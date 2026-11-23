@@ -179,7 +179,7 @@ Widget kitSpecimenFacts() => Builder(
 Widget kitSpecimenFormGroup() => Builder(
   builder: (context) => ComicFormField(
     kitSay(context, 'Your name'),
-    help: kitSay(context, 'As it should be on the list'),
+    helperText: kitSay(context, 'As it should be on the list'),
     child: ComicTextField(),
   ),
 );

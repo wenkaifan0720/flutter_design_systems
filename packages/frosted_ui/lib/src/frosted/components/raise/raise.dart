@@ -30,7 +30,7 @@ import '../toast.dart';
 /// [FrostedDialog.show]'s does.
 ///
 /// ```dart
-/// final ok = await showFrostedDialog<bool>(context, builder: (context) => FrostedDialog(title: 'Delete this note?', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, onConfirm: () => Navigator.pop(context, true), onCancel: () => Navigator.pop(context, false)));
+/// final ok = await showFrostedDialog<bool>(context, builder: (context) => FrostedDialog(title: 'Delete this note?', confirmLabel: 'Delete', cancelLabel: 'Cancel', isDestructiveAction: true, onConfirm: () => Navigator.pop(context, true), onCancel: () => Navigator.pop(context, false)));
 /// ```
 Future<T?> showFrostedDialog<T>(
   BuildContext context, {
@@ -112,14 +112,14 @@ void showFrostedSnackBar(
 
 /// One act of a [FrostedActionSheet]: its [label], what it does
 /// ([onPressed], after the sheet closes with [value]), and whether it is a
-/// loss ([destructive], set in the over ink).
+/// loss ([isDestructiveAction], set in the over ink).
 class FrostedActionSheetAction<T> {
   /// An act named [label].
   const FrostedActionSheetAction(
     this.label, {
     this.value,
     this.onPressed,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.key,
   });
 
@@ -133,7 +133,7 @@ class FrostedActionSheetAction<T> {
   final VoidCallback? onPressed;
 
   /// Whether it is a loss (Delete).
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// A key for its row.
   final Key? key;
@@ -147,7 +147,7 @@ class FrostedActionSheetAction<T> {
 /// runs the act. [showFrostedActionSheet] raises it.
 ///
 /// ```dart
-/// showFrostedActionSheet<void>(context, builder: (context) => FrostedActionSheet(title: 'This photo', actions: [FrostedActionSheetAction('Share', onPressed: share), FrostedActionSheetAction('Delete', destructive: true, onPressed: delete)]))
+/// showFrostedActionSheet<void>(context, builder: (context) => FrostedActionSheet(title: 'This photo', actions: [FrostedActionSheetAction('Share', onPressed: share), FrostedActionSheetAction('Delete', isDestructiveAction: true, onPressed: delete)]))
 /// ```
 class FrostedActionSheet<T> extends StatelessWidget {
   /// A sheet of [actions].
@@ -279,7 +279,7 @@ class FrostedActionSheet<T> extends StatelessWidget {
                           ),
                           child: row(
                             act.label,
-                            act.destructive
+                            act.isDestructiveAction
                                 ? t.textTheme.bodyLarge.c(t.colorScheme.over)
                                 : t.textTheme.bodyLarge.c(
                                     t.colorScheme.textPrimary,

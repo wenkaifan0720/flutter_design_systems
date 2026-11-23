@@ -35,7 +35,7 @@ class LedgerCommandPalette extends StatelessWidget {
   const LedgerCommandPalette({
     required this.commands,
     this.onSelected,
-    this.hint = 'Type an act or a place',
+    this.hintText = 'Type an act or a place',
     this.autofocus = false,
     super.key,
   });
@@ -47,7 +47,7 @@ class LedgerCommandPalette extends StatelessWidget {
   final ValueChanged<LedgerCommand>? onSelected;
 
   /// The field's words while it is empty.
-  final String hint;
+  final String hintText;
 
   /// {@macro ledger.autofocus}
   final bool autofocus;
@@ -63,7 +63,7 @@ class LedgerCommandPalette extends StatelessWidget {
           onSelected,
         ),
       )
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hintText', hintText))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 
@@ -113,7 +113,7 @@ class LedgerCommandPalette extends StatelessWidget {
                         if (value.text.isEmpty)
                           ExcludeSemantics(
                             child: Text(
-                              hint,
+                              hintText,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: words
@@ -125,7 +125,7 @@ class LedgerCommandPalette extends StatelessWidget {
                       ],
                     ),
                     child: Semantics(
-                      hint: hint,
+                      hint: hintText,
                       child: TextField(
                         controller: field.controller,
                         focusNode: field.focusNode,
@@ -197,7 +197,7 @@ Future<void> showLedgerCommandPalette(
   context: context,
   palette: (run) => LedgerCommandPalette(
     commands: commands,
-    hint: hint,
+    hintText: hint,
     autofocus: true,
     onSelected: run,
   ).toDesign(),

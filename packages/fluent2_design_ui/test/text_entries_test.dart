@@ -85,16 +85,16 @@ void main() {
                 'text field, ${size.name}': (context, controller, hint) =>
                     Fluent2TextField(
                       controller: controller,
-                      hint: hint,
+                      hintText: hint,
                       size: size,
                       onChanged: _drop,
                     ),
               },
               'search': (context, controller, hint) =>
-                  Fluent2SearchBox(controller: controller, hint: hint),
+                  Fluent2SearchBox(controller: controller, hintText: hint),
               'password': (context, controller, hint) => Fluent2PasswordField(
                 controller: controller,
-                hint: hint,
+                hintText: hint,
                 onChanged: _drop,
               ),
             },

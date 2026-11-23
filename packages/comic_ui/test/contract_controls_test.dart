@@ -332,7 +332,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           ComicTextField(
-            label: 'Password',
+            labelText: 'Password',
             password: true,
             controller: controller,
             revealLabels: ('Reveal letters', 'Conceal letters'),
@@ -368,7 +368,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         ComicSearchField(
-          hint: 'Search issues',
+          hintText: 'Search issues',
           name: 'Issue search',
           controller: controller,
           focusNode: focus,
@@ -388,7 +388,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         ComicInputOtp(
-          label: 'Code',
+          labelText: 'Code',
           length: 4,
           onCompleted: values.add,
           decorate: (input) => Semantics(label: 'Verification', child: input),
@@ -435,8 +435,8 @@ void main() {
       await tester.pumpWidget(
         _host(
           ComicRadioGroup<int>(
-            label: 'Format',
-            value: 1,
+            labelText: 'Format',
+            groupValue: 1,
             options: const [ComicRadio(1, 'Print'), ComicRadio(2, 'Digital')],
             onChanged: values.add,
           ),

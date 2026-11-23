@@ -1,0 +1,253 @@
+// The names gloss_ui 0.3.0 renames: gloss_ui.dart calls them as before `dart fix --apply`,
+// gloss_ui.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:gloss_ui/gloss_ui.dart';
+
+void calls(BuildContext context) {
+  final v1 = GlossInput(
+    hintText: 'Text',
+    labelText: 'Text',
+    errorText: 'Text',
+    obscureText: true,
+  );
+  print(v1.hintText);
+  print(v1.labelText);
+  print(v1.errorText);
+  print(v1.obscureText);
+  final v2 = GlossSearchField(hintText: 'Text');
+  print(v2.hintText);
+  final v3 = GlossPasswordField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v3.labelText);
+  print(v3.hintText);
+  print(v3.helperText);
+  print(v3.errorText);
+  final v4 = GlossInputGroup(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v4.labelText);
+  print(v4.hintText);
+  print(v4.helperText);
+  print(v4.errorText);
+  final v5 = GlossTextArea(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v5.labelText);
+  print(v5.hintText);
+  print(v5.helperText);
+  print(v5.errorText);
+  final v6 = GlossCombobox<String>(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v6.labelText);
+  print(v6.hintText);
+  print(v6.helperText);
+  print(v6.errorText);
+  final v7 = GlossTagInput<String>(
+    values: const [],
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v7.labelText);
+  print(v7.hintText);
+  print(v7.helperText);
+  print(v7.errorText);
+  final v8 = GlossDatePicker(
+    value: DateTime(2026),
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v8.labelText);
+  print(v8.hintText);
+  print(v8.helperText);
+  print(v8.errorText);
+  final v9 = GlossDateRangePicker(
+    value: null,
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v9.labelText);
+  print(v9.hintText);
+  print(v9.helperText);
+  print(v9.errorText);
+  final v10 = GlossSelect<String>(
+    items: const [],
+    value: 'a',
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v10.labelText);
+  print(v10.hintText);
+  print(v10.helperText);
+  print(v10.errorText);
+  final v11 = GlossTextField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v11.labelText);
+  print(v11.hintText);
+  print(v11.helperText);
+  print(v11.errorText);
+  final v12 = GlossFieldMessage(helperText: 'Text', errorText: 'Text');
+  print(v12.helperText);
+  print(v12.errorText);
+  final v13 = GlossFileDrop(onChoose: () {}, labelText: 'Text', hintText: 'Text');
+  print(v13.labelText);
+  print(v13.hintText);
+  final v14 = GlossCommandPalette(commands: const [], hintText: 'Text');
+  print(v14.hintText);
+  showGlossCommandPalette(context, commands: const [], hintText: 'Text');
+  final v15 = GlossHost(theme: null, darkTheme: null, child: const SizedBox());
+  print(v15.theme);
+  print(v15.darkTheme);
+  final v16 = GlossPreview(
+    child: const SizedBox(),
+    theme: null,
+    darkTheme: null,
+    selectedIndex: 1,
+  );
+  print(v16.theme);
+  print(v16.darkTheme);
+  print(v16.selectedIndex);
+  final v17 = GlossAppShell(
+    tabs: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+    child: const SizedBox(),
+  );
+  print(v17.onDestinationSelected);
+  final v18 = GlossNavigationBar(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v18.onDestinationSelected);
+  final v19 = GlossNavigationRail(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v19.onDestinationSelected);
+  final v20 = GlossSidebar(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v20.onDestinationSelected);
+  final v21 = GlossScaffold(body: const SizedBox(), onDestinationSelected: (_) {});
+  print(v21.onDestinationSelected);
+  final v22 = GlossTabBar(tabs: const [], selectedIndex: 1, onTap: (_) {});
+  print(v22.onTap);
+  final v23 = GlossDialogAction(
+    label: 'Text',
+    onPressed: () {},
+    isDefaultAction: true,
+    isDestructiveAction: true,
+  );
+  print(v23.isDefaultAction);
+  print(v23.isDestructiveAction);
+  final v24 = GlossListTile(title: 'Text', isDestructiveAction: true);
+  print(v24.isDestructiveAction);
+  final v25 = GlossIconButton(
+    onPressed: () {},
+    icon: const SizedBox(),
+    tooltip: 'Text',
+    isSelected: true,
+  );
+  final v26 = GlossIconButton.plain(
+    onPressed: () {},
+    icon: const SizedBox(),
+    tooltip: 'Text',
+    isSelected: true,
+  );
+  print(v25.isSelected);
+  final v27 = GlossDisclosure(
+    title: 'Text',
+    child: const SizedBox(),
+    onExpansionChanged: (_) {},
+  );
+  print(v27.onExpansionChanged);
+  final v28 = GlossStepProgress(steps: const [], currentStep: 1);
+  print(v28.currentStep);
+  final v29 = GlossPageDots(pageCount: 1, page: 1, onPageChanged: (_) {});
+  print(v29.pageCount);
+  print(v29.page);
+  print(v29.onPageChanged);
+  final v30 = GlossPagination(page: 1, pageCount: 1, onPageChanged: (_) {});
+  print(v30.onPageChanged);
+  final v31 = GlossBadge(count: 1, maxCount: 1);
+  print(v31.maxCount);
+  GlossTextTheme.from(const GlossColors.light());
+  final v32 = GlossRadioGroup<String>(
+    options: const [],
+    groupValue: 'a',
+    labelOf: (v) => '$v',
+    onChanged: (_) {},
+  );
+  print(v32.groupValue);
+  print([
+    v1,
+    v2,
+    v3,
+    v4,
+    v5,
+    v6,
+    v7,
+    v8,
+    v9,
+    v10,
+    v11,
+    v12,
+    v13,
+    v14,
+    v15,
+    v16,
+    v17,
+    v18,
+    v19,
+    v20,
+    v21,
+    v22,
+    v23,
+    v24,
+    v25,
+    v26,
+    v27,
+    v28,
+    v29,
+    v30,
+    v31,
+    v32,
+  ]);
+}

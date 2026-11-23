@@ -78,7 +78,7 @@ void main() {
           'standard',
           seen: seen,
           (v, set) => FrostedRadioGroup<String>(
-            label: 'Delivery',
+            labelText: 'Delivery',
             value: v,
             onChanged: set,
             options: const [
@@ -185,7 +185,7 @@ void main() {
           null,
           seen: seen,
           (v, set) => FrostedSelect<String>(
-            label: 'Room',
+            labelText: 'Room',
             value: v,
             onChanged: set,
             options: const [
@@ -216,8 +216,8 @@ void main() {
           (v, set) => FrostedDatePicker(
             value: v,
             currentDate: DateTime(2026, 11, 9),
-            first: DateTime(2026, 11, 3),
-            last: DateTime(2026, 12, 31),
+            firstDate: DateTime(2026, 11, 3),
+            lastDate: DateTime(2026, 12, 31),
             onChanged: set,
           ),
         ),

@@ -63,8 +63,8 @@ Widget kitPreviewDemo(Brightness brightness) => kitScreen(
       'Host scope',
       children: [
         LedgerHost(
-          light: kitTheme(Brightness.light),
-          dark: kitTheme(Brightness.dark),
+          theme: kitTheme(Brightness.light),
+          darkTheme: kitTheme(Brightness.dark),
           brightness: brightness == Brightness.dark
               ? Brightness.light
               : Brightness.dark,
@@ -98,8 +98,8 @@ Widget kitPreviewDemo(Brightness brightness) => kitScreen(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: const TextScaler.linear(3)),
             child: LedgerHost(
-              light: kitTheme(Brightness.light),
-              dark: kitTheme(Brightness.dark),
+              theme: kitTheme(Brightness.light),
+              darkTheme: kitTheme(Brightness.dark),
               brightness: brightness,
               child: Builder(
                 builder: (context) {
@@ -164,14 +164,14 @@ class _Phone extends StatelessWidget {
                       width: 390,
                       height: _height,
                       child: LedgerPreview(
-                        light: kitTheme(Brightness.light),
-                        dark: kitTheme(Brightness.dark),
+                        theme: kitTheme(Brightness.light),
+                        darkTheme: kitTheme(Brightness.dark),
                         brightness: brightness,
                         presentation: presentation,
                         tabs: presentation == LedgerPresentation.root
                             ? wrenTabs
                             : const [],
-                        activeIndex: 1,
+                        selectedIndex: 1,
                         child: LedgerAccountScope(
                           account: kitMaren,
                           child: child,

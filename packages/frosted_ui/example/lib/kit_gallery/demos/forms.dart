@@ -223,17 +223,17 @@ Widget kitSpecimenFormSection() => FrostedFormSection(
   title: kitSay('New goal'),
   children: [
     FrostedTextField(
-      label: kitSay('Name'),
-      hint: kitSay('What are you saving for?'),
+      labelText: kitSay('Name'),
+      hintText: kitSay('What are you saving for?'),
       value: kitSay('Lisbon'),
     ),
     FrostedFieldPair(
       FrostedAmountField(
-        label: kitSay('Target'),
+        labelText: kitSay('Target'),
         value: '4200',
         size: FrostedAmountFieldSize.small,
       ),
-      FrostedTextField(label: kitSay('Date'), value: kitSay('May 2027')),
+      FrostedTextField(labelText: kitSay('Date'), value: kitSay('May 2027')),
     ),
     FrostedIconPicker(
       icons: [
@@ -254,8 +254,11 @@ Widget kitSpecimenFormSection() => FrostedFormSection(
 Widget kitSpecimenFormBare() => FrostedFormSection(
   bare: true,
   children: [
-    FrostedAmountField(label: kitSay('Amount'), value: '500.00'),
-    FrostedTextField(label: kitSay('Note'), value: kitSay('November top-up')),
+    FrostedAmountField(labelText: kitSay('Amount'), value: '500.00'),
+    FrostedTextField(
+      labelText: kitSay('Note'),
+      value: kitSay('November top-up'),
+    ),
     FrostedSegmentedButton(
       segments: [
         FrostedButtonSegment('today', kitSay('Today')),

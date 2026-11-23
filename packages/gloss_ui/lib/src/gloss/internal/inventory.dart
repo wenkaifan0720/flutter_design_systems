@@ -98,14 +98,20 @@ DesignInventory _registry() => DesignInventory(
     _row('Link', (_) => const GlossLink('Method', onPressed: _none)),
     _row('Kbd', (_) => const GlossKbd('Ctrl K')),
     // Inputs.
-    _row('TextField', (_) => const GlossTextField(label: 'Name')),
-    _row('TextArea', (_) => const GlossTextArea(label: 'Notes')),
-    _row('SearchField', (_) => const GlossSearchField(hint: 'Search recipes')),
-    _row('PasswordField', (_) => const GlossPasswordField(label: 'Password')),
+    _row('TextField', (_) => const GlossTextField(labelText: 'Name')),
+    _row('TextArea', (_) => const GlossTextArea(labelText: 'Notes')),
+    _row(
+      'SearchField',
+      (_) => const GlossSearchField(hintText: 'Search recipes'),
+    ),
+    _row(
+      'PasswordField',
+      (_) => const GlossPasswordField(labelText: 'Password'),
+    ),
     _row(
       'InputGroup',
       (_) => const GlossInputGroup(
-        label: 'Weight',
+        labelText: 'Weight',
         prefixText: '≈',
         suffixText: 'g',
       ),
@@ -122,7 +128,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'Select',
       (_) => const GlossSelect<String>(
-        label: 'Course',
+        labelText: 'Course',
         value: 'main',
         onChanged: _ignore,
         items: [
@@ -134,14 +140,14 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'Combobox',
       (_) => const GlossCombobox<String>(
-        label: 'Ingredient',
+        labelText: 'Ingredient',
         options: ['Basil', 'Bay leaf', 'Butter'],
       ),
     ),
     _row(
       'MultiSelect',
       (_) => const GlossTagInput<String>(
-        label: 'Tags',
+        labelText: 'Tags',
         values: ['Quick'],
         onChanged: _ignore,
         options: ['Quick', 'Batch', 'Freezer'],
@@ -230,14 +236,14 @@ DesignInventory _registry() => DesignInventory(
       'FileUpload',
       (_) => const GlossFileDrop(
         onChoose: _none,
-        hint: 'A photo of the dish',
+        hintText: 'A photo of the dish',
         files: [GlossFile(name: 'risotto.jpg', bytes: 240000)],
       ),
     ),
     _row(
       'DatePicker',
       (_) => GlossDatePicker(
-        label: 'Cook on',
+        labelText: 'Cook on',
         value: null,
         onChanged: _ignore,
         firstDate: _first,
@@ -247,7 +253,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'DateRangePicker',
       (_) => GlossDateRangePicker(
-        label: 'Plan for',
+        labelText: 'Plan for',
         value: null,
         onChanged: _ignore,
         firstDate: _first,
@@ -302,7 +308,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => const GlossNavigationBar(
         destinations: _places,
         selectedIndex: 0,
-        onSelected: _ignore,
+        onDestinationSelected: _ignore,
       ),
     ),
     _row(
@@ -312,7 +318,7 @@ DesignInventory _registry() => DesignInventory(
         child: GlossNavigationRail(
           destinations: _places,
           selectedIndex: 0,
-          onSelected: _ignore,
+          onDestinationSelected: _ignore,
         ),
       ),
     ),
@@ -324,7 +330,7 @@ DesignInventory _registry() => DesignInventory(
         child: GlossSidebar(
           destinations: _places,
           selectedIndex: 0,
-          onSelected: _ignore,
+          onDestinationSelected: _ignore,
         ),
       ),
     ),
@@ -333,7 +339,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => const GlossTabBar(
         tabs: ['Method', 'Ingredients'],
         selectedIndex: 0,
-        onSelected: _ignore,
+        onTap: _ignore,
       ),
     ),
     _row(
@@ -347,16 +353,19 @@ DesignInventory _registry() => DesignInventory(
     ),
     _row(
       'Pagination',
-      (_) => const GlossPagination(page: 1, pageCount: 8, onChanged: _ignore),
+      (_) =>
+          const GlossPagination(page: 1, pageCount: 8, onPageChanged: _ignore),
     ),
     _row(
       'StepProgress',
-      (_) =>
-          const GlossStepProgress(steps: ['Prep', 'Cook', 'Serve'], current: 1),
+      (_) => const GlossStepProgress(
+        steps: ['Prep', 'Cook', 'Serve'],
+        currentStep: 1,
+      ),
     ),
     _row(
       'PageDots',
-      (_) => const GlossPageDots(count: 4, index: 1, onChanged: _ignore),
+      (_) => const GlossPageDots(pageCount: 4, page: 1, onPageChanged: _ignore),
     ),
     _row(
       'MenuBar',
@@ -390,7 +399,7 @@ DesignInventory _registry() => DesignInventory(
         child: GlossScaffold(
           topBar: GlossTopBar(title: 'Recipes'),
           destinations: _places,
-          onSelected: _ignore,
+          onDestinationSelected: _ignore,
           body: SizedBox.expand(),
         ),
       ),
@@ -535,7 +544,7 @@ DesignInventory _registry() => DesignInventory(
             GlossDialogAction(
               label: 'Delete',
               onPressed: _none,
-              destructive: true,
+              isDestructiveAction: true,
             ),
           ],
         ),

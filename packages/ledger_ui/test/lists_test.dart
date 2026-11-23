@@ -60,7 +60,7 @@ final List<_Case> _cases = [
   (
     'a select',
     (rtl) => LedgerSelect<String>(
-      label: rtl ? 'מטבע' : 'Currency',
+      labelText: rtl ? 'מטבע' : 'Currency',
       value: 'USD',
       items: [
         LedgerSelectItem(
@@ -82,7 +82,7 @@ final List<_Case> _cases = [
   (
     'a select whose options carry glyphs',
     (rtl) => LedgerSelect<String>(
-      label: rtl ? 'קטגוריה' : 'Category',
+      labelText: rtl ? 'קטגוריה' : 'Category',
       value: 'Rent',
       items: [
         LedgerSelectItem(
@@ -105,7 +105,7 @@ final List<_Case> _cases = [
   (
     'a combobox',
     (rtl) => LedgerCombobox<String>(
-      label: rtl ? 'מקבל' : 'Payee',
+      labelText: rtl ? 'מקבל' : 'Payee',
       options: rtl
           ? const ['בית קפה', 'בית מרקחת', 'ספרים']
           : const ['Corner Market', 'Cedar Books', 'Blue Fern Café'],
@@ -124,7 +124,7 @@ final List<_Case> _cases = [
   (
     'a multi-select',
     (rtl) => LedgerMultiSelect<String>(
-      label: rtl ? 'מתחלקים עם' : 'Split with',
+      labelText: rtl ? 'מתחלקים עם' : 'Split with',
       values: [rtl ? 'מרן' : 'Maren'],
       options: rtl
           ? const ['מרן', 'תאו', 'אנה']

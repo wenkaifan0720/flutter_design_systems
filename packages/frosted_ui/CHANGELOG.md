@@ -1,3 +1,39 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- Parameters take the names Flutter gives the same thing. A field's words are named as `InputDecoration` names them: `labelText`, `hintText`, `helperText` and `errorText`. Each parameter's field takes the new name too. `dart fix --apply` makes every rename below; `frosted_ui`'s `lib/fix_data.yaml` holds them.
+  - `label` → `labelText`: `FrostedTextField`, `FrostedTextArea`, `FrostedPasswordField`, `FrostedInputGroup`, `FrostedInputOtp`, `FrostedFormField`, `FrostedAmountField`, `FrostedSearchField`, `FrostedSearchLink`, `FrostedNumberField`, `FrostedSelect`, `FrostedCombobox`, `FrostedMultiSelect`, `FrostedFileUpload`, `FrostedRadioGroup`, `FrostedBareField`, `FrostedCommand`
+  - `hint` → `hintText`: `FrostedTextField`, `FrostedTextArea`, `FrostedPasswordField`, `FrostedInputGroup`, `FrostedAmountField`, `FrostedSearchField`, `FrostedSearchLink`, `FrostedCombobox`, `FrostedMultiSelect`, `FrostedFileUpload`, `FrostedBareField`, `FrostedCommand`, `FrostedCommand.show`, `FrostedComposer`
+  - `helper` → `helperText`: `FrostedTextField`, `FrostedTextArea`, `FrostedPasswordField`, `FrostedInputGroup`, `FrostedInputOtp`, `FrostedFormField`, `FrostedAmountField`, `FrostedSelect`, `FrostedCombobox`, `FrostedMultiSelect`
+  - `error` → `errorText`: `FrostedTextField`, `FrostedTextArea`, `FrostedPasswordField`, `FrostedInputGroup`, `FrostedInputOtp`, `FrostedFormField`, `FrostedSelect`, `FrostedCombobox`, `FrostedMultiSelect`, `FrostedFileUpload`, `FrostedRadioGroup`
+  - `obscure` → `obscureText`: `FrostedInputOtp`
+  - `prompt` → `hintText`: `FrostedSelect`
+  - `displayString` → `displayStringForOption`: `FrostedCombobox`, `FrostedMultiSelect`
+  - `light` → `theme`: `FrostedHost`, `FrostedPreview`
+  - `dark` → `darkTheme`: `FrostedHost`, `FrostedPreview`
+  - `activeIndex` → `selectedIndex`: `FrostedPreview`
+  - `multiple` → `multiSelectionEnabled`: `FrostedToggleGroup`
+  - `allowEmpty` → `emptySelectionAllowed`: `FrostedToggleGroup`
+  - `onChanged` → `onSelectionChanged`: `FrostedToggleGroup`
+  - `first` → `firstDate`: `FrostedDatePicker`
+  - `last` → `lastDate`: `FrostedDatePicker`
+  - `count` → `pageCount`: `FrostedPageDots`
+  - `destructive` → `isDestructiveAction`: `FrostedMenuItem`, `FrostedActionSheetAction`, `FrostedPanelRow`, `FrostedDialog`, `FrostedDialog.show`
+- Removes the members deprecated since 0.2.0 and 0.3.4, which nothing in the package read or drew. No `dart fix` moves them; each deprecation named its replacement.
+  - `FrostedLocalizations.cut`, `copy`, `paste`, `lookUp`, `searchWeb`, `share` and `scanText`: the text menu says `MaterialLocalizations`' words.
+  - `FrostedThemeData.copyWith`'s `shadows`, `glass`, `pearl` and `sheens`: a preset keeps them, and `opaqueMaterials` is the solid form for high contrast.
+  - `FrostedFocusRing.layers`, `FrostedFocusLight`, `frostedFocusLight`, `frostedFocusInk`, `frostedFocusWash`, `frostedFocusGlow` and `frostedErrorEdge`: focus clears the frost (`FrostedFocusRing`), and an invalid field keeps its neutral rim.
+- A field's help and error are read on the field. `FrostedTextField`, `FrostedTextArea`, `FrostedPasswordField`, `FrostedInputGroup`, `FrostedAmountField`, `FrostedSelect`, `FrostedCombobox` and `FrostedMultiSelect` lay out their label, help and error through ui_core's `RawInputDecorator`. A screen reader hears them on the field's node, and the drawn words stay out of the tree. A text field's entry is that node, also beside a key (a password's reveal). An amount field's node reads its label, its sign and the figure; a multi-select's entry is the field's node, alone or beside its tags, and that node spans the entry's lane, a touch target tall (beside its tags it stood at its line's height and said the field's name twice). The parts' `frostedFieldColumn` lays a field out, and `FrostedFieldTarget.ownNode` and `FrostedBareField.ownNode` leave the node to the field round them.
+- A dialog's and a sheet's acts stand on ui_core's `RawActionBar` (the parts' `FrostedActBar`). They share the row while each fits its share, else they stack at full width with the confirming one (the last given) on top. A dialog's own `actions` of three or more used to stack with the first on top.
+- A combobox's and a multi-select's entry says whether its list stands open (expanded or collapsed), and the combobox's and the select's chevrons turn while it does. The parts' `FrostedEntryOpen` carries it to the entry.
+- A menu opened from the keys focuses its chosen row as the row mounts, with no post-frame focus.
+- Toasts stand 12 over what ui_core's `RawToasterKeepClear` keeps clear: the tab bar, a screen's footer and a floating action bar. They follow the bar as it moves, and stand 12 over the safe inset where nothing is kept clear (16 before, on a screen with no inset). Toasts are no longer padded by a measured bar height. These go with it, and no `dart fix` moves them:
+  - `FrostedToastLook.bottom`: the toaster places the toast.
+  - `FrostedBottomStand.reachOf`: a stand keeps the toasts clear itself.
+  - `FrostedChromeMetrics.toastBottom`: `toastOverBar` is the gap.
+- Diagnostics name `displayStringForOption` and `onSelectionChanged` as the parameters are named.
+- `FrostedLastInput.keys` is a `ValueListenable<int>`. An app reads the count and listens to it; only Frosted counts. Code that set or disposed it no longer compiles, and no `dart fix` changes it.
+
 ## 0.4.1
 
 - Needs ui_core 0.4.1.

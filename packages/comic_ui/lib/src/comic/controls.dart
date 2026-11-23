@@ -25,6 +25,7 @@ import 'localizations.dart';
 import 'editing.dart';
 import 'tell.dart';
 import 'internal/cap_label.dart';
+import 'internal/list_open.dart';
 import 'internal/menu_open.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
@@ -586,7 +587,7 @@ class ComicIconButton extends StatelessWidget {
     this.onPressed,
     this.size = 40,
     this.focusNode,
-    this.selected = false,
+    this.isSelected = false,
     this.badge,
     this.badgeLabel,
     this.dot = false,
@@ -610,7 +611,7 @@ class ComicIconButton extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// A toggled action and its optional badge.
-  final bool selected, dot;
+  final bool isSelected, dot;
 
   /// An optional count or indicator beside the destination.
   final int? badge;
@@ -640,7 +641,7 @@ class ComicIconButton extends StatelessWidget {
         onPressed: onPressed,
         label: label,
         focusNode: focusNode,
-        selected: selected ? true : null,
+        selected: isSelected ? true : null,
         value: badgeLabel,
         outline: base.shapes(t.shapes.small),
         overlay: base.overlay,
@@ -680,7 +681,7 @@ class ComicIconButton extends StatelessWidget {
                   decoration: ShapeDecoration(
                     color:
                         look.fill ??
-                        (selected
+                        (isSelected
                             ? c.caption
                             : c.dark
                             ? c.card
@@ -700,7 +701,7 @@ class ComicIconButton extends StatelessWidget {
                             size: look.iconSize ?? 20,
                             color:
                                 look.foreground ??
-                                (selected
+                                (isSelected
                                     ? c.onCaption
                                     : c.dark
                                     ? c.text
@@ -770,8 +771,8 @@ class ComicIconButton extends StatelessWidget {
       )
       ..add(
         FlagProperty(
-          'selected',
-          value: selected,
+          'isSelected',
+          value: isSelected,
           ifTrue: 'selected',
           defaultValue: false,
         ),
@@ -816,7 +817,7 @@ const double _caretWidth = 2;
 /// [maxLines] above one makes a note box; [trailing] holds a send button or a unit.
 ///
 /// ```dart
-/// ComicTextField(hint: 'Your name', onChanged: (text) {})
+/// ComicTextField(hintText: 'Your name', onChanged: (text) {})
 /// ```
 class ComicTextField extends StatelessWidget {
   /// Creates a [ComicTextField].
@@ -825,21 +826,21 @@ class ComicTextField extends StatelessWidget {
     this.style,
     this.controller,
     this.initialValue,
-    this.hint,
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.trailing,
     this.leading,
     this.maxLines = 1,
     this.minLines,
-    this.prefix,
+    this.prefixText,
     this.keyboardType,
     this.textDirection,
     this.onPaper = false,
     this.obscureText = false,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.focusNode,
     this.autofocus = false,
@@ -862,8 +863,8 @@ class ComicTextField extends StatelessWidget {
   /// The caller-owned editing controller.
   final TextEditingController? controller;
 
-  /// [initialValue]: initial text when no editing controller is supplied. [hint]: placeholder text shown when the field is empty. [prefix]: text displayed before the editable value.
-  final String? initialValue, hint, prefix;
+  /// [initialValue]: initial text when no editing controller is supplied. [hintText]: placeholder text shown when the field is empty. [prefixText]: text displayed before the editable value.
+  final String? initialValue, hintText, prefixText;
 
   /// [onChanged]: reports a new value; null disables changes. [onSubmitted]: reports text submitted from the keyboard.
   final ValueChanged<String>? onChanged, onSubmitted;
@@ -888,13 +889,13 @@ class ComicTextField extends StatelessWidget {
   final bool onPaper, obscureText;
 
   /// The label stays above the frame, even while focused.
-  final String? label;
+  final String? labelText;
 
   /// Supporting text under the field; an error takes its place.
-  final String? helper;
+  final String? helperText;
 
   /// The error message and invalid semantics, when present.
-  final String? error;
+  final String? errorText;
 
   /// Whether input and selection are available.
   final bool enabled;
@@ -953,7 +954,7 @@ class ComicTextField extends StatelessWidget {
   ) {
     final t = ComicTheme.of(context);
     final c = t.colors;
-    final wrong = error != null || comicFieldInError(context);
+    final wrong = errorText != null || comicFieldInError(context);
     final look = comicStyleOf(
       [style, t.textFieldTheme],
       comicStates(
@@ -1001,7 +1002,7 @@ class ComicTextField extends StatelessWidget {
           autofillHints: autofillHints,
           inputFormatters: inputFormatters,
           contextMenuBuilder: ComicTextContextMenu.editable,
-          selectionControls: ComicTextSelectionControls.of(
+          selectionControls: ComicTextSelectionControls.forPlatform(
             Theme.of(context).platform,
           ),
           initialValue: controller == null ? initialValue : null,
@@ -1025,7 +1026,7 @@ class ComicTextField extends StatelessWidget {
             // A note box's hint wraps over its lines, as its words would; a one-line field's ends in an ellipsis.
             // At rest it stands where a select's value does. While the caret shows it moves in past the caret (its
             // 1 pt gap and width) and a letter's space, so an empty field's caret stands clear of its first letter.
-            hint: hint == null
+            hint: hintText == null
                 ? null
                 : ExcludeSemantics(
                     child: AnimatedPadding(
@@ -1035,7 +1036,7 @@ class ComicTextField extends StatelessWidget {
                         start: effectiveFocus.hasFocus ? _caretWidth + 3 : 0,
                       ),
                       child: Text(
-                        hint!,
+                        hintText!,
                         style: textStyle.copyWith(color: inputHint),
                         maxLines: maxLines,
                         overflow: TextOverflow.ellipsis,
@@ -1057,8 +1058,11 @@ class ComicTextField extends StatelessWidget {
     final input =
         decorate?.call(line) ??
         Semantics(
-          label: label ?? hint,
-          hint: error ?? helper ?? (label == null ? null : hint),
+          label: labelText ?? hintText,
+          hint:
+              errorText ?? helperText ?? (labelText == null ? null : hintText),
+          // A combobox's input reads whether its list shows.
+          expanded: ComicListOpen.maybeOf(context),
           child: line,
         );
     final trailing = password
@@ -1129,9 +1133,9 @@ class ComicTextField extends StatelessWidget {
                             leading!,
                             const SizedBox(width: ComicSpace.close),
                           ],
-                          if (prefix != null) ...[
+                          if (prefixText != null) ...[
                             Text(
-                              prefix!,
+                              prefixText!,
                               style: textStyle.copyWith(
                                 fontWeight: FontWeight.w800,
                               ),
@@ -1154,7 +1158,7 @@ class ComicTextField extends StatelessWidget {
     // A tap anywhere in the frame, beside the words too, reaches the field: the frame is the box a tap reaches and
     // the one a screen reader outlines (the label and the line under it are read with it, not outlined).
     final framed = Semantics(
-      validationResult: error == null
+      validationResult: errorText == null
           ? SemanticsValidationResult.none
           : SemanticsValidationResult.invalid,
       child: MouseRegion(
@@ -1171,18 +1175,18 @@ class ComicTextField extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null && showLabel) ...[
-          ExcludeSemantics(child: Text(label!, style: t.type.title)),
+        if (labelText != null && showLabel) ...[
+          ExcludeSemantics(child: Text(labelText!, style: t.type.title)),
           const SizedBox(height: ComicSpace.close),
         ],
         framed,
-        if (error != null || helper != null) ...[
+        if (errorText != null || helperText != null) ...[
           const SizedBox(height: ComicSpace.close),
           _fieldLine(
             Text(
-              error ?? helper!,
+              errorText ?? helperText!,
               style: t.type.small.copyWith(
-                color: error == null ? c.textSecondary : c.tones.danger,
+                color: errorText == null ? c.textSecondary : c.tones.danger,
               ),
             ),
           ),
@@ -1191,7 +1195,7 @@ class ComicTextField extends StatelessWidget {
     );
   }
 
-  Widget _fieldLine(Widget line) => error == null
+  Widget _fieldLine(Widget line) => errorText == null
       ? ExcludeSemantics(child: line)
       : failureLine?.call(line) ??
             Semantics(container: true, liveRegion: true, child: line);
@@ -1208,8 +1212,8 @@ class ComicTextField extends StatelessWidget {
         ),
       )
       ..add(StringProperty('initialValue', initialValue, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('prefixText', prefixText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -1255,9 +1259,9 @@ class ComicTextField extends StatelessWidget {
           defaultValue: false,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'enabled',
@@ -1487,11 +1491,11 @@ class ComicSendButton extends StatelessWidget {
   }
 }
 
-/// A read-only picker: a value, a dim note and a arrow, in a field's box, under an optional [label].
-/// A screen reader names it by [semanticLabel], else [label], and reads [value] after the name.
+/// A read-only picker: a value, a dim note and a arrow, in a field's box, under an optional [labelText].
+/// A screen reader names it by [semanticLabel], else [labelText], and reads [value] after the name.
 ///
 /// ```dart
-/// ComicSelectField(label: 'Account', value: 'Current ··3108', note: 'Change', onPressed: () {})
+/// ComicSelectField(labelText: 'Account', value: 'Current ··3108', helperText: 'Change', onPressed: () {})
 /// ```
 class ComicSelectField extends StatelessWidget {
   /// Creates a [ComicSelectField].
@@ -1499,8 +1503,8 @@ class ComicSelectField extends StatelessWidget {
     super.key,
     this.style,
     required this.value,
-    this.note,
-    this.label,
+    this.helperText,
+    this.labelText,
     this.semanticLabel,
     this.onPressed,
     this.focusNode,
@@ -1514,14 +1518,14 @@ class ComicSelectField extends StatelessWidget {
   final String value;
 
   /// Secondary explanatory text.
-  final String? note;
+  final String? helperText;
 
   /// The field's name, shown above its box in the field-label style (as [ComicTextField]'s) and spoken as the
   /// field's name. Null: no line above the box.
-  final String? label;
+  final String? labelText;
 
-  /// The name a screen reader speaks, in place of [label]: for a select with no visible label, or one whose label
-  /// leans on what is beside it. Null: [label]; with neither, the select is named by its [value].
+  /// The name a screen reader speaks, in place of [labelText]: for a select with no visible label, or one whose label
+  /// leans on what is beside it. Null: [labelText]; with neither, the select is named by its [value].
   final String? semanticLabel;
 
   /// {@macro comic.onPressed}
@@ -1538,7 +1542,7 @@ class ComicSelectField extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [style, t.textFieldTheme],
         base = comicStyleOf([style, t.textFieldTheme], const {});
-    final name = semanticLabel ?? label;
+    final name = semanticLabel ?? labelText;
     // A dropdown's face: its content's width, at most comicDropdownMost from 600 up.
     final face = comicDropdownWidth(
       context,
@@ -1614,9 +1618,9 @@ class ComicSelectField extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (note != null)
+                  if (helperText != null)
                     Text(
-                      note!,
+                      helperText!,
                       style: t.type.small.copyWith(
                         color:
                             look.foreground ??
@@ -1637,13 +1641,13 @@ class ComicSelectField extends StatelessWidget {
         },
       ),
     );
-    if (label == null) return face;
+    if (labelText == null) return face;
     // The label stands above the box as a text field's does; the box is what a menu opens from.
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ExcludeSemantics(child: Text(label!, style: t.type.title)),
+        ExcludeSemantics(child: Text(labelText!, style: t.type.title)),
         const SizedBox(height: ComicSpace.close),
         face,
       ],
@@ -1656,8 +1660,8 @@ class ComicSelectField extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
       ..add(StringProperty('value', value))
-      ..add(StringProperty('note', note, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
@@ -2682,7 +2686,7 @@ class ComicNumberField extends StatelessWidget {
     this.step = 1,
     this.format,
     this.unit,
-    this.note,
+    this.helperText,
     this.lessLabel,
     this.moreLabel,
   }) : assert(step > 0, 'a number field steps by more than nothing');
@@ -2706,7 +2710,7 @@ class ComicNumberField extends StatelessWidget {
   final String? unit;
 
   /// Secondary explanatory text.
-  final String? note;
+  final String? helperText;
 
   /// Overrides the localized decrease label.
   final String? lessLabel;
@@ -2838,10 +2842,10 @@ class ComicNumberField extends StatelessWidget {
         // From 600 up a stepper keeps to its count (no stepper stretches to its column); on a phone it
         // takes its column, as a field does.
         if (t.width >= 600) IntrinsicWidth(child: track) else track,
-        if (note != null)
+        if (helperText != null)
           Padding(
             padding: const EdgeInsets.only(top: ComicSpace.close),
-            child: Text(note!, style: t.type.small),
+            child: Text(helperText!, style: t.type.small),
           ),
       ],
     );
@@ -2860,7 +2864,7 @@ class ComicNumberField extends StatelessWidget {
         ObjectFlagProperty<String Function(int value)>.has('format', format),
       )
       ..add(StringProperty('unit', unit, defaultValue: null))
-      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('lessLabel', lessLabel, defaultValue: null))
       ..add(StringProperty('moreLabel', moreLabel, defaultValue: null))
       ..add(

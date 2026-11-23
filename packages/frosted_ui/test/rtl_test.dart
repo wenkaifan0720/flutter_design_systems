@@ -130,7 +130,7 @@ void main() {
   _mirrors(
     'a radio group',
     const FrostedRadioGroup<String>(
-      label: 'Plan',
+      labelText: 'Plan',
       value: 'free',
       onChanged: _drop,
       options: [FrostedRadio('free', 'Free'), FrostedRadio('plus', 'Plus')],
@@ -140,7 +140,7 @@ void main() {
   _mirrors(
     'a field with a leading glyph',
     const FrostedTextField(
-      label: 'Email',
+      labelText: 'Email',
       onChanged: _drop,
       leading: Icon(FrostedGlyphs.email),
     ),
@@ -244,7 +244,7 @@ void main() {
       t,
       TextDirection.rtl,
       const FrostedAmountField(
-        label: 'Amount',
+        labelText: 'Amount',
         value: '500.00',
         onChanged: _drop,
       ),

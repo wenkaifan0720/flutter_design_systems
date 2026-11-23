@@ -385,7 +385,7 @@ class TermLineChart extends StatelessWidget {
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.chartStyle], const {});
     final cw = grid.cellWidth;
-    final stroke = termStroke(theme, grid);
+    final stroke = termStrokeWidth(theme, grid);
     final inks = _inks(theme, series);
     // The axis column is as wide as the widest label the data could give;
     // the plot takes whole cells after it.

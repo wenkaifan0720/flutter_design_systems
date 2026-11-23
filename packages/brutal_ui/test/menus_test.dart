@@ -209,7 +209,7 @@ void main() {
         SizedBox(
           width: 320,
           child: BrutalSelect<String>(
-            label: 'Section',
+            labelText: 'Section',
             value: 'Stalls',
             items: const [
               BrutalSelectItem(value: 'Stalls', label: 'Stalls'),
@@ -244,7 +244,7 @@ void main() {
         SizedBox(
           width: 320,
           child: BrutalSelect<String>(
-            label: 'Section',
+            labelText: 'Section',
             value: 'Stalls',
             items: [for (final r in rows) BrutalSelectItem(value: r, label: r)],
             onChanged: (_) {},

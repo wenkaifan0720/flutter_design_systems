@@ -226,8 +226,8 @@ class _SteadyLogState extends State<SteadyLog> {
     final note = ClayCard(
       child: ClayTextArea(
         controller: _note,
-        label: 'Note',
-        hint: 'What helped today, or what got in the way',
+        labelText: 'Note',
+        hintText: 'What helped today, or what got in the way',
       ),
     );
 

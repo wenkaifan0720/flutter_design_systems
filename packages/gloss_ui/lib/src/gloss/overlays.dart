@@ -24,8 +24,8 @@ class GlossDialogAction {
   const GlossDialogAction({
     required this.label,
     required this.onPressed,
-    this.primary = false,
-    this.destructive = false,
+    this.isDefaultAction = false,
+    this.isDestructiveAction = false,
   });
 
   /// Its words.
@@ -35,11 +35,11 @@ class GlossDialogAction {
   final VoidCallback? onPressed;
 
   /// Whether it is the dialog's one action: a gel key (ruby when
-  /// [destructive]).
-  final bool primary;
+  /// [isDestructiveAction]).
+  final bool isDefaultAction;
 
   /// Whether it destroys something.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// A Gloss dialog: a raised porcelain panel rounded 24, its [title], its
@@ -49,7 +49,7 @@ class GlossDialogAction {
 /// opens, focus goes to the safe key (Keep, beside a Delete).
 ///
 /// ```dart
-/// GlossDialog(title: 'Delete this week’s plan?', content: const Text('The 7 dinners in it go back to your recipes.'), actions: [GlossDialogAction(label: 'Keep', onPressed: () {}), GlossDialogAction(label: 'Delete', onPressed: () {}, primary: true, destructive: true)])
+/// GlossDialog(title: 'Delete this week’s plan?', content: const Text('The 7 dinners in it go back to your recipes.'), actions: [GlossDialogAction(label: 'Keep', onPressed: () {}), GlossDialogAction(label: 'Delete', onPressed: () {}, isDefaultAction: true, isDestructiveAction: true)])
 /// ```
 class GlossDialog extends StatelessWidget {
   /// A dialog titled [title].
@@ -99,8 +99,8 @@ class GlossDialog extends StatelessWidget {
           RawDialogAction(
             label: a.label,
             onPressed: a.onPressed,
-            isDefaultAction: a.primary,
-            isDestructiveAction: a.destructive,
+            isDefaultAction: a.isDefaultAction,
+            isDestructiveAction: a.isDestructiveAction,
           ),
       ],
       insetPadding: routed
@@ -754,16 +754,17 @@ class _Sheet extends StatelessWidget {
           ),
       ],
     );
-    // A phone's panel runs a corner's height past the screen's foot, so only
-    // its top corners show.
+    // A phone's panel stands on the screen's foot, round at its top corners
+    // only.
     final sheet = GlossSurface(
-      face: _panel(c),
-      child: framed
-          ? panel
-          : Padding(
-              padding: const EdgeInsets.only(bottom: GlossMetrics.panelRadius),
-              child: panel,
+      face: framed
+          ? _panel(c)
+          : _panel(c).copyWith(
+              corners: const BorderRadius.vertical(
+                top: Radius.circular(GlossMetrics.panelRadius),
+              ),
             ),
+      child: panel,
     );
     // The route names it for a screen reader (its title).
     return ConstrainedBox(
@@ -777,12 +778,7 @@ class _Sheet extends StatelessWidget {
           left: framed ? GlossSpacing.large : 0,
           right: framed ? GlossSpacing.large : 0,
         ),
-        child: framed
-            ? sheet
-            : Transform.translate(
-                offset: const Offset(0, GlossMetrics.panelRadius),
-                child: sheet,
-              ),
+        child: sheet,
       ),
     );
   }
@@ -917,16 +913,17 @@ class _PageSheet extends StatelessWidget {
         if (drawer) Flexible(child: child) else Expanded(child: child),
       ],
     );
-    // A phone's panel runs a corner's height past the screen's foot, so only
-    // its top corners show.
+    // A phone's panel stands on the screen's foot, round at its top corners
+    // only.
     final sheet = GlossSurface(
-      face: _panel(c),
-      child: framed
-          ? panel
-          : Padding(
-              padding: const EdgeInsets.only(bottom: GlossMetrics.panelRadius),
-              child: panel,
+      face: framed
+          ? _panel(c)
+          : _panel(c).copyWith(
+              corners: const BorderRadius.vertical(
+                top: Radius.circular(GlossMetrics.panelRadius),
+              ),
             ),
+      child: panel,
     );
     final body = ConstrainedBox(
       constraints: BoxConstraints(
@@ -939,12 +936,7 @@ class _PageSheet extends StatelessWidget {
           left: framed ? GlossSpacing.large : 0,
           right: framed ? GlossSpacing.large : 0,
         ),
-        child: framed
-            ? sheet
-            : Transform.translate(
-                offset: const Offset(0, GlossMetrics.panelRadius),
-                child: sheet,
-              ),
+        child: sheet,
       ),
     );
     return body;
@@ -1286,6 +1278,25 @@ class _ActionSheet<T> extends StatelessWidget {
   }
 }
 
+// [words] lightened, keeping their hue, until they read at 4.5:1 on the
+// light where words stand on [face] (from its crown's fall to its middle):
+// by night a coloured word on the moonlit pearl. Words that read are kept.
+Color _readableOn(GlossFace face, Color words) {
+  final behind = Color.lerp(face.top, face.middle, 0.4)!;
+  double contrast(Color a) {
+    final x = a.computeLuminance(), y = behind.computeLuminance();
+    return x > y ? (x + .05) / (y + .05) : (y + .05) / (x + .05);
+  }
+
+  if (contrast(words) >= 4.6) return words;
+  final hsl = HSLColor.fromColor(words);
+  for (var l = hsl.lightness; l < 1; l += .01) {
+    final lighter = hsl.withLightness(l).toColor();
+    if (contrast(lighter) >= 4.6) return lighter;
+  }
+  return const Color(0xFFFFFFFF);
+}
+
 /// Where Gloss's toasts float: put it once under [GlossTheme], above the
 /// navigator, and call [showGlossToast].
 ///
@@ -1383,6 +1394,13 @@ class _Toast extends StatelessWidget {
                       GlossButton.text(
                         t.actionLabel!,
                         onPressed: details.runAction,
+                        // Jade on the pearl, as light as it must be by
+                        // night to read there.
+                        style: GlossStyle(
+                          foreground: WidgetStatePropertyAll(
+                            _readableOn(face, c.jadeInk),
+                          ),
+                        ),
                       ),
                       const SizedBox(width: GlossSpacing.tight),
                     ],

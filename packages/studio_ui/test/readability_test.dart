@@ -61,7 +61,7 @@ void main() {
     tester,
   ) async {
     final picker = StudioDatePicker(
-      label: 'Release date',
+      labelText: 'Release date',
       value: DateTime(2026, 11, 20),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027),

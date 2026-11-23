@@ -63,6 +63,7 @@ class GlossEntryText extends StatelessWidget {
     this.semanticLabel,
     this.textStyle,
     this.minHeight,
+    this.expanded,
   });
 
   /// The words.
@@ -119,6 +120,10 @@ class GlossEntryText extends StatelessWidget {
   /// well it is typed in, not only its line.
   final double? minHeight;
 
+  /// Whether the list it suggests from is open (a combobox's, a tag
+  /// input's); null for an entry with no list.
+  final bool? expanded;
+
   @override
   Widget build(BuildContext context) {
     assert(
@@ -147,6 +152,7 @@ class GlossEntryText extends StatelessWidget {
         child: Semantics(
           label: semanticLabel,
           hint: hint,
+          expanded: expanded,
           child: Material(
             type: MaterialType.transparency,
             child: TextField(

@@ -167,7 +167,7 @@ void main() {
               before,
               KeycapRadioGroup<String>(
                 options: const ['A', 'B', 'C', 'D'],
-                value: chosen,
+                groupValue: chosen,
                 isEnabled: (v) => v != 'B',
                 labelOf: (v) => v,
                 semanticLabel: 'Letters',
@@ -264,7 +264,7 @@ void main() {
           before,
           KeycapRadioGroup<String>(
             options: const ['A4', 'Letter', 'Legal'],
-            value: chosen,
+            groupValue: chosen,
             labelOf: (v) => v,
             onChanged: (v) => setState(() => chosen = v),
           ),

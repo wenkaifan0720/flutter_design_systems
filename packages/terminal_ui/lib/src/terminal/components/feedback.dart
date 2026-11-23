@@ -387,7 +387,7 @@ class TermToaster extends StatelessWidget {
         grid.cellWidth,
         grid.lineHeight,
         grid.cellWidth,
-        grid.lineHeight * 2,
+        grid.lineHeight,
       ),
       constraints: BoxConstraints(maxWidth: grid.cols(64)),
       toastBuilder: (context, details) => TermToast(details: details),

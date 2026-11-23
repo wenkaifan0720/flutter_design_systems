@@ -98,10 +98,10 @@ A form: a field, a select and the screen's one coral key.
 Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
-    ClayTextField(label: 'Habit name', hint: 'Drink water', onChanged: setName),
+    ClayTextField(labelText: 'Habit name', hintText: 'Drink water', onChanged: setName),
     const SizedBox(height: 24),
     ClaySelect<String>(
-      label: 'Repeat',
+      labelText: 'Repeat',
       value: repeat,
       items: const [
         ClaySelectItem(value: 'daily', label: 'Every day'),
@@ -147,8 +147,8 @@ final delete = await showClayDialog<bool>(
       ClayDialogAction(label: 'Keep', onPressed: () => Navigator.pop(context, false)),
       ClayDialogAction(
         label: 'Delete',
-        primary: true,
-        destructive: true,
+        isDefaultAction: true,
+        isDestructiveAction: true,
         onPressed: () => Navigator.pop(context, true),
       ),
     ],

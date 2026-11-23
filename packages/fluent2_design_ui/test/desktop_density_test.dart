@@ -64,7 +64,7 @@ final _entries = <_Entry>[
     'text field',
     (_) => const Fluent2TextField(
       label: 'Name',
-      hint: 'Your name',
+      hintText: 'Your name',
       onChanged: _drop,
     ),
     hint: 'Your name',
@@ -75,7 +75,7 @@ final _entries = <_Entry>[
     'text area',
     (_) => const Fluent2TextArea(
       label: 'Notes',
-      hint: 'Add a note',
+      hintText: 'Add a note',
       onChanged: _drop,
     ),
     hint: 'Add a note',
@@ -84,7 +84,7 @@ final _entries = <_Entry>[
   ),
   _Entry(
     'search field',
-    (_) => const Fluent2SearchBox(hint: 'Search files', onChanged: _drop),
+    (_) => const Fluent2SearchBox(hintText: 'Search files', onChanged: _drop),
     hint: 'Search files',
     words: 'budget',
     capitals: true,
@@ -93,7 +93,7 @@ final _entries = <_Entry>[
     'password field',
     (_) => const Fluent2PasswordField(
       label: 'Password',
-      hint: 'At least 8 characters',
+      hintText: 'At least 8 characters',
       onChanged: _drop,
     ),
     hint: 'At least 8 characters',
@@ -104,7 +104,7 @@ final _entries = <_Entry>[
     'input group',
     (_) => const Fluent2InputGroup(
       label: 'Website',
-      hint: 'example.com',
+      hintText: 'example.com',
       onChanged: _drop,
     ),
     hint: 'example.com',
@@ -115,7 +115,7 @@ final _entries = <_Entry>[
     'combobox',
     (_) => const Fluent2Combobox<String>(
       label: 'Size',
-      hint: 'Type a size',
+      hintText: 'Type a size',
       value: null,
       options: _sizes,
       onChanged: _drop,
@@ -128,7 +128,7 @@ final _entries = <_Entry>[
     'multi select',
     (_) => const Fluent2MultiSelect<String>(
       label: 'Sizes',
-      hint: 'Add sizes',
+      hintText: 'Add sizes',
       options: _sizes,
       selected: [],
       onChanged: _drop,
@@ -139,8 +139,11 @@ final _entries = <_Entry>[
   ),
   _Entry(
     'composer',
-    (_) =>
-        const Fluent2Composer(label: 'Message', hint: 'Message', onSend: _drop),
+    (_) => const Fluent2Composer(
+      label: 'Message',
+      hintText: 'Message',
+      onSend: _drop,
+    ),
     hint: 'Message',
     words: 'On my way',
   ),

@@ -315,14 +315,14 @@ class _Dot extends StatelessWidget {
 /// a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside.
 ///
 /// ```dart
-/// KeycapRadioGroup<String>(options: const ['A4', 'Letter'], value: paper, labelOf: (p) => p, onChanged: setPaper)
+/// KeycapRadioGroup<String>(options: const ['A4', 'Letter'], groupValue: paper, labelOf: (p) => p, onChanged: setPaper)
 /// ```
 class KeycapRadioGroup<T> extends StatelessWidget {
   /// A group over [options].
   const KeycapRadioGroup({
     super.key,
     required this.options,
-    required this.value,
+    required this.groupValue,
     required this.labelOf,
     required this.onChanged,
     this.isEnabled,
@@ -335,7 +335,7 @@ class KeycapRadioGroup<T> extends StatelessWidget {
   final List<T> options;
 
   /// The chosen one.
-  final T? value;
+  final T? groupValue;
 
   /// A choice's words.
   final String Function(T value) labelOf;
@@ -405,7 +405,7 @@ class KeycapRadioGroup<T> extends StatelessWidget {
         ),
     ];
     return KeycapGroupRadios<T>(
-      value: value,
+      value: groupValue,
       onChanged: (choice) {
         if (choice != null) change?.call(choice);
       },
@@ -425,7 +425,7 @@ class KeycapRadioGroup<T> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );

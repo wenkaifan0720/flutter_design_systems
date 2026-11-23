@@ -30,7 +30,7 @@ Widget _app() => MaterialApp(
       KeycapDestination(icon: LucideIcons.settings, label: 'Settings'),
     ],
     selectedIndex: 0,
-    onSelected: (_) {},
+    onDestinationSelected: (_) {},
     body: Navigator(
       onGenerateRoute: (settings) => PageRouteBuilder<void>(
         settings: settings,
@@ -39,7 +39,7 @@ Widget _app() => MaterialApp(
           child: Align(
             alignment: Alignment.topCenter,
             child: KeycapCombobox<String>(
-              label: _label,
+              labelText: _label,
               options: const ['Ana', 'Ben', 'Chloe'],
               onSelected: (_) {},
             ),

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -202,15 +203,31 @@ class _CivicDatePickerState extends State<CivicDatePicker> {
         isError: hasError,
       ),
     );
-    final row = _CalendarButton(
+    final framed =
+        widget.labelText != null ||
+        widget.helperText != null ||
+        widget.errorText != null;
+    return _CalendarButton(
       label: widget.chooseLabel,
       enabled: change != null,
-      around: (button) => Wrap(
-        spacing: CivicSpacing.s8,
-        runSpacing: CivicSpacing.s8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [field, button],
-      ),
+      // The calendar opens from the whole field, its label and help too, so
+      // above the field it stands clear of the label.
+      around: (button) {
+        final row = _LevelWrap(
+          spacing: CivicSpacing.s8,
+          runSpacing: CivicSpacing.s8,
+          slots: [(null, field), (null, button)],
+        );
+        if (!framed) return row;
+        return RawInputDecorator(
+          labelText: widget.labelText,
+          helperText: widget.helperText,
+          errorText: widget.errorText,
+          enabled: change != null,
+          builder: (context, parts) => CivicFieldFrame(parts: parts),
+          child: row,
+        );
+      },
       builder: (context, close) => CivicCalendar(
         controller: _dates,
         autofocus: true,
@@ -220,27 +237,16 @@ class _CivicDatePickerState extends State<CivicDatePicker> {
         },
       ),
     );
-    if (widget.labelText == null &&
-        widget.helperText == null &&
-        widget.errorText == null) {
-      return row;
-    }
-    return RawInputDecorator(
-      labelText: widget.labelText,
-      helperText: widget.helperText,
-      errorText: widget.errorText,
-      enabled: change != null,
-      builder: (context, parts) => CivicFieldFrame(parts: parts),
-      child: row,
-    );
   }
 }
 
 /// [around] with a secondary button, a calendar's glyph after its words,
-/// that opens [builder]'s calendar of [months] under [around] (the typed
-/// date and the button), from its start edge and as wide as the months,
-/// floating on the hairline and a soft shadow; Escape or a press outside
-/// closes it and the focus goes back to the button.
+/// that opens [builder]'s calendar of
+/// [months] under [around] (the whole field: its label, the typed date and
+/// the button, its help), or above it, clear of the label, where below
+/// can't hold the months; from its start edge and as wide as the months, floating on the hairline and a soft
+/// shadow (by night on the raised band); Escape or a press outside closes
+/// it and the focus goes back to the button.
 class _CalendarButton extends StatelessWidget {
   const _CalendarButton({
     required this.label,
@@ -266,12 +272,16 @@ class _CalendarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
+    // By night what floats stands on the raised band, and the calendar on
+    // it takes that band for its page.
+    final face = t.isDark ? t.surface : t.background;
     return RawPopover(
       semanticLabel: label,
       placement: const RawPopoverPlacement(
         align: RawPopoverAlign.start,
         matchAnchorWidth: false,
-        preferredExtent: 380,
+        // A month can't shrink: it opens on the side that holds it whole.
+        fit: RawPopoverFit.whole,
         gap: CivicSpacing.s8,
       ),
       anchorBuilder: (context, anchor) => around(
@@ -288,14 +298,17 @@ class _CalendarButton extends StatelessWidget {
           width: math.min(_width, info.maxSize.width),
           child: DecoratedBox(
             decoration: civicFloating(
-              face: t.background,
+              face: face,
               hairline: t.rule,
               dark: t.isDark,
             ),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(CivicSpacing.s16),
-                child: builder(context, info.close),
+            child: CivicTheme(
+              data: t.copyWith(background: face),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(CivicSpacing.s16),
+                  child: builder(context, info.close),
+                ),
               ),
             ),
           ),
@@ -456,7 +469,7 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
     );
   }
 
-  Widget _field(
+  (Widget, Widget) _field(
     BuildContext context,
     String label,
     DateTime? value,
@@ -464,34 +477,29 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
   ) {
     final t = context.civicTheme;
     final text = context.civicText;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      spacing: CivicSpacing.s4,
-      children: [
-        ExcludeSemantics(
-          child: Text(label, style: text.body.copyWith(color: t.textPrimary)),
+    return (
+      ExcludeSemantics(
+        child: Text(label, style: text.body.copyWith(color: t.textPrimary)),
+      ),
+      RawDateField(
+        value: value,
+        onChanged: widget.onChanged == null ? null : set,
+        firstDate: widget.firstDate,
+        lastDate: widget.lastDate,
+        // The field says the question once; each end says only its own
+        // name (From, To).
+        semanticLabel: label,
+        segmentBuilder: (context, details) =>
+            CivicDateSegment(details: details),
+        literalBuilder: civicSegmentLiteral,
+        frameBuilder: (context, states, segments) => civicSegmentWell(
+          context,
+          states,
+          segments,
+          styles: [widget.style, t.textFieldStyle],
+          isError: widget.errorText != null,
         ),
-        RawDateField(
-          value: value,
-          onChanged: widget.onChanged == null ? null : set,
-          firstDate: widget.firstDate,
-          lastDate: widget.lastDate,
-          // The field says the question once; each end says only its own
-          // name (From, To).
-          semanticLabel: label,
-          segmentBuilder: (context, details) =>
-              CivicDateSegment(details: details),
-          literalBuilder: civicSegmentLiteral,
-          frameBuilder: (context, states, segments) => civicSegmentWell(
-            context,
-            states,
-            segments,
-            styles: [widget.style, t.textFieldStyle],
-            isError: widget.errorText != null,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -501,25 +509,33 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
     final wide =
         (MediaQuery.maybeSizeOf(context)?.width ?? 1024) >= CivicLayout.medium;
     final months = wide ? 2 : 1;
-    final row = _CalendarButton(
+    return _CalendarButton(
       label: widget.chooseLabel,
       months: months,
       enabled: change != null,
-      around: (button) => Wrap(
-        spacing: CivicSpacing.s16,
-        runSpacing: CivicSpacing.s12,
-        crossAxisAlignment: WrapCrossAlignment.end,
-        children: [
-          _field(context, widget.startLabel, _start, (d) {
-            _start = d;
-            _typed();
-          }),
-          _field(context, widget.endLabel, _end, (d) {
-            _end = d;
-            _typed();
-          }),
-          button,
-        ],
+      // The calendar opens from the whole field, its legend and help too.
+      around: (button) => RawInputDecorator(
+        labelText: widget.labelText,
+        helperText: widget.helperText,
+        errorText: widget.errorText,
+        enabled: change != null,
+        builder: (context, parts) =>
+            CivicFieldFrame(parts: parts, isLegend: widget.labelText != null),
+        child: _LevelWrap(
+          spacing: CivicSpacing.s16,
+          runSpacing: CivicSpacing.s12,
+          slots: [
+            _field(context, widget.startLabel, _start, (d) {
+              _start = d;
+              _typed();
+            }),
+            _field(context, widget.endLabel, _end, (d) {
+              _end = d;
+              _typed();
+            }),
+            (null, button),
+          ],
+        ),
       ),
       builder: (context, close) => CivicCalendar(
         controller: _dates,
@@ -535,16 +551,258 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
         },
       ),
     );
-    return RawInputDecorator(
-      labelText: widget.labelText,
-      helperText: widget.helperText,
-      errorText: widget.errorText,
-      enabled: change != null,
-      builder: (context, parts) =>
-          CivicFieldFrame(parts: parts, isLegend: widget.labelText != null),
-      child: row,
-    );
   }
+}
+
+/// Lays out [slots] as a [Wrap] does (side by side while they fit, then on
+/// the next line), each slot a control under an optional label (a range's
+/// From and To). The controls on one line stand one height, the tallest's,
+/// as controls in a row do, under their labels, which stand
+/// [CivicSpacing.s4] over them.
+class _LevelWrap extends MultiChildRenderObjectWidget {
+  _LevelWrap({
+    required List<(Widget?, Widget)> slots,
+    required this.spacing,
+    required this.runSpacing,
+  }) : labels = [
+         for (final (label, _) in slots) ...[if (label != null) true, false],
+       ],
+       super(
+         children: [
+           for (final (label, control) in slots) ...[?label, control],
+         ],
+       );
+
+  /// Whether each child is a label (true) or a control (false).
+  final List<bool> labels;
+
+  final double spacing;
+  final double runSpacing;
+
+  @override
+  _RenderLevelWrap createRenderObject(BuildContext context) =>
+      _RenderLevelWrap(labels, spacing, runSpacing, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderLevelWrap renderObject,
+  ) => renderObject
+    ..labels = labels
+    ..spacing = spacing
+    ..runSpacing = runSpacing
+    ..direction = Directionality.of(context);
+}
+
+class _LevelParentData extends ContainerBoxParentData<RenderBox> {}
+
+typedef _Slot = ({RenderBox? label, RenderBox control});
+
+class _RenderLevelWrap extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _LevelParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _LevelParentData> {
+  _RenderLevelWrap(
+    this._labels,
+    this._spacing,
+    this._runSpacing,
+    this._direction,
+  );
+
+  List<bool> _labels;
+  set labels(List<bool> v) {
+    if (listEquals(v, _labels)) return;
+    _labels = v;
+    markNeedsLayout();
+  }
+
+  double _spacing;
+  set spacing(double v) {
+    if (v == _spacing) return;
+    _spacing = v;
+    markNeedsLayout();
+  }
+
+  double _runSpacing;
+  set runSpacing(double v) {
+    if (v == _runSpacing) return;
+    _runSpacing = v;
+    markNeedsLayout();
+  }
+
+  TextDirection _direction;
+  set direction(TextDirection v) {
+    if (v == _direction) return;
+    _direction = v;
+    markNeedsLayout();
+  }
+
+  static const double _labelGap = CivicSpacing.s4;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _LevelParentData) {
+      child.parentData = _LevelParentData();
+    }
+  }
+
+  List<_Slot> get _slots {
+    final out = <_Slot>[];
+    RenderBox? label;
+    var child = firstChild;
+    var i = 0;
+    while (child != null) {
+      if (i < _labels.length && _labels[i]) {
+        label = child;
+      } else {
+        out.add((label: label, control: child));
+        label = null;
+      }
+      child = childAfter(child);
+      i++;
+    }
+    return out;
+  }
+
+  double _slotWidth(_Slot s, double Function(RenderBox) width) =>
+      math.max(s.label == null ? 0 : width(s.label!), width(s.control));
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _slots.fold(
+    0,
+    (most, s) => math.max(
+      most,
+      _slotWidth(s, (b) => b.getMinIntrinsicWidth(double.infinity)),
+    ),
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    final slots = _slots;
+    if (slots.isEmpty) return 0;
+    return slots.fold<double>(
+          0,
+          (sum, s) =>
+              sum +
+              _slotWidth(s, (b) => b.getMaxIntrinsicWidth(double.infinity)),
+        ) +
+        _spacing * (slots.length - 1);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _layout(BoxConstraints(maxWidth: width), dry: true).height;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _layout(BoxConstraints(maxWidth: width), dry: true).height;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      _layout(constraints, dry: true);
+
+  @override
+  void performLayout() => size = _layout(constraints, dry: false);
+
+  Size _layout(BoxConstraints constraints, {required bool dry}) {
+    final slots = _slots;
+    if (slots.isEmpty) return constraints.smallest;
+    final loose = BoxConstraints(maxWidth: constraints.maxWidth);
+    Size measure(RenderBox box, BoxConstraints c) =>
+        dry ? box.getDryLayout(c) : (box..layout(c, parentUsesSize: true)).size;
+    final labels = [
+      for (final s in slots)
+        s.label == null ? Size.zero : measure(s.label!, loose),
+    ];
+    final controls = [for (final s in slots) measure(s.control, loose)];
+    final widths = [
+      for (var i = 0; i < slots.length; i++)
+        math.max(labels[i].width, controls[i].width),
+    ];
+    // The slots on each line, as a Wrap breaks them.
+    final runs = <List<int>>[];
+    var x = 0.0;
+    for (var i = 0; i < slots.length; i++) {
+      if (runs.isEmpty || x + widths[i] > constraints.maxWidth) {
+        runs.add([i]);
+        x = widths[i] + _spacing;
+      } else {
+        runs.last.add(i);
+        x += widths[i] + _spacing;
+      }
+    }
+    // Each line: the band its labels take, and its controls' one height.
+    final bands = [
+      for (final run in runs)
+        run.fold<double>(
+          0,
+          (most, i) => slots[i].label == null
+              ? most
+              : math.max(most, labels[i].height + _labelGap),
+        ),
+    ];
+    final levels = [
+      for (final run in runs)
+        run.fold<double>(0, (most, i) => math.max(most, controls[i].height)),
+    ];
+    final widest = runs.fold<double>(
+      0,
+      (most, run) => math.max(
+        most,
+        run.fold<double>(0, (sum, i) => sum + widths[i]) +
+            _spacing * (run.length - 1),
+      ),
+    );
+    var height = 0.0;
+    for (var r = 0; r < runs.length; r++) {
+      height += bands[r] + levels[r];
+    }
+    height += _runSpacing * (runs.length - 1);
+    final box = constraints.constrain(Size(widest, height));
+    if (dry) return box;
+    var y = 0.0;
+    for (var r = 0; r < runs.length; r++) {
+      var at = 0.0;
+      for (final i in runs[r]) {
+        final s = slots[i];
+        // Every control on the line stands as tall as the tallest.
+        if (controls[i].height < levels[r]) {
+          s.control.layout(
+            BoxConstraints.tightFor(
+              width: controls[i].width,
+              height: levels[r],
+            ),
+            parentUsesSize: true,
+          );
+        }
+        // Right to left, a line starts at the box's right edge.
+        double start(double width) =>
+            _direction == TextDirection.rtl ? box.width - at - width : at;
+        (s.control.parentData! as _LevelParentData).offset = Offset(
+          start(controls[i].width),
+          y + bands[r],
+        );
+        final label = s.label;
+        if (label != null) {
+          (label.parentData! as _LevelParentData).offset = Offset(
+            start(labels[i].width),
+            y + bands[r] - _labelGap - labels[i].height,
+          );
+        }
+        at += widths[i] + _spacing;
+      }
+      y += bands[r] + levels[r] + _runSpacing;
+    }
+    return box;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
 
 /// A time of day typed: the hour and the minute (and, on a 12-hour clock,

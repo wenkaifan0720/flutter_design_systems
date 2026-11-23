@@ -221,7 +221,7 @@ void main() {
         SizedBox(
           width: 320,
           child: BrutalSelect<String>(
-            label: 'Section',
+            labelText: 'Section',
             value: 'Stalls',
             items: const [
               BrutalSelectItem(value: 'Stalls', label: 'Stalls'),
@@ -246,10 +246,10 @@ void main() {
         SizedBox(
           width: 320,
           child: BrutalCombobox<String>(
-            label: 'Venue',
+            labelText: 'Venue',
             options: const ['Hall 4', 'Gallery Nine', 'The Yard'],
             value: 'Hall 4',
-            labelOf: (v) => v,
+            displayStringForOption: (v) => v,
             onSelected: (_) {},
           ),
         ),
@@ -272,7 +272,7 @@ void main() {
         SizedBox(
           width: 320,
           child: BrutalDatePicker(
-            label: 'Night',
+            labelText: 'Night',
             value: null,
             onChanged: (_) {},
             firstDate: DateTime(2026, 11),

@@ -206,10 +206,10 @@ final _parts = <_Part>[
   _Part(
     'Text field',
     (s, d, e) => StudioTextField(
-      label: 'Title',
-      hint: 'Name the episode',
+      labelText: 'Title',
+      hintText: 'Name the episode',
       enabled: !d,
-      error: e ? 'Give the episode a title.' : null,
+      errorText: e ? 'Give the episode a title.' : null,
     ),
     states: const {'idle', 'hovered', 'focused', 'disabled', 'error'},
     width: 320,
@@ -217,9 +217,9 @@ final _parts = <_Part>[
   _Part(
     'Select',
     (s, d, e) => StudioSelect<String>(
-      label: 'Quality',
+      labelText: 'Quality',
       value: 'High',
-      error: e ? 'Choose one the feed allows.' : null,
+      errorText: e ? 'Choose one the feed allows.' : null,
       items: const [
         StudioSelectItem(value: 'Standard', label: 'Standard'),
         StudioSelectItem(value: 'High', label: 'High'),
@@ -279,9 +279,9 @@ final _parts = <_Part>[
   _Part(
     'File drop',
     (s, d, e) => StudioFileDrop(
-      label: 'Audio',
-      hint: 'WAV or MP3',
-      error: e ? 'That file is not audio.' : null,
+      labelText: 'Audio',
+      hintText: 'WAV or MP3',
+      errorText: e ? 'That file is not audio.' : null,
       onChoose: d ? null : _none,
     ),
     states: _press.union({'error'}),

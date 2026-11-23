@@ -24,7 +24,7 @@ bool comicTouchEditing(TargetPlatform platform) => switch (platform) {
 /// none, as a pointer selects by dragging.
 ///
 /// ```dart
-/// TextField(selectionControls: ComicTextSelectionControls.of(Theme.of(context).platform))
+/// TextField(selectionControls: ComicTextSelectionControls.forPlatform(Theme.of(context).platform))
 /// ```
 class ComicTextSelectionControls extends TextSelectionControls
     with TextSelectionHandleControls {
@@ -40,7 +40,7 @@ class ComicTextSelectionControls extends TextSelectionControls
       ComicTextSelectionControls._(false);
 
   /// The controls for [platform].
-  static ComicTextSelectionControls of(TargetPlatform platform) =>
+  static ComicTextSelectionControls forPlatform(TargetPlatform platform) =>
       comicTouchEditing(platform) ? touch : desktop;
 
   final bool _touch;

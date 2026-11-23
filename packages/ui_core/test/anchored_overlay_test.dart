@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/gestures.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -148,6 +149,57 @@ void main() {
     // The anchor's size is the look's press (RawButton.minimumSize).
     targets: false,
   );
+
+  testWidgets('the open surface is a node of its own with no empty node '
+      'round it, and its children as the look gives them', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final controller = MenuController();
+    await tester.pumpWidget(
+      harness(
+        Center(
+          child: RawPopover(
+            controller: controller,
+            semanticLabel: 'Details',
+            anchorBuilder: (context, anchor) => GestureDetector(
+              onTap: anchor.toggle,
+              child: const Text('More'),
+            ),
+            overlayBuilder: (context, info) => headingAndText(),
+          ),
+        ),
+      ),
+    );
+    controller.open();
+    await tester.pumpAndSettle();
+    SemanticsNode? surface;
+    bool visit(SemanticsNode n) {
+      if (n.label == 'Details') {
+        surface = n;
+        return false;
+      }
+      n.visitChildren(visit);
+      return surface == null;
+    }
+
+    semanticsOwner().rootSemanticsNode!.visitChildren(visit);
+    final parent = surface!.parent!;
+    // 0.5.0: the surface's keys made a node round it that said nothing, as
+    // large as the surface and holding only it.
+    expect(
+      parent.label.isEmpty &&
+          parent.childrenCount == 1 &&
+          parent.rect.size == surface!.rect.size,
+      isFalse,
+    );
+    final children = <String>[];
+    surface!.visitChildren((c) {
+      children.add(c.label);
+      return true;
+    });
+    expect(children, ['Tide tables', 'Low water at 7:10']);
+    expectHeadingAndTextApart(tester);
+    semantics.dispose();
+  });
 
   testWidgets('a popover: Enter opens it and focus moves in, Tab stays '
       'inside, Escape closes it and focus returns to the anchor', (

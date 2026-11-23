@@ -2,12 +2,14 @@
 /// and the input itself, with no decoration of its own.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../fonts.dart';
 import '../surface.dart';
+import '../text_field.dart' show ClayFieldLabel;
 import '../theme.dart';
 
 /// The well a field is typed in, for its [states] (focused, disabled,
@@ -67,7 +69,7 @@ class ClayEntryText extends StatelessWidget {
     super.key,
     required this.controller,
     required this.focusNode,
-    this.hint,
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.onEditingComplete,
@@ -83,6 +85,7 @@ class ClayEntryText extends StatelessWidget {
     this.textStyle,
     this.textAlign = TextAlign.start,
     this.minHeight,
+    this.mergeSemantics = true,
   });
 
   /// The words.
@@ -92,7 +95,7 @@ class ClayEntryText extends StatelessWidget {
   final FocusNode focusNode;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Each change of the words.
   final ValueChanged<String>? onChanged;
@@ -142,6 +145,12 @@ class ClayEntryText extends StatelessWidget {
   /// well it is typed in, not only its line.
   final double? minHeight;
 
+  /// Whether its name and its text make one node of their own. False where
+  /// a [ClayFieldDecorator] makes the field's node and keys stand beside the
+  /// input (a password's reveal key): the input is then the field's node,
+  /// named and hinted by the decorator.
+  final bool mergeSemantics;
+
   @override
   Widget build(BuildContext context) {
     assert(
@@ -159,10 +168,10 @@ class ClayEntryText extends StatelessWidget {
       child: DesignTextEntryBox(
         minHeight: minHeight ?? theme.controlHeight,
         controller: controller,
-        hint: hint == null
+        hint: hintText == null
             ? null
             : Text(
-                hint!,
+                hintText!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: textAlign,
@@ -173,10 +182,10 @@ class ClayEntryText extends StatelessWidget {
         // One node, the field's own size, as the text field's: its name
         // and its text together, never spread onto what holds it (a list's
         // header below).
-        child: MergeSemantics(
-          child: Semantics(
+        child: _merged(
+          Semantics(
             label: semanticLabel,
-            hint: hint,
+            hint: hintText,
             child: Material(
               type: MaterialType.transparency,
               child: TextField(
@@ -206,6 +215,9 @@ class ClayEntryText extends StatelessWidget {
       ),
     );
   }
+
+  Widget _merged(Widget child) =>
+      mergeSemantics ? MergeSemantics(child: child) : child;
 }
 
 /// A one-line well: [leading], the words, [trailing], at a control's
@@ -324,5 +336,128 @@ class ClayWellSeam extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// The label above one of Clay's fields and its help or error under it, read
+/// with the field: a [RawInputDecorator] gives the field's node the label as
+/// its name and the error and help as its hint, so a screen reader on the
+/// field hears them, and never lands on them alone. Clay's text fields,
+/// selects, comboboxes, tag inputs and pickers stand in it.
+///
+/// ```dart
+/// ClayFieldDecorator(labelText: 'Habit name', helperText: 'Shown on Today', child: ClayEntryWell(face: face, child: field))
+/// ```
+class ClayFieldDecorator extends StatelessWidget {
+  /// [child] with its words.
+  const ClayFieldDecorator({
+    super.key,
+    required this.child,
+    this.labelText,
+    this.helperText,
+    this.errorText,
+    this.enabled = true,
+    this.focusNode,
+    this.end,
+    this.style,
+  });
+
+  /// The field.
+  final Widget child;
+
+  /// The label above the field.
+  final String? labelText;
+
+  /// Help under the field.
+  final String? helperText;
+
+  /// What is wrong, under the field in the danger ink; it replaces
+  /// [helperText].
+  final String? errorText;
+
+  /// Whether the field takes input.
+  final bool enabled;
+
+  /// The field's focus. The caller's, who disposes it.
+  final FocusNode? focusNode;
+
+  /// What stands at the end of the line under the field (a count).
+  final Widget? end;
+
+  /// The words' own style under the field, over
+  /// [ClayThemeData.fieldMessageStyle]: `foreground` the help (an error keeps
+  /// the danger ink), `textStyle` their face.
+  final ClayStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ClayTheme.of(context);
+    final c = theme.colors;
+    return RawInputDecorator(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      focusNode: focusNode,
+      builder: (context, parts) {
+        final words = parts.error ?? parts.helper;
+        Widget? message;
+        if (words != null) {
+          final error = parts.error != null;
+          final layered = DesignStyleOf(
+            [style, theme.fieldMessageStyle],
+            {if (error) WidgetState.error},
+          );
+          final face = theme.textTheme.secondary.merge(layered.textStyle);
+          message = Padding(
+            padding: const EdgeInsetsDirectional.only(
+              top: ClaySpacing.small,
+              start: ClayMetrics.fieldInset,
+              end: ClayMetrics.fieldInset,
+            ),
+            child: DefaultTextStyle(
+              style: error
+                  ? face.copyWith(color: c.dangerInk)
+                  : layered.foreground == null
+                  ? face
+                  : face.copyWith(color: layered.foreground),
+              child: words,
+            ),
+          );
+        }
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (labelText != null)
+              ExcludeSemantics(
+                child: ClayFieldLabel(labelText!, enabled: enabled),
+              ),
+            parts.control,
+            if (end == null)
+              ?message
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: message ?? const SizedBox.shrink()),
+                  end!,
+                ],
+              ),
+          ],
+        );
+      },
+      child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }

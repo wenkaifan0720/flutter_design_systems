@@ -30,8 +30,8 @@ Widget kitOverlaysDemo(Brightness brightness) => kitScreen(
               GlossDialogAction(
                 label: 'Delete',
                 onPressed: _none,
-                primary: true,
-                destructive: true,
+                isDefaultAction: true,
+                isDestructiveAction: true,
               ),
             ],
           ),
@@ -64,8 +64,8 @@ class _Open extends StatelessWidget {
               ),
               GlossDialogAction(
                 label: 'Delete',
-                primary: true,
-                destructive: true,
+                isDefaultAction: true,
+                isDestructiveAction: true,
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -156,9 +156,10 @@ class _Anchored extends StatelessWidget {
           ],
         ),
       ),
-      // A hover card rides on a link in running words.
-      Row(
-        mainAxisSize: MainAxisSize.min,
+      // A hover card rides on a link in running words, which wrap under
+      // large text.
+      Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           const Text('Point at '),
           GlossHoverCard(

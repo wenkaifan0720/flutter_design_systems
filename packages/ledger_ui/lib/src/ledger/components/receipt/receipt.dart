@@ -479,7 +479,7 @@ class _Bleed extends StatelessWidget {
 /// under its lines at their end.
 ///
 /// ```dart
-/// LedgerCheque(kind: 'Wren · Transfer', date: 'Wed, Oct 28, 2026', micr: '··0119 ··4821 ··9015', lines: [LedgerPickLine(label: 'From', icon: LucideIcons.wallet, name: 'Checking', mask: '··4821'), LedgerChequeAmount(label: 'Amount', words: 'Two hundred and 00/100', unit: 'dollars', amount: 200)])
+/// LedgerCheque(kind: 'Wren · Transfer', date: 'Wed, Oct 28, 2026', micr: '··0119 ··4821 ··9015', lines: [LedgerPickLine(label: 'From', icon: LucideIcons.wallet, name: 'Checking', mask: '··4821'), LedgerChequeAmount(labelText: 'Amount', words: 'Two hundred and 00/100', unit: 'dollars', amount: 200)])
 /// ```
 ///
 /// ```dart

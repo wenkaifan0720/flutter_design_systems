@@ -17,23 +17,23 @@ import '../pressable/pressable.dart';
 /// only show the place. A screen reader hears "Page 2 of 5".
 ///
 /// ```dart
-/// LedgerPageDots(count: 5, index: 1, onChanged: (i) {})
+/// LedgerPageDots(pageCount: 5, page: 1, onChanged: (i) {})
 /// ```
 class LedgerPageDots extends StatelessWidget {
-  /// [count] marks, [index] the one shown (from 0).
+  /// [pageCount] marks, [page] the one shown (from 0).
   const LedgerPageDots({
-    required this.count,
-    required this.index,
+    required this.pageCount,
+    required this.page,
     this.onChanged,
     super.key,
-  }) : assert(count > 0),
-       assert(index >= 0 && index < count);
+  }) : assert(pageCount > 0),
+       assert(page >= 0 && page < pageCount);
 
   /// How many pages.
-  final int count;
+  final int pageCount;
 
   /// The page shown, from 0.
-  final int index;
+  final int page;
 
   /// Turns to a page; null: the marks only show the place.
   final ValueChanged<int>? onChanged;
@@ -42,8 +42,8 @@ class LedgerPageDots extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('index', index))
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('page', page))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
   }
 
@@ -52,7 +52,7 @@ class LedgerPageDots extends StatelessWidget {
     final t = context.ledgerTheme;
     final change = onChanged;
     Widget mark(int i, bool hot) => LedgerEase(
-      value: i == index ? 1 : 0,
+      value: i == page ? 1 : 0,
       builder: (context, at, _) => Container(
         width: _short + (_long - _short) * at.clamp(0.0, 1.0),
         height: _thick,
@@ -68,12 +68,12 @@ class LedgerPageDots extends StatelessWidget {
     );
     if (change == null) {
       return Semantics(
-        label: 'Page ${index + 1} of $count',
+        label: 'Page ${page + 1} of $pageCount',
         excludeSemantics: true,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           spacing: _gap,
-          children: [for (var i = 0; i < count; i++) mark(i, false)],
+          children: [for (var i = 0; i < pageCount; i++) mark(i, false)],
         ),
       );
     }
@@ -83,12 +83,12 @@ class LedgerPageDots extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < count; i++)
+          for (var i = 0; i < pageCount; i++)
             TapTargetPadding(
               child: LedgerPressable(
-                onTap: i == index ? _stay : () => change(i),
-                label: 'Page ${i + 1} of $count',
-                selected: i == index,
+                onTap: i == page ? _stay : () => change(i),
+                label: 'Page ${i + 1} of $pageCount',
+                selected: i == page,
                 radius: _thick,
                 child: Builder(
                   builder: (context) => Padding(

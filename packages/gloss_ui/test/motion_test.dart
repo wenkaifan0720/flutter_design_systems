@@ -310,7 +310,7 @@ void main() {
             (context, v, change) => GlossTabBar(
               tabs: const ['Method', 'Ingredients', 'Notes'],
               selectedIndex: v,
-              onSelected: change,
+              onTap: change,
             ),
           ),
           () => find.byType(GlossTabBar),

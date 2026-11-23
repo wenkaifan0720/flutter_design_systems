@@ -475,7 +475,7 @@ void main() {
       await _pump(
         t,
         LedgerSearchEntry(
-          hint: 'Search entries',
+          hintText: 'Search entries',
           onTap: () => searched++,
           onFilterPressed: () => filtered++,
           filterCount: 3,
@@ -501,7 +501,7 @@ void main() {
               value: day,
               mode: mode,
               presentation: presentation,
-              today: DateTime(2026, 11, 1),
+              currentDate: DateTime(2026, 11, 1),
               onChanged: (_) {},
             ),
           );
@@ -513,7 +513,7 @@ void main() {
       await _pump(
         t,
         LedgerDatePicker(
-          label: 'Due',
+          labelText: 'Due',
           value: day,
           mode: LedgerDatePickerMode.dateAndTime,
           onChanged: (_) {},
@@ -547,7 +547,7 @@ void main() {
           '${width.round()}', (t) async {
         await _pump(
           t,
-          LedgerDatePicker(label: 'Due', value: day, onChanged: (_) {}),
+          LedgerDatePicker(labelText: 'Due', value: day, onChanged: (_) {}),
           size: Size(width, 900),
         );
         await t.tap(find.text('Nov 4, 2026'));
@@ -685,7 +685,7 @@ void main() {
       await _pump(
         t,
         LedgerDatePicker(
-          label: 'Due',
+          labelText: 'Due',
           value: day,
           onChanged: (v) => picked = v,
         ),

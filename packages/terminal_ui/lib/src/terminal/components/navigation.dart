@@ -379,7 +379,7 @@ class TermTopBar extends StatelessWidget {
       painter: _GroundWithRule(
         ground: own.fill ?? theme.surface,
         rule: own.edge ?? theme.rule,
-        stroke: termStroke(theme, grid),
+        stroke: termStrokeWidth(theme, grid),
       ),
       child: SizedBox(
         height: height < grid.lineHeight ? grid.lineHeight : height,
@@ -593,7 +593,7 @@ class TermNavigationBar extends StatelessWidget {
     final height = grid.ceil(DesignTapTargets.of(context).floorOn()).height;
     final lines = height < grid.lineHeight ? grid.lineHeight : height;
     final bar = TermStyleOf([style, theme.navigationBarStyle], const {});
-    Widget face(int i, String text, Set<WidgetState> states) =>
+    Widget face(int i, String text, Set<WidgetState> states, {int? lead}) =>
         TermStateSprings(
           pressed: states.contains(WidgetState.pressed),
           focused: states.contains(WidgetState.focused),
@@ -601,7 +601,8 @@ class TermNavigationBar extends StatelessWidget {
             target: i == selectedIndex ? 1 : 0,
             token: TermMotion.move,
             spatial: true,
-            builder: (context, t, _) => Center(
+            builder: (context, t, _) => _OnCell(
+              lead: lead == null ? null : grid.cols(lead),
               // The keyboard's focus: the cursor over the window, hollow
               // on the current one.
               child: _Inverse(
@@ -640,9 +641,9 @@ class TermNavigationBar extends StatelessWidget {
     // In TermScaffold's shell, its destinations stand in the windows'
     // places: the shell presses them and gives them their keys.
     final shell = TermShellDestinations.maybeOf(context);
-    Widget item(int i, String text) => shell != null
+    Widget item(int i, String text, {int? lead}) => shell != null
         ? TermShellFace(
-            face: (context, states) => face(i, text, states),
+            face: (context, states) => face(i, text, states, lead: lead),
             child: shell[i],
           )
         : RawButton(
@@ -655,13 +656,13 @@ class TermNavigationBar extends StatelessWidget {
             mouseCursor: onDestinationSelected == null
                 ? SystemMouseCursors.basic
                 : SystemMouseCursors.click,
-            builder: (context, states, _) => face(i, text, states),
+            builder: (context, states, _) => face(i, text, states, lead: lead),
           );
     return CustomPaint(
       painter: _GroundWithRule(
         ground: theme.surface,
         rule: bar.edge ?? theme.rule,
-        stroke: termStroke(theme, grid),
+        stroke: termStrokeWidth(theme, grid),
         top: true,
       ),
       child: SafeArea(
@@ -678,6 +679,33 @@ class TermNavigationBar extends StatelessWidget {
                 grid.widthOf('${i + 1}:${destinations[i].label}*') +
                     grid.cols(2),
             ];
+            // Equal cells, as Material's NavigationBar shares its width:
+            // each name in the middle of an equal slot of whole cells (to
+            // half a cell, so it starts on the character grid), the odd
+            // cells at the two ends, so the names stand evenly along the
+            // line whatever their lengths.
+            if (c.maxWidth.isFinite && n > 0) {
+              final cells = grid.colsIn(c.maxWidth);
+              final each = cells ~/ n;
+              if (wide.every((w) => w <= grid.cols(each) + 0.01)) {
+                final spare = cells - each * n;
+                return Row(
+                  children: [
+                    SizedBox(width: grid.cols(spare ~/ 2)),
+                    for (var i = 0; i < n; i++)
+                      SizedBox(
+                        width: grid.cols(each),
+                        height: lines,
+                        child: item(
+                          i,
+                          words(i),
+                          lead: (each - grid.colsIn(wide[i])) ~/ 2,
+                        ),
+                      ),
+                  ],
+                );
+              }
+            }
             final roomy =
                 !c.maxWidth.isFinite ||
                 wide.fold(0.0, (a, w) => a + w) <= c.maxWidth;
@@ -1068,6 +1096,28 @@ class _MarkedScrollState extends State<_MarkedScroll> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// [child] in the middle of the slot, or, given [lead], that far in from its
+// start, so it starts on a whole cell.
+class _OnCell extends StatelessWidget {
+  const _OnCell({required this.lead, required this.child});
+
+  final double? lead;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final lead = this.lead;
+    if (lead == null) return Center(child: child);
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(start: lead),
+        child: child,
       ),
     );
   }

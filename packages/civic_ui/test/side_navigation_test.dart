@@ -41,7 +41,7 @@ Future<void> _loadFonts() async {
 
 Widget _frame(int place) => CivicPreview(
   tabs: _places,
-  activeIndex: place,
+  selectedIndex: place,
   brand: _service,
   action: CivicShellAction(
     icon: LucideIcons.plus,

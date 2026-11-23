@@ -47,7 +47,7 @@ Widget _entryRow(
     height: _rowHeight(context),
     enabled: enabled,
     chosen: entry.checked ?? false,
-    destructive: entry.isDestructiveAction,
+    isDestructiveAction: entry.isDestructiveAction,
     lit: enabled && (_lit(states) || states.contains(WidgetState.selected)),
     trailing: entry.children != null
         ? Icon(rtl ? LucideIcons.chevronLeft : LucideIcons.chevronRight)
@@ -105,11 +105,6 @@ class KeycapMenu extends StatelessWidget {
     required this.entries,
     required this.builder,
     this.semanticLabel,
-    @Deprecated(
-      'Mark the entry instead: RawMenuEntry(isDestructiveAction: true). '
-      'This field was deprecated after keycap_ui 0.2.0.',
-    )
-    this.destructive = const {},
   });
 
   /// The rows.
@@ -121,14 +116,6 @@ class KeycapMenu extends StatelessWidget {
 
   /// The menu's name, for a screen reader.
   final String? semanticLabel;
-
-  /// The labels of more rows that destroy something, printed in the danger
-  /// ink as the entries marked [RawMenuEntry.isDestructiveAction] are.
-  @Deprecated(
-    'Mark the entry instead: RawMenuEntry(isDestructiveAction: true). '
-    'This field was deprecated after keycap_ui 0.2.0.',
-  )
-  final Set<String> destructive;
 
   @override
   Widget build(BuildContext context) => RawPopover(
@@ -163,11 +150,7 @@ class KeycapMenu extends StatelessWidget {
               height: _rowHeight(context),
               enabled: entry.onPressed != null,
               chosen: entry.checked ?? false,
-              destructive:
-                  entry.isDestructiveAction ||
-                  // A deprecated field keeps working until it is removed.
-                  // ignore: deprecated_member_use_from_same_package
-                  destructive.contains(entry.label),
+              isDestructiveAction: entry.isDestructiveAction,
               lit: entry.onPressed != null && _lit(states),
               trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
             ),
@@ -461,7 +444,7 @@ class KeycapCommandPalette extends StatelessWidget {
     super.key,
     required this.commands,
     this.onSelected,
-    this.hint,
+    this.hintText,
     this.emptyLabel,
     this.autofocus = false,
     this.maxHeight = 320,
@@ -474,7 +457,7 @@ class KeycapCommandPalette extends StatelessWidget {
   final ValueChanged<RawCommand>? onSelected;
 
   /// What the empty well says; the kit's "Search" when null.
-  final String? hint;
+  final String? hintText;
 
   /// What the list says when nothing fits; the kit's "No results" when
   /// null.
@@ -490,7 +473,7 @@ class KeycapCommandPalette extends StatelessWidget {
   Widget build(BuildContext context) => _palette(
     commands: commands,
     onSelected: onSelected,
-    hint: hint ?? RawWidgetsLocalizations.of(context).searchFieldLabel,
+    hint: hintText ?? RawWidgetsLocalizations.of(context).searchFieldLabel,
     emptyLabel:
         emptyLabel ?? RawWidgetsLocalizations.of(context).noResultsLabel,
     autofocus: autofocus,
@@ -513,7 +496,7 @@ class KeycapCommandPalette extends StatelessWidget {
 Future<void> showKeycapCommandPalette({
   required BuildContext context,
   required List<RawCommand> commands,
-  String? hint,
+  String? hintText,
   String? emptyLabel,
 }) {
   final c = KeycapTheme.of(context).colors;
@@ -524,7 +507,7 @@ Future<void> showKeycapCommandPalette({
     palette: (run) => _palette(
       commands: commands,
       onSelected: run,
-      hint: hint ?? words.searchFieldLabel,
+      hint: hintText ?? words.searchFieldLabel,
       emptyLabel: emptyLabel ?? words.noResultsLabel,
     ),
     surfaceBuilder: (context, palette) => ConstrainedBox(

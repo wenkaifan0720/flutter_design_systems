@@ -494,14 +494,14 @@ class ClayRadioMark extends StatelessWidget {
 /// A null [onChanged] disables it.
 ///
 /// ```dart
-/// ClayRadioGroup<String>(options: const ['morning', 'evening'], value: 'morning', labelOf: (v) => v == 'morning' ? 'Morning' : 'Evening', onChanged: (v) {})
+/// ClayRadioGroup<String>(options: const ['morning', 'evening'], groupValue: 'morning', labelOf: (v) => v == 'morning' ? 'Morning' : 'Evening', onChanged: (v) {})
 /// ```
 class ClayRadioGroup<T> extends StatelessWidget {
-  /// A group of [options], [value] chosen.
+  /// A group of [options], [groupValue] chosen.
   const ClayRadioGroup({
     super.key,
     required this.options,
-    required this.value,
+    required this.groupValue,
     required this.labelOf,
     required this.onChanged,
     this.isEnabled,
@@ -514,7 +514,7 @@ class ClayRadioGroup<T> extends StatelessWidget {
   final List<T> options;
 
   /// The one chosen; none when null.
-  final T? value;
+  final T? groupValue;
 
   /// The words beside a choice's cup, which a screen reader says too.
   final String Function(T value) labelOf;
@@ -584,7 +584,7 @@ class ClayRadioGroup<T> extends StatelessWidget {
         : Wrap(spacing: ClaySpacing.large, children: rows);
     final label = semanticLabel;
     return RadioGroup<T>(
-      groupValue: value,
+      groupValue: groupValue,
       // A group that takes no choice turns each radio off.
       onChanged: (v) {
         if (v != null) change?.call(v);
@@ -600,7 +600,7 @@ class ClayRadioGroup<T> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );

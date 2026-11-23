@@ -22,7 +22,8 @@ Widget _host(Widget child) {
   final t = FrostedThemeData.opal();
   return MaterialApp(
     debugShowCheckedModeBanner: false,
-    builder: (context, page) => FrostedHost(light: t, dark: t, child: page!),
+    builder: (context, page) =>
+        FrostedHost(theme: t, darkTheme: t, child: page!),
     home: ColoredBox(
       color: t.colorScheme.background,
       child: Align(
@@ -109,7 +110,7 @@ void main() {
         _host(
           StatefulBuilder(
             builder: (context, setState) => FrostedCombobox<String>(
-              label: 'City',
+              labelText: 'City',
               options: _cities,
               value: city,
               onSelected: (v) => setState(() => city = v),
@@ -131,7 +132,7 @@ void main() {
         _host(
           StatefulBuilder(
             builder: (context, setState) => FrostedMultiSelect<String>(
-              label: 'Tags',
+              labelText: 'Tags',
               options: _tags,
               values: chosen,
               onChanged: (v) => setState(() => chosen = v),
@@ -185,7 +186,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           FrostedTextField(
-            label: 'Add a guest',
+            labelText: 'Add a guest',
             controller: controller,
             onEditingComplete: () {
               added.add(controller.text);
@@ -209,7 +210,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           FrostedTextField(
-            label: 'Name',
+            labelText: 'Name',
             controller: controller,
             onSubmitted: submitted.add,
           ),

@@ -1,0 +1,54 @@
+# Data-driven fixes for `dart fix`: what moves callers off the names a release renames. look:package writes this file
+# to the package's lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after
+# (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+  # 0.4.0: the stroke helper differed from the TermStroke enum by case alone.
+  - title: "Rename to 'termStrokeWidth'"
+    date: 2026-11-22
+    element:
+      uris: ['terminal_ui.dart', 'terminal_parts.dart']
+      function: 'termStroke'
+    changes:
+      - kind: 'rename'
+        newName: 'termStrokeWidth'
+  # 0.4.0: a field's errorText is its error, as InputDecoration's is; a combobox's and a tag input's search failure
+  # words take a name of their own.
+  - title: "Rename to 'searchFailedText'"
+    date: 2026-11-22
+    element:
+      uris: ['terminal_ui.dart', 'terminal_parts.dart']
+      constructor: ''
+      inClass: 'TermCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'errorText'
+        newName: 'searchFailedText'
+  - title: "Rename to 'searchFailedText'"
+    date: 2026-11-22
+    element:
+      uris: ['terminal_ui.dart', 'terminal_parts.dart']
+      field: 'errorText'
+      inClass: 'TermCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'searchFailedText'
+  - title: "Rename to 'searchFailedText'"
+    date: 2026-11-22
+    element:
+      uris: ['terminal_ui.dart', 'terminal_parts.dart']
+      constructor: ''
+      inClass: 'TermTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'errorText'
+        newName: 'searchFailedText'
+  - title: "Rename to 'searchFailedText'"
+    date: 2026-11-22
+    element:
+      uris: ['terminal_ui.dart', 'terminal_parts.dart']
+      field: 'errorText'
+      inClass: 'TermTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'searchFailedText'

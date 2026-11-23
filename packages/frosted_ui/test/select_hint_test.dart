@@ -41,8 +41,8 @@ Future<_Read> _shot(WidgetTester tester) async {
 Widget _app(FrostedThemeData t, {required bool helper}) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: RepaintBoundary(key: _stage, child: page!),
   ),
@@ -55,8 +55,8 @@ Widget _app(FrostedThemeData t, {required bool helper}) => MaterialApp(
         child: SizedBox(
           width: 400,
           child: FrostedSelect<String>(
-            label: 'Room',
-            helper: helper ? _helper : null,
+            labelText: 'Room',
+            helperText: helper ? _helper : null,
             onChanged: (_) {},
             options: const [
               FrostedSelectOption('k', 'Kitchen'),

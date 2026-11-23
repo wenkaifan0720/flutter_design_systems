@@ -218,7 +218,7 @@ List<int?> _pageWindow(int page, int count, {int around = 1}) {
 /// from here fold to an ellipsis.
 ///
 /// ```dart
-/// GlossPagination(page: 2, pageCount: 12, onChanged: (page) {})
+/// GlossPagination(page: 2, pageCount: 12, onPageChanged: (page) {})
 /// ```
 class GlossPagination extends StatelessWidget {
   /// Pagination at [page] (0-based) of [pageCount].
@@ -226,7 +226,7 @@ class GlossPagination extends StatelessWidget {
     super.key,
     required this.page,
     required this.pageCount,
-    required this.onChanged,
+    required this.onPageChanged,
     this.style,
   }) : assert(pageCount > 0),
        assert(page >= 0 && page < pageCount);
@@ -238,7 +238,7 @@ class GlossPagination extends StatelessWidget {
   final int pageCount;
 
   /// The page to go to; null disables it.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// Its own style, over [GlossThemeData.paginationStyle].
   final GlossStyle? style;
@@ -262,7 +262,7 @@ class GlossPagination extends StatelessWidget {
       required Widget child,
       bool current = false,
     }) => RawButton(
-      onPressed: onChanged == null ? null : onPressed,
+      onPressed: onPageChanged == null ? null : onPressed,
       semanticLabel: semanticLabel,
       selected: current,
       semanticSelected: current,
@@ -341,7 +341,7 @@ class GlossPagination extends StatelessWidget {
               children: [
                 cell(
                   semanticLabel: words.previousPageTooltip,
-                  onPressed: page > 0 ? () => onChanged!(page - 1) : null,
+                  onPressed: page > 0 ? () => onPageChanged!(page - 1) : null,
                   child: Icon(
                     rtl ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
                     size: 18,
@@ -369,14 +369,14 @@ class GlossPagination extends StatelessWidget {
                   else
                     cell(
                       semanticLabel: words.positionLabel(p + 1, pageCount),
-                      onPressed: p == page ? () {} : () => onChanged!(p),
+                      onPressed: p == page ? () {} : () => onPageChanged!(p),
                       current: p == page,
                       child: figure(p),
                     ),
                 cell(
                   semanticLabel: words.nextPageTooltip,
                   onPressed: page < pageCount - 1
-                      ? () => onChanged!(page + 1)
+                      ? () => onPageChanged!(page + 1)
                       : null,
                   child: Icon(
                     rtl ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
@@ -406,22 +406,22 @@ class GlossPagination extends StatelessWidget {
 /// The groove fills with gel up to here.
 ///
 /// ```dart
-/// GlossStepProgress(steps: const ['Recipes', 'Days', 'List'], current: 1)
+/// GlossStepProgress(steps: const ['Recipes', 'Days', 'List'], currentStep: 1)
 /// ```
 class GlossStepProgress extends StatelessWidget {
-  /// Progress through [steps], at [current] (0-based).
+  /// Progress through [steps], at [currentStep] (0-based).
   const GlossStepProgress({
     super.key,
     required this.steps,
-    required this.current,
+    required this.currentStep,
     this.style,
-  }) : assert(current >= 0);
+  }) : assert(currentStep >= 0);
 
   /// The steps' names.
   final List<String> steps;
 
   /// The step you are on, from 0; [steps]' length when all are done.
-  final int current;
+  final int currentStep;
 
   /// Its own style, over [GlossThemeData.stepProgressStyle].
   final GlossStyle? style;
@@ -439,7 +439,7 @@ class GlossStepProgress extends StatelessWidget {
       label: steps.isEmpty
           ? null
           : words.positionLabel(
-              (current + 1).clamp(1, steps.length),
+              (currentStep + 1).clamp(1, steps.length),
               steps.length,
             ),
       // One groove runs behind the beads from the first's middle to the
@@ -458,7 +458,7 @@ class GlossStepProgress extends StatelessWidget {
                   GlossSurface(face: GlossFace.well(c)),
                   TweenAnimationBuilder<double>(
                     tween: Tween(
-                      end: (current / (steps.length - 1)).clamp(0.0, 1.0),
+                      end: (currentStep / (steps.length - 1)).clamp(0.0, 1.0),
                     ),
                     duration: const Duration(milliseconds: 360),
                     curve: Curves.easeOutCubic,
@@ -492,9 +492,9 @@ class GlossStepProgress extends StatelessWidget {
                 _StepBead(
                   index: i,
                   label: step,
-                  done: i < current,
-                  here: i == current,
-                  showLabel: !narrow || i == current,
+                  done: i < currentStep,
+                  here: i == currentStep,
+                  showLabel: !narrow || i == currentStep,
                   size: bead,
                   tint: layered.fill,
                 ),
@@ -513,7 +513,7 @@ class GlossStepProgress extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<String>('steps', steps))
-      ..add(IntProperty('current', current));
+      ..add(IntProperty('currentStep', currentStep));
   }
 }
 
@@ -589,30 +589,30 @@ class _StepBead extends StatelessWidget {
 }
 
 /// Page dots: a small socket for each page pressed into the surface, the
-/// current one a lozenge of jade gel. With [onChanged] each dot goes to its
+/// current one a lozenge of jade gel. With [onPageChanged] each dot goes to its
 /// page.
 ///
 /// ```dart
-/// GlossPageDots(count: 4, index: 1)
+/// GlossPageDots(pageCount: 4, page: 1)
 /// ```
 class GlossPageDots extends StatelessWidget {
-  /// Dots for [count] pages, at [index].
+  /// Dots for [pageCount] pages, at [page].
   const GlossPageDots({
     super.key,
-    required this.count,
-    required this.index,
-    this.onChanged,
+    required this.pageCount,
+    required this.page,
+    this.onPageChanged,
     this.style,
   });
 
   /// How many pages.
-  final int count;
+  final int pageCount;
 
   /// The page shown.
-  final int index;
+  final int page;
 
   /// The page to go to; null: the dots only show.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// Its own style, over [GlossThemeData.pageDotsStyle].
   final GlossStyle? style;
@@ -624,7 +624,7 @@ class GlossPageDots extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.pageDotsStyle], const {});
     Widget dot(int i, [Set<WidgetState> states = const {}]) {
-      final on = i == index;
+      final on = i == page;
       var gel = GlossFace.gel(c).copyWith(lift: 0.3, lens: 0.6);
       if (layered.fill != null) gel = gel.glazed(layered.fill!);
       return AnimatedContainer(
@@ -644,8 +644,8 @@ class GlossPageDots extends StatelessWidget {
     final dots = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < count; i++)
-          onChanged == null
+        for (var i = 0; i < pageCount; i++)
+          onPageChanged == null
               ? Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: GlossSpacing.tight,
@@ -653,10 +653,10 @@ class GlossPageDots extends StatelessWidget {
                   child: dot(i),
                 )
               : RawButton(
-                  onPressed: () => onChanged!(i),
-                  semanticLabel: words.positionLabel(i + 1, count),
-                  selected: i == index,
-                  semanticSelected: i == index,
+                  onPressed: () => onPageChanged!(i),
+                  semanticLabel: words.positionLabel(i + 1, pageCount),
+                  selected: i == page,
+                  semanticSelected: i == page,
                   builder: (context, states, _) => TapTargetPadding(
                     child: SizedBox(
                       width: 24,
@@ -667,9 +667,9 @@ class GlossPageDots extends StatelessWidget {
                 ),
       ],
     );
-    if (onChanged != null) return dots;
+    if (onPageChanged != null) return dots;
     return Semantics(
-      label: words.positionLabel(index + 1, count),
+      label: words.positionLabel(page + 1, pageCount),
       child: ExcludeSemantics(child: dots),
     );
   }
@@ -678,8 +678,8 @@ class GlossPageDots extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('index', index));
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('page', page));
   }
 }
 
@@ -876,7 +876,7 @@ class GlossCommandPalette extends StatelessWidget {
     super.key,
     required this.commands,
     this.onSelected,
-    this.hint,
+    this.hintText,
     this.emptyText,
     this.autofocus = false,
     this.style,
@@ -889,7 +889,7 @@ class GlossCommandPalette extends StatelessWidget {
   final ValueChanged<GlossCommand>? onSelected;
 
   /// What the empty well says; null: the platform's word for search.
-  final String? hint;
+  final String? hintText;
 
   /// What it says when nothing matches; null: the platform's words.
   final String? emptyText;
@@ -904,7 +904,7 @@ class GlossCommandPalette extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
-    final said = hint ?? words.searchFieldLabel;
+    final said = hintText ?? words.searchFieldLabel;
     return RawCommandPalette(
       commands: [
         for (final command in commands)
@@ -1040,7 +1040,7 @@ Widget _palettePanel(BuildContext context, GlossStyle? style, Widget child) {
 Future<void> showGlossCommandPalette(
   BuildContext context, {
   required List<GlossCommand> commands,
-  String? hint,
+  String? hintText,
   GlossStyle? style,
 }) {
   final theme = GlossTheme.of(context);
@@ -1049,7 +1049,7 @@ Future<void> showGlossCommandPalette(
     barrierColor: theme.colors.scrim,
     palette: (run) => GlossCommandPalette(
       commands: commands,
-      hint: hint,
+      hintText: hintText,
       autofocus: true,
       style: style,
     )._body(context, run),

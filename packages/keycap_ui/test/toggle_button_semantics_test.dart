@@ -59,7 +59,7 @@ void main() {
             KeycapIconButton(
               icon: const Icon(LucideIcons.bold),
               semanticLabel: on ? 'Bold on' : 'Bold off',
-              selected: on,
+              isSelected: on,
               onPressed: () {},
             ),
           for (final on in [true, false])
@@ -91,7 +91,10 @@ void main() {
     final handle = tester.ensureSemantics();
     await _show(
       tester,
-      const SizedBox(width: 358, child: KeycapPasswordField(label: 'Password')),
+      const SizedBox(
+        width: 358,
+        child: KeycapPasswordField(labelText: 'Password'),
+      ),
     );
     final reveal = find.bySemanticsLabel(
       RegExp('password', caseSensitive: false),

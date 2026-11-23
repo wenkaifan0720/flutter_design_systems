@@ -49,13 +49,13 @@ enum FrostedComposerVariant {
 /// has no composer; the search well and the round buttons lend the faces.
 ///
 /// ```dart
-/// FrostedComposer(hint: 'Message Maren', onSend: send, onAttach: attach)
+/// FrostedComposer(hintText: 'Message Maren', onSend: send, onAttach: attach)
 /// ```
 class FrostedComposer extends StatefulWidget {
   /// Creates a [FrostedComposer].
   const FrostedComposer({
     this.controller,
-    this.hint,
+    this.hintText,
     this.onSend,
     this.onAttach,
     this.onVoice,
@@ -74,7 +74,7 @@ class FrostedComposer extends StatefulWidget {
 
   /// The hint while the box is empty: "Message", or "Ask anything" for an
   /// assistant.
-  final String? hint;
+  final String? hintText;
 
   /// What send does with the written text.
   final ValueChanged<String>? onSend;
@@ -120,7 +120,7 @@ class FrostedComposer extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<String>>.has('onSend', onSend))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -173,7 +173,7 @@ class _FrostedComposerState extends State<FrostedComposer>
     final live = widget.enabled;
     final typed = fieldController.text.trim().isNotEmpty;
     final hint =
-        widget.hint ??
+        widget.hintText ??
         (assistant
             ? FrostedLocalizations.of(context).askAnything
             : FrostedLocalizations.of(context).message);

@@ -250,7 +250,7 @@ class ClayListTile extends StatelessWidget {
     this.checked,
     this.toggled,
     this.showChevron,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -293,7 +293,7 @@ class ClayListTile extends StatelessWidget {
   final bool? showChevron;
 
   /// Whether the row destroys something: its words in the danger ink.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether the row is on.
   final bool enabled;
@@ -332,7 +332,7 @@ class ClayListTile extends StatelessWidget {
           layered.foreground ??
           (disabled
               ? c.inkDisabled
-              : destructive
+              : isDestructiveAction
               ? c.dangerInk
               : c.ink);
       final muted = disabled ? c.inkDisabled : c.inkSecondary;
@@ -553,7 +553,11 @@ class ClayListTile extends StatelessWidget {
       ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(
-        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'destructive',
+        ),
       );
   }
 }

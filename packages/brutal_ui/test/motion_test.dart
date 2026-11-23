@@ -176,7 +176,7 @@ void main() {
             endActions: [
               BrutalSwipeAction(
                 label: 'Delete',
-                destructive: true,
+                isDestructiveAction: true,
                 onPressed: _none,
               ),
             ],
@@ -285,7 +285,7 @@ void main() {
             (context, v, change) => BrutalTabBar(
               tabs: const ['Upcoming', 'Past', 'Saved'],
               selectedIndex: v,
-              onSelected: change,
+              onTap: change,
             ),
           ),
           () => find.byType(BrutalTabBar),

@@ -68,7 +68,11 @@ Widget kitListsDemo(Brightness brightness) => kitScreen(
           children: [
             BrutalListTile(title: 'Harbour', selected: true, onTap: () {}),
             BrutalListTile(title: 'Old town', onTap: () {}),
-            BrutalListTile(title: 'Sign out', destructive: true, onTap: () {}),
+            BrutalListTile(
+              title: 'Sign out',
+              isDestructiveAction: true,
+              onTap: () {},
+            ),
             const BrutalListTile(title: 'Delete account', enabled: false),
           ],
         ),
@@ -280,7 +284,7 @@ class _CollectionsState extends State<_Collections> {
                       BrutalSwipeAction(
                         label: 'Hide',
                         icon: LucideIcons.eyeOff,
-                        destructive: true,
+                        isDestructiveAction: true,
                         onPressed: () {},
                       ),
                     ],
@@ -513,7 +517,7 @@ Widget kitSpecimenSwipeRow() => Builder(
       BrutalSwipeAction(
         label: 'Delete',
         icon: LucideIcons.trash2,
-        destructive: true,
+        isDestructiveAction: true,
         onPressed: () => kitFeedback(context, 'Deleted.'),
       ),
     ],

@@ -5,6 +5,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/button_face.dart';
+import '../../internal/button_stretch.dart';
 import '../../theme.dart';
 
 enum _Kind { primary, secondary, start }
@@ -167,7 +168,10 @@ class CivicButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.maybeSizeOf(context)?.width ?? 1024;
-    final stretch = expand ?? width < CivicLayout.medium;
+    final stretch =
+        expand ??
+        CivicButtonStretch.maybeOf(context) ??
+        width < CivicLayout.medium;
     // Spans a bounded column without a LayoutBuilder, so a dialog or a row
     // can still measure the button by its words.
     return _Stretch(

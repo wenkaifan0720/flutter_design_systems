@@ -44,12 +44,15 @@ Rect _global(RenderBox box) =>
     MatrixUtils.transformRect(box.getTransformTo(null), Offset.zero & box.size);
 
 final _fields = <String, Widget Function()>{
-  'text field': () =>
-      FrostedTextField(label: 'Name', hint: 'Your name', onChanged: (_) {}),
+  'text field': () => FrostedTextField(
+    labelText: 'Name',
+    hintText: 'Your name',
+    onChanged: (_) {},
+  ),
   'search field': () =>
-      FrostedSearchField(hint: 'Search activity', onChanged: (_) {}),
+      FrostedSearchField(hintText: 'Search activity', onChanged: (_) {}),
   'password field': () =>
-      FrostedPasswordField(label: 'Password', onChanged: (_) {}),
+      FrostedPasswordField(labelText: 'Password', onChanged: (_) {}),
 };
 
 bool _focused(WidgetTester t) =>

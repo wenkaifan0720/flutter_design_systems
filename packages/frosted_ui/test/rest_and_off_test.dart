@@ -43,7 +43,7 @@ final _parts = <String, Widget>{
     ),
   ),
   'radio': const FrostedRadioGroup<String>(
-    label: 'Plan',
+    labelText: 'Plan',
     value: null,
     onChanged: _drop,
     options: [FrostedRadio('free', 'Free'), FrostedRadio('pro', 'Pro')],
@@ -90,8 +90,8 @@ Future<({double dark, double shows, Offset at})> _measure(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (context, page) => FrostedHost(
-        light: theme,
-        dark: theme,
+        theme: theme,
+        darkTheme: theme,
         brightness: theme.brightness,
         child: page!,
       ),

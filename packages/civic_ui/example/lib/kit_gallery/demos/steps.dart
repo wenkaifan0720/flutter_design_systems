@@ -16,11 +16,11 @@ Widget kitStepsDemo(Brightness brightness) => kitScreen(
       children: [
         CivicStepIndicator(
           steps: ['Your vehicle', 'Your details', 'Proof of address', 'Check'],
-          current: 0,
+          currentStep: 0,
         ),
         CivicStepIndicator(
           steps: ['Your vehicle', 'Your details', 'Proof of address', 'Check'],
-          current: 2,
+          currentStep: 2,
         ),
       ],
     ),
@@ -63,11 +63,11 @@ class _MarksState extends State<_Marks> {
     spacing: CivicSpacing.s8,
     children: [
       CivicPageDots(
-        count: 5,
-        index: _page,
-        onChanged: (p) => setState(() => _page = p),
+        pageCount: 5,
+        selectedIndex: _page,
+        onPageChanged: (p) => setState(() => _page = p),
       ),
-      const CivicPageDots(count: 3, index: 0),
+      const CivicPageDots(pageCount: 3, selectedIndex: 0),
     ],
   );
 }

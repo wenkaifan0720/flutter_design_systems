@@ -284,7 +284,7 @@ class TermTable extends StatelessWidget {
                 border: Border(
                   bottom: BorderSide(
                     color: own.edge ?? theme.rule,
-                    width: termStroke(theme, grid),
+                    width: termStrokeWidth(theme, grid),
                   ),
                 ),
               ),
@@ -332,10 +332,11 @@ class TermTable extends StatelessWidget {
 }
 
 /// A table you work in, on [RawDataTable]: headings that sort when
-/// pressed (`↑` or `↓` after the one sorted), rows that select with a
-/// press or Space (`[x]` in the first column) and open with Enter, the
-/// arrows moving a `>` down the rows, one tab stop for them all. The
-/// page's rows come from the [controller]: its filter, sort and page.
+/// pressed (`↑` or `↓` beside the one sorted, after its words or before
+/// them over numbers), rows that select with a press or Space (`[x]` in
+/// the first column) and open with Enter, the arrows moving a `>` down the
+/// rows, one tab stop for them all. The page's rows come from the
+/// [controller]: its filter, sort and page.
 ///
 /// ```dart
 /// TermDataTable<Map<String, String>>(
@@ -365,7 +366,8 @@ class TermDataTable<R> extends StatelessWidget {
   cellBuilder;
 
   /// Columns' widths in cells, by column id; a column without one takes a
-  /// share of the rest.
+  /// share of the rest. A column is never given fewer cells than its heading
+  /// and, if it sorts, its arrow take, so sorting it cuts neither.
   final Map<String, int> widths;
 
   /// Whether rows select.
@@ -384,6 +386,18 @@ class TermDataTable<R> extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final rule = TermStyleOf([style, theme.tableStyle], const {}).edge;
+    // A column given a width keeps room for its heading and, if it sorts,
+    // the arrow beside it, as Material's DataTable keeps its arrow's room:
+    // sorting it then neither cuts its heading nor moves the columns.
+    int? span(RawDataColumn<R> column) {
+      final given = widths[column.id];
+      if (given == null) return null;
+      final heading =
+          (grid.widthOf(column.label) / grid.cellWidth - 1e-6).ceil() +
+          (column.sortable ? 2 : 0);
+      return math.max(given, heading);
+    }
+
     List<Widget> laid(List<Widget> cells, {Widget? lead}) {
       final cols = controller.columns;
       return [
@@ -391,7 +405,7 @@ class TermDataTable<R> extends StatelessWidget {
         if (selectable) SizedBox(width: grid.cols(4), child: null),
         for (var i = 0; i < cells.length; i++) ...[
           if (i > 0) SizedBox(width: grid.cols(2)),
-          _cell(grid, widths[cols[i].id], cols[i].numeric, cells[i]),
+          _cell(grid, span(cols[i]), cols[i].numeric, cells[i]),
         ],
       ];
     }
@@ -403,10 +417,11 @@ class TermDataTable<R> extends StatelessWidget {
       child: Text(m, style: theme.textStyle.copyWith(color: ink)),
     );
 
-    return DefaultTextStyle.merge(
+    // A cell longer than its column ends in an ellipsis: it says it is cut.
+    final table = DefaultTextStyle.merge(
       maxLines: 1,
       softWrap: false,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
       child: RawDataTable<R>(
         controller: controller,
         selectable: selectable,
@@ -414,12 +429,18 @@ class TermDataTable<R> extends StatelessWidget {
         headerBuilder: (context, column, sort, states) {
           final lit = states.contains(WidgetState.pressed);
           final focused = !lit && states.contains(WidgetState.focused);
-          final words =
-              '${column.label}${switch (sort) {
-                RawSortDirection.ascending => ' ↑',
-                RawSortDirection.descending => ' ↓',
-                null => '',
-              }}';
+          final arrow = switch (sort) {
+            RawSortDirection.ascending => '↑',
+            RawSortDirection.descending => '↓',
+            null => null,
+          };
+          // The arrow after the words, or before them over numbers, so the
+          // words still end over theirs, as Material's DataTable sets it.
+          final words = arrow == null
+              ? column.label
+              : column.numeric
+              ? '$arrow ${column.label}'
+              : '${column.label} $arrow';
           // A heading is one line; what a tap reaches is the floor (a
           // finger's five cells and two lines), the words at its start, or
           // at its end over numbers.
@@ -496,7 +517,7 @@ class TermDataTable<R> extends StatelessWidget {
               border: Border(
                 bottom: BorderSide(
                   color: rule ?? theme.rule,
-                  width: termStroke(theme, grid),
+                  width: termStrokeWidth(theme, grid),
                 ),
               ),
             ),
@@ -552,6 +573,29 @@ class TermDataTable<R> extends StatelessWidget {
         },
       ),
     );
+    // Where the columns given widths, each other column's heading and the
+    // gaps don't fit (larger text on a phone), it scrolls sideways rather
+    // than squeeze a column to nothing, as [TermTable] does, each column
+    // then as wide as its widest words, as Material's DataTable is.
+    return LayoutBuilder(
+      builder: (context, box) {
+        final cols = controller.columns;
+        var cells = 2 + (selectable ? 4 : 0) + 2 * (cols.length - 1);
+        for (final c in cols) {
+          // A column without a width: its heading and a sort mark.
+          cells += span(c) ?? grid.colsIn(grid.widthOf(c.label)) + 2;
+        }
+        final width = grid.cols(cells);
+        if (!box.hasBoundedWidth || width <= box.maxWidth) return table;
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: width),
+            child: IntrinsicWidth(child: table),
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -593,7 +637,7 @@ class TermDivider extends StatelessWidget {
     final own = TermStyleOf([style, theme.dividerStyle], const {});
     final rule = _Rule(
       color: own.edge ?? theme.rule,
-      stroke: termStroke(theme, grid),
+      stroke: termStrokeWidth(theme, grid),
       axis: axis,
     );
     if (axis == Axis.vertical) {
@@ -686,7 +730,7 @@ class TermScrollArea extends StatelessWidget {
         final own = TermStyleOf([style, theme.scrollbarStyle], thumb.states);
         return _Rule(
           color: own.edge ?? theme.rule,
-          stroke: termStroke(theme, grid),
+          stroke: termStrokeWidth(theme, grid),
           axis: axis == Axis.vertical ? Axis.vertical : Axis.horizontal,
         );
       },
@@ -828,7 +872,7 @@ class TermSplitView extends StatelessWidget {
         // The keyboard's focus: the cursor, the divider's cells in the
         // accent with its rule cut out of them; a drag doubles the rule.
         final focused = !held && states.contains(WidgetState.focused);
-        final stroke = termStroke(theme, grid);
+        final stroke = termStrokeWidth(theme, grid);
         return MouseRegion(
           cursor: axis == Axis.horizontal
               ? SystemMouseCursors.resizeColumn
@@ -947,7 +991,7 @@ class TermReorderableList<T extends Object> extends StatelessWidget {
           color: own.fill ?? theme.surface,
           border: Border.all(
             color: own.edge ?? theme.accent,
-            width: termStroke(theme, grid),
+            width: termStrokeWidth(theme, grid),
           ),
         ),
         child: child,
@@ -1274,7 +1318,7 @@ class TermTimeline extends StatelessWidget {
                                 width: grid.cellWidth,
                                 child: _Rule(
                                   color: own.edge ?? theme.rule,
-                                  stroke: termStroke(theme, grid),
+                                  stroke: termStrokeWidth(theme, grid),
                                   axis: Axis.vertical,
                                 ),
                               ),
@@ -1415,23 +1459,39 @@ class TermAvatarGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final shown = names.take(max).toList();
-    final rest = names.length - shown.length;
+    // At most [max], and no more than the width holds (larger text on a
+    // phone): each avatar four cells and one between, the count after.
+    double across(int n) {
+      final rest = names.length - n;
+      return grid.cols(5 * n - 1) +
+          (rest > 0 ? grid.cellWidth + grid.widthOf('+$rest') : 0);
+    }
+
     return Semantics(
       label: TermLocalizations.of(context).avatarGroupLabel(names),
       excludeSemantics: true,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (i, n) in shown.indexed) ...[
-            if (i > 0) SizedBox(width: grid.cellWidth),
-            TermAvatar(name: n, style: style),
-          ],
-          if (rest > 0) ...[
-            SizedBox(width: grid.cellWidth),
-            Text('+$rest', style: theme.dimStyle),
-          ],
-        ],
+      child: LayoutBuilder(
+        builder: (context, box) {
+          var n = math.min(max, names.length);
+          while (n > 1 && box.hasBoundedWidth && across(n) > box.maxWidth) {
+            n--;
+          }
+          final rest = names.length - n;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final (i, name) in names.take(n).indexed) ...[
+                if (i > 0) SizedBox(width: grid.cellWidth),
+                TermAvatar(name: name, style: style),
+              ],
+              if (rest > 0) ...[
+                SizedBox(width: grid.cellWidth),
+                // Isolated, so a right-to-left line keeps it `+3`.
+                Text('\u2068+$rest\u2069', style: theme.dimStyle),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -1532,7 +1592,7 @@ class TermMedia extends StatelessWidget {
               foregroundPainter: TermFramePainter(
                 grid: grid,
                 color: own.edge ?? theme.rule,
-                stroke: termStroke(theme, grid),
+                stroke: termStrokeWidth(theme, grid),
                 textDirection: Directionality.of(context),
                 topGaps: [
                   if (caption != null)

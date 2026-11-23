@@ -109,7 +109,7 @@ class AdmitSettings extends StatelessWidget {
         ),
         const SizedBox(height: BrutalSpacing.large),
         BrutalSelect<String>(
-          label: 'Density',
+          labelText: 'Density',
           items: const [
             BrutalSelectItem(value: 'standard', label: 'Standard'),
             BrutalSelectItem(value: 'comfortable', label: 'Comfortable'),
@@ -165,8 +165,8 @@ class AdmitSettings extends StatelessWidget {
           ),
           BrutalDialogAction(
             label: 'Sign out',
-            primary: true,
-            destructive: true,
+            isDefaultAction: true,
+            isDestructiveAction: true,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],
@@ -235,8 +235,8 @@ class _AdmitAccountPageState extends State<AdmitAccountPage> {
       children: [
         BrutalTextField(
           controller: _name,
-          label: 'Name',
-          error: _submitted && _name.text.trim().isEmpty
+          labelText: 'Name',
+          errorText: _submitted && _name.text.trim().isEmpty
               ? 'Enter your name.'
               : null,
           onChanged: (_) {
@@ -248,14 +248,14 @@ class _AdmitAccountPageState extends State<AdmitAccountPage> {
         const SizedBox(height: BrutalSpacing.large),
         BrutalTextField(
           controller: _email,
-          label: 'Email',
-          error: _submitted && !admitValidEmail(_email.text)
+          labelText: 'Email',
+          errorText: _submitted && !admitValidEmail(_email.text)
               ? 'Enter a valid email address.'
               : null,
           onChanged: (_) {
             if (_submitted) setState(() {});
           },
-          helper: 'Tickets and receipts go here.',
+          helperText: 'Tickets and receipts go here.',
           keyboardType: TextInputType.emailAddress,
           autofillHints: const [AutofillHints.email],
         ),
@@ -308,16 +308,16 @@ class _AdmitPaymentPageState extends State<AdmitPaymentPage> {
     void changed(String _) => setState(() {});
     final expiry = BrutalTextField(
       controller: _expiry,
-      label: 'Expiry',
-      hint: 'MM/YY',
+      labelText: 'Expiry',
+      hintText: 'MM/YY',
       keyboardType: TextInputType.datetime,
       textDirection: TextDirection.ltr,
       onChanged: changed,
     );
     final code = BrutalTextField(
       controller: _code,
-      label: 'Security code',
-      hint: '3 digits',
+      labelText: 'Security code',
+      hintText: '3 digits',
       keyboardType: TextInputType.number,
       textDirection: TextDirection.ltr,
       obscureText: true,
@@ -344,8 +344,8 @@ class _AdmitPaymentPageState extends State<AdmitPaymentPage> {
         const BrutalSectionHeader('Replace it'),
         BrutalTextField(
           controller: _card,
-          label: 'Card number',
-          hint: '16 digits',
+          labelText: 'Card number',
+          hintText: '16 digits',
           keyboardType: TextInputType.number,
           textDirection: TextDirection.ltr,
           autofillHints: const [AutofillHints.creditCardNumber],

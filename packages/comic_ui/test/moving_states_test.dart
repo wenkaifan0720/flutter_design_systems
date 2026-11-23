@@ -22,7 +22,7 @@ void main() {
     'checkbox': () =>
         ComicCheckbox(label: 'Keep issue', value: true, onChanged: (_) {}),
     'switch': () => ComicSwitch(value: true, onChanged: (_) {}),
-    'field': () => const ComicTextField(hint: 'Your name'),
+    'field': () => const ComicTextField(hintText: 'Your name'),
     'link': () => ComicLink('Read the issue', onPressed: () {}),
   };
 

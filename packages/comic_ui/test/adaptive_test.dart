@@ -67,7 +67,7 @@ void main() {
               child: SizedBox(
                 width: 300,
                 child: ComicTextField(
-                  label: 'Issue title',
+                  labelText: 'Issue title',
                   controller: controller,
                   focusNode: focus,
                 ),

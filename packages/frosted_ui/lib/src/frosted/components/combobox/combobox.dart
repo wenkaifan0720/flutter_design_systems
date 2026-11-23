@@ -98,22 +98,22 @@ Widget _searchFailed(BuildContext context, RawSearchError failure) {
 /// the behaviour.
 ///
 /// ```dart
-/// FrostedCombobox<String>(label: 'Country', options: countries, value: country, onSelected: (v) => setState(() => country = v))
+/// FrostedCombobox<String>(labelText: 'Country', options: countries, value: country, onSelected: (v) => setState(() => country = v))
 /// ```
 class FrostedCombobox<T extends Object> extends StatelessWidget {
-  /// A combobox named [label] over [options].
+  /// A combobox named [labelText] over [options].
   const FrostedCombobox({
-    required this.label,
+    required this.labelText,
     this.options = const [],
     this.search,
     this.debounceDuration,
     this.value,
     this.onSelected,
     this.isOptionEnabled,
-    this.displayString = _plain,
-    this.hint,
-    this.helper,
-    this.error,
+    this.displayStringForOption = _plain,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.requireSelection = false,
     this.controller,
     this.focusNode,
@@ -123,7 +123,7 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
   });
 
   /// The field's name, over its well.
-  final String label;
+  final String labelText;
 
   /// What it offers.
   final Iterable<T> options;
@@ -158,20 +158,20 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
   final bool autofocus;
 
   /// An option's words.
-  final String Function(T option) displayString;
+  final String Function(T option) displayStringForOption;
 
   /// The placeholder.
-  final String? hint;
+  final String? hintText;
 
   /// {@template frosted.helper}
   /// The help line under the well.
   /// {@endtemplate}
-  final String? helper;
+  final String? helperText;
 
   /// {@template frosted.error}
   /// What is wrong, in place of the help line.
   /// {@endtemplate}
-  final String? error;
+  final String? errorText;
 
   /// Whether only an option may stand in the field.
   final bool requireSelection;
@@ -202,34 +202,46 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
         // The pointer's row and the keys' row are the same wash in Frosted:
         // one place, so the list never shows two held rows.
         highlightFollowsPointer: true,
-        displayStringForOption: displayString,
+        displayStringForOption: displayStringForOption,
         requireSelection: requireSelection,
         controller: controller,
         focusNode: focusNode,
         optionsMaxHeight: maxListHeight,
-        semanticLabel: label,
-        fieldBuilder: (context, field) => FrostedTextField(
-          autofocus: autofocus,
-          label: label,
-          controller: field.controller,
-          focusNode: field.focusNode,
-          // Enter takes the option and the field keeps the focus: through
-          // onEditingComplete, never onSubmitted, or in a browser the
-          // typing after it goes nowhere.
-          onEditingComplete: field.submit,
-          hint: hint,
-          helper: helper,
-          error: error,
-          trailing: ExcludeSemantics(
-            child: Icon(
-              FrostedGlyphs.chevronDown,
-              size: FrostedIconSize.i18,
-              color: t.colorScheme.textTertiary,
+        semanticLabel: labelText,
+        // The entry says whether its list stands open, and the chevron
+        // turns with it.
+        fieldBuilder: (context, field) => FrostedEntryOpen(
+          open: field.isOpen,
+          child: FrostedTextField(
+            autofocus: autofocus,
+            labelText: labelText,
+            controller: field.controller,
+            focusNode: field.focusNode,
+            // Enter takes the option and the field keeps the focus: through
+            // onEditingComplete, never onSubmitted, or in a browser the
+            // typing after it goes nowhere.
+            onEditingComplete: field.submit,
+            hintText: hintText,
+            helperText: helperText,
+            errorText: errorText,
+            trailing: ExcludeSemantics(
+              child: AnimatedRotation(
+                turns: field.isOpen ? .5 : 0,
+                duration: FrostedMotion.of(context).base,
+                curve: FrostedMotion.of(context).curve,
+                child: Icon(
+                  FrostedGlyphs.chevronDown,
+                  size: FrostedIconSize.i18,
+                  color: t.colorScheme.textTertiary,
+                ),
+              ),
             ),
           ),
         ),
-        optionBuilder: (context, option, states) =>
-            FrostedPanelRow(label: displayString(option), states: states),
+        optionBuilder: (context, option, states) => FrostedPanelRow(
+          label: displayStringForOption(option),
+          states: states,
+        ),
         surfaceBuilder: (context, list) => FrostedPanel(child: list),
         emptyBuilder: (context) => Padding(
           padding: const EdgeInsets.all(FrostedSpacing.s24),
@@ -247,7 +259,7 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(IterableProperty<T>('options', options, defaultValue: const []))
       ..add(
         ObjectFlagProperty<FutureOr<Iterable<T>> Function(String query)>.has(
@@ -273,13 +285,13 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(
         ObjectFlagProperty<String Function(T option)>.has(
-          'displayString',
-          displayString,
+          'displayStringForOption',
+          displayStringForOption,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'requireSelection',
@@ -319,24 +331,24 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
 /// stops taking more. ui_core's [RawTagInput] is the behaviour.
 ///
 /// ```dart
-/// FrostedMultiSelect<String>(label: 'Tags', options: tags, values: chosen, onChanged: (v) => setState(() => chosen = v))
+/// FrostedMultiSelect<String>(labelText: 'Tags', options: tags, values: chosen, onChanged: (v) => setState(() => chosen = v))
 /// ```
 class FrostedMultiSelect<T extends Object> extends StatefulWidget {
-  /// A multi-select named [label] holding [values].
+  /// A multi-select named [labelText] holding [values].
   const FrostedMultiSelect({
-    required this.label,
+    required this.labelText,
     required this.values,
     required this.onChanged,
     this.options = const [],
     this.search,
     this.debounceDuration,
     this.isOptionEnabled,
-    this.displayString = _plain,
+    this.displayStringForOption = _plain,
     this.onCreate,
     this.maxTags,
-    this.hint,
-    this.helper,
-    this.error,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.maxListHeight = 300,
     this.autofocus = false,
@@ -344,7 +356,7 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
   });
 
   /// The field's name, over its well.
-  final String label;
+  final String labelText;
 
   /// What is chosen, in order.
   final List<T> values;
@@ -368,7 +380,7 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
   final bool Function(T option)? isOptionEnabled;
 
   /// A value's words.
-  final String Function(T value) displayString;
+  final String Function(T value) displayStringForOption;
 
   /// Turns typed text into a value of its own; null takes only [options].
   final T? Function(String text)? onCreate;
@@ -377,13 +389,13 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
   final int? maxTags;
 
   /// The placeholder, while nothing is typed.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro frosted.helper}
-  final String? helper;
+  final String? helperText;
 
   /// {@macro frosted.error}
-  final String? error;
+  final String? errorText;
 
   /// The field's focus.
   final FocusNode? focusNode;
@@ -398,7 +410,7 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(IterableProperty<T>('values', values))
       ..add(
         ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
@@ -426,17 +438,17 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
       )
       ..add(
         ObjectFlagProperty<String Function(T value)>.has(
-          'displayString',
-          displayString,
+          'displayStringForOption',
+          displayStringForOption,
         ),
       )
       ..add(
         ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
       )
       ..add(IntProperty('maxTags', maxTags, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -483,165 +495,167 @@ class _FrostedMultiSelectState<T extends Object>
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
-    final error = widget.error;
-    final helper = widget.helper;
     // A select's measure: its column on a phone, at most 320 from 600 up.
     return FrostedControlMeasure(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        spacing: FrostedChromeMetrics.fieldLabelGap,
-        children: [
-          FrostedFieldLabel(widget.label),
-          RawTagInput<T>(
-            values: widget.values,
-            onChanged: widget.onChanged,
-            options: widget.options,
-            search: widget.search,
-            debounceDuration: widget.debounceDuration,
-            loadingBuilder: _searching,
-            errorBuilder: _searchFailed,
-            isOptionEnabled: widget.isOptionEnabled,
-            // One held row, as the combobox's.
-            highlightFollowsPointer: true,
-            displayStringForOption: widget.displayString,
-            onCreate: widget.onCreate,
-            maxTags: widget.maxTags,
-            focusNode: _focus,
-            optionsMaxHeight: widget.maxListHeight,
-            semanticLabel: widget.label,
-            deleteLabel: words.remove,
-            fieldBuilder: (context, field) => ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 96),
-              child: FrostedBareField(
-                controller: field.controller,
-                focusNode: field.focusNode,
-                autofocus: widget.autofocus,
-                label: widget.label,
-                hint: widget.values.isEmpty ? widget.hint : null,
-                // Enter adds the tag and the field keeps the focus for the
-                // next, as the combobox's.
-                onEditingComplete: field.submit,
+      child: RawInputDecorator(
+        labelText: widget.labelText,
+        helperText: widget.helperText,
+        errorText: widget.errorText,
+        focusNode: _focus,
+        builder: frostedFieldColumn,
+        child: RawTagInput<T>(
+          values: widget.values,
+          onChanged: widget.onChanged,
+          options: widget.options,
+          search: widget.search,
+          debounceDuration: widget.debounceDuration,
+          loadingBuilder: _searching,
+          errorBuilder: _searchFailed,
+          isOptionEnabled: widget.isOptionEnabled,
+          // One held row, as the combobox's.
+          highlightFollowsPointer: true,
+          displayStringForOption: widget.displayStringForOption,
+          onCreate: widget.onCreate,
+          maxTags: widget.maxTags,
+          focusNode: _focus,
+          optionsMaxHeight: widget.maxListHeight,
+          semanticLabel: widget.labelText,
+          deleteLabel: words.remove,
+          // ui_core reads the field's words on the entry, on one node
+          // round this box: the box is the entry's lane, a touch target
+          // tall, its line in the middle, so the node a screen reader
+          // outlines is the lane a tap reaches. The line names nothing
+          // itself, so the name is read once.
+          fieldBuilder: (context, field) => ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: 96,
+              minHeight: FrostedBreakpoints.hitTargetOf(context),
+            ),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              heightFactor: 1,
+              child: FrostedEntryOpen(
+                open: field.isOpen,
+                child: FrostedBareField(
+                  controller: field.controller,
+                  focusNode: field.focusNode,
+                  autofocus: widget.autofocus,
+                  ownNode: false,
+                  hintText: widget.values.isEmpty ? widget.hintText : null,
+                  // Enter adds the tag and the field keeps the focus for
+                  // the next, as the combobox's.
+                  onEditingComplete: field.submit,
+                ),
               ),
             ),
-            layoutBuilder: (context, tags, field) {
-              // A tag stands in its touch target's lane (48 under a
-              // finger); the lane takes what it reaches past the tag from
-              // the well's padding and the gap between runs, so one run of
-              // tags keeps the field's height wherever the lane allows.
-              final tag = frostedGrownHeight(
-                context,
-                28,
-                t.textTheme.labelLarge,
-              );
-              final past = math.max(
-                0.0,
-                FrostedBreakpoints.hitTargetOf(context) - tag,
-              );
-              return ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minHeight: FrostedChromeMetrics.field,
+          ),
+          layoutBuilder: (context, tags, field) {
+            // A tag stands in its touch target's lane (48 under a
+            // finger); the lane takes what it reaches past the tag from
+            // the well's padding and the gap between runs, so one run of
+            // tags keeps the field's height wherever the lane allows.
+            final tag = frostedGrownHeight(context, 28, t.textTheme.labelLarge);
+            final past = math.max(
+              0.0,
+              FrostedBreakpoints.hitTargetOf(context) - tag,
+            );
+            return ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: FrostedChromeMetrics.field,
+              ),
+              child: FrostedWell(
+                focused: _focus.hasFocus,
+                error: widget.errorText != null,
+                // In by a field's inset, so its words (the first tag's
+                // face, the typed words, the hint) start where every
+                // field's words do and its list lies as every field's
+                // list (ui_core's lists sweep: 4 px in short of them).
+                padding: EdgeInsets.symmetric(
+                  horizontal: FrostedChromeMetrics.fieldInset,
+                  vertical: math.max(0.0, FrostedSpacing.s8 - past / 2),
                 ),
-                child: FrostedWell(
-                  focused: _focus.hasFocus,
-                  error: error != null,
-                  // In by a field's inset, so its words (the first tag's
-                  // face, the typed words, the hint) start where every
-                  // field's words do and its list lies as every field's
-                  // list (ui_core's lists sweep: 4 px in short of them).
-                  padding: EdgeInsets.symmetric(
-                    horizontal: FrostedChromeMetrics.fieldInset,
-                    vertical: math.max(0.0, FrostedSpacing.s8 - past / 2),
-                  ),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: _TagFlow(
-                      spacing: FrostedSpacing.s6,
-                      runSpacing: math.max(0.0, FrostedSpacing.s6 - past),
-                      fieldMin: 96,
-                      children: [
-                        ...tags,
-                        // The field fills the rest of the last run, in a
-                        // lane a touch target tall that its line answers
-                        // across, beside the tags rather than under them.
-                        FrostedFieldRoom(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: FrostedBreakpoints.hitTargetOf(
-                                context,
-                              ),
-                            ),
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              heightFactor: 1,
-                              child: field,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-            tagBuilder: (context, value, tag) {
-              final name = widget.displayString(value);
-              final type = t.textTheme.labelLarge;
-              final chip = FrostedFace(
-                material: FrostedMaterial.paint,
-                radius: BorderRadius.circular(FrostedCorners.r10),
-                color: tag.focused
-                    ? t.colorScheme.accentSubtle
-                    : t.glass.fillHigh,
-                ring: tag.focused ? t.colorScheme.accent : t.glass.edge,
-                padding: const EdgeInsetsDirectional.only(
-                  start: FrostedSpacing.s10,
-                ).resolve(Directionality.of(context)),
-                // Large text grows the tag by its words' extra line: held
-                // to its 28 remover, at 200% the words stood out of the
-                // glass above and below.
-                child: SizedBox(
-                  height: frostedGrownHeight(context, 28, type),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: _TagFlow(
+                    spacing: FrostedSpacing.s6,
+                    runSpacing: math.max(0.0, FrostedSpacing.s6 - past),
+                    fieldMin: 96,
                     children: [
-                      Text(name, style: type.c(t.colorScheme.textPrimary)),
-                      // Its node spans the tag's lane, as its tap does.
-                      FrostedLaneKey(
-                        child: FrostedPressable(
-                          onPressed: tag.onDeleted,
-                          label: '${words.remove} $name',
-                          radius: FrostedCorners.r10,
-                          builder: (context, states, _) => SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: Icon(
-                              FrostedGlyphs.close,
-                              size: 14,
-                              color: states.contains(WidgetState.hovered)
-                                  ? t.colorScheme.textPrimary
-                                  : t.colorScheme.textTertiary,
-                            ),
+                      ...tags,
+                      // The field fills the rest of the last run, in a
+                      // lane a touch target tall that its line answers
+                      // across, beside the tags rather than under them.
+                      FrostedFieldRoom(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: FrostedBreakpoints.hitTargetOf(context),
+                          ),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            heightFactor: 1,
+                            child: field,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              );
-              return FrostedTargetLane(child: chip);
-            },
-            optionBuilder: (context, option, states) => FrostedPanelRow(
-              label: widget.displayString(option),
-              states: states,
-            ),
-            surfaceBuilder: (context, list) => FrostedPanel(child: list),
+              ),
+            );
+          },
+          tagBuilder: (context, value, tag) {
+            final name = widget.displayStringForOption(value);
+            final type = t.textTheme.labelLarge;
+            final chip = FrostedFace(
+              material: FrostedMaterial.paint,
+              radius: BorderRadius.circular(FrostedCorners.r10),
+              color: tag.focused
+                  ? t.colorScheme.accentSubtle
+                  : t.glass.fillHigh,
+              ring: tag.focused ? t.colorScheme.accent : t.glass.edge,
+              padding: const EdgeInsetsDirectional.only(
+                start: FrostedSpacing.s10,
+              ).resolve(Directionality.of(context)),
+              // Large text grows the tag by its words' extra line: held
+              // to its 28 remover, at 200% the words stood out of the
+              // glass above and below.
+              child: SizedBox(
+                height: frostedGrownHeight(context, 28, type),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(name, style: type.c(t.colorScheme.textPrimary)),
+                    // Its node spans the tag's lane, as its tap does.
+                    FrostedLaneKey(
+                      child: FrostedPressable(
+                        onPressed: tag.onDeleted,
+                        label: '${words.remove} $name',
+                        radius: FrostedCorners.r10,
+                        builder: (context, states, _) => SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: Icon(
+                            FrostedGlyphs.close,
+                            size: 14,
+                            color: states.contains(WidgetState.hovered)
+                                ? t.colorScheme.textPrimary
+                                : t.colorScheme.textTertiary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+            return FrostedTargetLane(child: chip);
+          },
+          optionBuilder: (context, option, states) => FrostedPanelRow(
+            label: widget.displayStringForOption(option),
+            states: states,
           ),
-          if (error != null)
-            FrostedFieldHint(error, error: true)
-          else if (helper != null)
-            FrostedFieldHint(helper),
-        ],
+          surfaceBuilder: (context, list) => FrostedPanel(child: list),
+        ),
       ),
     );
   }

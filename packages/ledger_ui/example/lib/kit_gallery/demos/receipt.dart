@@ -74,7 +74,7 @@ LedgerPickLine _to({bool balance = true, VoidCallback? onTap}) =>
 /// The cheque's amount and note read back: no control left on it.
 List<Widget> _readBack() => [
   const LedgerChequeAmount(
-    label: 'Amount',
+    labelText: 'Amount',
     words: kitTransferWords,
     unit: 'dollars',
     amount: kitTransferAmount,
@@ -167,14 +167,14 @@ Widget kitSpecimenCheque() => KitTyped(
         _from(onTap: () {}),
         _to(onTap: () {}),
         LedgerChequeAmount(
-          label: 'Amount',
+          labelText: 'Amount',
           words: kitTransferWords,
           unit: 'dollars',
           controller: amount,
         ),
-        LedgerField(label: 'Note', controller: note),
+        LedgerField(labelText: 'Note', controller: note),
         LedgerField(
-          label: 'When',
+          labelText: 'When',
           child: KitChosen<String>(
             'Today',
             (when, choose) => LedgerSegmentedControl(
@@ -258,9 +258,9 @@ Widget kitSpecimenSlipHead() => LedgerSlip(
             KitTyped(
               '',
               (name) => LedgerField(
-                label: 'Name',
+                labelText: 'Name',
                 controller: name,
-                hint: 'What are you saving for?',
+                hintText: 'What are you saving for?',
               ),
             ),
           ],

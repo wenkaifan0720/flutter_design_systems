@@ -393,15 +393,17 @@ void main() {
           reason: '$name starts at $start',
         );
       }
-      // Evenly apart, to a cell.
-      final gaps = [
-        starts[0] - cw,
-        starts[1] - starts[0] - cw * (names[0].length + 2),
-        starts[2] - starts[1] - cw * (names[1].length + 2),
+      // In equal cells, as Material's NavigationBar: their middles evenly
+      // apart, to a cell.
+      final middles = [
+        for (final (i, name) in names.indexed) starts[i] + cw * name.length / 2,
       ];
-      final least = gaps.reduce((a, b) => a < b ? a : b);
-      final most = gaps.reduce((a, b) => a > b ? a : b);
-      expect(most - least, lessThanOrEqualTo(cw + 0.001), reason: '$gaps');
+      final steps = [middles[1] - middles[0], middles[2] - middles[1]];
+      expect(
+        (steps[0] - steps[1]).abs(),
+        lessThanOrEqualTo(cw + 0.001),
+        reason: '$steps',
+      );
     });
   }
 

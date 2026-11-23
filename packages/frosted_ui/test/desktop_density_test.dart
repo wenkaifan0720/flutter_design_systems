@@ -115,7 +115,7 @@ Future<_Shot> _shoot(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (BuildContext context, Widget? page) =>
-          FrostedHost(light: _standard, dark: _standardDark, child: page!),
+          FrostedHost(theme: _standard, darkTheme: _standardDark, child: page!),
       home: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
@@ -162,8 +162,8 @@ final _cases = <_Case>[
   _Case(
     'Text field',
     () => const FrostedTextField(
-      label: 'Name',
-      hint: 'What are you saving for?',
+      labelText: 'Name',
+      hintText: 'What are you saving for?',
       onChanged: _drop,
     ),
     () => _wellOf(_editable()),
@@ -173,8 +173,8 @@ final _cases = <_Case>[
   _Case(
     'Password field',
     () => const FrostedPasswordField(
-      label: 'Password',
-      hint: 'At least 8 characters',
+      labelText: 'Password',
+      hintText: 'At least 8 characters',
       onChanged: _drop,
     ),
     () => _wellOf(_editable()),
@@ -184,8 +184,8 @@ final _cases = <_Case>[
   _Case(
     'Text area',
     () => const FrostedTextArea(
-      label: 'Notes',
-      hint: 'Anything the team should know',
+      labelText: 'Notes',
+      hintText: 'Anything the team should know',
       onChanged: _drop,
     ),
     () => _wellOf(_editable()),
@@ -194,7 +194,8 @@ final _cases = <_Case>[
   ),
   _Case(
     'Search field',
-    () => const FrostedSearchField(hint: 'Search activity', onChanged: _drop),
+    () =>
+        const FrostedSearchField(hintText: 'Search activity', onChanged: _drop),
     () => _faceOf(_editable()),
     hint: 'Search activity',
     type: 'coffee',
@@ -202,10 +203,10 @@ final _cases = <_Case>[
   _Case(
     'Input group',
     () => const FrostedInputGroup(
-      label: 'Website',
+      labelText: 'Website',
       prefix: Text('https://'),
       suffix: Text('.com'),
-      hint: 'example',
+      hintText: 'example',
       onChanged: _drop,
     ),
     () => _wellOf(_editable()),
@@ -215,9 +216,9 @@ final _cases = <_Case>[
   _Case(
     'Combobox',
     () => const FrostedCombobox<String>(
-      label: 'Fruit',
+      labelText: 'Fruit',
       options: ['Apple', 'Banana', 'Cherry'],
-      hint: 'Pick a fruit',
+      hintText: 'Pick a fruit',
       onSelected: _drop,
     ),
     () => _wellOf(_editable()),
@@ -227,10 +228,10 @@ final _cases = <_Case>[
   _Case(
     'Multi-select',
     () => const FrostedMultiSelect<String>(
-      label: 'Tags',
+      labelText: 'Tags',
       values: [],
       options: ['Home', 'Work', 'Travel'],
-      hint: 'Add a tag',
+      hintText: 'Add a tag',
       onChanged: _drop,
     ),
     () => _wellOf(_editable()),
@@ -239,7 +240,7 @@ final _cases = <_Case>[
   ),
   _Case(
     'Composer',
-    () => const FrostedComposer(hint: 'Message', onSend: _drop),
+    () => const FrostedComposer(hintText: 'Message', onSend: _drop),
     () => _faceOf(_editable()),
     hint: 'Message',
     type: 'See you at eight',
@@ -247,7 +248,7 @@ final _cases = <_Case>[
   _Case(
     'Composer, assistant',
     () => const FrostedComposer(
-      hint: 'Ask anything',
+      hintText: 'Ask anything',
       onSend: _drop,
       variant: FrostedComposerVariant.assistant,
     ),
@@ -257,21 +258,24 @@ final _cases = <_Case>[
   ),
   _Case(
     'One-time code',
-    () => const FrostedInputOtp(label: 'Code from your text'),
+    () => const FrostedInputOtp(labelText: 'Code from your text'),
     () => _faceOf(_figure('4')),
     type: '4',
     words: () => _figure('4'),
   ),
   _Case(
     'Number field',
-    () =>
-        const FrostedNumberField(value: 40, onChanged: _drop, label: 'Budget'),
+    () => const FrostedNumberField(
+      value: 40,
+      onChanged: _drop,
+      labelText: 'Budget',
+    ),
     () => _wellOf(_editable()),
     type: '45',
   ),
   _Case(
     'Amount field',
-    () => const FrostedAmountField(label: 'Amount', onChanged: _drop),
+    () => const FrostedAmountField(labelText: 'Amount', onChanged: _drop),
     () => _wellOf(_editable()),
     hint: '0',
     type: '250',
@@ -279,7 +283,7 @@ final _cases = <_Case>[
   _Case(
     'Amount field, small',
     () => const FrostedAmountField(
-      label: 'Target',
+      labelText: 'Target',
       size: FrostedAmountFieldSize.small,
       onChanged: _drop,
     ),
@@ -290,8 +294,8 @@ final _cases = <_Case>[
   _Case(
     "Select's field, its prompt",
     () => const FrostedSelect<String>(
-      label: 'Room',
-      prompt: 'Pick a room',
+      labelText: 'Room',
+      hintText: 'Pick a room',
       options: [
         FrostedSelectOption('k', 'Kitchen'),
         FrostedSelectOption('s', 'Study'),
@@ -304,7 +308,7 @@ final _cases = <_Case>[
   _Case(
     "Select's field, its choice",
     () => const FrostedSelect<String>(
-      label: 'Room',
+      labelText: 'Room',
       value: 'k',
       options: [
         FrostedSelectOption('k', 'Kitchen'),
@@ -318,7 +322,7 @@ final _cases = <_Case>[
   _Case(
     "Command palette's field",
     () => const FrostedCommand(
-      hint: 'Type a command',
+      hintText: 'Type a command',
       commands: [
         RawCommand(label: 'New payment', group: 'Money'),
         RawCommand(label: 'Settings'),

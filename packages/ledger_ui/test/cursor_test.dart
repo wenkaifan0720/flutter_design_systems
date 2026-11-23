@@ -108,9 +108,9 @@ void main() {
         width: 400,
         child: Column(
           children: [
-            const LedgerTextField(label: 'Payee'),
+            const LedgerTextField(labelText: 'Payee'),
             LedgerSelect<String>(
-              label: 'Account',
+              labelText: 'Account',
               value: 'everyday',
               items: const [
                 LedgerSelectItem(value: 'everyday', label: 'Everyday'),
@@ -118,7 +118,7 @@ void main() {
               ],
               onChanged: (_) {},
             ),
-            const LedgerTextField(label: 'Memo', enabled: false),
+            const LedgerTextField(labelText: 'Memo', enabled: false),
           ],
         ),
       ),

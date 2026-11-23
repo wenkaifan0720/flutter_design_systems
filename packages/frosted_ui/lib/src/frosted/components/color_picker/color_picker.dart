@@ -220,7 +220,7 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
                 ),
                 Expanded(
                   child: FrostedTextField(
-                    label: words.hex,
+                    labelText: words.hex,
                     controller: _hex,
                     focusNode: _hexFocus,
                     textDirection: TextDirection.ltr,

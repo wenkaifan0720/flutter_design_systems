@@ -4,9 +4,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme.dart';
 import 'paint.dart';
 
-/// The surface shared by select and combobox lists: the field's own
-/// material, square on its 2 pt edge in the field's ink, so the list reads
-/// as the field's, opened, not a card floating over the page.
+/// The surface shared by select and combobox lists: what floats in Civic,
+/// as a menu, a popover and a dialog do: the field's face (by night the
+/// raised band, its options on it), a control's corners, a hairline round
+/// it and the soft shadow, at the field's width under it. The 2 pt ink edge
+/// stays the field's alone.
 class CivicOptionSurface extends StatelessWidget {
   /// Clips [child] to the inside of the list's edge.
   const CivicOptionSurface({super.key, required this.child});
@@ -17,14 +19,22 @@ class CivicOptionSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
+    final face = t.isDark ? t.surface : t.background;
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: t.background,
-        border: Border.all(color: t.border, width: CivicMetrics.edge),
-      ),
+      decoration: civicFloating(face: face, hairline: t.rule, dark: t.isDark),
       child: Padding(
-        padding: const EdgeInsets.all(CivicMetrics.edge),
-        child: ClipRect(child: child),
+        // The options' faces stop inside the hairline, clear of the
+        // rounded corners above and below.
+        padding: const EdgeInsets.symmetric(
+          vertical: CivicSpacing.s4,
+          horizontal: 1,
+        ),
+        child: ClipRect(
+          child: CivicTheme(
+            data: t.copyWith(background: face),
+            child: child,
+          ),
+        ),
       ),
     );
   }

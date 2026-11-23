@@ -23,15 +23,15 @@ import '../text-field/text_field.dart';
 /// when not, the field makes its own and disposes them.
 ///
 /// ```dart
-/// LedgerPasswordField(label: 'Password', helper: 'At least 12 characters', controller: password)
+/// LedgerPasswordField(labelText: 'Password', helperText: 'At least 12 characters', controller: password)
 /// ```
 class LedgerPasswordField extends StatefulWidget {
-  /// A password field [label]led.
+  /// A password field [labelText]led.
   const LedgerPasswordField({
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.controller,
     this.focusNode,
     this.isRequired = false,
@@ -47,16 +47,16 @@ class LedgerPasswordField extends StatefulWidget {
   });
 
   /// The small capitals over the rule.
-  final String? label;
+  final String? labelText;
 
   /// The third ink's words while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The note under the rule.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong, under the rule in the vermilion; it replaces [helper].
-  final String? error;
+  /// What is wrong, under the rule in the vermilion; it replaces [helperText].
+  final String? errorText;
 
   /// The words typed; null: the field's own.
   final TextEditingController? controller;
@@ -98,10 +98,10 @@ class LedgerPasswordField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -168,10 +168,10 @@ class _LedgerPasswordFieldState extends State<LedgerPasswordField> {
     focusNode: _focus,
     hideOnBlur: widget.hideOnBlur,
     builder: (context, password) => LedgerTextField(
-      label: widget.label,
-      hint: widget.hint,
-      helper: widget.helper,
-      error: widget.error,
+      labelText: widget.labelText,
+      hintText: widget.hintText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
       controller: widget.controller,
       focusNode: _focus,
       isRequired: widget.isRequired,

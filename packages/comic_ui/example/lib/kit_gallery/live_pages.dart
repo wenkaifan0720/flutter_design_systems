@@ -582,26 +582,26 @@ Widget _fieldStates() => Builder(
     gap: 16,
     children: [
       ComicTextField(
-        label: kitSay(context, 'Email address'),
-        hint: 'you@example.com',
-        helper: kitSay(context, 'We only write about your orders.'),
+        labelText: kitSay(context, 'Email address'),
+        hintText: 'you@example.com',
+        helperText: kitSay(context, 'We only write about your orders.'),
         keyboardType: TextInputType.emailAddress,
       ),
       ComicTextField(
-        label: kitSay(context, 'Full name'),
+        labelText: kitSay(context, 'Full name'),
         initialValue: kitSay(context, 'Alex'),
-        error: kitSay(context, 'Write your whole name, as on your card.'),
+        errorText: kitSay(context, 'Write your whole name, as on your card.'),
       ),
       ComicTextField(
-        label: kitSay(context, 'Member number'),
+        labelText: kitSay(context, 'Member number'),
         initialValue: '0042 1187',
         // A number in groups reads left to right in a right-to-left app too.
         textDirection: TextDirection.ltr,
         enabled: false,
       ),
       ComicTextField(
-        label: kitSay(context, 'Amount'),
-        prefix: '€',
+        labelText: kitSay(context, 'Amount'),
+        prefixText: '€',
         initialValue: '24',
         keyboardType: TextInputType.number,
       ),

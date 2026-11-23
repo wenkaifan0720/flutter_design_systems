@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/src/internal/panes.dart';
 
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
@@ -726,6 +727,73 @@ void main() {
     await _width(tester, 768);
     await tester.pumpAndSettle();
     expect(toast().bottom, moreOrLessEquals(700 - 16), reason: 'a rail');
+  });
+
+  testWidgets('a heading and the text under it stay two nodes: in the body '
+      'beside a bar and beside a rail, and under PaneCycle alone', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    for (final width in [390.0, 1200.0]) {
+      await _width(tester, width);
+      await tester.pumpWidget(
+        harness(
+          DesignAdaptiveShell(
+            destinations: _destinations,
+            selectedIndex: 0,
+            onDestinationSelected: (_) {},
+            destinationBuilder: _destination,
+            navigationBuilder: _navigationOf,
+            body: headingAndText(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expectHeadingAndTextApart(tester);
+    }
+    await tester.pumpWidget(harness(PaneCycle(child: headingAndText())));
+    expectHeadingAndTextApart(tester);
+    semantics.dispose();
+  });
+
+  testWidgets('a route pushed over the shell lets the toasts go from its '
+      'bar; back, they keep clear of the bar again', (tester) async {
+    await _width(tester, 390);
+    final toaster = GlobalKey<RawToasterState>();
+    await tester.pumpWidget(
+      harness(
+        const _Host(),
+        wrap: (context, navigator) => RawToaster(
+          key: toaster,
+          toastBuilder: (context, details) => SizedBox(
+            key: const ValueKey('toast'),
+            height: 48,
+            child: Text(details.toast.message),
+          ),
+          child: navigator!,
+        ),
+      ),
+    );
+    toaster.currentState!.show(
+      const RawToast(message: 'Saved', duration: null),
+    );
+    await tester.pumpAndSettle();
+    Rect toast() => tester.getRect(find.byKey(const ValueKey('toast')));
+    final bar = tester.getRect(find.byKey(const ValueKey('nav')));
+    expect(toast().bottom, moreOrLessEquals(bar.top - 16));
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    unawaited(
+      navigator.push(
+        PageRouteBuilder<void>(
+          pageBuilder: (context, _, _) => const SizedBox.expand(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(toast().bottom, moreOrLessEquals(700 - 16), reason: 'covered');
+    navigator.pop();
+    await tester.pumpAndSettle();
+    expect(toast().bottom, moreOrLessEquals(bar.top - 16), reason: 'back');
   });
 
   testWidgets('from outside every pane, F6 goes to the first', (tester) async {

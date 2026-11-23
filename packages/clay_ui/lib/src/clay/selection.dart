@@ -705,7 +705,7 @@ String _size(int bytes) {
 /// while it goes up and a key that takes it out.
 ///
 /// ```dart
-/// ClayFileDrop(label: 'Photo', hint: 'A picture for this habit, up to 5 MB', onChoose: () {})
+/// ClayFileDrop(labelText: 'Photo', hintText: 'A picture for this habit, up to 5 MB', onChoose: () {})
 /// ```
 class ClayFileDrop extends StatelessWidget {
   /// A file tray.
@@ -714,8 +714,8 @@ class ClayFileDrop extends StatelessWidget {
     required this.onChoose,
     this.files = const [],
     this.onRemove,
-    this.label,
-    this.hint,
+    this.labelText,
+    this.hintText,
     this.chooseLabel = 'Choose files',
     this.style,
   });
@@ -730,10 +730,10 @@ class ClayFileDrop extends StatelessWidget {
   final ValueChanged<ClayFile>? onRemove;
 
   /// The words above the tray.
-  final String? label;
+  final String? labelText;
 
   /// What the tray says: what it takes.
-  final String? hint;
+  final String? hintText;
 
   /// The key's words.
   final String chooseLabel;
@@ -755,11 +755,11 @@ class ClayFileDrop extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null)
+        if (labelText != null)
           Padding(
             padding: const EdgeInsets.only(bottom: ClaySpacing.small),
             child: Text(
-              label!,
+              labelText!,
               style: theme.textTheme.label.copyWith(
                 fontSize: 14,
                 height: 20 / 14,
@@ -783,10 +783,10 @@ class ClayFileDrop extends StatelessWidget {
                   size: 28,
                   color: enabled ? c.inkSecondary : c.inkDisabled,
                 ),
-                if (hint != null) ...[
+                if (hintText != null) ...[
                   const SizedBox(height: ClaySpacing.small),
                   Text(
-                    hint!,
+                    hintText!,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.secondary,
                   ),

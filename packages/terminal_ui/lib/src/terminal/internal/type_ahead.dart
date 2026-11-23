@@ -5,7 +5,6 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -15,19 +14,12 @@ import '../primitives/menu.dart';
 /// by typed letters: a letter takes the focus to the next row whose words
 /// start with it, round to the first; the same letter again goes on to the
 /// one after; letters typed close together, to the row their run starts.
-/// With [initial], that row (counted among those that take the focus) has
-/// the focus once the list is up. A row's words are its [TermMenuRow]'s
-/// label, or else its first text's. Wherever the focus goes among the rows
-/// (the chosen one as the list comes up, an arrow past the end and round, a
-/// letter's jump), a long list scrolls just enough to show that row.
+/// A row's words are its [TermMenuRow]'s label, or else its first text's.
+/// Wherever the focus goes among the rows (an arrow past the end and round,
+/// a letter's jump), a long list scrolls just enough to show that row.
 class TermTypeAhead extends StatefulWidget {
   /// Walks [child]'s rows by letters.
-  const TermTypeAhead({super.key, this.initial, required this.child});
-
-  /// The row the focus goes to when the list comes up (the chosen one),
-  /// among the rows that take it; null leaves it where the list puts it
-  /// (its first row).
-  final int? initial;
+  const TermTypeAhead({super.key, required this.child});
 
   /// The list.
   final Widget child;
@@ -49,16 +41,6 @@ class _TermTypeAheadState extends State<TermTypeAhead> {
   void initState() {
     super.initState();
     FocusManager.instance.addListener(_reveal);
-    final first = widget.initial;
-    if (first != null) {
-      // After the list's own move of the focus to its first row, which also
-      // waits for the frame that builds it to end.
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final rows = _rows();
-        if (first < rows.length) rows[first].requestFocus();
-      });
-    }
   }
 
   // The row with the focus, in view: scrolled no further than it takes, so

@@ -1,3 +1,30 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- Under a toaster, a heading and the text after it are read as two nodes again, the heading as a header; ui_core
+  0.5.0's keyboard shortcuts over the whole app merged them into one.
+- While a page covers a screen's footer, a toast stands over the screen's foot, and over the footer again as
+  the page goes.
+- A field's words take Flutter's names: `Fluent2FormField`'s `label` is `labelText` and its `helper` is
+  `helperText`; the `hint` of `Fluent2TextField`, `Fluent2TextArea`, `Fluent2PasswordField`, `Fluent2SearchBox`,
+  `Fluent2SearchEntry`, `Fluent2InputGroup`, `Fluent2Combobox`, `Fluent2MultiSelect`, `Fluent2DatePicker` and
+  `Fluent2Composer` is `hintText`. `dart fix --apply` moves your code. A control's own `label` stays: it is the
+  name a screen reader says where no `Fluent2FormField` draws one, as `Fluent2IconButton.label` is.
+- `fluent2CssShadow`, `fluent2EasedInks`, `fluent2BarAllowance`, `Fluent2BadgeFace`, `Fluent2TagFace` and the
+  button's faces (`Fluent2ButtonFace`, `Fluent2ButtonLook`, `Fluent2ButtonBox`, `Fluent2ActsFill`) leave
+  `fluent2_design_ui.dart` for `fluent2_design_parts.dart`: they build a part of your own in Fluent's grammar, and a
+  page never places them. Import `fluent2_design_parts.dart` where you use them.
+- A dialog from 480 wide and a sheet's foot lay their buttons out with ui_core's `RawActionBar`: side by side while
+  they fit (a phone's sheet foot sharing its width), else stacked in one column of one width, the primary on top.
+  They ran past the dialog's or the sheet's edge with long words or large text. Under 480 a dialog stacks its
+  buttons as before.
+- `Fluent2Combobox` and `Fluent2MultiSelect` say on their input whether their list is expanded.
+- A field with a button at its end (`Fluent2PasswordField`'s reveal) reads its label, help and error on its text
+  entry, the button a node of its own in it, as Material's text field with a suffix button. They were read on a
+  group round both.
+- A `Fluent2Toaster`'s toasts stand over a screen's footer and an action bar, as a toast raised without a toaster
+  does; they stood over their buttons.
+
 ## 0.4.1
 
 - Needs ui_core 0.4.1.

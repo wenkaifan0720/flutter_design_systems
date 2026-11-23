@@ -8,10 +8,10 @@ import '../../theme.dart';
 
 /// A little more about something, on a panel beside the control [builder]
 /// paints: an explanation ("What counts as a visitor?"), a short form (a
-/// filter of two answers). The page's face floating on a hairline and the
-/// soft shadow, as an open list does, [width] wide, with its [title] as a
-/// heading over [content]: ui_core's [RawPopover] as a popover,
-/// Civic's painting.
+/// filter of two answers). The page's face (by night the raised band)
+/// floating on a hairline and the soft shadow, as an open list does, [width]
+/// wide, with its [title] as a heading over [content]: ui_core's
+/// [RawPopover] as a popover, Civic's painting.
 ///
 /// A press on the control, Enter or Space opens it and the focus moves
 /// into it (Tab stays inside); Escape, a press outside and Android's back
@@ -102,6 +102,9 @@ class CivicPopover extends StatelessWidget {
       final so = DesignStyleOf([style, t.popoverStyle], const {});
       final heading = title;
       final ink = so.foreground ?? t.textPrimary;
+      // By night what floats stands on the raised band, and what it holds
+      // takes that band for its page.
+      final face = so.fill ?? (t.isDark ? t.surface : t.background);
       return civicRise(
         animation: info.animation,
         fromAbove: info.side == RawPopoverSide.below,
@@ -111,33 +114,36 @@ class CivicPopover extends StatelessWidget {
             constraints: BoxConstraints(maxHeight: info.maxSize.height),
             child: DecoratedBox(
               decoration: civicFloating(
-                face: so.fill ?? t.background,
+                face: face,
                 hairline: so.edge ?? t.rule,
                 dark: t.isDark,
               ),
-              child: SingleChildScrollView(
-                padding:
-                    so.padding(Directionality.of(context)) ??
-                    const EdgeInsets.all(CivicSpacing.s16),
-                child: DefaultTextStyle(
-                  style: text.body.copyWith(color: ink),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: CivicSpacing.s8,
-                    children: [
-                      if (heading != null)
-                        Semantics(
-                          header: true,
-                          child: Text(
-                            heading,
-                            style: text.headingS
-                                .merge(so.textStyle)
-                                .copyWith(color: ink),
+              child: CivicTheme(
+                data: t.copyWith(background: face),
+                child: SingleChildScrollView(
+                  padding:
+                      so.padding(Directionality.of(context)) ??
+                      const EdgeInsets.all(CivicSpacing.s16),
+                  child: DefaultTextStyle(
+                    style: text.body.copyWith(color: ink),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      spacing: CivicSpacing.s8,
+                      children: [
+                        if (heading != null)
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              heading,
+                              style: text.headingS
+                                  .merge(so.textStyle)
+                                  .copyWith(color: ink),
+                            ),
                           ),
-                        ),
-                      content,
-                    ],
+                        content,
+                      ],
+                    ),
                   ),
                 ),
               ),

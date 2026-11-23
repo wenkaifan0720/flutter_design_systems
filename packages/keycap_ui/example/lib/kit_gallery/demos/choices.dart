@@ -70,7 +70,7 @@ class _TogglesState extends State<_Toggles> {
         KeycapRadioGroup<String>(
           semanticLabel: 'Paper',
           options: const ['A4', 'Letter', 'A5'],
-          value: _paper,
+          groupValue: _paper,
           labelOf: (p) => p,
           onChanged: (v) => setState(() => _paper = v),
         ),

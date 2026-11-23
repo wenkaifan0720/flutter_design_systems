@@ -41,8 +41,8 @@ void main() {
     await _show(
       tester,
       const KeycapTextField(
-        label: 'Description',
-        hint: hint,
+        labelText: 'Description',
+        hintText: hint,
         maxLines: 4,
         minLines: 3,
       ),
@@ -59,7 +59,10 @@ void main() {
     tester,
   ) async {
     const hint = 'Where shared notes are sent from, and replies go';
-    await _show(tester, const KeycapTextField(label: 'Email', hint: hint));
+    await _show(
+      tester,
+      const KeycapTextField(labelText: 'Email', hintText: hint),
+    );
     expect(_hint(tester, hint).didExceedMaxLines, isTrue);
   });
 }

@@ -1,6 +1,6 @@
-# Data-driven fixes for `dart fix`: what moves callers off what 0.2.0 deprecates. look:package writes this file to the
-# package's lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after
-# (`dart fix --compare-to-golden test_fixes`).
+# Data-driven fixes for `dart fix`: what moves callers to the names a release renames and off what it deprecates.
+# look:package writes this file to the package's lib/fix_data.yaml; package/test_fixes/ holds each fix's before and
+# after (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
   # 0.2.0: Fluent's elevations stay Fluent's. A theme's shadows are the preset's, so the fix drops the argument and the
@@ -23,3 +23,255 @@ transforms:
     changes:
       - kind: 'removeParameter'
         name: 'brandShadows'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2FormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2FormField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2FormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'helper'
+      inClass: 'Fluent2FormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2TextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2TextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2SearchBox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2SearchBox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2SearchEntry'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2SearchEntry'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2PasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2PasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2InputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2InputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Combobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2Combobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2MultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2MultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2DatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2DatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Composer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'hint'
+      inClass: 'Fluent2Composer'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'

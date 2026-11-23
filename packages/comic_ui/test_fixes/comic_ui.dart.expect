@@ -1,0 +1,192 @@
+// The names comic_ui 0.5.0 renames: comic_ui.dart calls them as before `dart fix --apply`,
+// comic_ui.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:comic_ui/comic_ui.dart';
+
+void calls(BuildContext context) {
+  final v1 = ComicTextField(
+    hintText: 'Text',
+    prefixText: 'Text',
+    labelText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v1.labelText);
+  print(v1.hintText);
+  print(v1.helperText);
+  print(v1.errorText);
+  print(v1.prefixText);
+  final v2 = ComicInput(hintText: 'Text');
+  print(v2.hintText);
+  final v3 = ComicTextArea(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v3.labelText);
+  print(v3.hintText);
+  print(v3.helperText);
+  print(v3.errorText);
+  final v4 = ComicSearchField(hintText: 'Text');
+  print(v4.hintText);
+  final v5 = ComicSelect<String>(
+    options: const [],
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v5.labelText);
+  print(v5.hintText);
+  print(v5.helperText);
+  print(v5.errorText);
+  final v6 = ComicSelectField(value: 'Text', helperText: 'Text', labelText: 'Text');
+  print(v6.labelText);
+  print(v6.helperText);
+  final v7 = ComicCombobox<String>(
+    options: const [],
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+  );
+  print(v7.labelText);
+  print(v7.hintText);
+  print(v7.helperText);
+  final v8 = ComicPasswordField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v8.labelText);
+  print(v8.hintText);
+  print(v8.helperText);
+  print(v8.errorText);
+  final v9 = ComicInputGroup(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v9.labelText);
+  print(v9.hintText);
+  print(v9.helperText);
+  print(v9.errorText);
+  final v10 = ComicMultiSelect<String>(
+    values: const [],
+    onChanged: (_) {},
+    displayStringForOption: (v) => '$v',
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v10.labelText);
+  print(v10.hintText);
+  print(v10.helperText);
+  print(v10.errorText);
+  print(v10.displayStringForOption);
+  final v11 = ComicFormField(
+    'Text',
+    child: const SizedBox(),
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v11.helperText);
+  print(v11.errorText);
+  final v12 = ComicFileUpload(labelText: 'Text', hintText: 'Text', errorText: 'Text');
+  print(v12.labelText);
+  print(v12.hintText);
+  print(v12.errorText);
+  final v13 = ComicNumberField(value: 1, helperText: 'Text');
+  print(v13.helperText);
+  final v14 = ComicInputOtp(labelText: 'Text', errorText: 'Text');
+  print(v14.labelText);
+  print(v14.errorText);
+  final v15 = ComicReply(
+    person: const ComicPerson(initials: 'AL'),
+    hintText: 'Text',
+  );
+  print(v15.hintText);
+  final v16 = ComicCommand(commands: const [], hintText: 'Text');
+  print(v16.hintText);
+  showComicCommand(context, commands: const [], hintText: 'Text');
+  final v17 = ComicRadioGroup<String>(
+    labelText: 'Text',
+    options: const [],
+    groupValue: 'a',
+  );
+  print(v17.labelText);
+  print(v17.groupValue);
+  final v18 = ComicTabBar(tabs: const [], onTap: (_) {});
+  print(v18.onTap);
+  final v19 = ComicPageDots(
+    pageCount: 1,
+    selectedIndex: 1,
+    label: 'Text',
+    onPageChanged: (_) {},
+  );
+  print(v19.pageCount);
+  print(v19.onPageChanged);
+  final v20 = ComicPagination(pageCount: 1, page: 1, onPageChanged: (_) {});
+  print(v20.pageCount);
+  print(v20.onPageChanged);
+  final v21 = ComicIconButton(
+    const IconData(0xe000),
+    label: 'Text',
+    isSelected: true,
+  );
+  print(v21.isSelected);
+  final v22 = ComicListTile(title: 'Text', isDestructiveAction: true);
+  print(v22.isDestructiveAction);
+  final v23 = ComicSheetAction<String>('Text', value: 'a', isDestructiveAction: true);
+  print(v23.isDestructiveAction);
+  final v24 = ComicToggleGroup<String>(
+    values: const [],
+    selected: const {},
+    onSelectionChanged: (_) {},
+    labelOf: (v) => '$v',
+    multiSelectionEnabled: true,
+    emptySelectionAllowed: true,
+  );
+  print(v24.onSelectionChanged);
+  print(v24.multiSelectionEnabled);
+  print(v24.emptySelectionAllowed);
+  showComicDatePicker(context, confirmText: 'Text', cancelText: 'Text');
+  showComicDateRangePicker(
+    context,
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    confirmText: 'Text',
+    cancelText: 'Text',
+  );
+  showComicTimePicker(context, confirmText: 'Text', cancelText: 'Text');
+  ComicTextSelectionControls.forPlatform(TargetPlatform.android);
+  print([
+    v1,
+    v2,
+    v3,
+    v4,
+    v5,
+    v6,
+    v7,
+    v8,
+    v9,
+    v10,
+    v11,
+    v12,
+    v13,
+    v14,
+    v15,
+    v16,
+    v17,
+    v18,
+    v19,
+    v20,
+    v21,
+    v22,
+    v23,
+    v24,
+  ]);
+}

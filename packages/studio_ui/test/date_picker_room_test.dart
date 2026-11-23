@@ -15,14 +15,14 @@ Widget _app(Widget page) => MaterialApp(
 void main() {
   final pickers = <String, Widget>{
     'date': StudioDatePicker(
-      label: 'Release date',
+      labelText: 'Release date',
       value: DateTime(2026, 11, 20),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},
     ),
     'date range': StudioDateRangePicker(
-      label: 'Recording days',
+      labelText: 'Recording days',
       value: StudioDateRange(
         start: DateTime(2026, 11, 20),
         end: DateTime(2026, 11, 24),

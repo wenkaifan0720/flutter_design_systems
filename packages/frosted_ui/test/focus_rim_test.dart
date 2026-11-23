@@ -22,7 +22,7 @@ void _drop(Object? _) {}
 final _parts = <String, Widget Function()>{
   'filled button': () => const FrostedButton('Save', onPressed: _none),
   'glass button': () => const FrostedButton.glass('Share', onPressed: _none),
-  'field': () => const FrostedTextField(label: 'Title', value: 'Workshop'),
+  'field': () => const FrostedTextField(labelText: 'Title', value: 'Workshop'),
   'list row': () => const FrostedListTile(
     title: 'Print workshop',
     meta: 'Tomorrow',
@@ -34,7 +34,7 @@ final _parts = <String, Widget Function()>{
   'check': () =>
       const FrostedCheckbox(value: false, label: 'Walk', onChanged: _drop),
   'radio': () => const FrostedRadioGroup<String>(
-    label: 'Plan',
+    labelText: 'Plan',
     value: 'free',
     onChanged: _drop,
     options: [FrostedRadio('free', 'Free'), FrostedRadio('pro', 'Pro')],

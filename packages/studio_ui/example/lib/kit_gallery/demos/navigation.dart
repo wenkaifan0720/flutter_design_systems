@@ -130,7 +130,7 @@ Widget kitNavigationDemo(Brightness brightness) => kitScreen(
         ),
         const StudioStepProgress(
           steps: ['Record', 'Edit', 'Master', 'Publish'],
-          current: 1,
+          currentStep: 1,
         ),
         kitState<int>(
           1,

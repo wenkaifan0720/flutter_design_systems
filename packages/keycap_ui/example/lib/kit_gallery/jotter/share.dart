@@ -117,7 +117,7 @@ class _JotterShareState extends State<JotterShare> {
         ),
         KeycapSheetAction(
           'Remove access',
-          destructive: true,
+          isDestructiveAction: true,
           onPressed: () => setState(() => _people.removeAt(i)),
         ),
       ],
@@ -146,9 +146,9 @@ class _JotterShareState extends State<JotterShare> {
     final link = 'jotter.example/n/${note.id}-7f3k';
     final invite = KeycapTextField(
       controller: _invite,
-      label: 'Invite by email',
-      hint: 'name@example.com',
-      error: _inviteError,
+      labelText: 'Invite by email',
+      hintText: 'name@example.com',
+      errorText: _inviteError,
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.send,
       autofillHints: const [AutofillHints.email],
@@ -217,7 +217,7 @@ class _JotterShareState extends State<JotterShare> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               KeycapSelect<String>(
-                label: 'Format',
+                labelText: 'Format',
                 value: _format,
                 items: const [
                   KeycapSelectItem(value: 'pdf', label: 'PDF'),

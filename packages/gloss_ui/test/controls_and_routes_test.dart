@@ -49,8 +49,8 @@ void main() {
                   ),
                   GlossDialogAction(
                     label: 'Delete',
-                    destructive: true,
-                    primary: true,
+                    isDestructiveAction: true,
+                    isDefaultAction: true,
                     onPressed: () {
                       answer = 'deleted';
                       Navigator.of(context).pop();
@@ -391,7 +391,7 @@ void main() {
             builder: (context, setState) => GlossTabBar(
               tabs: const ['Ingredients', 'Method', 'Notes'],
               selectedIndex: chosen.isEmpty ? 0 : chosen.last,
-              onSelected: (i) => setState(() => chosen.add(i)),
+              onTap: (i) => setState(() => chosen.add(i)),
             ),
           ),
         ),
@@ -450,12 +450,12 @@ void main() {
               mainAxisSize: MainAxisSize.min,
               children: [
                 GlossCombobox<String>(
-                  label: 'Herb',
+                  labelText: 'Herb',
                   options: const ['Basil', 'Dill'],
                   onSelected: (_) {},
                 ),
                 GlossTagInput<String>(
-                  label: 'Tags',
+                  labelText: 'Tags',
                   values: const [],
                   options: const ['Quick'],
                   onChanged: (_) {},
@@ -503,7 +503,7 @@ void main() {
                 GlossDestination(icon: IconData(0x43), label: 'Plan'),
               ],
               selectedIndex: place,
-              onSelected: (i) => setState(() => place = i),
+              onDestinationSelected: (i) => setState(() => place = i),
               body: Center(child: Text('Place $place')),
             ),
           ),

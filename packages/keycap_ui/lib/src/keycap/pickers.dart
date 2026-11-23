@@ -4,6 +4,8 @@
 /// [KeycapDropZone] (a well a file is dropped in) and [KeycapColorPicker].
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialType, TextField;
@@ -15,7 +17,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'cap.dart';
 import 'feedback.dart';
+import 'internal/spring_value.dart';
 import 'select.dart';
+import 'fields.dart' show KeycapField;
 import 'text_field.dart';
 import 'theme.dart';
 
@@ -61,6 +65,7 @@ class _BareField extends StatelessWidget {
     required this.onEditingComplete,
     this.hint,
     this.semanticLabel,
+    this.ownNode = true,
   });
 
   final TextEditingController controller;
@@ -71,6 +76,10 @@ class _BareField extends StatelessWidget {
   final String? hint;
   final String? semanticLabel;
 
+  /// Whether the entry is a node of its own; false where ui_core gives it
+  /// one (a tag input's entry, which carries the field's words).
+  final bool ownNode;
+
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
@@ -79,7 +88,7 @@ class _BareField extends StatelessWidget {
       color: enabled ? c.ink : c.inkDisabled,
     );
     return Semantics(
-      container: true,
+      container: ownNode,
       label: semanticLabel,
       child: DesignTextEntryBox(
         minHeight: minHeight,
@@ -234,7 +243,7 @@ Widget _failed(BuildContext context, RawSearchError error) {
 /// a field that opens a list. Built on ui_core's `RawCombobox`.
 ///
 /// ```dart
-/// KeycapCombobox<String>(label: 'Folder', options: const ['Ideas', 'Work', 'Home'], onSelected: move)
+/// KeycapCombobox<String>(labelText: 'Folder', options: const ['Ideas', 'Work', 'Home'], onSelected: move)
 /// ```
 class KeycapCombobox<T extends Object> extends StatefulWidget {
   /// A combobox over [options] or [search].
@@ -246,10 +255,10 @@ class KeycapCombobox<T extends Object> extends StatefulWidget {
     this.onSelected,
     this.value,
     this.displayStringForOption,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.emptyLabel,
     this.requireSelection = false,
@@ -278,18 +287,18 @@ class KeycapCombobox<T extends Object> extends StatefulWidget {
   final String Function(T option)? displayStringForOption;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// What the well says while empty.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when [label] is not shown.
+  /// The field's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// What the list says when nothing fits; the kit's "No results" when
@@ -318,7 +327,7 @@ class KeycapCombobox<T extends Object> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
@@ -362,87 +371,97 @@ class _KeycapComboboxState<T extends Object> extends State<KeycapCombobox<T>> {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final pad = KeycapSpacing.medium + theme.density.paddingDelta / 2;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: KeycapFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        RawCombobox<T>(
-          options: widget.options,
-          search: widget.search,
-          debounceDuration: widget.debounceDuration,
-          loadingBuilder: _looking,
-          errorBuilder: _failed,
-          value: widget.value,
-          onSelected: widget.onSelected,
-          displayStringForOption: _words,
-          requireSelection: widget.requireSelection,
-          highlightFollowsPointer: true,
-          controller: widget.controller,
-          focusNode: _focus,
-          semanticLabel: widget.semanticLabel ?? widget.label,
-          surfaceBuilder: _panel,
-          emptyBuilder: (context) => _nothing(
-            context,
-            widget.emptyLabel ??
-                RawWidgetsLocalizations.of(context).noResultsLabel,
-          ),
-          optionBuilder: (context, option, states) => _row(
-            context,
-            _words(option),
-            states,
-            chosen: option == widget.value,
-          ),
-          fieldBuilder: (context, field) => MouseRegion(
-            cursor: widget.enabled
-                ? SystemMouseCursors.text
-                : SystemMouseCursors.basic,
-            child: _fieldWell(
-              theme,
-              {
-                if (!widget.enabled) WidgetState.disabled,
-                if (field.focusNode.hasFocus) WidgetState.focused,
-                if (widget.error != null) WidgetState.error,
-              },
-              widget.style,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.only(start: pad),
-                      child: DesignCapCenter(
-                        capHeightFactor: theme.capHeightFactor,
+    return KeycapField(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      focusNode: _focus,
+      child: RawCombobox<T>(
+        options: widget.options,
+        search: widget.search,
+        debounceDuration: widget.debounceDuration,
+        loadingBuilder: _looking,
+        errorBuilder: _failed,
+        value: widget.value,
+        onSelected: widget.onSelected,
+        displayStringForOption: _words,
+        requireSelection: widget.requireSelection,
+        highlightFollowsPointer: true,
+        controller: widget.controller,
+        focusNode: _focus,
+        semanticLabel: widget.semanticLabel ?? widget.labelText,
+        surfaceBuilder: _panel,
+        emptyBuilder: (context) => _nothing(
+          context,
+          widget.emptyLabel ??
+              RawWidgetsLocalizations.of(context).noResultsLabel,
+        ),
+        optionBuilder: (context, option, states) => _row(
+          context,
+          _words(option),
+          states,
+          chosen: option == widget.value,
+        ),
+        fieldBuilder: (context, field) => MouseRegion(
+          cursor: widget.enabled
+              ? SystemMouseCursors.text
+              : SystemMouseCursors.basic,
+          child: _fieldWell(
+            theme,
+            {
+              if (!widget.enabled) WidgetState.disabled,
+              if (field.focusNode.hasFocus) WidgetState.focused,
+              if (widget.errorText != null) WidgetState.error,
+            },
+            widget.style,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.only(start: pad),
+                    child: DesignCapCenter(
+                      capHeightFactor: theme.capHeightFactor,
+                      // Whether the options show under it.
+                      child: Semantics(
+                        expanded: field.isOpen,
                         child: _BareField(
                           controller: field.controller,
                           focusNode: field.focusNode,
                           minHeight: theme.controlHeight,
-                          hint: widget.hint,
-                          semanticLabel: widget.semanticLabel ?? widget.label,
+                          hint: widget.hintText,
+                          semanticLabel:
+                              widget.semanticLabel ?? widget.labelText,
                           enabled: widget.enabled,
                           onEditingComplete: field.submit,
                         ),
                       ),
                     ),
                   ),
-                  // The select's sign: a field that opens a list ends in it.
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: pad),
+                ),
+                // The select's sign: a field that opens a list ends in it,
+                // turned up while the list shows.
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: pad),
+                  child: KeycapSpringValue(
+                    value: field.isOpen ? 0.5 : 0,
+                    spring: KeycapMotion.panel,
+                    builder: (context, turns, chevron) => Transform.rotate(
+                      angle: turns * 2 * math.pi,
+                      child: chevron,
+                    ),
                     child: Icon(
                       LucideIcons.chevronDown,
                       size: 18,
                       color: widget.enabled ? c.inkMuted : c.inkDisabled,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
-        KeycapFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -454,7 +473,7 @@ class _KeycapComboboxState<T extends Object> extends State<KeycapCombobox<T>> {
 /// field removes the last. Built on ui_core's `RawTagInput`.
 ///
 /// ```dart
-/// KeycapTagInput<String>(label: 'Tags', values: tags, options: const ['draft', 'work', 'recipe'], onChanged: setTags)
+/// KeycapTagInput<String>(labelText: 'Tags', values: tags, options: const ['draft', 'work', 'recipe'], onChanged: setTags)
 /// ```
 class KeycapTagInput<T extends Object> extends StatefulWidget {
   /// A tag input holding [values].
@@ -467,10 +486,10 @@ class KeycapTagInput<T extends Object> extends StatefulWidget {
     this.debounceDuration,
     this.onCreate,
     this.displayStringForOption,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.deleteLabel,
     this.maxTags,
@@ -500,18 +519,18 @@ class KeycapTagInput<T extends Object> extends StatefulWidget {
   final String Function(T option)? displayStringForOption;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// What the well says while empty.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when [label] is not shown.
+  /// The field's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// A remove key's name for a screen reader; the kit's "Delete" when null.
@@ -560,109 +579,111 @@ class _KeycapTagInputState<T extends Object> extends State<KeycapTagInput<T>> {
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (_within) WidgetState.focused,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
     };
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: KeycapFieldLabel(widget.label!, enabled: widget.enabled),
+    return KeycapField(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      focusNode: _focus,
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: (inside) => setState(() => _within = inside),
+        child: RawTagInput<T>(
+          values: widget.values,
+          onChanged: widget.onChanged,
+          options: widget.options,
+          search: widget.search,
+          debounceDuration: widget.debounceDuration,
+          loadingBuilder: _looking,
+          errorBuilder: _failed,
+          onCreate: widget.onCreate,
+          displayStringForOption: _words,
+          highlightFollowsPointer: true,
+          maxTags: widget.maxTags,
+          focusNode: _focus,
+          semanticLabel: widget.semanticLabel ?? widget.labelText,
+          deleteLabel: remove,
+          surfaceBuilder: _panel,
+          optionBuilder: (context, option, states) => _row(
+            context,
+            _words(option),
+            states,
+            chosen: widget.values.contains(option),
           ),
-        Focus(
-          canRequestFocus: false,
-          skipTraversal: true,
-          onFocusChange: (inside) => setState(() => _within = inside),
-          child: RawTagInput<T>(
-            values: widget.values,
-            onChanged: widget.onChanged,
-            options: widget.options,
-            search: widget.search,
-            debounceDuration: widget.debounceDuration,
-            loadingBuilder: _looking,
-            errorBuilder: _failed,
-            onCreate: widget.onCreate,
-            displayStringForOption: _words,
-            highlightFollowsPointer: true,
-            maxTags: widget.maxTags,
-            focusNode: _focus,
-            semanticLabel: widget.semanticLabel ?? widget.label,
-            deleteLabel: remove,
-            surfaceBuilder: _panel,
-            optionBuilder: (context, option, states) => _row(
-              context,
-              _words(option),
-              states,
-              chosen: widget.values.contains(option),
-            ),
-            layoutBuilder: (context, tags, field) => GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTap: widget.enabled ? _focus.requestFocus : null,
-              child: MouseRegion(
-                cursor: widget.enabled
-                    ? SystemMouseCursors.text
-                    : SystemMouseCursors.basic,
-                child: _fieldWell(
-                  theme,
-                  states,
-                  widget.style,
-                  // A hair above and below: the entry's own box stays a
-                  // finger's 44 high inside a 48 field.
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: KeycapSpacing.small,
-                    vertical: KeycapSpacing.hairline,
+          layoutBuilder: (context, tags, field) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: widget.enabled ? _focus.requestFocus : null,
+            child: MouseRegion(
+              cursor: widget.enabled
+                  ? SystemMouseCursors.text
+                  : SystemMouseCursors.basic,
+              child: _fieldWell(
+                theme,
+                states,
+                widget.style,
+                // A hair above and below: the entry's own box stays a
+                // finger's 44 high inside a 48 field.
+                padding: const EdgeInsets.symmetric(
+                  horizontal: KeycapSpacing.small,
+                  vertical: KeycapSpacing.hairline,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: theme.controlHeight - 2 * KeycapSpacing.hairline,
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight:
-                          theme.controlHeight - 2 * KeycapSpacing.hairline,
-                    ),
-                    child: Wrap(
-                      spacing: KeycapMetrics.keyGap,
-                      runSpacing: KeycapMetrics.keyGap,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        ...tags,
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minWidth: 96,
-                            maxWidth: 240,
-                          ),
-                          child: IntrinsicWidth(child: field),
+                  child: Wrap(
+                    spacing: KeycapMetrics.keyGap,
+                    runSpacing: KeycapMetrics.keyGap,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      ...tags,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: 96,
+                          maxWidth: 240,
                         ),
-                      ],
-                    ),
+                        child: IntrinsicWidth(child: field),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            tagBuilder: (context, value, tag) => _TagCap(
-              label: _words(value),
-              focused: tag.focused,
-              enabled: widget.enabled,
-              removeLabel: '$remove ${_words(value)}',
-              onRemove: widget.enabled ? tag.onDeleted : null,
+          ),
+          tagBuilder: (context, value, tag) => _TagCap(
+            label: _words(value),
+            focused: tag.focused,
+            enabled: widget.enabled,
+            removeLabel: '$remove ${_words(value)}',
+            onRemove: widget.enabled ? tag.onDeleted : null,
+          ),
+          fieldBuilder: (context, field) => Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: KeycapSpacing.tight,
             ),
-            fieldBuilder: (context, field) => Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: KeycapSpacing.tight,
-              ),
+            // Whether the suggestions show under it.
+            child: Semantics(
+              expanded: field.isOpen,
               child: _BareField(
                 controller: field.controller,
                 focusNode: field.focusNode,
                 minHeight: theme.controlHeight - 2 * KeycapSpacing.hairline,
-                hint: widget.values.isEmpty ? widget.hint : null,
-                semanticLabel: widget.semanticLabel ?? widget.label,
+                hint: widget.values.isEmpty ? widget.hintText : null,
+                // Its node is the one ui_core gives the field's label, help
+                // and error, beside the tags' own.
+                semanticLabel: widget.semanticLabel,
+                ownNode: false,
                 enabled: widget.enabled,
                 onEditingComplete: field.submit,
               ),
             ),
           ),
         ),
-        KeycapFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }

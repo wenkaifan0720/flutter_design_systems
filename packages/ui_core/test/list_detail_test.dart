@@ -105,6 +105,30 @@ void main() {
     expect(_told, ['B', null]);
   });
 
+  testWidgets('a heading and the text under it stay two nodes, in the list '
+      'alone and side by side with the detail', (tester) async {
+    final semantics = tester.ensureSemantics();
+    for (final (width, item) in [(390.0, null), (1000.0, 'A')]) {
+      await _width(tester, width);
+      await tester.pumpWidget(
+        harness(
+          DesignListDetail<String>(
+            selectedItem: item,
+            onSelectedItemChanged: (_) {},
+            listBuilder: (context) => headingAndText(),
+            detailBuilder: (context, item) => Text('Detail $item'),
+            detailRouteBuilder: (builder) => PageRouteBuilder<void>(
+              pageBuilder: (context, _, _) => builder(context),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expectHeadingAndTextApart(tester);
+    }
+    semantics.dispose();
+  });
+
   testWidgets('wide: side by side, the list 360 wide, nothing pushed', (
     tester,
   ) async {

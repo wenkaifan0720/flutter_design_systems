@@ -35,21 +35,21 @@ const double _pageWidth = 1200;
 /// MaterialApp(builder: (context, child) => StudioHost(child: child!))
 /// ```
 class StudioHost extends StatelessWidget {
-  /// Hosts [child] in [light] or [dark], as [brightness] (or the platform)
+  /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
   /// asks; either left out is the default preset in that brightness.
   const StudioHost({
     super.key,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
     required this.child,
   });
 
   /// The theme by day.
-  final StudioThemeData? light;
+  final StudioThemeData? theme;
 
   /// The theme by night.
-  final StudioThemeData? dark;
+  final StudioThemeData? darkTheme;
 
   /// The brightness to draw in; null follows the preview's or the
   /// platform's.
@@ -65,7 +65,7 @@ class StudioHost extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final data =
-        (wanted == Brightness.dark ? dark : light) ??
+        (wanted == Brightness.dark ? darkTheme : theme) ??
         StudioThemeData.preset(StudioThemeData.presets.first, wanted);
     return StudioTheme(
       data: data,
@@ -82,12 +82,16 @@ class StudioHost extends StatelessWidget {
       ..add(
         DiagnosticsProperty<StudioThemeData>(
           'light',
-          light,
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<StudioThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<StudioThemeData>(
+          'dark',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(
         DiagnosticsProperty<Brightness>(
@@ -388,12 +392,12 @@ class StudioPreview extends StatelessWidget {
   const StudioPreview({
     super.key,
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness = Brightness.light,
     this.presentation = StudioPresentation.root,
     this.tabs = const [],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.brand,
     this.drawer = false,
@@ -404,10 +408,10 @@ class StudioPreview extends StatelessWidget {
   final Widget child;
 
   /// The theme by day.
-  final StudioThemeData? light;
+  final StudioThemeData? theme;
 
   /// The theme by night.
-  final StudioThemeData? dark;
+  final StudioThemeData? darkTheme;
 
   /// The brightness to draw in.
   final Brightness brightness;
@@ -419,7 +423,7 @@ class StudioPreview extends StatelessWidget {
   final List<StudioTab> tabs;
 
   /// The place the page is.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The app's one act, on a root.
   final ShellAction? action;
@@ -439,7 +443,7 @@ class StudioPreview extends StatelessWidget {
         ? page
         : StudioAppShell(
             tabs: tabs,
-            selectedIndex: activeIndex,
+            selectedIndex: selectedIndex,
             onSelected: (_) {},
             action: action,
             brand: brand,
@@ -462,8 +466,8 @@ class StudioPreview extends StatelessWidget {
             DefaultWidgetsLocalizations.delegate,
           ],
           builder: (context, app) => StudioHost(
-            light: light,
-            dark: dark,
+            theme: theme,
+            darkTheme: darkTheme,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),
@@ -497,19 +501,23 @@ class StudioPreview extends StatelessWidget {
       ..add(
         DiagnosticsProperty<StudioThemeData>(
           'light',
-          light,
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<StudioThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<StudioThemeData>(
+          'dark',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(DiagnosticsProperty<Brightness>('brightness', brightness))
       ..add(
         DiagnosticsProperty<StudioPresentation>('presentation', presentation),
       )
       ..add(IterableProperty<StudioTab>('tabs', tabs))
-      ..add(IntProperty('activeIndex', activeIndex))
+      ..add(IntProperty('activeIndex', selectedIndex))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -863,16 +871,16 @@ class StudioErrorState extends StatelessWidget {
 /// [StudioTextField], which takes the rest.
 ///
 /// ```dart
-/// StudioInput(hint: 'Search episodes', onSubmitted: search)
+/// StudioInput(hintText: 'Search episodes', onSubmitted: search)
 /// ```
 class StudioInput extends StatelessWidget {
-  /// A field hinting [hint].
+  /// A field hinting [hintText].
   const StudioInput({
     super.key,
-    this.hint,
-    this.label,
-    this.error,
-    this.obscure = false,
+    this.hintText,
+    this.labelText,
+    this.errorText,
+    this.obscureText = false,
     this.controller,
     this.onChanged,
     this.onSubmitted,
@@ -880,16 +888,16 @@ class StudioInput extends StatelessWidget {
   });
 
   /// What it is for, until something is typed.
-  final String? hint;
+  final String? hintText;
 
   /// Its name, over the well.
-  final String? label;
+  final String? labelText;
 
   /// What is wrong with what was typed; null when nothing is.
-  final String? error;
+  final String? errorText;
 
   /// Whether what is typed is hidden (a password).
-  final bool obscure;
+  final bool obscureText;
 
   /// Its text's controller.
   final TextEditingController? controller;
@@ -906,11 +914,11 @@ class StudioInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) => StudioTextField(
     controller: controller,
-    label: label,
-    hint: hint,
-    error: error,
-    obscureText: obscure,
-    semanticLabel: label == null ? hint : null,
+    labelText: labelText,
+    hintText: hintText,
+    errorText: errorText,
+    obscureText: obscureText,
+    semanticLabel: labelText == null ? hintText : null,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
     enabled: enabled,
@@ -920,10 +928,10 @@ class StudioInput extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(StringProperty('hint', hintText, defaultValue: null))
+      ..add(StringProperty('label', labelText, defaultValue: null))
+      ..add(StringProperty('error', errorText, defaultValue: null))
+      ..add(FlagProperty('obscure', value: obscureText, ifTrue: 'obscure'))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',

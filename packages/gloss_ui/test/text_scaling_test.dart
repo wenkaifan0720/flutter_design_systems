@@ -65,7 +65,7 @@ void main() {
           tester,
           range
               ? GlossDateRangePicker(
-                  label: 'Plan',
+                  labelText: 'Plan',
                   value: null,
                   firstDate: first,
                   lastDate: last,
@@ -73,7 +73,7 @@ void main() {
                   onChanged: (days) => chosen = days.end,
                 )
               : GlossDatePicker(
-                  label: 'Plan',
+                  labelText: 'Plan',
                   value: null,
                   firstDate: first,
                   lastDate: last,

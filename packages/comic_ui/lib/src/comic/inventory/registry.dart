@@ -119,9 +119,9 @@ final DesignInventory comicInventory = DesignInventory(
         label: 'Style',
         values: const ['Bold', 'Italic'],
         selected: const {'Bold'},
-        multiple: true,
+        multiSelectionEnabled: true,
         labelOf: (value) => value,
-        onChanged: _take,
+        onSelectionChanged: _take,
       ),
     ),
     DesignInventoryEntry.present(
@@ -145,31 +145,32 @@ final DesignInventory comicInventory = DesignInventory(
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
-      (context) => const ComicTextField(label: 'Name', hint: 'Your name'),
+      (context) =>
+          const ComicTextField(labelText: 'Name', hintText: 'Your name'),
     ),
     DesignInventoryEntry.present(
       'TextArea',
-      (context) => const ComicTextArea(label: 'Notes'),
+      (context) => const ComicTextArea(labelText: 'Notes'),
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (context) => const ComicSearchField(hint: 'Search issues'),
+      (context) => const ComicSearchField(hintText: 'Search issues'),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
-      (context) => const ComicPasswordField(label: 'Password'),
+      (context) => const ComicPasswordField(labelText: 'Password'),
     ),
     DesignInventoryEntry.present(
       'InputGroup',
       (context) => const ComicInputGroup(
-        label: 'Price',
-        hint: '0.00',
+        labelText: 'Price',
+        hintText: '0.00',
         leading: [Text('USD')],
       ),
     ),
     DesignInventoryEntry.present(
       'InputOtp',
-      (context) => const ComicInputOtp(label: 'Code'),
+      (context) => const ComicInputOtp(labelText: 'Code'),
     ),
     DesignInventoryEntry.present(
       'NumberField',
@@ -179,7 +180,7 @@ final DesignInventory comicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Select',
       (context) => const ComicSelect<String>(
-        label: 'Format',
+        labelText: 'Format',
         options: [
           ComicSelectOption('print', 'Print'),
           ComicSelectOption('digital', 'Digital'),
@@ -191,14 +192,14 @@ final DesignInventory comicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Combobox',
       (context) => const ComicCombobox<String>(
-        label: 'City',
+        labelText: 'City',
         options: ['Lisbon', 'London', 'Lyon'],
       ),
     ),
     DesignInventoryEntry.present(
       'MultiSelect',
       (context) => const ComicMultiSelect<String>(
-        label: 'Genres',
+        labelText: 'Genres',
         values: ['Noir'],
         options: ['Noir', 'Western', 'Horror'],
         onChanged: _take,
@@ -215,12 +216,12 @@ final DesignInventory comicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'RadioGroup',
       (context) => const ComicRadioGroup<String>(
-        label: 'Format',
+        labelText: 'Format',
         options: [
           ComicRadio('print', 'Print'),
           ComicRadio('digital', 'Digital'),
         ],
-        value: 'print',
+        groupValue: 'print',
         onChanged: _take,
       ),
     ),
@@ -265,7 +266,8 @@ final DesignInventory comicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'FileUpload',
-      (context) => const ComicFileUpload(label: 'Cover art', onChoose: _tap),
+      (context) =>
+          const ComicFileUpload(labelText: 'Cover art', onChoose: _tap),
     ),
     DesignInventoryEntry.present(
       'DatePicker',
@@ -316,7 +318,7 @@ final DesignInventory comicInventory = DesignInventory(
       'FormField',
       (context) => const ComicFormField(
         'Your name',
-        child: ComicTextField(hint: 'Name'),
+        child: ComicTextField(hintText: 'Name'),
       ),
     ),
     // Navigation
@@ -347,7 +349,7 @@ final DesignInventory comicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'TabBar',
-      (context) => const ComicTabBar(tabs: ['All', 'Saved'], onChanged: _take),
+      (context) => const ComicTabBar(tabs: ['All', 'Saved'], onTap: _take),
     ),
     DesignInventoryEntry.present(
       'Breadcrumb',
@@ -358,7 +360,8 @@ final DesignInventory comicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Pagination',
-      (context) => const ComicPagination(count: 5, page: 0, onChanged: _take),
+      (context) =>
+          const ComicPagination(pageCount: 5, page: 0, onPageChanged: _take),
     ),
     DesignInventoryEntry.present(
       'StepProgress',
@@ -368,7 +371,7 @@ final DesignInventory comicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'PageDots',
       (context) =>
-          const ComicPageDots(count: 3, selectedIndex: 0, label: 'Pages'),
+          const ComicPageDots(pageCount: 3, selectedIndex: 0, label: 'Pages'),
     ),
     DesignInventoryEntry.present(
       'MenuBar',

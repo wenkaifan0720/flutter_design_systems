@@ -135,7 +135,7 @@ void main() {
                 message: 'Check your connection.',
                 onRetry: () => tries++,
               ),
-              const GlossInput(label: 'Password', obscure: true),
+              const GlossInput(labelText: 'Password', obscureText: true),
             ],
           ),
         ),

@@ -19,8 +19,8 @@ class ClayDialogAction {
   const ClayDialogAction({
     required this.label,
     required this.onPressed,
-    this.primary = false,
-    this.destructive = false,
+    this.isDefaultAction = false,
+    this.isDestructiveAction = false,
   });
 
   /// Its words.
@@ -30,11 +30,11 @@ class ClayDialogAction {
   final VoidCallback? onPressed;
 
   /// Whether it is the dialog's one action: the coral key.
-  final bool primary;
+  final bool isDefaultAction;
 
-  /// Whether it destroys something: the danger key (with [primary]) or
+  /// Whether it destroys something: the danger key (with [isDefaultAction]) or
   /// danger words.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// A Clay dialog: a floating slab of white clay, rounded 32, its [title],
@@ -43,7 +43,7 @@ class ClayDialogAction {
 /// focus as it opens.
 ///
 /// ```dart
-/// ClayDialog(title: 'Delete this habit?', content: const Text('Its 42-day streak goes with it.'), actions: [ClayDialogAction(label: 'Keep', onPressed: () {}), ClayDialogAction(label: 'Delete', onPressed: () {}, primary: true, destructive: true)])
+/// ClayDialog(title: 'Delete this habit?', content: const Text('Its 42-day streak goes with it.'), actions: [ClayDialogAction(label: 'Keep', onPressed: () {}), ClayDialogAction(label: 'Delete', onPressed: () {}, isDefaultAction: true, isDestructiveAction: true)])
 /// ```
 class ClayDialog extends StatelessWidget {
   /// A dialog titled [title].
@@ -93,8 +93,8 @@ class ClayDialog extends StatelessWidget {
           RawDialogAction(
             label: a.label,
             onPressed: a.onPressed,
-            isDefaultAction: a.primary,
-            isDestructiveAction: a.destructive,
+            isDefaultAction: a.isDefaultAction,
+            isDestructiveAction: a.isDestructiveAction,
           ),
       ],
       insetPadding: routed
@@ -478,9 +478,12 @@ class _Sheet extends StatelessWidget {
         ),
         child: framed
             ? sheet
-            : Transform.translate(
-                offset: const Offset(0, radius),
-                child: sheet,
+            : ClipRect(
+                clipper: const _ClipBelow(),
+                child: Transform.translate(
+                  offset: const Offset(0, radius),
+                  child: sheet,
+                ),
               ),
       ),
     );
@@ -644,9 +647,12 @@ class _PageSheet extends StatelessWidget {
         ),
         child: framed
             ? sheet
-            : Transform.translate(
-                offset: const Offset(0, radius),
-                child: sheet,
+            : ClipRect(
+                clipper: const _ClipBelow(),
+                child: Transform.translate(
+                  offset: const Offset(0, radius),
+                  child: sheet,
+                ),
               ),
       ),
     );
@@ -1126,7 +1132,7 @@ class _Toast extends StatelessWidget {
 /// (never while the pointer or the focus rests on it), or stays with null.
 ///
 /// ```dart
-/// showClayToast(context, 'Habit archived', actionLabel: 'Undo')
+/// showClayToast(context, 'Habit archived', actionLabel: 'Undo', onAction: undo)
 /// ```
 RawToastController showClayToast(
   BuildContext context,
@@ -1144,3 +1150,17 @@ RawToastController showClayToast(
     duration: duration,
   ),
 );
+
+/// Cuts what runs past the foot of its box, and nothing else: a phone's sheet
+/// runs a corner's height past the screen's foot, so only its top corners
+/// show, and its shadow still falls above and beside it.
+class _ClipBelow extends CustomClipper<Rect> {
+  const _ClipBelow();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(-size.width, -size.height, size.width * 2, size.height);
+
+  @override
+  bool shouldReclip(_ClipBelow oldClipper) => false;
+}

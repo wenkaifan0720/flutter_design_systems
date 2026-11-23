@@ -65,8 +65,8 @@ class _HarnessState extends State<_Harness> {
     builder: (context, page) => RepaintBoundary(
       key: _screen,
       child: FrostedHost(
-        light: _theme(Brightness.light),
-        dark: _theme(Brightness.dark),
+        theme: _theme(Brightness.light),
+        darkTheme: _theme(Brightness.dark),
         brightness: _brightness,
         child: page!,
       ),

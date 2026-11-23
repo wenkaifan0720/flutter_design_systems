@@ -32,17 +32,17 @@ class LedgerHost extends StatelessWidget {
   /// Mounts Ledger over [child].
   const LedgerHost({
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
     super.key,
   });
 
   /// The light theme; null is the default preset's.
-  final LedgerThemeData? light;
+  final LedgerThemeData? theme;
 
   /// The dark theme; null is the default preset's.
-  final LedgerThemeData? dark;
+  final LedgerThemeData? darkTheme;
 
   /// Pins the appearance; null follows the platform (or the preview frame).
   final Brightness? brightness;
@@ -93,13 +93,17 @@ class LedgerHost extends StatelessWidget {
     properties
       ..add(
         DiagnosticsProperty<LedgerThemeData>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<LedgerThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<LedgerThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(
         DiagnosticsProperty<Brightness>(
@@ -116,12 +120,12 @@ class LedgerHost extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
-    final darkTheme =
-        dark ??
+    final night =
+        darkTheme ??
         LedgerThemeData.preset(LedgerThemeData.presets.first, Brightness.dark);
     final t = wanted == Brightness.dark
-        ? darkTheme
-        : light ??
+        ? night
+        : theme ??
               LedgerThemeData.preset(
                 LedgerThemeData.presets.first,
                 Brightness.light,
@@ -131,7 +135,7 @@ class LedgerHost extends StatelessWidget {
       maxScaleFactor: maxTextScale,
       child: AnimatedLedgerTheme(
         data: t,
-        dark: darkTheme,
+        darkData: night,
         duration: LedgerMotion.of(context, LedgerMotion.slow),
         curve: LedgerMotion.out,
         // The theme of the moment, on its way from day to night.
@@ -193,7 +197,7 @@ class LedgerMediaGround extends StatelessWidget {
     final dark = LedgerTheme.darkOf(context);
     return LedgerTheme(
       data: dark,
-      dark: dark,
+      darkData: dark,
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: child,

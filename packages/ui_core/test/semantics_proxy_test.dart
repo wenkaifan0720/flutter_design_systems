@@ -2,7 +2,9 @@
 // ui_core puts round a control only to add semantics (round a labelled
 // RawButton's face, a RawInputDecorator's control, a RawTabGroup's tabs),
 // so a layout that looks through such proxies by type (css_box hosts
-// nested flows through them) names one type for all.
+// nested flows through them) names one type for all. It is Flutter's
+// RenderSemanticsAnnotations, so such a layout that knows only Flutter's
+// semantics-only types looks through it too.
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -114,6 +116,54 @@ void main() {
     );
     final proxy = _proxies(tester, find.byType(RawInputDecorator)).single;
     expect(proxy.size, tester.getSize(find.byKey(_face)));
+  });
+
+  testWidgets("each is Flutter's Semantics render object with no properties "
+      "of its own: the face's, the field's and the tab group's", (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      harness(
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RawButton(
+                semanticLabel: 'Save',
+                onPressed: () {},
+                builder: (context, states, _) => const Text('Save'),
+              ),
+              RawInputDecorator(
+                labelText: 'Email',
+                builder: (context, parts) => parts.control,
+                child: const SizedBox(width: 120, height: 24),
+              ),
+              RawTabGroup<int>(
+                groupValue: 0,
+                onChanged: (_) {},
+                child: RawTabGroupTab(
+                  value: 0,
+                  builder: (context, states, _) => const Text('Overview'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    for (final at in [
+      find.byType(RawButton).first,
+      find.byType(RawInputDecorator),
+      find.byType(RawTabGroup<int>),
+    ]) {
+      final proxy = _proxies(tester, at).first;
+      expect(proxy, isA<RenderSemanticsAnnotations>(), reason: '$at');
+      expect(proxy.properties.label, isNull, reason: '$at');
+      expect(proxy.properties.button, isNull, reason: '$at');
+      expect(proxy.container, isFalse, reason: '$at');
+      expect(proxy.explicitChildNodes, isFalse, reason: '$at');
+      expect(proxy.excludeSemantics, isFalse, reason: '$at');
+    }
   });
 
   testWidgets("a tab group's node is one, the size of the caller's row", (

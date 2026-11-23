@@ -50,10 +50,12 @@ Color civicPointerFill(Color fill, Color ink, Set<WidgetState> states) {
   return Color.alphaBlend(ink.withValues(alpha: ink.a * opacity), fill);
 }
 
-/// A surface that floats over the page (a menu, a dialog): the
-/// card's [face], its corners rounded ([radius]), a [hairline] round it and
-/// a soft shadow under it; never an ink edge, which Civic keeps for a
-/// field's well.
+/// A surface that floats over the page (an open list, a menu, a popover, a
+/// dialog): the card's [face], its corners rounded ([radius]), a [hairline]
+/// round it and a soft shadow under it; never an ink edge, which Civic keeps
+/// for a field's well. By night the shadow is lost on the dark ground, so
+/// the edge carries the surface: a [hairline] that reads at less than 3:1
+/// against the [face] is lifted toward white until it does.
 BoxDecoration civicFloating({
   required Color face,
   required Color hairline,
@@ -62,7 +64,7 @@ BoxDecoration civicFloating({
 }) => BoxDecoration(
   color: face,
   borderRadius: BorderRadius.circular(radius),
-  border: Border.all(color: hairline),
+  border: Border.all(color: dark ? _readable(hairline, face) : hairline),
   boxShadow: [
     BoxShadow(
       color: Color(dark ? 0x99000000 : 0x2E0C1116),
@@ -71,6 +73,21 @@ BoxDecoration civicFloating({
     ),
   ],
 );
+
+/// [edge] lifted toward white, a twentieth at a time, until it reads at 3:1
+/// against [face].
+Color _readable(Color edge, Color face) {
+  var lifted = edge;
+  for (var step = 1; step <= 20 && _contrast(lifted, face) < 3; step++) {
+    lifted = Color.lerp(edge, const Color(0xFFFFFFFF), step / 20)!;
+  }
+  return lifted;
+}
+
+double _contrast(Color a, Color b) {
+  final x = a.computeLuminance(), y = b.computeLuminance();
+  return (math.max(x, y) + 0.05) / (math.min(x, y) + 0.05);
+}
 
 /// Paints a face: its fill and, under it, a solid edge [edgeHeight] tall
 /// that a press sinks onto ([press] 0 to 1); with [focus] (0 to 1) the fill

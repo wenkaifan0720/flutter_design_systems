@@ -36,7 +36,7 @@ void main() {
                 GlossIconButton(
                   icon: const Icon(LucideIcons.star),
                   tooltip: 'Favourite',
-                  selected: latched,
+                  isSelected: latched,
                   onPressed: () {},
                 ),
               ],

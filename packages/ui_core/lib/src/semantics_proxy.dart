@@ -14,14 +14,25 @@ import 'tabs.dart' show RawTabGroup;
 ///
 /// ui_core's own extend it: what a [RawButton] given its own words puts
 /// round its face, what a [RawInputDecorator] puts round its control, and
-/// the node a [RawTabGroup] makes round its tabs. A layout that looks
-/// through render objects which add only semantics (one that hosts nested
-/// flows through them, and knows them by type, as it knows Flutter's
-/// [RenderMergeSemantics]) names this one type for all of them.
+/// the node a [RawTabGroup] makes round its tabs.
+///
+/// It is a [RenderSemanticsAnnotations], the render object of Flutter's
+/// `Semantics` widget, with empty [properties]: each subclass describes its
+/// node in [describeSemanticsConfiguration], after `super`. So a layout that
+/// looks through the render objects which add only semantics by Flutter's
+/// types ([RenderSemanticsAnnotations], [RenderMergeSemantics],
+/// [RenderExcludeSemantics], [RenderBlockSemantics],
+/// [RenderIndexedSemantics]) looks through these too, with no import of
+/// ui_core; one that names this type finds ui_core's alone.
 ///
 /// A look never makes one; an app's own may extend it to be looked through
 /// the same way.
-abstract class RenderDesignSemanticsProxy extends RenderProxyBox {
+abstract class RenderDesignSemanticsProxy extends RenderSemanticsAnnotations {
   /// A proxy round [child].
-  RenderDesignSemanticsProxy([super.child]);
+  RenderDesignSemanticsProxy([RenderBox? child])
+    : super(
+        child: child,
+        properties: const SemanticsProperties(),
+        container: false,
+      );
 }

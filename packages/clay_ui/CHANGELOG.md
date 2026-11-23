@@ -1,3 +1,21 @@
+## 0.3.0
+
+- Needs ui_core 0.5.1.
+- **Breaking:** parameters and fields take the names Flutter's widgets give the same jobs. `dart fix --apply` moves each call and read below; the old names are gone.
+- Fields: `label`, `hint`, `helper` and `error` are `labelText`, `hintText`, `helperText` and `errorText`, as on `InputDecoration`: `ClayTextField`, `ClayInput`, `ClayTextArea`, `ClayPasswordField`, `ClayInputGroup`, `ClaySelect`, `ClayCombobox`, `ClayTagInput`, `ClayDatePicker`, `ClayDateRangePicker`, `ClayTimeField`, `ClaySearchField`, `ClayFileDrop`, `ClayFieldMessage`, `ClayCommandPalette` and `showClayCommandPalette` (and `ClayEntryText.hint` in `clay_parts.dart`). `ClayInput.obscure` is `obscureText`, as on `TextField`.
+- `ClayHost` and `ClayPreview`: `light` and `dark` are `theme` and `darkTheme`, as on `MaterialApp`. `ClayPreview.activeIndex` is `selectedIndex`.
+- `ClayAppShell`, `ClayScaffold`, `ClayNavigationBar`, `ClayNavigationRail` and `ClaySidebar`: `onSelected` is `onDestinationSelected`, as on `NavigationBar`. `ClayTabBar.onSelected` is `onTap`, as on `TabBar`.
+- `ClayDialogAction`: `primary` and `destructive` are `isDefaultAction` and `isDestructiveAction`, as on `CupertinoDialogAction`. `ClayListTile.destructive` is `isDestructiveAction` too, as are `ClayMenuEntry.destructive` and `ClayMenuRow.destructive` in `clay_parts.dart`.
+- `ClayIconButton.selected` is `isSelected` (`IconButton`), `ClayDisclosure.onChanged` is `onExpansionChanged` (`ExpansionTile`), `ClayStepProgress.current` is `currentStep` (`Stepper`), `ClayBadge.max` is `maxCount` (`Badge.count`), and `ClayRadioGroup.value` is `groupValue` (`RadioGroup`).
+- `ClayPageDots`: `count`, `index` and `onChanged` are `pageCount`, `page` and `onPageChanged`, the names `ClayPagination` takes. `ClayPagination`: `count` and `onChanged` are `pageCount` and `onPageChanged` (`PageView`).
+- `ClayTextTheme.of` is `ClayTextTheme.from`: in Flutter, `of` looks a value up from a `BuildContext`.
+- A field's help and error are read with the field. The fields stand on ui_core's `RawInputDecorator` (`ClayFieldDecorator` in `clay_parts.dart`): the label, help and error are drawn as before, and a screen reader hears them on the field's own node rather than as words of their own after it. A password field's input is that node, beside its reveal key.
+- `ClayCombobox` and `ClayTagInput` read as expanded while their list shows, and the combobox's chevron turns with it.
+- A tag input holding tags reads its label, help and error on its typing line, as with none; each tag keeps its own name and remove action.
+- A select's list opened from the keys puts the focus on its chosen option, and keeps it in view whether the keys or a pointer opened it. The focus stayed on the field.
+- A toast stands above a phone's `ClayNavigationBar` dock rather than over its places, and at the screen's foot on a page pushed over the dock.
+- A phone's bottom sheet is cut at the screen's foot: its slab, set below the foot to hide its lower corners, no longer paints past it.
+
 ## 0.2.1
 
 - Needs ui_core 0.4.1. `ClayMenuItem.isDestructiveAction` reaches ui_core's `RawMenuEntry` in a context menu and a menu bar.

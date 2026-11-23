@@ -221,7 +221,7 @@ void main() {
         builder: (context, setState) => SizedBox(
           width: 360,
           child: StudioFormField(
-            label: 'Format',
+            labelText: 'Format',
             child: StudioRadioGroup<String>(
               options: const ['MP3', 'AAC', 'WAV'],
               value: chosen,

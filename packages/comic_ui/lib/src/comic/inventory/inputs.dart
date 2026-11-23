@@ -19,6 +19,7 @@ import '../component_themes.dart';
 import '../controls.dart';
 import '../internal/cap_label.dart';
 import '../internal/field_icon.dart';
+import '../internal/list_open.dart';
 import '../internal/lettering.dart'
     show comicCalendarScaleMost, comicDisplayFor;
 import '../internal/pop.dart';
@@ -214,6 +215,8 @@ class ComicBareEditor extends StatelessWidget {
     return Semantics(
       label: label ?? hint,
       hint: semanticHint ?? (label == null ? null : hint),
+      // A tag input's editor reads whether its list shows.
+      expanded: ComicListOpen.maybeOf(context),
       // Its capitals on its line's middle, as the text field's.
       child: CapLabel(
         display: false,
@@ -232,7 +235,7 @@ class ComicBareEditor extends StatelessWidget {
             style: style,
             cursorColor: _inputInk(c),
             contextMenuBuilder: ComicTextContextMenu.editable,
-            selectionControls: ComicTextSelectionControls.of(
+            selectionControls: ComicTextSelectionControls.forPlatform(
               Theme.of(context).platform,
             ),
             decoration: InputDecoration(
@@ -340,7 +343,7 @@ mixin _OwnedFocus<W extends StatefulWidget> on State<W> {
 /// When [hideOnBlur] is true, leaving the field hides the password.
 ///
 /// ```dart
-/// ComicPasswordField(label: 'Password', controller: password, onSubmitted: (_) => signIn())
+/// ComicPasswordField(labelText: 'Password', controller: password, onSubmitted: (_) => signIn())
 /// ```
 class ComicPasswordField extends StatefulWidget {
   /// Creates a [ComicPasswordField].
@@ -348,10 +351,10 @@ class ComicPasswordField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.onChanged,
     this.onSubmitted,
@@ -369,9 +372,9 @@ class ComicPasswordField extends StatefulWidget {
   /// The caller-owned focus.
   final FocusNode? focusNode;
 
-  /// [label]: its name, above the frame. [hint]: the placeholder. [helper]: the help under it. [error]: what is
+  /// [labelText]: its name, above the frame. [hintText]: the placeholder. [helperText]: the help under it. [errorText]: what is
   /// wrong, in the help's place.
-  final String? label, hint, helper, error;
+  final String? labelText, hintText, helperText, errorText;
 
   /// Whether it takes input.
   final bool enabled;
@@ -415,10 +418,10 @@ class ComicPasswordField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'enabled',
@@ -491,10 +494,10 @@ class _ComicPasswordFieldState extends State<ComicPasswordField>
         autofocus: widget.autofocus,
         controller: widget.controller,
         focusNode: focus,
-        label: widget.label,
-        hint: widget.hint,
-        helper: widget.helper,
-        error: widget.error,
+        labelText: widget.labelText,
+        hintText: widget.hintText,
+        helperText: widget.helperText,
+        errorText: widget.errorText,
         enabled: widget.enabled,
         onChanged: widget.onChanged,
         onSubmitted: widget.onSubmitted,
@@ -527,7 +530,7 @@ class _ComicPasswordFieldState extends State<ComicPasswordField>
 /// noninteractive accessory focuses the text field.
 ///
 /// ```dart
-/// ComicInputGroup(label: 'Weight', leading: const [Icon(ComicGlyphs.search)], trailing: const [Text('kg')], keyboardType: TextInputType.number)
+/// ComicInputGroup(labelText: 'Weight', leading: const [Icon(ComicGlyphs.search)], trailing: const [Text('kg')], keyboardType: TextInputType.number)
 /// ```
 class ComicInputGroup extends StatefulWidget {
   /// Creates a [ComicInputGroup].
@@ -535,10 +538,10 @@ class ComicInputGroup extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.onChanged,
     this.onSubmitted,
@@ -555,9 +558,9 @@ class ComicInputGroup extends StatefulWidget {
   /// The caller-owned focus.
   final FocusNode? focusNode;
 
-  /// [label]: its name, above the frame. [hint]: the placeholder. [helper]: the help under it. [error]: what is
+  /// [labelText]: its name, above the frame. [hintText]: the placeholder. [helperText]: the help under it. [errorText]: what is
   /// wrong, in the help's place.
-  final String? label, hint, helper, error;
+  final String? labelText, hintText, helperText, errorText;
 
   /// Whether it takes input.
   final bool enabled;
@@ -598,10 +601,10 @@ class ComicInputGroup extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'enabled',
@@ -667,13 +670,13 @@ class _ComicInputGroupState extends State<ComicInputGroup>
     );
     return _fieldColumn(
       t,
-      label: widget.label,
-      helper: widget.helper,
-      error: widget.error,
+      label: widget.labelText,
+      helper: widget.helperText,
+      error: widget.errorText,
       child: DesignInputGroup(
         focusNode: focus,
         enabled: widget.enabled,
-        isError: widget.error != null,
+        isError: widget.errorText != null,
         builder: (context, states, child) => _fieldFrame(
           context,
           states,
@@ -694,9 +697,9 @@ class _ComicInputGroupState extends State<ComicInputGroup>
                 autofocus: widget.autofocus,
                 focusNode: focus,
                 controller: widget.controller,
-                label: widget.label,
-                hint: widget.hint,
-                semanticHint: widget.error ?? widget.helper,
+                label: widget.labelText,
+                hint: widget.hintText,
+                semanticHint: widget.errorText ?? widget.helperText,
                 enabled: widget.enabled,
                 onChanged: widget.onChanged,
                 onSubmitted: widget.onSubmitted,
@@ -722,7 +725,7 @@ class _ComicInputGroupState extends State<ComicInputGroup>
 /// kit's `RawTagInput`.
 ///
 /// ```dart
-/// ComicMultiSelect<String>(label: 'Genres', values: genres, options: const ['Noir', 'Western', 'Horror'], onChanged: (next) => setState(() => genres = next))
+/// ComicMultiSelect<String>(labelText: 'Genres', values: genres, options: const ['Noir', 'Western', 'Horror'], onChanged: (next) => setState(() => genres = next))
 /// ```
 class ComicMultiSelect<T extends Object> extends StatefulWidget {
   /// Creates a [ComicMultiSelect].
@@ -733,12 +736,12 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
     this.options = const [],
     this.search,
     this.debounceDuration,
-    this.labelOf,
+    this.displayStringForOption,
     this.onCreate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.maxTags,
     this.isOptionEnabled,
@@ -764,14 +767,14 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
   final Duration? debounceDuration;
 
   /// A value's words; `toString` when null.
-  final String Function(T value)? labelOf;
+  final String Function(T value)? displayStringForOption;
 
   /// Makes a value of typed words, or null to refuse them; null takes suggestions only.
   final T? Function(String text)? onCreate;
 
-  /// [label]: its name, above the frame. [hint]: the placeholder while nothing is chosen. [helper]: the help under
-  /// it. [error]: what is wrong, in the help's place.
-  final String? label, hint, helper, error;
+  /// [labelText]: its name, above the frame. [hintText]: the placeholder while nothing is chosen. [helperText]: the help under
+  /// it. [errorText]: what is wrong, in the help's place.
+  final String? labelText, hintText, helperText, errorText;
 
   /// Whether it takes input.
   final bool enabled;
@@ -815,15 +818,18 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
+        ObjectFlagProperty<String Function(T value)>.has(
+          'displayStringForOption',
+          displayStringForOption,
+        ),
       )
       ..add(
         ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'enabled',
@@ -863,7 +869,8 @@ class _ComicMultiSelectState<T extends Object>
   @override
   FocusNode? get callerFocus => widget.focusNode;
 
-  String _words(T value) => widget.labelOf?.call(value) ?? value.toString();
+  String _words(T value) =>
+      widget.displayStringForOption?.call(value) ?? value.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -874,7 +881,7 @@ class _ComicMultiSelectState<T extends Object>
       builder: (context, _) {
         final states = <WidgetState>{
           if (focus.hasFocus) WidgetState.focused,
-          if (widget.error != null) WidgetState.error,
+          if (widget.errorText != null) WidgetState.error,
           if (!widget.enabled) WidgetState.disabled,
         };
         final style = comicStyleOf([t.textFieldTheme], states);
@@ -907,7 +914,7 @@ class _ComicMultiSelectState<T extends Object>
           // Keyboard and pointer share one active option.
           highlightFollowsPointer: true,
           focusNode: focus,
-          semanticLabel: widget.label,
+          semanticLabel: widget.labelText,
           deleteLabel: words.delete,
           // The list starts on the field's face, which the focus lifts toward the start.
           surfaceBuilder: (_, list) =>
@@ -928,18 +935,21 @@ class _ComicMultiSelectState<T extends Object>
           // edge at its width (the list stands under the editor).
           fieldBuilder: (context, field) => Padding(
             padding: EdgeInsets.symmetric(horizontal: comicFieldWordsAt(t)),
-            child: ComicBareEditor(
-              focusNode: field.focusNode,
-              autofocus: widget.autofocus,
-              controller: field.controller,
-              label: widget.label,
-              hint: widget.values.isEmpty ? widget.hint : null,
-              semanticHint: widget.error ?? widget.helper,
-              enabled: widget.enabled,
-              // Enter adds a tag and the editor keeps the focus for the next, as a tag input's does. The add runs here, with
-              // no onSubmitted: a field told of a submit that keeps its focus has its text input restarted, and in a
-              // browser the restarted input takes no typing.
-              onEditingComplete: field.submit,
+            child: ComicListOpen(
+              open: field.isOpen,
+              child: ComicBareEditor(
+                focusNode: field.focusNode,
+                autofocus: widget.autofocus,
+                controller: field.controller,
+                label: widget.labelText,
+                hint: widget.values.isEmpty ? widget.hintText : null,
+                semanticHint: widget.errorText ?? widget.helperText,
+                enabled: widget.enabled,
+                // Enter adds a tag and the editor keeps the focus for the next, as a tag input's does. The add runs here, with
+                // no onSubmitted: a field told of a submit that keeps its focus has its text input restarted, and in a
+                // browser the restarted input takes no typing.
+                onEditingComplete: field.submit,
+              ),
             ),
           ),
           layoutBuilder: (context, tags, field) => _fieldFrame(
@@ -976,9 +986,9 @@ class _ComicMultiSelectState<T extends Object>
       context,
       _fieldColumn(
         t,
-        label: widget.label,
-        helper: widget.helper,
-        error: widget.error,
+        label: widget.labelText,
+        helper: widget.helperText,
+        error: widget.errorText,
         child: widget.enabled
             ? input
             : IgnorePointer(child: ExcludeFocus(child: input)),
@@ -1754,8 +1764,8 @@ Future<RawDateRange?> showComicDateRangePicker(
   RawDateRange? value,
   DateTime? currentDate,
   String? title,
-  String? confirm,
-  String? cancel,
+  String? confirmText,
+  String? cancelText,
 }) {
   var picked = value;
   return showComicDialog<RawDateRange>(
@@ -1774,11 +1784,11 @@ Future<RawDateRange?> showComicDateRangePicker(
         ],
         actions: [
           ComicButton(
-            cancel ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
+            cancelText ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           ComicButton.filled(
-            confirm ?? ComicLocalizations.of(context).choose,
+            confirmText ?? ComicLocalizations.of(context).choose,
             size: ComicButtonSize.small,
             onPressed: picked == null
                 ? null
@@ -2020,19 +2030,19 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
 /// a secondary click offers Paste, and a screen reader hears one field.
 ///
 /// ```dart
-/// ComicInputOtp(label: 'Verification code', length: 6, onCompleted: verify)
+/// ComicInputOtp(labelText: 'Verification code', length: 6, onCompleted: verify)
 /// ```
 class ComicInputOtp extends StatefulWidget {
   /// Creates a code input of [length] boxes.
   const ComicInputOtp({
     super.key,
     this.style,
-    required this.label,
+    required this.labelText,
     this.length = 6,
     this.controller,
     this.onChanged,
     this.onSubmitted,
-    this.error,
+    this.errorText,
     this.enabled = true,
     this.focusNode,
     this.autofocus = false,
@@ -2046,7 +2056,7 @@ class ComicInputOtp extends StatefulWidget {
   }) : assert(length > 0);
 
   /// Its visible and spoken label.
-  final String label;
+  final String labelText;
 
   /// How many digits.
   final int length;
@@ -2061,7 +2071,7 @@ class ComicInputOtp extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
 
   /// What is wrong, under the boxes.
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes input.
   final bool enabled;
@@ -2103,7 +2113,7 @@ class ComicInputOtp extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(IntProperty('length', length, defaultValue: 6))
       ..add(
         DiagnosticsProperty<TextEditingController>(
@@ -2121,7 +2131,7 @@ class ComicInputOtp extends StatefulWidget {
           onSubmitted,
         ),
       )
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'enabled',
@@ -2279,8 +2289,8 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       enabled: widget.enabled,
-      isError: widget.error != null,
-      semanticLabel: widget.label,
+      isError: widget.errorText != null,
+      semanticLabel: widget.labelText,
       textInputAction: widget.textInputAction,
       onEditingComplete: widget.onEditingComplete,
       onSubmitted: widget.onSubmitted,
@@ -2304,8 +2314,8 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
     );
     return _fieldColumn(
       t,
-      label: widget.label,
-      error: widget.error,
+      label: widget.labelText,
+      error: widget.errorText,
       failureLine: widget.failureLine,
       child: Align(
         alignment: AlignmentDirectional.centerStart,

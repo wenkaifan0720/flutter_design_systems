@@ -168,9 +168,12 @@ void main() {
       expect(derived.focus.width, 5);
     }
     final plain = ComicThemeData.offset();
-    expect(plain.lerp(theme, 0), plain);
-    expect(plain.lerp(theme, 1), theme);
-    expect(plain.lerp(theme, .5).motion.state.inMilliseconds, 195);
+    expect(ComicThemeData.lerp(plain, theme, 0), plain);
+    expect(ComicThemeData.lerp(plain, theme, 1), theme);
+    expect(
+      ComicThemeData.lerp(plain, theme, .5).motion.state.inMilliseconds,
+      195,
+    );
   });
   for (final (name, act, caption, shade, ground) in [
     (

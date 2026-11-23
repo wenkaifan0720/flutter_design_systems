@@ -18,14 +18,16 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
     kitSection('Busy', children: [kitSpecimenComposerBusy()]),
     kitSection(
       'Disabled',
-      children: [const FrostedComposer(hint: 'Message Jonah', enabled: false)],
+      children: [
+        const FrostedComposer(hintText: 'Message Jonah', enabled: false),
+      ],
     ),
   ],
 );
 
 /// A reply line: attach before the text, the voice seat at its end.
 Widget kitSpecimenComposerMessages() => FrostedComposer(
-  hint: 'Message Jonah',
+  hintText: 'Message Jonah',
   onSend: (_) {},
   onAttach: () {},
   onVoice: () {},

@@ -402,7 +402,7 @@ class _Day extends StatelessWidget {
 
 /// A date field that opens a [Fluent2Calendar].
 ///
-/// The field displays the formatted [value] or its [hint] when empty. A
+/// The field displays the formatted [value] or its [hintText] when empty. A
 /// desktop or tablet opens a popover with keyboard focus in the calendar.
 /// Escape closes the popover and returns focus to the field. A touch phone
 /// opens a bottom sheet titled [label]. Selecting a day calls [onChanged]
@@ -417,7 +417,7 @@ class Fluent2DatePicker extends StatefulWidget {
     required this.value,
     required this.onChanged,
     this.label,
-    this.hint,
+    this.hintText,
     this.firstDate,
     this.lastDate,
     this.today,
@@ -448,7 +448,7 @@ class Fluent2DatePicker extends StatefulWidget {
 
   /// The words before a date is chosen; null is "Select a date..." in the
   /// app's language.
-  final String? hint;
+  final String? hintText;
 
   /// The earliest day that can be picked; null sets no bound.
   final DateTime? firstDate;
@@ -494,7 +494,7 @@ class Fluent2DatePicker extends StatefulWidget {
         ObjectFlagProperty<ValueChanged<DateTime>?>.has('onChanged', onChanged),
       )
       ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         DiagnosticsProperty<DateTime>(
           'firstDate',
@@ -556,7 +556,7 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
       widget.label ?? Fluent2FieldScope.maybeOf(context)?.label;
 
   String get _hint =>
-      widget.hint ?? Fluent2Localizations.of(context).selectADate;
+      widget.hintText ?? Fluent2Localizations.of(context).selectADate;
 
   void _pick(DateTime d) {
     if (_portal.isShowing) setState(_portal.hide);

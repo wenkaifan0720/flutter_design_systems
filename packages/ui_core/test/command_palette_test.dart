@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' show Tristate;
 
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -70,6 +71,54 @@ RawCommandPalette _palette({
 bool _lit(String label) => _items[label]!.contains(WidgetState.focused);
 
 void main() {
+  testWidgets('RawCommandShortcut keeps the nodes of the app under it: a '
+      'heading and the text under it stay two', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      harness(RawCommandShortcut(onOpen: () {}, child: headingAndText())),
+    );
+    expectHeadingAndTextApart(tester);
+    semantics.dispose();
+  });
+
+  testWidgets('words beside the palette\'s field name its text field, on '
+      'its one node, and are read once', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      harness(
+        RawCommandPalette(
+          commands: _commands(),
+          fieldBuilder: (context, field) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Search'),
+              plainField(
+                controller: field.controller,
+                focusNode: field.focusNode,
+                onSubmitted: field.submit,
+              ),
+            ],
+          ),
+          itemBuilder: (context, command, states) =>
+              SizedBox(height: 44, child: Text(command.label)),
+        ),
+      ),
+    );
+    expect(textFieldNode().label, 'Search');
+    var said = 0;
+    void visit(SemanticsNode n) {
+      if (!n.isMergedIntoParent && n.label.contains('Search')) said++;
+      n.visitChildren((c) {
+        visit(c);
+        return true;
+      });
+    }
+
+    visit(semanticsOwner().rootSemanticsNode!);
+    expect(said, 1, reason: 'no node of its own beside the field says it');
+    semantics.dispose();
+  });
+
   testWidgets('the field hears that its list shows: a palette\'s always '
       'does', (tester) async {
     _open = null;

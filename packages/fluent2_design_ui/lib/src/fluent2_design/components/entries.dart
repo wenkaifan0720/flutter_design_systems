@@ -31,7 +31,7 @@ class Fluent2PasswordField extends StatelessWidget {
   const Fluent2PasswordField({
     super.key,
     this.label,
-    this.hint,
+    this.hintText,
     this.value,
     this.controller,
     this.focusNode,
@@ -49,7 +49,7 @@ class Fluent2PasswordField extends StatelessWidget {
   final String? label;
 
   /// Placeholder text shown when the field is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The text, when the page holds it with [onChanged].
   final String? value;
@@ -92,7 +92,7 @@ class Fluent2PasswordField extends StatelessWidget {
       hideLabel: RawWidgetsLocalizations.of(context).hidePasswordLabel,
       builder: (context, s) => Fluent2TextField(
         label: label,
-        hint: hint,
+        hintText: hintText,
         value: value,
         controller: controller,
         focusNode: focusNode,
@@ -121,7 +121,7 @@ class Fluent2PasswordField extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
@@ -198,7 +198,7 @@ class Fluent2InputGroup extends StatefulWidget {
     this.suffix,
     this.leading,
     this.trailing,
-    this.hint,
+    this.hintText,
     this.controller,
     this.onChanged,
     this.onSubmitted,
@@ -223,7 +223,7 @@ class Fluent2InputGroup extends StatefulWidget {
   final Widget? trailing;
 
   /// Its empty words.
-  final String? hint;
+  final String? hintText;
 
   /// The text; null keeps its own.
   final TextEditingController? controller;
@@ -259,7 +259,7 @@ class Fluent2InputGroup extends StatefulWidget {
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('prefix', prefix, defaultValue: null))
       ..add(StringProperty('suffix', suffix, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -353,7 +353,7 @@ class _Fluent2InputGroupState extends State<Fluent2InputGroup> {
           style: t.body1.c(
             live ? c.neutralForeground1 : c.neutralForegroundDisabled,
           ),
-          hint: widget.hint,
+          hint: widget.hintText,
           hintStyle: t.body1.c(
             live
                 ? fluent2PlaceholderInk(t, widget.appearance)

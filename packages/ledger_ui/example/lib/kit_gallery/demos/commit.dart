@@ -237,7 +237,7 @@ Widget kitSpecimenActionBarFloating() => LedgerActionBar(
 
 /// The message box at rest: attach at its start, voice at its end.
 Widget kitSpecimenComposerMessages() => LedgerComposer(
-  hint: 'Write a reply',
+  hintText: 'Write a reply',
   onAttachPressed: () {},
   onVoicePressed: () {},
 );
@@ -248,7 +248,7 @@ Widget kitSpecimenComposerDrafted() => KitTyped(
   'Friday? It is the last thing I am waiting on before the print run.',
   (controller) => LedgerComposer(
     controller: controller,
-    hint: 'Write a reply',
+    hintText: 'Write a reply',
     onAttachPressed: () {},
     onSubmitted: () {},
   ),
@@ -257,7 +257,7 @@ Widget kitSpecimenComposerDrafted() => KitTyped(
 /// The ask box over its toolbar of the page's own chips.
 Widget kitSpecimenComposerAssistant() => LedgerComposer(
   style: LedgerComposerStyle.assistant,
-  hint: 'Ask about the books',
+  hintText: 'Ask about the books',
   onAttachPressed: () {},
   onSubmitted: () {},
   toolbar: [

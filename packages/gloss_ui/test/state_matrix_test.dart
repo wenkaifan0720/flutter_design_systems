@@ -78,7 +78,7 @@ final _parts = <_Part>[
     (s, d, e) => GlossIconButton(
       icon: const Icon(LucideIcons.heart),
       tooltip: 'Save',
-      selected: s,
+      isSelected: s,
       onPressed: d ? null : _none,
     ),
     states: _all.difference({'error'}),
@@ -154,7 +154,7 @@ final _parts = <_Part>[
     (s, d, e) => GlossTabBar(
       tabs: const ['Method', 'Ingredients'],
       selectedIndex: s ? 1 : 0,
-      onSelected: (_) {},
+      onTap: (_) {},
     ),
     states: {'idle', 'hovered', 'pressed', 'focused', 'selected'},
     target: () => find.text('Ingredients'),
@@ -170,7 +170,7 @@ final _parts = <_Part>[
         GlossDestination(icon: LucideIcons.settings, label: 'Settings'),
       ],
       selectedIndex: s ? 1 : 0,
-      onSelected: (_) {},
+      onDestinationSelected: (_) {},
     ),
     states: {'idle', 'hovered', 'pressed', 'focused', 'selected'},
     target: () => find.text('Plan'),
@@ -208,7 +208,7 @@ final _parts = <_Part>[
     (s, d, e) => GlossDisclosure(
       title: 'Storage',
       expanded: s,
-      onChanged: d ? null : (_) {},
+      onExpansionChanged: d ? null : (_) {},
       child: const Text('Keeps three days in the fridge.'),
     ),
     states: _all.difference({'error'}),
@@ -217,9 +217,9 @@ final _parts = <_Part>[
   _Part(
     'Text field',
     (s, d, e) => GlossTextField(
-      label: 'Email',
-      hint: 'name@example.com',
-      error: e ? 'Enter an email with an @.' : null,
+      labelText: 'Email',
+      hintText: 'name@example.com',
+      errorText: e ? 'Enter an email with an @.' : null,
       enabled: !d,
       onChanged: (_) {},
     ),
@@ -229,7 +229,7 @@ final _parts = <_Part>[
   _Part(
     'Search field',
     (s, d, e) => GlossSearchField(
-      hint: 'Search recipes',
+      hintText: 'Search recipes',
       enabled: !d,
       onChanged: (_) {},
     ),
@@ -239,9 +239,9 @@ final _parts = <_Part>[
   _Part(
     'Select',
     (s, d, e) => GlossSelect<String>(
-      label: 'Course',
+      labelText: 'Course',
       value: 'main',
-      error: e ? 'Pick a course.' : null,
+      errorText: e ? 'Pick a course.' : null,
       items: const [
         GlossSelectItem(value: 'main', label: 'Main'),
         GlossSelectItem(value: 'side', label: 'Side'),
@@ -292,8 +292,11 @@ final _parts = <_Part>[
   ),
   _Part(
     'Pagination',
-    (s, d, e) =>
-        GlossPagination(page: 1, pageCount: 5, onChanged: d ? null : (_) {}),
+    (s, d, e) => GlossPagination(
+      page: 1,
+      pageCount: 5,
+      onPageChanged: d ? null : (_) {},
+    ),
     target: () => find.text('3'),
     width: 360,
   ),

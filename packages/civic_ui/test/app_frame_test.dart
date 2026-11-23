@@ -54,7 +54,7 @@ CivicPreview _place({
 }) => CivicPreview(
   brightness: brightness,
   tabs: _places,
-  activeIndex: 1,
+  selectedIndex: 1,
   brand: 'Brindlemere permits',
   action: CivicShellAction(
     key: _act,
@@ -178,9 +178,9 @@ void main() {
       tester,
       _hosted(
         CivicShellFrame(
-          places: _places,
+          destinations: _places,
           selectedIndex: 0,
-          onSelected: (index) => picked = index,
+          onDestinationSelected: (index) => picked = index,
           child: const CivicScreen(body: Text('Home')),
         ),
       ),
@@ -202,9 +202,9 @@ void main() {
         tester,
         _hosted(
           CivicShellFrame(
-            places: _places,
+            destinations: _places,
             selectedIndex: 0,
-            onSelected: (index) => picked = index,
+            onDestinationSelected: (index) => picked = index,
             child: const CivicScreen(body: Text('Home')),
           ),
         ),
@@ -233,9 +233,9 @@ void main() {
       tester,
       _hosted(
         CivicShellFrame(
-          places: _places,
+          destinations: _places,
           selectedIndex: 1,
-          onSelected: (_) {},
+          onDestinationSelected: (_) {},
           child: const CivicScreen(body: Text('Applications')),
         ),
       ),
@@ -464,9 +464,9 @@ void main() {
       _hosted(
         CivicScreen(
           body: CivicInput(
-            label: 'Vehicle registration number',
-            hint: 'For example, CU57 ABC',
-            error: 'Enter your vehicle registration number',
+            labelText: 'Vehicle registration number',
+            hintText: 'For example, CU57 ABC',
+            errorText: 'Enter your vehicle registration number',
             onChanged: (value) => typed = value,
           ),
         ),

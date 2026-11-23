@@ -1,3 +1,52 @@
+## 0.4.0
+
+- Needs ui_core 0.5.1.
+- Under the app's shell or a toaster, a heading and the text after it are read as two nodes again, the heading as a header; ui_core
+  0.5.0's keyboard shortcuts over the whole app merged them into one.
+- While a page covers the shell's window list, a toast stands one line over the screen's foot, and over the list
+  again as the page goes.
+- Renames `termStroke` to `termStrokeWidth`: it differed from the `TermStroke` enum by case alone.
+  `dart fix --apply` moves your code.
+- Renames `TermCombobox.errorText` and `TermTagInput.errorText`, the words a failed search shows, to
+  `searchFailedText`: a field's `errorText` is its error, as `InputDecoration`'s is. `dart fix --apply` moves your code.
+- `TermDialog`, `TermSheet` and `TermConfirmDialog` lay their keys out with ui_core's `RawActionBar`: in one row
+  while they fit, else stacked in one column of one width, the confirming key on top.
+- A `TermButton` given more width than its words stands them in the middle, between its brackets; given less,
+  its words wrap onto more lines and its brackets grow with them, as a Material button's label wraps, so an action
+  is never cut short.
+- `TermCombobox` and `TermTagInput` say on their input whether their list is expanded.
+- `TermTagInput`'s help is read on its words' node, with tags or none, as a text field's is; it was drawn in
+  its frame and read nowhere.
+- `TermSelect` opens with the focus on its chosen option (none chosen: its first), and `TermDatePicker` and `TermDateRangePicker` on the
+  chosen day, from the first frame.
+- `TermDatePicker` and `TermDateRangePicker` ask for their whole month (`RawPopoverFit.whole`).
+- `TermToaster` keeps one line between its toasts and the screen's foot, as at its top; the app's shell keeps them
+  clear of its tab bar.
+- A title cut into a pane's or a field's border that runs past its line ends in an ellipsis by its drawn width
+  too (a script the face lacks, set in a wider fallback), never cut mid-letter, and is read whole.
+- In a right-to-left app `TermDatePicker`'s and `TermDateRangePicker`'s value stands at the field's start, as every
+  field's value does; it stood at the end, beside the `▾`.
+- `TermAvatarGroup`'s count of the rest is isolated, so a right-to-left app shows `+3`, not `3+`.
+- `TermNavigationBar` shares a phone's width in equal cells, as Material's `NavigationBar` does, so its names stand
+  evenly along the line whatever their lengths, each still starting on the character grid.
+- `TermDataTable` keeps a column as wide as its heading and, if it sorts, its arrow, as Material's `DataTable`
+  does, so a sorted column's `↑` or `↓` is never cut off; over numbers the arrow stands before the heading, so its
+  words still end over their numbers.
+- A field paints its error state from `invalid`, so a field marked invalid with no error words shows it too.
+- At twice the text on a phone nothing runs past its line:
+  - `TermMeter`'s bar takes the whole cells its line leaves;
+  - `TermRating` grows with the text only as far as its width holds;
+  - `TermAvatarGroup` shows as many avatars as fit and counts the rest;
+  - a `TermTextField`'s `prefixText` and `suffixText`, and `TermNumberField`'s unit, stay whole while they fit
+    the line, the words typed having the rest, as Material's `InputDecorator` lays them out; when the add-ons
+    alone run past the line, the longer is cut with an ellipsis rather than painted over the other, and keeps its
+    first two letters;
+  - `TermDataTable` scrolls sideways when its columns don't fit, as `TermTable` does, each column then as wide as
+    its widest words, as Material's `DataTable` is; a cell longer than a width you give ends in an ellipsis;
+  - `TermNavigationRail` scrolls when its destinations don't fit its height.
+- terminal_parts: `TermTypeAhead.initial` goes. Give the row that should hold the keys `autofocus: true`; it takes
+  the focus as the list mounts.
+
 ## 0.3.1
 
 - Needs ui_core 0.4.1.

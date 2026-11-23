@@ -650,6 +650,9 @@ class _DesignDataTableState<R> extends State<RawDataTable<R>> {
             SingleActivator(LogicalKeyboardKey.keyA, meta: true):
                 _SelectPageIntent(),
           },
+          // The keys alone: no empty semantics node of its own between the
+          // table and its rows.
+          includeSemantics: false,
           child: Actions(
             actions: {
               _SelectPageIntent: CallbackAction<_SelectPageIntent>(

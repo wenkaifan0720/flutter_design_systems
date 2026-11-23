@@ -30,8 +30,8 @@ void main() {
         MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: (context, page) => FrostedHost(
-            light: t,
-            dark: t,
+            theme: t,
+            darkTheme: t,
             brightness: brightness,
             child: page!,
           ),
@@ -41,8 +41,8 @@ void main() {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  FrostedTextField(label: 'Name', onChanged: (_) {}),
-                  const FrostedInputOtp(label: 'Code'),
+                  FrostedTextField(labelText: 'Name', onChanged: (_) {}),
+                  const FrostedInputOtp(labelText: 'Code'),
                 ],
               ),
             ),

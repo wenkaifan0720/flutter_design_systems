@@ -151,7 +151,7 @@ final Map<String, DocExample> _examples = {
   ),
   'ComicInput': (context) => ComicInput(
     key: const ValueKey('name'),
-    hint: 'Your name',
+    hintText: 'Your name',
     onChanged: (text) {},
   ),
   'ComicMedia': (context) =>
@@ -191,12 +191,12 @@ final Map<String, DocExample> _examples = {
   'ComicIconButton': (context) =>
       ComicIconButton(ComicGlyphs.bell, label: 'Alerts', onPressed: () {}),
   'ComicTextField': (context) =>
-      ComicTextField(hint: 'Your name', onChanged: (text) {}),
+      ComicTextField(hintText: 'Your name', onChanged: (text) {}),
   'ComicSendButton': (context) => ComicSendButton(onPressed: () {}),
   'ComicSelectField': (context) => ComicSelectField(
-    label: 'Account',
+    labelText: 'Account',
     value: 'Current ··3108',
-    note: 'Change',
+    helperText: 'Change',
     onPressed: () {},
   ),
   'ComicChip (2)': (context) =>
@@ -224,7 +224,7 @@ final Map<String, DocExample> _examples = {
     return ComicSwitch(value: on, onChanged: (v) => setState(() => on = v));
   },
   'TextField': (context) => TextField(
-    selectionControls: ComicTextSelectionControls.of(
+    selectionControls: ComicTextSelectionControls.forPlatform(
       Theme.of(context).platform,
     ),
   ),
@@ -232,16 +232,16 @@ final Map<String, DocExample> _examples = {
       const TextField(contextMenuBuilder: ComicTextContextMenu.editable),
   'ComicTextArea': (context) {
     void save([Object? a, Object? b]) {}
-    return ComicTextArea(label: 'Notes', onChanged: save);
+    return ComicTextArea(labelText: 'Notes', onChanged: save);
   },
   'ComicSearchField': (context) {
     void search([Object? a, Object? b]) {}
-    return ComicSearchField(hint: 'Search issues', onChanged: search);
+    return ComicSearchField(hintText: 'Search issues', onChanged: search);
   },
   'ComicSelect': (context) {
     void change([Object? a, Object? b]) {}
     return ComicSelect<String>(
-      label: 'Format',
+      labelText: 'Format',
       options: const [ComicSelectOption('print', 'Print')],
       value: 'print',
       onChanged: change,
@@ -254,12 +254,12 @@ final Map<String, DocExample> _examples = {
   'ComicRadioGroup': (context) {
     void change([Object? a, Object? b]) {}
     return ComicRadioGroup<String>(
-      label: 'Format',
+      labelText: 'Format',
       options: const [
         ComicRadio('print', 'Print'),
         ComicRadio('digital', 'Digital'),
       ],
-      value: 'print',
+      groupValue: 'print',
       onChanged: change,
     );
   },
@@ -280,7 +280,7 @@ final Map<String, DocExample> _examples = {
     void pick([Object? a, Object? b]) {}
     void remove([Object? a, Object? b]) {}
     return ComicFileUpload(
-      label: 'Cover art',
+      labelText: 'Cover art',
       files: files,
       onChoose: pick,
       onRemove: remove,
@@ -432,9 +432,9 @@ final Map<String, DocExample> _examples = {
       label: 'Style',
       values: const ['Bold', 'Italic'],
       selected: on,
-      multiple: true,
+      multiSelectionEnabled: true,
       labelOf: (v) => v,
-      onChanged: (next) => setState(() => on = next),
+      onSelectionChanged: (next) => setState(() => on = next),
     );
   },
   'ComicSplitButton': (context) {
@@ -451,13 +451,13 @@ final Map<String, DocExample> _examples = {
     final password = _own(TextEditingController());
     void signIn() {}
     return ComicPasswordField(
-      label: 'Password',
+      labelText: 'Password',
       controller: password,
       onSubmitted: (_) => signIn(),
     );
   },
   'ComicInputGroup': (context) => const ComicInputGroup(
-    label: 'Weight',
+    labelText: 'Weight',
     leading: [Icon(ComicGlyphs.search)],
     trailing: [Text('kg')],
     keyboardType: TextInputType.number,
@@ -466,7 +466,7 @@ final Map<String, DocExample> _examples = {
     var genres = ['Noir'];
     void setState(VoidCallback fn) => fn();
     return ComicMultiSelect<String>(
-      label: 'Genres',
+      labelText: 'Genres',
       values: genres,
       options: const ['Noir', 'Western', 'Horror'],
       onChanged: (next) => setState(() => genres = next),
@@ -530,7 +530,7 @@ final Map<String, DocExample> _examples = {
   'ComicInputOtp': (context) {
     void verify([Object? a, Object? b]) {}
     return ComicInputOtp(
-      label: 'Verification code',
+      labelText: 'Verification code',
       length: 6,
       onCompleted: verify,
     );
@@ -594,7 +594,11 @@ final Map<String, DocExample> _examples = {
         context,
         title: 'Issue 12',
         actions: const [
-          ComicSheetAction('Delete', value: 'delete', destructive: true),
+          ComicSheetAction(
+            'Delete',
+            value: 'delete',
+            isDestructiveAction: true,
+          ),
         ],
       );
     }
@@ -810,19 +814,15 @@ final Map<String, DocExample> _examples = {
   },
   'ComicTabBar': (context) {
     void select([Object? a, Object? b]) {}
-    return ComicTabBar(
-      tabs: ['All', 'Saved'],
-      selectedIndex: 0,
-      onChanged: select,
-    );
+    return ComicTabBar(tabs: ['All', 'Saved'], selectedIndex: 0, onTap: select);
   },
   'ComicPageDots': (context) {
     void select([Object? a, Object? b]) {}
     return ComicPageDots(
-      count: 4,
+      pageCount: 4,
       selectedIndex: 1,
       label: 'Pages',
-      onChanged: select,
+      onPageChanged: select,
     );
   },
   'ComicStepProgress': (context) =>
@@ -851,9 +851,9 @@ final Map<String, DocExample> _examples = {
     var page = 2;
     void setState(VoidCallback fn) => fn();
     return ComicPagination(
-      count: 12,
+      pageCount: 12,
       page: 2,
-      onChanged: (i) => setState(() => page = i),
+      onPageChanged: (i) => setState(() => page = i),
     );
   },
   'ComicPerson': (context) => const ComicPerson(initials: 'AB', size: 36),
@@ -1094,7 +1094,7 @@ final Map<String, DocExample> _examples = {
   'ComicCombobox': (context) {
     void pick([Object? a, Object? b]) {}
     return ComicCombobox<String>(
-      label: 'City',
+      labelText: 'City',
       options: const ['Lisbon', 'London', 'Lyon'],
       onSelected: pick,
     );
@@ -1143,8 +1143,10 @@ final Map<String, DocExample> _examples = {
     ('Sleeps 6', '3 bedrooms'),
     ('€145', 'each'),
   ]),
-  'ComicFormField': (context) =>
-      const ComicFormField('Your name', child: ComicTextField(hint: 'Name')),
+  'ComicFormField': (context) => const ComicFormField(
+    'Your name',
+    child: ComicTextField(hintText: 'Name'),
+  ),
   'ComicTheme (shapes)': (context) => ComicTheme.of(context).shapes.medium,
   'ComicAvatar': (context) {
     void example() {
@@ -1290,7 +1292,7 @@ final Map<String, DocExample> _examples = {
   ),
   'ComicReply': (context) => ComicReply(
     person: const ComicPerson(initials: 'Me', size: 44),
-    hint: 'Say something…',
+    hintText: 'Say something…',
     onSend: () {},
   ),
   'ComicClaim': (context) => const ComicClaim(

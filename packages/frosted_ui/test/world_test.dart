@@ -41,7 +41,7 @@ Widget _screen(
           alignment: AlignmentDirectional.centerStart,
           child: FrostedChip('Vegan', onPressed: () {}),
         ),
-        const FrostedTextField(label: 'Email', onChanged: _drop),
+        const FrostedTextField(labelText: 'Email', onChanged: _drop),
         const FrostedSwitchRow(
           label: 'Weekly summary',
           value: true,

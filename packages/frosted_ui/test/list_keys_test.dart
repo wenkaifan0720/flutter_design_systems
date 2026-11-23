@@ -26,8 +26,8 @@ const _tags = ['Design', 'Review', 'Writing', 'Travel'];
 Widget _host(FrostedThemeData t, Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: page!,
   ),
@@ -61,7 +61,7 @@ class _CityState extends State<_City> {
 
   @override
   Widget build(BuildContext context) => FrostedCombobox<String>(
-    label: 'City',
+    labelText: 'City',
     options: _cities,
     value: _value,
     isOptionEnabled: widget.isOptionEnabled,
@@ -84,7 +84,7 @@ List<String> _chosen = [];
 class _TagsState extends State<_Tags> {
   @override
   Widget build(BuildContext context) => FrostedMultiSelect<String>(
-    label: 'Tags',
+    labelText: 'Tags',
     options: _tags,
     values: _chosen,
     isOptionEnabled: widget.isOptionEnabled,
@@ -219,8 +219,8 @@ void main() {
         MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: (context, page) => FrostedHost(
-            light: t,
-            dark: t,
+            theme: t,
+            darkTheme: t,
             brightness: t.isDark ? Brightness.dark : Brightness.light,
             child: page!,
           ),

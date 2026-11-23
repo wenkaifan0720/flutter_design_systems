@@ -19,7 +19,7 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
         KitHeld<String?>(
           'standard',
           (v, set) => FrostedRadioGroup<String>(
-            label: 'Delivery',
+            labelText: 'Delivery',
             value: v,
             onChanged: set,
             options: const [
@@ -112,8 +112,8 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
       'File upload',
       children: [
         FrostedFileUpload(
-          label: 'Attachments',
-          hint: 'PDF or image, up to 10 MB',
+          labelText: 'Attachments',
+          hintText: 'PDF or image, up to 10 MB',
           onPressed: () {},
           onRemoved: (_) {},
           files: const [
@@ -161,8 +161,8 @@ Widget kitSpecimenChoices() => FrostedChoices<String>(
 
 /// Receipts, one attached.
 Widget kitSpecimenFileUpload() => FrostedFileUpload(
-  label: 'Receipts',
-  hint: 'PDF or photos, up to 10 MB',
+  labelText: 'Receipts',
+  hintText: 'PDF or photos, up to 10 MB',
   onPressed: () {},
   files: const [FrostedUploadFile('blue-fern-receipt.pdf')],
   onRemoved: (_) {},
@@ -170,7 +170,7 @@ Widget kitSpecimenFileUpload() => FrostedFileUpload(
 
 /// When it arrives, each with its fee.
 Widget kitSpecimenRadioGroup() => FrostedRadioGroup<String>(
-  label: 'Arrives',
+  labelText: 'Arrives',
   value: 'thu',
   onChanged: (_) {},
   options: const [

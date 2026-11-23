@@ -165,20 +165,18 @@ class Fluent2SheetShell extends StatelessWidget {
         );
 
   /// The foot's acts: on a phone each takes an even share of the width;
-  /// from 600 they stand at their own widths at the end, 8 apart.
+  /// from 600 they stand at their own widths at the end, 8 apart. When they
+  /// don't fit (long words, large text) they stack, each as wide as the
+  /// foot, the primary on top (RawActionBar).
   static Widget footOf(List<Widget> acts) => Builder(
-    builder: (context) => fluent2Roomy(context)
-        ? Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            spacing: Fluent2Spacing.s,
-            children: acts,
-          )
-        : Fluent2ActsFill(
-            child: Row(
-              spacing: Fluent2Spacing.s,
-              children: [for (final act in acts) Expanded(child: act)],
-            ),
-          ),
+    builder: (context) => Fluent2ActsFill(
+      child: RawActionBar(
+        expanded: !fluent2Roomy(context),
+        spacing: Fluent2Spacing.s,
+        overflowSpacing: Fluent2Spacing.s,
+        children: acts,
+      ),
+    ),
   );
 
   @override

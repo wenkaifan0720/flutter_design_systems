@@ -229,7 +229,7 @@ class SteadySettings extends StatelessWidget {
         ClayListTile(
           title: 'Sign out',
           leading: const Icon(LucideIcons.logOut),
-          destructive: true,
+          isDestructiveAction: true,
           showChevron: false,
           onTap: () {},
         ),

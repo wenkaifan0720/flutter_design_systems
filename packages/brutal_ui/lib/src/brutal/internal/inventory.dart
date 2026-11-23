@@ -129,18 +129,25 @@ DesignInventory _registry() => DesignInventory(
       ),
     ),
     // Inputs.
-    _row('TextField', (_) => const BrutalTextField(label: 'Name')),
+    _row('TextField', (_) => const BrutalTextField(labelText: 'Name')),
     _row(
       'TextArea',
-      (_) => const BrutalTextField(label: 'Note', maxLines: 4, minLines: 3),
+      (_) => const BrutalTextField(labelText: 'Note', maxLines: 4, minLines: 3),
     ),
     _row('SearchField', (_) => const BrutalSearchField()),
-    _row('PasswordField', (_) => const BrutalPasswordField(label: 'Password')),
+    _row(
+      'PasswordField',
+      (_) => const BrutalPasswordField(labelText: 'Password'),
+    ),
     _row(
       'InputGroup',
-      (_) => const BrutalInputGroup(label: 'Price', before: '£', after: 'each'),
+      (_) => const BrutalInputGroup(
+        labelText: 'Price',
+        before: '£',
+        after: 'each',
+      ),
     ),
-    _row('InputOtp', (_) => const BrutalCodeField(label: 'Code')),
+    _row('InputOtp', (_) => const BrutalCodeField(labelText: 'Code')),
     _row(
       'NumberField',
       (_) => const BrutalStepper(value: 2, onChanged: _ignore),
@@ -148,7 +155,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'Select',
       (_) => const BrutalSelect<String>(
-        label: 'Venue',
+        labelText: 'Venue',
         value: 'shed',
         onChanged: _ignore,
         items: [
@@ -160,19 +167,19 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'Combobox',
       (_) => BrutalCombobox<String>(
-        label: 'Venue',
+        labelText: 'Venue',
         options: const ['The Shed', 'Dock 4', 'Cellar'],
-        labelOf: (s) => s,
+        displayStringForOption: (s) => s,
       ),
     ),
     _row(
       'MultiSelect',
       (_) => BrutalTagInput<String>(
-        label: 'Genres',
+        labelText: 'Genres',
         values: const ['Jazz'],
         onChanged: _ignore,
         options: const ['Jazz', 'Folk', 'Techno'],
-        labelOf: (s) => s,
+        displayStringForOption: (s) => s,
       ),
     ),
     _row(
@@ -263,7 +270,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'DatePicker',
       (_) => BrutalDatePicker(
-        label: 'Date',
+        labelText: 'Date',
         value: null,
         onChanged: _ignore,
         firstDate: _first,
@@ -273,7 +280,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'DateRangePicker',
       (_) => BrutalDateRangePicker(
-        label: 'Dates',
+        labelText: 'Dates',
         value: null,
         onChanged: _ignore,
         firstDate: _first,
@@ -328,7 +335,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => const BrutalNavigationBar(
         destinations: _places,
         selectedIndex: 0,
-        onSelected: _ignore,
+        onDestinationSelected: _ignore,
       ),
     ),
     _row(
@@ -338,7 +345,7 @@ DesignInventory _registry() => DesignInventory(
         child: BrutalNavigationRail(
           destinations: _places,
           selectedIndex: 0,
-          onSelected: _ignore,
+          onDestinationSelected: _ignore,
         ),
       ),
     ),
@@ -350,7 +357,7 @@ DesignInventory _registry() => DesignInventory(
         child: BrutalSideNavigation(
           destinations: _places,
           selectedIndex: 0,
-          onSelected: _ignore,
+          onDestinationSelected: _ignore,
         ),
       ),
     ),
@@ -359,7 +366,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => const BrutalTabBar(
         tabs: ['Upcoming', 'Past'],
         selectedIndex: 0,
-        onSelected: _ignore,
+        onTap: _ignore,
       ),
     ),
     _row(
@@ -373,16 +380,20 @@ DesignInventory _registry() => DesignInventory(
     ),
     _row(
       'Pagination',
-      (_) => const BrutalPagination(page: 2, pageCount: 8, onChanged: _ignore),
+      (_) =>
+          const BrutalPagination(page: 2, pageCount: 8, onPageChanged: _ignore),
     ),
     _row(
       'StepProgress',
-      (_) =>
-          const BrutalStepProgress(steps: ['Seats', 'Pay', 'Done'], current: 1),
+      (_) => const BrutalStepProgress(
+        steps: ['Seats', 'Pay', 'Done'],
+        currentStep: 1,
+      ),
     ),
     _row(
       'PageDots',
-      (_) => const BrutalPageDots(count: 4, index: 1, onChanged: _ignore),
+      (_) =>
+          const BrutalPageDots(pageCount: 4, page: 1, onPageChanged: _ignore),
     ),
     _row(
       'MenuBar',
@@ -416,7 +427,7 @@ DesignInventory _registry() => DesignInventory(
         child: BrutalScaffold(
           appBar: BrutalAppBar(title: 'Events'),
           destinations: _places,
-          onSelected: _ignore,
+          onDestinationSelected: _ignore,
           body: SizedBox.expand(),
         ),
       ),
@@ -479,7 +490,7 @@ DesignInventory _registry() => DesignInventory(
         endActions: [
           BrutalSwipeAction(
             label: 'Delete',
-            destructive: true,
+            isDestructiveAction: true,
             onPressed: _none,
           ),
         ],
@@ -551,7 +562,7 @@ DesignInventory _registry() => DesignInventory(
           BrutalDialogAction(
             label: 'Cancel it',
             onPressed: _none,
-            destructive: true,
+            isDestructiveAction: true,
           ),
         ],
       ),

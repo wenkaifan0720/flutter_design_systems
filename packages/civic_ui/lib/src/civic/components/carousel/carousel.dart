@@ -131,9 +131,9 @@ class CivicCarousel extends StatelessWidget {
           ),
           Center(
             child: CivicPageDots(
-              count: controls.count,
-              index: controls.page,
-              onChanged: controls.goToPage,
+              pageCount: controls.count,
+              selectedIndex: controls.page,
+              onPageChanged: controls.goToPage,
             ),
           ),
           // Previous at the start and Next at the end; one over the other

@@ -15,7 +15,8 @@ Widget _insight(int visits) {
   final t = FrostedThemeData.opal();
   return MaterialApp(
     debugShowCheckedModeBanner: false,
-    builder: (context, page) => FrostedHost(light: t, dark: t, child: page!),
+    builder: (context, page) =>
+        FrostedHost(theme: t, darkTheme: t, child: page!),
     home: Builder(
       builder: (context) => kitWords(
         context,

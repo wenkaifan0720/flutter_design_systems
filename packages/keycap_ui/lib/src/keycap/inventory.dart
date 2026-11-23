@@ -291,31 +291,31 @@ final DesignInventory keycapInventory = DesignInventory(
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
-      (_) => const KeycapTextField(label: 'Title', hint: 'Garden plan'),
+      (_) => const KeycapTextField(labelText: 'Title', hintText: 'Garden plan'),
     ),
     DesignInventoryEntry.present(
       'TextArea',
       (_) => const KeycapTextField(
-        label: 'Note',
-        hint: 'Start writing',
+        labelText: 'Note',
+        hintText: 'Start writing',
         maxLines: 4,
         minLines: 3,
       ),
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (_) => const KeycapSearchField(hint: 'Search notes'),
+      (_) => const KeycapSearchField(hintText: 'Search notes'),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
-      (_) => const KeycapPasswordField(label: 'Password'),
+      (_) => const KeycapPasswordField(labelText: 'Password'),
     ),
     DesignInventoryEntry.present(
       'InputGroup',
       (_) => const KeycapInputGroup(
-        label: 'Address',
-        prefix: 'https://',
-        suffix: '.notes',
+        labelText: 'Address',
+        prefixText: 'https://',
+        suffixText: '.notes',
       ),
     ),
     DesignInventoryEntry.present(
@@ -341,7 +341,7 @@ final DesignInventory keycapInventory = DesignInventory(
       (_) => _Held<String>(
         'edited',
         (context, v, set) => KeycapSelect<String>(
-          label: 'Sort by',
+          labelText: 'Sort by',
           value: v,
           onChanged: set,
           items: const [
@@ -357,7 +357,7 @@ final DesignInventory keycapInventory = DesignInventory(
       (_) => _Held<String?>(
         null,
         (context, v, set) => KeycapCombobox<String>(
-          label: 'Folder',
+          labelText: 'Folder',
           value: v,
           onSelected: set,
           options: const ['Work', 'Home', 'Ideas', 'Travel', 'Recipes'],
@@ -369,7 +369,7 @@ final DesignInventory keycapInventory = DesignInventory(
       (_) => _Held<List<String>>(
         const ['garden'],
         (context, v, set) => KeycapTagInput<String>(
-          label: 'Tags',
+          labelText: 'Tags',
           values: v,
           onChanged: set,
           options: const ['garden', 'spring', 'to buy', 'ideas'],
@@ -393,7 +393,7 @@ final DesignInventory keycapInventory = DesignInventory(
         'list',
         (context, v, set) => KeycapRadioGroup<String>(
           options: const ['list', 'grid'],
-          value: v,
+          groupValue: v,
           labelOf: (value) => value == 'grid' ? 'Grid' : 'List',
           semanticLabel: 'Layout',
           onChanged: set,
@@ -483,7 +483,7 @@ final DesignInventory keycapInventory = DesignInventory(
       (_) => _Held<DateTime?>(
         DateTime(2026, 11, 20),
         (context, v, set) => KeycapDatePicker(
-          label: 'Remind me on',
+          labelText: 'Remind me on',
           value: v,
           firstDate: DateTime(2026, 11, 16),
           lastDate: DateTime(2027, 2, 28),
@@ -497,7 +497,7 @@ final DesignInventory keycapInventory = DesignInventory(
       (_) => _Held<RawDateRange?>(
         RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
         (context, v, set) => KeycapDateRangePicker(
-          label: 'Trip',
+          labelText: 'Trip',
           value: v,
           firstDate: DateTime(2026, 11, 16),
           lastDate: DateTime(2027, 2, 28),
@@ -511,7 +511,7 @@ final DesignInventory keycapInventory = DesignInventory(
       (_) => _Held<RawTimeOfDay?>(
         const RawTimeOfDay(hour: 9, minute: 30),
         (context, v, set) =>
-            KeycapTimePicker(label: 'At', value: v, onChanged: set),
+            KeycapTimePicker(labelText: 'At', value: v, onChanged: set),
       ),
     ),
     DesignInventoryEntry.present(
@@ -582,7 +582,7 @@ final DesignInventory keycapInventory = DesignInventory(
         (context, i, set) => KeycapNavigationBar(
           destinations: _places,
           selectedIndex: i,
-          onSelected: set,
+          onDestinationSelected: set,
         ),
       ),
     ),
@@ -593,7 +593,7 @@ final DesignInventory keycapInventory = DesignInventory(
         (context, i, set) => KeycapNavigationRail(
           destinations: _places,
           selectedIndex: i,
-          onSelected: set,
+          onDestinationSelected: set,
         ),
       ),
     ),
@@ -604,7 +604,7 @@ final DesignInventory keycapInventory = DesignInventory(
         (context, i, set) => KeycapSideNavigation(
           destinations: _places,
           selectedIndex: i,
-          onSelected: set,
+          onDestinationSelected: set,
         ),
       ),
     ),
@@ -638,21 +638,22 @@ final DesignInventory keycapInventory = DesignInventory(
       (_) => _Held<int>(
         3,
         (context, p, set) =>
-            KeycapPagination(page: p, pageCount: 9, onChanged: set),
+            KeycapPagination(page: p, pageCount: 9, onPageChanged: set),
       ),
     ),
     DesignInventoryEntry.present(
       'StepProgress',
       (_) => const KeycapStepProgress(
         steps: ['Account', 'Folders', 'Sync', 'Done'],
-        current: 1,
+        currentStep: 1,
       ),
     ),
     DesignInventoryEntry.present(
       'PageDots',
       (_) => _Held<int>(
         1,
-        (context, i, set) => KeycapPageDots(count: 4, index: i, onChanged: set),
+        (context, i, set) =>
+            KeycapPageDots(pageCount: 4, page: i, onPageChanged: set),
       ),
     ),
     DesignInventoryEntry.present(
@@ -717,7 +718,7 @@ final DesignInventory keycapInventory = DesignInventory(
         (context, i, set) => KeycapScaffold(
           destinations: _places,
           selectedIndex: i,
-          onSelected: set,
+          onDestinationSelected: set,
           body: Center(child: Text(_places[i].label)),
         ),
       ),
@@ -984,7 +985,11 @@ final DesignInventory keycapInventory = DesignInventory(
         onCancel: _none,
         actions: [
           KeycapSheetAction('Duplicate', onPressed: _none),
-          KeycapSheetAction('Delete', destructive: true, onPressed: _none),
+          KeycapSheetAction(
+            'Delete',
+            isDestructiveAction: true,
+            onPressed: _none,
+          ),
         ],
       ),
     ),

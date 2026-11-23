@@ -6,8 +6,8 @@ repository: https://github.com/wenkaifan0720/flutter_design_systems
 environment:
   sdk: ">=3.13.0 <4.0.0"
 
-# Every package, and every package's example app. While the looks move to ui_core 0.5.0 (11-22), a look joins this
-# list as its release goes out (a look still on an older ui_core can't resolve beside 0.5.0); then back to the globs.
+# Every package, and every package's example app. While the looks move to ui_core 0.5.2 (11-20), a look joins this
+# list as its release goes out (a look still on an older ui_core can't resolve beside 0.5.2); then back to the globs.
 workspace:
   - packages/ui_core
   - packages/ui_core/example
@@ -15,6 +15,28 @@ workspace:
   - packages/ui_core_test/example
   - packages/ui_core_review
   - packages/ui_core_review/example
+  - packages/civic_ui
+  - packages/civic_ui/example
+  - packages/gloss_ui
+  - packages/gloss_ui/example
+  - packages/clay_ui
+  - packages/clay_ui/example
+  - packages/keycap_ui
+  - packages/keycap_ui/example
+  - packages/terminal_ui
+  - packages/terminal_ui/example
+  - packages/studio_ui
+  - packages/studio_ui/example
+  - packages/brutal_ui
+  - packages/brutal_ui/example
+  - packages/ledger_ui
+  - packages/ledger_ui/example
+  - packages/fluent2_design_ui
+  - packages/fluent2_design_ui/example
+  - packages/comic_ui
+  - packages/comic_ui/example
+  - packages/frosted_ui
+  - packages/frosted_ui/example
   # The skill's samples, on the ui_core beside them: a core change that breaks the skill fails CI. This line stays
   # below the packages.
   - skills/ui_core_design_system/samples

@@ -83,7 +83,7 @@ void main() {
   final groups = <String, _Choice>{
     'ClayRadioGroup': (value, choose) => ClayRadioGroup<String>(
       options: _options,
-      value: value,
+      groupValue: value,
       labelOf: (o) => o,
       isEnabled: (o) => o != 'B',
       onChanged: choose,
@@ -91,7 +91,7 @@ void main() {
     ),
     'ClayRadioGroup in a row': (value, choose) => ClayRadioGroup<String>(
       options: _options,
-      value: value,
+      groupValue: value,
       labelOf: (o) => o,
       isEnabled: (o) => o != 'B',
       onChanged: choose,
@@ -212,7 +212,7 @@ void main() {
         child: Center(
           child: ClayRadioGroup<String>(
             options: _options,
-            value: 'A',
+            groupValue: 'A',
             labelOf: (o) => 'Letter $o',
             onChanged: (v) => chosen = v,
           ),

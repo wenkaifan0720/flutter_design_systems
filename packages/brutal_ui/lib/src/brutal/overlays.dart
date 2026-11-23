@@ -12,15 +12,15 @@ import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import 'lists.dart';
-import 'internal/dialog_foot.dart';
+import 'internal/focus_ink.dart';
 import 'internal/ruled_column.dart';
+import 'lists.dart';
 import 'surface.dart';
 import 'theme.dart';
 
 /// One cell of a [BrutalDialog]'s foot: its words on a cell that fills
 /// with ink while pressed; the main one is filled with the signal colour
-/// (the danger colour when [destructive]).
+/// (the danger colour when [isDestructiveAction]).
 ///
 /// ```dart
 /// BrutalDialogAction(label: 'Keep it', onPressed: () => Navigator.pop(context))
@@ -31,8 +31,8 @@ class BrutalDialogAction extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
-    this.primary = false,
-    this.destructive = false,
+    this.isDefaultAction = false,
+    this.isDestructiveAction = false,
     this.focusNode,
     this.autofocus = false,
   });
@@ -44,11 +44,11 @@ class BrutalDialogAction extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// Whether it is the dialog's main action: its cell is filled with the
-  /// signal colour (the danger colour when [destructive]).
-  final bool primary;
+  /// signal colour (the danger colour when [isDestructiveAction]).
+  final bool isDefaultAction;
 
   /// Whether it destroys something.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -60,12 +60,12 @@ class BrutalDialogAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final rest = primary
-        ? (destructive ? c.danger : c.signal)
+    final rest = isDefaultAction
+        ? (isDestructiveAction ? c.danger : c.signal)
         : c.ink.withValues(alpha: 0);
-    final restWords = primary
-        ? (destructive ? c.onDanger : c.onSignal)
-        : (destructive ? c.danger : c.ink);
+    final restWords = isDefaultAction
+        ? (isDestructiveAction ? c.onDanger : c.onSignal)
+        : (isDestructiveAction ? c.danger : c.ink);
     return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
@@ -92,7 +92,9 @@ class BrutalDialogAction extends StatelessWidget {
           ),
           child: CustomPaint(
             foregroundPainter: states.contains(WidgetState.focused)
-                ? BrutalInsetFocusPainter(pressed || primary ? words : c.ink)
+                ? BrutalInsetFocusPainter(
+                    pressed || isDefaultAction ? words : c.ink,
+                  )
                 : null,
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -124,9 +126,19 @@ class BrutalDialogAction extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('label', label))
-      ..add(FlagProperty('primary', value: primary, ifTrue: 'primary'))
       ..add(
-        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+        FlagProperty(
+          'isDefaultAction',
+          value: isDefaultAction,
+          ifTrue: 'primary',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'destructive',
+        ),
       );
   }
 }
@@ -143,7 +155,7 @@ class BrutalDialogAction extends StatelessWidget {
 /// the signal: it is the screen's one main action.
 ///
 /// ```dart
-/// BrutalDialog(title: 'Cancel this ticket?', content: const Text('Your seat goes back on sale.'), actions: [BrutalDialogAction(label: 'Keep it', onPressed: () => Navigator.pop(context)), BrutalDialogAction(label: 'Cancel ticket', primary: true, destructive: true, onPressed: () => Navigator.pop(context, true))])
+/// BrutalDialog(title: 'Cancel this ticket?', content: const Text('Your seat goes back on sale.'), actions: [BrutalDialogAction(label: 'Keep it', onPressed: () => Navigator.pop(context)), BrutalDialogAction(label: 'Cancel ticket', isDefaultAction: true, isDestructiveAction: true, onPressed: () => Navigator.pop(context, true))])
 /// ```
 class BrutalDialog extends StatelessWidget {
   /// A dialog titled [title].
@@ -179,7 +191,6 @@ class BrutalDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final stacked = MediaQuery.textScalerOf(context).scale(16) > 24;
     final layered = DesignStyleOf([style, theme.dialogStyle], const {});
     final face = layered.on(
       BrutalFace(
@@ -244,14 +255,28 @@ class BrutalDialog extends StatelessWidget {
                 ),
                 if (actions.isNotEmpty) ...[
                   BrutalRule(color: face.border),
-                  // Side by side while every action's words fit its cell,
-                  // else one above another, the main one on top.
-                  BrutalDialogFoot(
-                    cellHeight: 56,
-                    ruleWidth: theme.borderWidth,
-                    rule: face.border,
-                    stacked: stacked,
-                    children: actions,
+                  // ui_core's action bar lays the cells: side by side in
+                  // equal shares while every action's words fit its share,
+                  // else one above another, full width, the main one on
+                  // top. The rules between them are the dialog's ink
+                  // showing through the bar's gaps.
+                  ColoredBox(
+                    color: face.border,
+                    child: RawActionBar(
+                      expanded: true,
+                      spacing: theme.borderWidth,
+                      overflowSpacing: theme.borderWidth,
+                      children: [
+                        for (final action in actions)
+                          ColoredBox(
+                            color: face.fill,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 56),
+                              child: action,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ],
               ],
@@ -975,8 +1000,11 @@ class _Toast extends StatelessWidget {
     final c = theme.colors;
     final t = details.toast;
     final layered = DesignStyleOf([style, theme.toastStyle], const {});
-    final block = layered.fill ?? c.ink;
-    final paper = layered.foreground ?? c.onColor(block);
+    // A raised Brutal surface, as a dialog, a menu and a list are: the
+    // surface in the ink rule, on the hard ink shadow.
+    final block = layered.fill ?? c.surface;
+    final ink =
+        layered.foreground ?? (block == c.surface ? c.ink : c.onColor(block));
     final words = RawWidgetsLocalizations.of(context);
     Widget cell({
       required String label,
@@ -990,12 +1018,12 @@ class _Toast extends StatelessWidget {
         semanticLabel: label,
         builder: (context, states, _) {
           final lit = states.contains(WidgetState.pressed);
-          final fg = lit ? block : paper;
+          final fg = lit ? block : ink;
           return AnimatedBrutalSurface(
             stiffness: BrutalMotion.colorStiffness,
             face: BrutalFace(
-              fill: lit ? paper : paper.withValues(alpha: 0),
-              border: paper.withValues(alpha: 0),
+              fill: lit ? ink : ink.withValues(alpha: 0),
+              border: ink.withValues(alpha: 0),
               foreground: fg,
               borderWidth: 0,
             ),
@@ -1009,7 +1037,7 @@ class _Toast extends StatelessWidget {
         },
       ),
     );
-    final rule = BrutalRule(vertical: true, color: paper);
+    final rule = BrutalRule(vertical: true, color: ink);
     final opacity = details.animation.drive(
       Animatable<double>.fromCallback((v) => v.clamp(0.0, 1.0)),
     );
@@ -1021,9 +1049,12 @@ class _Toast extends StatelessWidget {
         child: BrutalSurface(
           face: BrutalFace(
             fill: block,
-            border: layered.side?.color ?? layered.edge ?? c.ink,
-            foreground: paper,
-            focus: details.focused ? c.ink : c.ink.withValues(alpha: 0),
+            border: layered.side?.color ?? layered.edge ?? ink,
+            foreground: ink,
+            shadow: c.ink,
+            focus: details.focused
+                ? brutalFocusInk(c, c.ink)
+                : c.ink.withValues(alpha: 0),
           ),
           child: IntrinsicHeight(
             child: Row(
@@ -1046,14 +1077,14 @@ class _Toast extends StatelessWidget {
                           Text(
                             t.title!,
                             style: theme.textTheme.label.copyWith(
-                              color: paper,
+                              color: ink,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         Text(
                           t.message,
                           style: layered.text(
-                            theme.textTheme.body.copyWith(color: paper),
+                            theme.textTheme.body.copyWith(color: ink),
                           ),
                         ),
                       ],

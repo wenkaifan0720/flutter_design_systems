@@ -127,7 +127,7 @@ class _ChecksState extends State<_Checks> {
       const SizedBox(height: ClaySpacing.regular),
       ClayRadioGroup<String>(
         options: const ['morning', 'afternoon', 'evening'],
-        value: _when,
+        groupValue: _when,
         labelOf: (v) => '${v[0].toUpperCase()}${v.substring(1)}',
         onChanged: (v) => setState(() => _when = v),
         semanticLabel: 'Time of day',
@@ -351,8 +351,8 @@ class _Files extends StatelessWidget {
       ClayFile(name: 'route.gpx', bytes: 86000, progress: 0.4),
     ],
     (context, files, set) => ClayFileDrop(
-      label: 'Photos',
-      hint: 'Pictures for this habit, up to 5 MB each',
+      labelText: 'Photos',
+      hintText: 'Pictures for this habit, up to 5 MB each',
       files: files,
       onChoose: () => set([
         ...files,

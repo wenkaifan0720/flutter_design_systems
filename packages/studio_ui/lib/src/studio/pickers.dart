@@ -17,13 +17,13 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'internal/control_light.dart';
+import 'internal/field_frame.dart';
 
 import 'button.dart';
 import 'controls.dart';
 import 'internal/focus_light.dart';
 import 'select.dart';
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 Color _ring(StudioColors c, Set<WidgetState> states) =>
@@ -512,7 +512,6 @@ class _PickerWindow extends StatelessWidget {
     required this.icon,
     required this.enabled,
     required this.error,
-    required this.semanticLabel,
   });
 
   final DesignOverlayAnchor? anchor;
@@ -521,7 +520,6 @@ class _PickerWindow extends StatelessWidget {
   final IconData icon;
   final bool enabled;
   final bool error;
-  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -531,7 +529,8 @@ class _PickerWindow extends StatelessWidget {
     return RawButton(
       onPressed: anchor?.toggle,
       expanded: anchor?.isOpen,
-      semanticLabel: semanticLabel,
+      // Named by its field, which reads the label on this node; a name of
+      // its own would be read twice.
       semanticValue: text,
       excludeSemantics: true,
       builder: (context, states, _) {
@@ -623,31 +622,22 @@ Widget _labelled(
   String? helper,
   String? error,
   required bool enabled,
-}) => Column(
-  mainAxisSize: MainAxisSize.min,
-  crossAxisAlignment: CrossAxisAlignment.stretch,
-  children: [
-    if (label != null)
-      ExcludeSemantics(child: StudioFieldLabel(label, enabled: enabled)),
-    box,
-    StudioFieldMessage(helper: helper, error: error),
-  ],
+}) => StudioFieldFrame(
+  labelText: label,
+  helperText: helper,
+  errorText: error,
+  enabled: enabled,
+  child: box,
 );
 
-// A calendar's popover under its field. It opens on the side with room for
-// a whole month (its header, weekdays and six weeks at the reader's text
-// size) and scrolls when neither side has that much.
+// A calendar's popover under its field. It opens on the side that holds
+// the whole month as measured, and scrolls when neither side has that much.
 RawPopoverPlacement _calendarPlacement(BuildContext context) =>
-    RawPopoverPlacement(
+    const RawPopoverPlacement(
       gap: StudioSpacing.tight,
       margin: StudioSpacing.small,
       matchAnchorWidth: false,
-      preferredExtent:
-          StudioTheme.of(context).controlHeight +
-          28 +
-          6 * _dayHeight(context) +
-          3 * StudioSpacing.small +
-          2 * StudioMetrics.recessInset,
+      fit: RawPopoverFit.whole,
     );
 
 // The least width a month needs: seven 40 px days inside the bezel.
@@ -678,14 +668,14 @@ Widget _panel(BuildContext context, RawPopoverInfo info, Widget child) =>
       ),
     );
 
-/// A date field: a glass window showing the chosen day (or [hint]) with a
+/// A date field: a glass window showing the chosen day (or [hintText]) with a
 /// calendar glyph at its end; a press opens a [StudioCalendar] under it,
 /// and taking a day closes it.
 ///
 /// A null [onChanged] disables it.
 ///
 /// ```dart
-/// StudioDatePicker(label: 'Release date', value: day, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (d) => setState(() => day = d))
+/// StudioDatePicker(labelText: 'Release date', value: day, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (d) => setState(() => day = d))
 /// ```
 class StudioDatePicker extends StatelessWidget {
   /// A date field at [value].
@@ -695,10 +685,10 @@ class StudioDatePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose a day',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose a day',
+    this.helperText,
+    this.errorText,
     this.currentDate,
     this.style,
   });
@@ -716,16 +706,16 @@ class StudioDatePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// What it says while empty.
-  final String hint;
+  final String hintText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// Today; the clock's when null.
   final DateTime? currentDate;
@@ -743,25 +733,23 @@ class StudioDatePicker extends StatelessWidget {
           ? _PickerWindow(
               anchor: null,
               text: text,
-              hint: hint,
+              hint: hintText,
               icon: LucideIcons.calendar,
               enabled: false,
-              error: error != null,
-              semanticLabel: label,
+              error: errorText != null,
             )
           : RawPopover(
-              semanticLabel: label,
+              semanticLabel: labelText,
               placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
               stiffness: StudioMotion.overlayStiffness,
               anchorBuilder: (context, anchor) => _PickerWindow(
                 anchor: anchor,
                 text: text,
-                hint: hint,
+                hint: hintText,
                 icon: LucideIcons.calendar,
                 enabled: true,
-                error: error != null,
-                semanticLabel: label,
+                error: errorText != null,
               ),
               overlayBuilder: (context, info) => _panel(
                 context,
@@ -780,9 +768,9 @@ class StudioDatePicker extends StatelessWidget {
                 ),
               ),
             ),
-      label: label,
-      helper: helper,
-      error: error,
+      label: labelText,
+      helper: helperText,
+      error: errorText,
       enabled: enabled,
     );
   }
@@ -792,18 +780,18 @@ class StudioDatePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('label', labelText, defaultValue: null));
   }
 }
 
 /// A span field: a glass window showing the first and last days (or
-/// [hint]); a press opens a range [StudioCalendar] under it, which closes
+/// [hintText]); a press opens a range [StudioCalendar] under it, which closes
 /// once the last day is taken.
 ///
 /// A null [onChanged] disables it.
 ///
 /// ```dart
-/// StudioDateRangePicker(label: 'Recording days', value: span, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (r) => setState(() => span = r))
+/// StudioDateRangePicker(labelText: 'Recording days', value: span, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (r) => setState(() => span = r))
 /// ```
 class StudioDateRangePicker extends StatelessWidget {
   /// A span field at [value].
@@ -813,10 +801,10 @@ class StudioDateRangePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose the days',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose the days',
+    this.helperText,
+    this.errorText,
     this.currentDate,
     this.style,
   });
@@ -834,16 +822,16 @@ class StudioDateRangePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// What it says while empty.
-  final String hint;
+  final String hintText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// Today; the clock's when null.
   final DateTime? currentDate;
@@ -864,25 +852,23 @@ class StudioDateRangePicker extends StatelessWidget {
           ? _PickerWindow(
               anchor: null,
               text: text,
-              hint: hint,
+              hint: hintText,
               icon: LucideIcons.calendarRange,
               enabled: false,
-              error: error != null,
-              semanticLabel: label,
+              error: errorText != null,
             )
           : RawPopover(
-              semanticLabel: label,
+              semanticLabel: labelText,
               placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
               stiffness: StudioMotion.overlayStiffness,
               anchorBuilder: (context, anchor) => _PickerWindow(
                 anchor: anchor,
                 text: text,
-                hint: hint,
+                hint: hintText,
                 icon: LucideIcons.calendarRange,
                 enabled: true,
-                error: error != null,
-                semanticLabel: label,
+                error: errorText != null,
               ),
               overlayBuilder: (context, info) => _panel(
                 context,
@@ -901,9 +887,9 @@ class StudioDateRangePicker extends StatelessWidget {
                 ),
               ),
             ),
-      label: label,
-      helper: helper,
-      error: error,
+      label: labelText,
+      helper: helperText,
+      error: errorText,
       enabled: enabled,
     );
   }
@@ -919,7 +905,7 @@ class StudioDateRangePicker extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('label', labelText, defaultValue: null));
   }
 }
 
@@ -2159,7 +2145,7 @@ class StudioFile {
 /// Reads [style]'s `fill` (the tray), then [StudioThemeData.fileDropStyle].
 ///
 /// ```dart
-/// StudioFileDrop(label: 'Audio', hint: 'WAV or MP3, up to 500 MB', files: files, onChoose: pick, onRemove: (f) => setState(() => files.remove(f)))
+/// StudioFileDrop(labelText: 'Audio', hintText: 'WAV or MP3, up to 500 MB', files: files, onChoose: pick, onRemove: (f) => setState(() => files.remove(f)))
 /// ```
 class StudioFileDrop extends StatelessWidget {
   /// A tray holding [files].
@@ -2168,9 +2154,9 @@ class StudioFileDrop extends StatelessWidget {
     required this.onChoose,
     this.files = const [],
     this.onRemove,
-    this.label,
-    this.hint,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.errorText,
     this.chooseLabel = 'Choose a file',
     this.removeLabel = 'Remove',
     this.multiple = true,
@@ -2191,13 +2177,13 @@ class StudioFileDrop extends StatelessWidget {
   final ValueChanged<StudioFile>? onRemove;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// What it takes, printed in the tray.
-  final String? hint;
+  final String? hintText;
 
   /// What is wrong (it would not go up), under it.
-  final String? error;
+  final String? errorText;
 
   /// The chooser key's legend.
   final String chooseLabel;
@@ -2217,60 +2203,63 @@ class StudioFileDrop extends StatelessWidget {
       [style, theme.fileDropStyle],
       {
         if (!enabled) WidgetState.disabled,
-        if (error != null) WidgetState.error,
+        if (errorText != null) WidgetState.error,
       },
     );
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null)
-          ExcludeSemantics(child: StudioFieldLabel(label!, enabled: enabled)),
-        // The drop is a pane of glass with a cut edge: what lands on it is
-        // read there.
-        if (multiple || files.isEmpty)
-          StudioSurface(
-            face: c.displayFace.copyWith(
-              radius: StudioRadii.bank,
-              fill: frame.fill,
-            ),
-            child: CustomPaint(
-              painter: _DashedEdge(
-                error != null ? c.danger : c.groove,
-                c.edgeLight,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(StudioSpacing.large),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      LucideIcons.upload,
-                      size: StudioIconSizes.large,
-                      color: enabled ? c.onDisplayMuted : c.disabled,
+        StudioFieldFrame(
+          labelText: labelText,
+          errorText: errorText,
+          enabled: enabled,
+          // The drop is a pane of glass with a cut edge: what lands on it is
+          // read there. Taking one file, the file stands in its place.
+          child: multiple || files.isEmpty
+              ? StudioSurface(
+                  face: c.displayFace.copyWith(
+                    radius: StudioRadii.bank,
+                    fill: frame.fill,
+                  ),
+                  child: CustomPaint(
+                    painter: _DashedEdge(
+                      errorText != null ? c.danger : c.groove,
+                      c.edgeLight,
                     ),
-                    if (hint != null) ...[
-                      const SizedBox(height: StudioSpacing.small),
-                      Text(
-                        hint!,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.secondary.copyWith(
-                          color: enabled ? c.onDisplayMuted : c.disabled,
-                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(StudioSpacing.large),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.upload,
+                            size: StudioIconSizes.large,
+                            color: enabled ? c.onDisplayMuted : c.disabled,
+                          ),
+                          if (hintText != null) ...[
+                            const SizedBox(height: StudioSpacing.small),
+                            Text(
+                              hintText!,
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.secondary.copyWith(
+                                color: enabled ? c.onDisplayMuted : c.disabled,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: StudioSpacing.medium),
+                          StudioButton(
+                            chooseLabel,
+                            icon: const Icon(LucideIcons.folderOpen),
+                            onPressed: onChoose,
+                          ),
+                        ],
                       ),
-                    ],
-                    const SizedBox(height: StudioSpacing.medium),
-                    StudioButton(
-                      chooseLabel,
-                      icon: const Icon(LucideIcons.folderOpen),
-                      onPressed: onChoose,
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        StudioFieldMessage(error: error),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
         for (final f in files) ...[
           const SizedBox(height: StudioSpacing.small),
           _FileRow(

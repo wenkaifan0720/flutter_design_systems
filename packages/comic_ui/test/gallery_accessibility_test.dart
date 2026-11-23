@@ -60,7 +60,7 @@ void main() {
       await phone(tester, page());
       final field = find.descendant(
         of: find.byWidgetPredicate(
-          (w) => w is ComicTextField && w.label == label,
+          (w) => w is ComicTextField && w.labelText == label,
         ),
         matching: find.byType(EditableText),
       );
@@ -135,7 +135,7 @@ void main() {
         await phone(
           tester,
           ComicSelect<String>(
-            label: 'Delivery',
+            labelText: 'Delivery',
             value: 'standard',
             options: const [
               ComicSelectOption('standard', 'Standard delivery'),

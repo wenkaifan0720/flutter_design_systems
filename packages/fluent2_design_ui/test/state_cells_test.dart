@@ -278,7 +278,10 @@ final _parts = <_Part>[
     'Search field',
     (enabled, error) => _w(
       280,
-      Fluent2SearchBox(hint: 'Search files', onChanged: enabled ? _drop : null),
+      Fluent2SearchBox(
+        hintText: 'Search files',
+        onChanged: enabled ? _drop : null,
+      ),
     ),
     press: false,
     why: _noPress,
@@ -305,7 +308,7 @@ final _parts = <_Part>[
       280,
       Fluent2InputGroup(
         label: 'Website',
-        hint: 'example.com',
+        hintText: 'example.com',
         onChanged: _drop,
         enabled: enabled,
         invalid: error,

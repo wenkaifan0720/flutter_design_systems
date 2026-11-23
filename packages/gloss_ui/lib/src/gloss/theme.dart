@@ -620,7 +620,7 @@ List<FontVariation> glossWeightAxis(FontWeight weight) => [
 /// four at most.
 @immutable
 class GlossTextTheme with Diagnosticable {
-  /// Styles given one by one; [GlossTextTheme.of] is the look's own.
+  /// Styles given one by one; [GlossTextTheme.from] is the look's own.
   const GlossTextTheme({
     required this.display,
     required this.headline,
@@ -634,7 +634,7 @@ class GlossTextTheme with Diagnosticable {
   /// The look's type in [colors]' inks, set in [fontFamily] (from
   /// [fontPackage]) when given: a brand's face, or one for a script Plus
   /// Jakarta Sans does not carry.
-  factory GlossTextTheme.of(
+  factory GlossTextTheme.from(
     GlossColors colors, {
     String? fontFamily,
     String? fontPackage,
@@ -821,7 +821,7 @@ class GlossThemeData with Diagnosticable {
     this.scrollAreaStyle,
     this.splitViewStyle,
     this.treeStyle,
-  }) : textTheme = textTheme ?? GlossTextTheme.of(colors),
+  }) : textTheme = textTheme ?? GlossTextTheme.from(colors),
        density = density ?? GlossDensity.adaptivePlatformDensity;
 
   /// The jade preset by day.
@@ -1163,7 +1163,7 @@ class GlossThemeData with Diagnosticable {
     colors: colors ?? this.colors,
     textTheme:
         textTheme ??
-        (colors == null ? this.textTheme : GlossTextTheme.of(colors)),
+        (colors == null ? this.textTheme : GlossTextTheme.from(colors)),
     density: density ?? this.density,
     buttonStyle: buttonStyle ?? this.buttonStyle,
     filledButtonStyle: filledButtonStyle ?? this.filledButtonStyle,

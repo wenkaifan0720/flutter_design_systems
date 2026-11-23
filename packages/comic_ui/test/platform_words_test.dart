@@ -36,7 +36,7 @@ void main() {
                 child: const Center(
                   child: SizedBox(
                     width: 320,
-                    child: ComicTextField(hint: 'Your name'),
+                    child: ComicTextField(hintText: 'Your name'),
                   ),
                 ),
               ),

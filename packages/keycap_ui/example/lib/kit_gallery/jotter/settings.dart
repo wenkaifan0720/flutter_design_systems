@@ -268,7 +268,7 @@ class _PickState extends State<_Pick> {
       KeycapRadioGroup<String>(
         semanticLabel: widget.semanticLabel,
         options: widget.options,
-        value: _to,
+        groupValue: _to,
         labelOf: widget.labelOf,
         onChanged: (v) => setState(() => _to = v),
       ),

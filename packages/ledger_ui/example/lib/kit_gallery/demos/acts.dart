@@ -78,7 +78,7 @@ class _RangeState extends State<_Range> {
     options: const ['Week', 'Month', 'Quarter', 'Year'],
     labelOf: (v) => v,
     selected: _range,
-    onChanged: (next) => setState(() => _range = next),
+    onSelectionChanged: (next) => setState(() => _range = next),
   );
 }
 
@@ -95,12 +95,12 @@ class _ColumnsState extends State<_Columns> {
   @override
   Widget build(BuildContext context) => LedgerToggleGroup<String>(
     label: 'Columns',
-    multiple: true,
-    allowEmpty: true,
+    multiSelectionEnabled: true,
+    emptySelectionAllowed: true,
     options: const ['Time', 'Payee', 'Category', 'Account', 'Amount'],
     labelOf: (v) => v,
     selected: _shown,
     isEnabled: (v) => v != 'Amount',
-    onChanged: (next) => setState(() => _shown = next),
+    onSelectionChanged: (next) => setState(() => _shown = next),
   );
 }

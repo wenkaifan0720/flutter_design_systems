@@ -175,7 +175,7 @@ class GlossListTile extends StatelessWidget {
     this.onTap,
     this.selected = false,
     this.showChevron,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -208,7 +208,7 @@ class GlossListTile extends StatelessWidget {
   final bool? showChevron;
 
   /// Whether the row destroys something: ruby words.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether the row takes presses.
   final bool enabled;
@@ -238,7 +238,7 @@ class GlossListTile extends StatelessWidget {
           layered.foreground ??
           (disabled
               ? c.inkDisabled
-              : destructive
+              : isDestructiveAction
               ? c.danger
               : c.ink);
       final muted = disabled ? c.inkDisabled : c.inkSecondary;
@@ -246,7 +246,7 @@ class GlossListTile extends StatelessWidget {
           ? c.inkDisabled
           : selected
           ? c.jadeInk
-          : destructive
+          : isDestructiveAction
           ? c.danger
           : c.inkSecondary;
       final chevron = showChevron ?? (onTap != null && trailing == null);
@@ -267,6 +267,7 @@ class GlossListTile extends StatelessWidget {
           floor: floor,
           selected: selected && !disabled,
           focus: light,
+          rtl: Directionality.of(context) == TextDirection.rtl,
         ),
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: rowHeight),
@@ -423,7 +424,11 @@ class GlossListTile extends StatelessWidget {
       ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(
-        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'destructive',
+        ),
       );
   }
 }
@@ -434,12 +439,14 @@ class _RowPainter extends CustomPainter {
     required this.floor,
     required this.selected,
     required this.focus,
+    required this.rtl,
   });
 
   final GlossColors colors;
   final Color floor;
   final bool selected;
   final Color focus;
+  final bool rtl;
 
   // Its plate fits 4 px inside the wall of the well.
   static const double _inset = 4;
@@ -451,27 +458,37 @@ class _RowPainter extends CustomPainter {
     if (floor.a > 0) canvas.drawRect(rect, Paint()..color = floor);
     final plate = rect.deflate(_inset);
     if (selected) {
-      paintGlossFace(
+      _fromStart(
         canvas,
         plate,
-        // A plate that carries words: by night no band of light across
-        // its crown, where it would run behind the title.
-        GlossFace.pearl(colors, radius: _radius).copyWith(
-          lift: 0.45,
-          focus: focus,
-          lens: colors.brightness == Brightness.light ? 0.4 : 0,
+        rtl,
+        () => paintGlossFace(
+          canvas,
+          plate,
+          // A plate that carries words: by night no band of light across
+          // its crown, where it would run behind the title.
+          GlossFace.pearl(colors, radius: _radius).copyWith(
+            lift: 0.45,
+            focus: focus,
+            lens: colors.brightness == Brightness.light ? 0.4 : 0,
+          ),
+          brightness: colors.brightness,
         ),
-        brightness: colors.brightness,
       );
       return;
     }
     // An unselected row catches the light on the well floor.
-    paintGlossHalo(
+    _fromStart(
       canvas,
-      RRect.fromRectAndRadius(plate, const Radius.circular(_radius)),
-      focus,
-      brightness: colors.brightness,
-      inside: true,
+      plate,
+      rtl,
+      () => paintGlossHalo(
+        canvas,
+        RRect.fromRectAndRadius(plate, const Radius.circular(_radius)),
+        focus,
+        brightness: colors.brightness,
+        inside: true,
+      ),
     );
   }
 
@@ -480,7 +497,24 @@ class _RowPainter extends CustomPainter {
       old.colors != colors ||
       old.floor != floor ||
       old.selected != selected ||
-      old.focus != focus;
+      old.focus != focus ||
+      old.rtl != rtl;
+}
+
+// Gloss is lit once, from above and the reading start: right to left, what
+// [paint] draws in [rect] (a face, even about its middle) is turned about
+// its middle, so its light runs from the right.
+void _fromStart(Canvas canvas, Rect rect, bool rtl, VoidCallback paint) {
+  if (!rtl) {
+    paint();
+    return;
+  }
+  canvas
+    ..save()
+    ..translate(rect.center.dx * 2, 0)
+    ..scale(-1, 1);
+  paint();
+  canvas.restore();
 }
 
 /// The chevron a row that opens something ends with: a fine stroke pointing

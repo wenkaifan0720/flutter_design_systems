@@ -1,0 +1,5 @@
+import 'package:flutter/widgets.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+double lineWidth(BuildContext context) =>
+    termStrokeWidth(TermTheme.of(context), context.termGrid);

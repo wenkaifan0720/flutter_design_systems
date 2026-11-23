@@ -31,8 +31,8 @@ Widget _host(
   debugShowCheckedModeBanner: false,
   shortcuts: shortcuts,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: page!,
   ),
@@ -64,7 +64,7 @@ class _RoomState extends State<_Room> {
 
   @override
   Widget build(BuildContext context) => FrostedSelect<String>(
-    label: 'Room',
+    labelText: 'Room',
     focusNode: widget.focusNode,
     value: _value,
     onChanged: (v) => setState(() => _value = v),

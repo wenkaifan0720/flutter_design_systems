@@ -40,7 +40,7 @@ class LedgerDateRangePicker extends StatefulWidget {
     required this.lastDate,
     required this.onChanged,
     this.value,
-    this.today,
+    this.currentDate,
     this.months = 1,
     this.unit = 'nights',
     super.key,
@@ -59,7 +59,7 @@ class LedgerDateRangePicker extends StatefulWidget {
   final ValueChanged<LedgerDateRange>? onChanged;
 
   /// The day ringed as today; null: the clock's.
-  final DateTime? today;
+  final DateTime? currentDate;
 
   /// How many months show at once.
   final int months;
@@ -86,7 +86,13 @@ class LedgerDateRangePicker extends StatefulWidget {
           onChanged,
         ),
       )
-      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
       ..add(IntProperty('months', months))
       ..add(StringProperty('unit', unit));
   }
@@ -103,7 +109,7 @@ class _LedgerDateRangePickerState extends State<LedgerDateRangePicker> {
     lastDate: widget.lastDate,
     mode: RawCalendarMode.range,
     selectedRange: widget.value,
-    currentDate: widget.today,
+    currentDate: widget.currentDate,
   );
 
   @override

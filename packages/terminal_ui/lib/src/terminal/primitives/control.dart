@@ -76,7 +76,7 @@ class TermStateSprings extends StatelessWidget {
 }
 
 /// One line's stroke at [grid]: the theme's width grown with the words.
-double termStroke(TermThemeData theme, TermGrid grid) =>
+double termStrokeWidth(TermThemeData theme, TermGrid grid) =>
     theme.strokeWidth * grid.fontSize / theme.grid.fontSize;
 
 /// The words' colour as the keyboard's focus comes ([focus], 0 to 1): from
@@ -137,7 +137,7 @@ class TermCursorCells extends StatelessWidget {
               amount: focus,
               color: theme.accent,
               knockout: theme.onAccent,
-              stroke: termStroke(theme, grid),
+              stroke: termStrokeWidth(theme, grid),
               hollow: hollow,
             ),
       child: child,

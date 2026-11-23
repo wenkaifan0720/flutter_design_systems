@@ -75,7 +75,8 @@ class LedgerFieldFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final wrong = parts.errorText != null;
+    // Wrong: an error, or marked invalid with no words to say why.
+    final wrong = parts.invalid;
     final so = DesignStyleOf(
       [style, t.components.textField],
       {

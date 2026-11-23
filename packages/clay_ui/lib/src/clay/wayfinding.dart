@@ -131,27 +131,27 @@ List<int?> _pagesShown(int page, int count, {int siblings = 1}) {
 /// others lie in it as figures; arrows either side turn a page.
 ///
 /// ```dart
-/// ClayPagination(page: 3, count: 12, onChanged: (page) {})
+/// ClayPagination(page: 3, pageCount: 12, onPageChanged: (page) {})
 /// ```
 class ClayPagination extends StatelessWidget {
-  /// Pages 1 to [count], [page] current.
+  /// Pages 1 to [pageCount], [page] current.
   const ClayPagination({
     super.key,
     required this.page,
-    required this.count,
-    required this.onChanged,
+    required this.pageCount,
+    required this.onPageChanged,
     this.style,
-  }) : assert(count >= 1),
-       assert(page >= 1 && page <= count);
+  }) : assert(pageCount >= 1),
+       assert(page >= 1 && page <= pageCount);
 
   /// The current page, from 1.
   final int page;
 
   /// How many pages there are.
-  final int count;
+  final int pageCount;
 
   /// A page chosen; null turns the keys off.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// This bar's own style, over [ClayThemeData.paginationStyle]: `fill`
   /// the current page.
@@ -166,9 +166,9 @@ class ClayPagination extends StatelessWidget {
     final side = theme.controlHeight - 8;
     Widget arrow(bool next) {
       final to = next ? page + 1 : page - 1;
-      final can = to >= 1 && to <= count && onChanged != null;
+      final can = to >= 1 && to <= pageCount && onPageChanged != null;
       return ClayIconButton.plain(
-        onPressed: can ? () => onChanged!(to) : null,
+        onPressed: can ? () => onPageChanged!(to) : null,
         tooltip: next ? words.nextPageTooltip : words.previousPageTooltip,
         icon: Icon(
           next == rtl ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
@@ -211,7 +211,7 @@ class ClayPagination extends StatelessWidget {
                         children: [
                           for (final p in _pagesShown(
                             page,
-                            count,
+                            pageCount,
                             siblings: box.maxWidth - ends >= 7 * key ? 1 : 0,
                           ))
                             p == null
@@ -230,9 +230,10 @@ class ClayPagination extends StatelessWidget {
                                     label: words.formatDecimal(p),
                                     current: p == page,
                                     side: side,
-                                    onPressed: onChanged == null || p == page
+                                    onPressed:
+                                        onPageChanged == null || p == page
                                         ? null
-                                        : () => onChanged!(p),
+                                        : () => onPageChanged!(p),
                                     semanticLabel:
                                         'Page ${words.formatDecimal(p)}',
                                     style: style,
@@ -257,7 +258,7 @@ class ClayPagination extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('page', page))
-      ..add(IntProperty('count', count));
+      ..add(IntProperty('pageCount', pageCount));
   }
 }
 
@@ -354,14 +355,14 @@ class _PageKey extends StatelessWidget {
 /// come pressed in; each step's name under its ball.
 ///
 /// ```dart
-/// ClayStepProgress(steps: const ['Habit', 'Schedule', 'Reminder'], current: 1)
+/// ClayStepProgress(steps: const ['Habit', 'Schedule', 'Reminder'], currentStep: 1)
 /// ```
 class ClayStepProgress extends StatelessWidget {
-  /// [steps], the one at [current] under way.
+  /// [steps], the one at [currentStep] under way.
   const ClayStepProgress({
     super.key,
     required this.steps,
-    required this.current,
+    required this.currentStep,
     this.style,
   });
 
@@ -369,7 +370,7 @@ class ClayStepProgress extends StatelessWidget {
   final List<String> steps;
 
   /// The step under way, from 0; [steps]' length once all are done.
-  final int current;
+  final int currentStep;
 
   /// This bar's own style, over [ClayThemeData.stepProgressStyle]: `fill`
   /// the steps done.
@@ -384,7 +385,8 @@ class ClayStepProgress extends StatelessWidget {
     const ball = 32.0;
     return Semantics(
       container: true,
-      label: 'Step ${math.min(current + 1, steps.length)} of ${steps.length}',
+      label:
+          'Step ${math.min(currentStep + 1, steps.length)} of ${steps.length}',
       child: ExcludeSemantics(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,18 +415,21 @@ class ClayStepProgress extends StatelessWidget {
                                   width: math.max(0, box.maxWidth - ball - 8),
                                   top: (ball - 6) / 2,
                                   height: 6,
-                                  child: _Run(filled: i < current, color: done),
+                                  child: _Run(
+                                    filled: i < currentStep,
+                                    color: done,
+                                  ),
                                 ),
                               SizedBox.square(
                                 dimension: ball,
                                 child: AnimatedClaySurface(
-                                  face: i < current
+                                  face: i < currentStep
                                       ? ClayFace.raised(
                                           c,
                                           color: done,
                                           radius: ball / 2,
                                         ).copyWith(elevation: 0.7)
-                                      : i == current
+                                      : i == currentStep
                                       ? ClayFace.raised(
                                           c,
                                           radius: ball / 2,
@@ -439,7 +444,7 @@ class ClayStepProgress extends StatelessWidget {
                                           radius: ball / 2,
                                         ),
                                   child: Center(
-                                    child: i < current
+                                    child: i < currentStep
                                         ? Icon(
                                             LucideIcons.check,
                                             size: 16,
@@ -449,7 +454,7 @@ class ClayStepProgress extends StatelessWidget {
                                             '${i + 1}',
                                             style: theme.textTheme.secondary
                                                 .copyWith(
-                                                  color: i == current
+                                                  color: i == currentStep
                                                       ? c.ink
                                                       : c.inkSecondary,
                                                   fontWeight: FontWeight.w600,
@@ -474,8 +479,8 @@ class ClayStepProgress extends StatelessWidget {
                       child: _StepName(
                         name: name,
                         style: theme.textTheme.caption.copyWith(
-                          color: i == current ? c.ink : c.inkSecondary,
-                          fontWeight: i == current
+                          color: i == currentStep ? c.ink : c.inkSecondary,
+                          fontWeight: i == currentStep
                               ? FontWeight.w600
                               : FontWeight.w400,
                         ),
@@ -495,7 +500,7 @@ class ClayStepProgress extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('steps', steps.length))
-      ..add(IntProperty('current', current));
+      ..add(IntProperty('currentStep', currentStep));
   }
 }
 
@@ -550,29 +555,29 @@ class _Run extends StatelessWidget {
 }
 
 /// Which page of a few is showing: small cups pressed into the clay, the
-/// current one a raised coral pill. With [onChanged] a dot takes a tap.
+/// current one a raised coral pill. With [onPageChanged] a dot takes a tap.
 ///
 /// ```dart
-/// ClayPageDots(count: 4, index: 1, onChanged: (page) {})
+/// ClayPageDots(pageCount: 4, page: 1, onPageChanged: (page) {})
 /// ```
 class ClayPageDots extends StatelessWidget {
-  /// [count] dots, [index] current.
+  /// [pageCount] dots, [page] current.
   const ClayPageDots({
     super.key,
-    required this.count,
-    required this.index,
-    this.onChanged,
+    required this.pageCount,
+    required this.page,
+    this.onPageChanged,
     this.style,
   });
 
   /// How many pages.
-  final int count;
+  final int pageCount;
 
   /// The current page, from 0.
-  final int index;
+  final int page;
 
   /// A page chosen; null: the dots only show.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// These dots' own style, over [ClayThemeData.pageDotsStyle]: `fill` the
   /// current one.
@@ -585,7 +590,7 @@ class ClayPageDots extends StatelessWidget {
     final layered = DesignStyleOf([style, theme.pageDotsStyle], const {});
     final fill = layered.fill ?? c.accent;
     Widget dot(int i, Set<WidgetState> states) {
-      final current = i == index;
+      final current = i == page;
       return AnimatedContainer(
         duration: const Duration(milliseconds: 260),
         curve: Curves.easeOutCubic,
@@ -610,14 +615,14 @@ class ClayPageDots extends StatelessWidget {
     return Semantics(
       container: true,
       label:
-          'Page ${words.formatDecimal(index + 1)} of '
-          '${words.formatDecimal(count)}',
-      explicitChildNodes: onChanged != null,
+          'Page ${words.formatDecimal(page + 1)} of '
+          '${words.formatDecimal(pageCount)}',
+      explicitChildNodes: onPageChanged != null,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < count; i++)
-            onChanged == null
+          for (var i = 0; i < pageCount; i++)
+            onPageChanged == null
                 ? Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: ClaySpacing.tight,
@@ -625,10 +630,10 @@ class ClayPageDots extends StatelessWidget {
                     child: ExcludeSemantics(child: dot(i, const {})),
                   )
                 : RawButton(
-                    onPressed: i == index ? null : () => onChanged!(i),
+                    onPressed: i == page ? null : () => onPageChanged!(i),
                     enabled: true,
                     semanticLabel: 'Page ${words.formatDecimal(i + 1)}',
-                    semanticSelected: i == index,
+                    semanticSelected: i == page,
                     // The platform's floor: a finger's 44, a pointer's 24.
                     builder: (context, states, _) => TapTargetPadding(
                       child: Padding(
@@ -648,8 +653,8 @@ class ClayPageDots extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('index', index));
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('page', page));
   }
 }
 
@@ -738,7 +743,7 @@ class ClayMenuBar extends StatelessWidget {
           return ClayMenuRow(
             label: entry.label,
             leading: item?.icon == null ? null : Icon(item!.icon),
-            destructive: entry.isDestructiveAction,
+            isDestructiveAction: entry.isDestructiveAction,
             states: states,
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );
@@ -840,7 +845,7 @@ class ClayCommandPalette extends StatelessWidget {
     super.key,
     required this.commands,
     this.onSelected,
-    this.hint,
+    this.hintText,
     this.emptyText,
     this.autofocus = false,
     this.style,
@@ -853,7 +858,7 @@ class ClayCommandPalette extends StatelessWidget {
   final ValueChanged<ClayCommand>? onSelected;
 
   /// What the empty well says; null: "Search".
-  final String? hint;
+  final String? hintText;
 
   /// What it says when nothing matches.
   final String? emptyText;
@@ -868,7 +873,7 @@ class ClayCommandPalette extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
-    final said = hint ?? words.searchFieldLabel;
+    final said = hintText ?? words.searchFieldLabel;
     return RawCommandPalette(
       commands: [
         for (final command in commands)
@@ -900,7 +905,7 @@ class ClayCommandPalette extends StatelessWidget {
             child: ClayEntryText(
               controller: field.controller,
               focusNode: field.focusNode,
-              hint: said,
+              hintText: said,
               semanticLabel: said,
               onEditingComplete: field.submit,
             ),
@@ -1001,7 +1006,7 @@ Widget _palettePanel(BuildContext context, ClayStyle? style, Widget child) {
 Future<void> showClayCommandPalette(
   BuildContext context, {
   required List<ClayCommand> commands,
-  String? hint,
+  String? hintText,
   ClayStyle? style,
 }) {
   final theme = ClayTheme.of(context);
@@ -1010,7 +1015,7 @@ Future<void> showClayCommandPalette(
     barrierColor: theme.colors.scrim,
     palette: (run) => ClayCommandPalette(
       commands: commands,
-      hint: hint,
+      hintText: hintText,
       autofocus: true,
       style: style,
     )._body(context, run),

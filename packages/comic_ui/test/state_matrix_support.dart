@@ -94,7 +94,7 @@ List<MatrixRow> matrixRows() {
           : ComicIconButton(
               ComicGlyphs.bell,
               label: 'Alerts',
-              selected: f.selected,
+              isSelected: f.selected,
               onPressed: f.disabled ? null : _tap,
             ),
     ),
@@ -118,10 +118,10 @@ List<MatrixRow> matrixRows() {
               label: 'Style',
               values: const ['Bold', 'Italic'],
               selected: f.selected ? const {'Bold'} : const {},
-              allowEmpty: true,
+              emptySelectionAllowed: true,
               labelOf: (value) => value,
               isEnabled: (_) => !f.disabled,
-              onChanged: _no,
+              onSelectionChanged: _no,
             ),
     ),
     _plain(
@@ -160,8 +160,8 @@ List<MatrixRow> matrixRows() {
       (f) => f.error
           ? null
           : ComicRadioGroup<int>(
-              label: 'Format',
-              value: f.selected ? 1 : null,
+              labelText: 'Format',
+              groupValue: f.selected ? 1 : null,
               options: const [ComicRadio(1, 'Print'), ComicRadio(2, 'Digital')],
               onChanged: f.disabled ? null : _no,
             ),
@@ -217,7 +217,7 @@ List<MatrixRow> matrixRows() {
           : ComicTabBar(
               tabs: const ['All', 'Saved', 'Read'],
               selectedIndex: f.selected ? 1 : 0,
-              onChanged: f.disabled ? null : _no,
+              onTap: f.disabled ? null : _no,
             ),
     ),
     _row(
@@ -257,9 +257,9 @@ List<MatrixRow> matrixRows() {
       (f) => f.error
           ? null
           : ComicPagination(
-              count: 6,
+              pageCount: 6,
               page: f.selected ? 4 : 1,
-              onChanged: f.disabled ? null : _no,
+              onPageChanged: f.disabled ? null : _no,
             ),
     ),
     _row(
@@ -268,9 +268,9 @@ List<MatrixRow> matrixRows() {
       (f) => f.selected
           ? null
           : ComicSelect<int>(
-              label: 'Size',
+              labelText: 'Size',
               value: 1,
-              error: f.error ? 'Choose a size' : null,
+              errorText: f.error ? 'Choose a size' : null,
               options: const [
                 ComicSelectOption(1, 'Small'),
                 ComicSelectOption(2, 'Large'),
@@ -285,10 +285,10 @@ List<MatrixRow> matrixRows() {
       (f) => f.selected
           ? null
           : ComicTextField(
-              label: 'Name',
+              labelText: 'Name',
               initialValue: 'Alex',
               enabled: !f.disabled,
-              error: f.error ? 'Required' : null,
+              errorText: f.error ? 'Required' : null,
             ),
       press: false,
     ),
@@ -298,17 +298,17 @@ List<MatrixRow> matrixRows() {
       (f) => f.selected
           ? null
           : ComicTextArea(
-              label: 'Notes',
+              labelText: 'Notes',
               maxLines: 2,
               enabled: !f.disabled,
-              error: f.error ? 'Required' : null,
+              errorText: f.error ? 'Required' : null,
             ),
       press: false,
     ),
     _plain(
       'Search field',
       200,
-      (off) => ComicSearchField(hint: 'Search', enabled: !off),
+      (off) => ComicSearchField(hintText: 'Search', enabled: !off),
       press: false,
     ),
     _row(
@@ -317,9 +317,9 @@ List<MatrixRow> matrixRows() {
       (f) => f.selected
           ? null
           : ComicPasswordField(
-              label: 'Password',
+              labelText: 'Password',
               enabled: !f.disabled,
-              error: f.error ? 'Too short' : null,
+              errorText: f.error ? 'Too short' : null,
             ),
       press: false,
     ),
@@ -329,11 +329,11 @@ List<MatrixRow> matrixRows() {
       (f) => f.selected
           ? null
           : ComicInputGroup(
-              label: 'Price',
-              hint: '0.00',
+              labelText: 'Price',
+              hintText: '0.00',
               leading: const [Text('USD')],
               enabled: !f.disabled,
-              error: f.error ? 'Required' : null,
+              errorText: f.error ? 'Required' : null,
             ),
       press: false,
     ),
@@ -343,10 +343,10 @@ List<MatrixRow> matrixRows() {
       (f) => f.selected
           ? null
           : ComicInputOtp(
-              label: 'Code',
+              labelText: 'Code',
               length: 4,
               enabled: !f.disabled,
-              error: f.error ? 'Wrong code' : null,
+              errorText: f.error ? 'Wrong code' : null,
             ),
       press: false,
     ),
@@ -356,11 +356,11 @@ List<MatrixRow> matrixRows() {
       (f) => f.selected
           ? null
           : ComicMultiSelect<String>(
-              label: 'Genres',
+              labelText: 'Genres',
               values: const ['Noir'],
               options: const ['Noir', 'Western'],
               enabled: !f.disabled,
-              error: f.error ? 'Pick one more' : null,
+              errorText: f.error ? 'Pick one more' : null,
               onChanged: _no,
             ),
       press: false,
@@ -373,8 +373,8 @@ List<MatrixRow> matrixRows() {
           : ComicFormField(
               'Your name',
               enabled: !f.disabled,
-              error: f.error ? 'Required' : null,
-              child: ComicTextField(hint: 'Name', enabled: !f.disabled),
+              errorText: f.error ? 'Required' : null,
+              child: ComicTextField(hintText: 'Name', enabled: !f.disabled),
             ),
       press: false,
     ),

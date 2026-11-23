@@ -201,7 +201,11 @@ void main() {
         t,
         (d) => _app(
           d,
-          const LedgerTextField(label: 'Amount', prefix: r'$', hint: '0.00'),
+          const LedgerTextField(
+            labelText: 'Amount',
+            prefix: r'$',
+            hintText: '0.00',
+          ),
         ),
         // The label is set in the small capitals. The sum typed after its sign reads left to right (README).
         parts: [find.text('AMOUNT')],
@@ -258,7 +262,7 @@ void main() {
           d,
           LedgerStepper(
             value: 250,
-            label: 'Monthly budget',
+            labelText: 'Monthly budget',
             format: _dollars,
             onChanged: (_) {},
           ),
@@ -513,7 +517,8 @@ void main() {
                       labelOf: (p) => p,
                       selected: {?chosen},
                       isEnabled: (p) => p != 'Month',
-                      onChanged: (next) => setState(() => chosen = next.first),
+                      onSelectionChanged: (next) =>
+                          setState(() => chosen = next.first),
                     ),
                     const Focus(child: Text('After')),
                   ],

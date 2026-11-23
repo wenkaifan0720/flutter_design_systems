@@ -27,7 +27,7 @@ class _Settings extends StatelessWidget {
           footnote: 'You can change these at any time.',
           children: [
             Fluent2FormField(
-              label: 'Email',
+              labelText: 'Email',
               child: Fluent2TextField(
                 value: 'kai@northwind.example',
                 onChanged: (_) {},

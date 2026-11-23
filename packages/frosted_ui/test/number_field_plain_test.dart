@@ -21,7 +21,7 @@ class _PeopleState extends State<_People> {
 
   @override
   Widget build(BuildContext context) => FrostedNumberField(
-    label: 'Guests',
+    labelText: 'Guests',
     value: _people,
     min: 2,
     max: 3,
@@ -87,7 +87,7 @@ void main() {
     await _pump(
       tester,
       FrostedNumberField(
-        label: 'the budget',
+        labelText: 'the budget',
         value: 250,
         money: true,
         onChanged: (_) {},
@@ -124,7 +124,7 @@ void main() {
                 children: [
                   FrostedNumberField(
                     value: 2700,
-                    label: 'the budget',
+                    labelText: 'the budget',
                     money: true,
                     max: 99999,
                     onChanged: (_) {},

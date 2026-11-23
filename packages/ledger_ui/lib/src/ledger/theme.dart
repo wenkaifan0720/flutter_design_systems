@@ -2172,7 +2172,7 @@ class LedgerTheme extends StatelessWidget {
     super.key,
     required this.data,
     required this.child,
-    this.dark,
+    this.darkData,
   });
 
   /// The theme for what is under it.
@@ -2180,7 +2180,7 @@ class LedgerTheme extends StatelessWidget {
 
   /// The theme a part drawn over a photograph or a dark band wears whatever
   /// the appearance: the app's dark theme. Null takes [data].
-  final LedgerThemeData? dark;
+  final LedgerThemeData? darkData;
 
   /// What it styles.
   final Widget child;
@@ -2203,7 +2203,7 @@ class LedgerTheme extends StatelessWidget {
   static LedgerThemeData? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_LedgerScope>()?.data;
 
-  /// The dark theme in scope at [context]: [dark], or the theme itself when
+  /// The dark theme in scope at [context]: [darkData], or the theme itself when
   /// none was given.
   static LedgerThemeData darkOf(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<_LedgerScope>();
@@ -2249,7 +2249,7 @@ class LedgerTheme extends StatelessWidget {
     }
     return _LedgerScope(
       data: data,
-      dark: dark,
+      dark: darkData,
       child: Theme(
         data: _bridges[data] ??= _materialUnder(data),
         child: IconTheme.merge(
@@ -2315,7 +2315,11 @@ class LedgerTheme extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<LedgerThemeData>('data', data))
       ..add(
-        DiagnosticsProperty<LedgerThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<LedgerThemeData>(
+          'darkData',
+          darkData,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -2336,7 +2340,7 @@ class AnimatedLedgerTheme extends ImplicitlyAnimatedWidget {
     super.key,
     required this.data,
     required this.child,
-    this.dark,
+    this.darkData,
     super.curve,
     super.duration = const Duration(milliseconds: 200),
     super.onEnd,
@@ -2345,8 +2349,8 @@ class AnimatedLedgerTheme extends ImplicitlyAnimatedWidget {
   /// The theme to arrive at.
   final LedgerThemeData data;
 
-  /// [LedgerTheme.dark], passed through as it is.
-  final LedgerThemeData? dark;
+  /// [LedgerTheme.darkData], passed through as it is.
+  final LedgerThemeData? darkData;
 
   /// What it styles.
   final Widget child;
@@ -2378,7 +2382,7 @@ class _AnimatedLedgerThemeState
   @override
   Widget build(BuildContext context) => LedgerTheme(
     data: _data!.evaluate(animation),
-    dark: widget.dark,
+    darkData: widget.darkData,
     child: widget.child,
   );
 }

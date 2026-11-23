@@ -18,7 +18,6 @@ import 'internal/entry_parts.dart';
 import 'internal/menu.dart';
 import 'select.dart' show ClayMenuReveal;
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -568,15 +567,12 @@ Widget _fieldColumn({
   required Widget box,
   required String? helper,
   required String? error,
-}) => Column(
-  mainAxisSize: MainAxisSize.min,
-  crossAxisAlignment: CrossAxisAlignment.stretch,
-  children: [
-    if (label != null)
-      ExcludeSemantics(child: ClayFieldLabel(label, enabled: enabled)),
-    box,
-    ClayFieldMessage(helper: helper, error: error),
-  ],
+}) => ClayFieldDecorator(
+  labelText: label,
+  helperText: helper,
+  errorText: error,
+  enabled: enabled,
+  child: box,
 );
 
 Widget _calendarPanel(BuildContext context, Widget calendar) => ClaySurface(
@@ -592,7 +588,7 @@ Widget _calendarPanel(BuildContext context, Widget calendar) => ClaySurface(
 /// it and calls [onChanged].
 ///
 /// ```dart
-/// ClayDatePicker(label: 'Starts on', value: DateTime(2026, 11, 23), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
+/// ClayDatePicker(labelText: 'Starts on', value: DateTime(2026, 11, 23), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
 /// ```
 class ClayDatePicker extends StatelessWidget {
   /// A date field at [value].
@@ -602,10 +598,10 @@ class ClayDatePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.currentDate,
     this.style,
   });
@@ -623,16 +619,16 @@ class ClayDatePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty well says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -648,18 +644,18 @@ class ClayDatePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final theme = ClayTheme.of(context);
     return _fieldColumn(
-      label: label,
+      label: labelText,
       enabled: enabled,
-      helper: helper,
-      error: error,
+      helper: helperText,
+      error: errorText,
       box: RawPopover(
-        semanticLabel: label,
+        semanticLabel: labelText,
         // The calendar wants its whole month before it picks a side: low on
         // a phone it opens above the field rather than below in a sliver.
         placement: const RawPopoverPlacement(
           gap: ClaySpacing.small,
           margin: ClaySpacing.small,
-          preferredExtent: double.infinity,
+          fit: RawPopoverFit.whole,
           matchAnchorWidth: false,
         ),
         dampingRatio: ClayMotion.panelDamping,
@@ -667,11 +663,11 @@ class ClayDatePicker extends StatelessWidget {
         anchorBuilder: (context, anchor) => _PickerField(
           anchor: anchor,
           text: value == null ? null : words.formatFullDate(value!),
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendar,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label ?? hint,
+          error: errorText != null,
+          semanticLabel: labelText ?? hintText,
           styles: [style, theme.datePickerStyle],
         ),
         overlayBuilder: (context, info) => ClayMenuReveal(
@@ -700,7 +696,7 @@ class ClayDatePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<DateTime>('value', value))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
 
@@ -709,7 +705,7 @@ class ClayDatePicker extends StatelessWidget {
 /// there is room.
 ///
 /// ```dart
-/// ClayDateRangePicker(label: 'Break', value: null, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (range) {})
+/// ClayDateRangePicker(labelText: 'Break', value: null, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (range) {})
 /// ```
 class ClayDateRangePicker extends StatelessWidget {
   /// A date-range field at [value].
@@ -719,10 +715,10 @@ class ClayDateRangePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.currentDate,
     this.style,
   });
@@ -740,16 +736,16 @@ class ClayDateRangePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty well says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -766,18 +762,18 @@ class ClayDateRangePicker extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final wide = MediaQuery.sizeOf(context).width >= 760;
     return _fieldColumn(
-      label: label,
+      label: labelText,
       enabled: enabled,
-      helper: helper,
-      error: error,
+      helper: helperText,
+      error: errorText,
       box: RawPopover(
-        semanticLabel: label,
+        semanticLabel: labelText,
         // The calendar wants its whole month before it picks a side: low on
         // a phone it opens above the field rather than below in a sliver.
         placement: const RawPopoverPlacement(
           gap: ClaySpacing.small,
           margin: ClaySpacing.small,
-          preferredExtent: double.infinity,
+          fit: RawPopoverFit.whole,
           matchAnchorWidth: false,
         ),
         dampingRatio: ClayMotion.panelDamping,
@@ -787,11 +783,11 @@ class ClayDateRangePicker extends StatelessWidget {
           text: value == null
               ? null
               : _rangeWords(words, value!, currentDate ?? DateTime.now()),
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendarRange,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label ?? hint,
+          error: errorText != null,
+          semanticLabel: labelText ?? hintText,
           styles: [style, theme.dateRangePickerStyle],
         ),
         overlayBuilder: (context, info) => ClayMenuReveal(
@@ -1183,7 +1179,7 @@ class ClayTimePicker extends StatelessWidget {
 /// and Down step a segment; typing fills it and moves on.
 ///
 /// ```dart
-/// ClayTimeField(label: 'Remind me at', value: const ClayTime(hour: 7, minute: 30), onChanged: (time) {})
+/// ClayTimeField(labelText: 'Remind me at', value: const ClayTime(hour: 7, minute: 30), onChanged: (time) {})
 /// ```
 class ClayTimeField extends StatelessWidget {
   /// A time field at [value].
@@ -1191,9 +1187,9 @@ class ClayTimeField extends StatelessWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.showSeconds = false,
     this.autofocus = false,
     this.style,
@@ -1206,13 +1202,13 @@ class ClayTimeField extends StatelessWidget {
   final ValueChanged<ClayTime?>? onChanged;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes seconds too.
   final bool showSeconds;
@@ -1229,10 +1225,10 @@ class ClayTimeField extends StatelessWidget {
     final c = theme.colors;
     final enabled = onChanged != null;
     return _fieldColumn(
-      label: label,
+      label: labelText,
       enabled: enabled,
-      helper: helper,
-      error: error,
+      helper: helperText,
+      error: errorText,
       // The well fills its column as every field's does; the time sits at
       // its start and the clock at its end.
       box: RawTimeField(
@@ -1240,7 +1236,7 @@ class ClayTimeField extends StatelessWidget {
         onChanged: onChanged,
         showSeconds: showSeconds,
         autofocus: autofocus,
-        semanticLabel: label,
+        semanticLabel: labelText,
         frameBuilder: (context, states, segments) {
           final layered = DesignStyleOf([style, theme.timeFieldStyle], states);
           return SizedBox(
@@ -1248,7 +1244,7 @@ class ClayTimeField extends StatelessWidget {
             child: AnimatedClaySurface(
               face: clayEntryFace(
                 theme,
-                {...states, if (error != null) WidgetState.error},
+                {...states, if (errorText != null) WidgetState.error},
                 fill: layered.fill,
                 edge: layered.edge,
               ),

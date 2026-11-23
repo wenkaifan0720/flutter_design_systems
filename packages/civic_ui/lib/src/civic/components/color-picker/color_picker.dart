@@ -343,10 +343,13 @@ class _SwatchState extends State<_Swatch> {
                       : null,
                 ),
               ),
-              Text(
-                swatch.name,
-                style: (chosen ? text.label : text.body).copyWith(
-                  color: Color.lerp(t.textPrimary, t.onFocus, focus),
+              // Under large text the name wraps beside its well.
+              Flexible(
+                child: Text(
+                  swatch.name,
+                  style: (chosen ? text.label : text.body).copyWith(
+                    color: Color.lerp(t.textPrimary, t.onFocus, focus),
+                  ),
                 ),
               ),
             ],

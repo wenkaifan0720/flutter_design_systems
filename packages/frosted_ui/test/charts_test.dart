@@ -17,8 +17,8 @@ Widget _host(
 }) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (BuildContext context, Widget? page) => FrostedHost(
-    light: FrostedThemeData.preset(style, Brightness.light),
-    dark: FrostedThemeData.preset(style, Brightness.dark),
+    theme: FrostedThemeData.preset(style, Brightness.light),
+    darkTheme: FrostedThemeData.preset(style, Brightness.dark),
     brightness: brightness,
     child: MediaQuery.withClampedTextScaling(
       minScaleFactor: textScale,

@@ -4,16 +4,16 @@ import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
 
-/// A text input in Ledger's type, its [placeholder] shown while it is
+/// A text input in Ledger's type, its [hintText] shown while it is
 /// empty, one line unless [maxLines] says it may grow. Plumbing of the
 /// fields and the composer; pages never place one.
 class LedgerTextInput extends StatefulWidget {
   /// A text input set in [style].
   const LedgerTextInput({
     required this.style,
-    required this.placeholderStyle,
+    required this.hintStyle,
     this.controller,
-    this.placeholder,
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.onEditingComplete,
@@ -29,14 +29,14 @@ class LedgerTextInput extends StatefulWidget {
   final TextStyle style;
 
   /// The placeholder's style.
-  final TextStyle placeholderStyle;
+  final TextStyle hintStyle;
 
   /// The words typed; the input makes its own when none is given, and never
   /// disposes one it was given.
   final TextEditingController? controller;
 
   /// What stands while the input is empty.
-  final String? placeholder;
+  final String? hintText;
 
   /// Called with the words as they are typed.
   final ValueChanged<String>? onChanged;
@@ -71,9 +71,7 @@ class LedgerTextInput extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<TextStyle>('style', style))
-      ..add(
-        DiagnosticsProperty<TextStyle>('placeholderStyle', placeholderStyle),
-      )
+      ..add(DiagnosticsProperty<TextStyle>('hintStyle', hintStyle))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -81,7 +79,7 @@ class LedgerTextInput extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('placeholder', placeholder, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -162,15 +160,15 @@ class _LedgerTextInputState extends State<LedgerTextInput> {
       builder: (context, value, _) => Stack(
         alignment: AlignmentDirectional.centerStart,
         children: [
-          if (value.text.isEmpty && widget.placeholder != null)
+          if (value.text.isEmpty && widget.hintText != null)
             IgnorePointer(
               child: ExcludeSemantics(
                 child: Text(
-                  widget.placeholder!,
+                  widget.hintText!,
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.ellipsis,
-                  style: widget.placeholderStyle,
+                  style: widget.hintStyle,
                 ),
               ),
             ),

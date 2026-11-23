@@ -468,8 +468,15 @@ class GlossSplitButton extends StatelessWidget {
         actions: actions,
         menuLabel: menuLabel,
         minimumSize: Size(height, height),
-        layoutBuilder: (context, main, toggle) =>
-            Row(mainAxisSize: MainAxisSize.min, children: [main, toggle]),
+        // The main half gives way where the two are wider than the row
+        // (large text on a phone): its label ends in an ellipsis.
+        layoutBuilder: (context, main, toggle) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(child: main),
+            toggle,
+          ],
+        ),
         buttonBuilder: (context, part, states, open) {
           final layered = DesignStyleOf([
             style,

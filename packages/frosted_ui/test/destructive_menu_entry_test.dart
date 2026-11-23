@@ -11,8 +11,8 @@ import 'package:frosted_ui/frosted_host.dart';
 Widget _host(FrostedThemeData t, Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: page!,
   ),

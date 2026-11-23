@@ -107,7 +107,7 @@ Future<_Photo> _paint(WidgetTester tester, double width, Widget child) async {
     MaterialApp(
       builder: (context, app) => StudioHost(
         brightness: Brightness.light,
-        light: theme.copyWith(colors: colors, textureStrength: 0),
+        theme: theme.copyWith(colors: colors, textureStrength: 0),
         child: app!,
       ),
       home: Center(

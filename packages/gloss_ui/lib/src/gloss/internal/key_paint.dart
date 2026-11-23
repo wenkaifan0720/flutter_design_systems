@@ -72,9 +72,7 @@ GlossFace glossKeyFace(
   }
   var face = switch (kind) {
     GlossKeyKind.gel => destructive ? GlossFace.ruby(c) : GlossFace.gel(c),
-    _ => GlossFace.pearl(
-      c,
-    ).copyWith(foreground: destructive ? c.danger : c.ink),
+    _ => _pearlKey(c, destructive: destructive),
   };
   final fill = layered.fill;
   if (fill != null) face = face.glazed(fill);
@@ -85,6 +83,34 @@ GlossFace glossKeyFace(
     travel: pressed ? 1 : 0,
     focus: focus,
   );
+}
+
+// A pearl key's face: its words ink, or ruby words on a key that destroys.
+// Where ruby words can't read on the pearl (by night, on the moonlit
+// pearl, where no rose both reads and stays rose) the key is the same
+// pearl moulded in ruby, its words the ruby's: raised and lit from above
+// as every pearl, with a pearl's lustre and not the gel's lens, which is
+// kept for a screen's one action.
+GlossFace _pearlKey(GlossColors c, {required bool destructive}) {
+  final pearl = GlossFace.pearl(c);
+  if (!destructive) return pearl.copyWith(foreground: c.ink);
+  if (_contrast(Color.lerp(pearl.top, pearl.middle, 0.4)!, c.danger) >= 4.5) {
+    return pearl.copyWith(foreground: c.danger);
+  }
+  return pearl.copyWith(
+    top: c.dangerTop,
+    middle: c.dangerFill,
+    bottom: c.dangerBottom,
+    foreground: c.onDanger,
+    // The soft light in its foot is the ruby's own, so it never greys it.
+    glow: c.dangerTop.withValues(alpha: pearl.glow.a),
+  );
+}
+
+// The contrast of [a] and [b], as WCAG reckons it.
+double _contrast(Color a, Color b) {
+  final x = a.computeLuminance(), y = b.computeLuminance();
+  return x > y ? (x + .05) / (y + .05) : (y + .05) / (x + .05);
 }
 
 /// A pearl or gel key of [kind] reading [label] (after [icon]), painted in

@@ -134,7 +134,7 @@ class _JotterSearchPageState extends State<JotterSearchPage> {
         KeycapSearchField(
           controller: _query,
           focusNode: _field,
-          hint: 'Search notes',
+          hintText: 'Search notes',
           autofocus: widget.initialQuery.isEmpty,
         ),
         const SizedBox(height: KeycapSpacing.medium),

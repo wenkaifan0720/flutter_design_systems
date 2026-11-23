@@ -262,8 +262,8 @@ class _QuillAppState extends State<QuillApp> {
               child: _scaled(
                 context,
                 LedgerHost(
-                  light: LedgerThemeData.light(density: density),
-                  dark: LedgerThemeData.dark(density: density),
+                  theme: LedgerThemeData.light(density: density),
+                  darkTheme: LedgerThemeData.dark(density: density),
                   brightness: switch (_prefs.appearance) {
                     QuillAppearance.light => Brightness.light,
                     QuillAppearance.dark => Brightness.dark,

@@ -75,7 +75,11 @@ void main() {
           onChanged: _drop,
         ),
         const FrostedCheckRow(label: long, value: false, onChanged: _drop),
-        const FrostedTextField(label: long, hint: german, onChanged: _drop),
+        const FrostedTextField(
+          labelText: long,
+          hintText: german,
+          onChanged: _drop,
+        ),
         const FrostedSegmentedButton<int>(
           label: german,
           value: 0,
@@ -104,7 +108,7 @@ void main() {
       _phone(t);
       await t.pumpWidget(
         _app(direction: direction, [
-          FrostedTextField(label: words, value: words, onChanged: _drop),
+          FrostedTextField(labelText: words, value: words, onChanged: _drop),
           FrostedButton(words, onPressed: () {}),
           FrostedListTile(title: words, meta: words, onPressed: () {}),
         ]),

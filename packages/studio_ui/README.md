@@ -75,9 +75,9 @@ A form's everyday parts take `value` and `onChanged`; a null `onChanged` or `onP
 ```dart
 Column(
   children: [
-    StudioTextField(label: 'Episode title', onChanged: (v) => title = v),
+    StudioTextField(labelText: 'Episode title', onChanged: (v) => title = v),
     StudioSelect<String>(
-      label: 'Quality',
+      labelText: 'Quality',
       value: quality,
       items: const [
         StudioSelectItem(value: 'high', label: 'High'),
@@ -122,8 +122,8 @@ Set the indicator and panel finish with `StudioThemeData.from`, and hand `Studio
 
 ```dart
 StudioHost(
-  light: StudioThemeData.from(indicator: const Color(0xFF4FD1C5)),
-  dark: StudioThemeData.from(
+  theme: StudioThemeData.from(indicator: const Color(0xFF4FD1C5)),
+  darkTheme: StudioThemeData.from(
     indicator: const Color(0xFF4FD1C5),
     brightness: Brightness.dark,
   ),

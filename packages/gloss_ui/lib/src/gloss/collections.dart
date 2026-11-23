@@ -367,7 +367,7 @@ class GlossDataTable<R> extends StatelessWidget {
                 GlossPagination(
                   page: controller.page,
                   pageCount: controller.pageCount,
-                  onChanged: controller.goToPage,
+                  onPageChanged: controller.goToPage,
                 ),
               ],
             ),
@@ -695,9 +695,9 @@ class GlossCarousel extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: GlossPageDots(
-                    count: controls.count,
-                    index: controls.page,
-                    onChanged: controls.goToPage,
+                    pageCount: controls.count,
+                    page: controls.page,
+                    onPageChanged: controls.goToPage,
                   ),
                 ),
               ),

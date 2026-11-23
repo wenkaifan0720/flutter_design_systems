@@ -31,9 +31,9 @@ class _FrameState extends State<_Frame> {
   Widget build(BuildContext context) {
     final text = context.civicText;
     return CivicShellFrame(
-      places: _places,
+      destinations: _places,
       selectedIndex: _index,
-      onSelected: (i) => setState(() => _index = i),
+      onDestinationSelected: (i) => setState(() => _index = i),
       brand: 'Brindlemere parking permits',
       action: CivicShellAction(
         icon: LucideIcons.plus,
@@ -62,8 +62,8 @@ class _FrameState extends State<_Frame> {
             ),
             const SizedBox(height: CivicSpacing.s32),
             CivicInput(
-              label: 'Your street',
-              hint: 'For example, Harbour Row',
+              labelText: 'Your street',
+              hintText: 'For example, Harbour Row',
               onChanged: (_) {},
             ),
             const SizedBox(height: CivicSpacing.s48),

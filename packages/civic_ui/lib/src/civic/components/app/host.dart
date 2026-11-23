@@ -8,8 +8,8 @@ import '../../theme.dart';
 import '../toast/toast.dart';
 import 'routes.dart';
 
-/// Civic over a whole app: the theme for the brightness in force ([light]
-/// by day, [dark] by night), the page's ground, words and glyphs, the
+/// Civic over a whole app: the theme for the brightness in force ([theme]
+/// by day, [darkTheme] by night), the page's ground, words and glyphs, the
 /// status bar's polarity, Civic's page change on every platform
 /// ([CivicPageTransitions]) and a [CivicToaster] for `CivicToast.show`. It
 /// never clamps the text scale: a reader at 200% gets 200%, and Civic's
@@ -30,8 +30,8 @@ class CivicHost extends StatelessWidget {
   const CivicHost({
     super.key,
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
   });
 
@@ -39,10 +39,10 @@ class CivicHost extends StatelessWidget {
   final Widget child;
 
   /// The theme by day; null is Civic's own.
-  final CivicThemeData? light;
+  final CivicThemeData? theme;
 
   /// The theme by night; null is Civic's own.
-  final CivicThemeData? dark;
+  final CivicThemeData? darkTheme;
 
   /// Pins the appearance; null follows the platform, or a preview frame.
   final Brightness? brightness;
@@ -63,7 +63,7 @@ class CivicHost extends StatelessWidget {
         brightness ??
         frame?.brightness ??
         MediaQuery.platformBrightnessOf(context);
-    final t = wanted == Brightness.dark ? dark ?? _dark : light ?? _light;
+    final t = wanted == Brightness.dark ? darkTheme ?? _dark : theme ?? _light;
     // The platform the app's own Material theme behaves as.
     final platform = Theme.of(context).platform;
     return CivicTheme(

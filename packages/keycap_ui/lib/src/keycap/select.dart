@@ -17,7 +17,7 @@ import 'internal/field_width.dart';
 import 'internal/keep_in_view.dart';
 import 'internal/spring_value.dart';
 import 'internal/type_ahead.dart';
-import 'text_field.dart';
+import 'fields.dart' show KeycapField;
 import 'theme.dart';
 
 /// One choice in a [KeycapSelect].
@@ -52,7 +52,7 @@ class KeycapSelectItem<T> {
 /// but spans a column not much wider than that (a pane, a dialog).
 ///
 /// ```dart
-/// KeycapSelect<String>(label: 'Format', value: format, items: formats, onChanged: setFormat)
+/// KeycapSelect<String>(labelText: 'Format', value: format, items: formats, onChanged: setFormat)
 /// ```
 class KeycapSelect<T> extends StatefulWidget {
   /// A select over [items].
@@ -61,11 +61,11 @@ class KeycapSelect<T> extends StatefulWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    this.label,
+    this.labelText,
     this.semanticLabel,
-    this.hint,
-    this.helper,
-    this.error,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.style,
   });
@@ -73,26 +73,26 @@ class KeycapSelect<T> extends StatefulWidget {
   /// The choices.
   final List<KeycapSelectItem<T>> items;
 
-  /// The chosen value; null shows [hint].
+  /// The chosen value; null shows [hintText].
   final T? value;
 
   /// Called with a new choice; null turns the select off.
   final ValueChanged<T>? onChanged;
 
   /// The words over the select.
-  final String? label;
+  final String? labelText;
 
-  /// The select's name for a screen reader, when there is no [label].
+  /// The select's name for a screen reader, when there is no [labelText].
   final String? semanticLabel;
 
   /// The words shown while nothing is chosen.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the select.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the select.
-  final String? error;
+  final String? errorText;
 
   /// The key's focus node.
   final FocusNode? focusNode;
@@ -112,8 +112,8 @@ class KeycapSelect<T> extends StatefulWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(IntProperty('items', items.length))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
@@ -142,10 +142,10 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
       :items,
       :value,
       :onChanged,
-      :label,
-      :hint,
-      :helper,
-      :error,
+      :labelText,
+      :hintText,
+      :helperText,
+      :errorText,
       :style,
     ) = widget;
     final theme = KeycapTheme.of(context);
@@ -193,13 +193,14 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
                 },
           focusNode: _focus,
           expanded: anchor?.isOpen,
-          semanticLabel: widget.semanticLabel ?? label,
+          // KeycapField names the key with its label.
+          semanticLabel: widget.semanticLabel,
           semanticValue: chosen?.label,
           excludeSemantics: true,
           builder: (context, states, _) {
             final layered = DesignStyleOf(
               [style, theme.selectStyle],
-              {...states, if (error != null) WidgetState.error},
+              {...states, if (errorText != null) WidgetState.error},
             );
             var face = keycapKeyFace(theme, KeycapKind.alpha, {
               ...states,
@@ -212,7 +213,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
             if (!states.contains(WidgetState.focused) || open) {
               face = face.copyWith(focus: c.focus.withValues(alpha: 0));
             }
-            if (error != null && enabled) {
+            if (errorText != null && enabled) {
               face = face.copyWith(
                 edge: c.dangerInk,
                 focus: states.contains(WidgetState.focused) && !open
@@ -247,7 +248,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
                           child: DesignCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
-                              chosen?.label ?? hint ?? '',
+                              chosen?.label ?? hintText ?? '',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.body
@@ -277,7 +278,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
         ? key(null)
         : RawPopover(
             arrowKeyNavigation: true,
-            semanticLabel: widget.semanticLabel ?? label,
+            semanticLabel: widget.semanticLabel ?? labelText,
             placement: const RawPopoverPlacement(
               gap: KeycapSpacing.tight + 2,
               margin: KeycapSpacing.small,
@@ -301,15 +302,13 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
               ),
             ),
           );
-    final field = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: KeycapFieldLabel(label, enabled: enabled)),
-        box,
-        KeycapFieldMessage(helper: helper, error: error),
-      ],
+    final field = KeycapField(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      focusNode: _focus,
+      child: box,
     );
     return keycapFieldWidth(context, field, KeycapSelect.maxWideWidth);
   }
@@ -426,7 +425,7 @@ class KeycapMenuRow extends StatelessWidget {
     this.enabled = true,
     this.leading,
     this.trailing,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.inset = KeycapSpacing.medium,
   });
 
@@ -459,7 +458,7 @@ class KeycapMenuRow extends StatelessWidget {
   final Widget? trailing;
 
   /// Whether choosing it destroys something.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   @override
   Widget build(BuildContext context) {
@@ -482,7 +481,7 @@ class KeycapMenuRow extends StatelessWidget {
         style.foreground ??
         (!enabled
             ? c.inkDisabled
-            : destructive
+            : isDestructiveAction
             ? c.dangerInk
             : c.ink);
     return SizedBox(
@@ -626,11 +625,22 @@ class _SelectListState<T> extends State<_SelectList<T>> {
     for (final item in widget.items) FocusNode(debugLabel: item.label),
   ];
 
-  // The one lit row: where the pointer or the keyboard last went.
-  int? _lit;
+  // The row the keyboard starts on: the chosen one, else the first that
+  // can be chosen; -1 when none can. It asks for the focus as the list
+  // mounts, and the popover keeps it there, in view.
+  late final int _first = () {
+    final items = widget.items;
+    final at = items.indexWhere((i) => i.enabled && i.value == widget.value);
+    return at >= 0 ? at : items.indexWhere((i) => i.enabled);
+  }();
 
-  // While the list puts the keyboard on its chosen row, quietly.
-  bool _quiet = true;
+  // The one lit row: where the pointer or the keyboard last went. The row
+  // the keyboard starts on is lit only when the keyboard opened the list.
+  late int? _lit = widget.lightChosen && _first >= 0 ? _first : null;
+
+  // Until the keyboard first lands, on the row it starts on: that landing
+  // lights nothing.
+  late bool _quiet = _first >= 0;
 
   @override
   void initState() {
@@ -638,29 +648,14 @@ class _SelectListState<T> extends State<_SelectList<T>> {
     keycapKeepInView(_nodes);
     for (final (i, node) in _nodes.indexed) {
       node.addListener(() {
-        if (_quiet || !node.hasPrimaryFocus || _lit == i) return;
-        setState(() => _lit = i);
+        if (!node.hasPrimaryFocus) return;
+        if (_quiet) {
+          _quiet = false;
+          if (i == _first) return;
+        }
+        if (_lit != i) setState(() => _lit = i);
       });
     }
-    // The overlay puts the keyboard on the first row as the list opens; a
-    // select's goes on to the chosen row (the first when none is), in view.
-    // It is lit only when the keyboard opened the list.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final items = widget.items;
-      var at = items.indexWhere((i) => i.enabled && i.value == widget.value);
-      if (at < 0) at = items.indexWhere((i) => i.enabled);
-      if (at < 0) {
-        _quiet = false;
-        return;
-      }
-      FocusTraversalPolicy.defaultTraversalRequestFocusCallback(_nodes[at]);
-      scheduleMicrotask(() {
-        if (!mounted) return;
-        _quiet = false;
-        if (widget.lightChosen) setState(() => _lit = at);
-      });
-    });
   }
 
   @override
@@ -701,6 +696,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                       ? () => widget.onChosen(item.value)
                       : null,
                   focusNode: _nodes[i],
+                  autofocus: i == _first,
                   selected: item.value == widget.value,
                   semanticSelected: item.value == widget.value,
                   semanticLabel: item.label,

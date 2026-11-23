@@ -506,7 +506,7 @@ class _HarborActivityState extends State<HarborActivity> {
               '${kitSay(tx.title)} · ${FrostedFormat.money(tx.amount.abs())}',
             ),
             FrostedNumberField(
-              label: kitSay('People'),
+              labelText: kitSay('People'),
               value: people,
               min: 2,
               max: 20,
@@ -610,7 +610,7 @@ class _HarborActivityState extends State<HarborActivity> {
     ].where((day) => day.rows.isNotEmpty).toList();
     final list = <Widget>[
       FrostedSearchField(
-        hint: kitSay('Search activity'),
+        hintText: kitSay('Search activity'),
         value: _query,
         onChanged: (value) => setState(() => _query = value),
       ),
@@ -811,7 +811,7 @@ class _HarborSettingsState extends State<HarborSettings> {
       cancelLabel: kitSay('Cancel'),
       content: StatefulBuilder(
         builder: (context, change) => FrostedNumberField(
-          label: kitSay('Limit in dollars'),
+          labelText: kitSay('Limit in dollars'),
           value: draft,
           min: 0,
           step: 100,
@@ -951,7 +951,7 @@ class _HarborSettingsState extends State<HarborSettings> {
                     ),
                     confirmLabel: kitSay('Close account'),
                     cancelLabel: kitSay('Keep it'),
-                    destructive: true,
+                    isDestructiveAction: true,
                   ),
                 ),
               ),

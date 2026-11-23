@@ -156,6 +156,22 @@ class GlossRangeSlider extends StatelessWidget {
   }
 }
 
+// Gloss is lit once, from above and the reading start: right to left, what
+// [paint] draws in [rect] (a face, even about its middle) is turned about
+// its middle, so its light runs from the right.
+void _fromStart(Canvas canvas, Rect rect, bool rtl, VoidCallback paint) {
+  if (!rtl) {
+    paint();
+    return;
+  }
+  canvas
+    ..save()
+    ..translate(rect.center.dx * 2, 0)
+    ..scale(-1, 1);
+  paint();
+  canvas.restore();
+}
+
 class _RangeGroove extends CustomPainter {
   _RangeGroove({
     required this.c,
@@ -180,14 +196,19 @@ class _RangeGroove extends CustomPainter {
     if (size.isEmpty) return;
     // The core track spans from the first thumb's center to the last one's.
     final radius = size.height / 2;
-    paintGlossFace(
+    _fromStart(
       canvas,
       Rect.fromLTRB(-radius, 0, size.width + radius, size.height),
-      GlossFace.well(c).copyWith(
-        lift: enabled ? -1 : -0.5,
-        edge: highContrast ? c.ink : const Color(0x00000000),
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        Rect.fromLTRB(-radius, 0, size.width + radius, size.height),
+        GlossFace.well(c).copyWith(
+          lift: enabled ? -1 : -0.5,
+          edge: highContrast ? c.ink : const Color(0x00000000),
+        ),
+        highContrast: highContrast,
       ),
-      highContrast: highContrast,
     );
     final a = start * size.width;
     final b = end * size.width;
@@ -209,7 +230,12 @@ class _RangeGroove extends CustomPainter {
         bottom: c.inkDisabled,
       );
     }
-    paintGlossFace(canvas, lit, face, highContrast: highContrast);
+    _fromStart(
+      canvas,
+      lit,
+      rtl,
+      () => paintGlossFace(canvas, lit, face, highContrast: highContrast),
+    );
   }
 
   @override
@@ -476,7 +502,7 @@ String _size(int bytes) {
 /// ([onChoose]).
 ///
 /// ```dart
-/// GlossFileDrop(label: 'Photos', onChoose: () {}, files: const [GlossFile(name: 'risotto.jpg', bytes: 240000)])
+/// GlossFileDrop(labelText: 'Photos', onChoose: () {}, files: const [GlossFile(name: 'risotto.jpg', bytes: 240000)])
 /// ```
 class GlossFileDrop extends StatelessWidget {
   /// A file drop.
@@ -485,8 +511,8 @@ class GlossFileDrop extends StatelessWidget {
     required this.onChoose,
     this.files = const [],
     this.onRemove,
-    this.label,
-    this.hint,
+    this.labelText,
+    this.hintText,
     this.chooseLabel = 'Choose files',
   });
 
@@ -500,10 +526,10 @@ class GlossFileDrop extends StatelessWidget {
   final ValueChanged<GlossFile>? onRemove;
 
   /// The words above the tray.
-  final String? label;
+  final String? labelText;
 
   /// What the tray says.
-  final String? hint;
+  final String? hintText;
 
   /// The key's words.
   final String chooseLabel;
@@ -518,7 +544,7 @@ class GlossFileDrop extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null) GlossFieldLabel(label!, enabled: enabled),
+        if (labelText != null) GlossFieldLabel(labelText!, enabled: enabled),
         GlossSurface(
           face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
           child: Padding(
@@ -537,10 +563,10 @@ class GlossFileDrop extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (hint != null) ...[
+                if (hintText != null) ...[
                   const SizedBox(height: GlossSpacing.small),
                   Text(
-                    hint!,
+                    hintText!,
                     textAlign: TextAlign.center,
                     style: glossLetterpress(theme.textTheme.secondary, c),
                   ),

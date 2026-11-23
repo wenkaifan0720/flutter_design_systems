@@ -58,19 +58,22 @@ const _sizes = <FrostedSelectOption<String>>[
 final List<NestedPart> nestedParts = [
   _n(
     'Text field',
-    () => _w(280, const FrostedTextField(label: 'Name', value: 'Maya')),
+    () => _w(280, const FrostedTextField(labelText: 'Name', value: 'Maya')),
   ),
-  _n('Search field', () => _w(280, const FrostedSearchField(hint: 'Search'))),
+  _n(
+    'Search field',
+    () => _w(280, const FrostedSearchField(hintText: 'Search')),
+  ),
   _n(
     'Text area',
-    () => _w(280, const FrostedTextArea(label: 'Notes', value: 'Maya')),
+    () => _w(280, const FrostedTextArea(labelText: 'Notes', value: 'Maya')),
   ),
   _n(
     'Select',
     () => _w(
       280,
       const FrostedSelect<String>(
-        label: 'Size',
+        labelText: 'Size',
         value: 'm',
         options: _sizes,
         onChanged: _drop,
@@ -103,7 +106,7 @@ final List<NestedPart> nestedParts = [
   _n(
     'Radio',
     () => const FrostedRadioGroup<String>(
-      label: 'Plan',
+      labelText: 'Plan',
       value: 'a',
       options: [FrostedRadio('a', 'Monthly'), FrostedRadio('b', 'Yearly')],
       onChanged: _drop,
@@ -249,8 +252,8 @@ Future<void> pumpNested(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (BuildContext context, Widget? page) => FrostedHost(
-        light: theme,
-        dark: theme,
+        theme: theme,
+        darkTheme: theme,
         brightness: brightness,
         child: page!,
       ),

@@ -14,7 +14,7 @@ Widget _app() => MaterialApp(
     padding: EdgeInsets.all(24),
     child: Align(
       alignment: Alignment.topCenter,
-      child: ClaySearchField(hint: 'Habits, notes'),
+      child: ClaySearchField(hintText: 'Habits, notes'),
     ),
   ),
 );

@@ -175,7 +175,7 @@ class ComicNavigationDrawer extends StatelessWidget {
 /// more room than the row has.
 ///
 /// ```dart
-/// ComicTabBar(tabs: ['All', 'Saved'], selectedIndex: 0, onChanged: select)
+/// ComicTabBar(tabs: ['All', 'Saved'], selectedIndex: 0, onTap: select)
 /// ```
 class ComicTabBar extends StatefulWidget {
   /// Creates a tab bar, distinct from the app's destination navigation.
@@ -183,7 +183,7 @@ class ComicTabBar extends StatefulWidget {
     super.key,
     required this.tabs,
     this.selectedIndex = 0,
-    this.onChanged,
+    this.onTap,
     this.label,
   });
 
@@ -194,7 +194,7 @@ class ComicTabBar extends StatefulWidget {
   final int selectedIndex;
 
   /// Selects a view; absent means disabled.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onTap;
 
   /// Overrides the localized group name.
   final String? label;
@@ -207,7 +207,7 @@ class ComicTabBar extends StatefulWidget {
     properties
       ..add(IterableProperty<String>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onTap', onTap))
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }
@@ -284,7 +284,7 @@ class _ComicTabBarState extends State<ComicTabBar>
   void _moved() {
     final controller = _controller!;
     if (controller.index == _chosen) return;
-    widget.onChanged?.call(controller.index);
+    widget.onTap?.call(controller.index);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _controller == controller && controller.index != _chosen) {
         controller.animateTo(_chosen);
@@ -327,7 +327,7 @@ class _ComicTabBarState extends State<ComicTabBar>
       words.dispose();
       if (own > widest) widest = own;
     }
-    final enabled = widget.onChanged != null;
+    final enabled = widget.onTap != null;
     return LayoutBuilder(
       builder: (context, box) {
         // Tabs that need more than the row (large text on a phone): the trough's rim holds still at the row's ends and
@@ -407,26 +407,26 @@ class _ComicTabBarState extends State<ComicTabBar>
   }
 }
 
-/// Page indicators: a small caption mark a page, the current one longer. With [onChanged] the row is one control, as
+/// Page indicators: a small caption mark a page, the current one longer. With [onPageChanged] the row is one control, as
 /// a phone's page control is: a press on a mark goes to its page, the arrow keys step (Home and End to the ends), and
 /// a screen reader adjusts it as a slider. One target, the whole row's height, instead of a row of small ones each
 /// inside its neighbours' reach.
 ///
 /// ```dart
-/// ComicPageDots(count: 4, selectedIndex: 1, label: 'Pages', onChanged: select)
+/// ComicPageDots(pageCount: 4, selectedIndex: 1, label: 'Pages', onPageChanged: select)
 /// ```
 class ComicPageDots extends StatelessWidget {
   /// Creates page indicators.
   const ComicPageDots({
     super.key,
-    required this.count,
+    required this.pageCount,
     required this.selectedIndex,
     required this.label,
-    this.onChanged,
-  }) : assert(count >= 0);
+    this.onPageChanged,
+  }) : assert(pageCount >= 0);
 
   /// Number of pages.
-  final int count;
+  final int pageCount;
 
   /// Current page position.
   final int selectedIndex;
@@ -435,7 +435,7 @@ class ComicPageDots extends StatelessWidget {
   final String label;
 
   /// Selects a page; absent means display only.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
@@ -462,15 +462,15 @@ class ComicPageDots extends StatelessWidget {
     // the column's edge and a target's reach past an end stands outward.
     EdgeInsetsGeometry slot(int i) => EdgeInsetsDirectional.only(
       start: i == 0 ? 0 : (44 - across(i)) / 2,
-      end: i == count - 1 ? 0 : (44 - across(i)) / 2,
+      end: i == pageCount - 1 ? 0 : (44 - across(i)) / 2,
       top: 13,
       bottom: 13,
     );
     Widget dot(int i) => Padding(padding: slot(i), child: mark(i));
-    final choose = onChanged;
-    if (choose != null && count > 0) {
+    final choose = onPageChanged;
+    if (choose != null && pageCount > 0) {
       return _ChoosingDots(
-        count: count,
+        count: pageCount,
         selectedIndex: selectedIndex,
         label: label,
         onChanged: choose,
@@ -488,9 +488,9 @@ class ComicPageDots extends StatelessWidget {
     }
     return Semantics(
       label: label,
-      value: '${count == 0 ? 0 : selectedIndex + 1} / $count',
+      value: '${pageCount == 0 ? 0 : selectedIndex + 1} / $pageCount',
       child: ExcludeSemantics(
-        child: Wrap(children: [for (var i = 0; i < count; i++) dot(i)]),
+        child: Wrap(children: [for (var i = 0; i < pageCount; i++) dot(i)]),
       ),
     );
   }
@@ -499,10 +499,15 @@ class ComicPageDots extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
+      ..add(IntProperty('pageCount', pageCount))
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(StringProperty('label', label))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      );
   }
 }
 
@@ -1033,28 +1038,28 @@ class ComicBreadcrumb extends StatelessWidget {
 /// zero-based.
 ///
 /// ```dart
-/// ComicPagination(count: 12, page: 2, onChanged: (i) => setState(() => page = i))
+/// ComicPagination(pageCount: 12, page: 2, onPageChanged: (i) => setState(() => page = i))
 /// ```
 class ComicPagination extends StatelessWidget {
   /// Creates a pager.
   const ComicPagination({
     super.key,
-    required this.count,
+    required this.pageCount,
     required this.page,
-    this.onChanged,
+    this.onPageChanged,
     this.window = 1,
     this.label,
-  }) : assert(count >= 1),
-       assert(page >= 0 && page < count);
+  }) : assert(pageCount >= 1),
+       assert(page >= 0 && page < pageCount);
 
   /// How many pages there are.
-  final int count;
+  final int pageCount;
 
   /// The current page, from zero.
   final int page;
 
   /// Goes to a page; null disables the pager.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// How many numbers stand either side of the current one.
   final int window;
@@ -1103,10 +1108,12 @@ class ComicPagination extends StatelessWidget {
     Widget number(int i) {
       final on = i == page;
       return cell(
-        label: words.page(i + 1, count),
+        label: words.page(i + 1, pageCount),
         on: on,
         // The current page stays at full ink: a press on it keeps the page where it is.
-        onPressed: onChanged == null ? null : () => on ? null : onChanged!(i),
+        onPressed: onPageChanged == null
+            ? null
+            : () => on ? null : onPageChanged!(i),
         // Its capitals on the cell's middle, as the arrows' glyphs are (the design kit's checks read them 0.2 px apart).
         child: CapLabel(
           child: Text(
@@ -1126,9 +1133,10 @@ class ComicPagination extends StatelessWidget {
       label: back
           ? RawWidgetsLocalizations.of(context).previousPageTooltip
           : RawWidgetsLocalizations.of(context).nextPageTooltip,
-      onPressed: onChanged == null || (back ? page == 0 : page == count - 1)
+      onPressed:
+          onPageChanged == null || (back ? page == 0 : page == pageCount - 1)
           ? null
-          : () => onChanged!(page + (back ? -1 : 1)),
+          : () => onPageChanged!(page + (back ? -1 : 1)),
       child: Icon(
         back == !rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
         size: 20,
@@ -1157,9 +1165,9 @@ class ComicPagination extends StatelessWidget {
           (List<Widget>, int?) row(int window) {
             final shown = <int>{
               0,
-              count - 1,
+              pageCount - 1,
               for (var i = page - window; i <= page + window; i++)
-                if (i >= 0 && i < count) i,
+                if (i >= 0 && i < pageCount) i,
             }.toList()..sort();
             final cells = <Widget>[step(true)];
             int? lit;
@@ -1204,7 +1212,7 @@ class ComicPagination extends StatelessWidget {
                 child: Center(
                   child: CapLabel(
                     child: Text(
-                      words.page(page + 1, count),
+                      words.page(page + 1, pageCount),
                       textAlign: TextAlign.center,
                       style: t.type.text(
                         15,
@@ -1228,9 +1236,14 @@ class ComicPagination extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
+      ..add(IntProperty('pageCount', pageCount))
       ..add(IntProperty('page', page))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      )
       ..add(IntProperty('window', window, defaultValue: 1))
       ..add(StringProperty('label', label, defaultValue: null));
   }

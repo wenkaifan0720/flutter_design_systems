@@ -319,7 +319,7 @@ void main() {
             (context, v, change) => ClayTabBar(
               tabs: const ['Week', 'Month', 'Year'],
               selectedIndex: v,
-              onSelected: change,
+              onTap: change,
             ),
           ),
           () => find.byType(ClayTabBar),

@@ -1842,23 +1842,23 @@ class ComicThemeData with Diagnosticable {
     ),
   );
 
-  /// Between this and [other]: colours blend, the width eases, the preset and the dots flip at the middle.
-  /// `AnimatedComicTheme` animates with it.
-  ComicThemeData lerp(ComicThemeData? other, double t) {
-    if (other == null || identical(this, other) || t == 0) return this;
-    if (t == 1) return other;
+  /// Between [a] and [b], as `ThemeData.lerp` takes two themes: colours blend, the width eases, the preset and the
+  /// dots flip at the middle. `AnimatedComicTheme` animates with it.
+  static ComicThemeData lerp(ComicThemeData a, ComicThemeData b, double t) {
+    if (identical(a, b) || t == 0) return a;
+    if (t == 1) return b;
     return ComicThemeData._(
-      t < .5 ? id : other.id,
-      t < .5 ? _palette : other._palette,
-      ComicColors.lerp(colors, other.colors, t),
-      lerpDouble(width, other.width, t)!,
-      t < .5 ? onDots : other.onDots,
-      shapes: ComicShapes.lerp(shapes, other.shapes, t),
-      strokes: ComicStrokes.lerp(strokes, other.strokes, t),
-      density: ComicDensity.lerp(density, other.density, t),
-      typeface: ComicTypeface.lerp(typeface, other.typeface, t),
-      components: ComicComponentThemes.lerp(components, other.components, t),
-      motion: ComicMotion.lerp(motion, other.motion, t),
+      t < .5 ? a.id : b.id,
+      t < .5 ? a._palette : b._palette,
+      ComicColors.lerp(a.colors, b.colors, t),
+      lerpDouble(a.width, b.width, t)!,
+      t < .5 ? a.onDots : b.onDots,
+      shapes: ComicShapes.lerp(a.shapes, b.shapes, t),
+      strokes: ComicStrokes.lerp(a.strokes, b.strokes, t),
+      density: ComicDensity.lerp(a.density, b.density, t),
+      typeface: ComicTypeface.lerp(a.typeface, b.typeface, t),
+      components: ComicComponentThemes.lerp(a.components, b.components, t),
+      motion: ComicMotion.lerp(a.motion, b.motion, t),
     );
   }
 
@@ -2351,7 +2351,7 @@ class ComicThemeDataTween extends Tween<ComicThemeData> {
   ComicThemeDataTween({super.begin, super.end});
 
   @override
-  ComicThemeData lerp(double t) => begin!.lerp(end, t);
+  ComicThemeData lerp(double t) => ComicThemeData.lerp(begin!, end!, t);
 }
 
 /// Uses the primary text colour for secondary text on a tinted surface.

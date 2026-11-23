@@ -29,7 +29,7 @@ class GlossDisclosure extends StatefulWidget {
     this.subtitle,
     this.expanded,
     this.initiallyExpanded = false,
-    this.onChanged,
+    this.onExpansionChanged,
     this.style,
   });
 
@@ -49,7 +49,7 @@ class GlossDisclosure extends StatefulWidget {
   final bool initiallyExpanded;
 
   /// Called with whether it is now open.
-  final ValueChanged<bool>? onChanged;
+  final ValueChanged<bool>? onExpansionChanged;
 
   /// Its own style, over [GlossThemeData.disclosureStyle].
   final GlossStyle? style;
@@ -76,7 +76,7 @@ class _GlossDisclosureState extends State<GlossDisclosure> {
   void _toggle() {
     final next = !_open;
     if (widget.expanded == null) setState(() => _own = next);
-    widget.onChanged?.call(next);
+    widget.onExpansionChanged?.call(next);
   }
 
   @override
@@ -929,7 +929,7 @@ class GlossAvatarGroup extends StatelessWidget {
 }
 
 /// A badge: a small ruby gel bead with a count, set on [child]'s top end
-/// corner (or alone). Past [max] it reads max+.
+/// corner (or alone). Past [maxCount] it reads max+.
 ///
 /// ```dart
 /// GlossBadge(count: 3, child: Icon(LucideIcons.bell))
@@ -940,7 +940,7 @@ class GlossBadge extends StatelessWidget {
     super.key,
     required this.count,
     this.child,
-    this.max = 99,
+    this.maxCount = 99,
     this.semanticLabel,
     this.style,
   });
@@ -952,7 +952,7 @@ class GlossBadge extends StatelessWidget {
   final Widget? child;
 
   /// The most it shows.
-  final int max;
+  final int maxCount;
 
   /// What a screen reader says; null: the count.
   final String? semanticLabel;
@@ -967,7 +967,7 @@ class GlossBadge extends StatelessWidget {
     final layered = DesignStyleOf([style, theme.badgeStyle], const {});
     var face = GlossFace.ruby(c).copyWith(lift: 0.6);
     if (layered.fill != null) face = face.glazed(layered.fill!);
-    final words = count > max ? '$max+' : '$count';
+    final words = count > maxCount ? '$maxCount+' : '$count';
     final bead = Semantics(
       label: semanticLabel ?? words,
       excludeSemantics: true,
@@ -1030,7 +1030,7 @@ class GlossBadge extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('count', count))
-      ..add(IntProperty('max', max));
+      ..add(IntProperty('maxCount', maxCount));
   }
 }
 
@@ -1121,14 +1121,17 @@ class GlossTag extends StatelessWidget {
                 Icon(icon, size: 14, color: ink),
                 const SizedBox(width: GlossSpacing.tight),
               ],
-              DesignCapCenter(
-                capHeightFactor: glossCapHeightFactor,
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  style: theme.textTheme.caption
-                      .copyWith(color: ink, fontWeight: FontWeight.w600)
-                      .merge(layered.textStyle),
+              Flexible(
+                child: DesignCapCenter(
+                  capHeightFactor: glossCapHeightFactor,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.caption
+                        .copyWith(color: ink, fontWeight: FontWeight.w600)
+                        .merge(layered.textStyle),
+                  ),
                 ),
               ),
             ],

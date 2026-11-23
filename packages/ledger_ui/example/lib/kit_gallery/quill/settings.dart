@@ -45,7 +45,9 @@ class _QuillSettingsState extends State<QuillSettings> {
       context,
       title: context.say('Change ${label.toLowerCase()}'),
       confirmLabel: context.say('Save'),
-      children: [LedgerTextField(label: context.say(label), controller: words)],
+      children: [
+        LedgerTextField(labelText: context.say(label), controller: words),
+      ],
     );
     if (ok == true && words.text.trim().isNotEmpty) done(words.text.trim());
     words.dispose();
@@ -146,9 +148,9 @@ class _QuillSettingsState extends State<QuillSettings> {
       ],
     );
     final week = LedgerSelect<String>(
-      label: context.say('Week starts on'),
+      labelText: context.say('Week starts on'),
       value: prefs.weekStart,
-      helper: context.say('The first day of each week'),
+      helperText: context.say('The first day of each week'),
       items: [
         LedgerSelectItem(value: 'monday', label: context.say('Monday')),
         LedgerSelectItem(value: 'sunday', label: context.say('Sunday')),
@@ -156,9 +158,9 @@ class _QuillSettingsState extends State<QuillSettings> {
       onChanged: (v) => prefs.update((p) => p.weekStart = v),
     );
     final density = LedgerSelect<LedgerDensity>(
-      label: context.say('Density'),
+      labelText: context.say('Density'),
       value: prefs.density,
-      helper: context.say('Compact fits more entries on a screen'),
+      helperText: context.say('Compact fits more entries on a screen'),
       items: [
         LedgerSelectItem(
           value: LedgerDensity.standard,

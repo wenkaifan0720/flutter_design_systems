@@ -278,7 +278,7 @@ void main() {
           t,
           const CivicPreview(
             tabs: _places,
-            activeIndex: 0,
+            selectedIndex: 0,
             brand: 'Brindlemere parking permits',
             child: CivicScreen(
               topBar: CivicTopBar(title: 'Applications'),

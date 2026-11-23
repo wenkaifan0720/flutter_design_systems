@@ -85,7 +85,7 @@ Map<String, Widget> _row(int size) {
         Fluent2ButtonSegment('board', 'Board'),
       ],
     ),
-    'text field': Fluent2TextField(hint: 'Name', onChanged: _drop, size: i),
+    'text field': Fluent2TextField(hintText: 'Name', onChanged: _drop, size: i),
     'select': Fluent2Select<String>(
       prompt: 'Pick a size',
       value: null,
@@ -95,7 +95,7 @@ Map<String, Widget> _row(int size) {
     ),
     'date picker': Fluent2DatePicker(
       value: null,
-      hint: 'Choose a date',
+      hintText: 'Choose a date',
       size: i,
       onChanged: _drop,
     ),

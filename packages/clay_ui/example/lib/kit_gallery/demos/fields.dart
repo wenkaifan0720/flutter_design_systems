@@ -29,7 +29,7 @@ class _LabelledPart extends StatelessWidget {
         ),
       ),
       const ClayFieldMessage(
-        helper: 'A label and help round a part with none of its own',
+        helperText: 'A label and help round a part with none of its own',
       ),
     ],
   );
@@ -45,35 +45,35 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       maxWidth: 420,
       children: [
         ClayTextField(
-          label: 'Habit name',
-          hint: 'Drink water',
-          helper: 'Shown on Today',
+          labelText: 'Habit name',
+          hintText: 'Drink water',
+          helperText: 'Shown on Today',
           onChanged: (_) {},
         ),
         ClayTextField(
-          label: 'Search',
-          hint: 'Habits, notes',
+          labelText: 'Search',
+          hintText: 'Habits, notes',
           prefixIcon: const Icon(LucideIcons.search),
           onChanged: (_) {},
         ),
         ClayTextField(
-          label: 'Daily goal',
-          hint: '8',
+          labelText: 'Daily goal',
+          hintText: '8',
           suffix: const Text('glasses'),
-          error: 'Enter a number from 1 to 20',
+          errorText: 'Enter a number from 1 to 20',
           onChanged: (_) {},
         ),
         ClayTextField(
-          label: 'Note',
-          hint: 'Why this habit matters',
+          labelText: 'Note',
+          hintText: 'Why this habit matters',
           maxLines: 4,
           minLines: 3,
           maxLength: 140,
           onChanged: (_) {},
         ),
         const ClayTextField(
-          label: 'Account',
-          hint: 'mara@example.com',
+          labelText: 'Account',
+          hintText: 'mara@example.com',
           enabled: false,
         ),
         const _LabelledPart(),
@@ -128,7 +128,7 @@ class _SelectsState extends State<_Selects> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       ClaySelect<String>(
-        label: 'Repeat',
+        labelText: 'Repeat',
         value: _repeat,
         items: const [
           ClaySelectItem(value: 'daily', label: 'Every day'),
@@ -141,8 +141,8 @@ class _SelectsState extends State<_Selects> {
       ),
       const SizedBox(height: ClaySpacing.regular),
       ClaySelect<String>(
-        label: 'Time of day',
-        hint: 'Choose a time',
+        labelText: 'Time of day',
+        hintText: 'Choose a time',
         value: _time,
         items: const [
           ClaySelectItem(
@@ -165,7 +165,7 @@ class _SelectsState extends State<_Selects> {
       ),
       const SizedBox(height: ClaySpacing.regular),
       const ClaySelect<String>(
-        label: 'Week starts on',
+        labelText: 'Week starts on',
         value: 'mon',
         items: [ClaySelectItem(value: 'mon', label: 'Monday')],
         onChanged: null,
@@ -182,15 +182,15 @@ class _Entry extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       const ClayTextArea(
-        label: 'Note',
-        hint: 'What helped today, or what got in the way',
+        labelText: 'Note',
+        hintText: 'What helped today, or what got in the way',
       ),
       const SizedBox(height: ClaySpacing.regular),
-      ClaySearchField(hint: 'Search habits', onChanged: (_) {}),
+      ClaySearchField(hintText: 'Search habits', onChanged: (_) {}),
       const SizedBox(height: ClaySpacing.regular),
       ClayPasswordField(
-        label: 'Password',
-        helper: 'Eight letters or more',
+        labelText: 'Password',
+        helperText: 'Eight letters or more',
         onChanged: (_) {},
       ),
     ],
@@ -205,8 +205,8 @@ class _Numbers extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       const ClayInputGroup(
-        label: 'Goal',
-        hint: '8',
+        labelText: 'Goal',
+        hintText: '8',
         suffixText: 'glasses a day',
         keyboardType: TextInputType.number,
       ),
@@ -237,8 +237,8 @@ class _Many extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       ClayCombobox<String>(
-        label: 'Category',
-        hint: 'Health, mind, home',
+        labelText: 'Category',
+        hintText: 'Health, mind, home',
         options: const ['Health', 'Mind', 'Home', 'Work', 'Friends'],
         onSelected: (_) {},
       ),
@@ -246,7 +246,7 @@ class _Many extends StatelessWidget {
       KitLive<List<String>>(
         const ['Morning', 'Outdoors'],
         (context, tags, set) => ClayTagInput<String>(
-          label: 'Tags',
+          labelText: 'Tags',
           values: tags,
           options: const ['Morning', 'Outdoors', 'Quick', 'With friends'],
           onCreate: (text) => text,

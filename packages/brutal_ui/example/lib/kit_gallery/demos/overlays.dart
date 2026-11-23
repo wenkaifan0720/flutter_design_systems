@@ -34,8 +34,8 @@ class _Overlays extends StatelessWidget {
             ),
             BrutalDialogAction(
               label: 'Cancel ticket',
-              primary: true,
-              destructive: true,
+              isDefaultAction: true,
+              isDestructiveAction: true,
               onPressed: open
                   ? () => Navigator.of(context).maybePop(true)
                   : () {},
@@ -208,8 +208,8 @@ class _Anchored extends StatelessWidget {
                       Text('Share Low Tide', style: t.title),
                       const SizedBox(height: BrutalSpacing.medium),
                       const BrutalTextField(
-                        label: 'Email',
-                        hint: 'name@example.com',
+                        labelText: 'Email',
+                        hintText: 'name@example.com',
                       ),
                       const SizedBox(height: BrutalSpacing.medium),
                       BrutalButton.filled('Send', onPressed: close),
@@ -257,9 +257,9 @@ class _Anchored extends StatelessWidget {
                     builder: (context) => const Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        BrutalTextField(label: 'Venue'),
+                        BrutalTextField(labelText: 'Venue'),
                         SizedBox(height: BrutalSpacing.regular),
-                        BrutalTextField(label: 'Most per ticket'),
+                        BrutalTextField(labelText: 'Most per ticket'),
                       ],
                     ),
                   ),
@@ -315,8 +315,8 @@ Widget kitSpecimenDialog() => Builder(
         ),
         BrutalDialogAction(
           label: 'Cancel ticket',
-          destructive: true,
-          primary: true,
+          isDestructiveAction: true,
+          isDefaultAction: true,
           onPressed: () => kitFeedback(context, 'Ticket cancelled.'),
         ),
       ],

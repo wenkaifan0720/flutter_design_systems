@@ -194,7 +194,7 @@ class _HabitList extends StatelessWidget {
       children: [
         ClaySearchField(
           controller: search,
-          hint: 'Search habits',
+          hintText: 'Search habits',
           semanticLabel: 'Search habits',
         ),
         const SizedBox(height: ClaySpacing.regular),
@@ -372,7 +372,7 @@ class _SteadyHabitPageState extends State<SteadyHabitPage> {
         ClayTabBar(
           tabs: const ['November', 'Five weeks'],
           selectedIndex: _range,
-          onSelected: (i) => setState(() => _range = i),
+          onTap: (i) => setState(() => _range = i),
         ),
         const SizedBox(height: ClaySpacing.regular),
         ClayCard(

@@ -18,7 +18,7 @@ Widget _group(String kind, String? value, ValueChanged<String>? changed) =>
     switch (kind) {
       'radio group' => KeycapRadioGroup<String>(
         options: const ['A', 'B', 'C', 'D'],
-        value: value,
+        groupValue: value,
         isEnabled: (v) => v != 'B',
         labelOf: (v) => v,
         semanticLabel: 'Letters',

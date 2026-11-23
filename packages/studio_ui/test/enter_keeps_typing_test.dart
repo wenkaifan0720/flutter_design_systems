@@ -70,7 +70,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         StudioCombobox<String>(
-          label: 'Show',
+          labelText: 'Show',
           options: const ['Night Desk', 'Night Shift', 'Field Notes'],
           labelOf: (v) => v,
           onSelected: taken.add,
@@ -90,7 +90,7 @@ void main() {
       _app(
         StatefulBuilder(
           builder: (context, setState) => StudioTagInput<String>(
-            label: 'Topics',
+            labelText: 'Topics',
             values: topics,
             options: const ['Interviews', 'Science', 'Music', 'History'],
             labelOf: (k) => k,

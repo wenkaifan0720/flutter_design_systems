@@ -66,8 +66,8 @@ void main() {
               context,
               title: 'Filter tasks',
               builder: (context) => const [
-                LedgerTextField(label: 'Project'),
-                LedgerTextField(label: 'Assignee'),
+                LedgerTextField(labelText: 'Project'),
+                LedgerTextField(labelText: 'Assignee'),
               ],
             ),
           ),

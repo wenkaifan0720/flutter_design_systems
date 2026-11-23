@@ -277,7 +277,7 @@ enum _IconButtonKind { pearl, gel, plain }
 
 /// A round Gloss bead holding a glyph: pearl by default, jade gel with
 /// [GlossIconButton.filled], or a bare letterpressed glyph with
-/// [GlossIconButton.plain] (on a bar, beside a field). [selected] latches a
+/// [GlossIconButton.plain] (on a bar, beside a field). [isSelected] latches a
 /// pearl bead in: it stays sunk and its glyph turns jade.
 ///
 /// ```dart
@@ -290,7 +290,7 @@ class GlossIconButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     required this.tooltip,
-    this.selected,
+    this.isSelected,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -305,7 +305,7 @@ class GlossIconButton extends StatelessWidget {
     this.style,
     this.focusNode,
     this.autofocus = false,
-  }) : selected = null,
+  }) : isSelected = null,
        _kind = _IconButtonKind.gel;
 
   /// A bare glyph letterpressed into the surface it stands on.
@@ -314,7 +314,7 @@ class GlossIconButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     required this.tooltip,
-    this.selected,
+    this.isSelected,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -331,7 +331,7 @@ class GlossIconButton extends StatelessWidget {
 
   /// Whether a toggling bead is on (latched in, its glyph jade); null for a
   /// bead that does not toggle, as `IconButton.isSelected`.
-  final bool? selected;
+  final bool? isSelected;
 
   /// This bead's own style, over [GlossThemeData.iconButtonStyle].
   final GlossStyle? style;
@@ -352,16 +352,16 @@ class GlossIconButton extends StatelessWidget {
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
-      selected: selected ?? false,
+      selected: isSelected ?? false,
       // A key that latches: a button that is selected while latched, as
       // Flutter's IconButton(isSelected:) reads.
-      semanticSelected: selected,
+      semanticSelected: isSelected,
       semanticLabel: tooltip,
       builder: (context, states, _) {
         final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
-        final on = selected ?? false;
+        final on = isSelected ?? false;
         final focus = glossGlazeOf(c, states);
         final side = layered.minimumSize?.height ?? theme.controlHeight - 8;
         final glyph = layered.iconSize ?? 20;
@@ -450,7 +450,7 @@ class GlossIconButton extends StatelessWidget {
         FlagProperty('enabled', value: onPressed != null, ifFalse: 'disabled'),
       )
       ..add(
-        DiagnosticsProperty<bool>('selected', selected, defaultValue: null),
+        DiagnosticsProperty<bool>('isSelected', isSelected, defaultValue: null),
       );
   }
 }

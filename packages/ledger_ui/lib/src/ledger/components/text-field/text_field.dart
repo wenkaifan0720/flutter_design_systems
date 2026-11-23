@@ -10,11 +10,12 @@ import '../../internal/field_frame.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
 import '../../theme.dart';
+import '../../internal/entry_open.dart';
 
-/// A field written on a rule, as a ledger is: its [label] in the small
-/// capitals over the line, the words typed in the medium at 16 (its [hint]
+/// A field written on a rule, as a ledger is: its [labelText] in the small
+/// capitals over the line, the words typed in the medium at 16 (its [hintText]
 /// in the third ink while it is empty), the ink rule under it (2 thick
-/// while it has focus), its [helper] or its [error] under the rule. No box:
+/// while it has focus), its [helperText] or its [errorText] under the rule. No box:
 /// the rule is the field. 48 tall at [LedgerDensity.standard], each density
 /// step 4 less, the words centred in it on every platform.
 ///
@@ -31,25 +32,25 @@ import '../../theme.dart';
 /// when not, the field makes its own and disposes them.
 ///
 /// ```dart
-/// LedgerTextField(label: 'Name', hint: 'As it is on the account', controller: name)
+/// LedgerTextField(labelText: 'Name', hintText: 'As it is on the account', controller: name)
 /// ```
 ///
 /// ```dart
-/// LedgerTextField(label: 'Amount', prefix: r'$', hint: '0.00', keyboardType: const TextInputType.numberWithOptions(decimal: true))
+/// LedgerTextField(labelText: 'Amount', prefix: r'$', hintText: '0.00', keyboardType: const TextInputType.numberWithOptions(decimal: true))
 /// ```
 ///
 /// ```dart
-/// LedgerTextField(label: 'Email', error: 'Enter an email address', onChanged: (v) {})
+/// LedgerTextField(labelText: 'Email', errorText: 'Enter an email address', onChanged: (v) {})
 /// ```
 class LedgerTextField extends StatefulWidget {
-  /// A field named [label] on its rule.
+  /// A field named [labelText] on its rule.
   const LedgerTextField({
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.prefix,
     this.trailing,
     this.isRequired = false,
@@ -80,17 +81,17 @@ class LedgerTextField extends StatefulWidget {
 
   /// What the field is, over the line in the small capitals; its spoken
   /// name.
-  final String? label;
+  final String? labelText;
 
   /// Shown while it is empty, in the third ink.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the rule.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the rule in the danger red; null while it is
   /// fine.
-  final String? error;
+  final String? errorText;
 
   /// Before the words, in the serif: a currency sign, a unit. A field with
   /// one is a sum's, its words typed in the serif ([sumOf]).
@@ -192,10 +193,10 @@ class LedgerTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(StringProperty('prefix', prefix, defaultValue: null))
       ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'isRequired'))
       ..add(FlagProperty('enabled', value: enabled, ifTrue: 'enabled'))
@@ -303,7 +304,7 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
       [widget.style, t.components.textField],
       {
         if (!enabled) WidgetState.disabled,
-        if (widget.error != null) WidgetState.error,
+        if (widget.errorText != null) WidgetState.error,
       },
     );
     final ink = so.foreground ?? (enabled ? t.textPrimary : t.textTertiary);
@@ -333,7 +334,7 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
         onEditingComplete: widget.onEditingComplete,
       ),
     );
-    final hint = widget.hint;
+    final hint = widget.hintText;
     final box = DesignTextEntryBox(
       minHeight: LedgerTextField.heightOf(t),
       controller: hint == null ? null : _controller,
@@ -361,7 +362,12 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
     final across = oneLine
         ? CrossAxisAlignment.center
         : CrossAxisAlignment.start;
-    final typed = hint == null ? entry : Semantics(hint: hint, child: entry);
+    final hinted = hint == null ? entry : Semantics(hint: hint, child: entry);
+    // A combobox's entry says whether its list stands open.
+    final open = LedgerEntryOpen.maybeOf(context);
+    final typed = open == null
+        ? hinted
+        : Semantics(expanded: open, child: hinted);
     final line = Row(
       crossAxisAlignment: across,
       spacing: _gap,
@@ -396,9 +402,9 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
       ],
     );
     final field = RawInputDecorator(
-      labelText: widget.label,
-      helperText: widget.helper,
-      errorText: widget.error,
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
       required: widget.isRequired,
       enabled: enabled,
       focusNode: _focus,

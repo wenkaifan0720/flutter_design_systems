@@ -621,7 +621,7 @@ Set<String> _dayPills(WidgetTester t) => {
     if (!e.ledgerTheme.isDark &&
         (e.widget as LedgerDatePicker).presentation ==
             LedgerDatePickerPresentation.compact)
-      (e.widget as LedgerDatePicker).label,
+      (e.widget as LedgerDatePicker).labelText,
 };
 
 /// A filter set's pills as it words them, whatever it holds.
@@ -1672,7 +1672,7 @@ void screenChecksMain() {
               (w) => w.runtimeType.toString().startsWith('_SelectList'),
             );
             final at =
-                '$name ${size.width.round()} "${(t.widget(select) as LedgerSelect).label}"';
+                '$name ${size.width.round()} "${(t.widget(select) as LedgerSelect).labelText}"';
             if (list.evaluate().isEmpty) {
               found.add('$at: no list opened');
               continue;
@@ -1769,7 +1769,7 @@ void screenChecksMain() {
                   child: LedgerSlip(
                     padding: const EdgeInsets.all(16),
                     child: LedgerSelect<int>(
-                      label: 'Category',
+                      labelText: 'Category',
                       value: 1,
                       items: const [
                         LedgerSelectItem(

@@ -54,7 +54,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           width: width,
-          Fluent2TextField(value: '', hint: 'Name', onChanged: (_) {}),
+          Fluent2TextField(value: '', hintText: 'Name', onChanged: (_) {}),
         ),
       );
       final editable = find.byType(EditableText);
@@ -235,7 +235,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         Fluent2FormField(
-          label: 'Email digest',
+          labelText: 'Email digest',
           child: Fluent2RadioGroup<String>(
             value: 'daily',
             onChanged: (_) {},
@@ -411,7 +411,7 @@ void main() {
         SizedBox(
           width: 560,
           child: Fluent2FormField(
-            label: 'Type',
+            labelText: 'Type',
             child: Fluent2Select<String>(
               options: const [
                 Fluent2Option('gear', 'Equipment'),

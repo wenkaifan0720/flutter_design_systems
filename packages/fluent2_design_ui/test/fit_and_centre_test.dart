@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
+import 'package:fluent2_design_ui/src/fluent2_design/components/button/button.dart'
+    show Fluent2ButtonBox;
 
 const _registers = <String, (TargetPlatform, double)>{
   'touch': (TargetPlatform.android, 3),
@@ -242,11 +244,11 @@ void main() {
       title: 'Delivery',
       children: [
         Fluent2FormField(
-          label: 'Name',
+          labelText: 'Name',
           child: Fluent2TextField(value: 'Kai Tanaka', onChanged: (_) {}),
         ),
         Fluent2FormField(
-          label: 'Channel',
+          labelText: 'Channel',
           child: Fluent2Select<String>(
             options: const [
               Fluent2Option('mail', 'Mail'),

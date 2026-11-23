@@ -56,8 +56,8 @@ Map<String, Color> _body(FrostedThemeData t) => {
 Widget _stage(FrostedThemeData theme, FrostedMaterial material) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: theme,
-    dark: theme,
+    theme: theme,
+    darkTheme: theme,
     brightness: theme.isDark ? Brightness.dark : Brightness.light,
     child: page!,
   ),
@@ -282,15 +282,18 @@ void main() {
             onDestinationSelected: drop,
           ),
         ),
-        'a field': FrostedTextField(label: 'Name', onChanged: drop),
-        'a search field': FrostedSearchField(hint: 'Search', onChanged: drop),
+        'a field': FrostedTextField(labelText: 'Name', onChanged: drop),
+        'a search field': FrostedSearchField(
+          hintText: 'Search',
+          onChanged: drop,
+        ),
         'an empty check': FrostedCheckbox(
           value: false,
           label: 'Agree',
           onChanged: drop,
         ),
         'an unchosen radio': FrostedRadioGroup<String>(
-          label: 'Plan',
+          labelText: 'Plan',
           value: 'none',
           onChanged: drop,
           options: const [FrostedRadio('free', 'Free')],
@@ -302,8 +305,8 @@ void main() {
           MaterialApp(
             debugShowCheckedModeBanner: false,
             builder: (context, page) => FrostedHost(
-              light: t,
-              dark: t,
+              theme: t,
+              darkTheme: t,
               brightness: brightness,
               child: page!,
             ),
@@ -403,8 +406,8 @@ void main() {
         MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: (context, page) => FrostedHost(
-            light: t,
-            dark: t,
+            theme: t,
+            darkTheme: t,
             brightness: brightness,
             child: page!,
           ),

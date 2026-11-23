@@ -49,7 +49,7 @@ void main() {
     }
 
     await tester.pumpWidget(
-      comicApp(const Center(child: ComicPasswordField(label: 'Password'))),
+      comicApp(const Center(child: ComicPasswordField(labelText: 'Password'))),
     );
     // Hidden: the button shows it, and is not selected.
     expect(
@@ -74,7 +74,7 @@ void main() {
           child: ComicIconButton(
             ComicGlyphs.bell,
             label: 'Pin',
-            selected: true,
+            isSelected: true,
             onPressed: () {},
           ),
         ),

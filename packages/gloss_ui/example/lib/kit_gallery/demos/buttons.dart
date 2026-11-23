@@ -94,7 +94,7 @@ class _BeadsState extends State<_Beads> {
     children: [
       GlossIconButton(
         onPressed: () => setState(() => _saved = !_saved),
-        selected: _saved,
+        isSelected: _saved,
         tooltip: 'Save',
         icon: const Icon(LucideIcons.heart),
       ),

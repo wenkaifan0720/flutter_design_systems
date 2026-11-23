@@ -75,7 +75,7 @@ class ThreadPage extends StatelessWidget {
                     ),
                     ComicReply(
                       person: _you,
-                      hint: 'Say something…',
+                      hintText: 'Say something…',
                       icon: LucideIcons.send,
                       onSend: () {},
                     ),

@@ -595,7 +595,7 @@ class ClayTextTheme with Diagnosticable {
 
   /// Clay's ramp in [family] (the bundled Rubik when null), inked [ink] and
   /// [secondaryInk].
-  factory ClayTextTheme.of({
+  factory ClayTextTheme.from({
     required Color ink,
     required Color secondaryInk,
     String? family,
@@ -819,7 +819,7 @@ class ClayThemeData with Diagnosticable {
   }) : colors = colors ?? const ClayColors.light(),
        textTheme =
            textTheme ??
-           ClayTextTheme.of(
+           ClayTextTheme.from(
              ink: (colors ?? const ClayColors.light()).ink,
              secondaryInk: (colors ?? const ClayColors.light()).inkSecondary,
            ),
@@ -887,7 +887,7 @@ class ClayThemeData with Diagnosticable {
     );
     return ClayThemeData(
       colors: colors,
-      textTheme: ClayTextTheme.of(
+      textTheme: ClayTextTheme.from(
         ink: colors.ink,
         secondaryInk: colors.inkSecondary,
         family: fontFamily,

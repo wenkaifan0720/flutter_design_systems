@@ -60,7 +60,7 @@ void main() {
               child: Column(
                 children: [
                   StudioSelect<String>(
-                    label: 'Density',
+                    labelText: 'Density',
                     value: _projects.first,
                     items: [
                       for (final p in _projects)
@@ -70,7 +70,7 @@ void main() {
                   ),
                   const SizedBox(height: 300),
                   StudioCombobox<String>(
-                    label: 'Project',
+                    labelText: 'Project',
                     options: _projects,
                     labelOf: (p) => p,
                     value: _projects.first,
@@ -129,7 +129,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       Widget combobox() => StudioCombobox<String>(
-        label: 'Project',
+        labelText: 'Project',
         options: _projects,
         labelOf: (p) => p,
         value: _projects.first,

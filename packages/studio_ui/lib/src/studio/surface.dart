@@ -1152,7 +1152,13 @@ class StudioGroove extends StatelessWidget {
 /// ```
 class StudioLegend extends StatelessWidget {
   /// [text] as a legend.
-  const StudioLegend(this.text, {super.key, this.style, this.color});
+  const StudioLegend(
+    this.text, {
+    super.key,
+    this.style,
+    this.color,
+    this.maxLines = 1,
+  });
 
   /// The words, written in sentence case; the legend sets their capitals.
   final String text;
@@ -1162,6 +1168,10 @@ class StudioLegend extends StatelessWidget {
 
   /// Their ink; the theme's muted legend when null.
   final Color? color;
+
+  /// The most lines it takes, cut with an ellipsis past them; null wraps it
+  /// onto as many as its words need.
+  final int? maxLines;
 
   /// Whether [text]'s script has capitals.
   static bool hasCapitals(String text) =>
@@ -1182,8 +1192,8 @@ class StudioLegend extends StatelessWidget {
     return Text(
       capitals ? text.toUpperCase() : text,
       style: shown,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      maxLines: maxLines,
+      overflow: maxLines == null ? null : TextOverflow.ellipsis,
       semanticsLabel: text,
     );
   }

@@ -34,21 +34,21 @@ const double _pageWidth = 1080;
 /// MaterialApp(builder: (context, child) => GlossHost(child: child!))
 /// ```
 class GlossHost extends StatelessWidget {
-  /// Hosts [child] in [light] or [dark], as [brightness] (or the platform)
+  /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
   /// asks; either left out is the jade preset in that brightness.
   const GlossHost({
     super.key,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
     required this.child,
   });
 
   /// The theme by day.
-  final GlossThemeData? light;
+  final GlossThemeData? theme;
 
   /// The theme by night.
-  final GlossThemeData? dark;
+  final GlossThemeData? darkTheme;
 
   /// The brightness to draw in; null follows the preview's or the
   /// platform's.
@@ -64,7 +64,7 @@ class GlossHost extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final data =
-        (wanted == Brightness.dark ? dark : light) ??
+        (wanted == Brightness.dark ? darkTheme : theme) ??
         GlossThemeData.preset(GlossThemeData.presets.first, wanted);
     return GlossTheme(
       data: data,
@@ -79,10 +79,14 @@ class GlossHost extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<GlossThemeData>('light', light, defaultValue: null),
+        DiagnosticsProperty<GlossThemeData>('theme', theme, defaultValue: null),
       )
       ..add(
-        DiagnosticsProperty<GlossThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<GlossThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(
         DiagnosticsProperty<Brightness>(
@@ -357,12 +361,12 @@ class GlossPreview extends StatelessWidget {
   const GlossPreview({
     super.key,
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness = Brightness.light,
     this.presentation = GlossPresentation.root,
     this.tabs = const [],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.brand,
     this.drawer = false,
@@ -373,10 +377,10 @@ class GlossPreview extends StatelessWidget {
   final Widget child;
 
   /// The theme by day.
-  final GlossThemeData? light;
+  final GlossThemeData? theme;
 
   /// The theme by night.
-  final GlossThemeData? dark;
+  final GlossThemeData? darkTheme;
 
   /// The brightness to draw in.
   final Brightness brightness;
@@ -388,7 +392,7 @@ class GlossPreview extends StatelessWidget {
   final List<GlossTab> tabs;
 
   /// The place the page is.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The app's one act, on a root.
   final ShellAction? action;
@@ -408,8 +412,8 @@ class GlossPreview extends StatelessWidget {
         ? page
         : GlossAppShell(
             tabs: tabs,
-            selectedIndex: activeIndex,
-            onSelected: (_) {},
+            selectedIndex: selectedIndex,
+            onDestinationSelected: (_) {},
             action: action,
             brand: brand,
             child: page,
@@ -430,8 +434,8 @@ class GlossPreview extends StatelessWidget {
             DefaultWidgetsLocalizations.delegate,
           ],
           builder: (context, app) => GlossHost(
-            light: light,
-            dark: dark,
+            theme: theme,
+            darkTheme: darkTheme,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),
@@ -463,17 +467,21 @@ class GlossPreview extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<GlossThemeData>('light', light, defaultValue: null),
+        DiagnosticsProperty<GlossThemeData>('theme', theme, defaultValue: null),
       )
       ..add(
-        DiagnosticsProperty<GlossThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<GlossThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(DiagnosticsProperty<Brightness>('brightness', brightness))
       ..add(
         DiagnosticsProperty<GlossPresentation>('presentation', presentation),
       )
       ..add(IterableProperty<GlossTab>('tabs', tabs))
-      ..add(IntProperty('activeIndex', activeIndex))
+      ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -491,7 +499,7 @@ class GlossPreview extends StatelessWidget {
 /// `GlossShell`; a preview mounts it directly.
 ///
 /// ```dart
-/// GlossAppShell(tabs: const [GlossTab(LucideIcons.house, 'Today'), GlossTab(LucideIcons.bookOpen, 'Recipes')], selectedIndex: 0, onSelected: (i) {}, child: const TodayPage())
+/// GlossAppShell(tabs: const [GlossTab(LucideIcons.house, 'Today'), GlossTab(LucideIcons.bookOpen, 'Recipes')], selectedIndex: 0, onDestinationSelected: (i) {}, child: const TodayPage())
 /// ```
 class GlossAppShell extends StatelessWidget {
   /// [child] with the app's [tabs].
@@ -499,7 +507,7 @@ class GlossAppShell extends StatelessWidget {
     super.key,
     required this.tabs,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     required this.child,
     this.action,
     this.brand,
@@ -513,7 +521,7 @@ class GlossAppShell extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// The page.
   final Widget child;
@@ -539,7 +547,7 @@ class GlossAppShell extends StatelessWidget {
           GlossDestination(icon: tab.icon, label: tab.label, key: tab.key),
       ],
       selectedIndex: selectedIndex,
-      onSelected: tabs.isNotEmpty ? onSelected : null,
+      onDestinationSelected: tabs.isNotEmpty ? onDestinationSelected : null,
       showNavigation: showPlaces,
       brand: name == null || name.isEmpty ? null : _Brand(name),
       action: act == null ? null : _ActKey(act),
@@ -553,7 +561,12 @@ class GlossAppShell extends StatelessWidget {
     properties
       ..add(IterableProperty<GlossTab>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -781,16 +794,16 @@ class GlossErrorState extends StatelessWidget {
 /// a page you write, use [GlossTextField], which says more.
 ///
 /// ```dart
-/// GlossInput(hint: 'Search recipes', onSubmitted: search)
+/// GlossInput(hintText: 'Search recipes', onSubmitted: search)
 /// ```
 class GlossInput extends StatelessWidget {
-  /// A field hinting [hint], or named [label].
+  /// A field hinting [hintText], or named [labelText].
   const GlossInput({
     super.key,
-    this.hint,
-    this.label,
-    this.error,
-    this.obscure = false,
+    this.hintText,
+    this.labelText,
+    this.errorText,
+    this.obscureText = false,
     this.controller,
     this.onChanged,
     this.onSubmitted,
@@ -798,16 +811,16 @@ class GlossInput extends StatelessWidget {
   });
 
   /// What it is for, until something is typed.
-  final String? hint;
+  final String? hintText;
 
   /// Its name, over it.
-  final String? label;
+  final String? labelText;
 
   /// What is wrong with what was typed; null when nothing is.
-  final String? error;
+  final String? errorText;
 
   /// Whether its words are hidden (a password).
-  final bool obscure;
+  final bool obscureText;
 
   /// Its text's controller.
   final TextEditingController? controller;
@@ -824,11 +837,11 @@ class GlossInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GlossTextField(
     controller: controller,
-    label: label,
-    hint: hint,
-    error: error,
-    obscureText: obscure,
-    semanticLabel: label ?? hint,
+    labelText: labelText,
+    hintText: hintText,
+    errorText: errorText,
+    obscureText: obscureText,
+    semanticLabel: labelText ?? hintText,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
     enabled: enabled,
@@ -838,10 +851,10 @@ class GlossInput extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscure'))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',

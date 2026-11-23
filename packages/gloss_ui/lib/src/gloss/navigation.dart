@@ -573,7 +573,7 @@ Widget _sideFrame(
 /// per slot; the current place sits in a pocket pressed into the bar.
 ///
 /// ```dart
-/// GlossNavigationBar(destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onSelected: (index) {})
+/// GlossNavigationBar(destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onDestinationSelected: (index) {})
 /// ```
 class GlossNavigationBar extends StatelessWidget {
   /// A bar over [destinations], [selectedIndex] current.
@@ -581,7 +581,7 @@ class GlossNavigationBar extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.action,
     this.style,
   });
@@ -593,7 +593,7 @@ class GlossNavigationBar extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// The app's one act, a gel bead standing in the bar's last cell, in
   /// reach of the thumb.
@@ -611,7 +611,7 @@ class GlossNavigationBar extends StatelessWidget {
       _Place(
         destination: d,
         chosen: i == selectedIndex,
-        onPressed: () => onSelected(i),
+        onPressed: () => onDestinationSelected(i),
         face: (states) =>
             _PocketFace(destination: d, states: states, style: style),
       ),
@@ -635,7 +635,7 @@ class GlossNavigationBar extends StatelessWidget {
 /// stacked, the current one in a pocket pressed into it.
 ///
 /// ```dart
-/// GlossNavigationRail(destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onSelected: (index) {})
+/// GlossNavigationRail(destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onDestinationSelected: (index) {})
 /// ```
 class GlossNavigationRail extends StatelessWidget {
   /// A rail over [destinations], [selectedIndex] current.
@@ -643,7 +643,7 @@ class GlossNavigationRail extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.leading,
     this.style,
   }) : _places = null;
@@ -654,7 +654,7 @@ class GlossNavigationRail extends StatelessWidget {
     required this.selectedIndex,
     this.leading,
   }) : destinations = const [],
-       onSelected = _ignore,
+       onDestinationSelected = _ignore,
        style = null;
 
   final List<Widget>? _places;
@@ -666,7 +666,7 @@ class GlossNavigationRail extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// Something above the places: the app's mark.
   final Widget? leading;
@@ -686,7 +686,7 @@ class GlossNavigationRail extends StatelessWidget {
             _Place(
               destination: d,
               chosen: i == selectedIndex,
-              onPressed: () => onSelected(i),
+              onPressed: () => onDestinationSelected(i),
               face: (states) =>
                   _PocketFace(destination: d, states: states, style: style),
             ),
@@ -713,7 +713,7 @@ class GlossNavigationRail extends StatelessWidget {
 /// its glyph jade. A pointer over a row shades it a breath.
 ///
 /// ```dart
-/// GlossSidebar(destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onSelected: (index) {})
+/// GlossSidebar(destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onDestinationSelected: (index) {})
 /// ```
 class GlossSidebar extends StatelessWidget {
   /// A sidebar over [destinations], [selectedIndex] current.
@@ -721,7 +721,7 @@ class GlossSidebar extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.header,
     this.footer,
     this.style,
@@ -734,7 +734,7 @@ class GlossSidebar extends StatelessWidget {
     this.header,
     this.footer,
   }) : destinations = const [],
-       onSelected = _ignore,
+       onDestinationSelected = _ignore,
        style = null;
 
   final List<Widget>? _places;
@@ -746,7 +746,7 @@ class GlossSidebar extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// Something above the places: the app's name.
   final Widget? header;
@@ -769,7 +769,7 @@ class GlossSidebar extends StatelessWidget {
             _Place(
               destination: d,
               chosen: i == selectedIndex,
-              onPressed: () => onSelected(i),
+              onPressed: () => onDestinationSelected(i),
               face: (states) =>
                   _SideFace(destination: d, states: states, style: style),
             ),
@@ -806,7 +806,7 @@ class GlossSidebar extends StatelessWidget {
 /// root); a rail or a sidebar stays.
 ///
 /// ```dart
-/// GlossScaffold(topBar: const GlossTopBar(title: 'Today'), destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onSelected: (index) {}, body: const SizedBox.expand())
+/// GlossScaffold(topBar: const GlossTopBar(title: 'Today'), destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onDestinationSelected: (index) {}, body: const SizedBox.expand())
 /// ```
 class GlossScaffold extends StatelessWidget {
   /// A page of [body].
@@ -816,7 +816,7 @@ class GlossScaffold extends StatelessWidget {
     this.topBar,
     this.destinations = const [],
     this.selectedIndex = 0,
-    this.onSelected,
+    this.onDestinationSelected,
     this.brand,
     this.action,
     this.sideFooter,
@@ -836,7 +836,7 @@ class GlossScaffold extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int>? onSelected;
+  final ValueChanged<int>? onDestinationSelected;
 
   /// The app's name or mark, atop a rail or a sidebar.
   final Widget? brand;
@@ -856,7 +856,7 @@ class GlossScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final width = MediaQuery.sizeOf(context).width;
-    final places = destinations.isNotEmpty && onSelected != null;
+    final places = destinations.isNotEmpty && onDestinationSelected != null;
     final phone = width < GlossMetrics.railBreakpoint;
     final bar = places && phone && showNavigation;
     final page = Column(
@@ -892,11 +892,15 @@ class GlossScaffold extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(child: page),
-                  GlossNavigationBar(
-                    destinations: destinations,
-                    selectedIndex: selectedIndex,
-                    onSelected: onSelected!,
-                    action: action,
+                  // Toasts stand above the places, as a Scaffold keeps a
+                  // snackbar above its navigation bar.
+                  RawToasterKeepClear(
+                    child: GlossNavigationBar(
+                      destinations: destinations,
+                      selectedIndex: selectedIndex,
+                      onDestinationSelected: onDestinationSelected!,
+                      action: action,
+                    ),
                   ),
                 ],
               ),
@@ -919,7 +923,7 @@ class GlossScaffold extends StatelessWidget {
             ),
         ],
         selectedIndex: selectedIndex,
-        onDestinationSelected: onSelected,
+        onDestinationSelected: onDestinationSelected,
         destinationBuilder: (context, destination, details) {
           final d = destination.data! as GlossDestination;
           return KeyedSubtree(
@@ -1000,7 +1004,7 @@ class GlossScaffold extends StatelessWidget {
 /// "Method, Tab 2 of 2".
 ///
 /// ```dart
-/// GlossTabBar(tabs: const ['Ingredients', 'Method'], selectedIndex: 0, onSelected: (index) {})
+/// GlossTabBar(tabs: const ['Ingredients', 'Method'], selectedIndex: 0, onTap: (index) {})
 /// ```
 class GlossTabBar extends StatefulWidget {
   /// Tabs reading [tabs], [selectedIndex] current.
@@ -1008,7 +1012,7 @@ class GlossTabBar extends StatefulWidget {
     super.key,
     required this.tabs,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onTap,
     this.expand,
     this.style,
   });
@@ -1020,7 +1024,7 @@ class GlossTabBar extends StatefulWidget {
   final int selectedIndex;
 
   /// Called with the tab chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onTap;
 
   /// Whether it fills its row; null fills below 600 px and hugs above.
   final bool? expand;
@@ -1060,7 +1064,7 @@ class _GlossTabBarState extends State<GlossTabBar>
   void _chosen() {
     if (_tabs.index == _reported) return;
     _reported = _tabs.index;
-    widget.onSelected(_tabs.index);
+    widget.onTap(_tabs.index);
   }
 
   @override

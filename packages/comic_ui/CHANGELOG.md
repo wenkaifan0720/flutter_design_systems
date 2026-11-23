@@ -1,3 +1,23 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- **Breaking:** parameters and fields take the names Flutter's widgets give the same jobs. `dart fix --apply` moves each call and read below; the old names are gone.
+- Fields: `label`, `hint`, `helper` and `error` are `labelText`, `hintText`, `helperText` and `errorText`, as on `InputDecoration`: `ComicTextField`, `ComicInput`, `ComicTextArea`, `ComicSearchField`, `ComicPasswordField`, `ComicInputGroup`, `ComicSelect`, `ComicSelectField`, `ComicCombobox`, `ComicMultiSelect`, `ComicFormField`, `ComicFileUpload`, `ComicInputOtp`, `ComicReply`, `ComicCommand` and `showComicCommand`. `ComicSelectField.note`, `ComicNumberField.note` and `ComicFormField.help` are `helperText`, and `ComicTextField.prefix` is `prefixText`.
+- `ComicMultiSelect.labelOf` is `displayStringForOption`, as on `Autocomplete`. `ComicRadioGroup`: `label` and `value` are `labelText` and `groupValue` (`RadioGroup`).
+- `showComicDatePicker`, `showComicDateRangePicker` and `showComicTimePicker`: `confirm` and `cancel` are `confirmText` and `cancelText`, as on `showDatePicker`.
+- `ComicToggleGroup`: `onChanged`, `multiple` and `allowEmpty` are `onSelectionChanged`, `multiSelectionEnabled` and `emptySelectionAllowed`, as on `SegmentedButton`.
+- `ComicTabBar.onChanged` is `onTap` (`TabBar`). `ComicPageDots` and `ComicPagination`: `count` and `onChanged` are `pageCount` and `onPageChanged` (`PageView`).
+- `ComicIconButton.selected` is `isSelected` (`IconButton`). `ComicListTile.destructive` and `ComicSheetAction.destructive` are `isDestructiveAction`, as on `CupertinoActionSheetAction`.
+- `ComicTextSelectionControls.of` is `ComicTextSelectionControls.forPlatform`: in Flutter, `of` looks a value up from a `BuildContext`.
+- **Breaking, no fix:** `ComicThemeData.lerp` is static and takes both themes, as `ThemeData.lerp` does: write `ComicThemeData.lerp(a, b, t)` for `a.lerp(b, t)`. The old call no longer compiles.
+- **Breaking:** `ComicChart`, `ComicLineChart`, `ComicAreaChart`, `ComicBarChart` and `ComicSparkline` take ui_core's `valueFormat` in place of `format`, which is gone (no fix moves it: the two are different kinds of value). For `format: (v) => '${v.round()} h'`, pass `valueFormat: const DesignChartValueFormat(suffix: ' h', fractionDigits: 0)`, or `DesignChartValueFormat.custom` for words of your own. Left unset, the figures are whole numbers, as before. The format writes the value axis, the plate and what a screen reader hears in the reader's digits.
+- `ComicCombobox`'s and `ComicMultiSelect`'s text input reads as expanded while its list shows and collapsed once it closes, as a combo box does. The combobox's chevron points up while its list shows.
+- `showComicDatePicker` puts the keys on the chosen day (else today, or the nearest day allowed), so the arrows walk the month from there; they started on the dialog's first button. `ComicDatePicker.autofocus` does the same for a calendar on a page.
+- `ComicFormField` paints its error state from ui_core's `RawInputDecorator` (`invalid`) and draws the decorator's own error line, so on a platform that takes no announcements the error is still heard as it appears, from that line's live region. Comic drew a line of its own, kept out of the semantics tree.
+- A `ComicDialog`'s actions are laid out by ui_core's `RawActionBar`, as every look's are: in a row at the end while they fit, else one above another, each as wide as the dialog, the confirming one on top. Comic laid them out the same with its own bar.
+- A snack bar or a toast raised from a `ComicScaffold` page with a `footer` stands above the footer, as a `Scaffold` keeps a snackbar above its footer; it used to cover the page's one action. (Comic raises them in the navigator's overlay, where ui_core's `RawToasterKeepClear` can't reach, so the scaffold tells them where its footer is.) Inside a `ComicShell` they already stood above the tab bar.
+- `ComicSectionHeader`'s title is a header to a screen reader (its own node, flagged as a header; the note after it reads apart). It used to read as plain words.
+
 ## 0.4.1
 
 - Needs ui_core 0.4.1.

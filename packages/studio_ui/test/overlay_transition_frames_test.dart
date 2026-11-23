@@ -175,7 +175,7 @@ class _BenchState extends State<_Bench> {
           SizedBox(
             width: 280,
             child: StudioCombobox<String>(
-              label: 'Show',
+              labelText: 'Show',
               labelOf: (s) => s,
               search: (query) async {
                 await Future<void>.delayed(const Duration(milliseconds: 400));

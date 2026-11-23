@@ -28,9 +28,9 @@ void main() {
               child: child ?? const SizedBox.shrink(),
             ),
             home: CivicShellFrame(
-              places: _places,
+              destinations: _places,
               selectedIndex: 1,
-              onSelected: (_) {},
+              onDestinationSelected: (_) {},
               child: const CivicScreen(body: Text('Tasks')),
             ),
           ),

@@ -595,7 +595,7 @@ class JotterFrameState extends State<JotterFrame> {
     return KeycapScaffold(
       destinations: places,
       selectedIndex: index,
-      onSelected: (i) => go(JotterPlace.values[i]),
+      onDestinationSelected: (i) => go(JotterPlace.values[i]),
       header: const JotterBrand(large: true),
       action: KeycapIconButton(
         icon: const Icon(LucideIcons.squarePen),

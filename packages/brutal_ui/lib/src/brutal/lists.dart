@@ -234,7 +234,7 @@ class BrutalListTile extends StatelessWidget {
     this.onTap,
     this.selected = false,
     this.showChevron,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -266,7 +266,7 @@ class BrutalListTile extends StatelessWidget {
   final bool? showChevron;
 
   /// Whether the row's action destroys something: its words are red.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether it can be pressed; off, its words go grey.
   final bool enabled;
@@ -301,7 +301,7 @@ class BrutalListTile extends StatelessWidget {
               ? c.disabled
               : lit
               ? c.paper
-              : destructive
+              : isDestructiveAction
               ? c.danger
               : c.ink);
       final muted = disabled

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawToasterKeepClear;
 
 /// Marks the band a screen or a sheet stands its footer in, so a bar that
 /// also asks for a band of its own there is caught: the two would draw two
@@ -20,8 +21,9 @@ class Fluent2FooterBand extends InheritedWidget {
 
 /// Marks what a screen or a sheet stands over its bottom edge (the footer's
 /// band, a floating bar), so a toast raised on that route rises above it
-/// rather than over its buttons. Plumbing of the components; pages never
-/// place one.
+/// rather than over its buttons: a toaster's toast ([RawToasterKeepClear])
+/// and one raised without a toaster ([reachOf]). Plumbing of the
+/// components; pages never place one.
 class Fluent2BottomStand extends StatelessWidget {
   /// Marks [child] as standing over the bottom edge.
   const Fluent2BottomStand({required this.child, super.key});
@@ -51,5 +53,5 @@ class Fluent2BottomStand extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => child;
+  Widget build(BuildContext context) => RawToasterKeepClear(child: child);
 }

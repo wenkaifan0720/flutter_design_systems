@@ -24,8 +24,8 @@ import '../../internal/cap.dart';
 /// A strip of toggles (shadcn's ToggleGroup, a toolbar's Bold, Italic,
 /// Underline): [segments] on the wash, the ones that are on raised as white
 /// plates with the ink and semibold, as [FrostedSegmentedButton] draws its
-/// choice. With [multiple] each toggles on its own; without, it is one
-/// choice and a press on the chosen one keeps it unless [allowEmpty]. One
+/// choice. With [multiSelectionEnabled] each toggles on its own; without, it is one
+/// choice and a press on the chosen one keeps it unless [emptySelectionAllowed]. One
 /// Tab stop for the strip, Space or Return to press. Several at once,
 /// ui_core's [RawSegmentedButton] is the behaviour: the arrows move between
 /// the toggles. One at a time it is a group of radio buttons, Flutter's
@@ -33,16 +33,16 @@ import '../../internal/cap.dart';
 /// the chosen toggle and the four arrows choose as they move, wrapping.
 ///
 /// ```dart
-/// FrostedToggleGroup<String>(label: 'Text style', multiple: true, segments: const [FrostedButtonSegment('b', 'Bold'), FrostedButtonSegment('i', 'Italic')], selected: styles, onChanged: (v) => setState(() => styles = v))
+/// FrostedToggleGroup<String>(label: 'Text style', multiSelectionEnabled: true, segments: const [FrostedButtonSegment('b', 'Bold'), FrostedButtonSegment('i', 'Italic')], selected: styles, onSelectionChanged: (v) => setState(() => styles = v))
 /// ```
 class FrostedToggleGroup<T> extends StatelessWidget {
   /// A strip of [segments], [selected] on.
   const FrostedToggleGroup({
     required this.segments,
     required this.selected,
-    required this.onChanged,
-    this.multiple = false,
-    this.allowEmpty = false,
+    required this.onSelectionChanged,
+    this.multiSelectionEnabled = false,
+    this.emptySelectionAllowed = false,
     this.label,
     super.key,
   });
@@ -54,13 +54,13 @@ class FrostedToggleGroup<T> extends StatelessWidget {
   final Set<T> selected;
 
   /// Called with the values on after a press; null leaves the strip inert.
-  final ValueChanged<Set<T>>? onChanged;
+  final ValueChanged<Set<T>>? onSelectionChanged;
 
   /// Whether any number may be on (else one).
-  final bool multiple;
+  final bool multiSelectionEnabled;
 
   /// Whether none may be on.
-  final bool allowEmpty;
+  final bool emptySelectionAllowed;
 
   /// What a screen reader calls the strip.
   final String? label;
@@ -182,13 +182,13 @@ class FrostedToggleGroup<T> extends StatelessWidget {
 
     final values = [for (final s in segments) s.value];
     final minimum = Size(FrostedChromeMetrics.segmentMinWidth, height);
-    if (multiple) {
+    if (multiSelectionEnabled) {
       return RawSegmentedButton<T>(
         options: values,
         selected: selected,
-        onSelectionChanged: onChanged,
+        onSelectionChanged: onSelectionChanged,
         multiSelectionEnabled: true,
-        emptySelectionAllowed: allowEmpty,
+        emptySelectionAllowed: emptySelectionAllowed,
         labelOf: (value) => labels[value] ?? '$value',
         semanticLabel: label,
         minimumSize: minimum,
@@ -198,7 +198,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
     }
     // One at a time: a group of radio buttons, each toggle one of Flutter's
     // radios drawing the same plate as before.
-    final change = onChanged;
+    final change = onSelectionChanged;
     final chosen = selected.isEmpty ? null : selected.first;
     return Semantics(
       container: true,
@@ -212,7 +212,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
           // clears it.
           if (value != null) {
             change({value});
-          } else if (allowEmpty) {
+          } else if (emptySelectionAllowed) {
             change(<T>{});
           }
         },
@@ -223,7 +223,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
                 key: ObjectKey(value),
                 value: value,
                 enabled: change != null,
-                toggleable: allowEmpty,
+                toggleable: emptySelectionAllowed,
                 label: labels[value] ?? '$value',
                 minimumSize: minimum,
                 face: (states) => toggle(value, states),
@@ -241,10 +241,25 @@ class FrostedToggleGroup<T> extends StatelessWidget {
       ..add(IterableProperty<FrostedButtonSegment<T>>('segments', segments))
       ..add(IterableProperty<T>('selected', selected))
       ..add(
-        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
       )
-      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
-      ..add(FlagProperty('allowEmpty', value: allowEmpty, ifTrue: 'allowEmpty'))
+      ..add(
+        FlagProperty(
+          'multiSelectionEnabled',
+          value: multiSelectionEnabled,
+          ifTrue: 'multiple',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'emptySelectionAllowed',
+          value: emptySelectionAllowed,
+          ifTrue: 'allowEmpty',
+        ),
+      )
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }

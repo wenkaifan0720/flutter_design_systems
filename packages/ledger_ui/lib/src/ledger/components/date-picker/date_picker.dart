@@ -44,12 +44,12 @@ enum LedgerDatePickerPresentation {
 }
 
 /// A day and a time of day chosen from a calendar or from wheels, in the
-/// ledger's hand. [LedgerDatePickerPresentation.compact] prints the [label] on
+/// ledger's hand. [LedgerDatePickerPresentation.compact] prints the [labelText] on
 /// the dot leader to the value in mono pills (`Nov 4, 2026`, `7:40 PM`), each
 /// raising its own picker in a sheet that commits on Done;
 /// [LedgerDatePickerPresentation.inline] is the month itself: its name in the
 /// serif with the two ringed arrows, the weekdays in the small capitals, the
-/// days in 44 point cells with the chosen one struck on the ink and [today]
+/// days in 44 point cells with the chosen one struck on the ink and [currentDate]
 /// ringed, closed on the accountant's double rule;
 /// [LedgerDatePickerPresentation.wheel] is the day, or the hour, the minute and
 /// AM or PM, as flat columns of figures that settle between two ink rules, as a
@@ -60,24 +60,24 @@ enum LedgerDatePickerPresentation {
 /// In English it writes as above; in another language, the days, months,
 /// clock and figures are that language's, in its order and its digits, from
 /// ui_core's [RawWidgetsLocalizations] (`٢٠ نوفمبر ٢٠٢٦`, `٠٩:٣٠`, `20. Nov. 2026`).
-/// Nothing here reads the clock: pass [today] to have it ringed. A null
+/// Nothing here reads the clock: pass [currentDate] to have it ringed. A null
 /// [onChanged] dims the whole picker and holds it. Each wheel is an adjustable
 /// value for a screen reader, and each day a button named by its full date.
 ///
 /// ```dart
-/// LedgerDatePicker(label: 'Due', value: due, mode: LedgerDatePickerMode.dateAndTime, onChanged: setDue)
+/// LedgerDatePicker(labelText: 'Due', value: due, mode: LedgerDatePickerMode.dateAndTime, onChanged: setDue)
 /// ```
 class LedgerDatePicker extends StatefulWidget {
-  /// A picker named [label] showing [value].
+  /// A picker named [labelText] showing [value].
   const LedgerDatePicker({
     required this.value,
     required this.onChanged,
-    this.label = 'Date',
+    this.labelText = 'Date',
     this.mode = LedgerDatePickerMode.date,
     this.presentation = LedgerDatePickerPresentation.compact,
     this.firstDate,
     this.lastDate,
-    this.today,
+    this.currentDate,
     this.use24hFormat = false,
     super.key,
   });
@@ -90,7 +90,7 @@ class LedgerDatePicker extends StatefulWidget {
 
   /// What the picker is of: the compact line's words, its pills' and its
   /// wheels' spoken names and its sheet's title.
-  final String label;
+  final String labelText;
 
   /// Whether it sets the day, the time or both.
   final LedgerDatePickerMode mode;
@@ -105,7 +105,7 @@ class LedgerDatePicker extends StatefulWidget {
   final DateTime? lastDate;
 
   /// The day the calendar rings; none when null.
-  final DateTime? today;
+  final DateTime? currentDate;
 
   /// Whether the clock is read on the twenty-four hour face, as it is anyway
   /// where the reader's language reads one (German's 21:05).
@@ -119,7 +119,7 @@ class LedgerDatePicker extends StatefulWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(EnumProperty<LedgerDatePickerMode>('mode', mode))
       ..add(
         EnumProperty<LedgerDatePickerPresentation>(
@@ -137,7 +137,13 @@ class LedgerDatePicker extends StatefulWidget {
       ..add(
         DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
       )
-      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
       ..add(
         FlagProperty(
           'use24hFormat',
@@ -176,20 +182,20 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
     final draft = ValueNotifier<DateTime>(widget.value);
     final picked = await LedgerSheet.show<DateTime>(
       context,
-      title: widget.label,
+      title: widget.labelText,
       builder: (sheetContext) => [
         ValueListenableBuilder<DateTime>(
           valueListenable: draft,
           builder: (context, value, _) => LedgerDatePicker(
             value: value,
-            label: widget.label,
+            labelText: widget.labelText,
             mode: part,
             presentation: part == LedgerDatePickerMode.date
                 ? LedgerDatePickerPresentation.inline
                 : LedgerDatePickerPresentation.wheel,
             firstDate: widget.firstDate,
             lastDate: widget.lastDate,
-            today: widget.today,
+            currentDate: widget.currentDate,
             use24hFormat: widget.use24hFormat,
             onChanged: (next) => draft.value = next,
           ),
@@ -220,7 +226,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
           if (_hasDate)
             _Calendar(
               value: widget.value,
-              today: widget.today,
+              today: widget.currentDate,
               first: widget.firstDate,
               last: widget.lastDate,
               onPick: (day) => _set(
@@ -287,7 +293,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
       opacity: live ? 1 : LedgerChromeMetrics.disabledOpacity,
       child: Semantics(
         container: true,
-        label: widget.label,
+        label: widget.labelText,
         child: measured
             ? Align(
                 alignment: AlignmentDirectional.topStart,
@@ -315,7 +321,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
       padding: const EdgeInsets.symmetric(vertical: _lineGap),
       child: LedgerLeaderLine(
         centred: true,
-        start: Text(widget.label, style: t.rowTitle.colored(t.textPrimary)),
+        start: Text(widget.labelText, style: t.rowTitle.colored(t.textPrimary)),
         end: Wrap(
           alignment: WrapAlignment.end,
           spacing: _gap / 2,
@@ -325,13 +331,13 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
             if (_hasDate)
               _Pill(
                 dates.day(v),
-                label: widget.label,
+                label: widget.labelText,
                 onTap: live ? () => _raise(LedgerDatePickerMode.date) : null,
               ),
             if (_hasTime)
               _Pill(
                 dates.clock(v, use24h: widget.use24hFormat),
-                label: widget.label,
+                label: widget.labelText,
                 onTap: live ? () => _raise(LedgerDatePickerMode.time) : null,
               ),
           ],

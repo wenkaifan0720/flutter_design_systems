@@ -1,6 +1,6 @@
 // A chart's figures are the reader's: Arabic-Indic digits on an Arabic
 // page, on the axis and in what a screen reader hears. An app names its
-// values (a unit) with valueLabel. A chart whose values are all 0 counts its
+// values (a unit) with valueFormat. A chart whose values are all 0 counts its
 // axis 0 and 1, not in tenths.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:ui' as ui;
@@ -132,19 +132,19 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets("a chart's valueLabel names the axis and the read-out", (
+  testWidgets("a chart's valueFormat writes the axis and the read-out", (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     await _pump(
       tester,
-      GlossBarChart(
+      const GlossBarChart(
         labels: _days,
-        series: const [
+        series: [
           GlossSeries('Hours', [2, 6, 3]),
         ],
         semanticLabel: 'Hours a day',
-        valueLabel: (v) => '${v.round()} h',
+        valueFormat: DesignChartValueFormat(suffix: ' h'),
       ),
     );
     final widest = _figures(tester)

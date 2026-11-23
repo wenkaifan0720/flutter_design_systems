@@ -1,0 +1,21 @@
+// The names clay_ui 0.3.0 renames: clay_parts.dart calls them as before `dart fix --apply`,
+// clay_parts.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:clay_ui/clay_parts.dart';
+
+void calls() {
+  final v1 = ClayEntryText(
+    controller: TextEditingController(),
+    focusNode: FocusNode(),
+    hintText: 'Text',
+  );
+  print(v1.hintText);
+  final v2 = const ClayMenuEntry<String>(
+    value: 'Text',
+    label: 'Text',
+    isDestructiveAction: true,
+  );
+  print(v2.isDestructiveAction);
+  final v3 = const ClayMenuRow(label: 'Text', states: {}, isDestructiveAction: true);
+  print(v3.isDestructiveAction);
+}

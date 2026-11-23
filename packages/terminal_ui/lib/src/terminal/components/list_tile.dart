@@ -357,7 +357,7 @@ class TermListTile extends StatelessWidget {
                     amount: cursor,
                     color: own.edge ?? theme.accent,
                     knockout: theme.onAccent,
-                    stroke: termStroke(theme, grid),
+                    stroke: termStrokeWidth(theme, grid),
                     hollow: hollow,
                   ),
                 ),
@@ -628,7 +628,7 @@ class TermSectionHeader extends StatelessWidget {
               child: CustomPaint(
                 painter: TermRulePainter(
                   color: own.edge ?? theme.rule,
-                  stroke: termStroke(theme, grid),
+                  stroke: termStrokeWidth(theme, grid),
                   gaps: const [],
                 ),
                 child: SizedBox(height: grid.lineHeight),

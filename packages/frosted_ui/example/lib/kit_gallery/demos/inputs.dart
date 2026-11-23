@@ -49,7 +49,7 @@ Widget kitInputsDemo(Brightness brightness) => kitScreen(
       children: [
         kitSpecimenTextFieldName(),
         kitSpecimenTextFieldNote(),
-        const FrostedTextField(label: 'Account', value: 'Checking ·· 4821'),
+        const FrostedTextField(labelText: 'Account', value: 'Checking ·· 4821'),
       ],
     ),
     kitSection(
@@ -70,31 +70,37 @@ Widget kitInputsDemo(Brightness brightness) => kitScreen(
 // --- Specimens ---
 
 Widget kitSpecimenSearchLink() =>
-    FrostedSearchLink(hint: 'Search activity', onPressed: () {});
+    FrostedSearchLink(hintText: 'Search activity', onPressed: () {});
 
 Widget kitSpecimenSearchLinkTyped() => FrostedSearchLink(
-  hint: 'Search activity',
+  hintText: 'Search activity',
   value: 'Blue Fern',
   onPressed: () {},
 );
 
 Widget kitSpecimenSearchField() => _Live<String>(
   '',
-  (value, set) =>
-      FrostedSearchField(hint: 'Search activity', value: value, onChanged: set),
+  (value, set) => FrostedSearchField(
+    hintText: 'Search activity',
+    value: value,
+    onChanged: set,
+  ),
 );
 
 Widget kitSpecimenSearchFieldTyped() => _Live<String>(
   'Blue Fern',
-  (value, set) =>
-      FrostedSearchField(hint: 'Search activity', value: value, onChanged: set),
+  (value, set) => FrostedSearchField(
+    hintText: 'Search activity',
+    value: value,
+    onChanged: set,
+  ),
 );
 
 Widget kitSpecimenTextFieldName() => _Live<String>(
   '',
   (value, set) => FrostedTextField(
-    label: 'Name',
-    hint: 'What are you saving for?',
+    labelText: 'Name',
+    hintText: 'What are you saving for?',
     value: value,
     onChanged: set,
   ),
@@ -103,8 +109,8 @@ Widget kitSpecimenTextFieldName() => _Live<String>(
 Widget kitSpecimenTextFieldNote() => _Live<String>(
   'November top-up',
   (value, set) => FrostedTextField(
-    label: 'Note',
-    helper: 'Shows on both statements',
+    labelText: 'Note',
+    helperText: 'Shows on both statements',
     value: value,
     onChanged: set,
   ),
@@ -113,19 +119,19 @@ Widget kitSpecimenTextFieldNote() => _Live<String>(
 Widget kitSpecimenAmountField() => _Live<String>(
   '500.00',
   (value, set) =>
-      FrostedAmountField(label: 'Amount', value: value, onChanged: set),
+      FrostedAmountField(labelText: 'Amount', value: value, onChanged: set),
 );
 
 Widget kitSpecimenAmountFieldSmall() => _Live<String>(
   '',
   (value, set) => FrostedFieldPair(
     FrostedAmountField(
-      label: 'Target',
+      labelText: 'Target',
       value: value,
       onChanged: set,
       size: FrostedAmountFieldSize.small,
     ),
-    const FrostedTextField(label: 'Date', hint: 'Month and year'),
+    const FrostedTextField(labelText: 'Date', hintText: 'Month and year'),
   ),
 );
 
@@ -162,7 +168,7 @@ Widget kitSpecimenStepper() => _Live<int>(
   (value, set) => FrostedNumberField(
     value: value,
     onChanged: set,
-    label: 'the budget',
+    labelText: 'the budget',
     note: 'a month',
     money: true,
   ),
@@ -173,14 +179,14 @@ Widget kitSpecimenStepperFloor() => _Live<int>(
   (value, set) => FrostedNumberField(
     value: value,
     onChanged: set,
-    label: 'the budget',
+    labelText: 'the budget',
     money: true,
   ),
 );
 
 /// The account a transfer comes from.
 Widget kitSpecimenSelect() => FrostedSelect<String>(
-  label: 'From',
+  labelText: 'From',
   options: const [
     FrostedSelectOption('chk', 'Everyday · 4821'),
     FrostedSelectOption('sav', 'Savings · 0937'),
@@ -191,8 +197,8 @@ Widget kitSpecimenSelect() => FrostedSelect<String>(
 
 /// A transfer's note over two lines.
 Widget kitSpecimenTextArea() => FrostedTextArea(
-  label: 'Note',
-  hint: 'What is it for?',
+  labelText: 'Note',
+  hintText: 'What is it for?',
   value: 'Dinner at Blue Fern, split three ways',
   onChanged: (_) {},
 );

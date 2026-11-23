@@ -483,7 +483,7 @@ class FrostedCarouselView extends StatelessWidget {
                 spacing: FrostedSpacing.s8,
                 children: [
                   FrostedPageDots(
-                    count: controls.count,
+                    pageCount: controls.count,
                     selectedIndex: controls.page,
                     position: controls.position,
                     // The dots say where the slides stand ("Slide 1 of 5"; its

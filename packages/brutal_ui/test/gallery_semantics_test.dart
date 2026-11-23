@@ -73,7 +73,7 @@ void main() {
             const Text('Painted before the preview'),
             Expanded(
               child: BrutalPreview(
-                light: BrutalThemeData.light(),
+                theme: BrutalThemeData.light(),
                 child: const Text('Inside the preview'),
               ),
             ),

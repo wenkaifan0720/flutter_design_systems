@@ -156,16 +156,16 @@ Widget kitSpecimenTabs() => kitState(
       kitSay(context, 'Read'),
     ],
     selectedIndex: value,
-    onChanged: change,
+    onTap: change,
   ),
 );
 Widget kitSpecimenDots() => kitState(
   1,
   (context, value, change) => ComicPageDots(
-    count: 4,
+    pageCount: 4,
     selectedIndex: value,
     label: kitSay(context, 'Preview pages'),
-    onChanged: change,
+    onPageChanged: change,
   ),
 );
 Widget kitSpecimenSteps() => Builder(
@@ -347,9 +347,9 @@ Widget kitSpecimenPagination() => kitState(
   3,
   (context, value, change) => ComicPagination(
     label: kitSay(context, 'Results pages'),
-    count: 12,
+    pageCount: 12,
     page: value,
-    onChanged: change,
+    onPageChanged: change,
   ),
 );
 
@@ -485,8 +485,8 @@ Widget _files() => kitState(
     ComicDroppedFile('page-03.jpg', size: '1.1 MB', progress: .6),
   ],
   (context, value, change) => ComicFileUpload(
-    label: kitSay(context, 'Cover art'),
-    hint: kitSay(context, 'PNG or JPG, up to 10\u00A0MB'),
+    labelText: kitSay(context, 'Cover art'),
+    hintText: kitSay(context, 'PNG or JPG, up to 10\u00A0MB'),
     files: [
       for (final file in value)
         ComicDroppedFile(

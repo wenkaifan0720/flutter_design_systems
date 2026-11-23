@@ -371,10 +371,10 @@ class _Validation extends StatelessWidget {
   }
 }
 
-/// Fluent 2's Field: its [label] (a [Fluent2Label], or a [Fluent2InfoLabel]
+/// Fluent 2's Field: its [labelText] (a [Fluent2Label], or a [Fluent2InfoLabel]
 /// when [info] is given; the asterisk when [required]) 4 over the
 /// [child] control, then the validation line ([validationMessage] with its
-/// [validationState]'s glyph: an error by default) and the [helper] in
+/// [validationState]'s glyph: an error by default) and the [helperText] in
 /// caption1 in the third ink, 2 apart. The control takes the field's label
 /// as its spoken name and, for an error, its red stroke.
 /// [Fluent2FieldOrientation.horizontal] stands the label in the start third.
@@ -386,15 +386,15 @@ class _Validation extends StatelessWidget {
 /// read once ([mergeSemantics]).
 ///
 /// ```dart
-/// Fluent2FormField(label: 'Email', required: true, helper: 'We send the invite here.', child: Fluent2TextField(value: email, onChanged: (v) => setState(() => email = v)))
+/// Fluent2FormField(labelText: 'Email', required: true, helperText: 'We send the invite here.', child: Fluent2TextField(value: email, onChanged: (v) => setState(() => email = v)))
 /// ```
 class Fluent2FormField extends StatelessWidget {
-  /// A form field: [label] over [child], with its hint and validation under.
+  /// A form field: [labelText] over [child], with its hint and validation under.
   const Fluent2FormField({
     required this.child,
-    this.label,
+    this.labelText,
     this.required = false,
-    this.helper,
+    this.helperText,
     this.validationMessage,
     this.validationState,
     this.info,
@@ -408,13 +408,13 @@ class Fluent2FormField extends StatelessWidget {
   final Widget child;
 
   /// The label's words; null shows none.
-  final String? label;
+  final String? labelText;
 
   /// Whether the field must be filled (a red asterisk follows its label).
   final bool required;
 
   /// A hint under the control; null shows none.
-  final String? helper;
+  final String? helperText;
 
   /// The validation message under the control; null shows none.
   final String? validationMessage;
@@ -446,7 +446,7 @@ class Fluent2FormField extends StatelessWidget {
         (validationMessage != null
             ? Fluent2ValidationState.error
             : Fluent2ValidationState.none);
-    final words = label;
+    final words = labelText;
     final Widget? head = words == null
         ? null
         : info != null
@@ -465,12 +465,12 @@ class Fluent2FormField extends StatelessWidget {
     // hears them as the control's hint (the shared RawInputDecorator).
     final under = [
       if (message != null) ExcludeSemantics(child: _Validation(state, message)),
-      if (helper != null)
+      if (helperText != null)
         ExcludeSemantics(
           child: Padding(
             padding: const EdgeInsets.only(top: Fluent2Spacing.xxs),
             child: Text(
-              helper!,
+              helperText!,
               style: t.caption1.c(t.colors.neutralForeground3),
             ),
           ),
@@ -478,7 +478,7 @@ class Fluent2FormField extends StatelessWidget {
     ];
     // A warning or a success is said as help; only an error marks the
     // control invalid.
-    final help = [if (message != null && !error) message, ?helper];
+    final help = [if (message != null && !error) message, ?helperText];
     return RawInputDecorator(
       mergeSemantics: mergeSemantics,
       labelText: words,
@@ -582,9 +582,9 @@ class Fluent2FormField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(FlagProperty('required', value: required, ifTrue: 'required'))
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>(
           'mergeSemantics',
@@ -631,7 +631,7 @@ class Fluent2FormField extends StatelessWidget {
 /// and a [footnote] in caption1 under the last.
 ///
 /// ```dart
-/// Fluent2FormSection(title: 'Notifications', description: 'How Northwind reaches you.', children: [Fluent2FormField(label: 'Email', child: Fluent2TextField(value: email, onChanged: setEmail)), Fluent2Switch(value: push, label: 'Push notifications', onChanged: setPush)])
+/// Fluent2FormSection(title: 'Notifications', description: 'How Northwind reaches you.', children: [Fluent2FormField(labelText: 'Email', child: Fluent2TextField(value: email, onChanged: setEmail)), Fluent2Switch(value: push, label: 'Push notifications', onChanged: setPush)])
 /// ```
 class Fluent2FormSection extends StatelessWidget {
   /// A section of a form: [title] and [description] over [children].

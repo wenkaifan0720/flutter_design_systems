@@ -55,7 +55,7 @@ class _StepsState extends State<_Steps> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     spacing: LedgerSpacing.s16,
     children: [
-      LedgerStepProgress(steps: _names, current: _at),
+      LedgerStepProgress(steps: _names, currentStep: _at),
       Row(
         spacing: LedgerSpacing.s12,
         children: [
@@ -90,8 +90,8 @@ class _DotsState extends State<_Dots> {
 
   @override
   Widget build(BuildContext context) => LedgerPageDots(
-    count: 4,
-    index: _at,
+    pageCount: 4,
+    page: _at,
     onChanged: (i) => setState(() => _at = i),
   );
 }
@@ -123,7 +123,7 @@ Widget kitWayfindingDemo(Brightness brightness) => kitScreen(
     kitSection("A form's steps", children: const [_Steps()]),
     kitSection(
       'Page marks',
-      children: const [_Dots(), LedgerPageDots(count: 3, index: 0)],
+      children: const [_Dots(), LedgerPageDots(pageCount: 3, page: 0)],
     ),
     kitSection(
       'The palette',

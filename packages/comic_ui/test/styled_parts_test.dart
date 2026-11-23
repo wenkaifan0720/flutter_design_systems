@@ -72,7 +72,7 @@ final _cases = <String, _Case>{
   ),
   'radio': _Case(
     (s) => ComicRadioGroup<int>(
-      label: 'Copy',
+      labelText: 'Copy',
       options: const [ComicRadio(1, 'One'), ComicRadio(2, 'Two')],
       onChanged: (_) {},
       style: s,
@@ -88,7 +88,7 @@ final _cases = <String, _Case>{
     const Offset(0.2, 0.5),
   ),
   'field': _Case(
-    (s) => ComicTextField(hint: 'Name', style: s),
+    (s) => ComicTextField(hintText: 'Name', style: s),
     () => _in(ComicTextField, DecoratedBox),
     (t, s) => t.copyWith(textFieldTheme: s),
     const Offset(0.9, 0.5),

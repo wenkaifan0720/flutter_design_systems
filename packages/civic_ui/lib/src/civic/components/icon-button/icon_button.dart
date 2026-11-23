@@ -22,7 +22,7 @@ import '../tooltip/tooltip.dart';
 /// With a [tooltip] a pointer resting on it, the keyboard reaching it and a
 /// long press show those words beside it ([CivicTooltip]).
 ///
-/// A glyph that is on or off (Reminders, Saved) takes [selected]: on, it
+/// A glyph that is on or off (Reminders, Saved) takes [isSelected]: on, it
 /// stands solid in the action colour with the glyph in its ink, as a chosen
 /// [CivicChip] does, and a screen reader hears it as a toggle. What it holds
 /// (a count drawn over it) is its [semanticValue], read after its name.
@@ -47,7 +47,7 @@ class CivicIconButton extends StatelessWidget {
     this.autofocus = false,
     this.statesController,
     this.tooltip,
-    this.selected,
+    this.isSelected,
     this.semanticValue,
   });
 
@@ -79,7 +79,7 @@ class CivicIconButton extends StatelessWidget {
 
   /// Whether it is on, for a glyph that turns something on and off; null
   /// for one that acts once.
-  final bool? selected;
+  final bool? isSelected;
 
   /// What it holds, read after [semanticLabel] ("3 new" for a count drawn
   /// over it); null reads nothing more.
@@ -106,17 +106,17 @@ class CivicIconButton extends StatelessWidget {
         statesController: statesController,
         semanticLabel: semanticLabel,
         semanticValue: semanticValue,
-        selected: selected ?? false,
+        selected: isSelected ?? false,
         // A toggle button: a button that is selected, as
         // IconButton(isSelected:) is.
-        semanticSelected: selected,
+        semanticSelected: isSelected,
         mouseCursor: onPressed == null
             ? SystemMouseCursors.basic
             : SystemMouseCursors.click,
         builder: (context, states, _) {
           final so = DesignStyleOf([style, t.iconButtonStyle], states);
           final disabled = states.contains(WidgetState.disabled);
-          final on = selected ?? false;
+          final on = isSelected ?? false;
           // On a band of its own (the top bar's ink) it takes the band's glyph
           // colour.
           final ink = disabled
@@ -207,7 +207,9 @@ class CivicIconButton extends StatelessWidget {
         ),
       )
       ..add(StringProperty('tooltip', tooltip, defaultValue: null))
-      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('isSelected', isSelected, defaultValue: null),
+      )
       ..add(StringProperty('semanticValue', semanticValue, defaultValue: null));
   }
 }

@@ -41,8 +41,8 @@ Future<_Read> _shot(WidgetTester tester) async {
 Widget _app(FrostedThemeData t) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: RepaintBoundary(key: _stage, child: page!),
   ),

@@ -28,7 +28,7 @@ void main() {
             child: Column(
               children: [
                 KeycapSelect<String>(
-                  label: 'Folder',
+                  labelText: 'Folder',
                   value: 'Work',
                   items: const [
                     KeycapSelectItem(value: 'Work', label: 'Work'),
@@ -38,7 +38,7 @@ void main() {
                 ),
                 const SizedBox(height: 24),
                 KeycapCombobox<String>(
-                  label: 'Tag',
+                  labelText: 'Tag',
                   options: const ['Draft', 'Recipe'],
                   onSelected: (_) {},
                 ),

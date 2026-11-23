@@ -18,22 +18,22 @@ import '../text-field/text_field.dart';
 /// [minLines] of them before anything is typed and more as the words run
 /// on, up to [maxLines] before it scrolls; the last rule is the field's
 /// ink rule, doubled while it has focus, as on every Ledger field. Its
-/// [label] in the small capitals over the paper, its [helper] or [error]
+/// [labelText] in the small capitals over the paper, its [helperText] or [errorText]
 /// under. With a [maxLength] the count of what is left stands in the
 /// paper's foot at the reading end, in the mono, turning vermilion once it
 /// is spent. The rules grow with the text size, so large text still
 /// writes on them.
 ///
 /// ```dart
-/// LedgerTextArea(label: 'Memo', hint: 'What it was for', maxLength: 280)
+/// LedgerTextArea(labelText: 'Memo', hintText: 'What it was for', maxLength: 280)
 /// ```
 class LedgerTextArea extends StatefulWidget {
-  /// A ruled area named [label].
+  /// A ruled area named [labelText].
   const LedgerTextArea({
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.controller,
     this.focusNode,
     this.minLines = 4,
@@ -51,16 +51,16 @@ class LedgerTextArea extends StatefulWidget {
        assert(maxLength == null || maxLength > 0);
 
   /// The small capitals over the paper.
-  final String? label;
+  final String? labelText;
 
   /// Words in the third ink while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The note under the paper.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong, in the vermilion; it replaces [helper].
-  final String? error;
+  /// What is wrong, in the vermilion; it replaces [helperText].
+  final String? errorText;
 
   /// Its words; null: its own.
   final TextEditingController? controller;
@@ -102,10 +102,10 @@ class LedgerTextArea extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -189,7 +189,7 @@ class _LedgerTextAreaState extends State<LedgerTextArea> {
       [widget.style, t.components.textField],
       {
         if (!enabled) WidgetState.disabled,
-        if (widget.error != null) WidgetState.error,
+        if (widget.errorText != null) WidgetState.error,
       },
     );
     final editable = Material(
@@ -217,7 +217,7 @@ class _LedgerTextAreaState extends State<LedgerTextArea> {
         onChanged: widget.onChanged,
       ),
     );
-    final hint = widget.hint;
+    final hint = widget.hintText;
     // The box holds one line at least; the editable's own minLines rules
     // the rest. A taller box would stand the first line where a single line
     // would (centred in it), half a box down, and the rule a line under the
@@ -264,9 +264,9 @@ class _LedgerTextAreaState extends State<LedgerTextArea> {
       child: ruled,
     );
     return RawInputDecorator(
-      labelText: widget.label,
-      helperText: widget.helper,
-      errorText: widget.error,
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
       required: widget.isRequired,
       enabled: enabled,
       focusNode: _focus,

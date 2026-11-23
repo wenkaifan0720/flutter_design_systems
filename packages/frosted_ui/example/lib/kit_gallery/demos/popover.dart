@@ -36,7 +36,7 @@ Widget kitPopoverDemo(Brightness brightness) => kitScreen(
                     value: unread,
                     onChanged: set,
                   ),
-                  const FrostedTextField(label: 'From'),
+                  const FrostedTextField(labelText: 'From'),
                 ],
               ),
             ),

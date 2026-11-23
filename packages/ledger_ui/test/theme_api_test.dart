@@ -167,7 +167,7 @@ void main() {
   test('the public widgets name their settings in the inspector', () {
     String described(Diagnosticable d) => d.toDiagnosticsNode().toStringDeep();
     expect(
-      described(const LedgerTextField(label: 'Name', maxLines: 2)),
+      described(const LedgerTextField(labelText: 'Name', maxLines: 2)),
       contains('maxLines: 2'),
     );
     expect(

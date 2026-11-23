@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/dialog_actions.dart';
 import '../../internal/paint.dart';
 import '../../theme.dart';
 
@@ -169,19 +170,7 @@ class CivicDialog extends StatelessWidget {
                         ],
                         if (actions.isNotEmpty) ...[
                           const SizedBox(height: CivicSpacing.s32),
-                          if (narrow)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              spacing: CivicSpacing.s12,
-                              children: actions,
-                            )
-                          else
-                            Wrap(
-                              spacing: CivicSpacing.s16,
-                              runSpacing: CivicSpacing.s12,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: actions,
-                            ),
+                          CivicDialogActions(actions: actions),
                         ],
                       ],
                     ),

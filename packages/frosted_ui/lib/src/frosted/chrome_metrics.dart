@@ -620,21 +620,18 @@ abstract final class FrostedChromeMetrics {
   /// See [toastHeight].
   static const double toastActInset = 14;
 
-  /// Where a toast stands: 16 over the screen's foot and in from its sides;
-  /// over the tab bar 12 above the slab (88 from the foot); on the desktop
-  /// 32 from the window's right and foot, 380 wide.
-  static const double toastBottom = 16;
-
-  /// See [toastBottom].
+  /// Where a toast stands: 16 in from the screen's sides, 12 over the tab
+  /// bar (88 from the foot), a route's footer or the screen's safe inset;
+  /// on the desktop 32 from the window's right and foot, 380 wide.
   static const double toastSide = 16;
 
-  /// See [toastBottom].
+  /// See [toastSide].
   static const double toastOverBar = 12;
 
-  /// See [toastBottom].
+  /// See [toastSide].
   static const double toastWideEdge = 32;
 
-  /// See [toastBottom].
+  /// See [toastSide].
   static const double toastWideWidth = 380;
 
   /// DERIVED: a toast rises 16 as it comes in, and stays 3.2 seconds (5.6

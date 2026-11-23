@@ -4,14 +4,14 @@ import 'package:flutter/widgets.dart';
 import '../text-field/text_field.dart';
 
 /// A one-line answer, as generated code writes it: a [CivicTextField] with
-/// its [label] over the box, a [hint] under the label, an [error] above the
-/// box. A field always has words over it: with no [label], the [hint] is
+/// its [labelText] over the box, a [hintText] under the label, an [errorText] above the
+/// box. A field always has words over it: with no [labelText], the [hintText] is
 /// the label.
 ///
 /// ```dart
 /// CivicInput(
-///   label: 'Email address',
-///   error: emailError,
+///   labelText: 'Email address',
+///   errorText: emailError,
 ///   onChanged: (value) => email = value,
 /// )
 /// ```
@@ -19,26 +19,26 @@ class CivicInput extends StatelessWidget {
   /// A one-line answer.
   const CivicInput({
     super.key,
-    this.label,
-    this.hint,
-    this.error,
-    this.obscure = false,
+    this.labelText,
+    this.hintText,
+    this.errorText,
+    this.obscureText = false,
     this.controller,
     this.onChanged,
     this.onSubmitted,
   });
 
   /// What the field asks.
-  final String? label;
+  final String? labelText;
 
   /// Help with the answer, under the label.
-  final String? hint;
+  final String? hintText;
 
   /// What is wrong with the answer; null when nothing is.
-  final String? error;
+  final String? errorText;
 
   /// Whether the answer is hidden as it is typed (a password).
-  final bool obscure;
+  final bool obscureText;
 
   /// The answer's controller; null keeps its own.
   final TextEditingController? controller;
@@ -52,10 +52,10 @@ class CivicInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) => CivicTextField(
     controller: controller,
-    labelText: label ?? hint,
-    helperText: label == null ? null : hint,
-    errorText: error,
-    obscureText: obscure,
+    labelText: labelText ?? hintText,
+    helperText: labelText == null ? null : hintText,
+    errorText: errorText,
+    obscureText: obscureText,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
   );
@@ -64,9 +64,11 @@ class CivicInput extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscured'));
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscured'),
+      );
   }
 }

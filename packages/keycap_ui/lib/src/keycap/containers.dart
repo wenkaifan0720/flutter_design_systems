@@ -91,7 +91,7 @@ class _Hinge extends StatelessWidget {
 
 /// A section that opens and closes: its title on a row in a well, a
 /// chevron turning as its content slides out under it, calmly. Built on
-/// the kit's press; the state is its own unless [open] is given.
+/// the kit's press; the state is its own unless [expanded] is given.
 ///
 /// ```dart
 /// KeycapDisclosure(title: 'Advanced export', child: options)
@@ -103,9 +103,9 @@ class KeycapDisclosure extends StatefulWidget {
     required this.title,
     required this.child,
     this.subtitle,
-    this.open,
-    this.onChanged,
-    this.initiallyOpen = false,
+    this.expanded,
+    this.onExpansionChanged,
+    this.initiallyExpanded = false,
   });
 
   /// Its title.
@@ -118,13 +118,13 @@ class KeycapDisclosure extends StatefulWidget {
   final Widget child;
 
   /// Whether it is open; its own state when null.
-  final bool? open;
+  final bool? expanded;
 
   /// Called with its new state.
-  final ValueChanged<bool>? onChanged;
+  final ValueChanged<bool>? onExpansionChanged;
 
-  /// Whether it starts open (when [open] is null).
-  final bool initiallyOpen;
+  /// Whether it starts open (when [expanded] is null).
+  final bool initiallyExpanded;
 
   @override
   State<KeycapDisclosure> createState() => _KeycapDisclosureState();
@@ -137,25 +137,25 @@ class KeycapDisclosure extends StatefulWidget {
 }
 
 class _KeycapDisclosureState extends State<KeycapDisclosure> {
-  late bool _open = widget.initiallyOpen;
+  late bool _open = widget.initiallyExpanded;
 
-  bool get _isOpen => widget.open ?? _open;
+  bool get _isOpen => widget.expanded ?? _open;
 
   void _toggle() {
     final next = !_isOpen;
-    if (widget.open == null) setState(() => _open = next);
-    widget.onChanged?.call(next);
+    if (widget.expanded == null) setState(() => _open = next);
+    widget.onExpansionChanged?.call(next);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final open = _isOpen;
+    final expanded = _isOpen;
     return KeycapWell(
       page: true,
       child: KeycapSpringValue(
-        value: open ? 1 : 0,
+        value: expanded ? 1 : 0,
         spring: KeycapMotion.panel,
         builder: (context, v, _) => Column(
           mainAxisSize: MainAxisSize.min,
@@ -163,7 +163,7 @@ class _KeycapDisclosureState extends State<KeycapDisclosure> {
           children: [
             RawButton(
               onPressed: _toggle,
-              expanded: open,
+              expanded: expanded,
               semanticLabel: widget.title,
               excludeSemantics: true,
               builder: (context, states, _) => KeycapSpringColor(
@@ -846,9 +846,9 @@ class KeycapCarousel extends StatelessWidget {
               ),
               const SizedBox(width: KeycapSpacing.small),
               KeycapPageDots(
-                count: math.max(controls.count, 1),
-                index: controls.page.clamp(0, math.max(controls.count - 1, 0)),
-                onChanged: controls.goToPage,
+                pageCount: math.max(controls.count, 1),
+                page: controls.page.clamp(0, math.max(controls.count - 1, 0)),
+                onPageChanged: controls.goToPage,
               ),
               const SizedBox(width: KeycapSpacing.small),
               KeycapSmallKey(

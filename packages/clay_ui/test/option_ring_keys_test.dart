@@ -31,7 +31,7 @@ void main() {
           child: Align(
             alignment: Alignment.topCenter,
             child: ClayCombobox<String>(
-              label: 'Category',
+              labelText: 'Category',
               value: 'Mind',
               options: const ['Health', 'Mind', 'Home'],
               onSelected: (_) {},

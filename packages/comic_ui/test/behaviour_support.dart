@@ -148,7 +148,7 @@ final _parts = <String, _Part>{
   ),
   'ComicRadioGroup': _Part(
     (hit) => ComicRadioGroup<String>(
-      label: 'Format',
+      labelText: 'Format',
       options: const [
         ComicRadio('print', 'Print'),
         ComicRadio('digital', 'Digital'),
@@ -196,17 +196,17 @@ final _parts = <String, _Part>{
     ),
   ),
   'ComicTabBar': _Part(
-    (hit) => ComicTabBar(tabs: const ['All', 'Saved'], onChanged: _on(hit)),
+    (hit) => ComicTabBar(tabs: const ['All', 'Saved'], onTap: _on(hit)),
     // One tab stop, the chosen tab: the arrows choose (ui_core's RawTabBar), and Enter on the chosen tab changes
     // nothing, so it calls nothing (routes_values_test).
     keys: false,
   ),
   'ComicPageDots': _Part(
     (hit) => ComicPageDots(
-      count: 4,
+      pageCount: 4,
       selectedIndex: 1,
       label: 'Pages',
-      onChanged: _on(hit),
+      onPageChanged: _on(hit),
     ),
     // One adjustable control, as a slider: arrows step it, a tap goes to the nearest page.
     keys: false,
@@ -228,7 +228,7 @@ final _parts = <String, _Part>{
     ]),
   ),
   'ComicPagination': _Part(
-    (hit) => ComicPagination(count: 6, page: 2, onChanged: _on(hit)),
+    (hit) => ComicPagination(pageCount: 6, page: 2, onPageChanged: _on(hit)),
   ),
   'ComicRating': _Part(
     (hit) => ComicRating(label: 'Rate it', value: 2, onChanged: _on(hit)),
@@ -250,7 +250,7 @@ final _parts = <String, _Part>{
     disables: false,
   ),
   'ComicFileUpload': _Part(
-    (hit) => ComicFileUpload(label: 'Attachments', onChoose: hit),
+    (hit) => ComicFileUpload(labelText: 'Attachments', onChoose: hit),
   ),
   'ComicMoreLink': _Part((hit) => ComicMoreLink('See all', onPressed: hit)),
   'ComicPanelHead': _Part(
@@ -322,7 +322,7 @@ final _parts = <String, _Part>{
   ),
   'ComicSelect': _Part(
     (hit) => ComicSelect<String>(
-      label: 'Format',
+      labelText: 'Format',
       options: const [ComicSelectOption('print', 'Print')],
       onChanged: _on(hit),
     ),
@@ -340,26 +340,26 @@ final _parts = <String, _Part>{
     disables: false,
   ),
   'ComicTextField': _Part(
-    (hit) => ComicTextField(label: 'Name', onChanged: _on(hit)),
+    (hit) => ComicTextField(labelText: 'Name', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
   ),
   'ComicInput': _Part(
-    (hit) => ComicInput(hint: 'Your name', onChanged: _on(hit)),
+    (hit) => ComicInput(hintText: 'Your name', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
   ),
   'ComicSearchField': _Part(
-    (hit) => ComicSearchField(hint: 'Search', onChanged: _on(hit)),
+    (hit) => ComicSearchField(hintText: 'Search', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
   ),
   'ComicCombobox': _Part(
     (hit) => ComicCombobox<String>(
-      label: 'City',
+      labelText: 'City',
       options: const ['Lisbon', 'London'],
       onSelected: _on(hit),
     ),
@@ -368,13 +368,13 @@ final _parts = <String, _Part>{
     disables: false,
   ),
   'ComicInputOtp': _Part(
-    (hit) => ComicInputOtp(label: 'Code', onChanged: _on(hit)),
+    (hit) => ComicInputOtp(labelText: 'Code', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
   ),
   'ComicTextArea': _Part(
-    (hit) => ComicTextArea(label: 'Notes', onChanged: _on(hit)),
+    (hit) => ComicTextArea(labelText: 'Notes', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
@@ -389,13 +389,13 @@ final _parts = <String, _Part>{
     disables: false,
   ),
   'ComicPasswordField': _Part(
-    (hit) => ComicPasswordField(label: 'Password', onChanged: _on(hit)),
+    (hit) => ComicPasswordField(labelText: 'Password', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
   ),
   'ComicInputGroup': _Part(
-    (hit) => ComicInputGroup(label: 'Price', onChanged: _on(hit)),
+    (hit) => ComicInputGroup(labelText: 'Price', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,

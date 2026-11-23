@@ -13,11 +13,11 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/control_light.dart';
+import 'internal/field_frame.dart';
 
 import 'internal/list_keys.dart';
 import 'internal/stepper_glyph.dart';
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 /// One setting a [StudioSelect] offers.
@@ -55,7 +55,7 @@ class StudioSelectItem<T> {
 /// `textStyle`, then [StudioThemeData.selectStyle].
 ///
 /// ```dart
-/// StudioSelect<String>(label: 'Quality', value: q, items: const [StudioSelectItem(value: 'hi', label: 'High')], onChanged: (v) => setState(() => q = v))
+/// StudioSelect<String>(labelText: 'Quality', value: q, items: const [StudioSelectItem(value: 'hi', label: 'High')], onChanged: (v) => setState(() => q = v))
 /// ```
 class StudioSelect<T> extends StatefulWidget {
   /// A select over [items], showing [value].
@@ -64,10 +64,10 @@ class StudioSelect<T> extends StatefulWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.style,
   });
@@ -82,16 +82,16 @@ class StudioSelect<T> extends StatefulWidget {
   final ValueChanged<T>? onChanged;
 
   /// Its label, above it.
-  final String? label;
+  final String? labelText;
 
   /// Shown while nothing is chosen.
-  final String? hint;
+  final String? hintText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -107,7 +107,7 @@ class StudioSelect<T> extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<T>('value', value))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('label', labelText, defaultValue: null))
       ..add(IntProperty('items', items.length))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
@@ -133,10 +133,10 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
       :items,
       :value,
       :onChanged,
-      :label,
-      :hint,
-      :helper,
-      :error,
+      labelText: label,
+      hintText: hint,
+      helperText: helper,
+      errorText: error,
       :style,
     ) = widget;
     final theme = StudioTheme.of(context);
@@ -182,7 +182,8 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
               },
         focusNode: _focus,
         expanded: anchor?.isOpen,
-        semanticLabel: label,
+        // Named by its field, which reads the label on this node; a name of
+        // its own would be read twice.
         semanticValue: chosen?.label,
         builder: (context, states, _) {
           final layered = DesignStyleOf(
@@ -261,8 +262,10 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
       );
     }
 
+    // The window is one node, its press and its words: the field merges a
+    // lone control with its label.
     final Widget box = !enabled
-        ? window(null)
+        ? MergeSemantics(child: window(null))
         : RawPopover(
             arrowKeyNavigation: true,
             semanticLabel: label,
@@ -272,7 +275,8 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
             ),
             dampingRatio: StudioMotion.dampingRatio,
             stiffness: StudioMotion.overlayStiffness,
-            anchorBuilder: (context, anchor) => window(anchor),
+            anchorBuilder: (context, anchor) =>
+                MergeSemantics(child: window(anchor)),
             overlayBuilder: (context, info) => FadeTransition(
               opacity: info.animation,
               child: StudioMenuList<T>(
@@ -293,15 +297,12 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
               ),
             ),
           );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: StudioFieldLabel(label, enabled: enabled)),
-        box,
-        StudioFieldMessage(helper: helper, error: error),
-      ],
+    return StudioFieldFrame(
+      labelText: label,
+      helperText: helper,
+      errorText: error,
+      enabled: enabled,
+      child: box,
     );
   }
 }
@@ -386,18 +387,18 @@ class _StudioMenuListState<T> extends State<StudioMenuList<T>> {
 
   bool _pointer = false;
 
+  // The row the keys start on, from the list's first frame: the chosen one,
+  // else the first that takes a press.
+  late final int _first = () {
+    final items = widget.items;
+    final at = items.indexWhere((i) => i.enabled && i.value == widget.value);
+    return at >= 0 ? at : items.indexWhere((i) => i.enabled);
+  }();
+
   @override
   void initState() {
     super.initState();
     studioKeepInView(_nodes);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final items = widget.items;
-      var at = items.indexWhere((i) => i.enabled && i.value == widget.value);
-      if (at < 0) at = items.indexWhere((i) => i.enabled);
-      if (at < 0) return;
-      FocusTraversalPolicy.defaultTraversalRequestFocusCallback(_nodes[at]);
-    });
   }
 
   @override
@@ -455,6 +456,7 @@ class _StudioMenuListState<T> extends State<StudioMenuList<T>> {
     return RawButton(
       onPressed: item.enabled ? () => widget.onChosen(item.value) : null,
       focusNode: _nodes[i],
+      autofocus: i == _first,
       selected: isChosen,
       semanticSelected: widget.showLamps ? isChosen : null,
       semanticLabel: item.label,

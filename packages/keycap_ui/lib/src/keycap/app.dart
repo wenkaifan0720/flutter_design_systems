@@ -8,7 +8,7 @@ import 'package:ui_core/host.dart';
 import 'overlays.dart';
 import 'theme.dart';
 
-/// Keycap for [child] in the room's light: [light] by day, [dark] by night
+/// Keycap for [child] in the room's light: [theme] by day, [darkTheme] by night
 /// (the platform's, a preview frame's, or [brightness] when given), moving
 /// between them on a calm spring, with a [KeycapToaster] over it. Put it in
 /// an app's `builder:`.
@@ -21,8 +21,8 @@ class KeycapHost extends StatelessWidget {
   const KeycapHost({
     super.key,
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
   });
 
@@ -30,10 +30,10 @@ class KeycapHost extends StatelessWidget {
   final Widget child;
 
   /// The theme by day; [KeycapThemeData.light] when null.
-  final KeycapThemeData? light;
+  final KeycapThemeData? theme;
 
   /// The theme by night; [KeycapThemeData.dark] when null.
-  final KeycapThemeData? dark;
+  final KeycapThemeData? darkTheme;
 
   /// Day or night, whatever the platform says; by the platform when null.
   final Brightness? brightness;
@@ -45,8 +45,8 @@ class KeycapHost extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final data = wanted == Brightness.dark
-        ? dark ?? KeycapThemeData.dark()
-        : light ?? KeycapThemeData.light();
+        ? darkTheme ?? KeycapThemeData.dark()
+        : theme ?? KeycapThemeData.light();
     return AnimatedKeycapTheme(
       data: data,
       child: KeycapToaster(child: child),

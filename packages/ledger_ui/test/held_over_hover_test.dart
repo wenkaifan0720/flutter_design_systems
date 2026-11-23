@@ -169,7 +169,7 @@ void main() {
     ),
     'select': (
       LedgerSelect<String>(
-        label: 'Currency',
+        labelText: 'Currency',
         value: 'USD',
         items: const [
           LedgerSelectItem(value: 'USD', label: 'US dollar'),
@@ -181,7 +181,7 @@ void main() {
     ),
     'multi-select': (
       LedgerMultiSelect<String>(
-        label: 'Split with',
+        labelText: 'Split with',
         values: const ['Maren'],
         options: const ['Maren', 'Theo', 'Ana'],
         onChanged: (_) {},
@@ -193,7 +193,7 @@ void main() {
       find.text('3'),
     ),
     'page dots': (
-      LedgerPageDots(count: 5, index: 1, onChanged: (_) {}),
+      LedgerPageDots(pageCount: 5, page: 1, onChanged: (_) {}),
       find.byType(LedgerPageDots),
     ),
     'disclosure': (
@@ -225,11 +225,11 @@ void main() {
       find.byType(LedgerAvatar),
     ),
     'file pick': (
-      LedgerFileUpload(label: 'Receipts', files: const [], onPick: () {}),
+      LedgerFileUpload(labelText: 'Receipts', files: const [], onPick: () {}),
       find.byType(LedgerFileUpload),
     ),
     'search entry': (
-      LedgerSearchEntry(hint: 'Search entries', onTap: () {}),
+      LedgerSearchEntry(hintText: 'Search entries', onTap: () {}),
       find.text('Search entries'),
     ),
     'note row': (
@@ -343,7 +343,7 @@ void main() {
         selected: const {'Day'},
         label: 'Range',
         labelOf: (v) => v,
-        onChanged: (_) {},
+        onSelectionChanged: (_) {},
       ),
       find.text('Week'),
     ),

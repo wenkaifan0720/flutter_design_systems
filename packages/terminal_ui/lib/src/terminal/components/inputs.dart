@@ -205,7 +205,7 @@ class TermOtpField extends StatelessWidget {
   Widget _code(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final stroke = termStroke(theme, grid);
+    final stroke = termStrokeWidth(theme, grid);
     // The code is one line; what a tap reaches is the floor's height (two
     // lines under a finger), the cells in its middle.
     return TermTapTarget(
@@ -447,7 +447,19 @@ class TermNumberField extends StatelessWidget {
         key('+', up),
         if (unit != null) ...[
           SizedBox(width: grid.cellWidth),
-          ExcludeSemantics(child: Text(unit!, style: theme.dimStyle)),
+          // Where the line ends first (larger text on a phone), the unit is
+          // cut with an ellipsis; the number and its keys stay whole.
+          Flexible(
+            child: ExcludeSemantics(
+              child: Text(
+                unit!,
+                style: theme.dimStyle,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
         ],
       ],
     );
@@ -505,7 +517,7 @@ class _TermNumberFocus extends StatelessWidget {
 ///
 /// With [search] the options are looked up rather than filtered: while
 /// the search runs the pane says [loadingText] by the spinner, and when it
-/// fails, [errorText] over a [retryText] row (Down from the field reaches
+/// fails, [searchFailedText] over a [retryText] row (Down from the field reaches
 /// it, Return or a press runs the search again).
 ///
 /// ```dart
@@ -532,7 +544,7 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     this.search,
     this.debounceDuration,
     this.loadingText = 'searching',
-    this.errorText = 'search failed',
+    this.searchFailedText = 'search failed',
     this.retryText = 'try again',
     this.controller,
     this.focusNode,
@@ -564,9 +576,9 @@ class TermCombobox<T extends Object> extends StatelessWidget {
   ///
   /// Left as `'search failed'`, it is the reader's words for it
   /// (`TermLocalizations.searchFailedLabel`): Arabic or German in an app in either.
-  final String errorText;
+  final String searchFailedText;
 
-  /// The row under [errorText] that runs [search] again.
+  /// The row under [searchFailedText] that runs [search] again.
   ///
   /// Left as `'try again'`, it is the reader's words for it
   /// (`TermLocalizations.retryLabel`): Arabic or German in an app in either.
@@ -615,17 +627,13 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final show = displayStringForOption ?? (T option) => '$option';
-    // While its list is up, the field stands on the list's ground. The
-    // list goes over a field with too little room under it, as a select's
-    // does: its frame and the lines of a failed search, or four options.
+    // The list goes over a field with too little room under it, as a
+    // select's does: its frame and the lines of a failed search, or four
+    // options.
     return TermListSide(
       wanted: grid.lines(6),
-      builder: (context, above, watch) => TermListUp(
-        builder: (context, up, mark) => TermListOpen(
-          open: up,
-          child: _combobox(theme, grid, show, mark, above, watch),
-        ),
-      ),
+      builder: (context, above, watch) =>
+          _combobox(theme, grid, show, above, watch),
     );
   }
 
@@ -633,7 +641,6 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     TermThemeData theme,
     TermGrid grid,
     String Function(T) show,
-    Widget Function(Widget list) mark,
     bool above,
     Widget Function(TextEditingController, FocusNode, Widget) watch,
   ) => RawCombobox<T>(
@@ -655,7 +662,7 @@ class TermCombobox<T extends Object> extends StatelessWidget {
       error: error,
       text: termWords(
         context,
-        errorText,
+        searchFailedText,
         'search failed',
         (w) => w.searchFailedLabel,
       ),
@@ -677,38 +684,42 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     focusNode: focusNode,
     semanticLabel: labelText,
     optionsMaxHeight: grid.lines(8),
+    // While its list is up, the field stands on the list's ground, and its
+    // input says the list is expanded.
     fieldBuilder: (context, field) => watch(
       field.controller,
       field.focusNode,
-      TermTextField(
-        controller: field.controller,
-        focusNode: field.focusNode,
-        labelText: labelText,
-        hintText: hintText,
-        helperText: helperText,
-        prompt: prompt,
-        autocorrect: false,
-        style: style,
-        // Return takes the lit option and keeps the focus: no onSubmitted,
-        // whose restarted input would take no more typing in a browser.
-        onEditingComplete: field.submit,
+      TermListOpen(
+        open: field.isOpen,
+        child: TermTextField(
+          controller: field.controller,
+          focusNode: field.focusNode,
+          labelText: labelText,
+          hintText: hintText,
+          helperText: helperText,
+          prompt: prompt,
+          autocorrect: false,
+          style: style,
+          // Return takes the lit option and keeps the focus: no
+          // onSubmitted, whose restarted input would take no more typing in
+          // a browser.
+          onEditingComplete: field.submit,
+        ),
       ),
     ),
     optionBuilder: (context, option, states) =>
         TermMenuRow(label: show(option), states: states),
     // As wide as its field: the field's width is the list's most, and a
     // pane left to itself takes whole cells, short of the field's edge.
-    surfaceBuilder: (context, list) => mark(
-      SizedBox(
-        width: double.infinity,
-        child: TermPane(
-          raised: true,
-          focused: true,
-          // A cell inside the frame each side, as a menu's: the keys' block
-          // stands as far from the frame's sides as from its top and bottom.
-          padding: const TermInset(),
-          child: list,
-        ),
+    surfaceBuilder: (context, list) => SizedBox(
+      width: double.infinity,
+      child: TermPane(
+        raised: true,
+        focused: true,
+        // A cell inside the frame each side, as a menu's: the keys' block
+        // stands as far from the frame's sides as from its top and bottom.
+        padding: const TermInset(),
+        child: list,
       ),
     ),
     emptyBuilder: (context) => Padding(
@@ -850,7 +861,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
     this.search,
     this.debounceDuration,
     this.loadingText = 'searching',
-    this.errorText = 'search failed',
+    this.searchFailedText = 'search failed',
     this.retryText = 'try again',
     this.style,
   });
@@ -872,9 +883,9 @@ class TermTagInput<T extends Object> extends StatelessWidget {
   ///
   /// Left as `'search failed'`, it is the reader's words for it
   /// (`TermLocalizations.searchFailedLabel`): Arabic or German in an app in either.
-  final String errorText;
+  final String searchFailedText;
 
-  /// The row under [errorText] that runs [search] again.
+  /// The row under [searchFailedText] that runs [search] again.
   ///
   /// Left as `'try again'`, it is the reader's words for it
   /// (`TermLocalizations.retryLabel`): Arabic or German in an app in either.
@@ -951,7 +962,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
       error: error,
       text: termWords(
         context,
-        errorText,
+        searchFailedText,
         'search failed',
         (w) => w.searchFailedLabel,
       ),
@@ -971,17 +982,24 @@ class TermTagInput<T extends Object> extends StatelessWidget {
     maxTags: maxTags,
     semanticLabel: labelText,
     optionsMaxHeight: grid.lines(8),
-    fieldBuilder: (context, field) => TermTextField(
-      controller: field.controller,
-      focusNode: field.focusNode,
-      labelText: labelText,
-      hintText: hintText,
-      autocorrect: false,
-      style: style,
-      framed: false,
-      // Return adds a tag and keeps the focus for the next: no onSubmitted,
-      // whose restarted input would take no more typing in a browser.
-      onEditingComplete: field.submit,
+    // Its input says whether the list is expanded.
+    fieldBuilder: (context, field) => TermListOpen(
+      open: field.isOpen,
+      child: TermTextField(
+        controller: field.controller,
+        focusNode: field.focusNode,
+        labelText: labelText,
+        hintText: hintText,
+        // Read on the words' node, as the label is; the frame draws both.
+        helperText: helperText,
+        autocorrect: false,
+        style: style,
+        framed: false,
+        // Return adds a tag and keeps the focus for the next: no
+        // onSubmitted, whose restarted input would take no more typing in a
+        // browser.
+        onEditingComplete: field.submit,
+      ),
     ),
     optionBuilder: (context, option, states) =>
         TermMenuRow(label: show(option), states: states),
@@ -1098,7 +1116,7 @@ class _TagFrameState extends State<_TagFrame> {
                 text,
                 maxLines: 1,
                 softWrap: false,
-                overflow: TextOverflow.clip,
+                overflow: TextOverflow.ellipsis,
                 style: style,
               ),
             ),
@@ -1115,8 +1133,8 @@ class _TagFrameState extends State<_TagFrame> {
                 // it.
                 if (TermListOpen.of(context))
                   Positioned(
-                    left: termRaisedEdge(grid, termStroke(theme, grid)),
-                    right: termRaisedEdge(grid, termStroke(theme, grid)),
+                    left: termRaisedEdge(grid, termStrokeWidth(theme, grid)),
+                    right: termRaisedEdge(grid, termStrokeWidth(theme, grid)),
                     top: lh / 2,
                     bottom: lh / 2,
                     child: ColoredBox(color: theme.surface),
@@ -1127,7 +1145,8 @@ class _TagFrameState extends State<_TagFrame> {
                     color:
                         widget.edge ??
                         Color.lerp(theme.rule, theme.accent, t.clamp(0, 1))!,
-                    stroke: termStroke(theme, grid) * (1 + t.clamp(0.0, 1.0)),
+                    stroke:
+                        termStrokeWidth(theme, grid) * (1 + t.clamp(0.0, 1.0)),
                     topGaps: [if (label != null) gap(label)],
                     bottomGaps: [if (inLine != null) gap(inLine)],
                     textDirection: Directionality.of(context),

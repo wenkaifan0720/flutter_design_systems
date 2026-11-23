@@ -55,7 +55,7 @@ void main() {
     t,
   ) async {
     final handle = t.ensureSemantics();
-    await _show(t, const LedgerCodeField(label: 'Verification code'));
+    await _show(t, const LedgerCodeField(labelText: 'Verification code'));
     expect(
       t.getSemantics(find.byType(EditableText)).getSemanticsData().label,
       'Verification code',
@@ -63,7 +63,7 @@ void main() {
     await _show(
       t,
       const LedgerCodeField(
-        label: 'Verification code',
+        labelText: 'Verification code',
         semanticLabel: 'Code for login',
       ),
     );
@@ -75,7 +75,7 @@ void main() {
     await _show(
       t,
       LedgerSelect<String>(
-        label: 'Paper size',
+        labelText: 'Paper size',
         value: 'A4',
         items: const [LedgerSelectItem(value: 'A4', label: 'A4')],
         onChanged: (_) {},
@@ -94,7 +94,10 @@ void main() {
       var query = '';
       await _show(
         t,
-        LedgerSearchField(hint: 'Search titles', onChanged: (v) => query = v),
+        LedgerSearchField(
+          hintText: 'Search titles',
+          onChanged: (v) => query = v,
+        ),
       );
       final editor = find.byType(EditableText);
       final data = t.getSemantics(editor).getSemanticsData();
@@ -121,7 +124,7 @@ void main() {
           builder: (context, set) => LedgerMultiSelect<String>(
             values: values,
             options: const ['Work', 'Home'],
-            label: 'Labels',
+            labelText: 'Labels',
             onChanged: (v) => set(() => values = v),
           ),
         ),
@@ -146,7 +149,7 @@ void main() {
       await _show(
         t,
         LedgerStepper(
-          label: 'Copies',
+          labelText: 'Copies',
           value: 2,
           step: 1,
           min: 1,
@@ -237,11 +240,11 @@ void main() {
           mainAxisSize: MainAxisSize.min,
           children: [
             const LedgerInputGroup(
-              label: 'Parcel weight in kilograms',
+              labelText: 'Parcel weight in kilograms',
               after: 'kg',
             ),
             LedgerDatePicker(
-              label: 'Due date',
+              labelText: 'Due date',
               value: DateTime(2026, 11, 18),
               onChanged: (_) {},
             ),
@@ -423,7 +426,10 @@ void main() {
   testWidgets('the error text meets text contrast on Ledger paper', (t) async {
     await _show(
       t,
-      const LedgerTextField(label: 'Amount', error: 'Enter what was paid'),
+      const LedgerTextField(
+        labelText: 'Amount',
+        errorText: 'Enter what was paid',
+      ),
     );
     final finder = find.text('Enter what was paid');
     final theme = LedgerTheme.of(t.element(finder));
@@ -441,7 +447,7 @@ void main() {
       t,
       const LedgerStepProgress(
         steps: ['Address', 'Payment', 'Review'],
-        current: 0,
+        currentStep: 0,
       ),
       scale: 2,
       direction: TextDirection.rtl,
@@ -462,6 +468,26 @@ void main() {
 
     expect(xOf('1'), lessThan(xOf('3')));
   });
+
+  testWidgets(
+    "a pushed page's masthead keeps the title under its crumb at small text",
+    (t) async {
+      // At 0.85 the meta's line is shorter than the crumb's reach (the pointer's
+      // 24): the gap under the crumb gives up what it has, and no more.
+      await _show(
+        t,
+        const LedgerTopBar(
+          title: 'Receipt',
+          leading: SizedBox.square(dimension: 36),
+        ),
+        width: 1440,
+        maxWidth: 1200,
+        scale: 0.85,
+      );
+      expect(t.takeException(), isNull);
+      expect(find.text('Receipt'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'a pushed title uses the space beyond its centre at double text size',

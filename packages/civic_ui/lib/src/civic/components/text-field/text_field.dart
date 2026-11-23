@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/field_frame.dart';
+import '../../internal/list_open.dart';
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
@@ -454,29 +455,33 @@ class _CivicTextFieldState extends State<CivicTextField> {
               so.foreground ??
               (widget.enabled ? t.textPrimary : t.textDisabled),
         );
-    final editable = Material(
-      type: MaterialType.transparency,
-      child: TextField(
-        controller: _controller,
-        focusNode: _focus,
-        decoration: null,
-        style: words,
-        cursorColor: t.textPrimary,
-        cursorWidth: 2,
-        enabled: widget.enabled,
-        readOnly: widget.readOnly,
-        obscureText: widget.obscureText,
-        autofocus: widget.autofocus,
-        keyboardType: widget.keyboardType,
-        textInputAction: widget.textInputAction,
-        textCapitalization: widget.textCapitalization,
-        inputFormatters: widget.inputFormatters,
-        autofillHints: widget.autofillHints,
-        maxLines: widget.obscureText ? 1 : widget.maxLines,
-        minLines: widget.minLines,
-        onChanged: widget.onChanged,
-        onSubmitted: widget.onSubmitted,
-        onEditingComplete: widget.onEditingComplete,
+    final editable = Semantics(
+      // A combobox's input says whether its list is open.
+      expanded: CivicListOpen.maybeOf(context),
+      child: Material(
+        type: MaterialType.transparency,
+        child: TextField(
+          controller: _controller,
+          focusNode: _focus,
+          decoration: null,
+          style: words,
+          cursorColor: t.textPrimary,
+          cursorWidth: 2,
+          enabled: widget.enabled,
+          readOnly: widget.readOnly,
+          obscureText: widget.obscureText,
+          autofocus: widget.autofocus,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          textCapitalization: widget.textCapitalization,
+          inputFormatters: widget.inputFormatters,
+          autofillHints: widget.autofillHints,
+          maxLines: widget.obscureText ? 1 : widget.maxLines,
+          minLines: widget.minLines,
+          onChanged: widget.onChanged,
+          onSubmitted: widget.onSubmitted,
+          onEditingComplete: widget.onEditingComplete,
+        ),
       ),
     );
     final hint = widget.hintText;

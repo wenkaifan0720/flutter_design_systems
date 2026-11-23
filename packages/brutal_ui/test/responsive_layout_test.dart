@@ -136,7 +136,7 @@ void main() {
             width: 340,
             child: BrutalStepProgress(
               steps: ['Cart', 'Address', 'Delivery', 'Review'],
-              current: 1,
+              currentStep: 1,
             ),
           ),
         ),
@@ -170,7 +170,7 @@ void main() {
                     tabs: const ['Upcoming', 'Past'],
                     selectedIndex: 0,
                     expand: true,
-                    onSelected: (_) {},
+                    onTap: (_) {},
                   ),
                   BrutalSegmentedButton<String>(
                     value: 'music',

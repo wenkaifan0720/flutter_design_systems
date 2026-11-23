@@ -61,8 +61,8 @@ void main() {
                 ),
                 ClayDialogAction(
                   label: 'Delete',
-                  destructive: true,
-                  primary: true,
+                  isDestructiveAction: true,
+                  isDefaultAction: true,
                   onPressed: () {
                     answer = 'deleted';
                     Navigator.of(context).pop();
@@ -163,7 +163,7 @@ void main() {
       tester,
       const ClayStepProgress(
         steps: ['Habit', 'Schedule', 'Reminder'],
-        current: 1,
+        currentStep: 1,
       ),
     );
     // The balls are animated surfaces, the grooves plain ones.
@@ -270,9 +270,9 @@ void main() {
       tester,
       Column(
         children: [
-          ClayTextField(label: 'Note', controller: note, maxLength: 4),
+          ClayTextField(labelText: 'Note', controller: note, maxLength: 4),
           ClayTextField(
-            label: 'Daily goal',
+            labelText: 'Daily goal',
             controller: goal,
             maxLength: 2,
             keyboardType: TextInputType.number,

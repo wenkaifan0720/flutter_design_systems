@@ -23,7 +23,7 @@ enum CivicPresentation {
 
 /// One page as the app stands it, without its router: the same host, frame
 /// and route the app gives it live, so a preview's pixels are the app's. A
-/// place stands in the [tabs]' frame with [activeIndex] current; a pushed
+/// place stands in the [tabs]' frame with [selectedIndex] current; a pushed
 /// page beside the places from 600 wide, as the app stands it; a raised
 /// task over a blank stage, so its way out draws as it does live.
 ///
@@ -41,12 +41,12 @@ class CivicPreview extends StatelessWidget {
   const CivicPreview({
     super.key,
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness = Brightness.light,
     this.presentation = CivicPresentation.root,
     this.tabs = const <CivicNavItem>[],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.brand,
     this.platform = PreviewPlatform.android,
@@ -57,10 +57,10 @@ class CivicPreview extends StatelessWidget {
   final Widget child;
 
   /// The theme by day; null is Civic's own.
-  final CivicThemeData? light;
+  final CivicThemeData? theme;
 
   /// The theme by night; null is Civic's own.
-  final CivicThemeData? dark;
+  final CivicThemeData? darkTheme;
 
   /// The appearance it stands in.
   final Brightness brightness;
@@ -72,7 +72,7 @@ class CivicPreview extends StatelessWidget {
   final List<CivicNavItem> tabs;
 
   /// The current place.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The app's one act.
   final ShellAction? action;
@@ -90,9 +90,9 @@ class CivicPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     // A preview's page is looked at, not navigated: its places stay put.
     Widget framed(Widget page, {required bool places}) => CivicShellFrame(
-      places: tabs,
-      selectedIndex: activeIndex,
-      onSelected: (_) {},
+      destinations: tabs,
+      selectedIndex: selectedIndex,
+      onDestinationSelected: (_) {},
       action: action,
       brand: brand,
       showPlaces: places,
@@ -114,8 +114,8 @@ class CivicPreview extends StatelessWidget {
           title: brand ?? '',
           debugShowCheckedModeBanner: false,
           builder: (context, app) => CivicHost(
-            light: light,
-            dark: dark,
+            theme: theme,
+            darkTheme: darkTheme,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),
@@ -149,6 +149,6 @@ class CivicPreview extends StatelessWidget {
     properties
       ..add(EnumProperty<CivicPresentation>('presentation', presentation))
       ..add(EnumProperty<Brightness>('brightness', brightness))
-      ..add(IntProperty('activeIndex', activeIndex));
+      ..add(IntProperty('selectedIndex', selectedIndex));
   }
 }

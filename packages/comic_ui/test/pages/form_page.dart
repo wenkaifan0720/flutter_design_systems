@@ -38,21 +38,21 @@ class _FormPageState extends State<FormPage> {
                     const ComicBalloon("What's the plan?"),
                     const ComicFormField(
                       'A name for it',
-                      help: 'The first thing people will read.',
-                      child: ComicTextField(hint: 'The long weekend'),
+                      helperText: 'The first thing people will read.',
+                      child: ComicTextField(hintText: 'The long weekend'),
                     ),
                     ComicFormField(
                       'When',
                       child: ComicSelectField(
                         value: 'Fri 4 – Sun 6',
-                        note: 'Two nights',
+                        helperText: 'Two nights',
                         onPressed: () {},
                       ),
                     ),
                     const ComicFormField(
                       'A few words',
                       child: ComicTextField(
-                        hint: 'What should people bring?',
+                        hintText: 'What should people bring?',
                         maxLines: 3,
                       ),
                     ),

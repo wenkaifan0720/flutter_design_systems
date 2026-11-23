@@ -184,7 +184,7 @@ class _SimmerSearchState extends State<SimmerSearch> {
           ),
           child: GlossSearchField(
             controller: _field,
-            hint: 'Recipes, cuisines, ingredients',
+            hintText: 'Recipes, cuisines, ingredients',
             semanticLabel: 'Search recipes',
             onChanged: (_) => setState(() {}),
           ),

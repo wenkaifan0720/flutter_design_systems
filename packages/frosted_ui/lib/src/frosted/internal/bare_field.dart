@@ -24,8 +24,8 @@ class FrostedBareField extends StatelessWidget {
   const FrostedBareField({
     required this.controller,
     required this.focusNode,
-    this.hint,
-    this.label,
+    this.hintText,
+    this.labelText,
     this.onChanged,
     this.onSubmitted,
     this.onEditingComplete,
@@ -37,6 +37,7 @@ class FrostedBareField extends StatelessWidget {
     this.autofillHints,
     this.inputFormatters,
     this.textAlign = TextAlign.start,
+    this.ownNode = true,
     super.key,
   });
 
@@ -47,10 +48,10 @@ class FrostedBareField extends StatelessWidget {
   final FocusNode focusNode;
 
   /// The placeholder.
-  final String? hint;
+  final String? hintText;
 
   /// What a screen reader calls the field.
-  final String? label;
+  final String? labelText;
 
   /// Called as the text changes.
   final ValueChanged<String>? onChanged;
@@ -89,39 +90,47 @@ class FrostedBareField extends StatelessWidget {
   /// Where the text stands.
   final TextAlign textAlign;
 
+  /// Whether the field's line makes its node ([FrostedFieldTarget.ownNode]);
+  /// false inside a field that names it.
+  final bool ownNode;
+
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final style = t.textTheme.bodyLarge.line(19.2).c(t.colorScheme.textPrimary);
     return FrostedFieldTarget(
-      label: label,
-      child: Material(
-        type: MaterialType.transparency,
-        child: frostedCapCentredEntry(
-          style,
-          TextField(
-            contextMenuBuilder: FrostedTextContextMenu.editable,
-            selectionControls: FrostedTextSelectionControls.of(
-              Theme.of(context).platform,
-            ),
-            controller: controller,
-            focusNode: focusNode,
-            autofocus: autofocus,
-            enabled: enabled,
-            obscureText: obscureText,
-            autofillHints: autofillHints,
-            inputFormatters: inputFormatters,
-            keyboardType: keyboardType,
-            textInputAction: textInputAction,
-            textAlign: textAlign,
-            onChanged: onChanged,
-            onSubmitted: onSubmitted,
-            onEditingComplete: onEditingComplete,
-            style: style,
-            cursorColor: t.colorScheme.textPrimary,
-            decoration: _bareDecoration(
-              hint: hint,
-              hintStyle: style.c(t.colorScheme.textTertiary),
+      label: labelText,
+      ownNode: ownNode,
+      child: frostedOpenEntry(
+        context,
+        Material(
+          type: MaterialType.transparency,
+          child: frostedCapCentredEntry(
+            style,
+            TextField(
+              contextMenuBuilder: FrostedTextContextMenu.editable,
+              selectionControls: FrostedTextSelectionControls.of(
+                Theme.of(context).platform,
+              ),
+              controller: controller,
+              focusNode: focusNode,
+              autofocus: autofocus,
+              enabled: enabled,
+              obscureText: obscureText,
+              autofillHints: autofillHints,
+              inputFormatters: inputFormatters,
+              keyboardType: keyboardType,
+              textInputAction: textInputAction,
+              textAlign: textAlign,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              onEditingComplete: onEditingComplete,
+              style: style,
+              cursorColor: t.colorScheme.textPrimary,
+              decoration: _bareDecoration(
+                hint: hintText,
+                hintStyle: style.c(t.colorScheme.textTertiary),
+              ),
             ),
           ),
         ),
@@ -156,3 +165,31 @@ InputDecoration _bareDecoration({String? hint, TextStyle? hintStyle}) =>
       errorBorder: InputBorder.none,
       focusedErrorBorder: InputBorder.none,
     );
+
+/// Whether the list a text entry opens stands open, for the entry under it
+/// to say on its own node (expanded, or collapsed): a combobox's or a tag
+/// input's field builder sets it from its field's `isOpen`. Outside one an
+/// entry says neither. Plumbing of the components.
+class FrostedEntryOpen extends InheritedWidget {
+  /// Marks the entry under [child] as opening a list that is [open].
+  const FrostedEntryOpen({required this.open, required super.child, super.key});
+
+  /// Whether the entry's list stands open.
+  final bool open;
+
+  /// Whether the list of the entry at [context] stands open; null where
+  /// the entry opens none.
+  static bool? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<FrostedEntryOpen>()?.open;
+
+  @override
+  bool updateShouldNotify(FrostedEntryOpen oldWidget) => open != oldWidget.open;
+}
+
+/// Wraps [entry] so its node says whether its list stands open
+/// ([FrostedEntryOpen]); [entry] as it is outside one. Plumbing of the
+/// components.
+Widget frostedOpenEntry(BuildContext context, Widget entry) {
+  final open = FrostedEntryOpen.maybeOf(context);
+  return open == null ? entry : Semantics(expanded: open, child: entry);
+}

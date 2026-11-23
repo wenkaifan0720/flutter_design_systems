@@ -85,13 +85,13 @@ class _NavigationState extends State<_Navigation> {
             BrutalTabBar(
               tabs: const ['Upcoming', 'Past'],
               selectedIndex: _tab,
-              onSelected: (i) => setState(() => _tab = i),
+              onTap: (i) => setState(() => _tab = i),
               expand: true,
             ),
             BrutalTabBar(
               tabs: const ['All', 'Music', 'Talks', 'Film'],
               selectedIndex: _tab.clamp(0, 3),
-              onSelected: (i) => setState(() => _tab = i),
+              onTap: (i) => setState(() => _tab = i),
               expand: false,
             ),
           ],
@@ -106,7 +106,7 @@ class _NavigationState extends State<_Navigation> {
               BrutalNavigationBar(
                 destinations: _places,
                 selectedIndex: _place,
-                onSelected: (i) => setState(() => _place = i),
+                onDestinationSelected: (i) => setState(() => _place = i),
               ),
             ),
           ],
@@ -127,14 +127,14 @@ class _NavigationState extends State<_Navigation> {
                     ),
                     destinations: _places,
                     selectedIndex: _place,
-                    onSelected: (i) => setState(() => _place = i),
+                    onDestinationSelected: (i) => setState(() => _place = i),
                   ),
                   Expanded(
                     child: BrutalSideNavigation(
                       header: const Text('ADMIT'),
                       destinations: _places,
                       selectedIndex: _place,
-                      onSelected: (i) => setState(() => _place = i),
+                      onDestinationSelected: (i) => setState(() => _place = i),
                     ),
                   ),
                 ],
@@ -218,9 +218,9 @@ class _WayfindingState extends State<_Wayfinding> {
           BrutalPagination(
             page: _page,
             pageCount: 12,
-            onChanged: (p) => setState(() => _page = p),
+            onPageChanged: (p) => setState(() => _page = p),
           ),
-          const BrutalPagination(page: 1, pageCount: 3, onChanged: null),
+          const BrutalPagination(page: 1, pageCount: 3, onPageChanged: null),
         ],
       ),
       const SizedBox(height: BrutalSpacing.extraLarge),
@@ -232,7 +232,7 @@ class _WayfindingState extends State<_Wayfinding> {
         children: [
           BrutalStepProgress(
             steps: const ['Seats', 'Details', 'Pay', 'Done'],
-            current: _step,
+            currentStep: _step,
           ),
           Row(
             children: [
@@ -255,9 +255,9 @@ class _WayfindingState extends State<_Wayfinding> {
         note: 'Squares; the page you are on is a bar.',
         children: [
           BrutalPageDots(
-            count: 5,
-            index: _dot,
-            onChanged: (i) => setState(() => _dot = i),
+            pageCount: 5,
+            page: _dot,
+            onPageChanged: (i) => setState(() => _dot = i),
           ),
         ],
       ),
@@ -355,7 +355,7 @@ Widget kitSpecimenNavigationBar() => kitState(
   (context, index, change) => BrutalNavigationBar(
     destinations: _places,
     selectedIndex: index,
-    onSelected: change,
+    onDestinationSelected: change,
   ),
 );
 
@@ -368,7 +368,7 @@ Widget kitSpecimenNavigationRail() => kitState(
       child: BrutalNavigationRail(
         destinations: _places,
         selectedIndex: index,
-        onSelected: change,
+        onDestinationSelected: change,
       ),
     ),
   ),
@@ -384,7 +384,7 @@ Widget kitSpecimenSideNavigation() => kitState(
       child: BrutalSideNavigation(
         destinations: _places,
         selectedIndex: index,
-        onSelected: change,
+        onDestinationSelected: change,
       ),
     ),
   ),
@@ -396,7 +396,7 @@ Widget kitSpecimenScaffold() => kitState(
     appBar: const BrutalAppBar(title: 'Events'),
     destinations: _places,
     selectedIndex: index,
-    onSelected: change,
+    onDestinationSelected: change,
     body: ListView(
       padding: const EdgeInsets.all(BrutalSpacing.regular),
       children: [
@@ -422,7 +422,7 @@ Widget kitSpecimenTabBar() => kitState(
   (context, index, change) => BrutalTabBar(
     tabs: const ['Upcoming', 'Past', 'Saved'],
     selectedIndex: index,
-    onSelected: change,
+    onTap: change,
   ),
 );
 
@@ -446,17 +446,19 @@ Widget kitSpecimenPagination() => kitState(
   2,
   (context, page, change) => Align(
     alignment: AlignmentDirectional.centerStart,
-    child: BrutalPagination(page: page, pageCount: 8, onChanged: change),
+    child: BrutalPagination(page: page, pageCount: 8, onPageChanged: change),
   ),
 );
 
-Widget kitSpecimenStepProgress() =>
-    const BrutalStepProgress(steps: ['Seats', 'Details', 'Pay'], current: 1);
+Widget kitSpecimenStepProgress() => const BrutalStepProgress(
+  steps: ['Seats', 'Details', 'Pay'],
+  currentStep: 1,
+);
 
 Widget kitSpecimenPageDots() => kitState(
   1,
   (context, index, change) => Center(
-    child: BrutalPageDots(count: 4, index: index, onChanged: change),
+    child: BrutalPageDots(pageCount: 4, page: index, onPageChanged: change),
   ),
 );
 

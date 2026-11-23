@@ -237,16 +237,16 @@ class _Caller {
         ValueKey('applications'),
       );
       return CivicShellFrame(
-        places: const [CivicNavItem(LucideIcons.house, 'Home'), item],
+        destinations: const [CivicNavItem(LucideIcons.house, 'Home'), item],
         selectedIndex: 1,
-        onSelected: (_) {},
+        onDestinationSelected: (_) {},
         child: const CivicScreen(body: Text('Applications')),
       );
     },
     'CivicShellAction': (context) => CivicShellFrame(
-      places: const [CivicNavItem(LucideIcons.house, 'Home')],
+      destinations: const [CivicNavItem(LucideIcons.house, 'Home')],
       selectedIndex: 0,
-      onSelected: (_) {},
+      onDestinationSelected: (_) {},
       action: CivicShellAction(
         icon: LucideIcons.plus,
         label: 'Apply for a permit',
@@ -255,12 +255,12 @@ class _Caller {
       child: const CivicScreen(body: Text('Home')),
     ),
     'CivicShellFrame': (context) => CivicShellFrame(
-      places: const [
+      destinations: const [
         CivicNavItem(LucideIcons.house, 'Home'),
         CivicNavItem(LucideIcons.fileText, 'Applications'),
       ],
       selectedIndex: index,
-      onSelected: (i) => setState(() => index = i),
+      onDestinationSelected: (i) => setState(() => index = i),
       child: pages[index],
     ),
     // app/host.dart
@@ -270,8 +270,8 @@ class _Caller {
     ),
     // app/input.dart
     'CivicInput': (context) => CivicInput(
-      label: 'Email address',
-      error: emailError,
+      labelText: 'Email address',
+      errorText: emailError,
       onChanged: (value) => email = value,
     ),
     // app/preview.dart
@@ -1020,11 +1020,11 @@ class _Caller {
     // step-indicator/step_indicator.dart
     'CivicStepIndicator': (context) => const CivicStepIndicator(
       steps: ['Your vehicle', 'Your details', 'Proof of address', 'Check'],
-      current: 1,
+      currentStep: 1,
     ),
     // page-dots/page_dots.dart
     'CivicPageDots': (context) =>
-        CivicPageDots(count: 5, index: 1, onChanged: (page) {}),
+        CivicPageDots(pageCount: 5, selectedIndex: 1, onPageChanged: (page) {}),
     // carousel/carousel.dart
     'CivicCarousel': (context) => CivicCarousel(
       semanticLabel: 'Photos of Zone B',

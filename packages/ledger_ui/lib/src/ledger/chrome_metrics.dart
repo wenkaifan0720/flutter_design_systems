@@ -321,13 +321,6 @@ abstract final class LedgerChromeMetrics {
   /// The distance between the sheet head's title and its close.
   static const double sheetHeadGap = 12;
 
-  /// How far the sheet's close hung into the gutter, before 0.2.0.
-  @Deprecated(
-    'The close stands on the column\'s end, its target inside the head. '
-    'This feature was deprecated after ledger_ui 0.2.0.',
-  )
-  static const double sheetCloseHang = 6;
-
   /// `.sheet-body` 8 under the head; `.sheet-foot` 20 over the acts.
   static const double sheetBodyTop = 8;
 
@@ -565,27 +558,6 @@ abstract final class LedgerChromeMetrics {
   /// An empty state's title line height.
   static const double emptyTitleLine = 34;
 
-  /// An empty state's body distance under its title, before 0.4.1.
-  @Deprecated(
-    'The empty page stands its body and act on its rules. '
-    'This feature was deprecated after ledger_ui 0.4.0.',
-  )
-  static const double emptyBodyTop = 10;
-
-  /// An empty state's body line height, before 0.4.1.
-  @Deprecated(
-    'The empty page stands its body and act on its rules. '
-    'This feature was deprecated after ledger_ui 0.4.0.',
-  )
-  static const double emptyBodyLine = 22;
-
-  /// An empty state's act distance under its body, before 0.4.1.
-  @Deprecated(
-    'The empty page stands its body and act on its rules. '
-    'This feature was deprecated after ledger_ui 0.4.0.',
-  )
-  static const double emptyActTop = 22;
-
   /// `.seal`: 112 round, pressed 7° off square (6° the other way over, 5°
   /// in ink); its words 7.5 on 10 tracked .2em, 19 on 17 italic, 8.5 on 10
   /// mono; the over and ink seals' middle line 24 on 20 and 24 on 21.
@@ -614,15 +586,6 @@ abstract final class LedgerChromeMetrics {
   /// The gap between the focus double rule's two lines; the rule stands
   /// twice this under its control.
   static const double focusGap = 2;
-
-  /// How far a pressed face sank into the paper. No Ledger control moves
-  /// when pressed: a held face keeps its place and deepens its ink
-  /// (`LedgerImpression`).
-  @Deprecated(
-    'Ledger controls no longer move when pressed; use LedgerImpression to '
-    'deepen a held face in place. Unused by the package.',
-  )
-  static const double pressSink = 1;
 
   /// The loading leader's length: its dots draw in across it, one by one.
   static const double loadingLeader = 96;

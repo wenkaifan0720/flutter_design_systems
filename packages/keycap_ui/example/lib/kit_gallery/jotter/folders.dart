@@ -111,7 +111,7 @@ class _JotterFolderChoiceState extends State<JotterFolderChoice> {
       KeycapRadioGroup<String>(
         semanticLabel: 'Folder',
         options: [for (final f in jotterFolders) f.id],
-        value: _to,
+        groupValue: _to,
         labelOf: (id) =>
             '${jotterFolder(id).name} (${jotterCount(widget.notes, id)})',
         onChanged: (v) => setState(() => _to = v),
@@ -158,7 +158,7 @@ class _JotterMoveDialogState extends State<JotterMoveDialog> {
     content: KeycapRadioGroup<String>(
       semanticLabel: 'Folder',
       options: [for (final f in jotterFolders) f.id],
-      value: _to,
+      groupValue: _to,
       labelOf: (id) =>
           '${jotterFolder(id).name} (${jotterCount(widget.notes, id)})',
       onChanged: (v) => setState(() => _to = v),

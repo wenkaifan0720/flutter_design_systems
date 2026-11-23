@@ -33,7 +33,7 @@ class _WallPageState extends State<WallPage> {
               gap: 10,
               children: [
                 const ComicTextField(
-                  hint: 'Search the wall',
+                  hintText: 'Search the wall',
                   leading: Icon(LucideIcons.search, size: 18),
                 ),
                 Wrap(

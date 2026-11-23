@@ -48,8 +48,8 @@ DesignAlignmentTheme _under({
           ? null
           : ThemeData(inputDecorationTheme: decorations),
       builder: (context, page) => LedgerHost(
-        light: LedgerThemeData.light(density: density),
-        dark: LedgerThemeData.dark(density: density),
+        theme: LedgerThemeData.light(density: density),
+        darkTheme: LedgerThemeData.dark(density: density),
         child: MediaQuery.withClampedTextScaling(
           minScaleFactor: scale,
           maxScaleFactor: scale,
@@ -83,13 +83,17 @@ void main() {
       },
       entries: {
         'LedgerTextField': (context, controller, hint) =>
-            LedgerTextField(controller: controller, hint: hint),
+            LedgerTextField(controller: controller, hintText: hint),
         'LedgerTextField, a sum': (context, controller, hint) =>
-            LedgerTextField(prefix: r'$', controller: controller, hint: hint),
+            LedgerTextField(
+              prefix: r'$',
+              controller: controller,
+              hintText: hint,
+            ),
         'LedgerSearchField': (context, controller, hint) =>
-            LedgerSearchField(controller: controller, hint: hint),
+            LedgerSearchField(controller: controller, hintText: hint),
         'LedgerComposer': (context, controller, hint) =>
-            LedgerComposer(controller: controller, hint: hint),
+            LedgerComposer(controller: controller, hintText: hint),
       },
     ).check(pump: t.pumpWidget);
     report.verify();
@@ -113,8 +117,8 @@ void main() {
         _under()(
           t.binding.rootElement!,
           LedgerTextField(
-            label: 'Payee',
-            helper: 'Who was paid',
+            labelText: 'Payee',
+            helperText: 'Who was paid',
             controller: words,
           ),
         ),

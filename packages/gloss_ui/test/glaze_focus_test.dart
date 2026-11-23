@@ -189,9 +189,9 @@ void main() {
             mainAxisSize: MainAxisSize.min,
             children: [
               GlossTextField(
-                label: 'Cooking time',
+                labelText: 'Cooking time',
                 focusNode: focus,
-                error: invalid ? 'Use minutes' : null,
+                errorText: invalid ? 'Use minutes' : null,
               ),
               SizedBox.square(
                 dimension: 24,
@@ -400,7 +400,7 @@ void main() {
       'text field',
       SizedBox(
         width: 320,
-        child: GlossTextField(hint: 'name@example.com', onChanged: (_) {}),
+        child: GlossTextField(hintText: 'name@example.com', onChanged: (_) {}),
       ),
       GlossTextField,
     ),
@@ -411,7 +411,7 @@ void main() {
         child: GlossTabBar(
           tabs: const ['Today', 'Week'],
           selectedIndex: 0,
-          onSelected: (_) {},
+          onTap: (_) {},
         ),
       ),
       GlossTabBar,

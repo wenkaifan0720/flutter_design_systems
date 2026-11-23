@@ -44,7 +44,7 @@ void main() {
                   child: SizedBox(
                     width: 340,
                     child: FrostedTextField(
-                      label: 'Name',
+                      labelText: 'Name',
                       value: 'Ada Lovelace',
                     ),
                   ),

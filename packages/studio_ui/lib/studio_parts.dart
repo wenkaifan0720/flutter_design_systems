@@ -17,6 +17,7 @@ export 'studio_host.dart';
 export 'src/studio/internal/brush.dart';
 export 'src/studio/internal/control_light.dart';
 export 'src/studio/internal/curved.dart';
+export 'src/studio/internal/field_frame.dart';
 export 'src/studio/internal/focus_light.dart';
 export 'src/studio/internal/inventory.dart';
 export 'src/studio/internal/label_stride.dart';

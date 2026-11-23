@@ -440,7 +440,7 @@ class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
           LucideIcons.slidersHorizontal,
           key: const ValueKey('customize'),
           label: kitSay(context, 'Customize'),
-          selected: _customizing,
+          isSelected: _customizing,
           onPressed: () => setState(() => _customizing = !_customizing),
         ),
       ],
@@ -604,7 +604,7 @@ class CustomizePanel extends StatelessWidget {
           SizedBox(
             width: 220,
             child: ComicSelect<String>(
-              label: say('Preset'),
+              labelText: say('Preset'),
               value: chosen,
               options: [
                 for (final id in ComicThemeData.presets)
@@ -678,7 +678,7 @@ class CustomizePanel extends StatelessWidget {
         SizedBox(
           width: 220,
           child: ComicSelect<String>(
-            label: say('Your own colours'),
+            labelText: say('Your own colours'),
             value: c.colours?.name ?? '',
             options: [
               ComicSelectOption('', say("The preset's")),

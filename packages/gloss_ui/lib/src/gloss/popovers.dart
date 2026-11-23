@@ -97,9 +97,7 @@ class GlossMenuRow extends StatelessWidget {
     final focused = !disabled && states.contains(WidgetState.focused);
     var plate = glossRowPlate(
       c,
-      lit:
-          c.brightness == Brightness.dark &&
-          (focused || (!disabled && states.contains(WidgetState.hovered))),
+      lit: focused || (!disabled && states.contains(WidgetState.hovered)),
       pressed: states.contains(WidgetState.pressed),
     );
     if (layered.fill != null) plate = plate.glazed(layered.fill!);

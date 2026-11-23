@@ -106,7 +106,7 @@ void main() {
     await _pump(
       t,
       LedgerSelect<String>(
-        label: 'Category',
+        labelText: 'Category',
         value: 'Transport',
         items: [for (final n in _names) LedgerSelectItem(value: n, label: n)],
         onChanged: (_) {},
@@ -143,7 +143,7 @@ void main() {
     await _pump(
       t,
       LedgerCombobox<String>(
-        label: 'Category',
+        labelText: 'Category',
         value: 'Transport',
         options: _names,
         onSelected: (_) {},
@@ -172,7 +172,7 @@ void main() {
       await _pump(
         t,
         LedgerMultiSelect<String>(
-          label: 'Categories',
+          labelText: 'Categories',
           values: const ['Groceries'],
           options: _names,
           onChanged: (_) {},

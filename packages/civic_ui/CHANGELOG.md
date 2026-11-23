@@ -1,3 +1,28 @@
+## 0.5.1
+
+- By night a toast stands on the raised band inside an edge that reads at 3:1 against the page, so it reads as its own surface. It stood on the top bar's night band, about as dark as the page, with no edge.
+- A date picker's Choose date button and the typed date beside it stand one height, as controls in a row do, at any text size. On a touch screen the button stood 48 beside a 52 field, and at twice the text it stood taller than the field. A date range's button and its two fields likewise.
+- A calendar's header centres the month's name, with the way to the month before at the start and the way to the month after at the end. The name stood at the start with both arrows at the end.
+- By night a popover, a date picker's calendar, a menu, an open list and a dialog stand on the raised band inside an edge that reads at 3:1 against the page. The popover and the calendar stood on the page's own face (about 1.1:1 against the page) on a faint hairline.
+- The list a `CivicSelect`, `CivicCombobox` or `CivicMultiSelect` opens floats as a popover, a menu, the date picker's calendar and a dialog do: rounded, on a hairline, with the soft shadow under it. The 2 pt ink edge is a field's alone again; 0.4.1 had squared the list onto it.
+- A date picker's calendar opens clear of the whole field, its label and help too, as Material's menus open clear of their field. Low on a window it opened above the typed date, over the field's label.
+
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- **Breaking:** parameters and fields take the names Flutter's widgets give the same jobs. `dart fix --apply` moves each call and read below; the old names are gone.
+- `CivicInput`: `label`, `hint`, `error` and `obscure` are `labelText`, `hintText`, `errorText` and `obscureText`, as on `TextField` and `InputDecoration` (and as `CivicTextField` already names them).
+- `CivicShellFrame`: `places` and `onSelected` are `destinations` and `onDestinationSelected`, as on `NavigationBar`.
+- `CivicHost` and `CivicPreview`: `light` and `dark` are `theme` and `darkTheme`, as on `MaterialApp`. `CivicPreview.activeIndex` is `selectedIndex`.
+- `CivicPageDots`: `count`, `index` and `onChanged` are `pageCount`, `selectedIndex` and `onPageChanged` (`PageView`).
+- `CivicStepIndicator.current` is `currentStep` (`Stepper`), `CivicIconButton.selected` is `isSelected` (`IconButton`), and `CivicBadge.max` is `maxCount` (`Badge.count`).
+- On a wider screen a `CivicDialog`'s and a `CivicSheet`'s actions are laid out by ui_core's `RawActionBar`: side by side from the start, the main action first, while they all fit; else one column, every button its width, the main action on top. Before, a `Wrap` put the action that no longer fitted alone on a second line, and a stack kept each button at its words' width. On a phone they stand one under another, the whole width, as before.
+- `CivicDatePicker` opens its calendar on the side of the field that holds the whole month, as ui_core's `RawPopoverFit.whole` places it. Before, a field low on a phone could open it below in the room left, the month cut off.
+- `CivicCombobox`'s and `CivicMultiSelect`'s text input reads as expanded while its list shows and collapsed once it closes, as a combo box does; the combobox's chevron points up while the list is open.
+- A `CivicSelect` opened from the keys puts them on its chosen answer as the list opens, without waiting a frame.
+- At large text on a phone `CivicPagination`'s previous and next links and `CivicColorPicker`'s swatch names wrap their words beside their arrow or well. Before, they ran off the screen's edge.
+- On a phone a toast stands above `CivicScaffold`'s navigation bar (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its navigation bar. It used to cover the bar.
+
 ## 0.4.1
 
 - Needs ui_core 0.4.1.

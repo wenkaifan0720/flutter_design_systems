@@ -42,9 +42,9 @@ Widget _app(
           width: 360,
           child: StatefulBuilder(
             builder: (context, set) => Fluent2FormField(
-              label: label,
+              labelText: label,
               info: info,
-              helper: 'Some help',
+              helperText: 'Some help',
               mergeSemantics: merge,
               child: Align(
                 alignment: AlignmentDirectional.centerStart,

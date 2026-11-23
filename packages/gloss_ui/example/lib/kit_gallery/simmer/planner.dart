@@ -71,8 +71,8 @@ class _SimmerPlannerState extends State<SimmerPlanner> {
           ),
           GlossDialogAction(
             label: 'Delete plan',
-            primary: true,
-            destructive: true,
+            isDefaultAction: true,
+            isDestructiveAction: true,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],
@@ -263,7 +263,7 @@ class _DayRow extends StatelessWidget {
             ],
             builder: (context, toggle, open) => GlossIconButton.plain(
               onPressed: toggle,
-              selected: open,
+              isSelected: open,
               tooltip: 'Choose dinner for $name',
               icon: const Icon(LucideIcons.ellipsis),
             ),

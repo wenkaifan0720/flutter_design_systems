@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/dialog_actions.dart';
 import '../../internal/menu_row.dart';
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
@@ -421,11 +422,7 @@ class _Foot extends StatelessWidget {
           margin,
           CivicSpacing.s16,
         ),
-        child: Wrap(
-          spacing: CivicSpacing.s16,
-          runSpacing: CivicSpacing.s12,
-          children: actions,
-        ),
+        child: CivicDialogActions(actions: actions),
       ),
     );
   }

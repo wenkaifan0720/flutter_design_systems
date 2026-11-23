@@ -58,7 +58,7 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
     required this.selected,
     required this.onChanged,
     this.label,
-    this.hint,
+    this.hintText,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2MultiSelectSize.medium,
     this.invalid = false,
@@ -89,7 +89,7 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
   final String? label;
 
   /// The input's empty words; null is "Add people" in the app's language.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
@@ -133,7 +133,7 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
         ObjectFlagProperty<ValueChanged<List<T>>?>.has('onChanged', onChanged),
       )
       ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
           'appearance',
@@ -263,6 +263,7 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
       deleteLabel: words.removeAction,
       fieldBuilder: (context, field) => Semantics(
         label: name,
+        expanded: field.isOpen,
         child: Fluent2FieldEditor(
           autofocus: widget.autofocus,
           controller: field.controller,
@@ -276,7 +277,7 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
             live ? c.neutralForeground1 : c.neutralForegroundDisabled,
           ),
           hint: widget.selected.isEmpty
-              ? (widget.hint ?? words.addPeople)
+              ? (widget.hintText ?? words.addPeople)
               : null,
           hintStyle: type.c(
             live

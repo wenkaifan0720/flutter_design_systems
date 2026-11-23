@@ -114,19 +114,19 @@ void main() {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               LedgerDatePicker(
-                label: 'تاريخ الاستحقاق',
+                labelText: 'تاريخ الاستحقاق',
                 value: _due,
                 onChanged: (_) {},
               ),
               LedgerDatePicker(
-                label: 'وقت التذكير',
+                labelText: 'وقت التذكير',
                 mode: LedgerDatePickerMode.time,
                 use24hFormat: true,
                 value: DateTime(2026, 11, 20, 9, 30),
                 onChanged: (_) {},
               ),
               LedgerDatePicker(
-                label: 'الموعد',
+                labelText: 'الموعد',
                 mode: LedgerDatePickerMode.dateAndTime,
                 value: _due,
                 onChanged: (_) {},
@@ -160,9 +160,9 @@ void main() {
           ar,
           scale,
           LedgerDatePicker(
-            label: 'تاريخ الاستحقاق',
+            labelText: 'تاريخ الاستحقاق',
             value: _due,
-            today: DateTime(2026, 11, 18),
+            currentDate: DateTime(2026, 11, 18),
             onChanged: (_) {},
           ),
         );
@@ -193,7 +193,7 @@ void main() {
           ar,
           scale,
           LedgerDatePicker(
-            label: 'الموعد',
+            labelText: 'الموعد',
             mode: LedgerDatePickerMode.time,
             value: _due,
             onChanged: (_) {},
@@ -232,7 +232,7 @@ void main() {
           de,
           scale,
           LedgerDatePicker(
-            label: 'Fällig am',
+            labelText: 'Fällig am',
             mode: LedgerDatePickerMode.dateAndTime,
             value: _due,
             onChanged: (_) {},
@@ -250,7 +250,11 @@ void main() {
           t,
           de,
           scale,
-          LedgerDatePicker(label: 'Fällig am', value: _due, onChanged: (_) {}),
+          LedgerDatePicker(
+            labelText: 'Fällig am',
+            value: _due,
+            onChanged: (_) {},
+          ),
         );
         await t.tap(find.text('20. Nov. 2026'));
         await t.pumpAndSettle();
@@ -275,7 +279,7 @@ void main() {
           de,
           scale,
           LedgerDatePicker(
-            label: 'Beginn',
+            labelText: 'Beginn',
             mode: LedgerDatePickerMode.dateAndTime,
             presentation: LedgerDatePickerPresentation.wheel,
             value: _due,
@@ -308,7 +312,7 @@ void main() {
       const Locale('en'),
       1,
       LedgerDatePicker(
-        label: 'Starts',
+        labelText: 'Starts',
         mode: LedgerDatePickerMode.dateAndTime,
         value: _due,
         onChanged: (_) {},

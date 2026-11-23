@@ -8,6 +8,7 @@ import '../../internal/choice_face.dart';
 import '../../internal/field_frame.dart';
 import '../../internal/list_option.dart';
 import '../../internal/paint.dart';
+import '../../internal/list_open.dart';
 import '../../theme.dart';
 import '../text-field/text_field.dart';
 
@@ -134,15 +135,18 @@ class CivicMultiSelect<T extends Object> extends StatelessWidget {
           field,
         ],
       ),
-      fieldBuilder: (context, field) => CivicTextField(
-        controller: field.controller,
-        focusNode: field.focusNode,
-        hintText: hintText,
-        isError: errorText != null,
-        enabled: enabled,
-        textInputAction: TextInputAction.done,
-        onEditingComplete: field.submit,
-        style: style,
+      fieldBuilder: (context, field) => CivicListOpen(
+        open: field.isOpen,
+        child: CivicTextField(
+          controller: field.controller,
+          focusNode: field.focusNode,
+          hintText: hintText,
+          isError: errorText != null,
+          enabled: enabled,
+          textInputAction: TextInputAction.done,
+          onEditingComplete: field.submit,
+          style: style,
+        ),
       ),
       surfaceBuilder: (context, list) => Padding(
         padding: const EdgeInsets.only(top: CivicSpacing.s8),

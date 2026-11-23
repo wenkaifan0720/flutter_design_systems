@@ -29,17 +29,17 @@ class FrostedHost extends StatelessWidget {
   /// Creates a [FrostedHost].
   const FrostedHost({
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
     super.key,
   });
 
   /// The light theme; null is the default preset's.
-  final FrostedThemeData? light;
+  final FrostedThemeData? theme;
 
   /// The dark theme; null is the default preset's.
-  final FrostedThemeData? dark;
+  final FrostedThemeData? darkTheme;
 
   /// Pins the appearance; null follows the platform (or the preview frame).
   final Brightness? brightness;
@@ -88,16 +88,16 @@ class FrostedHost extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
-    final darkTheme =
-        dark ??
-        light?.darkTwin ??
+    final night =
+        darkTheme ??
+        theme?.darkTwin ??
         FrostedThemeData.preset(
           FrostedThemeData.presets.first,
           Brightness.dark,
         );
     final t = wanted == Brightness.dark
-        ? darkTheme
-        : light ??
+        ? night
+        : theme ??
               FrostedThemeData.preset(
                 FrostedThemeData.presets.first,
                 Brightness.light,
@@ -114,7 +114,7 @@ class FrostedHost extends StatelessWidget {
       maxScaleFactor: maxTextScale,
       child: AnimatedFrostedTheme(
         data: t,
-        darkData: darkTheme,
+        darkData: night,
         duration: motion.base,
         curve: motion.curve,
         child: AnnotatedRegion<SystemUiOverlayStyle>(
@@ -149,13 +149,17 @@ class FrostedHost extends StatelessWidget {
     properties
       ..add(
         DiagnosticsProperty<FrostedThemeData>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<FrostedThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<FrostedThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(
         EnumProperty<Brightness>('brightness', brightness, defaultValue: null),

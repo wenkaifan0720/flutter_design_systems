@@ -172,7 +172,9 @@ class _CivicScaffoldState extends State<CivicScaffold> {
                     ],
                   ),
           ),
-          ?bottom,
+          // Toasts stand above the places, as a Scaffold keeps a snackbar
+          // above its navigation bar.
+          if (bottom != null) RawToasterKeepClear(child: bottom),
         ],
       ),
     );

@@ -62,13 +62,15 @@ Future<void> _tab(WidgetTester t, String id) async {
 }
 
 Finder _field(String label) => find.descendant(
-  of: find.byWidgetPredicate((w) => w is LedgerTextField && w.label == label),
+  of: find.byWidgetPredicate(
+    (w) => w is LedgerTextField && w.labelText == label,
+  ),
   matching: find.byType(EditableText),
 );
 
 Future<void> _choose(WidgetTester t, String select, String option) async {
   final field = find.byWidgetPredicate(
-    (w) => w is LedgerSelect && w.label == select,
+    (w) => w is LedgerSelect && w.labelText == select,
   );
   await t.tap(
     find.descendant(of: field, matching: find.byType(LedgerPressable)).first,
@@ -351,7 +353,9 @@ void main() {
   testWidgets('the currency is a fact, not a choice', (t) async {
     await _open(t, QuillPage.settings, _desktop);
     expect(
-      find.byWidgetPredicate((w) => w is LedgerSelect && w.label == 'Currency'),
+      find.byWidgetPredicate(
+        (w) => w is LedgerSelect && w.labelText == 'Currency',
+      ),
       findsNothing,
     );
     final row = t.widget<LedgerSettingRow>(

@@ -25,18 +25,18 @@ enum Fluent2ComposerAppearance {
 /// emoji, and custom actions. Enter sends on desktop and Shift+Enter
 /// inserts a new line. Sending clears the draft.
 ///
-/// Set [onSend] to null to disable the composer. Use [hint] to explain
+/// Set [onSend] to null to disable the composer. Use [hintText] to explain
 /// why the user cannot send a message.
 ///
 /// ```dart
-/// Fluent2Composer(onSend: (text) => post(text), hint: 'Message Design team', onAttach: attach)
+/// Fluent2Composer(onSend: (text) => post(text), hintText: 'Message Design team', onAttach: attach)
 /// ```
 class Fluent2Composer extends StatefulWidget {
   /// A composer: a field for a message, with its send button.
   const Fluent2Composer({
     required this.onSend,
     this.controller,
-    this.hint,
+    this.hintText,
     this.label,
     this.onAttach,
     this.onEmoji,
@@ -58,7 +58,7 @@ class Fluent2Composer extends StatefulWidget {
   final TextEditingController? controller;
 
   /// Placeholder text. Defaults to the localized equivalent of “Type a message”.
-  final String? hint;
+  final String? hintText;
 
   /// The text field's spoken name; null is "Message" in the app's language.
   final String? label;
@@ -104,7 +104,7 @@ class Fluent2Composer extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onAttach', onAttach))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onEmoji', onEmoji))
@@ -209,9 +209,9 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
         style: type.c(
           live ? c.neutralForeground1 : c.neutralForegroundDisabled,
         ),
-        hint: widget.hint ?? own.typeAMessage,
+        hint: widget.hintText ?? own.typeAMessage,
         hintStyle: type.c(live ? c.neutralForeground4 : c.neutralForeground2),
-        hintMaxLines: !live && widget.hint != null
+        hintMaxLines: !live && widget.hintText != null
             ? widget.maxLines
             : assistant
             ? 2

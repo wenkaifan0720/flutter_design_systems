@@ -11,6 +11,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'cap.dart';
+import 'fields.dart' show KeycapField;
 import 'internal/small_key.dart';
 import 'theme.dart';
 
@@ -53,30 +54,30 @@ class KeycapFieldLabel extends StatelessWidget {
   }
 }
 
-/// The line under a field: what is wrong ([error], announced as it
-/// appears), else a [helper].
+/// The line under a field: what is wrong ([errorText], announced as it
+/// appears), else a [helperText].
 ///
 /// ```dart
-/// const KeycapFieldMessage(error: 'Give the folder a name.')
+/// const KeycapFieldMessage(errorText: 'Give the folder a name.')
 /// ```
 class KeycapFieldMessage extends StatelessWidget {
   /// A message under a field.
-  const KeycapFieldMessage({super.key, this.helper, this.error});
+  const KeycapFieldMessage({super.key, this.helperText, this.errorText});
 
   /// Help with the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong with what was entered; an empty string marks the field
   /// wrong without words.
-  final String? error;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final style = theme.textTheme.secondary;
-    final error = this.error;
-    if (error != null) {
-      if (error.isEmpty) return const SizedBox.shrink();
+    final errorText = this.errorText;
+    if (errorText != null) {
+      if (errorText.isEmpty) return const SizedBox.shrink();
       final line = (style.fontSize ?? 14) * (style.height ?? 1);
       return Padding(
         padding: const EdgeInsets.only(top: KeycapSpacing.small),
@@ -98,7 +99,7 @@ class KeycapFieldMessage extends StatelessWidget {
               const SizedBox(width: KeycapSpacing.small),
               Expanded(
                 child: Text(
-                  error,
+                  errorText,
                   style: style.copyWith(color: theme.colors.dangerInk),
                 ),
               ),
@@ -107,10 +108,10 @@ class KeycapFieldMessage extends StatelessWidget {
         ),
       );
     }
-    if (helper != null) {
+    if (helperText != null) {
       return Padding(
         padding: const EdgeInsets.only(top: KeycapSpacing.small),
-        child: Text(helper!, style: style),
+        child: Text(helperText!, style: style),
       );
     }
     return const SizedBox.shrink();
@@ -120,18 +121,18 @@ class KeycapFieldMessage extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null));
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null));
   }
 }
 
 /// A text field: a well cut into the case, as tall as a key, with a
-/// [label] over it and a [helper] or an [error] under it. Its words are
-/// centred on their capitals; focus lights a band inside the well's edge
-/// (the danger colour while [error] is set).
+/// [labelText] over it and a [helperText] or an [errorText] under it. Its
+/// words are centred on their capitals; focus lights a band inside the
+/// well's edge (the danger colour while [errorText] is set).
 ///
 /// ```dart
-/// KeycapTextField(label: 'Title', controller: title, onChanged: rename)
+/// KeycapTextField(labelText: 'Title', controller: title, onChanged: rename)
 /// ```
 class KeycapTextField extends StatefulWidget {
   /// A text field.
@@ -139,10 +140,10 @@ class KeycapTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.leading,
     this.trailing,
@@ -170,18 +171,18 @@ class KeycapTextField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the field.
-  final String? label;
+  final String? labelText;
 
   /// The words in an empty field.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the field.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when there is no [label].
+  /// The field's name for a screen reader, when there is no [labelText].
   final String? semanticLabel;
 
   /// A glyph at the field's start (a search field's).
@@ -245,9 +246,9 @@ class KeycapTextField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscured'))
       ..add(IntProperty('maxLines', maxLines, defaultValue: 1));
@@ -295,7 +296,7 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final focused = _focus.hasFocus;
-    final wrong = widget.error != null;
+    final wrong = widget.errorText != null;
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (focused) WidgetState.focused,
@@ -313,10 +314,10 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
       minHeight: height,
       controller: _controller,
       maxLines: widget.maxLines,
-      hint: widget.hint == null
+      hint: widget.hintText == null
           ? null
           : Text(
-              widget.hint!,
+              widget.hintText!,
               // A text area's hint wraps over its lines, as its words do.
               maxLines: oneLine ? 1 : widget.maxLines,
               overflow: widget.maxLines == null ? null : TextOverflow.ellipsis,
@@ -350,13 +351,12 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
         ),
       ),
     );
+    // The entry is the field's node: its KeycapField names it and gives it
+    // its help, beside the keys at its ends (a password's eye).
     final named = Semantics(
-      container: true,
-      child: Semantics(
-        label: widget.semanticLabel ?? widget.label,
-        hint: widget.hint,
-        child: editable,
-      ),
+      label: widget.semanticLabel ?? widget.labelText,
+      hint: widget.hintText,
+      child: editable,
     );
     final pad = KeycapSpacing.medium + theme.density.paddingDelta / 2;
     final Widget well = MouseRegion(
@@ -433,17 +433,13 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
         ),
       ),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: KeycapFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        well,
-        KeycapFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+    return KeycapField(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      focusNode: _focus,
+      child: well,
     );
   }
 }

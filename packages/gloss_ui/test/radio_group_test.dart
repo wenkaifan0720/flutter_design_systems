@@ -180,7 +180,7 @@ void main() {
                 valueListenable: when,
                 builder: (context, value, _) => GlossRadioGroup<String>(
                   options: const ['Today', 'Tomorrow', 'Later'],
-                  value: value,
+                  groupValue: value,
                   labelOf: (v) => v,
                   direction: axis,
                   onChanged: (v) => when.value = v,
@@ -234,7 +234,7 @@ void main() {
             labelText: 'Format',
             child: GlossRadioGroup<String>(
               options: const ['MP3', 'AAC', 'WAV'],
-              value: chosen,
+              groupValue: chosen,
               labelOf: (f) => f,
               onChanged: (f) => setState(() => chosen = f),
             ),
@@ -301,7 +301,7 @@ void main() {
                 width: 360,
                 child: GlossRadioGroup<String>(
                   options: const ['MP3', 'AAC', 'WAV'],
-                  value: chosen,
+                  groupValue: chosen,
                   labelOf: (f) => f,
                   direction: axis,
                   semanticLabel: 'Format',
@@ -407,7 +407,7 @@ void main() {
                     width: 310,
                     child: GlossRadioGroup<String>(
                       options: const ['A', 'B', 'C', 'D'],
-                      value: chosen,
+                      groupValue: chosen,
                       isEnabled: (v) => v != 'B',
                       labelOf: (v) => v,
                       direction: axis,
@@ -456,7 +456,7 @@ void main() {
               width: 360,
               child: GlossRadioGroup<String>(
                 options: const ['A', 'B', 'C', 'D'],
-                value: chosen,
+                groupValue: chosen,
                 isEnabled: (v) => v != 'A',
                 labelOf: (v) => v,
                 onChanged: (v) => setState(() => chosen = v),

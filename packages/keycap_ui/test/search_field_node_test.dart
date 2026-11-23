@@ -20,7 +20,7 @@ Widget _app() => MaterialApp(
     padding: EdgeInsets.all(24),
     child: Align(
       alignment: Alignment.topCenter,
-      child: KeycapSearchField(hint: 'Search notes'),
+      child: KeycapSearchField(hintText: 'Search notes'),
     ),
   ),
 );

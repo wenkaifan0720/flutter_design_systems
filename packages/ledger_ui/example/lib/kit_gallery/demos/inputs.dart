@@ -194,7 +194,7 @@ class _LiveState extends State<_Live> {
         ],
       ),
       LedgerSearchField(
-        hint: 'Search merchants and categories',
+        hintText: 'Search merchants and categories',
         semanticLabel: 'Search activity',
         controller: _query,
         onChanged: (_) => setState(() {}),
@@ -213,15 +213,15 @@ class _LiveState extends State<_Live> {
         ],
       ),
       LedgerChequeAmount(
-        label: 'Amount',
+        labelText: 'Amount',
         words: kitTransferWords,
         unit: 'dollars',
         controller: _amount,
       ),
-      LedgerField(label: 'Note', controller: _note),
+      LedgerField(labelText: 'Note', controller: _note),
       LedgerStepper(
         size: LedgerStepperSize.field,
-        label: 'Copies',
+        labelText: 'Copies',
         value: _copies,
         min: 1,
         max: 20,
@@ -231,7 +231,7 @@ class _LiveState extends State<_Live> {
       ),
       LedgerStepper(
         value: _budget,
-        label: 'Monthly budget',
+        labelText: 'Monthly budget',
         format: (v) => LedgerFormat.money(v, showCents: false),
         lowerLabel: 'Lower the budget',
         raiseLabel: 'Raise the budget',
@@ -322,7 +322,7 @@ Widget kitSpecimenSettingRow() => LedgerRows(
 
 /// Activity's search, a link to the search page.
 Widget kitSpecimenSearchLink() => LedgerSearchField(
-  hint: 'Search merchants and categories',
+  hintText: 'Search merchants and categories',
   semanticLabel: "Search October's activity",
   onTap: () {},
 );
@@ -331,7 +331,7 @@ Widget kitSpecimenSearchLink() => LedgerSearchField(
 Widget kitSpecimenSearchTyped() => KitTyped(
   kitInsightMerchant.substring(0, kitInsightMerchant.lastIndexOf(' ')),
   (controller) => LedgerSearchField(
-    hint: 'Search merchants and categories',
+    hintText: 'Search merchants and categories',
     semanticLabel: 'Search activity',
     controller: controller,
     onCleared: controller.clear,
@@ -341,7 +341,7 @@ Widget kitSpecimenSearchTyped() => KitTyped(
 /// The transfer's note.
 Widget kitSpecimenField() => KitTyped(
   kitTransferNote,
-  (controller) => LedgerField(label: 'Note', controller: controller),
+  (controller) => LedgerField(labelText: 'Note', controller: controller),
 );
 
 /// The profile's preferences that open nothing: the month's start and the
@@ -365,7 +365,7 @@ Widget kitSpecimenSettingPlain() => const LedgerRows(
 
 /// The transfer's note, shown on its line, read only.
 Widget kitSpecimenFieldShown() =>
-    const LedgerField(label: 'Note', value: kitTransferNote);
+    const LedgerField(labelText: 'Note', value: kitTransferNote);
 
 /// The form's From, its choice shown with the chevron, opening nothing.
 Widget kitSpecimenPickShown() => LedgerPickLine(
@@ -406,7 +406,7 @@ Widget kitSpecimenPickLines() => Column(
 
 /// The transfer's amount read back under review, and in words.
 Widget kitSpecimenChequeAmount() => const LedgerChequeAmount(
-  label: 'Amount',
+  labelText: 'Amount',
   words: kitTransferWords,
   unit: 'dollars',
   amount: kitTransferAmount,
@@ -414,7 +414,7 @@ Widget kitSpecimenChequeAmount() => const LedgerChequeAmount(
 
 /// The form's amount, read back as its input holds it, and in words.
 Widget kitSpecimenChequeAmountTyped() => const LedgerChequeAmount(
-  label: 'Amount',
+  labelText: 'Amount',
   words: kitTransferWords,
   unit: 'dollars',
   amount: kitTransferAmount,
@@ -424,7 +424,7 @@ Widget kitSpecimenChequeAmountTyped() => const LedgerChequeAmount(
 /// The add sheet's amount to add, the sum alone over its chips.
 Widget kitSpecimenStepperAlone() => LedgerStepper(
   value: kitAddAmount,
-  label: 'Amount to add',
+  labelText: 'Amount to add',
   showRings: false,
   format: (v) => LedgerFormat.money(v, showCents: false),
   onChanged: (_) {},
@@ -433,7 +433,7 @@ Widget kitSpecimenStepperAlone() => LedgerStepper(
 /// A form's estimate: typed or stepped on the field's rule.
 Widget kitSpecimenStepperField() => LedgerStepper(
   size: LedgerStepperSize.field,
-  label: 'Estimate (minutes)',
+  labelText: 'Estimate (minutes)',
   value: 45,
   min: 5,
   max: 480,
@@ -444,7 +444,7 @@ Widget kitSpecimenStepperField() => LedgerStepper(
 /// Dining out's monthly budget in the edit sheet.
 Widget kitSpecimenStepper() => LedgerStepper(
   value: kitDiningBudget,
-  label: 'Monthly budget',
+  labelText: 'Monthly budget',
   format: (v) => LedgerFormat.money(v, showCents: false),
   lowerLabel: 'Lower the budget',
   raiseLabel: 'Raise the budget',

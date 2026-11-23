@@ -31,21 +31,21 @@ const double _pageWidth = 1200;
 /// MaterialApp(builder: (context, child) => BrutalHost(child: child!))
 /// ```
 class BrutalHost extends StatelessWidget {
-  /// Hosts [child] in [light] or [dark], as [brightness] (or the platform)
+  /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
   /// asks; either left out is the default preset in that brightness.
   const BrutalHost({
     super.key,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
     required this.child,
   });
 
   /// The theme by day.
-  final BrutalThemeData? light;
+  final BrutalThemeData? theme;
 
   /// The theme by night.
-  final BrutalThemeData? dark;
+  final BrutalThemeData? darkTheme;
 
   /// The brightness to draw in; null follows the preview's or the
   /// platform's.
@@ -61,7 +61,7 @@ class BrutalHost extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final data =
-        (wanted == Brightness.dark ? dark : light) ??
+        (wanted == Brightness.dark ? darkTheme : theme) ??
         BrutalThemeData.preset(BrutalThemeData.presets.first, wanted);
     return BrutalTheme(
       data: data,
@@ -77,13 +77,17 @@ class BrutalHost extends StatelessWidget {
     properties
       ..add(
         DiagnosticsProperty<BrutalThemeData>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<BrutalThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<BrutalThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(
         DiagnosticsProperty<Brightness>(
@@ -497,12 +501,12 @@ class BrutalPreview extends StatelessWidget {
   const BrutalPreview({
     super.key,
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness = Brightness.light,
     this.presentation = BrutalPresentation.root,
     this.tabs = const [],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.brand,
     this.drawer = false,
@@ -513,10 +517,10 @@ class BrutalPreview extends StatelessWidget {
   final Widget child;
 
   /// The theme by day.
-  final BrutalThemeData? light;
+  final BrutalThemeData? theme;
 
   /// The theme by night.
-  final BrutalThemeData? dark;
+  final BrutalThemeData? darkTheme;
 
   /// The brightness to draw in.
   final Brightness brightness;
@@ -528,7 +532,7 @@ class BrutalPreview extends StatelessWidget {
   final List<BrutalTab> tabs;
 
   /// The place the page is.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The app's one act, on a root.
   final ShellAction? action;
@@ -548,8 +552,8 @@ class BrutalPreview extends StatelessWidget {
         ? page
         : BrutalAppShell(
             tabs: tabs,
-            selectedIndex: activeIndex,
-            onSelected: (_) {},
+            selectedIndex: selectedIndex,
+            onDestinationSelected: (_) {},
             action: action,
             brand: brand,
             child: page,
@@ -571,8 +575,8 @@ class BrutalPreview extends StatelessWidget {
             DefaultWidgetsLocalizations.delegate,
           ],
           builder: (context, app) => BrutalHost(
-            light: light,
-            dark: dark,
+            theme: theme,
+            darkTheme: darkTheme,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),
@@ -605,20 +609,24 @@ class BrutalPreview extends StatelessWidget {
     properties
       ..add(
         DiagnosticsProperty<BrutalThemeData>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<BrutalThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<BrutalThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(DiagnosticsProperty<Brightness>('brightness', brightness))
       ..add(
         DiagnosticsProperty<BrutalPresentation>('presentation', presentation),
       )
       ..add(IterableProperty<BrutalTab>('tabs', tabs))
-      ..add(IntProperty('activeIndex', activeIndex))
+      ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -635,7 +643,7 @@ class BrutalPreview extends StatelessWidget {
 /// `BrutalShell`; a preview mounts it directly.
 ///
 /// ```dart
-/// BrutalAppShell(tabs: const [BrutalTab(LucideIcons.house, 'Home'), BrutalTab(LucideIcons.ticket, 'Tickets')], selectedIndex: 0, onSelected: (i) {}, child: const HomePage())
+/// BrutalAppShell(tabs: const [BrutalTab(LucideIcons.house, 'Home'), BrutalTab(LucideIcons.ticket, 'Tickets')], selectedIndex: 0, onDestinationSelected: (i) {}, child: const HomePage())
 /// ```
 class BrutalAppShell extends StatelessWidget {
   /// [child] with the app's [tabs].
@@ -643,7 +651,7 @@ class BrutalAppShell extends StatelessWidget {
     super.key,
     required this.tabs,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     required this.child,
     this.action,
     this.brand,
@@ -657,7 +665,7 @@ class BrutalAppShell extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// The page.
   final Widget child;
@@ -687,7 +695,7 @@ class BrutalAppShell extends StatelessWidget {
       // A phone's bar springs away under a page pushed over the root.
       showNavigation: showPlaces,
       selectedIndex: selectedIndex,
-      onSelected: onSelected,
+      onDestinationSelected: onDestinationSelected,
       brand: name == null || name.isEmpty ? null : _Brand(name),
       floatingButton: act == null ? null : _ActButton(act),
       body: ShellInsets(
@@ -705,7 +713,12 @@ class BrutalAppShell extends StatelessWidget {
     properties
       ..add(IterableProperty<BrutalTab>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -943,13 +956,13 @@ class BrutalErrorState extends StatelessWidget {
 /// page you write, use [BrutalTextField], which names itself.
 ///
 /// ```dart
-/// BrutalInput(hint: 'Search events', onSubmitted: search)
+/// BrutalInput(hintText: 'Search events', onSubmitted: search)
 /// ```
 class BrutalInput extends StatelessWidget {
-  /// A field hinting [hint].
+  /// A field hinting [hintText].
   const BrutalInput({
     super.key,
-    this.hint,
+    this.hintText,
     this.controller,
     this.onChanged,
     this.onSubmitted,
@@ -957,7 +970,7 @@ class BrutalInput extends StatelessWidget {
   });
 
   /// What it is for, until something is typed.
-  final String? hint;
+  final String? hintText;
 
   /// Its text's controller.
   final TextEditingController? controller;
@@ -974,8 +987,8 @@ class BrutalInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BrutalTextField(
     controller: controller,
-    hint: hint,
-    semanticLabel: hint,
+    hintText: hintText,
+    semanticLabel: hintText,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
     enabled: enabled,
@@ -985,7 +998,7 @@ class BrutalInput extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',

@@ -244,7 +244,7 @@ class TermBracketBand extends StatelessWidget {
                 painter: TermBracketPainter(
                   grid: grid,
                   color: edge ?? theme.rule,
-                  stroke: termStroke(theme, grid),
+                  stroke: termStrokeWidth(theme, grid),
                   cursor: focus,
                   cursorColor: theme.accent,
                   knockout: theme.onAccent,
@@ -447,7 +447,7 @@ class TermBracketFace extends StatelessWidget {
       painter: TermBracketPainter(
         grid: grid,
         color: brackets,
-        stroke: termStroke(theme, grid),
+        stroke: termStrokeWidth(theme, grid),
         fill: ground,
         fillAmount: amount,
         cursor: enabled ? focus : 0,

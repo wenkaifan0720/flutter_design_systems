@@ -1,0 +1,53 @@
+// The names civic_ui 0.5.0 renames: civic_ui.dart calls them as before `dart fix --apply`,
+// civic_ui.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:civic_ui/civic_ui.dart';
+
+void calls(BuildContext context) {
+  final v1 = CivicInput(
+    labelText: 'Text',
+    hintText: 'Text',
+    errorText: 'Text',
+    obscureText: true,
+  );
+  print(v1.labelText);
+  print(v1.hintText);
+  print(v1.errorText);
+  print(v1.obscureText);
+  final v2 = CivicShellFrame(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+    child: const SizedBox(),
+  );
+  print(v2.destinations);
+  print(v2.onDestinationSelected);
+  final v3 = CivicHost(child: const SizedBox(), theme: null, darkTheme: null);
+  print(v3.theme);
+  print(v3.darkTheme);
+  final v4 = CivicPreview(
+    child: const SizedBox(),
+    theme: null,
+    darkTheme: null,
+    selectedIndex: 1,
+  );
+  print(v4.theme);
+  print(v4.darkTheme);
+  print(v4.selectedIndex);
+  final v5 = CivicPageDots(pageCount: 1, selectedIndex: 1, onPageChanged: (_) {});
+  print(v5.pageCount);
+  print(v5.selectedIndex);
+  print(v5.onPageChanged);
+  final v6 = CivicStepIndicator(steps: const [], currentStep: 1);
+  print(v6.currentStep);
+  final v7 = CivicIconButton(
+    icon: const IconData(0xe000),
+    semanticLabel: 'Text',
+    onPressed: () {},
+    isSelected: true,
+  );
+  print(v7.isSelected);
+  final v8 = CivicBadge(count: 1, noun: 'Text', maxCount: 1);
+  print(v8.maxCount);
+  print([v1, v2, v3, v4, v5, v6, v7, v8]);
+}

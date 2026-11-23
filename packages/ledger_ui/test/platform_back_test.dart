@@ -95,7 +95,7 @@ class _Everything extends StatelessWidget {
       children: [
         const Text('Entry'),
         LedgerSelect<String>(
-          label: 'Currency',
+          labelText: 'Currency',
           value: 'USD',
           items: const [
             LedgerSelectItem(value: 'USD', label: 'US dollar'),
@@ -104,12 +104,12 @@ class _Everything extends StatelessWidget {
           onChanged: (_) {},
         ),
         LedgerCombobox<String>(
-          label: 'Payee',
+          labelText: 'Payee',
           options: _payees,
           onSelected: (_) {},
         ),
         LedgerMultiSelect<String>(
-          label: 'Split with',
+          labelText: 'Split with',
           values: const ['Maren'],
           options: const ['Maren', 'Theo', 'Ana'],
           onChanged: (_) {},

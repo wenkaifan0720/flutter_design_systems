@@ -52,8 +52,8 @@ class CivicMenuItem<T> {
 
 /// A menu of worded [items] that opens from the control [builder] paints
 /// (a [CivicButton.secondary] saying what the menu holds: "Actions",
-/// "Download"), on the page's face floating on a hairline and the soft
-/// shadow, as an open list does: ui_core's [RawPopover] as a
+/// "Download"), on the page's face (by night the raised band) floating on a
+/// hairline and the soft shadow, as an open list does: ui_core's [RawPopover] as a
 /// menu, Civic's painting.
 ///
 /// A press on the control, Enter or Space opens it. A pointer greys the

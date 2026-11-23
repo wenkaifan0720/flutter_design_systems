@@ -194,7 +194,7 @@ class _SpecimenState extends State<_Specimen> {
     Widget latch(String id, IconData icon, String label) => KeycapIconButton(
       icon: Icon(icon),
       semanticLabel: label,
-      selected: _on.contains(id),
+      isSelected: _on.contains(id),
       onPressed: () => setState(() {
         if (!_on.remove(id)) _on.add(id);
       }),

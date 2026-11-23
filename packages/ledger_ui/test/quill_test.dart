@@ -542,7 +542,7 @@ void main() {
           await _open(t, s, size);
           for (final e
               in find.byWidgetPredicate((w) => w is LedgerSelect).evaluate()) {
-            final label = (e.widget as LedgerSelect).label;
+            final label = (e.widget as LedgerSelect).labelText;
             final slot = (e.renderObject! as RenderBox).size.width;
             final face = t.getRect(
               find
@@ -572,7 +572,7 @@ void main() {
   testWidgets("a select's open list hugs its options", (t) async {
     await _open(t, _screens.firstWhere((s) => s.name == 'settings'), _desktop);
     final select = find.byWidgetPredicate(
-      (w) => w is LedgerSelect && w.label == 'Density',
+      (w) => w is LedgerSelect && w.labelText == 'Density',
     );
     final anchor = find
         .descendant(of: select, matching: find.byType(LedgerPressable))

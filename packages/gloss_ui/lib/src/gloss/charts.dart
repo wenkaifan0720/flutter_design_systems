@@ -80,18 +80,20 @@ GlossFace _gelOf(Color color, {double? radius}) {
   );
 }
 
-/// Gloss's figure for [v] in the reader's digits: whole or to one decimal,
-/// compact past a thousand (1.2k).
-String _figure(RawWidgetsLocalizations words, double v) {
-  if (v.abs() >= 1000) {
-    final k = words.formatDecimal(
-      v / 1000,
-      fractionDigits: v % 1000 == 0 ? 0 : 1,
-    );
-    return '${k}k';
-  }
-  return words.formatDecimal(v, fractionDigits: v == v.roundToDouble() ? 0 : 1);
+/// Gloss's figure for [value] in the reader's digits: as the scale writes
+/// it, compact past a thousand (1.2k).
+String _compact(double value, String figure, RawWidgetsLocalizations words) {
+  if (value.abs() < 1000) return figure;
+  final k = words.formatDecimal(
+    value / 1000,
+    fractionDigits: value % 1000 == 0 ? 0 : 1,
+  );
+  return '${k}k';
 }
+
+/// A chart's own format, or Gloss's compact figure.
+DesignChartValueFormat _formatOf(DesignChartValueFormat? format) =>
+    format ?? const DesignChartValueFormat.custom(_compact);
 
 class _Legend extends StatelessWidget {
   const _Legend(this.entries);
@@ -187,10 +189,10 @@ String _readOut(
   List<String> labels,
   List<GlossSeries> series,
   RawWidgetsLocalizations words,
-  String Function(double value)? valueLabel,
+  DesignChartValueFormat format,
 ) => [
   for (final s in series)
-    '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${valueLabel?.call(v) ?? _figure(words, v)}'].join(', ')}',
+    '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${format.format(v, words)}'].join(', ')}',
 ].join('. ');
 
 /// What the axes charts share: the engraved grid, the figures up the start
@@ -205,7 +207,7 @@ abstract class _AxesPainter extends CustomPainter {
     required this.textScaler,
     required this.t,
     required this.words,
-    this.valueLabel,
+    required this.valueFormat,
   });
 
   final GlossColors c;
@@ -219,8 +221,8 @@ abstract class _AxesPainter extends CustomPainter {
   /// The reader's words, for ui_core's ticks.
   final RawWidgetsLocalizations words;
 
-  /// The value axis's words for a value, in place of Gloss's figure.
-  final String Function(double value)? valueLabel;
+  /// How the value axis writes its ticks: each at its scale's decimals.
+  final DesignChartValueFormat valueFormat;
 
   // Whether no value is above 0.
   bool get _empty => series.expand((s) => s.values).fold(0.0, math.max) <= 0;
@@ -258,15 +260,21 @@ abstract class _AxesPainter extends CustomPainter {
   Rect paintAxes(Canvas canvas, Size size) {
     // Nothing above 0: the axis counts 0 and 1, not tenths of a scale no
     // value reaches.
-    final ticks = _scale.ticks(words, count: _empty ? 1 : 5);
-    // Gloss's figures: the reader's digits, compact past a thousand (1.2k).
-    final figures = [
-      for (final tick in ticks)
-        _words(valueLabel?.call(tick.value) ?? _figure(words, tick.value)),
-    ];
+    final ticks = valueFormat.labelTicks(
+      _scale.ticks(words, count: _empty ? 1 : 5),
+      words,
+    );
+    final figures = [for (final tick in ticks) _words(tick.label)];
+    // The figures' room at the start of the plot.
     final gutter = math.min(
       size.width,
-      figures.map((f) => f.width).fold(0.0, math.max) + GlossSpacing.small,
+      DesignScaleTick.widestLabel(
+            ticks,
+            style: text,
+            textScaler: textScaler,
+            textDirection: direction,
+          ) +
+          GlossSpacing.small,
     );
     final lineHeight = figures.map((f) => f.height).fold(0.0, math.max);
     // The tray already has room for a 16 px caption and its two half-lines
@@ -373,7 +381,7 @@ abstract class _AxesPainter extends CustomPainter {
       old.direction != direction ||
       old.textScaler != textScaler ||
       old.words != words ||
-      old.valueLabel != valueLabel ||
+      old.valueFormat != valueFormat ||
       !listEquals(old.labels, labels) ||
       !listEquals(
         [for (final s in old.series) ...s.values],
@@ -391,7 +399,7 @@ class _LinePainter extends _AxesPainter {
     required super.textScaler,
     required super.t,
     required super.words,
-    super.valueLabel,
+    required super.valueFormat,
     required this.area,
   });
 
@@ -498,7 +506,7 @@ class _BarPainter extends _AxesPainter {
     required super.textScaler,
     required super.t,
     required super.words,
-    super.valueLabel,
+    required super.valueFormat,
   });
 
   @override
@@ -580,7 +588,7 @@ class GlossLineChart extends StatelessWidget {
     required this.series,
     required this.semanticLabel,
     this.height = 200,
-    this.valueLabel,
+    this.valueFormat,
     this.style,
   });
 
@@ -596,10 +604,11 @@ class GlossLineChart extends StatelessWidget {
   /// Its height.
   final double height;
 
-  /// The words for a value on the value axis and in what a screen reader
-  /// hears, with its unit (`(v) => '${v.round()} h'`); null: the figure in
-  /// the reader's digits, compact past a thousand.
-  final String Function(double value)? valueLabel;
+  /// How a value is written on the value axis and in what a screen reader
+  /// hears: in the reader's digits, each tick at its scale's decimals, with
+  /// a unit (`DesignChartValueFormat(suffix: ' h')`); null: the figure,
+  /// compact past a thousand (1.2k).
+  final DesignChartValueFormat? valueFormat;
 
   /// Its own style, over [GlossThemeData.chartStyle].
   final GlossStyle? style;
@@ -618,7 +627,7 @@ class GlossLineChart extends StatelessWidget {
           labels,
           series,
           RawWidgetsLocalizations.of(context),
-          valueLabel,
+          _formatOf(valueFormat),
         ),
         legend: [
           for (final (i, s) in series.indexed) (s.label, _gelAt(c, s.color, i)),
@@ -633,7 +642,7 @@ class GlossLineChart extends StatelessWidget {
           direction: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
           words: RawWidgetsLocalizations.of(context),
-          valueLabel: valueLabel,
+          valueFormat: _formatOf(valueFormat),
           t: t,
           area: area,
         ),
@@ -663,7 +672,7 @@ class GlossAreaChart extends GlossLineChart {
     required super.series,
     required super.semanticLabel,
     super.height,
-    super.valueLabel,
+    super.valueFormat,
     super.style,
   });
 
@@ -685,7 +694,7 @@ class GlossBarChart extends StatelessWidget {
     required this.series,
     required this.semanticLabel,
     this.height = 200,
-    this.valueLabel,
+    this.valueFormat,
     this.style,
   });
 
@@ -701,10 +710,11 @@ class GlossBarChart extends StatelessWidget {
   /// Its height.
   final double height;
 
-  /// The words for a value on the value axis and in what a screen reader
-  /// hears, with its unit (`(v) => '${v.round()} h'`); null: the figure in
-  /// the reader's digits, compact past a thousand.
-  final String Function(double value)? valueLabel;
+  /// How a value is written on the value axis and in what a screen reader
+  /// hears: in the reader's digits, each tick at its scale's decimals, with
+  /// a unit (`DesignChartValueFormat(suffix: ' h')`); null: the figure,
+  /// compact past a thousand (1.2k).
+  final DesignChartValueFormat? valueFormat;
 
   /// Its own style, over [GlossThemeData.chartStyle].
   final GlossStyle? style;
@@ -721,7 +731,7 @@ class GlossBarChart extends StatelessWidget {
           labels,
           series,
           RawWidgetsLocalizations.of(context),
-          valueLabel,
+          _formatOf(valueFormat),
         ),
         legend: [
           for (final (i, s) in series.indexed) (s.label, _gelAt(c, s.color, i)),
@@ -736,7 +746,7 @@ class GlossBarChart extends StatelessWidget {
           direction: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
           words: RawWidgetsLocalizations.of(context),
-          valueLabel: valueLabel,
+          valueFormat: _formatOf(valueFormat),
           t: t,
         ),
       ),
@@ -803,7 +813,7 @@ class GlossPieChart extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _figure(words, total),
+                  _formatOf(null).format(total, words),
                   style: theme.textTheme.title.copyWith(
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
@@ -818,7 +828,7 @@ class GlossPieChart extends StatelessWidget {
     );
     final entries = [
       for (final (i, s) in slices.indexed)
-        ('${s.label} ${_figure(words, s.value)}', colors[i]),
+        ('${s.label} ${_formatOf(null).format(s.value, words)}', colors[i]),
     ];
     final legend = _Legend(entries);
     final direction = Directionality.of(context);
@@ -840,8 +850,10 @@ class GlossPieChart extends StatelessWidget {
     );
     return Semantics(
       label: semanticLabel,
-      value: [for (final s in slices) '${s.label} ${_figure(words, s.value)}']
-          .join(', '),
+      value: [
+        for (final s in slices)
+          '${s.label} ${_formatOf(null).format(s.value, words)}',
+      ].join(', '),
       excludeSemantics: true,
       child: LayoutBuilder(
         builder: (context, box) => box.maxWidth >= size + legendRoom

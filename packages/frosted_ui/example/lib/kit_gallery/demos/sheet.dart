@@ -105,7 +105,7 @@ class _RaiseState extends State<_Raise> {
                       onChanged: set,
                     ),
                   ),
-                  FrostedTextField(label: kitSay('From')),
+                  FrostedTextField(labelText: kitSay('From')),
                 ],
                 foot: (sheet) => [
                   FrostedButton(
@@ -136,7 +136,7 @@ class _RaiseState extends State<_Raise> {
                         foot: [
                           FrostedButton(kitSay('Apply'), onPressed: () {}),
                         ],
-                        children: [FrostedTextField(label: kitSay('From'))],
+                        children: [FrostedTextField(labelText: kitSay('From'))],
                       ),
                     ),
                   ),

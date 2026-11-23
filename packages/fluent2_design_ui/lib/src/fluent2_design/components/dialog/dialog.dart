@@ -185,6 +185,10 @@ class Fluent2Dialog extends StatelessWidget {
                         const SizedBox(
                           height: Fluent2ChromeMetrics.dialogActionsGap,
                         ),
+                        // Under 480 Fluent stacks a dialog's acts, the
+                        // primary on top; wider they stand at the end at
+                        // their own widths while they fit, and stack once
+                        // they don't (long words, large text).
                         if (narrow)
                           Fluent2ActsFill(
                             child: Column(
@@ -194,10 +198,12 @@ class Fluent2Dialog extends StatelessWidget {
                             ),
                           )
                         else
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            spacing: Fluent2Spacing.s,
-                            children: actions,
+                          Fluent2ActsFill(
+                            child: RawActionBar(
+                              spacing: Fluent2Spacing.s,
+                              overflowSpacing: Fluent2Spacing.s,
+                              children: actions,
+                            ),
                           ),
                       ],
                     ],

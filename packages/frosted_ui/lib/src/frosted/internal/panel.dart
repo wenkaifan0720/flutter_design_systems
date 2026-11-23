@@ -166,7 +166,7 @@ class _RenderDrawn extends RenderProxyBox {
 /// reads as a second choice and a resting pointer never lights a second
 /// row. With [followsPointer] a pointer moving over the row gives it the
 /// focus, for the lists whose highlight is the focus (a menu bar's or a
-/// split button's menu). A [destructive] row sets its words in the over
+/// split button's menu). A [isDestructiveAction] row sets its words in the over
 /// tone, as a `FrostedMenuItem`'s loss is. A disabled row fades. Plumbing
 /// of the components.
 class FrostedPanelRow extends StatelessWidget {
@@ -179,13 +179,13 @@ class FrostedPanelRow extends StatelessWidget {
     this.checkable = true,
     this.height = FrostedChromeMetrics.menuItem,
     this.followsPointer = false,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     super.key,
   });
 
   /// Whether the row destroys something (Delete): its words in the over
   /// tone.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether a pointer moving over the row gives it the focus (the row's
   /// own [Focus], above it), so the list's one lit row follows the pointer.
@@ -252,12 +252,12 @@ class FrostedPanelRow extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: chosen
                 ? t.textTheme.link.semibold.c(
-                    destructive
+                    isDestructiveAction
                         ? t.colorScheme.over
                         : t.colorScheme.textPrimary,
                   )
                 : t.textTheme.link.c(
-                    destructive
+                    isDestructiveAction
                         ? t.colorScheme.over
                         : lit
                         ? t.colorScheme.textPrimary

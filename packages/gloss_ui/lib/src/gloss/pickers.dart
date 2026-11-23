@@ -14,10 +14,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'fonts.dart';
+import 'internal/field_frame.dart';
 import 'internal/menu_parts.dart';
 import 'popovers.dart';
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -332,9 +332,9 @@ class _GlossCalendarState extends State<GlossCalendar> {
         ),
         dayBuilder: (context, day, states) {
           final layered = DesignStyleOf(layers, states);
-          // A waiting range's preview ends as a finished range does: a bead on
-          // the day under the pointer (or the keyboard), the glaze stopping at
-          // it.
+          // A waiting range's preview ends as a finished range does: a lit
+          // well on the day under the pointer (or the keyboard), the glaze
+          // stopping at it.
           final end =
               day.isRangeStart ||
               day.isRangeEnd ||
@@ -355,13 +355,21 @@ class _GlossCalendarState extends State<GlossCalendar> {
           final glaze = light
               ? const Color(0xFFD9F1E7)
               : const Color(0xFF1E4136);
-          var bead = GlossFace.gel(c);
-          if (layered.fill != null) bead = bead.glazed(layered.fill!);
+          // What is on glows jade inside its well, as a slider's lit run
+          // does: the chosen day (a range's two ends) is a well lit jade,
+          // never a raised gel bead, the key a screen keeps for its one
+          // action.
+          var lit = GlossFace.well(c).copyWith(
+            top: c.jadeBottom,
+            middle: c.jade,
+            bottom: c.jadeTop,
+            shade: const Color(0x80002814),
+          );
+          if (layered.fill != null) lit = lit.glazed(layered.fill!);
           final clear = c.page.withValues(alpha: 0);
           final face = end
-              ? bead.copyWith(
-                  lift: 0.6,
-                  travel: states.contains(WidgetState.pressed) ? 1 : 0,
+              ? lit.copyWith(
+                  lift: states.contains(WidgetState.pressed) ? -1 : -0.8,
                 )
               : GlossFace(
                   top: clear,
@@ -570,25 +578,33 @@ Widget _fieldColumn({
   required Widget box,
   required String? helper,
   required String? error,
-}) => Column(
-  mainAxisSize: MainAxisSize.min,
-  crossAxisAlignment: CrossAxisAlignment.stretch,
-  children: [
-    if (label != null)
-      ExcludeSemantics(child: GlossFieldLabel(label, enabled: enabled)),
-    box,
-    GlossFieldMessage(helper: helper, error: error),
-  ],
+}) => GlossFieldFrame(
+  labelText: label,
+  helperText: helper,
+  errorText: error,
+  enabled: enabled,
+  child: box,
 );
 
+// The least width a month's days keep in a field's calendar.
+const double _monthLeast = 288;
+
 // The calendar's panel, no taller than the room on its side ([info]), the
-// month scrolling inside where it must.
+// month scrolling inside where it must. One month opened from a field
+// narrower than the month takes the field's width, edge to edge with it
+// (down to [_monthLeast]); two keep their own.
 Widget _calendarPanel(
   BuildContext context,
   RawPopoverInfo info,
-  Widget calendar,
-) => ConstrainedBox(
-  constraints: BoxConstraints(maxHeight: info.maxSize.height),
+  Widget calendar, {
+  int months = 1,
+}) => ConstrainedBox(
+  constraints: BoxConstraints(
+    maxHeight: info.maxSize.height,
+    maxWidth: months == 1
+        ? math.max(info.anchorRect.width, _monthLeast)
+        : double.infinity,
+  ),
   child: GlossSurface(
     face: glossPanelFace(GlossTheme.of(context).colors, radius: 20),
     child: SingleChildScrollView(
@@ -603,7 +619,7 @@ Widget _calendarPanel(
 /// closes the panel and calls [onChanged].
 ///
 /// ```dart
-/// GlossDatePicker(label: 'Cook on', value: DateTime(2026, 11, 18), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
+/// GlossDatePicker(labelText: 'Cook on', value: DateTime(2026, 11, 18), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
 /// ```
 class GlossDatePicker extends StatelessWidget {
   /// A date field at [value].
@@ -613,10 +629,10 @@ class GlossDatePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.currentDate,
   });
 
@@ -633,16 +649,16 @@ class GlossDatePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty well says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -651,49 +667,53 @@ class GlossDatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
-    return _fieldColumn(
-      label: label,
-      enabled: enabled,
-      helper: helper,
-      error: error,
-      box: RawPopover(
-        semanticLabel: label,
-        // The calendar opens where its whole month fits: below while below
-        // holds it, else above; it shrinks and scrolls only where neither
-        // side does.
-        placement: const RawPopoverPlacement(
-          gap: GlossSpacing.small,
-          margin: GlossSpacing.small,
-          matchAnchorWidth: false,
-          preferredExtent: double.infinity,
-        ),
-        dampingRatio: GlossMotion.panelDamping,
-        stiffness: GlossMotion.panelStiffness,
-        anchorBuilder: (context, anchor) => _PickerField(
+    return RawPopover(
+      semanticLabel: labelText,
+      // The calendar opens where its whole month fits: below while below
+      // holds it, else above; it shrinks and scrolls only where neither
+      // side does. It opens from the whole field, its label too, so above
+      // the field it stands clear of the label, as Material's menus stand
+      // clear of their field.
+      placement: const RawPopoverPlacement(
+        gap: GlossSpacing.small,
+        margin: GlossSpacing.small,
+        matchAnchorWidth: false,
+        fit: RawPopoverFit.whole,
+      ),
+      dampingRatio: GlossMotion.panelDamping,
+      stiffness: GlossMotion.panelStiffness,
+      anchorBuilder: (context, anchor) => _fieldColumn(
+        label: labelText,
+        enabled: enabled,
+        helper: helperText,
+        error: errorText,
+        box: _PickerField(
           anchor: anchor,
           text: value == null ? null : words.formatFullDate(value!),
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendar,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label ?? hint,
+          error: errorText != null,
+          // Named by its field (ui_core's RawInputDecorator), or else by
+          // its hint.
+          semanticLabel: labelText == null ? hintText : null,
         ),
-        overlayBuilder: (context, info) => glossPanelArrival(
+      ),
+      overlayBuilder: (context, info) => glossPanelArrival(
+        info,
+        _calendarPanel(
+          context,
           info,
-          _calendarPanel(
-            context,
-            info,
-            GlossCalendar(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              selectedDate: value,
-              currentDate: currentDate,
-              autofocus: true,
-              onDateChanged: (day) {
-                info.close();
-                onChanged?.call(day);
-              },
-            ),
+          GlossCalendar(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            selectedDate: value,
+            currentDate: currentDate,
+            autofocus: true,
+            onDateChanged: (day) {
+              info.close();
+              onChanged?.call(day);
+            },
           ),
         ),
       ),
@@ -705,7 +725,7 @@ class GlossDatePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<DateTime>('value', value))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
 
@@ -713,7 +733,7 @@ class GlossDatePicker extends StatelessWidget {
 /// and an end day to close the panel and receive the range in [onChanged].
 ///
 /// ```dart
-/// GlossDateRangePicker(label: 'Plan', value: null, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (range) {})
+/// GlossDateRangePicker(labelText: 'Plan', value: null, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (range) {})
 /// ```
 class GlossDateRangePicker extends StatelessWidget {
   /// A date-range field at [value].
@@ -723,10 +743,10 @@ class GlossDateRangePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.currentDate,
   });
 
@@ -743,16 +763,16 @@ class GlossDateRangePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty well says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -762,53 +782,58 @@ class GlossDateRangePicker extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final wide = MediaQuery.sizeOf(context).width >= 760;
-    return _fieldColumn(
-      label: label,
-      enabled: enabled,
-      helper: helper,
-      error: error,
-      box: RawPopover(
-        semanticLabel: label,
-        // The calendar opens where its whole month fits: below while below
-        // holds it, else above; it shrinks and scrolls only where neither
-        // side does.
-        placement: const RawPopoverPlacement(
-          gap: GlossSpacing.small,
-          margin: GlossSpacing.small,
-          matchAnchorWidth: false,
-          preferredExtent: double.infinity,
-        ),
-        dampingRatio: GlossMotion.panelDamping,
-        stiffness: GlossMotion.panelStiffness,
-        anchorBuilder: (context, anchor) => _PickerField(
+    return RawPopover(
+      semanticLabel: labelText,
+      // The calendar opens where its whole month fits: below while below
+      // holds it, else above; it shrinks and scrolls only where neither
+      // side does. It opens from the whole field, its label too, so above
+      // the field it stands clear of the label, as Material's menus stand
+      // clear of their field.
+      placement: const RawPopoverPlacement(
+        gap: GlossSpacing.small,
+        margin: GlossSpacing.small,
+        matchAnchorWidth: false,
+        fit: RawPopoverFit.whole,
+      ),
+      dampingRatio: GlossMotion.panelDamping,
+      stiffness: GlossMotion.panelStiffness,
+      anchorBuilder: (context, anchor) => _fieldColumn(
+        label: labelText,
+        enabled: enabled,
+        helper: helperText,
+        error: errorText,
+        box: _PickerField(
           anchor: anchor,
           text: value == null
               ? null
               : '${words.formatFullDate(value!.start)} – '
                     '${words.formatFullDate(value!.end)}',
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendarRange,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label ?? hint,
+          error: errorText != null,
+          // Named by its field (ui_core's RawInputDecorator), or else by
+          // its hint.
+          semanticLabel: labelText == null ? hintText : null,
         ),
-        overlayBuilder: (context, info) => glossPanelArrival(
+      ),
+      overlayBuilder: (context, info) => glossPanelArrival(
+        info,
+        _calendarPanel(
+          context,
           info,
-          _calendarPanel(
-            context,
-            info,
-            GlossCalendar.range(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              selectedRange: value,
-              currentDate: currentDate,
-              months: wide ? 2 : 1,
-              autofocus: true,
-              onRangeChanged: (range) {
-                info.close();
-                onChanged?.call(range);
-              },
-            ),
+          months: wide ? 2 : 1,
+          GlossCalendar.range(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            selectedRange: value,
+            currentDate: currentDate,
+            months: wide ? 2 : 1,
+            autofocus: true,
+            onRangeChanged: (range) {
+              info.close();
+              onChanged?.call(range);
+            },
           ),
         ),
       ),

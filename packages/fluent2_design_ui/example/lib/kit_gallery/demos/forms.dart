@@ -39,16 +39,16 @@ Widget kitFormsDemo(Brightness brightness) => kitScreen(
         _Live<String>(
           'Northwind',
           (v, set) => Fluent2FormField(
-            label: 'Workspace name',
+            labelText: 'Workspace name',
             orientation: Fluent2FieldOrientation.horizontal,
-            helper: 'Shown on invites and the sign-in page.',
+            helperText: 'Shown on invites and the sign-in page.',
             child: Fluent2TextField(value: v, onChanged: set),
           ),
         ),
         _Live<String?>(
           'eu',
           (v, set) => Fluent2FormField(
-            label: 'Data region',
+            labelText: 'Data region',
             orientation: Fluent2FieldOrientation.horizontal,
             child: Fluent2Select<String>(
               options: const [
@@ -70,7 +70,7 @@ Widget kitFormsDemo(Brightness brightness) => kitScreen(
           _Live<String>(
             '',
             (v, set) => Fluent2FormField(
-              label: 'Display name, ${kitSay(size)}',
+              labelText: 'Display name, ${kitSay(size)}',
               size: size,
               child: Fluent2TextField(value: v, size: size, onChanged: set),
             ),
@@ -104,12 +104,12 @@ Widget kitSpecimenField() => Column(
     _Live<String>(
       '',
       (v, set) => Fluent2FormField(
-        label: 'Email',
+        labelText: 'Email',
         required: true,
-        helper: 'We send the invite here.',
+        helperText: 'We send the invite here.',
         child: Fluent2TextField(
           value: v,
-          hint: 'name@northwind.example',
+          hintText: 'name@northwind.example',
           onChanged: set,
         ),
       ),
@@ -117,7 +117,7 @@ Widget kitSpecimenField() => Column(
     _Live<String>(
       '30',
       (v, set) => Fluent2FormField(
-        label: 'Keep deleted files',
+        labelText: 'Keep deleted files',
         info: 'After this many days, files in the bin are gone for good.',
         child: Fluent2TextField(value: v, onChanged: set),
       ),
@@ -133,7 +133,7 @@ Widget kitSpecimenFieldValidation() => Column(
     _Live<String>(
       'northwind launch',
       (v, set) => Fluent2FormField(
-        label: 'Channel name',
+        labelText: 'Channel name',
         validationMessage: 'Use letters, numbers and dashes only.',
         child: Fluent2TextField(value: v, onChanged: set),
       ),
@@ -141,7 +141,7 @@ Widget kitSpecimenFieldValidation() => Column(
     _Live<String>(
       'design',
       (v, set) => Fluent2FormField(
-        label: 'Channel name',
+        labelText: 'Channel name',
         validationMessage: 'A channel named design already exists.',
         validationState: Fluent2ValidationState.warning,
         child: Fluent2TextField(value: v, onChanged: set),
@@ -150,7 +150,7 @@ Widget kitSpecimenFieldValidation() => Column(
     _Live<String>(
       'launch-2026',
       (v, set) => Fluent2FormField(
-        label: 'Channel name',
+        labelText: 'Channel name',
         validationMessage: 'The name is free.',
         validationState: Fluent2ValidationState.success,
         child: Fluent2TextField(value: v, onChanged: set),
@@ -168,7 +168,7 @@ Widget kitSpecimenFormSection() =>
         footnote: 'Admins can turn off email for the whole workspace.',
         children: [
           Fluent2FormField(
-            label: 'Display name',
+            labelText: 'Display name',
             required: true,
             child: Fluent2TextField(
               value: name,
@@ -181,7 +181,7 @@ Widget kitSpecimenFormSection() =>
             onChanged: (p) => set((name, p, digest)),
           ),
           Fluent2FormField(
-            label: 'Email digest',
+            labelText: 'Email digest',
             child: Fluent2RadioGroup<String>(
               value: digest,
               onChanged: (d) => set((name, push, d)),

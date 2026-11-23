@@ -169,7 +169,10 @@ void main() {
     const steps = ['Your vehicle', 'Your details', 'Proof of address'];
 
     testWidgets('says the step in words below 600', (tester) async {
-      await _app(tester, const CivicStepIndicator(steps: steps, current: 1));
+      await _app(
+        tester,
+        const CivicStepIndicator(steps: steps, currentStep: 1),
+      );
       expect(find.text('Step 2 of 3: Your details'), findsOneWidget);
       expect(find.text('Proof of address'), findsNothing);
     });
@@ -180,7 +183,7 @@ void main() {
         tester,
         const SizedBox(
           width: 640,
-          child: CivicStepIndicator(steps: steps, current: 1),
+          child: CivicStepIndicator(steps: steps, currentStep: 1),
         ),
         size: const Size(1024, 768),
       );
@@ -202,7 +205,7 @@ void main() {
           width: 600,
           child: CivicStepIndicator(
             steps: ['Your vehicle', 'Your details', 'Proof of address'],
-            current: 1,
+            currentStep: 1,
           ),
         ),
         size: const Size(1024, 768),
@@ -222,7 +225,7 @@ void main() {
 
   group('the page marks', () {
     testWidgets('that only say the place still show it', (tester) async {
-      await _app(tester, const CivicPageDots(count: 3, index: 1));
+      await _app(tester, const CivicPageDots(pageCount: 3, selectedIndex: 1));
       final marks = find.descendant(
         of: find.byType(CivicPageDots),
         matching: find.byType(DecoratedBox),
@@ -240,7 +243,11 @@ void main() {
       int? shown;
       await _app(
         tester,
-        CivicPageDots(count: 5, index: 1, onChanged: (p) => shown = p),
+        CivicPageDots(
+          pageCount: 5,
+          selectedIndex: 1,
+          onPageChanged: (p) => shown = p,
+        ),
       );
       expect(find.text('2 of 5'), findsOneWidget);
       final current = tester
@@ -253,7 +260,10 @@ void main() {
     });
 
     testWidgets('are 24 wide and 48 tall to a pointer', (tester) async {
-      await _app(tester, CivicPageDots(count: 3, index: 0, onChanged: (_) {}));
+      await _app(
+        tester,
+        CivicPageDots(pageCount: 3, selectedIndex: 0, onPageChanged: (_) {}),
+      );
       final mark = tester.getSize(find.bySemanticsLabel('Page 2 of 3'));
       expect(mark.width, greaterThanOrEqualTo(24));
       expect(mark.height, greaterThanOrEqualTo(48));

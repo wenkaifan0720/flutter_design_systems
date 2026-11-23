@@ -163,16 +163,9 @@ class FrostedSheetShell extends StatelessWidget {
         );
 
   /// The foot's acts laid out as the source's `.btn-row`: each takes an
-  /// even share of the width, the gap of the width apart.
-  static Widget footOf(List<Widget> acts) => Builder(
-    builder: (context) => Row(
-      spacing: FrostedBreakpoints.gap(context),
-      // One top and one bottom: each act shows the size the largest asks for.
-      children: [
-        for (final act in FrostedActRow.wrap(acts)) Expanded(child: act),
-      ],
-    ),
-  );
+  /// even share of the width, the gap of the width apart; when one doesn't
+  /// fit its share they stack, the confirming one (the last) on top.
+  static Widget footOf(List<Widget> acts) => FrostedActBar(acts);
 
   /// The body's parts in order, a hairline between two consecutive
   /// [FrostedOption]s (`.opt + .opt { border-top }`): drawn on the later

@@ -100,7 +100,7 @@ class TermButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final stroke = termStroke(theme, grid);
+    final stroke = termStrokeWidth(theme, grid);
     final keys = shortcut == null || !termKeysShown(context)
         ? null
         : termKeyLabel(shortcut!);
@@ -192,28 +192,37 @@ class TermButton extends StatelessWidget {
                   cursorColor: theme.accent,
                   knockout: theme.onAccent,
                   hollow: filled,
+                  spansHeight: true,
                 ),
-                child: SizedBox(
-                  height: grid.lineHeight,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: grid.lineHeight),
                   child: Padding(
                     padding: EdgeInsetsDirectional.symmetric(
                       horizontal: grid.cols(2),
                     ),
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textStyle
-                          .merge(own.textStyle)
-                          .copyWith(color: own.foreground ?? words),
+                    // Given more width than its words (a dialog's stacked
+                    // keys, each as wide as the dialog), the words stand in
+                    // the middle, between the brackets. Given less, they
+                    // wrap onto more lines and the brackets grow with them,
+                    // as a Material button's label wraps: an action is never
+                    // cut short.
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: theme.textStyle
+                            .merge(own.textStyle)
+                            .copyWith(color: own.foreground ?? words),
+                      ),
                     ),
                   ),
                 ),
               );
               if (keys == null) return face;
-              // Where the line is short, the label gives way (it ends in
-              // an ellipsis) and the key stays.
+              // Where the line is short, the label gives way (it wraps)
+              // and the key stays.
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -305,7 +314,7 @@ class TermIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final stroke = termStroke(theme, grid);
+    final stroke = termStrokeWidth(theme, grid);
     final on = selected ?? false;
     return TermTapTarget(
       child: RawButton(

@@ -72,7 +72,7 @@ class _RaisedState extends State<_Raised> {
           'Delete',
           value: 'Deleted',
           icon: LucideIcons.trash2,
-          destructive: true,
+          isDestructiveAction: true,
         ),
       ],
     );

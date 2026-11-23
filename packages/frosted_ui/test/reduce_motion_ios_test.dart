@@ -14,7 +14,8 @@ Widget _host(Widget child) {
   final t = FrostedThemeData.opal();
   return MaterialApp(
     debugShowCheckedModeBanner: false,
-    builder: (context, page) => FrostedHost(light: t, dark: t, child: page!),
+    builder: (context, page) =>
+        FrostedHost(theme: t, darkTheme: t, child: page!),
     home: ColoredBox(
       color: t.colorScheme.background,
       child: Center(child: SizedBox(width: 320, child: child)),

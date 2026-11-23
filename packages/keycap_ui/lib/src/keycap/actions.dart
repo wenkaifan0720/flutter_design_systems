@@ -24,7 +24,7 @@ export 'package:ui_core/ui_core.dart' show RawSplitAction;
 /// ([expand]); from 600 each keeps its own width.
 ///
 /// ```dart
-/// KeycapToolbar(semanticLabel: 'Formatting', children: [KeycapIconButton(icon: const Icon(LucideIcons.bold), semanticLabel: 'Bold', selected: bold, onPressed: toggleBold)])
+/// KeycapToolbar(semanticLabel: 'Formatting', children: [KeycapIconButton(icon: const Icon(LucideIcons.bold), semanticLabel: 'Bold', isSelected: bold, onPressed: toggleBold)])
 /// ```
 class KeycapToolbar extends StatelessWidget {
   /// A cluster of [children].

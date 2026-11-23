@@ -234,7 +234,7 @@ class FrostedHueDot extends StatelessWidget {
 /// One choice of a [FrostedMenu]: its [value], its [label], an optional
 /// [hue] swatch and quiet [trailing] note, the check when [checked], whether
 /// it can be chosen ([enabled]; a disabled one stands faded and inert),
-/// whether it is a loss ([destructive], its words in the over ink, as the
+/// whether it is a loss ([isDestructiveAction], its words in the over ink, as the
 /// action sheet sets one), and the walkthrough [key] set on its row.
 @immutable
 class FrostedMenuItem<T> {
@@ -246,7 +246,7 @@ class FrostedMenuItem<T> {
     this.trailing,
     this.checked = false,
     this.enabled = true,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.key,
   });
 
@@ -270,7 +270,7 @@ class FrostedMenuItem<T> {
 
   /// Whether choosing it loses something (Delete): its words stand in the
   /// over ink.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// The walkthrough key set on its row.
   final Key? key;
@@ -299,13 +299,15 @@ class FrostedMenu<T> extends StatelessWidget {
     this.width,
     super.key,
   }) : _rows = null,
-       _place = null;
+       _place = null,
+       _focused = null;
 
   // A menu [show] raises: its rows take these focus nodes, which its keys
   // move between (_MenuKeys).
   const FrostedMenu._keyed(
     this._rows,
-    this._place, {
+    this._place,
+    this._focused, {
     required this.items,
     required this.onSelected,
     this.title,
@@ -314,6 +316,10 @@ class FrostedMenu<T> extends StatelessWidget {
   });
 
   final List<FocusNode>? _rows;
+
+  // The row that takes the focus as it mounts: the chosen one, when keys
+  // opened the menu (_MenuKeys).
+  final int? _focused;
 
   // The one row a menu [show] raises lights: where the keys or the pointer
   // last went (_MenuKeys).
@@ -492,11 +498,12 @@ class FrostedMenu<T> extends StatelessWidget {
                     index: i,
                     place: _place,
                     focusNode: _rows?[i],
+                    autofocus: i == _focused,
                     label: item.label,
                     hue: item.hue,
                     end: item.trailing,
                     checked: item.checked,
-                    destructive: item.destructive,
+                    destructive: item.isDestructiveAction,
                     onTap: item.enabled ? () => onSelected(item.value) : null,
                   ),
               ],
@@ -538,10 +545,14 @@ class _MenuRow extends StatelessWidget {
     this.hue,
     this.end,
     this.focusNode,
+    this.autofocus = false,
     super.key,
   });
 
   final bool destructive;
+
+  // Whether the row takes the focus as it mounts.
+  final bool autofocus;
   final int index;
   final _MenuPlace? place;
   final FocusNode? focusNode;
@@ -618,6 +629,7 @@ class _MenuRow extends StatelessWidget {
       child: FrostedPressable(
         onPressed: onTap,
         focusNode: focusNode,
+        autofocus: autofocus,
         label: label,
         selected: checked,
         radius: FrostedChromeMetrics.menuItemRadius,
@@ -759,16 +771,9 @@ class _MenuKeysState<T> extends State<_MenuKeys<T>> {
     _menu.requestFocus();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    // The rows mount in this frame; focus one once they have.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final start = widget.keyed ? (_chosen ?? _step(-1, 1)) : null;
-      (start == null ? _menu : _rows[start]).requestFocus();
-    });
-  }
+  // Opened by a key, the chosen row (else the first) takes the focus as it
+  // mounts; opened by a pointer, the menu holds it.
+  late final int? _start = widget.keyed ? (_chosen ?? _step(-1, 1)) : null;
 
   @override
   void didUpdateWidget(_MenuKeys<T> old) {
@@ -904,11 +909,13 @@ class _MenuKeysState<T> extends State<_MenuKeys<T>> {
   @override
   Widget build(BuildContext context) => Focus(
     focusNode: _menu,
+    autofocus: _start == null,
     includeSemantics: false,
     onKeyEvent: _key,
     child: FrostedMenu<T>._keyed(
       _rows,
       _place,
+      _start,
       items: widget.items,
       title: widget.title,
       label: widget.label,

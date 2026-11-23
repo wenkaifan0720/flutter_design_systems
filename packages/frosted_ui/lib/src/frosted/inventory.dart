@@ -101,8 +101,8 @@ final DesignInventory frostedInventory = DesignInventory(
           FrostedButtonSegment('i', 'Italic'),
         ],
         selected: {'b'},
-        multiple: true,
-        onChanged: _drop,
+        multiSelectionEnabled: true,
+        onSelectionChanged: _drop,
       ),
     ),
     DesignInventoryEntry.present(
@@ -121,31 +121,31 @@ final DesignInventory frostedInventory = DesignInventory(
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
-      (context) => const FrostedTextField(label: 'Name', onChanged: _drop),
+      (context) => const FrostedTextField(labelText: 'Name', onChanged: _drop),
     ),
     DesignInventoryEntry.present(
       'TextArea',
-      (context) => const FrostedTextArea(label: 'Notes', onChanged: _drop),
+      (context) => const FrostedTextArea(labelText: 'Notes', onChanged: _drop),
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (context) => const FrostedSearchField(hint: 'Search'),
+      (context) => const FrostedSearchField(hintText: 'Search'),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
-      (context) => const FrostedPasswordField(label: 'Password'),
+      (context) => const FrostedPasswordField(labelText: 'Password'),
     ),
     DesignInventoryEntry.present(
       'InputGroup',
       (context) => const FrostedInputGroup(
-        label: 'Website',
+        labelText: 'Website',
         prefix: Text('https://'),
         suffix: Text('.com'),
       ),
     ),
     DesignInventoryEntry.present(
       'InputOtp',
-      (context) => const FrostedInputOtp(label: 'Code'),
+      (context) => const FrostedInputOtp(labelText: 'Code'),
     ),
     DesignInventoryEntry.present(
       'NumberField',
@@ -154,7 +154,7 @@ final DesignInventory frostedInventory = DesignInventory(
       (context) => const FrostedNumberField(
         value: 250,
         onChanged: _drop,
-        label: 'the budget',
+        labelText: 'the budget',
         note: 'a month',
         money: true,
       ),
@@ -162,7 +162,7 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Select',
       (context) => const FrostedSelect<String>(
-        label: 'Size',
+        labelText: 'Size',
         value: 'm',
         options: [
           FrostedSelectOption('s', 'Small'),
@@ -174,14 +174,14 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Combobox',
       (context) => const FrostedCombobox<String>(
-        label: 'Country',
+        labelText: 'Country',
         options: ['Canada', 'Chile', 'Japan', 'Portugal'],
       ),
     ),
     DesignInventoryEntry.present(
       'MultiSelect',
       (context) => const FrostedMultiSelect<String>(
-        label: 'Tags',
+        labelText: 'Tags',
         values: ['travel'],
         options: ['food', 'travel', 'work'],
         onChanged: _drop,
@@ -195,7 +195,7 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'RadioGroup',
       (context) => const FrostedRadioGroup<String>(
-        label: 'Plan',
+        labelText: 'Plan',
         value: 'a',
         options: [FrostedRadio('a', 'Monthly'), FrostedRadio('b', 'Yearly')],
         onChanged: _drop,
@@ -241,7 +241,7 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'FileUpload',
       (context) =>
-          const FrostedFileUpload(label: 'Attachments', onPressed: _none),
+          const FrostedFileUpload(labelText: 'Attachments', onPressed: _none),
     ),
     DesignInventoryEntry.present(
       'DatePicker',
@@ -287,8 +287,8 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'FormField',
       (context) => const FrostedFormField(
-        label: 'Notify me',
-        helper: 'Pick at least one',
+        labelText: 'Notify me',
+        helperText: 'Pick at least one',
         // A chip is a control of its own, not the field's one value.
         mergeSemantics: false,
         child: FrostedChip('Email', onPressed: _none),
@@ -357,7 +357,7 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'PageDots',
       (context) =>
-          const FrostedPageDots(count: 4, selectedIndex: 0, label: 'Page'),
+          const FrostedPageDots(pageCount: 4, selectedIndex: 0, label: 'Page'),
     ),
     DesignInventoryEntry.present(
       'MenuBar',

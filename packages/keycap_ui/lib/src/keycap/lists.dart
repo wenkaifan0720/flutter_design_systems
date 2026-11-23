@@ -258,7 +258,7 @@ class KeycapListTile extends StatelessWidget {
     this.onTap,
     this.selected = false,
     this.showChevron,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.enabled = true,
     this.maxTitleLines,
     this.maxSubtitleLines = 1,
@@ -303,7 +303,7 @@ class KeycapListTile extends StatelessWidget {
   final bool? showChevron;
 
   /// Whether pressing it destroys something.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether the row is on.
   final bool enabled;
@@ -329,7 +329,7 @@ class KeycapListTile extends StatelessWidget {
           layered.foreground ??
           (off
               ? c.inkDisabled
-              : destructive
+              : isDestructiveAction
               ? c.dangerInk
               : c.ink);
       final chevron =
@@ -385,7 +385,7 @@ class KeycapListTile extends StatelessWidget {
                     size: 20,
                     color: off
                         ? c.inkDisabled
-                        : destructive
+                        : isDestructiveAction
                         ? c.dangerInk
                         : c.inkMuted,
                   ),

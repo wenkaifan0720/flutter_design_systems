@@ -3,6 +3,8 @@
 /// [StudioListTile] (a row: a press sinks a slot into the glass under it).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -52,25 +54,48 @@ class StudioSectionHeader extends StatelessWidget {
             ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 24),
-          child: Row(
-            children: [
-              Flexible(
-                flex: 0,
-                child: StudioLegend(text, color: layered.foreground),
-              ),
-              const SizedBox(width: StudioSpacing.medium),
-              const Expanded(child: StudioGroove()),
-              if (trailing != null) ...[
-                const SizedBox(width: StudioSpacing.small),
-                trailing!,
-              ],
-            ],
+          // The legend takes the width its words need, up to the line less a
+          // groove's least; longer (larger text on a phone), it wraps. Beside
+          // an action, it shares the line with the groove.
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final legend = StudioLegend(
+                text,
+                color: layered.foreground,
+                maxLines: null,
+              );
+              return Row(
+                children: [
+                  if (trailing == null)
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: math.max(
+                          0,
+                          box.maxWidth - StudioSpacing.medium - _leastGroove,
+                        ),
+                      ),
+                      child: legend,
+                    )
+                  else
+                    Flexible(child: legend),
+                  const SizedBox(width: StudioSpacing.medium),
+                  const Expanded(child: StudioGroove()),
+                  if (trailing != null) ...[
+                    const SizedBox(width: StudioSpacing.small),
+                    trailing!,
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),
     );
   }
 }
+
+// The least of a section header's groove beside its legend.
+const double _leastGroove = 24;
 
 /// Rows on one pane of glass, parted by fine rules that start where the
 /// rows' words do. A [header] stands above it as a [StudioSectionHeader], a

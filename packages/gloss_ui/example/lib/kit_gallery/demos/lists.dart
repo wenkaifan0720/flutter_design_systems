@@ -76,7 +76,7 @@ class _RowsState extends State<_Rows> {
         children: [
           GlossListTile(
             title: 'Delete account',
-            destructive: true,
+            isDestructiveAction: true,
             onTap: () {},
           ),
           const GlossListTile(

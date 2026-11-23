@@ -344,6 +344,7 @@ class GlossSurface extends StatelessWidget {
         face,
         GlossTheme.of(context).colors.brightness,
         highContrast: highContrast,
+        rtl: Directionality.maybeOf(context) == TextDirection.rtl,
       ),
       child: Transform.translate(
         offset: Offset(0, travel),
@@ -377,21 +378,32 @@ RRect glossOutline(Rect rect, double? radius) => RRect.fromRectAndRadius(
 );
 
 class _FacePainter extends CustomPainter {
-  _FacePainter(this.face, this.brightness, {required this.highContrast});
+  _FacePainter(
+    this.face,
+    this.brightness, {
+    required this.highContrast,
+    required this.rtl,
+  });
 
   final Brightness brightness;
 
   final GlossFace face;
   final bool highContrast;
+  final bool rtl;
 
   @override
   void paint(Canvas canvas, Size size) {
-    paintGlossFace(
+    _fromStart(
       canvas,
       Offset.zero & size,
-      face,
-      brightness: brightness,
-      highContrast: highContrast,
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        Offset.zero & size,
+        face,
+        brightness: brightness,
+        highContrast: highContrast,
+      ),
     );
   }
 
@@ -399,7 +411,8 @@ class _FacePainter extends CustomPainter {
   bool shouldRepaint(_FacePainter old) =>
       old.face != face ||
       old.brightness != brightness ||
-      old.highContrast != highContrast;
+      old.highContrast != highContrast ||
+      old.rtl != rtl;
 }
 
 /// Paints [face] in [rect] on [canvas]: what [GlossSurface] draws, for a
@@ -769,6 +782,22 @@ void _paintReflection(
     ..restore();
 }
 
+// Gloss is lit once, from above and the reading start: right to left, what
+// [paint] draws in [rect] (a face, even about its middle) is turned about
+// its middle, so its light runs from the right.
+void _fromStart(Canvas canvas, Rect rect, bool rtl, VoidCallback paint) {
+  if (!rtl) {
+    paint();
+    return;
+  }
+  canvas
+    ..save()
+    ..translate(rect.center.dx * 2, 0)
+    ..scale(-1, 1);
+  paint();
+  canvas.restore();
+}
+
 void _shadeGlaze(Canvas canvas, RRect shape, Color color, double strength) {
   final pigment = Color.lerp(
     const Color(0xFF14212E),
@@ -861,6 +890,7 @@ class GlossGlazeHighlight extends StatelessWidget {
         inset,
         inside,
         tint,
+        rtl: Directionality.maybeOf(context) == TextDirection.rtl,
       ),
       child: content,
     );
@@ -888,8 +918,9 @@ class _GlazePainter extends CustomPainter {
     this.radius,
     this.inset,
     this.inside,
-    this.tint,
-  );
+    this.tint, {
+    required this.rtl,
+  });
   final Offset value;
   final Color color;
   final Brightness brightness;
@@ -897,6 +928,7 @@ class _GlazePainter extends CustomPainter {
   final double inset;
   final bool inside;
   final bool tint;
+  final bool rtl;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -909,7 +941,13 @@ class _GlazePainter extends CustomPainter {
     final face = glossOutline(box, radius);
     final day = brightness == Brightness.light;
     if (!day) _shadeGlaze(canvas, face, color, light * (tint ? 1.18 : 1));
-    _paintReflection(canvas, face, light, pale: day, pressure: value.dy);
+    _fromStart(
+      canvas,
+      face.outerRect,
+      rtl,
+      () =>
+          _paintReflection(canvas, face, light, pale: day, pressure: value.dy),
+    );
   }
 
   @override
@@ -920,7 +958,8 @@ class _GlazePainter extends CustomPainter {
       old.radius != radius ||
       old.inset != inset ||
       old.inside != inside ||
-      old.tint != tint;
+      old.tint != tint ||
+      old.rtl != rtl;
 }
 
 /// [GlossSurface] that moves to each new [face] on a spring from wherever

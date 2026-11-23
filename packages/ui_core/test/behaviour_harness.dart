@@ -126,3 +126,24 @@ Rect globalRect(SemanticsNode node, double ratio) {
     rect.bottom / ratio,
   );
 }
+
+/// A heading and the text under it, as a page shows them: two nodes, the
+/// heading a header.
+Widget headingAndText() => Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Semantics(header: true, child: const Text('Tide tables')),
+    const Text('Low water at 7:10'),
+  ],
+);
+
+/// That [headingAndText]'s heading and text are two nodes, as with nothing
+/// round them: a wrapper's own node would merge them into one header.
+void expectHeadingAndTextApart(WidgetTester tester) {
+  final heading = tester.getSemantics(find.text('Tide tables'));
+  final text = tester.getSemantics(find.text('Low water at 7:10'));
+  expect(heading.label, 'Tide tables');
+  expect(heading.flagsCollection.isHeader, isTrue);
+  expect(text.label, 'Low water at 7:10');
+  expect(text.flagsCollection.isHeader, isFalse);
+}

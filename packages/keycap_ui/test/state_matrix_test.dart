@@ -122,7 +122,7 @@ final _specs = <_Spec>[
     build: (on) => SizedBox(
       width: 280,
       child: KeycapSelect<String>(
-        label: 'Sort by',
+        labelText: 'Sort by',
         items: const [
           KeycapSelectItem(value: 'edited', label: 'Last edited'),
           KeycapSelectItem(value: 'title', label: 'Title'),
@@ -307,9 +307,9 @@ void main() {
       Widget field({String? error, bool enabled = true}) => SizedBox(
         width: 320,
         child: KeycapTextField(
-          label: 'Folder name',
-          helper: error == null ? 'Shown in the sidebar' : null,
-          error: error,
+          labelText: 'Folder name',
+          helperText: error == null ? 'Shown in the sidebar' : null,
+          errorText: error,
           enabled: enabled,
         ),
       );

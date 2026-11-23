@@ -1,0 +1,1195 @@
+# Data-driven fixes for `dart fix`: what moves callers off the names a release renames. look:package writes this file
+# to the package's lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after
+# (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+  # 0.3.0: a field's labelText, hintText, helperText and errorText, as on InputDecoration.
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'label'
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapTimePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  # 0.3.0: KeycapInputGroup's prefixText and suffixText, as on InputDecoration.
+  - title: "Rename to 'prefixText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'prefix'
+        newName: 'prefixText'
+  - title: "Rename to 'prefixText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'prefix'
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'prefixText'
+  - title: "Rename to 'suffixText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'suffix'
+        newName: 'suffixText'
+  - title: "Rename to 'suffixText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'suffix'
+      inClass: 'KeycapInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'suffixText'
+  # 0.3.0: a field's labelText, hintText, helperText and errorText, as on InputDecoration.
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'hint'
+      inClass: 'KeycapCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'helper'
+      inClass: 'KeycapFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'error'
+      inClass: 'KeycapFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  # 0.3.0: KeycapHost's theme and darkTheme, as on MaterialApp.
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'light'
+      inClass: 'KeycapHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'dark'
+      inClass: 'KeycapHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  # 0.3.0: KeycapStepProgress's currentStep, as on Stepper.
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapStepProgress'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'current'
+        newName: 'currentStep'
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'current'
+      inClass: 'KeycapStepProgress'
+    changes:
+      - kind: 'rename'
+        newName: 'currentStep'
+  # 0.3.0: isDestructiveAction, as on CupertinoDialogAction and RawMenuEntry.
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'destructive'
+      inClass: 'KeycapListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapMenuRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'destructive'
+      inClass: 'KeycapMenuRow'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapSheetAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'destructive'
+      inClass: 'KeycapSheetAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  # 0.3.0: the navigation's onDestinationSelected, as on NavigationBar.
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapScaffold'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'onSelected'
+      inClass: 'KeycapScaffold'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapNavigationBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'onSelected'
+      inClass: 'KeycapNavigationBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'onSelected'
+      inClass: 'KeycapNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapSideNavigation'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'onSelected'
+      inClass: 'KeycapSideNavigation'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  # 0.3.0: KeycapIconButton's isSelected, as on IconButton.
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'selected'
+      inClass: 'KeycapIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'isSelected'
+  # 0.3.0: KeycapDisclosure's expanded, initiallyExpanded and onExpansionChanged, as on ExpansionTile.
+  - title: "Rename to 'expanded'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'open'
+        newName: 'expanded'
+  - title: "Rename to 'expanded'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'open'
+      inClass: 'KeycapDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'expanded'
+  - title: "Rename to 'initiallyExpanded'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'initiallyOpen'
+        newName: 'initiallyExpanded'
+  - title: "Rename to 'initiallyExpanded'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'initiallyOpen'
+      inClass: 'KeycapDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'initiallyExpanded'
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onExpansionChanged'
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'onChanged'
+      inClass: 'KeycapDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'onExpansionChanged'
+  # 0.3.0: KeycapRadioGroup's groupValue, as on RadioGroup.
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'value'
+        newName: 'groupValue'
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'value'
+      inClass: 'KeycapRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'groupValue'
+  # 0.3.0: the page names: pageCount, page and onPageChanged (PageView).
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'onChanged'
+      inClass: 'KeycapPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'count'
+      inClass: 'KeycapPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'index'
+        newName: 'page'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'index'
+      inClass: 'KeycapPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'page'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: ''
+      inClass: 'KeycapPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      field: 'onChanged'
+      inClass: 'KeycapPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+  # 0.3.0: the palette's hintText, as KeycapCommandPalette's.
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      function: 'showKeycapCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  # 0.3.0: KeycapTextTheme.from; in Flutter, of looks a value up from a BuildContext.
+  - title: "Rename to 'KeycapTextTheme.from'"
+    date: 2026-11-22
+    element:
+      uris: ['keycap_ui.dart', 'keycap_parts.dart']
+      constructor: 'of'
+      inClass: 'KeycapTextTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'from'

@@ -1,0 +1,1054 @@
+# studio_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.3.0 renames. test_fixes/ holds
+# their before and after (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'helper'
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'obscure'
+      inClass: 'StudioInput'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'light'
+      inClass: 'StudioHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'dark'
+      inClass: 'StudioHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'light'
+      inClass: 'StudioPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'dark'
+      inClass: 'StudioPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'activeIndex'
+      inClass: 'StudioPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioStepProgress'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'current'
+        newName: 'currentStep'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'current'
+      inClass: 'StudioStepProgress'
+    changes:
+      - kind: 'rename'
+        newName: 'currentStep'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'label'
+      inClass: 'StudioFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'hint'
+      inClass: 'StudioFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      constructor: ''
+      inClass: 'StudioFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['studio_ui.dart']
+      field: 'error'
+      inClass: 'StudioFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'

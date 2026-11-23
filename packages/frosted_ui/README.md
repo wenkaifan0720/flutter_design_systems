@@ -40,8 +40,8 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     builder: (context, child) => FrostedHost(
-      light: FrostedThemeData.opal(),
-      dark: FrostedThemeData.opal(Brightness.dark),
+      theme: FrostedThemeData.opal(),
+      darkTheme: FrostedThemeData.opal(Brightness.dark),
       child: child!,
     ),
     home: const FrostedScaffold(
@@ -56,7 +56,7 @@ Under a `CupertinoApp` it is the same `builder:`:
 
 ```dart
 CupertinoApp(
-  builder: (context, child) => FrostedHost(light: FrostedThemeData.glacier(), dark: FrostedThemeData.glacier(Brightness.dark), child: child!),
+  builder: (context, child) => FrostedHost(theme: FrostedThemeData.glacier(), darkTheme: FrostedThemeData.glacier(Brightness.dark), child: child!),
   home: const TodayPage(),
 );
 ```
@@ -66,7 +66,7 @@ And under a bare `WidgetsApp`, which asks for its colour and how to build a rout
 ```dart
 WidgetsApp(
   color: const Color(0xFF0B0B0F),
-  builder: (context, child) => FrostedHost(light: FrostedThemeData.jade(), dark: FrostedThemeData.jade(Brightness.dark), child: child!),
+  builder: (context, child) => FrostedHost(theme: FrostedThemeData.jade(), darkTheme: FrostedThemeData.jade(Brightness.dark), child: child!),
   pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
       PageRouteBuilder<T>(settings: settings, pageBuilder: (context, _, _) => builder(context)),
   home: const TodayPage(),
@@ -127,13 +127,13 @@ A text field and a select, each with its label over a well:
 
 ```dart
 FrostedTextField(
-  label: 'Name',
-  hint: 'What are you saving for?',
+  labelText: 'Name',
+  hintText: 'What are you saving for?',
   value: name,
   onChanged: (value) => setState(() => name = value),
 );
 FrostedSelect<String>(
-  label: 'Room',
+  labelText: 'Room',
   options: const [FrostedSelectOption('k', 'Kitchen'), FrostedSelectOption('s', 'Study')],
   value: room,
   onChanged: (value) => setState(() => room = value),

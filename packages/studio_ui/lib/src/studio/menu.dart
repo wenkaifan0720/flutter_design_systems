@@ -415,7 +415,7 @@ class StudioCommandPalette extends StatelessWidget {
     fieldBuilder: (context, field) => StudioTextField(
       controller: field.controller,
       focusNode: field.focusNode,
-      hint: hint,
+      hintText: hint,
       semanticLabel: hint,
       textCapitalization: TextCapitalization.none,
       prefixIcon: const Icon(LucideIcons.search),

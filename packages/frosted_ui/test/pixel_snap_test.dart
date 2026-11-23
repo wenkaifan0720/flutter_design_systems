@@ -26,7 +26,7 @@ void main() {
         MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: (context, page) =>
-              FrostedHost(light: t, dark: t, child: page!),
+              FrostedHost(theme: t, darkTheme: t, child: page!),
           home: ColoredBox(
             color: t.colorScheme.background,
             child: Align(

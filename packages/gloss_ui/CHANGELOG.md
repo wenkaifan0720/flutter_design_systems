@@ -1,3 +1,30 @@
+## 0.3.1
+
+- The row the pointer or the keys are on in a `GlossCombobox`'s or a `GlossSelect`'s list, a menu and the command palette stands on a plate plainly deeper than the rows beside it, by day as by night. By day it stood about 3/255 from them.
+- By night a key that destroys (a dialog's "Remove recipe") is a pearl moulded in ruby, its light words at 4.5:1 or more, plainly red beside a neutral key at rest, hovered, focused and pressed. Its rose words read at about 2.6:1 on the slate pearl, nearly lost beside its neighbour. By day it is unchanged.
+- By night a toast's action ("Undo") is a lighter jade that reads at 4.5:1 on the toast. It read at about 3.1:1.
+- `GlossDatePicker`'s and `GlossDateRangePicker`'s calendar opens clear of the whole field, its label too, as Material's menus do: above a field low on a wide window it covered the label. One month stands at the field's width, edge to edge with it, where on a phone it ran about 7 past each side.
+- Right to left, Gloss's light comes from the right, the reading start: the glaze on a lit row, a focused field's lip, a key, a switch, a checkbox, a slider and a range runs from the right, mirrored. It ran from the left in both directions.
+- The calendar's chosen day, and a range's two ends, sit in a well lit jade, as an on switch's groove and a slider's run do, rather than as a raised gel bead, the key Gloss keeps for a screen's one action.
+
+## 0.3.0
+
+- Needs ui_core 0.5.1.
+- **Breaking:** parameters and fields take the names Flutter's widgets give the same jobs. `dart fix --apply` moves each call and read below; the old names are gone.
+- Fields: `label`, `hint`, `helper` and `error` are `labelText`, `hintText`, `helperText` and `errorText`, as on `InputDecoration`: `GlossTextField`, `GlossInput`, `GlossSearchField`, `GlossPasswordField`, `GlossInputGroup`, `GlossTextArea`, `GlossSelect`, `GlossCombobox`, `GlossTagInput`, `GlossDatePicker`, `GlossDateRangePicker`, `GlossFileDrop`, `GlossFieldMessage`, `GlossCommandPalette` and `showGlossCommandPalette`. `GlossInput.obscure` is `obscureText`, as on `TextField`.
+- `GlossHost` and `GlossPreview`: `light` and `dark` are `theme` and `darkTheme`, as on `MaterialApp`. `GlossPreview.activeIndex` is `selectedIndex`.
+- `GlossAppShell`, `GlossScaffold`, `GlossNavigationBar`, `GlossNavigationRail` and `GlossSidebar`: `onSelected` is `onDestinationSelected`, as on `NavigationBar`. `GlossTabBar.onSelected` is `onTap`, as on `TabBar`.
+- `GlossDialogAction`: `primary` and `destructive` are `isDefaultAction` and `isDestructiveAction`, as on `CupertinoDialogAction`. `GlossListTile.destructive` is `isDestructiveAction` too.
+- `GlossIconButton.selected` is `isSelected` (`IconButton`), `GlossDisclosure.onChanged` is `onExpansionChanged` (`ExpansionTile`), `GlossStepProgress.current` is `currentStep` (`Stepper`), `GlossBadge.max` is `maxCount` (`Badge.count`), and `GlossRadioGroup.value` is `groupValue` (`RadioGroup`).
+- `GlossPageDots`: `count`, `index` and `onChanged` are `pageCount`, `page` and `onPageChanged`, the names `GlossPagination` takes. `GlossPagination.onChanged` is `onPageChanged` (`PageView`).
+- `GlossTextTheme.of` is `GlossTextTheme.from`: in Flutter, `of` looks a value up from a `BuildContext`.
+- **Breaking:** `GlossLineChart`, `GlossAreaChart` and `GlossBarChart` take ui_core's `valueFormat` in place of `valueLabel`, which is gone (no fix moves it: the two are different kinds of value). For `valueLabel: (v) => '${v.round()} h'`, pass `valueFormat: const DesignChartValueFormat(suffix: ' h', fractionDigits: 0)`, or `DesignChartValueFormat.custom` for words of your own. Left unset, the figures are Gloss's own, compact past a thousand (1.2k). The format writes the value axis and what a screen reader hears in the reader's language, and the axis stands as wide as its widest label at the reader's text size.
+- A field's label, help and error (`GlossTextField`, `GlossPasswordField`, `GlossInputGroup`, `GlossSelect`, `GlossCombobox`, `GlossTagInput`, `GlossDatePicker`, `GlossDateRangePicker`) are read through ui_core's `RawInputDecorator`: a screen reader hears them on the field itself, its help and then its error, and hears an error when it comes. Before, the help and the error were loose words after the field.
+- `GlossCombobox`'s and `GlossTagInput`'s text input reads as expanded while its list shows and collapsed once it closes, as a combo box does. The combobox's pearl bead turns with its list, where it turned with the focus and stayed turned after Escape closed the list.
+- On a phone `showGlossSheet`'s and `GlossSheetPage`'s panel stands on the screen's foot, rounded at its top corners only. It used to run a corner's height past the foot, out of the screen.
+- At large text on a phone a `GlossStepper`'s figure shrinks to fit its readout, a `GlossTag`'s words end in an ellipsis, and a `GlossSplitButton`'s main half gives way (its words end in an ellipsis) before its menu half. Before, each ran past its edge.
+- On a phone a toast stands above `GlossScaffold`'s tab bar (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its navigation bar. It used to cover the bar.
+
 ## 0.2.1
 
 - Needs ui_core 0.4.1.

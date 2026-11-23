@@ -21,8 +21,8 @@ import 'package:frosted_ui/src/frosted/internal/panel.dart';
 Widget _host(FrostedThemeData t, Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: page!,
   ),
@@ -52,7 +52,7 @@ class _RoomState extends State<_Room> {
 
   @override
   Widget build(BuildContext context) => FrostedSelect<String>(
-    label: 'Room',
+    labelText: 'Room',
     value: _value,
     onChanged: (v) => setState(() => _room = _value = v),
     options: const [

@@ -24,8 +24,8 @@ Widget kitOverlaysDemo(Brightness brightness) => kitScreen(
             ClayDialogAction(
               label: 'Delete',
               onPressed: _atRest,
-              primary: true,
-              destructive: true,
+              isDefaultAction: true,
+              isDestructiveAction: true,
             ),
           ],
         ),
@@ -54,8 +54,8 @@ Widget kitOverlaysDemo(Brightness brightness) => kitScreen(
                       ),
                       ClayDialogAction(
                         label: 'Delete',
-                        primary: true,
-                        destructive: true,
+                        isDefaultAction: true,
+                        isDestructiveAction: true,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
@@ -178,7 +178,7 @@ class _Popovers extends StatelessWidget {
               ],
               builder: (context, toggle, open) => ClayIconButton(
                 onPressed: toggle,
-                selected: open,
+                isSelected: open,
                 icon: const Icon(LucideIcons.ellipsis),
                 tooltip: 'More',
               ),

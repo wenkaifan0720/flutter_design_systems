@@ -37,18 +37,18 @@ class _LiveState extends State<_Live> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       LedgerDatePicker(
-        label: 'Due',
+        labelText: 'Due',
         value: _due,
         mode: LedgerDatePickerMode.dateAndTime,
-        today: kitNow,
+        currentDate: kitNow,
         onChanged: (v) => setState(() => _due = v),
       ),
       const LedgerGap(LedgerSpacing.s16),
       LedgerDatePicker(
-        label: 'Remind me',
+        labelText: 'Remind me',
         value: _due,
         presentation: LedgerDatePickerPresentation.inline,
-        today: kitNow,
+        currentDate: kitNow,
         onChanged: (v) => setState(() => _due = v),
       ),
     ],
@@ -65,11 +65,11 @@ final DateTime _day = DateTime(2026, 11, 4, 9, 30);
 
 /// The way into the search, a link.
 Widget kitSpecimenSearchEntry() =>
-    LedgerSearchEntry(hint: 'Search entries and invoices', onTap: () {});
+    LedgerSearchEntry(hintText: 'Search entries and invoices', onTap: () {});
 
 /// The way into the search with the filters beside it, two in force.
 Widget kitSpecimenSearchEntryFilter() => LedgerSearchEntry(
-  hint: 'Search entries and invoices',
+  hintText: 'Search entries and invoices',
   onTap: () {},
   onFilterPressed: () {},
   filterCount: 2,
@@ -77,7 +77,7 @@ Widget kitSpecimenSearchEntryFilter() => LedgerSearchEntry(
 
 /// The compact line: the due date and time in pills on the dot leader.
 Widget kitSpecimenDateCompact() => LedgerDatePicker(
-  label: 'Due',
+  labelText: 'Due',
   value: _day,
   mode: LedgerDatePickerMode.dateAndTime,
   onChanged: (_) {},
@@ -85,16 +85,16 @@ Widget kitSpecimenDateCompact() => LedgerDatePicker(
 
 /// November on the page, the fourth chosen, the first of the month ringed.
 Widget kitSpecimenDateInline() => LedgerDatePicker(
-  label: 'Due',
+  labelText: 'Due',
   value: _day,
   presentation: LedgerDatePickerPresentation.inline,
-  today: DateTime(2026, 11, 1),
+  currentDate: DateTime(2026, 11, 1),
   onChanged: (_) {},
 );
 
 /// The day and the time as wheels.
 Widget kitSpecimenDateWheel() => LedgerDatePicker(
-  label: 'Due',
+  labelText: 'Due',
   value: _day,
   mode: LedgerDatePickerMode.dateAndTime,
   presentation: LedgerDatePickerPresentation.wheel,

@@ -36,8 +36,8 @@ Future<void> _pump(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (BuildContext context, Widget? page) => FrostedHost(
-        light: FrostedThemeData.preset(preset, Brightness.light),
-        dark: FrostedThemeData.preset(preset, Brightness.dark),
+        theme: FrostedThemeData.preset(preset, Brightness.light),
+        darkTheme: FrostedThemeData.preset(preset, Brightness.dark),
         brightness: brightness,
         child: MediaQuery(
           data: MediaQuery.of(context)

@@ -112,6 +112,10 @@ const _sheet = FrostedActionSheet<String>(
   actions: [
     FrostedActionSheetAction('Share', value: 'share'),
     FrostedActionSheetAction('Duplicate', value: 'duplicate'),
-    FrostedActionSheetAction('Delete', value: 'delete', destructive: true),
+    FrostedActionSheetAction(
+      'Delete',
+      value: 'delete',
+      isDestructiveAction: true,
+    ),
   ],
 );

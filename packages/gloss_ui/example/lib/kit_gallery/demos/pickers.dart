@@ -48,7 +48,7 @@ class _DateFieldsState extends State<_DateFields> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GlossDatePicker(
-          label: 'Cook on',
+          labelText: 'Cook on',
           value: _day,
           firstDate: _first,
           lastDate: _last,
@@ -57,8 +57,8 @@ class _DateFieldsState extends State<_DateFields> {
         ),
         const SizedBox(height: GlossSpacing.regular),
         GlossDateRangePicker(
-          label: 'Plan for',
-          hint: 'Pick the days',
+          labelText: 'Plan for',
+          hintText: 'Pick the days',
           value: _week,
           firstDate: _first,
           lastDate: _last,

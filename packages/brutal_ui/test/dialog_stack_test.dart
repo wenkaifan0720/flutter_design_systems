@@ -44,7 +44,7 @@ void main() {
                             ),
                             BrutalDialogAction(
                               label: 'Save the changes',
-                              primary: true,
+                              isDefaultAction: true,
                               onPressed: () {},
                             ),
                           ],

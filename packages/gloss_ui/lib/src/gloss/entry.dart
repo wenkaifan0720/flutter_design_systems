@@ -17,8 +17,9 @@ import 'feedback.dart' show GlossSpinner;
 import 'fonts.dart';
 import 'internal/chevron.dart';
 import 'internal/entry_parts.dart';
-import 'internal/menu_parts.dart';
+import 'internal/field_frame.dart';
 import 'internal/glaze_state.dart';
+import 'internal/menu_parts.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -70,7 +71,7 @@ mixin _OwnsEntry<W extends StatefulWidget> on State<W> {
 /// field's well, growing from [minLines] as the words run on.
 ///
 /// ```dart
-/// GlossTextArea(label: 'Notes', hint: 'What to remember next time')
+/// GlossTextArea(labelText: 'Notes', hintText: 'What to remember next time')
 /// ```
 class GlossTextArea extends StatelessWidget {
   /// A text area.
@@ -78,10 +79,10 @@ class GlossTextArea extends StatelessWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.enabled = true,
     this.readOnly = false,
@@ -98,16 +99,16 @@ class GlossTextArea extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty area says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well, in the danger ink.
-  final String? error;
+  final String? errorText;
 
   /// Each change of the words.
   final ValueChanged<String>? onChanged;
@@ -131,10 +132,10 @@ class GlossTextArea extends StatelessWidget {
   Widget build(BuildContext context) => GlossTextField(
     controller: controller,
     focusNode: focusNode,
-    label: label,
-    hint: hint,
-    helper: helper,
-    error: error,
+    labelText: labelText,
+    hintText: hintText,
+    helperText: helperText,
+    errorText: errorText,
     onChanged: onChanged,
     enabled: enabled,
     readOnly: readOnly,
@@ -149,7 +150,7 @@ class GlossTextArea extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(IntProperty('minLines', minLines))
       ..add(IntProperty('maxLines', maxLines, defaultValue: null));
   }
@@ -159,7 +160,7 @@ class GlossTextArea extends StatelessWidget {
 /// once there are words, a bead that clears them.
 ///
 /// ```dart
-/// GlossSearchField(hint: 'Search recipes', onChanged: (query) {})
+/// GlossSearchField(hintText: 'Search recipes', onChanged: (query) {})
 /// ```
 class GlossSearchField extends StatefulWidget {
   /// A search field.
@@ -167,7 +168,7 @@ class GlossSearchField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.hint,
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
@@ -184,7 +185,7 @@ class GlossSearchField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// What the empty field says; null: the platform's word for search.
-  final String? hint;
+  final String? hintText;
 
   /// Each change of the query.
   final ValueChanged<String>? onChanged;
@@ -198,7 +199,7 @@ class GlossSearchField extends StatefulWidget {
   /// Whether it takes the focus when it first shows.
   final bool autofocus;
 
-  /// What a screen reader calls it; null: [hint].
+  /// What a screen reader calls it; null: [hintText].
   final String? semanticLabel;
 
   /// This field's own style, over [GlossThemeData.searchFieldStyle].
@@ -225,7 +226,7 @@ class _GlossSearchFieldState extends State<GlossSearchField>
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final words = RawWidgetsLocalizations.of(context);
-    final hint = widget.hint ?? words.searchFieldLabel;
+    final hint = widget.hintText ?? words.searchFieldLabel;
     return _OnFocus(
       focusNode: focusNode,
       builder: (context, focused) {
@@ -281,7 +282,7 @@ class _GlossSearchFieldState extends State<GlossSearchField>
 /// shows and hides the words, keeping the caret where it was.
 ///
 /// ```dart
-/// GlossPasswordField(label: 'Password', onChanged: (value) {})
+/// GlossPasswordField(labelText: 'Password', onChanged: (value) {})
 /// ```
 class GlossPasswordField extends StatefulWidget {
   /// A password field.
@@ -289,10 +290,10 @@ class GlossPasswordField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
@@ -308,16 +309,16 @@ class GlossPasswordField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Each change of the password.
   final ValueChanged<String>? onChanged;
@@ -349,65 +350,60 @@ class _GlossPasswordFieldState extends State<GlossPasswordField>
   @override
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: GlossFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        RawPasswordReveal(
+    return GlossFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      child: RawPasswordReveal(
+        focusNode: focusNode,
+        builder: (context, password) => _OnFocus(
           focusNode: focusNode,
-          builder: (context, password) => _OnFocus(
-            focusNode: focusNode,
-            builder: (context, focused) {
-              final states = {
-                if (!widget.enabled) WidgetState.disabled,
-                if (focused) WidgetState.focused,
-                if (widget.error != null) WidgetState.error,
-              };
-              final layered = DesignStyleOf([
-                widget.style,
-                theme.textFieldStyle,
-              ], states);
-              return GlossEntryWell(
+          builder: (context, focused) {
+            final states = {
+              if (!widget.enabled) WidgetState.disabled,
+              if (focused) WidgetState.focused,
+              if (widget.errorText != null) WidgetState.error,
+            };
+            final layered = DesignStyleOf([
+              widget.style,
+              theme.textFieldStyle,
+            ], states);
+            return GlossEntryWell(
+              focusNode: focusNode,
+              enabled: widget.enabled,
+              face: glossEntryFace(
+                theme,
+                states,
+                fill: layered.fill,
+                edge: layered.edge,
+              ),
+              trailing: GlossIconButton.plain(
+                onPressed: widget.enabled ? password.toggle : null,
+                tooltip: password.toggleLabel,
+                isSelected: !password.obscured,
+                style: _wellBead,
+                icon: Icon(
+                  password.obscured ? LucideIcons.eye : LucideIcons.eyeOff,
+                ),
+              ),
+              child: GlossEntryText(
+                controller: controller,
                 focusNode: focusNode,
+                hint: widget.hintText,
+                obscureText: password.obscured,
                 enabled: widget.enabled,
-                face: glossEntryFace(
-                  theme,
-                  states,
-                  fill: layered.fill,
-                  edge: layered.edge,
-                ),
-                trailing: GlossIconButton.plain(
-                  onPressed: widget.enabled ? password.toggle : null,
-                  tooltip: password.toggleLabel,
-                  selected: !password.obscured,
-                  style: _wellBead,
-                  icon: Icon(
-                    password.obscured ? LucideIcons.eye : LucideIcons.eyeOff,
-                  ),
-                ),
-                child: GlossEntryText(
-                  controller: controller,
-                  focusNode: focusNode,
-                  hint: widget.hint,
-                  obscureText: password.obscured,
-                  enabled: widget.enabled,
-                  autofillHints: widget.autofillHints,
-                  keyboardType: TextInputType.visiblePassword,
-                  semanticLabel: widget.label,
-                  onChanged: widget.onChanged,
-                  onSubmitted: widget.onSubmitted,
-                  textStyle: layered.textStyle,
-                ),
-              );
-            },
-          ),
+                autofillHints: widget.autofillHints,
+                keyboardType: TextInputType.visiblePassword,
+                semanticLabel: widget.labelText,
+                onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
+                textStyle: layered.textStyle,
+              ),
+            );
+          },
         ),
-        GlossFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -416,7 +412,7 @@ class _GlossPasswordFieldState extends State<GlossPasswordField>
 /// the well's ends (kg, https://), or a glyph, a bead.
 ///
 /// ```dart
-/// GlossInputGroup(label: 'Weight', suffixText: 'kg', keyboardType: TextInputType.number)
+/// GlossInputGroup(labelText: 'Weight', suffixText: 'kg', keyboardType: TextInputType.number)
 /// ```
 class GlossInputGroup extends StatefulWidget {
   /// A field with add-ons.
@@ -424,10 +420,10 @@ class GlossInputGroup extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.prefixText,
     this.suffixText,
     this.leading,
@@ -448,16 +444,16 @@ class GlossInputGroup extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Words engraved at the well's start, behind a seam (https://).
   final String? prefixText;
@@ -526,86 +522,81 @@ class _GlossInputGroupState extends State<GlossInputGroup>
   @override
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: GlossFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        DesignInputGroup(
-          focusNode: focusNode,
-          enabled: widget.enabled,
-          isError: widget.error != null,
-          builder: (context, states, child) {
-            final layered = DesignStyleOf([
-              widget.style,
-              theme.textFieldStyle,
-            ], states);
-            return SizedBox(
-              height: theme.controlHeight,
-              child: GlazePointerSurface(
-                enabled: widget.enabled,
-                face: glossEntryFace(
-                  theme,
-                  states,
-                  fill: layered.fill,
-                  edge: layered.edge,
-                ),
-                child: child,
+    return GlossFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      child: DesignInputGroup(
+        focusNode: focusNode,
+        enabled: widget.enabled,
+        isError: widget.errorText != null,
+        builder: (context, states, child) {
+          final layered = DesignStyleOf([
+            widget.style,
+            theme.textFieldStyle,
+          ], states);
+          return SizedBox(
+            height: theme.controlHeight,
+            child: GlazePointerSurface(
+              enabled: widget.enabled,
+              face: glossEntryFace(
+                theme,
+                states,
+                fill: layered.fill,
+                edge: layered.edge,
               ),
-            );
-          },
-          child: Row(
-            children: [
-              if (widget.prefixText != null)
-                _addOn(theme, widget.prefixText!, start: true),
-              if (widget.leading != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: GlossSpacing.medium,
-                  ),
-                  child: IconTheme.merge(
-                    data: IconThemeData(
-                      size: 20,
-                      color: theme.colors.inkSecondary,
-                    ),
-                    child: widget.leading!,
-                  ),
+              child: child,
+            ),
+          );
+        },
+        child: Row(
+          children: [
+            if (widget.prefixText != null)
+              _addOn(theme, widget.prefixText!, start: true),
+            if (widget.leading != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: GlossSpacing.medium,
                 ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: GlossSpacing.medium,
+                child: IconTheme.merge(
+                  data: IconThemeData(
+                    size: 20,
+                    color: theme.colors.inkSecondary,
                   ),
-                  child: GlossEntryText(
-                    controller: controller,
-                    focusNode: focusNode,
-                    hint: widget.hint,
-                    enabled: widget.enabled,
-                    keyboardType: widget.keyboardType,
-                    inputFormatters: widget.inputFormatters,
-                    semanticLabel: widget.label,
-                    onChanged: widget.onChanged,
-                    onSubmitted: widget.onSubmitted,
-                  ),
+                  child: widget.leading!,
                 ),
               ),
-              if (widget.trailing != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: GlossSpacing.tight,
-                  ),
-                  child: widget.trailing,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: GlossSpacing.medium,
                 ),
-              if (widget.suffixText != null)
-                _addOn(theme, widget.suffixText!, start: false),
-            ],
-          ),
+                child: GlossEntryText(
+                  controller: controller,
+                  focusNode: focusNode,
+                  hint: widget.hintText,
+                  enabled: widget.enabled,
+                  keyboardType: widget.keyboardType,
+                  inputFormatters: widget.inputFormatters,
+                  semanticLabel: widget.labelText,
+                  onChanged: widget.onChanged,
+                  onSubmitted: widget.onSubmitted,
+                ),
+              ),
+            ),
+            if (widget.trailing != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  end: GlossSpacing.tight,
+                ),
+                child: widget.trailing,
+              ),
+            if (widget.suffixText != null)
+              _addOn(theme, widget.suffixText!, start: false),
+          ],
         ),
-        GlossFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -793,7 +784,7 @@ class _OptionRow extends StatelessWidget {
       child: AnimatedGlossSurface(
         face: glossRowPlate(
           c,
-          lit: focused && c.brightness == Brightness.dark,
+          lit: focused,
           pressed: states.contains(WidgetState.pressed),
         ).copyWith(foreground: ink, focus: glossGlazeOf(c, states)),
         child: Padding(
@@ -911,7 +902,7 @@ Widget _failed(BuildContext context, RawSearchError error) {
 /// Enter takes the lit option and keeps the focus in the field.
 ///
 /// ```dart
-/// GlossCombobox<String>(label: 'Cuisine', options: const ['Indian', 'Italian', 'Japanese'], onSelected: (cuisine) {})
+/// GlossCombobox<String>(labelText: 'Cuisine', options: const ['Indian', 'Italian', 'Japanese'], onSelected: (cuisine) {})
 /// ```
 class GlossCombobox<T extends Object> extends StatelessWidget {
   /// A combobox over [options].
@@ -927,10 +918,10 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
     this.debounceDuration,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -971,21 +962,21 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes input.
   final bool enabled;
 
-  /// What a screen reader calls it; null: [label].
+  /// What a screen reader calls it; null: [labelText].
   final String? semanticLabel;
 
   /// This field's own style, over [GlossThemeData.comboboxStyle].
@@ -995,83 +986,81 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final words = displayStringForOption ?? _words;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: GlossFieldLabel(label!, enabled: enabled)),
-        RawCombobox<T>(
-          options: options,
-          search: search,
-          value: value,
-          onSelected: onSelected,
-          displayStringForOption: words,
-          isOptionEnabled: isOptionEnabled,
-          requireSelection: requireSelection,
-          controller: controller,
-          focusNode: focusNode,
-          highlightFollowsPointer: true,
-          semanticLabel: semanticLabel ?? label,
-          fieldBuilder: (context, field) => _OnFocus(
-            focusNode: field.focusNode,
-            builder: (context, focused) {
-              final states = {
-                if (!enabled) WidgetState.disabled,
-                if (focused) WidgetState.focused,
-                if (error != null) WidgetState.error,
-              };
-              final layered = DesignStyleOf([
-                style,
-                theme.comboboxStyle,
-              ], states);
-              return GlossEntryWell(
-                focusNode: field.focusNode,
-                enabled: enabled,
-                face: glossEntryFace(
-                  theme,
-                  states,
-                  fill: layered.fill,
-                  edge: layered.edge,
+    return GlossFieldFrame(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: RawCombobox<T>(
+        options: options,
+        search: search,
+        value: value,
+        onSelected: onSelected,
+        displayStringForOption: words,
+        isOptionEnabled: isOptionEnabled,
+        requireSelection: requireSelection,
+        controller: controller,
+        focusNode: focusNode,
+        highlightFollowsPointer: true,
+        semanticLabel: semanticLabel ?? labelText,
+        fieldBuilder: (context, field) => _OnFocus(
+          focusNode: field.focusNode,
+          builder: (context, focused) {
+            final states = {
+              if (!enabled) WidgetState.disabled,
+              if (focused) WidgetState.focused,
+              if (errorText != null) WidgetState.error,
+            };
+            final layered = DesignStyleOf([style, theme.comboboxStyle], states);
+            return GlossEntryWell(
+              focusNode: field.focusNode,
+              enabled: enabled,
+              face: glossEntryFace(
+                theme,
+                states,
+                fill: layered.fill,
+                edge: layered.edge,
+              ),
+              // The select's dial bead, seated as the select seats it:
+              // the two read as one kind of field.
+              trailing: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  end: 7 - GlossSpacing.tight,
                 ),
-                // The select's dial bead, seated as the select seats it:
-                // the two read as one kind of field.
-                trailing: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: 7 - GlossSpacing.tight,
-                  ),
-                  child: GlossDialBead(
-                    size: theme.controlHeight - 14,
-                    enabled: enabled,
-                    open: focused,
-                  ),
-                ),
-                // Enter takes the lit option and keeps the focus here (on
-                // the web a restarted input would lose the typing).
-                child: GlossEntryText(
-                  controller: field.controller,
-                  focusNode: field.focusNode,
-                  hint: hint,
+                // Turned while the list is open, as the select's.
+                child: GlossDialBead(
+                  size: theme.controlHeight - 14,
                   enabled: enabled,
-                  // The field is named as its label reads (ui_core's
-                  // semanticLabel names the list of options).
-                  semanticLabel: semanticLabel ?? label,
-                  onEditingComplete: field.submit,
-                  textStyle: layered.textStyle,
+                  open: field.isOpen,
                 ),
-              );
-            },
-          ),
-          optionBuilder: (context, option, states) =>
-              _OptionRow(label: words(option), states: states),
-          surfaceBuilder: _panel,
-          emptyBuilder: _nothing,
-          debounceDuration: debounceDuration,
-          loadingBuilder: _searching,
-          errorBuilder: _failed,
+              ),
+              // Enter takes the lit option and keeps the focus here (on
+              // the web a restarted input would lose the typing).
+              child: GlossEntryText(
+                controller: field.controller,
+                focusNode: field.focusNode,
+                hint: hintText,
+                enabled: enabled,
+                // The field is named as its label reads (ui_core's
+                // semanticLabel names the list of options).
+                semanticLabel: semanticLabel ?? labelText,
+                // The text input says whether its list is open, as the
+                // select's button does.
+                expanded: field.isOpen,
+                onEditingComplete: field.submit,
+                textStyle: layered.textStyle,
+              ),
+            );
+          },
         ),
-        GlossFieldMessage(helper: helper, error: error),
-      ],
+        optionBuilder: (context, option, states) =>
+            _OptionRow(label: words(option), states: states),
+        surfaceBuilder: _panel,
+        emptyBuilder: _nothing,
+        debounceDuration: debounceDuration,
+        loadingBuilder: _searching,
+        errorBuilder: _failed,
+      ),
     );
   }
 }
@@ -1081,7 +1070,7 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
 /// and keeps the focus for the next.
 ///
 /// ```dart
-/// GlossTagInput<String>(label: 'Pantry', values: const ['Rice'], onChanged: (values) {}, onCreate: (text) => text)
+/// GlossTagInput<String>(labelText: 'Pantry', values: const ['Rice'], onChanged: (values) {}, onCreate: (text) => text)
 /// ```
 class GlossTagInput<T extends Object> extends StatelessWidget {
   /// A tag input over [values].
@@ -1098,10 +1087,10 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
     this.debounceDuration,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -1144,21 +1133,21 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes input.
   final bool enabled;
 
-  /// What a screen reader calls it; null: [label].
+  /// What a screen reader calls it; null: [labelText].
   final String? semanticLabel;
 
   /// This input's own style, over [GlossThemeData.tagInputStyle].
@@ -1181,7 +1170,7 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       highlightFollowsPointer: true,
-      semanticLabel: semanticLabel ?? label,
+      semanticLabel: semanticLabel ?? labelText,
       // The typing line: its whole slot takes a tap (as a field's well
       // does), and its words stand where every field's and its list's do.
       // Beside tags it is a short line after the last (it scrolls as it
@@ -1209,9 +1198,10 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
               child: GlossEntryText(
                 controller: field.controller,
                 focusNode: field.focusNode,
-                hint: values.isEmpty ? hint : null,
+                hint: values.isEmpty ? hintText : null,
                 enabled: enabled,
-                semanticLabel: semanticLabel ?? label,
+                semanticLabel: semanticLabel ?? labelText,
+                expanded: field.isOpen,
                 minHeight: _tagSlot,
                 onEditingComplete: field.submit,
               ),
@@ -1229,24 +1219,21 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
       errorBuilder: _failed,
       layoutBuilder: (context, tags, field) => _TagWell(
         enabled: enabled,
-        error: error != null,
+        error: errorText != null,
         style: style,
         tags: tags,
         field: field,
       ),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: GlossFieldLabel(label!, enabled: enabled)),
-        DefaultTextStyle.merge(
-          style: TextStyle(color: c.ink),
-          child: input,
-        ),
-        GlossFieldMessage(helper: helper, error: error),
-      ],
+    return GlossFieldFrame(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: c.ink),
+        child: input,
+      ),
     );
   }
 }

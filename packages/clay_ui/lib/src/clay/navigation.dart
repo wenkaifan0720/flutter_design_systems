@@ -520,7 +520,7 @@ Widget _clamped(Widget child) =>
 /// pill; an [action] (the screen's one key, a coral ball) at its end.
 ///
 /// ```dart
-/// ClayNavigationBar(destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onSelected: (index) {})
+/// ClayNavigationBar(destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onDestinationSelected: (index) {})
 /// ```
 class ClayNavigationBar extends StatelessWidget {
   /// A dock of [destinations], [selectedIndex] current.
@@ -528,7 +528,7 @@ class ClayNavigationBar extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.action,
     this.style,
   });
@@ -540,7 +540,7 @@ class ClayNavigationBar extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// A key at the dock's end.
   final Widget? action;
@@ -585,7 +585,7 @@ class ClayNavigationBar extends StatelessWidget {
                               child: _Place(
                                 destination: d,
                                 chosen: i == selectedIndex,
-                                onPressed: () => onSelected(i),
+                                onPressed: () => onDestinationSelected(i),
                                 face: (states) => _DockFace(
                                   destination: d,
                                   states: states,
@@ -628,7 +628,7 @@ class ClayNavigationBar extends StatelessWidget {
 /// glyph over name, the current glyph's pill risen as white clay.
 ///
 /// ```dart
-/// ClayNavigationRail(destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onSelected: (index) {})
+/// ClayNavigationRail(destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onDestinationSelected: (index) {})
 /// ```
 class ClayNavigationRail extends StatelessWidget {
   /// A rail of [destinations], [selectedIndex] current.
@@ -636,7 +636,7 @@ class ClayNavigationRail extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.leading,
     this.style,
   }) : _places = null;
@@ -646,7 +646,7 @@ class ClayNavigationRail extends StatelessWidget {
     required this.selectedIndex,
     this.leading,
   }) : destinations = const [],
-       onSelected = _ignore,
+       onDestinationSelected = _ignore,
        style = null;
 
   final List<Widget>? _places;
@@ -658,7 +658,7 @@ class ClayNavigationRail extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// What stands above the places: the app's mark, its one key.
   final Widget? leading;
@@ -680,7 +680,7 @@ class ClayNavigationRail extends StatelessWidget {
             _Place(
               destination: d,
               chosen: i == selectedIndex,
-              onPressed: () => onSelected(i),
+              onPressed: () => onDestinationSelected(i),
               face: (states) =>
                   _RailFace(destination: d, states: states, style: style),
             ),
@@ -726,7 +726,7 @@ class ClayNavigationRail extends StatelessWidget {
 /// above and a [footer] under.
 ///
 /// ```dart
-/// ClaySidebar(destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onSelected: (index) {})
+/// ClaySidebar(destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onDestinationSelected: (index) {})
 /// ```
 class ClaySidebar extends StatelessWidget {
   /// A sidebar of [destinations], [selectedIndex] current.
@@ -734,7 +734,7 @@ class ClaySidebar extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.header,
     this.footer,
     this.style,
@@ -746,7 +746,7 @@ class ClaySidebar extends StatelessWidget {
     this.header,
     this.footer,
   }) : destinations = const [],
-       onSelected = _ignore,
+       onDestinationSelected = _ignore,
        style = null;
 
   final List<Widget>? _places;
@@ -758,7 +758,7 @@ class ClaySidebar extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// What stands above the places.
   final Widget? header;
@@ -784,7 +784,7 @@ class ClaySidebar extends StatelessWidget {
             _Place(
               destination: d,
               chosen: i == selectedIndex,
-              onPressed: () => onSelected(i),
+              onPressed: () => onDestinationSelected(i),
               face: (states) =>
                   _SideFace(destination: d, states: states, style: style),
             ),
@@ -848,7 +848,7 @@ class ClaySidebar extends StatelessWidget {
 /// through the places, a screen reader hears a navigation region.
 ///
 /// ```dart
-/// ClayScaffold(topBar: const ClayTopBar(title: 'Today'), destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onSelected: (index) {}, body: const SizedBox.expand())
+/// ClayScaffold(topBar: const ClayTopBar(title: 'Today'), destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onDestinationSelected: (index) {}, body: const SizedBox.expand())
 /// ```
 class ClayScaffold extends StatelessWidget {
   /// A frame round [body].
@@ -858,7 +858,7 @@ class ClayScaffold extends StatelessWidget {
     this.topBar,
     this.destinations = const [],
     this.selectedIndex = 0,
-    this.onSelected,
+    this.onDestinationSelected,
     this.brand,
     this.action,
     this.sideFooter,
@@ -879,7 +879,7 @@ class ClayScaffold extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int>? onSelected;
+  final ValueChanged<int>? onDestinationSelected;
 
   /// The app's mark atop a rail or a sidebar.
   final Widget? brand;
@@ -905,7 +905,7 @@ class ClayScaffold extends StatelessWidget {
         DesignStyleOf([style, theme.scaffoldStyle], const {}).fill ??
         theme.colors.ground;
     final width = MediaQuery.sizeOf(context).width;
-    final places = destinations.isNotEmpty && onSelected != null;
+    final places = destinations.isNotEmpty && onDestinationSelected != null;
     final phone = width < ClayMetrics.railBreakpoint;
     final bar = places && phone && showNavigation;
     final page = Column(
@@ -965,11 +965,14 @@ class ClayScaffold extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ClayNavigationBar(
-                    destinations: destinations,
-                    selectedIndex: selectedIndex,
-                    onSelected: onSelected!,
-                    action: action,
+                  // Toasts stand above the dock.
+                  RawToasterKeepClear(
+                    child: ClayNavigationBar(
+                      destinations: destinations,
+                      selectedIndex: selectedIndex,
+                      onDestinationSelected: onDestinationSelected!,
+                      action: action,
+                    ),
                   ),
                 ],
               ),
@@ -990,7 +993,7 @@ class ClayScaffold extends StatelessWidget {
             ),
         ],
         selectedIndex: selectedIndex,
-        onDestinationSelected: onSelected,
+        onDestinationSelected: onDestinationSelected,
         destinationBuilder: (context, destination, details) {
           final d = destination.data! as ClayDestination;
           return KeyedSubtree(
@@ -1067,7 +1070,7 @@ class ClayScaffold extends StatelessWidget {
 /// 600 px; above, they hug their names. The arrows move between them.
 ///
 /// ```dart
-/// ClayTabBar(tabs: const ['Week', 'Month', 'Year'], selectedIndex: 0, onSelected: (index) {})
+/// ClayTabBar(tabs: const ['Week', 'Month', 'Year'], selectedIndex: 0, onTap: (index) {})
 /// ```
 class ClayTabBar extends StatefulWidget {
   /// Tabs named [tabs], [selectedIndex] current.
@@ -1075,7 +1078,7 @@ class ClayTabBar extends StatefulWidget {
     super.key,
     required this.tabs,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onTap,
     this.expand,
     this.style,
   });
@@ -1087,7 +1090,7 @@ class ClayTabBar extends StatefulWidget {
   final int selectedIndex;
 
   /// Called with the tab chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onTap;
 
   /// Whether they fill their row; null: below 600 px of window.
   final bool? expand;
@@ -1123,7 +1126,7 @@ class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
   void _chosen() {
     if (_tabs.index == _reported) return;
     _reported = _tabs.index;
-    widget.onSelected(_tabs.index);
+    widget.onTap(_tabs.index);
   }
 
   @override

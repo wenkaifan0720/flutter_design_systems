@@ -9,14 +9,14 @@ import 'package:material_ui/material_ui.dart' show MaterialApp;
 void main() {
   final pickers = <String, Widget>{
     'date': ClayDatePicker(
-      label: 'Starts on',
+      labelText: 'Starts on',
       value: DateTime(2026, 11, 20),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},
     ),
     'date range': ClayDateRangePicker(
-      label: 'Away',
+      labelText: 'Away',
       value: ClayDateRange(
         start: DateTime(2026, 11, 20),
         end: DateTime(2026, 11, 24),

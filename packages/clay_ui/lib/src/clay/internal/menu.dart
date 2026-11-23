@@ -28,7 +28,7 @@ class ClayMenuEntry<T> {
     required this.label,
     this.leading,
     this.enabled = true,
-    this.destructive = false,
+    this.isDestructiveAction = false,
   });
 
   /// What choosing the row gives.
@@ -44,7 +44,7 @@ class ClayMenuEntry<T> {
   final bool enabled;
 
   /// Whether it destroys something: its words in the danger ink.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// A floating panel of rows. [chosen] marks the current value (its words in
@@ -92,7 +92,6 @@ class ClayMenuList<T> extends StatefulWidget {
 
 class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
   late List<FocusNode> _nodes = _make();
-  final GlobalKey _chosenKey = GlobalKey();
   final ScrollController _scroll = ScrollController();
 
   // The row under a moving pointer; a key clears it, so the pointer's row
@@ -103,18 +102,6 @@ class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
     for (final e in widget.entries)
       FocusNode(debugLabel: 'ClayMenu ${e.label}'),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    // A long list opens on its value.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final row = _chosenKey.currentContext;
-      if (row != null && mounted) {
-        Scrollable.ensureVisible(row, alignment: 0.5);
-      }
-    });
-  }
 
   @override
   void didUpdateWidget(ClayMenuList<T> old) {
@@ -195,7 +182,6 @@ class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
       onEnter: (_) => _point(i),
       onHover: (_) => _point(i),
       child: RawButton(
-        key: isChosen ? _chosenKey : null,
         focusNode: _nodes[i],
         onPressed: e.enabled ? () => widget.onChosen(e.value) : null,
         autofocus: isChosen,
@@ -211,7 +197,7 @@ class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
           final pressed = states.contains(WidgetState.pressed);
           final words = !e.enabled
               ? c.inkDisabled
-              : e.destructive
+              : e.isDestructiveAction
               ? c.dangerInk
               : isChosen
               ? c.accentInk
@@ -368,7 +354,7 @@ class ClayMenuRow extends StatelessWidget {
     required this.states,
     this.leading,
     this.trailing,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.chosen = false,
     this.height,
   });
@@ -386,7 +372,7 @@ class ClayMenuRow extends StatelessWidget {
   final Widget? trailing;
 
   /// Whether it destroys something.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether it is the chosen one (words in the accent's ink, a check).
   final bool chosen;
@@ -408,7 +394,7 @@ class ClayMenuRow extends StatelessWidget {
         states.contains(WidgetState.selected) && !chosen;
     final words = disabled
         ? c.inkDisabled
-        : destructive
+        : isDestructiveAction
         ? c.dangerInk
         : chosen
         ? c.accentInk

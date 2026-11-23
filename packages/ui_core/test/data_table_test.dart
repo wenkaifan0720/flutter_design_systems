@@ -207,6 +207,19 @@ void main() {
     expect(c.selectedRows, isEmpty);
   });
 
+  testWidgets('the rows sit beside the headers under the table\'s node, with '
+      'no empty node between, each read as before', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final c = _controller();
+    addTearDown(c.dispose);
+    await tester.pumpWidget(_table(c));
+    final row = tester.getSemantics(_rowOf('Ada'));
+    final header = tester.getSemantics(find.textContaining('Name'));
+    expect(row.parent, same(header.parent));
+    expect(row.getSemanticsData().label, startsWith('Ada'));
+    semantics.dispose();
+  });
+
   testWidgets('one tab stop for the rows: arrows, Home and End move; Space '
       'selects, Shift with Space a run; Ctrl+A the page; Enter opens', (
     tester,

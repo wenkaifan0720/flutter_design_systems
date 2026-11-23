@@ -1,10 +1,8 @@
 // A combobox reads as a select does: it ends in the select's chevron, as far
-// in, and a press on it opens the list; and the list either opens stands on
-// the field's own 2 pt ink edge, square, not a card on a hairline and a soft
-// shadow.
+// in, and a press on it opens the list. (The list either opens floats as
+// everything that floats does: floating_surfaces_test.dart.)
 // ignore_for_file: avoid_relative_lib_imports
 import 'package:civic_ui/civic_ui.dart';
-import 'package:civic_ui/src/civic/internal/list_option.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -88,32 +86,4 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Noor Haddad'), findsOneWidget);
   });
-
-  for (final brightness in Brightness.values) {
-    testWidgets(
-      "a combobox's list stands on the field's ink edge (${brightness.name})",
-      (tester) async {
-        await _pump(tester, brightness: brightness);
-        await tester.tap(find.byType(EditableText));
-        await tester.pumpAndSettle();
-        final surface = find.byType(CivicOptionSurface);
-        expect(surface, findsOneWidget);
-        final t = CivicTheme.of(tester.element(surface));
-        final box =
-            tester
-                    .widgetList<DecoratedBox>(
-                      find.descendant(
-                        of: surface,
-                        matching: find.byType(DecoratedBox),
-                      ),
-                    )
-                    .first
-                    .decoration
-                as BoxDecoration;
-        expect(box.border, Border.all(color: t.border, width: 2));
-        expect(box.borderRadius, isNull);
-        expect(box.boxShadow, anyOf(isNull, isEmpty));
-      },
-    );
-  }
 }

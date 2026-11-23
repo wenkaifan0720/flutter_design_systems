@@ -185,6 +185,11 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
     final lh = grid.lineHeight;
     final enabled = widget.onChanged != null;
     final chosenAt = _chosenAt();
+    // The row that takes the keys as the list mounts: the chosen one, else
+    // the first that can be chosen.
+    final wakeAt = chosenAt >= 0
+        ? widget.items.indexWhere((i) => i.enabled && i.value == widget.value)
+        : widget.items.indexWhere((i) => i.enabled);
     TermSelectItem<T>? chosen;
     for (final item in widget.items) {
       if (item.value == widget.value) chosen = item;
@@ -260,7 +265,7 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
                   // An off select opens nothing, so it says nothing of
                   // opening.
                   expanded: anchor?.isOpen,
-                  isError: parts.hasError,
+                  isError: parts.invalid,
                   semanticValue: chosen?.label,
                   shortcuts: const {
                     SingleActivator(LogicalKeyboardKey.arrowDown):
@@ -364,12 +369,12 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
           // block and the chosen bar stand as far from the frame's sides
           // as from its top and bottom lines.
           padding: const TermInset(),
-          // The keys: the focus on the chosen one (or the first that
-          // takes it) as the menu comes up, a letter to the next it starts.
-          // Opened by the pointer, the keys' block waits for a key: with
-          // nothing chosen, no row reads current until then.
+          // The keys: the focus on the chosen one (it asks for it as it
+          // mounts; with none chosen, the list's first) as the menu comes
+          // up, a letter to the next it starts. Opened by the pointer, the
+          // keys' block waits for a key: with nothing chosen, no row reads
+          // current until then.
           child: TermTypeAhead(
-            initial: chosenAt >= 0 ? chosenAt : 0,
             child: TermMenuMarks(
               quietFirst: chosenAt < 0,
               child: SingleChildScrollView(
@@ -377,13 +382,14 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (final item in widget.items)
+                    for (final (i, item) in widget.items.indexed)
                       TermListTile(
                         title: Text(item.label),
                         subtitle: item.detail == null
                             ? null
                             : Text(item.detail!),
                         selected: item.value == widget.value,
+                        autofocus: i == wakeAt,
                         enabled: item.enabled,
                         option: true,
                         style: theme.menuStyle,

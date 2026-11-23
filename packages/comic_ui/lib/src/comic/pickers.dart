@@ -59,12 +59,17 @@ class ComicDatePicker extends StatefulWidget {
     this.dayNames,
     this.previousLabel,
     this.nextLabel,
+    this.autofocus = false,
   }) : assert(firstWeekday >= 1 && firstWeekday <= 7),
        assert(monthNames == null || monthNames.length == 12),
        assert(dayNames == null || dayNames.length == 7);
 
   /// Chosen date, ignoring time.
   final DateTime? value;
+
+  /// Whether the keys start on the chosen day (else today, or the nearest day allowed) when the calendar first shows,
+  /// as they do in [showComicDatePicker]'s.
+  final bool autofocus;
 
   /// Selects a date; absent disables selection.
   final ValueChanged<DateTime>? onChanged;
@@ -113,6 +118,14 @@ class ComicDatePicker extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
@@ -336,6 +349,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
         label: DateFormat.yMMMMd(locale).format(date),
         selected: selected,
         focusNode: _nodes[day - 1],
+        autofocus: widget.autofocus && date == _cursor,
         keys: (_, event) => _keys(event),
         onPressed: live
             ? () {
@@ -692,7 +706,7 @@ class ComicTimePicker extends StatelessWidget {
     final selects = <Widget>[
       ComicSelect<int>(
         style: layers,
-        label: names[0],
+        labelText: names[0],
         value: h24 ? time.hour : time.hour % 12,
         options: [
           for (var hour = 0; hour < (h24 ? 24 : 12); hour++)
@@ -716,7 +730,7 @@ class ComicTimePicker extends StatelessWidget {
       ),
       ComicSelect<int>(
         style: layers,
-        label: names[1],
+        labelText: names[1],
         value: time.minute,
         options: [
           for (final minute in minutes)
@@ -729,7 +743,7 @@ class ComicTimePicker extends StatelessWidget {
       if (!h24)
         ComicSelect<int>(
           style: layers,
-          label: names[2],
+          labelText: names[2],
           value: time.hour ~/ 12,
           options: [
             ComicSelectOption(0, shared.anteMeridiemAbbreviation),
@@ -839,8 +853,8 @@ Future<DateTime?> showComicDatePicker(
   DateTime? lastDate,
   DateTime? currentDate,
   String? title,
-  String? confirm,
-  String? cancel,
+  String? confirmText,
+  String? cancelText,
 }) {
   assert(
     firstDate == null ||
@@ -866,15 +880,17 @@ Future<DateTime?> showComicDatePicker(
             lastDate: lastDate,
             currentDate: currentDate,
             onChanged: (day) => setState(() => picked = day),
+            // The keys start on the chosen day.
+            autofocus: true,
           ),
         ],
         actions: [
           ComicButton(
-            cancel ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
+            cancelText ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           ComicButton.filled(
-            confirm ?? ComicLocalizations.of(context).choose,
+            confirmText ?? ComicLocalizations.of(context).choose,
             size: ComicButtonSize.small,
             onPressed: picked == null
                 ? null
@@ -897,8 +913,8 @@ Future<ComicTime?> showComicTimePicker(
   int minuteStep = 1,
   bool? use24hFormat,
   String? title,
-  String? confirm,
-  String? cancel,
+  String? confirmText,
+  String? cancelText,
 }) {
   var picked = value;
   return showComicDialog<ComicTime>(
@@ -916,11 +932,11 @@ Future<ComicTime?> showComicTimePicker(
         ],
         actions: [
           ComicButton(
-            cancel ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
+            cancelText ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           ComicButton.filled(
-            confirm ?? ComicLocalizations.of(context).choose,
+            confirmText ?? ComicLocalizations.of(context).choose,
             size: ComicButtonSize.small,
             onPressed: picked == null
                 ? null

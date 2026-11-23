@@ -10,14 +10,14 @@ import 'package:gloss_ui/gloss_ui.dart';
 void main() {
   final pickers = <String, Widget>{
     'date': GlossDatePicker(
-      label: 'Cook on',
+      labelText: 'Cook on',
       value: DateTime(2026, 11, 20),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},
     ),
     'date range': GlossDateRangePicker(
-      label: 'Cook on',
+      labelText: 'Cook on',
       value: GlossDateRange(
         start: DateTime(2026, 11, 20),
         end: DateTime(2026, 11, 24),

@@ -136,11 +136,11 @@ Widget _words(
 }
 
 /// A group of toggle buttons with a shared selection track.
-/// Set [multiple] to allow several selections. Arrow keys move focus within
+/// Set [multiSelectionEnabled] to allow several selections. Arrow keys move focus within
 /// the group. Space and Enter toggle the focused button.
 ///
 /// ```dart
-/// ComicToggleGroup<String>(label: 'Style', values: const ['Bold', 'Italic'], selected: on, multiple: true, labelOf: (v) => v, onChanged: (next) => setState(() => on = next))
+/// ComicToggleGroup<String>(label: 'Style', values: const ['Bold', 'Italic'], selected: on, multiSelectionEnabled: true, labelOf: (v) => v, onSelectionChanged: (next) => setState(() => on = next))
 /// ```
 class ComicToggleGroup<T> extends StatelessWidget {
   /// Creates a [ComicToggleGroup].
@@ -148,12 +148,12 @@ class ComicToggleGroup<T> extends StatelessWidget {
     super.key,
     required this.values,
     required this.selected,
-    required this.onChanged,
+    required this.onSelectionChanged,
     required this.labelOf,
     this.iconOf,
     this.iconOnly = false,
-    this.multiple = false,
-    this.allowEmpty = false,
+    this.multiSelectionEnabled = false,
+    this.emptySelectionAllowed = false,
     this.isEnabled,
     this.label,
   });
@@ -165,7 +165,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
   final Set<T> selected;
 
   /// Called with the next set; null disables the group.
-  final ValueChanged<Set<T>>? onChanged;
+  final ValueChanged<Set<T>>? onSelectionChanged;
 
   /// A value's words, and its name for a screen reader.
   final String Function(T value) labelOf;
@@ -177,10 +177,10 @@ class ComicToggleGroup<T> extends StatelessWidget {
   final bool iconOnly;
 
   /// Any number can be on; otherwise one at a time.
-  final bool multiple;
+  final bool multiSelectionEnabled;
 
   /// The last one can be turned off.
-  final bool allowEmpty;
+  final bool emptySelectionAllowed;
 
   /// Whether a value can be pressed; null: all.
   final bool Function(T value)? isEnabled;
@@ -202,9 +202,9 @@ class ComicToggleGroup<T> extends StatelessWidget {
     return RawSegmentedButton<T>(
       options: values,
       selected: selected,
-      onSelectionChanged: onChanged,
-      multiSelectionEnabled: multiple,
-      emptySelectionAllowed: allowEmpty,
+      onSelectionChanged: onSelectionChanged,
+      multiSelectionEnabled: multiSelectionEnabled,
+      emptySelectionAllowed: emptySelectionAllowed,
       isEnabled: isEnabled,
       labelOf: labelOf,
       semanticLabel: label,
@@ -246,7 +246,10 @@ class ComicToggleGroup<T> extends StatelessWidget {
       ..add(IterableProperty<T>('values', values))
       ..add(IterableProperty<T>('selected', selected))
       ..add(
-        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
       )
       ..add(
         ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
@@ -264,16 +267,16 @@ class ComicToggleGroup<T> extends StatelessWidget {
       )
       ..add(
         FlagProperty(
-          'multiple',
-          value: multiple,
+          'multiSelectionEnabled',
+          value: multiSelectionEnabled,
           ifTrue: 'multiple',
           defaultValue: false,
         ),
       )
       ..add(
         FlagProperty(
-          'allowEmpty',
-          value: allowEmpty,
+          'emptySelectionAllowed',
+          value: emptySelectionAllowed,
           ifTrue: 'allowEmpty',
           defaultValue: false,
         ),

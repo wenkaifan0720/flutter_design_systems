@@ -63,7 +63,7 @@ void main() {
                         child: SizedBox(
                           width: 320,
                           child: GlossCombobox<String>(
-                            label: 'Assignee',
+                            labelText: 'Assignee',
                             options: _names,
                             onSelected: (_) {},
                           ),

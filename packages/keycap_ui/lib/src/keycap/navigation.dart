@@ -336,7 +336,7 @@ Widget _placeKey(
 /// A phone's navigation: the places in a row at the screen's foot.
 ///
 /// ```dart
-/// KeycapNavigationBar(destinations: places, selectedIndex: at, onSelected: go)
+/// KeycapNavigationBar(destinations: places, selectedIndex: at, onDestinationSelected: go)
 /// ```
 class KeycapNavigationBar extends StatelessWidget {
   /// A row of places.
@@ -344,7 +344,7 @@ class KeycapNavigationBar extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.style,
   });
 
@@ -355,7 +355,7 @@ class KeycapNavigationBar extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// Overrides, over [KeycapThemeData.navigationStyle]: [DesignStyle.fill]
   /// the strip's colour.
@@ -395,7 +395,7 @@ class KeycapNavigationBar extends StatelessWidget {
                     child: KeyedSubtree(
                       key: d.key,
                       child: RawButton(
-                        onPressed: () => onSelected(i),
+                        onPressed: () => onDestinationSelected(i),
                         selected: i == selectedIndex,
                         semanticSelected: i == selectedIndex,
                         semanticLabel: d.label,
@@ -439,7 +439,7 @@ class KeycapNavigationBar extends StatelessWidget {
 /// chooses it by width.
 ///
 /// ```dart
-/// KeycapNavigationRail(destinations: places, selectedIndex: at, onSelected: go)
+/// KeycapNavigationRail(destinations: places, selectedIndex: at, onDestinationSelected: go)
 /// ```
 class KeycapNavigationRail extends StatelessWidget {
   /// A rail of places.
@@ -447,14 +447,14 @@ class KeycapNavigationRail extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.action,
   }) : _keys = null;
 
   const KeycapNavigationRail._shell(List<Widget> this._keys, {this.action})
     : destinations = const [],
       selectedIndex = 0,
-      onSelected = _ignore;
+      onDestinationSelected = _ignore;
 
   static void _ignore(int _) {}
 
@@ -465,7 +465,7 @@ class KeycapNavigationRail extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// A key over the places (a screen's main action).
   final Widget? action;
@@ -489,7 +489,7 @@ class KeycapNavigationRail extends StatelessWidget {
             KeyedSubtree(
               key: d.key,
               child: RawButton(
-                onPressed: () => onSelected(i),
+                onPressed: () => onDestinationSelected(i),
                 selected: i == selectedIndex,
                 semanticSelected: i == selectedIndex,
                 semanticLabel: d.label,
@@ -543,7 +543,7 @@ class KeycapNavigationRail extends StatelessWidget {
 /// modifier key latched under its legend.
 ///
 /// ```dart
-/// KeycapSideNavigation(destinations: places, selectedIndex: at, onSelected: go, header: Text('Jotter'))
+/// KeycapSideNavigation(destinations: places, selectedIndex: at, onDestinationSelected: go, header: Text('Jotter'))
 /// ```
 class KeycapSideNavigation extends StatelessWidget {
   /// A column of places.
@@ -551,7 +551,7 @@ class KeycapSideNavigation extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.header,
     this.action,
     this.footer,
@@ -564,7 +564,7 @@ class KeycapSideNavigation extends StatelessWidget {
     this.footer,
   }) : destinations = const [],
        selectedIndex = 0,
-       onSelected = KeycapNavigationRail._ignore;
+       onDestinationSelected = KeycapNavigationRail._ignore;
 
   /// The places.
   final List<KeycapDestination> destinations;
@@ -573,7 +573,7 @@ class KeycapSideNavigation extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// What stands over the places (the app's name).
   final Widget? header;
@@ -603,7 +603,7 @@ class KeycapSideNavigation extends StatelessWidget {
             KeyedSubtree(
               key: d.key,
               child: RawButton(
-                onPressed: () => onSelected(i),
+                onPressed: () => onDestinationSelected(i),
                 selected: i == selectedIndex,
                 semanticSelected: i == selectedIndex,
                 semanticLabel: d.label,
@@ -670,7 +670,7 @@ class KeycapSideNavigation extends StatelessWidget {
 /// between the places and the page.
 ///
 /// ```dart
-/// KeycapScaffold(destinations: places, selectedIndex: at, onSelected: go, body: page)
+/// KeycapScaffold(destinations: places, selectedIndex: at, onDestinationSelected: go, body: page)
 /// ```
 class KeycapScaffold extends StatelessWidget {
   /// An app's frame.
@@ -678,7 +678,7 @@ class KeycapScaffold extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     required this.body,
     this.header,
     this.action,
@@ -694,7 +694,7 @@ class KeycapScaffold extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// The page.
   final Widget body;
@@ -739,10 +739,13 @@ class KeycapScaffold extends StatelessWidget {
               child: page,
             ),
           ),
-          KeycapNavigationBar(
-            destinations: destinations,
-            selectedIndex: selectedIndex,
-            onSelected: onSelected,
+          // Toasts stand above the places.
+          RawToasterKeepClear(
+            child: KeycapNavigationBar(
+              destinations: destinations,
+              selectedIndex: selectedIndex,
+              onDestinationSelected: onDestinationSelected,
+            ),
           ),
         ],
       );
@@ -757,7 +760,7 @@ class KeycapScaffold extends StatelessWidget {
           DesignNavigationDestination(label: d.label, icon: d.icon),
       ],
       selectedIndex: selectedIndex,
-      onDestinationSelected: onSelected,
+      onDestinationSelected: onDestinationSelected,
       destinationBuilder: (context, _, details) {
         final d = destinations[details.index];
         final current = details.index == selectedIndex;

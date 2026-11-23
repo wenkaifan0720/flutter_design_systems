@@ -21,12 +21,12 @@ void main() {
             ),
             'select' => GlossSelect<String>(
               value: null,
-              hint: 'Actions',
+              hintText: 'Actions',
               items: const [GlossSelectItem(value: 'copy', label: label)],
               onChanged: (_) {},
             ),
             _ => GlossCombobox<String>(
-              label: 'Actions',
+              labelText: 'Actions',
               options: const [label],
               onSelected: (_) {},
             ),

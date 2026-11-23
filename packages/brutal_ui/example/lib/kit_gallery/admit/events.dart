@@ -83,6 +83,13 @@ class _EventRow extends StatelessWidget {
         final lit = chosen || states.contains(WidgetState.pressed);
         final ink = lit ? c.paper : c.ink;
         final muted = lit ? c.paper : c.inkMuted;
+        final fee = Text(
+          price,
+          style: t.secondary.copyWith(color: ink, fontWeight: FontWeight.w600),
+        );
+        // Past 1.5x text the price takes a line of its own under the time:
+        // beside the words it would leave them no room on a phone.
+        final large = MediaQuery.textScalerOf(context).scale(16) > 24;
         return AnimatedBrutalSurface(
           stiffness: BrutalMotion.colorStiffness,
           face: BrutalFace(
@@ -145,17 +152,14 @@ class _EventRow extends StatelessWidget {
                                   '${admitTime(event.starts)} · ${event.venue}',
                                   style: t.secondary.copyWith(color: muted),
                                 ),
+                                if (large) ...[const SizedBox(height: 2), fee],
                               ],
                             ),
                           ),
-                          const SizedBox(width: BrutalSpacing.medium),
-                          Text(
-                            price,
-                            style: t.secondary.copyWith(
-                              color: ink,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          if (!large) ...[
+                            const SizedBox(width: BrutalSpacing.medium),
+                            fee,
+                          ],
                         ],
                       ),
                     ),
@@ -677,10 +681,10 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
       key: _expiry.key,
       controller: _expiry.controller,
       focusNode: _expiry.focus,
-      error: _expiry.error,
+      errorText: _expiry.error,
       onChanged: (_) => _clearError(_expiry),
-      label: 'Expiry',
-      hint: 'MM/YY',
+      labelText: 'Expiry',
+      hintText: 'MM/YY',
       keyboardType: TextInputType.datetime,
       textDirection: TextDirection.ltr,
     );
@@ -688,9 +692,9 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
       key: _code.key,
       controller: _code.controller,
       focusNode: _code.focus,
-      label: 'Security code',
-      hint: '3 digits',
-      error: _code.error,
+      labelText: 'Security code',
+      hintText: '3 digits',
+      errorText: _code.error,
       keyboardType: TextInputType.number,
       textDirection: TextDirection.ltr,
       obscureText: true,
@@ -721,9 +725,9 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
         key: _email.key,
         controller: _email.controller,
         focusNode: _email.focus,
-        error: _email.error,
+        errorText: _email.error,
         onChanged: (_) => _clearError(_email),
-        label: 'Email for the tickets',
+        labelText: 'Email for the tickets',
         keyboardType: TextInputType.emailAddress,
         autofillHints: const [AutofillHints.email],
       ),
@@ -733,9 +737,9 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
           key: _card.key,
           controller: _card.controller,
           focusNode: _card.focus,
-          error: _card.error,
+          errorText: _card.error,
           onChanged: (_) => _clearError(_card),
-          label: 'Card number',
+          labelText: 'Card number',
           keyboardType: TextInputType.number,
           textDirection: TextDirection.ltr,
           autofillHints: const [AutofillHints.creditCardNumber],

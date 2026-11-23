@@ -8,7 +8,7 @@ import '../../theme.dart';
 
 /// Where a reader is in a form of several pages: "Step 2 of 5" over a band
 /// of [steps]' segments, the steps done in the action colour, the
-/// [current] one in ink, those to come on the rule. From 600 wide each
+/// [currentStep] one in ink, those to come on the rule. From 600 wide each
 /// segment has its step's words under it, the done ones ticked and the
 /// current one bold; below 600 the count says the current step's words.
 /// A change of step moves on Civic's springs.
@@ -23,15 +23,15 @@ import '../../theme.dart';
 /// ```dart
 /// CivicStepIndicator(
 ///   steps: ['Your vehicle', 'Your details', 'Proof of address', 'Check'],
-///   current: 1,
+///   currentStep: 1,
 /// )
 /// ```
 class CivicStepIndicator extends StatelessWidget {
-  /// [steps] with the reader at [current] (from 0).
+  /// [steps] with the reader at [currentStep] (from 0).
   const CivicStepIndicator({
     super.key,
     required this.steps,
-    required this.current,
+    required this.currentStep,
     this.countLabel,
     this.style,
   });
@@ -40,7 +40,7 @@ class CivicStepIndicator extends StatelessWidget {
   final List<String> steps;
 
   /// The reader's step, from 0.
-  final int current;
+  final int currentStep;
 
   /// The count's words for step `step` (from 1) of `count`; null: "Step 2
   /// of 5".
@@ -55,7 +55,7 @@ class CivicStepIndicator extends StatelessWidget {
     final text = context.civicText;
     final so = DesignStyleOf([style, t.stepIndicatorStyle], const {});
     assert(steps.isNotEmpty, 'A form has at least one step.');
-    final at = current.clamp(0, steps.length - 1);
+    final at = currentStep.clamp(0, steps.length - 1);
     final count =
         countLabel?.call(at + 1, steps.length) ??
         'Step ${at + 1} of ${steps.length}';
@@ -100,7 +100,7 @@ class CivicStepIndicator extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<String>('steps', steps))
-      ..add(IntProperty('current', current))
+      ..add(IntProperty('currentStep', currentStep))
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );

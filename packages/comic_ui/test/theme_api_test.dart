@@ -63,22 +63,25 @@ void main() {
       for (final id in ComicThemeData.presets) {
         final day = ComicThemeData.preset(id, Brightness.light);
         final night = ComicThemeData.preset(id, Brightness.dark);
-        expect(day.lerp(night, 0), day);
-        expect(day.lerp(night, 1).colors, night.colors);
-        final mid = day.lerp(night, .5);
+        expect(ComicThemeData.lerp(day, night, 0), day);
+        expect(ComicThemeData.lerp(day, night, 1).colors, night.colors);
+        final mid = ComicThemeData.lerp(day, night, .5);
         expect(
           mid.colors.background,
           Color.lerp(day.colors.background, night.colors.background, .5),
         );
         expect(mid.colors.series.length, day.colors.series.length);
-        expect(day.lerp(null, .3), same(day));
-        expect(day.lerp(day, .7), same(day));
+        expect(ComicThemeData.lerp(day, day, .7), same(day));
       }
       final a = ComicThemeData.offset(), b = ComicThemeData.reprint();
-      expect(a.lerp(b, .4).id, 'offset');
-      expect(a.lerp(b, .6).id, 'reprint');
+      expect(ComicThemeData.lerp(a, b, .4).id, 'offset');
+      expect(ComicThemeData.lerp(a, b, .6).id, 'reprint');
       expect(
-        a.copyWith(width: 400).lerp(a.copyWith(width: 800), .5).width,
+        ComicThemeData.lerp(
+          a.copyWith(width: 400),
+          a.copyWith(width: 800),
+          .5,
+        ).width,
         600,
       );
     });
