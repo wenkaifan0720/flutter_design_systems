@@ -253,7 +253,12 @@ class _Fonts {
     for (final e in inventory.entries.where((e) => e.isPresent)) {
       final key = GlobalKey();
       await tester.pumpWidget(
-        wrap(KeyedSubtree(key: key, child: Builder(builder: e.builder!))),
+        wrap(
+          KeyedSubtree(
+            key: key,
+            child: Builder(builder: e.builder!),
+          ),
+        ),
       );
       tester.takeException();
       names.addAll(lookFamilies(key.currentContext!));
