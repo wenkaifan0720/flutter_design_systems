@@ -611,7 +611,7 @@ Future<void> _add(
       content: ExpressiveTextField(
         key: const ValueKey('trip-add-name'),
         controller: name,
-        label: w.name,
+        labelText: w.name,
         autofocus: true,
       ),
       actions: [
@@ -808,10 +808,13 @@ class _TripCard extends StatelessWidget {
                         color: c.onPrimaryContainer,
                       ),
                     ),
-                    Text(
-                      w.daysToGo(trip.daysToGo),
-                      style: t.type.titleLarge.copyWith(
-                        color: c.onPrimaryContainer,
+                    // At large text the words wrap beside the figure.
+                    Flexible(
+                      child: Text(
+                        w.daysToGo(trip.daysToGo),
+                        style: t.type.titleLarge.copyWith(
+                          color: c.onPrimaryContainer,
+                        ),
                       ),
                     ),
                   ],
@@ -1049,7 +1052,7 @@ class _PlanScreenState extends State<_PlanScreen> {
         ExpressiveTextField(
           key: const ValueKey('plan-name'),
           controller: _name,
-          label: w.tripNameLabel,
+          labelText: w.tripNameLabel,
           textCapitalization: TextCapitalization.words,
         ),
         // Leaving and coming back are entered together: side by side at
@@ -1099,7 +1102,7 @@ class _PlanScreenState extends State<_PlanScreen> {
               fit: phone ? FlexFit.tight : FlexFit.loose,
               child: ExpressiveSelect<String>(
                 key: const ValueKey('plan-stay'),
-                label: w.whereYouStay,
+                labelText: w.whereYouStay,
                 value: _stay,
                 options: [
                   for (final id in _stays)
@@ -1628,7 +1631,7 @@ class _BasketState extends State<_Basket> {
             ExpressiveTextField(
               key: const ValueKey('card-number'),
               controller: number,
-              label: w.cardNumber,
+              labelText: w.cardNumber,
               keyboardType: TextInputType.number,
               autofillHints: const [AutofillHints.creditCardNumber],
             ),
@@ -1641,7 +1644,7 @@ class _BasketState extends State<_Basket> {
                   child: ExpressiveTextField(
                     key: const ValueKey('card-expiry'),
                     controller: expiry,
-                    label: w.expiry,
+                    labelText: w.expiry,
                     hintText: w.expiryHint,
                     keyboardType: TextInputType.datetime,
                   ),
@@ -1650,7 +1653,7 @@ class _BasketState extends State<_Basket> {
                   child: ExpressiveTextField(
                     key: const ValueKey('card-code'),
                     controller: code,
-                    label: w.securityCode,
+                    labelText: w.securityCode,
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -1789,7 +1792,7 @@ class _BasketState extends State<_Basket> {
                     child: ExpressiveTextField(
                       key: const ValueKey('checkout-promo'),
                       controller: _promo,
-                      label: w.code,
+                      labelText: w.code,
                       textCapitalization: TextCapitalization.characters,
                       errorText: _promoError,
                       helperText: trip.promo ? w.promoApplied : null,
@@ -1900,7 +1903,7 @@ Widget _basketRow(BuildContext context, _Trip trip, _Product p) {
   final name = w.product(p.id);
   final stepper = ExpressiveShrinkTapTargets.restore(
     child: ExpressiveNumberField(
-      label: name,
+      labelText: name,
       value: trip.quantities[p.id]!,
       min: 0,
       max: 9,

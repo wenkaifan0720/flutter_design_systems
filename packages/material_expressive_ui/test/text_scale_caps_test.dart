@@ -35,7 +35,7 @@ Future<void> _pump(
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ExpressiveHost(
-      light: _theme,
+      theme: _theme,
       brightness: Brightness.light,
       child: ExpressiveTheme(
         data: _theme,

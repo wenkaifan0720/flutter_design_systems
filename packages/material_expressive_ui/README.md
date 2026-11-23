@@ -115,10 +115,10 @@ ExpressiveTextButton('Cancel', onPressed: null); // disabled
 Inputs take `value` and `onChanged`, as Flutter's do:
 
 ```dart
-ExpressiveTextField(label: 'Trip name', onChanged: (name) => draft = name);
+ExpressiveTextField(labelText: 'Trip name', onChanged: (name) => draft = name);
 
 ExpressiveSelect<String>(
-  label: 'Project',
+  labelText: 'Project',
   options: const [
     ExpressiveSelectOption('studio', 'Open studio'),
     ExpressiveSelectOption('launch', 'Spring launch'),
@@ -144,7 +144,7 @@ final discard = await showExpressiveDialog<bool>(
     text: 'Save your changes before leaving this trip?',
     actions: [
       ExpressiveDialogAction('Cancel'),
-      ExpressiveDialogAction('Discard', value: true, destructive: true),
+      ExpressiveDialogAction('Discard', value: true, isDestructiveAction: true),
       ExpressiveDialogAction('Save', value: false, filled: true),
     ],
   ),
@@ -161,7 +161,7 @@ showExpressiveMenu(
     ExpressiveMenuItem(
       'Delete',
       icon: ExpressiveSymbols.delete,
-      destructive: true,
+      isDestructiveAction: true,
       onPressed: delete,
     ),
   ],

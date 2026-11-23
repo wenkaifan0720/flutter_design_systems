@@ -1159,7 +1159,6 @@ String _arabicGoToYear(int year) => 'الانتقال إلى $year';
 const ExpressiveLocalizations _arabicExpressiveWords = ExpressiveLocalizations(
   cancelSearch: 'إلغاء البحث',
   showSuggestions: 'عرض الاقتراحات',
-  hideSuggestions: 'إخفاء الاقتراحات',
   sheetDragHandle: 'مقبض السحب',
   fabMenu: 'قائمة الإضافة',
   toastDismiss: 'إغلاق',

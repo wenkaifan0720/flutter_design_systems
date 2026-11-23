@@ -14,7 +14,7 @@ final _theme = ExpressiveThemeData.preset('baseline', Brightness.light);
 
 Widget _app(Widget child, {ExpressiveThemeData? theme}) => MaterialApp(
   home: ExpressiveHost(
-    light: theme ?? _theme,
+    theme: theme ?? _theme,
     brightness: Brightness.light,
     child: Center(child: child),
   ),
@@ -316,8 +316,8 @@ void main() {
           Directionality(
             textDirection: direction,
             child: ExpressivePageDots(
-              count: 4,
-              selectedIndex: 1,
+              pageCount: 4,
+              page: 1,
               onChanged: (index) => chosen = index,
               style: const ExpressiveComponentThemeData(
                 iconSize: WidgetStatePropertyAll(12),

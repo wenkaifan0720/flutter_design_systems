@@ -28,7 +28,7 @@ Widget _app(
   double scale = 1,
 }) => MaterialApp(
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: Directionality(
       textDirection: direction,

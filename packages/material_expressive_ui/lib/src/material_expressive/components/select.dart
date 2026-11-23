@@ -94,7 +94,7 @@ class ExpressiveSelect<T> extends StatefulWidget {
     this.style,
     this.rounded = false,
     this.tonal = false,
-    this.label,
+    this.labelText,
     this.hintText,
     this.leading,
     this.helperText,
@@ -131,7 +131,7 @@ class ExpressiveSelect<T> extends StatefulWidget {
   final bool tonal;
 
   /// The field's label.
-  final String? label;
+  final String? labelText;
 
   /// Shown in the field while nothing is chosen.
   final String? hintText;
@@ -158,7 +158,7 @@ class ExpressiveSelect<T> extends StatefulWidget {
   /// otherwise.
   final double? menuMaxHeight;
 
-  /// What the select is called to assistive technology ([label] when
+  /// What the select is called to assistive technology ([labelText] when
   /// null).
   final String? semanticLabel;
 
@@ -195,7 +195,7 @@ class ExpressiveSelect<T> extends StatefulWidget {
       )
       ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
       ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
@@ -322,7 +322,7 @@ class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
       matchAnchorWidth: true,
       wordsStart: valueStart,
       maxHeight: widget.menuMaxHeight,
-      label: widget.semanticLabel ?? widget.label,
+      label: widget.semanticLabel ?? widget.labelText,
       entries: <ExpressiveMenuEntry>[
         for (final option in widget.options)
           // The row's fill marks the choice; no check, so every option's
@@ -359,7 +359,7 @@ class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
               ),
               rounded: widget.rounded,
               tonal: widget.tonal,
-              label: widget.label,
+              labelText: widget.labelText,
               hintText: widget.hintText,
               leading: widget.leading ?? _chosenIcon,
               trailing: ExpressiveSelectTrailingIcon(expanded: open),
@@ -414,7 +414,7 @@ class ExpressiveCombobox<T> extends StatefulWidget {
     this.style,
     this.rounded = false,
     this.tonal = false,
-    this.label,
+    this.labelText,
     this.hintText,
     this.leading,
     this.helperText,
@@ -469,7 +469,7 @@ class ExpressiveCombobox<T> extends StatefulWidget {
   final bool tonal;
 
   /// The field's label.
-  final String? label;
+  final String? labelText;
 
   /// Shown in the field while it is empty.
   final String? hintText;
@@ -502,7 +502,7 @@ class ExpressiveCombobox<T> extends StatefulWidget {
   /// otherwise.
   final double? menuMaxHeight;
 
-  /// What the combobox is called to assistive technology ([label] when
+  /// What the combobox is called to assistive technology ([labelText] when
   /// null).
   final String? semanticLabel;
 
@@ -581,7 +581,7 @@ class ExpressiveCombobox<T> extends StatefulWidget {
       )
       ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
       ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
@@ -805,7 +805,7 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
         matchAnchorWidth: true,
         wordsStart: valueStart,
         maxHeight: widget.menuMaxHeight,
-        label: widget.semanticLabel ?? widget.label,
+        label: widget.semanticLabel ?? widget.labelText,
         entries: <ExpressiveMenuEntry>[
           for (final option in matches)
             // As a select's: the row's fill marks the choice, no check, so
@@ -837,7 +837,7 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
               ),
               rounded: widget.rounded,
               tonal: widget.tonal,
-              label: widget.label,
+              labelText: widget.labelText,
               hintText: widget.hintText,
               leading: widget.leading,
               trailing: _ComboboxToggle(
@@ -883,6 +883,8 @@ class _ComboboxToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
+    // A node of its own beside the entry, which stays the field's.
+    container: true,
     button: true,
     enabled: enabled,
     expanded: expanded,

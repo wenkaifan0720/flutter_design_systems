@@ -40,7 +40,7 @@ DesignAlignmentTheme _under(
         data: MediaQuery.of(context)
             .copyWith(textScaler: TextScaler.linear(scale)),
         child: ExpressiveHost(
-          light: ExpressiveThemeData.preset(
+          theme: ExpressiveThemeData.preset(
             'baseline',
             Brightness.light,
           ).copyWith(density: density),

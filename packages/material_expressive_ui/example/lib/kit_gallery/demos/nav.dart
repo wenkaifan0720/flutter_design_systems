@@ -148,12 +148,12 @@ class _PagingState extends State<_Paging> {
     children: <Widget>[
       ExpressivePagination(
         page: _short,
-        count: 3,
+        pageCount: 3,
         onChanged: (p) => setState(() => _short = p),
       ),
       ExpressivePagination(
         page: _page,
-        count: 12,
+        pageCount: 12,
         onChanged: (p) => setState(() => _page = p),
       ),
       Center(
@@ -161,7 +161,7 @@ class _PagingState extends State<_Paging> {
           width: 260,
           child: ExpressivePagination(
             page: _page,
-            count: 12,
+            pageCount: 12,
             onChanged: (p) => setState(() => _page = p),
           ),
         ),
@@ -180,7 +180,7 @@ Widget kitSpecimenBreadcrumbsFolded() =>
 
 /// Page 5 of 12 at full width.
 Widget kitSpecimenPaginationPages() =>
-    ExpressivePagination(page: 5, count: 12, onChanged: (_) {});
+    ExpressivePagination(page: 5, pageCount: 12, onChanged: (_) {});
 
 class _BarVariants extends StatefulWidget {
   const _BarVariants();
@@ -206,7 +206,7 @@ class _BarVariantsState extends State<_BarVariants> {
       children: <Widget>[
         ExpressiveSelect<String>(
           key: const ValueKey('gallery-navigation-variant'),
-          label: 'Variant',
+          labelText: 'Variant',
           value: _variant,
           options: const [
             ExpressiveSelectOption('three', 'Three destinations'),

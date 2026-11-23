@@ -25,7 +25,7 @@ Widget host(
   MediaQueryData? media,
 }) => MaterialApp(
   builder: (context, app) =>
-      ExpressiveHost(light: bloom, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: bloom, brightness: Brightness.light, child: app!),
   home: Builder(
     builder: (context) => MediaQuery(
       data: (media ?? MediaQuery.of(context)).copyWith(

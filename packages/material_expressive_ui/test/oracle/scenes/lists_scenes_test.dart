@@ -49,8 +49,8 @@ ExpressiveCornerBorder _segmentShape(BuildContext context, int index) {
 final OracleGroup listsScenes = OracleGroup(
   id: 'lists',
   frame: (context, scene) => ExpressiveHost(
-    light: context.expressiveTheme,
-    dark: context.expressiveTheme,
+    theme: context.expressiveTheme,
+    darkTheme: context.expressiveTheme,
     brightness: context.expressiveTheme.brightness,
     child: scene,
   ),

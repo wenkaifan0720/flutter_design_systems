@@ -414,27 +414,35 @@ class _GalleryAppState extends State<GalleryApp> {
       ],
       // The components speak the reader's language where ui_core does.
       supportedLocales: RawWidgetsLocalizations.supportedLocales,
-      // Day to night, a preset or a Customize choice springs from one theme
-      // to the next.
+      // The look's host: day to night, a preset or a Customize choice
+      // springs from one theme to the next, and snackbars show above every
+      // page.
       // Direction and text size wrap the navigator, so every page, preview
       // and overlay reads them.
       // Tab and Shift+Tab bring the control they reach into view.
-      builder: (context, child) => KitFocusActions(
-        child: Directionality(
-          textDirection: _custom.textDirection,
-          child: MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: _custom.textScaler(MediaQuery.textScalerOf(context)),
-            ),
-            child: AnimatedExpressiveTheme(
-              data: _shownTheme(
-                ExpressiveThemeData.preset(_preset, _brightness),
+      builder: (context, child) {
+        final shown = _shownTheme(
+          ExpressiveThemeData.preset(_preset, _brightness),
+        );
+        return KitFocusActions(
+          child: Directionality(
+            textDirection: _custom.textDirection,
+            child: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: _custom.textScaler(
+                  MediaQuery.textScalerOf(context),
+                ),
               ),
-              child: child!,
+              child: ExpressiveHost(
+                theme: shown,
+                darkTheme: shown,
+                brightness: _brightness,
+                child: child!,
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
       // A link's route names a page, not a pushed route: the shell stands
       // alone and opens that page itself.
       onGenerateRoute: (_) => _shellRoute(),
@@ -687,7 +695,7 @@ class _CustomizePanel extends StatelessWidget {
                 SizedBox(
                   width: 200,
                   child: ExpressiveSelect<String>(
-                    label: 'Preset',
+                    labelText: 'Preset',
                     value: preset,
                     options: [
                       for (final id in ExpressiveThemeData.presets)

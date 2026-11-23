@@ -429,7 +429,7 @@ class _CartState extends State<_Cart> {
               ExpressiveNumberField(
                 value: _counts[i],
                 max: 9,
-                label: _items[i].$1,
+                labelText: _items[i].$1,
                 onChanged: (v) => setState(() => _counts[i] = v),
               ),
             ],
@@ -446,7 +446,7 @@ class _CartState extends State<_Cart> {
               value: _guests,
               min: 1,
               max: 12,
-              label: 'Guests',
+              labelText: 'Guests',
               format: (v) => v == 1 ? '1 guest' : '$v guests',
               onChanged: (v) => setState(() => _guests = v),
             ),
@@ -505,7 +505,7 @@ Widget kitSpecimenQuantityStepperGuests() => Center(
     value: 2,
     min: 1,
     max: 8,
-    label: 'Guests',
+    labelText: 'Guests',
     onChanged: (_) {},
   ),
 );

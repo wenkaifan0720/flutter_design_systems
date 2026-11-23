@@ -50,7 +50,6 @@ const ExpressiveLocalizations _frenchOwn = ExpressiveLocalizations(
   messageFromYou: 'Vous',
   messageFailed: 'Non envoyé',
   showSuggestions: 'Afficher les suggestions',
-  hideSuggestions: 'Masquer les suggestions',
   selectDate: 'Choisir une date',
 );
 
@@ -69,7 +68,7 @@ Widget _app(
     DefaultWidgetsLocalizations.delegate,
   ],
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: Center(
       child: SizedBox(
@@ -91,7 +90,9 @@ void main() {
   testWidgets("a secure field names its reveal toggle from the app's shared "
       'words', (tester) async {
     await tester.pumpWidget(
-      _app(const ExpressiveTextField(label: 'Mot de passe', obscureText: true)),
+      _app(
+        const ExpressiveTextField(labelText: 'Mot de passe', obscureText: true),
+      ),
     );
     await tester.tap(find.bySemanticsLabel('Afficher le mot de passe'));
     await tester.pumpAndSettle();
@@ -140,7 +141,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         const ExpressiveCombobox<String>(
-          label: 'Ville',
+          labelText: 'Ville',
           options: <ExpressiveSelectOption<String>>[
             ExpressiveSelectOption('paris', 'Paris'),
             ExpressiveSelectOption('lyon', 'Lyon'),

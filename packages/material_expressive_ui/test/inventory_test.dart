@@ -18,8 +18,8 @@ Widget _host(
   double width = 390,
 }) => MaterialApp(
   home: ExpressiveHost(
-    light: ExpressiveThemeData.preset('baseline', Brightness.light),
-    dark: ExpressiveThemeData.preset('baseline', Brightness.dark),
+    theme: ExpressiveThemeData.preset('baseline', Brightness.light),
+    darkTheme: ExpressiveThemeData.preset('baseline', Brightness.dark),
     brightness: brightness,
     child: Align(
       alignment: AlignmentDirectional.topStart,
@@ -133,7 +133,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: ExpressiveHost(
-          light: ExpressiveThemeData.preset('baseline', Brightness.light),
+          theme: ExpressiveThemeData.preset('baseline', Brightness.light),
           brightness: Brightness.light,
           child: const ExpressiveInventoryGallery(),
         ),

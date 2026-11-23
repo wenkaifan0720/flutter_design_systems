@@ -21,7 +21,7 @@ Widget _host(Widget child, {double width = 360, double height = 420}) =>
     MaterialApp(
       debugShowCheckedModeBanner: false,
       home: ExpressiveHost(
-        light: ExpressiveThemeData.preset('baseline', Brightness.light),
+        theme: ExpressiveThemeData.preset('baseline', Brightness.light),
         brightness: Brightness.light,
         child: Align(
           alignment: Alignment.topLeft,
@@ -400,7 +400,7 @@ void main() {
         host(
           const Column(
             children: <Widget>[
-              ExpressiveTextField(label: 'Trip name'),
+              ExpressiveTextField(labelText: 'Trip name'),
               Text('Below', key: ValueKey('below')),
             ],
           ),

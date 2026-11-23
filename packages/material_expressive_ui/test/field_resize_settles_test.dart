@@ -60,7 +60,7 @@ class _FieldsState extends State<_Fields> {
 
   Widget _select(String value, {bool leading = false, bool outlined = false}) =>
       ExpressiveSelect<String>(
-        label: 'Project',
+        labelText: 'Project',
         value: value,
         kind: outlined
             ? ExpressiveTextFieldKind.outlined
@@ -83,13 +83,13 @@ class _FieldsState extends State<_Fields> {
       _select('workshops'),
       _select('workshops', leading: true, outlined: true),
       ExpressiveMultiSelect<String>(
-        label: 'Projects',
+        labelText: 'Projects',
         options: _projects,
         values: const ['studio', 'workshops'],
         onChanged: (_) {},
       ),
       ExpressiveCombobox<String>(
-        label: 'Assignee',
+        labelText: 'Assignee',
         controller: _assignee,
         options: const [
           ExpressiveSelectOption('noor', 'Noor Haddad'),
@@ -97,10 +97,10 @@ class _FieldsState extends State<_Fields> {
         ],
         onSelected: (_) {},
       ),
-      ExpressiveTextField(label: 'Title', controller: _typed),
+      ExpressiveTextField(labelText: 'Title', controller: _typed),
       // A read-only value that opens something, as a date field's.
       ExpressiveTextField(
-        label: 'Due',
+        labelText: 'Due',
         controller: _date,
         readOnly: true,
         onTap: () {},
@@ -114,7 +114,7 @@ class _FieldsState extends State<_Fields> {
           children: [
             Expanded(
               child: ExpressiveTextField(
-                label: 'Starts',
+                labelText: 'Starts',
                 controller: _date,
                 readOnly: true,
                 onTap: () {},
@@ -125,10 +125,10 @@ class _FieldsState extends State<_Fields> {
           ],
         ),
       ),
-      ExpressiveTextArea(label: 'Notes', controller: _notes),
-      ExpressivePasswordField(label: 'Password', controller: _password),
+      ExpressiveTextArea(labelText: 'Notes', controller: _notes),
+      ExpressivePasswordField(labelText: 'Password', controller: _password),
       ExpressiveNumberField(
-        label: 'Guests',
+        labelText: 'Guests',
         value: _guests,
         min: 1,
         max: 8,
@@ -157,7 +157,7 @@ class _Prefixes extends StatelessWidget {
       for (final leading in [true, false])
         for (var n = 4; n <= 34; n++)
           ExpressiveSelect<int>(
-            label: 'Project',
+            labelText: 'Project',
             value: n,
             leading: leading
                 ? const ExpressiveIcon(ExpressiveSymbols.folder)
@@ -175,7 +175,7 @@ class _Prefixes extends StatelessWidget {
 Widget _app(double scale, {Widget fields = const _Fields()}) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, app) =>
-      ExpressiveHost(light: _theme, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: _theme, brightness: Brightness.light, child: app!),
   // At 1x, the platform's own scaler, as an app has it; and the page built
   // by a LayoutBuilder, as an adaptive app's is (Stint's).
   home: Builder(

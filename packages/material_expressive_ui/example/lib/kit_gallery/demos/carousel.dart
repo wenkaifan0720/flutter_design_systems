@@ -163,8 +163,8 @@ class _WithIndicatorState extends State<_WithIndicator> {
         listenable: _controller,
         builder: (context, _) => Center(
           child: ExpressivePageDots(
-            count: _places.length,
-            selectedIndex: _controller.currentItem,
+            pageCount: _places.length,
+            page: _controller.currentItem,
             onChanged: _controller.animateToItem,
           ),
         ),
@@ -226,9 +226,9 @@ class _Indicators extends StatelessWidget {
   Widget build(BuildContext context) => kitSection(
     'Page indicator · first, middle, last',
     children: const <Widget>[
-      ExpressivePageDots(count: 5, selectedIndex: 0),
-      ExpressivePageDots(count: 5, selectedIndex: 2),
-      ExpressivePageDots(count: 5, selectedIndex: 4),
+      ExpressivePageDots(pageCount: 5, page: 0),
+      ExpressivePageDots(pageCount: 5, page: 2),
+      ExpressivePageDots(pageCount: 5, page: 4),
     ],
   );
 }
@@ -245,4 +245,4 @@ Widget kitSpecimenCarouselMultiBrowse() => ExpressiveCarouselView.multiBrowse(
 
 /// Five pages, the second current.
 Widget kitSpecimenPageIndicatorFive() =>
-    const Center(child: ExpressivePageDots(count: 5, selectedIndex: 1));
+    const Center(child: ExpressivePageDots(pageCount: 5, page: 1));

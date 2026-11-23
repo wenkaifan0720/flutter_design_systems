@@ -30,8 +30,8 @@ Widget _app(
     builder: (context, home) => Directionality(
       textDirection: direction,
       child: ExpressiveHost(
-        light: ExpressiveThemeData.preset(_preset, Brightness.light),
-        dark: ExpressiveThemeData.preset(_preset, Brightness.dark),
+        theme: ExpressiveThemeData.preset(_preset, Brightness.light),
+        darkTheme: ExpressiveThemeData.preset(_preset, Brightness.dark),
         brightness: brightness,
         child: home!,
       ),
@@ -106,7 +106,7 @@ final _parts = <(String, Widget, List<Finder>)>[
   (
     "a field's leading and trailing icons",
     const ExpressiveTextField(
-      label: 'Name',
+      labelText: 'Name',
       leading: SizedBox(key: _lead, width: 24, height: 24),
       trailing: SizedBox(key: _trail, width: 24, height: 24),
     ),
@@ -193,7 +193,7 @@ void main() {
       tester,
       (direction) => _app(
         ExpressiveTextField(
-          label: 'Weight',
+          labelText: 'Weight',
           controller: controller,
           prefix: '~',
           suffix: 'kg',

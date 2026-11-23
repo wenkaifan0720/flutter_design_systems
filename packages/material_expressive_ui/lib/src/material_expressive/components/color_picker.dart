@@ -294,7 +294,7 @@ class _ExpressiveColorPickerState extends State<ExpressiveColorPicker> {
               ExpressiveTextField(
                 controller: _hex,
                 kind: ExpressiveTextFieldKind.outlined,
-                label: ExpressiveLocalizations.of(context).colorHex,
+                labelText: ExpressiveLocalizations.of(context).colorHex,
                 enabled: widget.onChanged != null,
                 onSubmitted: (text) {
                   if (!_color.setHex(text)) _hex.text = _color.hex;

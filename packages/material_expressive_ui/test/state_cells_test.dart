@@ -242,7 +242,7 @@ final _parts = <_Part>[
     (enabled, error) => SizedBox(
       width: 280,
       child: ExpressiveTextField(
-        label: 'Full name',
+        labelText: 'Full name',
         enabled: enabled,
         errorText: error ? 'Enter your name.' : null,
         helperText: error ? null : 'As on your passport.',
@@ -257,7 +257,7 @@ final _parts = <_Part>[
     (enabled, error) => SizedBox(
       width: 280,
       child: ExpressiveSelect<String>(
-        label: 'Size',
+        labelText: 'Size',
         value: 'm',
         options: _sizes,
         onChanged: enabled ? _drop : null,
@@ -334,7 +334,7 @@ final _parts = <_Part>[
     (enabled, error) => SizedBox(
       width: 280,
       child: ExpressivePasswordField(
-        label: 'Password',
+        labelText: 'Password',
         enabled: enabled,
         errorText: error ? 'Too short: 5 of 8 characters' : null,
         helperText: error ? null : 'At least 8 characters',
@@ -365,9 +365,9 @@ final _parts = <_Part>[
     (enabled, error) => SizedBox(
       width: 280,
       child: ExpressiveFormField(
-        label: 'Notify me',
-        help: error ? null : 'At most once a day',
-        error: error ? 'Turn this on to get reminders' : null,
+        labelText: 'Notify me',
+        helperText: error ? null : 'At most once a day',
+        errorText: error ? 'Turn this on to get reminders' : null,
         enabled: enabled,
         child: ExpressiveSwitch(value: true, onChanged: enabled ? _drop : null),
       ),
@@ -379,7 +379,7 @@ final _parts = <_Part>[
     (enabled, error) => SizedBox(
       width: 280,
       child: ExpressiveMultiSelect<String>(
-        label: 'Sizes',
+        labelText: 'Sizes',
         options: _sizes,
         values: const <String>['s', 'm'],
         isError: error,
@@ -418,8 +418,8 @@ Widget _stage(Brightness brightness, Widget part) {
   final theme = ExpressiveThemeData.preset('baseline', brightness);
   return MaterialApp(
     home: ExpressiveHost(
-      light: theme,
-      dark: theme,
+      theme: theme,
+      darkTheme: theme,
       brightness: brightness,
       child: ColoredBox(
         color: theme.colors.surface,

@@ -271,26 +271,26 @@ class ExpressiveBreadcrumb extends StatelessWidget {
 /// drawn from its buttons, so every press, focus ring and corner is theirs.
 ///
 /// ```dart
-/// ExpressivePagination(page: page, count: 12, onChanged: (p) => setState(() => page = p))
+/// ExpressivePagination(page: page, pageCount: 12, onChanged: (p) => setState(() => page = p))
 /// ```
 class ExpressivePagination extends StatelessWidget {
-  /// Page [page] (1-based) of [count], [onChanged] with the page asked for.
+  /// Page [page] (1-based) of [pageCount], [onChanged] with the page asked for.
   const ExpressivePagination({
     required this.page,
-    required this.count,
+    required this.pageCount,
     required this.onChanged,
     this.siblings = 1,
     this.semanticLabel,
     super.key,
-  }) : assert(count >= 1),
-       assert(page >= 1 && page <= count),
+  }) : assert(pageCount >= 1),
+       assert(page >= 1 && page <= pageCount),
        assert(siblings >= 0);
 
   /// The current page, 1-based.
   final int page;
 
   /// How many pages there are.
-  final int count;
+  final int pageCount;
 
   /// Called with the page to go to; the control shows [page] until it
   /// rebuilds with a new one.
@@ -306,9 +306,9 @@ class ExpressivePagination extends StatelessWidget {
   List<int?> get pages {
     final shown = <int>{
       1,
-      count,
+      pageCount,
       for (var p = page - siblings; p <= page + siblings; p++)
-        if (p >= 1 && p <= count) p,
+        if (p >= 1 && p <= pageCount) p,
     };
     // A fold that would hide a single page shows that page instead.
     final sorted = shown.toList()..sort();
@@ -338,7 +338,7 @@ class ExpressivePagination extends StatelessWidget {
       icon,
       size: ExpressiveIconButtonSize.extraSmall,
       semanticLabel: label,
-      onPressed: to < 1 || to > count ? null : () => onChanged(to),
+      onPressed: to < 1 || to > pageCount ? null : () => onChanged(to),
     );
     final previous = arrow(
       ExpressiveSymbols.chevronLeft,
@@ -371,7 +371,7 @@ class ExpressivePagination extends StatelessWidget {
           ? ExpressiveFilledButton.tonal(
               label,
               size: ExpressiveButtonSize.extraSmall,
-              semanticLabel: strings.pageOf(p, count),
+              semanticLabel: strings.pageOf(p, pageCount),
               onPressed: () {},
             )
           : ExpressiveTextButton(
@@ -403,7 +403,7 @@ class ExpressivePagination extends StatelessWidget {
               horizontal: ExpressiveSpacing.s8,
             ),
             child: Text(
-              strings.pageOf(page, count),
+              strings.pageOf(page, pageCount),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: t.type.bodyMedium.copyWith(color: t.colors.onSurface),
@@ -462,7 +462,7 @@ class ExpressivePagination extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('page', page))
-      ..add(IntProperty('count', count))
+      ..add(IntProperty('pageCount', pageCount))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
       ..add(IntProperty('siblings', siblings, defaultValue: 1))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));

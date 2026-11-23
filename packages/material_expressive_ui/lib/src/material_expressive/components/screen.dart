@@ -11,7 +11,6 @@ import 'package:ui_core/host.dart'
     show ChromeGround, RoutePresentation, ShellInsets;
 
 import '../chrome_metrics.dart';
-import '../internal/docked_band.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../motion.dart';
 import '../spacing.dart';
@@ -382,16 +381,13 @@ class _ExpressiveScreenState extends State<ExpressiveScaffold>
 
     final footer = widget.footer;
     final bottomNav = widget.bottomNav;
-    final route = ModalRoute.of(context);
     if (footer != null || bottomNav != null) {
       content = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Expanded(child: content),
-          // Measured for the route, so a toast raised on it stands above
-          // the docked chrome (internal/docked_band.dart).
-          ExpressiveDockedBand(
-            route: route,
+          // Snackbars stand above the docked chrome.
+          RawToasterKeepClear(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -418,8 +414,6 @@ class _ExpressiveScreenState extends State<ExpressiveScaffold>
           ),
         ],
       );
-    } else {
-      expressiveClearDockedBand(route);
     }
 
     final floating = widget.floating;

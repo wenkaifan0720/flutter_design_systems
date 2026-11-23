@@ -116,8 +116,8 @@ final OracleGroup sheetScenes = OracleGroup(
   frame: (context, scene) {
     final theme = context.expressiveTheme;
     return ExpressiveHost(
-      light: theme,
-      dark: theme,
+      theme: theme,
+      darkTheme: theme,
       brightness: theme.brightness,
       child: scene,
     );

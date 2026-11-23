@@ -26,7 +26,7 @@ final ExpressiveThemeData bloom = ExpressiveThemeData.preset(
 /// Expressive's host round a page holding [child] at its start.
 Widget host(Widget child, {ExpressiveThemeData? theme}) => MaterialApp(
   builder: (context, app) => ExpressiveHost(
-    light: theme ?? bloom,
+    theme: theme ?? bloom,
     brightness: Brightness.light,
     child: app!,
   ),
@@ -77,7 +77,7 @@ Widget select(FocusNode node, {String? initial, List<String>? chosen}) {
       builder: (context, update) => ExpressiveSelect<String>(
         options: sizes,
         value: value,
-        label: 'Size',
+        labelText: 'Size',
         focusNode: node,
         onChanged: (v) {
           chosen?.add(v);
@@ -239,7 +239,7 @@ void main() {
           width: 300,
           child: ExpressiveCombobox<String>(
             options: sizes,
-            label: 'Size',
+            labelText: 'Size',
             controller: text,
             focusNode: node,
           ),
@@ -295,7 +295,7 @@ void main() {
       child: ExpressiveSelect<int>(
         options: towns,
         value: value,
-        label: 'Town',
+        labelText: 'Town',
         focusNode: node,
         menuMaxHeight: 240,
         onChanged: (_) {},
@@ -364,7 +364,7 @@ void main() {
           width: 320,
           child: StatefulBuilder(
             builder: (context, update) => ExpressiveMultiSelect<String>(
-              label: 'Colours',
+              labelText: 'Colours',
               options: colours,
               values: values,
               onChanged: (next) {
@@ -554,7 +554,7 @@ void main() {
             width: 320,
             child: StatefulBuilder(
               builder: (context, update) => ExpressiveMultiSelect<String>(
-                label: 'Colours',
+                labelText: 'Colours',
                 options: const [],
                 values: chosen,
                 debounceDuration: const Duration(milliseconds: 300),

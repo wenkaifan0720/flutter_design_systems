@@ -121,7 +121,7 @@ class _LiveState extends State<_Live> {
     kind: widget.style,
     rounded: widget.rounded,
     tonal: widget.tonal,
-    label: widget.label,
+    labelText: widget.label,
     hintText: widget.placeholder,
     leading: widget.leading,
     helperText: widget.supportingText,
@@ -231,7 +231,7 @@ class _LongState extends State<_Long> {
         ],
         value: _city,
         onChanged: (city) => setState(() => _city = city),
-        label: 'City',
+        labelText: 'City',
         menuMaxHeight: 280,
         leading: const Icon(ExpressiveSymbols.locationOn),
       ),
@@ -282,7 +282,7 @@ class _OpenState extends State<_Open> {
         ExpressiveTextField(
           controller: _controller,
           readOnly: true,
-          label: 'Size',
+          labelText: 'Size',
           trailing: const ExpressiveSelectTrailingIcon(expanded: true),
         ),
       ),
@@ -359,7 +359,7 @@ class _Combobox extends StatelessWidget {
     children: <Widget>[
       ExpressiveCombobox<String>(
         options: _options,
-        label: 'Destination',
+        labelText: 'Destination',
         hintText: 'Try “por”',
         leading: const Icon(ExpressiveSymbols.flight),
         helperText: 'Pick a city or type your own',
@@ -368,7 +368,7 @@ class _Combobox extends StatelessWidget {
         kind: ExpressiveTextFieldKind.outlined,
         rounded: true,
         options: _options,
-        label: 'Departing from',
+        labelText: 'Departing from',
         // Its options carry icons: the field's own leaves them their place.
         leading: const Icon(ExpressiveSymbols.locationOn),
       ),
@@ -400,7 +400,7 @@ class _ComboboxNoMatchState extends State<_ComboboxNoMatch> {
   Widget build(BuildContext context) => ExpressiveCombobox<String>(
     controller: _text,
     options: widget.options,
-    label: 'Arriving at',
+    labelText: 'Arriving at',
     leading: const Icon(ExpressiveSymbols.flight),
     helperText: 'Open it: no city is called that',
   );
@@ -415,7 +415,7 @@ Widget kitSpecimenSelectCity() => ExpressiveSelect<String>(
   ],
   value: 'porto',
   onChanged: (_) {},
-  label: 'City',
+  labelText: 'City',
   leading: const Icon(ExpressiveSymbols.locationOn),
 );
 
@@ -425,7 +425,7 @@ Widget kitSpecimenComboboxDestination() => const ExpressiveCombobox<String>(
     ExpressiveSelectOption<String>('lisbon', 'Lisbon'),
     ExpressiveSelectOption<String>('porto', 'Porto'),
   ],
-  label: 'Destination',
+  labelText: 'Destination',
   leading: Icon(ExpressiveSymbols.flight),
   helperText: 'Pick a city or type your own',
 );

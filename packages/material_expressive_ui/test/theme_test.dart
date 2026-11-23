@@ -495,7 +495,7 @@ void main() {
       expect(page.colors.onSurface, isNot(app.colors.onSurface));
       await tester.pumpWidget(
         ExpressiveHost(
-          light: app,
+          theme: app,
           brightness: Brightness.light,
           child: Directionality(
             textDirection: TextDirection.ltr,

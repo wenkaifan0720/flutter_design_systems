@@ -192,11 +192,11 @@ void main() {
       'a chart step of nothing': () => ExpressiveChartDomain.data(step: _n(0)),
       'a rating past its max': () => ExpressiveRating(value: _n(6)),
       'page dots past their count': () =>
-          ExpressivePageDots(count: 2, selectedIndex: _i(2)),
+          ExpressivePageDots(pageCount: 2, page: _i(2)),
       'a step progress past its last step': () =>
           ExpressiveStepProgress(count: 3, currentStep: _i(4)),
       'a pagination before its first page': () =>
-          ExpressivePagination(page: _i(0), count: 3, onChanged: (_) {}),
+          ExpressivePagination(page: _i(0), pageCount: 3, onChanged: (_) {}),
       'a breadcrumb that shows too few': () =>
           ExpressiveBreadcrumb(items: const [], maxShown: _i(2)),
     };

@@ -39,7 +39,7 @@ class _ScriptsSection extends StatelessWidget {
   Widget build(BuildContext context) => kitSection(
     'Other scripts',
     children: <Widget>[
-      const ExpressiveTextField(label: 'Type in any script'),
+      const ExpressiveTextField(labelText: 'Type in any script'),
       Wrap(
         spacing: ExpressiveSpacing.s8,
         runSpacing: ExpressiveSpacing.s8,

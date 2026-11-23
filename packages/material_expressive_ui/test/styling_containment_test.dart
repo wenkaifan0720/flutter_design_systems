@@ -151,7 +151,7 @@ void main() {
               await tester.pumpWidget(
                 MaterialApp(
                   home: ExpressiveHost(
-                    light: _theme.copyWith(density: density),
+                    theme: _theme.copyWith(density: density),
                     brightness: Brightness.light,
                     child: MediaQuery(
                       data: MediaQueryData(
@@ -201,7 +201,7 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: ExpressiveHost(
-                light: _theme.copyWith(density: density),
+                theme: _theme.copyWith(density: density),
                 brightness: Brightness.light,
                 child: MediaQuery(
                   data: MediaQueryData(textScaler: TextScaler.linear(scale)),
@@ -280,7 +280,7 @@ void main() {
             },
           ),
     'page dots': () =>
-        ExpressivePageDots(count: 8, selectedIndex: 2, onChanged: (_) {}),
+        ExpressivePageDots(pageCount: 8, page: 2, onChanged: (_) {}),
 
     'bar chart': () => const ExpressiveChart.bar(
       points: [
@@ -716,7 +716,7 @@ void main() {
                 await tester.pumpWidget(
                   MaterialApp(
                     home: ExpressiveHost(
-                      light: _theme.copyWith(density: density),
+                      theme: _theme.copyWith(density: density),
                       brightness: Brightness.light,
                       child: MediaQuery(
                         data: MediaQueryData(

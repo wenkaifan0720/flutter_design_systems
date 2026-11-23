@@ -22,7 +22,7 @@ Widget _page(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   shortcuts: _webShortcuts,
   builder: (context, app) => ExpressiveHost(
-    light: ExpressiveThemeData.preset('bloom', Brightness.light),
+    theme: ExpressiveThemeData.preset('bloom', Brightness.light),
     brightness: Brightness.light,
     child: app!,
   ),
@@ -81,7 +81,7 @@ void main() {
                 ExpressiveSelectOption('m', 'Medium'),
               ],
               value: value,
-              label: 'Size',
+              labelText: 'Size',
               onChanged: (v) => update(() => value = v),
             ),
           ),

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
 
 import '../color.dart';
+import '../internal/snack_host.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../motion.dart';
 import '../theme.dart';
@@ -29,10 +30,10 @@ class ExpressiveHost extends StatefulWidget {
   /// A host mounting the Expressive theme over [child].
   const ExpressiveHost({
     required this.child,
-    this.light,
-    this.dark,
-    this.highContrastLight,
-    this.highContrastDark,
+    this.theme,
+    this.darkTheme,
+    this.highContrastTheme,
+    this.highContrastDarkTheme,
     this.brightness,
     super.key,
   });
@@ -41,32 +42,32 @@ class ExpressiveHost extends StatefulWidget {
   final Widget child;
 
   /// The light theme; null wears the default preset's.
-  final ExpressiveThemeData? light;
+  final ExpressiveThemeData? theme;
 
   /// The dark theme; null wears the default preset's.
-  final ExpressiveThemeData? dark;
+  final ExpressiveThemeData? darkTheme;
 
   /// The light theme while the platform asks for high contrast
   /// (`MediaQuery.highContrastOf`), as `MaterialApp.highContrastTheme`:
-  /// null wears [light], or the default preset at high contrast when
-  /// [light] is null too.
+  /// null wears [theme], or the default preset at high contrast when
+  /// [theme] is null too.
   ///
   /// ```dart
   /// ExpressiveHost(
-  ///   light: ExpressiveThemeData.from(seed: brand),
-  ///   highContrastLight: ExpressiveThemeData.from(
+  ///   theme: ExpressiveThemeData.from(seed: brand),
+  ///   highContrastTheme: ExpressiveThemeData.from(
   ///     seed: brand,
   ///     contrastLevel: 1,
   ///   ),
   ///   child: child,
   /// )
   /// ```
-  final ExpressiveThemeData? highContrastLight;
+  final ExpressiveThemeData? highContrastTheme;
 
   /// The dark theme while the platform asks for high contrast, as
-  /// `MaterialApp.highContrastDarkTheme`: null wears [dark], or the default
-  /// preset at high contrast when [dark] is null too.
-  final ExpressiveThemeData? highContrastDark;
+  /// `MaterialApp.highContrastDarkTheme`: null wears [darkTheme], or the default
+  /// preset at high contrast when [darkTheme] is null too.
+  final ExpressiveThemeData? highContrastDarkTheme;
 
   /// The brightness to wear; null follows the platform's.
   final Brightness? brightness;
@@ -214,29 +215,29 @@ class ExpressiveHost extends StatefulWidget {
     properties
       ..add(
         DiagnosticsProperty<ExpressiveThemeData?>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
         DiagnosticsProperty<ExpressiveThemeData?>(
-          'dark',
-          dark,
+          'darkTheme',
+          darkTheme,
           defaultValue: null,
         ),
       )
       ..add(
         DiagnosticsProperty<ExpressiveThemeData?>(
-          'highContrastLight',
-          highContrastLight,
+          'highContrastTheme',
+          highContrastTheme,
           defaultValue: null,
         ),
       )
       ..add(
         DiagnosticsProperty<ExpressiveThemeData?>(
-          'highContrastDark',
-          highContrastDark,
+          'highContrastDarkTheme',
+          highContrastDarkTheme,
           defaultValue: null,
         ),
       )
@@ -324,13 +325,13 @@ class _ExpressiveHostState extends State<ExpressiveHost> {
           contrastLevel: high ? 1 : 0,
         );
     final dark =
-        (high ? widget.highContrastDark : null) ??
-        widget.dark ??
+        (high ? widget.highContrastDarkTheme : null) ??
+        widget.darkTheme ??
         preset(Brightness.dark);
     final theme = wanted == Brightness.dark
         ? dark
-        : (high ? widget.highContrastLight : null) ??
-              widget.light ??
+        : (high ? widget.highContrastTheme : null) ??
+              widget.theme ??
               preset(Brightness.light);
     // Behaviour follows the platform: never pinned, and a
     // preview frame's register inside one.
@@ -370,7 +371,8 @@ class _ExpressiveHostState extends State<ExpressiveHost> {
             ),
           );
         },
-        child: widget.child,
+        // The snackbars, under the theme, over the app.
+        child: ExpressiveSnackBarHost(child: widget.child),
       ),
     );
   }

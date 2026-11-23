@@ -32,7 +32,7 @@ void main() {
                 width: 300,
                 child: ExpressiveTextField(
                   controller: controller,
-                  label: 'Name',
+                  labelText: 'Name',
                 ),
               ),
             ),

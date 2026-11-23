@@ -32,7 +32,7 @@ Widget _select(ExpressiveTextFieldKind style, _State state) {
       value: state == _State.empty ? null : 'm',
       onChanged: state == _State.disabled ? null : _none,
       kind: style,
-      label: 'Size',
+      labelText: 'Size',
       helperText: error ? null : 'Supporting text',
       errorText: error ? 'Error message' : null,
     ),
@@ -52,8 +52,8 @@ final OracleGroup selectScenes = OracleGroup(
         DefaultWidgetsLocalizations.delegate,
       ],
       child: ExpressiveHost(
-        light: theme,
-        dark: theme,
+        theme: theme,
+        darkTheme: theme,
         brightness: theme.brightness,
         child: Overlay(
           initialEntries: <OverlayEntry>[

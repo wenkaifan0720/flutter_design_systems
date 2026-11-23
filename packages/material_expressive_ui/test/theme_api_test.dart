@@ -291,7 +291,10 @@ void main() {
           (context, child) => ExpressiveTheme(data: grove, child: child!),
           Column(
             children: [
-              ExpressiveTextField(label: 'Name', onChanged: (v) => typed = v),
+              ExpressiveTextField(
+                labelText: 'Name',
+                onChanged: (v) => typed = v,
+              ),
               ExpressiveFilledButton('Book', onPressed: () => pressed++),
             ],
           ),

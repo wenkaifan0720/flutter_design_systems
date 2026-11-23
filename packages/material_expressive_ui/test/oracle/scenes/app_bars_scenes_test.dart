@@ -241,8 +241,8 @@ final OracleGroup appBarsScenes = OracleGroup(
         DefaultWidgetsLocalizations.delegate,
       ],
       child: ExpressiveHost(
-        light: theme,
-        dark: theme,
+        theme: theme,
+        darkTheme: theme,
         brightness: theme.brightness,
         child: Overlay(
           initialEntries: <OverlayEntry>[

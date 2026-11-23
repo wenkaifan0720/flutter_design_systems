@@ -19,7 +19,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 
 /// [child] in a 390dp-wide column, under the Expressive host.
 Widget _app(Widget child, {double textScale = 1}) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,

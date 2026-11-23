@@ -21,7 +21,7 @@ ExpressiveColorScheme get _c => _theme.colors;
 
 Widget _app(Widget child, {bool hero = false}) => MaterialApp(
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: Center(child: hero ? ExpressiveHeroMoment(child: child) : child),
   ),
@@ -429,7 +429,7 @@ void main() {
       required ExpressiveToolbarScrollBehavior behavior,
     }) => MaterialApp(
       home: ExpressiveHost(
-        light: _theme,
+        theme: _theme,
         brightness: Brightness.light,
         child: Stack(
           children: <Widget>[

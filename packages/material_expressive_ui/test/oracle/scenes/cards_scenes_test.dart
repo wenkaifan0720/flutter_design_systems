@@ -47,8 +47,8 @@ final OracleGroup cardsScenes = OracleGroup(
         DefaultWidgetsLocalizations.delegate,
       ],
       child: ExpressiveHost(
-        light: theme,
-        dark: theme,
+        theme: theme,
+        darkTheme: theme,
         brightness: theme.brightness,
         child: scene,
       ),

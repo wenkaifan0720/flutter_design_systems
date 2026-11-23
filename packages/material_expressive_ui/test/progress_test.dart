@@ -21,7 +21,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 
 Widget _app(Widget child, {double width = 360, bool hero = false}) =>
     ExpressiveHost(
-      light: _theme,
+      theme: _theme,
       brightness: Brightness.light,
       child: Directionality(
         textDirection: TextDirection.ltr,

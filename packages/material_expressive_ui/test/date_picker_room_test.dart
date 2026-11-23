@@ -18,7 +18,7 @@ final ExpressiveThemeData baseline = ExpressiveThemeData.preset(
 Widget _host(double top) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, app) => ExpressiveHost(
-    light: baseline,
+    theme: baseline,
     brightness: Brightness.light,
     child: app!,
   ),

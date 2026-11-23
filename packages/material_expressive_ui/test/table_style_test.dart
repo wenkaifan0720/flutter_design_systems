@@ -27,7 +27,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ExpressiveHost(
-            light: theme,
+            theme: theme,
             brightness: Brightness.light,
             child: Center(
               child: SizedBox(

@@ -22,8 +22,8 @@ Widget _kit(
   double width = 390,
 }) => MaterialApp(
   home: ExpressiveHost(
-    light: ExpressiveThemeData.preset(preset, Brightness.light),
-    dark: ExpressiveThemeData.preset(preset, Brightness.dark),
+    theme: ExpressiveThemeData.preset(preset, Brightness.light),
+    darkTheme: ExpressiveThemeData.preset(preset, Brightness.dark),
     brightness: brightness,
     child: Builder(
       builder: (context) => MediaQuery(

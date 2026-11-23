@@ -20,7 +20,7 @@ ExpressiveColorScheme get _c => _theme.colors;
 
 Widget _app(Widget child) => MaterialApp(
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: Center(child: child),
   ),

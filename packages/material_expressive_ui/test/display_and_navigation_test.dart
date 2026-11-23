@@ -16,7 +16,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 /// [child] in Expressive's host, started in a column as a page starts it.
 Widget _kit(Widget child, {double width = 390}) => MaterialApp(
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: Align(
       alignment: AlignmentDirectional.topStart,

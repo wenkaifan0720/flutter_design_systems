@@ -24,7 +24,7 @@ Widget host(
   TextDirection direction = TextDirection.ltr,
 }) => MaterialApp(
   builder: (context, app) =>
-      ExpressiveHost(light: bloom, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: bloom, brightness: Brightness.light, child: app!),
   home: Builder(
     builder: (context) => MediaQuery(
       data: MediaQuery.of(context)
@@ -68,7 +68,7 @@ Widget liveSelect({
       options: sizes,
       value: value,
       kind: style,
-      label: 'Size',
+      labelText: 'Size',
       hintText: 'Choose a size',
       enabled: enabled,
       focusNode: focusNode,
@@ -215,7 +215,7 @@ void main() {
           options: sizes,
           value: 'm',
           onChanged: null,
-          label: 'Size',
+          labelText: 'Size',
         ),
       ),
     );
@@ -255,7 +255,7 @@ void main() {
           value: null,
           onChanged: (_) {},
           controller: controller,
-          label: 'Size',
+          labelText: 'Size',
         ),
       ),
     );
@@ -285,7 +285,7 @@ void main() {
         controller: controller,
         focusNode: focusNode,
         enabled: enabled,
-        label: 'City',
+        labelText: 'City',
         onSelected: (option) => chosen?.add(option.value),
       ),
       const SizedBox(key: ValueKey('outside'), height: 300),
@@ -512,7 +512,7 @@ void main() {
             for (final city in cities)
               ExpressiveSelectOption<String>(city, city),
           ],
-          label: 'City',
+          labelText: 'City',
           emptyBuilder: (context) => const Text('No city by that name'),
         ),
       ),

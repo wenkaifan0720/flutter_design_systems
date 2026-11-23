@@ -34,7 +34,7 @@ Widget _app(
   double scale = 1,
   ExpressiveThemeData? theme,
 }) => ExpressiveHost(
-  light: theme ?? _theme,
+  theme: theme ?? _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: direction,

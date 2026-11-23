@@ -25,7 +25,7 @@ final ExpressiveThemeData bloom = ExpressiveThemeData.preset(
 
 Widget host(WidgetBuilder builder, {double scale = 1}) => MaterialApp(
   builder: (context, app) =>
-      ExpressiveHost(light: bloom, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: bloom, brightness: Brightness.light, child: app!),
   home: Builder(
     builder: (context) => MediaQuery(
       data: MediaQuery.of(context)
@@ -272,7 +272,7 @@ void main() {
         chosen = showExpressiveDatePicker(
           context: launcher,
           initialDate: result,
-          today: today,
+          currentDate: today,
         );
         await tester.pumpAndSettle();
         await tester.tap(pressableOf(find.text('12')));
@@ -404,7 +404,7 @@ void main() {
         MaterialApp(
           home: MaterialApp(
             builder: (context, app) => ExpressiveHost(
-              light: bloom,
+              theme: bloom,
               brightness: Brightness.light,
               child: app!,
             ),
@@ -1318,6 +1318,51 @@ void main() {
     expect(targetOfDay(tester, '12').width, 48);
     semantics.dispose();
   });
+
+  for (final width in [390.0, 393.0]) {
+    testWidgets('the date picker dialog on a ${width.toInt()} phone shows the '
+        "whole week, nothing panned: the dialog's narrow margin gives way to "
+        'seven whole days', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = Size(width, 844);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        host(
+          (context) => GestureDetector(
+            onTap: () => showExpressiveDatePicker(
+              context: context,
+              initialDate: DateTime(2026, 11, 20),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      final dialog = tester.getRect(find.byType(ExpressiveDatePickerDialog));
+      // November 2026 starts on a Sunday: the 1st and the 7th stand in the
+      // week's outer columns.
+      for (final day in ['1', '7']) {
+        final words = tester.getRect(find.text(day));
+        expect(
+          dialog.left <= words.left && words.right <= dialog.right,
+          isTrue,
+          reason: '$day at $words in $dialog',
+        );
+      }
+      expect(
+        find.descendant(
+          of: find.byType(ExpressiveDatePickerDialog),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is SingleChildScrollView &&
+                w.scrollDirection == Axis.horizontal,
+          ),
+        ),
+        findsNothing,
+      );
+    });
+  }
 }
 
 /// ui_core's shared words with the week starting on [day], as a locale

@@ -23,7 +23,7 @@ Widget _app(
   double scale = 1,
   double width = 360,
 }) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: direction,
@@ -645,7 +645,7 @@ void main() {
               ExpressiveSwipeAction(
                 label: 'Delete',
                 icon: ExpressiveSymbols.delete,
-                destructive: true,
+                isDestructiveAction: true,
                 onPressed: () => deletes++,
               ),
               ExpressiveSwipeAction(

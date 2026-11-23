@@ -23,7 +23,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 /// [child] in Expressive's host, started in a column as a page starts it.
 Widget _kit(Widget child, {double width = 390}) => MaterialApp(
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: Align(
       alignment: AlignmentDirectional.topStart,
@@ -42,7 +42,7 @@ Widget _kit(Widget child, {double width = 390}) => MaterialApp(
 /// [child] filling the screen in Expressive's host.
 Widget _screen(Widget child) => MaterialApp(
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: child,
   ),
@@ -231,7 +231,7 @@ void main() {
   group('ExpressivePasswordField', () {
     testWidgets('hidden until the eye shows it', (tester) async {
       await tester.pumpWidget(
-        _kit(const ExpressivePasswordField(label: 'Password')),
+        _kit(const ExpressivePasswordField(labelText: 'Password')),
       );
       bool obscured() =>
           tester.widget<EditableText>(find.byType(EditableText)).obscureText;
@@ -254,7 +254,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: ExpressiveHost(
-              light: _theme.copyWith(density: density),
+              theme: _theme.copyWith(density: density),
               brightness: Brightness.light,
               child: Align(
                 alignment: AlignmentDirectional.topStart,
@@ -317,9 +317,9 @@ void main() {
     ) async {
       Widget field(String? error) => _kit(
         ExpressiveFormField(
-          label: 'Display name',
-          help: 'Others see it',
-          error: error,
+          labelText: 'Display name',
+          helperText: 'Others see it',
+          errorText: error,
           required: true,
           child: const ExpressiveTextField(hintText: 'Ada'),
         ),
@@ -338,7 +338,7 @@ void main() {
       await tester.pumpWidget(
         _kit(
           ExpressiveFormField(
-            label: 'Notify me',
+            labelText: 'Notify me',
             child: ExpressiveSwitch(value: true, onChanged: (_) {}),
           ),
         ),
@@ -357,7 +357,7 @@ void main() {
       await tester.pumpWidget(
         _kit(
           const ExpressiveFormField(
-            label: 'Display name',
+            labelText: 'Display name',
             child: ExpressiveTextField(hintText: 'Ada'),
           ),
         ),
@@ -408,7 +408,7 @@ void main() {
       await tester.pumpWidget(
         _kit(
           ExpressiveMultiSelect<String>(
-            label: 'Topics',
+            labelText: 'Topics',
             options: const <ExpressiveSelectOption<String>>[
               ExpressiveSelectOption('design', 'Design'),
               ExpressiveSelectOption('travel', 'Travel'),
@@ -435,7 +435,7 @@ void main() {
       await tester.pumpWidget(
         _kit(
           ExpressiveMultiSelect<String>(
-            label: 'Sizes',
+            labelText: 'Sizes',
             options: const <ExpressiveSelectOption<String>>[
               ExpressiveSelectOption('s', 'Small'),
               ExpressiveSelectOption('m', 'Medium'),
@@ -819,7 +819,7 @@ void main() {
                 onChanged: (_) {},
               ),
               ExpressiveMultiSelect<String>(
-                label: 'Topics',
+                labelText: 'Topics',
                 options: const <ExpressiveSelectOption<String>>[
                   ExpressiveSelectOption('design', 'Design'),
                 ],

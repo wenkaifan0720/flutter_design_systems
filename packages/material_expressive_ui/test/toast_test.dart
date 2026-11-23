@@ -30,20 +30,26 @@ Widget host(
     child: Directionality(
       textDirection: direction,
       child: ExpressiveHost(
-        light: bloom,
+        theme: bloom,
         brightness: Brightness.light,
         child: app!,
       ),
     ),
   ),
-  home: ShellInsets(
-    bottomInset: allowance,
-    child: Builder(
-      builder: (context) => Align(
-        alignment: Alignment.topCenter,
-        child: SizedBox(width: 400, child: builder(context)),
+  home: Column(
+    children: <Widget>[
+      Expanded(
+        child: Builder(
+          builder: (context) => Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(width: 400, child: builder(context)),
+          ),
+        ),
       ),
-    ),
+      // A bar [allowance] tall along the foot, marked as the shell marks
+      // its own.
+      RawToasterKeepClear(child: SizedBox(height: allowance)),
+    ],
   ),
 );
 
@@ -242,7 +248,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           builder: (context, app) => ExpressiveHost(
-            light: bloom,
+            theme: bloom,
             brightness: Brightness.light,
             child: app!,
           ),
@@ -321,7 +327,7 @@ void main() {
             home: Directionality(
               textDirection: direction,
               child: ExpressiveHost(
-                light: bloom,
+                theme: bloom,
                 brightness: Brightness.light,
                 child: Align(
                   alignment: Alignment.topCenter,
@@ -424,7 +430,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           builder: (context, app) => ExpressiveHost(
-            light: bloom,
+            theme: bloom,
             brightness: Brightness.light,
             child: app!,
           ),
@@ -483,11 +489,14 @@ void main() {
       expect(find.text('Uploading 3 photos'), findsOneWidget);
       expect(find.text('Upload finished'), findsNothing);
       await tester.pump(ExpressiveSnackBarDuration.short.timeout!);
-      // The first leaves while the second enters.
+      // The first leaves, then the second enters, as Material's
+      // ScaffoldMessenger hands one to the next.
       await tester.pump(const Duration(milliseconds: 16));
-      expect(find.text('Upload finished'), findsOneWidget);
+      expect(find.text('Uploading 3 photos'), findsOneWidget);
+      expect(find.text('Upload finished'), findsNothing);
       await tester.pumpAndSettle();
       expect(find.text('Uploading 3 photos'), findsNothing);
+      expect(find.text('Upload finished'), findsOneWidget);
       await tester.pump(ExpressiveSnackBarDuration.short.timeout!);
       await tester.pumpAndSettle();
       expect(find.byType(ExpressiveSnackBar), findsNothing);
@@ -603,6 +612,225 @@ void main() {
       expect(find.text('First'), findsNothing);
       expect(find.text('Second'), findsOneWidget);
       await tester.pump(ExpressiveSnackBarDuration.short.timeout!);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets("stands above a shell's bar and action", (tester) async {
+      // A phone: the shell's bar (from 600dp it is a rail).
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      late BuildContext page;
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, app) => ExpressiveHost(
+            theme: bloom,
+            brightness: Brightness.light,
+            child: app!,
+          ),
+          home: ExpressiveShellScaffold(
+            tabs: const <NavTab>[
+              NavTab(
+                icon: ExpressiveSymbols.home,
+                label: 'Home',
+                location: '/',
+              ),
+              NavTab(
+                icon: ExpressiveSymbols.person,
+                label: 'You',
+                location: '/you',
+              ),
+            ],
+            selectedIndex: 0,
+            onDestinationSelected: (_) {},
+            action: ExpressiveShellAction(
+              icon: ExpressiveSymbols.add,
+              onPressed: (_) {},
+            ),
+            body: Builder(
+              builder: (context) {
+                page = context;
+                return const SizedBox.expand();
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      showExpressiveSnackBar(page, 'Draft saved');
+      await tester.pumpAndSettle();
+      final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+      // The action rides 16dp over the bar: the snackbar stands above both,
+      // where 0.4.1 put it from the shell's allowance.
+      expect(
+        rectOf(
+          tester,
+          find
+              .descendant(
+                of: find.byType(ExpressiveSnackBar),
+                matching: find.byType(ExpressiveSurface),
+              )
+              .first,
+        ).bottom,
+        closeTo(
+          screen.height -
+              ExpressiveShellInsets.allowance(systemInset: 0, action: true) -
+              SnackbarBehavior.margin,
+          0.01,
+        ),
+      );
+      hideCurrentExpressiveSnackBar(page);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('stands above the keyboard', (tester) async {
+      late BuildContext page;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpWidget(
+        host((context) {
+          page = context;
+          return const SizedBox.shrink();
+        }, allowance: 80),
+      );
+      showExpressiveSnackBar(page, 'Draft saved');
+      await tester.pumpAndSettle();
+      final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+      // The keyboard covers the bar: the snackbar stands on the keyboard.
+      expect(
+        rectOf(tester, surface).bottom,
+        closeTo(
+          screen.height -
+              300 / tester.view.devicePixelRatio -
+              SnackbarBehavior.margin,
+          0.01,
+        ),
+      );
+      hideCurrentExpressiveSnackBar(page);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets(
+      'one with an action stays while a screen reader runs; one without '
+      'times out',
+      (tester) async {
+        late BuildContext page;
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            const FakeAccessibilityFeatures(accessibleNavigation: true);
+        addTearDown(
+          tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+        );
+        await tester.pumpWidget(
+          host((context) {
+            page = context;
+            return const SizedBox.shrink();
+          }),
+        );
+        showExpressiveSnackBar(page, 'Note archived');
+        showExpressiveSnackBar(
+          page,
+          'List deleted',
+          actionLabel: 'Undo',
+          onAction: () {},
+        );
+        await tester.pumpAndSettle();
+        await tester.pump(ExpressiveSnackBarDuration.short.timeout!);
+        await tester.pumpAndSettle();
+        expect(find.text('Note archived'), findsNothing);
+        expect(find.text('List deleted'), findsOneWidget);
+        // As Material's ScaffoldMessenger holds a snackbar with an action.
+        await tester.pump(ExpressiveSnackBarDuration.long.timeout! * 2);
+        await tester.pumpAndSettle();
+        expect(find.text('List deleted'), findsOneWidget);
+        hideCurrentExpressiveSnackBar(page);
+        await tester.pumpAndSettle();
+        expect(find.byType(ExpressiveSnackBar), findsNothing);
+      },
+    );
+
+    testWidgets('with no ExpressiveHost, says how to mount one', (
+      tester,
+    ) async {
+      late BuildContext page;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              page = context;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+      expect(
+        () => showExpressiveSnackBar(page, 'Draft saved'),
+        throwsA(
+          isA<FlutterError>().having(
+            (e) => e.toString(),
+            'message',
+            allOf(
+              contains('found no ExpressiveHost'),
+              contains(
+                'MaterialApp(builder: (context, child) => '
+                'ExpressiveHost(child: child!))',
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+
+    testWidgets("a screen's footer holds it up only while the screen shows", (
+      tester,
+    ) async {
+      late BuildContext page;
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, app) => ExpressiveHost(
+            theme: bloom,
+            brightness: Brightness.light,
+            child: app!,
+          ),
+          home: const ExpressiveScaffold(
+            title: 'Library',
+            body: SizedBox(),
+            footer: SizedBox(height: 64),
+          ),
+        ),
+      );
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      unawaited(
+        navigator.push(
+          PageRouteBuilder<void>(
+            pageBuilder: (context, _, _) {
+              page = context;
+              return const ExpressiveScaffold(
+                title: 'Details',
+                body: SizedBox(),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      showExpressiveSnackBar(page, 'Following');
+      await tester.pumpAndSettle();
+      final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+      // The page over the footer docks nothing: the snackbar stands at
+      // the foot (ui_core 0.5.1 lets a covered route's part go).
+      expect(
+        rectOf(
+          tester,
+          find
+              .descendant(
+                of: find.byType(ExpressiveSnackBar),
+                matching: find.byType(ExpressiveSurface),
+              )
+              .first,
+        ).bottom,
+        closeTo(screen.height - SnackbarBehavior.margin, 0.01),
+      );
+      hideCurrentExpressiveSnackBar(page);
       await tester.pumpAndSettle();
     });
   });

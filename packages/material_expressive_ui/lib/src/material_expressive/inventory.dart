@@ -229,16 +229,16 @@ Widget _link(BuildContext context) =>
 // --- Inputs ------------------------------------------------------------------
 
 Widget _textField(BuildContext context) =>
-    const ExpressiveTextField(label: 'City');
+    const ExpressiveTextField(labelText: 'City');
 
 Widget _textArea(BuildContext context) =>
-    const ExpressiveTextArea(label: 'Notes');
+    const ExpressiveTextArea(labelText: 'Notes');
 
 Widget _searchField(BuildContext context) =>
     const ExpressiveSearchField(hintText: 'Search messages');
 
 Widget _passwordField(BuildContext context) =>
-    const ExpressivePasswordField(label: 'Password');
+    const ExpressivePasswordField(labelText: 'Password');
 
 Widget _inputGroup(BuildContext context) => ExpressiveInputGroup(
   hintText: 'example.com',
@@ -252,7 +252,7 @@ Widget _numberField(BuildContext context) => const ExpressiveNumberField(
   value: 2,
   min: 1,
   max: 8,
-  label: 'Guests',
+  labelText: 'Guests',
   onChanged: _drop,
 );
 
@@ -267,15 +267,15 @@ Widget _select(BuildContext context) => const ExpressiveSelect<String>(
   options: _sizes,
   value: 'm',
   onChanged: _drop,
-  label: 'Size',
+  labelText: 'Size',
 );
 
 Widget _combobox(BuildContext context) =>
-    const ExpressiveCombobox<String>(options: _sizes, label: 'Size');
+    const ExpressiveCombobox<String>(options: _sizes, labelText: 'Size');
 
 Widget _multiSelect(BuildContext context) =>
     const ExpressiveMultiSelect<String>(
-      label: 'Sizes',
+      labelText: 'Sizes',
       options: _sizes,
       values: <String>['s', 'm'],
       onChanged: _drop,
@@ -330,8 +330,8 @@ Widget _chip(BuildContext context) =>
 Widget _rating(BuildContext context) => const ExpressiveRating(value: 4.5);
 
 Widget _fileUpload(BuildContext context) => const ExpressiveFileUpload(
-  label: 'Drop a receipt here',
-  supportingText: 'PDF or JPG, up to 10 MB',
+  labelText: 'Drop a receipt here',
+  helperText: 'PDF or JPG, up to 10 MB',
   onBrowse: _none,
 );
 
@@ -361,8 +361,8 @@ Widget _colorPicker(BuildContext context) =>
     const ExpressiveColorPicker(value: Color(0xFF6750A4), onChanged: _drop);
 
 Widget _formField(BuildContext context) => const ExpressiveFormField(
-  label: 'Notify me',
-  help: 'At most once a day',
+  labelText: 'Notify me',
+  helperText: 'At most once a day',
   child: ExpressiveSwitch(value: true, onChanged: _drop),
 );
 
@@ -415,7 +415,7 @@ Widget _breadcrumb(BuildContext context) => const ExpressiveBreadcrumb(
 );
 
 Widget _pagination(BuildContext context) =>
-    const ExpressivePagination(page: 3, count: 12, onChanged: _drop);
+    const ExpressivePagination(page: 3, pageCount: 12, onChanged: _drop);
 
 Widget _stepProgress(BuildContext context) => const ExpressiveStepProgress(
   count: 3,
@@ -424,7 +424,7 @@ Widget _stepProgress(BuildContext context) => const ExpressiveStepProgress(
 );
 
 Widget _pageDots(BuildContext context) =>
-    const ExpressivePageDots(count: 5, selectedIndex: 1, onChanged: _drop);
+    const ExpressivePageDots(pageCount: 5, page: 1, onChanged: _drop);
 
 Widget _menuBar(BuildContext context) => ExpressiveMenuBar(
   menus: <ExpressiveMenuBarEntry>[

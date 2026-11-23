@@ -23,7 +23,7 @@ final ExpressiveThemeData bloom = ExpressiveThemeData.preset(
 Widget host(WidgetBuilder builder, {bool nested = false}) {
   final app = MaterialApp(
     builder: (context, app) =>
-        ExpressiveHost(light: bloom, brightness: Brightness.light, child: app!),
+        ExpressiveHost(theme: bloom, brightness: Brightness.light, child: app!),
     home: Builder(
       builder: (context) => SafeArea(
         child: Padding(
@@ -265,7 +265,7 @@ void main() {
               builder: (context) => ExpressiveDialog(
                 title: 'Move the trip',
                 content: ExpressiveCombobox<String>(
-                  label: 'City',
+                  labelText: 'City',
                   options: const <ExpressiveSelectOption<String>>[
                     ExpressiveSelectOption<String>('lisbon', 'Lisbon'),
                     ExpressiveSelectOption<String>('oslo', 'Oslo'),
@@ -341,7 +341,7 @@ void main() {
       ]) {
         await tester.pumpWidget(
           ExpressiveHost(
-            light: bloom.copyWith(density: density),
+            theme: bloom.copyWith(density: density),
             brightness: Brightness.light,
             child: const Directionality(
               textDirection: TextDirection.ltr,
@@ -628,7 +628,7 @@ void main() {
   group('the action slot', () {
     Widget tooltip({String? actionLabel, Widget? action}) => MaterialApp(
       builder: (context, app) => ExpressiveHost(
-        light: bloom,
+        theme: bloom,
         brightness: Brightness.light,
         child: app!,
       ),
@@ -890,7 +890,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         builder: (context, app) => ExpressiveHost(
-          light: ExpressiveThemeData.preset('baseline', Brightness.light),
+          theme: ExpressiveThemeData.preset('baseline', Brightness.light),
           brightness: Brightness.light,
           child: app!,
         ),

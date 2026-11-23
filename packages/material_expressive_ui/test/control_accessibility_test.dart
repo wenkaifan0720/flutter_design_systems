@@ -26,8 +26,8 @@ Future<void> _show(
   await tester.pumpWidget(
     MaterialApp(
       builder: (context, app) => ExpressiveHost(
-        light: theme,
-        dark: theme,
+        theme: theme,
+        darkTheme: theme,
         brightness: brightness,
         child: MediaQuery(
           data: MediaQuery.of(context)
@@ -288,7 +288,7 @@ void main() {
         await _show(
           tester,
           ExpressiveSelect<String>(
-            label: 'Where you stay',
+            labelText: 'Where you stay',
             value: name,
             options: const [ExpressiveSelectOption(name, name)],
             onChanged: (_) {},

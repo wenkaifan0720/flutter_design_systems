@@ -17,8 +17,8 @@ Widget _kit(
   TextDirection direction = TextDirection.ltr,
 }) => MaterialApp(
   home: ExpressiveHost(
-    light: ExpressiveThemeData.preset('baseline', Brightness.light),
-    dark: ExpressiveThemeData.preset('baseline', Brightness.dark),
+    theme: ExpressiveThemeData.preset('baseline', Brightness.light),
+    darkTheme: ExpressiveThemeData.preset('baseline', Brightness.dark),
     brightness: Brightness.light,
     child: Directionality(
       textDirection: direction,
@@ -144,8 +144,11 @@ void main() {
   });
 
   group('pagination', () {
-    List<int?> pages(int page, int count) =>
-        ExpressivePagination(page: page, count: count, onChanged: (_) {}).pages;
+    List<int?> pages(int page, int count) => ExpressivePagination(
+      page: page,
+      pageCount: count,
+      onChanged: (_) {},
+    ).pages;
 
     test('first, last and the current page with a sibling each side', () {
       expect(pages(5, 12), <int?>[1, null, 4, 5, 6, null, 12]);
@@ -163,7 +166,7 @@ void main() {
       final asked = <int>[];
       Future<void> pump(int page) => tester.pumpWidget(
         _kit(
-          ExpressivePagination(page: page, count: 12, onChanged: asked.add),
+          ExpressivePagination(page: page, pageCount: 12, onChanged: asked.add),
           width: 1000,
         ),
       );
@@ -194,7 +197,7 @@ void main() {
         'so the next page never covers it', (tester) async {
       await tester.pumpWidget(
         _kit(
-          ExpressivePagination(page: 5, count: 12, onChanged: (_) {}),
+          ExpressivePagination(page: 5, pageCount: 12, onChanged: (_) {}),
           width: 1000,
         ),
       );
@@ -216,7 +219,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _kit(
-          ExpressivePagination(page: 5, count: 12, onChanged: (_) {}),
+          ExpressivePagination(page: 5, pageCount: 12, onChanged: (_) {}),
           width: 260,
         ),
       );
@@ -231,7 +234,7 @@ void main() {
       ) async {
         await tester.pumpWidget(
           _kit(
-            ExpressivePagination(page: 5, count: 12, onChanged: (_) {}),
+            ExpressivePagination(page: 5, pageCount: 12, onChanged: (_) {}),
             direction: direction,
           ),
         );
@@ -255,8 +258,8 @@ void main() {
       await tester.pumpWidget(
         _kit(
           ExpressiveFileUpload(
-            label: 'Drop receipts here',
-            supportingText: 'PDF or JPG',
+            labelText: 'Drop receipts here',
+            helperText: 'PDF or JPG',
             onBrowse: () => browsed++,
             files: const <ExpressiveChosenFile>[
               ExpressiveChosenFile('a.pdf', detail: '1 KB'),

@@ -266,6 +266,7 @@ class ExpressiveBareField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.semanticLabel,
+    this.expanded,
     super.key,
   });
 
@@ -306,6 +307,10 @@ class ExpressiveBareField extends StatelessWidget {
 
   /// What a screen reader calls it, when no label around it does.
   final String? semanticLabel;
+
+  /// Whether the list it opens stands open (a multi-select's); null for a
+  /// field that opens none.
+  final bool? expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -370,7 +375,7 @@ class ExpressiveBareField extends StatelessWidget {
     // Named by its label, else by its placeholder (as a text field is): a
     // field a screen reader can only hint at has no name.
     final label = semanticLabel ?? hint;
-    if (label != null) {
+    if (label != null || expanded != null) {
       // Merged, so the name lands on the field's own node: an annotation
       // above a TextField names the node around it, not the field.
       field = MergeSemantics(
@@ -378,6 +383,7 @@ class ExpressiveBareField extends StatelessWidget {
           label: label,
           hint: semanticLabel == null ? null : hint,
           textField: true,
+          expanded: expanded,
           child: field,
         ),
       );

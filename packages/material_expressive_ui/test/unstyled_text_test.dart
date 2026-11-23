@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
+import 'package:material_expressive_ui/material_expressive_host.dart';
 
 // The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
@@ -94,14 +95,18 @@ final _theme = ExpressiveThemeData.preset('baseline', Brightness.light);
 
 /// A WidgetsApp with no Material and only the theme; on [_Ground.bare] no
 /// text style at all, on [_Ground.materialError] MaterialApp's error style.
+/// [hosted] mounts the [ExpressiveHost] on the theme in the theme's place.
 Widget _bare(
   _Mount mount,
   WidgetBuilder home, {
   _Ground ground = _Ground.materialError,
   ExpressiveThemeData? theme,
+  bool hosted = false,
 }) {
   final data = theme ?? _theme;
-  Widget themed(Widget child) => ExpressiveTheme(data: data, child: child);
+  Widget themed(Widget child) => hosted
+      ? ExpressiveHost(theme: data, darkTheme: data, child: child)
+      : ExpressiveTheme(data: data, child: child);
   return WidgetsApp(
     color: data.colors.primary,
     textStyle: ground == _Ground.materialError ? materialErrorTextStyle : null,
@@ -173,6 +178,7 @@ void main() {
               await tester.pumpWidget(
                 _bare(
                   ground: ground,
+                  hosted: hostedOverlays.contains(name),
                   mount,
                   (context) => Center(
                     child: GestureDetector(

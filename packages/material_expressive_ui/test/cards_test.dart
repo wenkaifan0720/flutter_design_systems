@@ -15,7 +15,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 );
 
 Widget _app(Widget child) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,
@@ -297,7 +297,9 @@ void main() {
         _app(
           const SizedBox(
             width: 320,
-            child: ExpressiveCard(child: ExpressiveTextField(label: 'Name')),
+            child: ExpressiveCard(
+              child: ExpressiveTextField(labelText: 'Name'),
+            ),
           ),
         ),
       );
