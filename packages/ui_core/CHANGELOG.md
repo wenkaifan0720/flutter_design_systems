@@ -1,3 +1,9 @@
+## 0.5.5
+
+- A `RawPopover` surface its `positionDelegate` places is sized by the bounds the popover keeps to (`RawPopoverPositionContext.bounds`: the overlay less the safe area, the on-screen keyboard, a `RawPopoverPadding` and the placement's margin), and `RawPopoverInfo.maxSize` is their size. It was sized by the room on its placement's side of the anchor, so a delegate that turned a menu over its control low on the screen got a surface as short as the room under the control: the lower rows were cut off and took no press. The placement's widths and side are kept, and a popover that places itself is sized as before.
+- `RawPopover.role` gives the surface's node a semantics role beside its `semanticLabel` (`SemanticsRole.menu` for a menu, `SemanticsRole.dialog` for a popover that holds a task), so a screen reader hears what it is. With none, the default, its node is as before.
+- A `RawPopover` surface drawn through its close spring takes no pointer and no focus: a press on a row as it closes, or a screen reader's tap there, no longer reaches the row, and a row asking for the focus no longer takes it back from where it went. A tap on it is a tap outside it, as on a route going out. Opened again during the spring, it takes them again.
+
 ## 0.5.4
 
 - A required `RawInputDecorator` with no `labelText`, named by what its control says (the words it draws, merged into its node, or a semantic label), says that it is required: `requiredHint` starts its hint, as it does where the control says the label itself. It carried the required flag and no words, so a screen reader everywhere but the web (where the flag is heard on a text field's input) never heard it. The same holds merged whole (`mergeSemantics: true`), in a group of its own (`false`), and on the node a number field's or a tag input's entry carries the words on. A labelled field is as before.

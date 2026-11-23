@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart' show SemanticsRole;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart'
@@ -665,7 +666,7 @@ class LookMenu extends StatelessWidget {
 /// [RawPopover], placed by the look through [RawPopover.positionDelegate].
 /// The popover keeps the rest: Escape and a tap outside close it, the keys
 /// start on the first row, the focus goes back to the button, and the menu
-/// is named.
+/// is named and heard as a menu ([RawPopover.role]).
 ///
 /// ```dart
 /// LookMoreMenu(semanticLabel: 'More', entries: [RawMenuEntry(label: 'Rename', onPressed: () {})])
@@ -690,6 +691,7 @@ class LookMoreMenu extends StatelessWidget {
     return RawPopover(
       arrowKeyNavigation: true,
       semanticLabel: semanticLabel,
+      role: SemanticsRole.menu,
       // Over the button, the menu's end corner on the button's (its right
       // corner, or its left right to left), kept inside the room the
       // popover keeps to on its own.

@@ -2,7 +2,7 @@
 
 ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core 0.5.4 carries, how to
+look's face for them. This page lists what ui_core 0.5.5 carries, how to
 wire each kind of part, and the three shims a look puts in place until
 Flutter's own fixes reach its minimum version.
 
@@ -25,7 +25,7 @@ with the `Raw*` names only.
 | Layout | `DesignControlBox`, `DesignCapCenter`, `DesignDensity`, `DesignSpacingScope`, `DesignKeylineRegion` | Its control height, padding, grid |
 | Style | `DesignStyle` (ten `WidgetStateProperty` slots), `DesignStyleOf` | A typedef, a slot per part in its theme, its defaults |
 | Motion | `designSpring`, `DesignMotionPolicy`, `springTo`, `designReduceMotionOf` | Its tokens |
-| Raised surfaces | `DesignDialogRoute`, `RawModalRoute` (a modal page with no role), `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawActionBar` (a dialog's or a sheet's actions), `RawPopover` (`RawPopoverFit.whole` for a picker, `positionDelegate` for a place of the look's own), `RawContextMenu`, `RawToaster` with `RawToasterKeepClear`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
+| Raised surfaces | `DesignDialogRoute`, `RawModalRoute` (a modal page with no role), `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawActionBar` (a dialog's or a sheet's actions), `RawPopover` (`RawPopoverFit.whole` for a picker, `positionDelegate` for a place of the look's own, `role` for a menu), `RawContextMenu`, `RawToaster` with `RawToasterKeepClear`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
 | Lists | `RawPopover` (a select's list, a menu), `RawCombobox`, `RawTagInput`, `RawMenuEntry` (with `isDestructiveAction`): placement below the field, keys, highlight, the chosen option focused, announcements | One list surface, one row, the destructive tone |
 | Navigation | `RawTabBar`, `RawTabGroup` (tabs the look lays out), `RawRovingFocusGroup` (a toolbar, a grid of choices), `RawMenuBar`, `RawCommandPalette`, `DesignAdaptiveShell`, `SwipeBackPageTransitionsBuilder` | Tabs, bars, rails, page motion |
 | Words | `RawWidgetsLocalizations` (30 languages) | Its own words, if any |
@@ -588,7 +588,9 @@ marked one way across the look:
 - **A menu** is a list of `RawMenuEntry` (`label`, `onPressed`, `children`
   for a submenu, `shortcut`, `checked`, `data`, `isDestructiveAction`) in a
   `RawContextMenu`, a `RawMenuBar`, or the look's menu button on
-  `RawPopover`. The item builder gets the entry, so it reads
+  `RawPopover` with `role: SemanticsRole.menu`, so a screen reader hears a
+  menu (Flutter 3.47 has no list box role: a select's list takes none). The
+  item builder gets the entry, so it reads
   `entry.isDestructiveAction` and paints Delete in the destructive tone;
   nothing else about the item changes.
 
@@ -614,11 +616,14 @@ pull-down menus open; a panel at a place the page knows) takes a
 `positionDelegate`: it returns the surface's top-left corner in the
 overlay from a `RawPopoverPositionContext` (`anchorRect`, `surfaceSize`,
 `overlaySize`, `bounds`, `side`, `textDirection`, and `position` for a
-popover opened at a point). The surface is still laid out by the placement
-(its side, `fit`, widths); the popover still closes on Escape and a tap
-outside, moves the focus in and back, and names its surface. `bounds` is
-what the popover keeps to on its own (the safe area, the keyboard, the
-margin): keep to it too, and mirror the place right to left.
+popover opened at a point). The surface is sized by `bounds`, not by the
+room on one side of its anchor, so a menu turned over its button keeps every
+row; the placement's widths still hold, and the popover still closes on
+Escape and a tap outside, moves the focus in and back, and names its
+surface. `bounds` is what the popover keeps to on its own (the safe area,
+the keyboard, the margin): keep to it too, and mirror the place right to
+left. A surface closing on its spring is still drawn but takes no taps and
+no focus, so an exit animation needs no guard of the look's own.
 
 ```dart
 positionDelegate: (place) {

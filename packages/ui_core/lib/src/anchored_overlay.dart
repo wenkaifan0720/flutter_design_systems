@@ -13,6 +13,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart' show SemanticsRole;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -247,6 +248,9 @@ class RawPopoverInfo {
   final Rect anchorRect;
 
   /// The most room it has on that side; a long surface scrolls within it.
+  /// Placed by a [RawPopover.positionDelegate], which may put it anywhere,
+  /// the size of the bounds it keeps to
+  /// ([RawPopoverPositionContext.bounds]).
   final Size maxSize;
 
   /// 0 to 1 as it opens, 1 to 0 as it closes, on a spring (critically damped
@@ -316,20 +320,22 @@ class RawPopoverPositionContext {
   /// The anchor's rectangle in the overlay.
   final Rect anchorRect;
 
-  /// The surface's size, laid out as when the popover places itself: within
-  /// the room on [side], by [RawPopoverPlacement.fit] and its widths.
+  /// The surface's size, laid out within [bounds] (the delegate may place it
+  /// anywhere in them, over its anchor too) by [RawPopoverPlacement]'s
+  /// widths, not within the room on [side].
   final Size surfaceSize;
 
   /// The overlay's size.
   final Size overlaySize;
 
-  /// What the popover keeps to when it places itself: the overlay less the
-  /// safe area, the on-screen keyboard, a [RawPopoverPadding] and
-  /// [RawPopoverPlacement.margin]. A delegate may place the surface past it.
+  /// What the popover keeps to when it places itself, and what the surface
+  /// is sized within: the overlay less the safe area, the on-screen
+  /// keyboard, a [RawPopoverPadding] and [RawPopoverPlacement.margin]. A
+  /// delegate may place the surface past it.
   final Rect bounds;
 
-  /// The side the surface's room is on and [RawPopoverInfo.side] says: the
-  /// placement's side, or the other after a flip.
+  /// The side [RawPopoverInfo.side] says: the placement's side, or the other
+  /// after a flip.
   final RawPopoverSide side;
 
   /// The reading direction at the popover.
@@ -528,7 +534,9 @@ class _LeaveArrows extends Action<DirectionalFocusIntent> {
 /// there is no room. [RawPopoverInfo.position] says so.
 ///
 /// [positionDelegate] places the surface where the caller says instead (a
-/// menu at the page's own place), the popover keeping all else.
+/// menu at the page's own place), sized by the bounds it keeps to rather
+/// than one side's room, the popover keeping all else. [role] says what the
+/// surface is to a screen reader (a menu, a dialog).
 ///
 /// ```dart
 /// RawPopover(anchorBuilder: (context, anchor) => GestureDetector(onTap: anchor.toggle, child: const Text('More')), overlayBuilder: (context, info) => const Text('Details'))
@@ -545,6 +553,7 @@ class RawPopover extends StatefulWidget {
     this.focusOnOpen = true,
     this.arrowKeyNavigation = false,
     this.semanticLabel,
+    this.role,
     this.onOpenChanged,
     this.hoverOpenDelay = const Duration(milliseconds: 700),
     this.hoverCloseDelay = const Duration(milliseconds: 300),
@@ -594,6 +603,16 @@ class RawPopover extends StatefulWidget {
   /// What a screen reader calls the surface.
   final String? semanticLabel;
 
+  /// What the surface is to a screen reader, on its node beside
+  /// [semanticLabel]: [SemanticsRole.menu] for a menu, [SemanticsRole.dialog]
+  /// for a popover that holds a task of its own. Null, the default: no role.
+  ///
+  /// The role is the surface's node's alone; the nodes inside keep their
+  /// own. Flutter's debug checks of the role hold as anywhere: a menu holds
+  /// at least one node, and a [SemanticsRole.menuItem] the look gives a row
+  /// sits under a menu.
+  final SemanticsRole? role;
+
   /// Called when it opens (true) or closes (false).
   final ValueChanged<bool>? onOpenChanged;
 
@@ -623,10 +642,18 @@ class RawPopover extends StatefulWidget {
   /// ([RawPopoverPositionContext.textDirection] says which). Null: the
   /// popover places itself by [placement].
   ///
+  /// A surface the delegate places may land anywhere (turned over its
+  /// anchor, say), so it is sized by the bounds the popover keeps to
+  /// ([RawPopoverPositionContext.bounds]: the overlay less the safe area,
+  /// the on-screen keyboard, a [RawPopoverPadding] and
+  /// [RawPopoverPlacement.margin]), not by the room on one side of its
+  /// anchor: as tall as it needs up to the bounds' height, as wide as
+  /// [placement]'s widths allow within theirs, and [RawPopoverInfo.maxSize]
+  /// is the bounds' size. [placement] still picks the side
+  /// [RawPopoverInfo.side] says.
+  ///
   /// The popover keeps all else: it opens, closes and moves focus as before,
-  /// a screen reader hears the same, and it sizes the surface by [placement]
-  /// (its side's room, [RawPopoverPlacement.fit], its widths): a delegate
-  /// places a surface it does not size. [RawPopoverInfo.surfaceRect] says
+  /// and a screen reader hears the same. [RawPopoverInfo.surfaceRect] says
   /// where it landed.
   ///
   /// A menu 12 px under its anchor, its trailing edge on the anchor's:
@@ -697,6 +724,7 @@ class RawPopover extends StatefulWidget {
         ),
       )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(EnumProperty<SemanticsRole>('role', role, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<bool>>.has(
           'onOpenChanged',
@@ -781,8 +809,9 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
   _HoverIntent? _intent;
   FocusNode? _returnTo;
   bool _open = false;
-  // Closing: its spring running down. Focus has gone back; nothing in it
-  // takes it again.
+  // Closing: its spring running down. Focus has gone back; drawn through the
+  // spring, the surface takes no pointer and nothing in it takes the focus
+  // again (built again with it).
   bool _closing = false;
   DesignOpenedBy _openedBy = DesignOpenedBy.other;
   // A pointer resting on the anchor (any trigger): a click that arrives as a
@@ -1036,7 +1065,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     // A menu that opens asks all its group's menus to close, itself among
     // them, before it shows: that request is not a close.
     if (!_controller.isOpen || _closing) return;
-    _closing = true;
+    setState(() => _closing = true);
     if (_open) {
       setState(() => _open = false);
       widget.onOpenChanged?.call(false);
@@ -1226,7 +1255,12 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       direction,
       extent: _extent,
     );
-    final maxSize = designOverlayMaxSize(anchor, bounds, side, gap, direction);
+    final delegate = widget.positionDelegate;
+    // Placed by the caller, anywhere in the bounds (over its anchor too): as
+    // large as the bounds, not one side's room.
+    final maxSize = delegate != null
+        ? bounds.size
+        : designOverlayMaxSize(anchor, bounds, side, gap, direction);
     final info = RawPopoverInfo(
       side: side,
       anchorRect: raw.anchorRect,
@@ -1240,6 +1274,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       container: true,
       explicitChildNodes: true,
       label: widget.semanticLabel,
+      role: widget.role,
       child: widget.overlayBuilder(context, info),
     );
     surface = DesignSurfaceFocus(
@@ -1266,7 +1301,12 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
         focusNode: _surfaceNode,
         includeSemantics: false,
         onKeyEvent: _onSurfaceKey,
-        child: FocusTraversalGroup(child: surface),
+        // Closing: nothing in it takes the focus again, as nothing in a route
+        // going out does.
+        child: ExcludeFocus(
+          excluding: _closing,
+          child: FocusTraversalGroup(child: surface),
+        ),
       ),
     );
     // Above the scope, so a key from the scope itself bubbles through them.
@@ -1306,6 +1346,10 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
         child: surface,
       ),
     );
+    // Closing, drawn through its spring: it takes no pointer, as a route
+    // going out takes none (nor a screen reader's tap), and a tap on it is a
+    // tap outside it.
+    surface = IgnorePointer(ignoring: _closing, child: surface);
     final intent = _intent;
     if (intent != null) {
       surface = MouseRegion(
@@ -1321,7 +1365,6 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       onTapOutside: (_) => _close(),
       child: surface,
     );
-    final delegate = widget.positionDelegate;
     final layout = DesignOverlayLayout(
       anchor: anchor,
       bounds: bounds,
@@ -1330,7 +1373,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       textDirection: direction,
       maxSize: maxSize,
       placed: _placed,
-      // The caller's place, the surface sized as before.
+      // The caller's place.
       placeAt: delegate == null
           ? null
           : (surfaceSize) => delegate(

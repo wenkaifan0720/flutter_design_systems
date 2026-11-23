@@ -1111,4 +1111,88 @@ void main() {
       });
     },
   );
+  // Escape starts the close; 16 ms later the spring (about 250 ms) has hardly
+  // begun, and the surface is still drawn.
+  group('a closing surface, drawn through its spring', () {
+    testWidgets('takes no taps: a row pressed as it closes does nothing, and '
+        'a screen reader finds no tap on it', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final pressed = <String>[];
+      await tester.pumpWidget(
+        _at(
+          Alignment.topCenter,
+          _overlay(itemNodes: _nodes(2), onItem: pressed.add),
+        ),
+      );
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pumpAndSettle();
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(find.text('item 1'), findsOneWidget, reason: 'still drawn');
+      expect(_info.animation.value, greaterThan(0.5));
+      await tester.tap(find.text('item 1'), warnIfMissed: false);
+      await tester.pump();
+      expect(pressed, isEmpty, reason: 'the press went to no row');
+      expect(
+        tester
+            .getSemantics(find.bySemanticsLabel('item 1'))
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isFalse,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('item 1'), findsNothing);
+      semantics.dispose();
+    });
+
+    testWidgets('takes no focus: a row that asks for it as the surface closes '
+        'gets none, and the focus stays on the anchor', (tester) async {
+      final nodes = _nodes(2);
+      await tester.pumpWidget(
+        _at(Alignment.topCenter, _overlay(itemNodes: nodes)),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(nodes.first.hasPrimaryFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(find.text('item 1'), findsOneWidget, reason: 'still drawn');
+      final anchor = FocusManager.instance.primaryFocus;
+      expect(
+        tester.getRect(find.byKey(_anchorKey)).overlaps(anchor!.rect),
+        isTrue,
+        reason: 'the focus went back to the anchor',
+      );
+      nodes[1].requestFocus();
+      await tester.pump();
+      expect(nodes[1].hasFocus, isFalse);
+      expect(FocusManager.instance.primaryFocus, anchor);
+      await tester.pumpAndSettle();
+      expect(FocusManager.instance.primaryFocus, anchor);
+    });
+
+    testWidgets('opened again during its spring, it takes taps and the focus '
+        'again', (tester) async {
+      final pressed = <String>[];
+      final nodes = _nodes(2);
+      await tester.pumpWidget(
+        _at(
+          Alignment.topCenter,
+          _overlay(itemNodes: nodes, onItem: pressed.add),
+        ),
+      );
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pumpAndSettle();
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pumpAndSettle();
+      expect(find.text('item 1'), findsOneWidget);
+      expect(nodes.first.hasPrimaryFocus, isTrue, reason: 'focus moved in');
+      await tester.tap(find.text('item 1'));
+      await tester.pump();
+      expect(pressed, ['item 1']);
+    });
+  });
 }

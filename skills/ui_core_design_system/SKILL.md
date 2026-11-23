@@ -18,7 +18,7 @@ The package it builds starts from:
 
 ```text
 flutter create --template=package <name>_ui
-flutter pub add ui_core:^0.5.4 material_ui
+flutter pub add ui_core:^0.5.5 material_ui
 flutter pub add 'dev:ui_core_test:^0.3.0' dev:leak_tracker_flutter_testing dev:flutter_lints
 ```
 
@@ -86,7 +86,7 @@ leave it plainer. See [taste.md](references/taste.md).
   README.md  CHANGELOG.md  LICENSE
 ```
 
-Depend on `ui_core: ^0.5.4` and, for the text editing and the localizations a
+Depend on `ui_core: ^0.5.5` and, for the text editing and the localizations a
 look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.3.0`,
 `leak_tracker_flutter_testing` and `flutter_lints`. Turn on `strict-casts`,
 `strict-inference`, `strict-raw-types` and `public_member_api_docs`, and leak
@@ -259,8 +259,9 @@ final themes = InheritedTheme.capture(from: context, to: navigator.context);
   the side that holds it; a list keeps the default and scrolls.
 - **A place of the look's own.** A popover that opens where ui_core's
   placement would not put it (a menu over its own button, as iOS's pull-down
-  menus open) takes a `positionDelegate`; the popover still closes, moves
-  the focus in and back, and names itself.
+  menus open) takes a `positionDelegate`; the popover sizes it by the
+  bounds it keeps to, still closes, moves the focus in and back, and names
+  itself. A menu's popover takes `role: SemanticsRole.menu`.
 - **Toasts.** A `RawToaster` in the app's builder holds them; the look
   paints one. A bar the look draws along the screen's foot is wrapped in
   `RawToasterKeepClear`, so a toast stands above it, never on it.

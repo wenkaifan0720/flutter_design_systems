@@ -923,6 +923,7 @@ void main() {
   for (final direction in TextDirection.values) {
     testWidgets('${direction.name}: a menu the look places opens over its '
         'button, its end corner on the button\'s', (tester) async {
+      final semantics = tester.ensureSemantics();
       String? picked;
       await tester.pumpWidget(
         lookApp(
@@ -960,6 +961,12 @@ void main() {
       } else {
         expect(menu.topLeft, button.topLeft);
       }
+      // Its node is a menu named as its button.
+      final node = tester
+          .getSemantics(find.byType(LookListSurface))
+          .getSemanticsData();
+      expect(node.role, SemanticsRole.menu);
+      expect(node.label, 'More');
       // The keys start on the first row; Enter picks it, the menu closes
       // and the focus goes back to the button.
       expect(focusedWords(tester), 'Rename');
@@ -968,6 +975,7 @@ void main() {
       expect(picked, 'Rename');
       expect(find.byType(LookListSurface), findsNothing);
       expect(focusedWords(tester), '…');
+      semantics.dispose();
     });
   }
 
