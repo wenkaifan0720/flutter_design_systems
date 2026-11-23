@@ -411,7 +411,13 @@ class TermBracketPainter extends CustomPainter {
     this.cursorColor,
     this.knockout,
     this.hollow = false,
+    this.spansHeight = false,
   });
+
+  /// Whether the brackets, the fill and the cursor run the whole height
+  /// painted, in whole lines (a label on more than one line), rather than
+  /// one line about its middle.
+  final bool spansHeight;
 
   /// How far the keyboard's focus has come, 0 to 1.
   final double cursor;
@@ -453,11 +459,12 @@ class TermBracketPainter extends CustomPainter {
     final lh = grid.lineHeight;
     final cy = size.height / 2;
     final height = math.min(grid.fontSize * 1.2, lh);
+    final span = spansHeight ? math.max(size.height, lh) : lh;
     final c = cursorColor == null ? 0.0 : cursor.clamp(0.0, 1.0);
     if (c > 0) {
       termPaintCursor(
         canvas,
-        Rect.fromLTRB(0, cy - lh / 2, size.width, cy + lh / 2),
+        Rect.fromLTRB(0, cy - span / 2, size.width, cy + span / 2),
         cursorColor!,
         c,
         cw,
@@ -466,7 +473,12 @@ class TermBracketPainter extends CustomPainter {
     }
     if (fill != null && fillAmount > 0) {
       final amount = fillAmount.clamp(0.0, 1.0);
-      final full = Rect.fromLTRB(cw, cy - lh / 2, size.width - cw, cy + lh / 2);
+      final full = Rect.fromLTRB(
+        cw,
+        cy - span / 2,
+        size.width - cw,
+        cy + span / 2,
+      );
       final inner = Rect.fromCenter(
         center: full.center,
         width: full.width,
@@ -492,7 +504,7 @@ class TermBracketPainter extends CustomPainter {
     final offsets = half < 0.01 ? const [0.0] : [-half, half];
     for (final d in offsets) {
       // d < 0 is the outer line: further out and taller.
-      final h = height / 2 - d;
+      final h = (height + span - lh) / 2 - d;
       _pair(
         canvas,
         paint,
@@ -568,7 +580,8 @@ class TermBracketPainter extends CustomPainter {
       old.cursor != cursor ||
       old.cursorColor != cursorColor ||
       old.knockout != knockout ||
-      old.hollow != hollow;
+      old.hollow != hollow ||
+      old.spansHeight != spansHeight;
 }
 
 /// The cursor over [band]: a block of [color] over every cell, [amount] of

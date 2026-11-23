@@ -208,14 +208,17 @@ class _TermPaneState extends State<TermPane> {
     // command in a right-to-left app keeps its own order: `~/.config`, not
     // `config./~`.
     // Words longer than their room are cut to it with an ellipsis, so a
-    // title never stops mid-letter at the frame's corner.
+    // title never stops mid-letter at the frame's corner: in whole cells
+    // where the face sets them on its grid, and by their drawn width where
+    // it doesn't (a script the face lacks, set in a wider fallback). The
+    // whole title is still read.
     Widget border(String words, TextStyle style) => SizedBox(
       height: lh,
       child: LayoutBuilder(
         builder: (context, c) => Text(
           '\u2068${grid.fit(words, c.maxWidth)}\u2069',
           maxLines: 1,
-          overflow: TextOverflow.clip,
+          overflow: TextOverflow.ellipsis,
           softWrap: false,
           style: style,
           semanticsLabel: words,

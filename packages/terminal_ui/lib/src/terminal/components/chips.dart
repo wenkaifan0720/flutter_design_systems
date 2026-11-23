@@ -221,7 +221,7 @@ class TermChip extends StatelessWidget {
                 color: !enabled
                     ? theme.rule.withValues(alpha: 0.6)
                     : own.edge ?? termHoverInk(theme, theme.rule, states),
-                stroke: termStroke(theme, grid),
+                stroke: termStrokeWidth(theme, grid),
                 shape: TermBracketShape.round,
                 fill: enabled ? own.fill ?? rest : theme.rule,
                 fillAmount: selected ? 1 : press,

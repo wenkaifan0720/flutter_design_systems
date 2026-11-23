@@ -266,7 +266,7 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
               child: CustomPaint(
                 painter: TermRulePainter(
                   color: theme.rule,
-                  stroke: termStroke(theme, grid),
+                  stroke: termStrokeWidth(theme, grid),
                 ),
               ),
             ),
@@ -426,7 +426,7 @@ class _Item extends StatelessWidget {
         amount: lit ? 1 : 0,
         color: own.fill ?? theme.accent,
         knockout: theme.onAccent,
-        stroke: termStroke(theme, grid),
+        stroke: termStrokeWidth(theme, grid),
       ),
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: height),

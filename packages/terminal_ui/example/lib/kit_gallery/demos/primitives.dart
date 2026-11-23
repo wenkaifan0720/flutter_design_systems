@@ -135,7 +135,7 @@ class _Own extends StatelessWidget {
       painter: TermFramePainter(
         grid: grid,
         color: theme.accent,
-        stroke: termStroke(theme, grid),
+        stroke: termStrokeWidth(theme, grid),
         textDirection: Directionality.of(context),
         topGaps: [
           (

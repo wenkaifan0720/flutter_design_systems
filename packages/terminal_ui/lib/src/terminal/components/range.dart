@@ -211,7 +211,7 @@ class _TermSliderState extends State<TermSlider> {
                                 termHoverInk(theme, theme.foreground, states),
                       cursor: theme.accent,
                       knockout: theme.onAccent,
-                      stroke: termStroke(theme, grid),
+                      stroke: termStrokeWidth(theme, grid),
                       textDirection: Directionality.of(context),
                       inset: 0,
                     ),
@@ -322,7 +322,7 @@ class TermRangeSlider extends StatelessWidget {
             thumb: theme.foreground,
             cursor: theme.accent,
             knockout: theme.onAccent,
-            stroke: termStroke(theme, grid),
+            stroke: termStrokeWidth(theme, grid),
             textDirection: Directionality.of(context),
             inset: target.width / 2,
           ),
@@ -426,14 +426,27 @@ class TermMeter extends StatelessWidget {
         children: [
           Text(label, style: theme.dimStyle),
           SizedBox(width: grid.cellWidth),
-          CustomPaint(
-            size: Size(grid.cols(cols), grid.lineHeight),
-            painter: TermBlocksPainter(
-              grid: grid,
-              value: v,
-              color: own.fill ?? tone.colorIn(theme),
-              track: own.edge ?? theme.rule,
-              textDirection: Directionality.of(context),
+          // [cols] cells, or as many whole ones as the line leaves it
+          // (larger text on a phone).
+          Flexible(
+            child: LayoutBuilder(
+              builder: (context, box) => CustomPaint(
+                size: Size(
+                  grid.cols(
+                    box.hasBoundedWidth
+                        ? math.min(cols, grid.colsIn(box.maxWidth))
+                        : cols,
+                  ),
+                  grid.lineHeight,
+                ),
+                painter: TermBlocksPainter(
+                  grid: grid,
+                  value: v,
+                  color: own.fill ?? tone.colorIn(theme),
+                  track: own.edge ?? theme.rule,
+                  textDirection: Directionality.of(context),
+                ),
+              ),
             ),
           ),
           SizedBox(width: grid.cellWidth),
@@ -525,8 +538,27 @@ class TermRating extends StatefulWidget {
 }
 
 class _TermRatingState extends State<TermRating> {
+  // The marks grow with the reader's text, and never past the width they
+  // are given: past that the last marks and the count run off a phone.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final grid = TermTheme.of(context).grid;
+      final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+      var whole = grid.cols((touch ? 4 : 2) * widget.max + 1);
+      if (widget.showCount) {
+        whole += grid.cellWidth + grid.widthOf('${widget.value}/${widget.max}');
+      }
+      if (!box.hasBoundedWidth) return Builder(builder: _rating);
+      return MediaQuery.withClampedTextScaling(
+        // To a hundredth below the fit: never a hair past the width.
+        maxScaleFactor: math.max(1, (box.maxWidth / whole * 100).floor() / 100),
+        child: Builder(builder: _rating),
+      );
+    },
+  );
+
+  Widget _rating(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final cw = grid.cellWidth;

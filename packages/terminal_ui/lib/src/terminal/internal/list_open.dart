@@ -40,8 +40,12 @@ class TermListOpen extends InheritedWidget {
   final bool open;
 
   /// Whether the list of the field at [context] is up.
-  static bool of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<TermListOpen>()?.open ?? false;
+  static bool of(BuildContext context) => maybeOf(context) ?? false;
+
+  /// Whether the list of the field at [context] is up, or null for a field
+  /// that opens no list.
+  static bool? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<TermListOpen>()?.open;
 
   @override
   bool updateShouldNotify(TermListOpen oldWidget) => open != oldWidget.open;

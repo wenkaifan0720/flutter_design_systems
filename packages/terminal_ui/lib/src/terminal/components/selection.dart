@@ -45,7 +45,7 @@ class _ChoiceFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final stroke = termStroke(theme, grid);
+    final stroke = termStrokeWidth(theme, grid);
     final disabled = states.contains(WidgetState.disabled);
     final error = states.contains(WidgetState.error);
     final own = TermStyleOf([style, themed], states);
@@ -596,7 +596,7 @@ class TermSwitch extends StatelessWidget {
         builder: (context, states, _) {
           final theme = TermTheme.of(context);
           final grid = context.termGrid;
-          final stroke = termStroke(theme, grid);
+          final stroke = termStrokeWidth(theme, grid);
           final disabled = states.contains(WidgetState.disabled);
           final own = TermStyleOf([style, theme.switchStyle], states);
           final direction = Directionality.of(context);

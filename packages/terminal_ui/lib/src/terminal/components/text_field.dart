@@ -11,6 +11,7 @@ import 'package:flutter/rendering.dart' show RenderEditable;
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/list_open.dart';
 import '../primitives/control.dart';
 import '../primitives/field_frame.dart';
 import '../style.dart';
@@ -126,8 +127,9 @@ class TermTextField extends StatefulWidget {
 
   /// Whether it draws its own frame; false: its words alone on one line
   /// (the tap floor's height), for a part that frames them with more, as
-  /// [TermTagInput] frames its tags and its words together. Its label is
-  /// then its screen reader's name, drawn by the part round it.
+  /// [TermTagInput] frames its tags and its words together. Its label and
+  /// its help are then what a screen reader reads on it, drawn by the part
+  /// round it.
   final bool framed;
 
   /// On one line, the label's width in cells; null for the label's own.
@@ -414,6 +416,10 @@ class _TermTextFieldState extends State<TermTextField> {
     if (gap > 0) {
       control = Transform.translate(offset: Offset(gap, 0), child: control);
     }
+    // The input of a field that opens a list (a combobox's, a tag input's)
+    // says whether the list is up, as a select says it on its button.
+    final open = TermListOpen.maybeOf(context);
+    if (open != null) control = Semantics(expanded: open, child: control);
     if (enabled && !widget.readOnly) {
       control = CustomPaint(
         painter: _Caret(
@@ -424,7 +430,7 @@ class _TermTextFieldState extends State<TermTextField> {
           color: caret,
           width: grid.cellWidth,
           height: grid.fontSize * 1.25,
-          stroke: termStroke(theme, grid),
+          stroke: termStrokeWidth(theme, grid),
           rtl: rtl,
         ),
         child: KeyedSubtree(key: _input, child: control),
@@ -440,74 +446,124 @@ class _TermTextFieldState extends State<TermTextField> {
       builder: (context, parts) {
         // The input takes the frame's whole height (its words centred on
         // the line), so the frame's area is the field's.
-        // An add-on stands on the first line, ruled off from the words.
-        Widget addOn(String text, {required bool before}) => Align(
-          alignment: multiline
-              ? AlignmentDirectional.topStart
-              : AlignmentDirectional.center,
-          widthFactor: 1,
-          child: Padding(
-            padding: EdgeInsets.only(top: multiline ? pad : 0),
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  if (!before)
-                    TextSpan(
-                      text: '│ ',
-                      style: theme.textStyle.copyWith(color: theme.rule),
+        // An add-on stands on the first line, ruled off from the words; at
+        // most [most] wide, its words cut with an ellipsis, the rule whole.
+        Widget addOn(String text, {required bool before, double? most}) {
+          final rule = Text(
+            before ? ' │' : '│ ',
+            style: theme.textStyle.copyWith(color: theme.rule),
+          );
+          return Align(
+            alignment: multiline
+                ? AlignmentDirectional.topStart
+                : AlignmentDirectional.center,
+            widthFactor: 1,
+            child: Padding(
+              padding: EdgeInsets.only(top: multiline ? pad : 0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: most ?? double.infinity),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!before) rule,
+                    Flexible(
+                      child: Text(
+                        text,
+                        style: theme.dimStyle,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  TextSpan(text: text, style: theme.dimStyle),
-                  if (before)
-                    TextSpan(
-                      text: ' │',
-                      style: theme.textStyle.copyWith(color: theme.rule),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
-        final row = Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.prompt != null) ...[
-              Align(
-                widthFactor: 1,
-                alignment: multiline
-                    ? AlignmentDirectional.topStart
-                    : AlignmentDirectional.center,
-                child: Padding(
-                  padding: EdgeInsets.only(top: multiline ? pad : 0),
-                  child: ExcludeSemantics(
-                    child: Text(widget.prompt!, style: theme.dimStyle),
-                  ),
+                    if (before) rule,
+                  ],
                 ),
               ),
-              SizedBox(width: grid.cellWidth),
-            ],
-            if (widget.prefixText != null) ...[
-              addOn(widget.prefixText!, before: true),
-              SizedBox(width: grid.cellWidth),
-            ],
-            Expanded(
-              child: multiline || widget.obscureText
-                  ? parts.control
-                  : _EndMark(
-                      controller: _controller,
-                      focus: _focus,
-                      child: parts.control,
-                    ),
             ),
-            if (widget.suffixText != null) ...[
-              SizedBox(width: grid.cellWidth),
-              addOn(widget.suffixText!, before: false),
+          );
+        }
+
+        // The add-ons whole while they leave the words [_wordsCols] cells;
+        // past that (larger text on a phone) the longer is cut first, each
+        // to no less than its rule and three cells of words (two letters
+        // and the ellipsis).
+        (double?, double?) addOnWidths(double width) {
+          final before = widget.prefixText;
+          final after = widget.suffixText;
+          if (!width.isFinite || (before == null && after == null)) {
+            return (null, null);
+          }
+          double whole(String? t) =>
+              t == null ? 0 : grid.widthOf(t) + grid.cols(2);
+          final a = whole(before);
+          final b = whole(after);
+          final prompt = widget.prompt;
+          final room =
+              width -
+              grid.cols(_wordsCols) -
+              (prompt == null ? 0 : grid.widthOf(prompt) + grid.cellWidth) -
+              (before == null ? 0 : grid.cellWidth) -
+              (after == null ? 0 : grid.cellWidth) -
+              (widget.suffix == null ? 0 : grid.cols(4));
+          if (a + b <= room) return (null, null);
+          final least = grid.cols(5);
+          if (before == null) return (null, math.max(least, room));
+          if (after == null) return (math.max(least, room), null);
+          final half = room / 2;
+          if (a <= half) return (null, math.max(least, room - a));
+          if (b <= half) return (math.max(least, room - b), null);
+          return (math.max(least, half), math.max(least, half));
+        }
+
+        Widget rowIn(double width) {
+          final (mostBefore, mostAfter) = addOnWidths(width);
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.prompt != null) ...[
+                Align(
+                  widthFactor: 1,
+                  alignment: multiline
+                      ? AlignmentDirectional.topStart
+                      : AlignmentDirectional.center,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: multiline ? pad : 0),
+                    child: ExcludeSemantics(
+                      child: Text(widget.prompt!, style: theme.dimStyle),
+                    ),
+                  ),
+                ),
+                SizedBox(width: grid.cellWidth),
+              ],
+              if (widget.prefixText != null) ...[
+                addOn(widget.prefixText!, before: true, most: mostBefore),
+                SizedBox(width: grid.cellWidth),
+              ],
+              Expanded(
+                child: multiline || widget.obscureText
+                    ? parts.control
+                    : _EndMark(
+                        controller: _controller,
+                        focus: _focus,
+                        child: parts.control,
+                      ),
+              ),
+              if (widget.suffixText != null) ...[
+                SizedBox(width: grid.cellWidth),
+                addOn(widget.suffixText!, before: false, most: mostAfter),
+              ],
+              if (widget.suffix != null) ...[
+                SizedBox(width: grid.cellWidth),
+                Center(widthFactor: 1, child: widget.suffix),
+              ],
             ],
-            if (widget.suffix != null) ...[
-              SizedBox(width: grid.cellWidth),
-              Center(widthFactor: 1, child: widget.suffix),
-            ],
-          ],
-        );
+          );
+        }
+
+        final Widget row =
+            widget.prefixText == null && widget.suffixText == null
+            ? rowIn(double.infinity)
+            : LayoutBuilder(builder: (context, box) => rowIn(box.maxWidth));
         // A field whose words run their own way (code, a path in a
         // right-to-left app) lays its prompt and words out that way too, so
         // the prompt stands before its words: `/ token`, not `token … /`.
@@ -555,6 +611,11 @@ class _TermTextFieldState extends State<TermTextField> {
     );
   }
 }
+
+// The cells a field's words keep however long its add-ons are: a letter and
+// the caret. As in Material's InputDecorator, the add-ons stay whole and the
+// words have the rest, scrolling under the caret.
+const _wordsCols = 2;
 
 // The caret: a block on the cell the field's caret is at (after the
 // words; before them, right to left), behind the words, while the field has

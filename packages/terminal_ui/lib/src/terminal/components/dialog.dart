@@ -663,17 +663,16 @@ class _ModalPaneState extends State<_ModalPane> {
                         cue
                       else
                         SizedBox(height: grid.lineHeight),
-                      // One row at the end when they fit, else one to a
-                      // line, each at the end, as Material's AlertDialog
-                      // stacks them: never two on a line and one alone
-                      // under them. Each button already stands on a whole
-                      // tap target, so stacked buttons need no blank line
-                      // between them: at large text that line cut the body
-                      // short of a field's last line.
-                      OverflowBar(
-                        alignment: MainAxisAlignment.end,
+                      // One row at the end when they fit, else one column
+                      // of one width, the strongest on top, as every look's
+                      // dialog stacks them: never two on a line and one
+                      // alone under them. Each button already stands on a
+                      // whole tap target, so stacked buttons need no blank
+                      // line between them: at large text that line cut the
+                      // body short of a field's last line.
+                      RawActionBar(
                         spacing: grid.cellWidth,
-                        overflowAlignment: OverflowBarAlignment.end,
+                        overflowSpacing: 0,
                         children: actions,
                       ),
                     ],

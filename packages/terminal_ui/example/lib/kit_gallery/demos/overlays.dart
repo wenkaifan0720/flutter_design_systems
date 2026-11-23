@@ -105,7 +105,7 @@ class _Working extends StatelessWidget {
           children: [
             const TermSpinner(),
             SizedBox(width: grid.cellWidth),
-            const Text('building the image'),
+            const Flexible(child: Text('building the image')),
           ],
         ),
         const TermProgressBar(value: 0.42, semanticLabel: 'upload'),

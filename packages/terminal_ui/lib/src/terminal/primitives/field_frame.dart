@@ -57,7 +57,7 @@ class TermFieldFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final stroke = termStroke(theme, grid);
+    final stroke = termStrokeWidth(theme, grid);
     final direction = Directionality.of(context);
     final enabled = parts.enabled;
     final hasError = parts.hasError;
@@ -92,7 +92,7 @@ class TermFieldFrame extends StatelessWidget {
             style: style,
             maxLines: 1,
             softWrap: false,
-            overflow: TextOverflow.clip,
+            overflow: TextOverflow.ellipsis,
             child: child,
           ),
         );
@@ -219,7 +219,7 @@ Color _edgeColor(
     edge ??
     (!parts.enabled
         ? theme.rule.withValues(alpha: 0.6)
-        : parts.hasError
+        : parts.invalid
         ? theme.danger
         : Color.lerp(theme.rule, theme.accent, t.clamp(0, 1))!);
 
@@ -289,7 +289,7 @@ class TermFieldLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final stroke = termStroke(theme, grid);
+    final stroke = termStrokeWidth(theme, grid);
     final cw = grid.cellWidth;
     final lh = grid.lineHeight;
     final floor = DesignTapTargets.of(context).floorOn();

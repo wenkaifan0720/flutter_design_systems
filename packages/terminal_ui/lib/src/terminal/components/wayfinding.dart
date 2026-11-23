@@ -543,7 +543,7 @@ Widget _menuDivider(BuildContext context) {
   return SizedBox(
     height: grid.lineHeight,
     child: Center(
-      child: Container(height: termStroke(theme, grid), color: theme.rule),
+      child: Container(height: termStrokeWidth(theme, grid), color: theme.rule),
     ),
   );
 }
@@ -840,7 +840,7 @@ class TermNavigationRail extends StatelessWidget {
         border: BorderDirectional(
           end: BorderSide(
             color: rest.edge ?? theme.rule,
-            width: termStroke(theme, grid),
+            width: termStrokeWidth(theme, grid),
           ),
         ),
       ),
@@ -850,7 +850,7 @@ class TermNavigationRail extends StatelessWidget {
           container: true,
           explicitChildNodes: true,
           // Each item the rail's width: its fill and its reach.
-          child: Column(
+          child: _RailColumn(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < destinations.length; i++)
@@ -885,6 +885,27 @@ class TermNavigationRail extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(IntProperty('selectedIndex', selectedIndex));
   }
+}
+
+// A rail's destinations down its height; where they don't fit it (larger
+// text on a short screen), they scroll.
+class _RailColumn extends StatelessWidget {
+  const _RailColumn({required this.crossAxisAlignment, required this.children});
+
+  final CrossAxisAlignment crossAxisAlignment;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final column = Column(
+        crossAxisAlignment: crossAxisAlignment,
+        children: children,
+      );
+      if (!box.hasBoundedHeight) return column;
+      return SingleChildScrollView(child: column);
+    },
+  );
 }
 
 /// An app's shell that fits its screen: the [topBar] over the [body] and

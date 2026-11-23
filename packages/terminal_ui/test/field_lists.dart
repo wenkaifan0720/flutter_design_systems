@@ -102,6 +102,14 @@ Future<void> openEachFieldList(
     if (i >= all.length) break;
     final field = all[i];
     final pinned = find.byElementPredicate((e) => identical(e, field));
+    // A combobox's or a tag input's entry says whether its list is
+    // expanded too; typing opens that list, read below.
+    if (find
+        .descendant(of: pinned, matching: find.byType(EditableText))
+        .evaluate()
+        .isNotEmpty) {
+      continue;
+    }
     if (!await onScreen(pinned)) continue;
     final at = tester.getRect(pinned);
     if (at.width < 96 || at.width < 2 * at.height) continue;

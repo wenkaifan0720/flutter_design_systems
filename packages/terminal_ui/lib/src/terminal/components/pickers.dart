@@ -6,7 +6,6 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -196,7 +195,7 @@ class TermCalendar extends StatelessWidget {
                       ? TermBracketPainter(
                           grid: grid,
                           color: theme.onAccent,
-                          stroke: termStroke(theme, grid),
+                          stroke: termStrokeWidth(theme, grid),
                           fill: ground,
                           cursor: 1,
                           cursorColor: own.edge ?? theme.accent,
@@ -550,7 +549,7 @@ class _DateFieldState extends State<_DateField> {
       placement: RawPopoverPlacement(
         gap: 0,
         margin: grid.cellWidth,
-        preferredExtent: double.infinity,
+        fit: RawPopoverFit.whole,
       ),
       anchorBuilder: (context, anchor) => LayoutBuilder(
         builder: (context, constraints) {
@@ -582,7 +581,7 @@ class _DateFieldState extends State<_DateField> {
                 onPressed: enabled ? termOpener(_focus, anchor) : null,
                 focusNode: _focus,
                 expanded: anchor.isOpen,
-                isError: parts.hasError,
+                isError: parts.invalid,
                 semanticValue: widget.words,
                 shortcuts: const {
                   SingleActivator(LogicalKeyboardKey.arrowDown):
@@ -625,7 +624,12 @@ class _DateFieldState extends State<_DateField> {
                       maxLines: lines,
                       softWrap: lines > 1,
                       overflow: TextOverflow.ellipsis,
+                      // A date reads left to right in every app, and stands
+                      // at the field's start, as every field's value does.
                       textDirection: TextDirection.ltr,
+                      textAlign: Directionality.of(context) == TextDirection.rtl
+                          ? TextAlign.right
+                          : TextAlign.left,
                       style: widget.words == null
                           ? theme.dimStyle.copyWith(
                               color: TermFieldCursor.inkOf(context, theme.dim),
@@ -675,17 +679,13 @@ class _DateFieldState extends State<_DateField> {
                   : null,
               raised: true,
               focused: true,
-              // The keys on the chosen day (or today) as it opens, not on the
-              // month's arrow the overlay focuses first: the date dialog's
-              // way. Opened by the pointer, the chosen day alone reads current
-              // until a key.
-              child: _FocusOnOpen(
-                node: _days,
-                child: TermMenuMarks(
-                  quietFirst: false,
-                  child: SingleChildScrollView(
-                    child: widget.calendar(info.close, _days),
-                  ),
+              // The keys on the chosen day (or today) as it opens: the
+              // calendar asks for the focus as it mounts. Opened by the
+              // pointer, the chosen day alone reads current until a key.
+              child: TermMenuMarks(
+                quietFirst: false,
+                child: SingleChildScrollView(
+                  child: widget.calendar(info.close, _days),
                 ),
               ),
             ),
@@ -694,31 +694,6 @@ class _DateFieldState extends State<_DateField> {
       },
     );
   }
-}
-
-// Puts the focus on [node] once [child] is up, after the overlay's own move
-// of it to the first thing that takes it (which waits for the same frame).
-class _FocusOnOpen extends StatefulWidget {
-  const _FocusOnOpen({required this.node, required this.child});
-
-  final FocusNode node;
-  final Widget child;
-
-  @override
-  State<_FocusOnOpen> createState() => _FocusOnOpenState();
-}
-
-class _FocusOnOpenState extends State<_FocusOnOpen> {
-  @override
-  void initState() {
-    super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) widget.node.requestFocus();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }
 
 /// A time typed as a terminal takes one, `14:30`, on a 24-hour clock: the
@@ -951,7 +926,7 @@ class TermColorPicker extends StatelessWidget {
                 cellWidth: grid.cellWidth,
                 color: theme.accent,
                 knockout: theme.onAccent,
-                stroke: termStroke(theme, grid),
+                stroke: termStrokeWidth(theme, grid),
               )
             : null,
         child: const SizedBox.expand(),
@@ -1022,7 +997,7 @@ class TermColorPicker extends StatelessWidget {
                             ? TermBracketPainter(
                                 grid: grid,
                                 color: theme.onAccent,
-                                stroke: termStroke(theme, grid),
+                                stroke: termStrokeWidth(theme, grid),
                                 cursor: 1,
                                 cursorColor: theme.accent,
                                 knockout: theme.onAccent,
@@ -1197,7 +1172,7 @@ class _Ring extends StatelessWidget {
           painter: TermBracketPainter(
             grid: grid,
             color: color,
-            stroke: termStroke(theme, grid) * 2,
+            stroke: termStrokeWidth(theme, grid) * 2,
             cursor: focus,
             cursorColor: accent,
             knockout: theme.onAccent,
