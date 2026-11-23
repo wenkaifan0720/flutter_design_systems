@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/gestures.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:look_ui/look_ui.dart';
 import 'package:look_ui/src/inventory.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:ui_core/ui_core.dart' show RawCalendarDatePicker;
+import 'package:ui_core/ui_core.dart'
+    show RawCalendarDatePicker, TapTargetPadding;
 import 'package:ui_core_test/guidelines.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 
@@ -849,6 +851,125 @@ void main() {
     expect(ink('Delete'), colors.danger);
     expect(ink('Rename'), colors.ink);
   });
+
+  testWidgets('a panel that is not a dialog says no dialog, keeps Tab '
+      'inside, closes on Escape and gives focus back', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      lookApp(
+        home: Builder(
+          builder: (context) => Center(
+            child: LookButton(
+              'Search',
+              onPressed: () => showLookPanel<void>(
+                context,
+                title: 'Search the notes',
+                builder: (context, close) => Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    LookButton(
+                      'Clear',
+                      variant: LookButtonVariant.outlined,
+                      onPressed: () {},
+                    ),
+                    const SizedBox(width: 12),
+                    LookButton('Done', onPressed: close),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(find.text('Search the notes'), findsOneWidget);
+    // No node says dialog; the heading names the route.
+    final roles = <SemanticsRole>[];
+    void collect(SemanticsNode node) {
+      roles.add(node.getSemanticsData().role);
+      node.visitChildren((SemanticsNode child) {
+        collect(child);
+        return true;
+      });
+    }
+
+    var root = tester.getSemantics(find.text('Search the notes'));
+    while (root.parent != null) {
+      root = root.parent!;
+    }
+    collect(root);
+    expect(roles, isNot(contains(SemanticsRole.dialog)));
+    expect(roles, isNot(contains(SemanticsRole.alertDialog)));
+    expect(
+      tester.getSemantics(find.text('Search the notes')),
+      isSemantics(isHeader: true, namesRoute: true),
+    );
+    // Tab goes round the panel's controls and never back to the page.
+    for (var i = 0; i < 4; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(focusedWords(tester), isIn(['Clear', 'Done']));
+    }
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(find.text('Search the notes'), findsNothing);
+    expect(focusedWords(tester), 'Search');
+    semantics.dispose();
+  });
+
+  for (final direction in TextDirection.values) {
+    testWidgets('${direction.name}: a menu the look places opens over its '
+        'button, its end corner on the button\'s', (tester) async {
+      String? picked;
+      await tester.pumpWidget(
+        lookApp(
+          direction: direction,
+          home: Center(
+            child: LookMoreMenu(
+              semanticLabel: 'More',
+              entries: [
+                RawMenuEntry(
+                  label: 'Rename',
+                  onPressed: () => picked = 'Rename',
+                ),
+                RawMenuEntry(
+                  label: 'Delete',
+                  isDestructiveAction: true,
+                  onPressed: () => picked = 'Delete',
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      final button = tester.getRect(
+        find.descendant(
+          of: find.byType(LookMoreMenu),
+          matching: find.byType(TapTargetPadding),
+        ),
+      );
+      final menu = tester.getRect(find.byType(LookListSurface));
+      if (direction == TextDirection.ltr) {
+        expect(menu.topRight, button.topRight);
+      } else {
+        expect(menu.topLeft, button.topLeft);
+      }
+      // The keys start on the first row; Enter picks it, the menu closes
+      // and the focus goes back to the button.
+      expect(focusedWords(tester), 'Rename');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(picked, 'Rename');
+      expect(find.byType(LookListSurface), findsNothing);
+      expect(focusedWords(tester), '…');
+    });
+  }
 
   testWidgets('a select opened from the keys starts on its chosen option', (
     tester,

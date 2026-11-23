@@ -659,3 +659,108 @@ class LookMenu extends StatelessWidget {
     properties.add(IterableProperty<RawMenuEntry>('entries', entries));
   }
 }
+
+/// A button that opens a menu of [entries] over itself, the menu's end
+/// corner on the button's, as iOS's pull-down menus open: ui_core's
+/// [RawPopover], placed by the look through [RawPopover.positionDelegate].
+/// The popover keeps the rest: Escape and a tap outside close it, the keys
+/// start on the first row, the focus goes back to the button, and the menu
+/// is named.
+///
+/// ```dart
+/// LookMoreMenu(semanticLabel: 'More', entries: [RawMenuEntry(label: 'Rename', onPressed: () {})])
+/// ```
+class LookMoreMenu extends StatelessWidget {
+  /// A button named [semanticLabel] that opens [entries].
+  const LookMoreMenu({
+    super.key,
+    required this.semanticLabel,
+    required this.entries,
+  });
+
+  /// What a screen reader calls the button and its menu.
+  final String semanticLabel;
+
+  /// The menu's rows.
+  final List<RawMenuEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = LookTheme.of(context);
+    return RawPopover(
+      arrowKeyNavigation: true,
+      semanticLabel: semanticLabel,
+      // Over the button, the menu's end corner on the button's (its right
+      // corner, or its left right to left), kept inside the room the
+      // popover keeps to on its own.
+      positionDelegate: (place) {
+        final size = place.surfaceSize;
+        final room = place.bounds;
+        final x = place.textDirection == TextDirection.ltr
+            ? place.anchorRect.right - size.width
+            : place.anchorRect.left;
+        return Offset(
+          x.clamp(room.left, math.max(room.left, room.right - size.width)),
+          place.anchorRect.top.clamp(
+            room.top,
+            math.max(room.top, room.bottom - size.height),
+          ),
+        );
+      },
+      anchorBuilder: (context, anchor) => TapTargetPadding(
+        child: RawButton(
+          onPressed: anchor.toggle,
+          semanticLabel: semanticLabel,
+          excludeSemantics: true,
+          expanded: anchor.isOpen,
+          builder: (context, states, _) => AnimatedLookSurface(
+            face: lookFieldFace(
+              theme,
+              focused: states.contains(WidgetState.focused) || anchor.isOpen,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(theme.radius),
+            ),
+            child: SizedBox.square(
+              dimension: theme.density.height(theme.controlHeight),
+              child: Center(child: Text('…', style: theme.label)),
+            ),
+          ),
+        ),
+      ),
+      overlayBuilder: (context, info) => LookListSurface(
+        child: IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final entry in entries)
+                RawButton(
+                  onPressed: entry.onPressed == null
+                      ? null
+                      : () {
+                          info.close();
+                          entry.onPressed!();
+                        },
+                  builder: (context, states, _) => lookOptionRow(
+                    theme,
+                    states,
+                    entry.label,
+                    destructive: entry.isDestructiveAction,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('semanticLabel', semanticLabel))
+      ..add(IterableProperty<RawMenuEntry>('entries', entries));
+  }
+}

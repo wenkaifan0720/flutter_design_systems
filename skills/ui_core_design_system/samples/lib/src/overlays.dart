@@ -247,6 +247,84 @@ Future<T?> showLookSheet<T>(
   );
 }
 
+/// Raises a panel over the page that is not a dialog (a search over the
+/// page, a picture shown large) and completes with what it pops: ui_core's
+/// [RawModalRoute] (spring, focus, Escape, back, barrier, Tab kept inside),
+/// whose page states no role. A screen reader hears the panel's own words,
+/// its heading first, where a [DesignDialogRoute] would call it a dialog.
+///
+/// ```dart
+/// showLookPanel<void>(
+///   context,
+///   title: 'Search the notes',
+///   builder: (context, close) => LookButton('Done', onPressed: close),
+/// );
+/// ```
+Future<T?> showLookPanel<T>(
+  BuildContext context, {
+  required String title,
+  required Widget Function(BuildContext context, VoidCallback close) builder,
+}) {
+  final theme = LookTheme.of(context);
+  final words = RawWidgetsLocalizations.of(context);
+  final navigator = Navigator.of(context);
+  final themes = InheritedTheme.capture(from: context, to: navigator.context);
+  return navigator.push(
+    // A modal page with no role: the route scopes what a reader hears, and
+    // the panel's heading names it.
+    RawModalRoute<T>(
+      barrierLabel: words.modalBarrierDismissLabel,
+      barrierColor: theme.colors.ink.withValues(alpha: .32),
+      dampingRatio: theme.motion.routeDampingRatio,
+      stiffness: theme.motion.routeStiffness,
+      builder: (context, details) => themes.wrap(
+        FadeTransition(
+          opacity: details.animation,
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: LookSurface(
+                    face: LookFace(
+                      fill: theme.colors.surface,
+                      rule: theme.colors.rule,
+                      foreground: theme.colors.ink,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(theme.radius * 1.5),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // The heading names the route, as a page's title
+                          // does.
+                          Semantics(
+                            header: true,
+                            namesRoute: true,
+                            child: Text(title, style: theme.title),
+                          ),
+                          const SizedBox(height: 16),
+                          builder(context, details.close),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 /// Shows the look's toasts over [child], the app: ui_core's [RawToaster]
 /// (the queue, the time, the swipe, F6 and Escape, what a screen reader
 /// hears), each toast on the look's dark plate. Put it in the app's
