@@ -2,7 +2,7 @@
 
 ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core 0.5.0 carries, how to
+look's face for them. This page lists what ui_core 0.5.2 carries, how to
 wire each kind of part, and the three shims a look puts in place until
 Flutter's own fixes reach its minimum version.
 
@@ -25,7 +25,7 @@ with the `Raw*` names only.
 | Layout | `DesignControlBox`, `DesignCapCenter`, `DesignDensity`, `DesignSpacingScope`, `DesignKeylineRegion` | Its control height, padding, grid |
 | Style | `DesignStyle` (ten `WidgetStateProperty` slots), `DesignStyleOf` | A typedef, a slot per part in its theme, its defaults |
 | Motion | `designSpring`, `DesignMotionPolicy`, `springTo`, `designReduceMotionOf` | Its tokens |
-| Raised surfaces | `DesignDialogRoute`, `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawActionBar` (a dialog's or a sheet's actions), `RawPopover` (`RawPopoverFit.whole` for a picker), `RawContextMenu`, `RawToaster` with `RawToasterKeepClear`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
+| Raised surfaces | `DesignDialogRoute`, `RawModalRoute` (a modal page with no role), `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawActionBar` (a dialog's or a sheet's actions), `RawPopover` (`RawPopoverFit.whole` for a picker, `positionDelegate` for a place of the look's own), `RawContextMenu`, `RawToaster` with `RawToasterKeepClear`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
 | Lists | `RawPopover` (a select's list, a menu), `RawCombobox`, `RawTagInput`, `RawMenuEntry` (with `isDestructiveAction`): placement below the field, keys, highlight, the chosen option focused, announcements | One list surface, one row, the destructive tone |
 | Navigation | `RawTabBar`, `RawTabGroup` (tabs the look lays out), `RawRovingFocusGroup` (a toolbar, a grid of choices), `RawMenuBar`, `RawCommandPalette`, `DesignAdaptiveShell`, `SwipeBackPageTransitionsBuilder` | Tabs, bars, rails, page motion |
 | Words | `RawWidgetsLocalizations` (30 languages) | Its own words, if any |
@@ -347,6 +347,27 @@ named for a screen reader. Its `builder` gets `DesignDialogDetails`
 `barrierColor` or `barrierBuilder`, `barrierLabel`, `barrierDismissible`,
 `anchorPoint` and `settings`.
 
+`RawModalRoute<T>` is the same route with no role: a modal page that is
+not a dialog (a search over the page, a picture shown large). It takes the
+same arguments but `isAlert` and `semanticLabel`, and its `builder` gets
+`RawModalDetails` (`animation`, `close`). Its page is a route's scope
+that says nothing of itself: a screen reader hears the page's own words,
+so give it a heading that names the route, as a page's title does.
+`DesignDialogRoute` is a `RawModalRoute` that says dialog.
+
+```dart
+// A modal page with no role: the route scopes what a reader hears, and
+// the panel's heading names it.
+RawModalRoute<T>(
+  barrierLabel: words.modalBarrierDismissLabel,
+// ...
+Semantics(
+  header: true,
+  namesRoute: true,
+  child: Text(title, style: theme.title),
+),
+```
+
 `RawAlertDialog` lays out an alert: `title`, `content`, `actions` (a list of
 `RawDialogAction`: `label`, `onPressed`, `isDefaultAction`,
 `isDestructiveAction`, `data`), between 280 and 560 wide, and the focus on
@@ -576,6 +597,26 @@ it is measured whole, opens below while below holds it, takes the other
 side when that holds it, and only scrolls where neither side does.
 `DesignListSideCheck` reads both fits.
 
+A popover the look places itself (a menu over its own button, as iOS's
+pull-down menus open; a panel at a place the page knows) takes a
+`positionDelegate`: it returns the surface's top-left corner in the
+overlay from a `RawPopoverPositionContext` (`anchorRect`, `surfaceSize`,
+`overlaySize`, `bounds`, `side`, `textDirection`, and `position` for a
+popover opened at a point). The surface is still laid out by the placement
+(its side, `fit`, widths); the popover still closes on Escape and a tap
+outside, moves the focus in and back, and names its surface. `bounds` is
+what the popover keeps to on its own (the safe area, the keyboard, the
+margin): keep to it too, and mirror the place right to left.
+
+```dart
+positionDelegate: (place) {
+  final size = place.surfaceSize;
+  final room = place.bounds;
+  final x = place.textDirection == TextDirection.ltr
+      ? place.anchorRect.right - size.width
+      : place.anchorRect.left;
+```
+
 ```dart
 placement: const RawPopoverPlacement(
   fit: RawPopoverFit.whole,
@@ -720,6 +761,7 @@ Each row on the left is built on the API on the right, painted by the look.
 | Pull to refresh | `RawRefreshIndicator` |
 | Tree | `DesignTree` |
 | Dialog | `DesignDialogRoute`, `RawAlertDialog` |
+| Modal page, not a dialog | `RawModalRoute` |
 | Bottom sheet | `RawBottomSheetRoute` |
 | Side sheet | `RawSideSheetRoute` |
 | Popover, hover card | `RawPopover` |

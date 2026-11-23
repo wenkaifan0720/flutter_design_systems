@@ -24,7 +24,7 @@ The agent then reads it when asked to build, extend or review a design
 system that is neither Material nor Cupertino. `SKILL.md` is the entry
 point; it says which page to read for each step.
 
-The package it builds depends on ui_core ^0.5.0 and material_ui, and
+The package it builds depends on ui_core ^0.5.2 and material_ui, and
 dev-depends on ui_core_test ^0.3.0, leak_tracker_flutter_testing and
 flutter_lints.
 
