@@ -273,7 +273,7 @@ void main() {
               width: 300,
               child: CivicStepIndicator(
                 steps: const ['One', 'Two'],
-                current: 1,
+                currentStep: 1,
                 style: s,
               ),
             ),
@@ -281,7 +281,7 @@ void main() {
           (
             'page marks',
             (t, s) => t.copyWith(pageDotsStyle: s),
-            (s) => CivicPageDots(count: 3, index: 1, style: s),
+            (s) => CivicPageDots(pageCount: 3, selectedIndex: 1, style: s),
           ),
           (
             'a carousel',

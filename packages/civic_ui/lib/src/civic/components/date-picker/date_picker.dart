@@ -271,7 +271,8 @@ class _CalendarButton extends StatelessWidget {
       placement: const RawPopoverPlacement(
         align: RawPopoverAlign.start,
         matchAnchorWidth: false,
-        preferredExtent: 380,
+        // A month can't shrink: it opens on the side that holds it whole.
+        fit: RawPopoverFit.whole,
         gap: CivicSpacing.s8,
       ),
       anchorBuilder: (context, anchor) => around(

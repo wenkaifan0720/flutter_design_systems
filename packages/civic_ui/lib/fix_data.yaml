@@ -1,0 +1,361 @@
+# civic_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.5.0 renames. test_fixes/ holds
+# their before and after (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'label'
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'hint'
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'error'
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'obscure'
+      inClass: 'CivicInput'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+
+  - title: "Rename to 'destinations'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicShellFrame'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'places'
+        newName: 'destinations'
+
+  - title: "Rename to 'destinations'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'places'
+      inClass: 'CivicShellFrame'
+    changes:
+      - kind: 'rename'
+        newName: 'destinations'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicShellFrame'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'onSelected'
+      inClass: 'CivicShellFrame'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'light'
+      inClass: 'CivicHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'dark'
+      inClass: 'CivicHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'light'
+      inClass: 'CivicPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'dark'
+      inClass: 'CivicPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'activeIndex'
+      inClass: 'CivicPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'count'
+      inClass: 'CivicPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'index'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'index'
+      inClass: 'CivicPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'onChanged'
+      inClass: 'CivicPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicStepIndicator'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'current'
+        newName: 'currentStep'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'current'
+      inClass: 'CivicStepIndicator'
+    changes:
+      - kind: 'rename'
+        newName: 'currentStep'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'selected'
+      inClass: 'CivicIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'isSelected'
+
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'max'
+        newName: 'maxCount'
+
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['civic_ui.dart']
+      field: 'max'
+      inClass: 'CivicBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'maxCount'

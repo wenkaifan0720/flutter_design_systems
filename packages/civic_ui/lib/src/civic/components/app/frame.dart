@@ -64,12 +64,12 @@ class CivicShellAction extends ShellAction {
 ///
 /// ```dart
 /// CivicShellFrame(
-///   places: const [
+///   destinations: const [
 ///     CivicNavItem(LucideIcons.house, 'Home'),
 ///     CivicNavItem(LucideIcons.fileText, 'Applications'),
 ///   ],
 ///   selectedIndex: index,
-///   onSelected: (i) => setState(() => index = i),
+///   onDestinationSelected: (i) => setState(() => index = i),
 ///   child: pages[index],
 /// )
 /// ```
@@ -77,9 +77,9 @@ class CivicShellFrame extends StatelessWidget {
   /// The frame around [child].
   const CivicShellFrame({
     super.key,
-    required this.places,
+    required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     required this.child,
     this.action,
     this.brand,
@@ -87,13 +87,13 @@ class CivicShellFrame extends StatelessWidget {
   });
 
   /// The app's places, in order.
-  final List<CivicNavigationDestination> places;
+  final List<CivicNavigationDestination> destinations;
 
   /// The place the reader is in.
   final int selectedIndex;
 
   /// Called with a place's index when the reader picks it.
-  final ValueChanged<int>? onSelected;
+  final ValueChanged<int>? onDestinationSelected;
 
   /// The page, or the router's branches.
   final Widget child;
@@ -118,10 +118,10 @@ class CivicShellFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (places.isEmpty) return child;
+    if (destinations.isEmpty) return child;
     final t = context.civicTheme;
     final styles = [null, t.navigationStyle];
-    final labels = [for (final p in places) p.label];
+    final labels = [for (final p in destinations) p.label];
     final act = action;
     final mode = modeFor(MediaQuery.sizeOf(context).width);
     final rtl = Directionality.of(context) == TextDirection.rtl;
@@ -138,9 +138,9 @@ class CivicShellFrame extends StatelessWidget {
       dampingRatio: CivicMotion.panel.dampingRatio,
       stiffness: CivicMotion.panel.stiffness,
       selectedIndex: selectedIndex,
-      onDestinationSelected: onSelected,
+      onDestinationSelected: onDestinationSelected,
       destinations: [
-        for (final p in places)
+        for (final p in destinations)
           DesignNavigationDestination(
             label: p.label,
             icon: p.icon,
@@ -151,7 +151,7 @@ class CivicShellFrame extends StatelessWidget {
         final selected = details.states.contains(WidgetState.selected);
         // The key a test finds the place by, as the place's own.
         return KeyedSubtree(
-          key: places[details.index].key,
+          key: destinations[details.index].key,
           child: details.mode == DesignNavigationMode.sidebar
               ? CivicSidePlace(
                   styles: styles,

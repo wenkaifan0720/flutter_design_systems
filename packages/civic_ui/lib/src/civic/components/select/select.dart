@@ -335,17 +335,6 @@ class _CivicSelectListState<T> extends State<_CivicSelectList<T>> {
   void initState() {
     super.initState();
     _sync();
-    // The overlay gives its first row the focus once the list is up; the
-    // answer chosen takes it straight after, in the same frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final items = widget.items;
-      final chosen = items.indexWhere(
-        (item) => item.enabled && item.value == widget.value,
-      );
-      final at = chosen >= 0 ? chosen : items.indexWhere((i) => i.enabled);
-      if (at >= 0) _reach(at);
-    });
   }
 
   @override
@@ -433,6 +422,10 @@ class _CivicSelectListState<T> extends State<_CivicSelectList<T>> {
                 for (var i = 0; i < items.length; i++)
                   RawButton(
                     focusNode: _nodes[i],
+                    // The answer chosen takes the keys as the list opens,
+                    // and the popover keeps it in view.
+                    autofocus:
+                        items[i].enabled && items[i].value == widget.value,
                     onPressed: items[i].enabled
                         ? () => widget.onChosen(items[i].value)
                         : null,

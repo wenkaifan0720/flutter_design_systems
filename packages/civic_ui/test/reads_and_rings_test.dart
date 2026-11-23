@@ -34,13 +34,13 @@ void main() {
             icon: Icons.notifications_outlined,
             semanticLabel: 'Alerts',
             semanticValue: '3 new',
-            selected: true,
+            isSelected: true,
             onPressed: () {},
           ),
           CivicIconButton(
             icon: Icons.bookmark_outline,
             semanticLabel: 'Save',
-            selected: false,
+            isSelected: false,
             onPressed: () {},
           ),
           CivicIconButton(

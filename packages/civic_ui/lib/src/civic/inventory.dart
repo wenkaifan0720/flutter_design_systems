@@ -713,12 +713,16 @@ final DesignInventory civicInventory = DesignInventory(
       'StepProgress',
       (_) => const CivicStepIndicator(
         steps: ['Your vehicle', 'Your details', 'Proof of address', 'Check'],
-        current: 1,
+        currentStep: 1,
       ),
     ),
     DesignInventoryEntry.present(
       'PageDots',
-      (_) => const CivicPageDots(count: 5, index: 1, onChanged: _drop),
+      (_) => const CivicPageDots(
+        pageCount: 5,
+        selectedIndex: 1,
+        onPageChanged: _drop,
+      ),
     ),
     const DesignInventoryEntry.absent(
       'MenuBar',

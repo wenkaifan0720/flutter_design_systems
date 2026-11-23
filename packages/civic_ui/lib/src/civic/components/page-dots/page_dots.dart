@@ -6,11 +6,11 @@ import '../../internal/paint.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
 
-/// Which of [count] pages shows ([index], from 0): a row of square marks,
+/// Which of [pageCount] pages shows ([selectedIndex], from 0): a row of square marks,
 /// the shown one a longer bar in ink, the others on the rule, then the
 /// place in words ("2 of 5"), so no one has to count marks.
 ///
-/// With [onChanged] each mark is a button (24 wide, 48 tall) that shows
+/// With [onPageChanged] each mark is a button (24 wide, 48 tall) that shows
 /// its page: a pointer over one darkens it, a press darkens it further, a
 /// keyboard focus lays it on the yellow plate over the ink bar. A screen
 /// reader hears each as "Page 2 of 5", the shown one selected. Every
@@ -20,28 +20,28 @@ import '../../theme.dart';
 /// its `style:`, then [CivicThemeData.pageDotsStyle].
 ///
 /// ```dart
-/// CivicPageDots(count: 5, index: 1, onChanged: (page) {})
+/// CivicPageDots(pageCount: 5, selectedIndex: 1, onPageChanged: (page) {})
 /// ```
 class CivicPageDots extends StatelessWidget {
-  /// [count] marks, [index] shown.
+  /// [pageCount] marks, [selectedIndex] shown.
   const CivicPageDots({
     super.key,
-    required this.count,
-    required this.index,
-    this.onChanged,
+    required this.pageCount,
+    required this.selectedIndex,
+    this.onPageChanged,
     this.pageLabel,
     this.style,
-  }) : assert(count > 0, 'There is at least one page.');
+  }) : assert(pageCount > 0, 'There is at least one page.');
 
   /// How many pages there are.
-  final int count;
+  final int pageCount;
 
   /// The page shown, from 0.
-  final int index;
+  final int selectedIndex;
 
   /// Shows a page by its index; null: the marks only say where the reader
   /// is.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// What a screen reader calls page `page` (from 1) of `count`; null:
   /// "Page 2 of 5".
@@ -55,8 +55,8 @@ class CivicPageDots extends StatelessWidget {
     final t = context.civicTheme;
     final words = RawWidgetsLocalizations.of(context);
     final so = DesignStyleOf([style, t.pageDotsStyle], const {});
-    final at = index.clamp(0, count - 1);
-    final change = onChanged;
+    final at = selectedIndex.clamp(0, pageCount - 1);
+    final change = onPageChanged;
     return Row(
       mainAxisSize: MainAxisSize.min,
       spacing: CivicSpacing.s8,
@@ -64,7 +64,7 @@ class CivicPageDots extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < pageCount; i++)
               RawButton(
                 // The shown page's mark stays in reach of the keys; a press
                 // on it changes nothing.
@@ -76,7 +76,8 @@ class CivicPageDots extends StatelessWidget {
                 selected: i == at,
                 semanticSelected: i == at,
                 semanticLabel:
-                    pageLabel?.call(i + 1, count) ?? 'Page ${i + 1} of $count',
+                    pageLabel?.call(i + 1, pageCount) ??
+                    'Page ${i + 1} of $pageCount',
                 excludeSemantics: true,
                 mouseCursor: change == null
                     ? SystemMouseCursors.basic
@@ -92,7 +93,7 @@ class CivicPageDots extends StatelessWidget {
         ),
         ExcludeSemantics(
           child: Text(
-            words.positionLabel(at + 1, count),
+            words.positionLabel(at + 1, pageCount),
             style: context.civicText.bodySmall.copyWith(
               color: so.foreground ?? t.textSecondary,
             ),
@@ -106,9 +107,14 @@ class CivicPageDots extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('index', index))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      )
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );

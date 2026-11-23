@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/list_option.dart';
 import '../../internal/paint.dart';
+import '../../internal/list_open.dart';
 import '../../theme.dart';
 import '../text-field/text_field.dart';
 
@@ -115,38 +116,46 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
       focusNode: focusNode,
       semanticLabel: labelText,
       optionsMaxHeight: _listMost,
-      fieldBuilder: (context, field) => CivicTextField(
-        controller: field.controller,
-        focusNode: field.focusNode,
-        labelText: labelText,
-        helperText: helperText,
-        errorText: errorText,
-        hintText: hintText,
-        enabled: enabled,
-        textInputAction: TextInputAction.done,
-        // The return key takes the lit answer and the field keeps the
-        // focus: taken in onEditingComplete, with no onSubmitted, so
-        // Flutter never restarts the field's text input (in a browser the
-        // restarted input would take no more typing).
-        onEditingComplete: field.submit,
-        // It ends in the select's chevron, as far in: a box that opens a
-        // list, as a select is. A press on it reaches the box.
-        suffixIcon: IgnorePointer(
-          child: ExcludeSemantics(
-            child: Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: CivicSpacing.s8),
-                child: Icon(
-                  LucideIcons.chevronDown,
-                  size: 24,
-                  color: enabled ? t.textPrimary : t.textDisabled,
+      fieldBuilder: (context, field) => CivicListOpen(
+        open: field.isOpen,
+        child: CivicTextField(
+          controller: field.controller,
+          focusNode: field.focusNode,
+          labelText: labelText,
+          helperText: helperText,
+          errorText: errorText,
+          hintText: hintText,
+          enabled: enabled,
+          textInputAction: TextInputAction.done,
+          // The return key takes the lit answer and the field keeps the
+          // focus: taken in onEditingComplete, with no onSubmitted, so
+          // Flutter never restarts the field's text input (in a browser the
+          // restarted input would take no more typing).
+          onEditingComplete: field.submit,
+          // It ends in the select's chevron, as far in: a box that opens a
+          // list, as a select is. A press on it reaches the box.
+          suffixIcon: IgnorePointer(
+            child: ExcludeSemantics(
+              child: Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    end: CivicSpacing.s8,
+                  ),
+                  // Up while the list is open, as the select's.
+                  child: Icon(
+                    field.isOpen
+                        ? LucideIcons.chevronUp
+                        : LucideIcons.chevronDown,
+                    size: 24,
+                    color: enabled ? t.textPrimary : t.textDisabled,
+                  ),
                 ),
               ),
             ),
           ),
+          style: style,
         ),
-        style: style,
       ),
       surfaceBuilder: (context, list) => Padding(
         padding: const EdgeInsets.only(top: CivicSpacing.s8),

@@ -118,7 +118,10 @@ class CivicPagination extends StatelessWidget {
               spacing: CivicSpacing.s4,
               children: [
                 arrow(LucideIcons.chevronLeft),
-                Text(previousLabel ?? words.previousPageTooltip),
+                // Under large text the words wrap beside the arrow.
+                Flexible(
+                  child: Text(previousLabel ?? words.previousPageTooltip),
+                ),
               ],
             ),
           )
@@ -132,7 +135,7 @@ class CivicPagination extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               spacing: CivicSpacing.s4,
               children: [
-                Text(nextLabel ?? words.nextPageTooltip),
+                Flexible(child: Text(nextLabel ?? words.nextPageTooltip)),
                 arrow(LucideIcons.chevronRight),
               ],
             ),

@@ -118,7 +118,8 @@ class CivicFieldFrame extends StatelessWidget {
         control ?? parts.control,
       ],
     );
-    return CivicErrorRule(show: parts.hasError, child: column);
+    // The rule shows while the value is invalid, with words or without.
+    return CivicErrorRule(show: parts.invalid, child: column);
   }
 }
 

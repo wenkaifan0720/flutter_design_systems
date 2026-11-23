@@ -8,7 +8,7 @@ import '../../theme.dart';
 
 /// How many of something wait, after the words they belong to: [count] in
 /// white on a square ink plate (on the error red when [needsAction]),
-/// "99+" past [max]. A screen reader hears the words and the count with
+/// "99+" past [maxCount]. A screen reader hears the words and the count with
 /// its noun as one: "Your applications, 2 need action". A count of 0
 /// shows [child] alone.
 ///
@@ -31,9 +31,9 @@ class CivicBadge extends StatelessWidget {
     this.nouns,
     this.child,
     this.needsAction = false,
-    this.max = 99,
+    this.maxCount = 99,
     this.style,
-  }) : assert(count >= 0 && max > 0);
+  }) : assert(count >= 0 && maxCount > 0);
 
   /// How many there are.
   final int count;
@@ -51,7 +51,7 @@ class CivicBadge extends StatelessWidget {
   final bool needsAction;
 
   /// The largest figure shown; above it, "99+".
-  final int max;
+  final int maxCount;
 
   /// Overrides for this badge's look.
   final CivicStyle? style;
@@ -77,7 +77,7 @@ class CivicBadge extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 child: Text(
-                  count > max ? '$max+' : CivicFormat.count(count),
+                  count > maxCount ? '$maxCount+' : CivicFormat.count(count),
                   textAlign: TextAlign.center,
                   style: context.civicText.bodySmall
                       .copyWith(
@@ -124,7 +124,7 @@ class CivicBadge extends StatelessWidget {
       ..add(
         FlagProperty('needsAction', value: needsAction, ifTrue: 'needs action'),
       )
-      ..add(IntProperty('max', max, defaultValue: 99))
+      ..add(IntProperty('maxCount', maxCount, defaultValue: 99))
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );

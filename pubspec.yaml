@@ -6,8 +6,8 @@ repository: https://github.com/wenkaifan0720/flutter_design_systems
 environment:
   sdk: ">=3.13.0 <4.0.0"
 
-# Every package, and every package's example app. While the looks move to ui_core 0.5.0 (11-22), a look joins this
-# list as its release goes out (a look still on an older ui_core can't resolve beside 0.5.0); then back to the globs.
+# Every package, and every package's example app. While the looks move to ui_core 0.5.1 (11-20), a look joins this
+# list as its release goes out (a look still on an older ui_core can't resolve beside 0.5.1); then back to the globs.
 workspace:
   - packages/ui_core
   - packages/ui_core/example
@@ -15,6 +15,8 @@ workspace:
   - packages/ui_core_test/example
   - packages/ui_core_review
   - packages/ui_core_review/example
+  - packages/civic_ui
+  - packages/civic_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0
