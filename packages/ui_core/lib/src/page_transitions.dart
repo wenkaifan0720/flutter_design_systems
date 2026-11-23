@@ -38,6 +38,11 @@ Map<TargetPlatform, PageTransitionsBuilder> designSwipeBack(
 /// transition rests, and it plays the look's push and pop as before. A first
 /// page, a full-screen dialog and a page that refuses to pop take no swipe.
 ///
+/// A route takes one swipe however often its transition is wrapped (one of
+/// these round another, or a builder that hands the route to one round its
+/// own): the outermost plays it. A page in a navigator of its own keeps
+/// its own swipe, which pops that navigator's page first.
+///
 /// ```dart
 /// const SwipeBackPageTransitionsBuilder(FadeUpwardsPageTransitionsBuilder())
 /// ```
@@ -236,6 +241,12 @@ class _SwipeBackState<T> extends State<_SwipeBack<T>>
 
   @override
   Widget build(BuildContext context) {
+    // A swipe back round this route's transition already: it plays the
+    // swipe, and this one adds no second recognizer, no edge and no slide.
+    final outer = context.getInheritedWidgetOfExactType<_SwipeBackRoute>();
+    if (outer != null && identical(outer.route, widget.route)) {
+      return widget.child;
+    }
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final swiping = widget.swiping;
     // The same widgets swiping or not, so the page keeps its state. While a
@@ -259,7 +270,7 @@ class _SwipeBackState<T> extends State<_SwipeBack<T>>
       ),
     );
     final padding = MediaQuery.paddingOf(context);
-    return Stack(
+    final stack = Stack(
       fit: StackFit.passthrough,
       children: [
         page,
@@ -275,5 +286,17 @@ class _SwipeBackState<T> extends State<_SwipeBack<T>>
         ),
       ],
     );
+    return _SwipeBackRoute(route: widget.route, child: stack);
   }
+}
+
+// The route a swipe back plays round, for one nested inside it to see.
+class _SwipeBackRoute extends InheritedWidget {
+  const _SwipeBackRoute({required this.route, required super.child});
+
+  final PageRoute<Object?> route;
+
+  @override
+  bool updateShouldNotify(_SwipeBackRoute oldWidget) =>
+      !identical(route, oldWidget.route);
 }

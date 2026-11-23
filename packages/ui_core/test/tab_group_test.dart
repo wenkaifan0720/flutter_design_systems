@@ -26,6 +26,7 @@ class _Row extends StatefulWidget {
     this.off = const {},
     this.direction = TextDirection.ltr,
     this.width,
+    this.order,
   });
 
   final bool group;
@@ -34,6 +35,8 @@ class _Row extends StatefulWidget {
   final TextDirection direction;
   // The scroll view's width; null: as wide as the row.
   final double? width;
+  // Each tab's place for the arrows; null: reading order.
+  final List<int>? order;
 
   @override
   State<_Row> createState() => _RowState();
@@ -69,6 +72,7 @@ class _RowState extends State<_Row> {
           RawTabGroupTab(
             value: _values[i],
             enabled: !widget.off.contains(i),
+            order: widget.order?[i],
             builder: (context, states, _) => _face(i, states),
           )
         else
@@ -344,6 +348,25 @@ void main() {
     expect(_chosen, 1);
     await _key(tester, LogicalKeyboardKey.tab);
     expect(_after.hasPrimaryFocus, isTrue, reason: 'the next Tab leaves');
+  });
+
+  testWidgets("the arrows, Home and End follow the tabs' order where each "
+      'gives one, not where they are drawn', (tester) async {
+    // Drawn Overview, Reviews, Photos; in order Overview, Photos, Reviews.
+    await tester.pumpWidget(harness(const _Row(order: [0, 2, 1])));
+    _before.requestFocus();
+    await tester.pump();
+    await _key(tester, LogicalKeyboardKey.tab);
+    expect(_focusedTab(tester), 0);
+    await _key(tester, LogicalKeyboardKey.arrowRight);
+    expect(_focusedTab(tester), 2, reason: 'Photos comes second');
+    expect(_chosen, 2);
+    await _key(tester, LogicalKeyboardKey.arrowRight);
+    expect(_focusedTab(tester), 1);
+    await _key(tester, LogicalKeyboardKey.home);
+    expect(_focusedTab(tester), 0);
+    await _key(tester, LogicalKeyboardKey.end);
+    expect(_focusedTab(tester), 1, reason: 'Reviews comes last');
   });
 
   testWidgets('right to left, Left moves to the next tab', (tester) async {

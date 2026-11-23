@@ -182,6 +182,128 @@ void main() {
     semantics.dispose();
   });
 
+  group('a field with no label, named by what its control says', () {
+    // The field's words: no label, the help, required.
+    Widget unnamed({bool? mergeSemantics, required Widget child}) => harness(
+      Center(
+        child: RawInputDecorator(
+          helperText: 'Work address',
+          required: true,
+          mergeSemantics: mergeSemantics,
+          focusNode: node,
+          builder: _layout,
+          child: child,
+        ),
+      ),
+    );
+
+    // A text field named by the words it draws beside its entry.
+    Widget drawn() => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('Email'),
+        plainField(controller: text, focusNode: node),
+      ],
+    );
+
+    testWidgets('by the words it draws: the node they name says it is '
+        'required, first in its hint', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(unnamed(child: drawn()));
+      final data = entry(tester);
+      expect(data.label, contains('Email'));
+      expect(data.flagsCollection.isRequired, Tristate.isTrue);
+      expect(data.hint, 'required, Work address');
+      semantics.dispose();
+    });
+
+    testWidgets('by its semantic label: the same', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        unnamed(
+          child: Semantics(
+            label: 'Accept the terms',
+            checked: false,
+            onTap: () {},
+            child: const SizedBox(width: 44, height: 44),
+          ),
+        ),
+      );
+      final data = tester
+          .getSemantics(find.bySemanticsLabel('Accept the terms'))
+          .getSemanticsData();
+      expect(data.flagsCollection.isRequired, Tristate.isTrue);
+      expect(data.hint, 'required, Work address');
+      semantics.dispose();
+    });
+
+    testWidgets('merged whole: the same', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(unnamed(mergeSemantics: true, child: drawn()));
+      final data = entry(tester);
+      expect(data.label, contains('Email'));
+      expect(data.flagsCollection.isRequired, Tristate.isTrue);
+      expect(data.hint, 'required, Work address');
+      semantics.dispose();
+    });
+
+    testWidgets("a group of its own: the group's node says it", (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(unnamed(mergeSemantics: false, child: drawn()));
+      final data = tester
+          .getSemantics(find.byType(RawInputDecorator))
+          .getSemanticsData();
+      expect(data.flagsCollection.isRequired, Tristate.isTrue);
+      expect(data.hint, 'required, Work address');
+      semantics.dispose();
+    });
+
+    testWidgets('a number field: the node that carries the words says it', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        unnamed(
+          child: RawNumberField(
+            value: 2,
+            onChanged: (value) {},
+            min: 0,
+            fieldBuilder: (context, field) => SizedBox(
+              width: 80,
+              child: EditableText(
+                controller: field.controller,
+                focusNode: field.focusNode,
+                keyboardType: field.keyboardType,
+                inputFormatters: field.inputFormatters,
+                onEditingComplete: field.onEditingComplete,
+                style: const TextStyle(),
+                cursorColor: const Color(0xFF000000),
+                backgroundCursorColor: const Color(0xFF808080),
+              ),
+            ),
+            buttonBuilder: (context, button) =>
+                Text(button.isIncrement ? '+' : '−'),
+          ),
+        ),
+      );
+      final data = entry(tester);
+      expect(data.flagsCollection.isRequired, Tristate.isTrue);
+      expect(data.hint, 'required, Work address');
+      semantics.dispose();
+    });
+
+    testWidgets("where the flag is heard, the text entry's node drops the "
+        'words: the flag says them', (tester) async {
+      final semantics = tester.ensureSemantics();
+      DesignRequiredFlag.heard = true;
+      await tester.pumpWidget(unnamed(child: drawn()));
+      final data = entry(tester);
+      expect(data.flagsCollection.isRequired, Tristate.isTrue);
+      expect(data.hint, 'Work address');
+      semantics.dispose();
+    });
+  });
+
   testWidgets('invalid with no words: a screen reader hears it invalid, and '
       'the parts know it; an error makes it invalid too', (tester) async {
     final semantics = tester.ensureSemantics();

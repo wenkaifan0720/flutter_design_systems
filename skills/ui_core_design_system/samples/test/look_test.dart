@@ -1245,6 +1245,92 @@ void main() {
     expect(focusedWords(tester), 'After');
   });
 
+  testWidgets("tabs laid out in another order: the arrows follow the tabs' "
+      'order', (tester) async {
+    final before = FocusNode();
+    addTearDown(before.dispose);
+    var tab = 'all';
+    await tester.pumpWidget(
+      lookApp(
+        home: StatefulBuilder(
+          builder: (context, setState) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Focus(
+                focusNode: before,
+                child: const SizedBox.square(dimension: 1),
+              ),
+              LookTabs<String>(
+                value: tab,
+                semanticLabel: 'Tasks',
+                onChanged: (next) => setState(() => tab = next),
+                tabs: const [
+                  LookTab(value: 'all', label: 'All', order: 0),
+                  LookTab(value: 'done', label: 'Done', order: 2),
+                  LookTab(value: 'open', label: 'Open', order: 1),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    before.requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(focusedWords(tester), 'All');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(tab, 'open', reason: 'Open comes second, though drawn last');
+    await tester.sendKeyEvent(LogicalKeyboardKey.end);
+    await tester.pumpAndSettle();
+    expect(tab, 'done');
+  });
+
+  testWidgets("a reorderable row's grip marks the keyboard's focus, and "
+      'Alt with Down moves its row, the focus with it', (tester) async {
+    var items = ['Milk', 'Eggs', 'Bread'];
+    await tester.pumpWidget(
+      lookApp(
+        home: StatefulBuilder(
+          builder: (context, setState) => LookReorderableList<String>(
+            items: items,
+            labelOf: (item) => item,
+            onReorder: (from, to) => setState(() {
+              final next = [...items];
+              final item = next.removeAt(from);
+              next.insert(to, item);
+              items = next;
+            }),
+            itemBuilder: (context, item) => Text(item),
+          ),
+        ),
+      ),
+    );
+    Color rule(String item) => tester
+        .widget<AnimatedLookSurface>(
+          find.descendant(
+            of: find.ancestor(of: find.text(item), matching: find.byType(Row)),
+            matching: find.byType(AnimatedLookSurface),
+          ),
+        )
+        .face
+        .rule;
+    const clear = Color(0x00000000);
+    expect(rule('Milk'), clear);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(rule('Milk'), isNot(clear), reason: 'the keyboard is on its grip');
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
+    await tester.pumpAndSettle();
+    expect(items, ['Eggs', 'Milk', 'Bread']);
+    expect(rule('Milk'), isNot(clear));
+    expect(rule('Eggs'), clear);
+  });
+
   test('the inventory answers its rows; what it leaves are missing', () {
     final problems = lookInventory.problems;
     expect(problems, isNotEmpty);

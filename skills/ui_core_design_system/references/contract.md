@@ -2,7 +2,7 @@
 
 ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core 0.5.3 carries, how to
+look's face for them. This page lists what ui_core 0.5.4 carries, how to
 wire each kind of part, and the three shims a look puts in place until
 Flutter's own fixes reach its minimum version.
 
@@ -262,7 +262,8 @@ everything round it.
 - **`RawInputDecorator`** takes the field's words and reads them with the
   field, as Material's `TextField` does: `labelText` names the entry,
   `errorText` and `helperText` are its hint, `required: true` puts the
-  required flag on its node, and `invalid: true` marks it invalid with no
+  required flag on its node (and, with no `labelText`, `requiredHint`
+  first in its hint, so the words are heard where the flag is not), and `invalid: true` marks it invalid with no
   words to say why. Its builder gets the parts
   (`RawInputDecoratorDetails`): `control` (the entry, carrying all of
   that), `label`, `helper` and `error` (the words as text a screen reader
@@ -495,7 +496,11 @@ between the group and its tabs (a scroll view, a labelled image) leaves
 the group a plain group: put a scroll view round the group, not inside it.
 Each tab is a `RawButton` read as a tab; its builder paints the face for
 `WidgetState.selected` and the rest. Give the type when `groupValue` may be
-null (`RawTabGroup<String>`), so the tabs find the group.
+null (`RawTabGroup<String>`), so the tabs find the group. Tabs laid out in
+another order than the arrows should take (a grid, a wrap the look fills
+its own way) each give `order`, as a `RawRovingFocusItem` does: the group
+follows the tabs' order when every tab gives one, else the order they are
+laid out in.
 
 ```dart
 return RawTabGroup<T>(
@@ -509,6 +514,7 @@ for (final tab in tabs)
   RawTabGroupTab<T>(
     value: tab.value,
     enabled: onChanged != null && tab.enabled,
+    order: tab.order,
     builder: (context, states, _) =>
         _lookTab(context, theme, states, tab.label),
   ),
@@ -700,7 +706,8 @@ TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
 Swipe back is wrapped once, on iOS only. Export the bare builder beside the
 map: an app's own page route that wraps `SwipeBackPageTransitionsBuilder`
 round the look's push (a go_router `Page`, say) takes the bare builder,
-never the map's iOS entry, or the page answers the edge swipe twice.
+not the map's iOS entry. A route wrapped twice still takes one swipe (the
+outermost plays it), but the second wrap is dead weight.
 
 Drive transitions with `animation.drive(...)` rather than a
 `CurvedAnimation` made in `buildTransitions`: a `CurvedAnimation` must be
@@ -791,13 +798,17 @@ with data counts; `yIncludesZero` is on by default. Pass the caller's
 the reader's digits show (Arabic-Indic digits in Arabic), and never force a
 chart left to right.
 
-Reorderable lists: `reorder.handle(grip)` wraps the grip in a `Focus` that
-the keys reach (Alt with Up or Down moves the row), but hands the grip no
-state. Build the grip's face in a widget under it that reads
-`Focus.of(context).hasPrimaryFocus`, listens for
-`FocusManager.instance.highlightMode` changes, and marks keyboard focus in
-the look's language, as on every other stop. A grip the keys reach that
-nothing marks is a focus nobody can find.
+Reorderable lists: build each row's grip with `reorder.buildHandle`. It
+wraps the grip in a `Focus` the keys reach (Alt with Up or Down moves the
+row) and hands its builder the grip's states as a `RawButton`'s builder
+gets them: `WidgetState.focused` while the keyboard's focus shows on it,
+`hovered` and `pressed`. Mark keyboard focus in the look's language, as on
+every other stop: a grip the keys reach that nothing marks is a focus
+nobody can find. (`reorder.handle(grip)` hands the grip no state.)
+
+```dart
+reorder.buildHandle((context, states, _) => _lookGrip(theme, states)),
+```
 
 ## The shims, and when they go away
 

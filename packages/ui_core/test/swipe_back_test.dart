@@ -4,6 +4,7 @@
 // follows the finger from where it went down. And the focus a swipe takes
 // from the page (a navigator lets none into a route while a user gesture
 // runs) comes back when it ends.
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
@@ -26,9 +27,13 @@ class _Plain extends PageTransitionsBuilder {
 
 // A page route that plays the swipe back round the look's push.
 class _Page extends PageRoute<void> {
-  _Page(this.page);
+  _Page(
+    this.page, [
+    this.transitions = const SwipeBackPageTransitionsBuilder(_Plain()),
+  ]);
 
   final Widget page;
+  final PageTransitionsBuilder transitions;
 
   @override
   Color? get barrierColor => null;
@@ -55,8 +60,50 @@ class _Page extends PageRoute<void> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     Widget child,
-  ) => const SwipeBackPageTransitionsBuilder(_Plain())
-      .buildTransitions(this, context, animation, secondaryAnimation, child);
+  ) => transitions.buildTransitions(
+    this,
+    context,
+    animation,
+    secondaryAnimation,
+    child,
+  );
+}
+
+// A theme's builder that hands the route to another that is a swipe back
+// already, and puts one round it too.
+class _Delegating extends PageTransitionsBuilder {
+  const _Delegating();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => const SwipeBackPageTransitionsBuilder(
+    _Plain(),
+  ).buildTransitions<T>(route, context, animation, secondaryAnimation, child);
+}
+
+// The swipe backs a pointer down at [at] puts in the gesture arena: the
+// drag recognizers the arena adds for it, as its diagnostics name them.
+Future<int> _swipesAt(WidgetTester tester, Offset at) async {
+  final lines = <String>[];
+  final print = debugPrint;
+  debugPrint = (message, {wrapWidth}) => lines.add(message ?? '');
+  debugPrintGestureArenaDiagnostics = true;
+  try {
+    final gesture = await tester.startGesture(at);
+    await gesture.up();
+  } finally {
+    debugPrintGestureArenaDiagnostics = false;
+    debugPrint = print;
+  }
+  await tester.pumpAndSettle();
+  return lines
+      .where((line) => line.contains('Adding: HorizontalDragGestureRecognizer'))
+      .length;
 }
 
 void main() {
@@ -161,5 +208,104 @@ void main() {
     await swipe(600);
     expect(find.text('Second'), findsNothing, reason: 'past half: popped');
     expect(opener.hasPrimaryFocus, isTrue, reason: 'the page under has it');
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+  for (final (name, transitions) in [
+    (
+      'one round another',
+      const SwipeBackPageTransitionsBuilder(
+        SwipeBackPageTransitionsBuilder(_Plain()),
+      ),
+    ),
+    (
+      "one round a builder that hands the route to one",
+      const SwipeBackPageTransitionsBuilder(_Delegating()),
+    ),
+  ]) {
+    testWidgets('a route wrapped twice ($name) takes one swipe: one '
+        'recognizer, and the page still follows the finger and pops', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        harness(
+          Builder(
+            builder: (context) => Center(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  _Page(
+                    const ColoredBox(
+                      color: Color(0xFFFFFFFF),
+                      child: Center(child: Text('Second')),
+                    ),
+                    transitions,
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      expect(await _swipesAt(tester, const Offset(4, 300)), 1);
+      final at = tester.getTopLeft(find.text('Second')).dx;
+      final gesture = await tester.startGesture(const Offset(4, 300));
+      for (var i = 0; i < 10; i++) {
+        await gesture.moveBy(const Offset(50, 0));
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(
+        tester.getTopLeft(find.text('Second')).dx - at,
+        moreOrLessEquals(500, epsilon: 1),
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Second'), findsNothing, reason: 'past half: popped');
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+  }
+
+  testWidgets('a page in a navigator of its own keeps its own swipe, beside '
+      "the outer page's: one for each route", (tester) async {
+    final inner = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      harness(
+        Builder(
+          builder: (context) => Center(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                _Page(
+                  ColoredBox(
+                    color: const Color(0xFFFFFFFF),
+                    child: Navigator(
+                      key: inner,
+                      onGenerateRoute: (_) => _Page(
+                        const ColoredBox(
+                          color: Color(0xFFFFFFFF),
+                          child: Center(child: Text('Inner first')),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    inner.currentState!.push(
+      _Page(
+        const ColoredBox(
+          color: Color(0xFFFFFFFF),
+          child: Center(child: Text('Inner second')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(await _swipesAt(tester, const Offset(4, 300)), 2);
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 }

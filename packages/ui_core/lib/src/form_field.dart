@@ -177,7 +177,8 @@ class RawInputDecorator extends StatefulWidget {
 
   /// Whether it must be filled. Its node carries the required flag
   /// ([SemanticsProperties.isRequired]); where the platform says nothing
-  /// of the flag, its name also ends with [requiredHint].
+  /// of the flag, its name also ends with [requiredHint] (with no
+  /// [labelText], its hint starts with them).
   final bool required;
 
   /// Whether the control takes input.
@@ -195,6 +196,9 @@ class RawInputDecorator extends StatefulWidget {
 
   /// Added to the name of a required field where the platform says nothing
   /// of the required flag; null: [RawWidgetsLocalizations.requiredHint].
+  /// A field with no [labelText] is named by what its control says (the
+  /// words it draws, a semantic label): its hint starts with them, as it
+  /// does where the control says the label itself.
   ///
   /// In Flutter 3.47 only the web reads the flag aloud (`aria-required`);
   /// Android, iOS, macOS, Windows and Linux carry it and say nothing. So
@@ -288,6 +292,14 @@ class _DesignFieldState extends State<RawInputDecorator> {
         ? label
         : '$label, $needed';
     final hint = [?error, ?help].join('. ');
+    // A field with no label is named by what its control says (the words it
+    // draws, a semantic label), which the field can't add to: a required
+    // one says so first in its hint, as one whose control says its label
+    // does.
+    final told = [
+      if (label == null) ?needed,
+      if (hint.isNotEmpty) hint,
+    ].join(', ');
     final invalid = error != null || widget.invalid;
     Widget control = Focus(
       canRequestFocus: false,
@@ -307,7 +319,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
         textDirection: Directionality.maybeOf(context),
         child: DesignFieldWords(
           name: name,
-          hint: hint.isEmpty ? null : hint,
+          hint: told.isEmpty ? null : told,
           invalid: invalid,
           required: widget.required,
           child: control,
@@ -317,7 +329,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
       control = MergeSemantics(
         child: Semantics(
           label: name,
-          hint: hint.isEmpty ? null : hint,
+          hint: told.isEmpty ? null : told,
           isRequired: widget.required ? true : null,
           validationResult: invalid
               ? SemanticsValidationResult.invalid
@@ -366,7 +378,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
       container: true,
       explicitChildNodes: true,
       label: name,
-      hint: hint.isEmpty ? null : hint,
+      hint: told.isEmpty ? null : told,
       isRequired: widget.required ? true : null,
       child: field,
     );
@@ -582,7 +594,8 @@ class _DesignFormScope extends InheritedWidget {
 // saying nothing.
 // The label is left out when a control already says it (a button's name
 // aside); a required field then says it is required first in its hint,
-// unless the control says that too.
+// unless the control says that too, as one with no label does: what its
+// control says names it.
 class _FieldSemantics extends SingleChildRenderObjectWidget {
   const _FieldSemantics({
     required this.label,
@@ -720,7 +733,8 @@ class _RenderFieldSemantics extends RenderDesignSemanticsProxy
     final label = flagged ? _words : _label;
     if (label != null && !shape.said) config.label = label;
     final hint = [
-      if (shape.said && !shape.saidWhole && !flagged) ?_needed,
+      if ((_label == null || (shape.said && !shape.saidWhole)) && !flagged)
+        ?_needed,
       ?_hint,
     ];
     if (hint.isNotEmpty) config.hint = hint.join(', ');

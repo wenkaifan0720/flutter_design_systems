@@ -16,6 +16,7 @@ class LookTab<T> {
     required this.value,
     required this.label,
     this.enabled = true,
+    this.order,
   });
 
   /// What choosing it chooses.
@@ -26,6 +27,12 @@ class LookTab<T> {
 
   /// Whether it can be chosen.
   final bool enabled;
+
+  /// Its place for the arrows, Home and End, where the tabs are not laid
+  /// out in the order they are read (a grid, a wrap the look fills its own
+  /// way); null: the order they are laid out in. Give every tab one, or
+  /// none.
+  final int? order;
 }
 
 /// A row of tabs drawn as words over a rule, the chosen one underlined in
@@ -76,6 +83,7 @@ class LookTabs<T> extends StatelessWidget {
               RawTabGroupTab<T>(
                 value: tab.value,
                 enabled: onChanged != null && tab.enabled,
+                order: tab.order,
                 builder: (context, states, _) =>
                     _lookTab(context, theme, states, tab.label),
               ),

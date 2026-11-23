@@ -349,6 +349,20 @@ final Map<String, DocExample> _examples = {
     labelOf: (item) => item,
     itemBuilder: (context, item, reorder) => reorder.handle(Text(item)),
   ),
+  'RawReorderItemDetails.buildHandle': (context) => RawReorderableList<String>(
+    items: const ['a', 'b'],
+    onReorder: (from, to) {},
+    labelOf: (item) => item,
+    itemBuilder: (context, item, reorder) => Row(
+      children: [
+        Text(item),
+        reorder.buildHandle(
+          (context, states, _) =>
+              Text(states.contains(WidgetState.focused) ? '[=]' : '='),
+        ),
+      ],
+    ),
+  ),
   'RawScrollArea': (context) {
     final controller = _own(ScrollController());
     return RawScrollArea(

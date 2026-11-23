@@ -193,7 +193,7 @@ return minimalInlineNode(
 ```dart
 builder: (context, parts) {
   final name = parts.label;
-  final help = parts.helper;
+  final helperText = parts.helper;
   final wrong = parts.error;
   return Column(
     mainAxisSize: MainAxisSize.min,

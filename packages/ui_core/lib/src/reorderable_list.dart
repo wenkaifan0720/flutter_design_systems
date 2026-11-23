@@ -10,7 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
+import 'internal/focus_visible.dart';
 import 'localizations.dart';
+import 'pressable.dart';
 
 /// An item's place and moves, as [RawReorderableList.itemBuilder] gets
 /// them.
@@ -32,7 +34,23 @@ class RawReorderItemDetails {
   final int count;
 
   /// Wraps a drag handle. Focus it and use Alt+Up or Alt+Down to reorder.
+  ///
+  /// The handle's face gets no states from it; [buildHandle] paints one
+  /// from them.
   final Widget Function(Widget handle) handle;
+
+  /// A drag handle ([handle]) whose face [builder] paints from its states,
+  /// as a [RawButton]'s: [WidgetState.focused] while the keyboard's focus
+  /// is on it (Alt+Up or Alt+Down moves the item) and shows,
+  /// [WidgetState.hovered] under a pointer, [WidgetState.pressed] while a
+  /// pointer holds it down (a drag starting). [child] is passed to
+  /// [builder], for a part that doesn't change with the states.
+  ///
+  /// ```dart
+  /// RawReorderableList<String>(items: const ['a', 'b'], onReorder: (from, to) {}, labelOf: (item) => item, itemBuilder: (context, item, reorder) => Row(children: [Text(item), reorder.buildHandle((context, states, _) => Text(states.contains(WidgetState.focused) ? '[=]' : '='))]))
+  /// ```
+  Widget buildHandle(RawButtonBuilder builder, {Widget? child}) =>
+      handle(_ReorderHandle(builder: builder, child: child));
 
   /// Moves it up one; null at the top (a menu's "Move up").
   final VoidCallback? moveUp;
@@ -179,6 +197,82 @@ class RawReorderableList<T extends Object> extends StatefulWidget {
         >.has('movedMessage', movedMessage),
       );
   }
+}
+
+// A handle's face built from its states: the focus of the handle's own node
+// (the one [RawReorderItemDetails.handle] puts round it) while it shows, a
+// pointer over it, a pointer down on it.
+class _ReorderHandle extends StatefulWidget {
+  const _ReorderHandle({required this.builder, this.child});
+
+  final RawButtonBuilder builder;
+  final Widget? child;
+
+  @override
+  State<_ReorderHandle> createState() => _ReorderHandleState();
+}
+
+class _ReorderHandleState extends State<_ReorderHandle> {
+  late final DesignFocusShown _shown = DesignFocusShown((shown) {
+    if (mounted && shown != _focused) setState(() => _focused = shown);
+  });
+  FocusNode? _node;
+  bool _focused = false;
+  bool _hovered = false;
+  bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addHighlightModeListener(_highlightChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final node = Focus.maybeOf(context, createDependency: false);
+    if (node == _node) return;
+    _node?.removeListener(_focusChanged);
+    _node = node?..addListener(_focusChanged);
+    _focusChanged();
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeHighlightModeListener(_highlightChanged);
+    _node?.removeListener(_focusChanged);
+    _shown.dispose();
+    super.dispose();
+  }
+
+  void _highlightChanged(FocusHighlightMode mode) => _focusChanged();
+
+  // The focus Flutter would highlight, as a FocusableActionDetector reports
+  // it: on the handle's node, in the traditional highlight mode.
+  void _focusChanged() => _shown.focused(
+    (_node?.hasFocus ?? false) &&
+        FocusManager.instance.highlightMode == FocusHighlightMode.traditional,
+  );
+
+  void _press(bool down) {
+    if (down != _pressed) setState(() => _pressed = down);
+  }
+
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+    onEnter: (_) => setState(() => _hovered = true),
+    onExit: (_) => setState(() => _hovered = false),
+    child: Listener(
+      onPointerDown: (_) => _press(true),
+      onPointerUp: (_) => _press(false),
+      onPointerCancel: (_) => _press(false),
+      child: widget.builder(context, {
+        if (_hovered) WidgetState.hovered,
+        if (_focused) WidgetState.focused,
+        if (_pressed) WidgetState.pressed,
+      }, widget.child),
+    ),
+  );
 }
 
 class _MoveIntent extends Intent {

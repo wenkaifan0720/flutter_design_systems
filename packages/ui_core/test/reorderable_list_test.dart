@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -69,6 +70,43 @@ Future<void> _alt(WidgetTester tester, LogicalKeyboardKey key) async {
   await tester.sendKeyEvent(key);
   await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
   await tester.pumpAndSettle();
+}
+
+// A list whose handles paint from their states (buildHandle); the states
+// each item's face last heard, by item.
+final Map<String, Set<WidgetState>> _handleStates = {};
+
+class _StatesHost extends StatefulWidget {
+  const _StatesHost();
+
+  @override
+  State<_StatesHost> createState() => _StatesHostState();
+}
+
+class _StatesHostState extends State<_StatesHost> {
+  List<String> items = ['one', 'two', 'three'];
+
+  @override
+  Widget build(BuildContext context) => RawReorderableList<String>(
+    items: items,
+    labelOf: (item) => item,
+    onReorder: (from, to) => setState(() {
+      final item = items.removeAt(from);
+      items.insert(to, item);
+    }),
+    itemBuilder: (context, item, reorder) => SizedBox(
+      height: 50,
+      child: Row(
+        children: [
+          Expanded(child: Text(item)),
+          reorder.buildHandle((context, states, child) {
+            _handleStates[item] = states;
+            return SizedBox(width: 44, height: 44, child: child);
+          }, child: Text('drag $item')),
+        ],
+      ),
+    ),
+  );
 }
 
 void main() {
@@ -197,5 +235,43 @@ void main() {
     await tester.pump();
     expect(_host.items, ['three', 'one', 'two', 'four']);
     semantics.dispose();
+  });
+
+  testWidgets("buildHandle: the handle's face hears the keyboard's focus on "
+      'it, a pointer over it and a pointer down on it; Alt+Down still moves '
+      'the item, the focus going with it', (tester) async {
+    _handleStates.clear();
+    await tester.pumpWidget(harness(const _StatesHost()));
+    expect(_handleStates['one'], isEmpty);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    expect(_handleStates['one'], {WidgetState.focused});
+    expect(_handleStates['two'], isEmpty);
+
+    await _alt(tester, LogicalKeyboardKey.arrowDown);
+    expect(find.text('drag one'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('drag one')).dy,
+      greaterThan(tester.getTopLeft(find.text('drag two')).dy),
+      reason: 'moved down one',
+    );
+    expect(_handleStates['one'], {WidgetState.focused});
+
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    addTearDown(mouse.removePointer);
+    await mouse.moveTo(tester.getCenter(find.text('drag three')));
+    await tester.pump();
+    expect(_handleStates['three'], {WidgetState.hovered});
+    await mouse.down(tester.getCenter(find.text('drag three')));
+    await tester.pump();
+    expect(_handleStates['three'], {WidgetState.hovered, WidgetState.pressed});
+    await mouse.up();
+    await tester.pump();
+    expect(_handleStates['three'], {WidgetState.hovered});
+    await mouse.moveTo(Offset.zero);
+    await tester.pump();
+    expect(_handleStates['three'], isEmpty);
   });
 }

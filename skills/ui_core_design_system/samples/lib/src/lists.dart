@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart'
-    show Material, MaterialType, TextField;
+    show Icons, Material, MaterialType, TextField;
 import 'package:ui_core/ui_core.dart';
 
 import 'face.dart';
@@ -763,4 +763,92 @@ class LookMoreMenu extends StatelessWidget {
       ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<RawMenuEntry>('entries', entries));
   }
+}
+
+/// A list the reader puts in their own order: ui_core's [RawReorderableList]
+/// for the behaviour (a drag on the grip, or Alt with Up or Down on it, and
+/// the move announced), each row the caller's with the look's grip at its
+/// end.
+///
+/// ```dart
+/// LookReorderableList<String>(items: const ['Milk', 'Eggs'], labelOf: (item) => item, onReorder: (from, to) {}, itemBuilder: (context, item) => Text(item))
+/// ```
+class LookReorderableList<T extends Object> extends StatelessWidget {
+  /// [items] in their order, each row built by [itemBuilder].
+  const LookReorderableList({
+    super.key,
+    required this.items,
+    required this.labelOf,
+    required this.onReorder,
+    required this.itemBuilder,
+  });
+
+  /// The items, in their order.
+  final List<T> items;
+
+  /// What a screen reader calls an item, in the move it announces.
+  final String Function(T item) labelOf;
+
+  /// Called with an item's old index and its new one.
+  final void Function(int from, int to) onReorder;
+
+  /// An item's row, the grip aside.
+  final Widget Function(BuildContext context, T item) itemBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = LookTheme.of(context);
+    return RawReorderableList<T>(
+      items: items,
+      labelOf: labelOf,
+      onReorder: onReorder,
+      shrinkWrap: true,
+      itemBuilder: (context, item, reorder) => Row(
+        children: [
+          Expanded(child: itemBuilder(context, item)),
+          // The grip paints from its states, as a button does: the look's
+          // focus under the keyboard (where Alt with Up or Down moves the
+          // row), a tint under a pointer and while it holds the row.
+          reorder.buildHandle((context, states, _) => _lookGrip(theme, states)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('items', items.length));
+  }
+}
+
+/// A reorderable row's grip: a rule round it under the keyboard (the
+/// look's focus, as on every other stop), a tint under a pointer and a
+/// deeper one while it holds the row.
+Widget _lookGrip(LookThemeData theme, Set<WidgetState> states) {
+  final c = theme.colors;
+  return MouseRegion(
+    cursor: SystemMouseCursors.grab,
+    child: AnimatedLookSurface(
+      face: LookFace(
+        fill: states.contains(WidgetState.pressed)
+            ? c.ink.withValues(alpha: .08)
+            : states.contains(WidgetState.hovered)
+            ? c.ink.withValues(alpha: .04)
+            : const Color(0x00000000),
+        rule: states.contains(WidgetState.focused)
+            ? c.ink
+            : const Color(0x00000000),
+        ruleWidth: 2,
+        foreground: c.mutedInk,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(theme.radius / 2),
+      ),
+      child: SizedBox.square(
+        dimension: theme.density.height(theme.controlHeight),
+        child: const Icon(Icons.drag_handle, size: 20),
+      ),
+    ),
+  );
 }

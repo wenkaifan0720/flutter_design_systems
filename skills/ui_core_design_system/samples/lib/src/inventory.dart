@@ -142,6 +142,15 @@ final DesignInventory lookInventory = DesignInventory(
       ),
     ),
     DesignInventoryEntry.present(
+      'ReorderableListView',
+      (context) => LookReorderableList<String>(
+        items: const ['Milk', 'Eggs', 'Bread'],
+        labelOf: (item) => item,
+        onReorder: (from, to) {},
+        itemBuilder: (context, item) => Text(item),
+      ),
+    ),
+    DesignInventoryEntry.present(
       'SnackBar',
       (context) => LookButton(
         'Save draft',

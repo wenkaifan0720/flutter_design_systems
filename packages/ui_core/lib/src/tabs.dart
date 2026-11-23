@@ -484,6 +484,7 @@ class RawTabGroupTab<T> extends StatefulWidget {
     this.enabled = true,
     this.focusNode,
     this.statesController,
+    this.order,
   });
 
   /// What it stands for: the group's [RawTabGroup.groupValue] while it is
@@ -504,6 +505,11 @@ class RawTabGroupTab<T> extends StatefulWidget {
 
   /// Watches and drives its states ([RawButton.statesController]).
   final WidgetStatesController? statesController;
+
+  /// Its place among the group's tabs for the arrows, Home and End, when
+  /// they are not in reading order ([RawRovingFocusItem.order]): the group
+  /// takes the tabs' order when every tab gives one, else reading order.
+  final int? order;
 
   @override
   State<RawTabGroupTab<T>> createState() => _RawTabGroupTabState<T>();
@@ -535,7 +541,8 @@ class RawTabGroupTab<T> extends StatefulWidget {
           statesController,
           defaultValue: null,
         ),
-      );
+      )
+      ..add(IntProperty('order', order, defaultValue: null));
   }
 }
 
@@ -602,7 +609,7 @@ class _RawTabGroupTabState<T> extends State<RawTabGroupTab<T>> {
       focusNode: _node,
       enabled: enabled,
       selected: selected,
-      order: bar == null ? null : value as int,
+      order: bar == null ? widget.order : value as int,
       onMovedTo: _movedTo,
       child: RawButton(
         focusNode: _node,
