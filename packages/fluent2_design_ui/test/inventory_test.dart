@@ -32,7 +32,7 @@ void main() {
 
   test('every row is answered once, live or absent with a reason', () {
     expect(fluent2Inventory.problems, isEmpty);
-    expect(fluent2Inventory.entries.length, DesignInventoryRow.all.length);
+    expect(fluent2Inventory.entries.length, RawInventoryRow.all.length);
     expect({
       for (final e in fluent2Inventory.entries)
         if (e.builder == null) e.row,
@@ -177,7 +177,7 @@ void main() {
                 matching: find.byType(Scrollable),
               )
               .first;
-          for (final row in DesignInventoryRow.all) {
+          for (final row in RawInventoryRow.all) {
             await tester.scrollUntilVisible(
               find.byKey(ValueKey<String>('inventory-${row.id}')),
               240,

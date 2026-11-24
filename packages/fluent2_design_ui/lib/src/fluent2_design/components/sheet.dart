@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';
@@ -467,7 +466,7 @@ class Fluent2Sheet extends StatelessWidget {
     );
     if (Fluent2Layout.isWide(context)) {
       return navigator.push(
-        DesignDialogRoute<T>(
+        RawModalDialogRoute<T>(
           barrierDismissible: true,
           barrierLabel: RawWidgetsLocalizations.of(context)
               .modalBarrierDismissLabel,
@@ -545,7 +544,7 @@ class Fluent2Sheet extends StatelessWidget {
           builder: (sheetContext, _) => card(sheetContext, _SheetPlace.side),
         );
       }
-      return DesignDialogRoute<T>(
+      return RawModalDialogRoute<T>(
         settings: settings,
         barrierDismissible: true,
         barrierLabel: RawWidgetsLocalizations.of(context)

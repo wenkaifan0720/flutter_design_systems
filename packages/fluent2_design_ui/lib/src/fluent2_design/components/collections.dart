@@ -375,8 +375,8 @@ class Fluent2ScrollArea extends StatelessWidget {
       thickness: _barThickness,
       semanticLabel: semanticLabel,
       visibility: thumbVisibility
-          ? DesignScrollbarVisibility.always
-          : DesignScrollbarVisibility.auto,
+          ? RawScrollbarVisibility.always
+          : RawScrollbarVisibility.auto,
       thumbBuilder: (context, thumb) => AnimatedOpacity(
         opacity: thumb.visible ? 1 : 0,
         duration: moves,

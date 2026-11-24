@@ -214,13 +214,13 @@ class _ShapeTween extends Tween<ShapeBorder?> {
 }
 
 /// A styled part's layers for its states: its own `style:`, then its component theme. Each getter is the first layer's
-/// value for the states, or null, so the part goes on to its own Fluent default. It is ui_core's [DesignStyleOf].
+/// value for the states, or null, so the part goes on to its own Fluent default. It is ui_core's [RawStyleOf].
 ///
 /// ```dart
 /// final look = Fluent2StyleOf([style, Fluent2Theme.of(context).tagTheme], states);
 /// final fill = look.fill ?? surface;
 /// ```
-typedef Fluent2StyleOf = DesignStyleOf;
+typedef Fluent2StyleOf = RawStyleOf;
 
 /// A styled surface: [fill] inside [side] at Fluent's [radius], or along
 /// [shape] when one is styled, in [shadows], [child] inside [padding] and

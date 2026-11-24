@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../internal/well.dart';
 import '../../theme.dart';
@@ -338,7 +339,12 @@ class Fluent2DateBlock extends StatelessWidget {
                 maxLines: 1,
                 style: t.caption1.c(ink),
               ),
-            Text('${date.day}', maxLines: 1, style: t.title3.tabular.c(figure)),
+            Text(
+              // The reader's digits: Arabic-Indic in Arabic.
+              RawWidgetsLocalizations.of(context).formatDecimal(date.day),
+              maxLines: 1,
+              style: t.title3.tabular.c(figure),
+            ),
             Text(
               monthOf(date).substring(0, 3),
               maxLines: 1,

@@ -1,5 +1,5 @@
 // iOS's Reduce Motion alone. Flutter 3.47 sets only dart:ui's reduceMotion there, never MediaQuery's
-// disableAnimations. Fluent 2's motion reads ui_core's designReduceMotionOf (Fluent2Motion.on), so its durations
+// disableAnimations. Fluent 2's motion reads ui_core's rawReduceMotionOf (Fluent2Motion.on), so its durations
 // collapse, its loops stop and start again as the flag flips (the change reaches a part as a build), and a swiped row's
 // spring lands at once with that flag alone.
 import 'package:material_ui/material_ui.dart';

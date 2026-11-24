@@ -670,7 +670,7 @@ class Fluent2FormSection extends StatelessWidget {
         heightFactor: 1,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: fluent2FormMeasure),
-          child: DesignKeylineRegion(
+          child: RawKeylineRegion(
             label: head ?? 'Form',
             child: Column(
               mainAxisSize: MainAxisSize.min,

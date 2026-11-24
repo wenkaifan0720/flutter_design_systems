@@ -312,7 +312,6 @@ class _Day extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
-    final date = day.date;
     final outside = !day.inMonth;
     final isToday = day.isToday;
     final chosen = day.selected;
@@ -345,9 +344,11 @@ class _Day extends StatelessWidget {
           : c.neutralForeground1;
     }
     final type = (isToday || chosen) ? t.body1Strong : t.body1;
+    // As tall as the look's tap floor where the month is narrower than
+    // seven of it: a finger's 48.
     return SizedBox(
       width: cell,
-      height: cell,
+      height: math.max(cell, RawTapTargets.of(context).floorOn().height),
       child: Center(
         child: Container(
           width: disc,
@@ -363,7 +364,7 @@ class _Day extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Text(
-                '${date.day}',
+                day.label,
                 maxLines: 1,
                 softWrap: false,
                 style: type.c(ink).tabular,

@@ -1,6 +1,6 @@
 // ui_core's text entry check: every
 // one-line entry the look draws (a field, a search, a password) holds the
-// typed text's capitals on its box's middle (DesignCapCenter round the bare
+// typed text's capitals on its box's middle (RawCapCenter round the bare
 // TextField, internal/cap_label.dart), its hint on the typed text's
 // baseline, and nothing in its editable's decoration but the hint, under
 // each density and under a host theme that pads and sizes decorations

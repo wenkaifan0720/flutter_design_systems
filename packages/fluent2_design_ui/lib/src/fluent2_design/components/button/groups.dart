@@ -18,7 +18,7 @@ class Fluent2Kbd extends StatelessWidget {
   const Fluent2Kbd(this.keys, {super.key}) : shortcut = null;
 
   /// The keys of [shortcut] (a `SingleActivator` or a `CharacterActivator`)
-  /// as ui_core's `designShortcutLabel` writes them: in the platform's order
+  /// as ui_core's `rawShortcutLabel` writes them: in the platform's order
   /// and the reader's words, "Ctrl+Shift+N", or Apple's symbols on macOS and
   /// iOS ("⇧ ⌘ N"). A screen reader hears the keys in words.
   ///
@@ -41,12 +41,10 @@ class Fluent2Kbd extends StatelessWidget {
     return Semantics(
       label: shortcut == null
           ? keys.join(' plus ')
-          : designShortcutLabel(context, shortcut, appleSymbols: false),
+          : rawShortcutLabel(context, shortcut, appleSymbols: false),
       excludeSemantics: true,
       child: Text(
-        shortcut == null
-            ? keys.join('+')
-            : designShortcutLabel(context, shortcut),
+        shortcut == null ? keys.join('+') : rawShortcutLabel(context, shortcut),
         maxLines: 1,
         style: t.caption1.c(t.colors.neutralForeground3),
       ),

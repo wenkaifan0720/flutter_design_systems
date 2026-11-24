@@ -132,16 +132,16 @@ class Fluent2Tree<T> extends StatefulWidget {
   }
 }
 
-// The tree's behaviour is the shared DesignTree: the arrows walk and open
+// The tree's behaviour is the shared RawTree: the arrows walk and open
 // it, Home and End jump, Enter activates, Space selects, `*` opens a level, one
 // row is the tab stop, and each row says its level, place, expanded and
 // selected state. Fluent 2 paints the rows.
 class _Fluent2TreeState<T> extends State<Fluent2Tree<T>> {
-  late DesignTreeController<Fluent2TreeItem<T>> _tree = _controller(
+  late RawTreeController<Fluent2TreeItem<T>> _tree = _controller(
     widget.initiallyExpanded ?? const {},
   );
 
-  DesignTreeController<Fluent2TreeItem<T>> _controller(Set<T> open) {
+  RawTreeController<Fluent2TreeItem<T>> _controller(Set<T> open) {
     final expanded = <Fluent2TreeItem<T>>[];
     void walk(List<Fluent2TreeItem<T>> items) {
       for (final item in items) {
@@ -151,7 +151,7 @@ class _Fluent2TreeState<T> extends State<Fluent2Tree<T>> {
     }
 
     walk(widget.items);
-    return DesignTreeController<Fluent2TreeItem<T>>(
+    return RawTreeController<Fluent2TreeItem<T>>(
       roots: widget.items,
       childrenOf: (item) => item.children,
       expanded: expanded,
@@ -191,7 +191,7 @@ class _Fluent2TreeState<T> extends State<Fluent2Tree<T>> {
   @override
   Widget build(BuildContext context) {
     final change = widget.onChanged;
-    return DesignTree<Fluent2TreeItem<T>>(
+    return RawTree<Fluent2TreeItem<T>>(
       controller: _tree,
       semanticLabel: widget.label,
       labelOf: (item) =>

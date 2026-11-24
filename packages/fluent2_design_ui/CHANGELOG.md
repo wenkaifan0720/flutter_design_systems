@@ -1,3 +1,10 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawCalendarController` for `DesignCalendarController`, `RawOverlayAnchor` for `DesignOverlayAnchor`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.
+- Under a finger a day in `Fluent2Calendar`, the date picker and `Fluent2DateRangePicker` is as tall as Fluent's 48 target (`Fluent2Layout.touchHitTarget`) where the month is narrower than seven of it, so the grid closes up; its width stays a seventh of the month. Before, such a day was 46 tall.
+- The day numbers in `Fluent2Calendar`, the date picker and `Fluent2DateRangePicker` come from ui_core's calendar (`RawCalendarDayDetails.label`), in the app's language and digits: Arabic-Indic in Arabic. `Fluent2DateBlock`'s day is in the app's digits too.
+- A `Fluent2BarChart` value too wide for its column (a length in Arabic on a phone) takes a second line, whole, breaking between one figure and its unit and the next ("4 h" over "45 m"), never inside a pair; every column then keeps two lines for its value so the bars stay on one scale. Before, it was cut short.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

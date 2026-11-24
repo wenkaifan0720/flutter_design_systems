@@ -111,12 +111,12 @@ class Fluent2Host extends StatelessWidget {
           // Fluent's tap targets: 48 where a finger reaches the controls
           // (Fluent2Layout.touchHitTarget), WCAG's 24 for a pointer; each
           // control lays out at least that big (TapTargetPadding).
-          child: DesignTapTargetScope(
-            targets: DesignTapTargets(
+          child: RawTapTargetScope(
+            targets: RawTapTargets(
               touch: const Size.square(Fluent2Layout.touchHitTarget),
               input: Fluent2Layout.padded(context)
-                  ? DesignInput.touch
-                  : DesignInput.pointer,
+                  ? RawInput.touch
+                  : RawInput.pointer,
             ),
             child: Builder(
               builder: (context) => ColoredBox(

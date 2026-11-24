@@ -1,4 +1,4 @@
-// Fluent 2's answer to the shared component inventory (ui_core's DesignInventoryRow.all, 89 rows): for each row the part
+// Fluent 2's answer to the shared component inventory (ui_core's RawInventoryRow.all, 89 rows): for each row the part
 // that answers it, `Fluent2<Stem>`, as a small live specimen. The live gallery lists it, and a test verifies it (every
 // row answered once, every specimen the row's own class).
 import 'package:flutter/foundation.dart';
@@ -78,15 +78,15 @@ const Map<String, double> fluent2InventoryHeights = {
 Widget _say(String words) => Center(child: Text(words));
 
 /// Component names, availability, and live examples for the Fluent 2 gallery.
-final DesignInventory fluent2Inventory = DesignInventory(
+final RawInventory fluent2Inventory = RawInventory(
   look: 'Fluent 2',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (_) => const Fluent2Button('Share', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (_) => const Fluent2IconButton(
         Fluent2Icons.share,
@@ -94,7 +94,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FloatingActionButton',
       (_) => const Fluent2FloatingActionButton(
         icon: Fluent2Icons.add,
@@ -102,7 +102,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const Fluent2ToolbarGroup(
         label: 'Share',
@@ -120,7 +120,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (_) => _choice<Set<String>>(
         const {'list'},
@@ -143,7 +143,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (_) => const Fluent2SplitButton(
         'Publish',
@@ -154,30 +154,30 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (_) => const Fluent2Link('Read the guide', onPressed: _none),
     ),
-    DesignInventoryEntry.present('Kbd', (_) => const Fluent2Kbd(['Ctrl', 'K'])),
+    RawInventoryEntry.present('Kbd', (_) => const Fluent2Kbd(['Ctrl', 'K'])),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (_) =>
           Fluent2TextField(label: 'Name', value: 'Sam Lee', onChanged: (_) {}),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (_) => Fluent2TextArea(label: 'Note', onChanged: (_) {}),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (_) => Fluent2SearchBox(hintText: 'Find a file', onChanged: (_) {}),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (_) => Fluent2PasswordField(label: 'Password', onChanged: (_) {}),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (_) => const Fluent2InputGroup(
         label: 'Website',
@@ -185,17 +185,17 @@ final DesignInventory fluent2Inventory = DesignInventory(
         suffix: '.com',
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'InputOtp',
       'No Fluent 2 platform has code boxes: Microsoft\'s sign-in asks for '
           'a code in one Input (Fluent2TextField with the number keyboard)',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       (_) =>
           const Fluent2SpinButton(label: 'Copies', value: 2, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (_) => const Fluent2Select<String>(
         label: 'Size',
@@ -204,7 +204,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (_) => const Fluent2Combobox<String>(
         label: 'Size',
@@ -213,7 +213,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (_) => const Fluent2MultiSelect<String>(
         label: 'Sizes',
@@ -222,7 +222,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (_) => const Fluent2Checkbox(
         label: 'Include archived files',
@@ -230,7 +230,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (_) => _choice<String>(
         'medium',
@@ -246,15 +246,15 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (_) => const Fluent2Switch(label: 'Sync', value: true, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (_) => const Fluent2Slider(label: 'Volume', value: 40, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (_) => const Fluent2RangeSlider(
         label: 'Pages',
@@ -262,7 +262,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (_) => const Fluent2SegmentedButton<String>(
         label: 'Size',
@@ -275,7 +275,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (_) => const Fluent2InteractionTag(
         'Shared',
@@ -283,15 +283,15 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (_) => const Fluent2Rating(label: 'Rating', value: 4, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (_) => Fluent2FileUpload(label: 'Attachments', onPressed: () {}),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (_) => Fluent2DatePicker(
         label: 'Due',
@@ -299,7 +299,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (_) => _Owning(
         (_) => RawCalendarController(
@@ -315,7 +315,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         (_, stay) => Fluent2DateRangePicker(controller: stay),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (_) => const Fluent2TimePicker(
         label: 'Start',
@@ -323,7 +323,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (_) => Fluent2Calendar(
         value: DateTime(2026, 6, 14),
@@ -331,7 +331,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'WheelPicker',
       (_) => const Fluent2WheelPicker<String>(
         label: 'Size',
@@ -341,7 +341,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ColorPicker',
       // It starts on the theme's brand.
       (_) => _Owning(
@@ -351,7 +351,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         (_, colour) => Fluent2ColorPicker(controller: colour),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (_) => Fluent2FormField(
         labelText: 'Email',
@@ -364,11 +364,11 @@ final DesignInventory fluent2Inventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (_) => const Fluent2AppBar(title: 'Files'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (_) => const Fluent2NavigationBar(
         items: [_home, _files, _people],
@@ -376,7 +376,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (_) => const Fluent2NavigationRail(
         items: [_home, _files, _people],
@@ -384,7 +384,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => const Fluent2NavigationDrawer(
         items: [_home, _files, _people],
@@ -392,7 +392,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (_) => const Fluent2TabList(
         tabs: ['Recent', 'Shared', 'Pinned'],
@@ -400,7 +400,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (_) => const Fluent2Breadcrumb(
         items: [
@@ -410,7 +410,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (_) => const Fluent2Pagination(
         label: 'Results',
@@ -419,12 +419,12 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (_) =>
           const Fluent2StepProgress(count: 4, currentStep: 1, name: 'Review'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (_) => const Fluent2PageDots(
         count: 4,
@@ -433,20 +433,20 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'MenuBar',
       "Fluent 2's web, iOS and Android kits have no menu bar; its Windows "
           "kit has one (WinUI's MenuBar), planned here. Until then a window's "
           'commands are its Toolbar and menu buttons (Fluent2Toolbar, '
           'Fluent2MenuButton)',
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'Command',
       'No Fluent 2 platform has a command palette (WinUI\'s CommandBar is '
           'a toolbar: Fluent2Toolbar); a search is its SearchBox '
           '(Fluent2SearchBox)',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (_) => const Fluent2Scaffold(
         scroll: false,
@@ -455,7 +455,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
       ),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (_) => const Fluent2Card(
         children: [
@@ -463,7 +463,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (_) => const Fluent2ListItem(
         title: 'Budget',
@@ -472,7 +472,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onTap: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (_) => const Fluent2ListSection(
         title: 'Recent',
@@ -482,11 +482,11 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (_) => const Fluent2SectionHeader('Recent'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (_) => const Fluent2Accordion(
         items: [
@@ -499,7 +499,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         collapsible: true,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (_) => const Fluent2Table(
         label: 'Files',
@@ -517,7 +517,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DataTable',
       (_) => _Owning(
         (_) => RawDataTableController<_File>(
@@ -548,8 +548,8 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present('Divider', (_) => const Fluent2Divider()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Divider', (_) => const Fluent2Divider()),
+    RawInventoryEntry.present(
       'ScrollArea',
       (_) => _Owning(
         (_) => ScrollController(),
@@ -566,18 +566,18 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Resizable',
       (_) => Fluent2Resizable(first: _say('Files'), second: _say('Details')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CarouselView',
       (_) => Fluent2CarouselView(
         label: 'Highlights',
         children: [_say('First'), _say('Second'), _say('Third')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (_) => Fluent2ReorderableListView<String>(
         shrinkWrap: true,
@@ -587,7 +587,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         itemBuilder: (_, item) => Text(item),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SwipeActions',
       (_) => const Fluent2SwipeActions(
         trailing: [
@@ -600,7 +600,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         child: Fluent2ListItem(title: 'Budget'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RefreshIndicator',
       (_) => Fluent2RefreshIndicator(
         onRefresh: () async {},
@@ -612,7 +612,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TreeView',
       (_) => const Fluent2Tree<String>(
         label: 'Files',
@@ -629,7 +629,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (_) => const Fluent2Timeline(
         entries: [
@@ -638,11 +638,11 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (_) => const Fluent2Avatar(name: 'Sam Lee'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (_) => const Fluent2AvatarGroup(
         people: [
@@ -652,20 +652,20 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present('Badge', (_) => const Fluent2Badge(3)),
-    DesignInventoryEntry.present('Tag', (_) => const Fluent2Tag('Draft')),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Badge', (_) => const Fluent2Badge(3)),
+    RawInventoryEntry.present('Tag', (_) => const Fluent2Tag('Draft')),
+    RawInventoryEntry.present(
       'Media',
       (_) => const Fluent2Image(width: 120, height: 80, semanticLabel: 'Cover'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (_) => const Fluent2EmptyState(
         title: 'No files yet',
         body: 'Files you upload appear here.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (_) => const Fluent2DescriptionList(
         properties: [
@@ -675,25 +675,25 @@ final DesignInventory fluent2Inventory = DesignInventory(
       ),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (_) => const Fluent2Dialog(
         title: 'Discard the draft?',
         message: 'Your changes will be lost.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (_) => const Fluent2BottomSheet(
         title: 'Share',
         child: Text('Anyone with the link'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (_) => const Fluent2Sheet(title: 'Details', child: Text('Edited today')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (_) => const Fluent2ActionSheet<String>(
         title: 'Budget',
@@ -705,7 +705,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (_) => Fluent2Popover(
         label: 'Filters',
@@ -713,7 +713,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         content: const Text('Only shared files'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'HoverCard',
       (_) => Fluent2Popover(
         label: 'Mara Okafor',
@@ -722,14 +722,14 @@ final DesignInventory fluent2Inventory = DesignInventory(
         content: const Text('Design lead · Seattle'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (_) => const Fluent2Tooltip(
         message: 'Share this file',
         child: Fluent2Button('Share', onPressed: _none),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (_) => const Fluent2Menu<String>(
         onSelected: _drop,
@@ -739,41 +739,41 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (_) => const Fluent2Toast('Saved to Files'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (_) => const Fluent2MessageBar(body: 'A new version is ready.'),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (_) => const Fluent2ProgressBar(value: .6, semanticLabel: 'Uploading'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (_) => const Fluent2Spinner(label: 'Loading files'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (_) => const Fluent2Skeleton(child: Fluent2SkeletonItem(width: 200)),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (_) => const Fluent2StatusView.success(
         title: 'Invitation sent',
         message: 'Sam will get an email.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (_) =>
           const Fluent2Spinner(label: 'Storage used', value: .62, below: false),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (_) => const Fluent2LineChart(
         label: 'Files shared',
@@ -784,7 +784,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (_) => const Fluent2BarChart(
         label: 'Files by day',
@@ -795,7 +795,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (_) => const Fluent2AreaChart(
         label: 'Storage used',
@@ -805,7 +805,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (_) => const Fluent2PieChart(
         label: 'Storage',
@@ -816,7 +816,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (_) => const Fluent2Sparkline(
         label: 'Files this week',
@@ -853,7 +853,7 @@ class Fluent2InventoryGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: fluent2Inventory,
       controller: controller,
       padding: padding,
@@ -879,7 +879,7 @@ class Fluent2InventoryGallery extends StatelessWidget {
                 if (specimen == null)
                   Text(
                     entry?.absentReason != null
-                        ? DesignInventory.absentLabel(entry!.absentReason!)
+                        ? RawInventory.absentLabel(entry!.absentReason!)
                         : 'Missing: the inventory does not answer this row',
                     style: t.body1.c(t.textSecondary),
                   )

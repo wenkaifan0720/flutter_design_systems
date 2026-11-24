@@ -234,7 +234,7 @@ class Fluent2Tooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.isEmpty) return child;
-    final spring = DesignMotionPolicy.of(context)
+    final spring = RawMotionPolicy.of(context)
         .effects(dampingRatio: 1, stiffness: 1600);
     // The bubble comes and goes on its own spring. RawTooltip's animation
     // says only whether it shows: at once when it shows, and while it hides,
@@ -424,7 +424,7 @@ class _TipPresenceState extends State<_TipPresence>
 
 // How long [spring] takes to close a tip from open: until its simulation is done, to the millisecond above.
 Duration _settleTime(SpringDescription spring) {
-  final closing = designSpringSimulation(spring, from: 1, to: 0);
+  final closing = rawSpringSimulation(spring, from: 1, to: 0);
   var ms = 1;
   while (ms < 5000 && !closing.isDone(ms / 1000)) {
     ms++;

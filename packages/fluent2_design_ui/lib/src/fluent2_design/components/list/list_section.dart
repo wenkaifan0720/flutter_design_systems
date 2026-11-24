@@ -62,7 +62,7 @@ class Fluent2ListSection extends StatelessWidget {
       explicitChildNodes: true,
       // The head, the selector and the card share the section's keylines
       // (the keyline check; the card's rows hold their own).
-      child: DesignKeylineRegion(
+      child: RawKeylineRegion(
         label: title,
         child: Column(
           mainAxisSize: MainAxisSize.min,

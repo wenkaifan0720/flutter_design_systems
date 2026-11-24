@@ -90,7 +90,7 @@ export 'fluent2_design/theme.dart' hide fluent2CssShadow;
 // a menu bar's entries, a command, where a flyout opens, a toast's handle,
 // the inventory, iOS's swipe back round a page's push, and a window's size
 // class.
-export 'package:ui_core/ui_core.dart' show DesignWindowSizeClass;
+export 'package:ui_core/ui_core.dart' show RawWindowSizeClass;
 export 'package:ui_core/ui_core.dart' show RawPopoverSide, RawPopoverAlign;
 export 'package:ui_core/ui_core.dart'
     show RawCalendarController, RawCalendarMode, RawDateRange;
@@ -98,9 +98,9 @@ export 'package:ui_core/ui_core.dart' show RawColorController;
 export 'package:ui_core/ui_core.dart'
     show RawDataTableController, RawDataColumn, RawSortDirection;
 export 'package:ui_core/inventory.dart'
-    show DesignInventory, DesignInventoryEntry, DesignInventoryRow;
+    show RawInventory, RawInventoryEntry, RawInventoryRow;
 export 'package:ui_core/ui_core.dart'
-    show SwipeBackPageTransitionsBuilder, designSwipeBack;
+    show SwipeBackPageTransitionsBuilder, rawSwipeBack;
 export 'package:ui_core/ui_core.dart' show RawRangeValues;
 export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 export 'package:ui_core/ui_core.dart' show RawToastController;

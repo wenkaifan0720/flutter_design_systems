@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
+export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 
 /// How one part looks, as Material's `ButtonStyle` is: every slot resolves for the part's states
 /// ([WidgetState.disabled], [WidgetState.hovered], [WidgetState.focused], [WidgetState.pressed],
@@ -29,9 +29,9 @@ export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 /// | [iconSize] | an icon's size |
 ///
 /// Each part's doc says which slots it reads. Its shape animates when a state changes it, as a Material 3 button's
-/// does. It is ui_core's [DesignStyle], so every look's parts take the same
+/// does. It is ui_core's [RawStyle], so every look's parts take the same
 /// style, read the same way: build one as `Fluent2Style(...)` or
-/// `DesignStyle(...)`.
+/// `RawStyle(...)`.
 ///
 /// ```dart
 /// Fluent2Button(
@@ -47,7 +47,7 @@ export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 ///   ),
 /// )
 /// ```
-typedef Fluent2Style = DesignStyle;
+typedef Fluent2Style = RawStyle;
 
 /// Every component theme in one, as `ThemeData` holds Material's: what
 /// `Fluent2ThemeData` carries and lerps. Each is empty by default: the part

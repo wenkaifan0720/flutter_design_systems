@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';
@@ -17,8 +17,6 @@ import 'account.dart';
 import 'screen.dart';
 import 'sheet.dart';
 import 'sheet_page.dart';
-
-import 'package:ui_core/ui_core.dart';
 
 /// The way back off a pushed page, or the close of a sheet or a cover, as
 /// the route's bar draws it: on a phone the subtle icon button with the

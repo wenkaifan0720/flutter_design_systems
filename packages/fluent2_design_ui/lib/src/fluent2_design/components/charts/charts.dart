@@ -332,6 +332,14 @@ class Fluent2BarChart extends StatelessWidget {
   static String _text(BuildContext context, Fluent2Bar b) =>
       b.valueText ?? fluent2Figure(context, b.value);
 
+  // A figure keeps the word after it ("45 m", "٣٠ د"): a value that takes a
+  // second line breaks between them ("4 h" over "45 m"), never between a
+  // figure and its unit.
+  static final _figureWord = RegExp(r'(\p{Nd}) (?=\S)', unicode: true);
+
+  static String _shown(BuildContext context, Fluent2Bar b) =>
+      _text(context, b).replaceAllMapped(_figureWord, (m) => '${m[1]}\u00A0');
+
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
@@ -345,20 +353,46 @@ class Fluent2BarChart extends StatelessWidget {
       ?label,
       for (final b in bars) '${b.label} ${_text(context, b)}',
     ].join(', ');
+    final direction = Directionality.of(context);
+    int valueLines(double width) {
+      for (final b in bars) {
+        // Set as the widest a value is drawn: strong, with tabular figures.
+        final painter = TextPainter(
+          text: TextSpan(
+            text: _shown(context, b),
+            style: t.caption1Strong.tabular,
+          ),
+          textDirection: direction,
+          textScaler: scaler,
+          locale: Localizations.maybeLocaleOf(context),
+          maxLines: 1,
+        )..layout();
+        final wide = painter.width > width;
+        painter.dispose();
+        if (wide) return 2;
+      }
+      return 1;
+    }
+
     Widget column(int i) {
       final b = bars[i];
       final lit = highlight == i;
       return LayoutBuilder(
         builder: (context, box) {
-          final room = math.max(0.0, box.maxHeight - line * 2 - 12);
+          // A value too wide for its column (a length in Arabic on a phone)
+          // takes a second line, whole; every column then keeps two lines
+          // for its value, so the bars stand on one scale.
+          final lines = valueLines(box.maxWidth);
+          final room = math.max(0.0, box.maxHeight - line * (lines + 1) - 12);
           final h = top <= 0 ? 0.0 : room * math.max(0, b.value) / top;
           final width = math.min(24.0, box.maxWidth * 0.6);
           return Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
-                _text(context, b),
-                maxLines: 1,
+                _shown(context, b),
+                maxLines: lines,
+                textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
                 style: lit
                     ? t.caption1Strong.tabular.c(t.textPrimary)

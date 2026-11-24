@@ -319,7 +319,7 @@ class _Fluent2InputGroupState extends State<Fluent2InputGroup> {
     final live = widget.enabled;
     final ink = live ? c.neutralForeground3 : c.neutralForegroundDisabled;
     Widget words(String w) => Text(w, maxLines: 1, style: t.body1.c(ink));
-    return DesignInputGroup(
+    return RawInputGroup(
       focusNode: _focus,
       enabled: live,
       isError: widget.invalid,
@@ -904,8 +904,9 @@ class _RangeDay extends StatelessWidget {
   final RawCalendarDayDetails day;
   final Set<WidgetState> states;
 
-  /// The day's height: 32, or 48 under a finger (its disc and band 28,
-  /// or 40).
+  /// The day's width: 32, or up to 48 under a finger (its disc and band 28,
+  /// or 40). Its height is the same, or the look's tap floor where that is
+  /// taller (a finger's 48 where the month is narrow).
   final double cell;
 
   /// The band starts here, at the disc's centre, and runs on.
@@ -928,6 +929,7 @@ class _RangeDay extends StatelessWidget {
     // The disc and the band: 28 on a 32 day; 40 on a finger's 48, as the
     // date picker's phone disc, so the chosen ground fills its cell.
     final disc = cell > 32 ? 40.0 : 28.0;
+    final height = math.max(cell, RawTapTargets.of(context).floorOn().height);
     final ink = !live
         ? c.neutralForegroundDisabled
         : end
@@ -949,7 +951,7 @@ class _RangeDay extends StatelessWidget {
                   ? Alignment.centerRight
                   : Alignment.centerLeft,
               widthFactor: half ? 0.5 : 1,
-              heightFactor: disc / cell,
+              heightFactor: disc / height,
               child: ColoredBox(color: fluent2BrandWell(t)),
             ),
           ),
@@ -979,7 +981,7 @@ class _RangeDay extends StatelessWidget {
                 : null,
           ),
           child: Text(
-            '${day.date.day}',
+            day.label,
             textScaler: TextScaler.noScaling,
             style: (end ? t.body1Strong : t.body1).tabular.c(ink),
           ),
@@ -992,7 +994,7 @@ class _RangeDay extends StatelessWidget {
           ),
       ],
     );
-    return SizedBox(height: cell, child: face);
+    return SizedBox(height: height, child: face);
   }
 }
 

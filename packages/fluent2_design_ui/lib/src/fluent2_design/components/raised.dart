@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';

@@ -54,7 +54,7 @@ class Fluent2Dialog extends StatelessWidget {
   /// Raises [dialog] over the whole app; completes with the value it pops
   /// with (null when the overlay is tapped or Escape pressed).
   ///
-  /// It is ui_core's dialog route (`DesignDialogRoute`): it fades in from
+  /// It is ui_core's dialog route (`RawModalDialogRoute`): it fades in from
   /// .95 of its size on a spring that settles in Fluent's `durationGentle`,
   /// and under Reduce Motion only fades. Focus moves into it, Tab stays
   /// inside it, and as it closes the focus goes back to what held it. A
@@ -69,7 +69,7 @@ class Fluent2Dialog extends StatelessWidget {
     final navigator = Fluent2Host.navigatorOf(context);
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     return navigator.push(
-      DesignDialogRoute<T>(
+      RawModalDialogRoute<T>(
         isAlert: isAlert,
         barrierDismissible: true,
         barrierLabel: RawWidgetsLocalizations.of(context)

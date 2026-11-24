@@ -207,7 +207,7 @@ _Place _measure(WidgetTester tester, String words, {bool capitals = false}) {
     // The capitals as drawn (the view's ratio is 1): the line's baseline
     // on a whole pixel, the capitals Selawik's 1434/2048 of the size. The
     // line is the words' own box (a paragraph, or the editable's line) where
-    // it is painted, DesignCapCenter's move included.
+    // it is painted, RawCapCenter's move included.
     RenderBox? words;
     void visit(RenderObject r) {
       if (words != null) return;

@@ -202,7 +202,7 @@ class Fluent2Card extends StatelessWidget {
                   )
                 : ShapeDecoration(shape: shape.copyWith(side: rim)),
             // Its parts share the card's keylines (the keyline check).
-            child: DesignKeylineRegion(label: label ?? 'Card', child: clipped),
+            child: RawKeylineRegion(label: label ?? 'Card', child: clipped),
           );
           if (selectable) {
             box = Stack(

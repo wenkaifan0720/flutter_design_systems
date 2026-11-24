@@ -216,7 +216,7 @@ abstract final class Fluent2Motion {
   static const Curve linear = Curves.linear;
 
   /// Whether a part at [context] moves: unless the reader has asked for
-  /// reduced motion, on any platform (ui_core's `designReduceMotionOf`:
+  /// reduced motion, on any platform (ui_core's `rawReduceMotionOf`:
   /// Android's Remove animations and the web's prefers-reduced-motion through
   /// `MediaQuery.disableAnimationsOf`, iOS's Reduce Motion through the
   /// platform's accessibility features). Off, every state change is a cut.
@@ -224,7 +224,7 @@ abstract final class Fluent2Motion {
   /// iOS's switch reaches [context] as a build, not as
   /// `didChangeDependencies`: a part that runs a loop starts and stops it in
   /// `build`.
-  static bool on(BuildContext context) => !designReduceMotionOf(context);
+  static bool on(BuildContext context) => !rawReduceMotionOf(context);
 
   /// [duration] at [context], or none when motion is off.
   static Duration of(BuildContext context, Duration duration) =>
@@ -289,12 +289,12 @@ abstract final class Fluent2Layout {
       padded(context) ? touchHitTarget : minHitTarget;
 
   /// The least size of a control's tap target at [context]: the floor
-  /// the nearest `DesignTapTargetScope` declares (Fluent2Host's: 48 for a
+  /// the nearest `RawTapTargetScope` declares (Fluent2Host's: 48 for a
   /// finger, 24 for a pointer) for what [padded] says reaches it here, so
   /// the target and the face read the same platform.
   static Size tapFloorOf(BuildContext context) =>
-      DesignTapTargets.of(context)
-          .floorFor(padded(context) ? DesignInput.touch : DesignInput.pointer);
+      RawTapTargets.of(context)
+          .floorFor(padded(context) ? RawInput.touch : RawInput.pointer);
 
   /// Whether a touch reaches the controls at [context] (Android, iOS and
   /// Fuchsia, where Material pads its tap targets): there a press stands at

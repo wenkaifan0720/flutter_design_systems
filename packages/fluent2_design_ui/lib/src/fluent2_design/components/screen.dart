@@ -345,7 +345,7 @@ class _Fluent2ScreenState extends State<Fluent2Scaffold> {
 
   /// The screen's content as one keyline region: its sections, cards and
   /// fields start on one line and end on another (the keyline check).
-  Widget _held(Widget body) => DesignKeylineRegion(
+  Widget _held(Widget body) => RawKeylineRegion(
     label: switch (widget.topBar) {
       Fluent2AppBar(:final title?) => title,
       _ => 'Screen',

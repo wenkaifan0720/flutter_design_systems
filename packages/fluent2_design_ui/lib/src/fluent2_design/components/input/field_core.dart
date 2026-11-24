@@ -399,7 +399,7 @@ class Fluent2FieldEditor extends StatelessWidget {
       ),
     );
     // One line: its capitals on the line's middle, the hint's too, the
-    // caret, selection and taps moving with them (ui_core's DesignCapCenter
+    // caret, selection and taps moving with them (ui_core's RawCapCenter
     // around the bare TextField). A text area keeps the browser's line box.
     return maxLines == 1
         ? fluent2CapCentred(field)

@@ -18,7 +18,7 @@ bool debugFluent2CapCentring = true;
 /// descent. Wrap the words alone, never an icon. Plumbing of the
 /// components; pages never write it.
 Widget fluent2CapCentred(Widget label) => debugFluent2CapCentring
-    ? DesignCapCenter(capHeightFactor: fluent2CapHeight, child: label)
+    ? RawCapCenter(capHeightFactor: fluent2CapHeight, child: label)
     : label;
 
 /// [control] beside words in [style], dropped by half what their first line

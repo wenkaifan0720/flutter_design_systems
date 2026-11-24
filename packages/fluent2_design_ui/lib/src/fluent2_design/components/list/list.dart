@@ -502,9 +502,9 @@ class Fluent2ListGroup extends StatelessWidget {
             shadows: t.shadows.shadow4,
             clip: true,
             // The rows share the card's keylines (the keyline check).
-            child: DesignKeylineRegion(label: title ?? 'List', child: rows),
+            child: RawKeylineRegion(label: title ?? 'List', child: rows),
           )
-        : DesignKeylineRegion(label: title ?? 'List', child: rows);
+        : RawKeylineRegion(label: title ?? 'List', child: rows);
     // The section header reads the title as a heading over the rows; a
     // label here as well would say it twice.
     return Semantics(

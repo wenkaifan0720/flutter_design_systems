@@ -123,11 +123,11 @@ class _Plot extends StatelessWidget {
     // words and keeps that room at the reading start.
     final yTicks = [
       for (final v in [top, top / 2, 0.0])
-        DesignScaleTick(value: v, position: v, label: _say(context, v)),
+        RawScaleTick(value: v, position: v, label: _say(context, v)),
     ];
     final ticks = [for (final y in yTicks) y.label];
     final left =
-        DesignScaleTick.widestLabel(
+        RawScaleTick.widestLabel(
           yTicks,
           style: tick,
           textScaler: scaler,
@@ -185,17 +185,17 @@ class _Plot extends StatelessWidget {
               // finger's scrub, a tap held, the keys) and says it; Fluent's
               // painter draws the run, its value axis, the crosshair and
               // the card.
-              return DesignChart(
+              return RawChart(
                 semanticLabel:
                     label ?? [for (final s in series) s.name].join(', '),
                 semanticSummary: summary,
                 series: [
                   for (final s in series)
-                    DesignChartSeries(
+                    RawChartSeries(
                       label: s.name,
                       points: [
                         for (final (i, v) in s.values.indexed)
-                          DesignChartPoint(i.toDouble(), v),
+                          RawChartPoint(i.toDouble(), v),
                       ],
                     ),
                 ],
@@ -810,13 +810,13 @@ class _Fluent2PieChartState extends State<Fluent2PieChart> {
     // and says it; Fluent's painter draws the ring and the words in its hole.
     final donut = SizedBox.square(
       dimension: widget.size,
-      child: DesignPieChart(
+      child: RawPieChart(
         semanticLabel:
             widget.label ?? [for (final s in parts) s.label].join(', '),
         semanticSummary: summary,
         slices: [
           for (final s in parts)
-            DesignPieSlice(label: s.label, value: math.max(0, s.value)),
+            RawPieSlice(label: s.label, value: math.max(0, s.value)),
         ],
         holeRadius:
             math.max(0, widget.size / 2 - widget.thickness) / (widget.size / 2),
@@ -945,7 +945,7 @@ class _DonutPainter extends CustomPainter {
 
   /// ui_core's slices: each part's angles from the top, clockwise (the other
   /// way right to left).
-  final List<DesignPieSliceDetails> slices;
+  final List<RawPieSliceDetails> slices;
   final List<Color> colors;
   final double thickness;
   final int? at;
