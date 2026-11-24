@@ -52,7 +52,12 @@ class _TendAppState extends State<TendApp> {
         ),
         builder: (context, child) =>
             tendHost(context, child!, _brightness(context)),
-        home: const PlantsScreen(),
+        // The first screen stands on the design's route too: Material's
+        // route under a RawPageRoute is never told to play its exit.
+        onGenerateRoute: (settings) => TendPageRoute<void>(
+          settings: settings,
+          builder: (context) => const PlantsScreen(),
+        ),
       ),
     ),
   );

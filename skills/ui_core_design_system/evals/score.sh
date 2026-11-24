@@ -28,12 +28,15 @@ gate() { # id, PASS|FAIL|REVIEW, what
 name="$(sed -n 's/^name: *//p' "$app/pubspec.yaml" | head -1)"
 (cd "$app" && flutter pub get) >"$log/get.txt" 2>&1
 
-# G1: formatted, and the analyzer clean.
-if dart format --output=none --set-exit-if-changed "$app/lib" "$app/test" >"$log/format.txt" 2>&1 &&
-  (cd "$app" && dart analyze --fatal-infos) >"$log/analyze.txt" 2>&1; then
+# G1: formatted, and the analyzer clean (each run, so both are reported).
+dart format --output=none --set-exit-if-changed "$app/lib" "$app/test" >"$log/format.txt" 2>&1
+formatted=$?
+(cd "$app" && dart analyze --fatal-infos) >"$log/analyze.txt" 2>&1
+analyzed=$?
+if [ "$formatted" = 0 ] && [ "$analyzed" = 0 ]; then
   gate G1 PASS "formatted, analyzer clean"
 else
-  gate G1 FAIL "see $log/format.txt and $log/analyze.txt"
+  gate G1 FAIL "format exit $formatted ($log/format.txt), analyze exit $analyzed ($log/analyze.txt)"
 fi
 
 # G2: its own tests, leak-tracked.

@@ -4,7 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart'
-    show Material, MaterialType, TextField;
+    show
+        Material,
+        MaterialType,
+        TextField,
+        TextSelectionTheme,
+        TextSelectionThemeData;
 import 'package:ui_core/ui_core.dart';
 
 import 'face.dart';
@@ -124,6 +129,15 @@ class _TendTextFieldState extends State<TendTextField> {
       decoration: null,
       style: entryStyle,
       cursorColor: c.accent,
+    );
+    // The selection and its handles in the design's colours, not Material's.
+    entry = TextSelectionTheme(
+      data: TextSelectionThemeData(
+        cursorColor: c.accent,
+        selectionColor: c.accent.withValues(alpha: .24),
+        selectionHandleColor: c.accent,
+      ),
+      child: entry,
     );
     // A design that stands on no Material: TextField asks for one above it.
     if (Material.maybeOf(context) == null) {

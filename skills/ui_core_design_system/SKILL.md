@@ -156,7 +156,12 @@ theme: ThemeData(
 ),
 builder: (context, child) =>
     tendHost(context, child!, _brightness(context)),
-home: const PlantsScreen(),
+// The first screen stands on the design's route too: Material's
+// route under a RawPageRoute is never told to play its exit.
+onGenerateRoute: (settings) => TendPageRoute<void>(
+  settings: settings,
+  builder: (context) => const PlantsScreen(),
+),
 ```
 
 ```dart
@@ -292,7 +297,7 @@ return TendScaffold(
 ```
 
 - **Pages.** Push screens on `RawPageRoute` (here `TendPageRoute`, which
-  names the design's transition). A screen's bar shows back or close from
+  names the design's transition), the first one included (step 2). A screen's bar shows back or close from
   `RoutePresentation.of(context)`, never from `canPop`: a page pushed as
   `fullscreenDialog` stands as a sheet and shows close.
 - **Widths.** Lay each screen out for the widths the app runs at. Content
@@ -375,7 +380,7 @@ standing above the bar, a radio group's keys (`DesignRadioGroupCheck`).
 | `DesignTooltipNodeCheck` | A tooltip read apart from the control it names |
 | `DesignListSideCheck` | An open list above its field while below holds it; a whole picker on a side that cuts it |
 | `DesignOverlayCheck` | A popover, list, menu, tooltip or dialog running off the screen |
-| `DesignDialogActionsCheck` | A dialog's or sheet's actions out of their row or stack ([contract.md](references/contract.md), "Dialogs and sheets") |
+| `DesignDialogActionsCheck` | A dialog's or sheet's actions out of their row or stack ([contract.md](references/contract.md), "Dialogs and sheets"); it reads the first control on screen with each action's words, so test a dialog over a screen whose keys don't share them |
 | `DesignOverflowCheck` | A part that overflows its box or runs off its screen |
 | `DesignTapTargetCheck` | A target under the floor, or a semantics box larger than where a tap reaches |
 | `DesignCursorCheck` | A live part that shows the arrow, or a handle without grab |
@@ -442,8 +447,9 @@ report it to the ui_core maintainers with a test that shows it.
       and opacity changes settle within 150 ms.
 - [ ] No part is harder to use than Material's at the same width, text size,
       direction and state.
-- [ ] `dart analyze --fatal-infos` and `flutter test` are clean, and every
-      picture has been read.
+- [ ] On the final code, after the last edit: `dart format --set-exit-if-changed
+      lib test`, `dart analyze --fatal-infos` and `flutter test` are clean, and
+      every picture has been read.
 
 ## Pitfalls
 
@@ -455,12 +461,3 @@ report it to the ui_core maintainers with a test that shows it.
   its own node: a "…" key inside a row that opens is read and pressed as the
   row. Put it beside the row's button ([contract.md](references/contract.md),
   "Semantics").
-- **A screen painting its own controls.** A `Container` with a border and a
-  `GestureDetector` in a screen is a part the design is missing, without
-  its focus, semantics, states and tap target.
-- **Material's routes and dialogs.** `showDialog`, `MaterialPageRoute` and
-  `showModalBottomSheet` play Material's motion and paint Material's
-  surfaces under the design; raise everything on ui_core's routes.
-- **Pumping the app without its fonts in a test.** The checks that measure
-  ink and words then read the stand-in font and report faults the app does
-  not have, or miss ones it does.

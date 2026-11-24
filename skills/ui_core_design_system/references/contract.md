@@ -126,7 +126,8 @@ family's cap height over its size (Roboto 0.711; read it from the font's
 `OS/2` table for another family). Use the same factor for every label and
 the text field's entry, so a row of mixed parts lines up.
 
-**`RawDensity`** shrinks or grows faces (`height`, `padding`; `standard`,
+**`RawDensity`** shrinks or grows faces (`height(double)`,
+`padding(EdgeInsets)`, never directional insets; `standard`,
 `comfortable`, `compact`) and never moves the tap-target floor. So compact
 is for the pointer: on touch the floor holds a field at 44 while a compact
 button shrinks below it, and a row loses its one height. Offer compact
@@ -198,7 +199,8 @@ stop when the chosen radio is turned off, and right-to-left arrows.
 Typing is Flutter's `TextField`: the IME, selection, autofill, spell check,
 the text-field role. The design sets its `decoration` to null and draws
 everything round it. `TextField` asks for a `Material` above it; a design on
-no Material adds a transparent one.
+no Material adds a transparent one. Give it the design's cursor, selection and
+handle colours (`cursorColor`, a `TextSelectionTheme`), or Material's show.
 
 - **`RawTextEntryBox`** stands the editable at the control height with
   one line centred, the hint drawn on the typed text's baseline while the
@@ -518,7 +520,9 @@ list, and takes the other side only when below can't and above has more
 room. `RawPopoverPlacement` sets the side, `fit`, `preferredExtent` (200) and
 `matchAnchorWidth` (on by default, up to `maxWidth`). A list keeps
 `RawPopoverFit.scroll`; a picker that does not shrink (a calendar, a grid of
-swatches) takes `fit: RawPopoverFit.whole`. A popover the design places
+swatches) takes `fit: RawPopoverFit.whole`, and caps its surface at the
+`maxSize` its `RawPopoverInfo` gives, scrolling inside, for a screen where
+neither side holds it. A popover the design places
 itself (a menu over its own button) takes a `positionDelegate` returning
 the surface's top-left from a `RawPopoverPositionContext` (`anchorRect`,
 `surfaceSize`, `overlaySize`, `bounds`, `side`, `textDirection`); keep to

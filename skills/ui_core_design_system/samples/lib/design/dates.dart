@@ -123,45 +123,54 @@ class _TendDateFieldState extends State<TendDateField> {
           onPressed: change == null ? null : anchor.toggle,
         ),
         overlayBuilder: (context, info) => TendListSurface(
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: SizedBox(
-              // Seven days at the touch floor, on every screen.
-              width: 7 * _day,
-              child: RawCalendarDatePicker(
-                controller: _calendar,
-                // The chosen day takes the focus as the month opens, from
-                // the keys or a pointer, ahead of the month's arrows.
-                autofocus: true,
-                onChanged: change == null
-                    ? null
-                    : (day) {
-                        info.close();
-                        change(day);
-                      },
-                headerBuilder: (context, header) => Row(
-                  children: [
-                    TendIconButton(
-                      icon: Icons.chevron_left,
-                      semanticLabel: words.previousMonthTooltip,
-                      onPressed: header.previous,
+          // Whole while a side holds it; where neither does, it takes the
+          // room there is and scrolls.
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: info.maxSize.height),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: SizedBox(
+                  // Seven days at the touch floor, on every screen.
+                  width: 7 * _day,
+                  child: RawCalendarDatePicker(
+                    controller: _calendar,
+                    // The chosen day takes the focus as the month opens, from
+                    // the keys or a pointer, ahead of the month's arrows.
+                    autofocus: true,
+                    onChanged: change == null
+                        ? null
+                        : (day) {
+                            info.close();
+                            change(day);
+                          },
+                    headerBuilder: (context, header) => Row(
+                      children: [
+                        TendIconButton(
+                          icon: Icons.chevron_left,
+                          semanticLabel: words.previousMonthTooltip,
+                          onPressed: header.previous,
+                        ),
+                        Expanded(
+                          child: Text(
+                            header.label,
+                            textAlign: TextAlign.center,
+                            style: theme.label.copyWith(
+                              color: theme.colors.ink,
+                            ),
+                          ),
+                        ),
+                        TendIconButton(
+                          icon: Icons.chevron_right,
+                          semanticLabel: words.nextMonthTooltip,
+                          onPressed: header.next,
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: Text(
-                        header.label,
-                        textAlign: TextAlign.center,
-                        style: theme.label.copyWith(color: theme.colors.ink),
-                      ),
-                    ),
-                    TendIconButton(
-                      icon: Icons.chevron_right,
-                      semanticLabel: words.nextMonthTooltip,
-                      onPressed: header.next,
-                    ),
-                  ],
+                    dayBuilder: (context, day, states) =>
+                        _tendDay(theme, day, states),
+                  ),
                 ),
-                dayBuilder: (context, day, states) =>
-                    _tendDay(theme, day, states),
               ),
             ),
           ),
