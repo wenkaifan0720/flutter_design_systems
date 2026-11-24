@@ -233,11 +233,14 @@ class _Moves extends StatelessWidget {
         body:
             'A soft light inside the top-leading edge, a soft shade inside '
             'the bottom-trailing one, continuous corners, no stroke.',
+        // By night the volume is the risen clay a chosen part stands in,
+        // 2:1 from the card's clay: night clay on night clay all but
+        // vanished. By day the two are one.
         specimen: SizedBox(
           width: 96,
           height: 64,
           child: ClaySurface(
-            face: ClayFace.raised(c, radius: ClayRadius.large),
+            face: ClayFace.raised(c, color: c.risen, radius: ClayRadius.large),
           ),
         ),
       ),

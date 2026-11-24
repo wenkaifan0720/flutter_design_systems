@@ -98,8 +98,9 @@ class ClayHost extends StatelessWidget {
 /// A page: its [topBar] (a pushed page's way back stands in it), its [body]
 /// on the ground in the page's margins, no wider than 1080 px, and its
 /// [footer] fixed at its foot, the page fading into the ground above it:
-/// the page's one coral key in reach. In a sheet it is as tall as its
-/// content allows and stands on the sheet's clay.
+/// the page's one coral key in reach. A toast stands above the footer, as a
+/// Scaffold keeps a snackbar above its persistent footer buttons. In a sheet
+/// it is as tall as its content allows and stands on the sheet's clay.
 ///
 /// ```dart
 /// ClayScreen(topBar: ClayTopBar(title: 'Drink water', leading: ClayTopBar.autoLeading(context)), body: const Text('Eight glasses a day.'))
@@ -214,22 +215,25 @@ class ClayScreen extends StatelessWidget {
           ?bar,
           if (sheet) Flexible(child: above) else Expanded(child: above),
           if (foot != null)
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                margin,
-                ClaySpacing.medium,
-                margin,
-                ClaySpacing.medium + media.padding.bottom,
+            // Toasts stand above the foot, as above the dock.
+            RawToasterKeepClear(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  margin,
+                  ClaySpacing.medium,
+                  margin,
+                  ClaySpacing.medium + media.padding.bottom,
+                ),
+                child: framed
+                    ? Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 360),
+                          child: foot,
+                        ),
+                      )
+                    : foot,
               ),
-              child: framed
-                  ? Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 360),
-                        child: foot,
-                      ),
-                    )
-                  : foot,
             ),
         ],
       ),

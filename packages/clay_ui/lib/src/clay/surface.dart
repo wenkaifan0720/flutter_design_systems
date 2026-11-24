@@ -155,8 +155,10 @@ class ClayFace with Diagnosticable {
   /// How strong its drop shadow is, 0 to 1.
   final double shadowOpacity;
 
-  /// How far, in logical pixels, a press or a lift moves the face.
-  double get travel => elevation > 0 ? 1.5 * press - 1.0 * (lift + focus) : 0;
+  /// How far, in logical pixels, a press or a lift moves the face: a press
+  /// sinks it 1.5 into the ground, whatever lifted it first.
+  double get travel =>
+      elevation > 0 ? 1.5 * press - 1.0 * (lift + focus) * (1 - press) : 0;
 
   /// A copy with the given values changed.
   ClayFace copyWith({
@@ -461,13 +463,15 @@ class _ClayPainter extends CustomPainter {
     final k = _scaleFor(size);
     final rect = whole.translate(0, f.travel);
     final radius = math.min(f.radius, math.min(size.width, size.height) / 2);
-    if (f.elevation > 0 && f.shadowOpacity > 0) {
+    // A press sinks the part into the ground: its shadow tightens and fades,
+    // and is gone once it is all the way in.
+    final sunk = f.press.clamp(0.0, 1.0);
+    if (f.elevation > 0 && f.shadowOpacity > 0 && sunk < 1) {
       // The shadow between its two nearest levels, cross-faded: a press
       // tightens it smoothly from two cached masks.
-      final e = (f.elevation + 0.2 * (f.lift + f.focus) - 1.0 * f.press).clamp(
-        0.0,
-        2.0,
-      );
+      final e =
+          (f.elevation + 0.2 * (f.lift + f.focus) * (1 - sunk) - 1.0 * sunk)
+              .clamp(0.0, 2.0);
       final low = math.min(e.floor(), 1);
       final t = e - low;
       for (final (level, weight) in [(low, 1 - t), (low + 1, t)]) {
@@ -485,7 +489,7 @@ class _ClayPainter extends CustomPainter {
           blur: blur,
           offset: down,
           color: f.shade.withValues(
-            alpha: f.shade.a * f.shadowOpacity * strength * weight,
+            alpha: f.shade.a * f.shadowOpacity * strength * weight * (1 - sunk),
           ),
           pixelRatio: pixelRatio,
         );
@@ -494,11 +498,10 @@ class _ClayPainter extends CustomPainter {
     clayDrawShape(canvas, rect, radius, Paint()..color = f.color);
     final inner = (math.min(size.width, size.height) * 0.09).clamp(2.0, 8.0);
     final raised = f.elevation >= 0;
-    final lightAlpha =
-        f.lightOpacity * (raised ? 1 - 0.6 * f.press : 1) * f.light.a;
-    final shadeAlpha =
-        math.min(1.0, f.shadeOpacity * (raised ? 1 + 0.6 * f.press : 1)) *
-        f.shade.a;
+    // A raised part's light and shade go as it sinks; the dent's come up
+    // below.
+    final lightAlpha = f.lightOpacity * (raised ? 1 - sunk : 1) * f.light.a;
+    final shadeAlpha = f.shadeOpacity * (raised ? 1 - sunk : 1) * f.shade.a;
     canvas.save();
     clayClipShape(canvas, rect, radius);
     clayPaintSprite(
@@ -523,18 +526,35 @@ class _ClayPainter extends CustomPainter {
       pixelRatio: pixelRatio,
       mirrored: mirrored,
     );
-    if (raised && f.press > 0.001) {
-      // Pressed, the clay dents: a shade comes up inside its top-leading
-      // edge, where the light was.
+    if (raised && sunk > 0.001) {
+      // Pressed, the clay dents, lit as a well is: a shade comes up inside
+      // its top-leading edge, where the light was, and its lower trailing
+      // lip catches the light.
+      // The shade is tight to its edge (offset past its blur), so none of
+      // it reaches round to the lower trailing edge; the lip's light is a
+      // little, by day and by night alike.
       clayPaintSprite(
         canvas,
         kind: ClaySpriteKind.insetStart,
         rect: rect,
         radius: radius,
-        blur: inner * 1.1,
-        offset: inner * 0.8,
+        blur: inner * 0.9,
+        offset: inner * 1.1,
         color: f.shade.withValues(
-          alpha: f.shade.a * f.shadeOpacity * 0.6 * f.press,
+          alpha: f.shade.a * math.min(0.6, f.shadeOpacity * 1.6) * sunk,
+        ),
+        pixelRatio: pixelRatio,
+        mirrored: mirrored,
+      );
+      clayPaintSprite(
+        canvas,
+        kind: ClaySpriteKind.insetEnd,
+        rect: rect,
+        radius: radius,
+        blur: inner * 0.9,
+        offset: inner * 0.8,
+        color: f.light.withValues(
+          alpha: f.light.a * math.max(0.18, f.lightOpacity * 0.2) * sunk,
         ),
         pixelRatio: pixelRatio,
         mirrored: mirrored,

@@ -1,3 +1,10 @@
+## 0.4.2
+
+- A press reads as a dent, as Clay's third law has it. A pressed part sinks 1.5 into the ground, its shadow fades out as it goes in, and its light and its lower trailing shade go. A shade comes up inside its top-leading edge, where the light was (mirrored right to left), and its lower trailing lip catches a little light, as a well's does. A pressed key had kept a shadow and a raised part's shading, and read as raised. This holds for every part a press sinks: keys, balls, rows, selects (an open select stays pressed in), pickers, chips and scrollbar thumbs.
+- A toast stands above `ClayScreen`'s `footer`, as a `Scaffold` keeps a snackbar above its persistent footer buttons. It covered the page's Save key.
+- `ClaySidebar` grows with the text size from its 264 width, as Material's extended rail grows to its labels, up to 360 (Material's navigation drawer) at twice the text. Its key, its places and its foot keep their words on one line. At the usual text size it stays 264 wide.
+- Example: by night each palette swatch whose colour sinks into the dark ground (the clay and the six pastels) catches a soft light inside its top and leading edges, in its own hue, so they stand 3:1 from the ground; the light fades down the leading side, and the bottom and the trailing side stay in shade. The Overview's inflated volume is the night's risen clay, 1.8:1 from its card, where it had matched the card.
+
 ## 0.4.1
 
 - At a large text size on a phone, parts keep their words whole and inside their shapes, following Material at the same size:

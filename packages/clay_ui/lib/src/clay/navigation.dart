@@ -774,8 +774,18 @@ class ClaySidebar extends StatelessWidget {
   /// The sidebar's own style, over [ClayThemeData.sidebarStyle].
   final ClayStyle? style;
 
-  /// The sidebar's width.
+  /// The sidebar's width at the reader's usual text size. With larger text
+  /// it grows, as Material's extended rail grows to its labels, up to the
+  /// width of Material's navigation drawer (360 at twice the text), so its
+  /// key, its places and its foot keep their words on a line.
   static const double width = ClayMetrics.sidebarWidth;
+
+  /// The width at the reader's text size: [width], and from there 96 more
+  /// by twice the text.
+  static double _widthFor(BuildContext context) {
+    final grown = MediaQuery.textScalerOf(context).scale(16) / 16 - 1;
+    return (width + 96 * grown).clamp(width, width + 96);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -797,7 +807,7 @@ class ClaySidebar extends StatelessWidget {
     return ColoredBox(
       color: c.ground,
       child: SizedBox(
-        width: width,
+        width: _widthFor(context),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
             ClaySpacing.regular,

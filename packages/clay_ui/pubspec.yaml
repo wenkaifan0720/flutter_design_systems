@@ -1,7 +1,7 @@
 name: clay_ui
 description: >-
   Claymorphic widgets for Flutter: soft inflated controls, pastel colour, accessible forms, navigation and dialogs in coordinated light and dark themes.
-version: 0.4.1
+version: 0.4.2
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/clay/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/clay/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/clay_ui

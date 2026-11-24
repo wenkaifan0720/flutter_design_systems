@@ -2,6 +2,8 @@
 /// clay itself at each depth, and its motion.
 library;
 
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:clay_ui/clay_ui.dart';
 
@@ -73,28 +75,42 @@ class _Palette extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = ClayTheme.of(context).colors;
     final t = ClayTheme.of(context).textTheme;
-    Widget chip(String name, Color fill) => SizedBox(
-      width: 104,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 56,
-            child: ClaySurface(
-              face: ClayFace.raised(c, color: fill, radius: ClayRadius.control),
-              child: Center(
-                child: Text(
-                  'Aa',
-                  style: t.label.copyWith(color: c.onColor(fill)),
+    Widget chip(String name, Color fill) {
+      final rim = paletteRim(c, fill);
+      final words = Center(
+        child: Text('Aa', style: t.label.copyWith(color: c.onColor(fill))),
+      );
+      return SizedBox(
+        width: 104,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 56,
+              child: ClaySurface(
+                face: ClayFace.raised(
+                  c,
+                  color: fill,
+                  radius: ClayRadius.control,
                 ),
+                child: rim == null
+                    ? words
+                    : CustomPaint(
+                        foregroundPainter: _LitRim(
+                          rim,
+                          Directionality.of(context),
+                        ),
+                        child: words,
+                      ),
               ),
             ),
-          ),
-          const SizedBox(height: ClaySpacing.small),
-          Text(name, style: t.caption.copyWith(color: c.inkSecondary)),
-        ],
-      ),
-    );
+            const SizedBox(height: ClaySpacing.small),
+            Text(name, style: t.caption.copyWith(color: c.inkSecondary)),
+          ],
+        ),
+      );
+    }
+
     return KitRow(
       children: [
         chip('Clay', c.clay),
@@ -104,6 +120,94 @@ class _Palette extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The light a palette swatch of [fill] catches by night, or null when it
+/// needs none. A deep night pastel, or the night clay, sinks into the dark
+/// ground; the light inside its top-leading edge (Clay's first law) is
+/// brought up until that edge stands 3:1 from the ground, so it reads as
+/// its colour and apart. A pastel's light is its own hue, lifted; the
+/// clay's, the clay lifted toward the ink, without a hue of its own. The
+/// accent and the danger colour stand apart on their own. By day each
+/// swatch's float, in its own hue, sets it apart.
+Color? paletteRim(ClayColors colors, Color fill) {
+  // The raised face's shade darkens its lower trailing edge: a margin.
+  if (colors.brightness != Brightness.dark ||
+      clayContrast(fill, colors.ground) >= 3.5) {
+    return null;
+  }
+  final hsl = HSLColor.fromColor(fill);
+  final hued = hsl.saturation >= 0.3;
+  var step = 0.0;
+  var rim = fill;
+  // The light is soft: a margin over 3:1 for its blur.
+  while (clayContrast(rim, colors.ground) < 3.8 && step < 1) {
+    step = math.min(1.0, step + 0.02);
+    rim = hued
+        ? hsl.withLightness(math.min(1.0, hsl.lightness + step)).toColor()
+        : Color.lerp(fill, colors.ink, step)!;
+  }
+  return rim;
+}
+
+/// A swatch's light: a soft band of [rim] inside its top and leading edges,
+/// where the light falls (mirrored right to left), fading down the leading
+/// side; its bottom and its trailing side stay in shade.
+class _LitRim extends CustomPainter {
+  const _LitRim(this.rim, this.direction);
+
+  final Color rim;
+  final TextDirection direction;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final shape = Path()
+      ..addRSuperellipse(
+        RSuperellipse.fromRectAndRadius(
+          rect,
+          const Radius.circular(ClayRadius.control),
+        ),
+      );
+    // Where the light falls, as on every raised part: inside the shape and
+    // outside itself moved toward the lower trailing corner, so the top and
+    // the leading side, and neither the bottom nor the trailing side. (A
+    // frame round the moved shape, filled even-odd: a browser draws it as
+    // the tests do, where a combined path's hole would fill.)
+    const reach = 5.0;
+    final lit = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(rect.inflate(4 * reach))
+      ..addRSuperellipse(
+        RSuperellipse.fromRectAndRadius(
+          rect.shift(
+            Offset(direction == TextDirection.rtl ? -reach : reach, reach),
+          ),
+          const Radius.circular(ClayRadius.control),
+        ),
+      );
+    canvas
+      ..save()
+      ..clipPath(shape)
+      ..drawPath(
+        lit,
+        Paint()
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.2)
+          // Whole along the top, fading down the leading side, gone before
+          // the lower leading corner.
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [rim, rim, rim.withValues(alpha: 0)],
+            stops: const [0, 0.4, 0.75],
+          ).createShader(rect),
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_LitRim old) =>
+      old.rim != rim || old.direction != direction;
 }
 
 class _Type extends StatelessWidget {
