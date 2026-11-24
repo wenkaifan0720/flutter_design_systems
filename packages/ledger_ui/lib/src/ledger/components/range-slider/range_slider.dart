@@ -122,7 +122,7 @@ class LedgerRangeSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final live = onChanged != null;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final side = floor.height < _strip ? _strip : floor.height;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return Opacity(

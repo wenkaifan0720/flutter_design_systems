@@ -222,7 +222,7 @@ class _LedgerTextAreaState extends State<LedgerTextArea> {
     // the rest. A taller box would stand the first line where a single line
     // would (centred in it), half a box down, and the rule a line under the
     // paper's top would run through the words.
-    final box = DesignTextEntryBox(
+    final box = RawTextEntryBox(
       minHeight: step,
       controller: hint == null ? null : _controller,
       hint: hint == null

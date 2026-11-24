@@ -50,7 +50,7 @@ class LedgerFieldFrame extends StatelessWidget {
   /// The field's own style, over `components.textField`: its `edge` inks
   /// the rule, its `fill` lays a paper behind the line and its `padding`
   /// stands round it.
-  final DesignStyle? style;
+  final RawStyle? style;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -67,9 +67,7 @@ class LedgerFieldFrame extends StatelessWidget {
         ),
       )
       ..add(DiagnosticsProperty<MouseCursor>('labelCursor', labelCursor))
-      ..add(
-        DiagnosticsProperty<DesignStyle>('style', style, defaultValue: null),
-      );
+      ..add(DiagnosticsProperty<RawStyle>('style', style, defaultValue: null));
   }
 
   @override
@@ -77,7 +75,7 @@ class LedgerFieldFrame extends StatelessWidget {
     final t = context.ledgerTheme;
     // Wrong: an error, or marked invalid with no words to say why.
     final wrong = parts.invalid;
-    final so = DesignStyleOf(
+    final so = RawStyleOf(
       [style, t.components.textField],
       {
         if (!parts.enabled) WidgetState.disabled,

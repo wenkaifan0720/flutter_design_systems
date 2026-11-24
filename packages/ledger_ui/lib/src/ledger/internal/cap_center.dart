@@ -22,4 +22,4 @@ double ledgerCapHeight(TextStyle? style) {
 /// box's middle: every face's label in Ledger's own widgets goes through it,
 /// never an icon.
 Widget ledgerCapCenter(TextStyle? style, Widget label) =>
-    DesignCapCenter(capHeightFactor: ledgerCapHeight(style), child: label);
+    RawCapCenter(capHeightFactor: ledgerCapHeight(style), child: label);

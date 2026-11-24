@@ -294,7 +294,7 @@ Widget kitSpecimenScreenHeading() => LedgerScreen(
           // Or the tap floor, which the ways are laid out at.
           height: math.max(
             LedgerIconButton.sideOf(t, LedgerIconButtonSize.medium),
-            DesignTapTargets.of(context).floorOn().height,
+            RawTapTargets.of(context).floorOn().height,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

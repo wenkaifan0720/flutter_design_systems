@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -202,7 +201,7 @@ class LedgerAccountMarks extends StatelessWidget {
     // target growing toward the start: the last face stands on the keyline,
     // and the room the avatar's target takes before its disc already parts
     // the two, so their targets meet rather than reach into each other.
-    final floor = DesignTapTargets.of(context).floorOn().width;
+    final floor = RawTapTargets.of(context).floorOn().width;
     final room = showAvatar && showBell
         ? math.max(0.0, floor - LedgerChromeMetrics.avatar)
         : 0.0;
@@ -623,7 +622,7 @@ class LedgerTopBar extends StatelessWidget {
         // gutter.
         child: SizedBox(
           height: LedgerChromeMetrics.topBarHeight,
-          child: DesignKeylineRegion(label: 'top bar', child: row),
+          child: RawKeylineRegion(label: 'top bar', child: row),
         ),
       ),
     );

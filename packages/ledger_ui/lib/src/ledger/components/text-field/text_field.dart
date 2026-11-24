@@ -25,7 +25,7 @@ import '../../internal/entry_open.dart';
 /// and from 600 it stands at a short entry's measure
 /// ([LedgerLayout.fieldMeasure]); [trailing] after them (a clear or a reveal
 /// button). [enabled] false holds it in the third ink on the light rule.
-/// Validate in a `DesignForm` with a `DesignFormField` around it and pass its
+/// Validate in a `RawForm` with a `RawFormField` around it and pass its
 /// error here.
 ///
 /// The [controller] and [focusNode] are the caller's to dispose when given;
@@ -335,7 +335,7 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
       ),
     );
     final hint = widget.hintText;
-    final box = DesignTextEntryBox(
+    final box = RawTextEntryBox(
       minHeight: LedgerTextField.heightOf(t),
       controller: hint == null ? null : _controller,
       hint: hint == null

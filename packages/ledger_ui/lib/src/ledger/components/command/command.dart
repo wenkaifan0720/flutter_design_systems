@@ -193,7 +193,7 @@ Future<void> showLedgerCommandPalette(
   BuildContext context, {
   required List<LedgerCommand> commands,
   String hint = 'Type an act or a place',
-}) => showDesignCommandPalette(
+}) => showRawCommandPalette(
   context: context,
   palette: (run) => LedgerCommandPalette(
     commands: commands,

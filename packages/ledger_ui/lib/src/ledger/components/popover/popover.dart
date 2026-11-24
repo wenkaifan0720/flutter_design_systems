@@ -8,13 +8,13 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../theme.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignOverlayAnchor;
+export 'package:ui_core/ui_core.dart' show RawOverlayAnchor;
 
 /// A slip of detail anchored to a control (how a figure was reached, a
 /// payee's details beside its name): the raised paper in the rule, at most
 /// [width] wide, its [title] in the medium over the [child], below the
 /// anchor (above it when there is no room), lining up with its reading
-/// start. [anchor] builds the control from its [DesignOverlayAnchor]: its
+/// start. [anchor] builds the control from its [RawOverlayAnchor]: its
 /// press calls `toggle`, and its `isOpen` is the control's expanded state.
 /// The slip fades and settles in on Ledger's spring (at once with reduced
 /// motion); a tap outside, Escape or the anchor again closes it, focus
@@ -35,8 +35,7 @@ class LedgerPopover extends StatelessWidget {
   }) : assert(width > 0);
 
   /// Builds the control that opens it.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
-  anchor;
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor) anchor;
 
   /// The slip's body.
   final Widget child;
@@ -56,7 +55,8 @@ class LedgerPopover extends StatelessWidget {
     properties
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel))
-      ..add(DoubleProperty('width', width));
+      ..add(DoubleProperty('width', width))
+      ..add(ObjectFlagProperty<Object>.has('anchor', anchor));
   }
 
   @override

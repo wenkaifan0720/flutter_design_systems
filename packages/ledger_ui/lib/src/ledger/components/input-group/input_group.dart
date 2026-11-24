@@ -157,7 +157,7 @@ class _LedgerInputGroupState extends State<LedgerInputGroup> {
     final words = LedgerTextField.wordsOf(t);
     final height = LedgerTextField.heightOf(t);
     final hint = widget.hintText;
-    final box = DesignTextEntryBox(
+    final box = RawTextEntryBox(
       minHeight: height,
       controller: hint == null ? null : _controller,
       hint: hint == null
@@ -206,7 +206,7 @@ class _LedgerInputGroupState extends State<LedgerInputGroup> {
         ),
       ),
     );
-    final group = DesignInputGroup(
+    final group = RawInputGroup(
       focusNode: _focus,
       enabled: enabled,
       isError: widget.errorText != null,

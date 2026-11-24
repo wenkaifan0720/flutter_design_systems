@@ -177,7 +177,7 @@ class LedgerChip extends StatelessWidget {
 
   static const double _height = 32;
   static const double _floor = 24;
-  // The words on a line of their own, inside the pill: DesignCapCenter sets
+  // The words on a line of their own, inside the pill: RawCapCenter sets
   // their capitals on its middle, and the ring stays out of their box.
   static const double _labelLine = 16;
   static const double _pad = 12;

@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -307,7 +306,7 @@ class _OnCard extends InheritedWidget {
 /// On a phone both rise off the bottom edge over the scrim, on ui_core's
 /// [RawBottomSheetRoute]: a drag moves the sheet with the finger and a
 /// drag down or a fling lets it go. At desktop width both stand centred as
-/// a dialog, on ui_core's [DesignDialogRoute], fading in. Both move on
+/// a dialog, on ui_core's [RawModalDialogRoute], fading in. Both move on
 /// ui_core's springs (a short fade under Reduce Motion), keep the focus in
 /// them and give it back as they close; a tap on the scrim, Escape, the
 /// system back or the close dismisses them.
@@ -377,7 +376,7 @@ abstract final class LedgerSheet {
     );
     if (LedgerLayout.isWide(context)) {
       return navigator.push(
-        DesignDialogRoute<T>(
+        RawModalDialogRoute<T>(
           barrierDismissible: true,
           barrierColor: t.overlay,
           semanticLabel: title,
@@ -431,7 +430,7 @@ abstract final class LedgerSheet {
       child: _PageSheetCard(child: builder(sheetContext)),
     );
     if (LedgerLayout.isWide(context)) {
-      return DesignDialogRoute<T>(
+      return RawModalDialogRoute<T>(
         settings: settings,
         barrierDismissible: true,
         barrierColor: t.overlay,

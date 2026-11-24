@@ -26,9 +26,9 @@ class LedgerKbd extends StatelessWidget {
   const LedgerKbd(this.keys, {this.semanticLabel, super.key}) : shortcut = null;
 
   /// The keys of [shortcut] as the platform prints them, in ui_core's
-  /// [designShortcutKeys]: ⌘ K on macOS and iOS, Ctrl K elsewhere, the
+  /// [rawShortcutKeys]: ⌘ K on macOS and iOS, Ctrl K elsewhere, the
   /// named keys in the reader's words; a screen reader hears them spelled
-  /// out ("Command+K", [designShortcutLabel]).
+  /// out ("Command+K", [rawShortcutLabel]).
   const LedgerKbd.shortcut(
     MenuSerializableShortcut this.shortcut, {
     this.semanticLabel,
@@ -64,15 +64,13 @@ class LedgerKbd extends StatelessWidget {
     final t = context.ledgerTheme;
     final words = t.meta.medium.sized(_words).line(_line).tracked(_track);
     final shortcut = this.shortcut;
-    final marks = shortcut == null
-        ? keys
-        : designShortcutKeys(context, shortcut);
+    final marks = shortcut == null ? keys : rawShortcutKeys(context, shortcut);
     return Semantics(
       label:
           semanticLabel ??
           (shortcut == null
               ? keys.join(' ')
-              : designShortcutLabel(context, shortcut, appleSymbols: false)),
+              : rawShortcutLabel(context, shortcut, appleSymbols: false)),
       child: ExcludeSemantics(
         child: Wrap(
           spacing: _gap,

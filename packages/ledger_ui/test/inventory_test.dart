@@ -1,4 +1,4 @@
-// Ledger in ui_core's shared inventory (DesignInventory): every row it
+// Ledger in ui_core's shared inventory (RawInventory): every row it
 // answers is answered once, each absence gives a ledger's reason (not a
 // to-do), and every live specimen builds and lays out on a phone and a desk,
 // by day and by night, right to left, and at 200% text on a phone, without an
@@ -125,7 +125,7 @@ void main() {
     expect(ledgerInventory.absentCount, _absent.length);
     expect(
       ledgerInventory.presentCount,
-      DesignInventoryRow.all.length - _absent.length - _toBuild.length,
+      RawInventoryRow.all.length - _absent.length - _toBuild.length,
     );
   });
 
@@ -179,7 +179,7 @@ void main() {
     await t.pump(const Duration(milliseconds: 400));
     expect(t.takeException(), isNull);
     expect(
-      find.text('LedgerButton · ${DesignInventoryRow.button.name}'),
+      find.text('LedgerButton · ${RawInventoryRow.button.name}'),
       findsOneWidget,
     );
     // The last group's last row is reached by scrolling, and an absent

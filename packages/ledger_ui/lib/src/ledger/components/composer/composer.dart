@@ -180,7 +180,7 @@ class _LedgerComposerState extends State<LedgerComposer> {
             _padEnd - 1,
             math.max(
               0.0,
-              (DesignTapTargets.of(context).floorOn().height -
+              (RawTapTargets.of(context).floorOn().height -
                       LedgerChromeMetrics.ringButton) /
                   2,
             ),

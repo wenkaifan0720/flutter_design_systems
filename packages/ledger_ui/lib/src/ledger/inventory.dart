@@ -78,11 +78,11 @@ import 'theme.dart';
 
 export 'package:ui_core/inventory.dart'
     show
-        DesignInventory,
-        DesignInventoryEntry,
-        DesignInventoryError,
-        DesignInventoryGallery,
-        DesignInventoryRow;
+        RawInventory,
+        RawInventoryEntry,
+        RawInventoryError,
+        RawInventoryGallery,
+        RawInventoryRow;
 
 void _none() {}
 
@@ -222,21 +222,21 @@ const Set<String> ledgerInventoryFills = {
 
 /// Ledger in ui_core's shared inventory: each row's specimen is the Ledger
 /// part for it ([ledgerInventoryParts]), built with plain values, and each
-/// row a ledger leaves out says why. [DesignInventory.verify] checks every
+/// row a ledger leaves out says why. [RawInventory.verify] checks every
 /// row is answered; [LedgerInventoryGallery] shows them all.
 ///
 /// ```dart
 /// LedgerInventoryGallery(inventory: ledgerInventory)
 /// ```
-final DesignInventory ledgerInventory = DesignInventory(
+final RawInventory ledgerInventory = RawInventory(
   look: 'Ledger',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (_) => const LedgerButton.filled('Save entry', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (_) => const LedgerIconButton(
         LucideIcons.search,
@@ -244,12 +244,12 @@ final DesignInventory ledgerInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       "Nothing floats over a ledger's page: its one act is the tab bar's "
           "green disc on a phone and the side bar's New entry on a desk.",
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const LedgerButtonRow(
         children: [
@@ -258,7 +258,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (_) => _Held<Set<String>>(
         const {'Month'},
@@ -271,7 +271,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (context) => const LedgerSplitButton(
         'Export',
@@ -282,7 +282,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Kbd',
       // Command K on macOS and iOS, Control K elsewhere.
       (_) => LedgerKbd.shortcut(
@@ -293,28 +293,28 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (_) => const LedgerMoreLink('All of October', onTap: _none),
     ),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (_) =>
           const LedgerTextField(labelText: 'Payee', hintText: 'Who was paid'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (_) => const LedgerSearchField(hintText: 'Search entries'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (_) => const LedgerPasswordField(
         labelText: 'Password',
         helperText: 'At least 12 characters',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (_) => const LedgerTextArea(
         labelText: 'Memo',
@@ -322,7 +322,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         maxLength: 280,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (_) => const LedgerInputGroup(
         labelText: 'Shop address',
@@ -331,14 +331,14 @@ final DesignInventory ledgerInventory = DesignInventory(
         hintText: 'your-shop',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputOtp',
       (_) => const LedgerCodeField(
         labelText: 'Code from your bank',
         helperText: 'Six figures, sent by text',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (_) => const LedgerCombobox<String>(
         labelText: 'Payee',
@@ -346,7 +346,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         options: _payees,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (_) => _Held<List<String>>(
         const ['Maren'],
@@ -358,7 +358,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (_) => LedgerFileUpload(
         labelText: 'Receipts',
@@ -370,7 +370,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         onRemove: (_) {},
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (_) => _Held<LedgerDateRange?>(
         LedgerDateRange(DateTime(2026, 10, 12), DateTime(2026, 10, 19)),
@@ -383,7 +383,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (_) => LedgerBreadcrumb([
         LedgerCrumb('Accounts', onTap: () {}),
@@ -391,7 +391,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         const LedgerCrumb('October'),
       ]),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (_) => _Held<int>(
         2,
@@ -399,14 +399,14 @@ final DesignInventory ledgerInventory = DesignInventory(
             LedgerPagination(page: v, pageCount: 9, onChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (_) => const LedgerStepProgress(
         steps: ['Payee', 'Amount', 'Review'],
         currentStep: 1,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (_) => _Held<int>(
         1,
@@ -414,7 +414,7 @@ final DesignInventory ledgerInventory = DesignInventory(
             LedgerPageDots(pageCount: 4, page: v, onChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Command',
       (_) => const LedgerCommandPalette(
         commands: [
@@ -423,11 +423,11 @@ final DesignInventory ledgerInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Divider',
       (_) => const LedgerDivider(label: 'Earlier'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Badge',
       (_) => LedgerBadge(
         count: 3,
@@ -438,7 +438,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (_) => const LedgerDisclosure(
         title: 'Fees',
@@ -446,7 +446,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         child: Text('A card fee and a foreign exchange fee.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (_) => const LedgerTimeline(
         entries: [
@@ -464,19 +464,19 @@ final DesignInventory ledgerInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Media',
       (_) => const SizedBox(
         width: 200,
         child: LedgerMedia(caption: 'Corner Market, Oct 27'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (_) =>
           const LedgerProgressBar(value: .6, label: 'Uploading the statement'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (_) => const LedgerProgressRing(
         value: .4,
@@ -485,14 +485,14 @@ final DesignInventory ledgerInventory = DesignInventory(
       ),
     ),
     // Its sheen held still here, so the inventory page comes to rest.
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (_) => const TickerMode(
         enabled: false,
         child: LedgerSkeleton(lines: 2, avatar: true),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (_) => const LedgerPieChart(
         label: 'October by category',
@@ -504,7 +504,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (_) => const LedgerSparkline(
         label: 'Everyday, 30 days',
@@ -513,7 +513,7 @@ final DesignInventory ledgerInventory = DesignInventory(
       ),
     ),
     // The panel as it stands in from the side, drawn in place.
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (_) => SizedBox(
         height: 320,
@@ -524,7 +524,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (_) => LedgerActionSheet<String>(
         message: 'Corner Market, Oct 27',
@@ -535,7 +535,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         onSelected: (_) {},
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (_) => LedgerPopover(
         semanticLabel: 'How Safe to spend is worked out',
@@ -548,7 +548,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         child: const Text('Your balance less the bills due before payday.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (_) => LedgerTooltip(
         message: 'Export as CSV',
@@ -559,7 +559,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (_) => LedgerBanner(
         title: 'Your October statement is ready',
@@ -567,9 +567,9 @@ final DesignInventory ledgerInventory = DesignInventory(
         onAction: () {},
       ),
     ),
-    DesignInventoryEntry.present('DataTable', (_) => _InventoryTable()),
-    DesignInventoryEntry.present('ScrollArea', (_) => _InventoryScroll()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('DataTable', (_) => _InventoryTable()),
+    RawInventoryEntry.present('ScrollArea', (_) => _InventoryScroll()),
+    RawInventoryEntry.present(
       'CarouselView',
       (_) => LedgerCarousel(
         semanticLabel: 'Highlights',
@@ -581,7 +581,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (_) => LedgerReorderableList<String>(
         items: const ['Everyday', 'Savings', 'Wren Card'],
@@ -590,7 +590,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         itemBuilder: (context, n) => Text(n),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SwipeActions',
       (_) => LedgerSwipeActions(
         trailing: [
@@ -603,7 +603,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         child: const LedgerRow(title: 'Studio rent', subtitle: 'Due Nov 1'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RefreshIndicator',
       (_) => SizedBox(
         height: 120,
@@ -617,7 +617,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       (_) => _Held<num>(
         2,
@@ -632,7 +632,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (_) => _Held<String>(
         'Everyday',
@@ -648,7 +648,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (_) => _Held<bool?>(
         true,
@@ -659,7 +659,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       // One Tab stop, the arrows choosing: the radios grouped at the owner
       // of their choice.
@@ -684,7 +684,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (_) => _Held<bool>(
         true,
@@ -692,7 +692,7 @@ final DesignInventory ledgerInventory = DesignInventory(
             LedgerSwitch(value: v, semanticLabel: 'Round-ups', onChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (_) => _Held<double>(
         320,
@@ -707,7 +707,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (_) => _Held<LedgerRangeValues>(
         const LedgerRangeValues(40, 180),
@@ -721,7 +721,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (_) => _Held<String>(
         'Month',
@@ -732,7 +732,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (_) => _Held<bool>(
         true,
@@ -740,12 +740,12 @@ final DesignInventory ledgerInventory = DesignInventory(
             LedgerChip('Groceries', selected: v, onTap: () => set(!v)),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'Rating',
       'A ledger records what was paid, not what it was worth: stars are a '
           "review's vocabulary.",
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (_) => _Held<DateTime>(
         _day,
@@ -757,7 +757,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (_) => _Held<DateTime>(
         _day.add(const Duration(hours: 8, minutes: 12)),
@@ -770,7 +770,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (_) => _Held<DateTime>(
         _day,
@@ -783,7 +783,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'WheelPicker',
       (_) => _Held<DateTime>(
         _day,
@@ -796,12 +796,12 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'ColorPicker',
       "Colour is ink in a ledger: one green, one vermilion and three inks, "
           'and a category is told by its glyph and its name.',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (_) => const LedgerTextField(
         labelText: 'Amount',
@@ -812,11 +812,11 @@ final DesignInventory ledgerInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (_) => const LedgerTopBar(title: 'Register', meta: '92 entries'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (_) => _Held<int>(
         0,
@@ -827,7 +827,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (_) => _Held<int>(
         0,
@@ -839,7 +839,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => _Held<int>(
         0,
@@ -851,7 +851,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (_) => _Held<int>(
         0,
@@ -863,12 +863,12 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'MenuBar',
       'The side bar goes between pages and the green act acts on one; a '
           "desktop menu bar is the platform's own, above the window.",
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (_) => _Held<int>(
         0,
@@ -882,7 +882,7 @@ final DesignInventory ledgerInventory = DesignInventory(
       ),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (context) => LedgerSlip(
         child: Padding(
@@ -899,7 +899,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (_) => const LedgerRow(
         leading: LedgerGlyph(LucideIcons.landmark),
@@ -910,7 +910,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         onTap: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (_) => const LedgerSection(
         head: LedgerHead('Accounts', note: 'Balance'),
@@ -932,11 +932,11 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (_) => const LedgerHead('Recent', note: 'Register', onTap: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (_) => LedgerRegister(
         heads: const ['Time', 'Payee', 'Category', 'Account', 'Amount'],
@@ -970,37 +970,37 @@ final DesignInventory ledgerInventory = DesignInventory(
         ],
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'Resizable',
       "A ledger page keeps its measure: its columns are set, never dragged "
           'apart.',
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'TreeView',
       "A ledger's order is one level deep (accounts, then entries by day); "
           "nested folders are a file system's.",
     ),
     // Display
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (_) => const LedgerAvatar(initials: 'MH', label: 'Maren Holt'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (_) => const LedgerAvatarStack(
         names: ['Maren Holt', 'Ines Vidal', 'Tomas Berg', 'Ada Moss'],
         max: 3,
       ),
     ),
-    DesignInventoryEntry.present('Tag', (_) => const LedgerTag('Pending')),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Tag', (_) => const LedgerTag('Pending')),
+    RawInventoryEntry.present(
       'EmptyState',
       (_) => const LedgerEmptyState(
         title: 'Nothing found',
         body: 'No entry has these words. Try a payee or a category.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (_) => const LedgerFacts(
         facts: [
@@ -1010,7 +1010,7 @@ final DesignInventory ledgerInventory = DesignInventory(
       ),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (_) => const LedgerDialog(
         title: 'Archive October?',
@@ -1020,7 +1020,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         onCancelPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (context) => LedgerButton(
         'Open the sheet',
@@ -1038,12 +1038,12 @@ final DesignInventory ledgerInventory = DesignInventory(
         ),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'HoverCard',
       'Facts stand on the page or in a popover a tap opens: nothing appears '
           'on hover alone, which a finger and a screen reader never get.',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (_) => LedgerMenu(
         head: 'Spent by month',
@@ -1063,7 +1063,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (context) => LedgerButton(
         'Save',
@@ -1072,7 +1072,7 @@ final DesignInventory ledgerInventory = DesignInventory(
       ),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (_) => const LedgerErrorState(
         title: 'The register could not load',
@@ -1080,7 +1080,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         onRetryPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (_) => LedgerGauge(
         ratio: 0.62,
@@ -1091,7 +1091,7 @@ final DesignInventory ledgerInventory = DesignInventory(
       ),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (_) => const LedgerMonthLine(
         values: [4200, 4120, 3980, 4460, 4390, 4310, 4210],
@@ -1103,14 +1103,14 @@ final DesignInventory ledgerInventory = DesignInventory(
         month: 'October',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (_) => const LedgerMonthBars(
         values: [12.4, 13.1, 14.8, 15.2, 16.9, 18.2],
         months: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (_) => const LedgerCumulativeChart(
         cumulative: [0, 1450, 1520, 1610, 1690, 1760, 1840],
@@ -1141,7 +1141,7 @@ class LedgerInventoryGallery extends StatelessWidget {
   });
 
   /// The inventory listed; null lists [ledgerInventory].
-  final DesignInventory? inventory;
+  final RawInventory? inventory;
 
   /// The room round the list.
   final EdgeInsetsGeometry padding;
@@ -1154,7 +1154,7 @@ class LedgerInventoryGallery extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignInventory>(
+        DiagnosticsProperty<RawInventory>(
           'inventory',
           inventory,
           defaultValue: null,
@@ -1166,7 +1166,7 @@ class LedgerInventoryGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: inventory ?? ledgerInventory,
       padding: padding,
       groupBuilder: (context, group, present, total) => Padding(
@@ -1192,7 +1192,7 @@ class LedgerInventoryGallery extends StatelessWidget {
               Text(
                 entry?.absentReason == null
                     ? 'Missing'
-                    : DesignInventory.absentLabel(entry!.absentReason!),
+                    : RawInventory.absentLabel(entry!.absentReason!),
                 style: t.bodySmall.colored(t.textTertiary),
               )
             else if (ledgerInventoryFills.contains(row.id))

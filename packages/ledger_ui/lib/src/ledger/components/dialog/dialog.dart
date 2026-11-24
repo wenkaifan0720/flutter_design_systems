@@ -79,7 +79,7 @@ class LedgerDialogAction {
 /// shadow, and it scrolls once its words outgrow the screen. Raise it with
 /// [show], which completes with true for the confirm, false for Cancel and
 /// null when the scrim, Escape or the system back dismisses it: ui_core's
-/// [DesignDialogRoute] fades it in on its spring (a short fade under Reduce
+/// [RawModalDialogRoute] fades it in on its spring (a short fade under Reduce
 /// Motion), keeps Tab inside it, opens with the focus on the safe act
 /// (Cancel beside a destructive confirm, the confirm otherwise) and gives
 /// the focus back to what opened it. A phone's choice among options is a
@@ -153,7 +153,7 @@ class LedgerDialog extends StatelessWidget {
   final List<LedgerDialogAction>? actions;
 
   /// Raises a [LedgerDialog] over the whole app (the app's root navigator,
-  /// [LedgerHost.navigatorOf]) on ui_core's [DesignDialogRoute]. Completes
+  /// [LedgerHost.navigatorOf]) on ui_core's [RawModalDialogRoute]. Completes
   /// with true when the confirming act is pressed, false for Cancel and null
   /// when it is dismissed.
   static Future<bool?> show(
@@ -170,7 +170,7 @@ class LedgerDialog extends StatelessWidget {
     // As showDialog does: the caller's themes ride along.
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     return navigator.push(
-      DesignDialogRoute<bool>(
+      RawModalDialogRoute<bool>(
         // The scrim closes it, as it did; Escape and the back do too.
         barrierDismissible: true,
         barrierColor: t.overlay,
@@ -213,7 +213,7 @@ class LedgerDialog extends StatelessWidget {
     final navigator = LedgerHost.navigatorOf(context);
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     return navigator.push(
-      DesignDialogRoute<T>(
+      RawModalDialogRoute<T>(
         barrierDismissible: true,
         barrierColor: t.overlay,
         semanticLabel: title,
@@ -304,7 +304,7 @@ class LedgerDialog extends StatelessWidget {
     // (ui_core's rule: the act that is not destructive, else the confirm)
     // takes the focus as it opens. Standing in a page, it names itself and
     // takes no focus.
-    final raised = ModalRoute.of(context) is DesignDialogRoute;
+    final raised = ModalRoute.of(context) is RawModalDialogRoute;
     final safe = !raised
         ? null
         : acknowledge

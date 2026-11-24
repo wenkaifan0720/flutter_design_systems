@@ -349,7 +349,7 @@ class _Day extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      '${day.date.day}',
+                      day.label,
                       maxLines: 1,
                       style: t.amount.colored(s.ink),
                     ),

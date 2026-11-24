@@ -157,7 +157,7 @@ class LedgerHead extends StatelessWidget {
             linkKey: linkKey,
             headBox: _takesAfter(context)
                 ? (
-                    box: DesignTapTargets.of(context).floorOn().height,
+                    box: RawTapTargets.of(context).floorOn().height,
                     top: LedgerChromeMetrics.headTop,
                   )
                 : null,
@@ -220,7 +220,7 @@ class LedgerHead extends StatelessWidget {
       note != null &&
       onTap != null &&
       MediaQuery.textScalerOf(context).scale(1) <= 1 &&
-      DesignTapTargets.of(context).floorOn().height >
+      RawTapTargets.of(context).floorOn().height >
           LedgerChromeMetrics.headTop + _line + LedgerChromeMetrics.headAfter;
 
   // The rubric's and the note's line, held to a whole pixel.
@@ -373,7 +373,7 @@ class LedgerSection extends StatelessWidget {
   // Its rows start on its edge and end on its other, so the
   // keyline check reads it as one region, named by its head.
   @override
-  Widget build(BuildContext context) => DesignKeylineRegion(
+  Widget build(BuildContext context) => RawKeylineRegion(
     label: switch (head) {
       final LedgerHead h => h.label,
       _ => null,
@@ -1471,7 +1471,7 @@ class LedgerFlag extends StatelessWidget {
           excludeChild: false,
           child: Container(
             constraints: BoxConstraints(
-              minHeight: DesignTapTargets.of(context).floorOn().height,
+              minHeight: RawTapTargets.of(context).floorOn().height,
             ),
             padding: const EdgeInsets.only(top: _top),
             alignment: AlignmentDirectional.topStart,

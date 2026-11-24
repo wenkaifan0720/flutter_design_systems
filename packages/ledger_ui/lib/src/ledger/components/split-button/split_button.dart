@@ -81,7 +81,7 @@ class LedgerSplitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final height = t.density.height(_height, floor: floor.height);
     final fill = filled ? t.accent : t.surface;
     final ink = filled ? t.onAccent : t.textPrimary;

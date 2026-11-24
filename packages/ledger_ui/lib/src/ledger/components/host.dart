@@ -85,7 +85,7 @@ class LedgerHost extends StatelessWidget {
       theme.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark;
 
   // LedgerSpacing's steps are every 2 from 2 to 40: the grid it declares.
-  static const _grid = DesignSpacing(grid: 2);
+  static const _grid = RawSpacing(grid: 2);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -154,7 +154,7 @@ class LedgerHost extends StatelessWidget {
                       data: IconThemeData(color: now.textPrimary, size: 24),
                       // Ledger's parts stand on a 2-pt grid (LedgerSpacing's
                       // steps), declared for ui_core's spacing check.
-                      child: DesignSpacingScope(
+                      child: RawSpacingScope(
                         spacing: _grid,
                         // Toasts stand over the app, above its navigator.
                         child: LedgerToaster(child: _HostMark(child: child)),

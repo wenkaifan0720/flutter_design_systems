@@ -99,7 +99,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     // the ring's room round them, each at least the floor's width. Each
     // chip's target runs the strip's whole height through the ring's room
     // above and under it, so its chosen ink fills the slot it is given.
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final chip = math.max(height, floor.height - 2 * _pad);
     final innerRadius = math.max(0.0, t.controlRadius - _pad);
     // A chip: a radio of the strip's group, in a pressable's dress. The
@@ -369,7 +369,7 @@ class LedgerFilters<T> extends StatelessWidget {
   }
 
   // `.filter`: 32 tall, 0 13, 500 11/30; `.filters` 6 apart. Its words on a
-  // line of their own inside the ring (DesignCapCenter sets their capitals
+  // line of their own inside the ring (RawCapCenter sets their capitals
   // on its middle), so the ring stays out of their box.
   static const double _height = 32;
   static const double _pad = 12;
@@ -2281,7 +2281,7 @@ class _StepperFieldState extends State<_StepperField> {
           child: MergeSemantics(
             child: ledgerCapCenter(
               words,
-              DesignTextEntryBox(minHeight: height, maxLines: 1, child: input),
+              RawTextEntryBox(minHeight: height, maxLines: 1, child: input),
             ),
           ),
         );

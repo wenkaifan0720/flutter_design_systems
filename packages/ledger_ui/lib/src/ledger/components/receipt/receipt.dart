@@ -57,7 +57,7 @@ class LedgerSlip extends StatelessWidget {
     final so = LedgerStyleOf([style, t.components.slip], const {});
     // A card for the keyline check: what is printed on it starts and ends
     // on its side room.
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: 'slip',
       child: Container(
         padding: padding ?? so.padding(Directionality.of(context)),

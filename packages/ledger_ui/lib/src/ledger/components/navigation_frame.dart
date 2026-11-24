@@ -18,7 +18,7 @@ import 'side_bar.dart';
 /// above the tab bar or beside the rail or side bar; beside either, its
 /// masthead heads it (the phone's strip is the tab bar's partner only).
 ///
-/// The frame is ui_core's [DesignAdaptiveShell], Ledger's bars painting
+/// The frame is ui_core's [RawAdaptiveShell], Ledger's bars painting
 /// it: the destinations are one tab stop, the arrows moving along them
 /// (mirrored right to left; Up and Down in the rail and the side bar),
 /// Enter or Space choosing; F6 moves the focus between the bar and the
@@ -89,15 +89,15 @@ class LedgerNavigationFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final mode = width < railFrom
-        ? DesignNavigationMode.bar
+        ? RawNavigationMode.bar
         : width >= LedgerLayout.wide
-        ? DesignNavigationMode.sidebar
-        : DesignNavigationMode.rail;
-    final shell = DesignAdaptiveShell(
+        ? RawNavigationMode.sidebar
+        : RawNavigationMode.rail;
+    final shell = RawAdaptiveShell(
       mode: mode,
       destinations: [
         for (final item in destinations)
-          DesignNavigationDestination(
+          RawNavigationDestination(
             label: item.label,
             icon: item.icon,
             selectedIcon: item.selectedIcon,
@@ -109,7 +109,7 @@ class LedgerNavigationFrame extends StatelessWidget {
           LedgerShellFace(index: details.index, states: details.states),
       navigationBuilder: (context, details) => LedgerShellDestinations(
         destinations: details.destinations,
-        child: details.mode == DesignNavigationMode.bar
+        child: details.mode == RawNavigationMode.bar
             ? LedgerNavBar(
                 items: destinations,
                 selectedIndex: selectedIndex,
@@ -117,7 +117,7 @@ class LedgerNavigationFrame extends StatelessWidget {
                 action: action,
               )
             : SizedBox(
-                width: details.mode == DesignNavigationMode.sidebar
+                width: details.mode == RawNavigationMode.sidebar
                     ? LedgerSideBar.width
                     : LedgerSideBar.railWidth,
                 child: LedgerSideBar(
@@ -126,19 +126,19 @@ class LedgerNavigationFrame extends StatelessWidget {
                   onDestinationSelected: onDestinationSelected,
                   action: action,
                   brand: brand,
-                  extended: details.mode == DesignNavigationMode.sidebar,
+                  extended: details.mode == RawNavigationMode.sidebar,
                 ),
               ),
       ),
       // Beside the rail or the side bar the page's masthead heads it.
       body: LedgerSideInset(
         inset: 0,
-        beside: mode != DesignNavigationMode.bar,
+        beside: mode != RawNavigationMode.bar,
         child: body,
       ),
     );
     final act = action;
-    if (mode != DesignNavigationMode.bar || act == null) return shell;
+    if (mode != RawNavigationMode.bar || act == null) return shell;
     // The tab bar's act stands among the tabs, but ui_core's tab bar holds
     // tabs alone: a screen reader hears the act as a button beside it, over
     // the act's column (a pointer goes through to the act itself).

@@ -7,9 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
+export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 
-/// How one part looks: ui_core's [DesignStyle], under Ledger's name. Every
+/// How one part looks: ui_core's [RawStyle], under Ledger's name. Every
 /// slot resolves for the part's states ([WidgetState.disabled],
 /// [WidgetState.hovered], [WidgetState.focused], [WidgetState.pressed],
 /// [WidgetState.selected]).
@@ -46,17 +46,17 @@ export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 ///   ),
 /// )
 /// ```
-typedef LedgerStyle = DesignStyle;
+typedef LedgerStyle = RawStyle;
 
 /// A part's style layers read at its states: its own `style:`, then its
-/// component theme (first wins). ui_core's [DesignStyleOf] under Ledger's
+/// component theme (first wins). ui_core's [RawStyleOf] under Ledger's
 /// name.
 ///
 /// ```dart
 /// final look = LedgerStyleOf([style, t.components.chip], states);
 /// final paper = look.fill ?? t.surface;
 /// ```
-typedef LedgerStyleOf = DesignStyleOf;
+typedef LedgerStyleOf = RawStyleOf;
 
 /// Every component theme in one, as `ThemeData` holds Material's: what
 /// `LedgerThemeData.components` carries and lerps. Each is null until an
@@ -233,7 +233,7 @@ class LedgerComponentThemes with Diagnosticable {
   ) {
     if (identical(a, b) || t == 0) return a;
     if (t == 1) return b;
-    LedgerStyle? l(LedgerStyle? x, LedgerStyle? y) => DesignStyle.lerp(x, y, t);
+    LedgerStyle? l(LedgerStyle? x, LedgerStyle? y) => RawStyle.lerp(x, y, t);
     return LedgerComponentThemes(
       button: l(a.button, b.button),
       filledButton: l(a.filledButton, b.filledButton),

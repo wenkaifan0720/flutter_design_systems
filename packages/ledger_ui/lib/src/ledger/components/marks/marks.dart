@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../format.dart';
 import '../../internal/cap_center.dart';
@@ -414,7 +415,7 @@ class LedgerDateTab extends StatelessWidget {
                   .medium,
             ),
             Text(
-              '${date.day}',
+              RawWidgetsLocalizations.of(context).formatDecimal(date.day),
               style: t.figureSmall
                   .sized(_day)
                   .line(_day)

@@ -1,3 +1,10 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0, whose `Design*` names are `Raw*` now (`RawTapTargets`, `RawInventoryEntry`, `RawModalDialogRoute` and the rest). `dart fix --apply` renames them in an app (ui_core's `lib/fix_data.yaml` holds them); Ledger's code, docs and examples use the new names.
+- A multi-select's text entry under its tags is as tall as a tag, the touch floor. On a run of its own its node and a tap reach a target's size (they were 24 tall), and the field grows by the run.
+- A multi-select's runs of tags stand in the field's line as one run does, centred: the first and the last keep the same room from the label and the rule whatever the count (four tags rested on the rule). With a pointer the runs stand the tags' gap apart; they touched, a pill being taller than a pointer's floor. On touch the floor already parts them.
+- A date range picker writes its days in the app's digits (`RawCalendarDayDetails.label`), Arabic-Indic in Arabic, as the date picker does. `LedgerDateTab` writes its day the same way.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

@@ -1,5 +1,5 @@
 // iOS's Reduce Motion alone. Flutter 3.47 sets only dart:ui's reduceMotion there, never MediaQuery's
-// disableAnimations. Ledger reads ui_core's designReduceMotionOf (LedgerMotion.isReduced), so its steps, its loops and
+// disableAnimations. Ledger reads ui_core's rawReduceMotionOf (LedgerMotion.isReduced), so its steps, its loops and
 // its eases calm with that flag alone, and a flip while a loop runs reaches the loop as a build.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -237,7 +237,7 @@ Run the app in `example/` to explore Quill, a household ledger with an account o
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.4.1 and re-exports it, so `RawWidgetsLocalizations`
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.6.0 and re-exports it, so `RawWidgetsLocalizations`
 and the `Raw*` parts come with the one import.
 
 ## Licences

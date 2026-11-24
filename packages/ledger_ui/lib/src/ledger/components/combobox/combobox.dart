@@ -57,7 +57,7 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
 
   /// Finds the options for the words typed, in place of filtering
   /// [options]; it may take time and fail.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs; null: at every change.
   final Duration? debounceDuration;
@@ -113,7 +113,7 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
     properties.add(ObjectFlagProperty<Object?>.has('noteOf', noteOf));
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         DiagnosticsProperty<Duration>(
           'debounceDuration',

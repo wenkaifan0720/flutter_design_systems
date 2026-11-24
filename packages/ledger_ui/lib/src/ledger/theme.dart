@@ -3,7 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:ui_core/ui_core.dart' show designReduceMotionOf;
+import 'package:ui_core/ui_core.dart' show rawReduceMotionOf;
 
 import 'density.dart';
 import 'fonts.dart';
@@ -146,7 +146,7 @@ abstract final class LedgerIconSize {
 /// moves nothing but its overlays' open and close. Where the reader asks for
 /// reduced motion (Android's Remove animations, the web's
 /// prefers-reduced-motion or iOS's Reduce Motion: ui_core's
-/// `designReduceMotionOf`), every change lands at once ([of]).
+/// `rawReduceMotionOf`), every change lands at once ([of]).
 abstract final class LedgerMotion {
   /// 120 ms: the quick step.
   static const Duration fast = Duration(milliseconds: 120);
@@ -169,7 +169,7 @@ abstract final class LedgerMotion {
   /// platform. [context] builds again when the answer changes; iOS's change
   /// comes as a build, never as `didChangeDependencies`, so a State reads it
   /// in `build` or as it acts.
-  static bool isReduced(BuildContext context) => designReduceMotionOf(context);
+  static bool isReduced(BuildContext context) => rawReduceMotionOf(context);
 }
 
 /// The paddings Ledger's parts use, on the spacing scale.

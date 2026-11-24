@@ -196,7 +196,7 @@ class LedgerScreen extends StatelessWidget {
                   ),
                 // The page for the keyline check: its masthead and its
                 // sections on the gutter.
-                DesignKeylineRegion(
+                RawKeylineRegion(
                   label: 'page',
                   child: Padding(
                     padding: room.copyWith(

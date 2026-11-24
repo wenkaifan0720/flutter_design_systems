@@ -200,7 +200,7 @@ class LedgerSideBar extends StatelessWidget {
       ),
       // A region for the keyline check: faces on the column, the mark, the
       // glyphs, the avatar and the profile's chevron on the inner keyline.
-      child: DesignKeylineRegion(
+      child: RawKeylineRegion(
         label: 'side bar',
         indents: const [LedgerChromeMetrics.navPad],
         trailingIndents: const [LedgerChromeMetrics.navPad],
@@ -576,7 +576,7 @@ class _Link extends StatelessWidget {
         builder: (context, s, _) => Container(
           height: math.max(
             LedgerChromeMetrics.navLink,
-            DesignTapTargets.of(context).floorOn().height,
+            RawTapTargets.of(context).floorOn().height,
           ),
           padding: const EdgeInsets.symmetric(
             horizontal: LedgerChromeMetrics.navPad,
@@ -642,7 +642,7 @@ class _Foot extends StatelessWidget {
         selected: current,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: DesignTapTargets.of(context).floorOn().height,
+            minHeight: RawTapTargets.of(context).floorOn().height,
           ),
           child: Align(
             alignment: AlignmentDirectional.centerStart,

@@ -214,7 +214,7 @@ class _Tab extends StatelessWidget {
     // A tab's words narrower than the tap floor stand centred in it.
     final least = math.max(
       0.0,
-      DesignTapTargets.of(context).floorOn().width - before - after,
+      RawTapTargets.of(context).floorOn().width - before - after,
     );
     final on = chosen.clamp(0.0, 1.0);
     final ink = Color.lerp(t.textSecondary, t.textPrimary, on)!;

@@ -5,7 +5,7 @@ import 'face.dart';
 
 /// A part's style layers over the face Ledger would draw: what each part
 /// reads of a `LedgerStyle`. Plumbing of the controls; pages never use it.
-extension LedgerStyled on DesignStyleOf {
+extension LedgerStyled on RawStyleOf {
   /// Whether no layer is set: the face stays the book's.
   bool get isBare => layers.every((l) => l == null);
 

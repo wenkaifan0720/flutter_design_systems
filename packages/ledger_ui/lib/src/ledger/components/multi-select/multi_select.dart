@@ -1,6 +1,8 @@
 /// Values chosen as tags on a Ledger field, over ui_core's [RawTagInput].
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialType, TextField;
@@ -136,6 +138,9 @@ class _LedgerMultiSelectState<T extends Object>
     final t = context.ledgerTheme;
     final enabled = widget.enabled;
     final words = LedgerTextField.wordsOf(t);
+    final floor = RawTapTargets.of(context).floorOn();
+    // A tag's run: the pill, or the floor where it is taller.
+    final row = math.max(floor.height, _Tag._pill);
     final input = RawTagInput<T>(
       values: widget.values,
       // The pointer's mark (an underline) and the keyboard's (the double
@@ -195,33 +200,53 @@ class _LedgerMultiSelectState<T extends Object>
             minWidth: double.infinity,
             minHeight: LedgerTextField.heightOf(t),
           ),
-          child: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: LedgerSpacing.s6,
-            children: [
-              ...tags,
-              ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: _fieldMin),
-                child: IntrinsicWidth(
-                  child: Stack(
-                    alignment: AlignmentDirectional.centerStart,
-                    children: [
-                      if (widget.values.isEmpty && widget.hintText != null)
-                        ExcludeSemantics(
-                          child: Text(
-                            widget.hintText!,
-                            maxLines: 1,
-                            style: words
-                                .copyWith(fontWeight: FontWeight.w400)
-                                .colored(t.textTertiary),
+          // A pill taller than the floor (a pointer's) fills its run, so the
+          // runs part by the tags' gap, as pills beside each other do; on
+          // touch the floor's room around a pill already parts them. The
+          // runs stand in the field's line as one run does, centred in it,
+          // so the first and the last keep one room from the label and the
+          // rule whatever the count.
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: widget.values.isEmpty
+                  ? 0
+                  : math.max(0, (LedgerTextField.heightOf(t) - row) / 2),
+            ),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: LedgerSpacing.s6,
+              runSpacing: math.max(0, LedgerSpacing.s6 - (row - _Tag._pill)),
+              children: [
+                ...tags,
+                ConstrainedBox(
+                  // Under the tags, the entry's line is as tall as a tag's
+                  // (the touch floor): on a run of its own it is a run of the
+                  // ruled paper like theirs, and a target to tap.
+                  constraints: BoxConstraints(
+                    minWidth: _fieldMin,
+                    minHeight: widget.values.isEmpty ? 0 : floor.height,
+                  ),
+                  child: IntrinsicWidth(
+                    child: Stack(
+                      alignment: AlignmentDirectional.centerStart,
+                      children: [
+                        if (widget.values.isEmpty && widget.hintText != null)
+                          ExcludeSemantics(
+                            child: Text(
+                              widget.hintText!,
+                              maxLines: 1,
+                              style: words
+                                  .copyWith(fontWeight: FontWeight.w400)
+                                  .colored(t.textTertiary),
+                            ),
                           ),
-                        ),
-                      field,
-                    ],
+                        field,
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -264,7 +289,7 @@ class _Tag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final ink = enabled ? t.textPrimary : t.textTertiary;
     final remove = RawWidgetsLocalizations.of(context).deleteButtonTooltip;
     return SizedBox(

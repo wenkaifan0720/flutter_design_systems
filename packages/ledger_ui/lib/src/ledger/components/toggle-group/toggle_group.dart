@@ -119,7 +119,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
     final t = context.ledgerTheme;
     final words = t.meta.medium.sized(_words).line(_line).tracked(_track);
     final change = onSelectionChanged;
-    final minimumSize = DesignTapTargets.of(context).floorOn();
+    final minimumSize = RawTapTargets.of(context).floorOn();
     Widget layout(BuildContext context, List<Widget> items) =>
         Wrap(spacing: _gap, children: items);
     Widget pill(BuildContext context, T value, Set<WidgetState> states) {
