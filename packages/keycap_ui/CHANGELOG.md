@@ -1,3 +1,7 @@
+## 0.4.1
+
+- A toast stands above `KeycapScreen`'s `footer` (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its persistent footer buttons, and as it already stands above `KeycapScaffold`'s tab bar. It stood over the page's keys.
+
 ## 0.4.0
 
 - Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawCalendarController` for `DesignCalendarController`, `RawOverlayAnchor` for `DesignOverlayAnchor`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.

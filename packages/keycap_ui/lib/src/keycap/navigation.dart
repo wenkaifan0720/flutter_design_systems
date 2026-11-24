@@ -913,25 +913,31 @@ class KeycapScreen extends StatelessWidget {
                       ),
                     ),
             Expanded(child: content),
+            // The foot, ruled along its top. A toast stands above it, as a
+            // Scaffold keeps a snackbar above its persistent footer buttons.
             if (foot != null)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: theme.colors.ground,
-                  border: Border(top: BorderSide(color: theme.colors.hairline)),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    margin,
-                    KeycapSpacing.medium,
-                    margin,
-                    KeycapSpacing.medium + media.padding.bottom,
+              RawToasterKeepClear(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.colors.ground,
+                    border: Border(
+                      top: BorderSide(color: theme.colors.hairline),
+                    ),
                   ),
-                  child: media.size.width >= 600
-                      ? Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: foot,
-                        )
-                      : foot,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      margin,
+                      KeycapSpacing.medium,
+                      margin,
+                      KeycapSpacing.medium + media.padding.bottom,
+                    ),
+                    child: media.size.width >= 600
+                        ? Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: foot,
+                          )
+                        : foot,
+                  ),
                 ),
               ),
           ],

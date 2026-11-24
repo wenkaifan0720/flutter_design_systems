@@ -1,7 +1,7 @@
 name: keycap_ui
 description: >-
   Flutter controls drawn as mechanical keyboard keycaps: sculpted keys that travel when pressed, latching choices, wells for lists and fields, in light and dark colourways.
-version: 0.4.0
+version: 0.4.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/keycap/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/keycap/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/keycap_ui
