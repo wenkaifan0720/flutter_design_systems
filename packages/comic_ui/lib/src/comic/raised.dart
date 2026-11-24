@@ -1910,8 +1910,13 @@ class ComicSnackBar extends StatelessWidget {
     );
     final actionStyle = ComicStyle(shape: WidgetStatePropertyAll(shape));
     final actions = <Widget>[
+      // The action is the act, as a Material SnackBarAction takes the accent; the dismiss stays a plain key.
       if (onAction != null && actionLabel != null)
-        ComicButton(actionLabel!, style: actionStyle, onPressed: onAction),
+        ComicButton.filled(
+          actionLabel!,
+          style: actionStyle,
+          onPressed: onAction,
+        ),
       if (onDismiss != null)
         // As tall as the action beside it: one row, one height.
         ComicIconButton(

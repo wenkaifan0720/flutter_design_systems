@@ -403,9 +403,12 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                         child: Text(
                           RawWidgetsLocalizations.of(context)
                               .formatDecimal(day),
-                          style: t.type.body
-                              .merge(look.textStyle)
-                              .copyWith(
+                          style:
+                              _dayFigure(
+                                t,
+                                look.textStyle,
+                                selected: selected,
+                              ).copyWith(
                                 color:
                                     look.foreground ??
                                     (selected
@@ -966,6 +969,16 @@ Future<ComicTime?> showComicTimePicker(
   );
 }
 
+/// A day's number: the body's words, the chosen day's heavy as a calendar's and a range's chosen ends are, under the
+/// app's [own] style for the day.
+TextStyle _dayFigure(
+  ComicThemeData t,
+  TextStyle? own, {
+  required bool selected,
+}) => t.type.body
+    .copyWith(fontWeight: selected ? FontWeight.w800 : null)
+    .merge(own);
+
 /// A day's width in a calendar under [context] (each of seven at least, where they fit) and the narrowest a day may
 /// grow, for the calendar and for the dialog that holds one.
 (double, double) _dayWidths(BuildContext context, ComicStyle? style) {
@@ -1006,7 +1019,11 @@ Future<ComicTime?> showComicTimePicker(
     for (var day = 1; day <= 31; day++) {
       painter.text = TextSpan(
         text: '$day',
-        style: t.type.body.merge(look.textStyle),
+        style: _dayFigure(
+          t,
+          look.textStyle,
+          selected: states.contains(WidgetState.selected),
+        ),
       );
       painter.layout();
       minimumDayWidth = math.max(

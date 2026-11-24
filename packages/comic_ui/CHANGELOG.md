@@ -1,3 +1,8 @@
+## 0.6.1
+
+- A snack bar's action is the act (`ComicButton.filled`), as a Material `SnackBarAction` takes the accent; its dismiss stays a plain key. Before, the action and the dismiss looked alike.
+- A `ComicDatePicker`'s chosen day writes its number heavy, as a `ComicCalendar`'s and a `ComicDateRangePicker`'s chosen days do. Before, it was the other days' weight.
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).

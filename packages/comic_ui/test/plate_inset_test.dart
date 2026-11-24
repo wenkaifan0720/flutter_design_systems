@@ -22,15 +22,19 @@ class _Pixels {
     return bytes[i] << 16 | bytes[i + 1] << 8 | bytes[i + 2];
   }
 
-  /// The first two transitions into [ink] along a ray into the corner.
-  List<double> crossings(Offset start, Offset step, Color ink) {
-    final rgb = ink.toARGB32() & 0xffffff;
+  /// The first transition into [ink] along a ray into the corner, then the next
+  /// into [then] (by default [ink] again).
+  List<double> crossings(Offset start, Offset step, Color ink, [Color? then]) {
+    final inks = [
+      ink,
+      then ?? ink,
+    ].map((c) => c.toARGB32() & 0xffffff).toList();
     final distances = <double>[];
     var previous = false;
     for (var i = 0; i < 144; i++) {
       final x = (2 * start.dx + i * step.dx).floor();
       final y = (2 * start.dy + i * step.dy).floor();
-      final current = at(x, y) == rgb;
+      final current = at(x, y) == inks[distances.length];
       if (current && !previous) distances.add(i / 2);
       if (distances.length == 2) break;
       previous = current;
@@ -195,9 +199,15 @@ void main() {
             final y = top ? rect.top : rect.bottom - .5;
             double gap(Offset origin, Offset step) {
               // The action has an offset black shadow. Follow the solid front fills
-              // to distinguish its inset corner from the shadow at its back.
+              // to distinguish its inset corner from the shadow at its back: the
+              // message's card, then the action's face, the accent of the act.
               final ink = message ? theme.colors.card : theme.colors.nightLine;
-              final runs = pixels.crossings(origin, step, ink);
+              final runs = pixels.crossings(
+                origin,
+                step,
+                ink,
+                message ? theme.colors.primary : ink,
+              );
               return (runs[1] - runs[0]) * step.distance;
             }
 
