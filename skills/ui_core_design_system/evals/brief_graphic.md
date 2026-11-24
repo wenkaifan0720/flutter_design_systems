@@ -5,7 +5,7 @@ A loud design, where character must not cost usability.
 ## The brief, as given to the agent
 
 > Build `fair`, a Flutter app for a two-day small-press fair's programme,
-> with a design of its own on ui_core ^0.6.0, in the language of two-colour
+> with a design of its own on ui_core ^0.6.1, in the language of two-colour
 > risograph printing: fluorescent pink and teal spot colours (and where they
 > overprint, the colour they make), on off-white paper by day and on black by
 > night; thick rounded type; shapes cut as if stencilled; a slight

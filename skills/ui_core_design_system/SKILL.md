@@ -34,7 +34,7 @@ To install the skill, copy this folder into the project's `.claude/skills/`
 (or `~/.claude/skills/` for every project). The app takes:
 
 ```text
-flutter pub add ui_core:^0.6.0 material_ui
+flutter pub add ui_core:^0.6.1 material_ui
 flutter pub add 'dev:ui_core_test:^0.4.0' dev:leak_tracker_flutter_testing
 ```
 
@@ -316,8 +316,8 @@ return PopScope<Object?>(
 
 - **Figures.** Numbers and dates come from `RawWidgetsLocalizations`
   (`formatDecimal`, `formatFullDate`), and a time's hour and minute from
-  its `formatHour` and `formatMinute` (the `RawTimeFormatting` extension,
-  ui_core 0.6.1). Never `n.toString().padLeft(2, '0')`, which stays ASCII in
+  its `formatHour` and `formatMinute` (the `RawTimeFormatting`
+  extension). Never `n.toString().padLeft(2, '0')`, which stays ASCII in
   every language.
 - **Toasts.** Shown with the toaster the app's builder holds; a pane's
   toasts go to a `RawToaster` round the pane, centred on it. Each part

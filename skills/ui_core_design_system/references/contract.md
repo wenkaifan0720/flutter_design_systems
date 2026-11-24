@@ -3,7 +3,7 @@
 ui_core gives the design every behaviour a part needs and no paint. The
 design wraps each part's ui_core widget, reads the states it reports, and
 draws its own face for them. This page says how to wire each kind of part
-on ui_core 0.6.0, and ends with the API each kind of part is painted on.
+on ui_core 0.6.1, and ends with the API each kind of part is painted on.
 
 ui_core names its parts in Flutter's `Raw*` form, as Flutter names its
 unstyled widgets. Older `Design*` names stay through 0.6 as deprecated
@@ -409,11 +409,10 @@ A toast never covers a part along the bottom. Wrap each one the design
 draws (a bottom bar, a docked composer, a page's foot with
 its Save, a status line) in `RawToasterKeepClear`: the toasts stand above
 it, follow it as it comes and goes, and stand where they did once it goes.
-From ui_core 0.6.1 a part standing on a kept part (its bottom on that one's
-top, the two overlapping across) joins the band, so a foot over a status
-line over a tab bar keeps the toasts above all three. A part floating with
-a gap, standing beside, or reaching both edges (a rail) keeps nothing
-clear. `RawAdaptiveShell` keeps its bar clear already. A part takes the
+A part standing on a kept part (its bottom on that one's top, the two
+overlapping across) joins the band, so a foot over a status line over a
+tab bar keeps the toasts above all three. A part floating with a gap,
+standing beside, or reaching both edges (a rail) keeps nothing clear. `RawAdaptiveShell` keeps its bar clear already. A part takes the
 screen's safe inset itself; never pad the toaster by its height, which
 stays when the part goes.
 

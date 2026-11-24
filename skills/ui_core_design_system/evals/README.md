@@ -8,7 +8,7 @@ that stay true to a physical material ([brief_material.md](brief_material.md)).
 
 ## Running a brief
 
-Run the briefs only against published packages: ui_core ^0.6.0 and
+Run the briefs only against published packages: ui_core ^0.6.1 and
 ui_core_test ^0.4.0 on pub.dev, and Flutter 3.47 or later.
 
 1. Start a fresh agent with this skill installed and nothing else: no
