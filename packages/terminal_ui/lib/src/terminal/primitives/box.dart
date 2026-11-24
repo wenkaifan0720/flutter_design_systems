@@ -787,14 +787,20 @@ class TermBlocksPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cw = grid.cellWidth;
     final h = grid.fontSize;
-    final top = (size.height - h) / 2;
+    // The blocks stand on whole pixels, as a terminal's block glyphs do: an
+    // edge astride two pixels would paint one of them at part strength, a
+    // soft line along the bar (a quarter block's end at 38.25).
+    final top = ((size.height - h) / 2).roundToDouble();
+    final bottom = ((size.height + h) / 2).roundToDouble();
     final eighths = (size.width / cw * 8 * value.clamp(0, 1)).round();
-    final filled = eighths * cw / 8;
+    final reach = eighths * cw / 8;
     final rtl = textDirection == TextDirection.rtl;
     final cells = (size.width / cw + 1e-6).floor();
     final dot = Paint()..color = track;
     final radius = grid.fontSize / 15 * 1.5;
-    for (var i = (filled / cw - 1e-6).ceil(); i < cells; i++) {
+    // A dot for each cell the blocks leave empty: by the eighths, not the
+    // pixel the blocks end on.
+    for (var i = (eighths / 8).ceil(); i < cells; i++) {
       final x = cw * i + cw / 2;
       canvas.drawCircle(
         Offset(rtl ? size.width - x : x, size.height / 2),
@@ -802,11 +808,21 @@ class TermBlocksPainter extends CustomPainter {
         dot,
       );
     }
-    if (filled > 0) {
+    if (eighths > 0) {
       canvas.drawRect(
         rtl
-            ? Rect.fromLTWH(size.width - filled, top, filled, h)
-            : Rect.fromLTWH(0, top, filled, h),
+            ? Rect.fromLTRB(
+                math.max(0, (size.width - reach).roundToDouble()),
+                top,
+                size.width,
+                bottom,
+              )
+            : Rect.fromLTRB(
+                0,
+                top,
+                math.min(size.width, reach.roundToDouble()),
+                bottom,
+              ),
         Paint()..color = color,
       );
     }

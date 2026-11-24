@@ -1489,7 +1489,7 @@ abstract final class TermMotion {
 
   /// A dialog, a sheet or a side sheet coming up and going, on ui_core's
   /// route spring: critically damped, it settles in about [screen]'s 120 ms
-  /// (to within `designSpringTolerance`), a very short fade in place.
+  /// (to within `rawSpringTolerance`), a very short fade in place.
   static const ({double dampingRatio, double stiffness}) surface = (
     dampingRatio: 1,
     stiffness: 5900,
@@ -1642,13 +1642,13 @@ class TermTheme extends StatelessWidget {
       data: data,
       child: Theme(
         data: material,
-        child: DesignTapTargetScope(
-          targets: DesignTapTargets(
+        child: RawTapTargetScope(
+          targets: RawTapTargets(
             touch: Size.square(data.grid.lines(2)),
             pointer: Size.square(data.grid.lines(1)),
           ),
-          child: DesignSpacingScope(
-            spacing: const DesignSpacing(grid: 3),
+          child: RawSpacingScope(
+            spacing: const RawSpacing(grid: 3),
             child: DefaultTextStyle(
               style: data.textStyle,
               child: DefaultSelectionStyle(
@@ -1724,7 +1724,7 @@ class _AnimatedTermThemeState
 
   @override
   Widget build(BuildContext context) {
-    final still = DesignMotionPolicy.of(context).reduceMotion;
+    final still = RawMotionPolicy.of(context).reduceMotion;
     return TermTheme(
       data: still ? widget.data : _data!.evaluate(animation),
       child: widget.child,
@@ -1749,7 +1749,7 @@ extension TermGridContext on BuildContext {
 
   /// The motion policy in force (Reduce Motion critically damps every
   /// spring and stops what blinks).
-  DesignMotionPolicy get termMotion => DesignMotionPolicy.of(this);
+  RawMotionPolicy get termMotion => RawMotionPolicy.of(this);
 }
 
 /// Lays [child] out [cols] cells wide and [lines] lines tall on the grid in

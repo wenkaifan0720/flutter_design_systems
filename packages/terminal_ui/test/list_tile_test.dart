@@ -13,9 +13,8 @@ Widget _rows({int? titleCols}) => MaterialApp(
   home: TermTheme(
     data: TermThemeData.dark(),
     child: Builder(
-      builder: (context) => DesignTapTargetScope(
-        targets: DesignTapTargets.of(context)
-            .copyWith(input: DesignInput.pointer),
+      builder: (context) => RawTapTargetScope(
+        targets: RawTapTargets.of(context).copyWith(input: RawInput.pointer),
         child: Align(
           alignment: Alignment.topLeft,
           child: SizedBox(

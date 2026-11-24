@@ -1,3 +1,17 @@
+## 0.5.0
+
+- Requires ui_core 0.6.0, whose `Design*` names are `Raw*` now (`RawTapTargets`, `RawInventoryEntry`, `RawModalDialogRoute` and the rest).
+  `dart fix --apply` renames them in an app (ui_core's `lib/fix_data.yaml` holds them); Terminal's code, docs and
+  examples use the new names, the README's `RawWidgetsLocalizations` among them.
+- A date picker's days are written in the app's digits by ui_core (`RawCalendarDayDetails.label`), as Terminal wrote them.
+- A toast stands a line clear of `TermScaffold`'s status line where the line runs the screen's width at its foot (beside a
+  rail or a side pane, or with no destinations), as it stands clear of a phone's window list. It stood on the line,
+  over the page's last line (a detail pane's Save).
+- A `TermTooltip` shows nothing over the `TermMenu` or `TermPopover` its control opened. A press by a screen reader,
+  or by the web's semantics, left a resting pointer's tip to show over the open menu.
+- A meter's and a progress bar's blocks stand on whole pixels: a fill ending part way into a pixel drew a soft line
+  along its end.
+
 ## 0.4.0
 
 - Needs ui_core 0.5.1.

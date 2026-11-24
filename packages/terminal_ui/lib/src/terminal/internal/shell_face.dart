@@ -1,4 +1,4 @@
-/// How [TermScaffold]'s shell (ui_core's `DesignAdaptiveShell`) wears the
+/// How [TermScaffold]'s shell (ui_core's `RawAdaptiveShell`) wears the
 /// window list, the rail and the side pane: the shell builds each
 /// destination (its press, its keys, its words to a screen reader) and asks
 /// the look for a face; the part lays the shell's destinations out where

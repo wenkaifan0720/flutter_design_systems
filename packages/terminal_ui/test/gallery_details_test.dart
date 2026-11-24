@@ -472,7 +472,7 @@ void main() {
     await row('CarouselView', 'on RawCarousel');
     await row('BottomSheet', 'BottomSheet');
     await row('BarChart', 'BarChart');
-    await row('LineChart', 'on DesignChart');
+    await row('LineChart', 'on RawChart');
     await tester.pumpWidget(const SizedBox.shrink());
   }, experimentalLeakTesting: LeakTesting.settings.withIgnoredAll());
 

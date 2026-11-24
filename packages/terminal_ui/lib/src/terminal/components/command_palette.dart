@@ -22,7 +22,7 @@ import '../localizations.dart';
 import 'key_hint.dart';
 import 'pane.dart';
 
-/// Where [query] matched [text], as [designMatchScore] ranks it: the
+/// Where [query] matched [text], as [rawMatchScore] ranks it: the
 /// prefix, the word or the run of letters it found, or each letter in
 /// order. Ranges are start inclusive, end exclusive; empty when nothing
 /// matched.
@@ -179,7 +179,7 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
     if (q.trim().isEmpty) return widget.commands.length;
     var n = 0;
     for (final c in widget.commands) {
-      if ([c.label, ...c.keywords].any((w) => designMatchScore(w, q) != null)) {
+      if ([c.label, ...c.keywords].any((w) => rawMatchScore(w, q) != null)) {
         n++;
       }
     }
@@ -192,7 +192,7 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
     final grid = context.termGrid;
     final cw = grid.cellWidth;
     final lh = grid.lineHeight;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final row = grid.ceil(Size(0, floor.height)).height;
 
     return TermPane(
@@ -290,7 +290,7 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
 class _Field extends StatelessWidget {
   const _Field({required this.field, required this.hintText});
 
-  final DesignComboboxField field;
+  final RawComboboxField field;
   final String hintText;
 
   @override
@@ -299,7 +299,7 @@ class _Field extends StatelessWidget {
     final grid = context.termGrid;
     final cw = grid.cellWidth;
     final lh = grid.lineHeight;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final tall = grid.ceil(Size(0, floor.height)).height;
     final pad = (tall - lh) / 2;
     // The field is the whole line, margins and prompt included, so a tap
@@ -492,7 +492,7 @@ Future<void> showTermCommandPalette({
   final grid = context.termGrid;
   final navigator = Navigator.of(context, rootNavigator: true);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = designReduceMotionOf(context);
+  final still = rawReduceMotionOf(context);
   final chosen = await navigator.push<RawCommand>(
     RawDialogRoute<RawCommand>(
       barrierDismissible: true,

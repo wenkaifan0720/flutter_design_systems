@@ -141,7 +141,7 @@ Future<T?> _pushSurface<T>(
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       barrierDismissible: barrierDismissible,
       isAlert: isAlert,
       semanticLabel: semanticLabel,

@@ -6,7 +6,7 @@ repository: https://github.com/wenkaifan0720/flutter_design_systems
 environment:
   sdk: ">=3.13.0 <4.0.0"
 
-# Every package, and every package's example app. While the looks move to ui_core 0.6.0 (11-23), a look joins this
+# Every package, and every package's example app. While the looks move to ui_core 0.6.0 (11-20), a look joins this
 # list as its release goes out (a look still on an older ui_core can't resolve beside 0.6.0); then back to the globs.
 workspace:
   - packages/ui_core
@@ -15,6 +15,8 @@ workspace:
   - packages/ui_core_test/example
   - packages/ui_core_review
   - packages/ui_core_review/example
+  - packages/terminal_ui
+  - packages/terminal_ui/example
   # The skill's samples, on the ui_core beside them: a core change that breaks the skill fails CI. This line stays
   # below the packages.
   - skills/ui_core_design_system/samples

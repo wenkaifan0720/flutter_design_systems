@@ -248,7 +248,7 @@ final Map<String, DocExample> _examples = {
   ),
   "containers.dart:1013": (context) {
     final tree = _own(
-      DesignTreeController<String>(
+      RawTreeController<String>(
         roots: const ['lib'],
         childrenOf: (path) =>
             path == 'lib' ? const ['lib/main.dart'] : const [],

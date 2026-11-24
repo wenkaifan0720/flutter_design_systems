@@ -46,19 +46,19 @@ String _keyName(LogicalKeyboardKey key) {
 }
 
 /// Whether keys are shown here: where a keyboard and a pointer reach the
-/// app ([DesignInput.pointer], from [DesignTapTargets]). Under touch there
+/// app ([RawInput.pointer], from [RawTapTargets]). Under touch there
 /// are no keys to press, so the look leaves them out: a [TermKey] draws
 /// nothing, a button's keys and a menu row's step aside, a status line's
 /// keys go, and so do the keys in the bottom line of a palette, a dialog, a
 /// sheet and a toast. A pane's footer is the app's own words: give keys
 /// there only where this is true.
 bool termKeysShown(BuildContext context) =>
-    DesignTapTargets.of(context).inputOn() == DesignInput.pointer;
+    RawTapTargets.of(context).inputOn() == RawInput.pointer;
 
 /// A key or a chord shown beside an action: [keys] in the dim ink, its
 /// letters in the words' face. A screen reader hears the keys as written,
 /// or, made [TermKey.of] an activator, in the reader's words
-/// (`designShortcutLabel`: "Ctrl+K" for `^K`). Under touch it draws nothing
+/// (`rawShortcutLabel`: "Ctrl+K" for `^K`). Under touch it draws nothing
 /// ([termKeysShown]).
 ///
 /// ```dart
@@ -93,7 +93,7 @@ class TermKey extends StatelessWidget {
       // `^K` drawn, "Ctrl+K" heard: a screen reader would spell the caret.
       label: activator == null
           ? keys
-          : designShortcutLabel(context, activator, appleSymbols: false),
+          : rawShortcutLabel(context, activator, appleSymbols: false),
       excludeSemantics: true,
       // A chord reads left to right in every language: `^S`, never `S^`.
       child: Text(

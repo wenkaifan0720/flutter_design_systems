@@ -78,9 +78,9 @@ List<(String, Offset)> _targets(WidgetTester tester) => [
   for (final (p, centre) in _pressables(tester))
     (p.semanticLabel ?? '$centre', centre),
   for (final (_, centre) in _radios(tester)) ('radio at $centre', centre),
-  for (final e in find.byType(DesignValueHandle).hitTestable().evaluate())
+  for (final e in find.byType(RawValueHandle).hitTestable().evaluate())
     (
-      (e.widget as DesignValueHandle).semanticLabel ?? 'handle',
+      (e.widget as RawValueHandle).semanticLabel ?? 'handle',
       tester.getCenter(find.byWidget(e.widget)),
     ),
 ];

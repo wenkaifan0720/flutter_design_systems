@@ -292,7 +292,7 @@ class TermFieldLine extends StatelessWidget {
     final stroke = termStrokeWidth(theme, grid);
     final cw = grid.cellWidth;
     final lh = grid.lineHeight;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final height = math.max(lh, grid.ceil(floor).height);
     final labelText = parts.labelText;
     final raised = TermListOpen.of(context);

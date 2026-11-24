@@ -131,7 +131,7 @@ class TermToggleGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
+    final floor = grid.ceil(RawTapTargets.of(context).floorOn());
     final minimumSize = Size(grid.cols(3), floor.height);
     Widget face(BuildContext context, T value, Set<WidgetState> states) {
       final own = TermStyleOf([style, theme.toggleGroupStyle], states);
@@ -484,7 +484,7 @@ class TermSplitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final grid = context.termGrid;
     final theme = TermTheme.of(context);
-    final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
+    final floor = grid.ceil(RawTapTargets.of(context).floorOn());
     // The arrow's half is at least the floor wide (a finger's five cells),
     // its brackets moved out to the target's edges so the face is the
     // target: `[  ▾  ]` under a finger, `[ ▾ ]` under a pointer.

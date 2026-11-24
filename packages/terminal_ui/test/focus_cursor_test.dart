@@ -278,7 +278,7 @@ List<_Part> _parts(List<VoidCallback> disposers) {
     }),
     part('tree-row', () {
       final tree = own(
-        DesignTreeController<String>(
+        RawTreeController<String>(
           roots: const ['lib', 'test'],
           childrenOf: (path) =>
               path == 'lib' ? const ['lib/main.dart'] : const [],

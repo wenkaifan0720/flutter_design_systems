@@ -92,8 +92,8 @@ class TermCalendar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
-    final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+    final floor = grid.ceil(RawTapTargets.of(context).floorOn());
+    final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final l = RawWidgetsLocalizations.of(context);
     return RawCalendarDatePicker(
@@ -209,7 +209,7 @@ class TermCalendar extends StatelessWidget {
                         : ground,
                     child: Center(
                       child: Text(
-                        termDigits(l, day.date.day).padLeft(2),
+                        day.label.padLeft(2),
                         style: (day.isToday ? theme.boldStyle : theme.textStyle)
                             .copyWith(
                               color: ink,
@@ -663,7 +663,7 @@ class _DateFieldState extends State<_DateField> {
       overlayBuilder: (context, info) {
         final dayWidth = math.max(
           grid.cols(2),
-          DesignTapTargets.of(context).floorOn().width,
+          RawTapTargets.of(context).floorOn().width,
         );
         final width = math.min(
           info.maxSize.width,

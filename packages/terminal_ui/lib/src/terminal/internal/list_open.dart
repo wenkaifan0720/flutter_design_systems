@@ -16,7 +16,7 @@ import 'package:ui_core/ui_core.dart';
 /// the end of the press's turn; the list opens after it, so it knows where
 /// to give it back. Pressed while it has the focus (Return, Space, Down) or
 /// open, it opens or closes at once.
-VoidCallback? termOpener(FocusNode field, DesignOverlayAnchor? anchor) {
+VoidCallback? termOpener(FocusNode field, RawOverlayAnchor? anchor) {
   if (anchor == null) return null;
   return () {
     final menu = anchor.controller;

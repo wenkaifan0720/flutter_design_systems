@@ -30,7 +30,7 @@ class TermTapTarget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final grid = context.termGrid;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     return TapTargetPadding(
       minSize: grid.ceil(floor),
       alignment: alignment,

@@ -22,9 +22,9 @@ void main() {
           home: TermTheme(
             data: TermThemeData.light(),
             child: Builder(
-              builder: (context) => DesignTapTargetScope(
-                targets: DesignTapTargets.of(context)
-                    .copyWith(input: DesignInput.pointer),
+              builder: (context) => RawTapTargetScope(
+                targets: RawTapTargets.of(context)
+                    .copyWith(input: RawInput.pointer),
                 child: Center(
                   child: TermConfirmDialog(
                     title: 'sign out',

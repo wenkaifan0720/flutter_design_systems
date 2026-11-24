@@ -23,7 +23,7 @@ import 'feedback.dart';
 const _clear = Color(0x00000000);
 
 bool _touch(BuildContext context) =>
-    DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+    RawTapTargets.of(context).inputOn() == RawInput.touch;
 
 /// A line of rule in [color], [stroke] thick, across the middle of
 /// whatever box it is given.
@@ -683,7 +683,7 @@ class TermScrollArea extends StatelessWidget {
     required this.controller,
     required this.child,
     this.axis = Axis.vertical,
-    this.visibility = DesignScrollbarVisibility.auto,
+    this.visibility = RawScrollbarVisibility.auto,
     this.semanticLabel,
     this.style,
   });
@@ -698,7 +698,7 @@ class TermScrollArea extends StatelessWidget {
   final Axis axis;
 
   /// When the bar shows.
-  final DesignScrollbarVisibility visibility;
+  final RawScrollbarVisibility visibility;
 
   /// What a screen reader calls the area.
   final String? semanticLabel;
@@ -1114,7 +1114,7 @@ class TermTree<T extends Object> extends StatelessWidget {
 
   /// The nodes, which are open and which chosen. The caller makes it,
   /// keeps it and disposes it.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A node's words.
   final String Function(T node) labelOf;
@@ -1137,8 +1137,8 @@ class TermTree<T extends Object> extends StatelessWidget {
       listenable: controller,
       builder: (context, _) {
         final byNode = {for (final r in controller.rows) r.node: r};
-        bool last(DesignTreeRow<T> r) => r.position == r.siblingCount - 1;
-        String guides(DesignTreeRow<T> row) {
+        bool last(RawTreeRow<T> r) => r.position == r.siblingCount - 1;
+        String guides(RawTreeRow<T> row) {
           if (row.depth == 0) return '';
           final out = <String>[last(row) ? '└─' : '├─'];
           var up = row.parent == null ? null : byNode[row.parent];
@@ -1149,7 +1149,7 @@ class TermTree<T extends Object> extends StatelessWidget {
           return out.reversed.join();
         }
 
-        return DesignTree<T>(
+        return RawTree<T>(
           controller: controller,
           labelOf: labelOf,
           onActivate: onActivate,

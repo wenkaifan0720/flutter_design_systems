@@ -447,7 +447,7 @@ String? _meant(String query, Iterable<String> projects) {
   String? best;
   int? score;
   for (final name in projects) {
-    final s = designMatchScore(name, q);
+    final s = rawMatchScore(name, q);
     if (s != null && (score == null || s > score)) {
       best = name;
       score = s;

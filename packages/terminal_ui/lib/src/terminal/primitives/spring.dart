@@ -60,7 +60,7 @@ class _TermSpringState extends State<TermSpring>
   void didUpdateWidget(TermSpring oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.target != widget.target) {
-      final policy = DesignMotionPolicy.of(context);
+      final policy = RawMotionPolicy.of(context);
       if (widget.focus && policy.reduceMotion) {
         _value.value = widget.target;
         return;
@@ -139,7 +139,7 @@ class _TermStepperState extends State<TermStepper>
   // Followed in build: iOS's Reduce Motion changing comes as a build alone,
   // with no didChangeDependencies.
   void _sync() {
-    final still = designReduceMotionOf(context);
+    final still = rawReduceMotionOf(context);
     final run =
         widget.running && !still && TickerMode.valuesOf(context).enabled;
     if (run && !_ticker.isActive) {

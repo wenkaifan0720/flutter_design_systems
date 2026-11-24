@@ -58,10 +58,10 @@ Widget kitApp({
             builder: (context) {
               // A phone's width is reached by a finger, a desk's by a pointer.
               final narrow = MediaQuery.sizeOf(context).width < 600;
-              return DesignTapTargetScope(
-                targets: DesignTapTargets.of(context).copyWith(
-                  input: narrow ? DesignInput.touch : DesignInput.pointer,
-                ),
+              return RawTapTargetScope(
+                targets: RawTapTargets.of(
+                  context,
+                ).copyWith(input: narrow ? RawInput.touch : RawInput.pointer),
                 child: TermToaster(
                   child: ColoredBox(color: data.background, child: child!),
                 ),

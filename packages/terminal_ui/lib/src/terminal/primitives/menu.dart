@@ -142,7 +142,7 @@ class TermMenuRow extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final cw = grid.cellWidth;
-    final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+    final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
     return SizedBox(
       height: grid.lineHeight * (touch ? 2 : 1),
       child: Padding(

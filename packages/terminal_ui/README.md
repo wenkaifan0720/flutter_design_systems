@@ -273,7 +273,7 @@ confirmation's `proceed? [y/N]` and its keys, a file field's `browse`, a
 refresh's `pull to refresh`, the palette's colour names) come from
 `TermLocalizations`, in English, Arabic and German. Nothing needs setting
 up: in an Arabic or German app they follow the app's locale, beside
-ui_core's `DesignLocalizations`, whose words cover 30 languages. Words an
+ui_core's `RawWidgetsLocalizations`, whose words cover 30 languages. Words an
 app passes, such as a dialog's `cancelLabel`, are its own; left at their
 English defaults, they follow the locale too. For another language, extend
 `DefaultTermLocalizations` and add a delegate for it to
@@ -283,7 +283,7 @@ In a right-to-left locale the layout mirrors: panes, keys, menus and
 charts read from the right, and Hebrew draws in Liberation Mono on the
 same grid.
 
-Figures follow the locale as well, through `DesignLocalizations`: dates,
+Figures follow the locale as well, through `RawWidgetsLocalizations`: dates,
 times, the number field and the charts (a bar's value, a chart's scale and
 readout, a sparkline's reading) write the reader's digits and separators,
 Arabic-Indic digits in Arabic and `2,5` in German.

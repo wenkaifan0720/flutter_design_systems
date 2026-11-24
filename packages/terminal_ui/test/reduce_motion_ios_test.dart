@@ -1,7 +1,7 @@
 // Reduce Motion as iOS sets it. Flutter gives iOS's setting only as the
 // platform's accessibility features (`reduceMotion`), never as MediaQuery's
 // `disableAnimations`, which Android and the web set. Terminal reads both,
-// through ui_core's `designReduceMotionOf`: with the iOS flag alone a spring
+// through ui_core's `rawReduceMotionOf`: with the iOS flag alone a spring
 // settles without overshoot, the keyboard's focus is cut (no fade), the
 // spinner and the caret stand still, and each follows the flag as it
 // changes, with no app rebuild.

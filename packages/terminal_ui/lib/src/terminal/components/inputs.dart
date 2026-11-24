@@ -561,7 +561,7 @@ class TermCombobox<T extends Object> extends StatelessWidget {
 
   /// Looks the options up for the words typed, in place of filtering
   /// [options]; it may be async.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs; null: at every change.
   final Duration? debounceDuration;
@@ -868,7 +868,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
 
   /// Looks the suggestions up for the words typed, in place of filtering
   /// [options]; it may be async.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs; null: at every change.
   final Duration? debounceDuration;

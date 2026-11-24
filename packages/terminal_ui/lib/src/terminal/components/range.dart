@@ -114,7 +114,7 @@ class _TermSliderState extends State<TermSlider> {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
+    final floor = grid.ceil(RawTapTargets.of(context).floorOn());
     final change = widget.onChanged;
     final span = widget.max - widget.min;
     final f = span <= 0 ? 0.0 : (widget.value - widget.min) / span;
@@ -165,7 +165,7 @@ class _TermSliderState extends State<TermSlider> {
           onHorizontalDragCancel: change == null
               ? null
               : () => setState(() => _dragging = false),
-          child: DesignValueHandle(
+          child: RawValueHandle(
             value: widget.value,
             onChanged: change,
             min: widget.min,
@@ -289,7 +289,7 @@ class TermRangeSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
+    final floor = grid.ceil(RawTapTargets.of(context).floorOn());
     // A thumb's target: the floor wide, its face one cell in the middle.
     final target = Size(math.max(floor.width, grid.cellWidth), floor.height);
     return RawRangeSlider(
@@ -544,7 +544,7 @@ class _TermRatingState extends State<TermRating> {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
       final grid = TermTheme.of(context).grid;
-      final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+      final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
       var whole = grid.cols((touch ? 4 : 2) * widget.max + 1);
       if (widget.showCount) {
         whole += grid.cellWidth + grid.widthOf('${widget.value}/${widget.max}');
@@ -562,8 +562,8 @@ class _TermRatingState extends State<TermRating> {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final cw = grid.cellWidth;
-    final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
-    final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
+    final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
+    final floor = grid.ceil(RawTapTargets.of(context).floorOn());
     // A mark and its gap; a finger's are wider.
     final per = touch ? 4 : 2;
     final change = widget.onChanged;

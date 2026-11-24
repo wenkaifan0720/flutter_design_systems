@@ -41,9 +41,8 @@ void main() {
     await tester.pumpWidget(
       _host(
         Builder(
-          builder: (context) => DesignTapTargetScope(
-            targets: DesignTapTargets.of(context)
-                .copyWith(input: DesignInput.touch),
+          builder: (context) => RawTapTargetScope(
+            targets: RawTapTargets.of(context).copyWith(input: RawInput.touch),
             child: const TermTextField.inline(labelText: 'name', labelCols: 8),
           ),
         ),

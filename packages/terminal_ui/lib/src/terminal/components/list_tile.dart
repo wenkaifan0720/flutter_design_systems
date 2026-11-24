@@ -141,7 +141,7 @@ class TermListTile extends StatelessWidget {
     final grid = context.termGrid;
     final cw = grid.cellWidth;
     final lh = grid.lineHeight;
-    final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+    final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
     final height = touch ? lh * 2 : lh;
     final interactive = onTap != null && enabled;
     // Chosen in a pane without the keyboard: a faint shade, not the bright

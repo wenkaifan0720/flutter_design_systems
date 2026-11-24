@@ -340,7 +340,7 @@ class TermPopover extends StatelessWidget {
   });
 
   /// What opens it: give the anchor's `toggle` to its press.
-  final DesignOverlayAnchorBuilder anchorBuilder;
+  final RawOverlayAnchorBuilder anchorBuilder;
 
   /// What it shows.
   final WidgetBuilder builder;
@@ -364,7 +364,8 @@ class TermPopover extends StatelessWidget {
     dampingRatio: TermMotion.reveal.dampingRatio,
     stiffness: TermMotion.reveal.stiffness,
     semanticLabel: semanticLabel ?? title,
-    anchorBuilder: anchorBuilder,
+    anchorBuilder: (context, anchor) =>
+        _AnchorOpen(open: anchor.isOpen, child: anchorBuilder(context, anchor)),
     overlayBuilder: (context, info) => _surface(
       context,
       info,
@@ -440,7 +441,10 @@ class TermHoverCard extends StatelessWidget {
 /// tip, Escape hides it, and one shows at a time. ui_core's
 /// [RawTooltipFocusFix] shows it on the keyboard's focus too, and
 /// [RawTooltipPlacement] sets it on the line above, or below where there is
-/// no line above. Terminal paints the block and its reveal.
+/// no line above. Terminal paints the block and its reveal. While a
+/// [TermMenu] or a [TermPopover] that [child] opened is open, the tip shows
+/// nothing over it, as Material's `PopupMenuButton` hides its tip as its
+/// menu opens.
 ///
 /// ```dart
 /// TermTooltip(message: 'rerun (r)', child: TermIconButton(glyph: 'r', semanticLabel: 'rerun', onPressed: rerun))
@@ -470,10 +474,14 @@ class TermTooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.isEmpty) return child;
+    // Over the menu or the popover its control opened, no tip: a press by a
+    // screen reader, or by the web's semantics, brings no pointer down to
+    // stop the tip a resting pointer asked for.
+    final covered = _AnchorOpen.of(context);
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.tooltipStyle], const {});
-    final spring = DesignMotionPolicy.of(context)
+    final spring = RawMotionPolicy.of(context)
         .effects(dampingRatio: 1, stiffness: 1600);
     // The tip comes and goes on its own spring. RawTooltip's animation says
     // only whether it shows: at once when it shows, and while it hides, as
@@ -501,7 +509,7 @@ class TermTooltip extends StatelessWidget {
           positionDelegate: positionDelegate,
           tooltipBuilder: (context, shown) => ExcludeSemantics(
             child: _TipPresence(
-              shown: shown,
+              shown: covered ? kAlwaysDismissedAnimation : shown,
               spring: spring,
               builder: (context, presence) => TermReveal(
                 presence: presence,
@@ -540,7 +548,7 @@ class TermTooltip extends StatelessWidget {
   // How long [spring] takes to close the tip from open: until its
   // simulation is done, to the millisecond above.
   static Duration _settleTime(SpringDescription spring) {
-    final closing = designSpringSimulation(spring, from: 1, to: 0);
+    final closing = rawSpringSimulation(spring, from: 1, to: 0);
     var ms = 1;
     while (ms < 5000 && !closing.isDone(ms / 1000)) {
       ms++;
@@ -557,6 +565,20 @@ class TermTooltip extends StatelessWidget {
 
 // A tip's presence, 0 to 1, on [spring]: toward 1 while [shown] runs
 // forward or has completed, toward 0 while it runs back.
+// Tells the controls round which a [TermMenu] or a [TermPopover] stands that
+// it is open, so a [TermTooltip] there shows nothing over it.
+class _AnchorOpen extends InheritedWidget {
+  const _AnchorOpen({required this.open, required super.child});
+
+  final bool open;
+
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_AnchorOpen>()?.open ?? false;
+
+  @override
+  bool updateShouldNotify(_AnchorOpen oldWidget) => open != oldWidget.open;
+}
+
 class _TipPresence extends StatefulWidget {
   const _TipPresence({
     required this.shown,
@@ -678,7 +700,7 @@ class TermMenu extends StatelessWidget {
   });
 
   /// What opens it: give the anchor's `toggle` to its press.
-  final DesignOverlayAnchorBuilder anchorBuilder;
+  final RawOverlayAnchorBuilder anchorBuilder;
 
   /// Its items.
   final List<TermMenuItem> items;
@@ -703,7 +725,10 @@ class TermMenu extends StatelessWidget {
       dampingRatio: TermMotion.reveal.dampingRatio,
       stiffness: TermMotion.reveal.stiffness,
       semanticLabel: semanticLabel,
-      anchorBuilder: anchorBuilder,
+      anchorBuilder: (context, anchor) => _AnchorOpen(
+        open: anchor.isOpen,
+        child: anchorBuilder(context, anchor),
+      ),
       overlayBuilder: (context, info) => TermMenuReveal(
         info: info,
         child: SizedBox(

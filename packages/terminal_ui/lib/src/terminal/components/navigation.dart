@@ -370,7 +370,7 @@ class TermTopBar extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final cw = grid.cellWidth;
-    final height = grid.ceil(DesignTapTargets.of(context).floorOn()).height;
+    final height = grid.ceil(RawTapTargets.of(context).floorOn()).height;
     final own = TermStyleOf([style, theme.topBarStyle], const {});
     final titleStyle = theme.boldStyle.copyWith(
       color: own.foreground ?? theme.accent,
@@ -590,7 +590,7 @@ class TermNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final height = grid.ceil(DesignTapTargets.of(context).floorOn()).height;
+    final height = grid.ceil(RawTapTargets.of(context).floorOn()).height;
     final lines = height < grid.lineHeight ? grid.lineHeight : height;
     final bar = TermStyleOf([style, theme.navigationBarStyle], const {});
     Widget face(int i, String text, Set<WidgetState> states, {int? lead}) =>

@@ -314,7 +314,7 @@ List<Color> _inks(TermThemeData theme, List<TermSeries> series) {
 /// cell: the most and least values dim at the start, a rule along the
 /// foot, [xLabels] under it, and a key of each series' `●` and name.
 ///
-/// The behaviour is ui_core's [DesignChart]: a pointer over the plot picks
+/// The behaviour is ui_core's [RawChart]: a pointer over the plot picks
 /// the point nearest it along the foot (a finger scrubs, a tap holds), and
 /// the keys pick too (one tab stop: Left and Right along a series, Up and
 /// Down between series, Home and End, Escape), the point's column shaded
@@ -411,14 +411,14 @@ class TermLineChart extends StatelessWidget {
             alignment: AlignmentDirectional.centerStart,
             child: SizedBox(
               width: axisWidth + plotWidth,
-              child: DesignChart(
+              child: RawChart(
                 series: [
                   for (final s in series)
-                    DesignChartSeries(
+                    RawChartSeries(
                       label: s.label,
                       points: [
                         for (final (i, v) in s.values.indexed)
-                          DesignChartPoint(i.toDouble(), v),
+                          RawChartPoint(i.toDouble(), v),
                       ],
                     ),
                 ],

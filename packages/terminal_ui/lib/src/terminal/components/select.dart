@@ -245,7 +245,7 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
 
     // The field, its list open or not ([anchor] null: an off select, which
     // opens nothing and so hangs no list at all).
-    Widget field(DesignOverlayAnchor? anchor) => TermListOpen(
+    Widget field(RawOverlayAnchor? anchor) => TermListOpen(
       open: anchor?.isOpen ?? false,
       child: RawInputDecorator(
         labelText: widget.labelText,

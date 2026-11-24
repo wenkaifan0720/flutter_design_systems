@@ -316,7 +316,7 @@ class _TermTextFieldState extends State<TermTextField> {
     // floor), its words on the middle line: the padding round them is
     // still the field's, so a tap anywhere in the frame reaches it.
     final lh = grid.lineHeight;
-    final floor = grid.ceil(DesignTapTargets.of(context).floorOn()).height;
+    final floor = grid.ceil(RawTapTargets.of(context).floorOn()).height;
     final multiline = widget.lines > 1;
     final tall = widget.inline || !widget.framed
         ? math.max(lh, floor)
@@ -335,7 +335,7 @@ class _TermTextFieldState extends State<TermTextField> {
     // inside the label and the hint. So Flutter's caret has no width and is
     // never shown, and the block is painted behind the words on the cell
     // the caret is at. Under Reduce Motion it holds still.
-    final steady = designReduceMotionOf(context);
+    final steady = rawReduceMotionOf(context);
     if (steady != _steady) {
       _steady = steady;
       // After this build: the notifier may have listeners painting.
@@ -599,7 +599,7 @@ class _TermTextFieldState extends State<TermTextField> {
         // With add-ons the frame is one control: a tap on an add-on puts
         // the caret in the words, and the frame is focused while anything
         // in it is.
-        return DesignInputGroup(
+        return RawInputGroup(
           focusNode: _focus,
           enabled: enabled,
           isError: hasError,

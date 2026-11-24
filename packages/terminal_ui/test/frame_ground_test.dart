@@ -158,9 +158,9 @@ void main() {
         _host(
           t,
           Builder(
-            builder: (context) => DesignTapTargetScope(
-              targets: DesignTapTargets.of(context)
-                  .copyWith(input: DesignInput.pointer),
+            builder: (context) => RawTapTargetScope(
+              targets: RawTapTargets.of(context)
+                  .copyWith(input: RawInput.pointer),
               child: TermSelect<String>(
                 labelText: 'assignee',
                 value: 'maya',
@@ -204,9 +204,9 @@ void main() {
         _host(
           t,
           Builder(
-            builder: (context) => DesignTapTargetScope(
-              targets: DesignTapTargets.of(context)
-                  .copyWith(input: DesignInput.pointer),
+            builder: (context) => RawTapTargetScope(
+              targets: RawTapTargets.of(context)
+                  .copyWith(input: RawInput.pointer),
               child: TermSelect<String>.inline(
                 labelText: 'theme',
                 value: 'day',

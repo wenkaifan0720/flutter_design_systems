@@ -39,128 +39,128 @@ import 'theme.dart';
 /// ```dart
 /// termInventory.verify();
 /// ```
-const DesignInventory termInventory = DesignInventory(
+const RawInventory termInventory = RawInventory(
   look: 'Terminal',
-  entries: <DesignInventoryEntry>[
+  entries: <RawInventoryEntry>[
     // Actions
-    DesignInventoryEntry.present('Button', _button),
-    DesignInventoryEntry.present('IconButton', _iconButton),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('Button', _button),
+    RawInventoryEntry.present('IconButton', _iconButton),
+    RawInventoryEntry.absent(
       'FloatingActionButton',
       'a terminal floats nothing over its text: the screen\'s main action '
           'is the filled [ button ] in its top bar or at its foot, with its '
           'key in the status line',
     ),
-    DesignInventoryEntry.present('ButtonGroup', _buttonGroup),
-    DesignInventoryEntry.present('ToggleGroup', _toggleGroup),
-    DesignInventoryEntry.present('SplitButton', _splitButton),
-    DesignInventoryEntry.present('Link', _link),
-    DesignInventoryEntry.present('Kbd', _kbd),
+    RawInventoryEntry.present('ButtonGroup', _buttonGroup),
+    RawInventoryEntry.present('ToggleGroup', _toggleGroup),
+    RawInventoryEntry.present('SplitButton', _splitButton),
+    RawInventoryEntry.present('Link', _link),
+    RawInventoryEntry.present('Kbd', _kbd),
     // Inputs
-    DesignInventoryEntry.present('TextField', _textField),
-    DesignInventoryEntry.present('TextArea', _textArea),
-    DesignInventoryEntry.present('SearchField', _searchField),
-    DesignInventoryEntry.present('PasswordField', _passwordField),
-    DesignInventoryEntry.present('InputGroup', _inputGroup),
-    DesignInventoryEntry.present('InputOtp', _inputOtp),
-    DesignInventoryEntry.present('NumberField', _numberField),
-    DesignInventoryEntry.present('Select', _select),
-    DesignInventoryEntry.present('Combobox', _combobox),
-    DesignInventoryEntry.present('MultiSelect', _multiSelect),
-    DesignInventoryEntry.present('Checkbox', _checkbox),
-    DesignInventoryEntry.present('RadioGroup', _radioGroup),
-    DesignInventoryEntry.present('Switch', _switch),
-    DesignInventoryEntry.present('Slider', _slider),
-    DesignInventoryEntry.present('RangeSlider', _rangeSlider),
-    DesignInventoryEntry.present('SegmentedButton', _segmented),
-    DesignInventoryEntry.present('Chip', _chip),
-    DesignInventoryEntry.present('Rating', _rating),
-    DesignInventoryEntry.present('FileUpload', _fileUpload),
-    DesignInventoryEntry.present('DatePicker', _datePicker),
-    DesignInventoryEntry.present('DateRangePicker', _dateRangePicker),
-    DesignInventoryEntry.present('TimePicker', _timePicker),
-    DesignInventoryEntry.present('Calendar', _calendar),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('TextField', _textField),
+    RawInventoryEntry.present('TextArea', _textArea),
+    RawInventoryEntry.present('SearchField', _searchField),
+    RawInventoryEntry.present('PasswordField', _passwordField),
+    RawInventoryEntry.present('InputGroup', _inputGroup),
+    RawInventoryEntry.present('InputOtp', _inputOtp),
+    RawInventoryEntry.present('NumberField', _numberField),
+    RawInventoryEntry.present('Select', _select),
+    RawInventoryEntry.present('Combobox', _combobox),
+    RawInventoryEntry.present('MultiSelect', _multiSelect),
+    RawInventoryEntry.present('Checkbox', _checkbox),
+    RawInventoryEntry.present('RadioGroup', _radioGroup),
+    RawInventoryEntry.present('Switch', _switch),
+    RawInventoryEntry.present('Slider', _slider),
+    RawInventoryEntry.present('RangeSlider', _rangeSlider),
+    RawInventoryEntry.present('SegmentedButton', _segmented),
+    RawInventoryEntry.present('Chip', _chip),
+    RawInventoryEntry.present('Rating', _rating),
+    RawInventoryEntry.present('FileUpload', _fileUpload),
+    RawInventoryEntry.present('DatePicker', _datePicker),
+    RawInventoryEntry.present('DateRangePicker', _dateRangePicker),
+    RawInventoryEntry.present('TimePicker', _timePicker),
+    RawInventoryEntry.present('Calendar', _calendar),
+    RawInventoryEntry.absent(
       'WheelPicker',
       'a wheel spins values past a lens, which a grid of fixed cells '
           'cannot draw: a value is typed (a time steps with the arrows) or '
           'chosen from a list',
     ),
-    DesignInventoryEntry.present('ColorPicker', _colorPicker),
-    DesignInventoryEntry.present('FormField', _formField),
+    RawInventoryEntry.present('ColorPicker', _colorPicker),
+    RawInventoryEntry.present('FormField', _formField),
     // Navigation
-    DesignInventoryEntry.present('AppBar', _appBar),
-    DesignInventoryEntry.present('NavigationBar', _navigationBar),
-    DesignInventoryEntry.present('NavigationRail', _navigationRail),
-    DesignInventoryEntry.present('NavigationDrawer', _sideBar),
-    DesignInventoryEntry.present('TabBar', _tabBar),
-    DesignInventoryEntry.present('Breadcrumb', _breadcrumb),
-    DesignInventoryEntry.present('Pagination', _pagination),
-    DesignInventoryEntry.present('StepProgress', _steps),
-    DesignInventoryEntry.present('PageDots', _pageDots),
-    DesignInventoryEntry.present('MenuBar', _menuBar),
-    DesignInventoryEntry.present('Command', _command),
-    DesignInventoryEntry.present('Scaffold', _scaffold),
+    RawInventoryEntry.present('AppBar', _appBar),
+    RawInventoryEntry.present('NavigationBar', _navigationBar),
+    RawInventoryEntry.present('NavigationRail', _navigationRail),
+    RawInventoryEntry.present('NavigationDrawer', _sideBar),
+    RawInventoryEntry.present('TabBar', _tabBar),
+    RawInventoryEntry.present('Breadcrumb', _breadcrumb),
+    RawInventoryEntry.present('Pagination', _pagination),
+    RawInventoryEntry.present('StepProgress', _steps),
+    RawInventoryEntry.present('PageDots', _pageDots),
+    RawInventoryEntry.present('MenuBar', _menuBar),
+    RawInventoryEntry.present('Command', _command),
+    RawInventoryEntry.present('Scaffold', _scaffold),
     // Containers
-    DesignInventoryEntry.present('Card', _card),
-    DesignInventoryEntry.present('ListTile', _listTile),
-    DesignInventoryEntry.present('ListSection', _listSection),
-    DesignInventoryEntry.present('SectionHeader', _sectionHeader),
-    DesignInventoryEntry.present('Disclosure', _disclosure),
-    DesignInventoryEntry.present('Table', _table),
-    DesignInventoryEntry.present('DataTable', _dataTable),
-    DesignInventoryEntry.present('Divider', _divider),
-    DesignInventoryEntry.present('ScrollArea', _scrollArea),
-    DesignInventoryEntry.present('Resizable', _resizable),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('Card', _card),
+    RawInventoryEntry.present('ListTile', _listTile),
+    RawInventoryEntry.present('ListSection', _listSection),
+    RawInventoryEntry.present('SectionHeader', _sectionHeader),
+    RawInventoryEntry.present('Disclosure', _disclosure),
+    RawInventoryEntry.present('Table', _table),
+    RawInventoryEntry.present('DataTable', _dataTable),
+    RawInventoryEntry.present('Divider', _divider),
+    RawInventoryEntry.present('ScrollArea', _scrollArea),
+    RawInventoryEntry.present('Resizable', _resizable),
+    RawInventoryEntry.absent(
       'CarouselView',
       'a carousel slides cards sideways under a finger, and Terminal\'s '
           'structure never travels: a set of pages is a list, or tabs with '
           'page dots',
     ),
-    DesignInventoryEntry.present('ReorderableListView', _reorderable),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('ReorderableListView', _reorderable),
+    RawInventoryEntry.absent(
       'SwipeActions',
       'swiping a row aside moves the structure, which Terminal never '
           'does: a row\'s actions are its keys and a menu on the row',
     ),
-    DesignInventoryEntry.present('RefreshIndicator', _refresh),
-    DesignInventoryEntry.present('TreeView', _tree),
-    DesignInventoryEntry.present('Timeline', _timeline),
-    DesignInventoryEntry.present('Avatar', _avatar),
-    DesignInventoryEntry.present('AvatarGroup', _avatarGroup),
-    DesignInventoryEntry.present('Badge', _badge),
-    DesignInventoryEntry.present('Tag', _tag),
-    DesignInventoryEntry.present('Media', _media),
-    DesignInventoryEntry.present('EmptyState', _emptyState),
-    DesignInventoryEntry.present('DescriptionList', _descriptionList),
+    RawInventoryEntry.present('RefreshIndicator', _refresh),
+    RawInventoryEntry.present('TreeView', _tree),
+    RawInventoryEntry.present('Timeline', _timeline),
+    RawInventoryEntry.present('Avatar', _avatar),
+    RawInventoryEntry.present('AvatarGroup', _avatarGroup),
+    RawInventoryEntry.present('Badge', _badge),
+    RawInventoryEntry.present('Tag', _tag),
+    RawInventoryEntry.present('Media', _media),
+    RawInventoryEntry.present('EmptyState', _emptyState),
+    RawInventoryEntry.present('DescriptionList', _descriptionList),
     // Overlays
-    DesignInventoryEntry.present('Dialog', _dialog),
-    DesignInventoryEntry.present('BottomSheet', _bottomSheet),
-    DesignInventoryEntry.present('Sheet', _sideSheet),
-    DesignInventoryEntry.present('ActionSheet', _actionSheet),
-    DesignInventoryEntry.present('Popover', _popover),
-    DesignInventoryEntry.present('HoverCard', _hoverCard),
-    DesignInventoryEntry.present('Tooltip', _tooltip),
-    DesignInventoryEntry.present('Menu', _menu),
-    DesignInventoryEntry.present('SnackBar', _snackBar),
-    DesignInventoryEntry.present('Banner', _banner),
+    RawInventoryEntry.present('Dialog', _dialog),
+    RawInventoryEntry.present('BottomSheet', _bottomSheet),
+    RawInventoryEntry.present('Sheet', _sideSheet),
+    RawInventoryEntry.present('ActionSheet', _actionSheet),
+    RawInventoryEntry.present('Popover', _popover),
+    RawInventoryEntry.present('HoverCard', _hoverCard),
+    RawInventoryEntry.present('Tooltip', _tooltip),
+    RawInventoryEntry.present('Menu', _menu),
+    RawInventoryEntry.present('SnackBar', _snackBar),
+    RawInventoryEntry.present('Banner', _banner),
     // Feedback
-    DesignInventoryEntry.present('LinearProgressIndicator', _progress),
-    DesignInventoryEntry.present('CircularProgressIndicator', _spinner),
-    DesignInventoryEntry.present('Skeleton', _skeleton),
-    DesignInventoryEntry.present('StatusView', _statusView),
-    DesignInventoryEntry.present('Meter', _meter),
+    RawInventoryEntry.present('LinearProgressIndicator', _progress),
+    RawInventoryEntry.present('CircularProgressIndicator', _spinner),
+    RawInventoryEntry.present('Skeleton', _skeleton),
+    RawInventoryEntry.present('StatusView', _statusView),
+    RawInventoryEntry.present('Meter', _meter),
     // Charts
-    DesignInventoryEntry.present('LineChart', _lineChart),
-    DesignInventoryEntry.present('BarChart', _barChart),
-    DesignInventoryEntry.present('AreaChart', _areaChart),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('LineChart', _lineChart),
+    RawInventoryEntry.present('BarChart', _barChart),
+    RawInventoryEntry.present('AreaChart', _areaChart),
+    RawInventoryEntry.absent(
       'PieChart',
       'slices are angles, and a text grid draws lengths: a share is a bar '
           'of blocks, which reads to the eighth of a cell',
     ),
-    DesignInventoryEntry.present('Sparkline', _sparkline),
+    RawInventoryEntry.present('Sparkline', _sparkline),
   ],
 );
 
@@ -794,8 +794,8 @@ const _src = _Node('src', [
   _Node('theme.dart'),
 ]);
 
-Widget _tree(BuildContext context) => _Held<DesignTreeController<_Node>>(
-  () => DesignTreeController<_Node>(
+Widget _tree(BuildContext context) => _Held<RawTreeController<_Node>>(
+  () => RawTreeController<_Node>(
     roots: const [_src, _Node('pubspec.yaml')],
     childrenOf: (n) => n.children,
     expanded: [_src, _src.children.first],
@@ -1065,7 +1065,7 @@ class TermInventoryGallery extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: termInventory,
       controller: controller,
       padding: EdgeInsets.symmetric(
@@ -1105,7 +1105,7 @@ class TermInventoryGallery extends StatelessWidget {
                   Text(
                     reason == null
                         ? 'missing'
-                        : DesignInventory.absentLabel(reason),
+                        : RawInventory.absentLabel(reason),
                     style: theme.dimStyle,
                   ),
               ],

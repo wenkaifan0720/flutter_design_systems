@@ -188,7 +188,7 @@ class TermPagination extends StatelessWidget {
       builder: (context, c) {
         // Every page a target a finger can hit (or a pointer's line): when
         // the row of them would not fit, the count stands in for them.
-        final floor = grid.ceil(DesignTapTargets.of(context).floorOn()).width;
+        final floor = grid.ceil(RawTapTargets.of(context).floorOn()).width;
         double slot(int? p) => p == null
             ? grid.cols(3)
             : math.max(floor, grid.cols('$p'.length + 3));
@@ -914,7 +914,7 @@ class _RailColumn extends StatelessWidget {
 /// [TermSideBar] pane at a desk. It goes by its own width (under 600, to
 /// 1100, past it), so a shell in a pane of a wider screen fits the pane.
 ///
-/// The behaviour is ui_core's `DesignAdaptiveShell`: the destinations are
+/// The behaviour is ui_core's `RawAdaptiveShell`: the destinations are
 /// one tab stop, on the current one, the arrows moving along them (Left
 /// and Right in the window list, Up and Down in the rail and the side
 /// pane), Enter or Space going there; F6 moves the keys between the
@@ -979,6 +979,12 @@ class TermScaffold extends StatelessWidget {
   Widget _shell(BuildContext context, double width) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
+    // Along the screen's foot the status line is a bar, as a phone's window
+    // list is: the toasts stand above it (a line clear, the toaster's
+    // padding), never on it over the page's last line.
+    final footLine = statusLine == null
+        ? null
+        : RawToasterKeepClear(child: statusLine);
     if (destinations.isEmpty) {
       return ColoredBox(
         color: theme.background,
@@ -987,7 +993,7 @@ class TermScaffold extends StatelessWidget {
           children: [
             ?topBar,
             Expanded(child: body),
-            ?statusLine,
+            ?footLine,
           ],
         ),
       );
@@ -995,16 +1001,16 @@ class TermScaffold extends StatelessWidget {
     // Terminal's widths, not Material's classes: the side pane's 26 cells
     // and a page beside them fit from 1100.
     final mode = width < 600
-        ? DesignNavigationMode.bar
+        ? RawNavigationMode.bar
         : width < 1100
-        ? DesignNavigationMode.rail
-        : DesignNavigationMode.sidebar;
-    final bar = mode == DesignNavigationMode.bar;
-    final shell = DesignAdaptiveShell(
+        ? RawNavigationMode.rail
+        : RawNavigationMode.sidebar;
+    final bar = mode == RawNavigationMode.bar;
+    final shell = RawAdaptiveShell(
       mode: mode,
       destinations: [
         for (final d in destinations)
-          DesignNavigationDestination(
+          RawNavigationDestination(
             label: d.badge == null ? d.label : '${d.label}, ${d.badge}',
             // Terminal draws its places in characters (a glyph, a number,
             // a name); no icon is drawn.
@@ -1018,17 +1024,17 @@ class TermScaffold extends StatelessWidget {
       navigationBuilder: (context, details) => TermShellDestinations(
         destinations: details.destinations,
         child: switch (details.mode) {
-          DesignNavigationMode.bar => TermNavigationBar(
+          RawNavigationMode.bar => TermNavigationBar(
             destinations: destinations,
             selectedIndex: selectedIndex,
             onDestinationSelected: onDestinationSelected,
           ),
-          DesignNavigationMode.rail => TermNavigationRail(
+          RawNavigationMode.rail => TermNavigationRail(
             destinations: destinations,
             selectedIndex: selectedIndex,
             onDestinationSelected: onDestinationSelected,
           ),
-          DesignNavigationMode.sidebar => SizedBox(
+          RawNavigationMode.sidebar => SizedBox(
             width: grid.cols(26),
             child: TermSideBar(
               title: title,
@@ -1059,7 +1065,7 @@ class TermScaffold extends StatelessWidget {
         children: [
           ?topBar,
           Expanded(child: shell),
-          if (!bar) ?statusLine,
+          if (!bar) ?footLine,
         ],
       ),
     );
