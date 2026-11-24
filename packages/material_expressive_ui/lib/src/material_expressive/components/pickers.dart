@@ -1230,46 +1230,85 @@ class _MonthsNavigation extends StatelessWidget {
       constraints: const BoxConstraints(
         minHeight: DatePickerBehavior.monthYearHeight,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Flexible(
-            child: _YearMenuButton(
-              label: label,
-              expanded: yearsOpen,
-              color: colors.navigation,
-              onTap: onYears,
-            ),
-          ),
-          if (!yearsOpen)
-            // CompositionLocalProvider(LocalContentColor provides
-            // navigationContentColor) around the arrows.
-            IconTheme.merge(
-              data: IconThemeData(color: colors.navigation),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  ExpressiveIconButton(
-                    _monthBack(context),
-                    onPressed: previous,
-                    semanticLabel: ExpressiveLocalizations.of(context)
-                        .previousMonth,
-                    tooltip: ExpressiveLocalizations.of(context).previousMonth,
-                  ),
-                  ExpressiveIconButton(
-                    _monthOn(context),
-                    onPressed: next,
-                    semanticLabel: ExpressiveLocalizations.of(context)
-                        .nextMonth,
-                    tooltip: ExpressiveLocalizations.of(context).nextMonth,
-                  ),
-                ],
+      // The row is as wide as the grid under it (the same padding), so its
+      // sevenths are the grid's columns.
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Flexible(
+              child: _YearMenuButton(
+                label: label,
+                expanded: yearsOpen,
+                color: colors.navigation,
+                onTap: onYears,
               ),
             ),
-        ],
+            if (!yearsOpen)
+              // CompositionLocalProvider(LocalContentColor provides
+              // navigationContentColor) around the arrows.
+              IconTheme.merge(
+                data: IconThemeData(color: colors.navigation),
+                child: _MonthArrows(
+                  column: constraints.maxWidth / DateTime.daysPerWeek,
+                  previous: previous,
+                  next: next,
+                ),
+              ),
+          ],
+        ),
       ),
     ),
   );
+}
+
+/// The month arrows, each 48dp button centred on one of the week's last two
+/// columns ([column] wide, a seventh of the grid), so they stand over its
+/// last two days at every width; where a seventh is narrower than a button,
+/// the two keep their size side by side.
+class _MonthArrows extends StatelessWidget {
+  const _MonthArrows({
+    required this.column,
+    required this.previous,
+    required this.next,
+  });
+
+  final double column;
+  final VoidCallback? previous;
+  final VoidCallback? next;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = ExpressiveLocalizations.of(context);
+    final slot = math.max(column, DatePickerBehavior.cellSize);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        SizedBox(
+          width: slot,
+          child: Center(
+            child: ExpressiveIconButton(
+              _monthBack(context),
+              onPressed: previous,
+              semanticLabel: strings.previousMonth,
+              tooltip: strings.previousMonth,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: slot,
+          child: Center(
+            child: ExpressiveIconButton(
+              _monthOn(context),
+              onPressed: next,
+              semanticLabel: strings.nextMonth,
+              tooltip: strings.nextMonth,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// `YearPickerMenuButton`: a text button in the ambient content colour, on
@@ -1348,6 +1387,10 @@ class _YearMenuButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
           horizontal: AlertDialogBehavior.actionHorizontalPadding,
         ),
+        // The month stands on the header's start line, under the title and
+        // the headline, at every density: compact density (a desktop's)
+        // drew it 4dp before them.
+        keylineSides: true,
         textStyle: t.type.labelLarge.copyWith(color: color),
         iconSize: DialogTokens.iconSize,
         child: Row(
@@ -1374,6 +1417,15 @@ class _YearMenuButton extends StatelessWidget {
     );
   }
 }
+
+/// A weekday's letter, M3's narrow form (S M T W T F S): the first of the
+/// app's short name for it. The date picker and the calendar head their
+/// columns with it alike.
+String _weekdayLetter(BuildContext context, int weekday) =>
+    RawWidgetsLocalizations.of(context)
+        .formatShortWeekday(weekday)
+        .characters
+        .first;
 
 /// `WeekDays`: the weekday letters, one to each seventh of the width (a
 /// 48dp cell and its share of the spare width, as `drawRangeBackground`
@@ -1422,10 +1474,7 @@ class _WeekDays extends StatelessWidget {
                   // The letter in the app's words; the name read aloud is
                   // the kit's (the shared words name a weekday only short).
                   final name = ExpressiveFormat.weekday(day, short: false);
-                  final letter = RawWidgetsLocalizations.of(context)
-                      .formatShortWeekday(day.weekday)
-                      .characters
-                      .first;
+                  final letter = _weekdayLetter(context, day.weekday);
                   return Expanded(
                     child: Semantics(
                       label: name,
@@ -2862,17 +2911,14 @@ class ExpressiveDatePickerDialog extends StatelessWidget {
   }
 }
 
-// Narrower than its container, the date dialog keeps a 16 margin round the
-// picker; where the dialog holds seven whole days but the margin would leave
-// the calendar under them (it would pan, the week's end out of sight), only
-// what the week leaves. Narrower than the week, the calendar pans anyway and
-// the margin keeps the header inside the corners.
-double _dateDialogMargin(double width) {
-  const week = DatePickerBehavior.cellSize * DateTime.daysPerWeek;
-  if (width >= DatePickerModalTokens.containerWidth) return 0;
-  if (width < week) return ExpressiveSpacing.s16;
-  return clampDouble((width - week) / 2, 0, ExpressiveSpacing.s16);
-}
+// Where the dialog holds seven whole days, the picker fills it, as Compose's
+// does: its header's divider runs from edge to edge. Narrower than the week,
+// the calendar pans, and a 16 margin round the picker keeps the header inside
+// the corners.
+double _dateDialogMargin(double width) =>
+    width < DatePickerBehavior.cellSize * DateTime.daysPerWeek
+    ? ExpressiveSpacing.s16
+    : 0;
 
 /// Raises an [ExpressiveDatePicker] in an [ExpressiveDatePickerDialog] and
 /// resolves to the day confirmed with OK, or null when cancelled. The
@@ -6195,7 +6241,8 @@ double _timeSupportingHeight(BuildContext context) {
 
 /// A month calendar standing in the page (shadcn's `Calendar`; the date
 /// picker's grid without its dialog): the month's name over its arrows,
-/// the weekdays in the picker's weekday type, each day a 40dp circle in a
+/// the weekdays as the picker's (its letters, S M T W T F S, in its weekday
+/// type) with the arrows over the last two, each day a 40dp circle in a
 /// 48dp cell (overhanging its seventh where seven do not fit) — the chosen
 /// day in `primary`, today ringed in `primary`, a range's days on its
 /// `secondaryContainer` band. The keyboard is ui_core's
@@ -6394,38 +6441,30 @@ class _ExpressiveCalendarState extends State<ExpressiveCalendar> {
         runSpacing: ExpressiveSpacing.s16,
         children: months,
       ),
+      // The month's width is its grid's: the arrows stand on the columns of
+      // the week's last two days.
       headerBuilder: (context, header) => SizedBox(
         height: DatePickerBehavior.monthYearHeight,
-        child: Row(
-          children: <Widget>[
-            const SizedBox(width: ExpressiveSpacing.s12),
-            Expanded(
-              child: Text(
-                header.label,
-                style: t.type.labelLarge.copyWith(color: colors.navigation),
+        child: LayoutBuilder(
+          builder: (context, constraints) => Row(
+            children: <Widget>[
+              const SizedBox(width: ExpressiveSpacing.s12),
+              Expanded(
+                child: Text(
+                  header.label,
+                  style: t.type.labelLarge.copyWith(color: colors.navigation),
+                ),
               ),
-            ),
-            IconTheme.merge(
-              data: IconThemeData(color: colors.navigation),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  ExpressiveIconButton(
-                    _monthBack(context),
-                    onPressed: header.previous,
-                    semanticLabel: strings.previousMonth,
-                    tooltip: strings.previousMonth,
-                  ),
-                  ExpressiveIconButton(
-                    _monthOn(context),
-                    onPressed: header.next,
-                    semanticLabel: strings.nextMonth,
-                    tooltip: strings.nextMonth,
-                  ),
-                ],
+              IconTheme.merge(
+                data: IconThemeData(color: colors.navigation),
+                child: _MonthArrows(
+                  column: constraints.maxWidth / DateTime.daysPerWeek,
+                  previous: header.previous,
+                  next: header.next,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       weekdayBuilder: (context, weekday, label) => SizedBox(
@@ -6433,7 +6472,7 @@ class _ExpressiveCalendarState extends State<ExpressiveCalendar> {
         height: DatePickerBehavior.cellSize,
         child: Center(
           child: Text(
-            label,
+            _weekdayLetter(context, weekday),
             style: t.type
                 .of(DatePickerModalTokens.weekdaysLabelTextFont)
                 .copyWith(color: colors.weekday),

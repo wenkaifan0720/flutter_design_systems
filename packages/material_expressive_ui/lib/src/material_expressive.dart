@@ -2,9 +2,10 @@
 /// Jetpack Compose's material3 1.5.0-alpha29 (its tokens, motion springs,
 /// shape library and components). The one import an app needs.
 ///
-/// It exports the theme ([ExpressiveTheme], [ExpressiveThemeData]), one
-/// library per foundation (colour, type, shape, motion, spacing, icons,
-/// elevation, interaction states) and every component.
+/// It exports the host every app mounts ([ExpressiveHost]), the theme
+/// ([ExpressiveTheme], [ExpressiveThemeData]), one library per foundation
+/// (colour, type, shape, motion, spacing, icons, elevation, interaction
+/// states) and every component.
 ///
 /// The parts library (`material_expressive_parts.dart`), for a component
 /// file copied out of the package to change, also exports what the
@@ -34,6 +35,7 @@ export 'material_expressive/components/feedback.dart';
 export 'material_expressive/components/file_input.dart';
 export 'material_expressive/components/form.dart';
 export 'material_expressive/components/hero.dart';
+export 'material_expressive/components/host.dart' show ExpressiveHost;
 export 'material_expressive/components/icon_buttons.dart';
 export 'material_expressive/components/lists.dart';
 export 'material_expressive/components/loading.dart';

@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/behavior.g.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/slider_tokens.g.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/small_icon_button_tokens.g.dart';

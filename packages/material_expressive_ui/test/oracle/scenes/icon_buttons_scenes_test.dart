@@ -9,7 +9,6 @@ library;
 
 import 'package:flutter/widgets.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/keys.g.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/large_icon_button_tokens.g.dart';

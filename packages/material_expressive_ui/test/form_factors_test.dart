@@ -1,14 +1,13 @@
 /// Platforms (0.2.0's form-factor check): under [ExpressiveHost], whose
 /// theme gives a `MaterialPageRoute` the look's own transitions, the iOS
 /// edge swipe still pops a page, and Android's back closes what is open over
-/// a page (a menu, a dialog) before it pops the page. ExpressivePage's own
+/// a page (a menu, a dialog) before it pops the page. The look's own page's
 /// swipe and predictive back are page_test's; a sheet's back is sheet_test's.
 library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 
 /// An app on [ExpressiveHost] whose home pushes the detail page.
 Widget _app() => MaterialApp(

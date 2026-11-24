@@ -12,7 +12,6 @@
 /// {@canonicalFor chrome_metrics}
 /// {@canonicalFor chrome_metrics.ExpressiveChromeMetrics}
 /// {@canonicalFor host}
-/// {@canonicalFor host.ExpressiveHost}
 /// {@canonicalFor host.ExpressiveMediaGround}
 /// {@canonicalFor page}
 /// {@canonicalFor page.ExpressivePage}

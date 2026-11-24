@@ -1,3 +1,12 @@
+## 0.6.1
+
+- `ExpressiveHost` comes from `package:material_expressive_ui/material_expressive_ui.dart`, the one import an app needs, under the package's version promise. `material_expressive_host.dart` still exports it, so an app that imports it from there compiles as before.
+- The date and time pickers' titles, modes, field labels and two of their errors speak the app's language where Material's pickers say the same words: an Arabic app's date picker is titled "اختيار التاريخ", not "Select date". They are the app's `MaterialLocalizations`' words (`GlobalMaterialLocalizations`, or the host's own when the app lists none); in English, and where the app gives `ExpressiveLocalizations` of its own, the words are as before.
+- At 390 the date dialog's header divider runs edge to edge: where the dialog holds seven whole days the picker fills it, without the margin that left the divider 3dp short of each edge.
+- The date picker's month stands on its header's start line, under the title and the headline, at every density; compact density (a desktop's) drew it 4dp before them.
+- `ExpressiveCalendar`'s month arrows stand on its last two columns at every width (on a 400dp calendar they stood 14dp and 5dp off), as the date picker's do; where a column is narrower than a 48dp button the two stand side by side.
+- `ExpressiveCalendar` heads its columns with the date picker's letters, Material 3's narrow S M T W T F S, where it wrote "Su Mo Tu".
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0, whose parts that still began with `Design` take `Raw` names (`DesignStyleOf` is `RawStyleOf`, `DesignDialogRoute` is `RawModalDialogRoute`). Material Expressive's code and docs say the new names. The old names stay through ui_core 0.6 as deprecated aliases, and `dart fix --apply` moves an app's code.

@@ -15,7 +15,6 @@ import 'package:flutter/semantics.dart' show SemanticsNode;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/state_face.dart';
 
 final ExpressiveThemeData bloom = ExpressiveThemeData.preset(

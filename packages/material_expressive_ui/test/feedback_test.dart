@@ -9,7 +9,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 
 final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
   'baseline',

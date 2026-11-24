@@ -7,7 +7,6 @@ library;
 
 import 'package:flutter/widgets.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/button_large_tokens.g.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/button_medium_tokens.g.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/button_small_tokens.g.dart';

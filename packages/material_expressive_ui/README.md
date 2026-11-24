@@ -20,10 +20,9 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 
 ## Set up
 
-Load the bundled fonts before the first frame and put `ExpressiveHost` in the app's `builder`, above its navigator, so routes, dialogs and menus share the theme. The host follows the platform from `theme` to `darkTheme` and back, gives the Flutter parts Expressive builds on (text editing, ink, page transitions) a Material theme to match, and holds the layer snackbars show in: `showExpressiveSnackBar` throws without it. It comes from `material_expressive_host.dart`:
+Load the bundled fonts before the first frame and put `ExpressiveHost` in the app's `builder`, above its navigator, so routes, dialogs and menus share the theme. The host follows the platform from `theme` to `darkTheme` and back, gives the Flutter parts Expressive builds on (text editing, ink, page transitions) a Material theme to match, and holds the layer snackbars show in: `showExpressiveSnackBar` throws without it.
 
 ```dart
-import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -178,14 +177,14 @@ Widgets read their theme from `context.expressiveTheme`. Use `copyWith` to set d
 
 ## Navigation
 
-`package:material_expressive_ui/material_expressive_host.dart`, the library `ExpressiveHost` comes from, also holds adaptive app navigation and page transitions. `ExpressiveShellScaffold` places destinations in a bottom bar on phones and a rail on wider screens. `ExpressivePage`, `ExpressiveSheetPage` and `ExpressiveFullScreenDialogPage` work with the Navigator pages API.
+`package:material_expressive_ui/material_expressive_host.dart` holds adaptive app navigation and page transitions. `ExpressiveShellScaffold` places destinations in a bottom bar on phones and a rail on wider screens. `ExpressivePage`, `ExpressiveSheetPage` and `ExpressiveFullScreenDialogPage` work with the Navigator pages API.
 
 ## Accessibility and languages
 
 - Every control is reachable with Tab and works with Enter or Space. Selects, comboboxes and menus take the arrow keys, Home and End, and Escape closes them and gives the focus back to what opened them. A radio group or a one-choice segmented button is one Tab stop.
 - Touch targets are at least 48 dp, as Material's are. Text scales with the platform setting, and the parts Material caps (a date picker's month label at 2×) are capped the same way.
 - The layout follows `Directionality`, so a right-to-left app mirrors its rows, menus and navigation.
-- Use `ExpressiveLocalizations` for component text and `RawWidgetsLocalizations` for shared actions. Both include English defaults, and `ExpressiveLocalizations.delegate` takes every locale. Supply delegates for your app's other languages. Until you do, a time picker's words come from `RawWidgetsLocalizations`, which ui_core speaks in 30 languages.
+- Use `ExpressiveLocalizations` for component text and `RawWidgetsLocalizations` for shared actions. Both include English defaults, and `ExpressiveLocalizations.delegate` takes every locale. Supply delegates for your app's other languages. Until you do, a time picker's words come from `RawWidgetsLocalizations`, which ui_core speaks in 30 languages, and the pickers' titles, modes and field labels come from the app's `MaterialLocalizations`, as Material's own pickers' do: in each of Material's languages, from `GlobalMaterialLocalizations.delegates` or, when the app lists no Material localizations, from the host.
 - Give icon-only controls a `semanticLabel`, and give a rating a name such as “Rate this trip”, so a screen reader announces it in context.
 
 ## Custom components

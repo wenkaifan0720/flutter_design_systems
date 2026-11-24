@@ -9,7 +9,6 @@ import 'package:flutter/rendering.dart' show SemanticsData;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 
 final ExpressiveThemeData bloom = ExpressiveThemeData.preset(
   'bloom',

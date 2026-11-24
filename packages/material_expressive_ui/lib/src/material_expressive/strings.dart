@@ -19,6 +19,8 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart'
+    show DefaultMaterialLocalizations, MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -143,15 +145,20 @@ class ExpressiveLocalizations {
     this.selectRow = 'Select row',
     this.colorHex = 'Hex',
   }) : _shared = const DefaultRawWidgetsLocalizations(),
-       _time = null;
+       _time = null,
+       _material = null;
 
   /// [own]'s words, with [_shared] for the words every look shares and,
-  /// where [time] is given, its time picker words over [own]'s English ones.
+  /// where [time] is given, its time picker words over [own]'s English ones;
+  /// where [material] is given, the pickers' words Material says too in its
+  /// language over [own]'s English ones.
   ExpressiveLocalizations._bound(
     ExpressiveLocalizations own,
     this._shared, [
     RawWidgetsLocalizations? time,
+    _MaterialWords? material,
   ]) : _time = time,
+       _material = material,
        cancelSearch = own.cancelSearch,
        showSuggestions = own.showSuggestions,
        sheetDragHandle = own.sheetDragHandle,
@@ -175,36 +182,100 @@ class ExpressiveLocalizations {
        increase = own.increase,
        stepOf = own.stepOf,
        allStepsDone = own.allStepsDone,
-       selectDate = own.selectDate,
-       selectDates = own.selectDates,
-       enterDates = own.enterDates,
+       selectDate = _MaterialWords.say(
+         material,
+         (l) => l.datePickerHelpText,
+         own.selectDate,
+       ),
+       selectDates = _MaterialWords.say(
+         material,
+         (l) => l.dateRangePickerHelpText,
+         own.selectDates,
+       ),
+       enterDates = _MaterialWords.say(
+         material,
+         (l) => l.dateRangePickerHelpText,
+         own.enterDates,
+       ),
        selectedDate = own.selectedDate,
        enteredDate = own.enteredDate,
-       startDate = own.startDate,
-       endDate = own.endDate,
-       date = own.date,
+       startDate = _MaterialWords.say(
+         material,
+         (l) => l.dateRangeStartLabel,
+         own.startDate,
+       ),
+       endDate = _MaterialWords.say(
+         material,
+         (l) => l.dateRangeEndLabel,
+         own.endDate,
+       ),
+       date = _MaterialWords.say(material, (l) => l.unspecifiedDate, own.date),
        datePattern = own.datePattern,
        inRange = own.inRange,
-       toDateInput = own.toDateInput,
-       toCalendar = own.toCalendar,
-       toYears = own.toYears,
+       toDateInput = _MaterialWords.say(
+         material,
+         (l) => l.inputDateModeButtonLabel,
+         own.toDateInput,
+       ),
+       toCalendar = _MaterialWords.say(
+         material,
+         (l) => l.calendarModeButtonLabel,
+         own.toCalendar,
+       ),
+       toYears = _MaterialWords.say(
+         material,
+         (l) => l.selectYearSemanticsLabel,
+         own.toYears,
+       ),
        toDays = own.toDays,
        badDatePattern = own.badDatePattern,
-       dateNotAllowed = own.dateNotAllowed,
-       endBeforeStart = own.endBeforeStart,
+       dateNotAllowed = _MaterialWords.say(
+         material,
+         (l) => l.dateOutOfRangeLabel,
+         own.dateNotAllowed,
+       ),
+       endBeforeStart = _MaterialWords.say(
+         material,
+         (l) => l.invalidDateRangeLabel,
+         own.endBeforeStart,
+       ),
        outOfYears = own.outOfYears,
        goToYear = own.goToYear,
-       selectTime = own.selectTime,
-       enterTime = own.enterTime,
+       selectTime = _MaterialWords.say(
+         material,
+         (l) => l.timePickerDialHelpText,
+         own.selectTime,
+       ),
+       enterTime = _MaterialWords.say(
+         material,
+         (l) => l.timePickerInputHelpText,
+         own.enterTime,
+       ),
        am = _timeWord(time, (l) => l.anteMeridiemAbbreviation, own.am),
        pm = _timeWord(time, (l) => l.postMeridiemAbbreviation, own.pm),
        period = _timeWord(time, (l) => l.timeFieldDayPeriodLabel, own.period),
        hour = _timeWord(time, (l) => l.timePickerHourLabel, own.hour),
        minute = _timeWord(time, (l) => l.timePickerMinuteLabel, own.minute),
-       selectHour = own.selectHour,
-       selectMinute = own.selectMinute,
-       toKeyboard = own.toKeyboard,
-       toDial = own.toDial,
+       selectHour = _MaterialWords.say(
+         material,
+         (l) => l.timePickerHourModeAnnouncement,
+         own.selectHour,
+       ),
+       selectMinute = _MaterialWords.say(
+         material,
+         (l) => l.timePickerMinuteModeAnnouncement,
+         own.selectMinute,
+       ),
+       toKeyboard = _MaterialWords.say(
+         material,
+         (l) => l.inputTimeModeButtonLabel,
+         own.toKeyboard,
+       ),
+       toDial = _MaterialWords.say(
+         material,
+         (l) => l.dialModeButtonLabel,
+         own.toDial,
+       ),
        toScroll = own.toScroll,
        badHour = own.badHour,
        badMinute = own.badMinute,
@@ -233,7 +304,15 @@ class ExpressiveLocalizations {
   /// [of] reads English. Where the words are [english] in another language,
   /// a time picker's ([hour], [minute], [period], [am], [pm]) are the app's
   /// `RawWidgetsLocalizations`' (ui_core's in the app's language with this
-  /// delegate and none of those installed).
+  /// delegate and none of those installed), and the pickers' words that
+  /// Material's pickers say too are the app's `MaterialLocalizations`', as
+  /// Material's are: their titles ([selectDate], [selectDates],
+  /// [enterDates], [selectTime], [enterTime]), their modes ([toDateInput],
+  /// [toCalendar], [toYears], [toKeyboard], [toDial], [selectHour],
+  /// [selectMinute]), their fields ([date], [startDate], [endDate]) and two
+  /// of their errors ([dateNotAllowed], [endBeforeStart]). An app that lists
+  /// `GlobalMaterialLocalizations.delegates` has them in each of Material's
+  /// languages.
   static const LocalizationsDelegate<ExpressiveLocalizations> delegate =
       _ExpressiveLocalizationsDelegate();
 
@@ -242,7 +321,8 @@ class ExpressiveLocalizations {
   /// locale (a delegate's), else [english]; the shared ones from
   /// [RawWidgetsLocalizations.of] (English with none registered). Over
   /// [english], a time picker's words are the shared ones in the app's
-  /// language (see [delegate]).
+  /// language, and the pickers' words Material says too are the app's
+  /// `MaterialLocalizations`' (see [delegate]).
   static ExpressiveLocalizations of(BuildContext context) {
     final installed = Localizations.of<RawWidgetsLocalizations>(
       context,
@@ -265,14 +345,31 @@ class ExpressiveLocalizations {
               (loaded == null
                   ? null
                   : _inLanguage(Localizations.localeOf(context)));
-    if (identical(own._shared, shared) && time == null) return own;
+    // Over [english], the pickers' words Material says too, in the app's
+    // language as its MaterialLocalizations say them (an app's
+    // GlobalMaterialLocalizations), as Material's own pickers read them.
+    final material = !identical(own, english)
+        ? null
+        : Localizations.of<MaterialLocalizations>(
+            context,
+            MaterialLocalizations,
+          );
+    if (identical(own._shared, shared) && time == null && material == null) {
+      return own;
+    }
     final last = _bindings[own];
     if (last != null &&
         identical(last._shared, shared) &&
-        identical(last._time, time)) {
+        identical(last._time, time) &&
+        identical(last._material?.words, material)) {
       return last;
     }
-    return _bindings[own] = ExpressiveLocalizations._bound(own, shared, time);
+    return _bindings[own] = ExpressiveLocalizations._bound(
+      own,
+      shared,
+      time,
+      material == null ? null : _MaterialWords(material),
+    );
   }
 
   /// ui_core's words for [locale], one object a locale.
@@ -307,6 +404,10 @@ class ExpressiveLocalizations {
   /// The words a time picker says over [english]'s, where they are another
   /// language's.
   final RawWidgetsLocalizations? _time;
+
+  /// The app's Material words, which the pickers' say over [english]'s where
+  /// they are another language's.
+  final _MaterialWords? _material;
 
   // Chrome.
 
@@ -716,4 +817,25 @@ class _ExpressiveLocalizationsDelegate
 
   @override
   bool shouldReload(_ExpressiveLocalizationsDelegate old) => false;
+}
+
+/// The app's Material words, read where the look's pickers say what
+/// Material's pickers say.
+class _MaterialWords {
+  const _MaterialWords(this.words);
+
+  final MaterialLocalizations words;
+
+  /// [material]'s [word] where it says other than Material's English, else
+  /// [own]: the look's word in the app's language, where Material's pickers
+  /// say the same thing.
+  static String say(
+    _MaterialWords? material,
+    String Function(MaterialLocalizations words) word,
+    String own,
+  ) {
+    if (material == null) return own;
+    final said = word(material.words);
+    return said == word(const DefaultMaterialLocalizations()) ? own : said;
+  }
 }
