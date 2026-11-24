@@ -98845,29 +98845,33 @@ m.drawCircle(j+o,i+(p.b-1.5)*g,f,n)
 n.delete()}},
 bW(a){return a.c!==this.c||!a.d.i(0,this.d)||!a.b.i(0,this.b)}}
 A.yx.prototype={
-ap(a,a0){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e=this,d=e.b,c=d.a,b=c*d.c
-d=a0.b
-s=B.c.jD((d-c)/2)
-r=B.c.jD((d+c)/2)
-q=a0.a
-p=q/b
-o=B.c.aJ(p*8*B.c.Y(e.c,0,1))
-n=o*b/8
-m=e.f===B.u
+ap(a2,a3){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b=this,a=b.b,a0=a.a,a1=a0*a.c
+a=a3.b
+s=B.c.jD((a-a0)/2)
+r=B.c.jD((a+a0)/2)
+q=a3.a
+p=q/a1
+o=B.c.aJ(p*8*B.c.Y(b.c,0,1))
+n=o*a1/8
+m=b.f===B.u
 l=B.c.bl(p+0.000001)
 $.a4()
 k=A.aG()
-k.r=e.e.gt()
-j=c/15*1.5
-for(i=B.c.eV(o/8),d/=2,c=a.a,p=b/2;i<l;++i){h=b*i+p
-g=m?q-h:h
-f=k.cw()
-c.drawCircle(g,d,j,f)
-f.delete()}if(o>0){d=m?new A.n(Math.max(0,B.c.jD(q-n)),s,q,r):new A.n(0,s,Math.min(q,B.c.jD(n)),r)
+k.r=b.e.gt()
+j=a0/15*1.5
+a0=o>0
+if(a0)i=m?q-Math.max(0,B.c.jD(q-n)):Math.min(q,B.c.jD(n))
+else i=0
+h=l-B.c.eV(o/8)
+for(a/=2,p=a2.a,g=i+(a1-2*j)+j,f=0;f<h;++f){e=g+a1*f
+d=m?q-e:e
+c=k.cw()
+p.drawCircle(d,a,j,c)
+c.delete()}if(a0){a=m?new A.n(q-i,s,q,r):new A.n(0,s,i,r)
 $.a4()
-c=A.aG()
-c.r=e.d.gt()
-a.bY(d,c)}},
+a0=A.aG()
+a0.r=b.d.gt()
+a2.bY(a,a0)}},
 bW(a){var s=this
 return a.c!==s.c||!a.d.i(0,s.d)||!a.e.i(0,s.e)||!a.b.i(0,s.b)||a.f!==s.f}}
 A.eB.prototype={
