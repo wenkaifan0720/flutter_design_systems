@@ -280,7 +280,7 @@ class _StudioTextFieldState extends State<StudioTextField> {
       if (focused) WidgetState.focused,
       if (widget.errorText != null) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
+    final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     final words = layered
         .text(theme.textTheme.body)
         .copyWith(
@@ -307,7 +307,7 @@ class _StudioTextFieldState extends State<StudioTextField> {
             : Color.lerp(c.displayLow, c.panelLow, 0.6),
       ),
     );
-    final Widget entryBox = DesignTextEntryBox(
+    final Widget entryBox = RawTextEntryBox(
       minHeight: layered.minimumSize?.height ?? theme.controlHeight,
       controller: _controller,
       maxLines: widget.maxLines,
@@ -402,7 +402,7 @@ class _StudioTextFieldState extends State<StudioTextField> {
                         horizontal: StudioSpacing.medium + 2,
                       ),
                       child: oneLine
-                          ? DesignCapCenter(
+                          ? RawCapCenter(
                               capHeightFactor: theme.capHeightFactor,
                               child: entry,
                             )

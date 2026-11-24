@@ -42,7 +42,7 @@ class StudioSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final layered = DesignStyleOf([style, theme.sectionHeaderStyle], const {});
+    final layered = RawStyleOf([style, theme.sectionHeaderStyle], const {});
     return Semantics(
       header: true,
       child: Padding(
@@ -293,7 +293,7 @@ class StudioListTile extends StatelessWidget {
         : (enabled ? onTap : null);
 
     Widget body(Set<WidgetState> states) {
-      final layered = DesignStyleOf(
+      final layered = RawStyleOf(
         [style, theme.listTileStyle],
         {...states, if (selected) WidgetState.selected},
       );
@@ -357,7 +357,7 @@ class StudioListTile extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        DesignCapCenter(
+                        RawCapCenter(
                           capHeightFactor: theme.capHeightFactor,
                           child: Text(
                             title,

@@ -83,7 +83,7 @@ class _Entry extends StatelessWidget {
         .merge(textStyle);
     return Semantics(
       label: semanticLabel,
-      child: DesignTextEntryBox(
+      child: RawTextEntryBox(
         minHeight: theme.controlHeight,
         controller: controller,
         hint: hint == null
@@ -395,7 +395,7 @@ class StudioPasswordField extends StatelessWidget {
 /// a groove; the window's rim and edge light while the words have the
 /// keyboard.
 ///
-/// Built on ui_core's DesignInputGroup; reads [style]'s `fill` and `edge`,
+/// Built on ui_core's RawInputGroup; reads [style]'s `fill` and `edge`,
 /// then [StudioThemeData.textFieldStyle].
 ///
 /// ```dart
@@ -527,12 +527,12 @@ class _StudioInputGroupState extends State<StudioInputGroup> {
       errorText: widget.errorText,
       enabled: widget.enabled,
       focusNode: _focus,
-      child: DesignInputGroup(
+      child: RawInputGroup(
         focusNode: _focus,
         enabled: widget.enabled,
         isError: widget.errorText != null,
         builder: (context, states, child) {
-          final layered = DesignStyleOf([
+          final layered = RawStyleOf([
             widget.style,
             theme.textFieldStyle,
           ], states);
@@ -1215,7 +1215,7 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
 
   /// Finds the options for the words typed, in place of filtering [options]
   /// (a lookup on a server).
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs; null runs it at once.
   final Duration? debounceDuration;
@@ -1382,7 +1382,7 @@ class StudioTagInput<T extends Object> extends StatefulWidget {
 
   /// Finds suggestions for the words typed, in place of filtering
   /// [options] (a lookup on a server).
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs; null runs it at once.
   final Duration? debounceDuration;
@@ -1460,7 +1460,7 @@ class _StudioTagInputState<T extends Object> extends State<StudioTagInput<T>> {
       if (widget.errorText != null) WidgetState.error,
       if (_focus.hasFocus) WidgetState.focused,
     };
-    final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
+    final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     return StudioFieldFrame(
       labelText: widget.labelText,
       helperText: widget.helperText,
@@ -1583,7 +1583,7 @@ class _Plate extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final ink = enabled ? c.onKey : c.disabled;
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final style = theme.textTheme.secondary.copyWith(
       color: ink,
       fontWeight: FontWeight.w500,

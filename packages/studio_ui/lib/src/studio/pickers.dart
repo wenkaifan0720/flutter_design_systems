@@ -197,7 +197,7 @@ class StudioCalendar extends StatefulWidget {
 // A day's row grows with its figure at large text, never under 40, nor under
 // a finger's floor where a finger reaches it.
 double _dayHeight(BuildContext context) => math.max(
-  math.max(40.0, DesignTapTargets.of(context).floorOn().height),
+  math.max(40.0, RawTapTargets.of(context).floorOn().height),
   MediaQuery.textScalerOf(context).scale(15) * 20 / 15 + 12,
 );
 
@@ -266,7 +266,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     final dayHeight = _dayHeight(context);
     final night = c.brightness == Brightness.dark;
     Widget turn(IconData icon, String label, VoidCallback? onPressed) =>
@@ -336,7 +336,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
               day.isRangeEnd ||
               day.isPreviewEnd;
           final middle = !end && (day.inRange || day.inPreview);
-          final layered = DesignStyleOf(layers, {
+          final layered = RawStyleOf(layers, {
             ...states,
             if (end) WidgetState.selected,
           });
@@ -427,7 +427,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
                                     child: FittedBox(
                                       fit: BoxFit.scaleDown,
                                       child: Text(
-                                        words.formatDecimal(day.date.day),
+                                        day.label,
                                         maxLines: 1,
                                         softWrap: false,
                                         style: layered
@@ -514,7 +514,7 @@ class _PickerWindow extends StatelessWidget {
     required this.error,
   });
 
-  final DesignOverlayAnchor? anchor;
+  final RawOverlayAnchor? anchor;
   final String? text;
   final String hint;
   final IconData icon;
@@ -537,7 +537,7 @@ class _PickerWindow extends StatelessWidget {
         final pressed = enabled && states.contains(WidgetState.pressed);
         final hovered = enabled && states.contains(WidgetState.hovered);
         final now = {...states, if (open) WidgetState.focused};
-        final layered = DesignStyleOf([theme.textFieldStyle], now);
+        final layered = RawStyleOf([theme.textFieldStyle], now);
         final face = layered.on(
           c.displayFace.copyWith(
             radius: StudioRadii.key,
@@ -581,7 +581,7 @@ class _PickerWindow extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: Text(
                           text ?? hint,
@@ -1562,7 +1562,7 @@ class StudioRangeFader extends StatelessWidget {
     final c = theme.colors;
     final change = onChanged;
     final lit =
-        DesignStyleOf([style, theme.faderStyle], const {}).fill ?? c.indicator;
+        RawStyleOf([style, theme.faderStyle], const {}).fill ?? c.indicator;
     const cap = StudioFader.cap;
     return RawRangeSlider(
       values: RawRangeValues(values.start, values.end),
@@ -1772,13 +1772,13 @@ class StudioChip extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final latching = onSelected != null;
-    final rest = DesignStyleOf(
+    final rest = RawStyleOf(
       [style, theme.chipStyle],
       {if (selected) WidgetState.selected, if (!enabled) WidgetState.disabled},
     );
     final faceHeight = rest.minimumSize?.height ?? height;
     Widget body(Set<WidgetState> states) {
-      final layered = DesignStyleOf(
+      final layered = RawStyleOf(
         [style, theme.chipStyle],
         {...states, if (selected) WidgetState.selected},
       );
@@ -1833,7 +1833,7 @@ class StudioChip extends StatelessWidget {
                   ),
                   const SizedBox(width: StudioSpacing.tight),
                 ],
-                DesignCapCenter(
+                RawCapCenter(
                   capHeightFactor: theme.capHeightFactor,
                   child: Text(
                     label,
@@ -1875,7 +1875,7 @@ class StudioChip extends StatelessWidget {
     // The chip stands in a row as tall as a finger's floor, and its cross's
     // target is the whole floor-wide square at its end, over the cross and
     // the end of its words.
-    final floor = DesignTapTargets.of(context).floorOn();
+    final floor = RawTapTargets.of(context).floorOn();
     final crossInk =
         rest.foreground ??
         (!enabled
@@ -2031,7 +2031,7 @@ class _StudioRatingState extends State<StudioRating> {
     final c = theme.colors;
     final value = widget.value.clamp(0, widget.max);
     final dead = widget.onChanged == null;
-    final frame = DesignStyleOf([widget.style, theme.ratingStyle], const {});
+    final frame = RawStyleOf([widget.style, theme.ratingStyle], const {});
     final side = frame.minimumSize?.height ?? 32.0;
     final light = frame.fill ?? c.indicator;
     Widget lens(int i, Set<WidgetState> states) {
@@ -2199,7 +2199,7 @@ class StudioFileDrop extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final enabled = onChoose != null;
-    final frame = DesignStyleOf(
+    final frame = RawStyleOf(
       [style, theme.fileDropStyle],
       {
         if (!enabled) WidgetState.disabled,

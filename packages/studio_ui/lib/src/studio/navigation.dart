@@ -8,7 +8,6 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
@@ -48,7 +47,7 @@ class _Faceplate extends StatelessWidget {
   const _Faceplate({required this.child, this.style});
 
   final Widget child;
-  final DesignStyleOf? style;
+  final RawStyleOf? style;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +145,7 @@ class StudioAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final layered = DesignStyleOf([style, theme.appBarStyle], const {});
+    final layered = RawStyleOf([style, theme.appBarStyle], const {});
     final height = layered.minimumSize?.height ?? _barHeight(theme);
     final margin = StudioSpacing.pageMargin(MediaQuery.sizeOf(context).width);
     final lead =
@@ -174,7 +173,7 @@ class StudioAppBar extends StatelessWidget {
                           ? const SizedBox.shrink()
                           : Semantics(
                               header: true,
-                              child: DesignCapCenter(
+                              child: RawCapCenter(
                                 capHeightFactor: theme.capHeightFactor,
                                 child: Text(
                                   title!,
@@ -281,7 +280,7 @@ class _BankFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style],
       {...states, if (selected) WidgetState.selected},
     );
@@ -407,7 +406,7 @@ class StudioNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final layered = DesignStyleOf([style, theme.navigationBarStyle], const {});
+    final layered = RawStyleOf([style, theme.navigationBarStyle], const {});
     final key = layered.minimumSize?.height ?? theme.controlHeight + 8;
     const inset = StudioMetrics.recessInset;
     final places =
@@ -531,7 +530,7 @@ class StudioNavigationRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final layered = DesignStyleOf([style, theme.navigationRailStyle], const {});
+    final layered = RawStyleOf([style, theme.navigationRailStyle], const {});
     final key = layered.minimumSize?.height ?? 60.0;
     const inset = StudioMetrics.recessInset;
     final places =
@@ -667,7 +666,7 @@ class StudioSideNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.sideNavigationStyle], const {});
+    final layered = RawStyleOf([style, theme.sideNavigationStyle], const {});
     final row = layered.minimumSize?.height ?? theme.controlHeight;
     final places =
         _places ??
@@ -825,7 +824,7 @@ class _SideFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style],
       {...states, if (selected) WidgetState.selected},
     );
@@ -865,7 +864,7 @@ class _SideFace extends StatelessWidget {
               ),
               const SizedBox(width: StudioSpacing.medium),
               Expanded(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: theme.capHeightFactor,
                   child: Text(
                     destination.label,
@@ -991,7 +990,7 @@ class _StudioTabBarState extends State<StudioTabBar>
     while (_keys.length < widget.tabs.length) {
       _keys.add(GlobalKey());
     }
-    final layered = DesignStyleOf([widget.style, theme.tabBarStyle], const {});
+    final layered = RawStyleOf([widget.style, theme.tabBarStyle], const {});
     final height = layered.minimumSize?.height ?? theme.controlHeight;
     // The gap from a legend's words to its neighbour's is twice this.
     const half = StudioSpacing.regular;
@@ -1291,10 +1290,10 @@ class StudioScaffold extends StatelessWidget {
     // Studio's own widths: the rail from 600, the side navigation from 1024
     // (ui_core's classes open the sidebar at 1200).
     final mode = width < StudioMetrics.tablet
-        ? DesignNavigationMode.bar
+        ? RawNavigationMode.bar
         : width < StudioMetrics.desk
-        ? DesignNavigationMode.rail
-        : DesignNavigationMode.sidebar;
+        ? RawNavigationMode.rail
+        : RawNavigationMode.sidebar;
     // The chassis between two modules: a seam, dark, its far lip lit.
     final seam = SizedBox(
       width: 3,
@@ -1311,11 +1310,11 @@ class StudioScaffold extends StatelessWidget {
     );
     return ColoredBox(
       color: c.chassis,
-      child: DesignAdaptiveShell(
+      child: RawAdaptiveShell(
         mode: mode,
         destinations: [
           for (final d in destinations)
-            DesignNavigationDestination(
+            RawNavigationDestination(
               label: d.label,
               // ui_core's shell reads no glyph (Studio paints its own); an
               // [Icon]'s is passed on.
@@ -1336,13 +1335,13 @@ class StudioScaffold extends StatelessWidget {
           final selected = details.states.contains(WidgetState.selected);
           return KeyedSubtree(
             key: d.key,
-            child: details.mode == DesignNavigationMode.sidebar
+            child: details.mode == RawNavigationMode.sidebar
                 ? _SideFace(
                     destination: d,
                     selected: selected,
                     states: details.states,
                     height:
-                        DesignStyleOf([
+                        RawStyleOf([
                           theme.sideNavigationStyle,
                         ], const {}).minimumSize?.height ??
                         theme.controlHeight,
@@ -1352,18 +1351,18 @@ class StudioScaffold extends StatelessWidget {
                     destination: d,
                     selected: selected,
                     states: details.states,
-                    style: details.mode == DesignNavigationMode.bar
+                    style: details.mode == RawNavigationMode.bar
                         ? theme.navigationBarStyle
                         : theme.navigationRailStyle,
                   ),
           );
         },
         navigationBuilder: (context, details) => switch (details.mode) {
-          DesignNavigationMode.bar => StudioNavigationBar._shell(
+          RawNavigationMode.bar => StudioNavigationBar._shell(
             details.destinations,
             selectedIndex: details.selectedIndex,
           ),
-          DesignNavigationMode.rail => Row(
+          RawNavigationMode.rail => Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               StudioNavigationRail._shell(
@@ -1381,7 +1380,7 @@ class StudioScaffold extends StatelessWidget {
               seam,
             ],
           ),
-          DesignNavigationMode.sidebar => Row(
+          RawNavigationMode.sidebar => Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               StudioSideNavigation._shell(

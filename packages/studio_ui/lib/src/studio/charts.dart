@@ -151,12 +151,12 @@ abstract class _AxesPainter extends CustomPainter {
   /// ui_core's scale up the start, from 0 to a whole step over the most:
   /// each step a round figure (1, 2 or 5 times a power of ten), so a
   /// five-hour week reads 0, 1, 2, 3, 4, 5, never 1.3 or 3.8.
-  late final DesignLinearScale _scale = () {
+  late final RawLinearScale _scale = () {
     final most = series.fold<double>(
       0,
       (m, s) => s.values.fold<double>(m, (a, v) => math.max(a, v)),
     );
-    return DesignLinearScale.nice(
+    return RawLinearScale.nice(
       // An empty or all-zero chart still climbs to 1.
       min: 0,
       max: most > 0 ? most : 1,
@@ -170,7 +170,7 @@ abstract class _AxesPainter extends CustomPainter {
   late final double top = _scale.max;
 
   /// The scale's steps, their figures in the reader's digits.
-  late final List<DesignScaleTick> _ticks = _scale.ticks(words);
+  late final List<RawScaleTick> _ticks = _scale.ticks(words);
 
   // These resolved family names may come from different packages. Inherit
   // the rest of the caption style from the enclosing span.

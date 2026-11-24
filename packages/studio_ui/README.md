@@ -137,11 +137,11 @@ The corners, the light from the top and the depths of the metal stay Studio's. S
 
 ## Accessibility
 
-Every part reads to a screen reader with its role and name; an icon key takes a `tooltip` for its name. The keyboard's focus lights the part's lamp or edge and shows for the keyboard only. Tab visits a key bank, a tab bar or a set of radios once, and the arrows move within it. A dialog keeps focus inside and returns it to its opener. Text scales to 200%: labels wrap and keys grow. Motion runs on springs through ui_core's `DesignMotionPolicy`, which honours Reduce Motion, and high-contrast mode takes the grain off the metal.
+Every part reads to a screen reader with its role and name; an icon key takes a `tooltip` for its name. The keyboard's focus lights the part's lamp or edge and shows for the keyboard only. Tab visits a key bank, a tab bar or a set of radios once, and the arrows move within it. A dialog keeps focus inside and returns it to its opener. Text scales to 200%: labels wrap and keys grow. Motion runs on springs through ui_core's `RawMotionPolicy`, which honours Reduce Motion, and high-contrast mode takes the grain off the metal.
 
 ## Languages and right to left
 
-Labels the parts say themselves (Cancel, Search, a picker's months) come from ui_core's `DesignLocalizations`, in 30 languages, and follow the app's locale with nothing to set up. Studio's own counts come from `StudioLocalizations`, in English; for another language, extend `DefaultStudioLocalizations` and add a delegate for it to `localizationsDelegates`. In a right-to-left locale every layout mirrors, and the charts write Arabic-Indic digits in Arabic.
+Labels the parts say themselves (Cancel, Search, a picker's months) come from ui_core's `RawWidgetsLocalizations`, in 30 languages, and follow the app's locale with nothing to set up. Studio's own counts come from `StudioLocalizations`, in English; for another language, extend `DefaultStudioLocalizations` and add a delegate for it to `localizationsDelegates`. In a right-to-left locale every layout mirrors, and the charts write Arabic-Indic digits in Arabic.
 
 ## Requirements
 

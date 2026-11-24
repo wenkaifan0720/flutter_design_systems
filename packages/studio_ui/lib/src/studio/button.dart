@@ -120,7 +120,7 @@ class StudioButton extends StatelessWidget {
       semanticLabel: label,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(_layers(theme), states);
+        final layered = RawStyleOf(_layers(theme), states);
         final face = layered.on(_face(theme, states));
         final text = _kind == _KeyKind.text;
         final lit = _kind == _KeyKind.lit;
@@ -152,7 +152,7 @@ class StudioButton extends StatelessWidget {
               .merge(layered.textStyle),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: theme.capHeightFactor,
             child: Text(label),
           ),
@@ -355,7 +355,7 @@ class StudioIconButton extends StatelessWidget {
       semanticSelected: selected,
       semanticLabel: tooltip,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
+        final layered = RawStyleOf([style, theme.iconButtonStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final latched = selected ?? false;

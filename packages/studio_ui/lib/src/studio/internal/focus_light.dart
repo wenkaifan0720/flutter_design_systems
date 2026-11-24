@@ -55,7 +55,7 @@ class _StudioFocusLightState extends State<StudioFocusLight>
     _t.value = 0;
     _t.springTo(
       1,
-      DesignMotionPolicy.of(context).effects(
+      RawMotionPolicy.of(context).effects(
         dampingRatio: StudioMotion.dampingRatio,
         stiffness: StudioMotion.lampStiffness,
       ),

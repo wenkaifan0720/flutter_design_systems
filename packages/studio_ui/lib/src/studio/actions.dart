@@ -143,7 +143,7 @@ class StudioFloatingKey extends StatelessWidget {
       semanticLabel: tooltip,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.floatingKeyStyle], states);
+        final layered = RawStyleOf([style, theme.floatingKeyStyle], states);
         final side = layered.minimumSize?.height ?? 56;
         final face = layered.on(_litFace(c, states, side / 2));
         final light = face.foreground ?? c.onLitKey;
@@ -192,7 +192,7 @@ class StudioFloatingKey extends StatelessWidget {
                           const SizedBox(width: StudioSpacing.small),
                           glyph,
                           const SizedBox(width: StudioSpacing.small),
-                          DesignCapCenter(
+                          RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
                               label!,
@@ -286,7 +286,7 @@ class StudioKeyRow extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     const inset = StudioMetrics.recessInset;
-    final frame = DesignStyleOf([style, theme.keyRowStyle], const {});
+    final frame = RawStyleOf([style, theme.keyRowStyle], const {});
     final minimumHeight = frame.minimumSize?.height ?? theme.controlHeight;
     final words = frame.text(theme.textTheme.label);
     final height = items.any((item) => !item.iconOnly)
@@ -319,7 +319,7 @@ class StudioKeyRow extends StatelessWidget {
                       semanticLabel: item.label,
                       excludeSemantics: true,
                       builder: (context, states, _) {
-                        final layered = DesignStyleOf([
+                        final layered = RawStyleOf([
                           style,
                           theme.keyRowStyle,
                         ], states);
@@ -361,7 +361,7 @@ class StudioKeyRow extends StatelessWidget {
                                         width: StudioSpacing.tight,
                                       ),
                                     if (!item.iconOnly)
-                                      DesignCapCenter(
+                                      RawCapCenter(
                                         capHeightFactor: theme.capHeightFactor,
                                         child: Text(
                                           item.label,
@@ -465,7 +465,7 @@ class StudioToggleBank<T> extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     const inset = StudioMetrics.recessInset;
-    final frame = DesignStyleOf([style, theme.toggleBankStyle], const {});
+    final frame = RawStyleOf([style, theme.toggleBankStyle], const {});
     final height = frame.minimumSize?.height ?? theme.controlHeight;
     return SizedBox(
       height: height,
@@ -491,7 +491,7 @@ class StudioToggleBank<T> extends StatelessWidget {
               ),
             ),
             itemBuilder: (context, value, states) {
-              final layered = DesignStyleOf([
+              final layered = RawStyleOf([
                 style,
                 theme.toggleBankStyle,
               ], states);
@@ -534,7 +534,7 @@ class StudioToggleBank<T> extends StatelessWidget {
                               child: iconOf!(value),
                             )
                           else
-                            DesignCapCenter(
+                            RawCapCenter(
                               capHeightFactor: theme.capHeightFactor,
                               child: Text(
                                 labelOf(value),
@@ -648,7 +648,7 @@ class StudioSplitKey extends StatelessWidget {
           ...states,
           if (open && part == RawSplitPart.toggle) WidgetState.pressed,
         };
-        final layered = DesignStyleOf(layers, now);
+        final layered = RawStyleOf(layers, now);
         final height = layered.minimumSize?.height ?? theme.controlHeight;
         final face = layered.on(
           lit ? _litFace(c, now, StudioRadii.key) : _keyFace(c, now),
@@ -673,7 +673,7 @@ class StudioSplitKey extends StatelessWidget {
                             StudioLamp(on: glowing, size: 6),
                             const SizedBox(width: StudioSpacing.small),
                           ],
-                          DesignCapCenter(
+                          RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
                               label,
@@ -787,7 +787,7 @@ class StudioLink extends StatelessWidget {
       excludeSemantics: true,
       link: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.linkStyle], states);
+        final layered = RawStyleOf([style, theme.linkStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final ink = layered.foreground ?? (disabled ? c.disabled : c.legend);
         final text = theme.textTheme.body
@@ -875,18 +875,18 @@ class StudioKbd extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.kbdStyle], const {});
+    final layered = RawStyleOf([style, theme.kbdStyle], const {});
     final side = layered.minimumSize?.height ?? 24;
     final shortcut = this.shortcut;
     final keys = shortcut == null
         ? this.keys
-        : designShortcutKeys(context, shortcut, appleSymbols: false);
+        : rawShortcutKeys(context, shortcut, appleSymbols: false);
     return Semantics(
       label:
           semanticLabel ??
           (shortcut == null
               ? keys.join(' ')
-              : designShortcutLabel(context, shortcut, appleSymbols: false)),
+              : rawShortcutLabel(context, shortcut, appleSymbols: false)),
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,

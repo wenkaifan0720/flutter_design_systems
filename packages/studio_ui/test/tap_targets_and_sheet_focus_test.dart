@@ -31,9 +31,9 @@ const _places = [
 
 void main() {
   for (final (width, kind, input) in [
-    (390.0, StudioNavigationBar, DesignInput.touch),
-    (800.0, StudioNavigationRail, DesignInput.pointer),
-    (1440.0, StudioSideNavigation, DesignInput.pointer),
+    (390.0, StudioNavigationBar, RawInput.touch),
+    (800.0, StudioNavigationRail, RawInput.pointer),
+    (1440.0, StudioSideNavigation, RawInput.pointer),
   ]) {
     testWidgets("at $width the shell's places take ${input.name} taps", (
       tester,
@@ -83,7 +83,7 @@ void main() {
     await tester.pumpAndSettle();
     const DesignTapTargetCheck(
       look: 'Studio',
-      input: DesignInput.touch,
+      input: RawInput.touch,
     ).check(tester.element(find.byType(StudioSheet))).verify();
   });
 
@@ -103,7 +103,7 @@ void main() {
     await tester.pumpAndSettle();
     const DesignTapTargetCheck(
       look: 'Studio',
-      input: DesignInput.touch,
+      input: RawInput.touch,
     ).check(tester.element(find.byType(StudioRating))).verify();
   });
 

@@ -25,7 +25,7 @@ Widget _panel(
   final theme = StudioTheme.of(context);
   final c = theme.colors;
   final night = c.brightness == Brightness.dark;
-  final layered = DesignStyleOf([style, theme.popoverStyle], const {});
+  final layered = RawStyleOf([style, theme.popoverStyle], const {});
   final face = layered.on(
     c.panelFace.copyWith(radius: StudioRadii.panel, brushed: true),
   );
@@ -219,7 +219,7 @@ class StudioTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
+    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
     return RawTooltipPlacement(
       placement: const RawPopoverPlacement(
         side: RawPopoverSide.above,
@@ -346,7 +346,7 @@ class _SidePanel extends StatelessWidget {
     final c = theme.colors;
     final pad = MediaQuery.paddingOf(context);
     final words = RawWidgetsLocalizations.of(context);
-    final layered = DesignStyleOf([style, theme.sideSheetStyle], const {});
+    final layered = RawStyleOf([style, theme.sideSheetStyle], const {});
     final night = c.brightness == Brightness.dark;
     final body =
         layered.padding(Directionality.of(context)) ??
@@ -402,7 +402,7 @@ class _SidePanel extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   padding: body,
-                  child: DesignKeylineRegion(
+                  child: RawKeylineRegion(
                     label: title,
                     child: DefaultTextStyle.merge(
                       style: theme.textTheme.body.copyWith(color: c.legend),

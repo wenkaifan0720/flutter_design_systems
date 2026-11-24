@@ -3,7 +3,7 @@
 /// [showStudioBottomSheet], or by the router's [StudioSheetPage]; and
 /// [StudioToaster] with [showStudioToast], a strip of readout glass with
 /// its lamp lit. The dialog and the sheets ride ui_core's routes
-/// (DesignDialogRoute, RawBottomSheetRoute); Studio paints them.
+/// (RawModalDialogRoute, RawBottomSheetRoute); Studio paints them.
 library;
 
 import 'dart:math' as math;
@@ -13,7 +13,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'internal/curved.dart';
@@ -68,7 +67,7 @@ class _ClearOfKeyboard extends StatelessWidget {
 }
 
 /// Raises [builder]'s dialog (a [StudioDialog]) over the page on ui_core's
-/// DesignDialogRoute: the room's lights lower and the module rises toward
+/// RawModalDialogRoute: the room's lights lower and the module rises toward
 /// the light, from 96% of its size to its own, on a spring
 /// ([StudioMotion.overlayStiffness]); under Reduce Motion it fades. Focus
 /// moves into it and stays there, and goes back to what held it as it
@@ -87,7 +86,7 @@ Future<T?> showStudioDialog<T>({
 }) {
   final theme = StudioTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       isAlert: isAlert,
       barrierDismissible: barrierDismissible,
       barrierColor: theme.colors.scrim,
@@ -176,7 +175,7 @@ class StudioDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final narrow = MediaQuery.sizeOf(context).width < StudioMetrics.tablet;
     final night = c.brightness == Brightness.dark;
     return ConstrainedBox(
@@ -484,7 +483,7 @@ class StudioSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.bottomSheetStyle], const {});
+    final layered = RawStyleOf([style, theme.bottomSheetStyle], const {});
     final words = RawWidgetsLocalizations.of(context);
     final size = MediaQuery.sizeOf(context);
     final night = c.brightness == Brightness.dark;
@@ -717,7 +716,7 @@ class _Toast extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final t = details.toast;
-    final layered = DesignStyleOf([style, theme.toastStyle], const {});
+    final layered = RawStyleOf([style, theme.toastStyle], const {});
     final ink = layered.foreground ?? c.onReadout;
     final words = RawWidgetsLocalizations.of(context);
     final opacity = details.animation.drive(

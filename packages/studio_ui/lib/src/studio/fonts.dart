@@ -15,7 +15,7 @@ const String? studioFontPackage = 'studio_ui';
 const String studioFontFamily = 'Barlow';
 
 /// Barlow's capitals as a fraction of its size (its OS/2 cap height, 700,
-/// over its 1000 units per em): what `DesignCapCenter` centres a label by.
+/// over its 1000 units per em): what `RawCapCenter` centres a label by.
 const double studioCapHeightFactor = 0.7;
 
 const List<(String, int)> _faces = [

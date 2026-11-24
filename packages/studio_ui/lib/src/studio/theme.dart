@@ -21,19 +21,19 @@ import 'transitions.dart' show studioPageTransitions;
 /// ```dart
 /// const wide = StudioStyle(padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32)));
 /// ```
-typedef StudioStyle = DesignStyle;
+typedef StudioStyle = RawStyle;
 
-/// How tight Studio's controls stand: [DesignDensity.standard] (a 44 px
-/// key), [DesignDensity.comfortable] (40) or [DesignDensity.compact] (36). A
+/// How tight Studio's controls stand: [RawDensity.standard] (a 44 px
+/// key), [RawDensity.comfortable] (40) or [RawDensity.compact] (36). A
 /// control's tap target stays at the floor for the input whatever the
 /// density.
-typedef StudioDensity = DesignDensity;
+typedef StudioDensity = RawDensity;
 
 /// Studio's measures. The corners, the light (always from the top) and the
 /// three depths are the look's and are not settings: a key, a pane and a
 /// panel are cut the same way on every app.
 abstract final class StudioMetrics {
-  /// A key's height at [DesignDensity.standard], before density: every
+  /// A key's height at [RawDensity.standard], before density: every
   /// control that shares a row takes it.
   static const double controlHeight = 44;
 
@@ -130,7 +130,7 @@ abstract final class StudioRadii {
   static const double cap = 3;
 }
 
-/// Studio's spacing, on a 4 px grid ([DesignSpacingScope] declares it).
+/// Studio's spacing, on a 4 px grid ([RawSpacingScope] declares it).
 abstract final class StudioSpacing {
   /// The grid every gap, inset and offset stands on.
   static const double grid = 4;
@@ -171,7 +171,7 @@ abstract final class StudioSpacing {
 }
 
 /// Studio's motion, from the objects: springs only, critically damped unless
-/// the object has a click in it. Run them through `DesignMotionPolicy`, which
+/// the object has a click in it. Run them through `RawMotionPolicy`, which
 /// honours Reduce Motion.
 abstract final class StudioMotion {
   /// The damping ratio of every spring that should stop dead.
@@ -1535,7 +1535,7 @@ class StudioTheme extends StatelessWidget {
 
   /// The tap floors every Studio control stands at: 44 by 44 for a finger,
   /// 24 by 24 for a pointer (ui_core's own floors).
-  static const DesignTapTargets tapTargets = DesignTapTargets.fallback;
+  static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   static final StudioThemeData _fallback = StudioThemeData.light();
 
@@ -1567,9 +1567,9 @@ class StudioTheme extends StatelessWidget {
       theme: this,
       child: Theme(
         data: material,
-        child: DesignSpacingScope(
-          spacing: DesignSpacing.fallback,
-          child: DesignTapTargetScope(
+        child: RawSpacingScope(
+          spacing: RawSpacing.fallback,
+          child: RawTapTargetScope(
             targets: tapTargets,
             child: DefaultSelectionStyle(
               cursorColor: colors.indicator,

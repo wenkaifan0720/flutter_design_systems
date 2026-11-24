@@ -215,7 +215,7 @@ class _StudioFaderState extends State<StudioFader> {
     final c = theme.colors;
     final enabled = widget.onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.faderStyle],
       {
         if (!enabled) WidgetState.disabled,
@@ -583,7 +583,7 @@ class _StudioKnobState extends State<StudioKnob>
   void _settle() {
     _shown.springTo(
       widget.value,
-      DesignMotionPolicy.of(context).spatial(
+      RawMotionPolicy.of(context).spatial(
         dampingRatio: widget.divisions == null
             ? StudioMotion.dampingRatio
             : StudioMotion.detentDampingRatio,
@@ -620,7 +620,7 @@ class _StudioKnobState extends State<StudioKnob>
     final c = theme.colors;
     final enabled = widget.onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.knobStyle],
       {if (!enabled) WidgetState.disabled, if (_focused) WidgetState.focused},
     );
@@ -918,7 +918,7 @@ class StudioMeter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.meterStyle], const {});
+    final layered = RawStyleOf([style, theme.meterStyle], const {});
     final along = axis == Axis.horizontal;
     return Semantics(
       label: semanticLabel,

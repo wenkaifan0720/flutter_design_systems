@@ -87,7 +87,7 @@ class StudioBreadcrumb extends StatelessWidget {
                   child: Text(
                     crumb.label,
                     style:
-                        DesignStyleOf(
+                        RawStyleOf(
                           [style, theme.breadcrumbStyle],
                           const {WidgetState.selected},
                         ).text(
@@ -106,7 +106,7 @@ class StudioBreadcrumb extends StatelessWidget {
                 excludeSemantics: true,
                 link: true,
                 builder: (context, states, _) {
-                  final layered = DesignStyleOf([
+                  final layered = RawStyleOf([
                     style,
                     theme.breadcrumbStyle,
                   ], states);

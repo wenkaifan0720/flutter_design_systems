@@ -122,7 +122,7 @@ class _CheckKey extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     const size = StudioCheckbox.size;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.checkboxStyle],
       {...states, if (value) WidgetState.selected},
     );
@@ -306,7 +306,7 @@ class _GlyphState extends State<_Glyph> with SingleTickerProviderStateMixin {
     if (old.on != widget.on) {
       _t.springTo(
         widget.on ? 1 : 0,
-        DesignMotionPolicy.of(context).effects(
+        RawMotionPolicy.of(context).effects(
           dampingRatio: StudioMotion.dampingRatio,
           stiffness: StudioMotion.lampStiffness,
         ),
@@ -452,7 +452,7 @@ class _RadioKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.radioStyle],
       {...states, if (chosen) WidgetState.selected},
     );
@@ -844,7 +844,7 @@ class _StudioSwitchState extends State<StudioSwitch>
   void _go(bool on) {
     _at.springTo(
       on ? 1 : 0,
-      DesignMotionPolicy.of(context).spatial(
+      RawMotionPolicy.of(context).spatial(
         dampingRatio: StudioMotion.dampingRatio,
         stiffness: StudioMotion.throwStiffness,
       ),
@@ -871,7 +871,7 @@ class _StudioSwitchState extends State<StudioSwitch>
       toggled: widget.value,
       semanticLabel: widget.semanticLabel,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [widget.style, theme.switchStyle],
           {...states, if (widget.value) WidgetState.selected},
         );
@@ -1202,7 +1202,7 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
     final c = theme.colors;
     final segments = widget.segments;
     final layers = [widget.style, theme.segmentedButtonStyle];
-    final frame = DesignStyleOf(layers, {
+    final frame = RawStyleOf(layers, {
       if (widget.onChanged == null) WidgetState.disabled,
     });
     final words = frame.text(theme.textTheme.label);
@@ -1340,7 +1340,7 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
     // adds the other half at its ends.
     const start = StudioSpacing.hair, end = StudioSpacing.hair;
     Widget drawKey(BuildContext context, Set<WidgetState> states) {
-      final layered = DesignStyleOf(layers, {
+      final layered = RawStyleOf(layers, {
         ...states,
         if (chosen) WidgetState.selected,
       });
@@ -1400,7 +1400,7 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
                   const SizedBox(width: StudioSpacing.tight),
                 ],
                 Flexible(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(
                       s.label,

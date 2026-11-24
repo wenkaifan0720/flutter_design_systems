@@ -829,7 +829,7 @@ class StudioTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tagStyle], const {});
+    final layered = RawStyleOf([style, theme.tagStyle], const {});
     final ink =
         layered.foreground ??
         switch (tone) {

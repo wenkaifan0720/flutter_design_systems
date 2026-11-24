@@ -116,7 +116,7 @@ void main() {
           await tester.pumpAndSettle();
           // The body's keylines: its content column, where the region
           // the keyline check reads stands.
-          final body = tester.getRect(find.byType(DesignKeylineRegion));
+          final body = tester.getRect(find.byType(RawKeylineRegion));
           final title = _words(tester, find.text('Sort and filter'));
           final close = _face(tester, find.byType(StudioIconButton));
           expect(

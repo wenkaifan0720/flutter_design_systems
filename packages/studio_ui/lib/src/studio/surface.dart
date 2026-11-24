@@ -660,7 +660,7 @@ void _innerShadow(
 /// spring ([StudioMotion.pressStiffness]), from wherever it is: a press, a
 /// release, a focus, a lamp lighting. A new face mid-way turns from where the
 /// surface stands, with no jump back. Under Reduce Motion the change is a
-/// short fade, as `DesignMotionPolicy` says.
+/// short fade, as `RawMotionPolicy` says.
 ///
 /// ```dart
 /// AnimatedStudioSurface(face: pressed ? resting.copyWith(travel: 1) : resting, child: const Text('Play'))
@@ -716,7 +716,7 @@ class _AnimatedStudioSurfaceState extends State<AnimatedStudioSurface>
     _controller.value = 0;
     _controller.springTo(
       1,
-      DesignMotionPolicy.of(context).effects(
+      RawMotionPolicy.of(context).effects(
         dampingRatio: StudioMotion.dampingRatio,
         stiffness: widget.stiffness,
       ),
@@ -826,10 +826,10 @@ extension StudioFaces on StudioColors {
   );
 }
 
-/// A part's two style layers ([DesignStyleOf]) put on a [StudioFace]: the
+/// A part's two style layers ([RawStyleOf]) put on a [StudioFace]: the
 /// style's `fill` (both tones), its `foreground`, and its `edge` for a lit
 /// rim. The light, the depths and the corners are the look's.
-extension StudioStyleFace on DesignStyleOf {
+extension StudioStyleFace on RawStyleOf {
   /// [face] in these layers' colours.
   StudioFace on(StudioFace face) {
     final fill = this.fill;
@@ -892,7 +892,7 @@ class _StudioLampState extends State<StudioLamp>
     if (old.on != widget.on) {
       _lit.springTo(
         widget.on ? 1 : 0,
-        DesignMotionPolicy.of(context).effects(
+        RawMotionPolicy.of(context).effects(
           dampingRatio: StudioMotion.dampingRatio,
           stiffness: StudioMotion.lampStiffness,
         ),

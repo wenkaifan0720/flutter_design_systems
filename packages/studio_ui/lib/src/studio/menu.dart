@@ -190,12 +190,12 @@ class StudioMenuBar extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.menuBarStyle];
-    final bar = DesignStyleOf(layers, const {});
+    final bar = RawStyleOf(layers, const {});
     // Its titles stand a recess inset in from the bar's edges; where a finger
     // reaches them the bar grows so each title is a finger's floor tall.
     final height = math.max(
       bar.minimumSize?.height ?? 40.0,
-      DesignTapTargets.of(context).floorOn().height +
+      RawTapTargets.of(context).floorOn().height +
           2 * StudioMetrics.recessInset,
     );
     return RawMenuBar(
@@ -248,7 +248,7 @@ class StudioMenuBar extends StatelessWidget {
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );
         }
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final open =
             states.contains(WidgetState.selected) ||
             states.contains(WidgetState.pressed);
@@ -268,7 +268,7 @@ class StudioMenuBar extends StatelessWidget {
             ),
             child: Center(
               widthFactor: 1,
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: theme.capHeightFactor,
                 child: Text(
                   entry.label,
@@ -500,7 +500,7 @@ Widget _panel(BuildContext context, StudioStyle? style, Widget child) {
   final theme = StudioTheme.of(context);
   final c = theme.colors;
   final night = c.brightness == Brightness.dark;
-  final layered = DesignStyleOf([style, theme.commandPaletteStyle], const {});
+  final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 560),
     child: DecoratedBox(
@@ -542,7 +542,7 @@ Future<void> showStudioCommandPalette(
   StudioStyle? style,
 }) {
   final scrim = StudioTheme.of(context).colors.scrim;
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: scrim,
     palette: (run) => StudioCommandPalette(

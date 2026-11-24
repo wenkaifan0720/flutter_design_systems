@@ -117,7 +117,7 @@ class StudioDataTable<R> extends StatelessWidget {
     final c = theme.colors;
     final t = theme.textTheme;
     final layers = [style, theme.dataTableStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     StudioDataColumn<R> col(RawDataColumn<R> column) =>
         column as StudioDataColumn<R>;
     final pad =
@@ -241,7 +241,7 @@ class StudioDataTable<R> extends StatelessWidget {
         );
       },
       rowBuilder: (context, row, cells) {
-        final layered = DesignStyleOf(layers, {
+        final layered = RawStyleOf(layers, {
           ...row.states,
           if (row.selected) WidgetState.selected,
         });
@@ -408,7 +408,7 @@ class StudioScrollArea extends StatelessWidget {
       thickness: 12,
       // A slot and its cap stand whenever there is more to scroll: gear
       // does not hide its controls.
-      visibility: DesignScrollbarVisibility.always,
+      visibility: RawScrollbarVisibility.always,
       trackBuilder: (context, thumb) => AnimatedOpacity(
         opacity: thumb.visible ? 1 : 0,
         duration: const Duration(milliseconds: 160),
@@ -1090,7 +1090,7 @@ class StudioPullToRefresh extends StatelessWidget {
 }
 
 /// Holds a [StudioTree]'s nodes, which are open and which are chosen.
-class StudioTreeController<T extends Object> extends DesignTreeController<T> {
+class StudioTreeController<T extends Object> extends RawTreeController<T> {
   /// A controller over [roots].
   StudioTreeController({
     required super.roots,
@@ -1104,7 +1104,7 @@ class StudioTreeController<T extends Object> extends DesignTreeController<T> {
 /// by an engraved line; a small wedge opens and closes a row. The chosen
 /// row sits in a slot with its lamp lit.
 ///
-/// Built on ui_core's DesignTree: the arrows walk and open the rows, Enter
+/// Built on ui_core's RawTree: the arrows walk and open the rows, Enter
 /// opens one ([onActivate]).
 ///
 /// ```dart
@@ -1141,7 +1141,7 @@ class StudioTree<T extends Object> extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
@@ -1168,7 +1168,7 @@ class StudioTree<T extends Object> extends StatelessWidget {
             constraints: BoxConstraints(
               minHeight: math.max(
                 theme.controlHeight - 4,
-                DesignTapTargets.of(context).floorOn().height,
+                RawTapTargets.of(context).floorOn().height,
               ),
             ),
             child: IntrinsicHeight(

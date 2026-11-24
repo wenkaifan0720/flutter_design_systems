@@ -36,7 +36,7 @@ class StudioPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final layered = DesignStyleOf([style, theme.panelStyle], const {});
+    final layered = RawStyleOf([style, theme.panelStyle], const {});
     return StudioSurface(
       face: layered.on(theme.colors.panelFace),
       child: Padding(
@@ -104,7 +104,7 @@ class StudioDisplay extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     StudioFace faceIn(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.displayStyle], states);
+      final layered = RawStyleOf([style, theme.displayStyle], states);
       final base = readout
           ? c.readoutFace.copyWith(
               radius: StudioRadii.display,
@@ -128,7 +128,7 @@ class StudioDisplay extends StatelessWidget {
     }
 
     Widget content(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.displayStyle], states);
+      final layered = RawStyleOf([style, theme.displayStyle], states);
       final face = faceIn(states);
       final body = Padding(
         padding:

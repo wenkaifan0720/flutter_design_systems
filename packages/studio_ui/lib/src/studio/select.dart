@@ -147,13 +147,13 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
     // the reader's text size where that is taller.
     final body = theme.textTheme.body;
     final height = math.max(
-      DesignStyleOf([style, theme.selectStyle], const {}).minimumSize?.height ??
+      RawStyleOf([style, theme.selectStyle], const {}).minimumSize?.height ??
           theme.controlHeight,
       MediaQuery.textScalerOf(context).scale(body.fontSize ?? 16) *
           (body.height ?? 1.5),
     );
 
-    Widget window(DesignOverlayAnchor? anchor) {
+    Widget window(RawOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
       return RawButton(
         onPressed: anchor == null
@@ -186,7 +186,7 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
         // its own would be read twice.
         semanticValue: chosen?.label,
         builder: (context, states, _) {
-          final layered = DesignStyleOf(
+          final layered = RawStyleOf(
             [style, theme.selectStyle],
             {...states, if (error != null) WidgetState.error},
           );
@@ -229,7 +229,7 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
                           const EdgeInsetsDirectional.only(
                             start: StudioSpacing.medium + StudioSpacing.hair,
                           ),
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: Text(
                           chosen?.label ?? hint ?? '',
@@ -722,7 +722,7 @@ class StudioMenuRow extends StatelessWidget {
                 const SizedBox(width: StudioSpacing.medium),
               ],
               Expanded(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: theme.capHeightFactor,
                   child: Text(
                     label,
