@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
-import 'package:fluent2_design_ui/src/fluent2_design/internal/well.dart'
-    show fluent2BrandWell;
 
 Widget _host(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
@@ -32,12 +30,14 @@ void main() {
       return controller;
     }
 
-    /// The band's pieces (the brand tint), each a rect on screen.
+    /// The band's pieces (the brand tint, each day's share drawn by the
+    /// range day's band painter), each a rect on screen.
     List<Rect> band(WidgetTester t) => [
       for (final e
           in find
               .byWidgetPredicate(
-                (w) => w is ColoredBox && w.color == fluent2BrandWell(_t),
+                (w) =>
+                    w is CustomPaint && '${w.painter.runtimeType}' == '_Band',
               )
               .evaluate())
         t.getRect(find.byWidget(e.widget)),

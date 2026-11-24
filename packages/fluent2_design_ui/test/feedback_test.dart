@@ -726,10 +726,11 @@ void main() {
       await tester.pumpWidget(
         _host(Fluent2DateBlock(date: DateTime(2026, 11, 3), emphasis: true)),
       );
-      expect(find.text('Tue'), findsOneWidget);
+      // ui_core's English names, as the calendar's heads say them.
+      expect(find.text('Tu'), findsOneWidget);
       expect(find.text('3'), findsOneWidget);
       expect(find.text('Nov'), findsOneWidget);
-      expect(find.bySemanticsLabel('Tuesday, November 3'), findsOneWidget);
+      expect(find.bySemanticsLabel('Tuesday, 3 November 2026'), findsOneWidget);
     });
   });
 
@@ -769,12 +770,12 @@ void main() {
       );
       expect(
         tester.getSemantics(
-          find.bySemanticsLabel('Tuesday, November 3, today'),
+          find.bySemanticsLabel('Tuesday, 3 November 2026, Today'),
         ),
         isSemantics(isSelected: true, isButton: true),
       );
       expect(
-        tester.getSemantics(find.bySemanticsLabel('Thursday, November 5')),
+        tester.getSemantics(find.bySemanticsLabel('Thursday, 5 November 2026')),
         isSemantics(value: 'Has events'),
       );
       await tester.tap(find.text('5'));
@@ -783,7 +784,9 @@ void main() {
       await tester.tap(find.text('10'), warnIfMissed: false);
       expect(picked, isNull);
       expect(
-        tester.getSemantics(find.bySemanticsLabel('Thursday, December 10')),
+        tester.getSemantics(
+          find.bySemanticsLabel('Thursday, 10 December 2026'),
+        ),
         isSemantics(isEnabled: false, hasEnabledState: true),
       );
       semantics.dispose();

@@ -2,9 +2,9 @@ import '../../internal/well.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../theme.dart';
-import '../icon_tile/icon_tile.dart';
 import '../pressable/pressable.dart';
 
 /// One week as a row of days to pick from, the strip a phone's calendar
@@ -77,14 +77,16 @@ class Fluent2WeekStrip extends StatelessWidget {
     final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
     final grow = scale < _most ? scale : _most;
     final disc = 32 * grow;
+    // The reader's names: Arabic ones in Arabic, as a date block's.
+    final names = RawWidgetsLocalizations.of(context);
     Widget cell(DateTime day) {
       final picked = _same(day, value);
       final isToday = _same(day, today);
       final events = hasEvents?.call(day) ?? false;
-      final spoken = Fluent2DateBlock.spoken(day);
+      final spoken = names.formatFullDate(day);
       return Fluent2Pressable(
         onPressed: pick == null ? null : () => pick(day),
-        label: isToday ? '$spoken, today' : spoken,
+        label: isToday ? '$spoken, ${names.currentDateLabel}' : spoken,
         value: events ? 'Has events' : null,
         selected: picked,
         radius: Fluent2Radius.medium,
@@ -112,7 +114,7 @@ class Fluent2WeekStrip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  Fluent2DateBlock.weekdayOf(day).substring(0, 3),
+                  names.formatShortWeekday(day.weekday),
                   maxLines: 1,
                   overflow: TextOverflow.clip,
                   style: t.caption1.c(t.textTertiary),
@@ -127,7 +129,7 @@ class Fluent2WeekStrip extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Text(
-                    '${day.day}',
+                    names.formatDecimal(day.day),
                     maxLines: 1,
                     overflow: TextOverflow.visible,
                     softWrap: false,

@@ -1,7 +1,7 @@
 name: fluent2_design_ui
 description: >-
   Fluent 2 widgets and themes for Flutter. Build forms, navigation, data grids and charts with seven light and dark presets, acrylic surfaces and Fluent icons.
-version: 0.6.0
+version: 0.6.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/fluent2/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/fluent2/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_design_ui

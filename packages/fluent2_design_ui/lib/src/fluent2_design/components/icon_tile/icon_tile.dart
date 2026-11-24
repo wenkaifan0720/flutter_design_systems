@@ -252,8 +252,10 @@ class Fluent2IconTile extends StatelessWidget {
 /// month, in caption1, on Fluent's grey with 4 corners; [emphasis]
 /// (today, the day picked) wears the brand's tint (`brandBackground2`
 /// under `brandForeground2`). [compact] drops the weekday. Derived:
-/// composed from Fluent's type ramp and tints. Read as the whole date,
-/// "Monday, November 3".
+/// composed from Fluent's type ramp and tints. Its names, figures and the
+/// whole date it is read as are the app's (ui_core's localizations, as
+/// Material's date header reads MaterialLocalizations): "Mo 3 Nov", read
+/// "Monday, 3 November 2026", in English; Arabic names and digits in Arabic.
 ///
 /// ```dart
 /// Fluent2DateBlock(date: DateTime(2026, 11, 3), emphasis: true)
@@ -301,13 +303,16 @@ class Fluent2DateBlock extends StatelessWidget {
     'December',
   ];
 
-  /// The weekday's English name, Monday to Sunday.
+  /// The weekday's English name, Monday to Sunday. The block itself says
+  /// the app's ([RawWidgetsLocalizations.formatShortWeekday]).
   static String weekdayOf(DateTime d) => _weekdays[d.weekday - 1];
 
-  /// The month's English name.
+  /// The month's English name. The block itself says the app's
+  /// ([RawWidgetsLocalizations.formatShortMonth]).
   static String monthOf(DateTime d) => _months[d.month - 1];
 
-  /// [date] said whole: "Monday, November 3".
+  /// [date] said whole in English: "Monday, November 3". The block is read
+  /// in the app's words ([RawWidgetsLocalizations.formatFullDate]).
   static String spoken(DateTime date) =>
       '${weekdayOf(date)}, ${monthOf(date)} ${date.day}';
 
@@ -317,8 +322,10 @@ class Fluent2DateBlock extends StatelessWidget {
     final fill = emphasis ? fluent2BrandWell(t) : fluent2Well(t);
     final ink = emphasis ? t.colors.brandForeground2 : t.textSecondary;
     final figure = emphasis ? t.colors.brandForeground2 : t.textPrimary;
+    // The reader's names and digits: Arabic ones in Arabic.
+    final names = RawWidgetsLocalizations.of(context);
     return Semantics(
-      label: spoken(date),
+      label: names.formatFullDate(date),
       excludeSemantics: true,
       child: Container(
         constraints: const BoxConstraints(minWidth: 48),
@@ -335,18 +342,17 @@ class Fluent2DateBlock extends StatelessWidget {
           children: [
             if (!compact)
               Text(
-                weekdayOf(date).substring(0, 3),
+                names.formatShortWeekday(date.weekday),
                 maxLines: 1,
                 style: t.caption1.c(ink),
               ),
             Text(
-              // The reader's digits: Arabic-Indic in Arabic.
-              RawWidgetsLocalizations.of(context).formatDecimal(date.day),
+              names.formatDecimal(date.day),
               maxLines: 1,
               style: t.title3.tabular.c(figure),
             ),
             Text(
-              monthOf(date).substring(0, 3),
+              names.formatShortMonth(date),
               maxLines: 1,
               style: t.caption1.c(ink),
             ),

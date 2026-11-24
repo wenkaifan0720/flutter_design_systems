@@ -1,3 +1,9 @@
+## 0.6.1
+
+- `Fluent2DateBlock` and `Fluent2WeekStrip` say their weekdays and months in the app's words (ui_core's localizations, as Material's date header reads `MaterialLocalizations`), and are read as the whole date in them: Arabic names and digits in an Arabic app. In English a weekday is ui_core's short name, as the calendar's heads say it ("Fr", was "Fri"), and a day is read "Friday, 20 November 2026" (was "Friday, November 20"). `Fluent2WeekStrip`'s day numbers are in the app's digits too, as the date block's are. The English helpers `Fluent2DateBlock.weekdayOf`, `monthOf` and `spoken` stay.
+- `Fluent2DateRangePicker` heads its month and weekdays in the app's language (ui_core's `formatMonthYear` and `formatShortWeekday`, the same Arabic names as `Fluent2Calendar`'s): `Fluent2Localizations.monthYear` and `weekdaysShort` take ui_core's words unless the app gives Fluent 2 words of its own. English is unchanged ("November 2026", "Su" to "Sa").
+- A range's band in `Fluent2DateRangePicker` runs unbroken where the month's columns fall on a fraction of a pixel; before, a lighter line of the page showed at each day's edge (at 1440, at 2x).
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawCalendarController` for `DesignCalendarController`, `RawOverlayAnchor` for `DesignOverlayAnchor`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.

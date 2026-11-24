@@ -850,6 +850,9 @@ class Fluent2DateRangePicker extends StatelessWidget {
             day,
             states,
             cell,
+            first:
+                firstDayOfWeek ??
+                RawWidgetsLocalizations.of(context).firstDayOfWeek,
             lead:
                 day.isRangeStart &&
                 ((day.inRange && !day.isRangeEnd) ||
@@ -897,6 +900,7 @@ class _RangeDay extends StatelessWidget {
     this.day,
     this.states,
     this.cell, {
+    required this.first,
     required this.lead,
     required this.tail,
   });
@@ -908,6 +912,10 @@ class _RangeDay extends StatelessWidget {
   /// or 40). Its height is the same, or the look's tap floor where that is
   /// taller (a finger's 48 where the month is narrow).
   final double cell;
+
+  /// The week's first day ([DateTime.monday] … [DateTime.sunday]): a day
+  /// there starts its row.
+  final int first;
 
   /// The band starts here, at the disc's centre, and runs on.
   final bool lead;
@@ -926,6 +934,17 @@ class _RangeDay extends StatelessWidget {
     final live = day.enabled;
     final press = states.press;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    // The band reaches half a device pixel into a neighbour only where the
+    // neighbour carries it on: not past its row's ends, nor its month's.
+    final date = day.date;
+    final reach = 1 / MediaQuery.devicePixelRatioOf(context) / 2;
+    final opens = date.weekday == first || date.day == 1;
+    final last = first == DateTime.monday ? DateTime.sunday : first - 1;
+    final closes =
+        date.weekday == last ||
+        DateTime(date.year, date.month, date.day + 1).month != date.month;
+    final toStart = opens ? 0.0 : reach;
+    final toEnd = closes ? 0.0 : reach;
     // The disc and the band: 28 on a 32 day; 40 on a finger's 48, as the
     // date picker's phone disc, so the chosen ground fills its cell.
     final disc = cell > 32 ? 40.0 : 28.0;
@@ -952,7 +971,13 @@ class _RangeDay extends StatelessWidget {
                   : Alignment.centerLeft,
               widthFactor: half ? 0.5 : 1,
               heightFactor: disc / height,
-              child: ColoredBox(color: fluent2BrandWell(t)),
+              child: CustomPaint(
+                painter: _Band(
+                  fluent2BrandWell(t),
+                  rtl ? toEnd : toStart,
+                  rtl ? toStart : toEnd,
+                ),
+              ),
             ),
           ),
         Container(
@@ -996,6 +1021,29 @@ class _RangeDay extends StatelessWidget {
     );
     return SizedBox(height: height, child: face);
   }
+}
+
+/// A day's share of a range's band, reaching [left] and [right] (half a
+/// device pixel, where a neighbour's band carries on) past its own edges, so
+/// where the month's columns fall on a fraction of a pixel the days' bands
+/// still meet: each pixel between two is wholly under one of them, no lighter
+/// seam of the page between.
+class _Band extends CustomPainter {
+  _Band(this.color, this.left, this.right);
+
+  final Color color;
+  final double left;
+  final double right;
+
+  @override
+  void paint(Canvas canvas, Size size) => canvas.drawRect(
+    Rect.fromLTRB(-left, 0, size.width + right, size.height),
+    Paint()..color = color,
+  );
+
+  @override
+  bool shouldRepaint(_Band old) =>
+      old.color != color || old.left != left || old.right != right;
 }
 
 /// Raises a [Fluent2DateRangePicker] in Fluent's dialog; answers the range on

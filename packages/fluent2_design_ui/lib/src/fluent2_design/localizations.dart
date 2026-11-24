@@ -20,9 +20,10 @@ abstract class Fluent2Localizations {
   const Fluent2Localizations();
 
   /// The words in force at [context]: the installed delegate's, else English.
-  /// English's time words ([hour], [minute], [am], [pm]) are those of the
-  /// `RawWidgetsLocalizations` in force at [context], so a time picker speaks the
-  /// app's language wherever ui_core has it.
+  /// English's time words ([hour], [minute], [am], [pm]) and calendar words
+  /// ([monthYear], [weekdaysShort]) are those of the `RawWidgetsLocalizations` in
+  /// force at [context], so a time picker and a range picker speak the app's
+  /// language wherever ui_core has it.
   static Fluent2Localizations of(BuildContext context) {
     final words = Localizations.of<Fluent2Localizations>(
       context,
@@ -314,8 +315,9 @@ abstract class Fluent2Localizations {
 }
 
 /// Fluent 2's English words. As [Fluent2Localizations.of] gives them, their
-/// time words ([hour], [minute], [am], [pm]) are ui_core's
-/// `RawWidgetsLocalizations`', in the app's language. A subclass in another
+/// time words ([hour], [minute], [am], [pm]) and calendar words ([monthYear],
+/// [weekdaysShort]) are ui_core's `RawWidgetsLocalizations`', in the app's
+/// language. A subclass in another
 /// language gives its own time words, or `RawWidgetsLocalizations`'
 /// (`timePickerHourLabel`, `timePickerMinuteLabel`,
 /// `anteMeridiemAbbreviation`, `postMeridiemAbbreviation`).
@@ -323,11 +325,12 @@ class Fluent2LocalizationsEn extends Fluent2Localizations {
   /// English.
   const Fluent2LocalizationsEn() : _shared = null;
 
-  /// English with [shared]'s time words.
+  /// English with [shared]'s time and calendar words.
   const Fluent2LocalizationsEn._time(RawWidgetsLocalizations shared)
     : _shared = shared;
 
-  /// The ui_core words the time words come from; English's own when null.
+  /// The ui_core words the time and calendar words come from; English's own
+  /// when null.
   final RawWidgetsLocalizations? _shared;
 
   @override
@@ -517,16 +520,23 @@ class Fluent2LocalizationsEn extends Fluent2Localizations {
     'Nov',
     'Dec',
   ];
+  // The calendar words come from ui_core in the app's language, as the
+  // calendar's and the date picker's do (their English is the same).
   @override
-  List<String> get weekdaysShort => const [
-    'Mo',
-    'Tu',
-    'We',
-    'Th',
-    'Fr',
-    'Sa',
-    'Su',
-  ];
+  List<String> get weekdaysShort {
+    final shared = _shared;
+    if (shared == null) {
+      return const ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+    }
+    return [
+      for (var day = DateTime.monday; day <= DateTime.sunday; day++)
+        shared.formatShortWeekday(day),
+    ];
+  }
+
+  @override
+  String monthYear(DateTime date) =>
+      _shared?.formatMonthYear(date) ?? super.monthYear(date);
 }
 
 class _Fluent2LocalizationsDelegate
