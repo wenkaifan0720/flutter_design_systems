@@ -1614,7 +1614,8 @@ class _RadioOption<T> extends StatefulWidget {
 // focus, the tap and the keys and says the option is checked and one of a
 // group, standing the look's press chrome (its reach, focus ring and dimming)
 // round the disc and the words.
-class _RadioOptionState<T> extends State<_RadioOption<T>> {
+class _RadioOptionState<T> extends State<_RadioOption<T>>
+    with _WordsAfterFonts<_RadioOption<T>> {
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -1719,23 +1720,28 @@ class _RadioOptionState<T> extends State<_RadioOption<T>> {
                         ),
                         const SizedBox(width: RetroDesktopSpacing.s10),
                         Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              if (t.chisel)
-                                _WordsFocus(
-                                  states: states,
-                                  child: Text(
-                                    option.label,
-                                    style: t.textTheme.body,
+                          child: fresh(
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (t.chisel)
+                                  _WordsFocus(
+                                    states: states,
+                                    child: Text(
+                                      option.label,
+                                      style: t.textTheme.body,
+                                    ),
+                                  )
+                                else
+                                  Text(option.label, style: t.textTheme.body),
+                                if (option.subtitle != null)
+                                  Text(
+                                    option.subtitle!,
+                                    style: t.textTheme.meta,
                                   ),
-                                )
-                              else
-                                Text(option.label, style: t.textTheme.body),
-                              if (option.subtitle != null)
-                                Text(option.subtitle!, style: t.textTheme.meta),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -1766,6 +1772,35 @@ class _Choice<T> {
   final bool enabled;
 }
 
+/// The words of a group that hugs its widest choice from 600 (a segmented button's segments, a radio group's
+/// options), built afresh each time the system's fonts change. A web app draws a script its faces lack (Arabic) in a
+/// face the browser fetches after the first frame, and Flutter's text keeps the width it measured for its parent
+/// before that face came: the group kept the narrower width and its words, drawn in the new face, broke onto a line
+/// the segment cut off. Built afresh, they measure in the face they are drawn in.
+mixin _WordsAfterFonts<W extends StatefulWidget> on State<W> {
+  int _fonts = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    PaintingBinding.instance.systemFonts.addListener(_fontsChanged);
+  }
+
+  @override
+  void dispose() {
+    PaintingBinding.instance.systemFonts.removeListener(_fontsChanged);
+    super.dispose();
+  }
+
+  void _fontsChanged() {
+    if (mounted) setState(() => _fonts++);
+  }
+
+  /// [words], measured afresh once the fonts change.
+  Widget fresh(Widget words) =>
+      KeyedSubtree(key: ValueKey<int>(_fonts), child: words);
+}
+
 class _ChoiceGroup<T> extends StatefulWidget {
   const _ChoiceGroup({
     required this.options,
@@ -1783,7 +1818,8 @@ class _ChoiceGroup<T> extends StatefulWidget {
   State<_ChoiceGroup<T>> createState() => _ChoiceState<T>();
 }
 
-class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
+class _ChoiceState<T> extends State<_ChoiceGroup<T>>
+    with _WordsAfterFonts<_ChoiceGroup<T>> {
   final List<FocusNode> _nodes = [];
   @override
   void dispose() {
@@ -1980,8 +2016,13 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
                               const SizedBox(width: RetroDesktopSpacing.s6),
                             ],
                             Flexible(
-                              child: RetroDesktopCaps(
-                                Text(option.label, textAlign: TextAlign.center),
+                              child: fresh(
+                                RetroDesktopCaps(
+                                  Text(
+                                    option.label,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
                               ),
                             ),
                           ],

@@ -1,3 +1,7 @@
+## 0.6.1
+
+- A `RetroDesktopSegmentedButton`'s segments and a `RetroDesktopRadioGroup`'s options measure their words again when the system's fonts change, so from 600, where the group keeps to its widest word, every word stands whole in the face it is drawn in. A web app draws a script its faces lack (Arabic) in a face the browser fetches after the first frame, and the group kept the width it had measured before that face came: an Arabic segment lost its last letter, "منخفضة" reading "منخفض".
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawCombobox` for `DesignCombobox`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.
