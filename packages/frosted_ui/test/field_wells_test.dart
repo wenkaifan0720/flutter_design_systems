@@ -1,5 +1,5 @@
-// Every box a field takes words in is a well (frosted-glass.md: a field is recessed glass, a step darker than what
-// holds it). Round 10: the one-time code's six boxes were still paint, white at 82%, so on a card they stood whiter
+// Every box a field takes words in is a well (a field is recessed glass, a step darker than what
+// holds it). The one-time code's six boxes were once paint, white at 82%, so on a card they stood whiter
 // than the card instead of cut into it, unlike the text field beside them. By day and by night, the code's boxes are
 // well glass, as the text field's box is.
 import 'package:material_ui/material_ui.dart';

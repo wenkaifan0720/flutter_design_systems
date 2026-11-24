@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart'
     show MaterialLocalizations, RawDialogRoute;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';

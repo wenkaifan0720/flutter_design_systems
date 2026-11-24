@@ -233,7 +233,7 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
                     FrostedBleedRoom(
                       // The page's content holds its cards to the page's
                       // margins; the shared keyline check reads it.
-                      child: DesignKeylineRegion(
+                      child: RawKeylineRegion(
                         label: 'screen',
                         child: Padding(
                           padding: room.copyWith(
@@ -261,7 +261,7 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
           Positioned.fill(
             child: page(
               FrostedBleedRoom(
-                child: DesignKeylineRegion(
+                child: RawKeylineRegion(
                   label: 'screen',
                   child: Padding(
                     padding: EdgeInsets.only(

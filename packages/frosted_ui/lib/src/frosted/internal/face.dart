@@ -844,10 +844,10 @@ class FrostedFace extends StatelessWidget {
     );
     // The face is its box, whatever its pixels show: glass may be the
     // colour of what is behind it, and its shadows fall outside it. The
-    // alignment checks take it as one face (ui_core's DesignKeylineFace).
+    // alignment checks take it as one face (ui_core's RawKeylineFace).
     // Always marked: a mark that came and went with a state would rebuild
     // the face's subtree (a field would lose its focus).
-    return DesignKeylineFace(child: face);
+    return RawKeylineFace(child: face);
   }
 }
 

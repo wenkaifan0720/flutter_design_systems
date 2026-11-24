@@ -208,7 +208,7 @@ abstract final class FrostedIconSize {
 /// what rises over it (a toast, a menu, a sheet), [slow] for a figure
 /// counting to its value; every one eased out on [curve]. The look's are
 /// [look]; read them through [of], which answers [still]
-/// under Reduce Motion (ui_core's `designReduceMotionOf`: Android's and the
+/// under Reduce Motion (ui_core's `rawReduceMotionOf`: Android's and the
 /// web's `MediaQuery.disableAnimations`, or iOS's Reduce Motion).
 ///
 /// ```dart
@@ -251,7 +251,7 @@ class FrostedMotion with Diagnosticable {
   bool get moves => fast > Duration.zero || base > Duration.zero;
 
   /// The timings in force at [context]: the look's, or [still] under
-  /// Reduce Motion, read through ui_core's `designReduceMotionOf`
+  /// Reduce Motion, read through ui_core's `rawReduceMotionOf`
   /// (`MediaQuery.disableAnimations`, which Flutter sets on Android and the
   /// web, or iOS's Reduce Motion, which it reports only in the platform's
   /// accessibility features). A change of iOS's flag builds [context] again
@@ -260,7 +260,7 @@ class FrostedMotion with Diagnosticable {
   /// `FakeAccessibilityFeatures(disableAnimations: true)`, or iOS's
   /// `reduceMotion: true`.
   static FrostedMotion of(BuildContext context) =>
-      designReduceMotionOf(context) ? still : look;
+      rawReduceMotionOf(context) ? still : look;
 
   /// This with the named timings changed.
   FrostedMotion copyWith({
@@ -432,19 +432,19 @@ abstract final class FrostedBreakpoints {
   static const double touchHitTarget = 48;
 
   /// Frosted's floors, which its theme declares round the app (a
-  /// `DesignTapTargetScope`): [touchHitTarget] for a finger,
+  /// `RawTapTargetScope`): [touchHitTarget] for a finger,
   /// [minHitTarget] for a pointer, both above ui_core's 44 and 24.
-  static const DesignTapTargets targets = DesignTapTargets(
+  static const RawTapTargets targets = RawTapTargets(
     touch: Size.square(touchHitTarget),
     pointer: Size.square(minHitTarget),
   );
 
   /// The floor a target answers on [context]'s platform, from the floors in
-  /// force there (an app's own `DesignTapTargetScope`, else [targets]):
+  /// force there (an app's own `RawTapTargetScope`, else [targets]):
   /// [touchHitTarget] on Android, iOS and Fuchsia, [minHitTarget] on the
   /// desktop.
   static double hitTargetOf(BuildContext context) =>
-      (DesignTapTargets.maybeOf(context) ?? targets)
+      (RawTapTargets.maybeOf(context) ?? targets)
           .floorOn(Theme.of(context).platform)
           .shortestSide;
 
@@ -5402,19 +5402,16 @@ class _FrostedInstall extends StatelessWidget {
       }
     }
     // Frosted's floors, unless the app declared its own.
-    if (DesignTapTargets.maybeOf(context) == null) {
-      under = DesignTapTargetScope(
+    if (RawTapTargets.maybeOf(context) == null) {
+      under = RawTapTargetScope(
         targets: FrostedBreakpoints.targets,
         child: under,
       );
     }
     // Frosted's 2-pt grid (iOS's values are 2-pt steps), unless the app
     // declared its own: ui_core's spacing check reads it.
-    if (DesignSpacing.maybeOf(context) == null) {
-      under = DesignSpacingScope(
-        spacing: const DesignSpacing(grid: 2),
-        child: under,
-      );
+    if (RawSpacing.maybeOf(context) == null) {
+      under = RawSpacingScope(spacing: const RawSpacing(grid: 2), child: under);
     }
     return Theme(
       data: _materialUnder(data, PreviewFrame.targetPlatformOf(context)),

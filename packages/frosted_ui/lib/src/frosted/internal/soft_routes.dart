@@ -13,7 +13,7 @@ const double frostedRouteStiffness = 700;
 /// [color], both growing with the route's animation (the blur drawn whole
 /// from the first frame it is, never faded under an Opacity), clipped to the
 /// route's own box.
-DesignBarrierBuilder frostedSoftBarrier({
+RawBarrierBuilder frostedSoftBarrier({
   required Color color,
   required double soften,
 }) =>
@@ -42,7 +42,7 @@ DesignBarrierBuilder frostedSoftBarrier({
 /// The barrier a Frosted route paints over [color]: the page below softened
 /// by [soften] as it dims, or the colour alone when [soften] is 0 (no
 /// transparency).
-DesignBarrierBuilder? _softBelow(Color color, double soften) =>
+RawBarrierBuilder? _softBelow(Color color, double soften) =>
     soften > 0 ? frostedSoftBarrier(color: color, soften: soften) : null;
 
 /// Under Reduce Motion ui_core's routes fade their page in. Frosted's glass is
@@ -53,14 +53,14 @@ Widget _stillCuts(
   BuildContext context,
   Widget child,
   Widget Function() moving,
-) => designReduceMotionOf(context) ? child : moving();
+) => rawReduceMotionOf(context) ? child : moving();
 
 /// The dialog route of Frosted's dialogs, and of its sheets on a tablet or
-/// the desktop (ui_core's [DesignDialogRoute]: a spring, focus kept inside
+/// the desktop (ui_core's [RawModalDialogRoute]: a spring, focus kept inside
 /// and given back, Escape, the dialog's role and name): the card grows in
 /// over the page, softened below by [soften], rather than fading (glass under
 /// an Opacity reads an empty layer).
-class FrostedSoftDialogRoute<T> extends DesignDialogRoute<T> {
+class FrostedSoftDialogRoute<T> extends RawModalDialogRoute<T> {
   /// A dialog route of [builder]'s page, softening the page below by
   /// [soften] under [barrierColor].
   FrostedSoftDialogRoute({

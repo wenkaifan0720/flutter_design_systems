@@ -1,3 +1,9 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0, whose parts that still began with `Design` take `Raw` names (`DesignStyleOf` is `RawStyleOf`, `DesignDialogRoute` is `RawModalDialogRoute`). Frosted's code and docs say the new names. The old names stay through ui_core 0.6 as deprecated aliases, and `dart fix --apply` moves an app's code.
+- A calendar's and a date picker's head writes its year in the app's digits also when the app gives Frosted words of its own: Arabic's "نوفمبر ٢٠٢٦", not "نوفمبر 2026". `FrostedCalendar` paints its days with ui_core's `RawCalendarDayDetails.label`, in the same digits as before.
+- `FrostedDatePicker`, and so `showFrostedDatePicker`, numbers its days in the app's digits (Arabic's ٢٠, not 20), as `FrostedCalendar` already did.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

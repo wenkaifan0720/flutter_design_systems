@@ -7,7 +7,7 @@
 //
 // A part's disabled face is the switch an app turns: `enabled: false` where
 // the part has it, else a null handler. Parts with no such state say why in
-// [StatePart.why], and DECISIONS.md carries the same reasons.
+// [StatePart.why].
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show listEquals;

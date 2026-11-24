@@ -17,7 +17,7 @@ import '../../internal/cap.dart';
 
 export 'package:ui_core/ui_core.dart'
     show RawDataColumn, RawDataTableController;
-export 'package:ui_core/ui_core.dart' show DesignTreeController;
+export 'package:ui_core/ui_core.dart' show RawTreeController;
 
 // ---------------------------------------------------------------------------
 // Data table
@@ -237,7 +237,7 @@ class FrostedDataTable<R> extends StatelessWidget {
                               : t.textTheme.titleMedium)
                           .c(t.colorScheme.textPrimary),
                   // A longer cell can wrap while retaining the row’s middle.
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: frostedSansCap,
                     child: cellBuilder(context, row, column),
                   ),
@@ -352,10 +352,10 @@ class FrostedDataTable<R> extends StatelessWidget {
 /// Down walk the visible rows, Right opens (then steps in), Left closes
 /// (then steps out), Home and End go to the ends, Return opens a row with
 /// [onActivate]. A screen reader hears each row's level and place.
-/// ui_core's [DesignTree] is the behaviour.
+/// ui_core's [RawTree] is the behaviour.
 ///
 /// ```dart
-/// FrostedTreeView<String>(controller: DesignTreeController(roots: const ['Bills', 'Trips'], childrenOf: (f) => folders[f] ?? const <String>[]), labelOf: (f) => f, onActivate: open)
+/// FrostedTreeView<String>(controller: RawTreeController(roots: const ['Bills', 'Trips'], childrenOf: (f) => folders[f] ?? const <String>[]), labelOf: (f) => f, onActivate: open)
 /// ```
 class FrostedTreeView<T extends Object> extends StatelessWidget {
   /// A tree of [controller]'s nodes.
@@ -369,7 +369,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
   });
 
   /// The nodes, which are open and which chosen.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A node's words.
   final String Function(T node) labelOf;
@@ -386,7 +386,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
@@ -478,9 +478,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawTreeController<T>>('controller', controller))
       ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
       ..add(
         ObjectFlagProperty<Widget? Function(T node)>.has(

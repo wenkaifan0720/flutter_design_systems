@@ -401,9 +401,9 @@ class FrostedTouchTargets extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => DesignTapTargetScope(
-    targets: (DesignTapTargets.maybeOf(context) ?? FrostedBreakpoints.targets)
-        .copyWith(input: DesignInput.touch),
+  Widget build(BuildContext context) => RawTapTargetScope(
+    targets: (RawTapTargets.maybeOf(context) ?? FrostedBreakpoints.targets)
+        .copyWith(input: RawInput.touch),
     child: child,
   );
 }

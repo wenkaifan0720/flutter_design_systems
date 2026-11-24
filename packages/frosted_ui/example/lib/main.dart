@@ -573,8 +573,8 @@ class _RaisedWatch extends NavigatorObserver {
   /// The barrier a ui_core route paints itself (Frosted's dialog and sheets,
   /// softening the page as they dim it): such a route gives no
   /// [ModalRoute.barrierColor].
-  static DesignBarrierBuilder? painted(Route<Object?> route) => switch (route) {
-    DesignDialogRoute<Object?>(:final barrierBuilder) => barrierBuilder,
+  static RawBarrierBuilder? painted(Route<Object?> route) => switch (route) {
+    RawModalDialogRoute<Object?>(:final barrierBuilder) => barrierBuilder,
     RawBottomSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
     RawSideSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
     _ => null,

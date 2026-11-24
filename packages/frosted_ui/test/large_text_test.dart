@@ -540,13 +540,13 @@ void main() {
         await _pump(t, row(), direction: direction);
         var words = t.getRect(label);
         var control = t.getRect(strip);
-        // The words stand cap-centred (ui_core's DesignCapCenter): the middle
+        // The words stand cap-centred (ui_core's RawCapCenter): the middle
         // of their capitals, their box's, meets the control's, not the middle
         // of their line.
         final caps = find.ancestor(
           of: label,
           matching: find.byWidgetPredicate(
-            (w) => w.runtimeType.toString() == 'DesignCapCenter',
+            (w) => w.runtimeType.toString() == 'RawCapCenter',
           ),
         );
         expect(

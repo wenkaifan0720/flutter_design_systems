@@ -481,7 +481,7 @@ class FrostedFacedCard extends StatelessWidget {
               )
             : child,
       );
-      inside = DesignKeylineRegion(label: this.label ?? 'card', child: inside);
+      inside = RawKeylineRegion(label: this.label ?? 'card', child: inside);
       if (rim) {
         // The rim lies over the content, which keeps the tile's width: a
         // loose Stack would let a centred hero shrink to its words and stand

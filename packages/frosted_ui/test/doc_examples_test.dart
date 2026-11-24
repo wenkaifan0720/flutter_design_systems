@@ -701,7 +701,7 @@ void main() {
                 Text(column.id == 'who' ? p.payee : money(p.cents)),
           ),
       'FrostedTreeView': (context) => FrostedTreeView<String>(
-        controller: DesignTreeController(
+        controller: RawTreeController(
           roots: const ['Bills', 'Trips'],
           childrenOf: (f) => folders[f] ?? const <String>[],
         ),

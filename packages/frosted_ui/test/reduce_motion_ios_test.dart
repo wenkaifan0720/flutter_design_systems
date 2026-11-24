@@ -1,6 +1,6 @@
 // iOS's Reduce Motion calms Frosted. Flutter 3.47 sets MediaQuery.disableAnimations on Android and the
 // web but only the platform's accessibilityFeatures.reduceMotion on iOS, so
-// Frosted reads both through ui_core 0.2.1's designReduceMotionOf. Every case
+// Frosted reads both through ui_core 0.2.1's rawReduceMotionOf. Every case
 // here sets iOS's flag alone (MediaQuery still says animations run): the
 // timings are cuts, each loop stops as the flag turns on and runs again as
 // it turns off (a change of iOS's flag comes as a build, never as

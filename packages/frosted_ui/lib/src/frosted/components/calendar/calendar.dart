@@ -413,7 +413,7 @@ class _FrostedMonths extends StatelessWidget {
             child: Center(
               // In the reader's digits (Arabic's ١٨), as its name is read.
               child: Text(
-                RawWidgetsLocalizations.of(context).formatDecimal(day.date.day),
+                day.label,
                 style:
                     (ends || day.isToday
                             ? t.textTheme.labelLarge.semibold

@@ -401,7 +401,7 @@ void main() {
               reason: "the $what's height: as $name $here, on Android $there",
             );
             // A one-line entry's capitals, not its line box, stand on the
-            // box's middle (DesignCapCenter); ui_core's label and row checks
+            // box's middle (RawCapCenter); ui_core's label and row checks
             // read them.
           }
         }

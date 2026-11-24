@@ -47,8 +47,8 @@ class FrostedSharedWords {
 
   /// A month and its year, as a calendar's head says them.
   String monthYear(DateTime month) => _say(
-    '${_own.monthName(month.month)} ${month.year}',
-    '${_stock.monthName(month.month)} ${month.year}',
+    '${_own.monthName(month.month)} ${_shared.formatYear(month)}',
+    '${_stock.monthName(month.month)} ${_shared.formatYear(month)}',
     () => _shared.formatMonthYear(month),
   );
 

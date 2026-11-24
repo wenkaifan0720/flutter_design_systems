@@ -173,7 +173,7 @@ class FrostedPasswordField extends StatelessWidget {
 /// left to right in any language (a value's parts, as an amount's). The
 /// whole well lights as one while anything in it has focus, and a press on
 /// it or on a plain add-on puts the caret in the text. ui_core's
-/// [DesignInputGroup] is the behaviour.
+/// [RawInputGroup] is the behaviour.
 ///
 /// ```dart
 /// FrostedInputGroup(labelText: 'Website', prefix: Text('https://'), suffix: Text('.com'), value: site, onChanged: (v) => setState(() => site = v))
@@ -353,7 +353,7 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
       enabled: widget.enabled,
       focusNode: fieldFocus,
       builder: frostedFieldColumn,
-      child: DesignInputGroup(
+      child: RawInputGroup(
         focusNode: fieldFocus,
         enabled: widget.enabled,
         isError: error != null,

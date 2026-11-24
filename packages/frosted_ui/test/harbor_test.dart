@@ -1,4 +1,4 @@
-// Harbor, the example's live app (frosted-glass.md, the gate): its Activity and its Settings on a phone (390) and at
+// Harbor, the example's live app: its Activity and its Settings on a phone (390) and at
 // desktop width (1440), by day, by night and over the night sky. On each it draws without an error, keeps Flutter's
 // guidelines (Android's 48 px targets, labelled targets, and every word's contrast read off the glass as drawn), and
 // works: a row opens its transaction (a sheet on a phone, the pane beside the list at desktop width), the tabs move

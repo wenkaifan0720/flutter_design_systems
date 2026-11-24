@@ -1,4 +1,4 @@
-// Glass keeps its words (frosted-glass.md, the legibility contract). Body text reads at 4.5:1 and quiet words at 3:1
+// Glass keeps its words (the legibility contract). Body text reads at 4.5:1 and quiet words at 3:1
 // on every glass, over whatever the page puts behind it:
 // - in arithmetic, for every preset by day and by night: each glass's tint over black, white and saturated colours
 //   (black is the worst behind light glass, white behind dark);

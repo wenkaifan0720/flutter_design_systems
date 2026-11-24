@@ -7,10 +7,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
+export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 
 /// How one part is drawn, slot by slot, as Material's `ButtonStyle` does:
-/// ui_core's [DesignStyle], every look's one style. Each slot is a
+/// ui_core's [RawStyle], every look's one style. Each slot is a
 /// [WidgetStateProperty] resolved against the part's states (hovered,
 /// focused, pressed, selected, disabled, error), and each null slot the
 /// look's own. Set one theme-wide in [FrostedComponentThemes]
@@ -28,11 +28,11 @@ export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 ///   ),
 /// )
 /// ```
-typedef FrostedStyle = DesignStyle;
+typedef FrostedStyle = RawStyle;
 
 /// A part's style layers (its own `style:`, then its component theme's)
-/// read at its states: ui_core's [DesignStyleOf].
-typedef FrostedStyleOf = DesignStyleOf;
+/// read at its states: ui_core's [RawStyleOf].
+typedef FrostedStyleOf = RawStyleOf;
 
 /// One [FrostedStyle] per part, theme-wide, as Material's component themes
 /// are: `FrostedThemeData.components`. A widget's own `style:` wins over its

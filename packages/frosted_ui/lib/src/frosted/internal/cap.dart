@@ -11,12 +11,12 @@ const double frostedSansCap = .700;
 const double frostedDisplayCap = .660;
 
 /// [label], one line of words on a face, drawn with its capitals on its
-/// box's middle (ui_core's DesignCapCenter), by the cap height of the face
+/// box's middle (ui_core's RawCapCenter), by the cap height of the face
 /// its style names. A line box centred on a face leaves the capitals up to
 /// three device pixels off its middle; the box still centres as before.
 /// An app's own face (`FrostedTypeface.app`) takes DM Sans' measure.
 /// Plumbing of the components: an icon is never wrapped, nor page code.
-Widget frostedCapCentred(Text label) => DesignCapCenter(
+Widget frostedCapCentred(Text label) => RawCapCenter(
   capHeightFactor: (label.style?.fontFamily ?? '').contains('Bricolage')
       ? frostedDisplayCap
       : frostedSansCap,
@@ -27,7 +27,7 @@ Widget frostedCapCentred(Text label) => DesignCapCenter(
 /// device-pixel grid ([FrostedPixelSnap]): the 12 px words of a filter chip
 /// or a segment, so their stems keep pixels of full ink where a screen does
 /// not darken stems.
-Widget frostedCapCentredSnapped(Text label) => DesignCapCenter(
+Widget frostedCapCentredSnapped(Text label) => RawCapCenter(
   capHeightFactor: (label.style?.fontFamily ?? '').contains('Bricolage')
       ? frostedDisplayCap
       : frostedSansCap,
@@ -44,7 +44,7 @@ Widget frostedCapCentredEntry(
   Widget field, {
   bool one = true,
 }) => one
-    ? DesignCapCenter(
+    ? RawCapCenter(
         capHeightFactor: (style.fontFamily ?? '').contains('Bricolage')
             ? frostedDisplayCap
             : frostedSansCap,

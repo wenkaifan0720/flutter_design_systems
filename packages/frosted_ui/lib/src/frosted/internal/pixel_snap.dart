@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 
 /// Paints [child] with its left edge on the device-pixel grid: at most half
 /// a device pixel off where layout put it, and only while nothing above it
-/// scales or turns it (its baseline is already whole: DesignCapCenter). A
+/// scales or turns it (its baseline is already whole: RawCapCenter). A
 /// small label (12 px in DM Sans at 500) laid at a fractional x draws stems
 /// of under two device pixels that cover no pixel whole on a screen without
 /// stem darkening (FreeType on Linux), so its words read as their edge's

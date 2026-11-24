@@ -77,8 +77,8 @@ class FrostedScrollArea extends StatelessWidget {
       autofocus: autofocus,
       semanticLabel: label,
       visibility: alwaysShown
-          ? DesignScrollbarVisibility.always
-          : DesignScrollbarVisibility.auto,
+          ? RawScrollbarVisibility.always
+          : RawScrollbarVisibility.auto,
       frameBuilder: (context, focused, area) =>
           FrostedFocusRing(shown: focused, radius: 8, child: area),
       trackBuilder: (context, thumb) => AnimatedOpacity(

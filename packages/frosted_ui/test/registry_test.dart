@@ -33,8 +33,8 @@ void main() {
     );
     frostedInventory.verify();
     expect(frostedInventory.look, 'Frosted');
-    final owned = <DesignInventoryRow>[];
-    for (final row in DesignInventoryRow.all) {
+    final owned = <RawInventoryRow>[];
+    for (final row in RawInventoryRow.all) {
       final specimen = frostedInventory
           .entryFor(row.id)
           ?.builder
@@ -77,7 +77,7 @@ void main() {
 
   test('the one gap gives its reason', () {
     final gaps = [
-      for (final row in DesignInventoryRow.all)
+      for (final row in RawInventoryRow.all)
         if (!(frostedInventory.entryFor(row.id)?.isPresent ?? false)) row.id,
     ];
     expect(gaps, ['FloatingActionButton']);
@@ -88,7 +88,7 @@ void main() {
   });
 
   group('each live specimen builds', () {
-    for (final (i, row) in DesignInventoryRow.all.indexed) {
+    for (final (i, row) in RawInventoryRow.all.indexed) {
       final entry = frostedInventory.entryFor(row.id);
       final build = entry?.builder;
       if (build == null) continue;

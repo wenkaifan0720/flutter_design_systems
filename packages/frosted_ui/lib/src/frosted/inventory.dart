@@ -1,9 +1,5 @@
 export 'package:ui_core/inventory.dart'
-    show
-        DesignInventory,
-        DesignInventoryEntry,
-        DesignInventoryGallery,
-        DesignInventoryRow;
+    show RawInventory, RawInventoryEntry, RawInventoryGallery, RawInventoryRow;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -56,21 +52,21 @@ import 'theme.dart';
 void _none() {}
 void _drop<T>(T _) {}
 
-/// Every row of the shared inventory (INVENTORY.md, ui_core's
-/// [DesignInventoryRow.all]) as Frosted answers it: a live specimen of the
+/// Every row of the shared inventory (ui_core's
+/// [RawInventoryRow.all]) as Frosted answers it: a live specimen of the
 /// row's `Frosted<Stem>` class, or the reason it is deliberately absent.
-/// The gallery lists it ([DesignInventoryGallery]); a test holds it whole
+/// The gallery lists it ([RawInventoryGallery]); a test holds it whole
 /// (`frostedInventory.verify()`). The specimens read the theme, so
 /// build them under a [FrostedHost].
-final DesignInventory frostedInventory = DesignInventory(
+final RawInventory frostedInventory = RawInventory(
   look: 'Frosted',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (context) => const FrostedButton('Save', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (context) => const FrostedIconButton(
         FrostedGlyphs.add,
@@ -78,13 +74,13 @@ final DesignInventory frostedInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       "Frosted's one act stands in the navigation bar's middle "
           '(FrostedNavAction) or at the page\'s foot, never floating over the '
           'content.',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ButtonGroup',
       (context) => const FrostedButtonGroup(
         items: [
@@ -93,7 +89,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (context) => const FrostedToggleGroup<String>(
         segments: [
@@ -105,7 +101,7 @@ final DesignInventory frostedInventory = DesignInventory(
         onSelectionChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (context) => const FrostedSplitButton(
         label: 'Save',
@@ -113,29 +109,29 @@ final DesignInventory frostedInventory = DesignInventory(
         actions: [FrostedSplitAction(label: 'Save as…', onPressed: _none)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (context) => const FrostedLink('Terms', link: 'Terms', onPressed: _none),
     ),
-    DesignInventoryEntry.present('Kbd', (context) => const FrostedKbd('Esc')),
+    RawInventoryEntry.present('Kbd', (context) => const FrostedKbd('Esc')),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (context) => const FrostedTextField(labelText: 'Name', onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (context) => const FrostedTextArea(labelText: 'Notes', onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (context) => const FrostedSearchField(hintText: 'Search'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (context) => const FrostedPasswordField(labelText: 'Password'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (context) => const FrostedInputGroup(
         labelText: 'Website',
@@ -143,11 +139,11 @@ final DesignInventory frostedInventory = DesignInventory(
         suffix: Text('.com'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputOtp',
       (context) => const FrostedInputOtp(labelText: 'Code'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       // A budget's stepper (its well an amount), at $250 so both rounds are
       // live.
@@ -159,7 +155,7 @@ final DesignInventory frostedInventory = DesignInventory(
         money: true,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (context) => const FrostedSelect<String>(
         labelText: 'Size',
@@ -171,14 +167,14 @@ final DesignInventory frostedInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (context) => const FrostedCombobox<String>(
         labelText: 'Country',
         options: ['Canada', 'Chile', 'Japan', 'Portugal'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (context) => const FrostedMultiSelect<String>(
         labelText: 'Tags',
@@ -187,12 +183,12 @@ final DesignInventory frostedInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (context) =>
           const FrostedCheckbox(value: true, label: 'Agree', onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (context) => const FrostedRadioGroup<String>(
         labelText: 'Plan',
@@ -201,24 +197,24 @@ final DesignInventory frostedInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (context) =>
           const FrostedSwitch(value: true, onChanged: _drop, label: 'Wi-Fi'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (context) =>
           const FrostedSlider(value: .4, onChanged: _drop, label: 'Volume'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (context) => const FrostedRangeSlider(
         values: RawRangeValues(.2, .7),
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (context) => const FrostedSegmentedButton<String>(
         segments: [
@@ -230,24 +226,24 @@ final DesignInventory frostedInventory = DesignInventory(
         label: 'Range',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (context) => const FrostedChip('Vegetarian', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (context) => const FrostedRating(value: 4, label: 'Your rating'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (context) =>
           const FrostedFileUpload(labelText: 'Attachments', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (context) => FrostedDatePicker(currentDate: DateTime(2026, 11, 10)),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (context) => FrostedDateRangePicker(
         firstDate: DateTime(2026),
@@ -255,14 +251,14 @@ final DesignInventory frostedInventory = DesignInventory(
         currentDate: DateTime(2026, 11, 10),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (context) => const FrostedTimePicker(
         value: FrostedTime(hour: 9, minute: 30),
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (context) => FrostedCalendar(
         firstDate: DateTime(2026),
@@ -270,7 +266,7 @@ final DesignInventory frostedInventory = DesignInventory(
         currentDate: DateTime(2026, 11, 10),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'WheelPicker',
       (context) => const FrostedWheelPicker<int>(
         options: [FrostedSelectOption(1, 'One'), FrostedSelectOption(2, 'Two')],
@@ -279,12 +275,12 @@ final DesignInventory frostedInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ColorPicker',
       (context) =>
           const FrostedColorPicker(value: Color(0xFF0A7CFF), onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (context) => const FrostedFormField(
         labelText: 'Notify me',
@@ -295,11 +291,11 @@ final DesignInventory frostedInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (context) => const FrostedAppBar(title: 'Settings'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (context) => const FrostedNavigationBar(
         items: [
@@ -310,7 +306,7 @@ final DesignInventory frostedInventory = DesignInventory(
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (context) => const FrostedNavigationRail(
         items: [
@@ -319,7 +315,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (context) => const FrostedNavigationDrawer(
         items: [
@@ -328,11 +324,11 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (context) => const FrostedTabBar(tabs: ['Overview', 'Activity']),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (context) => const FrostedBreadcrumb(
         items: [
@@ -341,7 +337,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (context) => const FrostedPagination(
         pageCount: 5,
@@ -349,17 +345,17 @@ final DesignInventory frostedInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (context) =>
           const FrostedStepProgress(count: 4, currentStep: 1, name: 'Details'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (context) =>
           const FrostedPageDots(pageCount: 4, selectedIndex: 0, label: 'Page'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MenuBar',
       (context) => const FrostedMenuBar(
         menus: [
@@ -374,7 +370,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Command',
       (context) => const FrostedCommand(
         width: 340,
@@ -384,38 +380,38 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (context) => const FrostedScaffold(body: Text('Page')),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (context) => const FrostedCard(child: Text('Card')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (context) => const FrostedListTile(title: 'Wi-Fi', meta: 'Home'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (context) => const FrostedListSection(
         title: 'Account',
         rows: [FrostedListTile(title: 'Profile')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (context) => const FrostedSectionHeader('Recent'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (context) => const FrostedDisclosure(
         title: 'Details',
         child: Text('More about it'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (context) => const FrostedTable(
         columns: [FrostedTableColumn('Item'), FrostedTableColumn('Qty')],
@@ -424,7 +420,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DataTable',
       (context) => _Owned(
         create: () => RawDataTableController<(String, int)>(
@@ -446,11 +442,8 @@ final DesignInventory frostedInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
-      'Divider',
-      (context) => const FrostedDivider(),
-    ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Divider', (context) => const FrostedDivider()),
+    RawInventoryEntry.present(
       'ScrollArea',
       (context) => _Owned(
         create: ScrollController.new,
@@ -466,14 +459,14 @@ final DesignInventory frostedInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Resizable',
       (context) => const FrostedResizable(
         first: Center(child: Text('List')),
         second: Center(child: Text('Detail')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CarouselView',
       (context) => FrostedCarouselView(
         height: 120,
@@ -483,7 +476,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (context) => FrostedReorderableListView<String>(
         items: const ['Wake', 'Run', 'Read'],
@@ -493,7 +486,7 @@ final DesignInventory frostedInventory = DesignInventory(
         itemBuilder: (context, s) => Text(s),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SwipeActions',
       (context) => const FrostedSwipeActions(
         trailing: [
@@ -507,7 +500,7 @@ final DesignInventory frostedInventory = DesignInventory(
         child: FrostedListTile(title: 'Swipe me'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RefreshIndicator',
       (context) => FrostedRefreshIndicator(
         onRefresh: () async {},
@@ -517,10 +510,10 @@ final DesignInventory frostedInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TreeView',
       (context) => _Owned(
-        create: () => DesignTreeController<String>(
+        create: () => RawTreeController<String>(
           roots: const ['Documents', 'Photos'],
           childrenOf: (n) => n == 'Documents' ? const ['Taxes'] : const [],
           expanded: const ['Documents'],
@@ -529,7 +522,7 @@ final DesignInventory frostedInventory = DesignInventory(
             FrostedTreeView<String>(controller: tree, labelOf: (n) => n),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (context) => const FrostedTimeline(
         entries: [
@@ -538,52 +531,49 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
-      'Avatar',
-      (context) => const FrostedAvatar('MC'),
-    ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Avatar', (context) => const FrostedAvatar('MC')),
+    RawInventoryEntry.present(
       'AvatarGroup',
       (context) => const FrostedAvatarGroup(['Maya Chen', 'Leo Park']),
     ),
-    DesignInventoryEntry.present('Badge', (context) => const FrostedBadge(3)),
-    DesignInventoryEntry.present('Tag', (context) => const FrostedTag('New')),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Badge', (context) => const FrostedBadge(3)),
+    RawInventoryEntry.present('Tag', (context) => const FrostedTag('New')),
+    RawInventoryEntry.present(
       'Media',
       (context) => const FrostedMedia(seed: 'Lisbon in May', aspect: 16 / 9),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (context) => const FrostedEmptyState(title: 'Nothing here yet'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (context) => const FrostedDescriptionList(
         children: [FrostedKeyValue(label: 'Plan', value: 'Yearly')],
       ),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (context) =>
           const FrostedDialog(title: 'Leave this page?', onConfirm: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (context) => const FrostedBottomSheet(child: Text('Sheet')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (context) =>
           const FrostedSheet(title: 'Filters', children: [Text('Options')]),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (context) => const FrostedActionSheet<String>(
         actions: [FrostedActionSheetAction('Share', value: 'share')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (context) => FrostedPopover(
         builder: (context, controller, _) => FrostedButton.glass(
@@ -594,18 +584,18 @@ final DesignInventory frostedInventory = DesignInventory(
         content: const Text('Only unread'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'HoverCard',
       (context) => const FrostedHoverCard(
         content: Text('Maya Chen · Design lead'),
         child: Text('@maya'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (context) => const FrostedTooltip(message: 'Copy', child: Text('Copy')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (context) => const FrostedMenu<String>(
         items: [
@@ -615,11 +605,11 @@ final DesignInventory frostedInventory = DesignInventory(
         onSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (context) => const FrostedSnackBar('Saved'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (context) => const FrostedBanner(
         icon: FrostedGlyphs.info,
@@ -628,29 +618,29 @@ final DesignInventory frostedInventory = DesignInventory(
       ),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (context) =>
           const FrostedLinearProgressIndicator(value: .4, label: 'Upload'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (context) => const FrostedCircularProgressIndicator(),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (context) => const FrostedSkeleton(width: 120, height: 16),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (context) => const FrostedStatusView.loading(),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (context) => FrostedMeter(.6, hue: context.frostedTheme.hue(0)),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (context) => const FrostedLineChart(
         label: 'Spending',
@@ -659,7 +649,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (context) => const FrostedBarChart(
         label: 'Spending',
@@ -668,7 +658,7 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (context) => const FrostedAreaChart(
         label: 'Spending',
@@ -677,14 +667,14 @@ final DesignInventory frostedInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (context) => const FrostedPieChart(
         label: 'Budget',
         slices: [FrostedPieSlice('Rent', 40), FrostedPieSlice('Food', 25)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (context) => const FrostedSparkline([3, 5, 4, 6], label: 'Trend'),
     ),
@@ -722,7 +712,7 @@ class FrostedInventoryGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: frostedInventory,
       controller: controller,
       padding: padding,

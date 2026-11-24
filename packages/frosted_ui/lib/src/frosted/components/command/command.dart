@@ -26,7 +26,7 @@ export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 
 /// [shortcut]'s keys as Frosted's menus and palette write them, for a
 /// [RawMenuEntry.shortcut] or a [RawCommand.shortcut]: ui_core's keys
-/// ([designShortcutKeys]) in the platform's order and the reader's words,
+/// ([rawShortcutKeys]) in the platform's order and the reader's words,
 /// close together with Apple's symbols ("⇧⌘Z", each symbol drawn as the
 /// look's glyph) on macOS and iOS, and joined by "+" elsewhere
 /// ("Ctrl+Shift+Z"). [platform] is [defaultTargetPlatform] when null.
@@ -41,7 +41,7 @@ String frostedShortcutLabel(
 }) {
   final on = platform ?? defaultTargetPlatform;
   final apple = on == TargetPlatform.macOS || on == TargetPlatform.iOS;
-  return designShortcutKeys(
+  return rawShortcutKeys(
     context,
     shortcut,
     platform: on,
@@ -360,7 +360,7 @@ class FrostedCommand extends StatelessWidget {
     final t = context.frostedTheme;
     final navigator = FrostedHost.navigatorOf(context);
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
-    return showDesignCommandPalette(
+    return showRawCommandPalette(
       context: navigator.context,
       // The page under the palette dims and softens, as under every raised
       // slab.

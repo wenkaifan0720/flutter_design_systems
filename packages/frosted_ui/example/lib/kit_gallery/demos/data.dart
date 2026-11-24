@@ -65,7 +65,7 @@ RawDataTableController<_File> _filesTable() => RawDataTableController<_File>(
   ],
 );
 
-DesignTreeController<_Folder> _folders() => DesignTreeController<_Folder>(
+RawTreeController<_Folder> _folders() => RawTreeController<_Folder>(
   roots: _roots,
   childrenOf: (f) => f.children,
   expanded: [_roots.first],
@@ -86,7 +86,7 @@ Widget kitSpecimenDataTable() => KitOwned<RawDataTableController<_File>>(
 );
 
 /// Folders, the first open.
-Widget kitSpecimenTreeView() => KitOwned<DesignTreeController<_Folder>>(
+Widget kitSpecimenTreeView() => KitOwned<RawTreeController<_Folder>>(
   _folders,
   (nodes) => FrostedTreeView<_Folder>(
     controller: nodes,

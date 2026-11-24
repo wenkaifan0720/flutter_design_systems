@@ -612,6 +612,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
         7;
     final shared = FrostedSharedWords.of(context);
     final title = shared.monthYear(_month);
+    final digits = RawWidgetsLocalizations.of(context);
 
     Widget step(IconData glyph, String label, VoidCallback? go) =>
         FrostedPressable(
@@ -725,7 +726,9 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
                 : null,
             child: Center(
               child: Text(
-                '$n',
+                // In the reader's digits (Arabic's ٢٠), as its head's year
+                // and a calendar's days are.
+                digits.formatDecimal(n),
                 style: s.words(
                   (chosen || isToday
                           ? t.textTheme.labelLarge.semibold
