@@ -1,4 +1,4 @@
-// The charts' picking on ui_core's DesignChart and DesignPieChart: a mouse, a finger, the keys (one tab stop) and a
+// The charts' picking on ui_core's RawChart and RawPieChart: a mouse, a finger, the keys (one tab stop) and a
 // screen reader choose a sample or a slice; the look marks it and shows its values, in the plot's readout or the
 // donut's hole.
 import 'package:flutter/gestures.dart';

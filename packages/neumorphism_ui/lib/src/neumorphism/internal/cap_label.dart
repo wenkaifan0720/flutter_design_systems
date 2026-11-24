@@ -1,4 +1,4 @@
-// A face's one-line label, centred by its capitals (ui_core's DesignCapCenter).
+// A face's one-line label, centred by its capitals (ui_core's RawCapCenter).
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -9,9 +9,9 @@ const double neumorphicCapHeight = 0.720;
 /// face's alignment, a row's cross axis) then centres the capitals. The look wraps each face's label once, here and
 /// nowhere in page code; never an icon.
 Widget neumorphicLabel(Widget label) => neumorphicCapCentred
-    ? DesignCapCenter(capHeightFactor: neumorphicCapHeight, child: label)
+    ? RawCapCenter(capHeightFactor: neumorphicCapHeight, child: label)
     : label;
 
-/// Off: labels centred by their line boxes, as before DesignCapCenter. For the label sweep's before-and-after count.
+/// Off: labels centred by their line boxes, as before RawCapCenter. For the label sweep's before-and-after count.
 @visibleForTesting
 bool neumorphicCapCentred = true;

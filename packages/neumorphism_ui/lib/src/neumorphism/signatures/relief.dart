@@ -386,7 +386,7 @@ class _BayCell extends StatelessWidget {
         : NeumorphicTap(
             onPressed: bay.onPressed,
             label: bay.name,
-            child: DesignKeylineFace(child: cell),
+            child: RawKeylineFace(child: cell),
           );
   }
 }

@@ -414,7 +414,7 @@ class NeumorphicDial extends StatelessWidget {
   // An instrument's face: its scale's numerals grow with the text only so far (at twice the size they ran into their
   // ticks). The setting takes priority in the centre when space is tight.
   Widget build(BuildContext context) =>
-      DesignKeylineFace(child: _instrument(context, _build));
+      RawKeylineFace(child: _instrument(context, _build));
 
   Widget _build(BuildContext context, TextScaler reader) {
     final t = NeumorphicTheme.of(context);

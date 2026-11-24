@@ -985,7 +985,7 @@ class NeumorphicSurface extends StatelessWidget {
         // and the hero cast hold things judged by their own keylines, so they stay unmarked.
         return switch (cast) {
           NeumorphicSurfaceLevel.slab || NeumorphicSurfaceLevel.casting => face,
-          _ => DesignKeylineFace(child: face),
+          _ => RawKeylineFace(child: face),
         };
       },
     );
@@ -1070,7 +1070,7 @@ class NeumorphicSlab extends StatelessWidget {
       EdgeInsets.all(t.desk ? 24 : 20);
   @override
   // A slab (a card, a list's section) holds its own keylines: ui_core's keyline check measures every screen built on it.
-  Widget build(BuildContext context) => DesignKeylineRegion(
+  Widget build(BuildContext context) => RawKeylineRegion(
     child: NeumorphicSurface(
       cast: NeumorphicSurfaceLevel.slab,
       style: style,

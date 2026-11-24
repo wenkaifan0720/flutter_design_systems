@@ -1337,7 +1337,7 @@ class NeumorphicScaffold extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1264),
               // The page holds its cards and heads to its margins (ui_core's keyline check).
-              child: DesignKeylineRegion(
+              child: RawKeylineRegion(
                 label: 'page',
                 child: Padding(
                   padding: inset,
@@ -1379,7 +1379,7 @@ class NeumorphicScaffold extends StatelessWidget {
       ];
       final below = fullBleed
           ? body
-          : DesignKeylineRegion(
+          : RawKeylineRegion(
               label: 'page',
               child: Padding(padding: inset, child: body),
             );

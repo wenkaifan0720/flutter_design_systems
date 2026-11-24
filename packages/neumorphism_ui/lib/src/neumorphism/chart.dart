@@ -137,9 +137,9 @@ class NeumorphicChart extends StatelessWidget {
     if (loading) {
       return _ChartLoading(label: label, style: style, height: height + 32);
     }
-    // The figures are ui_core's (DesignChartValueFormat), in the reader's digits; [format] replaces them.
+    // The figures are ui_core's (RawChartValueFormat), in the reader's digits; [format] replaces them.
     final figures = RawWidgetsLocalizations.of(context);
-    const plain = DesignChartValueFormat();
+    const plain = RawChartValueFormat();
     final fmt = format ?? (double value) => plain.format(value, figures);
     final values = [
       for (final s in series)
@@ -180,7 +180,7 @@ class NeumorphicChart extends StatelessWidget {
     }
     final marks = [
       for (final value in ticks)
-        DesignScaleTick(
+        RawScaleTick(
           value: value,
           position: value,
           label:
@@ -189,7 +189,7 @@ class NeumorphicChart extends StatelessWidget {
           fractionDigits: digits,
         ),
     ];
-    final gutter = DesignScaleTick.widestLabel(
+    final gutter = RawScaleTick.widestLabel(
       marks,
       style: tickStyle,
       textScaler: scaler,
@@ -228,23 +228,23 @@ class NeumorphicChart extends StatelessWidget {
         if (i < s.values.length && s.values[i] != null && s.values[i]!.isFinite)
           '${s.label} ${fmt(s.values[i]!)}',
     ].join('\n');
-    // The plot's picking is ui_core's (DesignChart): a mouse over it, a finger drawn across it or a tap on it, the
+    // The plot's picking is ui_core's (RawChart): a mouse over it, a finger drawn across it or a tap on it, the
     // keys (one tab stop: Left and Right, Home and End, Escape) and a screen reader's steps choose a sample; the look
-    // draws the plot, marks the sample and raises its values above it. The chart's one node is DesignChart's: its
+    // draws the plot, marks the sample and raises its values above it. The chart's one node is RawChart's: its
     // name, the summary, and the sample the keys or a screen reader step to. The words round the plot are drawn only.
     // The plot reads in the page's direction, as ui_core's picking does: right to left, the first sample stands at the
     // right, the gutter and its scale too.
     final rtl = direction == TextDirection.rtl;
-    final plot = DesignChart(
+    final plot = RawChart(
       semanticLabel: label,
       semanticSummary: read,
       series: [
         for (final s in series)
-          DesignChartSeries(
+          RawChartSeries(
             label: s.label,
             points: [
               for (final (i, value) in s.values.indexed)
-                DesignChartPoint(
+                RawChartPoint(
                   i.toDouble(),
                   value != null && value.isFinite ? value : null,
                 ),
@@ -252,8 +252,8 @@ class NeumorphicChart extends StatelessWidget {
           ),
       ],
       xAxis: kind == NeumorphicChartKind.bar
-          ? DesignChartXAxis.band
-          : DesignChartXAxis.linear,
+          ? RawChartXAxis.band
+          : RawChartXAxis.linear,
       categories: kind == NeumorphicChartKind.bar
           ? [
               for (var i = 0; i < count; i++)
@@ -878,7 +878,7 @@ double _plotX(Rect area, int i, int count, NeumorphicChartKind kind) {
   return count <= 1 ? area.center.dx : area.left + area.width * i / (count - 1);
 }
 
-/// The plot with its readout: the sample ui_core's DesignChart picked is marked and its values raised above the
+/// The plot with its readout: the sample ui_core's RawChart picked is marked and its values raised above the
 /// plot, following the sample and staying inside the plot. The values are the chart's node's already, so the readout
 /// itself is not announced. Keyboard focus lifts the plot, as it lifts every face of the look.
 class _Readout extends StatelessWidget {
@@ -1106,10 +1106,10 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
             fmt(widget.slices[selected].value),
             '${widget.slices[selected].label}, ${share(widget.slices[selected])}',
           );
-    // The ring's picking is ui_core's (DesignPieChart): a mouse over a slice, a finger on it, the keys (one tab stop:
+    // The ring's picking is ui_core's (RawPieChart): a mouse over a slice, a finger on it, the keys (one tab stop:
     // the arrows, Home and End) and a screen reader's steps choose one; the look raises it, names it in the hole and
     // brings its row in the key up to the ink. A pointer picks on the ring and 6 px either side of it, never in the
-    // hole. The chart's one node is DesignPieChart's.
+    // hole. The chart's one node is RawPieChart's.
     final ringWidth = widget.size * .15;
     final ringRadius = (widget.size - ringWidth) / 2 - 4;
     final ring = Directionality(
@@ -1117,12 +1117,12 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
       textDirection: TextDirection.ltr,
       child: SizedBox.square(
         dimension: widget.size,
-        child: DesignPieChart(
+        child: RawPieChart(
           semanticLabel: widget.label,
           semanticSummary: read,
           slices: [
             for (final s in widget.slices)
-              DesignPieSlice(label: s.label, value: s.value),
+              RawPieSlice(label: s.label, value: s.value),
           ],
           formatValue: fmt,
           holeRadius: math.max(

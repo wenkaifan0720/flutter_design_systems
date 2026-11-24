@@ -13,7 +13,7 @@ void main() {
 
   test('every row is answered once, and none is left out', () {
     expect(neumorphicInventory.problems, isEmpty);
-    expect(neumorphicInventory.entries.length, DesignInventoryRow.all.length);
+    expect(neumorphicInventory.entries.length, RawInventoryRow.all.length);
     // Left out by the look's laws, each with its reason (README, "How Neumorphism is built"): a key floating over the
     // content is a bump over bumps, and a pull's dome would stand over the first row.
     expect(
@@ -55,7 +55,7 @@ void main() {
                 matching: find.byType(Scrollable),
               )
               .first;
-          for (final row in DesignInventoryRow.all) {
+          for (final row in RawInventoryRow.all) {
             await tester.scrollUntilVisible(
               find.byKey(ValueKey<String>('inventory-${row.id}')),
               240,

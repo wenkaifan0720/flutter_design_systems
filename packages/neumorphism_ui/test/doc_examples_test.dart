@@ -389,7 +389,7 @@ void main() {
       },
       'NeumorphicTreeView': (context) {
         final places = _own(
-          DesignTreeController<String>(
+          RawTreeController<String>(
             roots: const ['Home'],
             childrenOf: (place) => const [],
           ),

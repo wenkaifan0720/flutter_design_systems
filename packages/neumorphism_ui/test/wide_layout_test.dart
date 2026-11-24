@@ -344,10 +344,7 @@ void main() {
     final fields = find.byType(NeumorphicTextField);
     Rect groove(int i) => tester.getRect(
       find
-          .descendant(
-            of: fields.at(i),
-            matching: find.byType(DesignKeylineFace),
-          )
+          .descendant(of: fields.at(i), matching: find.byType(RawKeylineFace))
           .first,
     );
     Rect words(int i) => tester.getRect(
@@ -390,7 +387,7 @@ void main() {
       find
           .descendant(
             of: find.byType(NeumorphicTabBar),
-            matching: find.byType(DesignKeylineFace),
+            matching: find.byType(RawKeylineFace),
           )
           .first,
     );

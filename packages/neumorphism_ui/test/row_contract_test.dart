@@ -3,7 +3,7 @@
 //   width, at most 320, and the list it opens is at least as wide as the face and starts on its leading edge.
 // - Controls sharing a row show one top and one bottom, whatever
 //   their variant, at each density, by day and by night. A face here is what the look marks as drawn
-//   (DesignKeylineFace: the box its relief is cast around); a quiet button shows no face at rest.
+//   (RawKeylineFace: the box its relief is cast around); a quiet button shows no face at rest.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -35,7 +35,7 @@ Widget _host(NeumorphicDensity density, Brightness brightness, Widget child) =>
     );
 
 Rect _face(WidgetTester tester, Finder control) => tester.getRect(
-  find.descendant(of: control, matching: find.byType(DesignKeylineFace)).first,
+  find.descendant(of: control, matching: find.byType(RawKeylineFace)).first,
 );
 
 // The open list: the outermost painted box around [option] that is narrower than the window.
@@ -127,7 +127,7 @@ void main() {
               : find
                     .descendant(
                       of: control,
-                      matching: find.byType(DesignKeylineFace),
+                      matching: find.byType(RawKeylineFace),
                     )
                     .first,
         );

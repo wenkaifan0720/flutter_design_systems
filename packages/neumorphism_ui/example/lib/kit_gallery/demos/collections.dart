@@ -74,8 +74,8 @@ Widget kitSpecimenDataTable() => kitHeld<RawDataTableController<_Room>>(
   ),
 );
 
-Widget kitSpecimenTreeView() => kitHeld<DesignTreeController<String>>(
-  () => DesignTreeController<String>(
+Widget kitSpecimenTreeView() => kitHeld<RawTreeController<String>>(
+  () => RawTreeController<String>(
     roots: const ['Upstairs', 'Ground'],
     expanded: const ['Upstairs'],
     childrenOf: (n) => switch (n) {

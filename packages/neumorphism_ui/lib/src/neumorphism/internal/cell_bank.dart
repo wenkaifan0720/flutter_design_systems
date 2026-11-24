@@ -326,7 +326,7 @@ class NeumorphicCellBank extends StatelessWidget {
           child: bankBody,
         );
         // The bank is one control: one item for ui_core's keyline and label checks, whatever its cells hold.
-        bankBody = DesignKeylineFace(child: bankBody);
+        bankBody = RawKeylineFace(child: bankBody);
         bankBody = group?.call(bankBody) ?? bankBody;
         // A control's 48 target round the bank's face, as a button and a field keep: the face takes the density's
         // height in it, and a press in the margin reaches the cell it stands over.

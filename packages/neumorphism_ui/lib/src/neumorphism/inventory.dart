@@ -1,4 +1,4 @@
-// Neumorphism's answer to the shared component inventory (ui_core's DesignInventoryRow.all, 89 rows): for each row the
+// Neumorphism's answer to the shared component inventory (ui_core's RawInventoryRow.all, 89 rows): for each row the
 // part that answers it, `Neumorphic<Stem>`, as a small live specimen. The live gallery lists it, and a test verifies it
 // (every row answered once, every specimen the row's own class).
 import 'package:flutter/foundation.dart';
@@ -86,13 +86,11 @@ RawDataTableController<_Room> _table(BuildContext _) =>
         ),
       ],
     );
-DesignTreeController<String> _places(BuildContext _) =>
-    DesignTreeController<String>(
-      roots: const ['Upstairs'],
-      expanded: const ['Upstairs'],
-      childrenOf: (n) =>
-          n == 'Upstairs' ? const ['Bedroom', 'Study'] : const [],
-    );
+RawTreeController<String> _places(BuildContext _) => RawTreeController<String>(
+  roots: const ['Upstairs'],
+  expanded: const ['Upstairs'],
+  childrenOf: (n) => n == 'Upstairs' ? const ['Bedroom', 'Study'] : const [],
+);
 
 /// A specimen's controller, made by [make] when the specimen first shows and disposed when it goes; [builder] shows
 /// the specimen with it. A controller kept for the app's life outlived every specimen that used it.
@@ -146,11 +144,11 @@ class _Room {
 }
 
 /// Neumorphism's inventory: every row of the shared component list, answered.
-final DesignInventory neumorphicInventory = DesignInventory(
+final RawInventory neumorphicInventory = RawInventory(
   look: 'Neumorphism',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       // The row names four kinds (filled, outlined, text, danger): one of each.
       (_) => const Wrap(
@@ -169,7 +167,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (_) => const NeumorphicIconButton(
         NeumorphicGlyphs.share2,
@@ -177,11 +175,11 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       'a button floating over the page would stack one raised part on others; give the page\'s main action its own place instead, at the end of its column, the foot of the screen or the side bar',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const NeumorphicButtonGroup(
         label: 'Week',
@@ -192,7 +190,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (_) => const NeumorphicToggleGroup<String>(
         label: 'Rooms',
@@ -205,7 +203,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (_) => const NeumorphicSplitButton(
         'Start',
@@ -213,33 +211,30 @@ final DesignInventory neumorphicInventory = DesignInventory(
         actions: [NeumorphicSplitAction('Start at dusk', onPressed: _none)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (_) => const NeumorphicLink('View details', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
-      'Kbd',
-      (_) => const NeumorphicKbd(['Ctrl', 'K']),
-    ),
+    RawInventoryEntry.present('Kbd', (_) => const NeumorphicKbd(['Ctrl', 'K'])),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (_) =>
           const NeumorphicTextField(labelText: 'Name', initialValue: 'Marta'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (_) => const NeumorphicTextArea(labelText: 'Notes'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (_) => const NeumorphicSearchField(hintText: 'Find a room'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (_) => const NeumorphicPasswordField(labelText: 'Password'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (_) => const NeumorphicInputGroup(
         labelText: 'Website',
@@ -248,11 +243,11 @@ final DesignInventory neumorphicInventory = DesignInventory(
         suffix: '.com',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputOtp',
       (_) => const NeumorphicInputOtp(labelText: 'Code', length: 6),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       (_) => const NeumorphicNumberField(
         value: 2,
@@ -260,7 +255,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (_) => const NeumorphicSelect<String>(
         labelText: 'Room',
@@ -272,7 +267,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (_) => const NeumorphicCombobox<String>(
         labelText: 'Room',
@@ -280,7 +275,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         options: ['Bedroom', 'Kitchen', 'Study', 'Hall'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (_) => const NeumorphicMultiSelect<String>(
         labelText: 'Rooms',
@@ -289,7 +284,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         options: ['Bedroom', 'Kitchen', 'Study'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (_) => const NeumorphicCheckbox(
         label: 'Dim at dusk',
@@ -297,7 +292,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (_) => const NeumorphicRadioGroup<String>(
         label: 'Room',
@@ -309,7 +304,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (_) => const NeumorphicSwitch(
         label: 'Night light',
@@ -317,12 +312,12 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (_) =>
           const NeumorphicSlider(label: 'Warmth', value: .5, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (_) => const NeumorphicRangeSlider(
         label: 'Comfort',
@@ -332,7 +327,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (_) => const NeumorphicSegmentedButton<String>(
         label: 'View',
@@ -344,39 +339,39 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (_) => const NeumorphicChip('Warm white', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (_) => const NeumorphicRating(label: 'Sleep', value: 4, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (_) => const NeumorphicFileUpload(onPressed: _none, hint: 'PDF or JPG'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (_) =>
           NeumorphicDatePicker(value: DateTime(2026, 6, 14), onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (_) => _Owns(
         _stay,
         (context, stay) => NeumorphicDateRangePicker(controller: stay),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (_) => const NeumorphicTimePicker(onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (_) => _Owns(_day, (context, day) => NeumorphicCalendar(controller: day)),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'WheelPicker',
       (_) => const NeumorphicWheelPicker<int>(
         label: 'Lamps',
@@ -386,14 +381,14 @@ final DesignInventory neumorphicInventory = DesignInventory(
         rows: 3,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ColorPicker',
       (_) => _Owns(
         _colour,
         (context, colour) => NeumorphicColorPicker(controller: colour),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (_) => const NeumorphicFormField(
         labelText: 'Email',
@@ -403,32 +398,32 @@ final DesignInventory neumorphicInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (_) => const NeumorphicAppBar(title: 'Tonight'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (_) => const NeumorphicNavigationBar(
         items: [_home, _rooms, _sleep],
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (_) => const NeumorphicNavigationRail(
         items: [_home, _rooms, _sleep],
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => const NeumorphicNavigationDrawer(
         items: [_home, _rooms, _sleep],
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (_) => NeumorphicTabBar(
         tabs: const ['Day', 'Week', 'Month'],
@@ -436,7 +431,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (_) => NeumorphicBreadcrumb(
         crumbs: const [
@@ -446,16 +441,16 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (_) => const NeumorphicPagination(count: 12, page: 4, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (_) =>
           const NeumorphicStepProgress(count: 3, currentStep: 1, name: 'Setup'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (_) => const NeumorphicPageDots(
         count: 4,
@@ -464,7 +459,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MenuBar',
       (context) => NeumorphicMenuBar(
         menus: [
@@ -488,7 +483,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Command',
       (context) => NeumorphicCommand(
         maxHeight: 200,
@@ -502,7 +497,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (_) => const NeumorphicScaffold(
         scroll: false,
@@ -511,14 +506,14 @@ final DesignInventory neumorphicInventory = DesignInventory(
       ),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (_) => const NeumorphicCard(
         title: 'Bedroom',
         children: [Text('19 degrees, two lamps')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (_) => const NeumorphicListTile(
         title: 'Bedroom',
@@ -526,7 +521,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (_) => const NeumorphicListSection(
         label: 'Rooms',
@@ -536,18 +531,18 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (_) => const NeumorphicSectionHeader(title: 'Tonight'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (_) => const NeumorphicDisclosure(
         title: 'House rules',
         child: Text('Quiet after ten'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (_) => const NeumorphicTable(
         columns: [
@@ -560,7 +555,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DataTable',
       (_) => _Owns(
         _table,
@@ -571,8 +566,8 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present('Divider', (_) => const NeumorphicDivider()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Divider', (_) => const NeumorphicDivider()),
+    RawInventoryEntry.present(
       'ScrollArea',
       (_) => _Owns(
         _scroll,
@@ -597,14 +592,14 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Resizable',
       (_) => const NeumorphicResizable(
         first: Text('Rooms'),
         second: Text('Bedroom'),
       ),
     ),
-    DesignInventoryEntry.present('CarouselView', (context) {
+    RawInventoryEntry.present('CarouselView', (context) {
       final c = NeumorphicTheme.of(context).colors;
       // Each slide is its room by its mark, on the one material: tinted in hues of their own the slides wore colours
       // the theme does not hold.
@@ -624,7 +619,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       );
     }),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (_) => NeumorphicReorderableListView<String>(
         items: const ['Bedroom', 'Study', 'Hall'],
@@ -633,7 +628,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         itemBuilder: (context, s) => Text(s),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SwipeActions',
       (_) => const NeumorphicSwipeActions(
         endActions: [RawSwipeAction(label: 'Archive', onPressed: _none)],
@@ -643,11 +638,11 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'RefreshIndicator',
       'its spinner sat over the list\'s first row; a pull to refresh that opens a gap at the top of the list comes in 0.2.0',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TreeView',
       (_) => _Owns(
         _places,
@@ -658,7 +653,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (_) => const NeumorphicTimeline(
         stops: [
@@ -675,11 +670,11 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (_) => const NeumorphicAvatar('MR', name: 'Marta Rossi'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (_) => const NeumorphicAvatarGroup([
         NeumorphicFace('MR'),
@@ -687,21 +682,21 @@ final DesignInventory neumorphicInventory = DesignInventory(
         NeumorphicFace('IV'),
       ]),
     ),
-    DesignInventoryEntry.present('Badge', (_) => const NeumorphicBadge(3)),
-    DesignInventoryEntry.present('Tag', (_) => const NeumorphicTag('Warm')),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Badge', (_) => const NeumorphicBadge(3)),
+    RawInventoryEntry.present('Tag', (_) => const NeumorphicTag('Warm')),
+    RawInventoryEntry.present(
       'Media',
       (_) =>
           const NeumorphicMedia(label: 'Bedroom', glyph: NeumorphicGlyphs.lamp),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (_) => const NeumorphicEmptyState(
         title: 'All quiet',
         body: 'No rooms are on.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (_) => const NeumorphicDescriptionList([
         NeumorphicDescription('Lights out', '22:30'),
@@ -709,14 +704,14 @@ final DesignInventory neumorphicInventory = DesignInventory(
       ]),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (_) => const NeumorphicDialog(
         title: 'Remove the scene?',
         message: 'The rooms keep their settings.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (_) => const NeumorphicBottomSheet(
         title: 'Bedroom',
@@ -725,11 +720,11 @@ final DesignInventory neumorphicInventory = DesignInventory(
         child: Text('Two lamps'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (_) => const NeumorphicSheet(title: 'Filters', child: Text('Warm white')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (_) => const NeumorphicActionSheet<String>(
         title: 'Bedroom',
@@ -745,7 +740,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (_) => NeumorphicPopover(
         label: 'Lights out',
@@ -754,21 +749,21 @@ final DesignInventory neumorphicInventory = DesignInventory(
         content: const Text('At half past ten, every night.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'HoverCard',
       (_) => const NeumorphicHoverCard(
         content: Text('Asleep by eleven, most nights'),
         child: NeumorphicLink('Marta Rossi', onPressed: _none),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (_) => const NeumorphicTooltip(
         message: 'Share',
         child: Icon(NeumorphicGlyphs.share2),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (_) => const NeumorphicMenu<String>(
         autofocus: false,
@@ -779,7 +774,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (_) => const NeumorphicSnackBar(
         'Scene saved',
@@ -787,31 +782,31 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onAction: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (_) =>
           const NeumorphicBanner('The hall lamp is changing.', title: 'Note'),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (_) =>
           const NeumorphicLinearProgressIndicator(value: .6, label: 'Upload'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (_) =>
           const NeumorphicCircularProgressIndicator(value: .6, label: 'Upload'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (_) => const NeumorphicSkeleton.lines(3),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (_) => const NeumorphicStatusView.loading(),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (_) => const NeumorphicMeter(
         label: 'Hot water',
@@ -822,7 +817,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
       ),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (_) => const NeumorphicLineChart(
         label: 'Hours slept',
@@ -833,7 +828,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (_) => const NeumorphicBarChart(
         label: 'Lamp hours',
@@ -845,7 +840,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (_) => const NeumorphicAreaChart(
         label: 'Warmth',
@@ -856,7 +851,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (_) => const NeumorphicPieChart(
         label: 'Rooms',
@@ -864,7 +859,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         slices: [NeumorphicPieSlice('On', 3), NeumorphicPieSlice('Off', 5)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (_) => const NeumorphicSparkline(
         label: 'Hours slept',
@@ -898,7 +893,7 @@ class NeumorphicInventoryGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: neumorphicInventory,
       controller: controller,
       padding: padding,
@@ -921,7 +916,7 @@ class NeumorphicInventoryGallery extends StatelessWidget {
             if (sized == null)
               Text(
                 entry?.absentReason != null
-                    ? DesignInventory.absentLabel(entry!.absentReason!)
+                    ? RawInventory.absentLabel(entry!.absentReason!)
                     : 'Missing: the inventory does not answer this row',
                 style: t.textTheme.body.copyWith(color: t.colors.inkSecondary),
               )
@@ -978,7 +973,7 @@ String _primaryKeys(BuildContext context, LogicalKeyboardKey key) {
   final apple =
       defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.iOS;
-  return designShortcutLabel(
+  return rawShortcutLabel(
     context,
     SingleActivator(key, meta: apple, control: !apple),
   );

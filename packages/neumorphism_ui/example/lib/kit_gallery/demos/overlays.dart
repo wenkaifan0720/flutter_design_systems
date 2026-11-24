@@ -245,7 +245,7 @@ String _primaryKeys(BuildContext context, LogicalKeyboardKey key) {
   final apple =
       defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.iOS;
-  return designShortcutLabel(
+  return rawShortcutLabel(
     context,
     SingleActivator(key, meta: apple, control: !apple),
   );

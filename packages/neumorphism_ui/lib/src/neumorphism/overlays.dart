@@ -492,7 +492,7 @@ Future<void> showNeumorphicCommand(
 }) {
   final t = NeumorphicTheme.of(context);
   final words = NeumorphicLocalizations.of(context);
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: neumorphicVeil(t.colors),
     barrierLabel: words.close,

@@ -149,9 +149,9 @@ class _ShapeTween extends Tween<ShapeBorder?> {
 /// final fill = look.fill ?? colors.faceStart;
 /// ```
 ///
-/// It is ui_core's [DesignStyleOf] under the look's name; [DesignStyleOf.freeze] holds one set of states as a
+/// It is ui_core's [RawStyleOf] under the look's name; [RawStyleOf.freeze] holds one set of states as a
 /// style.
-typedef NeumorphicStyleOf = DesignStyleOf;
+typedef NeumorphicStyleOf = RawStyleOf;
 
 /// An explicit styled rim or the high-contrast outline; otherwise none, and the relief draws the edge.
 ///

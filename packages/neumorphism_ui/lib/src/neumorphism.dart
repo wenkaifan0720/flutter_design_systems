@@ -79,9 +79,9 @@ export 'package:ui_core/ui_core.dart' show RawColorController;
 export 'package:ui_core/ui_core.dart' show RawCommand, RawCommandShortcut;
 export 'package:ui_core/ui_core.dart'
     show RawDataTableController, RawDataColumn, RawSortDirection;
-export 'package:ui_core/ui_core.dart' show DesignForm, DesignFormField;
+export 'package:ui_core/ui_core.dart' show RawForm, RawFormField;
 export 'package:ui_core/inventory.dart'
-    show DesignInventory, DesignInventoryEntry, DesignInventoryRow;
+    show RawInventory, RawInventoryEntry, RawInventoryRow;
 export 'package:ui_core/ui_core.dart'
     show RawWidgetsLocalizations, DefaultRawWidgetsLocalizations;
 export 'package:ui_core/ui_core.dart' show RawMenuEntry;
@@ -89,7 +89,7 @@ export 'package:ui_core/ui_core.dart' show RawRangeValues;
 export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 export 'package:ui_core/ui_core.dart' show RawSwipeAction;
 export 'package:ui_core/ui_core.dart' show RawToastController;
-export 'package:ui_core/ui_core.dart' show DesignTreeController;
+export 'package:ui_core/ui_core.dart' show RawTreeController;
 
 export 'neumorphism/format.dart';
 export 'neumorphism/component_themes.dart';

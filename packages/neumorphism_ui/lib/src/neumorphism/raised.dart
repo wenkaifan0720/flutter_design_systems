@@ -53,7 +53,7 @@ class _Carried {
       locale = Localizations.maybeLocaleOf(context) ?? const Locale('en'),
       scaler = MediaQuery.textScalerOf(context),
       // MediaQuery's own flag, carried as it is where the surface was opened. Not a reading of Reduce Motion: that is
-      // NeumorphicMotion.of's, through designReduceMotionOf, which takes iOS's from the platform wherever it is read.
+      // NeumorphicMotion.of's, through rawReduceMotionOf, which takes iOS's from the platform wherever it is read.
       disableAnimations = MediaQuery.disableAnimationsOf(context),
       motion = NeumorphicMotion.of(context),
       themes = InheritedTheme.capture(from: context, to: destination);
@@ -295,7 +295,7 @@ Future<T?> _push<T>(
   return result;
 }
 
-/// Raises a soft dialog on ui_core's dialog route ([DesignDialogRoute]): it rises and fades in on a spring as long as
+/// Raises a soft dialog on ui_core's dialog route ([RawModalDialogRoute]): it rises and fades in on a spring as long as
 /// the theme's raise, Escape, back or its dismissible scrim close it, Tab stays inside it, the focus goes back to its
 /// opener, and a screen reader hears a dialog named by [NeumorphicDialog]'s title. Under Reduce Motion it only fades.
 /// The future returns the value passed to pop.
@@ -336,7 +336,7 @@ Future<T?> showNeumorphicDialog<T>(
 
 // ui_core's dialog route in the look's Escape order: the newest raised surface takes Escape first, so a dialog opened
 // over a notice closes before the notice does.
-class _NeumorphicDialogRoute<T> extends DesignDialogRoute<T>
+class _NeumorphicDialogRoute<T> extends RawModalDialogRoute<T>
     with _EscapeCloses<T> {
   _NeumorphicDialogRoute({
     required super.builder,
@@ -402,7 +402,7 @@ class NeumorphicDialog extends StatelessWidget {
               child: Semantics(
                 // On ui_core's dialog route the route is the dialog (its role and scope) and the title names it;
                 // elsewhere (a specimen on a page) the slab scopes its own.
-                scopesRoute: ModalRoute.of(context) is DesignDialogRoute
+                scopesRoute: ModalRoute.of(context) is RawModalDialogRoute
                     ? null
                     : true,
                 explicitChildNodes: true,
@@ -449,7 +449,7 @@ class NeumorphicDialog extends StatelessWidget {
                       ],
                       if (actions.isNotEmpty) ...[
                         const SizedBox(height: 24),
-                        ModalRoute.of(context) is DesignDialogRoute
+                        ModalRoute.of(context) is RawModalDialogRoute
                             ? _SafeFocus(child: _Actions(children: actions))
                             : _Actions(children: actions),
                       ],
@@ -1987,7 +1987,7 @@ class _NeumorphicTipFadeState extends State<_NeumorphicTipFade>
     _shown = shown;
     _opacity.springTo(
       shown ? 1 : 0,
-      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+      RawMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
     );
   }
 

@@ -37,7 +37,7 @@ void main() {
       );
       addTearDown(tester.view.reset);
       addTearDown(() => neumorphicCapCentred = true);
-      // Two passes: labels centred by their line boxes, then by their capitals (DesignCapCenter). Only the second is
+      // Two passes: labels centred by their line boxes, then by their capitals (RawCapCenter). Only the second is
       // held.
       final counts = <String>[];
       var found = <String>[];
@@ -130,7 +130,7 @@ String? _named(String problem) {
   // colour, the gradient's rows count as ink, so the whole line box reads as capitals or as solid boxes. Every
   // family in FontManifest.json is loaded (loadBundledFonts); the same labels on flat faces read true.
   final tall = RegExp(
-    r'are drawn ([\d.]+) device px high; its DesignCapCenter.s capHeightFactor gives ([\d.]+)',
+    r'are drawn ([\d.]+) device px high; its RawCapCenter.s capHeightFactor gives ([\d.]+)',
   ).firstMatch(problem);
   if (tall != null && double.parse(tall[1]!) > 1.3 * double.parse(tall[2]!)) {
     return "an act's gradient face read as ink";

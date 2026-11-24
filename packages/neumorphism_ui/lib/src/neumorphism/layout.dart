@@ -710,7 +710,7 @@ class NeumorphicRow extends StatelessWidget {
       // read them, never across from a list's row to the pane beside it and back.
       children: [
         for (final child in children)
-          DesignKeylineRegion(
+          RawKeylineRegion(
             label: 'column',
             child: FocusTraversalGroup(
               policy: FocusTraversalGroup.maybeOf(context),

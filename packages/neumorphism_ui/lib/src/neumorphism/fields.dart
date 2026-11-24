@@ -530,7 +530,7 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
             ].whereType<String>().join(', '),
             child: NeumorphicReach(
               height: NeumorphicChromeMetrics.targetSize,
-              child: DesignInputGroup(
+              child: RawInputGroup(
                 focusNode: _focus,
                 enabled: widget.enabled,
                 isError: widget.errorText != null,
@@ -699,7 +699,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
   /// Finds the options for what is typed, in place of filtering [options]: a search over the network or a database.
   /// While it runs the list says it is loading; when it fails, the list says so and offers Try again (Down moves the
   /// keys there, Enter runs it), and the focus stays in the field.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs; null runs it at every change.
   final Duration? debounceDuration;
@@ -833,7 +833,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         DiagnosticsProperty<Duration>(
           'debounceDuration',
@@ -916,7 +916,7 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
   /// Finds the options for what is typed, in place of filtering [options]: a search over the network or a database.
   /// While it runs the list says it is loading; when it fails, the list says so and offers Try again (Down moves the
   /// keys there, Enter runs it), and the focus stays in the field.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs; null runs it at every change.
   final Duration? debounceDuration;
@@ -963,7 +963,7 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
       ..add(
         IterableProperty<T>('options', options, defaultValue: const <Never>[]),
       )
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         DiagnosticsProperty<Duration>(
           'debounceDuration',
@@ -1228,7 +1228,7 @@ class _SearchFailedState extends State<_SearchFailed> {
 /// A form row around any control: its label (with a required mark), the control, and its help or failure under it. A
 /// single control speaks the label, help and failure itself; a group of controls ([group]: a segmented button, radios,
 /// choices, chips in a wrap) is named by them, each control keeping its own node, so every one takes a tap from a screen
-/// reader or a browser with semantics on. The drawn words are silent. In a `DesignForm`, a `DesignFormField` validates it
+/// reader or a browser with semantics on. The drawn words are silent. In a `RawForm`, a `RawFormField` validates it
 /// and the form focuses the first wrong field on submit.
 ///
 /// ```dart

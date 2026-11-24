@@ -173,7 +173,7 @@ void main() {
                     hint: e.hint,
                   );
                   places[name] = empty;
-                  // The line is centred by its capitals (DesignCapCenter), not its line box: ui_core's
+                  // The line is centred by its capitals (RawCapCenter), not its line box: ui_core's
                   // DesignTextEntryCheck holds that (inline_alignment_test). Here the hint on the line it stands for.
                   near(
                     '$name · $os: hint on its line',

@@ -382,7 +382,7 @@ final _parts = <String, _Build>{
   'NeumorphicTreeView': (hit) => NeumorphicTreeView<String>(
     label: 'Rooms',
     controller: _own(
-      DesignTreeController<String>(
+      RawTreeController<String>(
         roots: const ['Bedroom'],
         childrenOf: (_) => const [],
       ),

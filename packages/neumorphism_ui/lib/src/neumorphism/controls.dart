@@ -1419,7 +1419,7 @@ class _ActButtonState extends State<_ActButton> {
     Widget paint(Widget child, {required EdgeInsets padding}) =>
         AnimatedNeumorphicShape(
           shape: shape,
-          builder: (context, border) => DesignKeylineFace(
+          builder: (context, border) => RawKeylineFace(
             child: TweenAnimationBuilder<double>(
               // Held in while busy, as a moulded key is.
               tween: Tween(
@@ -3981,7 +3981,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
       // One line's node is its reach round the whole box (below).
       node: multi,
       expanded: expanded,
-      // One line stands on the seat's middle by its capitals (ui_core's DesignCapCenter): caret, hint and taps move
+      // One line stands on the seat's middle by its capitals (ui_core's RawCapCenter): caret, hint and taps move
       // with it. Several lines start at the top, where they are laid out.
       child: multi
           ? (decorate?.call(editable) ?? editable)
@@ -5103,7 +5103,7 @@ class _NumberFigureState extends State<_NumberFigure>
                 spacing: 4,
                 children: [
                   // As wide as its figure. Its capitals on the line's middle, as every field's one line stands
-                  // (ui_core's DesignCapCenter): an editable's strut sat it half a pixel off the plain figure it
+                  // (ui_core's RawCapCenter): an editable's strut sat it half a pixel off the plain figure it
                   // replaced.
                   IntrinsicWidth(
                     child: neumorphicLabel(
@@ -5403,7 +5403,7 @@ class NeumorphicSwitch extends StatelessWidget {
             final look = neumorphicStyleOf([style, t.switchTheme], states);
             // The track is the switch's face, whichever end its thumb stands at: marked for ui_core's checks, which
             // would read an off switch's ground-coloured track by its thumb alone.
-            final paint = DesignKeylineFace(
+            final paint = RawKeylineFace(
               child: RepaintBoundary(
                 child: AnimatedNeumorphicShape(
                   shape: look.shape ?? t.shapes.capsule,
@@ -6273,7 +6273,7 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
               // checks, which would place its edge by the shading's first dark pixel.
               return Align(
                 alignment: place,
-                child: DesignKeylineFace(
+                child: RawKeylineFace(
                   child: SizedBox.square(
                     dimension: 28,
                     child: Stack(

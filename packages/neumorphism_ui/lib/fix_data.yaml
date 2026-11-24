@@ -907,7 +907,7 @@ transforms:
       - kind: 'renameParameter'
         oldName: 'today'
         newName: 'currentDate'
-  # 0.2.0: NeumorphicStyle is ui_core's DesignStyle, whose `layered` is what `cascade` was. The old name cannot stay
+  # 0.2.0: NeumorphicStyle is ui_core's RawStyle, whose `layered` is what `cascade` was. The old name cannot stay
   # beside it as a deprecated alias (a typedef carries no statics of its own), so the fix is the way across.
   - title: "Rename to 'layered'"
     date: 2026-11-14

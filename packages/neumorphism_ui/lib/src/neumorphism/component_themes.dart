@@ -1,7 +1,7 @@
-// A part's style: ui_core's DesignStyle under the look's name.
+// A part's style: ui_core's RawStyle under the look's name.
 import 'package:ui_core/ui_core.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
+export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 
 /// How one part looks, as Material's `ButtonStyle` is: every slot resolves for the part's states
 /// ([WidgetState.disabled], [WidgetState.hovered], [WidgetState.focused], [WidgetState.pressed],
@@ -25,8 +25,8 @@ export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 /// | [iconSize] | an icon's size |
 ///
 /// Each part's doc says which slots it reads. Its shape animates when a state changes it, as a Material 3 button's
-/// does. It is ui_core's [DesignStyle] under the look's name, so every look's parts take the same style, read the
-/// same way; [DesignStyle.layered] forwards a part's style and its theme to a part inside it.
+/// does. It is ui_core's [RawStyle] under the look's name, so every look's parts take the same style, read the
+/// same way; [RawStyle.layered] forwards a part's style and its theme to a part inside it.
 ///
 /// ```dart
 /// NeumorphicChip(
@@ -42,4 +42,4 @@ export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 ///   ),
 /// )
 /// ```
-typedef NeumorphicStyle = DesignStyle;
+typedef NeumorphicStyle = RawStyle;

@@ -118,8 +118,8 @@ class NeumorphicHost extends StatelessWidget {
         NeumorphicThemeData.preset(NeumorphicThemeData.presets.first, wanted);
     // Neumorphism's tap floors: a finger's 48 (Android's), a pointer's 24 (WCAG 2.2). Each control lays out at the
     // finger's 48 on every platform (NeumorphicChromeMetrics.targetSize), so a row stands the same wherever it runs.
-    return DesignTapTargetScope(
-      targets: const DesignTapTargets(
+    return RawTapTargetScope(
+      targets: const RawTapTargets(
         touch: Size.square(NeumorphicChromeMetrics.touchTarget),
       ),
       child: NeumorphicTheme(
@@ -227,7 +227,7 @@ class _NeumorphicPageRoute<T> extends PageRouteBuilder<T> {
 /// [drawer] stands it as tall as its content. The screen inside derives its close.
 /// Its routes are ui_core's, on springs as long as the theme's move: on a phone a [RawBottomSheetRoute] (a finger
 /// drags it down and away, the screen's scroll view handing the drag over at its top), on a desktop a
-/// [DesignDialogRoute]; both close on Escape and back, and give the focus back as they close.
+/// [RawModalDialogRoute]; both close on Escape and back, and give the focus back as they close.
 class NeumorphicSheetPage<T> extends Page<T> {
   /// Creates a [NeumorphicSheetPage].
   const NeumorphicSheetPage({
@@ -312,7 +312,7 @@ class NeumorphicSheetPage<T> extends Page<T> {
     final stiffness = neumorphicRouteStiffness(t.motion.move);
     final close = NeumorphicLocalizations.of(context).close;
     if (t.desk) {
-      return DesignDialogRoute<T>(
+      return RawModalDialogRoute<T>(
         settings: this,
         stiffness: stiffness,
         barrierDismissible: true,

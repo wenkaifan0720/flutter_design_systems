@@ -368,7 +368,7 @@ void main() {
   }
 
   // ui_core's check over the regions the look marks (every slab and the page): edges by what is drawn, rows of
-  // controls by their faces, a face of the ground's colour where the look marks it (DesignKeylineFace).
+  // controls by their faces, a face of the ground's colour where the look marks it (RawKeylineFace).
   // The gallery's pages too, at a desk's width: every example's first drawn pixel on the column's
   // edge, its face's and never its target's.
   group('ui_core\'s keyline check', () {

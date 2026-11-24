@@ -1,3 +1,9 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0, whose `Design*` names are `Raw*` now (`RawTapTargets`, `RawInventoryEntry`, `RawModalDialogRoute` and the rest). `dart fix --apply` renames them in an app (ui_core's `lib/fix_data.yaml` holds them); Neumorphism's code, docs and examples use the new names.
+- A calendar writes its days in the app's digits (`RawCalendarDayDetails.label`): Arabic-Indic in Arabic, as its dates and times already were.
+- A three-line `NeumorphicListTile` stands its key at the top a little lower, so the key's light no longer reaches the divider above the row.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

@@ -628,7 +628,7 @@ class NeumorphicListTile extends StatelessWidget {
           firstLine: lineOf(titleStyle),
           children: [
             ?lead,
-            DesignKeylineRegion(label: 'words', child: words),
+            RawKeylineRegion(label: 'words', child: words),
           ],
         );
       }
@@ -645,7 +645,7 @@ class NeumorphicListTile extends StatelessWidget {
         firstLine: lineOf(titleStyle),
         children: [
           ?lead,
-          DesignKeylineRegion(
+          RawKeylineRegion(
             label: 'words',
             child: _WordsAndAction(
               wide: wide,
@@ -1009,6 +1009,10 @@ class _RenderActionRow extends RenderBox
 
   static const _gap = 14.0;
 
+  /// How far under the row's top a key at the top keeps its box: a raised face's light, thrown up and to the start,
+  /// reaches a few pixels past it.
+  static const _keyRoom = 6.0;
+
   bool _centre;
   set centre(bool value) {
     if (value == _centre) return;
@@ -1075,8 +1079,9 @@ class _RenderActionRow extends RenderBox
     final centre = _centre && place.words.height < _threeTall;
     if (place.beside && !centre) {
       // At the top the mark and the key stand on the middle of the title's first line; a key taller than that line
-      // reaches over the words into the padding, and lower when it would reach past the row's top.
-      final wordsTop = math.max(_tilePadding, place.top);
+      // reaches over the words into the padding, and lower when it would come nearer the row's top than its raised
+      // face's light reaches ([_keyRoom]): the divider above keeps its line.
+      final wordsTop = math.max(_tilePadding, place.top + _keyRoom);
       final bodyY = wordsTop - place.top;
       final markY = math.max(0.0, wordsTop + (_firstLine - m.height) / 2);
       final bottom = math.max(
@@ -1632,7 +1637,7 @@ class NeumorphicLevelRow extends StatelessWidget {
             ),
             // The level stands under the words: a keyline of its own, after the well.
             if (leveled)
-              DesignKeylineRegion(
+              RawKeylineRegion(
                 label: 'level',
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(start: 58),

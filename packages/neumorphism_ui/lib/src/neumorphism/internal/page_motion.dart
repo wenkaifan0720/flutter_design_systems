@@ -121,14 +121,14 @@ class NeumorphicPageMotion extends PageTransitionsBuilder {
 
 /// The look's page change for every platform Flutter runs on, for a `PageTransitionsTheme` of either Material, a
 /// push taking [travel] and a pop [leave] (the change's curves are the theme's at the page). On iOS it keeps the swipe
-/// back from the screen's leading edge (ui_core's `designSwipeBack`). It takes the two durations rather than a
+/// back from the screen's leading edge (ui_core's `rawSwipeBack`). It takes the two durations rather than a
 /// [NeumorphicMotion], so an app's own copy of the theme, with a timing type of its own, still reaches it.
 Map<TargetPlatform, PageTransitionsBuilder> neumorphicPageTransitionBuilders({
   required Duration travel,
   required Duration leave,
 }) {
   final motion = NeumorphicMotion(travel: travel, leave: leave);
-  return designSwipeBack({
+  return rawSwipeBack({
     for (final platform in TargetPlatform.values)
       platform: NeumorphicPageMotion(motion),
   });

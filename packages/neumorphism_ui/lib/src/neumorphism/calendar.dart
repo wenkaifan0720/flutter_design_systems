@@ -112,7 +112,7 @@ Widget _day(
   // and the face's rim.
   final painter = TextPainter(
     text: TextSpan(
-      text: '${day.date.day}',
+      text: day.label,
       style: _figureStyle(t, day, end: end, look: look),
     ),
     textDirection: TextDirection.ltr,
@@ -316,7 +316,7 @@ Widget _figure(
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
-            '${day.date.day}',
+            day.label,
             maxLines: 1,
             softWrap: false,
             style: _figureStyle(t, day, end: end, look: look),

@@ -229,7 +229,7 @@ void main() {
                 : find
                       .descendant(
                         of: field,
-                        matching: find.byType(DesignKeylineFace),
+                        matching: find.byType(RawKeylineFace),
                       )
                       .first,
             warnIfMissed: false,
@@ -443,7 +443,7 @@ String? _named(String problem) {
     }
   }
   // A bay of the house stands its window over its words (its figure, name and note at its foot): the bay's face is
-  // its whole wall (DesignKeylineFace), and its words are at the foot by design.
+  // its whole wall (RawKeylineFace), and its words are at the foot by design.
   if (RegExp(
     r'a button "(Living room|Kitchen|Hall|Bedroom|Study)" beside a button "(Living room|Kitchen|Hall|Bedroom|Study)": '
     r'the capitals of "[\d.]+°" are [\d.]+ px below',

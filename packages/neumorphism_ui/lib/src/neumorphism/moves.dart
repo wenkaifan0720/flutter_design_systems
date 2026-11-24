@@ -182,7 +182,7 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar>
           pressRelief: !selected,
           // A tab's face is its cell, marked for ui_core's checks: read from its pixels, the chosen tab's well
           // reached into the bank's cast above it, and its words read 19 px under the well's middle under compact.
-          child: DesignKeylineFace(
+          child: RawKeylineFace(
             child: NeumorphicCellFace(
               child: _faceWords(
                 context,

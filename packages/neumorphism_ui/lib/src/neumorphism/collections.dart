@@ -453,8 +453,8 @@ class _NeumorphicScrollAreaState extends State<NeumorphicScrollArea> {
       thickness: 12,
       semanticLabel: widget.label,
       visibility: widget.thumbVisibility
-          ? DesignScrollbarVisibility.always
-          : DesignScrollbarVisibility.auto,
+          ? RawScrollbarVisibility.always
+          : RawScrollbarVisibility.auto,
       thumbBuilder: (context, thumb) {
         final held = thumb.states.contains(WidgetState.pressed);
         return AnimatedOpacity(
@@ -1032,7 +1032,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
   });
 
   /// The roots, the children, and which are open and chosen.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A row's words.
   final String Function(T node) labelOf;
@@ -1053,7 +1053,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
     final words = NeumorphicLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final shape = _rowShape(t);
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
@@ -1154,9 +1154,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawTreeController<T>>('controller', controller))
       ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
       ..add(
