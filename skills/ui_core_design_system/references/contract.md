@@ -129,10 +129,9 @@ the text field's entry, so a row of mixed parts lines up.
 **`RawDensity`** shrinks or grows faces (`height(double)`,
 `padding(EdgeInsets)`, never directional insets; `standard`,
 `comfortable`, `compact`) and never moves the tap-target floor. So compact
-is for the pointer: on touch the floor holds a field at 44 while a compact
-button shrinks below it, and a row loses its one height. Offer compact
-where the pointer is the input, as Material's
-`VisualDensity.adaptivePlatformDensity` does. **`RawSpacingScope`** carries
+is for the pointer (on touch the floor holds a field at 44 while a compact
+button shrinks, and a row loses its one height), as Material's
+`VisualDensity.adaptivePlatformDensity` offers it. **`RawSpacingScope`** carries
 the spacing grid.
 
 ## Motion
@@ -215,7 +214,7 @@ handle colours (`cursorColor`, a `TextSelectionTheme`), or Material's show.
   words to say why. Its builder gets `RawInputDecoratorDetails`: `control`
   (the entry, carrying all of that), `label`, `helper` and `error` (the
   words as text a screen reader skips, since the control says them: draw
-  these, not copies, and the error is announced as it appears),
+  these, not copies),
   `required`, `invalid`, `enabled`, `focused`. Words drawn beside the
   decorator instead are read on a node of their own, apart from the field.
 - **A press anywhere on the face focuses the entry.** Leave that tap out of
@@ -304,12 +303,11 @@ the safe action: while one action is destructive, the first enabled one
 that is not, so Enter never confirms a loss.
 
 **A dialog takes a list of actions**, as Material's `AlertDialog` does
-(Keep editing, Discard, Save), never a fixed two. They are given dismissive
-first and confirming last: in a row they read in that order; when they do
-not fit (long words, a phone, twice the text size), they stack in one
-column, each as wide as the dialog, the confirming one on top, never two on
-a line and one under them. A `RawActionBar` lays them out; whether they fit
-is read from the words at the current text size. A destructive action takes
+(Keep editing, Discard, Save), never a fixed two. Give them dismissive
+first, confirming last: a row reads in that order; when they do not fit
+(long words, a phone, 2x text) they stack, each as wide as the dialog, the
+confirming one on top, never two on a line and one under. A
+`RawActionBar` lays them out, measuring the words at the current text size. A destructive action takes
 the design's destructive tone, and only the tone changes.
 
 The design draws the dialog through four builders: `titleBuilder`,
@@ -392,9 +390,8 @@ RawActionBar(
 ## Toasts
 
 A `RawToaster` in the app's builder, under the design's theme and over every
-route, holds the toasts: the queue (`maxVisible`), each toast's time (paused
-under a pointer or the focus), the swipe away, F6 to reach the newest and
-Escape to dismiss it, and what a screen reader hears. The design paints one
+route, holds the toasts: the queue (`maxVisible`), their time, the swipe away,
+the keys (F6, Escape) and what a screen reader hears. The design paints one
 toast in `toastBuilder` from `RawToastDetails` (`toast`, `animation`,
 `remaining`, `dismiss`, and `runAction`, null when the toast has no
 action). The presence animation may pass 1 on its spring: clamp it before
@@ -408,11 +405,17 @@ builder: (context, toast) => Opacity(
 ),
 ```
 
-A toast never covers a bar. A bar the design draws (a bottom bar, a docked
-composer) is wrapped in `RawToasterKeepClear`: the toasts stand above it,
-follow it as it comes and goes, and stand where they did once it goes. The
-bar takes the screen's safe inset itself. Never pad the toaster by a bar's
-height: the bar comes and goes, and the padding stays.
+A toast never covers a part along the bottom. Wrap each one the design
+draws (a bottom bar, a docked composer, a page's foot with
+its Save, a status line) in `RawToasterKeepClear`: the toasts stand above
+it, follow it as it comes and goes, and stand where they did once it goes.
+From ui_core 0.6.1 a part standing on a kept part (its bottom on that one's
+top, the two overlapping across) joins the band, so a foot over a status
+line over a tab bar keeps the toasts above all three. A part floating with
+a gap, standing beside, or reaching both edges (a rail) keeps nothing
+clear. `RawAdaptiveShell` keeps its bar clear already. A part takes the
+screen's safe inset itself; never pad the toaster by its height, which
+stays when the part goes.
 
 ```dart
 // The toasts stand above the bar, and follow it as it comes and goes.
@@ -453,9 +456,8 @@ Any other group of the design's (a toolbar, a grid of swatches, a row of
 toggles) takes the same keys from `RawRovingFocusGroup` and a
 `RawRovingFocusItem` round each control: one Tab stop, the arrows along
 `orientation` (all four when null), `loop`, `homeAndEnd`. The item takes the
-control's own focus node (the caller makes it and disposes it). The group
-moves the focus only: a selection that follows the focus is made in the
-item's `onMovedTo`. Tab enters on the item marked `selected`, else the first.
+control's own focus node (the caller makes it and disposes it). A selection
+that follows the focus is made in the item's `onMovedTo`. Tab enters on the item marked `selected`, else the first.
 
 ```dart
 RawRovingFocusItem(

@@ -87,8 +87,8 @@ back from where it stands.
 **The design owns its route motion**: its page push and pop, its dialog's
 arrival, its sheet's rise. The iOS edge swipe still pops a page.
 
-**Reduce Motion:** nothing overshoots, bounces or travels far; effects
-settle within 150 ms (`RawMotionPolicy`); a long travel becomes a fade.
+**Reduce Motion:** nothing overshoots or travels far (a long travel becomes
+a fade); effects settle within 150 ms (`RawMotionPolicy`).
 
 **Judge in motion, not only at rest.** Faults hide between states: a sheet's
 shadow while it rises, a selection sliding between tabs, a carousel's

@@ -252,8 +252,7 @@ not built. For each part:
 4. Reuse what an earlier part decided: a face two parts share (a resting
    panel, a well, a chosen row) is named once, on the face's class or the
    theme, and both use it; a face spelled out in three parts is one the
-   theme is missing. Parts of one kind read as one family
-   ([taste.md](references/taste.md), "Parts of one kind").
+   theme is missing.
 5. Give it the API Flutter's own widget has: `value` and `onChanged`, a null
    callback to turn it off, an optional controller and focus node.
 
@@ -297,9 +296,9 @@ return TendScaffold(
 ```
 
 - **Pages.** Push screens on `RawPageRoute` (here `TendPageRoute`, which
-  names the design's transition), the first one included (step 2). A screen's bar shows back or close from
-  `RoutePresentation.of(context)`, never from `canPop`: a page pushed as
-  `fullscreenDialog` stands as a sheet and shows close.
+  names the design's transition), the first one included (step 2). A
+  screen's bar shows back or close from `RoutePresentation.of(context)`
+  ([contract.md](references/contract.md), "Pages and where a screen stands").
 - **Widths.** Lay each screen out for the widths the app runs at. Content
   keeps a readable width on a wide screen, and controls keep their own
   width from 600 px ([taste.md](references/taste.md), "Alignment and size").
@@ -315,7 +314,16 @@ return PopScope<Object?>(
   },
 ```
 
-- **Toasts.** Shown with the toaster the app's builder holds:
+- **Figures.** Numbers and dates come from `RawWidgetsLocalizations`
+  (`formatDecimal`, `formatFullDate`), and a time's hour and minute from
+  its `formatHour` and `formatMinute` (the `RawTimeFormatting` extension,
+  ui_core 0.6.1). Never `n.toString().padLeft(2, '0')`, which stays ASCII in
+  every language.
+- **Toasts.** Shown with the toaster the app's builder holds; a pane's
+  toasts go to a `RawToaster` round the pane, centred on it. Each part
+  along the bottom toasts must not cover (a page's foot with its Save, a
+  status line) stands in `RawToasterKeepClear`
+  ([contract.md](references/contract.md), "Toasts"):
 
 ```dart
 TendToaster.of(context).show(

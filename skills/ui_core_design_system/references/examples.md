@@ -1,17 +1,15 @@
 # Examples from published designs
 
-Excerpts from two published design packages on ui_core, each a different
-material. Open a package on pub.dev to read the rest of it and see its
-pictures:
+Excerpts from two published designs on ui_core, each a different material
+(the rest, and pictures, on pub.dev):
 
 - [brutal_ui](https://pub.dev/packages/brutal_ui): hard blocks, hard offset
   shadows, no blur.
 - [neumorphism_ui](https://pub.dev/packages/neumorphism_ui): soft surfaces
   extruded from their ground, lit from the top start; focus raises a part.
 
-Each excerpt is quoted from the package's source (the path above it names
-the file); `// ...` marks lines left out. The notes after each say what to
-take from it.
+Each excerpt is quoted from the file named above it; `// ...` marks lines
+left out.
 
 ## A button: behaviour from ui_core, face from the design (brutal_ui)
 
@@ -93,8 +91,7 @@ return navigator.push(
 - `RawModalDialogRoute` (here a subclass) carries the barrier, Escape, back,
   focus trap and focus return; the design gives the veil's colour, the
   stiffness from its motion tokens, and the transition.
-- The opener's themes are carried into the route, which builds under the
-  navigator.
+- The opener's themes are carried into the route.
 - The barrier's name comes from the design's localizations.
 
 ## Focus that raises the surface instead of outlining it (neumorphism_ui)

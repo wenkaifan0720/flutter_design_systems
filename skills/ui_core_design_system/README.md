@@ -1,12 +1,9 @@
 # ui_core design skill
 
-An agent skill for building a Flutter app's own design on
-[ui_core](https://pub.dev/packages/ui_core): a look that is neither Material
-nor Cupertino (a brand, a designer's mock-ups, or a named style such as
-Swiss, neumorphic, brutalist or glass), and the app's screens made of it.
-ui_core carries the behaviour of every part (focus, keyboard, screen-reader
-semantics, tap targets, overlays, motion policy, built-in words); the app's
-design paints them.
+An agent skill for building a Flutter app's own design, neither Material nor
+Cupertino, on [ui_core](https://pub.dev/packages/ui_core), and the app's
+screens made of it: ui_core carries every part's behaviour, the design
+paints it.
 
 ## Install
 
@@ -17,8 +14,7 @@ Copy this folder into your project's `.claude/skills/`, or into
 cp -R ui_core_design_system <your app>/.claude/skills/
 ```
 
-The agent reads it when asked to give an app a design of its own, to build
-screens in that design, or to review one. The app depends on:
+The app depends on:
 
 ```text
 flutter pub add ui_core:^0.6.0 material_ui
@@ -30,7 +26,7 @@ flutter pub add 'dev:ui_core_test:^0.4.0' dev:leak_tracker_flutter_testing
 | Path | What it is |
 |---|---|
 | `SKILL.md` | The workflow: the design's laws, its theme, its face, the parts the screens need, the screens, and the checks. |
-| `references/contract.md` | How each kind of part is wired on ui_core 0.6.0, and the API each part is painted on. |
+| `references/contract.md` | How each kind of part is wired on ui_core 0.6.x, and the API each part is painted on. |
 | `references/taste.md` | The rules a good design keeps, each with a check. |
 | `references/examples.md` | Excerpts from published designs on ui_core. |
 | `samples/` | Tend, a small plant-care app with a design of its own (`lib/design/`), three screens (`lib/screens/`) and its tests. Every Dart block in the pages is taken from it, and a test keeps them in step. |
