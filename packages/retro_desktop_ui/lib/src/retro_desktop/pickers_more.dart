@@ -561,7 +561,6 @@ Widget _day(
 ) {
   final t = RetroDesktopTheme.of(context);
   final c = t.colors;
-  final words = RetroDesktopLocalizations.of(context);
   final lit =
       day.selected || day.isRangeStart || day.isRangeEnd || day.isPreviewEnd;
   final tint = !lit && (day.inRange || day.inPreview);
@@ -597,7 +596,7 @@ Widget _day(
             child: RetroDesktopCaps(
               style: t.textTheme.body,
               Text(
-                words.formatInteger(day.date.day),
+                day.label,
                 style: t.textTheme.body.copyWith(color: ink),
                 maxLines: 1,
                 softWrap: false,
@@ -710,13 +709,13 @@ const double _dayGap = 4;
 final Map<(String, TextStyle), double> _dayWidths = {};
 
 double _widestDay(BuildContext context, TextStyle style) {
-  final words = RetroDesktopLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   final key = (Localizations.localeOf(context).toString(), style);
   return _dayWidths[key] ??= () {
     var most = 0.0;
     for (var d = 1; d <= 31; d++) {
       final tp = TextPainter(
-        text: TextSpan(text: words.formatInteger(d), style: style),
+        text: TextSpan(text: words.formatDecimal(d), style: style),
         textDirection: TextDirection.ltr,
         maxLines: 1,
       )..layout();
@@ -845,7 +844,7 @@ class RetroDesktopCalendar extends StatelessWidget {
     final day = math.max(
       minDayWidth,
       RetroDesktopReach.padsAcross(context)
-          ? DesignTapTargets.of(context).floorOn().width
+          ? RawTapTargets.of(context).floorOn().width
           : RetroDesktopReach.least(context),
     );
     final box = retroDesktopSunkenBox(

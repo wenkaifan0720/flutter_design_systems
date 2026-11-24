@@ -78,11 +78,11 @@ export 'package:ui_core/ui_core.dart' show RawColorController;
 export 'package:ui_core/ui_core.dart'
     show RawDataTableController, RawDataColumn, RawSortDirection;
 export 'package:ui_core/inventory.dart'
-    show DesignInventory, DesignInventoryEntry, DesignInventoryRow;
+    show RawInventory, RawInventoryEntry, RawInventoryRow;
 export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 export 'package:ui_core/ui_core.dart' show RawRangeValues;
 export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 export 'package:ui_core/ui_core.dart' show RawSplitAction;
 export 'package:ui_core/ui_core.dart' show RawSwipeAction;
 export 'package:ui_core/ui_core.dart' show RawToastController;
-export 'package:ui_core/ui_core.dart' show DesignTreeController;
+export 'package:ui_core/ui_core.dart' show RawTreeController;

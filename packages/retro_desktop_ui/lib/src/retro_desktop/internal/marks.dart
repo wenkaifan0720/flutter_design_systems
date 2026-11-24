@@ -155,6 +155,15 @@ List<String> _stop(bool octagon) => [
     ].join(),
 ];
 
+// A balloon with its tail on the other side, for right to left: the rows under the balloon mirrored, the mark inside
+// it as it is.
+List<String> _tailTurned(List<String> rows) => [
+  for (final (i, row) in rows.indexed)
+    i < 11 ? row : String.fromCharCodes(row.codeUnits.reversed),
+];
+final _noteRtl = _tailTurned(_note);
+final _doneRtl = _tailTurned(_done);
+
 final _stopOctagon = _stop(true);
 final _stopDisc = _stop(false);
 
@@ -165,23 +174,30 @@ Widget retroDesktopAlertArt(
   RetroDesktopTone tone, {
   double size = 32,
 }) {
-  final rows = switch (tone) {
-    RetroDesktopTone.info => _note,
-    RetroDesktopTone.success => _done,
-    RetroDesktopTone.warning => _caution,
-    RetroDesktopTone.danger => t.chisel ? _stopDisc : _stopOctagon,
-  };
   final inks = t.colors.illustration;
   return ExcludeSemantics(
-    child: RetroDesktopPixelPaint(
-      painter: RetroDesktopArtPainter(rows, {
-        'k': const Color(0xff000000),
-        'w': const Color(0xffffffff),
-        'y': inks.caution,
-        'r': inks.stop,
-        'b': inks.note,
-      }),
-      child: SizedBox.square(dimension: size),
+    // A balloon (a note's, a success's) turns its tail with the text, right to left; the mark inside it and the
+    // other pictures stand as they are.
+    child: Builder(
+      builder: (context) {
+        final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
+        final rows = switch (tone) {
+          RetroDesktopTone.info => rtl ? _noteRtl : _note,
+          RetroDesktopTone.success => rtl ? _doneRtl : _done,
+          RetroDesktopTone.warning => _caution,
+          RetroDesktopTone.danger => t.chisel ? _stopDisc : _stopOctagon,
+        };
+        return RetroDesktopPixelPaint(
+          painter: RetroDesktopArtPainter(rows, {
+            'k': const Color(0xff000000),
+            'w': const Color(0xffffffff),
+            'y': inks.caution,
+            'r': inks.stop,
+            'b': inks.note,
+          }),
+          child: SizedBox.square(dimension: size),
+        );
+      },
     ),
   );
 }

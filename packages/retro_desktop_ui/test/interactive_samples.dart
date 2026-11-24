@@ -485,7 +485,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopTreeView': (hit) => RetroDesktopTreeView<String>(
     controller: _owned(
-      DesignTreeController<String>(
+      RawTreeController<String>(
         roots: const ['Documents'],
         childrenOf: (node) => const [],
       ),

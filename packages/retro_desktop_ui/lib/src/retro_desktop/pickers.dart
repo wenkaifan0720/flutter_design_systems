@@ -215,20 +215,17 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
           const {},
         ) ??
         Size.zero;
-    // A day is a whole target: the touch floor (44) under a finger, the desk's 44 under a pointer.
-    final slot = math.max(
-      RetroDesktopReach.padsAcross(context)
-          ? DesignTapTargets.of(context).floorOn().width
-          : RetroDesktopReach.least(context),
-      minimum.width,
-    );
+    final (:slot, :side, :frame) = _monthMeasures(context, widget.style);
     final week = 7 * slot;
     final height = math.max(
       math.max(slot, minimum.height),
       MediaQuery.textScalerOf(context).scale(dayStyle.fontSize ?? 16) +
           24 * t.density.vertical,
     );
-    final title = words.formatMonthYear(month);
+    // The month's head, its weekdays and its days are written as
+    // RetroDesktopCalendar writes them (ui_core's words): in an Arabic app,
+    // Arabic names and Arabic-Indic digits, never half of each.
+    final title = RawWidgetsLocalizations.of(context).formatMonthYear(month);
     // Seven 44-wide days need 308. The month stands in the calendar's sunken
     // box, as "A calendar" does: one face for both, its edge on the column's.
     // A slot a little short of the box takes the shortfall from the box's side
@@ -238,10 +235,6 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
     // up a month keeps its own width at its column's start, not the column's.
     final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
     final h = t.density.horizontal;
-    // The density rounds a padding to whole pixels: the side is reckoned in
-    // them, so what the box takes is what it is asked for.
-    final side = (pad * h).roundToDouble();
-    final frame = 2 * (side + retroDesktopFaceRim(t));
     Widget boxed(Widget picker, {double give = 0}) => retroDesktopSunkenBox(
       context,
       states: const {},
@@ -413,7 +406,12 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
             final headStyle = t.textTheme.small.copyWith(
               color: t.colors.textSecondary,
             );
-            final widest = words.weekdaysShort.fold(0.0, (w, name) {
+            final names = RawWidgetsLocalizations.of(context);
+            final weekdays = [
+              for (var day = DateTime.monday; day <= DateTime.sunday; day++)
+                names.formatShortWeekday(day),
+            ];
+            final widest = weekdays.fold(0.0, (w, name) {
               final p = TextPainter(
                 text: TextSpan(text: name, style: headStyle),
                 textDirection: Directionality.of(context),
@@ -425,7 +423,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
               return math.max(w, width);
             });
             final heads = [
-              for (final name in words.weekdaysShort)
+              for (final name in weekdays)
                 widest > column - 6 ? name.characters.first : name,
             ];
             return SingleChildScrollView(
@@ -589,10 +587,13 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                                                                   s.textStyle,
                                                             ),
                                                             Text(
-                                                              words
-                                                                  .formatInteger(
-                                                                    day,
-                                                                  ),
+                                                              // The app's digits, as ui_core's calendar writes a day
+                                                              // (RawCalendarDayDetails.label): Arabic-Indic in Arabic.
+                                                              RawWidgetsLocalizations.of(
+                                                                context,
+                                                              ).formatDecimal(
+                                                                day,
+                                                              ),
                                                               style:
                                                                   (slot(
                                                                             (
@@ -635,6 +636,33 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
   }
 }
 
+/// A month's measures: a day's slot (a whole target: the touch floor, 44, under a finger, the desk's 44 under a
+/// pointer), the sunken box's side padding and the box's whole frame across.
+({double slot, double side, double frame}) _monthMeasures(
+  BuildContext context,
+  RetroDesktopStyle? style,
+) {
+  final t = RetroDesktopTheme.of(context);
+  final minimum =
+      RetroDesktopStyle.first(
+        [style, t.datePickerTheme],
+        (s) => s.minimumSize,
+        const {},
+      ) ??
+      Size.zero;
+  final slot = math.max(
+    RetroDesktopReach.padsAcross(context)
+        ? RawTapTargets.of(context).floorOn().width
+        : RetroDesktopReach.least(context),
+    minimum.width,
+  );
+  final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
+  // The density rounds a padding to whole pixels: the side is reckoned in them, so what the box takes is what it is
+  // asked for.
+  final side = (pad * t.density.horizontal).roundToDouble();
+  return (slot: slot, side: side, frame: 2 * (side + retroDesktopFaceRim(t)));
+}
+
 /// Opens a date dialog; Cancel, Escape and the barrier return null. [today] is the day outlined as today and the one
 /// shown when there is no [value]; null: the device's date.
 Future<DateTime?> showRetroDesktopDatePicker(
@@ -657,33 +685,48 @@ Future<DateTime?> showRetroDesktopDatePicker(
       : initial;
   return showRetroDesktopDialog<DateTime>(
     context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, change) => RetroDesktopDialog(
-        title: title ?? words.chooseDate,
-        content: [
-          RetroDesktopDatePicker(
-            value: selected,
-            firstDate: firstDate,
-            lastDate: lastDate,
-            today: today,
-            // The dialog opens on the chosen day, where the arrows go on.
-            autofocus: true,
-            onChanged: (date) => change(() => selected = date),
+    builder: (context) {
+      // The window is as wide as its month and the window's own margins, as Material's date dialog is its calendar's:
+      // at the alert's 520 a month took three fifths of it, the rest empty. The month stands on its middle, so a
+      // margin a theme widens stays even on both sides.
+      final measures = _monthMeasures(context, null);
+      final month = 7 * measures.slot + measures.frame;
+      return StatefulBuilder(
+        builder: (context, change) => RetroDesktopDialog(
+          title: title ?? words.chooseDate,
+          constraints: BoxConstraints(
+            maxWidth: month + 2 * RetroDesktopSpacing.s16,
           ),
-        ],
-        actions: [
-          RetroDesktopButton(
-            RawWidgetsLocalizations.of(context).cancelButtonLabel,
-            onPressed: () => Navigator.pop(context),
-          ),
-          RetroDesktopButton(
-            words.choose,
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(context, selected),
-          ),
-        ],
-      ),
-    ),
+          content: [
+            Center(
+              child: SizedBox(
+                width: month,
+                child: RetroDesktopDatePicker(
+                  value: selected,
+                  firstDate: firstDate,
+                  lastDate: lastDate,
+                  today: today,
+                  // The dialog opens on the chosen day, where the arrows go on.
+                  autofocus: true,
+                  onChanged: (date) => change(() => selected = date),
+                ),
+              ),
+            ),
+          ],
+          actions: [
+            RetroDesktopButton(
+              RawWidgetsLocalizations.of(context).cancelButtonLabel,
+              onPressed: () => Navigator.pop(context),
+            ),
+            RetroDesktopButton(
+              words.choose,
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(context, selected),
+            ),
+          ],
+        ),
+      );
+    },
   );
 }
 

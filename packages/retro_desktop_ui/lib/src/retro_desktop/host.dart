@@ -345,7 +345,7 @@ class RetroDesktopSheetPage<T> extends Page<T> {
 // routes: focus taken and given back, Tab kept inside, Escape and a press outside closing it. Each stands at once while
 // the theme's time is zero (the default and Reduce Motion), else moves on ui_core's spring within it. Nothing behind
 // is dimmed (the look's stacking law).
-class _SheetWindowRoute<T> extends DesignDialogRoute<T>
+class _SheetWindowRoute<T> extends RawModalDialogRoute<T>
     with RetroDesktopModalRoute<T>, RetroDesktopRouteStill<T> {
   _SheetWindowRoute({
     required super.builder,

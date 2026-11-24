@@ -32,7 +32,7 @@ double _stripInset(BuildContext context) => math.max(
 // The painted face sits inside the segment's pointer target.
 Widget _cell(BuildContext context, Widget shown) => Padding(
   padding: EdgeInsets.symmetric(vertical: _stripInset(context)),
-  child: DesignKeylineFace(
+  child: RawKeylineFace(
     child: Padding(
       padding: EdgeInsets.symmetric(
         vertical: retroDesktopFaceRim(RetroDesktopTheme.of(context)),

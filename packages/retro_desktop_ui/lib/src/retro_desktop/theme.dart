@@ -1675,7 +1675,7 @@ class RetroDesktopThemeData with Diagnosticable {
   Map<TargetPlatform, PageTransitionsBuilder> get _pageTransitions =>
       motion == RetroDesktopMotion.still
       ? retroDesktopPageTransitions
-      : designSwipeBack({
+      : rawSwipeBack({
           for (final platform in TargetPlatform.values)
             platform: _RetroDesktopPageTransitions(motion),
         });
@@ -1704,7 +1704,7 @@ class RetroDesktopThemeData with Diagnosticable {
 
   /// The class of the available window width, ui_core's (Material's breakpoints: compact under 600, medium to 840,
   /// expanded to 1200, large to 1600, extra large beyond).
-  DesignWindowSizeClass get window => DesignWindowSizeClass.fromWidth(width);
+  RawWindowSizeClass get window => RawWindowSizeClass.fromWidth(width);
 
   /// Returns a theme with the requested values replaced.
   RetroDesktopThemeData copyWith({
@@ -2086,8 +2086,8 @@ class RetroDesktopTheme extends StatelessWidget {
               style: scoped.textTheme.body,
               // The look's spacing steps stand on a 2-pixel grid (RetroDesktopSpacing), which ui_core's spacing
               // check reads from here.
-              child: DesignSpacingScope(
-                spacing: const DesignSpacing(grid: 2),
+              child: RawSpacingScope(
+                spacing: const RawSpacing(grid: 2),
                 child: under,
               ),
             ),
@@ -2524,7 +2524,7 @@ class _RetroDesktopPageTransitions extends PageTransitionsBuilder {
   ) {
     final still =
         (motion.travel == Duration.zero && motion.leave == Duration.zero) ||
-        designReduceMotionOf(context);
+        rawReduceMotionOf(context);
     return still
         ? child
         : FadeTransition(

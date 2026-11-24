@@ -259,7 +259,7 @@ Widget kitSpecimenDataTable() => _Held(
   ),
 );
 Widget kitSpecimenTreeView() => _Held(
-  make: (_) => DesignTreeController<String>(
+  make: (_) => RawTreeController<String>(
     roots: const ['System', 'Documents'],
     expanded: const ['System'],
     childrenOf: (node) => switch (node) {

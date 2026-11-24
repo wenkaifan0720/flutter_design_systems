@@ -1,4 +1,4 @@
-// The look's raised windows on ui_core's routes: a dialog (DesignDialogRoute) is a screen reader's dialog, keeps
+// The look's raised windows on ui_core's routes: a dialog (RawModalDialogRoute) is a screen reader's dialog, keeps
 // Tab inside, gives the focus back to the button that opened it, and Escape closes it only when escapeDismissible
 // says so; a sheet page on a phone (RawBottomSheetRoute) follows a finger that drags it closed; each stands at once
 // under the look's default motion.

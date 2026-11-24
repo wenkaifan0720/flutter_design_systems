@@ -18,7 +18,7 @@ const retroDesktopReach = RetroDesktopChromeMetrics.touchTarget;
 /// A control's reach, ui_core's `TapTargetPadding` at the look's floors: the area a press reaches, the box a screen reader
 /// outlines and the layout are one. On a phone at least [retroDesktopReach] by [retroDesktopReach] to a finger, its drawing
 /// unchanged at [alignment] in it (the middle, unless the drawing must keep an edge where it was); on a desk at least 44
-/// logical pixels high and at least the pointer's floor wide (`DesignTapTargets`, 24), so a face starts where its column
+/// logical pixels high and at least the pointer's floor wide (`RawTapTargets`, 24), so a face starts where its column
 /// does. A control [inside] another's face (a field's eye or clear button) is laid out at the pointer's floor both ways on
 /// a desk, which the field's line holds, so it never makes the field taller. A press anywhere in the reach lands on the
 /// drawing. The width a stretching parent gives passes through, so a control that fills its row still does. Not
@@ -55,7 +55,7 @@ class RetroDesktopReach extends StatelessWidget {
   static Size floor(BuildContext context, {bool inside = false}) {
     final reach = least(context);
     if (padsAcross(context)) return Size.square(reach);
-    final pointer = DesignTapTargets.of(context).pointer;
+    final pointer = RawTapTargets.of(context).pointer;
     return Size(pointer.width, inside ? pointer.height : reach);
   }
 

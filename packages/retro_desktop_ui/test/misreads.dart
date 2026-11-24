@@ -54,7 +54,7 @@ final _gradientFace = Misread(
   'a face filled with a gradient reads as solid boxes or as ink as tall as '
       'the face; the look\'s fonts are loaded before the check',
   r"draws? (its|their) text in the test's own font|"
-      r"are drawn \d+(\.\d+)? device px high; its DesignCapCenter's "
+      r"are drawn \d+(\.\d+)? device px high; its RawCapCenter's "
       r'capHeightFactor gives',
 );
 

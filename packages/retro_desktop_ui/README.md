@@ -112,7 +112,7 @@ changes in place too. The map fits Flutter's `ThemeData` and material_ui's alike
 swipe from the screen's leading edge, which lives in Cupertino's slide: the map's iOS entry, and `RetroDesktopPageRoute`
 there, stand ui_core's `SwipeBackPageTransitionsBuilder` round the look's change, so the page follows the finger
 while it swipes and stands in place otherwise. A map of your own keeps the swipe the same way, through ui_core's
-`designSwipeBack(map)`.
+`rawSwipeBack(map)`.
 
 ```dart
 MaterialApp(

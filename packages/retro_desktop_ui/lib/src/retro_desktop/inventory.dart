@@ -1,4 +1,4 @@
-// Retro Desktop's answer to the shared component inventory (ui_core's DesignInventoryRow.all, 89 rows): for each row the
+// Retro Desktop's answer to the shared component inventory (ui_core's RawInventoryRow.all, 89 rows): for each row the
 // part that answers it, `RetroDesktop<Stem>`, as a small live specimen, or the reason the look leaves it out. The live
 // gallery lists it, and a test verifies it (every row answered once, every specimen the row's own class).
 import 'package:flutter/foundation.dart';
@@ -79,8 +79,8 @@ RawDataTableController<_File> _files(BuildContext context) =>
         ),
       ],
     );
-DesignTreeController<String> _folders(BuildContext context) =>
-    DesignTreeController<String>(
+RawTreeController<String> _folders(BuildContext context) =>
+    RawTreeController<String>(
       roots: const ['System'],
       expanded: const ['System'],
       childrenOf: (n) => n == 'System' ? const ['Fonts', 'Sounds'] : const [],
@@ -134,12 +134,12 @@ const _absentCommand =
     'and their keys.';
 
 /// Retro Desktop's inventory: every row of the shared component list, answered.
-final DesignInventory retroDesktopInventory = DesignInventory(
+final RawInventory retroDesktopInventory = RawInventory(
   look: 'Retro Desktop',
   entries: [
     // Actions
     // Every kind the row names: the default (filled), a plain one (outlined), a quiet one (text) and a destructive one.
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (_) => const Wrap(
         spacing: RetroDesktopSpacing.s8,
@@ -160,7 +160,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (_) => const RetroDesktopIconButton(
         RetroDesktopGlyphs.search,
@@ -168,8 +168,8 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent('FloatingActionButton', _absentFab),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('FloatingActionButton', _absentFab),
+    RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const RetroDesktopButtonGroup(
         label: 'Week',
@@ -180,7 +180,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (_) => RetroDesktopToggleGroup<String>(
         label: 'Style',
@@ -191,7 +191,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (_) => const RetroDesktopSplitButton(
         label: 'Save',
@@ -202,36 +202,36 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (_) => const RetroDesktopLink('Read the manual', onPressed: _none),
     ),
-    DesignInventoryEntry.present('Kbd', (_) => const RetroDesktopKbd('Ctrl+S')),
+    RawInventoryEntry.present('Kbd', (_) => const RetroDesktopKbd('Ctrl+S')),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (_) =>
           const RetroDesktopTextField(labelText: 'Name', hintText: 'File name'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (_) => const RetroDesktopTextArea(
         labelText: 'Notes',
         hintText: 'Anything the next reader should know',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (_) => const RetroDesktopSearchField(hintText: 'Search files'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (_) => const RetroDesktopPasswordField(
         labelText: 'Password',
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (_) => const RetroDesktopInputGroup(
         labelText: 'Site',
@@ -240,12 +240,12 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         hintText: 'studio',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputOtp',
       (_) =>
           const RetroDesktopInputOtp(labelText: 'Verification code', length: 6),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       (_) => const RetroDesktopNumberField(
         labelText: 'Copies',
@@ -255,7 +255,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (_) => const RetroDesktopSelect<String>(
         labelText: 'Paper',
@@ -267,7 +267,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (_) => const RetroDesktopCombobox<String>(
         labelText: 'Country',
@@ -276,8 +276,8 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onSelected: _drop,
       ),
     ),
-    const DesignInventoryEntry.absent('MultiSelect', _absentMultiSelect),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('MultiSelect', _absentMultiSelect),
+    RawInventoryEntry.present(
       'Checkbox',
       (_) => const RetroDesktopCheckbox(
         label: 'Keep a backup',
@@ -285,7 +285,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (_) => const RetroDesktopRadioGroup<String>(
         labelText: 'Paper',
@@ -297,7 +297,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (_) => const RetroDesktopSwitch(
         label: 'Sound',
@@ -305,7 +305,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (_) => const RetroDesktopSlider(
         label: 'Volume',
@@ -313,7 +313,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (_) => const RetroDesktopRangeSlider(
         label: 'Price',
@@ -322,7 +322,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (_) => const RetroDesktopSegmentedButton<String>(
         label: 'View',
@@ -334,11 +334,11 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (_) => const RetroDesktopChip('Drafts', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (_) => const RetroDesktopRating(
         label: 'Your rating',
@@ -346,7 +346,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (_) => const RetroDesktopFileUpload(
         label: 'Attachments',
@@ -355,7 +355,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onRemove: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (_) => RetroDesktopDatePicker(
         value: DateTime(2026, 6, 14),
@@ -364,7 +364,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (_) => RetroDesktopDateRangePicker(
         labelText: 'Stay',
@@ -375,26 +375,26 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (_) => const RetroDesktopTimePicker(
         value: RetroDesktopTime(9, 30),
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (_) => _Own(_day, (day) => RetroDesktopCalendar(controller: day)),
     ),
-    const DesignInventoryEntry.absent('WheelPicker', _absentWheel),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('WheelPicker', _absentWheel),
+    RawInventoryEntry.present(
       'ColorPicker',
       (_) => _Own(
         _colour,
         (colour) => RetroDesktopColorPicker(controller: colour),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (_) => const RetroDesktopFormField(
         labelText: 'Email',
@@ -404,18 +404,18 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (_) => const RetroDesktopAppBar(title: 'Documents'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (_) => const RetroDesktopNavigationBar(
         items: [_desk, _mail, _bin],
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (_) => const RetroDesktopNavigationRail(
         label: 'Places',
@@ -423,7 +423,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => const RetroDesktopNavigationDrawer(
         label: 'Places',
@@ -431,7 +431,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (_) => const RetroDesktopTabBar(
         label: 'Settings',
@@ -439,7 +439,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (_) => const RetroDesktopBreadcrumb(
         items: [
@@ -449,11 +449,11 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (_) => const RetroDesktopPagination(count: 5, page: 1, onChanged: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (_) => const RetroDesktopStepProgress(
         count: 4,
@@ -461,7 +461,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         name: 'Details',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (_) => const RetroDesktopPageDots(
         count: 4,
@@ -470,7 +470,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MenuBar',
       (_) => const RetroDesktopMenuBar(
         menus: [
@@ -488,9 +488,9 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    const DesignInventoryEntry.absent('Command', _absentCommand),
+    const RawInventoryEntry.absent('Command', _absentCommand),
     // Layout
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (_) => const RetroDesktopScaffold(
         scroll: false,
@@ -498,14 +498,14 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         body: Center(child: Text('Four items')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (_) => const RetroDesktopCard(
         title: 'Disk',
         child: Text('40 MB free of 80 MB'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (_) => const RetroDesktopListTile(
         title: 'Budget',
@@ -513,7 +513,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (_) => const RetroDesktopListSection(
         title: 'Recent',
@@ -527,11 +527,11 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (_) => const RetroDesktopSectionHeader('Recent files', subtitle: 'Today'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (_) => const RetroDesktopDisclosure(
         title: 'Advanced',
@@ -539,7 +539,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         child: Text('Memory and start-up disk'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (_) => const RetroDesktopTable(
         columns: [
@@ -552,7 +552,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DataTable',
       (_) => _Own(
         _files,
@@ -563,8 +563,8 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present('Divider', (_) => const RetroDesktopDivider()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Divider', (_) => const RetroDesktopDivider()),
+    RawInventoryEntry.present(
       'ScrollArea',
       (_) => _OwnScroll(
         (scroll) => RetroDesktopScrollArea(
@@ -583,7 +583,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Resizable',
       (_) => const RetroDesktopResizable(
         minFirst: 60,
@@ -592,8 +592,8 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         second: Center(child: Text('Files')),
       ),
     ),
-    const DesignInventoryEntry.absent('CarouselView', _absentCarousel),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('CarouselView', _absentCarousel),
+    RawInventoryEntry.present(
       'ReorderableListView',
       (_) => RetroDesktopReorderableListView<String>(
         items: const ['Fonts', 'Sounds', 'Scripts'],
@@ -602,9 +602,9 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onReorder: (from, to) {},
       ),
     ),
-    const DesignInventoryEntry.absent('SwipeActions', _absentSwipe),
-    const DesignInventoryEntry.absent('RefreshIndicator', _absentRefresh),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('SwipeActions', _absentSwipe),
+    const RawInventoryEntry.absent('RefreshIndicator', _absentRefresh),
+    RawInventoryEntry.present(
       'TreeView',
       (_) => _Own(
         _folders,
@@ -615,7 +615,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (_) => const RetroDesktopTimeline(
         entries: [
@@ -626,11 +626,11 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       ),
     ),
     // Display
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (_) => const RetroDesktopAvatar('AL', name: 'Alex Lee'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (_) => const RetroDesktopAvatarGroup(
         children: [
@@ -639,15 +639,15 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Badge',
       (_) => const RetroDesktopBadge(3, label: 'Three unread'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tag',
       (_) => const RetroDesktopTag('Draft', icon: RetroDesktopGlyphs.tag),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Media',
       (_) => const RetroDesktopMedia(
         slotId: 'desk-photo',
@@ -655,14 +655,14 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         aspect: 16 / 9,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (_) => const RetroDesktopEmptyState(
         title: 'No documents',
         message: 'A new document appears here.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (_) => const RetroDesktopDescriptionList([
         RetroDesktopFact('Kind', 'Document'),
@@ -670,7 +670,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       ]),
     ),
     // Raised
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (_) => const RetroDesktopDialog(
         title: 'Save changes?',
@@ -685,7 +685,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (_) => const RetroDesktopBottomSheet(
         title: 'Share',
@@ -693,7 +693,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         child: Text('Anyone with the link can read it.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (_) => const RetroDesktopSheet(
         title: 'Filters',
@@ -701,7 +701,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         child: Text('Kind and date'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (_) => const RetroDesktopActionSheet(
         title: 'Budget',
@@ -717,15 +717,15 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onCancel: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (_) => RetroDesktopPopover(
         label: 'Share',
         content: (context) => const Text('Anyone with the link can read it.'),
       ),
     ),
-    const DesignInventoryEntry.absent('HoverCard', _absentHoverCard),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('HoverCard', _absentHoverCard),
+    RawInventoryEntry.present(
       'Tooltip',
       (_) => const RetroDesktopTooltip(
         message: 'Find a document',
@@ -736,7 +736,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (_) => const RetroDesktopMenu<String>(
         label: 'File',
@@ -747,7 +747,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (_) => const RetroDesktopSnackBar(
         'Saved to Documents',
@@ -756,7 +756,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onDismissed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (_) => const RetroDesktopBanner(
         title: 'The disk is almost full',
@@ -764,25 +764,25 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       ),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (_) => const RetroDesktopLinearProgressIndicator(
         value: .6,
         label: 'Copying',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (_) => const RetroDesktopCircularProgressIndicator(
         value: .6,
         label: 'Copying',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (_) => const RetroDesktopSkeleton(label: 'Loading documents'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (_) => const RetroDesktopStatusView(
         status: RetroDesktopStatus.error,
@@ -790,12 +790,12 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         onRetry: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (_) => const RetroDesktopMeter(label: 'Disk', value: .7),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (_) => const RetroDesktopLineChart(
         label: 'Visits',
@@ -806,7 +806,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (_) => const RetroDesktopBarChart(
         label: 'Files',
@@ -817,7 +817,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (_) => const RetroDesktopAreaChart(
         label: 'Disk used',
@@ -828,7 +828,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (_) => const RetroDesktopPieChart(
         label: 'Storage',
@@ -839,7 +839,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (_) =>
           const RetroDesktopSparkline(label: 'Visits', values: [4, 6, 5, 9, 8]),
@@ -891,7 +891,7 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
 
   Widget _gallery(BuildContext context, ScrollController scroll) {
     final t = RetroDesktopTheme.of(context);
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: retroDesktopInventory,
       controller: scroll,
       padding: padding,
@@ -950,9 +950,7 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
                       sized ??
                           Text(
                             entry?.absentReason != null
-                                ? DesignInventory.absentLabel(
-                                    entry!.absentReason!,
-                                  )
+                                ? RawInventory.absentLabel(entry!.absentReason!)
                                 : 'Missing: the inventory does not answer '
                                       'this row',
                             style: t.textTheme.body,

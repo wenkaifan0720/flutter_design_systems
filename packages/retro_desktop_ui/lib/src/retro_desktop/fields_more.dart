@@ -488,7 +488,7 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
             ],
           ),
         );
-        return DesignInputGroup(
+        return RawInputGroup(
           focusNode: _focus,
           enabled: widget.enabled,
           isError: error != null,
@@ -644,11 +644,21 @@ EdgeInsetsGeometry _optionPadding(RetroDesktopThemeData t) =>
     );
 
 /// A field's list: no room at its sides, so its rows reach the rims.
-Widget _listPanel(BuildContext context, Widget list) => retroDesktopPanel(
-  context,
-  padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s4),
-  child: list,
-);
+// The list hangs past its field's focus ring, on whichever side it opens, so the ring closes round the field (a list on
+// the ring's foot left it a three-sided bracket), as a select's list does. The room stands on both sides: the far one
+// is only transparent space beyond the list's end.
+Widget _listPanel(BuildContext context, Widget list) {
+  final ring = RetroDesktopTheme.of(context).focus;
+  final clear = ring.inside ? 0.0 : ring.gap + ring.width;
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: clear),
+    child: retroDesktopPanel(
+      context,
+      padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s4),
+      child: list,
+    ),
+  );
+}
 
 /// A box that suggests as you type: the options that match open under it, the
 /// arrows move along them, Enter takes one. ui_core's combobox carries the
@@ -687,7 +697,7 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
   /// take time (a future) and fail. While it runs the list says it is
   /// loading; a failure says so in the list, with a "Try again" row the
   /// arrows reach and Enter runs.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs; null (the default) runs it
   /// at every change.
@@ -784,7 +794,7 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         DiagnosticsProperty<Duration>(
           'debounceDuration',

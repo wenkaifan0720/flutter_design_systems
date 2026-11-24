@@ -45,6 +45,8 @@ workspace:
   - packages/material_expressive_ui/example
   - packages/appliance_ui
   - packages/appliance_ui/example
+  - packages/retro_desktop_ui
+  - packages/retro_desktop_ui/example
   # The skill's samples, on the ui_core beside them: a core change that breaks the skill fails CI. This line stays
   # below the packages.
   - skills/ui_core_design_system/samples

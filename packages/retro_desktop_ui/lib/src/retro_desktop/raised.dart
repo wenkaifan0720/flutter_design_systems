@@ -238,11 +238,11 @@ class _RaisedRoute<T> extends PopupRoute<T>
   }
 }
 
-// A dialog the look raises (showRetroDesktopDialog), on ui_core's DesignDialogRoute: its focus taken and given back,
+// A dialog the look raises (showRetroDesktopDialog), on ui_core's RawModalDialogRoute: its focus taken and given back,
 // Tab kept inside, a screen reader's dialog. It stands at once while the theme's raise is zero (the default and Reduce
 // Motion), else fades and rises its 2 % on ui_core's spring within that time. Nothing behind it is dimmed; Escape
 // closes it when [escapeDismissible] says so, apart from a press outside ([barrierDismissible]).
-class _RaisedDialogRoute<T> extends DesignDialogRoute<T>
+class _RaisedDialogRoute<T> extends RawModalDialogRoute<T>
     with
         _EscapeCloses<T>,
         RetroDesktopModalRoute<T>,
@@ -461,6 +461,7 @@ class RetroDesktopDialog extends StatelessWidget {
     this.content = const [],
     this.actions = const [],
     this.tone,
+    this.constraints = const BoxConstraints(maxWidth: 520),
     this.style,
   });
 
@@ -469,6 +470,10 @@ class RetroDesktopDialog extends StatelessWidget {
 
   /// The message displayed to the user.
   final String? message;
+
+  /// Constrains the window's size, as [Dialog.constraints] does Material's: by default it is at most 520 wide, an
+  /// alert's width. A window for one part (a month to pick a day from) may be given that part's width.
+  final BoxConstraints constraints;
 
   /// What kind of alert this is, drawn at its start as the period's alert boxes were: the note, the caution
   /// triangle or the stop sign. Null draws no picture, for a dialog that asks for input rather than warns.
@@ -515,7 +520,7 @@ class RetroDesktopDialog extends StatelessWidget {
                 )
               : Center(child: window),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
+            constraints: constraints,
             // A window taller than the screen (twice the text size on a phone) scrolls whole, its frame with it, as a
             // page does: scrolled inside its frame, its buttons' row stood off its own line in a short window.
             child: SingleChildScrollView(
@@ -627,6 +632,13 @@ class RetroDesktopDialog extends StatelessWidget {
       ..add(StringProperty('title', title))
       ..add(StringProperty('message', message, defaultValue: null))
       ..add(EnumProperty<RetroDesktopTone>('tone', tone, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<BoxConstraints>(
+          'constraints',
+          constraints,
+          defaultValue: const BoxConstraints(maxWidth: 520),
+        ),
+      )
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -2029,7 +2041,7 @@ class _TipSpringState extends State<_TipSpring>
     _shown = shown;
     _presence.springTo(
       shown ? 1 : 0,
-      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+      RawMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
     );
   }
 
@@ -2113,59 +2125,65 @@ class RetroDesktopSnackBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
-    return Semantics(
+    // On a desk a notice is as wide as its words and keys need, up to its room (the toaster's 520), from its start;
+    // the toaster stands it on the room's middle. On a phone it spans the screen, its edges on the windows'. One with a
+    // title spans its room on a desk too.
+    final fits = t.desk && title == null;
+    final face = Semantics(
       liveRegion: true,
       child: _RaisedSurface(
         componentTheme: t.snackBarTheme,
         style: style,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: fits
+              ? CrossAxisAlignment.start
+              : CrossAxisAlignment.stretch,
           children: [
             if (title != null) ...[
               Text(title!, style: t.textTheme.sub),
               const SizedBox(height: RetroDesktopSpacing.s6),
             ],
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            _NoticeLine(
+              mark: RetroDesktopOnCaps(
                 // On the message's first line at any text size.
-                RetroDesktopOnCaps(
-                  child: SizedBox.square(
-                    dimension: 20,
-                    child: Center(
-                      child: retroDesktopAlertArt(t, tone, size: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: RetroDesktopSpacing.s10),
-                Expanded(child: Text(message)),
-              ],
-            ),
-            if (actionLabel != null || onDismissed != null)
-              Padding(
-                padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
-                child: Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: RetroDesktopSpacing.s8,
-                  runSpacing: RetroDesktopSpacing.s8,
-                  children: [
-                    if (actionLabel != null)
-                      RetroDesktopButton(actionLabel!, onPressed: onAction),
-                    if (onDismissed != null)
-                      RetroDesktopButton(
-                        dismissLabel ??
-                            RawWidgetsLocalizations.of(context)
-                                .modalBarrierDismissLabel,
-                        onPressed: onDismissed,
-                      ),
-                  ],
+                child: SizedBox.square(
+                  dimension: 20,
+                  child: Center(child: retroDesktopAlertArt(t, tone, size: 16)),
                 ),
               ),
+              message: Text(message),
+              keys: actionLabel == null && onDismissed == null
+                  ? null
+                  : Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: RetroDesktopSpacing.s8,
+                      runSpacing: RetroDesktopSpacing.s8,
+                      children: [
+                        if (actionLabel != null)
+                          RetroDesktopButton(actionLabel!, onPressed: onAction),
+                        if (onDismissed != null)
+                          RetroDesktopButton(
+                            dismissLabel ??
+                                RawWidgetsLocalizations.of(context)
+                                    .modalBarrierDismissLabel,
+                            onPressed: onDismissed,
+                          ),
+                      ],
+                    ),
+            ),
           ],
         ),
       ),
     );
+    return fits
+        ? Align(
+            alignment: AlignmentDirectional.centerStart,
+            widthFactor: 1,
+            heightFactor: 1,
+            child: face,
+          )
+        : face;
   }
 
   @override
@@ -2193,6 +2211,146 @@ class RetroDesktopSnackBar extends StatelessWidget {
         ),
       );
   }
+}
+
+/// A notice's mark, words and keys: on one line when the words, unbroken, and the keys fit beside each other, the keys
+/// at the line's end; else the words under the mark and the keys below them at the end. The line is as wide as it
+/// needs, or as its room when that is tight.
+class _NoticeLine extends MultiChildRenderObjectWidget {
+  _NoticeLine({required Widget mark, required Widget message, Widget? keys})
+    : super(children: [mark, message, ?keys]);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderNoticeLine(Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderNoticeLine renderObject,
+  ) {
+    renderObject.direction = Directionality.of(context);
+  }
+}
+
+class _NoticeLineData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderNoticeLine extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _NoticeLineData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _NoticeLineData> {
+  _RenderNoticeLine(this._direction);
+
+  // The room after the mark, and between the words and the keys, beside them or above them.
+  static const double _markGap = RetroDesktopSpacing.s10;
+  static const double _keysGap = RetroDesktopSpacing.s16;
+  static const double _keysDrop = RetroDesktopSpacing.s8;
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _NoticeLineData) {
+      child.parentData = _NoticeLineData();
+    }
+  }
+
+  RenderBox get _mark => firstChild!;
+  RenderBox get _message => childAfter(_mark)!;
+  RenderBox? get _keys => childAfter(_message);
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      _mark.getMinIntrinsicWidth(height) +
+      _markGap +
+      _message.getMinIntrinsicWidth(double.infinity);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    final keys = _keys;
+    return _mark.getMaxIntrinsicWidth(height) +
+        _markGap +
+        _message.getMaxIntrinsicWidth(double.infinity) +
+        (keys == null ? 0 : _keysGap + keys.getMaxIntrinsicWidth(height));
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      _layout(constraints, dry: true);
+
+  @override
+  void performLayout() {
+    size = _layout(constraints, dry: false);
+  }
+
+  Size _layout(BoxConstraints constraints, {required bool dry}) {
+    final max = constraints.maxWidth;
+    Size lay(RenderBox child, BoxConstraints c) {
+      if (dry) return child.getDryLayout(c);
+      child.layout(c, parentUsesSize: true);
+      return child.size;
+    }
+
+    final mark = lay(_mark, const BoxConstraints());
+    final lead = mark.width + _markGap;
+    final keys = _keys == null
+        ? Size.zero
+        : lay(_keys!, BoxConstraints(maxWidth: max));
+    final whole = _message.getMaxIntrinsicWidth(double.infinity);
+    final beside = _keys == null ? 0.0 : _keysGap + keys.width;
+    final oneLine = lead + whole + beside <= max;
+    final words = lay(
+      _message,
+      BoxConstraints(maxWidth: math.max(0.0, oneLine ? whole : max - lead)),
+    );
+    final double width;
+    final double height;
+    Offset markAt, wordsAt, keysAt;
+    if (oneLine) {
+      width = constraints.hasTightWidth
+          ? max
+          : constraints.constrainWidth(lead + words.width + beside);
+      height = math.max(math.max(mark.height, words.height), keys.height);
+      wordsAt = Offset(lead, (height - words.height) / 2);
+      markAt = Offset(0, wordsAt.dy);
+      keysAt = Offset(width - keys.width, (height - keys.height) / 2);
+    } else {
+      width = constraints.hasTightWidth
+          ? max
+          : constraints.constrainWidth(
+              math.max(lead + words.width, keys.width),
+            );
+      final top = math.max(mark.height, words.height);
+      height = _keys == null ? top : top + _keysDrop + keys.height;
+      markAt = Offset.zero;
+      wordsAt = Offset(lead, 0);
+      keysAt = Offset(width - keys.width, top + _keysDrop);
+    }
+    if (!dry) {
+      Offset side(Offset at, Size child) => _direction == TextDirection.rtl
+          ? Offset(width - at.dx - child.width, at.dy)
+          : at;
+      (_mark.parentData! as _NoticeLineData).offset = side(markAt, mark);
+      (_message.parentData! as _NoticeLineData).offset = side(wordsAt, words);
+      if (_keys != null) {
+        (_keys!.parentData! as _NoticeLineData).offset = side(keysAt, keys);
+      }
+    }
+    return constraints.constrain(Size(width, height));
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
 }
 
 /// Every notice's id: a new one replaces the one showing.
@@ -2383,7 +2541,7 @@ class _RetroDesktopToasterState extends State<RetroDesktopToaster> {
 
   Widget _notice(BuildContext context, RawToastDetails v) {
     final look = v.toast.data;
-    final face = RetroDesktopSnackBar(
+    final notice = RetroDesktopSnackBar(
       v.toast.message,
       title: v.toast.title,
       tone: look is _NoticeLook ? look.tone : RetroDesktopTone.info,
@@ -2393,6 +2551,10 @@ class _RetroDesktopToasterState extends State<RetroDesktopToaster> {
       dismissLabel: look is _NoticeLook ? look.dismissLabel : null,
       style: look is _NoticeLook ? look.style : null,
     );
+    // On a desk a notice as wide as its words stands on the room's middle.
+    final face = RetroDesktopTheme.of(context).desk && v.toast.title == null
+        ? Center(heightFactor: 1, child: notice)
+        : notice;
     if (look is! _NoticeLook) return face;
     // The look's motion: instant, as the period was, unless the theme gives a notice's rise or fall a time.
     final motion = look.carried.motion;
@@ -2412,13 +2574,17 @@ class _RetroDesktopToasterState extends State<RetroDesktopToaster> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
+    final side = RetroDesktopTheme.of(context).desk
+        ? RetroDesktopSpacing.s16
+        : RetroDesktopSpacing.s12;
     return RawToaster(
       key: _toaster,
       maxVisible: 1,
+      // On a phone a notice stands as far in from the screen's sides as the page's window, so their edges line up.
       padding: EdgeInsets.fromLTRB(
+        side,
         RetroDesktopSpacing.s16,
-        RetroDesktopSpacing.s16,
-        RetroDesktopSpacing.s16,
+        side,
         RetroDesktopSpacing.s16 +
             math.max(media.viewInsets.bottom - media.padding.bottom, 0.0),
       ),

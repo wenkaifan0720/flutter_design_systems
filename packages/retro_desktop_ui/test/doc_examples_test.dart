@@ -543,7 +543,7 @@ void main() {
         );
       },
       'RetroDesktopTreeView': (context) {
-        final tree = DesignTreeController<String>(
+        final tree = RawTreeController<String>(
           roots: const ['Documents'],
           childrenOf: (name) => const [],
         );

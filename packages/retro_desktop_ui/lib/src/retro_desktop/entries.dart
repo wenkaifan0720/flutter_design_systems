@@ -799,7 +799,7 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
             // a Chisel button is: its shade row on top sits barely off the
             // window's grey by night, and read from the pixels the face
             // started a row late.
-            ? DesignKeylineFace(
+            ? RawKeylineFace(
                 child: retroDesktopFace(
                   states: states,
                   sunken: true,
@@ -1933,7 +1933,7 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
                 // frame's rim above and below it included: what the eye
                 // reads as its top and bottom beside a button, whether a
                 // chosen cell's own top row is ink or shade.
-                DesignKeylineFace(
+                RawKeylineFace(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: vertical ? 0 : rim),
                     child: ConstrainedBox(

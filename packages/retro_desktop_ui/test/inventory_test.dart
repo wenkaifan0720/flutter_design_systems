@@ -13,7 +13,7 @@ void main() {
 
   test('every row is answered once, and every gap has a reason', () {
     expect(retroDesktopInventory.problems, isEmpty);
-    expect(retroDesktopInventory.entries.length, DesignInventoryRow.all.length);
+    expect(retroDesktopInventory.entries.length, RawInventoryRow.all.length);
     // Rows the period had no honest form for:
     // each says why and what to use instead.
     const absent = [
@@ -110,7 +110,7 @@ void main() {
                   matching: find.byType(Scrollable),
                 )
                 .first;
-            for (final row in DesignInventoryRow.all) {
+            for (final row in RawInventoryRow.all) {
               await tester.scrollUntilVisible(
                 find.byKey(ValueKey<String>('inventory-${row.id}')),
                 240,

@@ -712,7 +712,7 @@ class _Face extends StatelessWidget {
         ),
       ),
     );
-    return raisedChisel ? DesignKeylineFace(child: face) : face;
+    return raisedChisel ? RawKeylineFace(child: face) : face;
   }
 
   // The outline that content flush with this face's padding meets: the face's

@@ -333,8 +333,8 @@ class RetroDesktopScrollArea extends StatelessWidget {
       thickness: 16,
       // The period's scroll box keeps its size, as long as the floor for what drags it (24 under a pointer, 44 under a
       // finger): a thumb sized by the content grew and shrank as a lazy list built its rows.
-      thumbLength: DesignTapTargets.of(context).floorOn().height,
-      visibility: DesignScrollbarVisibility.always,
+      thumbLength: RawTapTargets.of(context).floorOn().height,
+      visibility: RawScrollbarVisibility.always,
       semanticLabel: label,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -894,7 +894,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
   });
 
   /// The roots, what is open and what is chosen; the caller disposes it.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A node's words.
   final String Function(T node) labelOf;
@@ -916,7 +916,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
       context,
       states: const {},
       padding: const EdgeInsets.all(RetroDesktopSpacing.s2),
-      child: DesignTree<T>(
+      child: RawTree<T>(
         controller: controller,
         labelOf: labelOf,
         onActivate: onActivate,
@@ -998,9 +998,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawTreeController<T>>('controller', controller))
       ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
       ..add(
         ObjectFlagProperty<IconData? Function(T node)>.has('iconOf', iconOf),

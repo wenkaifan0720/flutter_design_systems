@@ -70,7 +70,8 @@ bool retroDesktopActiveHere(BuildContext context) =>
 
 /// A window's title bar alone, for a raised window the look draws on a surface of its own (a bottom sheet): [title],
 /// a heading for a screen reader, the close box live when [onClose] is given (named [closeLabel] for a screen reader),
-/// striped while the window is the front one.
+/// striped while the window is the front one. A modal sheet is neither zoomed nor shaded, so it carries no zoom or
+/// shade box, on a desk either.
 Widget retroDesktopTitleBar({
   required String title,
   VoidCallback? onClose,
@@ -82,6 +83,7 @@ Widget retroDesktopTitleBar({
     onClose: onClose,
     closeLabel: closeLabel,
     header: true,
+    modal: true,
   ),
 );
 
@@ -249,6 +251,9 @@ class _BarLayout extends MultiChildLayoutDelegate {
     final end = boxes
         ? size.width - side - 2 * box - boxGap - boxGap
         : size.width - side - box;
+    // With no boxes at the end, the end's stripes run on through the close box's room to the bar's edge, as the
+    // start's run from the close box: an empty slot there read as a missing box. The title keeps the window's middle.
+    final endRun = boxes ? 0.0 : box;
     final room = end - start;
     final bars = 2 * (min + 2 * margin);
     // A title that wraps (twice the text size on a phone) keeps whole stripes of at least 12 beside its lines: as 6 px
@@ -282,10 +287,11 @@ class _BarLayout extends MultiChildLayoutDelegate {
       'left',
       Offset(place(start + margin, stripe).roundToDouble(), sy),
     );
-    layoutChild('right', st);
+    final endStripe = stripes ? stripe + endRun : 0.0;
+    layoutChild('right', BoxConstraints.tightFor(width: endStripe, height: 12));
     positionChild(
       'right',
-      Offset(place(tx + t.width + margin, stripe).roundToDouble(), sy),
+      Offset(place(tx + t.width + margin, endStripe).roundToDouble(), sy),
     );
   }
 
@@ -311,9 +317,13 @@ class _TitleBar extends StatelessWidget {
     this.closeLabel,
     this.style,
     this.header = false,
+    this.modal = false,
   });
   final RetroDesktopStyle? style;
   final String title;
+
+  /// Whether the bar is a modal sheet's, which is neither zoomed nor shaded: no zoom or shade box at its end.
+  final bool modal;
   final IconData? icon;
 
   /// The close box's name for a screen reader, in place of the shared "Close".
@@ -369,7 +379,7 @@ class _TitleBar extends StatelessWidget {
     // boxes, drawn there, read as controls that did nothing; it keeps its close box, the way back.
     Widget box(int kind) => Visibility(
       visible:
-          (active && (kind == 0 || t.desk)) ||
+          (active && (kind == 0 || (t.desk && !modal))) ||
           (kind == 0 && onClose != null) ||
           (kind == 2 && folded),
       maintainSize: true,
@@ -445,7 +455,7 @@ class _TitleBar extends StatelessWidget {
                 line: line,
                 pixel: pixel,
                 striped: striped,
-                boxes: t.desk || folded,
+                boxes: (t.desk && !modal) || folded,
               ),
               children: [
                 LayoutId(
@@ -582,15 +592,16 @@ extension _ChiselTitleBar on _TitleBar {
     // A narrow window keeps its close button and some of its title: the shade
     // and zoom buttons give way first, then the icon. Off the desk (a phone, a
     // tablet) a window fills its screen and is neither shaded nor zoomed: it
-    // keeps its close button alone, the way back. A folded window keeps them
-    // anywhere, as Platinum's keeps its fold box: the bar alone read as a
-    // wide push button.
+    // keeps its close button alone, the way back, as a modal sheet does
+    // anywhere. A folded window keeps them anywhere, as Platinum's keeps its
+    // fold box: the bar alone read as a wide push button.
     return LayoutBuilder(
       builder: (context, constraints) {
         final room = constraints.maxWidth - 10;
         final withIcon = icon != null && room - 18 >= 16 + 24;
         final all =
-            (t.desk || folded) && room - (withIcon ? 18 : 0) >= 3 * 16 + 2 + 24;
+            ((t.desk && !modal) || folded) &&
+            room - (withIcon ? 18 : 0) >= 3 * 16 + 2 + 24;
         return _Chrome(
           child: SizedBox(
             height: height,
@@ -920,7 +931,7 @@ class RetroDesktopWindow extends StatelessWidget {
                 fills: fills,
                 // A window's content shares its keylines (the check in ui_core's alignment.dart).
                 child: _InsideWindow(
-                  child: DesignKeylineRegion(label: title, child: body),
+                  child: RawKeylineRegion(label: title, child: body),
                 ),
               ),
               if (status.isNotEmpty || statusAction != null)
@@ -1230,7 +1241,7 @@ class RetroDesktopWell extends StatelessWidget implements RetroDesktopFlush {
     final t = RetroDesktopTheme.of(context);
     // To ui_core's keyline check the well is one item at its frame, whatever
     // it holds (a table's heads and rows have the well's own keylines).
-    return DesignKeylineFace(
+    return RawKeylineFace(
       child: retroDesktopFace(
         states: const {},
         component: t.wellTheme.over(

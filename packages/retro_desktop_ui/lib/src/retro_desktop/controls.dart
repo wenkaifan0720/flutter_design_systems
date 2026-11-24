@@ -2817,7 +2817,7 @@ class RetroDesktopGroupBox extends StatelessWidget {
     );
     final minimum = slot((s) => s.minimumSize) ?? Size.zero;
     // To the window the group is its frame; inside, its name and its rows share keylines (ui_core's alignment.dart).
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: title,
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -3247,7 +3247,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
                 ),
                 // The tab's own face, not the panel's rule that shows
                 // under a closed tab, is what its label is centred on.
-                child: DesignKeylineFace(
+                child: RawKeylineFace(
                   // Tabs stand side by side: the ring keeps inside the
                   // tab's rim, clear of the next tab and the panel.
                   child: retroDesktopJoinedRing(
@@ -3372,7 +3372,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
       ),
     );
     // For ui_core's keyline check: the row of tabs is one item to what holds it, and the panel is a section of its own.
-    final strip = DesignKeylineRegion(
+    final strip = RawKeylineRegion(
       label: widget.label ?? RetroDesktopLocalizations.of(context).tabs,
       mixedHeights:
           'the open tab stands taller than the others and joins its panel, '
@@ -3385,7 +3385,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
       header: strip,
       // The panel, its frame included, is the section: its frame stands on
       // the holder's keyline, its contents on the frame's own.
-      panel: DesignKeylineRegion(
+      panel: RawKeylineRegion(
         label: widget.tabs.isEmpty
             ? null
             : widget.tabs[widget.selectedIndex.clamp(

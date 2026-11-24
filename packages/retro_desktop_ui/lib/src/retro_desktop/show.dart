@@ -424,7 +424,7 @@ class RetroDesktopCard extends StatelessWidget {
         child ?? RetroDesktopColumn(gap: 8, children: children ?? const []);
     return RetroDesktopSurface(
       style: style,
-      child: DesignKeylineRegion(
+      child: RawKeylineRegion(
         label: title,
         child: RetroDesktopColumn(
           gap: 12,
@@ -502,7 +502,7 @@ class RetroDesktopListSection extends StatelessWidget {
         RetroDesktopSurface(
           style: style,
           padding: EdgeInsets.zero,
-          child: DesignKeylineRegion(
+          child: RawKeylineRegion(
             label: title,
             child: _GroupedRows(
               children: [

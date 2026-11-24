@@ -103,7 +103,7 @@ void main() {
     testWidgets(
       'a focused chosen row in a ${appearance.name} tree rings in its words\' colour',
       (tester) async {
-        final tree = DesignTreeController<String>(
+        final tree = RawTreeController<String>(
           roots: const ['System'],
           expanded: const ['System'],
           childrenOf: (node) =>

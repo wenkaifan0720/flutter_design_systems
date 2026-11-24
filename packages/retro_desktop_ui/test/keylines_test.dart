@@ -1,5 +1,5 @@
 // Keylines, by ui_core's shared check: every window, group box, card and list section is a
-// DesignKeylineRegion, and in each the words, icons, fields and controls that start a row sit on one leading keyline and
+// RawKeylineRegion, and in each the words, icons, fields and controls that start a row sit on one leading keyline and
 // what ends one on one trailing keyline; a row of controls has one height and one centre line. Over Papers' windows and
 // the ordinary screens at 390 and 1440, in Platinum and Chisel. papers_test's own keyline check stays for what this does
 // not cover: a row of buttons ending on the window's trailing keyline.

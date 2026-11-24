@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-/// How one part looks: ui_core's [DesignStyle] under the look's name, so every look's parts take one style, read the same
+/// How one part looks: ui_core's [RawStyle] under the look's name, so every look's parts take one style, read the same
 /// way. Every slot resolves for the part's states ([WidgetState.disabled], [WidgetState.hovered],
 /// [WidgetState.focused], [WidgetState.pressed], [WidgetState.selected], [WidgetState.error]).
 ///
@@ -23,7 +23,7 @@ import 'package:ui_core/ui_core.dart';
 /// | `textStyle` | the words' style, merged over the look's (its colour comes from `foreground`) |
 /// | `iconSize` | an icon's size |
 ///
-/// `merge` keeps a slot whole, as `ButtonStyle.merge` does; [DesignStyle.layered] falls through within a slot, state by
+/// `merge` keeps a slot whole, as `ButtonStyle.merge` does; [RawStyle.layered] falls through within a slot, state by
 /// state.
 ///
 /// The look's bounds: a `shape` is the period's, a `RetroDesktopBorder` on the pixel grid; any other [OutlinedBorder]
@@ -34,20 +34,20 @@ import 'package:ui_core/ui_core.dart';
 /// ```dart
 /// RetroDesktopStyle(fill: WidgetStatePropertyAll(Color(0xFFE0E0E0)))
 /// ```
-typedef RetroDesktopStyle = DesignStyle;
+typedef RetroDesktopStyle = RawStyle;
 
-/// A part's style layers (its `style:`, then its component theme) read at its states: ui_core's [DesignStyleOf].
+/// A part's style layers (its `style:`, then its component theme) read at its states: ui_core's [RawStyleOf].
 ///
 /// ```dart
 /// RetroDesktopStyleOf([style, theme.buttonTheme], states).fill
 /// ```
-typedef RetroDesktopStyleOf = DesignStyleOf;
+typedef RetroDesktopStyleOf = RawStyleOf;
 
 /// The look's own layering of a component theme over its default for a part.
-extension RetroDesktopStyleLayers on DesignStyle {
+extension RetroDesktopStyleLayers on RawStyle {
   /// This over [below], slot by slot and state by state: a slot of this that is absent, or resolves to null for the
-  /// states at hand, takes [below]'s ([DesignStyle.layered]).
-  DesignStyle over(DesignStyle? below) => DesignStyle.layered([this, below]);
+  /// states at hand, takes [below]'s ([RawStyle.layered]).
+  RawStyle over(RawStyle? below) => RawStyle.layered([this, below]);
 }
 
 /// Every component theme in one, as `ThemeData` holds Material's: what `RetroDesktopThemeData` carries and lerps.

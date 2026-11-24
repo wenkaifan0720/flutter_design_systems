@@ -129,14 +129,14 @@ void main() {
         1600.0,
       ].map((width) => RetroDesktopThemeData.classic().atWidth(width).window),
       [
-        DesignWindowSizeClass.compact,
-        DesignWindowSizeClass.medium,
-        DesignWindowSizeClass.medium,
-        DesignWindowSizeClass.expanded,
-        DesignWindowSizeClass.expanded,
-        DesignWindowSizeClass.large,
-        DesignWindowSizeClass.large,
-        DesignWindowSizeClass.extraLarge,
+        RawWindowSizeClass.compact,
+        RawWindowSizeClass.medium,
+        RawWindowSizeClass.medium,
+        RawWindowSizeClass.expanded,
+        RawWindowSizeClass.expanded,
+        RawWindowSizeClass.large,
+        RawWindowSizeClass.large,
+        RawWindowSizeClass.extraLarge,
       ],
     );
   });

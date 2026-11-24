@@ -49,8 +49,8 @@ RawDataTableController<_Doc> _table(bool selected) {
   return controller;
 }
 
-DesignTreeController<String> _tree(bool selected) {
-  final controller = DesignTreeController<String>(
+RawTreeController<String> _tree(bool selected) {
+  final controller = RawTreeController<String>(
     roots: const ['System'],
     expanded: const ['System'],
     childrenOf: (n) => n == 'System' ? const ['Fonts', 'Sounds'] : const [],

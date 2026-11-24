@@ -1,3 +1,16 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawCombobox` for `DesignCombobox`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.
+- `RetroDesktopDialog` takes `constraints`, as Material's `Dialog` does: by default the window is at most 520 wide.
+- `showRetroDesktopDatePicker`'s window is as wide as its month and the window's margins, with the month on its middle. Before, on a desk the month took three fifths of a 520 window and the rest stood empty.
+- A sheet raised by `showRetroDesktopBottomSheet` carries its close box alone in its title bar, on a desk too: a modal sheet is neither zoomed nor shaded. Before, on a desk it carried zoom and collapse boxes that did nothing.
+- A title bar without zoom and collapse boxes (a phone's window, a sheet) runs its stripes on to its end, as far in from it as they start from the close box's side. Before, they stopped short where the boxes would stand, an empty slot.
+- A list that opens from a focused `RetroDesktopCombobox` hangs clear of the field's focus ring, on whichever side it opens, as a `RetroDesktopSelect`'s does. Before, it covered the ring's foot.
+- A notice from `showRetroDesktopSnackBar` sets its words and keys on one line when they fit, the keys at the line's end; on a desk it is as wide as they need, up to 520, on its room's middle. A notice too long for one line keeps its keys below its words, at the end. Before, the keys always stood on a row of their own, in a box 520 wide on a desk.
+- On a phone a notice stands 12 in from the screen's sides, as a page's window does, so their edges line up. Before, it stood 16 in.
+- The note and success balloons on a notice or an alert turn their tails with the text, right to left.
+- The day numbers in `RetroDesktopCalendar` (ui_core's calendar, `RawCalendarDayDetails.label`) and in `RetroDesktopDatePicker` are in the app's digits: Arabic-Indic in Arabic. `RetroDesktopDatePicker` writes its month's name and its weekdays in ui_core's words too (`DesignLocalizations.formatMonthYear` and `formatShortWeekday`), as `RetroDesktopCalendar` does, so a month reads in one language and one set of digits. Before, they were the look's English words and ASCII digits in every language.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

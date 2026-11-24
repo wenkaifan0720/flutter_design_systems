@@ -175,7 +175,7 @@ void main() {
   });
 
   // iOS's Reduce Motion reaches dart:ui's accessibility features alone, not MediaQuery.disableAnimations (Flutter 3.47
-  // sets only the first on iOS): the look reads both through ui_core's designReduceMotionOf.
+  // sets only the first on iOS): the look reads both through ui_core's rawReduceMotionOf.
   testWidgets('iOS\'s Reduce Motion alone stills the look\'s motion: a page '
       'set to fade stands in place, every timing is zero', (tester) async {
     const timed = RetroDesktopMotion(

@@ -1,4 +1,4 @@
-// A face's one-line label, drawn with its capitals on the middle of its box (ui_core's DesignCapCenter): what centres
+// A face's one-line label, drawn with its capitals on the middle of its box (ui_core's RawCapCenter): what centres
 // the box then centres the capitals, not the line, whose ascent and descent differ by face. The look's two label faces:
 // Jersey 15's capitals are 750 of its 1350 units, Atkinson Hyperlegible Next's 0.668 of its size.
 import 'package:flutter/rendering.dart' show BoxParentData, RenderShiftedBox;
@@ -25,7 +25,7 @@ class RetroDesktopCaps extends StatelessWidget {
   final TextStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignCapCenter(
+  Widget build(BuildContext context) => RawCapCenter(
     capHeightFactor: retroDesktopCapHeight(
       style?.fontFamily ?? DefaultTextStyle.of(context).style.fontFamily,
     ),

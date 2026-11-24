@@ -1450,7 +1450,7 @@ class RetroDesktopFolderGrid extends StatelessWidget
       // its outline, nor is the others' picture.
       final held = KeyedSubtree(
         key: f.key,
-        child: retroDesktopFillHeight(DesignKeylineFace(child: box)),
+        child: retroDesktopFillHeight(RawKeylineFace(child: box)),
       );
       if (f.onPressed == null) return held;
       return RetroDesktopPressable(
@@ -1690,7 +1690,7 @@ class RetroDesktopFileGrid extends StatelessWidget
       // its outline, nor is the others' picture.
       final held = KeyedSubtree(
         key: f.key,
-        child: retroDesktopFillHeight(DesignKeylineFace(child: box)),
+        child: retroDesktopFillHeight(RawKeylineFace(child: box)),
       );
       if (f.onPressed == null) return held;
       return RetroDesktopPressable(
@@ -2125,7 +2125,7 @@ class RetroDesktopChecklist extends StatelessWidget {
       checked: item.value,
       label: item.text,
       onPressed: () => toggle(!item.value),
-      child: DesignKeylineFace(child: drawn),
+      child: RawKeylineFace(child: drawn),
     );
   }
 

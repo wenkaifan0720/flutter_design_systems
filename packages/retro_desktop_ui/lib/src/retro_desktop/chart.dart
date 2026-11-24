@@ -1080,7 +1080,7 @@ class _ChartPainter extends CustomPainter {
       rtl != old.rtl;
 }
 
-/// Round gridline values holding [low] to [high], on ui_core's scale ([DesignLinearScale.nice]): a step of 1, 2 or 5
+/// Round gridline values holding [low] to [high], on ui_core's scale ([RawLinearScale.nice]): a step of 1, 2 or 5
 /// times a power of ten, about four steps to a chart, from the last round value at or under [low] to the first at or
 /// over [high]. A range too wide to subtract keeps its two ends.
 List<double> _roundTicks(
@@ -1090,7 +1090,7 @@ List<double> _roundTicks(
 ) {
   final range = high - low;
   if (!range.isFinite || range <= 0) return [low, high];
-  final scale = DesignLinearScale.nice(
+  final scale = RawLinearScale.nice(
     min: low,
     max: high,
     start: 0,

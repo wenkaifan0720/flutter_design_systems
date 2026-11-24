@@ -1090,7 +1090,7 @@ class _KitPapersState extends State<KitPapers> {
         TargetPlatform.macOS || TargetPlatform.iOS => true,
         _ => false,
       };
-      return designShortcutLabel(
+      return rawShortcutLabel(
         context,
         SingleActivator(key, meta: apple, control: !apple),
         appleSymbols: false,
