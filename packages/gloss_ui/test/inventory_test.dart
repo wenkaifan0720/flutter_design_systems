@@ -1,4 +1,4 @@
-// Gloss in ui_core's shared inventory (DesignInventory): every row answered once (one left out, with its reason), and
+// Gloss in ui_core's shared inventory (RawInventory): every row answered once (one left out, with its reason), and
 // every live specimen building and laying out on a phone and a desk, by day and by night, right to left, and at 200%
 // text on a phone, with nothing thrown.
 // ignore_for_file: avoid_relative_lib_imports
@@ -42,7 +42,7 @@ void main() {
     final inventory = GlossInventory.registry;
     inventory.verify();
     expect(inventory.absentCount, 1);
-    expect(inventory.presentCount, DesignInventoryRow.all.length - 1);
+    expect(inventory.presentCount, RawInventoryRow.all.length - 1);
   });
 
   const cases = [

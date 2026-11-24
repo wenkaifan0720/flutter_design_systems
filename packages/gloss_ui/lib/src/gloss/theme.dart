@@ -26,22 +26,22 @@ import 'page_transitions.dart';
 /// ```dart
 /// final roomy = GlossStyle(padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32)));
 /// ```
-typedef GlossStyle = DesignStyle;
+typedef GlossStyle = RawStyle;
 
-/// How tight Gloss's controls stand: [DesignDensity.standard] (a 48 px
-/// control), [DesignDensity.comfortable] (44) or [DesignDensity.compact] (40).
+/// How tight Gloss's controls stand: [RawDensity.standard] (a 48 px
+/// control), [RawDensity.comfortable] (44) or [RawDensity.compact] (40).
 /// The default adapts: compact on a desktop, standard on touch. A control's
 /// tap target stays at the floor for the input whatever the density.
-typedef GlossDensity = DesignDensity;
+typedef GlossDensity = RawDensity;
 
 /// The look's constants: its corners, its depths and its light. They are not
 /// settings: one light from the top and parts moulded at these radii are what
 /// Gloss is.
 abstract final class GlossMetrics {
-  /// A control's height at [DesignDensity.standard], before density.
+  /// A control's height at [RawDensity.standard], before density.
   static const double controlHeight = 48;
 
-  /// A list row's least height at [DesignDensity.standard].
+  /// A list row's least height at [RawDensity.standard].
   static const double rowHeight = 52;
 
   /// The corner of a field, a select and the small wells inside a panel.
@@ -107,7 +107,7 @@ abstract final class GlossMetrics {
   static const double sidebarBreakpoint = 1024;
 }
 
-/// Gloss's spacing, on a 4 px grid ([DesignSpacingScope] declares it).
+/// Gloss's spacing, on a 4 px grid ([RawSpacingScope] declares it).
 abstract final class GlossSpacing {
   /// The grid every gap, inset and offset stands on.
   static const double grid = 4;
@@ -142,7 +142,7 @@ abstract final class GlossSpacing {
       : regular;
 }
 
-/// Gloss's motion: springs, run through `DesignMotionPolicy`, which honours
+/// Gloss's motion: springs, run through `RawMotionPolicy`, which honours
 /// Reduce Motion. Moulded parts settle: a key returns with a small give, a
 /// bead snaps through and settles, a panel rises and stops.
 abstract final class GlossMotion {
@@ -1440,7 +1440,7 @@ class GlossTheme extends StatelessWidget {
 
   /// Gloss's tap floors: 44 by 44 for a finger, 24 by 24 for a pointer, as
   /// ui_core's defaults.
-  static const DesignTapTargets tapTargets = DesignTapTargets.fallback;
+  static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   static final GlossThemeData _fallback = GlossThemeData.light();
 
@@ -1471,10 +1471,10 @@ class GlossTheme extends StatelessWidget {
       theme: this,
       child: Theme(
         data: material,
-        child: DesignSpacingScope(
+        child: RawSpacingScope(
           // Gloss keeps ui_core's 4 px grid.
-          spacing: DesignSpacing.fallback,
-          child: DesignTapTargetScope(
+          spacing: RawSpacing.fallback,
+          child: RawTapTargetScope(
             targets: tapTargets,
             child: DefaultSelectionStyle(
               cursorColor: colors.jadeInk,

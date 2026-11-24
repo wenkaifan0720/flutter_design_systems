@@ -106,7 +106,7 @@ class GlossSelect<T> extends StatelessWidget {
       // Named by its field (ui_core's RawInputDecorator), with its help.
       semanticValue: chosen?.label,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [style, theme.selectStyle],
           {...states, if (errorText != null) WidgetState.error},
         );
@@ -142,7 +142,7 @@ class GlossSelect<T> extends StatelessWidget {
                       start: GlossSpacing.regular,
                       end: GlossSpacing.small,
                     ),
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: glossCapHeightFactor,
                       child: Text(
                         chosen?.label ?? hintText ?? '',
@@ -372,7 +372,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: glossCapHeightFactor,
                         child: Text(
                           item.label,

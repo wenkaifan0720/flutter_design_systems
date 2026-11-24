@@ -1,4 +1,4 @@
-// On a page of GlossScaffold, on ui_core's DesignAdaptiveShell, under the look's host, a heading and the
+// On a page of GlossScaffold, on ui_core's RawAdaptiveShell, under the look's host, a heading and the
 // words after it read as two nodes, the heading flagged as a header: the keys
 // set round the app and its panes (F6 between panes) add no node of their own
 // for the two to merge into.

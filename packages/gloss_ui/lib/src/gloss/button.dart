@@ -126,7 +126,7 @@ class GlossButton extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.textButtonStyle], states);
+        final layered = RawStyleOf([style, theme.textButtonStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final focused = states.contains(WidgetState.focused);
@@ -185,7 +185,7 @@ class GlossButton extends StatelessWidget {
                                 ),
                               ),
                             ).merge(layered.textStyle),
-                            child: DesignCapCenter(
+                            child: RawCapCenter(
                               capHeightFactor: glossCapHeightFactor,
                               child: Text(label),
                             ),
@@ -248,13 +248,13 @@ class _PressedState extends State<_Pressed>
   void didUpdateWidget(_Pressed old) {
     super.didUpdateWidget(old);
     if (old.pressed != widget.pressed) {
-      if (DesignMotionPolicy.of(context).reduceMotion) {
+      if (RawMotionPolicy.of(context).reduceMotion) {
         _depth.value = widget.pressed ? 1 : 0;
         return;
       }
       _depth.springTo(
         widget.pressed ? 1 : 0,
-        DesignMotionPolicy.of(context)
+        RawMotionPolicy.of(context)
             .spatial(dampingRatio: 1, stiffness: GlossMotion.pressStiffness),
       );
     }
@@ -358,7 +358,7 @@ class GlossIconButton extends StatelessWidget {
       semanticSelected: isSelected,
       semanticLabel: tooltip,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
+        final layered = RawStyleOf([style, theme.iconButtonStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final on = isSelected ?? false;

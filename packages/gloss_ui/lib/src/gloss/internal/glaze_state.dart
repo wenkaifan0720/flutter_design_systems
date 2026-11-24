@@ -17,7 +17,7 @@ Widget animatedGlazePaint(
 }) {
   Widget paint(Color value, Widget? content) =>
       CustomPaint(painter: painter(value), child: content);
-  if (DesignMotionPolicy.of(context).reduceMotion) return paint(light, child);
+  if (RawMotionPolicy.of(context).reduceMotion) return paint(light, child);
   return TweenAnimationBuilder<Color?>(
     tween: ColorTween(end: light),
     duration: const Duration(milliseconds: 140),

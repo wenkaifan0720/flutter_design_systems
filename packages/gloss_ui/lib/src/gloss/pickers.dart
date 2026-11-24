@@ -331,7 +331,7 @@ class _GlossCalendarState extends State<GlossCalendar> {
           ],
         ),
         dayBuilder: (context, day, states) {
-          final layered = DesignStyleOf(layers, states);
+          final layered = RawStyleOf(layers, states);
           // A waiting range's preview ends as a finished range does: a lit
           // well on the day under the pointer (or the keyboard), the glaze
           // stopping at it.
@@ -377,12 +377,15 @@ class _GlossCalendarState extends State<GlossCalendar> {
                   bottom: clear,
                   foreground: c.ink,
                 );
+          // A day of the months either side is a control (a press picks it):
+          // its figure is secondary words, at 4.5:1 like every secondary
+          // word, a step under the month's own ink.
           final ink = end
               ? c.onJade
               : disabled
               ? c.inkDisabled
               : !day.inMonth
-              ? c.inkSecondary.withValues(alpha: 0.6)
+              ? c.inkSecondary
               : day.isToday
               ? c.jadeInk
               : c.ink;
@@ -417,7 +420,7 @@ class _GlossCalendarState extends State<GlossCalendar> {
                         ),
                         child: Center(
                           child: Text(
-                            '${day.date.day}',
+                            day.label,
                             maxLines: 1,
                             softWrap: false,
                             style: theme.textTheme.body.copyWith(
@@ -475,7 +478,7 @@ class _PickerField extends StatelessWidget {
     required this.semanticLabel,
   });
 
-  final DesignOverlayAnchor anchor;
+  final RawOverlayAnchor anchor;
   final String? text;
   final String? hint;
   final IconData icon;
@@ -523,7 +526,7 @@ class _PickerField extends StatelessWidget {
                       top: 6,
                       bottom: 6,
                     ),
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: glossCapHeightFactor,
                       child: Text(
                         text ?? hint ?? '',

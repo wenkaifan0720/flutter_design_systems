@@ -83,7 +83,7 @@ class GlossMenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.menuStyle], states);
+    final layered = RawStyleOf([style, theme.menuStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     final ink =
         layered.foreground ??
@@ -119,7 +119,7 @@ class GlossMenuRow extends StatelessWidget {
                 const SizedBox(width: GlossSpacing.medium),
               ],
               Expanded(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: glossCapHeightFactor,
                   child: Text(
                     label,
@@ -608,7 +608,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, styleOf(theme)], const {});
+    final layered = RawStyleOf([style, styleOf(theme)], const {});
     var face = glossPanelFace(c);
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return SizedBox(
@@ -707,7 +707,7 @@ class _Smoke extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
+    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
     final light = c.brightness == Brightness.light;
     var face = GlossFace(
       top: light ? const Color(0xF2505A64) : const Color(0xF25E6872),

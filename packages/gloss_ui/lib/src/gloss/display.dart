@@ -93,7 +93,7 @@ class _GlossDisclosureState extends State<GlossDisclosure> {
           expanded: _open,
           semanticLabel: widget.title,
           builder: (context, states, _) {
-            final layered = DesignStyleOf([
+            final layered = RawStyleOf([
               widget.style,
               theme.disclosureStyle,
             ], states);
@@ -358,7 +358,7 @@ class GlossTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tableStyle], const {});
+    final layered = RawStyleOf([style, theme.tableStyle], const {});
     // The rows sit in a well below the page (law 3), not on a raised card.
     var card = GlossFace.well(c, radius: GlossMetrics.wellRadius);
     if (layered.fill != null) card = card.glazed(layered.fill!);
@@ -768,7 +768,7 @@ class GlossAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.avatarStyle], const {});
+    final layered = RawStyleOf([style, theme.avatarStyle], const {});
     // A face is read, not pressed: a level pearl disc (no lift, no shine
     // across it), apart from the beads a finger meets.
     var face = GlossFace.pearl(c).copyWith(lift: 0, lens: 0);
@@ -964,7 +964,7 @@ class GlossBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.badgeStyle], const {});
+    final layered = RawStyleOf([style, theme.badgeStyle], const {});
     var face = GlossFace.ruby(c).copyWith(lift: 0.6);
     if (layered.fill != null) face = face.glazed(layered.fill!);
     final words = count > maxCount ? '$maxCount+' : '$count';
@@ -1078,7 +1078,7 @@ class GlossTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tagStyle], const {});
+    final layered = RawStyleOf([style, theme.tagStyle], const {});
     final light = c.brightness == Brightness.light;
     var face = switch (tone) {
       // A plain tag is enamel in the page's own grey, as the toned ones are
@@ -1122,7 +1122,7 @@ class GlossTag extends StatelessWidget {
                 const SizedBox(width: GlossSpacing.tight),
               ],
               Flexible(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: glossCapHeightFactor,
                   child: Text(
                     label,
@@ -1376,7 +1376,7 @@ class GlossMeter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.meterStyle], const {});
+    final layered = RawStyleOf([style, theme.meterStyle], const {});
     final share = max <= 0 ? 0.0 : (value / max).clamp(0.0, 1.0);
     final over = high != null && value > high!;
     final said = valueText ?? '${(share * 100).round()}%';

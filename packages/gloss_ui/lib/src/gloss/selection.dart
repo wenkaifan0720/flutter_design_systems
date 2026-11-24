@@ -100,7 +100,7 @@ class GlossRangeSlider extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final enabled = onChanged != null;
-    final fill = DesignStyleOf([style, theme.sliderStyle], const {}).fill;
+    final fill = RawStyleOf([style, theme.sliderStyle], const {}).fill;
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return RawRangeSlider(

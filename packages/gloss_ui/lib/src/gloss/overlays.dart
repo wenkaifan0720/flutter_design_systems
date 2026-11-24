@@ -8,7 +8,6 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
@@ -80,7 +79,7 @@ class GlossDialog extends StatelessWidget {
     // centred; shown at rest in a page it stands at its column's start with
     // no margin, as a card does. Either way it is as wide as it may be (up to
     // [maxWidth]), never shrunk to its words.
-    final routed = ModalRoute.of(context) is DesignDialogRoute;
+    final routed = ModalRoute.of(context) is RawModalDialogRoute;
     // ui_core's dialog lays it out, focuses its safe key and stacks its
     // keys; Gloss paints the panel, the words and the keys.
     final dialog = RawAlertDialog(
@@ -117,7 +116,7 @@ class GlossDialog extends StatelessWidget {
       ),
       frameBuilder: (context, details, child) => GlossSurface(
         face: _panel(c),
-        child: DesignKeylineRegion(
+        child: RawKeylineRegion(
           label: 'Dialog',
           child: Padding(
             padding: const EdgeInsets.all(GlossSpacing.large),
@@ -192,7 +191,7 @@ Future<T?> showGlossDialog<T>({
 }) {
   final theme = GlossTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       isAlert: isAlert,
       barrierDismissible: barrierDismissible,
       barrierLabel: RawWidgetsLocalizations.of(context)
@@ -482,7 +481,7 @@ Future<T?> showGlossSheet<T>({
 
 /// The scrim fades in over [ms], follows the panel while it is dragged,
 /// and fades out with the closing transition.
-DesignBarrierBuilder _scrim(Color color, int ms) =>
+RawBarrierBuilder _scrim(Color color, int ms) =>
     (context, animation) => _Arrival(
       animation: animation,
       ms: ms,
@@ -733,7 +732,7 @@ class _Sheet extends StatelessWidget {
                   ? GlossSpacing.regular
                   : GlossSpacing.large + (framed ? 0 : pad.bottom),
             ),
-            child: DesignKeylineRegion(
+            child: RawKeylineRegion(
               label: title ?? 'Sheet',
               child: DefaultTextStyle.merge(
                 style: theme.textTheme.body,
@@ -1084,7 +1083,7 @@ class _SidePanel extends StatelessWidget {
                   GlossSpacing.large,
                   GlossSpacing.large,
                 ),
-                child: DesignKeylineRegion(
+                child: RawKeylineRegion(
                   label: title ?? 'Side sheet',
                   child: DefaultTextStyle.merge(
                     style: theme.textTheme.body,

@@ -97,7 +97,7 @@ class GlossBreadcrumb extends StatelessWidget {
                           fontVariations: glossWeightAxis(FontWeight.w600),
                         )
                         .merge(
-                          DesignStyleOf([
+                          RawStyleOf([
                             style,
                             theme.breadcrumbStyle,
                           ], const {}).textStyle,
@@ -136,7 +136,7 @@ class _CrumbLink extends StatelessWidget {
       link: true,
       semanticLabel: crumb.label,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.breadcrumbStyle], states);
+        final layered = RawStyleOf([style, theme.breadcrumbStyle], states);
         final pressed = states.contains(WidgetState.pressed);
         final ink =
             layered.foreground ??
@@ -267,7 +267,7 @@ class GlossPagination extends StatelessWidget {
       selected: current,
       semanticSelected: current,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [style, theme.paginationStyle],
           {...states, if (current) WidgetState.selected},
         );
@@ -315,7 +315,7 @@ class GlossPagination extends StatelessWidget {
     Widget figure(int p) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.small),
       child: Builder(
-        builder: (context) => DesignCapCenter(
+        builder: (context) => RawCapCenter(
           capHeightFactor: glossCapHeightFactor,
           child: Text(
             '${p + 1}',
@@ -354,7 +354,7 @@ class GlossPagination extends StatelessWidget {
                       // Set on the figures' line, as they are.
                       child: Center(
                         child: ExcludeSemantics(
-                          child: DesignCapCenter(
+                          child: RawCapCenter(
                             capHeightFactor: glossCapHeightFactor,
                             child: Text(
                               '…',
@@ -431,7 +431,7 @@ class GlossStepProgress extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
-    final layered = DesignStyleOf([style, theme.stepProgressStyle], const {});
+    final layered = RawStyleOf([style, theme.stepProgressStyle], const {});
     const bead = 28.0;
     final narrow = MediaQuery.sizeOf(context).width < 420;
     return Semantics(
@@ -622,7 +622,7 @@ class GlossPageDots extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
-    final layered = DesignStyleOf([style, theme.pageDotsStyle], const {});
+    final layered = RawStyleOf([style, theme.pageDotsStyle], const {});
     Widget dot(int i, [Set<WidgetState> states = const {}]) {
       final on = i == page;
       var gel = GlossFace.gel(c).copyWith(lift: 0.3, lens: 0.6);
@@ -718,7 +718,7 @@ class GlossMenuBar extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.menuBarStyle];
-    final bar = DesignStyleOf(layers, const {});
+    final bar = RawStyleOf(layers, const {});
     // The strip is chrome, as a bar is: level, in the bars' glaze, edged by
     // a hairline; only the menu a pointer is on rises as a plate.
     var strip = GlossFace(
@@ -752,7 +752,7 @@ class GlossMenuBar extends StatelessWidget {
       barBuilder: (context, items) => SizedBox(
         height: math.max(
           bar.minimumSize?.height ?? 40,
-          DesignTapTargets.of(context).floorOn().height + 6,
+          RawTapTargets.of(context).floorOn().height + 6,
         ),
         child: GlossSurface(
           face: strip,
@@ -777,7 +777,7 @@ class GlossMenuBar extends StatelessWidget {
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );
         }
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final open = states.contains(WidgetState.selected);
         final plate = glossRowPlate(
           c,
@@ -797,7 +797,7 @@ class GlossMenuBar extends StatelessWidget {
             child: Center(
               widthFactor: 1,
               child: Builder(
-                builder: (context) => DesignCapCenter(
+                builder: (context) => RawCapCenter(
                   capHeightFactor: glossCapHeightFactor,
                   child: Text(
                     entry.label,
@@ -1014,7 +1014,7 @@ class GlossCommandPalette extends StatelessWidget {
 Widget _palettePanel(BuildContext context, GlossStyle? style, Widget child) {
   final theme = GlossTheme.of(context);
   final c = theme.colors;
-  final layered = DesignStyleOf([style, theme.commandPaletteStyle], const {});
+  final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
   var face = glossPanelFace(c, radius: 20);
   if (layered.fill != null) face = face.glazed(layered.fill!);
   return ConstrainedBox(
@@ -1044,7 +1044,7 @@ Future<void> showGlossCommandPalette(
   GlossStyle? style,
 }) {
   final theme = GlossTheme.of(context);
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: theme.colors.scrim,
     palette: (run) => GlossCommandPalette(

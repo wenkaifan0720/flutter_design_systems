@@ -234,7 +234,7 @@ class _GlossSearchFieldState extends State<GlossSearchField>
           if (!widget.enabled) WidgetState.disabled,
           if (focused) WidgetState.focused,
         };
-        final layered = DesignStyleOf([
+        final layered = RawStyleOf([
           widget.style,
           theme.searchFieldStyle,
         ], states);
@@ -365,7 +365,7 @@ class _GlossPasswordFieldState extends State<GlossPasswordField>
               if (focused) WidgetState.focused,
               if (widget.errorText != null) WidgetState.error,
             };
-            final layered = DesignStyleOf([
+            final layered = RawStyleOf([
               widget.style,
               theme.textFieldStyle,
             ], states);
@@ -504,7 +504,7 @@ class _GlossInputGroupState extends State<GlossInputGroup>
         if (!start) const _Seam(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: glossCapHeightFactor,
             child: Text(
               words,
@@ -527,12 +527,12 @@ class _GlossInputGroupState extends State<GlossInputGroup>
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: widget.enabled,
-      child: DesignInputGroup(
+      child: RawInputGroup(
         focusNode: focusNode,
         enabled: widget.enabled,
         isError: widget.errorText != null,
         builder: (context, states, child) {
-          final layered = DesignStyleOf([
+          final layered = RawStyleOf([
             widget.style,
             theme.textFieldStyle,
           ], states);
@@ -718,7 +718,7 @@ class GlossOtpField extends StatelessWidget {
             if (slot.focused && slot.active) WidgetState.focused,
             if (slot.isError) WidgetState.error,
           };
-          final layered = DesignStyleOf([style, theme.otpFieldStyle], states);
+          final layered = RawStyleOf([style, theme.otpFieldStyle], states);
           return SizedBox(
             width: 44,
             height: theme.controlHeight + 4,
@@ -795,7 +795,7 @@ class _OptionRow extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: glossCapHeightFactor,
                   child: Text(
                     label,
@@ -932,7 +932,7 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
 
   /// Finds the options for a query itself (a server's search), instead of
   /// filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// The option taken.
   final T? value;
@@ -1011,7 +1011,7 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
               if (focused) WidgetState.focused,
               if (errorText != null) WidgetState.error,
             };
-            final layered = DesignStyleOf([style, theme.comboboxStyle], states);
+            final layered = RawStyleOf([style, theme.comboboxStyle], states);
             return GlossEntryWell(
               focusNode: field.focusNode,
               enabled: enabled,
@@ -1106,7 +1106,7 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
   final Iterable<T> options;
 
   /// Finds the suggestions for a query itself.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// Makes a tag of typed words; null: only suggestions become tags.
   final T? Function(String text)? onCreate;
@@ -1268,7 +1268,7 @@ class _TagWellState extends State<_TagWell> {
       if (_focused) WidgetState.focused,
       if (widget.error) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.tagInputStyle], states);
+    final layered = RawStyleOf([widget.style, theme.tagInputStyle], states);
     return Focus(
       canRequestFocus: false,
       skipTraversal: true,
@@ -1359,7 +1359,7 @@ class _Tag extends StatelessWidget {
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   widthFactor: 1,
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: glossCapHeightFactor,
                     child: Text(
                       label,
@@ -1407,7 +1407,7 @@ class _Tag extends StatelessWidget {
 
 /// A form: [GlossFormField]s inside it are checked together, and a failed
 /// submit moves the focus to the first one that is wrong.
-typedef GlossForm = DesignForm;
+typedef GlossForm = RawForm;
 
 /// Any control with its label, help and error, as one field: the label
 /// above it names it to a screen reader, the error under it is announced

@@ -15,7 +15,7 @@ const String? glossFontPackage = 'gloss_ui';
 const String glossFontFamily = 'PlusJakartaSans';
 
 /// Plus Jakarta Sans's capitals as a fraction of its size (its OS/2 cap
-/// height, 745, over its 1000 units per em): what `DesignCapCenter` centres a
+/// height, 745, over its 1000 units per em): what `RawCapCenter` centres a
 /// label by.
 const double glossCapHeightFactor = 0.745;
 

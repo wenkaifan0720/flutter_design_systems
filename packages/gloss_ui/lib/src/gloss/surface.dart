@@ -894,7 +894,7 @@ class GlossGlazeHighlight extends StatelessWidget {
       ),
       child: content,
     );
-    if (DesignMotionPolicy.of(context).reduceMotion) {
+    if (RawMotionPolicy.of(context).reduceMotion) {
       return paint(target, child);
     }
     return TweenAnimationBuilder<Offset>(
@@ -1013,7 +1013,7 @@ class _AnimatedGlossSurfaceState extends State<AnimatedGlossSurface>
     final pressChanged = widget.face.travel != _to.travel;
     _from = _now;
     _to = widget.face;
-    final policy = DesignMotionPolicy.of(context);
+    final policy = RawMotionPolicy.of(context);
     if (policy.reduceMotion) {
       _controller.value = 1;
       return;
@@ -1043,7 +1043,7 @@ class _AnimatedGlossSurfaceState extends State<AnimatedGlossSurface>
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _controller,
     builder: (context, child) => GlossSurface(
-      face: DesignMotionPolicy.of(context).reduceMotion ? _to : _now,
+      face: RawMotionPolicy.of(context).reduceMotion ? _to : _now,
       child: child,
     ),
     child: widget.child,

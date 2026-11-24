@@ -276,7 +276,7 @@ class _GlossTextFieldState extends State<GlossTextField> {
       if (focused) WidgetState.focused,
       if (widget.errorText != null) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
+    final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     final words = theme.textTheme.body
         .merge(layered.textStyle)
         .copyWith(color: widget.enabled ? c.ink : c.inkDisabled);
@@ -295,7 +295,7 @@ class _GlossTextFieldState extends State<GlossTextField> {
       lift: widget.enabled ? -1 : -0.45,
       focus: c.focus.withValues(alpha: 0),
     );
-    final entry = DesignTextEntryBox(
+    final entry = RawTextEntryBox(
       minHeight: theme.controlHeight,
       controller: _controller,
       maxLines: widget.maxLines,
@@ -374,7 +374,7 @@ class _GlossTextFieldState extends State<GlossTextField> {
                     horizontal: GlossSpacing.regular,
                   ),
                   child: oneLine
-                      ? DesignCapCenter(
+                      ? RawCapCenter(
                           capHeightFactor: glossCapHeightFactor,
                           child: entry,
                         )

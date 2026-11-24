@@ -92,8 +92,8 @@ String _compact(double value, String figure, RawWidgetsLocalizations words) {
 }
 
 /// A chart's own format, or Gloss's compact figure.
-DesignChartValueFormat _formatOf(DesignChartValueFormat? format) =>
-    format ?? const DesignChartValueFormat.custom(_compact);
+RawChartValueFormat _formatOf(RawChartValueFormat? format) =>
+    format ?? const RawChartValueFormat.custom(_compact);
 
 class _Legend extends StatelessWidget {
   const _Legend(this.entries);
@@ -189,7 +189,7 @@ String _readOut(
   List<String> labels,
   List<GlossSeries> series,
   RawWidgetsLocalizations words,
-  DesignChartValueFormat format,
+  RawChartValueFormat format,
 ) => [
   for (final s in series)
     '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${format.format(v, words)}'].join(', ')}',
@@ -222,7 +222,7 @@ abstract class _AxesPainter extends CustomPainter {
   final RawWidgetsLocalizations words;
 
   /// How the value axis writes its ticks: each at its scale's decimals.
-  final DesignChartValueFormat valueFormat;
+  final RawChartValueFormat valueFormat;
 
   // Whether no value is above 0.
   bool get _empty => series.expand((s) => s.values).fold(0.0, math.max) <= 0;
@@ -230,11 +230,11 @@ abstract class _AxesPainter extends CustomPainter {
   /// ui_core's scale up the start, from 0 to a whole tick over the most:
   /// each step a round figure (1, 2 or 5 times a power of ten), never 1.3
   /// or 3.8.
-  late final DesignLinearScale _scale = () {
+  late final RawLinearScale _scale = () {
     final most = series
         .expand((s) => s.values)
         .fold(0.0, (a, b) => math.max(a, b));
-    return DesignLinearScale.nice(
+    return RawLinearScale.nice(
       // An empty or all-zero chart still climbs to 1.
       min: 0,
       max: most > 0 ? most : 1,
@@ -268,7 +268,7 @@ abstract class _AxesPainter extends CustomPainter {
     // The figures' room at the start of the plot.
     final gutter = math.min(
       size.width,
-      DesignScaleTick.widestLabel(
+      RawScaleTick.widestLabel(
             ticks,
             style: text,
             textScaler: textScaler,
@@ -606,9 +606,9 @@ class GlossLineChart extends StatelessWidget {
 
   /// How a value is written on the value axis and in what a screen reader
   /// hears: in the reader's digits, each tick at its scale's decimals, with
-  /// a unit (`DesignChartValueFormat(suffix: ' h')`); null: the figure,
+  /// a unit (`RawChartValueFormat(suffix: ' h')`); null: the figure,
   /// compact past a thousand (1.2k).
-  final DesignChartValueFormat? valueFormat;
+  final RawChartValueFormat? valueFormat;
 
   /// Its own style, over [GlossThemeData.chartStyle].
   final GlossStyle? style;
@@ -619,7 +619,7 @@ class GlossLineChart extends StatelessWidget {
   Widget _axes(BuildContext context, {required bool area}) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    final layered = RawStyleOf([style, theme.chartStyle], const {});
     return _Grow(
       builder: (context, t) => _Framed(
         semanticLabel: semanticLabel,
@@ -712,9 +712,9 @@ class GlossBarChart extends StatelessWidget {
 
   /// How a value is written on the value axis and in what a screen reader
   /// hears: in the reader's digits, each tick at its scale's decimals, with
-  /// a unit (`DesignChartValueFormat(suffix: ' h')`); null: the figure,
+  /// a unit (`RawChartValueFormat(suffix: ' h')`); null: the figure,
   /// compact past a thousand (1.2k).
-  final DesignChartValueFormat? valueFormat;
+  final RawChartValueFormat? valueFormat;
 
   /// Its own style, over [GlossThemeData.chartStyle].
   final GlossStyle? style;
@@ -723,7 +723,7 @@ class GlossBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    final layered = RawStyleOf([style, theme.chartStyle], const {});
     return _Grow(
       builder: (context, t) => _Framed(
         semanticLabel: semanticLabel,

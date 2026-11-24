@@ -117,7 +117,7 @@ class GlossBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.bannerStyle], const {});
+    final layered = RawStyleOf([style, theme.bannerStyle], const {});
     // A level porcelain plate (it holds news, it is not an object to lift),
     // glazed faintly in its tone, its rim in the tone too.
     final ink = _toneInk(c, tone);
@@ -534,7 +534,7 @@ class GlossProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.progressStyle], const {});
+    final layered = RawStyleOf([style, theme.progressStyle], const {});
     var gel = GlossFace.gel(c).copyWith(lift: 0, lens: 0.65);
     if (layered.fill != null) gel = gel.glazed(layered.fill!);
     final known = value?.clamp(0.0, 1.0);

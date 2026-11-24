@@ -105,7 +105,7 @@ class GlossWell extends StatelessWidget {
         (first is GlossListTile && first.leading != null
             ? GlossListTile.leadingExtent
             : GlossSpacing.regular);
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: header ?? 'Well',
       indents: [indent],
       child: Column(
@@ -228,7 +228,7 @@ class GlossListTile extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     Widget body(Set<WidgetState> states) {
-      final layered = DesignStyleOf(
+      final layered = RawStyleOf(
         [style, theme.listTileStyle],
         {...states, if (selected) WidgetState.selected},
       );
@@ -298,7 +298,7 @@ class GlossListTile extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          DesignCapCenter(
+                          RawCapCenter(
                             capHeightFactor: glossCapHeightFactor,
                             child: Text(
                               title,
@@ -584,7 +584,7 @@ class GlossCard extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     Widget tile(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.cardStyle], states);
+      final layered = RawStyleOf([style, theme.cardStyle], states);
       var face = GlossFace.porcelain(c, radius: GlossMetrics.cardRadius);
       if (layered.fill != null) face = face.glazed(layered.fill!);
       final pressed = states.contains(WidgetState.pressed);

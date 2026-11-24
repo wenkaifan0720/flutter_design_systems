@@ -40,7 +40,7 @@ GlossFace glossKeyFace(
   GlossStyle? style,
 }) {
   final c = theme.colors;
-  final layered = DesignStyleOf([style, glossKeyTheme(theme, kind)], states);
+  final layered = RawStyleOf([style, glossKeyTheme(theme, kind)], states);
   final disabled = states.contains(WidgetState.disabled);
   final pressed = states.contains(WidgetState.pressed);
   final focus = glossGlazeOf(c, states);
@@ -125,7 +125,7 @@ Widget glossKeyPaint(
   GlossStyle? style,
 }) {
   final theme = GlossTheme.of(context);
-  final layered = DesignStyleOf([style, glossKeyTheme(theme, kind)], states);
+  final layered = RawStyleOf([style, glossKeyTheme(theme, kind)], states);
   final face = glossKeyFace(
     theme,
     states,
@@ -165,7 +165,7 @@ Widget glossKeyPaint(
       // beside the words, not at the key's far end.
       textWidthBasis: TextWidthBasis.longestLine,
       overflow: TextOverflow.ellipsis,
-      child: DesignCapCenter(
+      child: RawCapCenter(
         capHeightFactor: glossCapHeightFactor,
         child: Text(label),
       ),
@@ -209,7 +209,7 @@ Widget glossKeyPaint(
   );
 }
 
-double? _radius(DesignStyleOf layered) {
+double? _radius(RawStyleOf layered) {
   final shape = layered.shape;
   if (shape is RoundedRectangleBorder) {
     final r = shape.borderRadius;

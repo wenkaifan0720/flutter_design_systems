@@ -135,7 +135,7 @@ class _GroupKey extends StatelessWidget {
       onPressed: item.onPressed,
       semanticLabel: iconOnly ? item.label : null,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.buttonGroupStyle], states);
+        final layered = RawStyleOf([style, theme.buttonGroupStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         var face = GlossFace.pearl(c, radius: corner);
         if (layered.fill != null) face = face.glazed(layered.fill!);
@@ -174,7 +174,7 @@ class _GroupKey extends StatelessWidget {
                           style: theme.textTheme.label.merge(layered.textStyle),
                           maxLines: 1,
                           child: Builder(
-                            builder: (context) => DesignCapCenter(
+                            builder: (context) => RawCapCenter(
                               capHeightFactor: glossCapHeightFactor,
                               child: Text(
                                 item.label,
@@ -309,7 +309,7 @@ class GlossToggleGroup<T> extends StatelessWidget {
             ),
             itemBuilder: (context, value, states) {
               final toggle = byValue[value]!;
-              final layered = DesignStyleOf([
+              final layered = RawStyleOf([
                 style,
                 theme.toggleGroupStyle,
               ], states);
@@ -361,7 +361,7 @@ class GlossToggleGroup<T> extends StatelessWidget {
                             const SizedBox(width: GlossSpacing.small),
                           if (!only)
                             Builder(
-                              builder: (context) => DesignCapCenter(
+                              builder: (context) => RawCapCenter(
                                 capHeightFactor: glossCapHeightFactor,
                                 child: Text(
                                   toggle.label,
@@ -478,10 +478,7 @@ class GlossSplitButton extends StatelessWidget {
           ],
         ),
         buttonBuilder: (context, part, states, open) {
-          final layered = DesignStyleOf([
-            style,
-            theme.splitButtonStyle,
-          ], states);
+          final layered = RawStyleOf([style, theme.splitButtonStyle], states);
           final disabled = states.contains(WidgetState.disabled);
           final main = part == RawSplitPart.main;
           var face = filled && !disabled
@@ -520,7 +517,7 @@ class GlossSplitButton extends StatelessWidget {
                   child: Center(
                     widthFactor: 1,
                     child: Builder(
-                      builder: (context) => DesignCapCenter(
+                      builder: (context) => RawCapCenter(
                         capHeightFactor: glossCapHeightFactor,
                         child: Text(
                           label,
@@ -626,7 +623,7 @@ class GlossLink extends StatelessWidget {
       button: false,
       link: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.linkStyle], states);
+        final layered = RawStyleOf([style, theme.linkStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final ink =
@@ -713,7 +710,7 @@ class GlossKbd extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.kbdStyle], const {});
+    final layered = RawStyleOf([style, theme.kbdStyle], const {});
     var face = GlossFace.pearl(c, radius: 6);
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return Semantics(

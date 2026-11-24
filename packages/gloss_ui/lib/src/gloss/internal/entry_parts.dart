@@ -136,9 +136,9 @@ class GlossEntryText extends StatelessWidget {
     final words = theme.textTheme.body
         .merge(textStyle)
         .copyWith(color: enabled ? c.ink : c.inkDisabled);
-    return DesignCapCenter(
+    return RawCapCenter(
       capHeightFactor: glossCapHeightFactor,
-      child: DesignTextEntryBox(
+      child: RawTextEntryBox(
         minHeight: minHeight ?? theme.controlHeight,
         controller: controller,
         hint: hint == null

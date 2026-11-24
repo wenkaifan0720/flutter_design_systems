@@ -48,7 +48,7 @@ class _SprungState extends State<_Sprung> with SingleTickerProviderStateMixin {
     if (old.target != widget.target) {
       _t.springTo(
         widget.target,
-        DesignMotionPolicy.of(context)
+        RawMotionPolicy.of(context)
             .spatial(dampingRatio: widget.damping, stiffness: widget.stiffness),
       );
     }
@@ -137,7 +137,7 @@ class GlossCheckbox extends StatelessWidget {
       isError: isError,
       semanticLabel: semanticLabel,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.checkboxStyle], states);
+        final layered = RawStyleOf([style, theme.checkboxStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final size = layered.minimumSize?.width ?? 24;
@@ -283,7 +283,7 @@ class _RadioSocket extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.radioStyle], states);
+    final layered = RawStyleOf([style, theme.radioStyle], states);
     final size = layered.minimumSize?.width ?? 24;
     return SizedBox.square(
       dimension: size,
@@ -803,7 +803,7 @@ class _GlossSwitchState extends State<GlossSwitch>
   void _settle(bool on) {
     _position.springTo(
       on ? 1 : 0,
-      DesignMotionPolicy.of(context).spatial(
+      RawMotionPolicy.of(context).spatial(
         dampingRatio: GlossMotion.snapDamping,
         stiffness: GlossMotion.snapStiffness,
       ),
@@ -848,10 +848,7 @@ class _GlossSwitchState extends State<GlossSwitch>
       toggled: widget.value,
       semanticLabel: widget.semanticLabel,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([
-          widget.style,
-          theme.switchStyle,
-        ], states);
+        final layered = RawStyleOf([widget.style, theme.switchStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         return TapTargetPadding(
@@ -1320,7 +1317,7 @@ class _SegmentState<T> extends State<_Segment<T>> {
     final layered = widget.layered;
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final styles = DesignStyleOf(
+    final styles = RawStyleOf(
       [layered, theme.segmentedButtonStyle],
       {...states, if (chosen) WidgetState.selected},
     );
@@ -1357,7 +1354,7 @@ class _SegmentState<T> extends State<_Segment<T>> {
                   Flexible(
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: glossCapHeightFactor,
                         child: Text(
                           segment.label,
@@ -1486,7 +1483,7 @@ class GlossStepper extends StatelessWidget {
       );
     }
 
-    return DesignValueHandle(
+    return RawValueHandle(
       value: value.toDouble(),
       min: min.toDouble(),
       max: math.max(min + 1, max).toDouble(),
@@ -1528,7 +1525,7 @@ class GlossStepper extends StatelessWidget {
                           fit: BoxFit.scaleDown,
                           child: _Rolling(
                             value: value,
-                            child: DesignCapCenter(
+                            child: RawCapCenter(
                               capHeightFactor: glossCapHeightFactor,
                               child: Text(words, maxLines: 1, style: figure),
                             ),
@@ -1586,7 +1583,7 @@ class _RollingState extends State<_Rolling>
       _roll.value = widget.value > old.value ? 1 : -1;
       _roll.springTo(
         0,
-        DesignMotionPolicy.of(context)
+        RawMotionPolicy.of(context)
             .spatial(dampingRatio: GlossMotion.snapDamping, stiffness: 900),
       );
     }
@@ -1774,7 +1771,7 @@ class _GlossSliderState extends State<GlossSlider> {
                         fraction: fraction,
                         rtl: rtl,
                         enabled: enabled,
-                        light: DesignStyleOf([
+                        light: RawStyleOf([
                           widget.style,
                           theme.sliderStyle,
                         ], const {}).fill,
@@ -1786,7 +1783,7 @@ class _GlossSliderState extends State<GlossSlider> {
                   PositionedDirectional(
                     start: fraction * usable,
                     top: 8,
-                    child: DesignValueHandle(
+                    child: RawValueHandle(
                       value: widget.value,
                       min: widget.min,
                       max: widget.max,
@@ -1943,7 +1940,7 @@ class GlossChip extends StatelessWidget {
       selected: selected,
       semanticSelected: selected,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [style, theme.chipStyle],
           {...states, if (selected) WidgetState.selected},
         );
@@ -2012,7 +2009,7 @@ class GlossChip extends StatelessWidget {
                         );
                       },
                     ),
-                    DesignCapCenter(
+                    RawCapCenter(
                       capHeightFactor: glossCapHeightFactor,
                       child: Text(
                         label,

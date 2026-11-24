@@ -1,4 +1,4 @@
-/// Interactive examples of the Gloss components in [DesignInventoryRow.all].
+/// Interactive examples of the Gloss components in [RawInventoryRow.all].
 library;
 
 import 'package:flutter/widgets.dart';
@@ -37,16 +37,16 @@ const _places = [
 final _first = DateTime(2026, 11);
 final _last = DateTime(2026, 12, 31);
 
-DesignInventoryEntry _row(String id, WidgetBuilder builder) =>
-    DesignInventoryEntry.present(id, builder);
+RawInventoryEntry _row(String id, WidgetBuilder builder) =>
+    RawInventoryEntry.present(id, builder);
 
 /// The component examples in the Gloss inventory.
 abstract final class GlossInventory {
   /// Component rows with their example builders and availability.
-  static final DesignInventory registry = _registry();
+  static final RawInventory registry = _registry();
 }
 
-DesignInventory _registry() => DesignInventory(
+RawInventory _registry() => RawInventory(
   look: 'Gloss',
   entries: [
     // Actions.
@@ -62,7 +62,7 @@ DesignInventory _registry() => DesignInventory(
         tooltip: 'Save',
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       "Gloss's one action is the gel key in reach",
     ),

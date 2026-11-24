@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
@@ -145,7 +144,7 @@ class GlossTopBar extends StatelessWidget {
                       alignment: AlignmentDirectional.centerStart,
                       child: Semantics(
                         header: true,
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: glossCapHeightFactor,
                           // The bar's one line grows with the reader's text
                           // up to 1.5x; the large title under it grows all
@@ -269,7 +268,7 @@ class _PocketFace extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final chosen = states.contains(WidgetState.selected);
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.navigationStyle],
       {...states, if (chosen) WidgetState.selected},
     );
@@ -352,7 +351,7 @@ class _SideFace extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final chosen = states.contains(WidgetState.selected);
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.navigationStyle],
       {...states, if (chosen) WidgetState.selected},
     );
@@ -401,7 +400,7 @@ class _SideFace extends StatelessWidget {
                 ),
                 const SizedBox(width: GlossSpacing.medium),
                 Expanded(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: glossCapHeightFactor,
                     child: Text(
                       destination.label,
@@ -911,11 +910,11 @@ class GlossScaffold extends StatelessWidget {
     final wide = width >= GlossMetrics.sidebarBreakpoint;
     return ColoredBox(
       color: theme.colors.page,
-      child: DesignAdaptiveShell(
-        mode: wide ? DesignNavigationMode.sidebar : DesignNavigationMode.rail,
+      child: RawAdaptiveShell(
+        mode: wide ? RawNavigationMode.sidebar : RawNavigationMode.rail,
         destinations: [
           for (final d in destinations)
-            DesignNavigationDestination(
+            RawNavigationDestination(
               label: d.label,
               icon: d.icon,
               selectedIcon: d.selectedIcon,
@@ -928,7 +927,7 @@ class GlossScaffold extends StatelessWidget {
           final d = destination.data! as GlossDestination;
           return KeyedSubtree(
             key: d.key,
-            child: details.mode == DesignNavigationMode.sidebar
+            child: details.mode == RawNavigationMode.sidebar
                 ? _SideFace(destination: d, states: details.states, style: null)
                 : _PocketFace(
                     destination: d,
@@ -1163,7 +1162,7 @@ class _GlossTabBarState extends State<GlossTabBar>
     final c = theme.colors;
     final label = theme.textTheme.label.copyWith(fontSize: 15);
     final chosen = details.selection >= 0.5;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.tabBarStyle],
       {...details.states, if (chosen) WidgetState.selected},
     );
@@ -1185,7 +1184,7 @@ class _GlossTabBarState extends State<GlossTabBar>
               // cut.
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: glossCapHeightFactor,
                   child: Text(
                     tab.label,

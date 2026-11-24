@@ -144,7 +144,7 @@ void main() {
           GlossSeries('Hours', [2, 6, 3]),
         ],
         semanticLabel: 'Hours a day',
-        valueFormat: DesignChartValueFormat(suffix: ' h'),
+        valueFormat: RawChartValueFormat(suffix: ' h'),
       ),
     );
     final widest = _figures(tester)

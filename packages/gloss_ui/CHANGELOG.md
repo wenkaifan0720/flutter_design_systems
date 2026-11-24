@@ -1,3 +1,10 @@
+## 0.4.0
+
+- Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).
+- Types take ui_core 0.6.0's names: each `style` parameter and the theme's style fields are a `RawStyle` (it was `DesignStyle`), the charts' `valueFormat` a `RawChartValueFormat`, `GlossThemeData.density` a `RawDensity`, `GlossTheme.tapTargets` a `RawTapTargets` and `GlossInventory.registry` a `RawInventory`; `GlossTreeController` extends `RawTreeController`. ui_core keeps each old name but `DesignInventory` as a deprecated alias of the same type, and `dart fix --apply` moves them all.
+- A calendar writes its days in the app's digits (ui_core's `RawCalendarDayDetails.label`), as Material's does: in Arabic the 20th reads ٢٠, not 20.
+- The days of the months either side in a `GlossCalendar`, a `GlossDatePicker` or a `GlossDateRangePicker` read at 4.5:1 in the secondary ink, one step under the month's own days. A press on one picks it, yet its figure stood at 2.67:1.
+
 ## 0.3.1
 
 - The row the pointer or the keys are on in a `GlossCombobox`'s or a `GlossSelect`'s list, a menu and the command palette stands on a plate plainly deeper than the rows beside it, by day as by night. By day it stood about 3/255 from them.

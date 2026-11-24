@@ -115,7 +115,7 @@ class GlossDataTable<R> extends StatelessWidget {
     final t = theme.textTheme;
     final words = RawWidgetsLocalizations.of(context);
     final layers = [style, theme.dataTableStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     int flex(RawDataColumn<R> col) => (col as GlossDataColumn<R>).flex;
     const pad = EdgeInsets.symmetric(
       horizontal: GlossSpacing.medium,
@@ -240,7 +240,7 @@ class GlossDataTable<R> extends StatelessWidget {
       rowBuilder: (context, row, cells) {
         final states = row.states;
         final pressed = states.contains(WidgetState.pressed);
-        final layered = DesignStyleOf(layers, {
+        final layered = RawStyleOf(layers, {
           ...states,
           if (row.selected) WidgetState.selected,
         });
@@ -444,7 +444,7 @@ class GlossScrollArea extends StatelessWidget {
           travel: held ? 1 : 0,
           focus: glossGlazeOf(c, thumb.states),
         );
-        final fill = DesignStyleOf(layers, thumb.states).fill;
+        final fill = RawStyleOf(layers, thumb.states).fill;
         if (fill != null) bead = bead.glazed(fill);
         return AnimatedOpacity(
           opacity: thumb.visible ? 1 : 0,
@@ -564,7 +564,7 @@ class GlossSplitView extends StatelessWidget {
       hitExtent: _reach,
       dividerBuilder: (context, states, axis) {
         final along = axis == Axis.horizontal;
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final held = states.contains(WidgetState.pressed);
         var grip = GlossFace.pearl(c)
             .copyWith(lift: held ? 0.5 : 1, focus: glossGlazeOf(c, states));
@@ -572,7 +572,7 @@ class GlossSplitView extends StatelessWidget {
         // A finger needs the bead to find the line; under a pointer the
         // line and the cursor say it, and the bead comes up only while the
         // pointer is over it, the keys hold it or it is held.
-        final touch = DesignTapTargets.of(context).floorOn().height >= 44;
+        final touch = RawTapTargets.of(context).floorOn().height >= 44;
         final shown =
             touch ||
             held ||
@@ -1024,7 +1024,7 @@ class GlossPullToRefresh extends StatelessWidget {
 
 /// The nodes and the open and chosen state of a [GlossTree]: make it in a
 /// State, dispose it there.
-class GlossTreeController<T extends Object> extends DesignTreeController<T> {
+class GlossTreeController<T extends Object> extends RawTreeController<T> {
   /// A controller over [roots], [childrenOf] each.
   GlossTreeController({
     required super.roots,
@@ -1075,14 +1075,14 @@ class GlossTree<T extends Object> extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.treeStyle];
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
       semanticLabel: semanticLabel,
       rowBuilder: (context, item) {
         final states = item.states;
-        final layered = DesignStyleOf(layers, {
+        final layered = RawStyleOf(layers, {
           ...states,
           if (item.selected) WidgetState.selected,
         });
