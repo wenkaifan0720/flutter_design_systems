@@ -28240,8 +28240,7 @@ g=j*0.55
 a.by(b.cj(A.fm(c,new A.h(j,j))),A.tH(o.b7(Math.min(1,m*2.1)*d),g))
 m=-h
 m=b.cj(A.fm(c,new A.h(m,m)))
-k=l.b7((n?0.95:1)*d)
-a.by(m,A.tH(k,i?h*0.2:g))
+a.by(m,A.tH(l.b7((n?0.95:1)*d),g))
 p.restore()},
 blR(a,b){return a.a&&b>0?A.z(a.b,a.r,1+b):null},
 bnx(a,b,c,d){var s,r,q,p
