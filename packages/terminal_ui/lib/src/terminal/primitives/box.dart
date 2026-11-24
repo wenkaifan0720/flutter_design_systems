@@ -757,7 +757,8 @@ class TermBraillePainter extends CustomPainter {
 /// Paints a bar of block elements across [size]: [value] of it in whole
 /// eighths of a cell (`█▉▊▋▌▍▎▏`) in [color], each empty cell after it a
 /// dot (`·`) in [track], so the cells left can be counted, as a terminal
-/// draws a progress bar.
+/// draws a progress bar. The dots follow the blocks at the cells' pitch, the
+/// first as far from the blocks' end as one dot from the next.
 class TermBlocksPainter extends CustomPainter {
   /// A bar [value] full.
   const TermBlocksPainter({
@@ -798,10 +799,21 @@ class TermBlocksPainter extends CustomPainter {
     final cells = (size.width / cw + 1e-6).floor();
     final dot = Paint()..color = track;
     final radius = grid.fontSize / 15 * 1.5;
-    // A dot for each cell the blocks leave empty: by the eighths, not the
-    // pixel the blocks end on.
-    for (var i = (eighths / 8).ceil(); i < cells; i++) {
-      final x = cw * i + cw / 2;
+    // The blocks' end, on its whole pixel, from the bar's start.
+    final end = eighths > 0
+        ? (rtl
+              ? size.width - math.max(0, (size.width - reach).roundToDouble())
+              : math.min(size.width, reach.roundToDouble()))
+        : 0.0;
+    // A dot for each cell the blocks leave empty (by the eighths, not the
+    // pixel the blocks end on), a cell's pitch apart, the first one gap
+    // between two dots past the blocks' end. On the cells' middles a dot
+    // after a part block stood up to a cell and a half from it, and one after
+    // a whole block half a gap.
+    final gap = cw - 2 * radius;
+    final left = cells - (eighths / 8).ceil();
+    for (var i = 0; i < left; i++) {
+      final x = end + gap + radius + cw * i;
       canvas.drawCircle(
         Offset(rtl ? size.width - x : x, size.height / 2),
         radius,
@@ -811,18 +823,8 @@ class TermBlocksPainter extends CustomPainter {
     if (eighths > 0) {
       canvas.drawRect(
         rtl
-            ? Rect.fromLTRB(
-                math.max(0, (size.width - reach).roundToDouble()),
-                top,
-                size.width,
-                bottom,
-              )
-            : Rect.fromLTRB(
-                0,
-                top,
-                math.min(size.width, reach.roundToDouble()),
-                bottom,
-              ),
+            ? Rect.fromLTRB(size.width - end, top, size.width, bottom)
+            : Rect.fromLTRB(0, top, end, bottom),
         Paint()..color = color,
       );
     }

@@ -1,3 +1,7 @@
+## 0.5.1
+
+- After a `TermMeter`'s blocks (and a `TermProgress`'s and a bar chart's), the first dot stands one dot gap from the blocks' end, the gap between two dots, whatever eighth of a cell the blocks end on. The dots follow the blocks at the cells' pitch, one for each cell the blocks leave, as before. On the cells' middles a dot after a part block stood up to a cell and a half from it (about 9 px against 5 between dots), and one after a whole block half a gap.
+
 ## 0.5.0
 
 - Requires ui_core 0.6.0, whose `Design*` names are `Raw*` now (`RawTapTargets`, `RawInventoryEntry`, `RawModalDialogRoute` and the rest).
