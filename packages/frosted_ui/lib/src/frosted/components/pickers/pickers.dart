@@ -634,30 +634,46 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
           ),
         );
 
-    final head = Row(
-      children: [
-        Expanded(
-          child: Semantics(
-            liveRegion: true,
-            header: true,
-            // On the column's edge, as the field labels above it are.
-            child: Text(
-              title,
-              style: t.textTheme.labelLarge.c(t.colorScheme.textPrimary),
+    // The arrows stand on the last two columns' centres, over the days they
+    // step from, where a column holds an arrow's touch target; in a narrower
+    // card they stand side by side at the end, each target whole.
+    final target = FrostedBreakpoints.hitTargetOf(context);
+    final head = LayoutBuilder(
+      builder: (context, box) {
+        final onColumns = box.maxWidth / 7 >= target;
+        Widget slot(Widget arrow) =>
+            onColumns ? Expanded(child: Center(child: arrow)) : arrow;
+        return Row(
+          children: [
+            Expanded(
+              flex: onColumns ? 5 : 1,
+              child: Semantics(
+                liveRegion: true,
+                header: true,
+                // On the column's edge, as the field labels above it are.
+                child: Text(
+                  title,
+                  style: t.textTheme.labelLarge.c(t.colorScheme.textPrimary),
+                ),
+              ),
             ),
-          ),
-        ),
-        step(
-          FrostedGlyphs.chevronLeft,
-          RawWidgetsLocalizations.of(context).previousMonthTooltip,
-          canBack ? () => _go(-1) : null,
-        ),
-        step(
-          FrostedGlyphs.forward,
-          RawWidgetsLocalizations.of(context).nextMonthTooltip,
-          canOn ? () => _go(1) : null,
-        ),
-      ],
+            slot(
+              step(
+                FrostedGlyphs.chevronLeft,
+                RawWidgetsLocalizations.of(context).previousMonthTooltip,
+                canBack ? () => _go(-1) : null,
+              ),
+            ),
+            slot(
+              step(
+                FrostedGlyphs.forward,
+                RawWidgetsLocalizations.of(context).nextMonthTooltip,
+                canOn ? () => _go(1) : null,
+              ),
+            ),
+          ],
+        );
+      },
     );
 
     final weekdays = ExcludeSemantics(

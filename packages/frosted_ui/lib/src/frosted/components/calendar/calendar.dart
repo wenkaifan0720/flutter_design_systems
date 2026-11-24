@@ -344,6 +344,9 @@ class _FrostedMonths extends StatelessWidget {
         ),
         child: SizedBox(
           height: head,
+          // Months side by side carry one arrow each, on the outer side: the
+          // side with none keeps an arrow's room empty, so each title stands
+          // over its own grid's centre.
           child: Row(
             children: [
               if (header.previous != null || months == 1)
@@ -352,7 +355,9 @@ class _FrostedMonths extends StatelessWidget {
                   RawWidgetsLocalizations.of(context).previousMonthTooltip,
                   header.previous,
                   AlignmentDirectional.centerStart,
-                ),
+                )
+              else
+                SizedBox(width: head),
               Expanded(
                 child: Text(
                   header.label,
@@ -366,7 +371,9 @@ class _FrostedMonths extends StatelessWidget {
                   RawWidgetsLocalizations.of(context).nextMonthTooltip,
                   header.next,
                   AlignmentDirectional.centerEnd,
-                ),
+                )
+              else
+                SizedBox(width: head),
             ],
           ),
         ),
@@ -450,41 +457,21 @@ class _FrostedMonths extends StatelessWidget {
             : (day.isRangeEnd && !day.isRangeStart) || previewEnd
             ? (rtl ? Alignment.centerRight : Alignment.centerLeft)
             : null;
-        // Where a week's row (or the month) begins or ends the band ends
-        // there too, round at the day's edge: run to the cell's edge it
-        // stood square past the grid's last day.
-        final column =
-            (day.date.weekday -
-                RawWidgetsLocalizations.of(context).firstDayOfWeek) %
-            7;
-        final rowStart = column == 0 || day.date.day == 1;
-        final rowEnd =
-            column == 6 ||
-            DateTime(day.date.year, day.date.month, day.date.day + 1).day == 1;
-        // An end whose half would run off its row has nothing to join.
-        final offRow =
-            (day.isRangeStart && !day.isRangeEnd && rowEnd) ||
-            (day.isRangeEnd && !day.isRangeStart && rowStart);
-        // A preview's end that opens a row stands alone there, round.
-        final loneEnd = previewEnd && rowStart;
-        final capped = (half == null && (rowStart || rowEnd)) || loneEnd;
+        // Where a week's row (or the month) breaks, the band runs on to the
+        // cell's edge, square, as Material's range band does: one range
+        // reads as one across the break. An end at its row's edge keeps its
+        // half there, the range going on past it. Only the range's own ends
+        // are round: the ink discs, and a preview's end.
         return SizedBox(
           height: row,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              if (band != null && !offRow)
+              if (band != null)
                 Positioned.fill(
                   top: (row - cell) / 2,
                   bottom: (row - cell) / 2,
-                  child: capped
-                      ? _CappedBand(
-                          color: band,
-                          cell: cell,
-                          start: rowStart,
-                          end: rowEnd || loneEnd,
-                        )
-                      : half == null
+                  child: half == null
                       ? ColoredBox(color: band)
                       : previewEnd
                       ? Align(
@@ -529,51 +516,6 @@ class _FrostedMonths extends StatelessWidget {
           maxWidth: months * monthMax + (months - 1) * FrostedSpacing.s24,
         ),
         child: calendar,
-      ),
-    );
-  }
-}
-
-/// A piece of a range's band where a week's row (or the month) begins
-/// ([start]) or ends ([end]): round at the day's own edge on that side, to
-/// the cell's edge on the other; a day that both begins and ends its row
-/// is a round of the day's size.
-class _CappedBand extends StatelessWidget {
-  const _CappedBand({
-    required this.color,
-    required this.cell,
-    required this.start,
-    required this.end,
-  });
-
-  final Color color;
-  final double cell;
-  final bool start;
-  final bool end;
-
-  @override
-  Widget build(BuildContext context) {
-    const round = Radius.circular(9999);
-    return LayoutBuilder(
-      builder: (context, box) => Align(
-        alignment: start && end
-            ? Alignment.center
-            : start
-            ? AlignmentDirectional.centerEnd
-            : AlignmentDirectional.centerStart,
-        child: SizedBox(
-          width: start && end ? cell : box.maxWidth / 2 + cell / 2,
-          height: cell,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadiusDirectional.horizontal(
-                start: start ? round : Radius.zero,
-                end: end ? round : Radius.zero,
-              ).resolve(Directionality.of(context)),
-            ),
-          ),
-        ),
       ),
     );
   }

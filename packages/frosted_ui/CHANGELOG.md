@@ -1,3 +1,9 @@
+## 0.6.2
+
+- `FrostedDateRangePicker`'s and `FrostedCalendar`'s months side by side each title their month over the centre of its own grid. A month with one arrow kept no room for the other, so its title leaned half an arrow (24 under a finger) toward the gutter.
+- A range's band runs on at a row break, square to the row's edge, as Material's range band does, and an end day at its row's edge keeps its half there: one range reads as one across the break. The ink discs at its ends, and a preview's end, are its only round ends. The band was round at every row break (20–21 | 22–24 read as two ranges), and an end at its row's edge had no half (in Arabic, a range from a Friday).
+- `FrostedDatePicker`'s arrows, and so `showFrostedDatePicker`'s, stand on the centres of the last two columns, over the days they step from, where a column holds an arrow's touch target (a desk's card under a pointer); in a narrower card they stand side by side at the end as before, each target whole. At 1440 they sat up to 3.5 off Fr and Sa.
+
 ## 0.6.1
 
 - Today is one mark in every view: `FrostedCalendar`, `FrostedDateRangePicker` and `FrostedDatePicker` (and so `showFrostedDatePicker`) ring today in a hairline of the quiet ink, by day and by night. By day it was a white bead in the calendar and a disc darker than the dialog in the date picker. When today is the day chosen, the ring stands just inside the ink disc in the disc's words at half strength, so today still reads and stays a quiet mark.
