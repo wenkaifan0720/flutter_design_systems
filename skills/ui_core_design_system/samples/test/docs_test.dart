@@ -107,7 +107,7 @@ void main() {
   });
 
   test('every excerpt of a published look matches its source', () {
-    // The packages folders that hold the looks the excerpts quote: the
+    // The packages folders that hold the published designs the excerpts quote: the
     // repository's own by default, others colon-separated in LOOK_SOURCES.
     final roots = (Platform.environment['LOOK_SOURCES'] ?? '../../../packages')
         .split(':')

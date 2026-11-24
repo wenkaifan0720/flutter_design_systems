@@ -8,11 +8,11 @@ import 'button.dart';
 import 'face.dart';
 import 'theme.dart';
 
-/// One tab of a [LookTabs]: the value it stands for and its words.
+/// One tab of a [TendTabs]: the value it stands for and its words.
 @immutable
-class LookTab<T> {
+class TendTab<T> {
   /// A tab standing for [value], saying [label].
-  const LookTab({
+  const TendTab({
     required this.value,
     required this.label,
     this.enabled = true,
@@ -29,7 +29,7 @@ class LookTab<T> {
   final bool enabled;
 
   /// Its place for the arrows, Home and End, where the tabs are not laid
-  /// out in the order they are read (a grid, a wrap the look fills its own
+  /// out in the order they are read (a grid, a wrap the design fills its own
   /// way); null: the order they are laid out in. Give every tab one, or
   /// none.
   final int? order;
@@ -38,14 +38,14 @@ class LookTab<T> {
 /// A row of tabs drawn as words over a rule, the chosen one underlined in
 /// ink: ui_core's [RawTabGroup] for a tab bar's behaviour (one tab stop,
 /// the arrows, Home and End, the selection, a tab bar of tabs to a screen
-/// reader), round tabs the look lays out itself.
+/// reader), round tabs the design lays out itself.
 ///
 /// ```dart
-/// LookTabs<String>(value: 'all', onChanged: (next) {}, tabs: const [LookTab(value: 'all', label: 'All'), LookTab(value: 'open', label: 'Open')])
+/// TendTabs<String>(value: 'all', onChanged: (next) {}, tabs: const [TendTab(value: 'all', label: 'All'), TendTab(value: 'open', label: 'Open')])
 /// ```
-class LookTabs<T> extends StatelessWidget {
+class TendTabs<T> extends StatelessWidget {
   /// Tabs choosing [value] among [tabs].
-  const LookTabs({
+  const TendTabs({
     super.key,
     required this.value,
     required this.onChanged,
@@ -60,14 +60,14 @@ class LookTabs<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// The tabs, in reading order.
-  final List<LookTab<T>> tabs;
+  final List<TendTab<T>> tabs;
 
   /// What a screen reader calls the row.
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     return RawTabGroup<T>(
       groupValue: value,
       onChanged: onChanged,
@@ -85,7 +85,7 @@ class LookTabs<T> extends StatelessWidget {
                 enabled: onChanged != null && tab.enabled,
                 order: tab.order,
                 builder: (context, states, _) =>
-                    _lookTab(context, theme, states, tab.label),
+                    _tendTab(context, theme, states, tab.label),
               ),
           ],
         ),
@@ -103,11 +103,11 @@ class LookTabs<T> extends StatelessWidget {
 }
 
 /// A tab's face: its words, a rule round it under the keyboard (the
-/// look's focus), and an underline in ink once chosen. A chosen tab is a
+/// design's focus), and an underline in ink once chosen. A chosen tab is a
 /// state, so it never takes the accent of the screen's main action.
-Widget _lookTab(
+Widget _tendTab(
   BuildContext context,
-  LookThemeData theme,
+  TendThemeData theme,
   Set<WidgetState> states,
   String label,
 ) {
@@ -119,8 +119,8 @@ Widget _lookTab(
       : chosen
       ? c.ink
       : c.mutedInk;
-  return AnimatedLookSurface(
-    face: LookFace(
+  return AnimatedTendSurface(
+    face: TendFace(
       fill: states.contains(WidgetState.pressed)
           ? c.ink.withValues(alpha: .08)
           : clear,
@@ -151,8 +151,8 @@ Widget _lookTab(
               ),
             ),
           ),
-          AnimatedLookSurface(
-            face: LookFace(
+          AnimatedTendSurface(
+            face: TendFace(
               fill: chosen ? c.ink : clear,
               rule: clear,
               foreground: ink,
@@ -166,11 +166,11 @@ Widget _lookTab(
   );
 }
 
-/// One toggle of a [LookToolbar]: a glyph that is on or off (Bold, Italic).
+/// One toggle of a [TendToolbar]: a glyph that is on or off (Bold, Italic).
 @immutable
-class LookToolbarToggle {
+class TendToolbarToggle {
   /// A toggle showing [icon], named [semanticLabel].
-  const LookToolbarToggle({
+  const TendToolbarToggle({
     required this.icon,
     required this.semanticLabel,
     required this.isSelected,
@@ -191,32 +191,32 @@ class LookToolbarToggle {
 }
 
 /// A row of toggles that is one Tab stop, the arrows moving along it, as a
-/// formatting bar is: ui_core's [RawRovingFocusGroup] round the look's
-/// [LookIconButton]s, each a [RawRovingFocusItem] sharing its button's
+/// formatting bar is: ui_core's [RawRovingFocusGroup] round the design's
+/// [TendIconButton]s, each a [RawRovingFocusItem] sharing its button's
 /// focus node. The group moves the focus; a press still toggles.
 ///
 /// ```dart
-/// LookToolbar(toggles: [LookToolbarToggle(icon: const IconData(0xe238), semanticLabel: 'Bold', isSelected: bold, onPressed: () {})])
+/// TendToolbar(toggles: [TendToolbarToggle(icon: const IconData(0xe238), semanticLabel: 'Bold', isSelected: bold, onPressed: () {})])
 /// ```
-class LookToolbar extends StatefulWidget {
+class TendToolbar extends StatefulWidget {
   /// A bar of [toggles].
-  const LookToolbar({super.key, required this.toggles});
+  const TendToolbar({super.key, required this.toggles});
 
   /// The toggles, in reading order.
-  final List<LookToolbarToggle> toggles;
+  final List<TendToolbarToggle> toggles;
 
   @override
-  State<LookToolbar> createState() => _LookToolbarState();
+  State<TendToolbar> createState() => _TendToolbarState();
 }
 
-class _LookToolbarState extends State<LookToolbar> {
+class _TendToolbarState extends State<TendToolbar> {
   // One node a toggle: the group moves the focus through them, and each
   // button takes the same node. The bar owns them and disposes them.
   final List<FocusNode> _nodes = [];
 
   void _match() {
     while (_nodes.length < widget.toggles.length) {
-      _nodes.add(FocusNode(debugLabel: 'LookToolbar ${_nodes.length}'));
+      _nodes.add(FocusNode(debugLabel: 'TendToolbar ${_nodes.length}'));
     }
     while (_nodes.length > widget.toggles.length) {
       _nodes.removeLast().dispose();
@@ -230,7 +230,7 @@ class _LookToolbarState extends State<LookToolbar> {
   }
 
   @override
-  void didUpdateWidget(LookToolbar old) {
+  void didUpdateWidget(TendToolbar old) {
     super.didUpdateWidget(old);
     _match();
   }
@@ -253,7 +253,7 @@ class _LookToolbarState extends State<LookToolbar> {
           RawRovingFocusItem(
             focusNode: _nodes[i],
             enabled: toggle.onPressed != null,
-            child: LookIconButton(
+            child: TendIconButton(
               icon: toggle.icon,
               semanticLabel: toggle.semanticLabel,
               isSelected: toggle.isSelected,

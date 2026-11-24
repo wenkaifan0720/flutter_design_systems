@@ -1,42 +1,21 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:look_ui/look_ui.dart';
-import 'package:look_ui/src/inventory.dart';
+import 'package:tend/design/design.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:ui_core/ui_core.dart'
-    show RawCalendarDatePicker, RawPageRoute, TapTargetPadding;
+import 'package:ui_core/ui_core.dart';
 import 'package:ui_core_test/guidelines.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 
-/// The fonts the pixel checks read: Roboto for the words and Material's
-/// icons for the glyphs, from the Flutter SDK's own cache. A look loads the
-/// families its FontManifest.json lists; a family left out is drawn in the
-/// test's own font, whose boxes stand on the baseline and read as off-centre.
-Future<void> loadLookFonts(WidgetTester tester) async {
-  final fonts =
-      '${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts/material_fonts';
-  Future<ByteData> read(String name) =>
-      File('$fonts/$name').readAsBytes().then(ByteData.sublistView);
-  await tester.runAsync(() async {
-    await (FontLoader('Roboto')
-          ..addFont(read('Roboto-Regular.ttf'))
-          ..addFont(read('Roboto-Medium.ttf')))
-        .load();
-    await (FontLoader(
-      'MaterialIcons',
-    )..addFont(read('MaterialIcons-Regular.otf'))).load();
-  });
-}
+import 'fonts.dart';
 
-/// An app on the look: Flutter's MaterialApp, the look's theme in its
-/// builder, the look's page transitions in its ThemeData.
-Widget lookApp({
+/// An app on the design: Flutter's MaterialApp, the design's theme in its
+/// builder, the design's page transitions in its ThemeData.
+Widget tendApp({
   required Widget home,
   Brightness brightness = Brightness.light,
   TextDirection? direction,
@@ -53,7 +32,7 @@ Widget lookApp({
   supportedLocales: RawWidgetsLocalizations.supportedLocales,
   theme: ThemeData(
     pageTransitionsTheme: const PageTransitionsTheme(
-      builders: lookPageTransitions,
+      builders: tendPageTransitions,
     ),
   ),
   builder: (context, child) => MediaQuery.withClampedTextScaling(
@@ -61,12 +40,12 @@ Widget lookApp({
     maxScaleFactor: textScale,
     child: Directionality(
       textDirection: direction ?? Directionality.of(context),
-      child: LookTheme(
-        data: LookThemeData.of(brightness),
-        // Toasts over every route, under the look's theme.
-        child: LookToaster(
+      child: TendTheme(
+        data: TendThemeData.of(brightness),
+        // Toasts over every route, under the design's theme.
+        child: TendToaster(
           child: ColoredBox(
-            color: LookThemeData.of(brightness).colors.ground,
+            color: TendThemeData.of(brightness).colors.ground,
             child: child!,
           ),
         ),
@@ -76,7 +55,7 @@ Widget lookApp({
   home: home,
 );
 
-/// A screen of the look's parts, as a gallery page holds them.
+/// A screen of the design's parts, as a gallery page holds them.
 class PartsScreen extends StatefulWidget {
   const PartsScreen({super.key});
 
@@ -102,44 +81,44 @@ class _PartsScreenState extends State<PartsScreen> {
           spacing: 12,
           runSpacing: 12,
           children: [
-            LookButton('Save', onPressed: () {}),
-            LookButton(
+            TendButton('Save', onPressed: () {}),
+            TendButton(
               'Cancel',
-              variant: LookButtonVariant.outlined,
+              variant: TendButtonVariant.outlined,
               onPressed: () {},
             ),
-            const LookButton('Archived', onPressed: null),
+            const TendButton('Archived', onPressed: null),
           ],
         ),
         const SizedBox(height: 16),
-        LookIconButton(
+        TendIconButton(
           icon: Icons.favorite_border,
           semanticLabel: 'Favourite',
           isSelected: _pinned,
           onPressed: () => setState(() => _pinned = !_pinned),
         ),
-        LookCheckbox(
+        TendCheckbox(
           value: _email,
           label: 'Email me',
           onChanged: (value) => setState(() => _email = value!),
         ),
-        LookSwitch(
+        TendSwitch(
           value: _wifi,
           semanticLabel: 'Wi-Fi',
           onChanged: (value) => setState(() => _wifi = value),
         ),
-        LookRadioGroup<String>(
+        TendRadioGroup<String>(
           key: const ValueKey('plan'),
           value: _plan,
           onChanged: (value) => setState(() => _plan = value),
           options: const [
-            LookRadioOption(value: 'day', label: 'Day'),
-            LookRadioOption(value: 'week', label: 'Week'),
-            LookRadioOption(value: 'month', label: 'Month'),
+            TendRadioOption(value: 'day', label: 'Day'),
+            TendRadioOption(value: 'week', label: 'Week'),
+            TendRadioOption(value: 'month', label: 'Month'),
           ],
         ),
         const SizedBox(height: 16),
-        const LookTextField(
+        const TendTextField(
           labelText: 'Name',
           hintText: 'Ada Lovelace',
           helperText: 'As it appears on your card',
@@ -166,19 +145,19 @@ void main() {
   testWidgets('every part says what it is, and reaches the floor', (
     tester,
   ) async {
-    await tester.pumpWidget(lookApp(home: const PartsScreen()));
+    await tester.pumpWidget(tendApp(home: const PartsScreen()));
     final screen = tester.element(find.byType(PartsScreen));
-    const DesignCheckableCheck(look: 'Look').check(screen).verify();
-    const DesignTextFieldNameCheck(look: 'Look').check(screen).verify();
-    const DesignFieldSemanticsCheck(look: 'Look').check(screen).verify();
-    const DesignTapTargetCheck(look: 'Look').check(screen).verify();
-    const DesignCursorCheck(look: 'Look').check(screen).verify();
+    const DesignCheckableCheck(look: 'Tend').check(screen).verify();
+    const DesignTextFieldNameCheck(look: 'Tend').check(screen).verify();
+    const DesignFieldSemanticsCheck(look: 'Tend').check(screen).verify();
+    const DesignTapTargetCheck(look: 'Tend').check(screen).verify();
+    const DesignCursorCheck(look: 'Tend').check(screen).verify();
     await expectLater(tester, meetsGuideline(checkableRoleGuideline));
     await expectLater(tester, meetsGuideline(textFieldNameGuideline));
     await expectLater(tester, meetsGuideline(fieldSemanticsGuideline));
     await expectLater(tester, meetsGuideline(cursorGuideline));
-    // The look's floor is 44 by 44, Apple's; Flutter's iOS guideline holds
-    // it. A look on Material's 48 holds androidTapTargetGuideline.
+    // The design's floor is 44 by 44, Apple's; Flutter's iOS guideline holds
+    // it. A design on Material's 48 holds androidTapTargetGuideline.
     await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
     await expectLater(tester, meetsGuideline(tapTargetReachGuideline));
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
@@ -186,7 +165,7 @@ void main() {
   });
 
   testWidgets('a toggle button is a button that is selected', (tester) async {
-    await tester.pumpWidget(lookApp(home: const PartsScreen()));
+    await tester.pumpWidget(tendApp(home: const PartsScreen()));
     await tester.tap(find.bySemanticsLabel('Favourite'));
     await tester.pumpAndSettle();
     expect(
@@ -212,7 +191,7 @@ void main() {
     addTearDown(before.dispose);
     var plan = 'week';
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: StatefulBuilder(
           builder: (context, setState) => Column(
             children: [
@@ -220,14 +199,14 @@ void main() {
                 focusNode: before,
                 child: const SizedBox.square(dimension: 1),
               ),
-              LookRadioGroup<String>(
+              TendRadioGroup<String>(
                 key: const ValueKey('plan'),
                 value: plan,
                 onChanged: (value) => setState(() => plan = value),
                 options: const [
-                  LookRadioOption(value: 'day', label: 'Day'),
-                  LookRadioOption(value: 'week', label: 'Week'),
-                  LookRadioOption(value: 'month', label: 'Month'),
+                  TendRadioOption(value: 'day', label: 'Day'),
+                  TendRadioOption(value: 'week', label: 'Week'),
+                  TendRadioOption(value: 'month', label: 'Month'),
                 ],
               ),
             ],
@@ -235,7 +214,7 @@ void main() {
         ),
       ),
     );
-    final report = await const DesignRadioGroupCheck(look: 'Look').check(
+    final report = await const DesignRadioGroupCheck(look: 'Tend').check(
       tester.element(find.byKey(const ValueKey('plan'))),
       before: before,
       sendKeyEvent: tester.sendKeyEvent,
@@ -247,24 +226,24 @@ void main() {
   testWidgets('labels sit on their faces\' middles, by day and by night', (
     tester,
   ) async {
-    await loadLookFonts(tester);
+    await loadTendFonts(tester);
     for (final brightness in Brightness.values) {
       await tester.pumpWidget(
-        lookApp(home: const PartsScreen(), brightness: brightness),
+        tendApp(home: const PartsScreen(), brightness: brightness),
       );
       // A theme that springs from day to night is read once it lands.
       await tester.pumpAndSettle();
       final screen = tester.element(find.byType(PartsScreen));
       final labels = await const DesignLabelCheck(
-        look: 'Look',
+        look: 'Tend',
         drawnTolerance: 0.5,
       ).check(screen, runAsync: tester.runAsync);
       labels.verify();
-      final shadows = await const DesignShadowClipCheck(look: 'Look')
+      final shadows = await const DesignShadowClipCheck(look: 'Tend')
           .check(screen, runAsync: tester.runAsync);
       shadows.verify();
-      const DesignClipCheck(look: 'Look').check(screen).verify();
-      const DesignWordBreakCheck(look: 'Look').check(screen).verify();
+      const DesignClipCheck(look: 'Tend').check(screen).verify();
+      const DesignWordBreakCheck(look: 'Tend').check(screen).verify();
     }
   });
 
@@ -275,7 +254,7 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: const PartsScreen(),
         direction: TextDirection.rtl,
         textScale: 2,
@@ -283,24 +262,24 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     final screen = tester.element(find.byType(PartsScreen));
-    const DesignOverflowCheck(look: 'Look').check(screen).verify();
-    const DesignClipCheck(look: 'Look').check(screen).verify();
-    const DesignWordBreakCheck(look: 'Look').check(screen).verify();
+    const DesignOverflowCheck(look: 'Tend').check(screen).verify();
+    const DesignClipCheck(look: 'Tend').check(screen).verify();
+    const DesignWordBreakCheck(look: 'Tend').check(screen).verify();
     // Right to left, a checkbox's words stand to the left of its box.
     expect(
       tester.getCenter(find.text('Email me')).dx,
-      lessThan(tester.getCenter(find.byType(LookCheckbox)).dx),
+      lessThan(tester.getCenter(find.byType(TendCheckbox)).dx),
     );
   });
 
   testWidgets('a press passes through the faces between, on a spring', (
     tester,
   ) async {
-    await tester.pumpWidget(lookApp(home: const PartsScreen()));
-    final save = find.widgetWithText(LookButton, 'Save');
+    await tester.pumpWidget(tendApp(home: const PartsScreen()));
+    final save = find.widgetWithText(TendButton, 'Save');
     Color fill() => tester
-        .widget<LookSurface>(
-          find.descendant(of: save, matching: find.byType(LookSurface)),
+        .widget<TendSurface>(
+          find.descendant(of: save, matching: find.byType(TendSurface)),
         )
         .face
         .fill;
@@ -329,10 +308,10 @@ void main() {
     await tester.pumpWidget(
       MediaQuery(
         data: const MediaQueryData(disableAnimations: true),
-        child: lookApp(home: const PartsScreen()),
+        child: tendApp(home: const PartsScreen()),
       ),
     );
-    final save = find.widgetWithText(LookButton, 'Save');
+    final save = find.widgetWithText(TendButton, 'Save');
     final gesture = await tester.startGesture(
       tester.getCenter(save),
       kind: PointerDeviceKind.mouse,
@@ -340,16 +319,16 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 150));
     final face = tester
-        .widget<LookSurface>(
-          find.descendant(of: save, matching: find.byType(LookSurface)),
+        .widget<TendSurface>(
+          find.descendant(of: save, matching: find.byType(TendSurface)),
         )
         .face;
     await tester.pumpAndSettle();
     expect(
       face,
       tester
-          .widget<LookSurface>(
-            find.descendant(of: save, matching: find.byType(LookSurface)),
+          .widget<TendSurface>(
+            find.descendant(of: save, matching: find.byType(TendSurface)),
           )
           .face,
     );
@@ -359,11 +338,11 @@ void main() {
 
   testWidgets('the tooltip shows on the keyboard\'s focus', (tester) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Center(
-          child: LookTooltip(
+          child: TendTooltip(
             message: 'Archive the thread',
-            child: LookButton('Archive', onPressed: () {}),
+            child: TendButton('Archive', onPressed: () {}),
           ),
         ),
       ),
@@ -378,14 +357,14 @@ void main() {
   ) async {
     bool? answer;
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Builder(
           builder: (context) => Center(
-            child: LookButton(
+            child: TendButton(
               'Delete',
               destructive: true,
               onPressed: () async {
-                answer = await showLookDialog<bool>(
+                answer = await showTendDialog<bool>(
                   context,
                   title: 'Delete the draft?',
                   content: const Text('It cannot be brought back.'),
@@ -414,8 +393,8 @@ void main() {
     // The focus starts on the safe action, never on the destructive one.
     expect(focusedWords(tester), 'Cancel');
     final screen = tester.element(find.text('Delete the draft?'));
-    const DesignCheckableCheck(look: 'Look').check(screen).verify();
-    const DesignTapTargetCheck(look: 'Look').check(screen).verify();
+    const DesignCheckableCheck(look: 'Tend').check(screen).verify();
+    const DesignTapTargetCheck(look: 'Tend').check(screen).verify();
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
     expect(find.text('Delete the draft?'), findsNothing);
@@ -433,11 +412,11 @@ void main() {
         navigatorKey: navigator,
         theme: ThemeData(
           pageTransitionsTheme: const PageTransitionsTheme(
-            builders: lookPageTransitions,
+            builders: tendPageTransitions,
           ),
         ),
         builder: (context, child) =>
-            LookTheme(data: LookThemeData.day(), child: child!),
+            TendTheme(data: TendThemeData.day(), child: child!),
         home: const Text('Inbox'),
       ),
     );
@@ -459,12 +438,12 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Builder(
           builder: (context) => Center(
-            child: LookButton(
+            child: TendButton(
               'Share',
-              onPressed: () => showLookDialog<void>(
+              onPressed: () => showTendDialog<void>(
                 context,
                 title: 'Share the link?',
                 isAlert: false,
@@ -498,13 +477,13 @@ void main() {
       for (final scale in [1.0, 2.0]) {
         tester.view.physicalSize = Size(width, 844);
         await tester.pumpWidget(
-          lookApp(
+          tendApp(
             textScale: scale,
             home: Builder(
               builder: (context) => Center(
-                child: LookButton(
+                child: TendButton(
                   'Close',
-                  onPressed: () => showLookDialog<void>(
+                  onPressed: () => showTendDialog<void>(
                     context,
                     title: 'Discard the draft?',
                     content: const Text('Your changes will be lost.'),
@@ -526,10 +505,10 @@ void main() {
         await tester.pumpAndSettle();
         final dialog = tester.element(find.text('Discard the draft?'));
         const DesignDialogActionsCheck(
-          look: 'Look',
+          look: 'Tend',
           actions: labels,
         ).check(dialog).verify();
-        const DesignOverlayCheck(look: 'Look').check(dialog).verify();
+        const DesignOverlayCheck(look: 'Tend').check(dialog).verify();
         // The words and the actions keep a gap between them.
         final top = [
           for (final label in labels) tester.getRect(find.text(label)).top,
@@ -553,21 +532,21 @@ void main() {
     for (final width in [320.0, 1024.0]) {
       tester.view.physicalSize = Size(width, 700);
       await tester.pumpWidget(
-        lookApp(
+        tendApp(
           home: Builder(
             builder: (context) => Center(
-              child: LookButton(
+              child: TendButton(
                 'Share',
-                onPressed: () => showLookSheet<void>(
+                onPressed: () => showTendSheet<void>(
                   context,
                   title: 'Share the list',
                   actions: (context) => [
                     for (final label in labels)
-                      LookButton(
+                      TendButton(
                         label,
                         variant: label == labels.last
-                            ? LookButtonVariant.filled
-                            : LookButtonVariant.outlined,
+                            ? TendButtonVariant.filled
+                            : TendButtonVariant.outlined,
                         onPressed: () => Navigator.pop(context),
                       ),
                   ],
@@ -581,7 +560,7 @@ void main() {
       await tester.pumpAndSettle();
       final sheet = tester.element(find.text('Share the list'));
       const DesignDialogActionsCheck(
-        look: 'Look',
+        look: 'Tend',
         actions: labels,
       ).check(sheet).verify();
       // Stacked on a narrow phone, side by side on a desk.
@@ -596,13 +575,13 @@ void main() {
 
   testWidgets('built-in words follow the reader\'s language', (tester) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         locale: const Locale('de'),
         home: Builder(
           builder: (context) => Center(
-            child: LookButton(
+            child: TendButton(
               'Teilen',
-              onPressed: () => showLookDialog<void>(
+              onPressed: () => showTendDialog<void>(
                 context,
                 title: 'Link teilen?',
                 isAlert: false,
@@ -630,26 +609,26 @@ void main() {
 
   testWidgets('a tooltip is read with the control it names', (tester) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Center(
-          child: LookTooltip(
+          child: TendTooltip(
             message: 'Archive the thread',
-            child: LookButton('Archive', onPressed: () {}),
+            child: TendButton('Archive', onPressed: () {}),
           ),
         ),
       ),
     );
-    final screen = tester.element(find.byType(LookTooltip));
-    const DesignTooltipNodeCheck(look: 'Look').check(screen).verify();
+    final screen = tester.element(find.byType(TendTooltip));
+    const DesignTooltipNodeCheck(look: 'Tend').check(screen).verify();
     await expectLater(tester, meetsGuideline(tooltipNodeGuideline));
   });
 
   testWidgets('a field keeps its semantics nodes as its text changes', (
     tester,
   ) async {
-    await tester.pumpWidget(lookApp(home: const PartsScreen()));
+    await tester.pumpWidget(tendApp(home: const PartsScreen()));
     final screen = tester.element(find.byType(PartsScreen));
-    const check = DesignFieldNodesCheck(look: 'Look');
+    const check = DesignFieldNodesCheck(look: 'Tend');
     final empty = check.read(screen);
     await tester.enterText(find.byType(EditableText).first, 'A');
     await tester.pumpAndSettle();
@@ -659,17 +638,17 @@ void main() {
   testWidgets('a button, a field, a select and a combobox in a row stand '
       'at one height on one centre line', (tester) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(
                 width: 160,
-                child: LookTextField(labelText: 'Name'),
+                child: TendTextField(labelText: 'Name'),
               ),
               const SizedBox(width: 12),
-              LookSelect<String>(
+              TendSelect<String>(
                 labelText: 'Plan',
                 options: const ['Day', 'Week'],
                 value: 'Day',
@@ -678,13 +657,13 @@ void main() {
               const SizedBox(width: 12),
               const SizedBox(
                 width: 160,
-                child: LookCombobox<String>(
+                child: TendCombobox<String>(
                   labelText: 'Owner',
                   options: ['Ada', 'Grace'],
                 ),
               ),
               const SizedBox(width: 12),
-              LookButton('Save', onPressed: () {}),
+              TendButton('Save', onPressed: () {}),
             ],
           ),
         ),
@@ -692,13 +671,13 @@ void main() {
     );
     // The faces, not their tap targets: each part's painted surface.
     Rect face(Finder part) => tester.getRect(
-      find.descendant(of: part, matching: find.byType(LookSurface)).first,
+      find.descendant(of: part, matching: find.byType(TendSurface)).first,
     );
     final faces = [
-      face(find.byType(LookTextField)),
-      face(find.byType(LookSelect<String>)),
-      face(find.byType(LookCombobox<String>)),
-      face(find.byType(LookButton)),
+      face(find.byType(TendTextField)),
+      face(find.byType(TendSelect<String>)),
+      face(find.byType(TendCombobox<String>)),
+      face(find.byType(TendButton)),
     ];
     for (final f in faces.skip(1)) {
       expect(f.height, moreOrLessEquals(faces.first.height));
@@ -717,7 +696,7 @@ void main() {
     addTearDown(tester.view.reset);
     Future<double> faceWidth(CrossAxisAlignment align, Widget part) async {
       await tester.pumpWidget(
-        lookApp(
+        tendApp(
           home: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(crossAxisAlignment: align, children: [part]),
@@ -726,19 +705,19 @@ void main() {
       );
       final face = find.descendant(
         of: find.byWidget(part),
-        matching: find.byType(LookSurface),
+        matching: find.byType(TendSurface),
       );
       return tester.getSize(face.first).width;
     }
 
     const options = ['Day', 'Week', 'Month'];
-    LookSelect<String> select(String value) => LookSelect<String>(
+    TendSelect<String> select(String value) => TendSelect<String>(
       labelText: 'Plan',
       options: options,
       value: value,
       onChanged: (_) {},
     );
-    const combobox = LookCombobox<String>(labelText: 'Plan', options: options);
+    const combobox = TendCombobox<String>(labelText: 'Plan', options: options);
     const start = CrossAxisAlignment.start;
     final day = await faceWidth(start, select('Day'));
     expect(day, lessThan(240));
@@ -747,7 +726,7 @@ void main() {
     expect(await faceWidth(start, select('Month')), day);
     expect(await faceWidth(start, combobox), day);
     expect(
-      await faceWidth(start, LookButton('Save', onPressed: () {})),
+      await faceWidth(start, TendButton('Save', onPressed: () {})),
       lessThan(240),
     );
     // A form that sets its fields' width still sets it.
@@ -760,21 +739,21 @@ void main() {
       'of field', (tester) async {
     String? owner;
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: StatefulBuilder(
           builder: (context, setState) => Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                LookSelect<String>(
+                TendSelect<String>(
                   labelText: 'Plan',
                   options: const ['Day', 'Week', 'Month'],
                   value: 'Week',
                   onChanged: (_) {},
                 ),
                 const SizedBox(height: 16),
-                LookCombobox<String>(
+                TendCombobox<String>(
                   labelText: 'Owner',
                   options: const ['Ada', 'Grace', 'Katherine'],
                   value: owner,
@@ -790,22 +769,22 @@ void main() {
     // Both fields end in the same sign that they open a list.
     expect(
       find.descendant(
-        of: find.byType(LookSelect<String>),
-        matching: find.byType(LookListSign),
+        of: find.byType(TendSelect<String>),
+        matching: find.byType(TendListSign),
       ),
       findsOneWidget,
     );
     expect(
       find.descendant(
-        of: find.byType(LookCombobox<String>),
-        matching: find.byType(LookListSign),
+        of: find.byType(TendCombobox<String>),
+        matching: find.byType(TendListSign),
       ),
       findsOneWidget,
     );
-    await tester.tap(find.byType(LookSelect<String>));
+    await tester.tap(find.byType(TendSelect<String>));
     await tester.pumpAndSettle();
     expect(find.text('Month'), findsOneWidget);
-    const DesignListSideCheck(look: 'Look').check(screen).verify();
+    const DesignListSideCheck(look: 'Tend').check(screen).verify();
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
     await tester.tap(find.byType(EditableText));
@@ -815,7 +794,7 @@ void main() {
       tester.getTopLeft(find.text('Katherine')).dy,
       greaterThan(tester.getBottomLeft(find.byType(EditableText)).dy),
     );
-    const DesignListSideCheck(look: 'Look').check(screen).verify();
+    const DesignListSideCheck(look: 'Tend').check(screen).verify();
     await tester.tap(find.text('Grace'));
     await tester.pumpAndSettle();
     expect(owner, 'Grace');
@@ -823,9 +802,9 @@ void main() {
 
   testWidgets('a destructive menu row takes the danger tone', (tester) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Center(
-          child: LookMenu(
+          child: TendMenu(
             entries: [
               RawMenuEntry(label: 'Rename', onPressed: () {}),
               RawMenuEntry(
@@ -840,13 +819,13 @@ void main() {
       ),
     );
     final gesture = await tester.startGesture(
-      tester.getCenter(find.byType(LookMenu)),
+      tester.getCenter(find.byType(TendMenu)),
       kind: PointerDeviceKind.mouse,
       buttons: kSecondaryMouseButton,
     );
     await gesture.up();
     await tester.pumpAndSettle();
-    final colors = LookThemeData.day().colors;
+    final colors = TendThemeData.day().colors;
     Color? ink(String label) =>
         tester.widget<Text>(find.text(label)).style?.color;
     expect(ink('Delete'), colors.danger);
@@ -857,24 +836,24 @@ void main() {
       'inside, closes on Escape and gives focus back', (tester) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Builder(
           builder: (context) => Center(
-            child: LookButton(
+            child: TendButton(
               'Search',
-              onPressed: () => showLookPanel<void>(
+              onPressed: () => showTendPanel<void>(
                 context,
                 title: 'Search the notes',
                 builder: (context, close) => Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LookButton(
+                    TendButton(
                       'Clear',
-                      variant: LookButtonVariant.outlined,
+                      variant: TendButtonVariant.outlined,
                       onPressed: () {},
                     ),
                     const SizedBox(width: 12),
-                    LookButton('Done', onPressed: close),
+                    TendButton('Done', onPressed: close),
                   ],
                 ),
               ),
@@ -922,15 +901,15 @@ void main() {
   });
 
   for (final direction in TextDirection.values) {
-    testWidgets('${direction.name}: a menu the look places opens over its '
+    testWidgets('${direction.name}: a menu the design places opens over its '
         'button, its end corner on the button\'s', (tester) async {
       final semantics = tester.ensureSemantics();
       String? picked;
       await tester.pumpWidget(
-        lookApp(
+        tendApp(
           direction: direction,
           home: Center(
-            child: LookMoreMenu(
+            child: TendMoreMenu(
               semanticLabel: 'More',
               entries: [
                 RawMenuEntry(
@@ -952,11 +931,11 @@ void main() {
       await tester.pumpAndSettle();
       final button = tester.getRect(
         find.descendant(
-          of: find.byType(LookMoreMenu),
+          of: find.byType(TendMoreMenu),
           matching: find.byType(TapTargetPadding),
         ),
       );
-      final menu = tester.getRect(find.byType(LookListSurface));
+      final menu = tester.getRect(find.byType(TendListSurface));
       if (direction == TextDirection.ltr) {
         expect(menu.topRight, button.topRight);
       } else {
@@ -964,7 +943,7 @@ void main() {
       }
       // Its node is a menu named as its button.
       final node = tester
-          .getSemantics(find.byType(LookListSurface))
+          .getSemantics(find.byType(TendListSurface))
           .getSemanticsData();
       expect(node.role, SemanticsRole.menu);
       expect(node.label, 'More');
@@ -974,8 +953,15 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
       expect(picked, 'Rename');
-      expect(find.byType(LookListSurface), findsNothing);
-      expect(focusedWords(tester), '…');
+      expect(find.byType(TendListSurface), findsNothing);
+      final key = FocusManager.instance.primaryFocus!.context!;
+      expect(
+        find.ancestor(
+          of: find.byElementPredicate((e) => e == key),
+          matching: find.byType(TendMoreMenu),
+        ),
+        findsOneWidget,
+      );
       semantics.dispose();
     });
   }
@@ -984,13 +970,13 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LookSelect<String>(
+              TendSelect<String>(
                 labelText: 'Plan',
                 options: const ['Day', 'Week', 'Month'],
                 value: 'Month',
@@ -1011,12 +997,12 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: const Padding(
           padding: EdgeInsets.all(24),
           child: Align(
             alignment: AlignmentDirectional.topStart,
-            child: LookCombobox<String>(
+            child: TendCombobox<String>(
               labelText: 'Owner',
               options: ['Ada', 'Grace'],
             ),
@@ -1041,10 +1027,10 @@ void main() {
       'flag', (tester) async {
     for (final error in [null, 'Enter the whole address']) {
       await tester.pumpWidget(
-        lookApp(
+        tendApp(
           home: Padding(
             padding: const EdgeInsets.all(24),
-            child: LookTextField(
+            child: TendTextField(
               labelText: 'Email',
               helperText: 'For receipts only',
               errorText: error,
@@ -1053,9 +1039,9 @@ void main() {
           ),
         ),
       );
-      final screen = tester.element(find.byType(LookTextField));
+      final screen = tester.element(find.byType(TendTextField));
       DesignFieldWordsCheck(
-        look: 'Look',
+        look: 'Tend',
         words: [error ?? 'For receipts only'],
       ).check(screen).verify();
       expect(
@@ -1073,7 +1059,7 @@ void main() {
     addTearDown(tester.view.reset);
     DateTime? due = DateTime(2026, 3, 18);
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: StatefulBuilder(
           builder: (context, setState) => Padding(
             padding: const EdgeInsets.all(24),
@@ -1082,7 +1068,7 @@ void main() {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                LookDateField(
+                TendDateField(
                   labelText: 'Due',
                   value: due,
                   firstDate: DateTime(2026),
@@ -1098,19 +1084,19 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
-    final screen = tester.element(find.byType(LookDateField));
+    final screen = tester.element(find.byType(TendDateField));
     // Above the field's face, whole: below it the month would not fit.
     final face = find.descendant(
-      of: find.byType(LookDateField),
-      matching: find.byType(LookListSign),
+      of: find.byType(TendDateField),
+      matching: find.byType(TendListSign),
     );
     expect(
       tester.getRect(find.byType(RawCalendarDatePicker)).bottom,
       lessThan(tester.getRect(face).top),
     );
-    const DesignOverlayCheck(look: 'Look').check(screen).verify();
-    const DesignListSideCheck(look: 'Look').check(screen).verify();
-    const DesignTapTargetCheck(look: 'Look').check(screen).verify();
+    const DesignOverlayCheck(look: 'Tend').check(screen).verify();
+    const DesignListSideCheck(look: 'Tend').check(screen).verify();
+    const DesignTapTargetCheck(look: 'Tend').check(screen).verify();
     // The keys start on the chosen day: the next one, then Enter.
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -1124,16 +1110,16 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Builder(
           builder: (context) => Column(
             children: [
               const Expanded(child: SizedBox.expand()),
-              LookBottomBar(
-                child: LookButton(
+              TendBottomBar(
+                child: TendButton(
                   'Save draft',
                   onPressed: () =>
-                      LookToaster.of(context)
+                      TendToaster.of(context)
                           .show(const RawToast(message: 'Draft saved')),
                 ),
               ),
@@ -1147,7 +1133,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     expect(
       tester.getRect(find.text('Draft saved')).bottom,
-      lessThanOrEqualTo(tester.getRect(find.byType(LookBottomBar)).top),
+      lessThanOrEqualTo(tester.getRect(find.byType(TendBottomBar)).top),
     );
     // Its time runs out, and it leaves.
     await tester.pump(const Duration(seconds: 5));
@@ -1160,7 +1146,7 @@ void main() {
     addTearDown(before.dispose);
     var tab = 'open';
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: StatefulBuilder(
           builder: (context, setState) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1169,17 +1155,17 @@ void main() {
                 focusNode: before,
                 child: const SizedBox.square(dimension: 1),
               ),
-              LookTabs<String>(
+              TendTabs<String>(
                 value: tab,
                 semanticLabel: 'Tasks',
                 onChanged: (next) => setState(() => tab = next),
                 tabs: const [
-                  LookTab(value: 'all', label: 'All'),
-                  LookTab(value: 'open', label: 'Open'),
-                  LookTab(value: 'done', label: 'Done'),
+                  TendTab(value: 'all', label: 'All'),
+                  TendTab(value: 'open', label: 'Open'),
+                  TendTab(value: 'done', label: 'Done'),
                 ],
               ),
-              LookButton('After', onPressed: () {}),
+              TendButton('After', onPressed: () {}),
             ],
           ),
         ),
@@ -1201,9 +1187,9 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pumpAndSettle();
     expect(focusedWords(tester), 'After');
-    final screen = tester.element(find.byType(LookTabs<String>));
-    const DesignTapTargetCheck(look: 'Look').check(screen).verify();
-    const DesignCursorCheck(look: 'Look').check(screen).verify();
+    final screen = tester.element(find.byType(TendTabs<String>));
+    const DesignTapTargetCheck(look: 'Tend').check(screen).verify();
+    const DesignCursorCheck(look: 'Tend').check(screen).verify();
   });
 
   testWidgets('a toolbar is one tab stop, and the arrows move along it', (
@@ -1212,7 +1198,7 @@ void main() {
     final before = FocusNode();
     addTearDown(before.dispose);
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1220,14 +1206,14 @@ void main() {
               focusNode: before,
               child: const SizedBox.square(dimension: 1),
             ),
-            LookToolbar(
+            TendToolbar(
               toggles: [
                 for (final (label, icon) in [
                   ('Bold', Icons.format_bold),
                   ('Italic', Icons.format_italic),
                   ('Underline', Icons.format_underline),
                 ])
-                  LookToolbarToggle(
+                  TendToolbarToggle(
                     icon: icon,
                     semanticLabel: label,
                     isSelected: label == 'Italic',
@@ -1235,7 +1221,7 @@ void main() {
                   ),
               ],
             ),
-            LookButton('After', onPressed: () {}),
+            TendButton('After', onPressed: () {}),
           ],
         ),
       ),
@@ -1260,7 +1246,7 @@ void main() {
     addTearDown(before.dispose);
     var tab = 'all';
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: StatefulBuilder(
           builder: (context, setState) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1269,14 +1255,14 @@ void main() {
                 focusNode: before,
                 child: const SizedBox.square(dimension: 1),
               ),
-              LookTabs<String>(
+              TendTabs<String>(
                 value: tab,
                 semanticLabel: 'Tasks',
                 onChanged: (next) => setState(() => tab = next),
                 tabs: const [
-                  LookTab(value: 'all', label: 'All', order: 0),
-                  LookTab(value: 'done', label: 'Done', order: 2),
-                  LookTab(value: 'open', label: 'Open', order: 1),
+                  TendTab(value: 'all', label: 'All', order: 0),
+                  TendTab(value: 'done', label: 'Done', order: 2),
+                  TendTab(value: 'open', label: 'Open', order: 1),
                 ],
               ),
             ],
@@ -1301,9 +1287,9 @@ void main() {
       'Alt with Down moves its row, the focus with it', (tester) async {
     var items = ['Milk', 'Eggs', 'Bread'];
     await tester.pumpWidget(
-      lookApp(
+      tendApp(
         home: StatefulBuilder(
-          builder: (context, setState) => LookReorderableList<String>(
+          builder: (context, setState) => TendReorderableList<String>(
             items: items,
             labelOf: (item) => item,
             onReorder: (from, to) => setState(() {
@@ -1318,10 +1304,10 @@ void main() {
       ),
     );
     Color rule(String item) => tester
-        .widget<AnimatedLookSurface>(
+        .widget<AnimatedTendSurface>(
           find.descendant(
             of: find.ancestor(of: find.text(item), matching: find.byType(Row)),
-            matching: find.byType(AnimatedLookSurface),
+            matching: find.byType(AnimatedTendSurface),
           ),
         )
         .face
@@ -1340,21 +1326,15 @@ void main() {
     expect(rule('Eggs'), clear);
   });
 
-  test('the inventory answers its rows; what it leaves are missing', () {
-    final problems = lookInventory.problems;
-    expect(problems, isNotEmpty);
-    expect(problems.every((p) => p.contains(': missing (')), isTrue);
-  });
-
   testWidgets(
-    "a LookPage plays the look's push, and on iOS alone a swipe takes it back",
+    "a TendPage plays the design's push, and on iOS alone a swipe takes it back",
     (tester) async {
       var pages = <Page<void>>[
-        const LookPage<void>(key: ValueKey('inbox'), child: Text('Inbox')),
-        const LookPage<void>(key: ValueKey('thread'), child: Text('Thread')),
+        const TendPage<void>(key: ValueKey('inbox'), child: Text('Inbox')),
+        const TendPage<void>(key: ValueKey('thread'), child: Text('Thread')),
       ];
       await tester.pumpWidget(
-        lookApp(
+        tendApp(
           home: StatefulBuilder(
             builder: (context, setState) => Navigator(
               pages: pages,
@@ -1380,14 +1360,14 @@ void main() {
   testWidgets(
     "the dismiss key says back on a pushed page, close on a sheet, nothing on a root",
     (tester) async {
-      await tester.pumpWidget(lookApp(home: const LookDismissKey()));
-      expect(find.byType(LookIconButton), findsNothing);
+      await tester.pumpWidget(tendApp(home: const TendDismissKey()));
+      expect(find.byType(TendIconButton), findsNothing);
       final navigator = tester.state<NavigatorState>(find.byType(Navigator));
       unawaited(
         navigator.push(
           RawPageRoute<void>(
-            transitionsBuilder: const LookPageTransitionsBuilder(),
-            builder: (context) => const LookDismissKey(),
+            transitionsBuilder: const TendPageTransitionsBuilder(),
+            builder: (context) => const TendDismissKey(),
           ),
         ),
       );
@@ -1396,9 +1376,9 @@ void main() {
       unawaited(
         navigator.push(
           RawPageRoute<void>(
-            transitionsBuilder: const LookPageTransitionsBuilder(),
+            transitionsBuilder: const TendPageTransitionsBuilder(),
             fullscreenDialog: true,
-            builder: (context) => const LookDismissKey(),
+            builder: (context) => const TendDismissKey(),
           ),
         ),
       );
@@ -1407,60 +1387,6 @@ void main() {
       await tester.tap(find.bySemanticsLabel('Close'));
       await tester.pumpAndSettle();
       expect(find.bySemanticsLabel('Back'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    "drawn choices answer as a radio group: arrows choose, a press between a drawing's parts chooses",
-    (tester) async {
-      var size = 'S';
-      LookChoiceDrawing drawing(String text) =>
-          (BuildContext context, bool chosen, Set<WidgetState> states) =>
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(chosen ? '[$text' : text),
-                    const SizedBox(width: 24),
-                    const Text(']'),
-                  ],
-                ),
-              );
-      await tester.pumpWidget(
-        lookApp(
-          home: Center(
-            child: StatefulBuilder(
-              builder: (context, setState) => LookDrawnChoices<String>(
-                value: size,
-                onChanged: (next) => setState(() => size = next),
-                choices: [
-                  for (final s in const ['S', 'M', 'L'])
-                    LookDrawnChoice(value: s, label: s, drawing: drawing(s)),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-      await tester.pumpAndSettle();
-      expect(size, 'M');
-      // Between the words and the bracket of L's drawing: nothing painted.
-      final left = tester.getTopRight(find.text('L'));
-      await tester.tapAt(left + const Offset(12, 0));
-      await tester.pumpAndSettle();
-      expect(size, 'L');
-      expect(
-        tester.getSemantics(find.bySemanticsLabel('L')),
-        isSemantics(
-          label: 'L',
-          isInMutuallyExclusiveGroup: true,
-          hasCheckedState: true,
-          isChecked: true,
-        ),
-      );
     },
   );
 }

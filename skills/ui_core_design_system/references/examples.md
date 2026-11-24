@@ -1,20 +1,19 @@
-# Examples from published looks
+# Examples from published designs
 
-Excerpts from three published looks on ui_core, each a different material.
-Open a package on pub.dev to read the rest of it, and see its pictures:
+Excerpts from two published design packages on ui_core, each a different
+material. Open a package on pub.dev to read the rest of it and see its
+pictures:
 
 - [brutal_ui](https://pub.dev/packages/brutal_ui): hard blocks, hard offset
-  shadows, no blur; focus is a solid block of colour.
-- [minimal_ui](https://pub.dev/packages/minimal_ui): quiet neutral
-  surfaces, hairline edges, a thin accent ring for focus.
+  shadows, no blur.
 - [neumorphism_ui](https://pub.dev/packages/neumorphism_ui): soft surfaces
-  extruded from their ground, lit from the top left; focus raises a part.
+  extruded from their ground, lit from the top start; focus raises a part.
 
-Each excerpt is quoted from the package's source (the path under it names
+Each excerpt is quoted from the package's source (the path above it names
 the file); `// ...` marks lines left out. The notes after each say what to
 take from it.
 
-## A button: behaviour from ui_core, face from the look (brutal_ui)
+## A button: behaviour from ui_core, face from the design (brutal_ui)
 
 <!-- source: brutal_ui/lib/src/brutal/button.dart -->
 ```dart
@@ -63,151 +62,6 @@ return RawButton(
 - `TapTargetPadding` lays the whole part out at the floor, so the hit area
   and the screen reader's box agree.
 
-## Style layers, nearest first (brutal_ui)
-
-<!-- source: brutal_ui/lib/src/brutal/button.dart -->
-```dart
-List<BrutalStyle?> _buttonLayers(
-  BrutalThemeData theme,
-  _ButtonKind kind,
-  bool destructive,
-  BrutalStyle? style,
-) => [
-  style,
-  if (destructive) theme.destructiveButtonStyle,
-  switch (kind) {
-    _ButtonKind.framed => theme.framedButtonStyle,
-    _ButtonKind.filled => theme.filledButtonStyle,
-    _ButtonKind.text => theme.textButtonStyle,
-  },
-];
-```
-
-- The button's own `style:` wins, then a destructive slot, then the slot for
-  its kind; the look's defaults fill whatever no layer sets.
-- `BrutalStyle` is ui_core's `RawStyle` under the look's name.
-
-## A face that springs between states (brutal_ui)
-
-<!-- source: brutal_ui/lib/src/brutal/surface.dart -->
-```dart
-BrutalFace get _now => BrutalFace.lerp(_from, _to, _controller.value);
-
-@override
-void didUpdateWidget(AnimatedBrutalSurface old) {
-  super.didUpdateWidget(old);
-  if (widget.face == _to) return;
-  _from = _now;
-  _to = widget.face;
-  _controller.value = 0;
-  _controller.springTo(
-    1,
-    // ...
-      dampingRatio: BrutalMotion.dampingRatio,
-      stiffness: widget.stiffness,
-    ),
-  );
-}
-```
-
-- A face is a value with a `lerp`; the surface springs from wherever it
-  stands (`_now`) to the new face, so a press released mid-way turns back
-  without a jump.
-- `RawMotionPolicy.effects` makes the same code honour Reduce Motion.
-- One mechanism serves every part of the look.
-
-## Focus in the look's own idiom (brutal_ui)
-
-<!-- source: brutal_ui/lib/src/brutal/surface.dart -->
-```dart
-void _paintFocusBar(Canvas canvas, Rect bounds, Color color) {
-  if (bounds.isEmpty) return;
-  final thickness = BrutalMetrics.focusWidth.clamp(0.0, bounds.height);
-  canvas.drawRect(
-    Rect.fromLTRB(
-      bounds.left,
-      bounds.bottom - thickness,
-      bounds.right,
-      bounds.bottom,
-    ),
-    Paint()..color = color,
-  );
-}
-```
-
-- Keyboard focus is a solid colour block along the hard shadow's edge: the
-  look's own material, no ring and no blur.
-
-## A radio group on Flutter's RadioGroup (minimal_ui)
-
-<!-- source: minimal_ui/lib/src/minimal/components/radio.dart -->
-```dart
-child: RadioGroup<T>(
-  groupValue: value,
-  // RadioGroup takes no null: a group that takes no choice gives a
-  // no-op, and its options show the choice without offering it.
-  onChanged: (next) {
-    if (onChanged == null || next == null || next == value) return;
-    HapticFeedback.selectionClick();
-    onChanged(next);
-  },
-  child: RadioGroupKeyboardFix<T>(
-```
-
-<!-- source: minimal_ui/lib/src/minimal/components/radio.dart -->
-```dart
-// The target is the outermost layer, as a pressable's: the area a tap
-// reaches is the box a screen reader outlines.
-return minimalInlineNode(
-  context,
-  TapTargetPadding(
-    alignment:
-        MinimalTapAlignment.maybeOf(context) ?? AlignmentDirectional.center,
-    child: Semantics(
-      enabled: enabled,
-      // One node: the radio, its label and its description.
-      child: MergeSemantics(
-        child: RawRadio<T>(
-          value: option.value,
-          mouseCursor: WidgetStateMouseCursor.clickable,
-          toggleable: false,
-          focusNode: _node,
-          autofocus: false,
-          groupRegistry: RadioGroup.maybeOf<T>(context),
-          enabled: enabled,
-          builder: (context, radio) {
-            final pressed = enabled && radio.downPosition != null;
-            final focused =
-                enabled && radio.states.contains(WidgetState.focused);
-```
-
-- The group is Flutter's; `RadioGroupKeyboardFix` sits inside it, round the
-  options, and adds nothing but the two key fixes.
-- Each option is one semantics node (the radio and its words), with the
-  target outermost.
-- Pressed is read from `downPosition`, focus from `states`.
-
-## A form field's parts (minimal_ui)
-
-<!-- source: minimal_ui/lib/src/minimal/components/form_field.dart -->
-```dart
-builder: (context, parts) {
-  final name = parts.label;
-  final helperText = parts.helper;
-  final wrong = parts.error;
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      if (name != null) ...[
-// ...
-      MinimalFieldErrorScope(wrong: wrong != null, child: parts.control),
-```
-
-- `RawInputDecorator` hands over the parts; the look only lays them out and
-  styles them. The error widget it gives is the one that is announced as it
-  appears, so the look draws that one, not its own.
-
 ## A dialog that rises its own way (neumorphism_ui)
 
 <!-- source: neumorphism_ui/lib/src/neumorphism/raised.dart -->
@@ -237,11 +91,11 @@ return navigator.push(
 ```
 
 - `RawModalDialogRoute` (here a subclass) carries the barrier, Escape, back,
-  focus trap and focus return; the look gives the veil's colour, the
+  focus trap and focus return; the design gives the veil's colour, the
   stiffness from its motion tokens, and the transition.
 - The opener's themes are carried into the route, which builds under the
   navigator.
-- The barrier's name comes from the look's localizations.
+- The barrier's name comes from the design's localizations.
 
 ## Focus that raises the surface instead of outlining it (neumorphism_ui)
 

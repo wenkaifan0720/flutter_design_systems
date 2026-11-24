@@ -14,18 +14,18 @@ import 'theme.dart';
 /// A one-line text field with a label above, a hint inside, and help or an
 /// error below: Flutter's [TextField] for the typing (IME, selection,
 /// autofill, a screen reader's text field), its decoration null, inside the
-/// look's own box; ui_core's [RawInputDecorator] for the label, help and
+/// design's own box; ui_core's [RawInputDecorator] for the label, help and
 /// error a screen reader hears with the field.
 ///
 /// Its words are strings, named as Flutter's `InputDecoration` names them:
 /// [labelText], [hintText], [helperText], [errorText].
 ///
 /// ```dart
-/// LookTextField(labelText: 'Name', hintText: 'Ada Lovelace', controller: controller)
+/// TendTextField(labelText: 'Name', hintText: 'Ada Lovelace', controller: controller)
 /// ```
-class LookTextField extends StatefulWidget {
+class TendTextField extends StatefulWidget {
   /// A field labelled [labelText].
-  const LookTextField({
+  const TendTextField({
     super.key,
     required this.labelText,
     this.hintText,
@@ -68,7 +68,7 @@ class LookTextField extends StatefulWidget {
   final bool enabled;
 
   @override
-  State<LookTextField> createState() => _LookTextFieldState();
+  State<TendTextField> createState() => _TendTextFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -81,7 +81,7 @@ class LookTextField extends StatefulWidget {
   }
 }
 
-class _LookTextFieldState extends State<LookTextField> {
+class _TendTextFieldState extends State<TendTextField> {
   TextEditingController? _ownController;
   FocusNode? _ownFocusNode;
 
@@ -91,7 +91,7 @@ class _LookTextFieldState extends State<LookTextField> {
       widget.focusNode ?? (_ownFocusNode ??= FocusNode());
 
   @override
-  void didUpdateWidget(LookTextField old) {
+  void didUpdateWidget(TendTextField old) {
     super.didUpdateWidget(old);
     // A controller or node handed in later replaces the one the field made.
     if (widget.controller != null && _ownController != null) {
@@ -113,7 +113,7 @@ class _LookTextFieldState extends State<LookTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final c = theme.colors;
     final entryStyle = theme.body.copyWith(height: 1.2);
     Widget entry = TextField(
@@ -125,12 +125,12 @@ class _LookTextFieldState extends State<LookTextField> {
       style: entryStyle,
       cursorColor: c.accent,
     );
-    // A look that stands on no Material: TextField asks for one above it.
+    // A design that stands on no Material: TextField asks for one above it.
     if (Material.maybeOf(context) == null) {
       entry = Material(type: MaterialType.transparency, child: entry);
     }
     // The words go to the decorator, which reads them with the field; the
-    // look draws the parts it hands back.
+    // design draws the parts it hands back.
     return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
@@ -177,9 +177,9 @@ class _LookTextFieldState extends State<LookTextField> {
               behavior: HitTestBehavior.opaque,
               excludeFromSemantics: true,
               onTap: widget.enabled ? _focusNode.requestFocus : null,
-              child: AnimatedLookSurface(
+              child: AnimatedTendSurface(
                 // The face a select and a combobox stand on too.
-                face: lookFieldFace(
+                face: tendFieldFace(
                   theme,
                   focused: parts.focused,
                   // Invalid with or without words to say why.

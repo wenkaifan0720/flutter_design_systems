@@ -5,12 +5,12 @@ import 'package:ui_core/ui_core.dart';
 
 import 'theme.dart';
 
-/// How a face looks at one moment: what [LookSurface] paints and what
-/// [AnimatedLookSurface] moves between as the part's states change.
+/// How a face looks at one moment: what [TendSurface] paints and what
+/// [AnimatedTendSurface] moves between as the part's states change.
 @immutable
-class LookFace {
+class TendFace {
   /// A face of [fill] in a rule of [rule], [ruleWidth] wide.
-  const LookFace({
+  const TendFace({
     required this.fill,
     required this.rule,
     required this.foreground,
@@ -30,7 +30,7 @@ class LookFace {
   final Color foreground;
 
   /// Between [a] and [b] at [t].
-  static LookFace lerp(LookFace a, LookFace b, double t) => LookFace(
+  static TendFace lerp(TendFace a, TendFace b, double t) => TendFace(
     fill: Color.lerp(a.fill, b.fill, t)!,
     rule: Color.lerp(a.rule, b.rule, t)!,
     foreground: Color.lerp(a.foreground, b.foreground, t)!,
@@ -39,7 +39,7 @@ class LookFace {
 
   @override
   bool operator ==(Object other) =>
-      other is LookFace &&
+      other is TendFace &&
       other.fill == fill &&
       other.rule == rule &&
       other.foreground == foreground &&
@@ -51,9 +51,9 @@ class LookFace {
 
 /// Paints [face] in [shape] behind [child], and gives [child] the face's
 /// foreground for its words and glyphs.
-class LookSurface extends StatelessWidget {
+class TendSurface extends StatelessWidget {
   /// [child] on [face].
-  const LookSurface({
+  const TendSurface({
     super.key,
     required this.face,
     required this.shape,
@@ -61,7 +61,7 @@ class LookSurface extends StatelessWidget {
   });
 
   /// What to paint.
-  final LookFace face;
+  final TendFace face;
 
   /// The outline; the face's rule is drawn on it.
   final OutlinedBorder shape;
@@ -87,13 +87,13 @@ class LookSurface extends StatelessWidget {
   );
 }
 
-/// A [LookSurface] that moves to each new [face] on the theme's state
+/// A [TendSurface] that moves to each new [face] on the theme's state
 /// spring, from wherever it stands: a press, a release, a focus or a change
 /// of colour turns mid-way with no jump. Under Reduce Motion the change is a
 /// short fade, as [RawMotionPolicy] says.
-class AnimatedLookSurface extends StatefulWidget {
+class AnimatedTendSurface extends StatefulWidget {
   /// [child] on a face that moves to [face].
-  const AnimatedLookSurface({
+  const AnimatedTendSurface({
     super.key,
     required this.face,
     required this.shape,
@@ -101,7 +101,7 @@ class AnimatedLookSurface extends StatefulWidget {
   });
 
   /// The face to arrive at.
-  final LookFace face;
+  final TendFace face;
 
   /// The outline.
   final OutlinedBorder shape;
@@ -110,27 +110,27 @@ class AnimatedLookSurface extends StatefulWidget {
   final Widget? child;
 
   @override
-  State<AnimatedLookSurface> createState() => _AnimatedLookSurfaceState();
+  State<AnimatedTendSurface> createState() => _AnimatedTendSurfaceState();
 }
 
-class _AnimatedLookSurfaceState extends State<AnimatedLookSurface>
+class _AnimatedTendSurfaceState extends State<AnimatedTendSurface>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     value: 1,
   );
-  late LookFace _from = widget.face;
-  late LookFace _to = widget.face;
+  late TendFace _from = widget.face;
+  late TendFace _to = widget.face;
 
-  LookFace get _now => LookFace.lerp(_from, _to, _controller.value);
+  TendFace get _now => TendFace.lerp(_from, _to, _controller.value);
 
   @override
-  void didUpdateWidget(AnimatedLookSurface old) {
+  void didUpdateWidget(AnimatedTendSurface old) {
     super.didUpdateWidget(old);
     if (widget.face == _to) return;
     _from = _now;
     _to = widget.face;
-    final motion = LookTheme.of(context).motion;
+    final motion = TendTheme.of(context).motion;
     _controller
       ..value = 0
       ..springTo(
@@ -152,7 +152,7 @@ class _AnimatedLookSurfaceState extends State<AnimatedLookSurface>
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _controller,
     builder: (context, child) =>
-        LookSurface(face: _now, shape: widget.shape, child: child),
+        TendSurface(face: _now, shape: widget.shape, child: child),
     child: widget.child,
   );
 }
@@ -160,9 +160,9 @@ class _AnimatedLookSurfaceState extends State<AnimatedLookSurface>
 /// Builds with a number that moves to each new [value] on the theme's state
 /// spring: a thumb's travel, a mark's scale. A spatial motion, so under
 /// Reduce Motion it arrives without overshoot ([RawMotionPolicy.spatial]).
-class LookSpringBuilder extends StatefulWidget {
+class TendSpringBuilder extends StatefulWidget {
   /// Builds [builder] with a number springing to [value].
-  const LookSpringBuilder({
+  const TendSpringBuilder({
     super.key,
     required this.value,
     required this.builder,
@@ -179,10 +179,10 @@ class LookSpringBuilder extends StatefulWidget {
   final Widget? child;
 
   @override
-  State<LookSpringBuilder> createState() => _LookSpringBuilderState();
+  State<TendSpringBuilder> createState() => _TendSpringBuilderState();
 }
 
-class _LookSpringBuilderState extends State<LookSpringBuilder>
+class _TendSpringBuilderState extends State<TendSpringBuilder>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController.unbounded(
     vsync: this,
@@ -190,10 +190,10 @@ class _LookSpringBuilderState extends State<LookSpringBuilder>
   );
 
   @override
-  void didUpdateWidget(LookSpringBuilder old) {
+  void didUpdateWidget(TendSpringBuilder old) {
     super.didUpdateWidget(old);
     if (widget.value == old.value) return;
-    final motion = LookTheme.of(context).motion;
+    final motion = TendTheme.of(context).motion;
     _controller.springTo(
       widget.value,
       RawMotionPolicy.of(context).spatial(

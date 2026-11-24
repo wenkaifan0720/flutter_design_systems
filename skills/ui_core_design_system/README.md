@@ -1,56 +1,39 @@
-# ui_core design system skill
+# ui_core design skill
 
-An agent skill for building a Flutter design system (a "look", like
-material_ui or cupertino_ui) on [ui_core](https://pub.dev/packages/ui_core).
-ui_core carries the behaviour: focus, keyboard, screen-reader semantics, tap
-targets, overlays, dialog and toast layout, motion policy, built-in words.
-The look paints every part. With this skill an agent plans the look's scope,
-wires each part to the right ui_core API, designs every state in the look's
-own material, and proves each part with
-[ui_core_test](https://pub.dev/packages/ui_core_test) and screenshots.
-
-Written for ui_core 0.6.x and ui_core_test 0.4.x, on Flutter 3.47 or later.
+An agent skill for building a Flutter app's own design on
+[ui_core](https://pub.dev/packages/ui_core): a look that is neither Material
+nor Cupertino (a brand, a designer's mock-ups, or a named style such as
+Swiss, neumorphic, brutalist or glass), and the app's screens made of it.
+ui_core carries the behaviour of every part (focus, keyboard, screen-reader
+semantics, tap targets, overlays, motion policy, built-in words); the app's
+design paints them.
 
 ## Install
 
-Copy this folder into the project's `.claude/skills/`, or into
+Copy this folder into your project's `.claude/skills/`, or into
 `~/.claude/skills/` for every project:
 
-```sh
-cp -R ui_core_design_system <project>/.claude/skills/
+```text
+cp -R ui_core_design_system <your app>/.claude/skills/
 ```
 
-The agent then reads it when asked to build, extend or review a design
-system that is neither Material nor Cupertino. `SKILL.md` is the entry
-point; it says which page to read for each step.
+The agent reads it when asked to give an app a design of its own, to build
+screens in that design, or to review one. The app depends on:
 
-The package it builds depends on ui_core ^0.6.0 and material_ui, and
-dev-depends on ui_core_test ^0.4.0, leak_tracker_flutter_testing and
-flutter_lints.
+```text
+flutter pub add ui_core:^0.6.0 material_ui
+flutter pub add 'dev:ui_core_test:^0.4.0' dev:leak_tracker_flutter_testing
+```
 
-## Contents
+## What is inside
 
-| Path | What it holds |
+| Path | What it is |
 |---|---|
-| `SKILL.md` | The workflow, from the look's laws to a published package, what done means, and the common faults |
-| `references/contract.md` | Each ui_core API a look builds on, and how to wire it |
-| `references/inventory.md` | Every component an app expects, in build order, with the ui_core API under each |
-| `references/taste.md` | Designing states, sizes and motion; parts as one family; an API Flutter developers know |
-| `references/checks.md` | The ui_core_test checks, the commands, the screenshot review |
-| `references/examples.md` | Excerpts from three published looks: minimal_ui, brutal_ui, neumorphism_ui |
-| `samples/` | A small look that compiles and passes every check; every Dart block in the pages is taken from it |
-| `evals/` | Three cold briefs, the rubric and the scoring script that measure the skill |
+| `SKILL.md` | The workflow: the design's laws, its theme, its face, the parts the screens need, the screens, and the checks. |
+| `references/contract.md` | How each kind of part is wired on ui_core 0.6.0, and the API each part is painted on. |
+| `references/taste.md` | The rules a good design keeps, each with a check. |
+| `references/examples.md` | Excerpts from published designs on ui_core. |
+| `samples/` | Tend, a small plant-care app with a design of its own (`lib/design/`), three screens (`lib/screens/`) and its tests. Every Dart block in the pages is taken from it, and a test keeps them in step. |
+| `evals/` | App-design briefs, a rubric and a scorer for trying the skill on a fresh agent. |
 
-## How it is checked
-
-`samples/test/docs_test.dart` fails when a Dart block in the pages is not
-found in the samples' sources, so the pages can't drift from code that
-compiles. The samples are a member of this repository's pub workspace: they
-resolve on the ui_core and ui_core_test beside them, and CI runs them with
-every change to either, so a core change that breaks the skill fails CI.
-To run them outside the repository, delete `resolution: workspace` from
-`samples/pubspec.yaml`; they then resolve on the published packages.
-
-`evals/` measures the skill itself: a fresh agent with only this folder
-builds a look from each brief, and `evals/score.sh` scores it against
-`evals/rubric.md`.
+Written for ui_core 0.6.x and ui_core_test 0.4.x, on Flutter 3.47 or later.

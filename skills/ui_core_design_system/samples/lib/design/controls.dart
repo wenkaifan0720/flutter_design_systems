@@ -9,11 +9,11 @@ import 'theme.dart';
 /// [value] is null. A null [onChanged] disables it.
 ///
 /// ```dart
-/// LookCheckbox(value: true, onChanged: (value) {}, label: 'Email me')
+/// TendCheckbox(value: true, onChanged: (value) {}, label: 'Email me')
 /// ```
-class LookCheckbox extends StatelessWidget {
+class TendCheckbox extends StatelessWidget {
   /// A checkbox showing [value].
-  const LookCheckbox({
+  const TendCheckbox({
     super.key,
     required this.value,
     required this.onChanged,
@@ -41,7 +41,7 @@ class LookCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final c = theme.colors;
     final change = onChanged;
     return TapTargetPadding(
@@ -55,8 +55,8 @@ class LookCheckbox extends StatelessWidget {
           final on = value != false;
           final focused = states.contains(WidgetState.focused);
           final off = states.contains(WidgetState.disabled);
-          final box = AnimatedLookSurface(
-            face: LookFace(
+          final box = AnimatedTendSurface(
+            face: TendFace(
               fill: on ? (off ? c.mutedInk : c.accent) : c.surface,
               rule: focused ? c.ink : (on ? c.accent : c.rule),
               ruleWidth: focused ? 2 : 1,
@@ -140,11 +140,11 @@ class _Tick extends CustomPainter {
 /// An on or off switch. A null [onChanged] disables it.
 ///
 /// ```dart
-/// LookSwitch(value: true, onChanged: (value) {}, semanticLabel: 'Wi-Fi')
+/// TendSwitch(value: true, onChanged: (value) {}, semanticLabel: 'Wi-Fi')
 /// ```
-class LookSwitch extends StatelessWidget {
+class TendSwitch extends StatelessWidget {
   /// A switch showing [value].
-  const LookSwitch({
+  const TendSwitch({
     super.key,
     required this.value,
     required this.onChanged,
@@ -162,7 +162,7 @@ class LookSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final c = theme.colors;
     final change = onChanged;
     return TapTargetPadding(
@@ -173,8 +173,8 @@ class LookSwitch extends StatelessWidget {
         semanticLabel: semanticLabel,
         builder: (context, states, _) {
           final focused = states.contains(WidgetState.focused);
-          return AnimatedLookSurface(
-            face: LookFace(
+          return AnimatedTendSurface(
+            face: TendFace(
               fill: value ? c.accent : c.surface,
               rule: focused ? c.ink : (value ? c.accent : c.rule),
               ruleWidth: focused ? 2 : 1,
@@ -184,7 +184,7 @@ class LookSwitch extends StatelessWidget {
             child: SizedBox(
               width: 40,
               height: 24,
-              child: LookSpringBuilder(
+              child: TendSpringBuilder(
                 value: value ? 1 : 0,
                 builder: (context, travel, thumb) => Align(
                   alignment: AlignmentDirectional.lerp(
@@ -223,11 +223,11 @@ class LookSwitch extends StatelessWidget {
   }
 }
 
-/// One choice of a [LookRadioGroup].
+/// One choice of a [TendRadioGroup].
 @immutable
-class LookRadioOption<T> {
+class TendRadioOption<T> {
   /// A choice standing for [value], saying [label].
-  const LookRadioOption({
+  const TendRadioOption({
     required this.value,
     required this.label,
     this.enabled = true,
@@ -244,24 +244,24 @@ class LookRadioOption<T> {
 }
 
 /// A set of choices of which one is chosen: Flutter's [RadioGroup], a
-/// [RawRadio] per choice drawn in the look's hand, and ui_core's
+/// [RawRadio] per choice drawn in the design's hand, and ui_core's
 /// [RadioGroupKeyboardFix] round them, so Tab, the arrows, right-to-left
 /// rows and a chosen choice turned off answer as Flutter's own fixes make
 /// them.
 ///
 /// ```dart
-/// LookRadioGroup<String>(
+/// TendRadioGroup<String>(
 ///   value: 'day',
 ///   onChanged: (value) {},
 ///   options: const [
-///     LookRadioOption(value: 'day', label: 'Day'),
-///     LookRadioOption(value: 'week', label: 'Week'),
+///     TendRadioOption(value: 'day', label: 'Day'),
+///     TendRadioOption(value: 'week', label: 'Week'),
 ///   ],
 /// )
 /// ```
-class LookRadioGroup<T> extends StatelessWidget {
+class TendRadioGroup<T> extends StatelessWidget {
   /// A group choosing [value] among [options].
-  const LookRadioGroup({
+  const TendRadioGroup({
     super.key,
     required this.value,
     required this.onChanged,
@@ -276,7 +276,7 @@ class LookRadioGroup<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// The choices, in reading order.
-  final List<LookRadioOption<T>> options;
+  final List<TendRadioOption<T>> options;
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +285,7 @@ class LookRadioGroup<T> extends StatelessWidget {
       groupValue: value,
       onChanged: (next) {
         if (change == null || next == null || next == value) return;
-        // The look's haptic for a choice, from the table an app can swap.
+        // The design's haptic for a choice, from the table an app can swap.
         RawHaptics.of(context).selectionChanged?.call();
         change(next);
       },
@@ -295,7 +295,7 @@ class LookRadioGroup<T> extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (final option in options)
-              _LookRadio<T>(
+              _TendRadio<T>(
                 key: ValueKey<T>(option.value),
                 option: option,
                 enabled: change != null && option.enabled,
@@ -315,19 +315,19 @@ class LookRadioGroup<T> extends StatelessWidget {
   }
 }
 
-class _LookRadio<T> extends StatefulWidget {
-  const _LookRadio({super.key, required this.option, required this.enabled});
+class _TendRadio<T> extends StatefulWidget {
+  const _TendRadio({super.key, required this.option, required this.enabled});
 
-  final LookRadioOption<T> option;
+  final TendRadioOption<T> option;
   final bool enabled;
 
   @override
-  State<_LookRadio<T>> createState() => _LookRadioState<T>();
+  State<_TendRadio<T>> createState() => _TendRadioState<T>();
 }
 
-class _LookRadioState<T> extends State<_LookRadio<T>> {
+class _TendRadioState<T> extends State<_TendRadio<T>> {
   // RawRadio takes a node of its own; the radio owns it and disposes it.
-  final FocusNode _node = FocusNode(debugLabel: 'LookRadio');
+  final FocusNode _node = FocusNode(debugLabel: 'TendRadio');
 
   @override
   void dispose() {
@@ -337,7 +337,7 @@ class _LookRadioState<T> extends State<_LookRadio<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final c = theme.colors;
     return TapTargetPadding(
       alignment: AlignmentDirectional.centerStart,
@@ -364,8 +364,8 @@ class _LookRadioState<T> extends State<_LookRadio<T>> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AnimatedLookSurface(
-                    face: LookFace(
+                  AnimatedTendSurface(
+                    face: TendFace(
                       fill: c.surface,
                       rule: focused ? c.ink : (chosen ? c.accent : c.rule),
                       ruleWidth: focused || chosen ? 2 : 1,
@@ -375,7 +375,7 @@ class _LookRadioState<T> extends State<_LookRadio<T>> {
                     child: SizedBox.square(
                       dimension: 20,
                       child: Center(
-                        child: LookSpringBuilder(
+                        child: TendSpringBuilder(
                           value: chosen ? 1 : 0,
                           builder: (context, scale, dot) =>
                               Transform.scale(scale: scale, child: dot),
@@ -393,9 +393,13 @@ class _LookRadioState<T> extends State<_LookRadio<T>> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    widget.option.label,
-                    style: theme.body.copyWith(color: off ? c.mutedInk : c.ink),
+                  Flexible(
+                    child: Text(
+                      widget.option.label,
+                      style: theme.body.copyWith(
+                        color: off ? c.mutedInk : c.ink,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -405,130 +409,4 @@ class _LookRadioState<T> extends State<_LookRadio<T>> {
       ),
     );
   }
-}
-
-/// What a [LookDrawnChoice] draws: the page's own picture of the choice,
-/// chosen or not, in its [states].
-typedef LookChoiceDrawing = Widget Function(
-  BuildContext context,
-  bool chosen,
-  Set<WidgetState> states,
-);
-
-/// One choice of a [LookDrawnChoices].
-@immutable
-class LookDrawnChoice<T> {
-  /// A choice standing for [value], drawn by [drawing] and named [label].
-  const LookDrawnChoice({
-    required this.value,
-    required this.label,
-    required this.drawing,
-  });
-
-  /// What choosing it chooses.
-  final T value;
-
-  /// What a screen reader calls it.
-  final String label;
-
-  /// Its picture, chosen or not.
-  final LookChoiceDrawing drawing;
-}
-
-/// Choices a page draws itself (a converted page's own picture of each
-/// choice) with a radio group's behaviour, the look's [LookRadioGroup]
-/// without its mark: Flutter's [RadioGroup], a [RawRadio] per drawing and
-/// [RadioGroupKeyboardFix] round them. Tab stops once, the arrows choose
-/// and wrap (right to left too), and each choice is read as a radio.
-class LookDrawnChoices<T> extends StatelessWidget {
-  /// A row choosing [value] among [choices].
-  const LookDrawnChoices({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    required this.choices,
-  });
-
-  /// The chosen value.
-  final T value;
-
-  /// Called with the value chosen.
-  final ValueChanged<T> onChanged;
-
-  /// The choices, in reading order.
-  final List<LookDrawnChoice<T>> choices;
-
-  @override
-  Widget build(BuildContext context) => RadioGroup<T>(
-    groupValue: value,
-    onChanged: (next) {
-      if (next != null && next != value) onChanged(next);
-    },
-    child: RadioGroupKeyboardFix<T>(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final choice in choices)
-            _DrawnChoice<T>(key: ValueKey<T>(choice.value), choice: choice),
-        ],
-      ),
-    ),
-  );
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<T>('value', value));
-  }
-}
-
-class _DrawnChoice<T> extends StatefulWidget {
-  const _DrawnChoice({super.key, required this.choice});
-
-  final LookDrawnChoice<T> choice;
-
-  @override
-  State<_DrawnChoice<T>> createState() => _DrawnChoiceState<T>();
-}
-
-class _DrawnChoiceState<T> extends State<_DrawnChoice<T>> {
-  final FocusNode _node = FocusNode(debugLabel: 'LookDrawnChoice');
-
-  @override
-  void dispose() {
-    _node.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => TapTargetPadding(
-    // One node: the radio, named for its choice.
-    child: MergeSemantics(
-      child: Semantics(
-        label: widget.choice.label,
-        child: RawRadio<T>(
-          value: widget.choice.value,
-          mouseCursor: WidgetStateMouseCursor.clickable,
-          toggleable: false,
-          focusNode: _node,
-          autofocus: false,
-          groupRegistry: RadioGroup.maybeOf<T>(context),
-          enabled: true,
-          // The page's drawing on a box hit all over: a press between its
-          // painted parts still chooses it. The label names it; the drawing's
-          // own words are not read.
-          builder: (context, radio) => MetaData(
-            behavior: HitTestBehavior.opaque,
-            child: ExcludeSemantics(
-              child: widget.choice.drawing(
-                context,
-                radio.value ?? false,
-                radio.states,
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
 }

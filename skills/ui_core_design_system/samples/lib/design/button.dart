@@ -5,8 +5,8 @@ import 'package:ui_core/ui_core.dart';
 import 'face.dart';
 import 'theme.dart';
 
-/// A [LookButton]'s kind.
-enum LookButtonVariant {
+/// A [TendButton]'s kind.
+enum TendButtonVariant {
   /// The accent plate: the one thing to act on.
   filled,
 
@@ -14,59 +14,59 @@ enum LookButtonVariant {
   outlined,
 }
 
-/// The face a button of [variant] shows for [states]: what [LookButton]
+/// The face a button of [variant] shows for [states]: what [TendButton]
 /// draws and what a dialog's actions draw. [style] is read first, then the
-/// theme's [LookThemeData.buttonStyle], then the look's own default.
-LookFace lookButtonFace(
-  LookThemeData theme,
+/// theme's [TendThemeData.buttonStyle], then the design's own default.
+TendFace tendButtonFace(
+  TendThemeData theme,
   Set<WidgetState> states, {
-  LookButtonVariant variant = LookButtonVariant.filled,
+  TendButtonVariant variant = TendButtonVariant.filled,
   bool destructive = false,
-  LookStyle? style,
+  TendStyle? style,
 }) {
   final c = theme.colors;
-  final look = RawStyleOf([style, theme.buttonStyle], states);
+  final styled = RawStyleOf([style, theme.buttonStyle], states);
   final tone = destructive ? c.danger : c.accent;
   final onTone = destructive ? c.onDanger : c.onAccent;
   if (states.contains(WidgetState.disabled)) {
-    return LookFace(
-      fill: look.fill ?? c.ground,
-      rule: look.edge ?? c.rule,
-      foreground: look.foreground ?? c.mutedInk,
+    return TendFace(
+      fill: styled.fill ?? c.ground,
+      rule: styled.edge ?? c.rule,
+      foreground: styled.foreground ?? c.mutedInk,
     );
   }
-  final filled = variant == LookButtonVariant.filled;
-  final rest = look.fill ?? (filled ? tone : c.surface);
-  return LookFace(
+  final filled = variant == TendButtonVariant.filled;
+  final rest = styled.fill ?? (filled ? tone : c.surface);
+  return TendFace(
     // A press darkens the plate a step (lightens it by night): ink over it.
     fill: states.contains(WidgetState.pressed)
         ? Color.alphaBlend(c.ink.withValues(alpha: .12), rest)
         : rest,
-    // Keyboard focus is the look's own rule, darker and twice as heavy: no
+    // Keyboard focus is the design's own rule, darker and twice as heavy: no
     // ring is added round the part.
     rule: states.contains(WidgetState.focused)
         ? c.ink
-        : look.edge ?? (filled ? tone : c.rule),
+        : styled.edge ?? (filled ? tone : c.rule),
     ruleWidth: states.contains(WidgetState.focused) ? 2 : 1,
-    foreground: look.foreground ?? (filled ? onTone : tone),
+    foreground: styled.foreground ?? (filled ? onTone : tone),
   );
 }
 
-/// The look's button: a label, an optional glyph before it, and an action.
+/// The design's button: a label, an optional glyph before it, and an action.
 ///
-/// A null [onPressed] disables it. Its face is [lookButtonFace]; its tap
+/// A null [onPressed] disables it. Its face is [tendButtonFace]; its tap
 /// target reaches the theme's floor whatever its face's size.
 ///
 /// ```dart
-/// LookButton('Save', onPressed: () {})
+/// TendButton('Save', onPressed: () {})
 /// ```
-class LookButton extends StatelessWidget {
+class TendButton extends StatelessWidget {
   /// A button saying [label].
-  const LookButton(
+  const TendButton(
     this.label, {
     super.key,
     required this.onPressed,
-    this.variant = LookButtonVariant.filled,
+    this.variant = TendButtonVariant.filled,
     this.destructive = false,
     this.icon,
     this.style,
@@ -81,7 +81,7 @@ class LookButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// Filled or outlined.
-  final LookButtonVariant variant;
+  final TendButtonVariant variant;
 
   /// Whether the action deletes or cannot be undone.
   final bool destructive;
@@ -90,7 +90,7 @@ class LookButton extends StatelessWidget {
   final IconData? icon;
 
   /// This button's style, over the theme's.
-  final LookStyle? style;
+  final TendStyle? style;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -100,16 +100,16 @@ class LookButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     return TapTargetPadding(
       child: RawButton(
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,
         builder: (context, states, _) {
-          final look = RawStyleOf([style, theme.buttonStyle], states);
-          return AnimatedLookSurface(
-            face: lookButtonFace(
+          final styled = RawStyleOf([style, theme.buttonStyle], states);
+          return AnimatedTendSurface(
+            face: tendButtonFace(
               theme,
               states,
               variant: variant,
@@ -117,25 +117,25 @@ class LookButton extends StatelessWidget {
               style: style,
             ),
             shape:
-                look.shape ??
+                styled.shape ??
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(theme.radius),
                 ),
             child: Padding(
               padding:
-                  look.padding(Directionality.of(context)) ??
+                  styled.padding(Directionality.of(context)) ??
                   theme.density.padding(
                     const EdgeInsets.symmetric(horizontal: 16),
                   ),
               child: RawControlBox(
                 minHeight:
-                    look.minimumSize?.height ??
+                    styled.minimumSize?.height ??
                     theme.density.height(theme.controlHeight),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      Icon(icon, size: look.iconSize ?? 18),
+                      Icon(icon, size: styled.iconSize ?? 18),
                       const SizedBox(width: 8),
                     ],
                     Flexible(
@@ -143,7 +143,7 @@ class LookButton extends StatelessWidget {
                         capHeightFactor: theme.capHeightFactor,
                         child: Text(
                           label,
-                          style: theme.label.merge(look.textStyle),
+                          style: theme.label.merge(styled.textStyle),
                           maxLines: 2,
                           textAlign: TextAlign.center,
                         ),
@@ -165,7 +165,7 @@ class LookButton extends StatelessWidget {
     properties
       ..add(StringProperty('label', label))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(EnumProperty<LookButtonVariant>('variant', variant))
+      ..add(EnumProperty<TendButtonVariant>('variant', variant))
       ..add(
         FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
       );
@@ -177,11 +177,11 @@ class LookButton extends StatelessWidget {
 /// Flutter's `IconButton(isSelected:)` is, never as a switch.
 ///
 /// ```dart
-/// LookIconButton(icon: const IconData(0xe5d2), semanticLabel: 'Menu', onPressed: () {})
+/// TendIconButton(icon: const IconData(0xe5d2), semanticLabel: 'Menu', onPressed: () {})
 /// ```
-class LookIconButton extends StatelessWidget {
+class TendIconButton extends StatelessWidget {
   /// A button showing [icon], named [semanticLabel].
-  const LookIconButton({
+  const TendIconButton({
     super.key,
     required this.icon,
     required this.semanticLabel,
@@ -207,7 +207,7 @@ class LookIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final c = theme.colors;
     return TapTargetPadding(
       child: RawButton(
@@ -219,14 +219,18 @@ class LookIconButton extends StatelessWidget {
         builder: (context, states, _) {
           final on = states.contains(WidgetState.selected);
           final focused = states.contains(WidgetState.focused);
-          return AnimatedLookSurface(
-            face: LookFace(
-              fill: on ? c.ink : c.surface,
-              rule: focused ? c.ink : (on ? c.ink : c.rule),
+          return AnimatedTendSurface(
+            // A toggle that is on takes a wash of the accent, never the
+            // solid fill of the screen's main action.
+            face: TendFace(
+              fill: on
+                  ? Color.alphaBlend(c.accent.withValues(alpha: .12), c.surface)
+                  : c.surface,
+              rule: focused ? c.ink : (on ? c.accent : c.rule),
               ruleWidth: focused ? 2 : 1,
               foreground: states.contains(WidgetState.disabled)
                   ? c.mutedInk
-                  : (on ? c.surface : c.ink),
+                  : (on ? c.accent : c.ink),
             ),
             shape: const CircleBorder(),
             child: SizedBox.square(

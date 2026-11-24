@@ -15,11 +15,11 @@ import 'theme.dart';
 /// chosen day takes the focus as it opens.
 ///
 /// ```dart
-/// LookDateField(labelText: 'Due', value: due, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) => due = day)
+/// TendDateField(labelText: 'Due', value: due, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) => due = day)
 /// ```
-class LookDateField extends StatefulWidget {
+class TendDateField extends StatefulWidget {
   /// A field labelled [labelText] holding [value].
-  const LookDateField({
+  const TendDateField({
     super.key,
     required this.labelText,
     required this.value,
@@ -44,7 +44,7 @@ class LookDateField extends StatefulWidget {
   final ValueChanged<DateTime>? onChanged;
 
   @override
-  State<LookDateField> createState() => _LookDateFieldState();
+  State<TendDateField> createState() => _TendDateFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -55,7 +55,7 @@ class LookDateField extends StatefulWidget {
   }
 }
 
-class _LookDateFieldState extends State<LookDateField> {
+class _TendDateFieldState extends State<TendDateField> {
   // The month's model: the field makes it, keeps it and disposes it.
   late RawCalendarController _calendar = _newCalendar();
 
@@ -69,7 +69,7 @@ class _LookDateFieldState extends State<LookDateField> {
       a?.year == b?.year && a?.month == b?.month && a?.day == b?.day;
 
   @override
-  void didUpdateWidget(LookDateField old) {
+  void didUpdateWidget(TendDateField old) {
     super.didUpdateWidget(old);
     if (widget.firstDate != old.firstDate || widget.lastDate != old.lastDate) {
       _calendar.dispose();
@@ -88,7 +88,7 @@ class _LookDateFieldState extends State<LookDateField> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final words = RawWidgetsLocalizations.of(context);
     final change = widget.onChanged;
     final value = widget.value;
@@ -117,12 +117,12 @@ class _LookDateFieldState extends State<LookDateField> {
           fit: RawPopoverFit.whole,
           matchAnchorWidth: false,
         ),
-        anchorBuilder: (context, anchor) => LookFieldTrigger(
+        anchorBuilder: (context, anchor) => TendFieldTrigger(
           value: shown,
           open: anchor.isOpen,
           onPressed: change == null ? null : anchor.toggle,
         ),
-        overlayBuilder: (context, info) => LookListSurface(
+        overlayBuilder: (context, info) => TendListSurface(
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: SizedBox(
@@ -141,7 +141,7 @@ class _LookDateFieldState extends State<LookDateField> {
                       },
                 headerBuilder: (context, header) => Row(
                   children: [
-                    LookIconButton(
+                    TendIconButton(
                       icon: Icons.chevron_left,
                       semanticLabel: words.previousMonthTooltip,
                       onPressed: header.previous,
@@ -153,7 +153,7 @@ class _LookDateFieldState extends State<LookDateField> {
                         style: theme.label.copyWith(color: theme.colors.ink),
                       ),
                     ),
-                    LookIconButton(
+                    TendIconButton(
                       icon: Icons.chevron_right,
                       semanticLabel: words.nextMonthTooltip,
                       onPressed: header.next,
@@ -161,7 +161,7 @@ class _LookDateFieldState extends State<LookDateField> {
                   ],
                 ),
                 dayBuilder: (context, day, states) =>
-                    _lookDay(theme, day, states),
+                    _tendDay(theme, day, states),
               ),
             ),
           ),
@@ -176,8 +176,8 @@ const double _day = 44;
 /// A day of the month: a disc filled in ink when chosen (a state, so not in
 /// the accent the screen's main action wears), ringed when it is today,
 /// its rule heavier under the keyboard.
-Widget _lookDay(
-  LookThemeData theme,
+Widget _tendDay(
+  TendThemeData theme,
   RawCalendarDayDetails day,
   Set<WidgetState> states,
 ) {
@@ -187,8 +187,8 @@ Widget _lookDay(
   final quiet = states.contains(WidgetState.disabled) || !day.inMonth;
   return SizedBox.square(
     dimension: _day,
-    child: AnimatedLookSurface(
-      face: LookFace(
+    child: AnimatedTendSurface(
+      face: TendFace(
         fill: chosen ? c.ink : c.surface,
         rule: focused
             ? c.ink

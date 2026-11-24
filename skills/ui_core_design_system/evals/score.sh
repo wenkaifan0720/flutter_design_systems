@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
-# Scores a candidate look's gates (rubric.md, G1 to G10) on a copy of it.
+# Scores a candidate app's gates (rubric.md, G1 to G6) on a copy of it, and
+# draws the review pictures.
 #
-#   evals/score.sh path/to/<name>_ui
+#   evals/score.sh path/to/<app> [out dir]
 #
-# The candidate's example/lib/inventory.dart must define
-# `final RawInventory inventory` and
-# `Widget lookHost(BuildContext context, Widget child, Brightness brightness)`.
+# The candidate's lib/screens.dart must define
+# `final Map<String, WidgetBuilder> screens` and
+# `Widget designHost(BuildContext context, Widget child, Brightness brightness)`.
 # Needs Flutter 3.47 or later on PATH.
 set -u
 
 evals="$(cd "$(dirname "$0")" && pwd)"
 src="$(cd "$1" && pwd)"
-work="$(mktemp -d "${TMPDIR:-/tmp}/score.XXXXXX")"
-cp -R "$src" "$work/"
-pkg="$work/$(basename "$src")"
-ex="$pkg/example"
+work="${2:-$(mktemp -d "${TMPDIR:-/tmp}/score.XXXXXX")}"
+mkdir -p "$work"
+rsync -a --exclude .dart_tool --exclude build "$src/" "$work/app/"
+app="$work/app"
 log="$work/log"
 mkdir -p "$log"
 failed=0
@@ -24,135 +25,105 @@ gate() { # id, PASS|FAIL|REVIEW, what
   [ "$2" = FAIL ] && failed=$((failed + 1))
 }
 
-flutter pub get --directory "$pkg" >"$log/get.txt" 2>&1
-flutter pub get --directory "$ex" >>"$log/get.txt" 2>&1
+name="$(sed -n 's/^name: *//p' "$app/pubspec.yaml" | head -1)"
+(cd "$app" && flutter pub get) >"$log/get.txt" 2>&1
 
-# G1: formatted, and the analyzer clean on the package and its example.
-if dart format --output=none --set-exit-if-changed "$pkg" >"$log/format.txt" 2>&1 &&
-  dart analyze --fatal-infos "$pkg" "$ex" >"$log/analyze.txt" 2>&1; then
+# G1: formatted, and the analyzer clean.
+if dart format --output=none --set-exit-if-changed "$app/lib" "$app/test" >"$log/format.txt" 2>&1 &&
+  (cd "$app" && dart analyze --fatal-infos) >"$log/analyze.txt" 2>&1; then
   gate G1 PASS "formatted, analyzer clean"
 else
   gate G1 FAIL "see $log/format.txt and $log/analyze.txt"
 fi
 
 # G2: its own tests, leak-tracked.
-if ! grep -q "LeakTesting.enable" "$pkg/test/flutter_test_config.dart" 2>/dev/null; then
+if ! grep -q "LeakTesting.enable" "$app/test/flutter_test_config.dart" 2>/dev/null; then
   gate G2 FAIL "test/flutter_test_config.dart does not enable LeakTesting"
-elif (cd "$pkg" && flutter test --exclude-tags goldens) >"$log/test.txt" 2>&1; then
+elif (cd "$app" && flutter test) >"$log/test.txt" 2>&1; then
   gate G2 PASS "tests green, leak tracking on"
 else
   gate G2 FAIL "see $log/test.txt"
 fi
 
-# G3 to G5: the inventory and the sweep, from the example.
-if [ ! -f "$ex/lib/inventory.dart" ]; then
-  gate G3 FAIL "example/lib/inventory.dart is missing"
-  gate G4 FAIL "example/lib/inventory.dart is missing"
-  gate G5 FAIL "example/lib/inventory.dart is missing"
+# G3: every screen under every condition, through ui_core_test's checks.
+if [ ! -f "$app/lib/screens.dart" ]; then
+  gate G3 FAIL "lib/screens.dart is missing"
 else
-  example="$(sed -n 's/^name: *//p' "$ex/pubspec.yaml" | head -1)"
-  (cd "$ex" && flutter pub add 'dev:ui_core_test:^0.4.0') >>"$log/get.txt" 2>&1
-  (cd "$ex" && flutter pub add 'dev:flutter_test:{"sdk":"flutter"}') >>"$log/get.txt" 2>&1
-  cp "$evals/sweep.dart" "$ex/test/score_sweep.dart" 2>/dev/null ||
-    { mkdir -p "$ex/test" && cp "$evals/sweep.dart" "$ex/test/score_sweep.dart"; }
-  cat >"$ex/test/score_test.dart" <<EOF
+  (cd "$app" && flutter pub add 'dev:ui_core_test:^0.4.0' 'dev:flutter_test:{"sdk":"flutter"}') >>"$log/get.txt" 2>&1
+  mkdir -p "$app/test/score"
+  cp "$evals/sweep.dart" "$app/test/score/sweep.dart"
+  cat >"$app/test/score/score_test.dart" <<EOF
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/inventory.dart';
-import 'package:$example/inventory.dart';
+import 'package:$name/screens.dart';
 
-import 'score_sweep.dart';
+import 'sweep.dart';
 
 void main() {
-  test('G3', () => inventory.verify());
-  test('G4', () {
-    final present = {
-      for (final e in inventory.entries)
-        if (e.isPresent) e.row,
-    };
-    expect([
-      for (final r in RawInventoryRow.all)
-        if (r.refs == 'MCS' && !present.contains(r.id)) r.id,
-    ], isEmpty);
-  });
-  testWidgets('G5', (tester) async {
-    final found = await sweepInventory(
+  testWidgets('G3', (tester) async {
+    final found = await sweepScreens(
       tester,
-      inventory: inventory,
-      host: lookHost,
+      screens: screens,
+      host: designHost,
+      name: '$name',
     );
     expect(found, isEmpty, reason: found.join('\n'));
   });
   testWidgets('shoot', (tester) async {
-    await shootInventory(
+    await shootScreens(
       tester,
-      inventory: inventory,
-      host: lookHost,
+      screens: screens,
+      host: designHost,
       outDir: Platform.environment['SHOOT_DIR']!,
     );
   });
 }
 EOF
-  for g in G3 G4 G5; do
-    if (cd "$ex" && flutter test test/score_test.dart --plain-name "$g") >"$log/$g.txt" 2>&1; then
-      gate "$g" PASS "see rubric.md"
-    else
-      gate "$g" FAIL "see $log/$g.txt"
-    fi
-  done
-  # The review pictures (not a gate): the gallery and each part under focus.
-  if (cd "$ex" && SHOOT_DIR="$work/shots" flutter test test/score_test.dart --plain-name shoot) >"$log/shoot.txt" 2>&1; then
+  if (cd "$app" && flutter test test/score/score_test.dart --plain-name G3) >"$log/G3.txt" 2>&1; then
+    gate G3 PASS "every screen holds"
+  else
+    gate G3 FAIL "$(grep -c '^ *[A-Za-z].*: ' "$log/G3.txt") line(s); see $log/G3.txt"
+  fi
+  # The review pictures (not a gate).
+  mkdir -p "$work/shots"
+  if (cd "$app" && SHOOT_DIR="$work/shots" flutter test test/score/score_test.dart --plain-name shoot) >"$log/shoot.txt" 2>&1; then
     gate R REVIEW "pictures in $work/shots"
   else
     gate R REVIEW "shooting failed: see $log/shoot.txt"
   fi
 fi
 
-# G6: behaviour from ui_core, not hand-rolled.
-fad="$(grep -rln "FocusableActionDetector" "$pkg/lib" | wc -l | tr -d ' ')"
-taps="$(grep -rln "onTap:" "$pkg/lib" | xargs grep -l "GestureDetector(" 2>/dev/null | wc -l | tr -d ' ')"
-if [ "$fad" != 0 ]; then
-  gate G6 FAIL "$fad file(s) in lib use FocusableActionDetector"
+# G4: behaviour from ui_core: no Material parts, nothing hand-rolled.
+parts='ElevatedButton|TextButton|OutlinedButton|FilledButton|IconButton|FloatingActionButton|Checkbox|Switch|Radio|Slider|showDialog|showModalBottomSheet|showDatePicker|MaterialPageRoute|AlertDialog|SimpleDialog|Scaffold|AppBar|ListTile|DropdownButton|DropdownMenu|PopupMenuButton|SnackBar|Tooltip|Chip|TabBar|NavigationBar|Card|InkWell|FocusableActionDetector'
+grep -rnE "(^|[^.A-Za-z0-9_])($parts)(<[^(]*>)?\(" "$app/lib" | grep -vE ':[0-9]+: *//' >"$log/G4.txt"
+material="$(wc -l <"$log/G4.txt" | tr -d ' ')"
+taps="$(grep -rln "onTap:" "$app/lib" | xargs grep -l "GestureDetector(" 2>/dev/null | wc -l | tr -d ' ')"
+if [ "$material" != 0 ]; then
+  gate G4 FAIL "$material Material part(s) or hand-rolled focus in lib: see $log/G4.txt"
 elif [ "$taps" != 0 ]; then
-  gate G6 REVIEW "$taps file(s) in lib have a GestureDetector with onTap: each must not be a part's only press"
+  gate G4 REVIEW "$taps file(s) in lib have a GestureDetector with onTap: each must not be a part's only press"
 else
-  gate G6 PASS "no hand-rolled presses"
+  gate G4 PASS "behaviour from ui_core"
 fi
 
-# G7: re-exports ui_core with a show list only.
-if grep -nE "^export 'package:ui_core/ui_core.dart';" "$pkg"/lib/*.dart >/dev/null; then
-  gate G7 FAIL "the library re-exports all of ui_core"
+# G5: the screens hold no paint of their own.
+find "$app/lib" -name '*.dart' -not -path "$app/lib/design/*" -print0 |
+  xargs -0 grep -nE "(^|[^.A-Za-z0-9_])(Color|BoxDecoration|ShapeDecoration|TextStyle|BorderSide|GestureDetector|InkWell)\(|Colors\." |
+  grep -vE ':[0-9]+: *//' >"$log/G5.txt"
+paint="$(wc -l <"$log/G5.txt" | tr -d ' ')"
+if [ "$paint" = 0 ]; then
+  gate G5 PASS "screens paint nothing of their own"
 else
-  gate G7 PASS "ui_core re-exported with a show list, or not at all"
+  gate G5 FAIL "$paint line(s) of paint outside lib/design: see $log/G5.txt"
 fi
 
-# G8: dartdoc.
-dart doc --dry-run "$pkg" >"$log/doc.txt" 2>&1
-if grep -q "Found 0 warnings and 0 errors" "$log/doc.txt"; then
-  gate G8 PASS "dartdoc clean"
-else
-  gate G8 FAIL "$(grep -E "Found [0-9]+ warnings" "$log/doc.txt" || echo "see $log/doc.txt")"
-fi
-
-# G9: publishable. A brief gives no repository, so the one warning about a
-# missing homepage or repository is allowed; an invented URL is worse.
-dart pub publish --dry-run --directory "$pkg" >"$log/publish.txt" 2>&1
-if grep -q "has 0 warnings" "$log/publish.txt"; then
-  gate G9 PASS "publish dry-run clean"
-elif grep -q "has 1 warning" "$log/publish.txt" &&
-  grep -q '"homepage" or "repository"' "$log/publish.txt"; then
-  gate G9 PASS "publish dry-run clean but for the repository, not given"
-else
-  gate G9 FAIL "see $log/publish.txt"
-fi
-
-# G10: production grade.
-hits="$(grep -rIniwE "todo|fixme|hack|wip|self-review|round [0-9]+" "$pkg/lib" "$pkg/test" "$ex/lib" 2>/dev/null | grep -v "score_" | wc -l | tr -d ' ')"
+# G6: production grade.
+hits="$(grep -rIniwE "todo|fixme|hack|wip|round [0-9]+" "$app/lib" "$app/test" 2>/dev/null | grep -v "test/score/" | wc -l | tr -d ' ')"
 if [ "$hits" = 0 ]; then
-  gate G10 PASS "no working notes"
+  gate G6 PASS "no working notes"
 else
-  gate G10 FAIL "$hits line(s) of working notes in lib, test or example/lib"
+  gate G6 FAIL "$hits line(s) of working notes in lib or test"
 fi
 
 echo "$failed gate(s) failed; logs in $log"

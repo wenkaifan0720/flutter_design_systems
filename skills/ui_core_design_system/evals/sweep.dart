@@ -1,8 +1,8 @@
-// The scoring sweep: every part a look's inventory carries, alone on a
-// screen, under every condition a reader brings, through ui_core_test's
-// checks; and the pictures a reviewer reads. A scorer copies this file into
-// the candidate's example/test/ folder and calls [sweepInventory] and
-// [shootInventory] from a test (see README.md).
+// The scoring sweep: every screen of a candidate app, under every condition
+// a reader brings, through ui_core_test's checks; and the pictures a
+// reviewer reads. A scorer copies this file into the candidate's test/
+// folder and calls [sweepScreens] and [shootScreens] from a test (see
+// README.md).
 
 import 'dart:convert';
 import 'dart:io';
@@ -12,14 +12,14 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart' show MaterialApp;
-import 'package:ui_core/inventory.dart';
+import 'package:material_ui/material_ui.dart'
+    show GlobalMaterialLocalizations, MaterialApp;
 import 'package:ui_core/ui_core.dart' show RawInput, RawWidgetsLocalizations;
 import 'package:ui_core_test/ui_core_test.dart';
 
-/// Puts [child] under the look's theme for [brightness]: what the
-/// candidate's app puts in `MaterialApp.builder`.
-typedef LookHost = Widget Function(
+/// Puts [child] under the app's design for [brightness], with whatever its
+/// screens need above them: what the app puts in its `MaterialApp.builder`.
+typedef DesignHost = Widget Function(
   BuildContext context,
   Widget child,
   Brightness brightness,
@@ -35,8 +35,16 @@ class SweepCondition {
     this.textScale,
   );
 
-  /// The screen's width in logical pixels (the height is 900).
+  /// The screen's width in logical pixels.
   final double width;
+
+  /// The screen's height: a phone's below 600 wide, a tablet's to 1200,
+  /// else a desktop window's.
+  double get height => width < 600
+      ? 844
+      : width < 1200
+      ? 768
+      : 900;
 
   /// Day or night.
   final Brightness brightness;
@@ -55,107 +63,180 @@ class SweepCondition {
       '${width.round()} ${brightness.name} ${direction.name} ${textScale}x';
 }
 
-/// Every combination of 390 and 1440 wide, day and night, left to right and
-/// right to left, and 1x and 2x text.
-final List<SweepCondition> sweepConditions = [
-  for (final width in [390.0, 1440.0])
+/// Every combination of [widths], day and night, left to right and right to
+/// left, and 1x and 2x text.
+List<SweepCondition> sweepConditions(List<double> widths) => [
+  for (final width in widths)
     for (final brightness in Brightness.values)
       for (final direction in TextDirection.values)
         for (final textScale in [1.0, 2.0])
           SweepCondition(width, brightness, direction, textScale),
 ];
 
-/// Pumps each present entry of [inventory] alone under each of [conditions],
-/// under [host], with the look's fonts loaded, and returns one line per
-/// problem found: a layout exception (an overflow), or a ui_core_test check's
-/// finding. Empty when every part holds everywhere.
-Future<List<String>> sweepInventory(
+Widget _app(
+  SweepCondition c,
+  DesignHost host,
+  WidgetBuilder screen, {
+  Key? key,
+}) => MaterialApp(
+  key: key,
+  debugShowCheckedModeBanner: false,
+  localizationsDelegates: const [
+    RawWidgetsLocalizations.delegate,
+    ...GlobalMaterialLocalizations.delegates,
+  ],
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  builder: (context, child) => MediaQuery.withClampedTextScaling(
+    minScaleFactor: c.textScale,
+    maxScaleFactor: c.textScale,
+    child: Directionality(
+      textDirection: c.direction,
+      child: host(context, child!, c.brightness),
+    ),
+  ),
+  home: Builder(builder: screen),
+);
+
+/// Pumps each of [screens] under each condition of [widths], under [host],
+/// with the app's fonts loaded, and returns one line per problem found: a
+/// layout exception (an overflow), or a ui_core_test check's finding. Empty
+/// when every screen holds everywhere.
+Future<List<String>> sweepScreens(
   WidgetTester tester, {
-  required RawInventory inventory,
-  required LookHost host,
-  List<SweepCondition>? conditions,
+  required Map<String, WidgetBuilder> screens,
+  required DesignHost host,
+  List<double> widths = const [390, 1024],
+  String name = 'App',
 }) async {
-  final look = inventory.look;
   final found = <String>[];
   final fonts = _Fonts(tester);
   addTearDown(tester.view.reset);
-  await fonts.prime(
-    inventory,
-    (child) => MaterialApp(
-      localizationsDelegates: const [RawWidgetsLocalizations.delegate],
-      builder: (context, child) => host(context, child!, Brightness.light),
-      home: child,
-    ),
-  );
-  for (final condition in conditions ?? sweepConditions) {
+  await fonts.prime(screens, host);
+  for (final condition in sweepConditions(widths)) {
     tester.view.devicePixelRatio = 2;
-    tester.view.physicalSize = Size(condition.width, 900) * 2;
-    for (final entry in inventory.entries.where((e) => e.isPresent)) {
-      final at = '${entry.row} at $condition';
-      final key = GlobalKey();
-      await tester.pumpWidget(
-        MaterialApp(
-          key: ValueKey(at),
-          localizationsDelegates: const [RawWidgetsLocalizations.delegate],
-          builder: (context, child) => MediaQuery.withClampedTextScaling(
-            minScaleFactor: condition.textScale,
-            maxScaleFactor: condition.textScale,
-            child: Directionality(
-              textDirection: condition.direction,
-              child: host(context, child!, condition.brightness),
-            ),
-          ),
-          home: Align(
-            alignment: AlignmentDirectional.topStart,
-            child: Padding(
-              key: key,
-              padding: const EdgeInsets.all(24),
-              child: Builder(builder: entry.builder!),
-            ),
-          ),
-        ),
-      );
+    tester.view.physicalSize = Size(condition.width, condition.height) * 2;
+    for (final MapEntry(key: id, value: screen) in screens.entries) {
+      final at = '$id at $condition';
+      await tester.pumpWidget(_app(condition, host, screen, key: ValueKey(at)));
       await _settle(tester);
-      if (await fonts.under(key.currentContext!)) {
-        await tester.pump();
-        await _settle(tester);
-      }
       final thrown = tester.takeException();
       if (thrown != null) {
         found.add('$at: threw ${'$thrown'.split('\n').first}');
         continue;
       }
-      final screen = key.currentContext!;
+      final context = tester.element(find.byType(Navigator).first);
       final reports = [
-        DesignCheckableCheck(look: look).check(screen),
-        DesignTextFieldNameCheck(look: look).check(screen),
-        DesignFieldSemanticsCheck(look: look).check(screen),
+        DesignCheckableCheck(look: name).check(context),
+        DesignTextFieldNameCheck(look: name).check(context),
+        DesignFieldSemanticsCheck(look: name).check(context),
         DesignTapTargetCheck(
-          look: look,
+          look: name,
           input: condition.touch ? RawInput.touch : RawInput.pointer,
-        ).check(screen),
-        if (!condition.touch) DesignCursorCheck(look: look).check(screen),
-        DesignOverflowCheck(look: look).check(screen),
-        DesignClipCheck(look: look).check(screen),
-        DesignWordBreakCheck(look: look).check(screen),
+        ).check(context),
+        if (!condition.touch) DesignCursorCheck(look: name).check(context),
+        DesignOverflowCheck(look: name).check(context),
+        DesignClipCheck(look: name).check(context),
+        DesignWordBreakCheck(look: name).check(context),
       ];
       for (final report in reports) {
         found.addAll(report.problems.map((p) => '$at: $p'));
       }
     }
   }
+  await tester.pumpWidget(const SizedBox.shrink());
   return found;
 }
 
-/// The conditions [shootInventory] draws the gallery in: a phone by day, a
-/// phone by night right to left at twice the text size, and a desk by day
-/// and by night.
-final List<SweepCondition> shootConditions = [
+/// The conditions [shootScreens] draws each screen in: a phone by day, a
+/// phone by night right to left at twice the text size, and the widest of
+/// the app's widths by day and by night.
+List<SweepCondition> shootConditions(List<double> widths) => [
   const SweepCondition(390, Brightness.light, TextDirection.ltr, 1),
   const SweepCondition(390, Brightness.dark, TextDirection.rtl, 2),
-  const SweepCondition(1440, Brightness.light, TextDirection.ltr, 1),
-  const SweepCondition(1440, Brightness.dark, TextDirection.ltr, 1),
+  if (widths.any((w) => w >= 600)) ...[
+    SweepCondition(widths.reduce(_max), Brightness.light, TextDirection.ltr, 1),
+    SweepCondition(widths.reduce(_max), Brightness.dark, TextDirection.ltr, 1),
+  ],
 ];
+
+double _max(double a, double b) => a > b ? a : b;
+
+/// Draws each of [screens] for a reviewer, into [outDir] as PNG files at
+/// twice their size: whole, in each of [shootConditions]; and on a phone by
+/// day and by night after [tabs] presses of Tab, so the keyboard's focus
+/// shows on a part. Returns the files written.
+Future<List<String>> shootScreens(
+  WidgetTester tester, {
+  required Map<String, WidgetBuilder> screens,
+  required DesignHost host,
+  required String outDir,
+  List<double> widths = const [390, 1024],
+  int tabs = 3,
+}) async {
+  final written = <String>[];
+  addTearDown(tester.view.reset);
+  final fonts = _Fonts(tester);
+  await fonts.prime(screens, host);
+  Future<void> shoot(String path) async {
+    final boundary =
+        tester.renderObject(find.byKey(_frame)) as RenderRepaintBoundary;
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 2);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      File(path)
+        ..parent.createSync(recursive: true)
+        ..writeAsBytesSync(bytes!.buffer.asUint8List());
+    });
+    written.add(path);
+  }
+
+  for (final c in shootConditions(widths)) {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = Size(c.width, c.height);
+    for (final MapEntry(key: id, value: screen) in screens.entries) {
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: _frame,
+          child: _app(c, host, screen, key: ValueKey('$id $c')),
+        ),
+      );
+      await _settle(tester);
+      tester.takeException();
+      await shoot(
+        '$outDir/${_file(id)}_${c.width.round()}_${c.brightness.name}_'
+        '${c.direction.name}_${c.textScale}x.png',
+      );
+    }
+  }
+  for (final brightness in Brightness.values) {
+    final c = SweepCondition(390, brightness, TextDirection.ltr, 1);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = Size(c.width, c.height);
+    for (final MapEntry(key: id, value: screen) in screens.entries) {
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: _frame,
+          child: _app(c, host, screen, key: ValueKey('focus $id $c')),
+        ),
+      );
+      await _settle(tester);
+      for (var i = 0; i < tabs; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      }
+      await _settle(tester);
+      tester.takeException();
+      await shoot('$outDir/focus_${_file(id)}_${brightness.name}.png');
+    }
+  }
+  await tester.pumpWidget(const SizedBox.shrink());
+  return written;
+}
+
+const _frame = ValueKey('sweep frame');
+
+String _file(String id) =>
+    id.toLowerCase().replaceAll(RegExp('[^a-z0-9]+'), '_');
 
 /// Pumps until no frame is scheduled, or for three seconds of the test's
 /// clock: an indeterminate progress indicator never settles, and is read
@@ -166,11 +247,11 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
-/// Loads the fonts a look draws with, so checks measure and pictures show its
-/// real type: every family in the app's font manifest, Roboto and Material's
-/// icons from the Flutter SDK, and Roboto under any other family [names] asks
-/// for.
-Future<void> loadLookFonts(WidgetTester tester, [Set<String>? names]) async {
+/// Loads the fonts an app draws with, so checks measure and pictures show
+/// its real type: every family in the app's font manifest, Roboto and
+/// Material's icons from the Flutter SDK, and Roboto under any other family
+/// [names] asks for.
+Future<void> loadAppFonts(WidgetTester tester, [Set<String>? names]) async {
   final sdk = '${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts';
   Future<ByteData> file(String path) =>
       File(path).readAsBytes().then(ByteData.sublistView);
@@ -217,7 +298,7 @@ Future<void> loadLookFonts(WidgetTester tester, [Set<String>? names]) async {
 }
 
 /// The font families the paragraphs under [context] ask for.
-Set<String> lookFamilies(BuildContext context) {
+Set<String> appFamilies(BuildContext context) {
   final names = <String>{};
   void visit(RenderObject node) {
     if (node is RenderParagraph) {
@@ -235,209 +316,28 @@ Set<String> lookFamilies(BuildContext context) {
   return names;
 }
 
-/// The fonts loaded so far in one test.
 class _Fonts {
   _Fonts(this.tester);
 
   final WidgetTester tester;
-  Set<String>? _loaded;
 
-  /// Pumps each present part of [inventory] once under [wrap] and loads every
-  /// family they ask for, before any part is measured or drawn: a part that
-  /// measures its words as it builds keeps the test font's measure.
+  /// Pumps each screen once and loads every family it asks for, before any
+  /// screen is measured or drawn: a part that measures its words as it
+  /// builds keeps the test font's measure.
   Future<void> prime(
-    RawInventory inventory,
-    Widget Function(Widget child) wrap,
+    Map<String, WidgetBuilder> screens,
+    DesignHost host,
   ) async {
     final names = <String>{};
-    for (final e in inventory.entries.where((e) => e.isPresent)) {
-      final key = GlobalKey();
-      await tester.pumpWidget(
-        wrap(
-          KeyedSubtree(
-            key: key,
-            child: Builder(builder: e.builder!),
-          ),
-        ),
-      );
+    const c = SweepCondition(390, Brightness.light, TextDirection.ltr, 1);
+    for (final screen in screens.values) {
+      await tester.pumpWidget(_app(c, host, screen));
+      await _settle(tester);
       tester.takeException();
-      names.addAll(lookFamilies(key.currentContext!));
+      names.addAll(appFamilies(tester.element(find.byType(Navigator).first)));
     }
     await tester.pumpWidget(const SizedBox.shrink());
     tester.takeException();
-    _loaded = names;
-    await loadLookFonts(tester, names);
+    await loadAppFonts(tester, names);
   }
-
-  /// Loads what the paragraphs under [context] ask for, if any of it is new;
-  /// true when it loaded (the screen then needs another frame).
-  Future<bool> under(BuildContext context) async {
-    final names = lookFamilies(context);
-    final loaded = _loaded;
-    if (loaded != null && names.difference(loaded).isEmpty) return false;
-    _loaded = {...?loaded, ...names};
-    await loadLookFonts(tester, _loaded);
-    return true;
-  }
-}
-
-Future<void> _savePng(
-  WidgetTester tester,
-  GlobalKey key,
-  String path,
-  double ratio,
-) async {
-  final boundary =
-      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-  await tester.runAsync(() async {
-    final image = await boundary.toImage(pixelRatio: ratio);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    File(path)
-      ..parent.createSync(recursive: true)
-      ..writeAsBytesSync(bytes!.buffer.asUint8List());
-  });
-}
-
-/// Draws the look's present parts for a reviewer, into [outDir] as PNG files
-/// at twice their size: a gallery of [perPage] parts a page, each under its
-/// row id, in each of [conditions]; and each part alone after one Tab press
-/// (keyboard focus on its first stop), at 1440 wide by day and by night.
-/// Returns the files written.
-Future<List<String>> shootInventory(
-  WidgetTester tester, {
-  required RawInventory inventory,
-  required LookHost host,
-  required String outDir,
-  List<SweepCondition>? conditions,
-  int perPage = 8,
-}) async {
-  final written = <String>[];
-  final present = inventory.entries.where((e) => e.isPresent).toList();
-  addTearDown(tester.view.reset);
-  Widget app(SweepCondition c, Widget home) => MaterialApp(
-    debugShowCheckedModeBanner: false,
-    localizationsDelegates: const [RawWidgetsLocalizations.delegate],
-    builder: (context, child) => MediaQuery.withClampedTextScaling(
-      minScaleFactor: c.textScale,
-      maxScaleFactor: c.textScale,
-      child: Directionality(
-        textDirection: c.direction,
-        child: host(context, child!, c.brightness),
-      ),
-    ),
-    home: home,
-  );
-  const caption = TextStyle(
-    fontFamily: 'Roboto',
-    fontSize: 11,
-    color: Color(0xFF888888),
-  );
-  final fonts = _Fonts(tester);
-  await fonts.prime(inventory, (child) => app(shootConditions.first, child));
-
-  for (final c in conditions ?? shootConditions) {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = Size(c.width, 6000);
-    for (var page = 0; page * perPage < present.length; page++) {
-      final key = GlobalKey();
-      final entries = present.skip(page * perPage).take(perPage);
-      Widget sheet() => Align(
-        alignment: AlignmentDirectional.topStart,
-        child: RepaintBoundary(
-          key: key,
-          child: Builder(
-            builder: (context) => ColoredBox(
-              color: c.brightness == Brightness.dark
-                  ? const Color(0xFF000000)
-                  : const Color(0xFFFFFFFF),
-              child: SizedBox(
-                width: c.width,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final e in entries) ...[
-                        Text(e.row, style: caption),
-                        const SizedBox(height: 4),
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: Builder(builder: e.builder!),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpWidget(app(c, sheet()));
-      await _settle(tester);
-      if (await fonts.under(key.currentContext!)) {
-        await tester.pump();
-        await _settle(tester);
-      }
-      tester.takeException();
-      final path =
-          '$outDir/gallery_${c.width.round()}_${c.brightness.name}_'
-          '${c.direction.name}_${c.textScale}x_p${page + 1}.png';
-      await _savePng(tester, key, path, 2);
-      written.add(path);
-    }
-  }
-
-  for (final brightness in Brightness.values) {
-    final c = SweepCondition(1440, brightness, TextDirection.ltr, 1);
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(1440, 900);
-    for (final e in present) {
-      final key = GlobalKey();
-      final before = FocusNode();
-      await tester.pumpWidget(
-        app(
-          c,
-          Align(
-            alignment: AlignmentDirectional.topStart,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Focus(focusNode: before, child: const SizedBox(height: 1)),
-                RepaintBoundary(
-                  key: key,
-                  child: ColoredBox(
-                    color: brightness == Brightness.dark
-                        ? const Color(0xFF000000)
-                        : const Color(0xFFFFFFFF),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Builder(builder: e.builder!),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-      await _settle(tester);
-      if (await fonts.under(key.currentContext!)) await tester.pump();
-      before.requestFocus();
-      await tester.pump();
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await _settle(tester);
-      tester.takeException();
-      final path = '$outDir/focus_${brightness.name}_${e.row}.png';
-      await _savePng(tester, key, path, 2);
-      written.add(path);
-      await tester.pumpWidget(const SizedBox.shrink());
-      before.dispose();
-    }
-  }
-  return written;
 }

@@ -15,14 +15,14 @@ import 'theme.dart';
 /// alike, so a reader sees one kind of field wherever a value is typed or
 /// chosen. Its own rule darkens and thickens for focus and turns to the
 /// danger tone for an error; no ring is added round it.
-LookFace lookFieldFace(
-  LookThemeData theme, {
+TendFace tendFieldFace(
+  TendThemeData theme, {
   required bool focused,
   bool error = false,
   bool enabled = true,
 }) {
   final c = theme.colors;
-  return LookFace(
+  return TendFace(
     fill: enabled ? c.surface : c.ground,
     rule: error
         ? c.danger
@@ -37,16 +37,16 @@ LookFace lookFieldFace(
 /// The sign at the end of a field that opens a list: a select's and a
 /// combobox's are the same, so both read as fields that offer choices. It
 /// turns over while the list shows.
-class LookListSign extends StatelessWidget {
+class TendListSign extends StatelessWidget {
   /// The sign, in the face's foreground, turned over while [open].
-  const LookListSign({super.key, this.open = false});
+  const TendListSign({super.key, this.open = false});
 
   /// Whether the field's list shows.
   final bool open;
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
-    child: LookSpringBuilder(
+    child: TendSpringBuilder(
       value: open ? 1 : 0,
       builder: (context, turn, sign) =>
           Transform.rotate(angle: turn * math.pi, child: sign),
@@ -70,9 +70,9 @@ class LookListSign extends StatelessWidget {
 /// field): the text field's face, [value] at its start and the list sign at
 /// its end. Every such field stands on this one, so they match the text field
 /// and each other.
-class LookFieldTrigger extends StatelessWidget {
+class TendFieldTrigger extends StatelessWidget {
   /// A field showing [value].
-  const LookFieldTrigger({
+  const TendFieldTrigger({
     super.key,
     required this.value,
     required this.open,
@@ -91,14 +91,14 @@ class LookFieldTrigger extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     return TapTargetPadding(
       child: RawButton(
         onPressed: onPressed,
         semanticValue: value,
         expanded: open,
-        builder: (context, states, _) => AnimatedLookSurface(
-          face: lookFieldFace(
+        builder: (context, states, _) => AnimatedTendSurface(
+          face: tendFieldFace(
             theme,
             focused: states.contains(WidgetState.focused) || open,
             enabled: onPressed != null,
@@ -124,7 +124,7 @@ class LookFieldTrigger extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  LookListSign(open: open),
+                  TendListSign(open: open),
                 ],
               ),
             ),
@@ -180,21 +180,21 @@ class _ChevronPainter extends CustomPainter {
 /// its rule, its corner), opaque, so the list reads as the field's and the
 /// page's words never show through it. Its rows are clipped to its corners,
 /// so a chosen row's fill meets them.
-class LookListSurface extends StatelessWidget {
+class TendListSurface extends StatelessWidget {
   /// [child] in the panel.
-  const LookListSurface({super.key, required this.child});
+  const TendListSurface({super.key, required this.child});
 
   /// The rows.
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(theme.radius),
     );
-    return LookSurface(
-      face: lookFieldFace(theme, focused: false),
+    return TendSurface(
+      face: tendFieldFace(theme, focused: false),
       shape: shape,
       child: ClipPath(
         clipper: ShapeBorderClipper(shape: shape),
@@ -206,15 +206,15 @@ class LookListSurface extends StatelessWidget {
 
 /// One row of an open list, a menu's or a field's: the same row for a
 /// select, a combobox and a menu, so a choice is marked one way across the
-/// look.
+/// design.
 ///
 /// The keys' highlight ([WidgetState.focused]) and the pointer's
 /// ([WidgetState.hovered]) tint the whole row, edge to edge; the chosen
 /// row ([WidgetState.selected]) carries a check at its end. Neither is
 /// painted in the accent, which belongs to the screen's main action. A
 /// destructive row (Delete) takes the danger tone.
-Widget lookOptionRow(
-  LookThemeData theme,
+Widget tendOptionRow(
+  TendThemeData theme,
   Set<WidgetState> states,
   String label, {
   bool destructive = false,
@@ -228,8 +228,8 @@ Widget lookOptionRow(
       : destructive
       ? c.danger
       : c.ink;
-  return AnimatedLookSurface(
-    face: LookFace(
+  return AnimatedTendSurface(
+    face: TendFace(
       fill: lit
           ? Color.alphaBlend(c.ink.withValues(alpha: .08), c.surface)
           : c.surface,
@@ -293,8 +293,8 @@ class _CheckPainter extends CustomPainter {
   bool shouldRepaint(_CheckPainter old) => old.color != color;
 }
 
-/// The label above a field, in the look's label type.
-Widget _fieldLabel(LookThemeData theme, Widget label) => DefaultTextStyle(
+/// The label above a field, in the design's label type.
+Widget _fieldLabel(TendThemeData theme, Widget label) => DefaultTextStyle(
   style: theme.label.copyWith(color: theme.colors.ink),
   child: label,
 );
@@ -306,7 +306,7 @@ Widget _fieldLabel(LookThemeData theme, Widget label) => DefaultTextStyle(
 /// form that sets its fields' width (a stretched column) still sets it.
 double _choiceWidth(
   BuildContext context,
-  LookThemeData theme,
+  TendThemeData theme,
   String label,
   Iterable<String> options,
 ) {
@@ -330,14 +330,14 @@ double _choiceWidth(
 
 /// Chooses one of [options] from a list that opens below the field: a
 /// [RawPopover] round a [RawButton], on the same face and with the same
-/// sign as [LookCombobox], so the two read as one kind of field.
+/// sign as [TendCombobox], so the two read as one kind of field.
 ///
 /// ```dart
-/// LookSelect<String>(labelText: 'Plan', options: const ['Day', 'Week'], value: plan, onChanged: (next) => plan = next)
+/// TendSelect<String>(labelText: 'Plan', options: const ['Day', 'Week'], value: plan, onChanged: (next) => plan = next)
 /// ```
-class LookSelect<T extends Object> extends StatelessWidget {
+class TendSelect<T extends Object> extends StatelessWidget {
   /// A field labelled [labelText] offering [options].
-  const LookSelect({
+  const TendSelect({
     super.key,
     required this.labelText,
     required this.options,
@@ -363,7 +363,7 @@ class LookSelect<T extends Object> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final chosen = value;
     final change = onChanged;
     final width = _choiceWidth(
@@ -390,12 +390,12 @@ class LookSelect<T extends Object> extends StatelessWidget {
       child: RawPopover(
         arrowKeyNavigation: true,
         semanticLabel: labelText,
-        anchorBuilder: (context, anchor) => LookFieldTrigger(
+        anchorBuilder: (context, anchor) => TendFieldTrigger(
           value: chosen == null ? null : optionLabel(chosen),
           open: anchor.isOpen,
           onPressed: change == null ? null : anchor.toggle,
         ),
-        overlayBuilder: (context, info) => LookListSurface(
+        overlayBuilder: (context, info) => TendListSurface(
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -414,7 +414,7 @@ class LookSelect<T extends Object> extends StatelessWidget {
                             if (option != chosen) change(option);
                           },
                     builder: (context, states, _) =>
-                        lookOptionRow(theme, states, optionLabel(option)),
+                        tendOptionRow(theme, states, optionLabel(option)),
                   ),
               ],
             ),
@@ -437,14 +437,14 @@ String _words(Object option) => '$option';
 
 /// A field whose typing filters [options] in a list that opens below it:
 /// ui_core's [RawCombobox], on the same face and with the same sign as
-/// [LookSelect], its rows the same as the select's and the menu's.
+/// [TendSelect], its rows the same as the select's and the menu's.
 ///
 /// ```dart
-/// LookCombobox<String>(labelText: 'Assignee', options: const ['Ada', 'Grace'], value: who, onSelected: (next) => who = next)
+/// TendCombobox<String>(labelText: 'Assignee', options: const ['Ada', 'Grace'], value: who, onSelected: (next) => who = next)
 /// ```
-class LookCombobox<T extends Object> extends StatefulWidget {
+class TendCombobox<T extends Object> extends StatefulWidget {
   /// A field labelled [labelText] filtering [options].
-  const LookCombobox({
+  const TendCombobox({
     super.key,
     required this.labelText,
     required this.options,
@@ -473,7 +473,7 @@ class LookCombobox<T extends Object> extends StatefulWidget {
   final FocusNode? focusNode;
 
   @override
-  State<LookCombobox<T>> createState() => _LookComboboxState<T>();
+  State<TendCombobox<T>> createState() => _TendComboboxState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -484,14 +484,14 @@ class LookCombobox<T extends Object> extends StatefulWidget {
   }
 }
 
-class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
+class _TendComboboxState<T extends Object> extends State<TendCombobox<T>> {
   FocusNode? _ownFocusNode;
 
   FocusNode get _focusNode =>
       widget.focusNode ?? (_ownFocusNode ??= FocusNode());
 
   @override
-  void didUpdateWidget(LookCombobox<T> old) {
+  void didUpdateWidget(TendCombobox<T> old) {
     super.didUpdateWidget(old);
     if (widget.focusNode != null && _ownFocusNode != null) {
       _ownFocusNode!.dispose();
@@ -507,7 +507,7 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     final c = theme.colors;
     final entryStyle = theme.body.copyWith(height: 1.2);
     final width = _choiceWidth(
@@ -567,8 +567,8 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
                 behavior: HitTestBehavior.opaque,
                 excludeFromSemantics: true,
                 onTap: field.focusNode.requestFocus,
-                child: AnimatedLookSurface(
-                  face: lookFieldFace(theme, focused: field.focusNode.hasFocus),
+                child: AnimatedTendSurface(
+                  face: tendFieldFace(theme, focused: field.focusNode.hasFocus),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(theme.radius),
                   ),
@@ -593,7 +593,7 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        LookListSign(open: field.isOpen),
+                        TendListSign(open: field.isOpen),
                       ],
                     ),
                   ),
@@ -603,8 +603,8 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
           );
         },
         optionBuilder: (context, option, states) =>
-            lookOptionRow(theme, states, widget.optionLabel(option)),
-        surfaceBuilder: (context, list) => LookListSurface(child: list),
+            tendOptionRow(theme, states, widget.optionLabel(option)),
+        surfaceBuilder: (context, list) => TendListSurface(child: list),
       ),
     );
   }
@@ -612,15 +612,15 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
 
 /// A menu of [entries] over [child], opened by a right click, a long press,
 /// Shift+F10 or a screen reader's "Show menu": ui_core's [RawContextMenu],
-/// its rows the look's list rows. An entry marked
+/// its rows the design's list rows. An entry marked
 /// [RawMenuEntry.isDestructiveAction] (Delete) takes the danger tone.
 ///
 /// ```dart
-/// LookMenu(entries: [RawMenuEntry(label: 'Delete', isDestructiveAction: true, onPressed: () {})], child: const Text('Draft'))
+/// TendMenu(entries: [RawMenuEntry(label: 'Delete', isDestructiveAction: true, onPressed: () {})], child: const Text('Draft'))
 /// ```
-class LookMenu extends StatelessWidget {
+class TendMenu extends StatelessWidget {
   /// A menu of [entries] over [child].
-  const LookMenu({super.key, required this.entries, required this.child});
+  const TendMenu({super.key, required this.entries, required this.child});
 
   /// The menu's rows.
   final List<RawMenuEntry> entries;
@@ -630,18 +630,18 @@ class LookMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     return RawContextMenu(
       menuChildren: entries,
       // A destructive row is set apart by its tone, not by anything it
       // does: it is pressed, reached and read as any other.
-      itemBuilder: (context, entry, level, states) => lookOptionRow(
+      itemBuilder: (context, entry, level, states) => tendOptionRow(
         theme,
         states,
         entry.label,
         destructive: entry.isDestructiveAction,
       ),
-      surfaceBuilder: (context, info, items) => LookListSurface(
+      surfaceBuilder: (context, info, items) => TendListSurface(
         child: IntrinsicWidth(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -663,17 +663,17 @@ class LookMenu extends StatelessWidget {
 
 /// A button that opens a menu of [entries] over itself, the menu's end
 /// corner on the button's, as iOS's pull-down menus open: ui_core's
-/// [RawPopover], placed by the look through [RawPopover.positionDelegate].
+/// [RawPopover], placed by the design through [RawPopover.positionDelegate].
 /// The popover keeps the rest: Escape and a tap outside close it, the keys
 /// start on the first row, the focus goes back to the button, and the menu
 /// is named and heard as a menu ([RawPopover.role]).
 ///
 /// ```dart
-/// LookMoreMenu(semanticLabel: 'More', entries: [RawMenuEntry(label: 'Rename', onPressed: () {})])
+/// TendMoreMenu(semanticLabel: 'More', entries: [RawMenuEntry(label: 'Rename', onPressed: () {})])
 /// ```
-class LookMoreMenu extends StatelessWidget {
+class TendMoreMenu extends StatelessWidget {
   /// A button named [semanticLabel] that opens [entries].
-  const LookMoreMenu({
+  const TendMoreMenu({
     super.key,
     required this.semanticLabel,
     required this.entries,
@@ -687,7 +687,7 @@ class LookMoreMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     return RawPopover(
       arrowKeyNavigation: true,
       semanticLabel: semanticLabel,
@@ -715,22 +715,29 @@ class LookMoreMenu extends StatelessWidget {
           semanticLabel: semanticLabel,
           excludeSemantics: true,
           expanded: anchor.isOpen,
-          builder: (context, states, _) => AnimatedLookSurface(
-            face: lookFieldFace(
-              theme,
-              focused: states.contains(WidgetState.focused) || anchor.isOpen,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(theme.radius),
-            ),
-            child: SizedBox.square(
-              dimension: theme.density.height(theme.controlHeight),
-              child: Center(child: Text('…', style: theme.label)),
-            ),
-          ),
+          // The face of the design's icon buttons, so the key reads as one
+          // of them beside its neighbours; open, it stays marked.
+          builder: (context, states, _) {
+            final c = theme.colors;
+            final marked =
+                states.contains(WidgetState.focused) || anchor.isOpen;
+            return AnimatedTendSurface(
+              face: TendFace(
+                fill: c.surface,
+                rule: marked ? c.ink : c.rule,
+                ruleWidth: marked ? 2 : 1,
+                foreground: c.ink,
+              ),
+              shape: const CircleBorder(),
+              child: SizedBox.square(
+                dimension: theme.density.height(theme.controlHeight),
+                child: const Icon(Icons.more_horiz, size: 20),
+              ),
+            );
+          },
         ),
       ),
-      overlayBuilder: (context, info) => LookListSurface(
+      overlayBuilder: (context, info) => TendListSurface(
         child: IntrinsicWidth(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -744,7 +751,7 @@ class LookMoreMenu extends StatelessWidget {
                           info.close();
                           entry.onPressed!();
                         },
-                  builder: (context, states, _) => lookOptionRow(
+                  builder: (context, states, _) => tendOptionRow(
                     theme,
                     states,
                     entry.label,
@@ -769,15 +776,15 @@ class LookMoreMenu extends StatelessWidget {
 
 /// A list the reader puts in their own order: ui_core's [RawReorderableList]
 /// for the behaviour (a drag on the grip, or Alt with Up or Down on it, and
-/// the move announced), each row the caller's with the look's grip at its
+/// the move announced), each row the caller's with the design's grip at its
 /// end.
 ///
 /// ```dart
-/// LookReorderableList<String>(items: const ['Milk', 'Eggs'], labelOf: (item) => item, onReorder: (from, to) {}, itemBuilder: (context, item) => Text(item))
+/// TendReorderableList<String>(items: const ['Milk', 'Eggs'], labelOf: (item) => item, onReorder: (from, to) {}, itemBuilder: (context, item) => Text(item))
 /// ```
-class LookReorderableList<T extends Object> extends StatelessWidget {
+class TendReorderableList<T extends Object> extends StatelessWidget {
   /// [items] in their order, each row built by [itemBuilder].
-  const LookReorderableList({
+  const TendReorderableList({
     super.key,
     required this.items,
     required this.labelOf,
@@ -799,7 +806,7 @@ class LookReorderableList<T extends Object> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = LookTheme.of(context);
+    final theme = TendTheme.of(context);
     return RawReorderableList<T>(
       items: items,
       labelOf: labelOf,
@@ -808,10 +815,10 @@ class LookReorderableList<T extends Object> extends StatelessWidget {
       itemBuilder: (context, item, reorder) => Row(
         children: [
           Expanded(child: itemBuilder(context, item)),
-          // The grip paints from its states, as a button does: the look's
+          // The grip paints from its states, as a button does: the design's
           // focus under the keyboard (where Alt with Up or Down moves the
           // row), a tint under a pointer and while it holds the row.
-          reorder.buildHandle((context, states, _) => _lookGrip(theme, states)),
+          reorder.buildHandle((context, states, _) => _tendGrip(theme, states)),
         ],
       ),
     );
@@ -825,14 +832,14 @@ class LookReorderableList<T extends Object> extends StatelessWidget {
 }
 
 /// A reorderable row's grip: a rule round it under the keyboard (the
-/// look's focus, as on every other stop), a tint under a pointer and a
+/// design's focus, as on every other stop), a tint under a pointer and a
 /// deeper one while it holds the row.
-Widget _lookGrip(LookThemeData theme, Set<WidgetState> states) {
+Widget _tendGrip(TendThemeData theme, Set<WidgetState> states) {
   final c = theme.colors;
   return MouseRegion(
     cursor: SystemMouseCursors.grab,
-    child: AnimatedLookSurface(
-      face: LookFace(
+    child: AnimatedTendSurface(
+      face: TendFace(
         fill: states.contains(WidgetState.pressed)
             ? c.ink.withValues(alpha: .08)
             : states.contains(WidgetState.hovered)

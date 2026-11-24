@@ -4,15 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-/// How one part of the look looks, slot by slot, for its states: ui_core's
-/// [RawStyle] under the look's own name.
-typedef LookStyle = RawStyle;
+/// How one part of the design looks, slot by slot, for its states: ui_core's
+/// [RawStyle] under the design's own name.
+typedef TendStyle = RawStyle;
 
-/// The look's colours for one preset, by day or by night.
+/// The design's colours for one preset, by day or by night.
 @immutable
-class LookColors with Diagnosticable {
+class TendColors with Diagnosticable {
   /// Colours given one by one.
-  const LookColors({
+  const TendColors({
     required this.ground,
     required this.surface,
     required this.ink,
@@ -25,7 +25,7 @@ class LookColors with Diagnosticable {
   });
 
   /// The day colours.
-  static const LookColors day = LookColors(
+  static const TendColors day = TendColors(
     ground: Color(0xFFF7F5F0),
     surface: Color(0xFFFFFFFF),
     ink: Color(0xFF1C1B19),
@@ -39,7 +39,7 @@ class LookColors with Diagnosticable {
 
   /// The night colours: the same roles, chosen for a dark ground, not
   /// inverted from the day's.
-  static const LookColors night = LookColors(
+  static const TendColors night = TendColors(
     ground: Color(0xFF151413),
     surface: Color(0xFF201F1D),
     ink: Color(0xFFEDEAE3),
@@ -63,7 +63,7 @@ class LookColors with Diagnosticable {
   /// Help, hints and anything turned off.
   final Color mutedInk;
 
-  /// The look's one rule, round faces and between rows.
+  /// The design's one rule, round faces and between rows.
   final Color rule;
 
   /// The one colour that marks what acts.
@@ -79,7 +79,7 @@ class LookColors with Diagnosticable {
   final Color onDanger;
 
   /// Between [a] and [b], role by role.
-  static LookColors lerp(LookColors a, LookColors b, double t) => LookColors(
+  static TendColors lerp(TendColors a, TendColors b, double t) => TendColors(
     ground: Color.lerp(a.ground, b.ground, t)!,
     surface: Color.lerp(a.surface, b.surface, t)!,
     ink: Color.lerp(a.ink, b.ink, t)!,
@@ -105,7 +105,7 @@ class LookColors with Diagnosticable {
 
   @override
   bool operator ==(Object other) =>
-      other is LookColors && listEquals(other._all, _all);
+      other is TendColors && listEquals(other._all, _all);
 
   @override
   int get hashCode => Object.hashAll(_all);
@@ -120,12 +120,12 @@ class LookColors with Diagnosticable {
   }
 }
 
-/// The look's motion tokens: springs, each a damping ratio and a stiffness,
+/// The design's motion tokens: springs, each a damping ratio and a stiffness,
 /// as ui_core runs them ([rawSpring], [RawMotionPolicy]).
 @immutable
-class LookMotion {
+class TendMotion {
   /// Tokens given one by one.
-  const LookMotion({
+  const TendMotion({
     this.stateDampingRatio = 1,
     this.stateStiffness = 1600,
     this.routeDampingRatio = 1,
@@ -147,7 +147,7 @@ class LookMotion {
 
   @override
   bool operator ==(Object other) =>
-      other is LookMotion &&
+      other is TendMotion &&
       other.stateDampingRatio == stateDampingRatio &&
       other.stateStiffness == stateStiffness &&
       other.routeDampingRatio == routeDampingRatio &&
@@ -162,41 +162,41 @@ class LookMotion {
   );
 }
 
-/// Everything the look's parts read: colours, type, sizes, motion and each
+/// Everything the design's parts read: colours, type, sizes, motion and each
 /// part's theme slot.
 @immutable
-class LookThemeData with Diagnosticable {
+class TendThemeData with Diagnosticable {
   /// A theme given field by field.
-  const LookThemeData({
+  const TendThemeData({
     required this.colors,
     this.fontFamily = 'Roboto',
     this.capHeightFactor = 0.711,
     this.controlHeight = 44,
     this.radius = 8,
     this.density = RawDensity.standard,
-    this.motion = const LookMotion(),
+    this.motion = const TendMotion(),
     this.buttonStyle,
   });
 
-  /// The look by day.
-  factory LookThemeData.day() => const LookThemeData(colors: LookColors.day);
+  /// The design by day.
+  factory TendThemeData.day() => const TendThemeData(colors: TendColors.day);
 
-  /// The look by night.
-  factory LookThemeData.night() =>
-      const LookThemeData(colors: LookColors.night);
+  /// The design by night.
+  factory TendThemeData.night() =>
+      const TendThemeData(colors: TendColors.night);
 
-  /// The look for [brightness]: what an app passes from
+  /// The design for [brightness]: what an app passes from
   /// `MediaQuery.platformBrightnessOf(context)`.
-  factory LookThemeData.of(Brightness brightness) =>
+  factory TendThemeData.of(Brightness brightness) =>
       brightness == Brightness.dark
-      ? LookThemeData.night()
-      : LookThemeData.day();
+      ? TendThemeData.night()
+      : TendThemeData.day();
 
   /// The colours.
-  final LookColors colors;
+  final TendColors colors;
 
   /// The typeface every part writes in. Any family the app loads works; the
-  /// look never depends on one.
+  /// design never depends on one.
   final String fontFamily;
 
   /// [fontFamily]'s cap height over its font size, for [RawCapCenter].
@@ -212,13 +212,13 @@ class LookThemeData with Diagnosticable {
   final RawDensity density;
 
   /// The springs.
-  final LookMotion motion;
+  final TendMotion motion;
 
   /// Every button's style, under each button's own `style:`.
-  final LookStyle? buttonStyle;
+  final TendStyle? buttonStyle;
 
   /// A control label's words. Their colour comes from the face they stand
-  /// on (a `LookSurface`).
+  /// on (a `TendSurface`).
   TextStyle get label => TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,
@@ -243,16 +243,16 @@ class LookThemeData with Diagnosticable {
   );
 
   /// This theme with the given fields changed.
-  LookThemeData copyWith({
-    LookColors? colors,
+  TendThemeData copyWith({
+    TendColors? colors,
     String? fontFamily,
     double? capHeightFactor,
     double? controlHeight,
     double? radius,
     RawDensity? density,
-    LookMotion? motion,
-    LookStyle? buttonStyle,
-  }) => LookThemeData(
+    TendMotion? motion,
+    TendStyle? buttonStyle,
+  }) => TendThemeData(
     colors: colors ?? this.colors,
     fontFamily: fontFamily ?? this.fontFamily,
     capHeightFactor: capHeightFactor ?? this.capHeightFactor,
@@ -265,9 +265,9 @@ class LookThemeData with Diagnosticable {
 
   /// Between [a] and [b], as `ThemeData.lerp`: what an animated theme
   /// change (day to night) draws on the way.
-  static LookThemeData lerp(LookThemeData a, LookThemeData b, double t) =>
-      LookThemeData(
-        colors: LookColors.lerp(a.colors, b.colors, t),
+  static TendThemeData lerp(TendThemeData a, TendThemeData b, double t) =>
+      TendThemeData(
+        colors: TendColors.lerp(a.colors, b.colors, t),
         fontFamily: t < .5 ? a.fontFamily : b.fontFamily,
         capHeightFactor: t < .5 ? a.capHeightFactor : b.capHeightFactor,
         controlHeight: lerpDouble(a.controlHeight, b.controlHeight, t)!,
@@ -279,7 +279,7 @@ class LookThemeData with Diagnosticable {
 
   @override
   bool operator ==(Object other) =>
-      other is LookThemeData &&
+      other is TendThemeData &&
       other.colors == colors &&
       other.fontFamily == fontFamily &&
       other.capHeightFactor == capHeightFactor &&
@@ -305,14 +305,14 @@ class LookThemeData with Diagnosticable {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<LookColors>('colors', colors))
+      ..add(DiagnosticsProperty<TendColors>('colors', colors))
       ..add(StringProperty('fontFamily', fontFamily))
       ..add(DoubleProperty('controlHeight', controlHeight))
       ..add(DoubleProperty('radius', radius));
   }
 }
 
-/// Puts [data] round [child]: the look's theme, its tap-target floors, its
+/// Puts [data] round [child]: the design's theme, its tap-target floors, its
 /// spacing grid and its default words and glyphs.
 ///
 /// An app puts it in its `MaterialApp`, `CupertinoApp` or `WidgetsApp`
@@ -320,33 +320,33 @@ class LookThemeData with Diagnosticable {
 ///
 /// ```dart
 /// MaterialApp(
-///   builder: (context, child) => LookTheme(
-///     data: LookThemeData.of(MediaQuery.platformBrightnessOf(context)),
+///   builder: (context, child) => TendTheme(
+///     data: TendThemeData.of(MediaQuery.platformBrightnessOf(context)),
 ///     child: child!,
 ///   ),
 ///   home: const Placeholder(),
 /// )
 /// ```
-class LookTheme extends StatelessWidget {
+class TendTheme extends StatelessWidget {
   /// Applies [data] to [child].
-  const LookTheme({super.key, required this.data, required this.child});
+  const TendTheme({super.key, required this.data, required this.child});
 
   /// The theme.
-  final LookThemeData data;
+  final TendThemeData data;
 
   /// What stands under it.
   final Widget child;
 
   /// The nearest theme, or the day theme when there is none.
-  static LookThemeData of(BuildContext context) =>
-      maybeOf(context) ?? LookThemeData.day();
+  static TendThemeData of(BuildContext context) =>
+      maybeOf(context) ?? TendThemeData.day();
 
   /// The nearest theme, or null.
-  static LookThemeData? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<_LookScope>()?.theme.data;
+  static TendThemeData? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_TendScope>()?.theme.data;
 
   @override
-  Widget build(BuildContext context) => _LookScope(
+  Widget build(BuildContext context) => _TendScope(
     theme: this,
     child: RawTapTargetScope(
       targets: RawTapTargets.fallback,
@@ -366,19 +366,19 @@ class LookTheme extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<LookThemeData>('data', data));
+    properties.add(DiagnosticsProperty<TendThemeData>('data', data));
   }
 }
 
-class _LookScope extends InheritedTheme {
-  const _LookScope({required this.theme, required super.child});
+class _TendScope extends InheritedTheme {
+  const _TendScope({required this.theme, required super.child});
 
-  final LookTheme theme;
+  final TendTheme theme;
 
   @override
   Widget wrap(BuildContext context, Widget child) =>
-      LookTheme(data: theme.data, child: child);
+      TendTheme(data: theme.data, child: child);
 
   @override
-  bool updateShouldNotify(_LookScope old) => old.theme.data != theme.data;
+  bool updateShouldNotify(_TendScope old) => old.theme.data != theme.data;
 }

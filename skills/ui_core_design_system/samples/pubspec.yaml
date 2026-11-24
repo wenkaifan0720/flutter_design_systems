@@ -1,7 +1,8 @@
-name: look_ui
+name: tend
 description: >-
-  The skill's code samples, as a look of their own: every Dart block in the skill's pages is taken from this
-  package, which compiles and is tested in the repository's pub workspace, on the ui_core and ui_core_test beside it.
+  A small app with a design of its own on ui_core: the design folder (lib/design) and the three screens that use it.
+  Every Dart block in the skill's pages is taken from it. It is tested in the repository's pub workspace, on the
+  ui_core and ui_core_test beside it.
 publish_to: none
 resolution: workspace
 

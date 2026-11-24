@@ -105,7 +105,7 @@ jobs:
         if: matrix.shard == 0
         run: dart analyze --fatal-infos ${{ matrix.dir }}
       - name: Format the skill's samples and scoring sweep
-        # A look copies evals/sweep.dart into its example, where `dart format --set-exit-if-changed` must pass.
+        # The scorer copies evals/sweep.dart into a candidate app's tests, where `dart format --set-exit-if-changed` must pass.
         if: matrix.package == 'ui_core_design_system'
         run: dart format --output=none --set-exit-if-changed skills/ui_core_design_system/samples skills/ui_core_design_system/evals/sweep.dart
       - name: Test, without the goldens
