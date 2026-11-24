@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import 'color_picker.dart' show RawColorChannel;
 import 'data_table.dart' show RawSortDirection;
-import 'date_field.dart' show RawTimeOfDay;
+import 'date_field.dart' show RawDateSegmentType, RawTimeOfDay;
 import 'internal/decimal.dart' as decimal;
 import 'internal/localizations_data.dart';
 import 'internal/segments.dart';
@@ -1016,6 +1016,50 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
   }
 
   // 0.3.0 values end
+}
+
+/// A time's hour and minute as a look's time picker writes them, in the
+/// app's digits, as `MaterialLocalizations.formatHour` and `formatMinute`
+/// write Material's: a dial's numbers, a picker's hour and minute fields, a
+/// wheel's rows. A look builds its figures from these rather than from
+/// `n.toString().padLeft(2, '0')`, which stays in ASCII digits in every
+/// language. [RawWidgetsLocalizations.formatTimeOfDay] writes the whole time;
+/// [RawWidgetsLocalizations.anteMeridiemAbbreviation] and
+/// [RawWidgetsLocalizations.postMeridiemAbbreviation] the day period.
+///
+/// They follow the locale's clock ([RawWidgetsLocalizations.timeFieldPattern])
+/// and its digits ([RawWidgetsLocalizations.formatDecimal]), so an app's
+/// subclass that changes either changes them too.
+///
+/// ```dart
+/// Text(RawWidgetsLocalizations.of(context).formatMinute(const RawTimeOfDay(hour: 9, minute: 5)))
+/// ```
+extension RawTimeFormatting on RawWidgetsLocalizations {
+  /// [time]'s hour on the locale's clock, in the app's digits: 1 to 12 on a
+  /// 12-hour clock (English's 3 for 15:00, Arabic's ٣), 0 to 23 on a 24-hour
+  /// one (Persian's ۱۵), two digits where the locale's clock writes two (09
+  /// for 9:00 on English's 24-hour `HH:mm`). [alwaysUse24HourFormat] asks for
+  /// a 24-hour clock, as `MediaQuery.alwaysUse24HourFormatOf` does.
+  String formatHour(RawTimeOfDay time, {bool alwaysUse24HourFormat = false}) {
+    final hour = parsePattern(
+      timeFieldPattern(alwaysUse24HourFormat: alwaysUse24HourFormat),
+    ).where((part) => part.type == RawDateSegmentType.hour).firstOrNull;
+    final value = switch (hour?.letter) {
+      'h' => time.hourOfPeriod,
+      'K' => time.hour % 12,
+      'k' => time.hour == 0 ? 24 : time.hour,
+      _ => time.hour,
+    };
+    return digitsFrom(
+      formatDecimal(0),
+      value,
+      width: (hour?.width ?? 1) >= 2 ? 2 : 1,
+    );
+  }
+
+  /// [time]'s minute, two digits in the app's digits (05, Arabic's ٠٥).
+  String formatMinute(RawTimeOfDay time) =>
+      digitsFrom(formatDecimal(0), time.minute, width: 2);
 }
 
 class _DesignLocalizationsDelegate

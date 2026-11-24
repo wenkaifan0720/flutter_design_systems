@@ -134,6 +134,20 @@ List<PatternPart> parsePattern(String pattern) {
   return parts;
 }
 
+/// [n] zero-padded to [width], ungrouped ("2026", not "2,026"), in the
+/// digits that start at [zero]: the first character of a locale's
+/// `formatDecimal(0)` (Arabic's ٠).
+String digitsFrom(String zero, int n, {int width = 1}) {
+  final base = zero.codeUnitAt(0);
+  return String.fromCharCodes(
+    n
+        .toString()
+        .padLeft(width, '0')
+        .codeUnits
+        .map((c) => c >= 0x30 && c <= 0x39 ? base + c - 0x30 : c),
+  );
+}
+
 /// [n] in the locale's digits, [width] wide (zero-padded).
 String localDigits(RawLocaleData data, int n, {int width = 1}) {
   final ascii = n.toString().padLeft(width, '0');

@@ -609,6 +609,10 @@ final Map<String, DocExample> _examples = {
     RawWidgetsLocalizations.of(context)
         .formatTimeOfDay(const RawTimeOfDay(hour: 15, minute: 5)),
   ),
+  'RawTimeFormatting': (context) => Text(
+    RawWidgetsLocalizations.of(context)
+        .formatMinute(const RawTimeOfDay(hour: 9, minute: 5)),
+  ),
   'RawDateField': (context) => RawDateField(
     value: DateTime(2026, 11, 16),
     onChanged: (day) {},

@@ -391,15 +391,18 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   final GlobalKey<PaneCycleState> _cycle = GlobalKey();
   // 0.3.0 routes end
 
-  // What the parts kept clear cover of the toaster's top and bottom
-  // edges ([RawToasterKeepClear]), each part's, and the most of them.
-  final Map<Object, (double, double)> _kept = {};
+  // Where the parts kept clear stand in the toaster ([RawToasterKeepClear]),
+  // each part's rect in a box [_keptHeight] tall, and the bands they keep
+  // clear along its top and bottom ([_keptBands]).
+  final Map<Object, Rect> _kept = {};
+  double _keptHeight = 0;
   double _clearTop = 0;
   double _clearBottom = 0;
 
-  void _keepClear(Object part, double top, double bottom) {
-    if (_kept[part] == (top, bottom)) return;
-    _kept[part] = (top, bottom);
+  void _keepClear(Object part, Rect rect, double height) {
+    if (_kept[part] == rect && _keptHeight == height) return;
+    _kept[part] = rect;
+    _keptHeight = height;
     _clearChanged();
   }
 
@@ -408,12 +411,7 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   }
 
   void _clearChanged() {
-    var top = 0.0;
-    var bottom = 0.0;
-    for (final (t, b) in _kept.values) {
-      top = math.max(top, t);
-      bottom = math.max(bottom, b);
-    }
+    final (top, bottom) = _keptBands(_kept.values.toList(), _keptHeight);
     if (top == _clearTop && bottom == _clearBottom) return;
     _clearTop = top;
     _clearBottom = bottom;
@@ -817,18 +815,25 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 /// Keeps the nearest [RawToaster]'s toasts clear of [child]: a bar along
 /// the bottom (a tab bar, a bottom app bar, a docked composer) keeps them
 /// above it, and one along the top keeps them below it, as Material's
-/// `Scaffold` keeps a snackbar above its bottom navigation bar. It reads how
-/// much of the toaster's bottom or top edge [child] covers each frame it is
-/// laid out or painted, so the toasts follow a bar that springs in or away,
+/// `Scaffold` keeps a snackbar above its bottom navigation bar. It reads where
+/// [child] stands in the toaster each frame it is laid out or painted, so the toasts follow a bar that springs in or away,
 /// and lets go as it leaves the tree. It lets go too while tickers are off
 /// where it stands ([TickerMode]): on a route an opaque one covers, as the
 /// [Overlay] turns them off there, and in a hidden branch of a shell; it
 /// keeps clear again as they come back on. A route under one that is not
-/// opaque (a dialog) keeps its bar in sight, and its toasts clear of it. A
-/// part that reaches neither edge, or
-/// both (a rail, a sidebar), keeps nothing clear. The covered edge takes
+/// opaque (a dialog) keeps its bar in sight, and its toasts clear of it.
+///
+/// A part that stands on one kept clear along the bottom (its bottom on
+/// that one's top, the two overlapping across), as a page's foot stands on
+/// a status line or a tab bar, keeps the toasts above both, as `Scaffold`
+/// keeps a snackbar above its footer buttons and those above its bottom
+/// navigation bar; chains of bars and feet stack, and along the top a part
+/// hanging under a kept top bar keeps top toasts below both. A part that
+/// floats over the band with a gap, or reaches neither edge with nothing
+/// kept under or over it, keeps nothing clear; so does a part reaching
+/// both edges, or both bands (a rail, a sidebar). The covered edge takes
 /// the place of the screen's safe inset there (a bar takes that inset
-/// itself); [RawToaster.padding] stays between the bar and the toasts.
+/// itself); [RawToaster.padding] stays between the band and the toasts.
 /// `RawAdaptiveShell` keeps its bar clear, and not its rail or sidebar,
 /// whatever stands above or below them.
 ///
@@ -910,14 +915,7 @@ class _RenderKeepClear extends RenderProxyBox {
       getTransformTo(area),
       Offset.zero & size,
     );
-    final height = area.size.height;
-    final top = rect.top <= 0.5;
-    final bottom = rect.bottom >= height - 0.5;
-    toaster._keepClear(
-      this,
-      top && !bottom ? rect.bottom.clamp(0.0, height) : 0,
-      bottom && !top ? (height - rect.top).clamp(0.0, height) : 0,
-    );
+    toaster._keepClear(this, rect, area.size.height);
   }
 
   @override
@@ -937,6 +935,68 @@ class _RenderKeepClear extends RenderProxyBox {
     _toaster?._letGo(this);
     super.detach();
   }
+}
+
+// The bands along the top and the bottom of a toaster [height] tall that
+// the parts kept clear, standing at [parts], keep its toasts out of. A part
+// reaching one edge and not the other makes a band to its far side. A part
+// reaching neither that stands on a part of the bottom band (its bottom on
+// that one's top, the two overlapping across) joins the band, as Material's
+// Scaffold keeps a snackbar above its footer buttons and those above its
+// navigation bar; along the top, one hanging under a part of the top band
+// joins that. Chains repeat. A part that would join both (a rail between a
+// kept top bar and a kept status line), like a part reaching both edges,
+// keeps nothing clear.
+(double, double) _keptBands(List<Rect> parts, double height) {
+  bool meets(double a, double b) => (a - b).abs() <= 0.5;
+  bool across(Rect a, Rect b) =>
+      math.min(a.right, b.right) - math.max(a.left, b.left) > 0.5;
+  bool atTop(Rect r) => r.top <= 0.5;
+  bool atBottom(Rect r) => r.bottom >= height - 0.5;
+  // The parts of the bottom band ([bottom]) or the top one, [skip] aside.
+  Set<int> band({required bool bottom, Set<int> skip = const {}}) {
+    final reached = {
+      for (var i = 0; i < parts.length; i++)
+        if (bottom
+            ? atBottom(parts[i]) && !atTop(parts[i])
+            : atTop(parts[i]) && !atBottom(parts[i]))
+          i,
+    };
+    for (var grew = true; grew;) {
+      grew = false;
+      for (var i = 0; i < parts.length; i++) {
+        final r = parts[i];
+        if (reached.contains(i) || skip.contains(i)) continue;
+        if (atTop(r) || atBottom(r)) continue;
+        if (reached.any((j) {
+          final kept = parts[j];
+          return across(r, kept) &&
+              (bottom ? meets(r.bottom, kept.top) : meets(r.top, kept.bottom));
+        })) {
+          reached.add(i);
+          grew = true;
+        }
+      }
+    }
+    return reached;
+  }
+
+  var low = band(bottom: true);
+  var high = band(bottom: false);
+  final both = low.intersection(high);
+  if (both.isNotEmpty) {
+    low = band(bottom: true, skip: both);
+    high = band(bottom: false, skip: both);
+  }
+  var top = 0.0;
+  var bottom = 0.0;
+  for (final i in high) {
+    top = math.max(top, parts[i].bottom.clamp(0.0, height));
+  }
+  for (final i in low) {
+    bottom = math.max(bottom, (height - parts[i].top).clamp(0.0, height));
+  }
+  return (top, bottom);
 }
 
 class _ToastId {

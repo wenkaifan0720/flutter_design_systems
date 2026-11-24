@@ -796,16 +796,8 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
       _segments.firstWhere((p) => p.type == type);
 
   // Digits in the reader's script, ungrouped ("2026", not "2,026").
-  String digitsOf(RawWidgetsLocalizations l, int value, {int width = 1}) {
-    final zero = l.formatDecimal(0).codeUnitAt(0);
-    return String.fromCharCodes(
-      value
-          .toString()
-          .padLeft(width, '0')
-          .codeUnits
-          .map((c) => zero + c - 0x30),
-    );
-  }
+  String digitsOf(RawWidgetsLocalizations l, int value, {int width = 1}) =>
+      digitsFrom(l.formatDecimal(0), value, width: width);
 
   // A typed digit's value: ASCII or the reader's; null when not a digit.
   int? _digit(String character, RawWidgetsLocalizations l) {
