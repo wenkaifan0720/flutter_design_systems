@@ -60,8 +60,8 @@ DesignAlignmentTheme _page(
       ),
       home: Builder(
         builder: (context) {
-          final page = DesignTapTargetScope(
-            targets: const DesignTapTargets(input: DesignInput.touch),
+          final page = RawTapTargetScope(
+            targets: const RawTapTargets(input: RawInput.touch),
             child: Material(type: MaterialType.transparency, child: child),
           );
           return MediaQuery(

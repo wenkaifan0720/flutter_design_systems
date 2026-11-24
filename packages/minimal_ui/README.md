@@ -157,17 +157,17 @@ Import `package:minimal_ui/minimal_host.dart` for `MinimalHost`, which sets up t
 - **Direction and text size.** Controls follow the reading direction. The gallery’s Customize panel lets you try RTL and text sizes up to 200%. `MinimalHost` caps larger scales at 200%. Geist supplies Latin glyphs. Other scripts use Flutter’s font fallback.
 - **Keyboard and screen readers.** Tab moves between controls. Arrow keys select tabs, inspect chart values and navigate menus. Enter activates the focused action. Escape dismisses menus, dialogs and sheets and returns focus to the opener. A destructive dialog focuses its safe action first.
 - **Touch and motion.** The minimum hit area is 44 × 44 for touch and 24 × 24 for a pointer. Controls honor the platform’s reduced-motion setting.
-- **Localization.** English is the default. To use the built-in translations for shared labels, add `flutter_localizations` from the Flutter SDK and register `DesignLocalizations.delegate` alongside Flutter’s delegates.
+- **Localization.** English is the default. To use the built-in translations for shared labels, add `flutter_localizations` from the Flutter SDK and register `RawWidgetsLocalizations.delegate` alongside Flutter’s delegates.
 
   ```dart
   import 'package:flutter_localizations/flutter_localizations.dart';
 
   MaterialApp(
     localizationsDelegates: const [
-      DesignLocalizations.delegate,
+      RawWidgetsLocalizations.delegate,
       ...GlobalMaterialLocalizations.delegates,
     ],
-    supportedLocales: DesignLocalizations.supportedLocales,
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     // ...
   )
   ```

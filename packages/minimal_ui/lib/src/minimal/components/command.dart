@@ -181,7 +181,7 @@ class MinimalCommand extends StatefulWidget {
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
     MinimalCommandItem? chosen;
-    await showDesignCommandPalette(
+    await showRawCommandPalette(
       context: context,
       barrierColor: t.overlay,
       barrierLabel: words.close,

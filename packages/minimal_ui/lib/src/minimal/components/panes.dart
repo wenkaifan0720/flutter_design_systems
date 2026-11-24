@@ -147,8 +147,8 @@ class _MinimalScrollAreaState extends State<MinimalScrollArea> {
       axis: widget.axis,
       thickness: 12,
       visibility: widget.alwaysShown
-          ? DesignScrollbarVisibility.always
-          : DesignScrollbarVisibility.auto,
+          ? RawScrollbarVisibility.always
+          : RawScrollbarVisibility.auto,
       semanticLabel: widget.label,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,

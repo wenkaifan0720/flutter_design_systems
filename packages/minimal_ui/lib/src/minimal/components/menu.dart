@@ -66,7 +66,7 @@ class MinimalMenuItem {
 
   /// The keys that perform it elsewhere, printed as key caps at the end in
   /// the platform's order and the reader's words (`⌘ D` on a Mac, `Ctrl D`
-  /// elsewhere; ui_core's [designShortcutKeys]): a hint, not a binding.
+  /// elsewhere; ui_core's [rawShortcutKeys]): a hint, not a binding.
   final MenuSerializableShortcut? shortcut;
 }
 
@@ -462,11 +462,7 @@ class _MinimalContextMenuState extends State<_MinimalContextMenu> {
         checked: item.selected ? true : null,
         // What a screen reader adds: the keys in words.
         shortcut: switch (item.shortcut) {
-          final keys? => designShortcutLabel(
-            context,
-            keys,
-            appleSymbols: false,
-          ),
+          final keys? => rawShortcutLabel(context, keys, appleSymbols: false),
           null => null,
         },
         data: item,

@@ -80,8 +80,8 @@ import 'theme.dart';
 
 void _none() {}
 
-DesignInventoryEntry _live(String stem, WidgetBuilder builder) =>
-    DesignInventoryEntry.present(stem, builder);
+RawInventoryEntry _live(String stem, WidgetBuilder builder) =>
+    RawInventoryEntry.present(stem, builder);
 
 /// A file or folder of the specimen tree.
 class _Node {
@@ -170,13 +170,13 @@ class _Pane extends StatelessWidget {
 
 /// Minimal in ui_core's shared inventory: each row's specimen is the
 /// Minimal part that answers it, built with plain values, and the one
-/// absent row says why. [DesignInventory.verify] checks every row is
-/// answered; a [DesignInventoryGallery] shows them all.
+/// absent row says why. [RawInventory.verify] checks every row is
+/// answered; a [RawInventoryGallery] shows them all.
 ///
 /// ```dart
-/// DesignInventoryGallery(inventory: minimalInventory)
+/// RawInventoryGallery(inventory: minimalInventory)
 /// ```
-final DesignInventory minimalInventory = DesignInventory(
+final RawInventory minimalInventory = RawInventory(
   look: 'Minimal',
   entries: [
     // Actions
@@ -193,7 +193,7 @@ final DesignInventory minimalInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       'A floating action button is Material vocabulary; Minimal puts the '
           "page's one action in its top bar or a primary MinimalButton.",
@@ -412,7 +412,7 @@ final DesignInventory minimalInventory = DesignInventory(
         onChanged: (_) {},
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'WheelPicker',
       'A wheel picker is an iOS idiom; Minimal chooses from a MinimalSelect, '
           'a MinimalCombobox or a MinimalCommand, and a time from a '
@@ -1129,7 +1129,7 @@ class MinimalInventoryGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: minimalInventory,
       padding: padding,
       controller: controller,
@@ -1240,7 +1240,7 @@ class MinimalInventoryGallery extends StatelessWidget {
                 const MinimalGap(MinimalSpacing.s8),
               placed ??
                   Text(
-                    DesignInventory.absentLabel(entry?.absentReason ?? ''),
+                    RawInventory.absentLabel(entry?.absentReason ?? ''),
                     style: t.bodySmall.c(t.textTertiary),
                   ),
             ],

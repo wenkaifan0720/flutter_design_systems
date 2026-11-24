@@ -221,8 +221,8 @@ void main() {
           // finger's, as a touch screen on a desktop is (a pointer's 24 px
           // floor lays out less room round the same faces).
           density: MinimalDensity.standard,
-          DesignTapTargetScope(
-            targets: const DesignTapTargets(input: DesignInput.touch),
+          RawTapTargetScope(
+            targets: const RawTapTargets(input: RawInput.touch),
             child: SizedBox(
               width: 320,
               child: KeyedSubtree(

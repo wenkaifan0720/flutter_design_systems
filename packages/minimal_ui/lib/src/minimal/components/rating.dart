@@ -136,7 +136,7 @@ class _MinimalRatingState extends State<MinimalRating> {
     final next = value.round().clamp(widget.allowClear ? 0 : 1, widget.max);
     if (next == widget.value.round()) return;
     // ui_core plays a drag's steps itself; a tap and a key play here.
-    if (!_moved) DesignHaptics.of(context).selectionChanged?.call();
+    if (!_moved) RawHaptics.of(context).selectionChanged?.call();
     change(next);
   }
 

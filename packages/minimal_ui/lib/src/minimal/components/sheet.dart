@@ -424,7 +424,7 @@ class MinimalBottomSheet extends StatelessWidget {
   /// [centredWidth] wide, fading in and out as a dialog does (a short fade
   /// under Reduce Motion). The scrim and Escape dismiss it; focus stays
   /// inside it and goes back to what raised it as it closes. It is
-  /// ui_core's dialog route ([DesignDialogRoute]). A [MinimalSheetPage]
+  /// ui_core's dialog route ([RawModalDialogRoute]). A [MinimalSheetPage]
   /// takes it by itself where [centresAt] says so.
   static Route<T> centredRoute<T>({
     required BuildContext context,

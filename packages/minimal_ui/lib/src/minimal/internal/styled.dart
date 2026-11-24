@@ -22,15 +22,15 @@ Set<WidgetState> minimalStates({
 };
 
 /// One part's style layers (its own `style:` first, then its component
-/// theme) read for one set of states: ui_core's [DesignStyleOf]. Every
+/// theme) read for one set of states: ui_core's [RawStyleOf]. Every
 /// getter is null where no layer says, and the part goes on to the knob and
 /// its own default.
-typedef MinimalStyleOf = DesignStyleOf;
+typedef MinimalStyleOf = RawStyleOf;
 
 /// What Minimal's parts read from their layers beyond ui_core's getters.
-extension MinimalStyleReading on DesignStyleOf {
+extension MinimalStyleReading on RawStyleOf {
   /// The first layer's state wash in these states.
-  Color? get wash => DesignStyle.first(layers, (s) => s.overlay, states);
+  Color? get wash => RawStyle.first(layers, (s) => s.overlay, states);
 
   /// The first layer's padding, for [context]'s direction.
   EdgeInsets? paddingIn(BuildContext context) =>
@@ -57,14 +57,14 @@ extension MinimalStyleReading on DesignStyleOf {
   /// The wash and the outline of every layer as one style, each state
   /// falling through the layers as the part's own slots do: what its
   /// `MinimalPressable` reads. Null when no layer is set.
-  DesignStyle? get press {
+  RawStyle? get press {
     if (layers.every((l) => l == null)) return null;
-    return DesignStyle(
+    return RawStyle(
       overlay: WidgetStateProperty.resolveWith(
-        (s) => DesignStyle.first(layers, (l) => l.overlay, s),
+        (s) => RawStyle.first(layers, (l) => l.overlay, s),
       ),
       shape: WidgetStateProperty.resolveWith(
-        (s) => DesignStyle.first(layers, (l) => l.shape, s),
+        (s) => RawStyle.first(layers, (l) => l.shape, s),
       ),
     );
   }

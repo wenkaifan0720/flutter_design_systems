@@ -103,7 +103,7 @@ int minimalSeekIndex(
 /// target stands at least this tall; a compact face stands in the same
 /// target with more room round it, so density never moves it.
 double minimalTapFloor(BuildContext context) =>
-    DesignTapTargets.of(context).floorOn().height;
+    RawTapTargets.of(context).floorOn().height;
 
 /// A control's [height] grown by what the text scale adds to its 16 px
 /// label line, so the words keep at 130% the air they have at 100% (the

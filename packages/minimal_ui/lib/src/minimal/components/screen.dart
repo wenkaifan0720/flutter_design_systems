@@ -218,10 +218,7 @@ class MinimalScaffold extends StatelessWidget {
 
     // The page under its bar is one keyline region: what stands on it
     // starts on the gutter and ends on it (ui_core's keyline check).
-    final region = DesignKeylineRegion(
-      label: 'MinimalScaffold',
-      child: content,
-    );
+    final region = RawKeylineRegion(label: 'MinimalScaffold', child: content);
 
     final Widget frame;
     if (fullBleed) {

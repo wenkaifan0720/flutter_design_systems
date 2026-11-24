@@ -66,7 +66,7 @@ class MinimalMenuEntry {
 
   /// The keys that run it, printed as key caps at the end in the
   /// platform's order and the reader's words (`⌘ S` on a Mac, `Ctrl S`
-  /// elsewhere; ui_core's [designShortcutKeys]): a hint, not a binding.
+  /// elsewhere; ui_core's [rawShortcutKeys]): a hint, not a binding.
   final MenuSerializableShortcut? shortcut;
 
   /// The check of an item that toggles; null: none.
@@ -89,11 +89,7 @@ class MinimalMenuEntry {
               : [for (final c in children!) c._design(context)],
           // What a screen reader adds: the keys in words.
           shortcut: switch (shortcut) {
-            final keys? => designShortcutLabel(
-              context,
-              keys,
-              appleSymbols: false,
-            ),
+            final keys? => rawShortcutLabel(context, keys, appleSymbols: false),
             null => null,
           },
           checked: checked,

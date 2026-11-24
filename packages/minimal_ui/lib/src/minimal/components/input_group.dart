@@ -37,7 +37,7 @@ import 'pressable.dart';
 /// quiet fill behind a hairline, as one part of the box. A tap on the box
 /// or a plain add-on puts the caret in the field.
 ///
-/// The behaviour is ui_core's ([DesignInputGroup]); Minimal paints it.
+/// The behaviour is ui_core's ([RawInputGroup]); Minimal paints it.
 /// [style] dresses the box over `components.textField`, as a text field's
 /// `fieldStyle` does.
 ///
@@ -305,7 +305,7 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
       ),
     );
 
-    final group = DesignInputGroup(
+    final group = RawInputGroup(
       focusNode: focusNode,
       enabled: widget.enabled,
       isError: error != null || MinimalFieldErrorScope.of(context),

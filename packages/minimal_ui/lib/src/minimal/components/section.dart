@@ -111,7 +111,7 @@ class MinimalSection extends StatelessWidget {
         MinimalSectionHeader.inset.bottom,
       ),
     );
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: 'MinimalSection',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

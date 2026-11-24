@@ -319,7 +319,7 @@ const double _treeRow = 32;
 /// Left closes it or steps out (mirrored right to left), Home and End go to
 /// the ends, Enter activates ([onActivate]), Space selects, `*` opens every
 /// sibling; a screen reader hears each row's level and whether it is open.
-/// The behaviour is ui_core's ([DesignTree]); Minimal paints it.
+/// The behaviour is ui_core's ([RawTree]); Minimal paints it.
 ///
 /// ```dart
 /// MinimalTreeView<String>(roots: const ['lib', 'test'], childrenOf: (path) => folders[path] ?? const <String>[], labelOf: (path) => path, onActivate: open)
@@ -392,7 +392,7 @@ class MinimalTreeView<T extends Object> extends StatefulWidget {
 
 class _MinimalTreeViewState<T extends Object>
     extends State<MinimalTreeView<T>> {
-  late final DesignTreeController<T> _tree = DesignTreeController<T>(
+  late final RawTreeController<T> _tree = RawTreeController<T>(
     roots: widget.roots,
     childrenOf: widget.childrenOf,
     expanded: widget.initiallyExpanded,
@@ -424,7 +424,7 @@ class _MinimalTreeViewState<T extends Object>
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: _tree,
       labelOf: widget.labelOf,
       onActivate: widget.onActivate,

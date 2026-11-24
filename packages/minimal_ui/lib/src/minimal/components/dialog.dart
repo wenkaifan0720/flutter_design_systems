@@ -414,7 +414,7 @@ BorderRadiusGeometry _foot(BorderRadiusGeometry radius) {
 /// overshoot that settles in about 120 ms, and fades out the same way;
 /// under Reduce Motion a short fade. As it opens it takes the focus and
 /// keeps Tab inside it; as it closes the focus goes back to what opened it.
-/// The route is ui_core's ([DesignDialogRoute]); Minimal paints it.
+/// The route is ui_core's ([RawModalDialogRoute]); Minimal paints it.
 ///
 /// ```dart
 /// final sure = await showMinimalDialog<bool>(context, builder: (context) => const MinimalDialog(title: 'Archive habit?', confirmLabel: 'Archive', cancelLabel: 'Keep')) ?? false;
@@ -431,7 +431,7 @@ Future<T?> showMinimalDialog<T>(
   // mounts its host under the navigator), so the tokens travel with it.
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       barrierColor: t.overlay,
       barrierDismissible: barrierDismissible,
       barrierLabel: MinimalLocalizations.of(context).dismiss,

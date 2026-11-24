@@ -1,4 +1,4 @@
-// A line chart writes its figures as ui_core's DesignChartValueFormat does:
+// A line chart writes its figures as ui_core's RawChartValueFormat does:
 // in the reader's separators (German's 1,5), in thousands from a thousand up.
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';

@@ -133,7 +133,7 @@ class _MinimalNumberFieldState extends State<MinimalNumberField> {
     final next = (from + direction * widget.step).clamp(widget.min, widget.max);
     if (next == from) return _stop();
     _repeated = next;
-    DesignHaptics.of(context).selectionChanged?.call();
+    RawHaptics.of(context).selectionChanged?.call();
     onChanged(next);
   }
 

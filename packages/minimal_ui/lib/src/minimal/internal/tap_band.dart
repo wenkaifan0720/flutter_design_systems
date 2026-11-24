@@ -302,10 +302,10 @@ Widget minimalInlineTargets(
   Widget child, {
   double height = 0,
 }) {
-  final targets = DesignTapTargets.of(context);
+  final targets = RawTapTargets.of(context);
   return _BandTargets(
     targets: _BandTargets.maybeOf(context) ?? targets,
-    child: DesignTapTargetScope(
+    child: RawTapTargetScope(
       targets: targets.copyWith(
         touch: Size(targets.touch.width, height),
         pointer: Size(targets.pointer.width, height),
@@ -374,9 +374,9 @@ double minimalBandFloor(BuildContext context) =>
 class _BandTargets extends InheritedWidget {
   const _BandTargets({required this.targets, required super.child});
 
-  final DesignTapTargets targets;
+  final RawTapTargets targets;
 
-  static DesignTapTargets? maybeOf(BuildContext context) =>
+  static RawTapTargets? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_BandTargets>()?.targets;
 
   @override

@@ -360,7 +360,7 @@ class MinimalPriorityIcon extends StatelessWidget {
               .priorityNamed(priority.labelIn(context));
     // One item at its box for ui_core's keyline check: "no priority" is three
     // faint dashes whose ink it cannot find.
-    final glyph = DesignKeylineFace(
+    final glyph = RawKeylineFace(
       child: SizedBox.square(
         dimension: size,
         child: CustomPaint(

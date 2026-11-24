@@ -13,4 +13,4 @@ const double minimalCapHeight = 0.710;
 /// segment's, a chip's, a menu item's, a select's, a badge's, a one-line
 /// row's and a title bar's. Never around an icon.
 Widget minimalCapLabel(Widget label) =>
-    DesignCapCenter(capHeightFactor: minimalCapHeight, child: label);
+    RawCapCenter(capHeightFactor: minimalCapHeight, child: label);

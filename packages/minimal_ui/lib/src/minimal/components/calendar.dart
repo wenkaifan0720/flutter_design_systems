@@ -143,7 +143,7 @@ class _Grid extends StatelessWidget {
                 ink: ink,
                 figure: minimalCapLabel(
                   Text(
-                    '${d.date.day}',
+                    d.label,
                     style: (marked ? t.monoValue.medium : t.monoValue).c(ink),
                   ),
                 ),

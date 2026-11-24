@@ -129,7 +129,7 @@ class MinimalCard extends StatelessWidget {
     final fill = so.fill ?? (flat ? t.muted : t.card);
     // One keyline region: what stands in the card starts and ends on its
     // padding's lines (ui_core's keyline check reads it).
-    final box = DesignKeylineRegion(
+    final box = RawKeylineRegion(
       label: 'MinimalCard',
       child: _box(padding, shape, fill, so, chosen, t),
     );

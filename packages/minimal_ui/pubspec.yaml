@@ -1,7 +1,7 @@
 name: minimal_ui
 description: >-
   A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night.
-version: 0.5.0
+version: 0.6.0
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/minimal/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/minimal/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
@@ -34,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.5.1
+  ui_core: ^0.6.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -44,7 +44,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.3.0
+  ui_core_test: ^0.4.0
   # Our looks' layout review, in the repository alone (publish_to: none).
   ui_core_review: ^0.1.0
 

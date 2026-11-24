@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-/// How one part looks: ui_core's [DesignStyle], under Minimal's name. Every
+/// How one part looks: ui_core's [RawStyle], under Minimal's name. Every
 /// slot resolves for the part's states ([WidgetState.disabled],
 /// [WidgetState.hovered], [WidgetState.focused], [WidgetState.pressed],
 /// [WidgetState.selected], [WidgetState.error]).
@@ -45,7 +45,7 @@ import 'package:ui_core/ui_core.dart';
 ///   ),
 /// )
 /// ```
-typedef MinimalStyle = DesignStyle;
+typedef MinimalStyle = RawStyle;
 
 /// Every component theme in one, as `ThemeData` holds Material's: what
 /// `MinimalThemeData.components` carries and lerps. Each is null until an

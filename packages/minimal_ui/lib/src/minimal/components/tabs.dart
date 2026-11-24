@@ -147,7 +147,7 @@ class _MinimalTabBarState extends State<MinimalTabBar>
     if (i == widget.selectedIndex) return;
     final onChanged = widget.onChanged;
     if (onChanged != null) {
-      DesignHaptics.of(context).selectionChanged?.call();
+      RawHaptics.of(context).selectionChanged?.call();
       onChanged(i);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {

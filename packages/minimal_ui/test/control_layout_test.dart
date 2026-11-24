@@ -367,7 +367,7 @@ void main() {
           // What the words stand on: the gap between the glyph and them.
           final ground = shot.at(Offset(words.left - 2, words.top + 1));
           // The capitals are drawn up to a few pixels off the laid-out line
-          // (DesignCapCenter moves only what it paints).
+          // (RawCapCenter moves only what it paints).
           final caps = shot.inkRows(
             Rect.fromLTRB(
               words.left,

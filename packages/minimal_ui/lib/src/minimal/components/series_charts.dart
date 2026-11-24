@@ -335,14 +335,14 @@ class _SeriesChartState extends State<_SeriesChart> {
   /// widest label, so the last label stands centred on its own point.
   ({double axis, double end}) _gutters(TextStyle figure, TextScaler scaler) {
     final scale = _scaleOf([for (final s in widget.series) s.values]);
-    final widest = DesignScaleTick.widestLabel(
+    final widest = RawScaleTick.widestLabel(
       [
         for (
           var v = scale.bottom;
           v <= scale.top + scale.step / 2;
           v += scale.step
         )
-          DesignScaleTick(value: v, position: v, label: _say(v)),
+          RawScaleTick(value: v, position: v, label: _say(v)),
       ],
       style: figure,
       textScaler: scaler,
@@ -350,10 +350,10 @@ class _SeriesChartState extends State<_SeriesChart> {
     final names = widget.labels;
     final label = names == null || names.isEmpty
         ? 0.0
-        : DesignScaleTick.widestLabel(
+        : RawScaleTick.widestLabel(
             [
               for (final (i, name) in names.take(_count).indexed)
-                DesignScaleTick(
+                RawScaleTick(
                   value: i.toDouble(),
                   position: i.toDouble(),
                   label: name,
@@ -435,22 +435,22 @@ class _SeriesChartState extends State<_SeriesChart> {
       // at the sides, half a figure's line over it, the labels under it.
       plot = SizedBox(
         height: whole,
-        child: DesignChart(
+        child: RawChart(
           semanticLabel:
               widget.semanticLabel ??
               [for (final s in widget.series) s.name].join(', '),
           series: [
             for (final s in widget.series)
-              DesignChartSeries(
+              RawChartSeries(
                 label: s.name,
                 points: [
                   for (var i = 0; i < s.values.length; i++)
-                    DesignChartPoint(i.toDouble(), s.values[i]),
+                    RawChartPoint(i.toDouble(), s.values[i]),
                 ],
               ),
           ],
           // One point stands in the middle, as the painter draws it.
-          xAxis: n <= 1 ? DesignChartXAxis.band : DesignChartXAxis.linear,
+          xAxis: n <= 1 ? RawChartXAxis.band : RawChartXAxis.linear,
           padding: EdgeInsetsDirectional.fromSTEB(axis, head, end, strip),
           formatX: (x) {
             final i = x.round();
@@ -1159,7 +1159,7 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
       final radius = widget.size / 2;
       donut = SizedBox.square(
         dimension: widget.size,
-        child: DesignPieChart(
+        child: RawPieChart(
           semanticLabel:
               widget.semanticLabel ??
               widget.centerLabel ??
@@ -1168,7 +1168,7 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
           semanticSummary: summary,
           slices: [
             for (final s in widget.slices)
-              DesignPieSlice(label: s.label, value: math.max(0.0, s.value)),
+              RawPieSlice(label: s.label, value: math.max(0.0, s.value)),
           ],
           holeRadius: math.max(0.0, radius - widget.thickness) / radius,
           formatValue: format,

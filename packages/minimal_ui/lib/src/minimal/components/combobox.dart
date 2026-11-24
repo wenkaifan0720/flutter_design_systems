@@ -121,7 +121,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
 
   /// Finds the options for the words typed, in place of filtering
   /// [options]: a future for a search that takes time, which may fail.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs; null runs it at every
   /// letter.
@@ -310,7 +310,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         DiagnosticsProperty<Duration>(
           'debounceDuration',
@@ -620,7 +620,7 @@ class _MinimalMultiSelectState<T extends Object>
       );
     }
 
-    Widget group(Widget child) => DesignInputGroup(
+    Widget group(Widget child) => RawInputGroup(
       focusNode: _focus,
       enabled: _enabled,
       isError: widget.errorText != null,

@@ -318,7 +318,7 @@ class MinimalKbd extends StatelessWidget {
 
   /// A keyboard shortcut's keys as caps side by side, in the platform's
   /// order and the reader's words, as Flutter's own menus print them
-  /// (ui_core's [designShortcutKeys]: `⇧ ⌘ N` on a Mac, `Ctrl Shift N`
+  /// (ui_core's [rawShortcutKeys]: `⇧ ⌘ N` on a Mac, `Ctrl Shift N`
   /// elsewhere), announced once in words (`Shortcut Shift+Command+N`).
   ///
   /// ```dart
@@ -425,10 +425,10 @@ class _Shortcut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final caps = designShortcutKeys(context, keys);
+    final caps = rawShortcutKeys(context, keys);
     return Semantics(
       label: MinimalLocalizations.of(context)
-          .shortcut(designShortcutLabel(context, keys, appleSymbols: false)),
+          .shortcut(rawShortcutLabel(context, keys, appleSymbols: false)),
       excludeSemantics: true,
       // Keys read left to right in every language, as a code does.
       child: Row(

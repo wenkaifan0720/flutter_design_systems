@@ -491,7 +491,7 @@ class MinimalListSection extends StatelessWidget {
     }
     // In a card the card is the keyline region; full bleed, the group is.
     if (MinimalCard.contains(context)) return _rows(context, inCard: true);
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: 'MinimalListSection',
       child: _rows(context, inCard: false),
     );

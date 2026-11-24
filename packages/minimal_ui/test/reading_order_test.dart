@@ -76,7 +76,7 @@ void main() {
     );
     // The first handle is the hue's.
     double hueAt() =>
-        tester.getCenter(find.byType(DesignValueHandle).first).dx - box().left;
+        tester.getCenter(find.byType(RawValueHandle).first).dx - box().left;
     final picker = MinimalColorPicker(
       value: const Color(0xFF2563EB),
       onChanged: (_) {},

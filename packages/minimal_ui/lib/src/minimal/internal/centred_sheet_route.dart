@@ -4,7 +4,7 @@ import 'package:ui_core/ui_core.dart';
 /// (`MinimalBottomSheet.centredRoute`): ui_core's dialog route, which the
 /// page's bar still reads as a sheet (`MinimalRouteChrome.sheet`), so the
 /// card keeps its compact header and close. It adds nothing but its name.
-class MinimalCentredSheetRoute<T> extends DesignDialogRoute<T> {
+class MinimalCentredSheetRoute<T> extends RawModalDialogRoute<T> {
   /// The centred sheet's route, its page [builder]'s.
   MinimalCentredSheetRoute({
     required super.builder,

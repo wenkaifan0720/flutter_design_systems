@@ -1,7 +1,7 @@
 // iOS's Reduce Motion alone stills Minimal. Flutter 3.47 sets only dart:ui's
 // AccessibilityFeatures.reduceMotion on iOS, which MediaQuery does not carry
 // (MediaQuery.disableAnimations is Android's and the web's), so
-// context.minimalStill reads ui_core's designReduceMotionOf. Its change comes
+// context.minimalStill reads ui_core's rawReduceMotionOf. Its change comes
 // as a build, so each loop starts and stops from build, not once in
 // didChangeDependencies.
 import 'package:material_ui/material_ui.dart';

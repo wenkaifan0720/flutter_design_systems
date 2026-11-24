@@ -51,7 +51,7 @@ class MinimalFormSection extends StatelessWidget {
     final t = context.minimalTheme;
     final title = this.title;
     final footer = this.footer;
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: 'MinimalFormSection',
       child: _section(t, title, footer),
     );

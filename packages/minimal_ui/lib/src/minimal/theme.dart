@@ -359,7 +359,7 @@ abstract final class MinimalLayout {
   /// Minimal's floors, declared by [MinimalTheme] for the parts under it:
   /// [minHitTarget] for a finger, [pointerHitTarget] for a pointer.
   /// Density never moves them. They are ui_core's own floors.
-  static const DesignTapTargets tapTargets = DesignTapTargets.fallback;
+  static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   /// Whether the screen is narrower than [compact].
   static bool isCompact(BuildContext context) =>
@@ -1722,7 +1722,7 @@ class MinimalTheme extends StatelessWidget {
             child: DefaultTextStyle(
               style: shown.body,
               // Minimal's tap-target floors, which its parts lay out at.
-              child: DesignTapTargetScope(
+              child: RawTapTargetScope(
                 targets: MinimalLayout.tapTargets,
                 child: under,
               ),
@@ -1949,7 +1949,7 @@ extension MinimalMotionContext on BuildContext {
   ///
   /// Returns true when [MinimalMotion.animate] is false or the platform
   /// requests reduced motion. Read it during build to follow changes.
-  bool get minimalStill => !MinimalMotion.animate || designReduceMotionOf(this);
+  bool get minimalStill => !MinimalMotion.animate || rawReduceMotionOf(this);
 }
 
 /// Scale-step adjustments that keep a style on the scale.

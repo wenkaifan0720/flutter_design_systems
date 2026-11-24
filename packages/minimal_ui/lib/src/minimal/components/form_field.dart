@@ -150,10 +150,10 @@ class MinimalFormField extends StatelessWidget {
 /// field shows every error, moves focus to the first one (scrolling it into
 /// view) and tells a screen reader how many need attention; after that,
 /// the errors follow the edits. Fields take part through Flutter's
-/// `FormField` (ui_core's `DesignFormField`, with the control's focus
+/// `FormField` (ui_core's `RawFormField`, with the control's focus
 /// node); [MinimalForm.submit] runs the check from a button.
 ///
-/// The behaviour is ui_core's ([DesignForm]); it paints nothing.
+/// The behaviour is ui_core's ([RawForm]); it paints nothing.
 ///
 /// ```dart
 /// MinimalForm(onSubmit: save, child: Column(children: fields))
@@ -170,15 +170,15 @@ class MinimalForm extends StatelessWidget {
 
   /// Validates the form around [context]: true, and [onSubmit] called, when
   /// every field is fine.
-  static bool submit(BuildContext context) => DesignForm.of(context).submit();
+  static bool submit(BuildContext context) => RawForm.of(context).submit();
 
   /// Clears the form around [context] back to its first values.
-  static void reset(BuildContext context) => DesignForm.of(context).reset();
+  static void reset(BuildContext context) => RawForm.of(context).reset();
 
   @override
   Widget build(BuildContext context) {
     final words = MinimalLocalizations.of(context);
-    return DesignForm(
+    return RawForm(
       onSubmit: onSubmit,
       problemsMessage: words.fieldsNeedAttention,
       child: child,

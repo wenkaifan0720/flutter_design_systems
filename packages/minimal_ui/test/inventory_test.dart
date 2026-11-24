@@ -1,4 +1,4 @@
-// Minimal in the shared inventory (ui_core's DesignInventory): it answers
+// Minimal in the shared inventory (ui_core's RawInventory): it answers
 // every row once, each live specimen is the row's own class
 // (`Minimal<Stem>`), and each one builds and lays out on a phone and a
 // desktop, light and dark, and at 200% text on a phone, without an error.
