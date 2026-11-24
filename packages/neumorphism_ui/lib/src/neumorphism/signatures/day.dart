@@ -106,7 +106,7 @@ class _RailPainter extends CustomPainter {
       c,
       light: (const Offset(-2, -2), 5),
       dark: (const Offset(4, 3), 9),
-      face: cssLinear(box, rtl ? 270 : 90, [c.faceStart, c.faceEnd]),
+      face: cssLinear(box, c.litAngle(90), [c.faceStart, c.faceEnd]),
       flat: flat,
     );
     if (flat) {

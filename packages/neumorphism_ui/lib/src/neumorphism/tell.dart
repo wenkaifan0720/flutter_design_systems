@@ -712,7 +712,7 @@ class _SkeletonPainter extends CustomPainter {
   final bool row, flat;
 
   /// The shape of the content mirrors as the content would (its avatar at the start, a short last line ending
-  /// early); the light stays top-left.
+  /// early), and so does the light, from the top start.
   final bool rtl;
   final NeumorphicElevation elevation;
   @override
@@ -721,8 +721,8 @@ class _SkeletonPainter extends CustomPainter {
     final breath = .5 - .5 * math.cos(phase * math.pi * 2);
     final k = .55 + .45 * breath;
     final well = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
+      begin: colors.light,
+      end: -colors.light,
       colors: [colors.wellStart, colors.wellEnd],
     ).createShader(Offset.zero & size);
     Rect start(Rect r) => rtl
@@ -1133,8 +1133,8 @@ class _BeadPainter extends CustomPainter {
       lightColor: warm,
       face: fill == null
           ? LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: c.light,
+              end: -c.light,
               colors: [c.faceStart, c.faceEnd],
             ).createShader(box)
           : LinearGradient(colors: [fill!, fill!]).createShader(box),

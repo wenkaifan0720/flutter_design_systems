@@ -1,3 +1,8 @@
+## 0.6.1
+
+- The light stands at the top start: the top left, and the top right under a right-to-left `Directionality`. Every relief takes its light and shade from it, raised, pressed in, pressed down, focused and out of use, on every part (buttons, fields, cards, switches, sliders, segmented buttons, calendar days, dialogs, sheets, toasts and the rest), so a part right to left is the mirror of itself left to right, through a press as at rest. Before, the light stood at the top left in either direction. Left-to-right drawing is unchanged.
+- `NeumorphicTheme.of` and `maybeOf` place the light by the `Directionality` where they are read.
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0, whose `Design*` names are `Raw*` now (`RawTapTargets`, `RawInventoryEntry`, `RawModalDialogRoute` and the rest). `dart fix --apply` renames them in an app (ui_core's `lib/fix_data.yaml` holds them); Neumorphism's code, docs and examples use the new names.

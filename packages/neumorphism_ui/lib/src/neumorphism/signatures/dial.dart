@@ -166,6 +166,8 @@ class _DialPainter extends CustomPainter {
       flat: flat,
     );
     if (flat) canvas.drawOval(collar, neumorphicStrokePaint(c.quiet, 1));
+    // Each flute's shade stands past its lit stroke, away from the light: clockwise under a light at the top left.
+    final past = c.lit(const Offset(1.7, 0)).dx;
     for (var i = 0; i < 80; i++) {
       final a = i * 4.5;
       final w = 1.5 * k.clamp(.75, 1.2);
@@ -175,8 +177,8 @@ class _DialPainter extends CustomPainter {
         neumorphicStrokePaint(c.fluteHighlight, w),
       );
       canvas.drawLine(
-        at(109, a + 1.7),
-        at(119, a + 1.7),
+        at(109, a + past),
+        at(119, a + past),
         neumorphicStrokePaint(c.fluteShadow, w),
       );
     }
@@ -190,7 +192,7 @@ class _DialPainter extends CustomPainter {
       dark: (Offset(u(7, 11), u(7, 11)), u(16, 24)),
       face: cssRadial(
         dome,
-        .34,
+        c.litAcross(.34),
         .28,
         [c.domeLight, c.domeMid, c.domeDark],
         const [0, .46, 1],
@@ -210,7 +212,7 @@ class _DialPainter extends CustomPainter {
         lightColor: c.highlightSoft,
         dark: (const Offset(3, 3), 7),
         darkColor: c.shadowDeep,
-        face: cssLinear(box, 145, [c.domeLight, c.domeMid]),
+        face: cssLinear(box, c.litAngle(145), [c.domeLight, c.domeMid]),
         flat: flat,
       );
       if (flat) canvas.drawOval(box, neumorphicStrokePaint(c.quiet, 1));
@@ -1082,7 +1084,7 @@ class _MiniPainter extends CustomPainter {
       dark: (const Offset(4, 4), 10),
       face: cssRadial(
         dome,
-        .34,
+        c.litAcross(.34),
         .28,
         [c.domeLight, c.domeMid, c.domeDark],
         const [0, .5, 1],
@@ -1402,7 +1404,7 @@ class _KnobPainter extends CustomPainter {
       dark: (const Offset(4, 4), 9),
       face: cssRadial(
         cap,
-        .34,
+        c.litAcross(.34),
         .28,
         [c.domeLight, c.domeMid, c.domeDark],
         const [0, .5, 1],

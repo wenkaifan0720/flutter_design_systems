@@ -2609,8 +2609,8 @@ class _StarPainter extends CustomPainter {
         dark: (const Offset(1.4, 1.4) * d, 3 * d),
         lightColor: Color.lerp(colors.highlight, colors.pigmentHi, .35),
         face: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: colors.light,
+          end: -colors.light,
           colors: [colors.pigmentHi, colors.pigment, colors.pigmentDk],
           stops: const [0, .55, 1],
         ).createShader(box),

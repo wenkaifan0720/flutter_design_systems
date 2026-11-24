@@ -200,16 +200,18 @@ class _TimelineRail extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final x = rtl ? size.width - _x : _x;
     final c = colors;
-    // The engraved line: a crease and its lit edge, as the look's rules are, stood on end.
+    // The engraved line: a crease and its lit edge, as the look's rules are, stood on end. The cut's far wall takes the
+    // light: the lit edge stands past the crease, away from the light.
+    final lit = c.lit(const Offset(1, 0)).dx;
     void line(double from, double to) {
       if (to <= from) return;
       canvas.drawRect(
-        Rect.fromLTWH(x - 1, from, 1, to - from),
+        Rect.fromLTWH(lit > 0 ? x - 1 : x, from, 1, to - from),
         neumorphicFillPaint(flat ? c.quiet : c.crease),
       );
       if (!flat) {
         canvas.drawRect(
-          Rect.fromLTWH(x, from, 1, to - from),
+          Rect.fromLTWH(lit > 0 ? x : x - 1, from, 1, to - from),
           neumorphicFillPaint(c.rim),
         );
       }
@@ -460,7 +462,7 @@ class _MeterPainter extends CustomPainter {
     );
     // The fill ends round, as the groove it lies in does: a square end read as a cut stick. It is the groove's floor
     // where it reaches, under the groove's own shade in its colour's tones: laid over the groove, it would stand fuller
-    // than the groove beside it. Painted before the mirror, so its light stays top-left.
+    // than the groove beside it. Painted before the mirror: the groove's light is already where the light stands.
     final reach = value * size.width;
     if (reach > 0) {
       final colour = off ? colors.ink : colors.pigment;

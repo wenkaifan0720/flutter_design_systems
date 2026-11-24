@@ -1,5 +1,5 @@
-// Neumorphism's tokens: one cast material, cool porcelain by default, lit from the top left, and one mineral pigment set into
-// it. `NeumorphicTheme.of(context)` is the only way in. Porcelain is the first preset; every preset changes the wall
+// Neumorphism's tokens: one cast material, cool porcelain by default, lit from the top start (the top left, the top right in
+// a right-to-left app), and one mineral pigment set into it. `NeumorphicTheme.of(context)` is the only way in. Porcelain is the first preset; every preset changes the wall
 // and the pigment together, and each mode is a seed of its own, decided rather than inverted.
 //
 // The pigment is not on `NeumorphicColors`. It means one thing, live, and a page reaches it only through a part that says
@@ -183,6 +183,7 @@ class NeumorphicColors {
     required this._pigmentInk,
     required this._pigmentInkLit,
     required this._onPigment,
+    this._light = Alignment.topLeft,
   });
 
   /// Whether these colours were designed for a dark appearance.
@@ -191,13 +192,14 @@ class NeumorphicColors {
   /// The wall: the page's ground, every surface's base.
   final Color ground;
 
-  /// A raised face's two ends, on a 145 degree gradient: light top left, convex.
+  /// A raised face's two ends, on a 145 degree gradient from the light at the top start (the light's side lit), convex.
   final Color faceStart, faceEnd;
 
   /// A pressed face's two ends, the same gradient reversed: concave.
   final Color wellStart, wellEnd;
 
-  /// The light shadow up-left, its softer form, and the dark shadow: cards, cast objects, insets.
+  /// The light shadow, thrown toward the light, its softer form, and the dark shadow, thrown away from it: cards, cast
+  /// objects, insets.
   final Color highlight, highlightSoft, shadow, shadowDeep, shadowInset;
 
   /// The 1 px inner catch-light and inner crease: at night these do most of the edge's work.
@@ -234,6 +236,52 @@ class NeumorphicColors {
       _pigmentInk,
       _pigmentInkLit,
       _onPigment;
+
+  /// Where the light stands ([NeumorphicLightPlacement.light]).
+  final Alignment _light;
+
+  /// These colours lit from [light]: the same colours, with the light stood where the reading direction puts it.
+  NeumorphicColors _towards(Alignment light) => light == _light
+      ? this
+      : NeumorphicColors._(
+          dark: dark,
+          ground: ground,
+          faceStart: faceStart,
+          faceEnd: faceEnd,
+          wellStart: wellStart,
+          wellEnd: wellEnd,
+          highlight: highlight,
+          highlightSoft: highlightSoft,
+          shadow: shadow,
+          shadowDeep: shadowDeep,
+          shadowInset: shadowInset,
+          rim: rim,
+          crease: crease,
+          ink: ink,
+          inkSecondary: inkSecondary,
+          inkTertiary: inkTertiary,
+          quiet: quiet,
+          edge: edge,
+          barStart: barStart,
+          barEnd: barEnd,
+          domeLight: domeLight,
+          domeMid: domeMid,
+          domeDark: domeDark,
+          fluteHighlight: fluteHighlight,
+          fluteShadow: fluteShadow,
+          art: art,
+          toneLight: toneLight,
+          toneMid: toneMid,
+          toneDark: toneDark,
+          toneDetail: toneDetail,
+          pigment: _pigment,
+          pigmentHi: _pigmentHi,
+          pigmentDk: _pigmentDk,
+          pigmentInk: _pigmentInk,
+          pigmentInkLit: _pigmentInkLit,
+          onPigment: _onPigment,
+          light: light,
+        );
 
   /// A copy with the given colours replaced. The pigment's six colours go by the names [NeumorphicThemeData.from]
   /// takes its pigment by: [pigment] is the [accent], [onPigment] the [onAccent] and [pigmentInk] the [accentInk];
@@ -313,6 +361,7 @@ class NeumorphicColors {
     pigmentInk: pigmentInk ?? _pigmentInk,
     pigmentInkLit: pigmentInkLit ?? _pigmentInkLit,
     onPigment: onPigment ?? _onPigment,
+    light: _light,
   );
 
   /// The colours [t] of the way from [a] to [b]. Whether it is a night palette snaps at the middle.
@@ -359,6 +408,7 @@ class NeumorphicColors {
       pigmentInk: Color.lerp(a._pigmentInk, b._pigmentInk, t)!,
       pigmentInkLit: Color.lerp(a._pigmentInkLit, b._pigmentInkLit, t)!,
       onPigment: Color.lerp(a._onPigment, b._onPigment, t)!,
+      light: Alignment.lerp(a._light, b._light, t)!,
     );
   }
 
@@ -401,7 +451,8 @@ class NeumorphicColors {
           other._pigmentDk == _pigmentDk &&
           other._pigmentInk == _pigmentInk &&
           other._pigmentInkLit == _pigmentInkLit &&
-          other._onPigment == _onPigment;
+          other._onPigment == _onPigment &&
+          other._light == _light;
 
   @override
   int get hashCode => Object.hashAll([
@@ -441,6 +492,7 @@ class NeumorphicColors {
     _pigmentInk,
     _pigmentInkLit,
     _onPigment,
+    _light,
   ]);
 
   /// The accent fill for primary actions and app-defined controls.
@@ -482,6 +534,27 @@ extension NeumorphicPigment on NeumorphicColors {
 
   /// The ring around an LED.
   Color get ledGlow => _pigment.withValues(alpha: dark ? .25 : .18);
+}
+
+/// Where the light stands, for the parts' own drawing. Hidden from the barrel: a page never places the light. The
+/// look's light stands at the top start of the reading direction: [NeumorphicTheme.of] stands it there for the
+/// direction where it is read, so a raised or pressed part in a right-to-left app is lit from its top right.
+extension NeumorphicLightPlacement on NeumorphicColors {
+  /// Where the light stands: [Alignment.topLeft] from [NeumorphicTheme.of] in a left-to-right app, [Alignment.topRight]
+  /// in a right-to-left one.
+  Alignment get light => _light;
+
+  /// [offset], drawn for the light at the top left, turned to where the light stands: a throw toward the light or away
+  /// from it, a catch-light or a crease on its side of an edge.
+  Offset lit(Offset offset) => Offset(offset.dx * -_light.x, offset.dy);
+
+  /// A CSS gradient angle, clockwise from 12 o'clock, drawn for the light at the top left, turned to where the light
+  /// stands: 145 is 215 under a light at the top right.
+  double litAngle(double degrees) => 180 + (degrees - 180) * -_light.x;
+
+  /// A point across a box, as a share of its width from its left, drawn for the light at the top left, turned to where
+  /// the light stands: a dome's lit spot.
+  double litAcross(double share) => .5 + (share - .5) * -_light.x;
 }
 
 /// One appearance of a preset, by what a designer picks. Everything else is worked out in [_Seed.colors].
@@ -1702,20 +1775,27 @@ class NeumorphicThemeData with Diagnosticable {
     );
   }
 
-  final Map<(double, bool), NeumorphicThemeData> _windows = {};
+  final Map<(double, bool, Alignment), NeumorphicThemeData> _windows = {};
 
   /// The same theme, including component overrides, set for [width].
   NeumorphicThemeData atWidth(double width) =>
-      _atWindow(width, _platformHighContrast);
+      _atWindow(width, _platformHighContrast, colors._light);
 
-  NeumorphicThemeData _atWindow(double width, bool platformHighContrast) {
-    if (width == this.width && platformHighContrast == _platformHighContrast) {
+  NeumorphicThemeData _atWindow(
+    double width,
+    bool platformHighContrast,
+    Alignment light,
+  ) {
+    if (width == this.width &&
+        platformHighContrast == _platformHighContrast &&
+        light == colors._light) {
       return this;
     }
     if (_windows.length > 8) _windows.clear();
-    return _windows[(width, platformHighContrast)] ??= _copy(
+    return _windows[(width, platformHighContrast, light)] ??= _copy(
       width: width,
       platformHighContrast: platformHighContrast,
+      colors: colors._towards(light),
     );
   }
 
@@ -1933,14 +2013,22 @@ class NeumorphicTheme extends StatelessWidget {
   /// What stands under it.
   final Widget child;
 
-  /// The theme in scope at [context], its type set for the window's width. With none in scope it is the default,
-  /// porcelain by day, as `Theme.of` gives Material's fallback: a part shown outside the look's root still draws.
+  /// The theme in scope at [context], its type set for the window's width and its light stood at the top start of the
+  /// reading direction there ([Directionality]): the top left, or the top right in a right-to-left app. With none in
+  /// scope it is the default, porcelain by day, as `Theme.of` gives Material's fallback: a part shown outside the
+  /// look's root still draws.
   static NeumorphicThemeData of(BuildContext context) =>
       maybeOf(context) ??
       _fallback._atWindow(
         MediaQuery.maybeSizeOf(context)?.width ?? _fallback.width,
         MediaQuery.maybeHighContrastOf(context) ?? false,
+        _lightAt(context),
       );
+
+  /// Where the light stands at [context]: the top start of its reading direction, as the look's laws stand it.
+  static Alignment _lightAt(BuildContext context) => AlignmentDirectional
+      .topStart
+      .resolve(Directionality.maybeOf(context) ?? TextDirection.ltr);
 
   /// The default [of] gives with no theme in scope, made once.
   static final NeumorphicThemeData _fallback = NeumorphicThemeData.porcelain();
@@ -1954,6 +2042,7 @@ class NeumorphicTheme extends StatelessWidget {
     return data._atWindow(
       MediaQuery.maybeSizeOf(context)?.width ?? data.width,
       MediaQuery.maybeHighContrastOf(context) ?? false,
+      _lightAt(context),
     );
   }
 

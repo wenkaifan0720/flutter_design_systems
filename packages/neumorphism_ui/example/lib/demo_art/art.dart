@@ -50,6 +50,13 @@ class _GablePainter extends CustomPainter {
     canvas.save();
     // Relief shadows may overhang; the flat face stays inside its art slot.
     if (flat) canvas.clipRect(Offset.zero & s);
+    // Drawn for the light at the top left. Under a light at the top right (a right-to-left app) the picture is drawn in
+    // mirror, so its moon and its relief stand where the light does.
+    if (c.light.x > 0) {
+      canvas
+        ..translate(s.width, 0)
+        ..scale(-1, 1);
+    }
     // The gable's moulded eaves reach past its points by the round join's radius (the least corner): drawn to the
     // slot's edges, its feet would stand about 10 px past the column's keylines. The whole mark is set in by that
     // reach.

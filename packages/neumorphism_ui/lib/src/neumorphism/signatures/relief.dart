@@ -163,13 +163,13 @@ class _WallPainter extends CustomPainter {
     final box = Rect.fromLTRB(side, top, s.width - side, s.height - bottom);
     if (!flat) {
       canvas.drawRect(
-        box.shift(const Offset(18, 16)),
+        box.shift(c.lit(const Offset(18, 16))),
         Paint()
           ..color = c.shadowDeep
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
       );
       canvas.drawRect(
-        box.shift(const Offset(-12, -4)),
+        box.shift(c.lit(const Offset(-12, -4))),
         Paint()
           ..color = c.highlight
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 13),
@@ -177,17 +177,30 @@ class _WallPainter extends CustomPainter {
     }
     canvas.drawRect(
       box,
-      Paint()..shader = cssLinear(box, 145, [c.faceStart, c.faceEnd]),
+      Paint()
+        ..shader = cssLinear(box, c.litAngle(145), [c.faceStart, c.faceEnd]),
     );
     if (flat) {
       canvas.drawRect(box.deflate(.5), neumorphicStrokePaint(c.quiet, 1));
     } else {
+      // The catch-light on the side toward the light, the crease on the side away from it.
+      final fromLeft = c.light.x <= 0;
       canvas.drawRect(
-        Rect.fromLTWH(box.left, box.top, 1, box.height),
+        Rect.fromLTWH(
+          fromLeft ? box.left : box.right - 1,
+          box.top,
+          1,
+          box.height,
+        ),
         neumorphicFillPaint(c.rim),
       );
       canvas.drawRect(
-        Rect.fromLTWH(box.right - 1, box.top, 1, box.height),
+        Rect.fromLTWH(
+          fromLeft ? box.right - 1 : box.left,
+          box.top,
+          1,
+          box.height,
+        ),
         neumorphicFillPaint(c.crease),
       );
     }
@@ -310,8 +323,8 @@ class _BayCell extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    begin: c.light,
+                    end: -c.light,
                     colors: [c.pigment, c.pigmentDk],
                   ),
                 ),

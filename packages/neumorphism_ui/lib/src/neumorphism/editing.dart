@@ -181,12 +181,12 @@ class NeumorphicTextContextMenu extends StatelessWidget {
         shadows: [
           BoxShadow(
             color: c.highlight,
-            offset: const Offset(-3, -3),
+            offset: c.lit(const Offset(-3, -3)),
             blurRadius: 10,
           ),
           BoxShadow(
             color: c.shadow,
-            offset: const Offset(4, 4),
+            offset: c.lit(const Offset(4, 4)),
             blurRadius: 12,
           ),
         ],

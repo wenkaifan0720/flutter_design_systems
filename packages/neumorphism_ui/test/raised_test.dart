@@ -281,7 +281,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(NeumorphicTheme.of(raised).colors, nested.colors);
+      // The nested theme as the page reads it: right to left, its light at the top right.
+      expect(
+        NeumorphicTheme.of(raised).colors,
+        NeumorphicTheme.of(host).colors,
+      );
+      expect(NeumorphicTheme.of(raised).colors.ground, nested.colors.ground);
       expect(Directionality.of(raised), TextDirection.rtl);
       expect(MediaQuery.textScalerOf(raised).scale(10), 20);
       expect(

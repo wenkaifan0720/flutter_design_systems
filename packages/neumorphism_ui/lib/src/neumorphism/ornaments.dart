@@ -87,7 +87,7 @@ void neumorphicPaintLed(
       ..isAntiAlias = true
       ..shader = cssRadial(
         box,
-        .35,
+        c.litAcross(.35),
         .35,
         [c.pigmentHi, c.pigment],
         const [0, .7],
@@ -550,7 +550,7 @@ void neumorphicPaintDome(
     lightColor: c.highlightSoft,
     face: cssRadial(
       box,
-      .34,
+      c.litAcross(.34),
       .28,
       [c.domeLight, c.domeMid, c.domeDark],
       const [0, .5, 1],

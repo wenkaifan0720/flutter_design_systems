@@ -126,7 +126,8 @@ Paint _facePaint(Color ground, Shader? face) {
   return paint;
 }
 
-/// A cast shadow's reach: an offset and a CSS blur.
+/// A cast shadow's reach: an offset, drawn for the light at the top left and painted toward where the light stands
+/// ([NeumorphicLightPlacement.lit]), and a CSS blur.
 typedef NeumorphicThrow = (Offset, double);
 
 /// Raises [shape]: a dark shadow, a light shadow, the face, a catch-light and a crease.
@@ -154,11 +155,11 @@ void neumorphicPaintRaised(
         ? (light.$1 * .4, light.$2 * .45)
         : light;
     canvas.drawPath(
-      shape.shift(dark.$1 * elevation.depth),
+      shape.shift(c.lit(dark.$1) * elevation.depth),
       _blurred(strength(darkColor ?? c.shadow), dark.$2 * elevation.depth),
     );
     canvas.drawPath(
-      shape.shift(lit.$1 * elevation.depth),
+      shape.shift(c.lit(lit.$1) * elevation.depth),
       _blurred(strength(lightColor ?? c.highlight), lit.$2 * elevation.depth),
     );
   }
@@ -176,11 +177,11 @@ void _paintEdges(
   canvas.save();
   canvas.clipPath(shape);
   canvas.drawPath(
-    _outside(shape, box, const Offset(1, 1), 4),
+    _outside(shape, box, c.lit(const Offset(1, 1)), 4),
     neumorphicFillPaint(c.rim.withValues(alpha: c.rim.a * opacity)),
   );
   canvas.drawPath(
-    _outside(shape, box, const Offset(-1, -1), 4),
+    _outside(shape, box, c.lit(const Offset(-1, -1)), 4),
     neumorphicFillPaint(c.crease.withValues(alpha: c.crease.a * opacity)),
   );
   canvas.restore();
@@ -225,11 +226,11 @@ void neumorphicPaintPressed(
           elevation.depth +
       2;
   canvas.drawPath(
-    _outside(shape, box, light.$1 * elevation.depth, pad),
+    _outside(shape, box, c.lit(light.$1) * elevation.depth, pad),
     _blurred(strength(lightColor ?? c.highlight), light.$2 * elevation.depth),
   );
   canvas.drawPath(
-    _outside(shape, box, dark.$1 * elevation.depth, pad),
+    _outside(shape, box, c.lit(dark.$1) * elevation.depth, pad),
     _blurred(strength(darkColor ?? c.shadowInset), dark.$2 * elevation.depth),
   );
   canvas.restore();
@@ -266,8 +267,9 @@ bool neumorphicIsColourFace(Color? fill, NeumorphicColors c) {
   return d > .3 && HSLColor.fromColor(fill).saturation > .2;
 }
 
-/// One level on [shape], by name: each [NeumorphicDraw] is its own pair of shadows, the light one up-left and the dark
-/// one down-right; a raised level casts them round the shape, a pressed one inside it.
+/// One level on [shape], by name: each [NeumorphicDraw] is its own pair of shadows, the light one thrown up toward the
+/// light at the top start and the dark one down away from it; a raised level casts them round the shape, a pressed one
+/// inside it.
 void neumorphicPaintCast(
   Canvas canvas,
   Path shape,
@@ -408,14 +410,14 @@ void neumorphicPaintFocusLift(
   final rim = large ? 5.0 : near * .9;
   // The wide pair.
   canvas.drawPath(
-    shape.shift(const Offset(9, 9) * d),
+    shape.shift(c.lit(const Offset(9, 9)) * d),
     _blurred(
       shade.withValues(alpha: math.min(1, shade.a * 1.5) * amount),
       18 * d,
     ),
   );
   canvas.drawPath(
-    shape.shift(const Offset(-7, -7) * d),
+    shape.shift(c.lit(const Offset(-7, -7)) * d),
     _blurred(
       lit.withValues(alpha: (large ? .12 : (c.dark ? .28 : 1)) * amount),
       16 * d,
@@ -423,14 +425,14 @@ void neumorphicPaintFocusLift(
   );
   // The near pair, crisp under the edge.
   canvas.drawPath(
-    shape.shift(Offset(near, near)),
+    shape.shift(c.lit(Offset(near, near))),
     _blurred(
       shade.withValues(alpha: math.min(1, shade.a * 2.1) * amount),
       near * .55,
     ),
   );
   canvas.drawPath(
-    shape.shift(Offset(-rim, -rim)),
+    shape.shift(c.lit(Offset(-rim, -rim))),
     _blurred(
       lit.withValues(alpha: (c.dark ? .95 : 1) * amount),
       large ? rim * .2 : near * .55,
@@ -461,7 +463,7 @@ void neumorphicPaintHollowFocus(
   canvas.save();
   canvas.clipPath(shape);
   canvas.drawPath(
-    _outside(shape, box, Offset(reach, reach), reach * 3 + 2),
+    _outside(shape, box, c.lit(Offset(reach, reach)), reach * 3 + 2),
     _blurred(shade.withValues(alpha: shade.a * .7 * amount), reach * 2.5),
   );
   canvas.restore();

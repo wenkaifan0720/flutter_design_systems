@@ -39,7 +39,11 @@ export 'neumorphism/signatures/day.dart';
 export 'neumorphism/signatures/dial.dart';
 export 'neumorphism/signatures/relief.dart';
 export 'neumorphism/theme.dart'
-    hide NeumorphicPigment, neumorphicRuleWidth, neumorphicEdgeWidth;
+    hide
+        NeumorphicPigment,
+        NeumorphicLightPlacement,
+        neumorphicRuleWidth,
+        neumorphicEdgeWidth;
 
 export 'neumorphism/editing.dart';
 export 'neumorphism/localizations.dart';

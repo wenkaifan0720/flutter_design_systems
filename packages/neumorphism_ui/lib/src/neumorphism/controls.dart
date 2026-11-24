@@ -929,8 +929,8 @@ class _PressRelief extends CustomPainter {
       ..addPath(shape, by * elevation.depth);
     canvas.save();
     canvas.clipPath(shape);
-    canvas.drawPath(outside(const Offset(-3, -3)), blurred(light));
-    canvas.drawPath(outside(const Offset(3, 3)), blurred(dark));
+    canvas.drawPath(outside(c.lit(const Offset(-3, -3))), blurred(light));
+    canvas.drawPath(outside(c.lit(const Offset(3, 3))), blurred(dark));
     canvas.restore();
   }
 
@@ -1077,7 +1077,10 @@ class _ActPainter extends CustomPainter {
     // takes its pressed pair. A release runs back from wherever it is.
     final up = math.max(0.0, 1 - 2 * down);
     final pressed = math.max(0.0, 2 * down - 1);
-    final face = cssLinear(box, 145, [fill ?? c.pigment, fill ?? c.pigmentDk]);
+    final face = cssLinear(box, c.litAngle(145), [
+      fill ?? c.pigment,
+      fill ?? c.pigmentDk,
+    ]);
     neumorphicPaintRaised(
       canvas,
       shape,
@@ -1121,14 +1124,14 @@ class _ActPainter extends CustomPainter {
       Path()
         ..fillType = PathFillType.evenOdd
         ..addRect(box.inflate(4))
-        ..addPath(shape, const Offset(1, 1)),
+        ..addPath(shape, c.lit(const Offset(1, 1))),
       neumorphicFillPaint(c.pigmentHi.withValues(alpha: .55 * up)),
     );
     canvas.drawPath(
       Path()
         ..fillType = PathFillType.evenOdd
         ..addRect(box.inflate(4))
-        ..addPath(shape, const Offset(-1, -1)),
+        ..addPath(shape, c.lit(const Offset(-1, -1))),
       neumorphicFillPaint(c.pigmentDk.withValues(alpha: c.pigmentDk.a * up)),
     );
     canvas.restore();
@@ -2816,8 +2819,8 @@ class _KeyBeadPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final box = Offset.zero & size;
     final face = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
+      begin: c.light,
+      end: -c.light,
       colors: [c.faceStart, c.faceEnd],
     ).createShader(box);
     final path = border.getOuterPath(box);
@@ -5169,8 +5172,12 @@ class _SwitchPainter extends CustomPainter {
     this.elevation = const NeumorphicElevation(),
     this.rule = 1,
     this.focus = 0,
+    this.rtl = false,
   });
   final double position, rule;
+
+  /// Whether the switch reads right to left: off at the right, its thumb travelling left to on.
+  final bool rtl;
 
   /// How far keyboard focus has come in, 0 to 1: the slot deepens and the thumb rises in it.
   final double focus;
@@ -5189,7 +5196,8 @@ class _SwitchPainter extends CustomPainter {
       height: size.height,
     );
     final outline = border ?? NeumorphicRoundedBorder(radius: size.height / 2);
-    final shape = outline.getOuterPath(slot);
+    final direction = rtl ? TextDirection.rtl : TextDirection.ltr;
+    final shape = outline.getOuterPath(slot, textDirection: direction);
     neumorphicPaintPressed(
       canvas,
       shape,
@@ -5204,7 +5212,7 @@ class _SwitchPainter extends CustomPainter {
       face: fill != null
           ? cssLinear(slot, 145, [fill!, fill!])
           : on
-          ? cssLinear(slot, 145, [c.pigmentDk, c.pigment])
+          ? cssLinear(slot, c.litAngle(145), [c.pigmentDk, c.pigment])
           : null,
       flat: flat,
       elevation: elevation,
@@ -5216,7 +5224,9 @@ class _SwitchPainter extends CustomPainter {
     // No rim of its own is BorderSide.none, not null: read as null, so a flat off track still prints its outline (taking
     // none for a rim left the knob alone on the wall, a ring that read as a radio).
     if (side != null && side!.style != BorderStyle.none) {
-      outline.copyWith(side: side!).paint(canvas, slot);
+      outline
+          .copyWith(side: side!)
+          .paint(canvas, slot, textDirection: direction);
     } else if (flat && !on) {
       // Flat, an off track has no groove left: its outline is printed in the quiet ink, so the knob still has a
       // track to sit in (alone it read as a lone ring, not a switch).
@@ -5224,16 +5234,21 @@ class _SwitchPainter extends CustomPainter {
           .copyWith(
             side: BorderSide(color: c.quiet, width: rule),
           )
-          .paint(canvas, slot);
+          .paint(canvas, slot, textDirection: direction);
     }
+    final travel = (slot.width - size.height) * position;
     final knob = Rect.fromCircle(
       center: Offset(
-        slot.left + size.height / 2 + (slot.width - size.height) * position,
+        rtl
+            ? slot.right - size.height / 2 - travel
+            : slot.left + size.height / 2 + travel,
         slot.center.dy,
       ),
       radius: size.height * .375,
     );
-    final knobShape = knobBorder?.getOuterPath(knob) ?? (Path()..addOval(knob));
+    final knobShape =
+        knobBorder?.getOuterPath(knob, textDirection: direction) ??
+        (Path()..addOval(knob));
     neumorphicPaintRaised(
       canvas,
       knobShape,
@@ -5241,7 +5256,7 @@ class _SwitchPainter extends CustomPainter {
       light: (const Offset(-1, -1), 2),
       dark: (const Offset(2, 2), 5),
       lightColor: c.highlightSoft,
-      face: cssLinear(knob, 145, [
+      face: cssLinear(knob, c.litAngle(145), [
         foreground ?? c.domeLight,
         foreground ?? c.domeMid,
       ]),
@@ -5268,7 +5283,7 @@ class _SwitchPainter extends CustomPainter {
           .copyWith(
             side: BorderSide(color: c.quiet, width: rule),
           )
-          .paint(canvas, knob);
+          .paint(canvas, knob, textDirection: direction);
     }
     // The thumb's printed mark says the state without colour or shadow: a bar for on, a ring for off. The bar is the
     // pigment by night too: the thumb is the wall's colour, and the dark ink that stands on the pigment vanished on it.
@@ -5303,7 +5318,8 @@ class _SwitchPainter extends CustomPainter {
       o.side != side ||
       o.elevation != elevation ||
       o.rule != rule ||
-      o.focus != focus;
+      o.focus != focus ||
+      o.rtl != rtl;
 }
 
 /// The keyboard focus of a switch row with no face of its own, handed to the switch in it.
@@ -5372,7 +5388,7 @@ class NeumorphicSwitch extends StatelessWidget {
       math.max(56, initial.minimumSize?.width ?? 0),
       math.max(32, initial.minimumSize?.height ?? 0),
     );
-    final mirror = Directionality.of(context) == TextDirection.rtl;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     final motion = NeumorphicMotion.of(context);
     return neumorphicOwnSize(
       width: size.width,
@@ -5446,6 +5462,7 @@ class NeumorphicSwitch extends StatelessWidget {
                                       : BorderSide.none),
                               elevation: t.elevation,
                               rule: neumorphicRuleWidth,
+                              rtl: rtl,
                             ),
                           ),
                         ),
@@ -5454,10 +5471,7 @@ class NeumorphicSwitch extends StatelessWidget {
               ),
             );
             // Disabled reads as the other controls do: a shallow relief, its ink quiet.
-            return NeumorphicOutOfUse(
-              off: onChanged == null,
-              child: mirror ? Transform.flip(flipX: true, child: paint) : paint,
-            );
+            return NeumorphicOutOfUse(off: onChanged == null, child: paint);
           },
         ),
       ),
@@ -5726,7 +5740,7 @@ class _SliderPainter extends CustomPainter {
       light: (const Offset(-2, -2), 5),
       dark: (const Offset(3, 3), 7),
       lightColor: c.highlightSoft,
-      face: cssLinear(knob, 145, [
+      face: cssLinear(knob, c.litAngle(145), [
         foreground ?? c.domeLight,
         foreground ?? c.domeMid,
       ]),

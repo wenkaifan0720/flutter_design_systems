@@ -33,7 +33,7 @@ void main() {
       expect(
         barrel,
         matches(
-          RegExp("export '$stem/theme\\.dart'\\s+hide NeumorphicPigment\\b"),
+          RegExp("export '$stem/theme\\.dart'\\s+hide\\s+NeumorphicPigment\\b"),
         ),
       );
     });

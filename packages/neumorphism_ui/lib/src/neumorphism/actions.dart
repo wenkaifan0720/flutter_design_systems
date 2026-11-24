@@ -625,7 +625,7 @@ class _SplitBody extends CustomPainter {
       c,
       light: (const Offset(-4, -4), 10),
       dark: (const Offset(5, 5), 12),
-      face: cssLinear(box, 145, [c.pigment, c.pigmentDk]),
+      face: cssLinear(box, c.litAngle(145), [c.pigment, c.pigmentDk]),
       elevation: elevation,
       flat: flat,
       rim: false,
@@ -641,7 +641,7 @@ class _SplitBody extends CustomPainter {
 }
 
 /// One half's face of the split button: the body's colour, sunk by [down] when it is pressed, and its side of the thin
-/// pressed groove between the halves (shade on the left wall, the colour's own light on the right).
+/// pressed groove between the halves (shade on the wall nearer the light, the colour's own light on the far one).
 class _SplitHalf extends CustomPainter {
   const _SplitHalf(
     this.c,
@@ -672,7 +672,7 @@ class _SplitHalf extends CustomPainter {
       c,
       light: (const Offset(-3, -3), 7),
       dark: (const Offset(3, 3), 7),
-      face: cssLinear(box, 145, [colour, fill ?? c.pigmentDk]),
+      face: cssLinear(box, c.litAngle(145), [colour, fill ?? c.pigmentDk]),
       tone: colour,
       elevation: elevation.copyWith(
         depth: elevation.depth * down,
@@ -682,14 +682,18 @@ class _SplitHalf extends CustomPainter {
     );
     final (hi, lo) = neumorphicTones(colour, c);
     final left = (dir == TextDirection.ltr) == main;
+    // This half's edge is the groove's wall on its side: in shade when the light stands on this half's side.
+    final shaded = left == (c.light.x <= 0);
+    final inset = shaded ? .75 : .5;
+    final x = left ? size.width - inset : inset;
     canvas.save();
     canvas.clipPath(path);
     canvas.drawLine(
-      Offset(left ? size.width - .75 : .5, 0),
-      Offset(left ? size.width - .75 : .5, size.height),
+      Offset(x, 0),
+      Offset(x, size.height),
       Paint()
-        ..color = left ? lo.withValues(alpha: .9) : hi.withValues(alpha: .8)
-        ..strokeWidth = left ? 1.5 : 1,
+        ..color = shaded ? lo.withValues(alpha: .9) : hi.withValues(alpha: .8)
+        ..strokeWidth = shaded ? 1.5 : 1,
     );
     canvas.restore();
   }

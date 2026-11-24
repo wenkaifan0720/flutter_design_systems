@@ -114,14 +114,28 @@ class _RailPainter extends CustomPainter {
   final NeumorphicColors c;
   final bool flat;
 
-  /// Whether the rail stands at the right, its page to its left. The light stays the room's, top left: the rail's
-  /// left edge, toward the page, is its lit side, and its right edge, at the window, its shaded one.
+  /// Whether the rail stands at the right, its page to its left. Under a light at the top left a rail at the left casts
+  /// its shade on the page beside it, and a rail at the right its light: its edge toward the page is then its lit side.
+  /// Under a light at the top right (a right-to-left app) the rail is drawn as that rail's mirror.
   final bool rtl;
 
   /// The trailing crease's width; zero leaves the cast shadow alone to part the rail from the page.
   final double rule;
   @override
   void paint(Canvas canvas, Size s) {
+    final mirror = c.light.x > 0;
+    if (mirror) {
+      canvas
+        ..save()
+        ..translate(s.width, 0)
+        ..scale(-1, 1);
+    }
+    _paintLitFromLeft(canvas, s, rtl != mirror);
+    if (mirror) canvas.restore();
+  }
+
+  /// The rail drawn for the light at the top left, standing at the right when [rtl].
+  void _paintLitFromLeft(Canvas canvas, Size s, bool rtl) {
     final box = Offset.zero & s;
     if (!flat) {
       // The rail casts its shade away from the light, to the right. At the left of the window that falls on the
@@ -1207,8 +1221,8 @@ class _ActKey extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    begin: c.light,
+                    end: -c.light,
                     colors: [c.pigment, c.pigmentDk],
                   ),
                   shape: BoxShape.circle,

@@ -987,11 +987,11 @@ class _ActionFace extends CustomPainter {
       c,
       light: (const Offset(-2, -2), 4),
       dark: (const Offset(2, 2), 5),
-      // Lit top-left and deeper toward the bottom-right, as a filled key's face (pigment to its deep tone): shaded
-      // toward the wall's shadow, which is lighter than ink or pigment, the faces read lit from the bottom-right.
+      // Lit from the light at the top start and deeper away from it, as a filled key's face (pigment to its deep tone):
+      // shaded toward the wall's shadow, which is lighter than ink or pigment, the faces read lit from below.
       face: fill == null
           ? null
-          : cssLinear(box, 145, [
+          : cssLinear(box, c.litAngle(145), [
               fill!,
               // A face of the wall (an armed destructive key) shades toward the wall's own shadow.
               fill == c.pigment

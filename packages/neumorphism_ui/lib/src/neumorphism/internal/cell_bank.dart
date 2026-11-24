@@ -430,10 +430,18 @@ class _Seams extends CustomPainter {
     canvas.clipPath(outline);
     final dark = Paint()..color = flat ? c.quiet : c.crease;
     final light = Paint()..color = c.rim;
+    // A seam's crease on the light's side of it, its catch-light past it: the cut's far wall takes the light.
+    final lit = c.lit(Offset(width, 0)).dx;
     void vertical(double x, double top, double bottom) {
-      canvas.drawRect(Rect.fromLTRB(x - width, top, x, bottom), dark);
+      canvas.drawRect(
+        Rect.fromPoints(Offset(x - lit, top), Offset(x, bottom)),
+        dark,
+      );
       if (!flat) {
-        canvas.drawRect(Rect.fromLTRB(x, top, x + width, bottom), light);
+        canvas.drawRect(
+          Rect.fromPoints(Offset(x, top), Offset(x + lit, bottom)),
+          light,
+        );
       }
     }
 
@@ -613,13 +621,13 @@ class _ChosenCell extends CustomPainter {
         ..addPath(shape, by * elevation.depth);
       canvas.save();
       canvas.clipPath(shape);
-      // The groove's pair: light from the top left, dark from the bottom right.
+      // The groove's pair: light from the top start, dark from the bottom end.
       canvas.drawPath(
-        outside(const Offset(-3, -3)),
+        outside(c.lit(const Offset(-3, -3))),
         blurred(c.highlight, 7 * elevation.depth),
       );
       canvas.drawPath(
-        outside(const Offset(3, 3)),
+        outside(c.lit(const Offset(3, 3))),
         blurred(c.shadowInset, 7 * elevation.depth),
       );
       canvas.restore();
