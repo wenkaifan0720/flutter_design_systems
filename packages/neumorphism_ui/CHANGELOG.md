@@ -1,3 +1,7 @@
+## 0.6.2
+
+- Keyboard focus by night lights a long part (a wide button, a field, a stepper) with a soft light that falls off over several pixels, as it lights a small part and as every relief light does. Before, a focused part at least 40 tall and half again as wide drew its light as a hard-edged copy of its outline, with a notch at its lower corner. Day drawing is unchanged.
+
 ## 0.6.1
 
 - The light stands at the top start: the top left, and the top right under a right-to-left `Directionality`. Every relief takes its light and shade from it, raised, pressed in, pressed down, focused and out of use, on every part (buttons, fields, cards, switches, sliders, segmented buttons, calendar days, dialogs, sheets, toasts and the rest), so a part right to left is the mirror of itself left to right, through a press as at rest. Before, the light stood at the top left in either direction. Left-to-right drawing is unchanged.

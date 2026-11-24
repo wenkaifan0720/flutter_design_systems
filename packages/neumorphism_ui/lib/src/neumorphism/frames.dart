@@ -398,10 +398,11 @@ void neumorphicPaintFocusLift(
   final near = (math.min(box.width, box.height) * .22)
       .clamp(5.5, math.max(5.5, 9 * depth * math.sqrt(reach)))
       .toDouble();
-  // At night the light round a long part (a stepper's groove, a wide button) is its edge's own, a thin crisp rim on
-  // the lit side with only a breath of the wide light: a wide soft light read as a glow beside its keys, and a wider
-  // rim as a second pill above it. A round or small part keeps its softer light, which its
-  // 3:1 needs, and so does a slim one (a chip).
+  // At night the light round a long part (a stepper's groove, a wide button) stays close to its edge, with only a
+  // breath of the wide light: a wide soft light read as a glow beside its keys, and a light thrown further as a second
+  // pill above it. It is blurred as every relief light is, so it falls off over several pixels: never a hard copy of
+  // the outline, with a notch where that copy ends. A round or small part keeps its longer throw, which its 3:1 needs,
+  // and so does a slim one (a chip).
   final large =
       c.dark &&
       near * .9 > 6 &&
@@ -433,10 +434,7 @@ void neumorphicPaintFocusLift(
   );
   canvas.drawPath(
     shape.shift(c.lit(Offset(-rim, -rim))),
-    _blurred(
-      lit.withValues(alpha: (c.dark ? .95 : 1) * amount),
-      large ? rim * .2 : near * .55,
-    ),
+    _blurred(lit.withValues(alpha: (c.dark ? .95 : 1) * amount), near * .55),
   );
   canvas.restore();
 }
