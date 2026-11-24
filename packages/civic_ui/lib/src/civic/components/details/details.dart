@@ -120,7 +120,7 @@ class _CivicDetailsState extends State<CivicDetails> {
           spring: CivicMotion.focus,
           effects: true,
           builder: (context, focus, _) {
-            final so = DesignStyleOf(
+            final so = RawStyleOf(
               [widget.style, t.detailsStyle],
               {...states, if (_open) WidgetState.selected},
             );

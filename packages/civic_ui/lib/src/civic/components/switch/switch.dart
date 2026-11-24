@@ -86,7 +86,7 @@ class CivicSwitch extends StatelessWidget {
           ? SystemMouseCursors.basic
           : SystemMouseCursors.click,
       builder: (context, states, _) {
-        final so = DesignStyleOf([style, t.switchStyle], states);
+        final so = RawStyleOf([style, t.switchStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final focused = states.contains(WidgetState.focused);
         final ink =

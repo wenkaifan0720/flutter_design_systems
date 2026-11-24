@@ -117,14 +117,13 @@ void main() {
     test('refuses a tap floor under 48 for a finger or 24 for a pointer', () {
       final t = CivicThemeData.light();
       expect(
-        () => t.copyWith(
-          tapTargets: const DesignTapTargets(touch: Size.square(40)),
-        ),
+        () =>
+            t.copyWith(tapTargets: const RawTapTargets(touch: Size.square(40))),
         throwsAssertionError,
       );
       expect(
         () => t.copyWith(
-          tapTargets: const DesignTapTargets(
+          tapTargets: const RawTapTargets(
             touch: Size.square(48),
             pointer: Size.square(20),
           ),
@@ -133,7 +132,7 @@ void main() {
       );
       // A floor can rise.
       t.copyWith(
-        tapTargets: const DesignTapTargets(
+        tapTargets: const RawTapTargets(
           touch: Size.square(56),
           pointer: Size.square(32),
         ),
@@ -890,7 +889,7 @@ class _Tree extends StatefulWidget {
 }
 
 class _TreeState extends State<_Tree> {
-  final _tree = DesignTreeController<String>(
+  final _tree = RawTreeController<String>(
     roots: const ['Parking', 'Bins'],
     childrenOf: (_) => const [],
   );

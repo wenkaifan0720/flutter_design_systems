@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../theme.dart';

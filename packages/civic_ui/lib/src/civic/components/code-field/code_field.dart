@@ -143,7 +143,7 @@ class _CivicCodeFieldState extends State<CivicCodeField> {
             if (!widget.enabled) WidgetState.disabled,
             if (hasError) WidgetState.error,
           };
-          final so = DesignStyleOf([widget.style, t.textFieldStyle], states);
+          final so = RawStyleOf([widget.style, t.textFieldStyle], states);
           final figures = text.code.copyWith(
             fontSize: text.headingM.fontSize,
             height: 1.2,

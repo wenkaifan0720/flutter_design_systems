@@ -10,7 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'fonts.dart';
 import 'internal/platform_words.dart';
 
-/// How a part of Civic looks: Civic's name for ui_core's [DesignStyle], ten
+/// How a part of Civic looks: Civic's name for ui_core's [RawStyle], ten
 /// slots that each resolve for the part's states, as Material's
 /// `ButtonStyle` does. A part reads its `style:` first, then its component
 /// theme on [CivicThemeData], then Civic's own default.
@@ -24,7 +24,7 @@ import 'internal/platform_words.dart';
 ///   child: const Text('Continue'),
 /// )
 /// ```
-typedef CivicStyle = DesignStyle;
+typedef CivicStyle = RawStyle;
 
 /// What a status, a tag or a notice says about its subject: Civic's tones.
 enum CivicTone {
@@ -44,7 +44,7 @@ enum CivicTone {
   error,
 }
 
-/// Civic's spacing steps, on its 4 pt grid ([DesignSpacingScope] declares
+/// Civic's spacing steps, on its 4 pt grid ([RawSpacingScope] declares
 /// it): tight inside a group, loose between groups.
 abstract final class CivicSpacing {
   /// 4 pt: between a label's two lines of words, inside a tag.
@@ -143,7 +143,7 @@ abstract final class CivicLayout {
 }
 
 /// One of Civic's springs: a damping ratio and a stiffness, as ui_core's
-/// `designSpring` takes them.
+/// `rawSpring` takes them.
 typedef CivicSpring = ({double dampingRatio, double stiffness});
 
 /// Civic's motion: critically damped springs, so nothing bounces or
@@ -278,7 +278,7 @@ final class CivicTextTheme with Diagnosticable {
   final TextStyle code;
 
   /// The face's capitals as a share of its size, which centres words in a
-  /// box (`DesignCapCenter`).
+  /// box (`RawCapCenter`).
   final double capHeight;
 
   /// Atkinson Hyperlegible Next's [capHeight].
@@ -422,7 +422,7 @@ final class CivicThemeData with Diagnosticable {
     required this.tones,
     required this.text,
     required this.compactText,
-    this.tapTargets = const DesignTapTargets(
+    this.tapTargets = const RawTapTargets(
       touch: Size.square(48),
       pointer: Size.square(24),
     ),
@@ -493,7 +493,7 @@ final class CivicThemeData with Diagnosticable {
 
   /// Whether [targets] keep Civic's floors: 48 by 48 for a finger, 24 by 24
   /// for a pointer. [copyWith] and [CivicTheme] assert it.
-  static bool floorsHold(DesignTapTargets targets) =>
+  static bool floorsHold(RawTapTargets targets) =>
       targets.touch.width >= 48 &&
       targets.touch.height >= 48 &&
       targets.pointer.width >= 24 &&
@@ -812,7 +812,7 @@ final class CivicThemeData with Diagnosticable {
 
   /// The floors a tap reaches: 48 for a finger, 24 for a pointer. They can
   /// rise, never fall (an assert holds them): a large target is the look.
-  final DesignTapTargets tapTargets;
+  final RawTapTargets tapTargets;
 
   /// [CivicButton]'s component theme: the page's one action.
   final CivicStyle? primaryButtonStyle;
@@ -1039,7 +1039,7 @@ final class CivicThemeData with Diagnosticable {
     Map<CivicTone, (Color, Color)>? tones,
     CivicTextTheme? text,
     CivicTextTheme? compactText,
-    DesignTapTargets? tapTargets,
+    RawTapTargets? tapTargets,
     CivicStyle? primaryButtonStyle,
     CivicStyle? secondaryButtonStyle,
     CivicStyle? startButtonStyle,
@@ -1240,145 +1240,129 @@ final class CivicThemeData with Diagnosticable {
       text: CivicTextTheme.lerp(a.text, b.text, t),
       compactText: CivicTextTheme.lerp(a.compactText, b.compactText, t),
       tapTargets: t < 0.5 ? a.tapTargets : b.tapTargets,
-      primaryButtonStyle: DesignStyle.lerp(
+      primaryButtonStyle: RawStyle.lerp(
         a.primaryButtonStyle,
         b.primaryButtonStyle,
         t,
       ),
-      secondaryButtonStyle: DesignStyle.lerp(
+      secondaryButtonStyle: RawStyle.lerp(
         a.secondaryButtonStyle,
         b.secondaryButtonStyle,
         t,
       ),
-      startButtonStyle: DesignStyle.lerp(
+      startButtonStyle: RawStyle.lerp(
         a.startButtonStyle,
         b.startButtonStyle,
         t,
       ),
-      destructiveButtonStyle: DesignStyle.lerp(
+      destructiveButtonStyle: RawStyle.lerp(
         a.destructiveButtonStyle,
         b.destructiveButtonStyle,
         t,
       ),
-      iconButtonStyle: DesignStyle.lerp(
-        a.iconButtonStyle,
-        b.iconButtonStyle,
-        t,
-      ),
-      linkStyle: DesignStyle.lerp(a.linkStyle, b.linkStyle, t),
-      textFieldStyle: DesignStyle.lerp(a.textFieldStyle, b.textFieldStyle, t),
-      searchButtonStyle: DesignStyle.lerp(
+      iconButtonStyle: RawStyle.lerp(a.iconButtonStyle, b.iconButtonStyle, t),
+      linkStyle: RawStyle.lerp(a.linkStyle, b.linkStyle, t),
+      textFieldStyle: RawStyle.lerp(a.textFieldStyle, b.textFieldStyle, t),
+      searchButtonStyle: RawStyle.lerp(
         a.searchButtonStyle,
         b.searchButtonStyle,
         t,
       ),
-      selectStyle: DesignStyle.lerp(a.selectStyle, b.selectStyle, t),
-      checkboxStyle: DesignStyle.lerp(a.checkboxStyle, b.checkboxStyle, t),
-      radioStyle: DesignStyle.lerp(a.radioStyle, b.radioStyle, t),
-      switchStyle: DesignStyle.lerp(a.switchStyle, b.switchStyle, t),
-      tabStyle: DesignStyle.lerp(a.tabStyle, b.tabStyle, t),
-      navigationStyle: DesignStyle.lerp(
-        a.navigationStyle,
-        b.navigationStyle,
-        t,
-      ),
-      topBarStyle: DesignStyle.lerp(a.topBarStyle, b.topBarStyle, t),
-      paginationStyle: DesignStyle.lerp(
-        a.paginationStyle,
-        b.paginationStyle,
-        t,
-      ),
-      listRowStyle: DesignStyle.lerp(a.listRowStyle, b.listRowStyle, t),
-      tagStyle: DesignStyle.lerp(a.tagStyle, b.tagStyle, t),
-      detailsStyle: DesignStyle.lerp(a.detailsStyle, b.detailsStyle, t),
-      tableStyle: DesignStyle.lerp(a.tableStyle, b.tableStyle, t),
-      summaryListStyle: DesignStyle.lerp(
+      selectStyle: RawStyle.lerp(a.selectStyle, b.selectStyle, t),
+      checkboxStyle: RawStyle.lerp(a.checkboxStyle, b.checkboxStyle, t),
+      radioStyle: RawStyle.lerp(a.radioStyle, b.radioStyle, t),
+      switchStyle: RawStyle.lerp(a.switchStyle, b.switchStyle, t),
+      tabStyle: RawStyle.lerp(a.tabStyle, b.tabStyle, t),
+      navigationStyle: RawStyle.lerp(a.navigationStyle, b.navigationStyle, t),
+      topBarStyle: RawStyle.lerp(a.topBarStyle, b.topBarStyle, t),
+      paginationStyle: RawStyle.lerp(a.paginationStyle, b.paginationStyle, t),
+      listRowStyle: RawStyle.lerp(a.listRowStyle, b.listRowStyle, t),
+      tagStyle: RawStyle.lerp(a.tagStyle, b.tagStyle, t),
+      detailsStyle: RawStyle.lerp(a.detailsStyle, b.detailsStyle, t),
+      tableStyle: RawStyle.lerp(a.tableStyle, b.tableStyle, t),
+      summaryListStyle: RawStyle.lerp(
         a.summaryListStyle,
         b.summaryListStyle,
         t,
       ),
-      timelineStyle: DesignStyle.lerp(a.timelineStyle, b.timelineStyle, t),
-      insetStyle: DesignStyle.lerp(a.insetStyle, b.insetStyle, t),
-      panelStyle: DesignStyle.lerp(a.panelStyle, b.panelStyle, t),
-      bannerStyle: DesignStyle.lerp(a.bannerStyle, b.bannerStyle, t),
-      errorSummaryStyle: DesignStyle.lerp(
+      timelineStyle: RawStyle.lerp(a.timelineStyle, b.timelineStyle, t),
+      insetStyle: RawStyle.lerp(a.insetStyle, b.insetStyle, t),
+      panelStyle: RawStyle.lerp(a.panelStyle, b.panelStyle, t),
+      bannerStyle: RawStyle.lerp(a.bannerStyle, b.bannerStyle, t),
+      errorSummaryStyle: RawStyle.lerp(
         a.errorSummaryStyle,
         b.errorSummaryStyle,
         t,
       ),
-      dialogStyle: DesignStyle.lerp(a.dialogStyle, b.dialogStyle, t),
-      toastStyle: DesignStyle.lerp(a.toastStyle, b.toastStyle, t),
-      toggleStyle: DesignStyle.lerp(a.toggleStyle, b.toggleStyle, t),
-      chipStyle: DesignStyle.lerp(a.chipStyle, b.chipStyle, t),
-      sliderStyle: DesignStyle.lerp(a.sliderStyle, b.sliderStyle, t),
-      ratingStyle: DesignStyle.lerp(a.ratingStyle, b.ratingStyle, t),
-      calendarStyle: DesignStyle.lerp(a.calendarStyle, b.calendarStyle, t),
-      wheelPickerStyle: DesignStyle.lerp(
+      dialogStyle: RawStyle.lerp(a.dialogStyle, b.dialogStyle, t),
+      toastStyle: RawStyle.lerp(a.toastStyle, b.toastStyle, t),
+      toggleStyle: RawStyle.lerp(a.toggleStyle, b.toggleStyle, t),
+      chipStyle: RawStyle.lerp(a.chipStyle, b.chipStyle, t),
+      sliderStyle: RawStyle.lerp(a.sliderStyle, b.sliderStyle, t),
+      ratingStyle: RawStyle.lerp(a.ratingStyle, b.ratingStyle, t),
+      calendarStyle: RawStyle.lerp(a.calendarStyle, b.calendarStyle, t),
+      wheelPickerStyle: RawStyle.lerp(
         a.wheelPickerStyle,
         b.wheelPickerStyle,
         t,
       ),
-      colorPickerStyle: DesignStyle.lerp(
+      colorPickerStyle: RawStyle.lerp(
         a.colorPickerStyle,
         b.colorPickerStyle,
         t,
       ),
-      kbdStyle: DesignStyle.lerp(a.kbdStyle, b.kbdStyle, t),
-      menuStyle: DesignStyle.lerp(a.menuStyle, b.menuStyle, t),
-      popoverStyle: DesignStyle.lerp(a.popoverStyle, b.popoverStyle, t),
-      tooltipStyle: DesignStyle.lerp(a.tooltipStyle, b.tooltipStyle, t),
-      sheetStyle: DesignStyle.lerp(a.sheetStyle, b.sheetStyle, t),
-      commandPaletteStyle: DesignStyle.lerp(
+      kbdStyle: RawStyle.lerp(a.kbdStyle, b.kbdStyle, t),
+      menuStyle: RawStyle.lerp(a.menuStyle, b.menuStyle, t),
+      popoverStyle: RawStyle.lerp(a.popoverStyle, b.popoverStyle, t),
+      tooltipStyle: RawStyle.lerp(a.tooltipStyle, b.tooltipStyle, t),
+      sheetStyle: RawStyle.lerp(a.sheetStyle, b.sheetStyle, t),
+      commandPaletteStyle: RawStyle.lerp(
         a.commandPaletteStyle,
         b.commandPaletteStyle,
         t,
       ),
-      cardStyle: DesignStyle.lerp(a.cardStyle, b.cardStyle, t),
-      accordionStyle: DesignStyle.lerp(a.accordionStyle, b.accordionStyle, t),
-      stepIndicatorStyle: DesignStyle.lerp(
+      cardStyle: RawStyle.lerp(a.cardStyle, b.cardStyle, t),
+      accordionStyle: RawStyle.lerp(a.accordionStyle, b.accordionStyle, t),
+      stepIndicatorStyle: RawStyle.lerp(
         a.stepIndicatorStyle,
         b.stepIndicatorStyle,
         t,
       ),
-      pageDotsStyle: DesignStyle.lerp(a.pageDotsStyle, b.pageDotsStyle, t),
-      carouselStyle: DesignStyle.lerp(a.carouselStyle, b.carouselStyle, t),
-      scrollAreaStyle: DesignStyle.lerp(
-        a.scrollAreaStyle,
-        b.scrollAreaStyle,
-        t,
-      ),
-      splitViewStyle: DesignStyle.lerp(a.splitViewStyle, b.splitViewStyle, t),
-      reorderableListStyle: DesignStyle.lerp(
+      pageDotsStyle: RawStyle.lerp(a.pageDotsStyle, b.pageDotsStyle, t),
+      carouselStyle: RawStyle.lerp(a.carouselStyle, b.carouselStyle, t),
+      scrollAreaStyle: RawStyle.lerp(a.scrollAreaStyle, b.scrollAreaStyle, t),
+      splitViewStyle: RawStyle.lerp(a.splitViewStyle, b.splitViewStyle, t),
+      reorderableListStyle: RawStyle.lerp(
         a.reorderableListStyle,
         b.reorderableListStyle,
         t,
       ),
-      swipeActionsStyle: DesignStyle.lerp(
+      swipeActionsStyle: RawStyle.lerp(
         a.swipeActionsStyle,
         b.swipeActionsStyle,
         t,
       ),
-      treeStyle: DesignStyle.lerp(a.treeStyle, b.treeStyle, t),
-      avatarStyle: DesignStyle.lerp(a.avatarStyle, b.avatarStyle, t),
-      badgeStyle: DesignStyle.lerp(a.badgeStyle, b.badgeStyle, t),
-      imageStyle: DesignStyle.lerp(a.imageStyle, b.imageStyle, t),
-      keyFigureStyle: DesignStyle.lerp(a.keyFigureStyle, b.keyFigureStyle, t),
-      spinnerStyle: DesignStyle.lerp(a.spinnerStyle, b.spinnerStyle, t),
-      progressBarStyle: DesignStyle.lerp(
+      treeStyle: RawStyle.lerp(a.treeStyle, b.treeStyle, t),
+      avatarStyle: RawStyle.lerp(a.avatarStyle, b.avatarStyle, t),
+      badgeStyle: RawStyle.lerp(a.badgeStyle, b.badgeStyle, t),
+      imageStyle: RawStyle.lerp(a.imageStyle, b.imageStyle, t),
+      keyFigureStyle: RawStyle.lerp(a.keyFigureStyle, b.keyFigureStyle, t),
+      spinnerStyle: RawStyle.lerp(a.spinnerStyle, b.spinnerStyle, t),
+      progressBarStyle: RawStyle.lerp(
         a.progressBarStyle,
         b.progressBarStyle,
         t,
       ),
-      skeletonStyle: DesignStyle.lerp(a.skeletonStyle, b.skeletonStyle, t),
-      meterStyle: DesignStyle.lerp(a.meterStyle, b.meterStyle, t),
-      chartStyle: DesignStyle.lerp(a.chartStyle, b.chartStyle, t),
-      pieChartStyle: DesignStyle.lerp(a.pieChartStyle, b.pieChartStyle, t),
-      pullToRefreshStyle: DesignStyle.lerp(
+      skeletonStyle: RawStyle.lerp(a.skeletonStyle, b.skeletonStyle, t),
+      meterStyle: RawStyle.lerp(a.meterStyle, b.meterStyle, t),
+      chartStyle: RawStyle.lerp(a.chartStyle, b.chartStyle, t),
+      pieChartStyle: RawStyle.lerp(a.pieChartStyle, b.pieChartStyle, t),
+      pullToRefreshStyle: RawStyle.lerp(
         a.pullToRefreshStyle,
         b.pullToRefreshStyle,
         t,
       ),
-      actionBarStyle: DesignStyle.lerp(a.actionBarStyle, b.actionBarStyle, t),
+      actionBarStyle: RawStyle.lerp(a.actionBarStyle, b.actionBarStyle, t),
     );
   }
 
@@ -1603,7 +1587,7 @@ final class CivicThemeData with Diagnosticable {
     properties
       ..add(DiagnosticsProperty<CivicTextTheme>('text', text))
       ..add(DiagnosticsProperty<CivicTextTheme>('compactText', compactText))
-      ..add(DiagnosticsProperty<DesignTapTargets>('tapTargets', tapTargets));
+      ..add(DiagnosticsProperty<RawTapTargets>('tapTargets', tapTargets));
     for (final (name, style) in [
       ('primaryButtonStyle', primaryButtonStyle),
       ('secondaryButtonStyle', secondaryButtonStyle),
@@ -1791,10 +1775,10 @@ class CivicTheme extends StatelessWidget {
     }
     return _CivicScope(
       data: data,
-      child: DesignTapTargetScope(
+      child: RawTapTargetScope(
         targets: data.tapTargets,
-        child: DesignSpacingScope(
-          spacing: DesignSpacing.fallback,
+        child: RawSpacingScope(
+          spacing: RawSpacing.fallback,
           child: Theme(
             data: bridge,
             child: IconTheme.merge(

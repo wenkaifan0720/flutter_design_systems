@@ -582,7 +582,7 @@ void main() {
 
   group('a tree', () {
     testWidgets('opens a row on a press and on Right', (tester) async {
-      final tree = DesignTreeController<String>(
+      final tree = RawTreeController<String>(
         roots: const ['Parking', 'Bins'],
         childrenOf: (s) => switch (s) {
           'Parking' => const ['Permits'],

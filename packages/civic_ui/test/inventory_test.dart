@@ -15,7 +15,7 @@ void main() {
     civicInventory.verify();
     expect(
       civicInventory.presentCount + civicInventory.absentCount,
-      DesignInventoryRow.all.length,
+      RawInventoryRow.all.length,
     );
   });
 

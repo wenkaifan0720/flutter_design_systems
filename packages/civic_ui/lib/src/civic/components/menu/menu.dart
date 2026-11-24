@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/menu_row.dart';
+import '../../internal/tip_hold.dart';
 import '../../theme.dart';
 
 /// One choice of a [CivicMenu]: its [label] in words, a glyph before it
@@ -107,8 +108,7 @@ class CivicMenu<T> extends StatelessWidget {
 
   /// Paints the control that opens it: call the anchor's `toggle` on its
   /// press.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
-  builder;
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor) builder;
 
   /// What a screen reader calls the menu.
   final String? semanticLabel;
@@ -140,7 +140,10 @@ class CivicMenu<T> extends StatelessWidget {
       preferredExtent: 240,
       matchAnchorWidth: false,
     ),
-    anchorBuilder: builder,
+    // While the menu is open the control's tip stands down: it would stand
+    // over the menu's rows.
+    anchorBuilder: (context, anchor) =>
+        CivicTipHold(held: anchor.isOpen, child: builder(context, anchor)),
     overlayBuilder: (context, info) => civicRise(
       animation: info.animation,
       fromAbove: info.side == RawPopoverSide.below,

@@ -23,7 +23,7 @@ class CivicDateSegment extends StatelessWidget {
   /// The room either side of a segment's figures in [style]: what brings two
   /// figures up to the tap floor's width, and never less than 4.
   static double gapFor(BuildContext context, TextStyle style) {
-    final floor = DesignTapTargets.of(context).floorOn().width;
+    final floor = RawTapTargets.of(context).floorOn().width;
     final zero = RawWidgetsLocalizations.of(context).formatDecimal(0);
     final painter = TextPainter(
       text: TextSpan(text: '$zero$zero', style: style),
@@ -98,11 +98,11 @@ Widget civicSegmentWell(
   BuildContext context,
   Set<WidgetState> states,
   Widget segments, {
-  List<DesignStyle?> styles = const [],
+  List<RawStyle?> styles = const [],
   bool isError = false,
 }) {
   final t = context.civicTheme;
-  final so = DesignStyleOf(styles, states);
+  final so = RawStyleOf(styles, states);
   final disabled = states.contains(WidgetState.disabled);
   final error = isError || states.contains(WidgetState.error);
   return ConstrainedBox(

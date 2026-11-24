@@ -56,7 +56,7 @@ class CivicMenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.menuStyle], states);
+    final so = RawStyleOf([style, t.menuStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     final focused = !disabled && states.contains(WidgetState.focused);
     final wash = disabled
@@ -168,7 +168,7 @@ class CivicMenuPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.menuStyle], const {});
+    final so = RawStyleOf([style, t.menuStyle], const {});
     const inset = 1.0;
     final face = so.fill ?? (t.isDark ? t.surface : t.background);
     return ConstrainedBox(

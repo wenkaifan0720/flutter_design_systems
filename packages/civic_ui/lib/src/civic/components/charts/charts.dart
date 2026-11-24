@@ -406,13 +406,13 @@ class _Cartesian extends StatelessWidget {
   final FocusNode? focusNode;
   final CivicStyle? style;
 
-  List<DesignChartSeries> get _data => [
+  List<RawChartSeries> get _data => [
     for (final s in series)
-      DesignChartSeries(
+      RawChartSeries(
         label: s.label,
         points: [
           for (final (i, v) in s.values.indexed)
-            if (i < labels.length) DesignChartPoint(i.toDouble(), v),
+            if (i < labels.length) RawChartPoint(i.toDouble(), v),
         ],
       ),
   ];
@@ -421,7 +421,7 @@ class _Cartesian extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.chartStyle], const {});
+    final so = RawStyleOf([style, t.chartStyle], const {});
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
     final l = RawWidgetsLocalizations.of(context);
@@ -450,10 +450,10 @@ class _Cartesian extends StatelessWidget {
     }
     final line = scaler.scale(small.fontSize ?? 16) * (small.height ?? 1.3);
     final data = _data;
-    Widget chart(VoidCallback showTable) => DesignChart(
+    Widget chart(VoidCallback showTable) => RawChart(
       series: data,
       semanticLabel: title,
-      xAxis: DesignChartXAxis.band,
+      xAxis: RawChartXAxis.band,
       categories: labels,
       formatY: say,
       focusNode: focusNode,
@@ -527,7 +527,7 @@ class _Cartesian extends StatelessWidget {
 class _Readout extends StatefulWidget {
   const _Readout({required this.chart, required this.painter});
 
-  final DesignChartDetails chart;
+  final RawChartDetails chart;
   final CustomPainter Function(double shown, double along, int index) painter;
 
   @override
@@ -598,7 +598,7 @@ class _CartesianPainter extends CustomPainter {
   /// The label it reads.
   final int index;
   final _Kind kind;
-  final DesignChartDetails chart;
+  final RawChartDetails chart;
   final List<CivicSeriesLook> looks;
   final CivicThemeData t;
   final TextStyle small;
@@ -1038,7 +1038,7 @@ class CivicSparkline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.chartStyle], const {});
+    final so = RawStyleOf([style, t.chartStyle], const {});
     final l = RawWidgetsLocalizations.of(context);
     final last = values.isEmpty ? null : values.last;
     final words = valueLabel ?? (last == null ? '' : l.formatDecimal(last));

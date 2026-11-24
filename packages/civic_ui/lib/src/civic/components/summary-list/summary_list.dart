@@ -80,7 +80,7 @@ class CivicSummaryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.summaryListStyle], const {});
+    final so = RawStyleOf([style, t.summaryListStyle], const {});
     final words = so.foreground;
     final text = words == null
         ? context.civicText
@@ -95,7 +95,7 @@ class CivicSummaryList extends StatelessWidget {
     final line =
         MediaQuery.textScalerOf(context).scale(text.body.fontSize ?? 19) *
         (text.body.height ?? 1.25);
-    final floor = DesignTapTargets.of(context).floorOn().height;
+    final floor = RawTapTargets.of(context).floorOn().height;
     final half = ((floor - line - CivicMetrics.bar) / 2).clamp(0.0, floor);
     final pad =
         so.padding(Directionality.of(context)) ??
@@ -289,7 +289,7 @@ class CivicSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.summaryListStyle], const {});
+    final so = RawStyleOf([style, t.summaryListStyle], const {});
     // A card: white on the page's ground, its corners rounded, no stroke.
     return ClipRRect(
       borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),

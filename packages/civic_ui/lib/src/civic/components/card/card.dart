@@ -105,7 +105,7 @@ class CivicCard extends StatelessWidget {
   Widget _face(BuildContext context, Set<WidgetState> states) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.cardStyle], states);
+    final so = RawStyleOf([style, t.cardStyle], states);
     final link = onPressed != null;
     final wash = !link
         ? 0.0

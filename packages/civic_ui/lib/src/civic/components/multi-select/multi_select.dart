@@ -67,7 +67,7 @@ class CivicMultiSelect<T extends Object> extends StatelessWidget {
   final Iterable<T> options;
 
   /// Looks answers up as someone types, in place of [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// An answer's words; null: its `toString`.
   final String Function(T option)? displayStringForOption;
@@ -185,7 +185,7 @@ class CivicMultiSelect<T extends Object> extends StatelessWidget {
     properties
       ..add(IterableProperty<T>('values', values))
       ..add(IterableProperty<T>('options', options))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(IntProperty('maxTags', maxTags, defaultValue: null))

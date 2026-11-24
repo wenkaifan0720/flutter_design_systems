@@ -39,7 +39,7 @@ class CivicChoiceFace extends StatelessWidget {
 
   /// The styles it reads, first first; fill, foreground and edge by state,
   /// padding and textStyle.
-  final List<DesignStyle?> styles;
+  final List<RawStyle?> styles;
 
   /// Whether it stands on a solid edge a press sinks onto (a toggle's, a
   /// segment's); a chip's and a day's faces have none.
@@ -69,7 +69,7 @@ class CivicChoiceFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf(styles, states);
+    final so = RawStyleOf(styles, states);
     final selected = states.contains(WidgetState.selected);
     final disabled = states.contains(WidgetState.disabled);
     final (restFill, restInk, restEdge) = disabled
@@ -132,7 +132,7 @@ class CivicChoiceFace extends StatelessWidget {
                     child: leading,
                   ),
                 Flexible(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: context.civicText.capHeight,
                     child: IconTheme.merge(
                       data: IconThemeData(color: fg, size: 22),

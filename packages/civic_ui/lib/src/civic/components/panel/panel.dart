@@ -47,7 +47,7 @@ class CivicConfirmationPanel extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final body = child;
-    final so = DesignStyleOf([style, t.panelStyle], const {});
+    final so = RawStyleOf([style, t.panelStyle], const {});
     // By night the block keeps a deep green under white words, as by day,
     // rather than the light green the night's success words take: a result,
     // not the brightest thing on the screen.
@@ -158,7 +158,7 @@ class CivicNotificationBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.bannerStyle], const {});
+    final so = RawStyleOf([style, t.bannerStyle], const {});
     // A warning's band is the warning tone's deep words by day and that
     // amber made deep by night, white words on both: a caution, apart from
     // the focus plate's yellow.

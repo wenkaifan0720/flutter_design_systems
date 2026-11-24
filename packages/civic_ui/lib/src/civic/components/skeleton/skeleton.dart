@@ -74,7 +74,7 @@ class _CivicSkeletonState extends State<CivicSkeleton>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (DesignMotionPolicy.of(context).reduceMotion) {
+    if (RawMotionPolicy.of(context).reduceMotion) {
       _fade
         ..stop()
         ..value = 0;
@@ -92,7 +92,7 @@ class _CivicSkeletonState extends State<CivicSkeleton>
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([widget.style, t.skeletonStyle], const {});
+    final so = RawStyleOf([widget.style, t.skeletonStyle], const {});
     return Semantics(
       container: true,
       role: SemanticsRole.loadingSpinner,

@@ -34,12 +34,12 @@ class CivicSliderThumb extends StatelessWidget {
   final Set<WidgetState> states;
 
   /// The styles it reads: fill, foreground (unused) and edge.
-  final List<DesignStyle?> styles;
+  final List<RawStyle?> styles;
 
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf(styles, states);
+    final so = RawStyleOf(styles, states);
     final disabled = states.contains(WidgetState.disabled);
     final fill = disabled ? t.disabledFill : (so.fill ?? t.action);
     final edge = disabled ? t.rule : (so.edge ?? t.actionEdge);

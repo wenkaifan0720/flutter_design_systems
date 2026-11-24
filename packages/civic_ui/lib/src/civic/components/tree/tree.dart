@@ -11,7 +11,7 @@ import '../../theme.dart';
 
 // A tree's caller builds its controller and reads what is open and
 // selected.
-export 'package:ui_core/ui_core.dart' show DesignTreeController;
+export 'package:ui_core/ui_core.dart' show RawTreeController;
 
 /// Nested things a reader opens level by level (a service's sections, a
 /// council's departments): [controller]'s open rows, at least 48 tall,
@@ -26,7 +26,7 @@ export 'package:ui_core/ui_core.dart' show DesignTreeController;
 /// Right opens or steps in, Left shuts or steps out (mirrored right to
 /// left), Home and End go to the ends, Enter follows a row, Space selects
 /// it. A screen reader hears each row's level, place and whether it is
-/// open. ui_core's [DesignTree], Civic's painting.
+/// open. ui_core's [RawTree], Civic's painting.
 ///
 /// Reads [CivicStyle]'s fill (a row, by state: selected for the selected
 /// one), foreground and textStyle (its words): its `style:`, then
@@ -53,7 +53,7 @@ class CivicTree<T extends Object> extends StatelessWidget {
 
   /// The nodes, and which are open and selected; the caller's, who keeps
   /// and disposes it.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A node's words.
   final String Function(T node) labelOf;
@@ -75,7 +75,7 @@ class CivicTree<T extends Object> extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
@@ -85,7 +85,7 @@ class CivicTree<T extends Object> extends StatelessWidget {
           ...item.states,
           if (item.selected) WidgetState.selected,
         };
-        final so = DesignStyleOf([style, t.treeStyle], states);
+        final so = RawStyleOf([style, t.treeStyle], states);
         final wash = states.contains(WidgetState.pressed)
             ? 1.0
             : states.contains(WidgetState.hovered)
@@ -203,9 +203,7 @@ class CivicTree<T extends Object> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawTreeController<T>>('controller', controller))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),

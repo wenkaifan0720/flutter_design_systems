@@ -207,7 +207,7 @@ class _CivicSelectState<T> extends State<CivicSelect<T>> {
                 ? SystemMouseCursors.click
                 : SystemMouseCursors.basic,
             builder: (context, states, _) {
-              final so = DesignStyleOf([widget.style, t.selectStyle], states);
+              final so = RawStyleOf([widget.style, t.selectStyle], states);
               final disabled = states.contains(WidgetState.disabled);
               final ink =
                   so.foreground ?? (disabled ? t.textDisabled : t.textPrimary);
@@ -247,7 +247,7 @@ class _CivicSelectState<T> extends State<CivicSelect<T>> {
                         spacing: CivicSpacing.s8,
                         children: [
                           Expanded(
-                            child: DesignCapCenter(
+                            child: RawCapCenter(
                               capHeightFactor: context.civicText.capHeight,
                               child: Text(
                                 chosen?.label ?? widget.hintText ?? '',

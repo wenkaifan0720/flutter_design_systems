@@ -49,7 +49,7 @@ class _CivicSpringValueState extends State<CivicSpringValue>
   void didUpdateWidget(CivicSpringValue oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
-      final policy = DesignMotionPolicy.of(context);
+      final policy = RawMotionPolicy.of(context);
       final spring = widget.effects
           ? policy.effects(
               dampingRatio: widget.spring.dampingRatio,

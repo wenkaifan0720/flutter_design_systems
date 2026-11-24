@@ -52,7 +52,7 @@ class CivicKeyFigure extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.keyFigureStyle], const {});
+    final so = RawStyleOf([style, t.keyFigureStyle], const {});
     final more = detail;
     return Semantics(
       container: true,

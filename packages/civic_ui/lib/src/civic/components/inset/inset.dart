@@ -31,7 +31,7 @@ class CivicInset extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.insetStyle], const {});
+    final so = RawStyleOf([style, t.insetStyle], const {});
     return CustomPaint(
       painter: CivicRulePainter(
         width: CivicMetrics.insetRule,
@@ -99,7 +99,7 @@ class CivicWarning extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.insetStyle], const {});
+    final so = RawStyleOf([style, t.insetStyle], const {});
     final mark = so.fill ?? t.textPrimary;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

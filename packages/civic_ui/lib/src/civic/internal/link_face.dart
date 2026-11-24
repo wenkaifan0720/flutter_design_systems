@@ -42,7 +42,7 @@ class CivicLinkFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.linkStyle], states);
+    final so = RawStyleOf([style, t.linkStyle], states);
     final base = context.civicText.body.merge(so.textStyle).merge(textStyle);
     final disabled = states.contains(WidgetState.disabled);
     // A colour in [textStyle] is the link's ink at rest.

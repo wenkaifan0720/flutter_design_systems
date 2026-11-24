@@ -61,7 +61,7 @@ class CivicProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.progressBarStyle], const {});
+    final so = RawStyleOf([style, t.progressBarStyle], const {});
     final l = RawWidgetsLocalizations.of(context);
     final v = value?.clamp(0.0, 1.0);
     final share = v == null ? null : l.formatPercent(v);
@@ -157,7 +157,7 @@ class _SlidingState extends State<_Sliding>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (DesignMotionPolicy.of(context).reduceMotion) {
+    if (RawMotionPolicy.of(context).reduceMotion) {
       _run
         ..stop()
         ..value = 0.5;

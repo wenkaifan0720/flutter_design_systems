@@ -90,7 +90,7 @@ class CivicTable<R> extends StatelessWidget {
     final text = context.civicText;
     final heading = caption;
     final names = text.label.merge(
-      DesignStyleOf([style, t.tableStyle], const {}).textStyle,
+      RawStyleOf([style, t.tableStyle], const {}).textStyle,
     );
     Widget table(BuildContext context, BoxConstraints constraints) {
       final columns = controller.columns;
@@ -294,7 +294,7 @@ class CivicTable<R> extends StatelessWidget {
         rowBuilder: (context, row, cells) {
           final focused = row.states.contains(WidgetState.focused);
           final hovered = row.states.contains(WidgetState.hovered);
-          final so = DesignStyleOf(
+          final so = RawStyleOf(
             [style, t.tableStyle],
             {...row.states, if (row.selected) WidgetState.selected},
           );

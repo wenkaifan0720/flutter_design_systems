@@ -54,7 +54,7 @@ class CivicPageDots extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final words = RawWidgetsLocalizations.of(context);
-    final so = DesignStyleOf([style, t.pageDotsStyle], const {});
+    final so = RawStyleOf([style, t.pageDotsStyle], const {});
     final at = selectedIndex.clamp(0, pageCount - 1);
     final change = onPageChanged;
     return Row(

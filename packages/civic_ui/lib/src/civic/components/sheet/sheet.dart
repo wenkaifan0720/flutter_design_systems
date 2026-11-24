@@ -349,7 +349,7 @@ class _Head extends StatelessWidget {
 
   final String? title;
   final VoidCallback? close;
-  final DesignStyleOf so;
+  final RawStyleOf so;
 
   @override
   Widget build(BuildContext context) {
@@ -452,7 +452,7 @@ class _BottomPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.sheetStyle], const {});
+    final so = RawStyleOf([style, t.sheetStyle], const {});
     final margin = _margin(context);
     final bottom = MediaQuery.paddingOf(context).bottom;
     const corner = Radius.circular(CivicMetrics.cardCorner);
@@ -576,7 +576,7 @@ class _SidePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.sheetStyle], const {});
+    final so = RawStyleOf([style, t.sheetStyle], const {});
     final padding = MediaQuery.paddingOf(context);
     const margin = CivicSpacing.s24;
     final hairline = BorderSide(color: so.edge ?? t.rule);

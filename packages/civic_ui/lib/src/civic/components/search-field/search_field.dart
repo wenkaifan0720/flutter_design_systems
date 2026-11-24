@@ -197,7 +197,7 @@ class _SearchButton extends StatelessWidget {
           : SystemMouseCursors.click,
       builder: (context, states, _) {
         final disabled = states.contains(WidgetState.disabled);
-        final so = DesignStyleOf([style, t.searchButtonStyle], states);
+        final so = RawStyleOf([style, t.searchButtonStyle], states);
         return CivicSpringValue(
           value: states.contains(WidgetState.pressed)
               ? 1

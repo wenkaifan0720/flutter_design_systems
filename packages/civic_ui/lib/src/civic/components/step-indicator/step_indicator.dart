@@ -53,7 +53,7 @@ class CivicStepIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.stepIndicatorStyle], const {});
+    final so = RawStyleOf([style, t.stepIndicatorStyle], const {});
     assert(steps.isNotEmpty, 'A form has at least one step.');
     final at = currentStep.clamp(0, steps.length - 1);
     final count =

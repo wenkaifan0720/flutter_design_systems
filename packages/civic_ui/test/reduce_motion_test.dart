@@ -1,5 +1,5 @@
 // Reduce Motion, whichever platform asks for it (ui_core's
-// designReduceMotionOf): on iOS Flutter sets only dart:ui's
+// rawReduceMotionOf): on iOS Flutter sets only dart:ui's
 // AccessibilityFeatures.reduceMotion, never MediaQuery's disableAnimations,
 // and Civic still calms. A colour or opacity change becomes a short fade
 // (settled within 150 ms), a move stays as it was (Civic's springs are

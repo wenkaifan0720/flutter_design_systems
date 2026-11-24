@@ -74,7 +74,7 @@ class CivicReorderableList<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.reorderableListStyle], const {});
+    final so = RawStyleOf([style, t.reorderableListStyle], const {});
     return ClipRRect(
       borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
       child: ColoredBox(
@@ -202,7 +202,7 @@ class _GripState extends State<_Grip> {
       if (_over) WidgetState.hovered,
       if (focused) WidgetState.focused,
     };
-    final so = DesignStyleOf([widget.style, t.reorderableListStyle], states);
+    final so = RawStyleOf([widget.style, t.reorderableListStyle], states);
     return Semantics(
       label: widget.label,
       hint: 'Drag, or press Alt with the up or down arrow, to move it',

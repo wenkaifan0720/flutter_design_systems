@@ -41,4 +41,5 @@ export 'src/civic/internal/segment_well.dart';
 export 'src/civic/internal/slider_parts.dart';
 export 'src/civic/internal/spinner_arc.dart';
 export 'src/civic/internal/spring.dart';
+export 'src/civic/internal/tip_hold.dart';
 export 'src/civic/internal/underline.dart';

@@ -41,7 +41,7 @@ class CivicSpinner extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.spinnerStyle], const {});
+    final so = RawStyleOf([style, t.spinnerStyle], const {});
     final words = label ?? RawWidgetsLocalizations.of(context).loadingLabel;
     final across = MediaQuery.textScalerOf(context).scale(size);
     return Semantics(

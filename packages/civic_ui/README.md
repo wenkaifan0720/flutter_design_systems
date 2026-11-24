@@ -125,7 +125,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> transitions = {
 };
 ```
 
-`designSwipeBack(map)` does the same to a map built at run time.
+`rawSwipeBack(map)` does the same to a map built at run time.
 
 Under a `CupertinoApp` (from `cupertino_ui`, which an app adds itself) or a bare `WidgetsApp`, the theme goes in the
 same place:

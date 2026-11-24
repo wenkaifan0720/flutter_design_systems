@@ -37,7 +37,7 @@ class CivicTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.tagStyle], const {});
+    final so = RawStyleOf([style, t.tagStyle], const {});
     final (fill, ink) = t.toneOf(tone);
     return DecoratedBox(
       decoration: BoxDecoration(

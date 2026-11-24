@@ -156,7 +156,7 @@ class _CivicPieChartState extends State<CivicPieChart> {
     ) = widget;
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.pieChartStyle], const {});
+    final so = RawStyleOf([style, t.pieChartStyle], const {});
     final l = RawWidgetsLocalizations.of(context);
     final scaler = MediaQuery.textScalerOf(context);
     String say(double v) => valueLabel?.call(v) ?? l.formatDecimal(v);
@@ -167,12 +167,12 @@ class _CivicPieChartState extends State<CivicPieChart> {
       for (var i = 0; i < slices.length; i++) CivicSeriesLook.of(t, i),
     ];
     final data = [
-      for (final s in slices) DesignPieSlice(label: s.label, value: s.value),
+      for (final s in slices) RawPieSlice(label: s.label, value: s.value),
     ];
     final across = size * scaler.scale(1).clamp(1.0, 1.5);
     Widget pie(VoidCallback showTable) => SizedBox.square(
       dimension: across,
-      child: DesignPieChart(
+      child: RawPieChart(
         slices: data,
         semanticLabel: title,
         formatValue: say,
@@ -318,7 +318,7 @@ class _KeyRow extends StatelessWidget {
 class _PiePainter extends CustomPainter {
   _PiePainter({required this.pie, required this.looks, required this.t});
 
-  final DesignPieChartDetails pie;
+  final RawPieChartDetails pie;
   final List<CivicSeriesLook> looks;
   final CivicThemeData t;
 

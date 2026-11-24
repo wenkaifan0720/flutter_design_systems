@@ -560,7 +560,7 @@ void main() {
 
     testWidgets('a tree row', (tester) async {
       Widget tree({bool selected = false}) {
-        final c = DesignTreeController<String>(
+        final c = RawTreeController<String>(
           roots: const ['Parking', 'Bins'],
           childrenOf: (_) => const [],
         );

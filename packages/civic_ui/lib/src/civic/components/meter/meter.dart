@@ -74,7 +74,7 @@ class CivicMeter extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.meterStyle], const {});
+    final so = RawStyleOf([style, t.meterStyle], const {});
     final l = RawWidgetsLocalizations.of(context);
     final span = max - min;
     double share(double v) => ((v - min) / span).clamp(0.0, 1.0);

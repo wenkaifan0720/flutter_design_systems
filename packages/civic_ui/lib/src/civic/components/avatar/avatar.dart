@@ -50,7 +50,7 @@ class CivicAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.avatarStyle], const {});
+    final so = RawStyleOf([style, t.avatarStyle], const {});
     final initials = Center(
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -157,7 +157,7 @@ class CivicAvatarGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.avatarStyle], const {});
+    final so = RawStyleOf([style, t.avatarStyle], const {});
     final shown = names.take(max).toList();
     final count = total ?? names.length;
     final others = (count - shown.length).clamp(0, count);

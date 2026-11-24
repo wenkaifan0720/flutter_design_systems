@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -146,7 +145,7 @@ class CivicTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.topBarStyle], const {});
+    final so = RawStyleOf([style, t.topBarStyle], const {});
     final band = so.fill ?? bandOf(t);
     final onBand = so.foreground ?? onBandOf(t);
     final heading = text.headingS.merge(so.textStyle);

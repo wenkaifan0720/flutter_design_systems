@@ -69,7 +69,7 @@ class CivicTimeline extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final direction = Directionality.of(context);
-    final so = DesignStyleOf([style, t.timelineStyle], const {});
+    final so = RawStyleOf([style, t.timelineStyle], const {});
     final titles = text.label.merge(so.textStyle);
     return Semantics(
       role: SemanticsRole.list,

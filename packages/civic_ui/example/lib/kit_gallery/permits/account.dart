@@ -550,7 +550,7 @@ Widget _record(
       (text.body.height ?? 1.25);
   final room = math.max(
     0.0,
-    (DesignTapTargets.of(context).floorOn().height - line) / 2,
+    (RawTapTargets.of(context).floorOn().height - line) / 2,
   );
   final actions = Column(
     crossAxisAlignment: CrossAxisAlignment.start,

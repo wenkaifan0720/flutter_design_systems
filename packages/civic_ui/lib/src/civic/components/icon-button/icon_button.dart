@@ -114,7 +114,7 @@ class CivicIconButton extends StatelessWidget {
             ? SystemMouseCursors.basic
             : SystemMouseCursors.click,
         builder: (context, states, _) {
-          final so = DesignStyleOf([style, t.iconButtonStyle], states);
+          final so = RawStyleOf([style, t.iconButtonStyle], states);
           final disabled = states.contains(WidgetState.disabled);
           final on = isSelected ?? false;
           // On a band of its own (the top bar's ink) it takes the band's glyph

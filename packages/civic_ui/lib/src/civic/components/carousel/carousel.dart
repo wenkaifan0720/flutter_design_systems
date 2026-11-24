@@ -78,7 +78,7 @@ class CivicCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.carouselStyle], const {});
+    final so = RawStyleOf([style, t.carouselStyle], const {});
     return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,

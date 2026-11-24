@@ -112,7 +112,7 @@ class CivicPullToRefreshState extends State<CivicPullToRefresh> {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([widget.style, t.pullToRefreshStyle], const {});
+    final so = RawStyleOf([widget.style, t.pullToRefreshStyle], const {});
     final l = RawWidgetsLocalizations.of(context);
     final scaler = MediaQuery.textScalerOf(context);
     final rest = scaler

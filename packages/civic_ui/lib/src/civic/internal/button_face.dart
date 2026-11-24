@@ -113,7 +113,7 @@ class CivicButtonFace extends StatelessWidget {
             CivicButtonKind.secondary => t.secondaryButtonStyle,
             CivicButtonKind.start => t.startButtonStyle,
           };
-    final so = DesignStyleOf([style, kindStyle], states);
+    final so = RawStyleOf([style, kindStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     final secondary = kind == CivicButtonKind.secondary;
     // A secondary button is a tint of its words' colour (the
@@ -199,7 +199,7 @@ class CivicButtonFace extends StatelessWidget {
               spacing: CivicSpacing.s8,
               children: [
                 Flexible(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: context.civicText.capHeight,
                     child: DefaultTextStyle(
                       style: words.copyWith(color: fg),
@@ -268,7 +268,7 @@ class CivicButtonFace extends StatelessWidget {
                                       else
                                         SizedBox.square(dimension: arc),
                                       Flexible(
-                                        child: DesignCapCenter(
+                                        child: RawCapCenter(
                                           capHeightFactor:
                                               context.civicText.capHeight,
                                           child: Text(

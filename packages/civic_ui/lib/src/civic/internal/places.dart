@@ -13,7 +13,7 @@ import 'spring.dart';
 // rail down a tablet's start and the site's side navigation, each round its
 // places, and a place's face in each. What CivicNavigationBar and
 // CivicSideNavigation stand their own pressable places in, and what
-// CivicShellFrame gives ui_core's DesignAdaptiveShell to paint with.
+// CivicShellFrame gives ui_core's RawAdaptiveShell to paint with.
 
 /// A bar place's name, as [CivicBarPlace] sets it.
 TextStyle civicPlaceNameStyle(
@@ -22,7 +22,7 @@ TextStyle civicPlaceNameStyle(
   required bool bold,
   Set<WidgetState> states = const {},
 }) => context.civicText.bodySmall
-    .merge(DesignStyleOf(styles, states).textStyle)
+    .merge(RawStyleOf(styles, states).textStyle)
     .copyWith(
       fontSize: 15,
       height: 1.2,
@@ -65,7 +65,7 @@ class CivicPlacesBand extends StatelessWidget {
       explicitChildNodes: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: DesignStyleOf(styles, const {}).fill ?? t.background,
+          color: RawStyleOf(styles, const {}).fill ?? t.background,
           border: Border(top: BorderSide(color: t.rule)),
         ),
         child: Padding(
@@ -190,7 +190,7 @@ class CivicPlacesRail extends StatelessWidget {
       explicitChildNodes: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: DesignStyleOf(styles, const {}).fill ?? t.background,
+          color: RawStyleOf(styles, const {}).fill ?? t.background,
           border: BorderDirectional(end: BorderSide(color: t.rule)),
         ),
         child: SizedBox(
@@ -266,7 +266,7 @@ class CivicPlacesSide extends StatelessWidget {
       container: true,
       explicitChildNodes: true,
       child: ColoredBox(
-        color: DesignStyleOf(styles, const {}).fill ?? t.ground,
+        color: RawStyleOf(styles, const {}).fill ?? t.ground,
         child: _WordsWide(
           least: CivicChromeMetrics.sideNavigation,
           most: MediaQuery.sizeOf(context).width / 3,
@@ -457,7 +457,7 @@ class CivicBarPlace extends StatelessWidget {
           value: selected ? 1 : 0,
           spring: CivicMotion.state,
           builder: (context, on, _) {
-            final so = DesignStyleOf(styles, {
+            final so = RawStyleOf(styles, {
               ...states,
               if (selected) WidgetState.selected,
             });
@@ -622,7 +622,7 @@ class CivicSidePlace extends StatelessWidget {
       spring: CivicMotion.focus,
       effects: true,
       builder: (context, focus, _) {
-        final so = DesignStyleOf(styles, {
+        final so = RawStyleOf(styles, {
           ...states,
           if (selected) WidgetState.selected,
         });

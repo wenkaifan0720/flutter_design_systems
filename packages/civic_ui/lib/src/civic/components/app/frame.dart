@@ -52,7 +52,7 @@ class CivicShellAction extends ShellAction {
 /// What `CivicShell` stands a router's branches in, and [CivicPreview] one
 /// page; an app with its own navigation can stand its pages in it too.
 ///
-/// ui_core's [DesignAdaptiveShell] under Civic's painting and Civic's
+/// ui_core's [RawAdaptiveShell] under Civic's painting and Civic's
 /// widths: the places are one tab stop, the arrow keys moving along them
 /// (Up and Down in the rail and the side navigation) and Enter or Space
 /// choosing; F6 moves the focus between the places and the page. A screen
@@ -110,11 +110,11 @@ class CivicShellFrame extends StatelessWidget {
   /// How the places stand in a window [width] wide: Civic's widths, not
   /// Material's (a bar below [CivicLayout.medium], a rail to
   /// [CivicLayout.expanded], the site's side navigation from there).
-  static DesignNavigationMode modeFor(double width) => !CivicLayout.isApp(width)
-      ? DesignNavigationMode.sidebar
+  static RawNavigationMode modeFor(double width) => !CivicLayout.isApp(width)
+      ? RawNavigationMode.sidebar
       : width >= CivicLayout.medium
-      ? DesignNavigationMode.rail
-      : DesignNavigationMode.bar;
+      ? RawNavigationMode.rail
+      : RawNavigationMode.bar;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +132,7 @@ class CivicShellFrame extends StatelessWidget {
       removeLeft: rtl,
       child: navigation,
     );
-    return DesignAdaptiveShell(
+    return RawAdaptiveShell(
       mode: mode,
       showNavigation: showPlaces,
       dampingRatio: CivicMotion.panel.dampingRatio,
@@ -141,7 +141,7 @@ class CivicShellFrame extends StatelessWidget {
       onDestinationSelected: onDestinationSelected,
       destinations: [
         for (final p in destinations)
-          DesignNavigationDestination(
+          RawNavigationDestination(
             label: p.label,
             icon: p.icon,
             selectedIcon: p.selectedIcon,
@@ -152,7 +152,7 @@ class CivicShellFrame extends StatelessWidget {
         // The key a test finds the place by, as the place's own.
         return KeyedSubtree(
           key: destinations[details.index].key,
-          child: details.mode == DesignNavigationMode.sidebar
+          child: details.mode == RawNavigationMode.sidebar
               ? CivicSidePlace(
                   styles: styles,
                   label: destination.label,
@@ -166,7 +166,7 @@ class CivicShellFrame extends StatelessWidget {
                   label: destination.label,
                   states: details.states,
                   selected: selected,
-                  rail: details.mode == DesignNavigationMode.rail,
+                  rail: details.mode == RawNavigationMode.rail,
                 ),
         );
       },
@@ -174,7 +174,7 @@ class CivicShellFrame extends StatelessWidget {
         // A phone: the places along the foot, the act's square at their end.
         // A bar is a tab bar to a screen reader, which holds its tabs alone:
         // the shell's group stands round the places, the act outside it.
-        DesignNavigationMode.bar => CivicPlacesBand(
+        RawNavigationMode.bar => CivicPlacesBand(
           styles: styles,
           labels: labels,
           places: details.destinations,
@@ -190,7 +190,7 @@ class CivicShellFrame extends StatelessWidget {
                 ),
         ),
         // A tablet: the phone's places down the start, the act over them.
-        DesignNavigationMode.rail => beside(
+        RawNavigationMode.rail => beside(
           CivicPlacesRail(
             styles: styles,
             labels: labels,
@@ -198,7 +198,7 @@ class CivicShellFrame extends StatelessWidget {
             places: details.destinations,
           ),
         ),
-        DesignNavigationMode.sidebar => beside(
+        RawNavigationMode.sidebar => beside(
           CivicPlacesSide(
             styles: styles,
             headerInset: brand == null
@@ -215,7 +215,7 @@ class CivicShellFrame extends StatelessWidget {
       },
       // The page's bar and column line up with the places beside it.
       body: CivicFrameScope(
-        besideNavigation: mode != DesignNavigationMode.bar,
+        besideNavigation: mode != RawNavigationMode.bar,
         child: child,
       ),
     );

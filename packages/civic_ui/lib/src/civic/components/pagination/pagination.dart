@@ -231,7 +231,7 @@ class _PageNumber extends StatelessWidget {
     final styles = [style, t.paginationStyle];
     final text = context.civicText.copyWith(
       label: context.civicText.label.merge(
-        DesignStyleOf(styles, const {}).textStyle,
+        RawStyleOf(styles, const {}).textStyle,
       ),
     );
     Widget square({required Color fill, required Widget child}) => ColoredBox(
@@ -249,7 +249,7 @@ class _PageNumber extends StatelessWidget {
     );
     if (selected) {
       // The page shown is where the reader is, not a way to go.
-      final so = DesignStyleOf(styles, const {WidgetState.selected});
+      final so = RawStyleOf(styles, const {WidgetState.selected});
       return Semantics(
         label: semanticLabel,
         selected: true,
@@ -287,7 +287,7 @@ class _PageNumber extends StatelessWidget {
                   spring: CivicMotion.focus,
                   effects: true,
                   builder: (context, focus, _) {
-                    final so = DesignStyleOf(styles, states);
+                    final so = RawStyleOf(styles, states);
                     final ink = disabled
                         ? so.foreground ?? t.textDisabled
                         : Color.lerp(

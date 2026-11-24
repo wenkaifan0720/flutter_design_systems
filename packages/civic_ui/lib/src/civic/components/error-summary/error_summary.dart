@@ -181,7 +181,7 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf(
+    final so = RawStyleOf(
       [widget.style, t.errorSummaryStyle],
       {if (_focused) WidgetState.focused},
     );
@@ -192,7 +192,7 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
     // finger's target leaves the room itself, a pointer's shorter one not.
     final line =
         scaler.scale(text.label.fontSize ?? 19) * (text.label.height ?? 1.25);
-    final floor = DesignTapTargets.of(context).floorOn().height;
+    final floor = RawTapTargets.of(context).floorOn().height;
     final gap = math.max(
       math.max(0.0, CivicSpacing.s8 - (floor - line)),
       CivicSpacing.s12 * grown.clamp(0.0, 1.0),

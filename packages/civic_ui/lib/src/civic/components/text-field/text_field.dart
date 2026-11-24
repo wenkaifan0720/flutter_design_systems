@@ -345,7 +345,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
       enabled: enabled,
       focusNode: _focus,
       builder: (context, parts) {
-        final so = DesignStyleOf(
+        final so = RawStyleOf(
           [widget.style, t.textFieldStyle],
           {
             if (!enabled) WidgetState.disabled,
@@ -370,7 +370,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
         final width = widget.widthInCharacters;
         // One control: a focus on the box or on what is joined to it (the
         // search button) rings the whole.
-        Widget well = DesignInputGroup(
+        Widget well = RawInputGroup(
           focusNode: _focus,
           enabled: enabled,
           isError: hasError,
@@ -441,7 +441,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
   Widget _editable(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf(
+    final so = RawStyleOf(
       [widget.style, t.textFieldStyle],
       {
         if (!widget.enabled) WidgetState.disabled,
@@ -485,7 +485,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
       ),
     );
     final hint = widget.hintText;
-    final box = DesignTextEntryBox(
+    final box = RawTextEntryBox(
       minHeight: CivicMetrics.controlHeight - 2 * CivicMetrics.edge,
       controller: hint == null ? null : _controller,
       hint: hint == null
@@ -502,10 +502,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
     );
     final oneLine = widget.maxLines == 1 || widget.obscureText;
     final entry = oneLine
-        ? DesignCapCenter(
-            capHeightFactor: context.civicText.capHeight,
-            child: box,
-          )
+        ? RawCapCenter(capHeightFactor: context.civicText.capHeight, child: box)
         : box;
     // The help and the error are the field's hint; the placeholder only
     // where there is neither.
@@ -566,7 +563,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
         padding: const EdgeInsets.symmetric(horizontal: CivicSpacing.s12),
         alignment: Alignment.center,
         color: t.surface,
-        child: DesignCapCenter(
+        child: RawCapCenter(
           capHeightFactor: context.civicText.capHeight,
           child: DefaultTextStyle(
             style: ink,

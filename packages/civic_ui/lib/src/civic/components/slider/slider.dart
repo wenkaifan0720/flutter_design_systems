@@ -255,7 +255,7 @@ class _CivicSliderState extends State<CivicSlider> {
                     top: 0,
                     width: CivicSliderMetrics.strip,
                     height: CivicSliderMetrics.strip,
-                    child: DesignValueHandle(
+                    child: RawValueHandle(
                       value: value,
                       onChanged: live ? (v) => _move(_snap(v)) : null,
                       min: widget.min,

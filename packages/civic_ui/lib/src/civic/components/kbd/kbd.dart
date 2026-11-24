@@ -104,7 +104,7 @@ class _Cap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf([style, t.kbdStyle], const {});
+    final so = RawStyleOf([style, t.kbdStyle], const {});
     const edge = 2.0;
     final cap = Color.lerp(t.surface, t.rule, 0.25)!;
     return CustomPaint(

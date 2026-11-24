@@ -411,8 +411,8 @@ class CivicPageBody extends StatelessWidget {
     // bar and the heading on a desk as on a phone.
     final room = math.max(
       0.0,
-      (DesignTapTargets.of(context).touch.height -
-              DesignTapTargets.of(context).floorOn().height) /
+      (RawTapTargets.of(context).touch.height -
+              RawTapTargets.of(context).floorOn().height) /
           2,
     );
     final foot = act != null && app;
@@ -480,33 +480,36 @@ class CivicPageBody extends StatelessWidget {
       children: [
         Expanded(child: scroll),
         // The action's foot: the card's face over a hairline, the action in
-        // the page's column.
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: t.background,
-            border: Border(top: BorderSide(color: t.rule)),
-          ),
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(
-              start,
-              CivicSpacing.s12,
-              end,
-              CivicSpacing.s12 + insets.bottom,
+        // the page's column. A toast stands above it, as a Scaffold keeps a
+        // snackbar above its persistent footer buttons.
+        RawToasterKeepClear(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: t.background,
+              border: Border(top: BorderSide(color: t.rule)),
             ),
-            child: Align(
-              alignment: centred
-                  ? Alignment.center
-                  : AlignmentDirectional.centerStart,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: maxWidth),
-                // On a centred measure the action starts where the
-                // column's words do.
-                child: centred
-                    ? Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: act,
-                      )
-                    : act,
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                start,
+                CivicSpacing.s12,
+                end,
+                CivicSpacing.s12 + insets.bottom,
+              ),
+              child: Align(
+                alignment: centred
+                    ? Alignment.center
+                    : AlignmentDirectional.centerStart,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxWidth),
+                  // On a centred measure the action starts where the
+                  // column's words do.
+                  child: centred
+                      ? Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: act,
+                        )
+                      : act,
+                ),
               ),
             ),
           ),

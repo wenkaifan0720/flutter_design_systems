@@ -15,7 +15,7 @@ export 'package:ui_core/ui_core.dart' show RawCommand;
 /// action" by default) over the [commands] that match what is typed, in
 /// their groups, each worded, its shortcut at its end. The panel is the
 /// dialog's card floating on its hairline and soft shadow, at most 560
-/// wide: ui_core's [showDesignCommandPalette], Civic's painting.
+/// wide: ui_core's [showRawCommandPalette], Civic's painting.
 ///
 /// The field takes the focus; Up and Down move the yellow plate through the
 /// results, Enter runs the lit one, a press runs any; the palette closes,
@@ -49,7 +49,7 @@ Future<void> showCivicCommandPalette({
   CivicStyle? style,
 }) {
   final t = CivicTheme.of(context);
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: t.isDark
         ? const Color(0xFF000000).withValues(alpha: 0.85)
@@ -119,7 +119,7 @@ Future<void> showCivicCommandPalette({
       data: t,
       child: Builder(
         builder: (context) {
-          final so = DesignStyleOf([style, t.commandPaletteStyle], const {});
+          final so = RawStyleOf([style, t.commandPaletteStyle], const {});
           final top = (MediaQuery.sizeOf(context).height * 0.1).clamp(
             CivicSpacing.s16,
             CivicSpacing.s64 + CivicSpacing.s32,

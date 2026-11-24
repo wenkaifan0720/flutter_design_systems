@@ -275,7 +275,7 @@ class _Divider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = theme;
-    final so = DesignStyleOf([style, t.splitViewStyle], states);
+    final so = RawStyleOf([style, t.splitViewStyle], states);
     final across = axis == Axis.horizontal;
     final held = states.contains(WidgetState.pressed);
     final over = held || states.contains(WidgetState.hovered);

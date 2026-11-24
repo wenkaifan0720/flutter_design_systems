@@ -64,7 +64,7 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
 
   /// Finds the answers for the words typed, in place of narrowing
   /// [options]: a register looked up as the reader types.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// An answer's words; null says its `toString`.
   final String Function(T option)? displayStringForOption;
@@ -209,7 +209,7 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(StringProperty('labelText', labelText, defaultValue: null))

@@ -78,7 +78,7 @@ class CivicImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.imageStyle], const {});
+    final so = RawStyleOf([style, t.imageStyle], const {});
     final ground = so.fill ?? t.surface;
     final quiet = so.foreground ?? t.textSecondary;
     final missing = ColoredBox(

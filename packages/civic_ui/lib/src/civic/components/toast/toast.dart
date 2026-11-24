@@ -109,7 +109,7 @@ class _CivicToastView extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.toastStyle], const {});
+    final so = RawStyleOf([style, t.toastStyle], const {});
     // By night the top bar's band is as dark as the page under it: the
     // toast stands on the raised band inside the floating hairline instead,
     // so it reads as its own surface over the page.

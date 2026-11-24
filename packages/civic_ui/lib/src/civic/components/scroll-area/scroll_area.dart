@@ -71,15 +71,15 @@ class CivicScrollArea extends StatelessWidget {
       axis: axis,
       thickness: _thickness,
       minThumbLength: CivicMetrics.controlHeight,
-      visibility: DesignScrollbarVisibility.always,
+      visibility: RawScrollbarVisibility.always,
       focusable: focusable,
       semanticLabel: semanticLabel,
       trackBuilder: (context, thumb) {
-        final so = DesignStyleOf([style, t.scrollAreaStyle], thumb.states);
+        final so = RawStyleOf([style, t.scrollAreaStyle], thumb.states);
         return ColoredBox(color: so.edge ?? t.surface);
       },
       thumbBuilder: (context, thumb) {
-        final so = DesignStyleOf([style, t.scrollAreaStyle], thumb.states);
+        final so = RawStyleOf([style, t.scrollAreaStyle], thumb.states);
         final held = thumb.states.contains(WidgetState.pressed);
         final over = thumb.states.contains(WidgetState.hovered);
         return CivicSpringValue(

@@ -201,7 +201,7 @@ class _Caller {
   late final terms = _own(ScrollController());
   final documents = ['Proof of address', 'Vehicle logbook'];
   late final services = _own(
-    DesignTreeController<String>(
+    RawTreeController<String>(
       roots: const ['Parking', 'Bins'],
       childrenOf: (s) => s == 'Parking' ? const ['Permits'] : const [],
     ),

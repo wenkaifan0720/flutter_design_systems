@@ -230,14 +230,14 @@ class _Mark extends StatelessWidget {
   });
 
   final RawRatingItemDetails item;
-  final List<DesignStyle?> styles;
+  final List<RawStyle?> styles;
   final bool live;
   final bool focused;
 
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf(styles, item.states);
+    final so = RawStyleOf(styles, item.states);
     final disabled = !live;
     final on = disabled ? t.textDisabled : (so.fill ?? t.action);
     final onInk = disabled ? t.background : (so.foreground ?? t.onAction);

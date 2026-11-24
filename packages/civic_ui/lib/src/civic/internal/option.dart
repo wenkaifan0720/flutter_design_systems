@@ -150,7 +150,7 @@ class CivicOptionFace extends StatelessWidget {
     final boxDrop = math.max(0.0, (scaled - CivicMetrics.box) / 2);
     final label = labelText;
     final helper = helperText;
-    final so = DesignStyleOf(styles, states);
+    final so = RawStyleOf(styles, states);
     final disabled = states.contains(WidgetState.disabled);
     final focused = states.contains(WidgetState.focused);
     // A pointer over it rings the box in the rule's grey, a press a

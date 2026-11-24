@@ -19,7 +19,7 @@ class _Arrange extends StatefulWidget {
 class _ArrangeState extends State<_Arrange> {
   final _terms = ScrollController();
   final _documents = ['Proof of address', 'Vehicle logbook', 'Photo ID'];
-  final _services = DesignTreeController<String>(
+  final _services = RawTreeController<String>(
     roots: const ['Parking', 'Bins', 'Council tax'],
     childrenOf: (s) => _under[s] ?? const [],
     expanded: const ['Parking', 'Permits'],

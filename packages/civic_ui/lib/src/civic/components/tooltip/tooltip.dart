@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../internal/menu_row.dart';
 import '../../internal/paint.dart';
+import '../../internal/tip_hold.dart';
 import '../../theme.dart';
 
 /// A short [message] naming [child] (most often a [CivicIconButton]'s
@@ -91,12 +92,16 @@ class CivicTooltip extends StatelessWidget {
           triggerMode: triggerMode,
           positionDelegate: positionDelegate,
           animationStyle: _TipSpring.life,
-          tooltipBuilder: (context, animation) => ExcludeSemantics(
-            child: _TipSpring(
-              showing: animation,
-              builder: (context, presence) => _plate(context, presence),
-            ),
-          ),
+          // Under a control whose menu or popover is open the tip paints
+          // nothing (CivicTipHold).
+          tooltipBuilder: (context, animation) => CivicTipHold.of(context)
+              ? const SizedBox.shrink()
+              : ExcludeSemantics(
+                  child: _TipSpring(
+                    showing: animation,
+                    builder: (context, presence) => _plate(context, presence),
+                  ),
+                ),
           child: RawTooltipFocusFix(child: child),
         ),
       ),
@@ -106,7 +111,7 @@ class CivicTooltip extends StatelessWidget {
   Widget _plate(BuildContext context, Animation<double> presence) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.tooltipStyle], const {});
+    final so = RawStyleOf([style, t.tooltipStyle], const {});
     final plate = so.fill ?? t.textPrimary;
     return civicRise(
       animation: presence,
@@ -229,7 +234,7 @@ class _TipSpringState extends State<_TipSpring>
     _shown = shown;
     _presence.springTo(
       shown ? 1 : 0,
-      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+      RawMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
     );
   }
 

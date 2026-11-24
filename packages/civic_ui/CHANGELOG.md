@@ -1,3 +1,12 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).
+- Types take ui_core 0.6.0's names: each `style` parameter and style field is a `RawStyle` (it was `DesignStyle`), and the `styles` of `CivicChoiceFace`, `CivicOptionRow`, `CivicOptionFace`, `CivicPlacesBand`, `CivicPlacesRail`, `CivicPlacesSide`, `CivicBarPlace`, `CivicSidePlace` and `CivicSliderThumb` a `List<RawStyle?>`; `CivicThemeData.tapTargets` is a `RawTapTargets`, `CivicTree.controller` a `RawTreeController`, `CivicShellFrame.modeFor` gives a `RawNavigationMode` and `civicInventory` is a `RawInventory`; `CivicMenu.builder` and `CivicPopover.builder` take a `RawOverlayAnchor`. ui_core keeps each old name but `DesignInventory` as a deprecated alias of the same type, and `dart fix --apply` moves them all.
+- Under a finger a `CivicCalendar`'s day stands 48 tall, the look's tap floor, so its plate fills the tap target ui_core 0.6.0 gives it; under a pointer it stays 44. The plate stood 4 short of its target, and a week's plates 4 apart.
+- A calendar writes its days with the day's own label (`RawCalendarDayDetails.label`), in the app's digits, as Material's does.
+- A toast stands above `CivicPageBody`'s action foot in an app-sized window (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its footer buttons. On a 900 window it covered the page's one action.
+- While a `CivicMenu` or `CivicPopover` is open, the tooltip of the control that opened it stands down, as a Material menu button's does. With the pointer resting on the control (on the web, a click a screen reader's node takes), the tip came up over the open menu.
+
 ## 0.5.1
 
 - By night a toast stands on the raised band inside an edge that reads at 3:1 against the page, so it reads as its own surface. It stood on the top bar's night band, about as dark as the page, with no edge.

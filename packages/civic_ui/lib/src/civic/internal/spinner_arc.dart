@@ -54,7 +54,7 @@ class _CivicSpinnerArcState extends State<CivicSpinnerArc>
   }
 
   void _run() {
-    if (widget.filled != null || DesignMotionPolicy.of(context).reduceMotion) {
+    if (widget.filled != null || RawMotionPolicy.of(context).reduceMotion) {
       _turn
         ..stop()
         ..value = 0;

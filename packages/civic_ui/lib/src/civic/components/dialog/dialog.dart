@@ -7,7 +7,7 @@ import '../../internal/paint.dart';
 import '../../theme.dart';
 
 /// Opens [builder]'s [CivicDialog] over the page, on a scrim of ink, and
-/// returns what it closes with: ui_core's [DesignDialogRoute], Civic's
+/// returns what it closes with: ui_core's [RawModalDialogRoute], Civic's
 /// painting. The scrim comes up on a spring under a dialog that stands whole
 /// from its first frame (under Reduce Motion, whichever platform asks for
 /// it, the two fade in together, settled within 150 ms). The keyboard's
@@ -37,7 +37,7 @@ Future<T?> showCivicDialog<T>({
 }) {
   final t = CivicTheme.of(context);
   return Navigator.of(context, rootNavigator: useRootNavigator).push(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       isAlert: !barrierDismissible,
       barrierDismissible: barrierDismissible,
       // By night the scrim is black and deeper, so the page behind falls
@@ -105,7 +105,7 @@ class CivicDialog extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final narrow = size.width < CivicLayout.medium;
     final body = content;
-    final so = DesignStyleOf([style, t.dialogStyle], const {});
+    final so = RawStyleOf([style, t.dialogStyle], const {});
     final words = text.body.copyWith(color: so.foreground);
     return SafeArea(
       child: Center(

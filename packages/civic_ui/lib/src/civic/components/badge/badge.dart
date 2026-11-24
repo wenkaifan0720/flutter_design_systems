@@ -59,7 +59,7 @@ class CivicBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final so = DesignStyleOf(
+    final so = RawStyleOf(
       [style, t.badgeStyle],
       {if (needsAction) WidgetState.error},
     );

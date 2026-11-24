@@ -263,7 +263,7 @@ class _Section extends StatelessWidget {
           excludeSemantics: true,
           mouseCursor: SystemMouseCursors.click,
           builder: (context, states, _) {
-            final so = DesignStyleOf([style, t.accordionStyle], states);
+            final so = RawStyleOf([style, t.accordionStyle], states);
             return _Focusable(
               states: states,
               child: Padding(
@@ -423,7 +423,7 @@ class _Toggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf([style, t.accordionStyle], states);
+    final so = RawStyleOf([style, t.accordionStyle], states);
     final held = states.contains(WidgetState.pressed);
     final over = held || states.contains(WidgetState.hovered);
     return CivicSpringValue(

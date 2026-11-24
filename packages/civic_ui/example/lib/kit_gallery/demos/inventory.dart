@@ -24,7 +24,7 @@ class _Inventory extends StatelessWidget {
           constraints: const BoxConstraints(
             maxWidth: CivicLayout.readingWidth + 2 * CivicSpacing.s40,
           ),
-          child: DesignInventoryGallery(
+          child: RawInventoryGallery(
             inventory: civicInventory,
             padding: EdgeInsets.symmetric(
               horizontal: margin,
@@ -58,7 +58,7 @@ class _Inventory extends StatelessWidget {
                         child: Text(
                           reason == null
                               ? 'Missing'
-                              : DesignInventory.absentLabel(reason),
+                              : RawInventory.absentLabel(reason),
                           style: text.body.copyWith(color: t.textSecondary),
                         ),
                       ),

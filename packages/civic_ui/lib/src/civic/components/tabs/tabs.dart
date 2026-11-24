@@ -250,7 +250,7 @@ class _Tab extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final selected = states.contains(WidgetState.selected);
-    final so = DesignStyleOf([style, t.tabStyle], states);
+    final so = RawStyleOf([style, t.tabStyle], states);
     final base = text.body.merge(so.textStyle);
     return CivicSpringValue(
       value: states.contains(WidgetState.focused) ? 1 : 0,

@@ -118,7 +118,7 @@ class CivicListRow extends StatelessWidget {
     final grouped = _GroupScope.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     Widget body(Set<WidgetState> states, double focus) {
-      final so = DesignStyleOf([style, t.listRowStyle], states);
+      final so = RawStyleOf([style, t.listRowStyle], states);
       final titleInk = Color.lerp(
         so.foreground ?? t.textPrimary,
         t.onFocus,

@@ -1,7 +1,7 @@
 // ui_core_test's checks over Brindlemere parking permits' everyday screens:
 // every control a finger reaches on a phone is 48 by 48 at the least, and 24
 // by 24 for a pointer on a desk (Civic's floors, from its theme's
-// DesignTapTargetScope), each reached where a screen reader outlines it; and
+// RawTapTargetScope), each reached where a screen reader outlines it; and
 // on a desk a pointer over a live control shows the pointing hand over all of
 // it. The everyday run takes each screen once, the phone and the desk dealt
 // round them; the sweep takes the other half.

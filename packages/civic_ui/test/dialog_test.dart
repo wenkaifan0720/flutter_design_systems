@@ -1,4 +1,4 @@
-// The dialog (ui_core's DesignDialogRoute, Civic's painting): it opens over
+// The dialog (ui_core's RawModalDialogRoute, Civic's painting): it opens over
 // the page with its question, closes with the answer its button gives,
 // closes on Escape and Android's back unless it must be answered (then a
 // screen reader hears an alert), gives the focus back to what opened it,

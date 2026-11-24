@@ -261,13 +261,13 @@ class _Day extends StatelessWidget {
 
   final RawCalendarDayDetails day;
   final Set<WidgetState> states;
-  final List<DesignStyle?> styles;
+  final List<RawStyle?> styles;
 
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    final so = DesignStyleOf(styles, states);
+    final so = RawStyleOf(styles, states);
     final enabled = day.enabled;
     final end = day.selected || day.isRangeStart || day.isRangeEnd;
     final between = !end && (day.inRange || day.inPreview);
@@ -309,11 +309,16 @@ class _Day extends StatelessWidget {
             focusColor: t.focus,
             barColor: t.focusBar,
           ),
-          // At least a finger's 44, taller as the text grows; every day
-          // keeps room for today's rule, so a week's days stand level.
+          // At least 44 and the look's tap floor where it stands (48 under
+          // a finger), so each day's face fills the target its calendar
+          // gives it; taller as the text grows; every day keeps room for
+          // today's rule, so a week's days stand level.
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: CivicCalendar.dayWidth,
+            constraints: BoxConstraints(
+              minHeight: math.max(
+                CivicCalendar.dayWidth,
+                RawTapTargets.of(context).floorOn().height,
+              ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: CivicSpacing.s4),
@@ -322,8 +327,7 @@ class _Day extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    RawWidgetsLocalizations.of(context)
-                        .formatDecimal(day.date.day),
+                    day.label,
                     style: (day.isToday || end ? text.label : text.body)
                         .copyWith(
                           height: 1.2,

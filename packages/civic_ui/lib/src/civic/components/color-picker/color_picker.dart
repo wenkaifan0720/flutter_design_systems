@@ -232,7 +232,7 @@ class _Swatch extends StatefulWidget {
   final int index;
   final CivicColorSwatch swatch;
   final bool chosen;
-  final List<DesignStyle?> styles;
+  final List<RawStyle?> styles;
 
   @override
   State<_Swatch> createState() => _SwatchState();
@@ -304,7 +304,7 @@ class _SwatchState extends State<_Swatch> {
     Set<WidgetState> states,
   ) {
     final styles = widget.styles;
-    final so = DesignStyleOf(styles, states);
+    final so = RawStyleOf(styles, states);
     final focused = states.contains(WidgetState.focused);
     final hovered = states.contains(WidgetState.hovered);
     return CivicSpringValue(

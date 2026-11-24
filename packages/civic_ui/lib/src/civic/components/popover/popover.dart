@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../internal/menu_row.dart';
 import '../../internal/paint.dart';
+import '../../internal/tip_hold.dart';
 import '../../theme.dart';
 
 /// A little more about something, on a panel beside the control [builder]
@@ -50,8 +51,7 @@ class CivicPopover extends StatelessWidget {
 
   /// Paints the control that opens it: call the anchor's `toggle` on its
   /// press.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
-  builder;
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor) builder;
 
   /// What it holds.
   final Widget content;
@@ -95,11 +95,13 @@ class CivicPopover extends StatelessWidget {
       matchAnchorWidth: false,
       maxWidth: width,
     ),
-    anchorBuilder: builder,
+    // While the popover is open the control's tip stands down.
+    anchorBuilder: (context, anchor) =>
+        CivicTipHold(held: anchor.isOpen, child: builder(context, anchor)),
     overlayBuilder: (context, info) {
       final t = context.civicTheme;
       final text = context.civicText;
-      final so = DesignStyleOf([style, t.popoverStyle], const {});
+      final so = RawStyleOf([style, t.popoverStyle], const {});
       final heading = title;
       final ink = so.foreground ?? t.textPrimary;
       // By night what floats stands on the raised band, and what it holds

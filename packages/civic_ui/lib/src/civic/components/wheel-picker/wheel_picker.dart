@@ -117,7 +117,7 @@ class CivicWheelPicker extends StatelessWidget {
         children: list,
       ),
       columnBuilder: (context, column, wheel) {
-        final so = DesignStyleOf([style, t.wheelPickerStyle], column.states);
+        final so = RawStyleOf([style, t.wheelPickerStyle], column.states);
         final disabled = column.states.contains(WidgetState.disabled);
         return SizedBox(
           width: column.column < widths.length
@@ -156,7 +156,7 @@ class CivicWheelPicker extends StatelessWidget {
               color: !item.enabled
                   ? t.textDisabled
                   : item.selected
-                  ? (DesignStyleOf(
+                  ? (RawStyleOf(
                           [style, t.wheelPickerStyle],
                           const {WidgetState.selected},
                         ).foreground ??

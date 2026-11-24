@@ -212,7 +212,7 @@ class _Ground extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final states = details.states;
-    final so = DesignStyleOf([style, t.swipeActionsStyle], states);
+    final so = RawStyleOf([style, t.swipeActionsStyle], states);
     final danger = action.isDestructiveAction;
     // The edge action on the action colour, the next on slate, one that
     // destroys something on red.

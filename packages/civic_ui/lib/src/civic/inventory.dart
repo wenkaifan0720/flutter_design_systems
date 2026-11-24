@@ -1,5 +1,5 @@
 // Civic's answer to the shared component inventory (ui_core's
-// DesignInventoryRow.all): for each row the part that answers it, as a
+// RawInventoryRow.all): for each row the part that answers it, as a
 // small live specimen, or the reason a public service leaves it out. The
 // gallery lists it, and a test verifies it (every row answered once, no
 // reason a to-do).
@@ -82,11 +82,7 @@ import 'theme.dart';
 // The inventory's own types, so an app (and Civic's gallery) can list and
 // verify civicInventory through Civic's barrel.
 export 'package:ui_core/inventory.dart'
-    show
-        DesignInventory,
-        DesignInventoryEntry,
-        DesignInventoryGallery,
-        DesignInventoryRow;
+    show RawInventory, RawInventoryEntry, RawInventoryGallery, RawInventoryRow;
 
 void _none() {}
 void _drop(Object? _) {}
@@ -317,7 +313,7 @@ class _SectionsState extends State<_Sections> {
     'Permits': ['Resident', 'Visitor'],
   };
 
-  final _sections = DesignTreeController<String>(
+  final _sections = RawTreeController<String>(
     roots: const ['Parking', 'Bins'],
     childrenOf: (s) => _under[s] ?? const [],
     expanded: const ['Parking'],
@@ -347,15 +343,15 @@ const Map<String, double> civicInventoryHeights = {
 };
 
 /// Civic's inventory: every row of the shared component list, answered.
-final DesignInventory civicInventory = DesignInventory(
+final RawInventory civicInventory = RawInventory(
   look: 'Civic',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (_) => const CivicButton(onPressed: _none, child: Text('Continue')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (_) => const CivicIconButton(
         icon: LucideIcons.x,
@@ -363,12 +359,12 @@ final DesignInventory civicInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       'A floating button is Material vocabulary: a page\'s action is a '
           'button where the page ends (CivicButton), after what it acts on',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const CivicButtonGroup(
         children: [
@@ -377,7 +373,7 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (_) => const CivicToggleGroup<String>(
         labelText: 'Show applications',
@@ -389,7 +385,7 @@ final DesignInventory civicInventory = DesignInventory(
         onSelectionChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (_) => const CivicSplitButton(
         label: 'Send application',
@@ -400,23 +396,23 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (_) => const CivicLink(
         onPressed: _none,
         child: Text('Read the guidance on permit zones'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Kbd',
       (_) => const CivicKbd.combination(['Ctrl', 'K']),
     ),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (_) => const CivicTextField(labelText: 'Full name'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (_) => const CivicTextArea(
         labelText: 'Why do you need a second permit?',
@@ -424,15 +420,15 @@ final DesignInventory civicInventory = DesignInventory(
         minLines: 3,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (_) => const CivicSearchField(onSubmitted: _drop),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (_) => const CivicPasswordField(labelText: 'Password'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (_) => const CivicTextField(
         labelText: 'Weight of the vehicle',
@@ -440,11 +436,11 @@ final DesignInventory civicInventory = DesignInventory(
         widthInCharacters: 5,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputOtp',
       (_) => const CivicCodeField(labelText: 'Security code'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       (_) => const CivicNumberField(
         labelText: 'Visitor days',
@@ -454,7 +450,7 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (_) => const CivicSelect<String>(
         labelText: 'Permit zone',
@@ -466,14 +462,14 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (_) => const CivicCombobox<String>(
         labelText: 'Country',
         options: ['France', 'Germany', 'Ireland', 'Italy', 'Spain'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (_) => const CivicMultiSelect<String>(
         labelText: 'Languages you speak',
@@ -482,7 +478,7 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (_) => const CivicCheckbox(
         value: true,
@@ -490,7 +486,7 @@ final DesignInventory civicInventory = DesignInventory(
         labelText: 'Email',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (_) => _Held<String?>(
         'car',
@@ -505,7 +501,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (_) => const CivicSwitch(
         value: true,
@@ -513,7 +509,7 @@ final DesignInventory civicInventory = DesignInventory(
         labelText: 'Renewal reminders',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (_) => const CivicSlider(
         labelText: 'Text size',
@@ -524,7 +520,7 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (_) => const CivicRating(
         labelText: 'How easy was it to apply?',
@@ -533,7 +529,7 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (_) => const CivicRangeSlider(
         labelText: 'Monthly cost',
@@ -543,7 +539,7 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (_) => _Held<String>(
         'month',
@@ -559,7 +555,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (_) => const Wrap(
         spacing: 8,
@@ -570,7 +566,7 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (_) => const CivicFileUpload(
         labelText: 'Proof of address',
@@ -581,7 +577,7 @@ final DesignInventory civicInventory = DesignInventory(
     ),
     // A date typed in the reader's order, with the calendar a button
     // away; a date of birth stays three boxes (CivicDateInput).
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (_) => CivicDatePicker(
         labelText: 'When do you want the permit to start?',
@@ -591,7 +587,7 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (_) => CivicDateRangePicker(
         labelText: 'When will your visitor stay?',
@@ -601,7 +597,7 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (_) => const CivicTimeInput(
         labelText: 'What time will you arrive?',
@@ -609,8 +605,8 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present('Calendar', (_) => const _Days()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Calendar', (_) => const _Days()),
+    RawInventoryEntry.present(
       'WheelPicker',
       // The columns' names in the app's language: ui_core's words.
       (context) => CivicWheelPicker(
@@ -633,8 +629,8 @@ final DesignInventory civicInventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present('ColorPicker', (_) => const _Colour()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('ColorPicker', (_) => const _Colour()),
+    RawInventoryEntry.present(
       'FormField',
       (_) => const CivicTextField(
         labelText: 'Postcode',
@@ -644,11 +640,11 @@ final DesignInventory civicInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (_) => const CivicTopBar(title: 'Brindlemere parking permits'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (_) => const CivicNavigationBar(
         destinations: _places,
@@ -658,7 +654,7 @@ final DesignInventory civicInventory = DesignInventory(
     ),
     // A tablet's places: the navigation bar a scaffold or an app's frame
     // stands down the start from 600 wide, each glyph over its name.
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (_) => const SizedBox(
         height: 360,
@@ -676,7 +672,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => const CivicSideNavigation(
         destinations: _places,
@@ -684,7 +680,7 @@ final DesignInventory civicInventory = DesignInventory(
         onDestinationSelected: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (_) => const CivicTabBar(
         tabs: ['Details', 'Documents', 'History'],
@@ -692,7 +688,7 @@ final DesignInventory civicInventory = DesignInventory(
         onTap: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (_) => const CivicBreadcrumbs(
         items: [
@@ -701,7 +697,7 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (_) => const CivicPagination(
         pageCount: 12,
@@ -709,14 +705,14 @@ final DesignInventory civicInventory = DesignInventory(
         onPageChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (_) => const CivicStepIndicator(
         steps: ['Your vehicle', 'Your details', 'Proof of address', 'Check'],
         currentStep: 1,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (_) => const CivicPageDots(
         pageCount: 5,
@@ -724,12 +720,12 @@ final DesignInventory civicInventory = DesignInventory(
         onPageChanged: _drop,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'MenuBar',
       'A public service has no menus: its places are its navigation '
           '(CivicNavigationBar, CivicSideNavigation), its acts are buttons',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Command',
       (_) => Builder(
         builder: (context) => CivicButton.secondary(
@@ -752,7 +748,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (_) => const CivicScaffold(
         topBar: CivicTopBar(title: 'Brindlemere parking permits'),
@@ -768,7 +764,7 @@ final DesignInventory civicInventory = DesignInventory(
       ),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (_) => const CivicCard(
         title: 'Resident permit, Zone B',
@@ -776,7 +772,7 @@ final DesignInventory civicInventory = DesignInventory(
         child: Text('Runs out on 3 November 2027.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (_) => const CivicListRow(
         title: Text('Resident permit, Zone B'),
@@ -785,7 +781,7 @@ final DesignInventory civicInventory = DesignInventory(
         onTap: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (_) => const CivicSummaryCard(
         title: 'Your vehicle',
@@ -797,28 +793,28 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (_) => const CivicSectionHeader(title: 'Before you start'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (_) => const CivicDetails(
         title: 'Help with proof of address',
         child: Text('A council tax bill or a tenancy agreement.'),
       ),
     ),
-    DesignInventoryEntry.present('Table', (_) => const _Fees()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Table', (_) => const _Fees()),
+    RawInventoryEntry.present(
       'DataTable',
       (_) => const _Fees(selectable: true),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Divider',
       (_) => const CivicSectionBreak(size: CivicSectionBreakSize.medium),
     ),
-    DesignInventoryEntry.present('ScrollArea', (_) => const _Terms()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('ScrollArea', (_) => const _Terms()),
+    RawInventoryEntry.present(
       'Resizable',
       (_) => const CivicSplitView(
         first: _Pane('Your applications'),
@@ -827,7 +823,7 @@ final DesignInventory civicInventory = DesignInventory(
         minSecond: 120,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CarouselView',
       (_) => CivicCarousel(
         semanticLabel: 'Permit zones',
@@ -837,8 +833,8 @@ final DesignInventory civicInventory = DesignInventory(
             _Pane(const ['Zone A', 'Zone B', 'Zone C'][index]),
       ),
     ),
-    DesignInventoryEntry.present('ReorderableListView', (_) => const _Order()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('ReorderableListView', (_) => const _Order()),
+    RawInventoryEntry.present(
       'SwipeActions',
       (_) => const CivicSwipeActions(
         menuLabel: 'Actions for Resident permit',
@@ -853,7 +849,7 @@ final DesignInventory civicInventory = DesignInventory(
         child: CivicListRow(title: Text('Resident permit, Zone B')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RefreshIndicator',
       (_) => CivicPullToRefresh(
         onRefresh: () async {},
@@ -865,8 +861,8 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present('TreeView', (_) => const _Sections()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('TreeView', (_) => const _Sections()),
+    RawInventoryEntry.present(
       'Timeline',
       (_) => const CivicTimeline(
         entries: [
@@ -875,17 +871,17 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (_) => const CivicAvatar(name: 'Amara Okafor'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (_) => const CivicAvatarGroup(
         names: ['Amara Okafor', 'Ben Hale', 'Chi Lee', 'Dev Rao', 'Eli Moss'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Badge',
       (_) => const CivicBadge(
         count: 2,
@@ -893,11 +889,11 @@ final DesignInventory civicInventory = DesignInventory(
         child: Text('Your applications'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tag',
       (_) => const CivicTag(label: 'Approved', tone: CivicTone.success),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Media',
       (_) => const SizedBox(
         width: 240,
@@ -908,14 +904,14 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (_) => const CivicEmptyState(
         title: 'You have no applications yet',
         children: [Text('When you apply for a permit, it will show here.')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (_) => const CivicSummaryList(
         rows: [
@@ -925,7 +921,7 @@ final DesignInventory civicInventory = DesignInventory(
       ),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (_) => const CivicDialog(
         title: 'You will be signed out soon',
@@ -935,7 +931,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (_) => Builder(
         builder: (context) => CivicButton.secondary(
@@ -949,7 +945,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (_) => Builder(
         builder: (context) => CivicButton.secondary(
@@ -963,7 +959,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (_) => Builder(
         builder: (context) => CivicButton.secondary(
@@ -986,7 +982,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (_) => CivicPopover(
         title: 'Who counts as a visitor',
@@ -999,13 +995,13 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'HoverCard',
       'Nothing in Civic opens on a hover alone, out of reach of a finger, '
           'the keys and a screen reader: more to know opens on a press '
           '(CivicPopover) or folds in place (CivicDetails)',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (_) => const CivicIconButton(
         icon: LucideIcons.printer,
@@ -1014,7 +1010,7 @@ final DesignInventory civicInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (_) => CivicMenu<String>(
         semanticLabel: 'Application actions',
@@ -1034,7 +1030,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (_) => CivicToaster(
         child: Builder(
@@ -1046,7 +1042,7 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (_) => const CivicNotificationBanner(
         title: 'Important',
@@ -1054,7 +1050,7 @@ final DesignInventory civicInventory = DesignInventory(
       ),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (_) => const CivicProgressBar(
         label: 'Uploading proof of address',
@@ -1062,22 +1058,22 @@ final DesignInventory civicInventory = DesignInventory(
         valueLabel: '2 of 5 pages uploaded',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (_) => const CivicSpinner(label: 'Checking your vehicle'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (_) => const CivicSkeleton(child: CivicSkeletonText(lines: 2)),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (_) => const CivicEmptyState(
         title: 'Sorry, the service is unavailable',
         children: [Text('You will be able to use the service later.')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (_) => const CivicMeter(
         label: 'Visitor days used this year',
@@ -1088,7 +1084,7 @@ final DesignInventory civicInventory = DesignInventory(
       ),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (_) => const CivicLineChart(
         title: 'Permits issued each month',
@@ -1099,7 +1095,7 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (_) => const CivicBarChart(
         title: 'Fines paid by quarter',
@@ -1109,7 +1105,7 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (_) => const CivicAreaChart(
         title: 'Applications waiting',
@@ -1119,7 +1115,7 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (_) => const CivicPieChart(
         title: 'Permits by kind',
@@ -1130,7 +1126,7 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (_) => const CivicSparkline(
         label: 'Visitor permits this week',
