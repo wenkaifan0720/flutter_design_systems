@@ -2,7 +2,7 @@
 
 ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core 0.5.5 carries, how to
+look's face for them. This page lists what ui_core 0.5.6 carries, how to
 wire each kind of part, and the three shims a look puts in place until
 Flutter's own fixes reach its minimum version.
 
@@ -466,7 +466,9 @@ builder: (context, toast) => Opacity(
 ```
 
 A toast never covers a bar along the screen's foot or top. A
-`DesignAdaptiveShell` keeps its phone bar clear by itself. A bar the look
+`DesignAdaptiveShell` keeps its phone bar clear by itself, and not its rail
+or sidebar: a part down the screen's side is no bar, even under an app's top
+bar, where it reaches the foot alone. A bar the look
 draws itself (a bottom app bar, a docked composer, its own scaffold's
 bottom slot) is wrapped in `RawToasterKeepClear`: the toasts stand above it
 (below a top one), follow it as it springs in or away, and stand where they

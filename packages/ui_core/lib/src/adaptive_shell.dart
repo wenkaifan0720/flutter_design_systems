@@ -777,20 +777,21 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
       label: mode == DesignNavigationMode.sidebar ? words.drawerLabel : null,
       child: navigation,
     );
-    // A bar keeps the toasts above it, as Material's bottom navigation bar
-    // keeps a snackbar (a rail or a sidebar, edge to edge, keeps none).
-    navigation = RawToasterKeepClear(
-      child: Pane(
-        debugLabel: 'DesignAdaptiveShell navigation',
-        child: ExcludeFocus(
+    navigation = Pane(
+      debugLabel: 'DesignAdaptiveShell navigation',
+      child: ExcludeFocus(
+        excluding: hidden,
+        child: ExcludeSemantics(
           excluding: hidden,
-          child: ExcludeSemantics(
-            excluding: hidden,
-            child: IgnorePointer(ignoring: hidden, child: navigation),
-          ),
+          child: IgnorePointer(ignoring: hidden, child: navigation),
         ),
       ),
     );
+    // A bar keeps the toasts above it, as Material's Scaffold keeps a
+    // snackbar above its bottomNavigationBar. A rail or a sidebar keeps
+    // none, whatever stands above or below it: under an app's top bar it
+    // reaches the bottom edge alone, and is still no bar.
+    if (bar) navigation = RawToasterKeepClear(child: navigation);
     final branches = widget.branches;
     Widget body = branches == null ? widget.body! : _branches(branches);
     body = Pane(

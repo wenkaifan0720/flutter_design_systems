@@ -1,3 +1,7 @@
+## 0.5.6
+
+- `DesignAdaptiveShell` keeps the toasts clear of its navigation only as a bar, as `Scaffold` keeps a snackbar above its `bottomNavigationBar` alone. A rail or a sidebar under an app's top bar reached the window's bottom edge and not its top, so `RawToasterKeepClear` took it for a bottom bar as tall as the window less the top bar, and the toasts stood at the top of the window, half under the top bar; they now stand where they would with no navigation. A bar keeps them above it as before.
+
 ## 0.5.5
 
 - A `RawPopover` surface its `positionDelegate` places is sized by the bounds the popover keeps to (`RawPopoverPositionContext.bounds`: the overlay less the safe area, the on-screen keyboard, a `RawPopoverPadding` and the placement's margin), and `RawPopoverInfo.maxSize` is their size. It was sized by the room on its placement's side of the anchor, so a delegate that turned a menu over its control low on the screen got a surface as short as the room under the control: the lower rows were cut off and took no press. The placement's widths and side are kept, and a popover that places itself is sized as before.

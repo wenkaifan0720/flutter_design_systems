@@ -796,6 +796,80 @@ void main() {
     expect(toast().bottom, moreOrLessEquals(bar.top - 16), reason: 'back');
   });
 
+  testWidgets('a rail or a sidebar keeps no toast clear, edge to edge, under '
+      'a top bar or over a status line; a bar under a top bar still does, as '
+      'Scaffold keeps a snackbar above its bottomNavigationBar alone', (
+    tester,
+  ) async {
+    final toaster = GlobalKey<RawToasterState>();
+    Widget app({
+      bool topBar = false,
+      bool statusLine = false,
+      AlignmentGeometry alignment = AlignmentDirectional.bottomCenter,
+    }) => harness(
+      RawToaster(
+        key: toaster,
+        alignment: alignment,
+        toastBuilder: (context, details) => SizedBox(
+          key: const ValueKey('toast'),
+          height: 48,
+          child: Text(details.toast.message),
+        ),
+        child: Column(
+          children: [
+            if (topBar) const SizedBox(height: 56),
+            const Expanded(child: _Host()),
+            if (statusLine) const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+    Rect toast() => tester.getRect(find.byKey(const ValueKey('toast')));
+    Rect nav() => tester.getRect(find.byKey(const ValueKey('nav')));
+    await _width(tester, 768);
+    await tester.pumpWidget(app());
+    toaster.currentState!.show(
+      const RawToast(message: 'Saved', duration: null),
+    );
+    await tester.pumpAndSettle();
+    // 768 wide a rail, 1440 a sidebar.
+    for (final width in [768.0, 1440.0]) {
+      await _width(tester, width);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(nav().top, 0);
+      expect(nav().bottom, 700);
+      expect(toast().bottom, moreOrLessEquals(700 - 16), reason: '$width');
+      // It reaches the bottom edge and not the top: no bar for all that.
+      await tester.pumpWidget(app(topBar: true));
+      await tester.pumpAndSettle();
+      expect(nav().top, 56);
+      expect(nav().bottom, 700);
+      expect(
+        toast().bottom,
+        moreOrLessEquals(700 - 16),
+        reason: 'under a top bar, $width',
+      );
+      // The top edge and not the bottom, the toasts along the top.
+      await tester.pumpWidget(
+        app(statusLine: true, alignment: AlignmentDirectional.topCenter),
+      );
+      await tester.pumpAndSettle();
+      expect(nav().top, 0);
+      expect(nav().bottom, 676);
+      expect(
+        toast().top,
+        moreOrLessEquals(16),
+        reason: 'over a status line, $width',
+      );
+    }
+    await _width(tester, 390);
+    await tester.pumpWidget(app(topBar: true));
+    await tester.pumpAndSettle();
+    expect(nav().bottom, 700);
+    expect(toast().bottom, moreOrLessEquals(nav().top - 16), reason: 'a bar');
+  });
+
   testWidgets('from outside every pane, F6 goes to the first', (tester) async {
     await _width(tester, 768);
     await tester.pumpWidget(

@@ -829,7 +829,8 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 /// both (a rail, a sidebar), keeps nothing clear. The covered edge takes
 /// the place of the screen's safe inset there (a bar takes that inset
 /// itself); [RawToaster.padding] stays between the bar and the toasts.
-/// `DesignAdaptiveShell` keeps its navigation clear.
+/// `DesignAdaptiveShell` keeps its bar clear, and not its rail or sidebar,
+/// whatever stands above or below them.
 ///
 /// ```dart
 /// Column(
