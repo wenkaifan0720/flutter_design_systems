@@ -1024,10 +1024,24 @@ class TermScaffold extends StatelessWidget {
       navigationBuilder: (context, details) => TermShellDestinations(
         destinations: details.destinations,
         child: switch (details.mode) {
-          RawNavigationMode.bar => TermNavigationBar(
-            destinations: destinations,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onDestinationSelected,
+          // On a phone the status line stands over the window list, as a
+          // multiplexer's does, in the shell's bar: the shell keeps the
+          // toasts above both (a line clear, the toaster's padding), never
+          // on the status line over the page's last line. The window list
+          // alone is the tab bar.
+          RawNavigationMode.bar => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ?statusLine,
+              details.group(
+                TermNavigationBar(
+                  destinations: destinations,
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: onDestinationSelected,
+                ),
+              ),
+            ],
           ),
           RawNavigationMode.rail => TermNavigationRail(
             destinations: destinations,
@@ -1045,18 +1059,9 @@ class TermScaffold extends StatelessWidget {
           ),
         },
       ),
-      // On a phone the status line stands over the window list, as a
-      // multiplexer's does; beside a rail or a pane it runs the screen's
-      // width under both.
-      body: bar
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: body),
-                ?statusLine,
-              ],
-            )
-          : body,
+      // Beside a rail or a pane the status line runs the screen's width
+      // under both.
+      body: body,
     );
     return ColoredBox(
       color: theme.background,

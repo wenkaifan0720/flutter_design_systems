@@ -1,3 +1,7 @@
+## 0.5.2
+
+- On a phone a toast stands a line clear of `TermScaffold`'s status line, which stands on the window list: the line is a bar there too, in the shell's bar with the window list, and the toasts stand above both. It stood on the line, over the page's last line (an editor's Save). The window list alone is still the tab bar, and at the widths with a rail or a side pane nothing moves.
+
 ## 0.5.1
 
 - After a `TermMeter`'s blocks (and a `TermProgress`'s and a bar chart's), the first dot stands one dot gap from the blocks' end, the gap between two dots, whatever eighth of a cell the blocks end on. The dots follow the blocks at the cells' pitch, one for each cell the blocks leave, as before. On the cells' middles a dot after a part block stood up to a cell and a half from it (about 9 px against 5 between dots), and one after a whole block half a gap.
