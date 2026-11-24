@@ -21,6 +21,12 @@ export '../materials.dart' show FrostedMaterial;
 Color frostedLitEdge(FrostedThemeData t, Color night) =>
     t.isDark ? night : FrostedChromeMetrics.litEdge;
 
+/// The ring just inside a dialog's lit edge: by day none (the slab's own
+/// ring, a dark hairline, would stand inside the light), by night the
+/// slab's own light ring.
+Color? frostedSlabRing(FrostedThemeData t) =>
+    t.isDark ? null : const Color(0x00000000);
+
 // The luminance of the darkest place on the theme's dawn: its ground, or a
 // wash of its light over it at its strongest.
 

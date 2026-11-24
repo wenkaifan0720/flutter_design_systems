@@ -162,7 +162,11 @@ class FrostedDialog extends StatelessWidget {
       FrostedChromeMetrics.sheetWideRadius,
     );
     final fill = s.fill;
-    final (edge, edges) = s.edgeOf(t.glass.sheetEdge, FrostedStrokes.regular);
+    // By day the lit hairline round the glass, never a dark line (law 2).
+    final (edge, edges) = s.edgeOf(
+      frostedLitEdge(t, t.glass.sheetEdge),
+      FrostedStrokes.regular,
+    );
     return Semantics(
       scopesRoute: true,
       namesRoute: true,
@@ -181,6 +185,7 @@ class FrostedDialog extends StatelessWidget {
             color: fill,
             edge: edge,
             edges: edges,
+            ring: frostedSlabRing(t),
             sheen: t.glass.rim,
             shadows: t.shadows.dialog,
             clipChild: true,

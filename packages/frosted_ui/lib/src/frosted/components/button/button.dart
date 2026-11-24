@@ -51,6 +51,14 @@ enum FrostedButtonSize {
   small,
 }
 
+// The light over a glass act shaded on another glass, by day: from above,
+// fading out before its foot.
+const LinearGradient _shadedLight = LinearGradient(
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [Color(0x66FFFFFF), Color(0x00FFFFFF)],
+);
+
 /// A pill wearing a word: [label] in the label type, an optional [icon] 8
 /// before it, 44 tall and as wide as its word; with [expand] it takes all
 /// the width there is, 48 tall with its word 16 (`.btn--wide`, a sheet's
@@ -361,7 +369,11 @@ class FrostedButton extends StatelessWidget {
             child: content,
           ),
           // A lesser act is a capsule of glass; on another glass it is
-          // shaded a step.
+          // shaded a step. By day the light falls on it from above, brighter
+          // along its top under its sheen (a flat step of grey read duller
+          // than the glass it stands on). No light ring round it: on a white
+          // slab it would melt into the slab, and the pill would read a size
+          // smaller than the act beside it.
           _Face.glass when shaded => FrostedFace(
             material: FrostedMaterial.paint,
             radius: radius,
@@ -373,6 +385,9 @@ class FrostedButton extends StatelessWidget {
                       ? FrostedChromeMetrics.glassStepNight
                       : FrostedChromeMetrics.glassStepDay,
                 ),
+            gradients: fill == null && !t.isDark
+                ? const [_shadedLight]
+                : const <Gradient>[],
             wash: s.overlay,
             edge: edge,
             edges: edges,

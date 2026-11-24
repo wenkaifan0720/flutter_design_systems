@@ -65,6 +65,7 @@ export 'src/frosted/internal/themes/platinum.g.dart';
 export 'src/frosted/internal/themes/tokens.dart';
 export 'src/frosted/internal/themes/wayfinding.g.dart';
 export 'src/frosted/internal/toaster.dart';
+export 'src/frosted/internal/today_ring.dart';
 export 'src/frosted/internal/well.dart';
 export 'src/frosted/knobs.dart';
 export 'src/frosted/materials.dart';

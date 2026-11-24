@@ -1,3 +1,9 @@
+## 0.6.1
+
+- Today is one mark in every view: `FrostedCalendar`, `FrostedDateRangePicker` and `FrostedDatePicker` (and so `showFrostedDatePicker`) ring today in a hairline of the quiet ink, by day and by night. By day it was a white bead in the calendar and a disc darker than the dialog in the date picker. When today is the day chosen, the ring stands just inside the ink disc in the disc's words at half strength, so today still reads and stays a quiet mark.
+- By day `FrostedDialog` and the card `showFrostedDatePicker` raises wear the glass's lit rim: the lit hairline round the card, the sheen under it along the top, and no dark ring inside it.
+- By day a glass `FrostedButton` standing on another glass (a dialog's or a sheet's Cancel) catches the light from above, as glass does: brighter along its top under its sheen, where it was a flat step of grey. It keeps its size and stays quieter than the ink act beside it.
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0, whose parts that still began with `Design` take `Raw` names (`DesignStyleOf` is `RawStyleOf`, `DesignDialogRoute` is `RawModalDialogRoute`). Frosted's code and docs say the new names. The old names stay through ui_core 0.6 as deprecated aliases, and `dart fix --apply` moves an app's code.

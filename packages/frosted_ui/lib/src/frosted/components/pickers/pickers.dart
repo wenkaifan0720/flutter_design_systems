@@ -8,6 +8,7 @@ import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/styled.dart';
+import '../../internal/today_ring.dart';
 import '../../internal/panel.dart' show frostedRingFor;
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -509,7 +510,8 @@ bool _sameDay(DateTime a, DateTime b) =>
 /// name between a step back and a step on, the weekdays' two letters in the
 /// quiet caption, then the days in rows of seven from the words' first day
 /// of the week. The chosen day stands on the ink act's light, today in a
-/// hairline ring, a day outside [firstDate] to [lastDate] faded and inert. Each day
+/// hairline ring (inside the disc when it is the day chosen), a day outside
+/// [firstDate] to [lastDate] faded and inert. Each day
 /// is a button read as its full date; the month's name is announced as it
 /// turns. [showFrostedDatePicker] raises it in a card with Cancel and OK.
 ///
@@ -703,13 +705,8 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
         final side = s.side;
         Widget face = SizedBox.square(
           dimension: 38,
-          // Today, not chosen, is by day a small bead of glass in a field's
-          // language (a well, its rim the lit hairline), its number in the
-          // ink: never a dark ring. By night its light ring.
           child: FrostedFace(
-            material: isToday && !chosen && fill == null && !t.isDark
-                ? FrostedMaterial.well
-                : FrostedMaterial.paint,
+            material: FrostedMaterial.paint,
             radius: BorderRadius.circular(dayCorner),
             shape: dayCut,
             color: fill,
@@ -721,9 +718,6 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
             edges: EdgeInsets.all(side?.width ?? FrostedStrokes.regular),
             sheen: chosen ? t.colorScheme.buttonSheen : null,
             shadows: chosen ? t.shadows.button : const [],
-            ring: isToday && !chosen && side == null
-                ? s.edge ?? frostedLitEdge(t, t.colorScheme.borderStrong)
-                : null,
             child: Center(
               child: Text(
                 // In the reader's digits (Arabic's ٢٠), as its head's year
@@ -740,6 +734,18 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
             ),
           ),
         );
+        // Today wears the one mark a calendar's days wear too; a style's
+        // edge colours it, a style's side stands in its place.
+        if (isToday && side == null) {
+          face = FrostedTodayRing(
+            chosen: chosen,
+            radius: dayCorner,
+            shape: dayCut,
+            color: s.edge,
+            onChosen: s.foreground ?? t.colorScheme.onButton,
+            child: face,
+          );
+        }
         face = FrostedDim(off: !allowed, child: face);
         return Center(child: face);
       }
@@ -881,7 +887,9 @@ class _PickerCard extends StatelessWidget {
         child: FrostedFace(
           material: FrostedMaterial.slab,
           radius: BorderRadius.circular(FrostedChromeMetrics.sheetWideRadius),
-          edge: t.glass.sheetEdge,
+          // The dialog's rim: the lit hairline by day (law 2).
+          edge: frostedLitEdge(t, t.glass.sheetEdge),
+          ring: frostedSlabRing(t),
           sheen: t.glass.rim,
           shadows: t.shadows.dialog,
           clipChild: true,

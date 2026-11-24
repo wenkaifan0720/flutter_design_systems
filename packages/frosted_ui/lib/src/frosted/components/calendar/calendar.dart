@@ -8,6 +8,7 @@ import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
+import '../../internal/today_ring.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 import '../../internal/dim.dart';
@@ -395,21 +396,13 @@ class _FrostedMonths extends StatelessWidget {
             : t.colorScheme.textSecondary;
         Widget face = SizedBox.square(
           dimension: cell,
-          // Today, not chosen, is by day a small bead of glass in a field's
-          // language (a well, its rim the lit hairline), its number in the
-          // ink: never a dark ring. By night its light ring.
           child: FrostedFace(
-            material: day.isToday && !ends && !t.isDark
-                ? FrostedMaterial.well
-                : FrostedMaterial.paint,
+            material: FrostedMaterial.paint,
             radius: BorderRadius.circular(cell / 2),
             color: ends ? null : (lit ? t.glass.wash : null),
             gradients: ends ? [t.colorScheme.buttonFill] : const <Gradient>[],
             sheen: ends ? t.colorScheme.buttonSheen : null,
             shadows: ends ? t.shadows.button : const <BoxShadow>[],
-            ring: day.isToday && !ends
-                ? frostedLitEdge(t, t.colorScheme.borderStrong)
-                : null,
             child: Center(
               // In the reader's digits (Arabic's ١٨), as its name is read.
               child: Text(
@@ -424,6 +417,15 @@ class _FrostedMonths extends StatelessWidget {
             ),
           ),
         );
+        // Today wears the one mark the date picker's days wear too.
+        if (day.isToday) {
+          face = FrostedTodayRing(
+            chosen: ends,
+            radius: cell / 2,
+            onChosen: t.colorScheme.onButton,
+            child: face,
+          );
+        }
         face = FrostedFocusRing(
           shown: states.contains(WidgetState.focused),
           radius: cell / 2,
