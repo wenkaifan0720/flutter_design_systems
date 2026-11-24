@@ -143,7 +143,7 @@ void main() {
   );
 
   test('merge keeps its own slots whole and fills the rest from the other, '
-      'as ButtonStyle.merge and DesignStyle.merge do', () {
+      'as ButtonStyle.merge and RawStyle.merge do', () {
     final mine = ExpressiveComponentThemeData(
       backgroundColor: WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.pressed)

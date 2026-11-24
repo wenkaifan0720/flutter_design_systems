@@ -76,6 +76,14 @@ String _monthYear(BuildContext context, DateTime month) =>
 String _spokenDay(BuildContext context, DateTime d) =>
     RawWidgetsLocalizations.of(context).formatFullDate(d);
 
+/// "20 Nov 2026": a picker's headline, in the reader's digits and month
+/// words (Arabic's ٢٠ نوفمبر ٢٠٢٦), as its calendar's days and month are.
+String _headlineDay(BuildContext context, DateTime d) {
+  final words = RawWidgetsLocalizations.of(context);
+  return '${words.formatDecimal(d.day)} ${words.formatShortMonth(d)} '
+      '${words.formatYear(d)}';
+}
+
 /// "03/12/2031": a date as the input field holds it.
 String _inputText(DateTime d) =>
     '${_two(d.month)}/${_two(d.day)}/${d.year.toString().padLeft(4, '0')}';
@@ -291,7 +299,7 @@ void _springScroll(
   position.beginActivity(
     BallisticScrollActivity(
       position,
-      designSpringSimulation(spring, from: position.pixels, to: target),
+      rawSpringSimulation(spring, from: position.pixels, to: target),
       position.context.vsync,
       true,
     ),
@@ -572,7 +580,7 @@ class _ExpressiveDatePickerState extends State<ExpressiveDatePicker> {
     final headline =
         widget.headline ??
         (selected != null
-            ? ExpressiveFormat.date(selected)
+            ? _headlineDay(context, selected)
             : typing
             ? ExpressiveLocalizations.of(context).enteredDate
             : ExpressiveLocalizations.of(context).selectedDate);
@@ -1743,8 +1751,10 @@ class _Day extends StatelessWidget {
               textStyle: style,
               child: ExcludeSemantics(
                 child: _PickerLabel(
-                  '${date.day}',
-                  fitAs: '30',
+                  // In the app's digits (Arabic's ٢٠), as Material's day
+                  // picker writes them.
+                  RawWidgetsLocalizations.of(context).formatDecimal(date.day),
+                  fitAs: RawWidgetsLocalizations.of(context).formatDecimal(30),
                   singleLine: false,
                   textAlign: TextAlign.center,
                   shape: custom
@@ -2298,10 +2308,10 @@ class _ExpressiveDateRangePickerState extends State<ExpressiveDateRangePicker> {
         child: _RangeHeadlineRow(
           start: start == null
               ? ExpressiveLocalizations.of(context).startDate
-              : ExpressiveFormat.date(start),
+              : _headlineDay(context, start),
           end: end == null
               ? ExpressiveLocalizations.of(context).endDate
-              : ExpressiveFormat.date(end),
+              : _headlineDay(context, end),
         ),
       ),
       modeToggle: widget.showModeToggle
@@ -4678,7 +4688,7 @@ class _TimeFieldState extends State<_TimeField> {
           height: height,
           // The plate is the field's face (the editable inside is one line):
           // the checks read the field by it, beside the selector boxes.
-          child: DesignKeylineFace(
+          child: RawKeylineFace(
             child: _TimeInputPlate(
               states: {
                 WidgetState.selected,
@@ -6464,7 +6474,7 @@ class _ExpressiveCalendarState extends State<ExpressiveCalendar> {
             child: Center(
               child: expressiveFaceLabel(
                 Text(
-                  '${day.date.day}',
+                  day.label,
                   style: t.type.of(DatePickerModalTokens.dateLabelTextFont),
                 ),
               ),

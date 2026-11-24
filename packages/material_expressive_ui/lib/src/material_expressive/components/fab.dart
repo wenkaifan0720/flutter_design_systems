@@ -462,7 +462,7 @@ class ExpressiveFloatingActionButton extends StatelessWidget {
 /// the tail four frames past Compose's settle.
 final Tolerance _transitionTolerance = Tolerance(
   distance: 1 / 100,
-  velocity: designSpringTolerance.velocity,
+  velocity: rawSpringTolerance.velocity,
 );
 
 /// The FAB menu's stagger spring as Compose runs it: an `Int` animation
@@ -478,7 +478,7 @@ class _StaggerSimulation extends Simulation {
     double from,
     double to,
     double velocity,
-  ) : _spring = designSpringSimulation(
+  ) : _spring = rawSpringSimulation(
         spring,
         from: from,
         to: to,

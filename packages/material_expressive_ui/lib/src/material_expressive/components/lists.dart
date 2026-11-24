@@ -1286,7 +1286,7 @@ class ExpressiveListSection extends StatelessWidget {
     final count = children.length;
     // One keyline region per section: its header, rows and footer share its
     // keylines (ui_core's keyline check reads it; it paints nothing).
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: header ?? 'list section',
       child: Column(
         mainAxisSize: MainAxisSize.min,

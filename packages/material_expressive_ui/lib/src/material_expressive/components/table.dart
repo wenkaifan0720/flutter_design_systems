@@ -85,7 +85,7 @@ class ExpressiveTable extends StatelessWidget {
     required this.rows,
     this.semanticLabel,
     this.style,
-    this.stackBelow = DesignWindowSizeClass.medium,
+    this.stackBelow = RawWindowSizeClass.medium,
     super.key,
   });
 
@@ -103,7 +103,7 @@ class ExpressiveTable extends StatelessWidget {
 
   /// The window class from which rows stand as rows: narrower than its
   /// least width, each row stacks as a list item.
-  final DesignWindowSizeClass stackBelow;
+  final RawWindowSizeClass stackBelow;
 
   String _spoken(ExpressiveTableRow row) => <String>[
     for (var i = 0; i < row.cells.length && i < columns.length; i++)
@@ -114,8 +114,7 @@ class ExpressiveTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget table = LayoutBuilder(
       builder: (context, box) =>
-          DesignWindowSizeClass.fromWidth(box.maxWidth).index <
-                  stackBelow.index ||
+          RawWindowSizeClass.fromWidth(box.maxWidth).index < stackBelow.index ||
               !_wordsFit(context, box.maxWidth)
           ? _stacked(context)
           : _ruled(context),
@@ -312,10 +311,10 @@ class ExpressiveTable extends StatelessWidget {
       ..add(IterableProperty<ExpressiveTableRow>('rows', rows))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
-        EnumProperty<DesignWindowSizeClass>(
+        EnumProperty<RawWindowSizeClass>(
           'stackBelow',
           stackBelow,
-          defaultValue: DesignWindowSizeClass.medium,
+          defaultValue: RawWindowSizeClass.medium,
         ),
       );
   }

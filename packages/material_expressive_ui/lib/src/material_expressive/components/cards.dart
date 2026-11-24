@@ -358,7 +358,7 @@ class ExpressiveCard extends StatelessWidget {
     // keylines (ui_core's keyline check reads it; it paints nothing).
     if (!clickable) {
       // Compose's non-clickable card: its rest elevation, no interactions.
-      return DesignKeylineRegion(
+      return RawKeylineRegion(
         label: semanticLabel ?? 'card',
         child: Semantics(
           container: true,
@@ -381,7 +381,7 @@ class ExpressiveCard extends StatelessWidget {
         ),
       );
     }
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: semanticLabel ?? 'card',
       child: ExpressivePressable(
         style: style,

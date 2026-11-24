@@ -57,7 +57,7 @@ final Finder _menu = find.byWidgetPredicate(
       (w.semanticLabel == 'Show menu' || w.semanticLabel == 'More options'),
 );
 
-/// The screens' stated measures (DECISIONS.md): a form beside its summary,
+/// The screens' stated measures: a form beside its summary,
 /// the basket beside its total, and the settings' column.
 const _measures = {
   TripScreens.plan: 960.0,

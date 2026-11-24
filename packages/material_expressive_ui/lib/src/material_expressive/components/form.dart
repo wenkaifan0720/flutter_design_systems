@@ -1,6 +1,6 @@
 /// Fields ui_core's form behaviours hold, painted in the outlined text
 /// field's hand: [ExpressiveInputGroup] (a field and its add-ons as one
-/// control, on `DesignInputGroup`) and [ExpressiveFormField] (any control
+/// control, on `RawInputGroup`) and [ExpressiveFormField] (any control
 /// with its label, help and error, on `RawInputDecorator`).
 library;
 
@@ -20,7 +20,7 @@ import 'lists.dart' show ExpressiveDivider;
 /// add-on and the input. The container's outline is the text field's: 1dp
 /// `outline`, `onSurface` under a pointer, 2dp `primary` while anything
 /// inside has focus, `error` with [isError]. A press anywhere on the frame
-/// focuses the input (ui_core's `DesignInputGroup`).
+/// focuses the input (ui_core's `RawInputGroup`).
 ///
 /// [leading] and [trailing] hold the add-ons: words with
 /// [ExpressiveInputGroup.text], or a small icon button.
@@ -161,7 +161,7 @@ class _ExpressiveInputGroupState extends State<ExpressiveInputGroup> {
       height: ExpressiveSpacing.s24,
       child: ExpressiveDivider(vertical: true),
     );
-    return DesignInputGroup(
+    return RawInputGroup(
       focusNode: _node,
       enabled: widget.enabled,
       isError: widget.isError,
@@ -220,7 +220,7 @@ class _AddonText extends StatelessWidget {
 /// `bodySmall` `onSurfaceVariant` and the error in its place in `error`, as
 /// a text field's supporting text. A screen reader hears the label as the
 /// control's name and the error and help as its hint, once. Wrap the
-/// fields in ui_core's `DesignForm` to validate them together.
+/// fields in ui_core's `RawForm` to validate them together.
 ///
 /// ```dart
 /// ExpressiveFormField(labelText: 'Notify me', helperText: 'At most once a day', child: ExpressiveSwitch(value: on, onChanged: setOn))

@@ -460,7 +460,7 @@ class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
   bool _running = false;
 
   /// Reads Reduce Motion as the pulse builds: iOS's comes as a build, not
-  /// as a change of dependencies (`designReduceMotionOf`).
+  /// as a change of dependencies (`rawReduceMotionOf`).
   void _followReduceMotion() {
     if (ExpressiveMotion.of(context).reduceMotion) {
       if (!_running && _opacity.value == 1) return;

@@ -202,7 +202,7 @@ class _CollapsingState extends State<_Collapsing>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _offset.animateWith(
-        designSpringSimulation(
+        rawSpringSimulation(
           ExpressiveMotion.of(context).spring(AppBarBehavior.topSnapMotion),
           from: _offset.value,
           to: -_largeRange,

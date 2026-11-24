@@ -965,7 +965,7 @@ void main() {
       );
       final text = tester.getRect(find.text(label));
       expect(text.center.dx, closeTo(surface.center.dx, 0.01));
-      // Centred by its capitals (DesignCapCenter; the label check reads
+      // Centred by its capitals (RawCapCenter; the label check reads
       // them): its line box sits off the middle by the typeface's ascent and
       // descent, under a pixel and a half.
       expect(text.center.dy, closeTo(surface.center.dy, 1.5));

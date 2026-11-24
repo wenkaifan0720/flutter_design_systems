@@ -176,7 +176,7 @@ void main() {
     // warm, saturated accent) and far from Material's baseline purple and
     // any well-known brand colour. grove (#2E7D5B, a forest green, tonal
     // spot) and ember (#C25A1F, a burnt orange, the hue-rotating expressive
-    // variant) complete the five presets (COMPLETE.md section 1), on the
+    // variant) complete the five presets, on the
     // two variants slate and bloom leave out.
     test('slate is neutral, standard motion, calm; bloom vibrant, bold; '
         'grove tonal spot, balanced; ember expressive, bold', () {

@@ -254,7 +254,7 @@ void main() {
       final field = _rectOf(tester, _field);
       expect(field.size, const Size(280, 56));
       // Expanded label: bodyLarge's 24dp line, centred in the container by
-      // its capitals (DesignCapCenter), its line box a pixel or two lower.
+      // its capitals (RawCapCenter), its line box a pixel or two lower.
       final label = _rectOf(tester, find.text('City'));
       expect(label.top - field.top, closeTo(16, 2));
       expect(label.left - field.left, TextFieldBehavior.padding);

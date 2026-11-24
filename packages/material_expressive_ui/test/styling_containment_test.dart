@@ -396,8 +396,8 @@ void main() {
         clipBehavior: Clip.none,
         child: ExpressiveTable(
           stackBelow: ruled
-              ? DesignWindowSizeClass.compact
-              : DesignWindowSizeClass.medium,
+              ? RawWindowSizeClass.compact
+              : RawWindowSizeClass.medium,
           columns: const [
             ExpressiveTableColumn('Plant'),
             ExpressiveTableColumn('Water'),

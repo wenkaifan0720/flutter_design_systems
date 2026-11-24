@@ -758,7 +758,7 @@ class _TripCard extends StatelessWidget {
     final packed = trip.packed;
     final all = trip.packing.length;
     // A card of its own: its lines share its keylines, not the page's.
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: 'Next trip',
       child: ExpressiveSurface(
         key: const ValueKey('trip-card'),
@@ -1168,7 +1168,7 @@ class _PlanScreenState extends State<_PlanScreen> {
                 // its own, not the summary's (a card, a region already).
                 Expanded(
                   flex: 3,
-                  child: DesignKeylineRegion(label: 'Trip form', child: form),
+                  child: RawKeylineRegion(label: 'Trip form', child: form),
                 ),
                 Expanded(
                   flex: 2,

@@ -145,7 +145,7 @@ String? _misread(String where, String problem) {
   if (page == 'pickers' &&
       problem.startsWith('a text field beside a checkbox "Select hour')) {
     return "the time input's chosen field is read by its one-line entry, not "
-        'by its 72dp plate (marked, DesignKeylineFace), the selector beside '
+        'by its 72dp plate (marked, RawKeylineFace), the selector beside '
         "it's height";
   }
   if (page == 'select' &&

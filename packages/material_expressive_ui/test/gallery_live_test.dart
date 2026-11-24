@@ -569,7 +569,7 @@ void main() {
                         .height,
                 ];
                 for (var i = 1; i < labels.length; i++) {
-                  // The labels are drawn by their capitals (DesignCapCenter),
+                  // The labels are drawn by their capitals (RawCapCenter),
                   // each within half a device pixel of its face's middle, as
                   // the engine's whole-pixel baseline allows (here DPR 1).
                   expect(

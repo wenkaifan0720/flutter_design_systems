@@ -2,7 +2,7 @@
 /// dart:ui's `AccessibilityFeatures.reduceMotion`, not in
 /// `MediaQuery.disableAnimations` (Android's and the web's), so every test
 /// here sets only the iOS flag, under a MediaQuery that allows animations.
-/// It is read through ui_core's `designReduceMotionOf`, and a change of it
+/// It is read through ui_core's `rawReduceMotionOf`, and a change of it
 /// comes as a build, so the parts that loop (the loading and progress
 /// indicators, the skeleton's pulse) read it as they build and follow it
 /// both ways while shown.

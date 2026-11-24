@@ -11,7 +11,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart' show RoutePresentation;
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
@@ -1687,7 +1686,7 @@ class ExpressiveSearchBarState extends State<ExpressiveSearchBar> {
               listenable: _query,
               // A faint pill on the page: marked, so the keyline and label
               // checks take the bar as one item at its face.
-              builder: (context, _) => DesignKeylineFace(
+              builder: (context, _) => RawKeylineFace(
                 child: _CollapsedSearchBar(
                   bar: widget,
                   query: _query.text,
@@ -2328,7 +2327,7 @@ class _SearchViewRoute extends PopupRoute<void>
     super.didPush();
     final controller = this.controller!;
     return controller.animateWith(
-      designSpringSimulation(expand, from: controller.value, to: 1),
+      rawSpringSimulation(expand, from: controller.value, to: 1),
     );
   }
 
@@ -2339,7 +2338,7 @@ class _SearchViewRoute extends PopupRoute<void>
     if (!super.didPop(result)) return false;
     final controller = this.controller!;
     controller.animateBackWith(
-      designSpringSimulation(collapse, from: controller.value, to: 0),
+      rawSpringSimulation(collapse, from: controller.value, to: 0),
     );
     return true;
   }

@@ -1,4 +1,4 @@
-/// Expressive's answer to ui_core's shared inventory (looks/INVENTORY.md):
+/// Expressive's answer to ui_core's shared inventory:
 /// for each of the 89 components every look names alike, the Expressive
 /// class that is it, built live, or why the look leaves it out (six
 /// that are not Material's). [ExpressiveInventoryGallery] lists them, group by group.
@@ -56,126 +56,123 @@ import 'theme.dart';
 /// ```dart
 /// expressiveInventory.verify();
 /// ```
-const DesignInventory expressiveInventory = DesignInventory(
+const RawInventory expressiveInventory = RawInventory(
   look: 'Material Expressive',
-  entries: <DesignInventoryEntry>[
+  entries: <RawInventoryEntry>[
     // Actions
-    DesignInventoryEntry.present('Button', _button),
-    DesignInventoryEntry.present('IconButton', _iconButton),
-    DesignInventoryEntry.present('FloatingActionButton', _fab),
-    DesignInventoryEntry.present('ButtonGroup', _buttonGroup),
-    DesignInventoryEntry.present('ToggleGroup', _toggleGroup),
-    DesignInventoryEntry.present('SplitButton', _splitButton),
-    DesignInventoryEntry.present('Link', _link),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('Button', _button),
+    RawInventoryEntry.present('IconButton', _iconButton),
+    RawInventoryEntry.present('FloatingActionButton', _fab),
+    RawInventoryEntry.present('ButtonGroup', _buttonGroup),
+    RawInventoryEntry.present('ToggleGroup', _toggleGroup),
+    RawInventoryEntry.present('SplitButton', _splitButton),
+    RawInventoryEntry.present('Link', _link),
+    RawInventoryEntry.absent(
       'Kbd',
       "Material draws no keyboard keys (shadcn's Kbd): a shortcut is a menu item's trailing text",
     ),
     // Inputs
-    DesignInventoryEntry.present('TextField', _textField),
-    DesignInventoryEntry.present('TextArea', _textArea),
-    DesignInventoryEntry.present('SearchField', _searchField),
-    DesignInventoryEntry.present('PasswordField', _passwordField),
-    DesignInventoryEntry.present('InputGroup', _inputGroup),
-    DesignInventoryEntry.present('InputOtp', _inputOtp),
-    DesignInventoryEntry.present('NumberField', _numberField),
-    DesignInventoryEntry.present('Select', _select),
-    DesignInventoryEntry.present('Combobox', _combobox),
-    DesignInventoryEntry.present('MultiSelect', _multiSelect),
-    DesignInventoryEntry.present('Checkbox', _checkbox),
-    DesignInventoryEntry.present('RadioGroup', _radioGroup),
-    DesignInventoryEntry.present('Switch', _switch),
-    DesignInventoryEntry.present('Slider', _slider),
-    DesignInventoryEntry.present('RangeSlider', _rangeSlider),
-    DesignInventoryEntry.present('SegmentedButton', _segmentedButton),
-    DesignInventoryEntry.present('Chip', _chip),
-    DesignInventoryEntry.present('Rating', _rating),
-    DesignInventoryEntry.present('FileUpload', _fileUpload),
-    DesignInventoryEntry.present('DatePicker', _datePicker),
-    DesignInventoryEntry.present('DateRangePicker', _dateRangePicker),
-    DesignInventoryEntry.present('TimePicker', _timePicker),
-    DesignInventoryEntry.present('Calendar', _calendar),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('TextField', _textField),
+    RawInventoryEntry.present('TextArea', _textArea),
+    RawInventoryEntry.present('SearchField', _searchField),
+    RawInventoryEntry.present('PasswordField', _passwordField),
+    RawInventoryEntry.present('InputGroup', _inputGroup),
+    RawInventoryEntry.present('InputOtp', _inputOtp),
+    RawInventoryEntry.present('NumberField', _numberField),
+    RawInventoryEntry.present('Select', _select),
+    RawInventoryEntry.present('Combobox', _combobox),
+    RawInventoryEntry.present('MultiSelect', _multiSelect),
+    RawInventoryEntry.present('Checkbox', _checkbox),
+    RawInventoryEntry.present('RadioGroup', _radioGroup),
+    RawInventoryEntry.present('Switch', _switch),
+    RawInventoryEntry.present('Slider', _slider),
+    RawInventoryEntry.present('RangeSlider', _rangeSlider),
+    RawInventoryEntry.present('SegmentedButton', _segmentedButton),
+    RawInventoryEntry.present('Chip', _chip),
+    RawInventoryEntry.present('Rating', _rating),
+    RawInventoryEntry.present('FileUpload', _fileUpload),
+    RawInventoryEntry.present('DatePicker', _datePicker),
+    RawInventoryEntry.present('DateRangePicker', _dateRangePicker),
+    RawInventoryEntry.present('TimePicker', _timePicker),
+    RawInventoryEntry.present('Calendar', _calendar),
+    RawInventoryEntry.absent(
       'WheelPicker',
       "Material has no wheel: a number takes ExpressiveScrollField (Compose's ScrollField), a word the select",
     ),
-    DesignInventoryEntry.present('ColorPicker', _colorPicker),
-    DesignInventoryEntry.present('FormField', _formField),
+    RawInventoryEntry.present('ColorPicker', _colorPicker),
+    RawInventoryEntry.present('FormField', _formField),
     // Navigation
-    DesignInventoryEntry.present('AppBar', _appBar),
-    DesignInventoryEntry.present('NavigationBar', _navigationBar),
-    DesignInventoryEntry.present('NavigationRail', _navigationRail),
-    DesignInventoryEntry.present('NavigationDrawer', _navigationDrawer),
-    DesignInventoryEntry.present('TabBar', _tabBar),
-    DesignInventoryEntry.present('Breadcrumb', _breadcrumb),
-    DesignInventoryEntry.present('Pagination', _pagination),
-    DesignInventoryEntry.present('StepProgress', _stepProgress),
-    DesignInventoryEntry.present('PageDots', _pageDots),
-    DesignInventoryEntry.present('MenuBar', _menuBar),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('AppBar', _appBar),
+    RawInventoryEntry.present('NavigationBar', _navigationBar),
+    RawInventoryEntry.present('NavigationRail', _navigationRail),
+    RawInventoryEntry.present('NavigationDrawer', _navigationDrawer),
+    RawInventoryEntry.present('TabBar', _tabBar),
+    RawInventoryEntry.present('Breadcrumb', _breadcrumb),
+    RawInventoryEntry.present('Pagination', _pagination),
+    RawInventoryEntry.present('StepProgress', _stepProgress),
+    RawInventoryEntry.present('PageDots', _pageDots),
+    RawInventoryEntry.present('MenuBar', _menuBar),
+    RawInventoryEntry.absent(
       'Command',
       "shadcn's command palette: Material searches with the search bar and its view (ExpressiveSearchBar)",
     ),
-    DesignInventoryEntry.present('Scaffold', _scaffold),
+    RawInventoryEntry.present('Scaffold', _scaffold),
     // Containers
-    DesignInventoryEntry.present('Card', _card),
-    DesignInventoryEntry.present('ListTile', _listTile),
-    DesignInventoryEntry.present('ListSection', _listSection),
-    DesignInventoryEntry.present('SectionHeader', _sectionHeader),
-    DesignInventoryEntry.present('Disclosure', _disclosure),
-    DesignInventoryEntry.present('Table', _table),
-    DesignInventoryEntry.present('DataTable', _dataTable),
-    DesignInventoryEntry.present('Divider', _divider),
-    DesignInventoryEntry.present('ScrollArea', _scrollArea),
-    DesignInventoryEntry.present('Resizable', _resizable),
-    DesignInventoryEntry.present('CarouselView', _carouselView),
-    DesignInventoryEntry.present('ReorderableListView', _reorderableListView),
-    DesignInventoryEntry.present('SwipeActions', _swipeActions),
-    DesignInventoryEntry.present('RefreshIndicator', _refreshIndicator),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('Card', _card),
+    RawInventoryEntry.present('ListTile', _listTile),
+    RawInventoryEntry.present('ListSection', _listSection),
+    RawInventoryEntry.present('SectionHeader', _sectionHeader),
+    RawInventoryEntry.present('Disclosure', _disclosure),
+    RawInventoryEntry.present('Table', _table),
+    RawInventoryEntry.present('DataTable', _dataTable),
+    RawInventoryEntry.present('Divider', _divider),
+    RawInventoryEntry.present('ScrollArea', _scrollArea),
+    RawInventoryEntry.present('Resizable', _resizable),
+    RawInventoryEntry.present('CarouselView', _carouselView),
+    RawInventoryEntry.present('ReorderableListView', _reorderableListView),
+    RawInventoryEntry.present('SwipeActions', _swipeActions),
+    RawInventoryEntry.present('RefreshIndicator', _refreshIndicator),
+    RawInventoryEntry.absent(
       'TreeView',
       "shadcn's tree; Material has none: a list or the navigation drawer's sections hold a hierarchy",
     ),
-    DesignInventoryEntry.present('Timeline', _timeline),
-    DesignInventoryEntry.present('Avatar', _avatar),
-    DesignInventoryEntry.present('AvatarGroup', _avatarGroup),
-    DesignInventoryEntry.present('Badge', _badge),
-    DesignInventoryEntry.present('Tag', _tag),
-    DesignInventoryEntry.present('Media', _media),
-    DesignInventoryEntry.present('EmptyState', _emptyState),
-    DesignInventoryEntry.present('DescriptionList', _descriptionList),
+    RawInventoryEntry.present('Timeline', _timeline),
+    RawInventoryEntry.present('Avatar', _avatar),
+    RawInventoryEntry.present('AvatarGroup', _avatarGroup),
+    RawInventoryEntry.present('Badge', _badge),
+    RawInventoryEntry.present('Tag', _tag),
+    RawInventoryEntry.present('Media', _media),
+    RawInventoryEntry.present('EmptyState', _emptyState),
+    RawInventoryEntry.present('DescriptionList', _descriptionList),
     // Overlays
-    DesignInventoryEntry.present('Dialog', _dialog),
-    DesignInventoryEntry.present('BottomSheet', _bottomSheet),
-    DesignInventoryEntry.present('Sheet', _sheet),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('Dialog', _dialog),
+    RawInventoryEntry.present('BottomSheet', _bottomSheet),
+    RawInventoryEntry.present('Sheet', _sheet),
+    RawInventoryEntry.absent(
       'ActionSheet',
       "iOS's action sheet: Material lists a context's actions in a modal bottom sheet (showExpressiveBottomSheet)",
     ),
-    DesignInventoryEntry.present('Popover', _popover),
-    DesignInventoryEntry.absent(
+    RawInventoryEntry.present('Popover', _popover),
+    RawInventoryEntry.absent(
       'HoverCard',
       "shadcn's hover card; Material has none: a rich tooltip carries what one would",
     ),
-    DesignInventoryEntry.present('Tooltip', _tooltip),
-    DesignInventoryEntry.present('Menu', _menu),
-    DesignInventoryEntry.present('SnackBar', _snackBar),
-    DesignInventoryEntry.present('Banner', _banner),
+    RawInventoryEntry.present('Tooltip', _tooltip),
+    RawInventoryEntry.present('Menu', _menu),
+    RawInventoryEntry.present('SnackBar', _snackBar),
+    RawInventoryEntry.present('Banner', _banner),
     // Feedback
-    DesignInventoryEntry.present('LinearProgressIndicator', _linearProgress),
-    DesignInventoryEntry.present(
-      'CircularProgressIndicator',
-      _circularProgress,
-    ),
-    DesignInventoryEntry.present('Skeleton', _skeleton),
-    DesignInventoryEntry.present('StatusView', _statusView),
-    DesignInventoryEntry.present('Meter', _meter),
+    RawInventoryEntry.present('LinearProgressIndicator', _linearProgress),
+    RawInventoryEntry.present('CircularProgressIndicator', _circularProgress),
+    RawInventoryEntry.present('Skeleton', _skeleton),
+    RawInventoryEntry.present('StatusView', _statusView),
+    RawInventoryEntry.present('Meter', _meter),
     // Charts
-    DesignInventoryEntry.present('LineChart', _lineChart),
-    DesignInventoryEntry.present('BarChart', _barChart),
-    DesignInventoryEntry.present('AreaChart', _areaChart),
-    DesignInventoryEntry.present('PieChart', _pieChart),
-    DesignInventoryEntry.present('Sparkline', _sparkline),
+    RawInventoryEntry.present('LineChart', _lineChart),
+    RawInventoryEntry.present('BarChart', _barChart),
+    RawInventoryEntry.present('AreaChart', _areaChart),
+    RawInventoryEntry.present('PieChart', _pieChart),
+    RawInventoryEntry.present('Sparkline', _sparkline),
   ],
 );
 
@@ -462,7 +459,7 @@ String _shortcut(BuildContext context, LogicalKeyboardKey key) {
   final apple =
       defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.iOS;
-  return designShortcutLabel(
+  return rawShortcutLabel(
     context,
     SingleActivator(key, meta: apple, control: !apple),
   );
@@ -782,7 +779,7 @@ Widget _sparkline(BuildContext context) =>
 const double _specimenExtent = 560;
 
 /// The behaviour rows whose part paints ui_core's behaviour (the row's
-/// [DesignInventoryRow.behaviour]). The other behaviour rows keep
+/// [RawInventoryRow.behaviour]). The other behaviour rows keep
 /// Expressive's own (the split button, combobox, range slider, date range
 /// picker, command palette, carousel, reorderable list, swipe actions, pull
 /// to refresh, tree, popover, hover card and snackbar; and of the rows
@@ -833,7 +830,7 @@ class ExpressiveInventoryGallery extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final c = t.colors;
-    return DesignInventoryGallery(
+    return RawInventoryGallery(
       inventory: expressiveInventory,
       behaviourOnly: behaviourOnly,
       controller: controller,
@@ -890,7 +887,7 @@ class ExpressiveInventoryGallery extends StatelessWidget {
                   Text(
                     reason == null
                         ? 'Missing'
-                        : DesignInventory.absentLabel(reason),
+                        : RawInventory.absentLabel(reason),
                     style: t.type.bodyMedium.copyWith(
                       color: c.onSurfaceVariant,
                     ),

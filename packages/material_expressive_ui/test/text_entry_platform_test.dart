@@ -253,7 +253,7 @@ void main() {
             for (final (i, m) in states.indexed) {
               final what = '${platform.name}, ${i == 0 ? 'empty' : 'typed'}';
               // The line is drawn by its capitals on the box's middle
-              // (DesignCapCenter; row_alignment_test's DesignTextEntryCheck
+              // (RawCapCenter; row_alignment_test's DesignTextEntryCheck
               // reads the capitals): its line box sits off the middle by the
               // typeface's ascent and descent, a few pixels at most, and the
               // hint stands where the typed line does.

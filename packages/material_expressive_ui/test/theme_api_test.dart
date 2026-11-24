@@ -1,4 +1,4 @@
-/// The theme as an app on `material_ui` expects it (PACKAGE.md §3): a
+/// The theme as an app on `material_ui` expects it: a
 /// named factory per preset, `of`/`maybeOf`, `lerp`, diagnostics, an
 /// `InheritedTheme` a route captures, `AnimatedExpressiveTheme` springing
 /// between themes, and the words through a `LocalizationsDelegate`.

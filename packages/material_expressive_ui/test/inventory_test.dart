@@ -1,4 +1,4 @@
-/// Expressive in ui_core's shared inventory (looks/INVENTORY.md): it answers
+/// Expressive in ui_core's shared inventory: it answers
 /// every row once, each live specimen is the row's own class
 /// (`Expressive<Stem>`), and each one builds and lays out on a phone and a
 /// desktop, light and dark, without an error.

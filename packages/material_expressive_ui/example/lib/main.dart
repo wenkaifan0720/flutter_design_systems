@@ -414,9 +414,11 @@ class _GalleryAppState extends State<GalleryApp> {
       ],
       // The components speak the reader's language where ui_core does.
       supportedLocales: RawWidgetsLocalizations.supportedLocales,
-      // The look's host: day to night, a preset or a Customize choice
-      // springs from one theme to the next, and snackbars show above every
-      // page.
+      // ExpressiveHost, which every Expressive app mounts in its builder,
+      // above the navigator (from material_expressive_host.dart): it holds
+      // the theme, so day to night, a preset or a Customize choice springs
+      // from one theme to the next, and the layer snackbars show in, above
+      // every page. showExpressiveSnackBar throws without it.
       // Direction and text size wrap the navigator, so every page, preview
       // and overlay reads them.
       // Tab and Shift+Tab bring the control they reach into view.

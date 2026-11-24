@@ -36,10 +36,10 @@ import '../internal/style_layers.dart';
 // The popup route.
 
 /// How long [spring] takes to carry a 0–1 progress to rest at the kit's
-/// [designSpringTolerance]: a spring route's `transitionDuration`. The spring drives the route's controller; the navigator only reads
+/// [rawSpringTolerance]: a spring route's `transitionDuration`. The spring drives the route's controller; the navigator only reads
 /// the figure.
 Duration expressiveSettleTime(SpringDescription spring) {
-  final simulation = designSpringSimulation(spring, from: 0, to: 1);
+  final simulation = rawSpringSimulation(spring, from: 0, to: 1);
   const step = Duration.microsecondsPerMillisecond;
   const limit = Duration.microsecondsPerSecond * 10;
   var elapsed = 0;
@@ -108,7 +108,7 @@ class ExpressivePopupRoute<T> extends PopupRoute<T>
     super.didPush();
     final controller = this.controller!;
     return controller.animateWith(
-      designSpringSimulation(spring, from: controller.value, to: 1),
+      rawSpringSimulation(spring, from: controller.value, to: 1),
     );
   }
 
@@ -118,7 +118,7 @@ class ExpressivePopupRoute<T> extends PopupRoute<T>
     if (!super.didPop(result)) return false;
     final controller = this.controller!;
     controller.animateBackWith(
-      designSpringSimulation(spring, from: controller.value, to: 0),
+      rawSpringSimulation(spring, from: controller.value, to: 0),
     );
     return true;
   }
@@ -486,7 +486,9 @@ class ExpressiveDialog extends StatelessWidget {
       // role, and the title names it); laid out in place, the dialog scopes
       // its own words.
       child: Semantics(
-        scopesRoute: ModalRoute.of(context) is DesignDialogRoute ? null : true,
+        scopesRoute: ModalRoute.of(context) is RawModalDialogRoute
+            ? null
+            : true,
         explicitChildNodes: true,
         child: ExpressiveSurface(
           style: style,
@@ -740,7 +742,7 @@ class _TextAction extends StatelessWidget {
 /// the scrim or the system back closes it unless [barrierDismissible] is
 /// false; Escape closes it either way.
 ///
-/// It rides ui_core's [DesignDialogRoute]: focus moves into the dialog and
+/// It rides ui_core's [RawModalDialogRoute]: focus moves into the dialog and
 /// stays there (Tab from its last control comes round to its first), goes
 /// back to what held it as the dialog closes, and a screen reader hears a
 /// dialog.
@@ -794,7 +796,7 @@ Future<T?> showExpressiveDialog<T>({
 /// ui_core's dialog route with Expressive's back: a pop that an overlay
 /// held open in the dialog takes ([ExpressiveBackHandle]) leaves the dialog
 /// up.
-class _ExpressiveDialogRoute<T> extends DesignDialogRoute<T>
+class _ExpressiveDialogRoute<T> extends RawModalDialogRoute<T>
     with ExpressiveBackHandleRoute<T> {
   _ExpressiveDialogRoute({
     required super.builder,
@@ -2035,11 +2037,11 @@ class _TooltipLayerState extends State<_TooltipLayer>
     final effects = motion.spring(TooltipBehavior.alphaMotion);
     if (shown) {
       _alpha.animateWith(
-        designSpringSimulation(effects, from: _alpha.value, to: 1),
+        rawSpringSimulation(effects, from: _alpha.value, to: 1),
       );
     } else {
       _alpha.animateBackWith(
-        designSpringSimulation(effects, from: _alpha.value, to: 0),
+        rawSpringSimulation(effects, from: _alpha.value, to: 0),
       );
     }
   }

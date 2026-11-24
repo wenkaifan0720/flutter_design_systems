@@ -181,7 +181,7 @@ class _ExpressiveScreenState extends State<ExpressiveScaffold>
     _snap.value = pixels;
     _snap
         .animateWith(
-          designSpringSimulation(
+          rawSpringSimulation(
             ExpressiveMotion.of(context).spring(AppBarBehavior.topSnapMotion),
             from: pixels,
             to: target,
@@ -253,7 +253,7 @@ class _ExpressiveScreenState extends State<ExpressiveScaffold>
     // it paints nothing) at the window's full width, so its cards and
     // sections are held to the page's margins; the bar stands outside it.
     Widget region(Widget child) =>
-        DesignKeylineRegion(label: widget.title ?? 'screen', child: child);
+        RawKeylineRegion(label: widget.title ?? 'screen', child: child);
 
     Widget content;
     if (collapsing) {

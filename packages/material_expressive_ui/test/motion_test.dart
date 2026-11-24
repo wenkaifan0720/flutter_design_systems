@@ -52,7 +52,7 @@ void expectSpring(SpringDescription spring, double ratio, double stiffness) {
 /// The step response 0 → 1 of [spring], sampled every millisecond until it
 /// settles at the kit's tolerance: its peak and when it settled (s).
 ({double peak, double settled, double end}) step(SpringDescription spring) {
-  final sim = designSpringSimulation(spring, from: 0, to: 1);
+  final sim = rawSpringSimulation(spring, from: 0, to: 1);
   var peak = 0.0;
   var t = 0.0;
   while (!sim.isDone(t)) {
@@ -337,7 +337,7 @@ void main() {
               ? token.stiffness
               : math.max(
                   token.stiffness,
-                  DesignMotionPolicy.reducedEffectsStiffness,
+                  RawMotionPolicy.reducedEffectsStiffness,
                 );
           expectSpring(reduced.spring(key), 1, stiffness);
           expect(reduced.tokenOf(key), full.tokenOf(key));

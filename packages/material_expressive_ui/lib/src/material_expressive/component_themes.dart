@@ -72,7 +72,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
 
   /// [layers] in priority order, as one style: each slot is the first
   /// layer's that resolves to a value for the states at hand, as ui_core's
-  /// `DesignStyle.layered`. How a part lays its own `style:` over its
+  /// `RawStyle.layered`. How a part lays its own `style:` over its
   /// component theme. Unlike [merge], which keeps a whole slot, this falls
   /// through inside a slot, state by state.
   ///
@@ -208,7 +208,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
   );
 
   /// This style, with [other]'s slots where this has none, as
-  /// `ButtonStyle.merge` and ui_core's `DesignStyle.merge` do: a slot is
+  /// `ButtonStyle.merge` and ui_core's `RawStyle.merge` do: a slot is
   /// kept whole. [ExpressiveComponentThemeData.layered] falls through
   /// within a slot, state by state.
   ///

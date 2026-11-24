@@ -20,9 +20,10 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 
 ## Set up
 
-Load the bundled fonts before the first frame and put `ExpressiveTheme` in the app's `builder`, so routes, dialogs and menus share the theme.
+Load the bundled fonts before the first frame and put `ExpressiveHost` in the app's `builder`, above its navigator, so routes, dialogs and menus share the theme. The host follows the platform from `theme` to `darkTheme` and back, gives the Flutter parts Expressive builds on (text editing, ink, page transitions) a Material theme to match, and holds the layer snackbars show in: `showExpressiveSnackBar` throws without it. It comes from `material_expressive_host.dart`:
 
 ```dart
+import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -37,28 +38,19 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    theme: ThemeData(
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: expressivePageTransitions,
-      ),
-    ),
     localizationsDelegates: const [
       DefaultRawWidgetsLocalizations.delegate,
       ExpressiveLocalizations.delegate,
       DefaultMaterialLocalizations.delegate,
       DefaultWidgetsLocalizations.delegate,
     ],
-    builder: (context, child) => ExpressiveTheme(
-      data: ExpressiveThemeData.grove(MediaQuery.platformBrightnessOf(context)),
+    builder: (context, child) => ExpressiveHost(
+      theme: ExpressiveThemeData.grove(),
+      darkTheme: ExpressiveThemeData.grove(Brightness.dark),
       child: child!,
     ),
-    home: Builder(
-      builder: (context) => ColoredBox(
-        color: context.expressiveTheme.colors.surface,
-        child: Center(
-          child: ExpressiveFilledButton('Book a table', onPressed: () {}),
-        ),
-      ),
+    home: Center(
+      child: ExpressiveFilledButton('Book a table', onPressed: () {}),
     ),
   );
 }
@@ -73,8 +65,9 @@ CupertinoApp(
     DefaultCupertinoLocalizations.delegate,
     DefaultWidgetsLocalizations.delegate,
   ],
-  builder: (context, child) => ExpressiveTheme(
-    data: ExpressiveThemeData.grove(MediaQuery.platformBrightnessOf(context)),
+  builder: (context, child) => ExpressiveHost(
+    theme: ExpressiveThemeData.grove(),
+    darkTheme: ExpressiveThemeData.grove(Brightness.dark),
     child: child!,
   ),
   home: const TripsPage(),
@@ -90,8 +83,9 @@ WidgetsApp(
     DefaultMaterialLocalizations.delegate,
     DefaultWidgetsLocalizations.delegate,
   ],
-  builder: (context, child) => ExpressiveTheme(
-    data: ExpressiveThemeData.grove(MediaQuery.platformBrightnessOf(context)),
+  builder: (context, child) => ExpressiveHost(
+    theme: ExpressiveThemeData.grove(),
+    darkTheme: ExpressiveThemeData.grove(Brightness.dark),
     child: child!,
   ),
   pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
@@ -184,7 +178,7 @@ Widgets read their theme from `context.expressiveTheme`. Use `copyWith` to set d
 
 ## Navigation
 
-Import `package:material_expressive_ui/material_expressive_host.dart` for `ExpressiveHost`, adaptive app navigation and page transitions. `ExpressiveShellScaffold` places destinations in a bottom bar on phones and a rail on wider screens. `ExpressivePage`, `ExpressiveSheetPage` and `ExpressiveFullScreenDialogPage` work with the Navigator pages API.
+`package:material_expressive_ui/material_expressive_host.dart`, the library `ExpressiveHost` comes from, also holds adaptive app navigation and page transitions. `ExpressiveShellScaffold` places destinations in a bottom bar on phones and a rail on wider screens. `ExpressivePage`, `ExpressiveSheetPage` and `ExpressiveFullScreenDialogPage` work with the Navigator pages API.
 
 ## Accessibility and languages
 
@@ -204,7 +198,7 @@ The example app includes a Trip planner and an interactive component gallery. Sw
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.4.1 and re-exports it, so `RawWidgetsLocalizations` and the `Raw*` parts come with the one import.
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.6.0 and re-exports it, so `RawWidgetsLocalizations` and the `Raw*` parts come with the one import.
 
 ## Licences
 

@@ -1,4 +1,4 @@
-// The behaviour law (looks/COMPLETE.md §2a) over Expressive. Every part that takes a callback is enumerated from the
+// The behaviour law over Expressive. Every part that takes a callback is enumerated from the
 // source, so a new one fails here until it is named in the table. Each one: Tab reaches it and its focus layer shows
 // (Compose draws focus as a state layer; a menu's row shows the keys' place by the focus indicator alone, so it never
 // reads as the pointer's fill: one lit row), Enter and Space press it, with no callback it takes no focus and

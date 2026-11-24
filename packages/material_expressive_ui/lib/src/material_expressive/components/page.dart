@@ -271,14 +271,14 @@ mixin ExpressivePredictiveBackRoute<T> on PageRoute<T> {
       if (!controller.isAnimating) return done();
       controller
           .animateBackWith(
-            designSpringSimulation(spring, from: controller.value, to: 0),
+            rawSpringSimulation(spring, from: controller.value, to: 0),
           )
           .whenCompleteOrCancel(done);
     } else {
       if (controller.isCompleted) return done();
       controller
           .animateWith(
-            designSpringSimulation(spring, from: controller.value, to: 1),
+            rawSpringSimulation(spring, from: controller.value, to: 1),
           )
           .whenCompleteOrCancel(done);
     }

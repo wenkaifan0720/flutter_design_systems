@@ -11,10 +11,10 @@ import 'theme.dart';
 
 export 'package:ui_core/ui_core.dart'
     show
-        DesignMotionPolicy,
-        DesignSpringDrive,
-        designSpringSimulation,
-        designSpringTolerance;
+        RawMotionPolicy,
+        RawSpringDrive,
+        rawSpringSimulation,
+        rawSpringTolerance;
 
 export 'internal/tokens/keys.g.dart' show ExpressiveMotionKey;
 
@@ -47,7 +47,7 @@ class ExpressiveMotion with Diagnosticable {
     scheme: ExpressiveStandardMotion.pinnedAt(context)
         ? ExpressiveMotionScheme.standard
         : context.expressiveTheme.motion.scheme,
-    reduceMotion: DesignMotionPolicy.of(context).reduceMotion,
+    reduceMotion: RawMotionPolicy.of(context).reduceMotion,
   );
 
   /// The scheme the springs come from.
@@ -79,8 +79,7 @@ class ExpressiveMotion with Diagnosticable {
   ) => t < .5 ? a : b;
 
   /// The kit's policy this motion runs under.
-  DesignMotionPolicy get policy =>
-      DesignMotionPolicy(reduceMotion: reduceMotion);
+  RawMotionPolicy get policy => RawMotionPolicy(reduceMotion: reduceMotion);
 
   /// The scheme's token for [key], as generated, before Reduce Motion.
   ExpressiveSpringToken tokenOf(ExpressiveMotionKey key) {

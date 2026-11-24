@@ -206,8 +206,8 @@ class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {
     final select = widget.onDestinationSelected;
     // ui_core's window classes: the bar while compact, the rail from
     // medium, standing expanded from large.
-    final size = DesignWindowSizeClass.of(context);
-    final rail = size != DesignWindowSizeClass.compact;
+    final size = RawWindowSizeClass.of(context);
+    final rail = size != RawWindowSizeClass.compact;
     final index = widget.selectedIndex;
     final media =
         index < widget.tabs.length &&
@@ -322,8 +322,8 @@ class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {
             selectedIndex: widget.selectedIndex,
             onDestinationSelected: select,
             expanded:
-                DesignWindowSizeClass.of(context).index >=
-                DesignWindowSizeClass.large.index,
+                RawWindowSizeClass.of(context).index >=
+                RawWindowSizeClass.large.index,
             header: action == null
                 ? null
                 : SizedBox(

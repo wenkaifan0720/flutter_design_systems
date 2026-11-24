@@ -367,7 +367,7 @@ class ExpressivePressable extends StatefulWidget {
   final bool focusRing;
 
   /// Whether its drawn face (the surface, inside any 48dp target around it)
-  /// is marked for the alignment checks ([DesignKeylineFace]): a face too
+  /// is marked for the alignment checks ([RawKeylineFace]): a face too
   /// faint on its page to read by its pixels (an unchosen tonal segment) is
   /// then read by the face's own box, never by the target around it.
   final bool markFace;
@@ -651,89 +651,88 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
         enabled &&
         states.contains(WidgetState.focused);
 
-    Widget paint(
-      Color color,
-      Color content,
-      double ringT,
-    ) => ExpressiveSpringShape(
-      value: target,
-      motion: widget.motion,
-      builder: (context, shape, _) {
-        final outlined = shape is OutlinedBorder ? shape : target;
-        final ink = _ink(
-          layers,
-          content,
-          outlined,
-          enabled,
-          resolved.overlayColor,
-        );
-        final dragLayer = widget.dragged && enabled && widget.stateLayers
-            ? layers.layerOf(content, const <WidgetState>{WidgetState.dragged})
-            : null;
-        final outline = resolved.outline?.resolve(states);
-        final side =
-            resolved.side?.resolve(states) ??
-            widget.side.copyWith(
-              color: outline,
-              style: outline == null ? null : BorderStyle.solid,
+    Widget paint(Color color, Color content, double ringT) =>
+        ExpressiveSpringShape(
+          value: target,
+          motion: widget.motion,
+          builder: (context, shape, _) {
+            final outlined = shape is OutlinedBorder ? shape : target;
+            final ink = _ink(
+              layers,
+              content,
+              outlined,
+              enabled,
+              resolved.overlayColor,
             );
-        final surface = ExpressiveSurface(
-          shape: outlined,
-          side: side,
-          color: color,
-          contentColor: content,
-          tonalElevation: widget.tonalElevation,
-          shadowElevation: widget.elevation.resolve(states),
-          elevationMotion: widget.elevationMotion,
-          clipBehavior: widget.bounded ? Clip.antiAlias : Clip.none,
-          child: _PressableLayers(
-            enabled: enabled,
-            children: <Widget>[
-              ExpressiveStyleScope(
-                style: resolved,
-                states: states,
-                inset:
-                    (resolved.shape?.resolve(states) != null ||
-                        resolved.side?.resolve(states) != null ||
-                        outline != null)
-                    ? outlined.copyWith(side: side).dimensions
-                    : EdgeInsets.zero,
-                child: widget.child,
-              ),
-              if (dragLayer != null)
-                Positioned.fill(
-                  child: IgnorePointer(child: ColoredBox(color: dragLayer)),
-                ),
-              _inkLayer(ink),
-            ],
-          ),
-        );
-        // Always the one CustomPaint, so the ring coming and going never
-        // remounts the surface (and the focus node inside it).
-        return CustomPaint(
-          foregroundPainter: ringT > 0
-              ? _FocusRingPainter(
-                  shape: widget.focusShape ?? outlined,
-                  rect: widget.focusRect,
-                  inward: widget.focusInward,
-                  // A filled row or segment keeps the surface between its
-                  // face and an inward ring (paintExpressiveFocusRing).
-                  gap: widget.focusInward && color.a > 0
-                      ? theme.colors.surface.withValues(
-                          alpha: theme.colors.surface.a * ringT,
-                        )
-                      : null,
-                  color: theme.colors.secondary.withValues(
-                    alpha: theme.colors.secondary.a * ringT,
+            final dragLayer = widget.dragged && enabled && widget.stateLayers
+                ? layers.layerOf(content, const <WidgetState>{
+                    WidgetState.dragged,
+                  })
+                : null;
+            final outline = resolved.outline?.resolve(states);
+            final side =
+                resolved.side?.resolve(states) ??
+                widget.side.copyWith(
+                  color: outline,
+                  style: outline == null ? null : BorderStyle.solid,
+                );
+            final surface = ExpressiveSurface(
+              shape: outlined,
+              side: side,
+              color: color,
+              contentColor: content,
+              tonalElevation: widget.tonalElevation,
+              shadowElevation: widget.elevation.resolve(states),
+              elevationMotion: widget.elevationMotion,
+              clipBehavior: widget.bounded ? Clip.antiAlias : Clip.none,
+              child: _PressableLayers(
+                enabled: enabled,
+                children: <Widget>[
+                  ExpressiveStyleScope(
+                    style: resolved,
+                    states: states,
+                    inset:
+                        (resolved.shape?.resolve(states) != null ||
+                            resolved.side?.resolve(states) != null ||
+                            outline != null)
+                        ? outlined.copyWith(side: side).dimensions
+                        : EdgeInsets.zero,
+                    child: widget.child,
                   ),
-                  textDirection: Directionality.maybeOf(context),
-                  thickness: ExpressiveFocusRing.thickness,
-                )
-              : null,
-          child: widget.markFace ? DesignKeylineFace(child: surface) : surface,
+                  if (dragLayer != null)
+                    Positioned.fill(
+                      child: IgnorePointer(child: ColoredBox(color: dragLayer)),
+                    ),
+                  _inkLayer(ink),
+                ],
+              ),
+            );
+            // Always the one CustomPaint, so the ring coming and going never
+            // remounts the surface (and the focus node inside it).
+            return CustomPaint(
+              foregroundPainter: ringT > 0
+                  ? _FocusRingPainter(
+                      shape: widget.focusShape ?? outlined,
+                      rect: widget.focusRect,
+                      inward: widget.focusInward,
+                      // A filled row or segment keeps the surface between its
+                      // face and an inward ring (paintExpressiveFocusRing).
+                      gap: widget.focusInward && color.a > 0
+                          ? theme.colors.surface.withValues(
+                              alpha: theme.colors.surface.a * ringT,
+                            )
+                          : null,
+                      color: theme.colors.secondary.withValues(
+                        alpha: theme.colors.secondary.a * ringT,
+                      ),
+                      textDirection: Directionality.maybeOf(context),
+                      thickness: ExpressiveFocusRing.thickness,
+                    )
+                  : null,
+              child: widget.markFace ? RawKeylineFace(child: surface) : surface,
+            );
+          },
         );
-      },
-    );
 
     Widget pressable = ExpressiveSpringTween<double>(
       value: ringOn ? 1 : 0,
@@ -1444,11 +1443,11 @@ class ExpressiveMinimumInteractiveSize extends StatelessWidget {
   /// The smallest touch target, in dp.
   final double size;
 
-  /// Expressive's floors ([DesignTapTargetScope] in [ExpressiveTheme]): 48 ×
+  /// Expressive's floors ([RawTapTargetScope] in [ExpressiveTheme]): 48 ×
   /// 48 for a finger and for a pointer alike, as Compose keeps
   /// `minimumInteractiveComponentSize` on every platform. Density tightens a
   /// control's face (compact under a pointer), never its target.
-  static const DesignTapTargets targets = DesignTapTargets(
+  static const RawTapTargets targets = RawTapTargets(
     touch: Size.square(HostBehavior.minimumInteractiveComponentSize),
     pointer: Size.square(HostBehavior.minimumInteractiveComponentSize),
   );

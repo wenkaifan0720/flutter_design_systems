@@ -80,6 +80,7 @@ class ExpressiveTextField extends StatefulWidget {
     this.labelPosition,
     this.alwaysMinimizeLabel = false,
     this.hintText,
+    this.hint,
     this.leading,
     this.trailing,
     this.prefix,
@@ -104,7 +105,11 @@ class ExpressiveTextField extends StatefulWidget {
     this.semanticLabel,
     this.decorate,
     super.key,
-  }) : _singleLine = true,
+  }) : assert(
+         hint == null || hintText == null,
+         'Give the field a hint or a hintText, not both.',
+       ),
+       _singleLine = true,
        _minLines = null,
        _maxLines = 1;
 
@@ -121,6 +126,7 @@ class ExpressiveTextField extends StatefulWidget {
     required this.labelPosition,
     required this.alwaysMinimizeLabel,
     required this.hintText,
+    required this.hint,
     required this.leading,
     required this.trailing,
     required this.helperText,
@@ -181,6 +187,11 @@ class ExpressiveTextField extends StatefulWidget {
 
   /// Shown while the field is empty and its label minimized.
   final String? hintText;
+
+  /// A widget shown in place of [hintText], as `InputDecoration.hint`: drawn
+  /// in the hint's style, while the field is empty and its label minimized.
+  /// A field takes one or the other.
+  final Widget? hint;
 
   /// The leading icon (an `Icon` or `ExpressiveIcon`), in the field's icon
   /// colour at 24dp, centred in a 48dp touch target.
@@ -319,6 +330,7 @@ class ExpressiveTextField extends StatefulWidget {
         ),
       )
       ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('hint', hint, defaultValue: null))
       ..add(StringProperty('prefix', prefix, defaultValue: null))
       ..add(StringProperty('suffix', suffix, defaultValue: null))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
@@ -408,6 +420,7 @@ class ExpressiveTextArea extends StatelessWidget {
     this.labelPosition,
     this.alwaysMinimizeLabel = false,
     this.hintText,
+    this.hint,
     this.leading,
     this.trailing,
     this.helperText,
@@ -428,7 +441,10 @@ class ExpressiveTextArea extends StatelessWidget {
     this.semanticLabel,
     this.decorate,
     super.key,
-  });
+  }) : assert(
+         hint == null || hintText == null,
+         'Give the area a hint or a hintText, not both.',
+       );
 
   /// See [ExpressiveTextField.controller].
   final TextEditingController? controller;
@@ -459,6 +475,9 @@ class ExpressiveTextArea extends StatelessWidget {
 
   /// See [ExpressiveTextField.hintText].
   final String? hintText;
+
+  /// See [ExpressiveTextField.hint].
+  final Widget? hint;
 
   /// See [ExpressiveTextField.leading].
   final Widget? leading;
@@ -535,6 +554,7 @@ class ExpressiveTextArea extends StatelessWidget {
     labelPosition: labelPosition,
     alwaysMinimizeLabel: alwaysMinimizeLabel,
     hintText: hintText,
+    hint: hint,
     leading: leading,
     trailing: trailing,
     helperText: helperText,
@@ -604,6 +624,7 @@ class ExpressiveTextArea extends StatelessWidget {
         ),
       )
       ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('hint', hint, defaultValue: null))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(IntProperty('maxLength', maxLength, defaultValue: null))
@@ -1724,16 +1745,27 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     );
 
     Widget? placeholder;
-    if (widget.hintText != null && text.isEmpty) {
+    final hint = widget.hint;
+    if ((hint != null || widget.hintText != null) && text.isEmpty) {
+      final hintStyle = bodyLarge.copyWith(color: resolve(colors.placeholder));
+      final maxLines = widget._singleLine ? 1 : null;
+      final overflow = widget._singleLine ? TextOverflow.ellipsis : null;
       placeholder = _Faded(
         opacity: _placeholder,
         child: line(
-          Text(
-            widget.hintText!,
-            maxLines: widget._singleLine ? 1 : null,
-            overflow: widget._singleLine ? TextOverflow.ellipsis : null,
-            style: bodyLarge.copyWith(color: resolve(colors.placeholder)),
-          ),
+          hint != null
+              ? DefaultTextStyle.merge(
+                  style: hintStyle,
+                  maxLines: maxLines,
+                  overflow: overflow,
+                  child: hint,
+                )
+              : Text(
+                  widget.hintText!,
+                  maxLines: maxLines,
+                  overflow: overflow,
+                  style: hintStyle,
+                ),
           start: textStart,
           end: textEnd,
         ),
@@ -1871,7 +1903,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
             // checks recognise, and a filled one is faint against the page:
             // marked, the field is one item at its face (its supporting
             // text inside the same width).
-            builder: (context, _) => DesignKeylineFace(
+            builder: (context, _) => RawKeylineFace(
               child: _FieldLayout(
                 outlined: outlined,
                 cutout: cutout,

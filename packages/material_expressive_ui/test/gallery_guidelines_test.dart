@@ -68,7 +68,7 @@ void main() {
 
 /// Words Compose itself writes short of 4.5:1 in one of the five presets, held as Compose draws them: a tonal outlined
 /// field's placeholder is `onSurfaceVariant` on `onPrimary` (`OutlinedTextFieldDefaults.tonalColors()`), a pair the
-/// scheme does not tune, and ember's dark scheme leaves it at 4.24:1. The lead's call (DECISIONS.md); every other
+/// scheme does not tune, and ember's dark scheme leaves it at 4.24:1, kept as Compose draws it; every other
 /// word on every page meets its ratio.
 const _composePairs = {
   (

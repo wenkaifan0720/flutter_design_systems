@@ -218,7 +218,7 @@ abstract class _ProgressState<T extends StatefulWidget> extends State<T>
 
   /// Reads Reduce Motion as the indicator builds (each subclass's build
   /// starts with it): iOS's comes as a build, not as a change of
-  /// dependencies (`designReduceMotionOf`).
+  /// dependencies (`rawReduceMotionOf`).
   void _followReduceMotion() {
     final still = ExpressiveMotion.of(context).reduceMotion;
     if (_followed && still == _still) return;

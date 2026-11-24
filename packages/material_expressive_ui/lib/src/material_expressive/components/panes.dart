@@ -97,8 +97,8 @@ class ExpressiveScrollArea extends StatelessWidget {
       autofocus: autofocus,
       semanticLabel: semanticLabel,
       visibility: alwaysShown
-          ? DesignScrollbarVisibility.always
-          : DesignScrollbarVisibility.auto,
+          ? RawScrollbarVisibility.always
+          : RawScrollbarVisibility.auto,
       trackBuilder: (context, thumb) => ExpressiveSpringValue(
         value: thumb.states.isEmpty ? 0 : 1,
         motion: ExpressiveMotionKey.fastEffects,

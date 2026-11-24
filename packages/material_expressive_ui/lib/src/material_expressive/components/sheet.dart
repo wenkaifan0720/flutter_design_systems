@@ -493,7 +493,7 @@ class _ExpressiveBottomSheetState extends State<ExpressiveBottomSheet>
       _onOffset();
     } else {
       _offset.animateWith(
-        designSpringSimulation(
+        rawSpringSimulation(
           ExpressiveMotion.of(context).spring(motion),
           from: from,
           to: to,
@@ -1073,7 +1073,7 @@ class _DragHandle extends StatelessWidget {
 /// How long [spring] takes to settle from 0 to 1 at the kit's tolerance:
 /// a route's transition duration.
 Duration _settleTime(SpringDescription spring) {
-  final simulation = designSpringSimulation(spring, from: 0, to: 1);
+  final simulation = rawSpringSimulation(spring, from: 0, to: 1);
   var ms = 0;
   while (!simulation.isDone(ms / Duration.millisecondsPerSecond) &&
       ms < Duration.millisecondsPerMinute) {
@@ -1187,7 +1187,7 @@ class _ModalSheetRoute<T> extends PopupRoute<T> {
     super.didPush();
     sheet.show();
     return controller!.animateWith(
-      designSpringSimulation(_springs.spring(_showMotion), from: 0, to: 1),
+      rawSpringSimulation(_springs.spring(_showMotion), from: 0, to: 1),
     );
   }
 
@@ -1202,7 +1202,7 @@ class _ModalSheetRoute<T> extends PopupRoute<T> {
       _scrim.springTo(0, _springs.spring(ModalBottomSheetBehavior.scrimMotion));
     }
     controller!.animateBackWith(
-      designSpringSimulation(
+      rawSpringSimulation(
         _springs.spring(_hideMotion),
         from: controller!.value,
         to: 0,
@@ -1500,7 +1500,7 @@ class _FullScreenDialogRoute<T> extends PageRoute<T>
   TickerFuture didPush() {
     super.didPush();
     return controller!.animateWith(
-      designSpringSimulation(_springs.spring(_showMotion), from: 0, to: 1),
+      rawSpringSimulation(_springs.spring(_showMotion), from: 0, to: 1),
     );
   }
 
@@ -1509,7 +1509,7 @@ class _FullScreenDialogRoute<T> extends PageRoute<T>
     // False when an overlay held open in the dialog took the pop.
     if (!super.didPop(result)) return false;
     controller!.animateBackWith(
-      designSpringSimulation(
+      rawSpringSimulation(
         _springs.spring(_hideMotion),
         from: controller!.value,
         to: 0,
@@ -1616,7 +1616,7 @@ class _FullScreenDialogRoute<T> extends PageRoute<T>
       navigator.pop();
     } else {
       controller!.animateWith(
-        designSpringSimulation(
+        rawSpringSimulation(
           _springs.spring(_showMotion),
           from: controller!.value,
           to: 1,

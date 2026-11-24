@@ -22,7 +22,7 @@ import 'page.dart' show ExpressivePage, ExpressivePageTransitionsBuilder;
 /// - Android: Flutter's predictive back builder, whose push is
 ///   fade-forwards and whose back gesture is the platform's predictive back;
 /// - iOS: the Cupertino slide, which carries the edge swipe-back itself, so
-///   the entry needs no ui_core `designSwipeBack` round it (that is for a
+///   the entry needs no ui_core `rawSwipeBack` round it (that is for a
 ///   look whose own push replaces the slide; round this one it would add a
 ///   second edge gesture).
 ///

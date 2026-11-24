@@ -3571,10 +3571,10 @@ Widget _optionFace(
 /// A menu's panel around [child]: the popover surface (the standard menu
 /// container, the large corner, elevation 2), its list 4dp clear of every
 /// edge at every density ([_menuInset]). Marked as a face
-/// ([DesignKeylineFace]): the kit's surface paints itself, and the checks
+/// ([RawKeylineFace]): the kit's surface paints itself, and the checks
 /// read the list's width from the panel, not from the overlay box an
 /// autocomplete lays it out in.
-Widget _panel(Widget child) => DesignKeylineFace(
+Widget _panel(Widget child) => RawKeylineFace(
   child: ExpressivePopoverSurface(
     padding: EdgeInsets.zero,
     child: _menuInset(child, rowsInset: true),
@@ -3848,7 +3848,7 @@ class _ExpressiveMultiSelectState<T extends Object>
     // [ExpressiveSelect.wideMaxWidth] at its column's start.
     return expressiveChoiceWidth(
       context,
-      DesignInputGroup(
+      RawInputGroup(
         focusNode: _node,
         enabled: enabled,
         isError: widget.isError,

@@ -234,10 +234,10 @@ void main() {
       expect(surface.color, bloom.colors.surfaceContainerHigh);
       final route = ModalRoute.of(tester.element(dialog))!;
       // ui_core's dialog route, on the theme's default effects token.
-      expect(route, isA<DesignDialogRoute<Object?>>());
+      expect(route, isA<RawModalDialogRoute<Object?>>());
       final token = ExpressiveMotion(scheme: bloom.motion.scheme)
           .tokenOf(ExpressiveMotionKey.defaultEffects);
-      final dialogRoute = route as DesignDialogRoute<Object?>;
+      final dialogRoute = route as RawModalDialogRoute<Object?>;
       expect(dialogRoute.dampingRatio, token.dampingRatio);
       expect(dialogRoute.stiffness, token.stiffness);
       expect(dialogRoute.isAlert, isFalse);

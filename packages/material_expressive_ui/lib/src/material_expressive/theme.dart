@@ -1614,7 +1614,7 @@ class ExpressiveTheme extends StatelessWidget {
               ),
               // The floors every control's target stands at, and the tap
               // checks hold a screen to.
-              child: DesignTapTargetScope(
+              child: RawTapTargetScope(
                 targets: ExpressiveMinimumInteractiveSize.targets,
                 child: child,
               ),

@@ -648,7 +648,7 @@ class ExpressiveRadio extends StatelessWidget {
     // The ring is drawn inset in its slot (the padding and the painter's
     // inset): marked, the checks read the radio by its slot, as they read a
     // leading icon by its box.
-    painted = DesignKeylineFace(
+    painted = RawKeylineFace(
       child: Padding(
         padding:
             resolved.padding?.resolve(states) ??

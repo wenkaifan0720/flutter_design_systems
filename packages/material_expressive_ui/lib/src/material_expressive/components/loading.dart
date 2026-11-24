@@ -255,7 +255,7 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
   bool _followed = false;
 
   /// Reads Reduce Motion as the indicator builds: iOS's comes as a build,
-  /// not as a change of dependencies (`designReduceMotionOf`).
+  /// not as a change of dependencies (`rawReduceMotionOf`).
   void _followReduceMotion() {
     final still = ExpressiveMotion.of(context).reduceMotion;
     if (_followed && still == _still) return;

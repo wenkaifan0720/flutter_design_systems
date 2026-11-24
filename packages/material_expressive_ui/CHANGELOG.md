@@ -1,3 +1,11 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0, whose parts that still began with `Design` take `Raw` names (`DesignStyleOf` is `RawStyleOf`, `DesignDialogRoute` is `RawModalDialogRoute`). Material Expressive's code and docs say the new names. The old names stay through ui_core 0.6 as deprecated aliases, and `dart fix --apply` moves an app's code.
+- The date pickers and `ExpressiveCalendar` number their days in the app's digits (Arabic's ٢٠, not 20), as Material's day picker does; their months and years already were. `ExpressiveCalendar` paints ui_core's `RawCalendarDayDetails.label`.
+- The date and date range pickers' headline reads in the app's digits and month words (Arabic's ٢٠ نوفمبر ٢٠٢٦), as their calendar does; it was "20 Nov 2026" in every language. English keeps "20 Nov 2026".
+- `ExpressiveTextField.hint` and `ExpressiveTextArea.hint` take a widget in place of `hintText`, as `InputDecoration.hint` does: drawn in the hint's style while the field is empty and its label minimized (an `ExcludeSemantics` round it keeps its words out of the field's name).
+- The README's set-up puts `ExpressiveHost` in the app's `builder`, from `material_expressive_host.dart`: `showExpressiveSnackBar` needs it since 0.5.0. It names ui_core ^0.6.0.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

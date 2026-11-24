@@ -144,7 +144,7 @@ class _StepPainter extends CustomPainter {
         ..color = target
         ..strokeWidth = 1,
     );
-    final sim = designSpringSimulation(spring, from: 0, to: 1);
+    final sim = rawSpringSimulation(spring, from: 0, to: 1);
     final path = Path()..moveTo(0, y(0));
     const samples = 160;
     for (var i = 1; i <= samples; i++) {

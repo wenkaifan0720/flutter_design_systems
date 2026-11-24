@@ -888,7 +888,7 @@ class ExpressiveSlider extends StatelessWidget {
   // The inactive track is faint on the page (its end would read at the stop
   // dot): marked, the checks take the slider as one item, edge to edge.
   @override
-  Widget build(BuildContext context) => DesignKeylineFace(
+  Widget build(BuildContext context) => RawKeylineFace(
     child: _SingleSlider(
       style: style,
       value: value,
@@ -2243,8 +2243,8 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
     if (next == from) return false;
     _held = next;
     // ui_core's step moment: an app swaps or silences it in a
-    // DesignHapticsScope.
-    DesignHaptics.of(context).selectionChanged?.call();
+    // RawHapticsScope.
+    RawHaptics.of(context).selectionChanged?.call();
     widget.onChanged!(next);
     return true;
   }
@@ -2323,7 +2323,7 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
         // A tonal circle the checks may not tell from the page: marked, it
         // is read by its face, not by its glyph (a 2 px minus beside a
         // 14 px plus).
-        child: DesignKeylineFace(
+        child: RawKeylineFace(
           child: ExpressiveStyledContent(
             minimumSize: const Size.square(
               SmallIconButtonTokens.containerHeight,

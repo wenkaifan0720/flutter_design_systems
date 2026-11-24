@@ -942,7 +942,7 @@ void main() {
             reason: '${variant.name} $label',
           );
           // The word is drawn by its capitals on the tab's middle
-          // (DesignCapCenter), its line box under a pixel and a half from
+          // (RawCapCenter), its line box under a pixel and a half from
           // where it is laid out, where the badge stands.
           expect(
             badge.top,
