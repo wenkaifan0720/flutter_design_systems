@@ -7,6 +7,8 @@
 /// [KeycapKbd] a small cap naming a key on the keyboard.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -135,7 +137,7 @@ class KeycapButton extends StatelessWidget {
       autofocus: autofocus,
       semanticLabel: semanticLabel,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, _themed(theme)], states);
+        final layered = RawStyleOf([style, _themed(theme)], states);
         final height = layered.minimumSize?.height ?? theme.controlHeight;
         final walls = KeycapMetrics.walls(theme.controlHeight);
         final dir = Directionality.of(context);
@@ -251,10 +253,7 @@ class _Legend extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.center,
-      child: DesignCapCenter(
-        capHeightFactor: theme.capHeightFactor,
-        child: child,
-      ),
+      child: RawCapCenter(capHeightFactor: theme.capHeightFactor, child: child),
     );
     return IconTheme.merge(
       data: IconThemeData(color: color, size: iconSize),
@@ -436,7 +435,7 @@ class KeycapIconButton extends StatelessWidget {
       excludeSemantics: true,
       selected: isSelected ?? false,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
+        final layered = RawStyleOf([style, theme.iconButtonStyle], states);
         var face = keycapKeyFace(
           theme,
           accent ? KeycapKind.accent : KeycapKind.alpha,
@@ -541,7 +540,7 @@ class KeycapLegendKey extends StatelessWidget {
           semanticLabel ?? (subLegend == null ? legend : '$legend, $subLegend'),
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.buttonStyle], states);
+        final layered = RawStyleOf([style, theme.buttonStyle], states);
         var face = keycapKeyFace(
           theme,
           modifier ? KeycapKind.modifier : KeycapKind.alpha,
@@ -549,7 +548,8 @@ class KeycapLegendKey extends StatelessWidget {
           backlit: backlit,
         );
         face = layered.on(face);
-        // Two lines of words: the key grows by both as text grows.
+        // Two lines of words: the key grows by both as text grows, and by a
+        // second line of the legend where one can't hold it.
         final h =
             KeycapMetrics.grown(
               context,
@@ -557,9 +557,13 @@ class KeycapLegendKey extends StatelessWidget {
               theme.textTheme.label,
             ) +
             KeycapMetrics.grown(context, 0, theme.textTheme.figure);
+        final label = theme.textTheme.label;
+        final line =
+            MediaQuery.textScalerOf(context).scale(label.fontSize!) *
+            (label.height ?? 1);
         return TapTargetPadding(
-          child: SizedBox(
-            height: h,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: h),
             child: AnimatedKeycapCap(
               face: face,
               walls: KeycapMetrics.walls(theme.controlHeight),
@@ -571,21 +575,34 @@ class KeycapLegendKey extends StatelessWidget {
                   KeycapSpacing.small,
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
+                      // The icon stands on the legend's first line, however
+                      // many lines the legend takes.
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (icon != null) ...[
-                          IconTheme.merge(
-                            data: IconThemeData(size: 18, color: face.legend),
-                            child: icon!,
+                          SizedBox(
+                            height: math.max(18.0, line),
+                            child: Center(
+                              child: IconTheme.merge(
+                                data: IconThemeData(
+                                  size: 18,
+                                  color: face.legend,
+                                ),
+                                child: icon!,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: KeycapSpacing.small),
                         ],
                         Expanded(
                           child: Text(
                             legend,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.label.copyWith(
                               color: face.legend,
@@ -594,16 +611,21 @@ class KeycapLegendKey extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const Spacer(),
-                    if (subLegend != null)
+                    if (subLegend != null) ...[
+                      // The value stands clear of the legend, however many
+                      // lines the legend takes.
+                      const SizedBox(height: KeycapSpacing.small),
                       Text(
                         subLegend!,
                         textAlign: TextAlign.end,
                         maxLines: 1,
+                        // A quarter of the way to the key's top: quieter than
+                        // the legend, and at 4.5:1 on the key by night too.
                         style: theme.textTheme.figure.copyWith(
-                          color: Color.lerp(face.legend, face.top, 0.3),
+                          color: Color.lerp(face.legend, face.top, 0.25),
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -744,7 +766,7 @@ class KeycapLink extends StatelessWidget {
       button: false,
       link: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.linkStyle], states);
+        final layered = RawStyleOf([style, theme.linkStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final rest = disabled
             ? c.inkDisabled
@@ -840,12 +862,12 @@ class KeycapKbd extends StatelessWidget {
   Widget build(BuildContext context) {
     final keys = shortcut == null
         ? [label!]
-        : designShortcutKeys(context, shortcut!, appleSymbols: false);
+        : rawShortcutKeys(context, shortcut!, appleSymbols: false);
     final words =
         semanticLabel ??
         (shortcut == null
             ? label!
-            : designShortcutLabel(context, shortcut!, appleSymbols: false));
+            : rawShortcutLabel(context, shortcut!, appleSymbols: false));
     return KeycapShortcut(keys: keys, semanticLabel: words);
   }
 

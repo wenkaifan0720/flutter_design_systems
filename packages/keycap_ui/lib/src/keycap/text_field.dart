@@ -234,8 +234,8 @@ class KeycapTextField extends StatefulWidget {
   final int? minLines;
 
   /// Overrides for the well, over [KeycapThemeData.textFieldStyle]:
-  /// [DesignStyle.fill] its floor, [DesignStyle.foreground] its words,
-  /// [DesignStyle.textStyle] their style, [DesignStyle.minimumSize] its
+  /// [RawStyle.fill] its floor, [RawStyle.foreground] its words,
+  /// [RawStyle.textStyle] their style, [RawStyle.minimumSize] its
   /// height.
   final KeycapStyle? style;
 
@@ -302,7 +302,7 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
       if (focused) WidgetState.focused,
       if (wrong) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
+    final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     final words = theme.textTheme.body
         .merge(layered.textStyle)
         .copyWith(
@@ -310,7 +310,7 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
         );
     final oneLine = widget.maxLines == 1;
     final height = layered.minimumSize?.height ?? theme.controlHeight;
-    final Widget editable = DesignTextEntryBox(
+    final Widget editable = RawTextEntryBox(
       minHeight: height,
       controller: _controller,
       maxLines: widget.maxLines,
@@ -402,7 +402,7 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: pad),
                   child: oneLine
-                      ? DesignCapCenter(
+                      ? RawCapCenter(
                           capHeightFactor: theme.capHeightFactor,
                           child: named,
                         )

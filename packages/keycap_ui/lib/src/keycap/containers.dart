@@ -30,7 +30,7 @@ export 'package:ui_core/ui_core.dart'
         RawDataColumn,
         RawDataTableController;
 export 'package:ui_core/ui_core.dart' show RawSwipeAction;
-export 'package:ui_core/ui_core.dart' show DesignTreeController;
+export 'package:ui_core/ui_core.dart' show RawTreeController;
 
 /// A row's floor in a well (or a page, [KeycapWell.isPage]) for [states]:
 /// darker while pressed, a plate of modifier plastic while [selected].
@@ -305,7 +305,7 @@ class KeycapTable extends StatelessWidget {
   /// The rows, a string per column.
   final List<List<String>> rows;
 
-  /// Overrides, over [KeycapThemeData.tableStyle]: [DesignStyle.fill] the
+  /// Overrides, over [KeycapThemeData.tableStyle]: [RawStyle.fill] the
   /// well's floor.
   final KeycapStyle? style;
 
@@ -313,7 +313,7 @@ class KeycapTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tableStyle], const {});
+    final layered = RawStyleOf([style, theme.tableStyle], const {});
     const pad = EdgeInsets.symmetric(
       horizontal: KeycapSpacing.small,
       vertical: KeycapSpacing.medium,
@@ -456,7 +456,7 @@ class KeycapDataTable<R> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tableStyle], const {});
+    final layered = RawStyleOf([style, theme.tableStyle], const {});
     Widget cells(List<Widget> cells, {Widget? lead}) => Row(
       children: [
         if (selectable) SizedBox(width: _box, child: lead),
@@ -1114,7 +1114,7 @@ class KeycapRefresh extends StatelessWidget {
 /// Nested rows in a well that open and close (folders in folders): a
 /// chevron turning beside each row with rows under it, a pressed row's
 /// floor darkening, the chosen row on a plate of modifier plastic. The
-/// arrows move, open and close. Built on ui_core's `DesignTree`.
+/// arrows move, open and close. Built on ui_core's `RawTree`.
 ///
 /// ```dart
 /// KeycapTree<String>(controller: tree, labelOf: (folder) => folder, onActivate: open)
@@ -1131,7 +1131,7 @@ class KeycapTree<T extends Object> extends StatelessWidget {
   });
 
   /// The rows and which are open and chosen.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A row's words.
   final String Function(T node) labelOf;
@@ -1152,7 +1152,7 @@ class KeycapTree<T extends Object> extends StatelessWidget {
     return KeycapWell(
       page: true,
       padding: const EdgeInsets.all(KeycapSpacing.tight),
-      child: DesignTree<T>(
+      child: RawTree<T>(
         controller: controller,
         labelOf: labelOf,
         onActivate: onActivate,
@@ -1200,7 +1200,7 @@ class KeycapTree<T extends Object> extends StatelessWidget {
                   const SizedBox(width: KeycapSpacing.small),
                 ],
                 Expanded(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(
                       labelOf(item.row.node),

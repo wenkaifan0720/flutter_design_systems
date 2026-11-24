@@ -178,7 +178,7 @@ class KeycapToggleGroup<T> extends StatelessWidget {
     Widget keyFor(BuildContext context, T v, Set<WidgetState> states) {
       final o = of(v);
       final latched = states.contains(WidgetState.selected);
-      final layered = DesignStyleOf([style, theme.toggleStyle], states);
+      final layered = RawStyleOf([style, theme.toggleStyle], states);
       final side = KeycapMetrics.grown(
         context,
         layered.minimumSize?.height ?? theme.controlHeight,
@@ -197,7 +197,7 @@ class KeycapToggleGroup<T> extends StatelessWidget {
           : Icon(o.icon, size: layered.iconSize ?? 20, color: face.legend);
       final words = o.label == null
           ? null
-          : DesignCapCenter(
+          : RawCapCenter(
               capHeightFactor: theme.capHeightFactor,
               child: Text(
                 o.label!,
@@ -379,7 +379,7 @@ class KeycapSplitButton extends StatelessWidget {
       ),
       buttonBuilder: (context, part, states, open) {
         final isMain = part == RawSplitPart.main;
-        final layered = DesignStyleOf([
+        final layered = RawStyleOf([
           style,
           accent ? theme.accentButtonStyle : theme.buttonStyle,
         ], states);
@@ -408,7 +408,7 @@ class KeycapSplitButton extends StatelessWidget {
                       ),
                       child: Center(
                         widthFactor: 1,
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: theme.capHeightFactor,
                           child: Text(
                             label,

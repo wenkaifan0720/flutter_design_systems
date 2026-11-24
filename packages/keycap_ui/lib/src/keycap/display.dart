@@ -50,15 +50,15 @@ class KeycapAvatar extends StatelessWidget {
   /// Its side.
   final double size;
 
-  /// Overrides, over [KeycapThemeData.avatarStyle]: [DesignStyle.fill] the
-  /// tile, [DesignStyle.foreground] the initials.
+  /// Overrides, over [KeycapThemeData.avatarStyle]: [RawStyle.fill] the
+  /// tile, [RawStyle.foreground] the initials.
   final KeycapStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.avatarStyle], const {});
+    final layered = RawStyleOf([style, theme.avatarStyle], const {});
     final r = BorderRadius.circular(size / 4);
     final letters = Center(
       child: Text(
@@ -229,15 +229,15 @@ class KeycapBadge extends StatelessWidget {
   /// What a screen reader hears; the figure when null.
   final String? semanticLabel;
 
-  /// Overrides, over [KeycapThemeData.tagStyle]: [DesignStyle.fill] the
-  /// tab, [DesignStyle.foreground] the figure.
+  /// Overrides, over [KeycapThemeData.tagStyle]: [RawStyle.fill] the
+  /// tab, [RawStyle.foreground] the figure.
   final KeycapStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tagStyle], const {});
+    final layered = RawStyleOf([style, theme.tagStyle], const {});
     final fill = layered.fill ?? c.accent.top;
     final n = count;
     final child = n == null
@@ -310,15 +310,15 @@ class KeycapTag extends StatelessWidget {
   /// A glyph before the word.
   final IconData? icon;
 
-  /// Overrides, over [KeycapThemeData.tagStyle]: [DesignStyle.foreground]
-  /// its ink, [DesignStyle.fill] its floor.
+  /// Overrides, over [KeycapThemeData.tagStyle]: [RawStyle.foreground]
+  /// its ink, [RawStyle.fill] its floor.
   final KeycapStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tagStyle], const {});
+    final layered = RawStyleOf([style, theme.tagStyle], const {});
     final ink =
         layered.foreground ??
         switch (tone) {
@@ -461,7 +461,7 @@ class KeycapDescriptionList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tableStyle], const {});
+    final layered = RawStyleOf([style, theme.tableStyle], const {});
     final wide = MediaQuery.sizeOf(context).width >= 600;
     final termStyle = theme.textTheme.secondary.copyWith(color: c.inkMuted);
     final valueStyle = theme.textTheme.body

@@ -158,7 +158,7 @@ class _Cap extends StatelessWidget {
 /// by a bar of accent plastic up to it. Drag the key, or tap the slot to
 /// send it there; the arrows step it (by [divisions], else a hundredth).
 /// With [divisions] at most 20 the slot is notched. Built on ui_core's
-/// `DesignValueHandle`.
+/// `RawValueHandle`.
 ///
 /// ```dart
 /// KeycapSlider(value: size, min: 12, max: 24, divisions: 6, semanticLabel: 'Text size', onChanged: (v) => setState(() => size = v))
@@ -214,7 +214,7 @@ class KeycapSlider extends StatefulWidget {
   /// Whether it takes focus when it first appears.
   final bool autofocus;
 
-  /// Overrides, over [KeycapThemeData.sliderStyle]: [DesignStyle.fill] the
+  /// Overrides, over [KeycapThemeData.sliderStyle]: [RawStyle.fill] the
   /// bar's plastic.
   final KeycapStyle? style;
 
@@ -258,7 +258,7 @@ class _KeycapSliderState extends State<KeycapSlider> {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([widget.style, theme.sliderStyle], const {});
+    final layered = RawStyleOf([widget.style, theme.sliderStyle], const {});
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final enabled = widget.onChanged != null;
     final span = widget.max - widget.min;
@@ -328,7 +328,7 @@ class _KeycapSliderState extends State<KeycapSlider> {
                         top: 0,
                         width: _reach,
                         height: theme.controlHeight,
-                        child: DesignValueHandle(
+                        child: RawValueHandle(
                           value: widget.value
                               .clamp(widget.min, widget.max)
                               .toDouble(),
@@ -432,7 +432,7 @@ class KeycapRangeSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.sliderStyle], const {});
+    final layered = RawStyleOf([style, theme.sliderStyle], const {});
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return SizedBox(
       height: theme.controlHeight,
@@ -531,7 +531,7 @@ class KeycapRating extends StatelessWidget {
   /// Its name, for a screen reader.
   final String? semanticLabel;
 
-  /// Overrides, over [KeycapThemeData.sliderStyle]: [DesignStyle.fill] the
+  /// Overrides, over [KeycapThemeData.sliderStyle]: [RawStyle.fill] the
   /// filled stars' ink.
   final KeycapStyle? style;
 
@@ -539,7 +539,7 @@ class KeycapRating extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.sliderStyle], const {});
+    final layered = RawStyleOf([style, theme.sliderStyle], const {});
     final on = layered.fill ?? c.accentInk;
     return RawRating(
       value: value,

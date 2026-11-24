@@ -39,7 +39,7 @@ void main() {
     keycapInventory.verify();
     expect(
       keycapInventory.presentCount + keycapInventory.absentCount,
-      DesignInventoryRow.all.length,
+      RawInventoryRow.all.length,
     );
     expect(keycapInventory.absentCount, 1);
   });

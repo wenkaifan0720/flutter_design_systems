@@ -21,15 +21,15 @@ import 'page_transitions.dart';
 /// ```dart
 /// final wide = KeycapStyle(padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32)));
 /// ```
-typedef KeycapStyle = DesignStyle;
+typedef KeycapStyle = RawStyle;
 
-/// How tight Keycap's controls stand: [DesignDensity.standard] (a 48 px
-/// key), [DesignDensity.comfortable] (44) or [DesignDensity.compact] (40). A
+/// How tight Keycap's controls stand: [RawDensity.standard] (a 48 px
+/// key), [RawDensity.comfortable] (44) or [RawDensity.compact] (40). A
 /// control's tap target stays at the floor for the input whatever the
 /// density. [KeycapThemeData.density] defaults to
-/// [DesignDensity.adaptivePlatformDensity]: compact on a desktop, standard on
+/// [RawDensity.adaptivePlatformDensity]: compact on a desktop, standard on
 /// a phone.
-typedef KeycapDensity = DesignDensity;
+typedef KeycapDensity = RawDensity;
 
 /// The relative luminance contrast of [a] on [b], 1 to 21, as WCAG measures
 /// it.
@@ -813,7 +813,7 @@ abstract final class KeycapMetrics {
   /// A panel of keycap plastic over the keyboard (a dialog, a sheet, a menu).
   static const double panelRadius = 16;
 
-  /// A key's height at [DesignDensity.standard], before density.
+  /// A key's height at [RawDensity.standard], before density.
   static const double controlHeight = 48;
 
   /// The gap between keys in a row: a keyboard's pitch.
@@ -874,7 +874,7 @@ abstract final class KeycapMetrics {
   }
 }
 
-/// Keycap's spacing, on a 4 px grid ([DesignSpacingScope] declares it).
+/// Keycap's spacing, on a 4 px grid ([RawSpacingScope] declares it).
 abstract final class KeycapSpacing {
   /// The grid every gap, inset and offset stands on.
   static const double grid = 4;
@@ -915,7 +915,7 @@ abstract final class KeycapSpacing {
 /// Keycap's motion: springs, short and calm. A key goes down onto its switch
 /// crisply and comes back up without a bounce; a latch settles a little lower
 /// and stays; a panel is laid over the keyboard and lifted off. Run them
-/// through `DesignMotionPolicy`, which critically damps every spring under
+/// through `RawMotionPolicy`, which critically damps every spring under
 /// Reduce Motion.
 abstract final class KeycapMotion {
   /// A key going down onto its switch.
@@ -971,7 +971,7 @@ class KeycapThemeData with Diagnosticable {
   KeycapThemeData({
     required this.colors,
     KeycapTextTheme? textTheme,
-    DesignDensity? density,
+    RawDensity? density,
     this.backlight = true,
     this.buttonStyle,
     this.modifierButtonStyle,
@@ -1000,18 +1000,18 @@ class KeycapThemeData with Diagnosticable {
     this.chartStyle,
     this.avatarStyle,
   }) : textTheme = textTheme ?? KeycapTextTheme.from(colors),
-       density = density ?? DesignDensity.adaptivePlatformDensity;
+       density = density ?? RawDensity.adaptivePlatformDensity;
 
   /// The classic colourway in daylight.
-  factory KeycapThemeData.light({DesignDensity? density}) =>
+  factory KeycapThemeData.light({RawDensity? density}) =>
       KeycapThemeData(colors: KeycapColors.light, density: density);
 
   /// The classic colourway by night.
-  factory KeycapThemeData.dark({DesignDensity? density}) =>
+  factory KeycapThemeData.dark({RawDensity? density}) =>
       KeycapThemeData(colors: KeycapColors.dark, density: density);
 
   /// [brightness]'s theme: [KeycapThemeData.light] or [KeycapThemeData.dark].
-  factory KeycapThemeData.of(Brightness brightness, {DesignDensity? density}) =>
+  factory KeycapThemeData.of(Brightness brightness, {RawDensity? density}) =>
       brightness == Brightness.light
       ? KeycapThemeData.light(density: density)
       : KeycapThemeData.dark(density: density);
@@ -1045,7 +1045,7 @@ class KeycapThemeData with Diagnosticable {
     Color? alpha,
     String? fontFamily,
     String? fontPackage,
-    DesignDensity? density,
+    RawDensity? density,
   }) {
     final colors = KeycapColors.from(
       brightness: brightness,
@@ -1072,7 +1072,7 @@ class KeycapThemeData with Diagnosticable {
   final KeycapTextTheme textTheme;
 
   /// How tight the controls stand.
-  final DesignDensity density;
+  final RawDensity density;
 
   /// Whether the accent key's backlight shows round its foot by night. Off
   /// under the platform's high contrast whatever this says.
@@ -1181,7 +1181,7 @@ class KeycapThemeData with Diagnosticable {
   KeycapThemeData copyWith({
     KeycapColors? colors,
     KeycapTextTheme? textTheme,
-    DesignDensity? density,
+    RawDensity? density,
     bool? backlight,
     KeycapStyle? buttonStyle,
     KeycapStyle? modifierButtonStyle,
@@ -1278,11 +1278,11 @@ class KeycapThemeData with Diagnosticable {
     if (identical(a, b)) return a;
     final x = a._styles;
     final y = b._styles;
-    KeycapStyle? at(int i) => DesignStyle.lerp(x[i], y[i], t);
+    KeycapStyle? at(int i) => RawStyle.lerp(x[i], y[i], t);
     return KeycapThemeData(
       colors: KeycapColors.lerp(a.colors, b.colors, t),
       textTheme: KeycapTextTheme.lerp(a.textTheme, b.textTheme, t),
-      density: DesignDensity.lerp(a.density, b.density, t),
+      density: RawDensity.lerp(a.density, b.density, t),
       backlight: t < 0.5 ? a.backlight : b.backlight,
       buttonStyle: at(0),
       modifierButtonStyle: at(1),
@@ -1337,7 +1337,7 @@ class KeycapThemeData with Diagnosticable {
     properties
       ..add(DiagnosticsProperty<KeycapColors>('colors', colors))
       ..add(DiagnosticsProperty<KeycapTextTheme>('textTheme', textTheme))
-      ..add(DiagnosticsProperty<DesignDensity>('density', density))
+      ..add(DiagnosticsProperty<RawDensity>('density', density))
       ..add(
         FlagProperty('backlight', value: backlight, ifFalse: 'no backlight'),
       );
@@ -1348,7 +1348,7 @@ class KeycapThemeData with Diagnosticable {
 /// (`MaterialApp(builder: (context, child) => KeycapTheme(data: ..., child: child!))`).
 ///
 /// It sets the words, the glyphs and the text selection in the look's ink,
-/// declares the look's 4 px grid ([DesignSpacingScope]) and its tap floors
+/// declares the look's 4 px grid ([RawSpacingScope]) and its tap floors
 /// ([tapTargets]), and lays a Material theme under the look (its density
 /// pinned, its ink off, its page change Keycap's) so the Material parts it
 /// draws with never show.
@@ -1368,7 +1368,7 @@ class KeycapTheme extends StatelessWidget {
 
   /// The tap floors every Keycap control stands at: 48 by 48 for a finger,
   /// 24 by 24 for a pointer.
-  static const DesignTapTargets tapTargets = DesignTapTargets(
+  static const RawTapTargets tapTargets = RawTapTargets(
     touch: Size(48, 48),
     pointer: Size(24, 24),
   );
@@ -1402,9 +1402,9 @@ class KeycapTheme extends StatelessWidget {
       theme: this,
       child: Theme(
         data: material,
-        child: DesignSpacingScope(
-          spacing: DesignSpacing.fallback,
-          child: DesignTapTargetScope(
+        child: RawSpacingScope(
+          spacing: RawSpacing.fallback,
+          child: RawTapTargetScope(
             targets: tapTargets,
             child: DefaultSelectionStyle(
               cursorColor: colors.accent.top,
@@ -1554,7 +1554,7 @@ class _AnimatedKeycapThemeState extends State<AnimatedKeycapTheme>
     if (widget.data == _to) return;
     _from = KeycapThemeData.lerp(_from, _to, _t.value);
     _to = widget.data;
-    if (designReduceMotionOf(context)) {
+    if (rawReduceMotionOf(context)) {
       _t.value = 1;
       return;
     }
@@ -1562,7 +1562,7 @@ class _AnimatedKeycapThemeState extends State<AnimatedKeycapTheme>
       ..value = 0
       ..springTo(
         1,
-        designSpring(
+        rawSpring(
           dampingRatio: 1,
           stiffness: KeycapMotion.colour.stiffness / 4,
         ),

@@ -1,5 +1,5 @@
 /// Keycap's answer to the shared component list (ui_core's
-/// [DesignInventoryRow.all]): for each row the part that answers it, as a
+/// [RawInventoryRow.all]): for each row the part that answers it, as a
 /// small live specimen, or why a keyboard leaves it out. The gallery lists
 /// it, and a test verifies it (every row answered once, no reason a
 /// to-do).
@@ -36,11 +36,7 @@ import 'wayfinding.dart';
 // The inventory's own types, so an app (and the gallery) can list and
 // verify keycapInventory through the look's barrel.
 export 'package:ui_core/inventory.dart'
-    show
-        DesignInventory,
-        DesignInventoryEntry,
-        DesignInventoryGallery,
-        DesignInventoryRow;
+    show RawInventory, RawInventoryEntry, RawInventoryGallery, RawInventoryRow;
 
 void _none() {}
 
@@ -56,7 +52,7 @@ SingleActivator _primary(LogicalKeyboardKey key) {
 /// [_primary]'s shortcut as the platform writes it, in words (Rubik draws
 /// no ⌘).
 String _label(BuildContext context, LogicalKeyboardKey key) =>
-    designShortcutLabel(context, _primary(key), appleSymbols: false);
+    rawShortcutLabel(context, _primary(key), appleSymbols: false);
 
 /// A value a specimen holds and changes, so it can be worked.
 class _Held<T> extends StatefulWidget {
@@ -181,11 +177,11 @@ abstract final class _Why {
 }
 
 /// Keycap's inventory: every row of the shared component list, answered.
-final DesignInventory keycapInventory = DesignInventory(
+final RawInventory keycapInventory = RawInventory(
   look: 'Keycap',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (_) => const Wrap(
         spacing: KeycapSpacing.small,
@@ -208,7 +204,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (_) => const KeycapIconButton(
         icon: Icon(LucideIcons.pin),
@@ -216,8 +212,8 @@ final DesignInventory keycapInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent('FloatingActionButton', _Why.fab),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('FloatingActionButton', _Why.fab),
+    RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const KeycapToolbar(
         semanticLabel: 'Text',
@@ -240,7 +236,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (_) => _Held<Set<String>>(
         const {'bold'},
@@ -268,7 +264,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (_) => const KeycapSplitButton(
         label: 'Export',
@@ -280,20 +276,20 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (_) => const KeycapLink(onPressed: _none, child: Text('Formatting help')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Kbd',
       (_) => KeycapKbd.shortcut(_primary(LogicalKeyboardKey.keyK)),
     ),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (_) => const KeycapTextField(labelText: 'Title', hintText: 'Garden plan'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (_) => const KeycapTextField(
         labelText: 'Note',
@@ -302,15 +298,15 @@ final DesignInventory keycapInventory = DesignInventory(
         minLines: 3,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (_) => const KeycapSearchField(hintText: 'Search notes'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (_) => const KeycapPasswordField(labelText: 'Password'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (_) => const KeycapInputGroup(
         labelText: 'Address',
@@ -318,11 +314,11 @@ final DesignInventory keycapInventory = DesignInventory(
         suffixText: '.notes',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputOtp',
       (_) => const KeycapOtpField(semanticLabel: 'Sign-in code'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       (_) => _Held<double?>(
         14,
@@ -336,7 +332,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (_) => _Held<String>(
         'edited',
@@ -352,7 +348,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (_) => _Held<String?>(
         null,
@@ -364,7 +360,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (_) => _Held<List<String>>(
         const ['garden'],
@@ -376,7 +372,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (_) => _Held<bool>(
         true,
@@ -387,7 +383,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (_) => _Held<String>(
         'list',
@@ -400,7 +396,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (_) => _Held<bool>(
         true,
@@ -408,7 +404,7 @@ final DesignInventory keycapInventory = DesignInventory(
             KeycapSwitch(value: v, onChanged: set, semanticLabel: 'Sync'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (_) => _Held<double>(
         0.4,
@@ -420,7 +416,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (_) => _Held<RawRangeValues>(
         const RawRangeValues(200, 800),
@@ -434,7 +430,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (_) => _Held<Set<String>>(
         const {'list'},
@@ -448,7 +444,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (_) => _Held<bool>(
         true,
@@ -461,7 +457,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (_) => _Held<double>(
         4,
@@ -469,7 +465,7 @@ final DesignInventory keycapInventory = DesignInventory(
             KeycapRating(value: v, onChanged: set, semanticLabel: 'How useful'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (_) => const KeycapDropZone(
         label: 'Drop a file to attach',
@@ -478,7 +474,7 @@ final DesignInventory keycapInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (_) => _Held<DateTime?>(
         DateTime(2026, 11, 20),
@@ -492,7 +488,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (_) => _Held<RawDateRange?>(
         RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
@@ -506,7 +502,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (_) => _Held<RawTimeOfDay?>(
         const RawTimeOfDay(hour: 9, minute: 30),
@@ -514,7 +510,7 @@ final DesignInventory keycapInventory = DesignInventory(
             KeycapTimePicker(labelText: 'At', value: v, onChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (_) => _Owned<RawCalendarController>(
         () => RawCalendarController(
@@ -529,7 +525,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'WheelPicker',
       (_) => _Held<List<int>>(
         const [2],
@@ -553,7 +549,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ColorPicker',
       (_) => _Owned<RawColorController>(
         () => RawColorController(const Color(0xFF2F59CF)),
@@ -561,7 +557,7 @@ final DesignInventory keycapInventory = DesignInventory(
             SizedBox(width: 280, child: KeycapColorPicker(controller: c)),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (_) => const KeycapField(
         labelText: 'Folder name',
@@ -571,11 +567,11 @@ final DesignInventory keycapInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (_) => const KeycapAppBar(title: 'Garden plan', onBack: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (_) => _Held<int>(
         0,
@@ -586,7 +582,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (_) => _Held<int>(
         0,
@@ -597,7 +593,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => _Held<int>(
         0,
@@ -608,7 +604,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (_) => _Held<String>(
         'all',
@@ -623,7 +619,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (_) => const KeycapBreadcrumb(
         crumbs: [
@@ -633,7 +629,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (_) => _Held<int>(
         3,
@@ -641,14 +637,14 @@ final DesignInventory keycapInventory = DesignInventory(
             KeycapPagination(page: p, pageCount: 9, onPageChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (_) => const KeycapStepProgress(
         steps: ['Account', 'Folders', 'Sync', 'Done'],
         currentStep: 1,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (_) => _Held<int>(
         1,
@@ -656,7 +652,7 @@ final DesignInventory keycapInventory = DesignInventory(
             KeycapPageDots(pageCount: 4, page: i, onPageChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MenuBar',
       (context) => KeycapMenuBar(
         menus: [
@@ -684,7 +680,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Command',
       (context) => SizedBox(
         width: 340,
@@ -711,7 +707,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (_) => _Held<int>(
         0,
@@ -724,12 +720,12 @@ final DesignInventory keycapInventory = DesignInventory(
       ),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (_) =>
           const KeycapCard(child: Text('Sow the beans after the last frost.')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (_) => const KeycapListTile(
         title: 'Garden plan',
@@ -737,7 +733,7 @@ final DesignInventory keycapInventory = DesignInventory(
         onTap: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (_) => const KeycapListGroup(
         header: 'Account',
@@ -747,18 +743,18 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (_) => const KeycapSectionHeader('Pinned'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (_) => const KeycapDisclosure(
         title: 'Formatting',
         child: Text('Start a line with a dash to make a list.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (_) => const KeycapTable(
         columns: [
@@ -771,7 +767,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DataTable',
       (_) => _Owned<RawDataTableController<_Note>>(
         () => RawDataTableController<_Note>(
@@ -798,9 +794,9 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present('Divider', (_) => const KeycapDivider()),
-    DesignInventoryEntry.present('ScrollArea', (_) => const _Scrolled()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Divider', (_) => const KeycapDivider()),
+    RawInventoryEntry.present('ScrollArea', (_) => const _Scrolled()),
+    RawInventoryEntry.present(
       'Resizable',
       (_) => const KeycapSplitView(
         minFirst: 80,
@@ -809,7 +805,7 @@ final DesignInventory keycapInventory = DesignInventory(
         second: Center(child: Text('Garden plan')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CarouselView',
       (_) => KeycapCarousel(
         itemCount: 3,
@@ -820,7 +816,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (_) => _Held<List<String>>(
         const ['Work', 'Home', 'Ideas'],
@@ -836,7 +832,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SwipeActions',
       (_) => const KeycapSwipeActions(
         endActions: [
@@ -845,7 +841,7 @@ final DesignInventory keycapInventory = DesignInventory(
         child: KeycapListTile(title: 'Train times', trailingText: '96 words'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RefreshIndicator',
       (_) => KeycapRefresh(
         onRefresh: () => Future<void>.delayed(const Duration(seconds: 1)),
@@ -857,10 +853,10 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TreeView',
-      (_) => _Owned<DesignTreeController<String>>(
-        () => DesignTreeController<String>(
+      (_) => _Owned<RawTreeController<String>>(
+        () => RawTreeController<String>(
           roots: const ['Home', 'Work'],
           expanded: const ['Home'],
           childrenOf: (node) => switch (node) {
@@ -872,7 +868,7 @@ final DesignInventory keycapInventory = DesignInventory(
         (context, c) => KeycapTree<String>(controller: c, labelOf: (n) => n),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (_) => const KeycapTimeline(
         entries: [
@@ -890,18 +886,18 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (_) => const KeycapAvatar(name: 'Ada Brook'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (_) => const KeycapAvatarGroup(
         names: ['Ada Brook', 'Sam Lee', 'Kit Ward', 'Jo Hart', 'Ravi Shah'],
       ),
     ),
-    DesignInventoryEntry.present('Badge', (_) => const KeycapBadge(count: 3)),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Badge', (_) => const KeycapBadge(count: 3)),
+    RawInventoryEntry.present(
       'Tag',
       (_) => const Wrap(
         spacing: KeycapSpacing.small,
@@ -912,7 +908,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Media',
       (_) => const SizedBox(
         width: 240,
@@ -924,7 +920,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (_) => const KeycapEmptyState(
         title: 'No notes yet',
@@ -933,7 +929,7 @@ final DesignInventory keycapInventory = DesignInventory(
         action: KeycapButton.accent(onPressed: _none, child: Text('New note')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (_) => const KeycapDescriptionList(
         items: [
@@ -944,7 +940,7 @@ final DesignInventory keycapInventory = DesignInventory(
       ),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (_) => const KeycapDialog(
         title: 'Delete this note?',
@@ -959,7 +955,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (_) => const KeycapSheet(
         title: 'Sort',
@@ -967,7 +963,7 @@ final DesignInventory keycapInventory = DesignInventory(
         child: Text('Last edited first'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (_) => const SizedBox(
         width: 300,
@@ -978,7 +974,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (_) => const KeycapActionSheet(
         title: 'Garden plan',
@@ -993,7 +989,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (_) => KeycapPopover(
         semanticLabel: 'Word count',
@@ -1002,14 +998,14 @@ final DesignInventory keycapInventory = DesignInventory(
         content: (context, close) => const Text('412 words, 2,301 letters'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'HoverCard',
       (_) => KeycapHoverCard(
         card: (context) => const Text('Ada Brook, editing since Monday'),
         child: const KeycapLink(onPressed: _none, child: Text('Ada')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (_) => const KeycapTooltip(
         message: 'Pin to the top',
@@ -1020,7 +1016,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (_) => KeycapMenu(
         semanticLabel: 'Note',
@@ -1041,7 +1037,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (context) => KeycapButton(
         onPressed: () => showKeycapToast(
@@ -1053,7 +1049,7 @@ final DesignInventory keycapInventory = DesignInventory(
         child: const Text('Move a note'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (_) => const KeycapBanner(
         title: 'Offline',
@@ -1063,15 +1059,15 @@ final DesignInventory keycapInventory = DesignInventory(
       ),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (_) => const KeycapProgressBar(value: 0.4, semanticLabel: 'Exporting'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (_) => const KeycapSpinner(semanticLabel: 'Syncing'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (_) => const Row(
         children: [
@@ -1090,7 +1086,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (_) => const KeycapStatusView(
         status: KeycapStatus.error,
@@ -1099,7 +1095,7 @@ final DesignInventory keycapInventory = DesignInventory(
         action: KeycapButton.accent(onPressed: _none, child: Text('Try again')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (_) => const KeycapMeter(
         value: 0.62,
@@ -1108,7 +1104,7 @@ final DesignInventory keycapInventory = DesignInventory(
       ),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (_) => const KeycapLineChart(
         semanticLabel: 'Words written by month',
@@ -1119,7 +1115,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (_) => const KeycapBarChart(
         semanticLabel: 'Notes by folder',
@@ -1129,7 +1125,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (_) => const KeycapAreaChart(
         semanticLabel: 'Notes by week',
@@ -1139,7 +1135,7 @@ final DesignInventory keycapInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (_) => const KeycapDonutChart(
         semanticLabel: 'Notes by folder',
@@ -1147,7 +1143,7 @@ final DesignInventory keycapInventory = DesignInventory(
         slices: [('Work', 14), ('Home', 9), ('Ideas', 21)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (_) => const KeycapSparkline(
         values: [3, 5, 4, 7, 6, 9],

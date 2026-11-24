@@ -20,7 +20,7 @@ import 'select.dart';
 import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignOverlayAnchor;
+export 'package:ui_core/ui_core.dart' show RawOverlayAnchor;
 export 'package:ui_core/ui_core.dart' show RawCommand;
 export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 
@@ -111,8 +111,7 @@ class KeycapMenu extends StatelessWidget {
   final List<RawMenuEntry> entries;
 
   /// Draws the key that opens it.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
-  builder;
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor) builder;
 
   /// The menu's name, for a screen reader.
   final String? semanticLabel;
@@ -129,7 +128,9 @@ class KeycapMenu extends StatelessWidget {
     ),
     dampingRatio: KeycapMotion.panel.dampingRatio,
     stiffness: KeycapMotion.panel.stiffness,
-    anchorBuilder: builder,
+    // While it is open the key's tooltip stays away: the menu is in sight.
+    anchorBuilder: (context, anchor) =>
+        _TooltipsHeld(held: anchor.isOpen, child: builder(context, anchor)),
     overlayBuilder: (context, info) => _panel(info, [
       for (final entry in entries)
         if (entry.divider)
@@ -282,7 +283,7 @@ class KeycapMenuBar extends StatelessWidget {
                 ),
                 child: Center(
                   widthFactor: 1,
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(
                       entry.label,
@@ -313,7 +314,7 @@ class KeycapMenuBar extends StatelessWidget {
 class _PaletteWell extends StatelessWidget {
   const _PaletteWell({required this.field, required this.hint});
 
-  final DesignComboboxField field;
+  final RawComboboxField field;
   final String hint;
 
   @override
@@ -333,12 +334,12 @@ class _PaletteWell extends StatelessWidget {
             Icon(LucideIcons.search, size: 20, color: c.inkMuted),
             const SizedBox(width: KeycapSpacing.small),
             Expanded(
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: theme.capHeightFactor,
                 child: Semantics(
                   container: true,
                   label: hint,
-                  child: DesignTextEntryBox(
+                  child: RawTextEntryBox(
                     minHeight: theme.controlHeight,
                     controller: field.controller,
                     hint: Text(
@@ -501,7 +502,7 @@ Future<void> showKeycapCommandPalette({
 }) {
   final c = KeycapTheme.of(context).colors;
   final words = RawWidgetsLocalizations.of(context);
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: c.scrim,
     palette: (run) => _palette(
@@ -544,8 +545,7 @@ class KeycapPopover extends StatelessWidget {
   });
 
   /// Draws the key that opens it.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
-  builder;
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor) builder;
 
   /// What it holds; `close` puts it away.
   final Widget Function(BuildContext context, VoidCallback close) content;
@@ -556,7 +556,7 @@ class KeycapPopover extends StatelessWidget {
   /// Its width.
   final double width;
 
-  /// Overrides, over [KeycapThemeData.tooltipStyle]: [DesignStyle.fill] its
+  /// Overrides, over [KeycapThemeData.tooltipStyle]: [RawStyle.fill] its
   /// plastic.
   final KeycapStyle? style;
 
@@ -572,7 +572,9 @@ class KeycapPopover extends StatelessWidget {
     ),
     dampingRatio: KeycapMotion.panel.dampingRatio,
     stiffness: KeycapMotion.panel.stiffness,
-    anchorBuilder: builder,
+    // While it is open the key's tooltip stays away: the menu is in sight.
+    anchorBuilder: (context, anchor) =>
+        _TooltipsHeld(held: anchor.isOpen, child: builder(context, anchor)),
     overlayBuilder: (context, info) => KeycapMenuReveal(
       animation: info.animation,
       below: info.side != RawPopoverSide.above,
@@ -604,7 +606,7 @@ class _Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
+    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
     return Padding(
       padding: const EdgeInsets.only(bottom: KeycapSpacing.small),
       child: KeycapPanel(
@@ -710,15 +712,20 @@ class KeycapTooltip extends StatelessWidget {
   /// What it names.
   final Widget child;
 
-  /// Overrides, over [KeycapThemeData.tooltipStyle]: [DesignStyle.fill] the
-  /// tab, [DesignStyle.foreground] its words.
+  /// Overrides, over [KeycapThemeData.tooltipStyle]: [RawStyle.fill] the
+  /// tab, [RawStyle.foreground] its words.
   final KeycapStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
+    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
+    // Over a key whose menu or popover is open the tab is held back, as a
+    // modal menu's barrier keeps a pointer from the key under it.
+    final held =
+        context.dependOnInheritedWidgetOfExactType<_TooltipsHeld>()?.held ??
+        false;
     // One node, the tooltip on its control, as the published look read.
     return MergeSemantics(
       child: RawTooltipPlacement(
@@ -734,34 +741,36 @@ class KeycapTooltip extends StatelessWidget {
           semanticsTooltip: message,
           hoverDelay: const Duration(milliseconds: 500),
           positionDelegate: positionDelegate,
-          tooltipBuilder: (context, animation) => FadeTransition(
-            opacity: animation,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: KeycapSpacing.small + 2,
-                vertical: KeycapSpacing.tight + 2,
-              ),
-              decoration: BoxDecoration(
-                color: layered.fill ?? c.toast,
-                borderRadius: BorderRadius.circular(
-                  KeycapMetrics.smallKeyRadius,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: c.shadow.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          tooltipBuilder: (context, animation) => held
+              ? const SizedBox.shrink()
+              : FadeTransition(
+                  opacity: animation,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: KeycapSpacing.small + 2,
+                      vertical: KeycapSpacing.tight + 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: layered.fill ?? c.toast,
+                      borderRadius: BorderRadius.circular(
+                        KeycapMetrics.smallKeyRadius,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: c.shadow.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      message,
+                      style: theme.textTheme.secondary.copyWith(
+                        color: layered.foreground ?? c.onToast,
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: Text(
-                message,
-                style: theme.textTheme.secondary.copyWith(
-                  color: layered.foreground ?? c.onToast,
                 ),
-              ),
-            ),
-          ),
           // It shows on the keyboard's focus as well.
           child: RawTooltipFocusFix(child: child),
         ),
@@ -774,4 +783,15 @@ class KeycapTooltip extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(StringProperty('message', message));
   }
+}
+
+/// Whether the [KeycapTooltip]s under it hold their tabs back: the key's own
+/// menu or popover is open.
+class _TooltipsHeld extends InheritedWidget {
+  const _TooltipsHeld({required this.held, required super.child});
+
+  final bool held;
+
+  @override
+  bool updateShouldNotify(_TooltipsHeld oldWidget) => held != oldWidget.held;
 }

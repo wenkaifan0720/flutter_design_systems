@@ -43,8 +43,8 @@ class KeycapDialog extends StatelessWidget {
   /// Its keys, the main one last.
   final List<Widget> actions;
 
-  /// Overrides, over [KeycapThemeData.dialogStyle]: [DesignStyle.fill] the
-  /// panel, [DesignStyle.padding] the room inside it.
+  /// Overrides, over [KeycapThemeData.dialogStyle]: [RawStyle.fill] the
+  /// panel, [RawStyle.padding] the room inside it.
   final KeycapStyle? style;
 
   /// The widest a dialog stands.
@@ -54,7 +54,7 @@ class KeycapDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final narrow = MediaQuery.sizeOf(context).width < 600;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: maxWidth),
@@ -141,7 +141,7 @@ Future<T?> showKeycapDialog<T>({
 }) {
   final theme = KeycapTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       isAlert: isAlert,
       barrierDismissible: barrierDismissible,
       barrierColor: theme.colors.scrim,
@@ -285,7 +285,7 @@ class KeycapSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final media = MediaQuery.of(context);
     final words = RawWidgetsLocalizations.of(context);
     const top = Radius.circular(KeycapMetrics.panelRadius);
@@ -346,7 +346,7 @@ class KeycapSheet extends StatelessWidget {
                                 semanticLabel: words.closeButtonLabel,
                                 onPressed: onClose,
                                 // A finger's floor even in the sheet's head.
-                                style: const DesignStyle(
+                                style: const RawStyle(
                                   minimumSize: WidgetStatePropertyAll(
                                     Size.square(44),
                                   ),
@@ -516,8 +516,8 @@ class KeycapToaster extends StatelessWidget {
   /// The app.
   final Widget child;
 
-  /// Overrides, over [KeycapThemeData.toastStyle]: [DesignStyle.fill] the
-  /// panel, [DesignStyle.foreground] its words.
+  /// Overrides, over [KeycapThemeData.toastStyle]: [RawStyle.fill] the
+  /// panel, [RawStyle.foreground] its words.
   final KeycapStyle? style;
 
   @override
@@ -549,7 +549,7 @@ class _Toast extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final t = details.toast;
-    final layered = DesignStyleOf([style, theme.toastStyle], const {});
+    final layered = RawStyleOf([style, theme.toastStyle], const {});
     final panel = layered.fill ?? c.toast;
     final ink = layered.foreground ?? c.onToast;
     final words = RawWidgetsLocalizations.of(context);

@@ -156,14 +156,14 @@ class KeycapProgressBar extends StatelessWidget {
   /// What it is the progress of.
   final String? semanticLabel;
 
-  /// Overrides, over [KeycapThemeData.progressStyle]: [DesignStyle.fill]
-  /// the bar's plastic, [DesignStyle.minimumSize] the slot's height.
+  /// Overrides, over [KeycapThemeData.progressStyle]: [RawStyle.fill]
+  /// the bar's plastic, [RawStyle.minimumSize] the slot's height.
   final KeycapStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final layered = DesignStyleOf([style, theme.progressStyle], const {});
+    final layered = RawStyleOf([style, theme.progressStyle], const {});
     final h = layered.minimumSize?.height ?? 8;
     final color = layered.fill ?? theme.colors.accent.top;
     final v = value;
@@ -239,7 +239,7 @@ class KeycapSpinner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([theme.progressStyle], const {});
+    final layered = RawStyleOf([theme.progressStyle], const {});
     final arc = color ?? layered.fill ?? c.accent.top;
     final stroke = math.max(2.0, size / 8);
     final v = value;
@@ -362,7 +362,7 @@ class KeycapMeter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.progressStyle], const {});
+    final layered = RawStyleOf([style, theme.progressStyle], const {});
     final v = value.clamp(0.0, 1.0);
     final over = high != null && v > high!;
     final figure =
@@ -544,7 +544,7 @@ class KeycapBanner extends StatelessWidget {
   /// Puts it away; no close key when null.
   final VoidCallback? onDismissed;
 
-  /// Overrides, over [KeycapThemeData.bannerStyle]: [DesignStyle.fill] its
+  /// Overrides, over [KeycapThemeData.bannerStyle]: [RawStyle.fill] its
   /// floor.
   final KeycapStyle? style;
 
@@ -552,7 +552,7 @@ class KeycapBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.bannerStyle], const {});
+    final layered = RawStyleOf([style, theme.bannerStyle], const {});
     final (icon, ink) = _toneOf(tone, c);
     final wide = MediaQuery.sizeOf(context).width >= 600;
     final words = Column(

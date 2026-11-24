@@ -65,7 +65,7 @@ List<Color> _inks(KeycapColors c) => c.brightness == Brightness.light
 /// How a chart writes its figures when the app gives no words for them: in
 /// the reader's digits (Arabic's Arabic-Indic, German's decimal comma), a
 /// scale's ticks at its decimals.
-const _figures = DesignChartValueFormat();
+const _figures = RawChartValueFormat();
 
 /// [v] as [_figures] writes it.
 String _plain(BuildContext context, double v) =>
@@ -108,7 +108,7 @@ class _Well extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    final layered = RawStyleOf([style, theme.chartStyle], const {});
     return SizedBox(
       height: height,
       child: KeycapWell(
@@ -274,21 +274,21 @@ class _SeriesChartState extends State<_SeriesChart> {
         _measure(context, label, axis).width + KeycapSpacing.small,
       ),
     );
-    final chart = DesignChart(
+    final chart = RawChart(
       semanticLabel: widget.semanticLabel,
       series: [
         for (final s in widget.series)
-          DesignChartSeries(
+          RawChartSeries(
             label: s.label,
             points: [
               for (final (i, v) in s.values.take(_count).indexed)
-                DesignChartPoint(i.toDouble(), v),
+                RawChartPoint(i.toDouble(), v),
             ],
           ),
       ],
       xAxis: widget.mark == _Mark.bar
-          ? DesignChartXAxis.band
-          : DesignChartXAxis.linear,
+          ? RawChartXAxis.band
+          : RawChartXAxis.linear,
       categories: widget.labels,
       formatX: (x) {
         final i = x.round();
@@ -300,7 +300,7 @@ class _SeriesChartState extends State<_SeriesChart> {
       // The scale's figures stand beside the plot, as wide as the widest.
       yLabelGutter: (ticks) => math.max(
         32 * factor,
-        DesignScaleTick.widestLabel(
+        RawScaleTick.widestLabel(
               ticks,
               style: axis,
               textScaler: scaler,
@@ -379,7 +379,7 @@ class _SeriesChartState extends State<_SeriesChart> {
 
 /// [child] at the plot's top, on the far side from point [at], so the
 /// point and its neighbours stay in view.
-Widget _farFrom(DesignChartDetails chart, int at, Widget child) {
+Widget _farFrom(RawChartDetails chart, int at, Widget child) {
   final plot = chart.plotArea;
   final left = chart.x.map(at.toDouble()) > plot.center.dx;
   return Positioned(
@@ -459,7 +459,7 @@ class _SeriesPainter extends CustomPainter {
   });
 
   final _Mark mark;
-  final DesignChartDetails chart;
+  final RawChartDetails chart;
   final List<Color> colours;
   final Color rule;
   final Color floor;
@@ -543,7 +543,7 @@ class _SeriesPainter extends CustomPainter {
     }
     if (mark == _Mark.bar) {
       final n = series.length;
-      final band = (chart.x as DesignBandScale).step.abs();
+      final band = (chart.x as RawBandScale).step.abs();
       final gap = band * 0.28;
       final w = (band - gap) / n;
       for (final (si, values) in series.indexed) {
@@ -936,11 +936,11 @@ class _KeycapDonutChartState extends State<KeycapDonutChart> {
         ),
       );
     } else {
-      ring = DesignPieChart(
+      ring = RawPieChart(
         semanticLabel: widget.semanticLabel,
         slices: [
           for (final (label, value) in widget.slices)
-            DesignPieSlice(label: label, value: math.max(0.0, value)),
+            RawPieSlice(label: label, value: math.max(0.0, value)),
         ],
         holeRadius: 0.62,
         formatValue: widget.valueText,
@@ -1079,7 +1079,7 @@ class _DonutPainter extends CustomPainter {
     required this.track,
   });
 
-  final DesignPieChartDetails pie;
+  final RawPieChartDetails pie;
   final List<Color> colours;
   final Color track;
 
@@ -1158,7 +1158,7 @@ class KeycapSparkline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final look = DesignStyleOf([style, theme.chartStyle], const {});
+    final look = RawStyleOf([style, theme.chartStyle], const {});
     return Semantics(
       label: semanticLabel,
       child: ExcludeSemantics(

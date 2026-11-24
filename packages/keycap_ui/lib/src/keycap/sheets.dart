@@ -58,7 +58,7 @@ class KeycapSideSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final words = RawWidgetsLocalizations.of(context);
     final media = MediaQuery.of(context);
     const r = Radius.circular(KeycapMetrics.panelRadius);
@@ -264,7 +264,7 @@ class KeycapActionSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final media = MediaQuery.of(context);
     final words = RawWidgetsLocalizations.of(context);
     const top = Radius.circular(KeycapMetrics.panelRadius);

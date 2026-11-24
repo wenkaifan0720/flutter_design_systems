@@ -32,14 +32,14 @@ class KeycapSectionHeader extends StatelessWidget {
   /// A text key or a count at its end.
   final Widget? trailing;
 
-  /// Overrides: [DesignStyle.foreground], [DesignStyle.textStyle],
-  /// [DesignStyle.padding].
+  /// Overrides: [RawStyle.foreground], [RawStyle.textStyle],
+  /// [RawStyle.padding].
   final KeycapStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final layered = DesignStyleOf([style], const {});
+    final layered = RawStyleOf([style], const {});
     final legend = Semantics(
       header: true,
       label: text,
@@ -323,7 +323,7 @@ class KeycapListTile extends StatelessWidget {
     final c = theme.colors;
     final place = _RowPlace.of(context);
     Widget row(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.listTileStyle], states);
+      final layered = RawStyleOf([style, theme.listTileStyle], states);
       final off = !enabled;
       final ink =
           layered.foreground ??
@@ -341,7 +341,7 @@ class KeycapListTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DesignCapCenter(
+          RawCapCenter(
             capHeightFactor: theme.capHeightFactor,
             child: Text(
               title,
@@ -588,7 +588,7 @@ class KeycapCard extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     Widget well(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.wellStyle], states);
+      final layered = RawStyleOf([style, theme.wellStyle], states);
       return KeycapWell(
         page: true,
         style: style,
@@ -676,7 +676,7 @@ class KeycapValueCap extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Flexible(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(
                       label,

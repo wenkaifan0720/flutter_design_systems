@@ -8,7 +8,6 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
@@ -48,9 +47,9 @@ class KeycapAppBar extends StatelessWidget {
   /// A row under the bar (a tab bar, a search field).
   final Widget? bottom;
 
-  /// Overrides, over [KeycapThemeData.appBarStyle]: [DesignStyle.foreground]
-  /// the title's colour, [DesignStyle.textStyle] its style,
-  /// [DesignStyle.padding] the bar's.
+  /// Overrides, over [KeycapThemeData.appBarStyle]: [RawStyle.foreground]
+  /// the title's colour, [RawStyle.textStyle] its style,
+  /// [RawStyle.padding] the bar's.
   final KeycapStyle? style;
 
   /// The bar's height, under the status bar.
@@ -69,7 +68,7 @@ class KeycapAppBar extends StatelessWidget {
         ),
         semanticLabel: RawWidgetsLocalizations.of(context).backButtonTooltip,
         onPressed: onBack,
-        style: const DesignStyle(
+        style: const RawStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(keySide)),
         ),
       );
@@ -80,7 +79,7 @@ class KeycapAppBar extends StatelessWidget {
         icon: const Icon(LucideIcons.x),
         semanticLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
         onPressed: onClose,
-        style: const DesignStyle(
+        style: const RawStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(keySide)),
         ),
       );
@@ -99,7 +98,7 @@ class KeycapAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final layered = DesignStyleOf([style, theme.appBarStyle], const {});
+    final layered = RawStyleOf([style, theme.appBarStyle], const {});
     final media = MediaQuery.of(context);
     final margin = KeycapSpacing.pageMargin(media.size.width);
     final start = onBack != null ? backKey(context, onBack!) : leading;
@@ -129,7 +128,7 @@ class KeycapAppBar extends StatelessWidget {
                           ? const SizedBox()
                           : Semantics(
                               header: true,
-                              child: DesignCapCenter(
+                              child: RawCapCenter(
                                 capHeightFactor: theme.capHeightFactor,
                                 child: Text(
                                   title!,
@@ -277,7 +276,7 @@ Widget _rowLegend(
         Icon(d.icon, size: 20, color: face.legend),
         const SizedBox(width: KeycapSpacing.medium),
         Expanded(
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: theme.capHeightFactor,
             child: Text(
               d.label,
@@ -357,7 +356,7 @@ class KeycapNavigationBar extends StatelessWidget {
   /// Called with the place chosen.
   final ValueChanged<int> onDestinationSelected;
 
-  /// Overrides, over [KeycapThemeData.navigationStyle]: [DesignStyle.fill]
+  /// Overrides, over [KeycapThemeData.navigationStyle]: [RawStyle.fill]
   /// the strip's colour.
   final KeycapStyle? style;
 
@@ -367,7 +366,7 @@ class KeycapNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final layered = DesignStyleOf([style, theme.navigationStyle], const {});
+    final layered = RawStyleOf([style, theme.navigationStyle], const {});
     final media = MediaQuery.of(context);
     return Semantics(
       container: true,
@@ -666,7 +665,7 @@ class KeycapSideNavigation extends StatelessWidget {
 
 /// An app's frame: its places at a phone's foot below 600 wide, down a
 /// rail to 1024, in a side column wider, and [body] beside them. From 600
-/// it stands on ui_core's `DesignAdaptiveShell`, which moves the keyboard
+/// it stands on ui_core's `RawAdaptiveShell`, which moves the keyboard
 /// between the places and the page.
 ///
 /// ```dart
@@ -750,14 +749,12 @@ class KeycapScaffold extends StatelessWidget {
         ],
       );
     }
-    return DesignAdaptiveShell(
-      mode: width < 1024
-          ? DesignNavigationMode.rail
-          : DesignNavigationMode.sidebar,
+    return RawAdaptiveShell(
+      mode: width < 1024 ? RawNavigationMode.rail : RawNavigationMode.sidebar,
       showNavigation: showNavigation,
       destinations: [
         for (final d in destinations)
-          DesignNavigationDestination(label: d.label, icon: d.icon),
+          RawNavigationDestination(label: d.label, icon: d.icon),
       ],
       selectedIndex: selectedIndex,
       onDestinationSelected: onDestinationSelected,
@@ -767,7 +764,7 @@ class KeycapScaffold extends StatelessWidget {
         return KeyedSubtree(
           key: d.key,
           child: switch (details.mode) {
-            DesignNavigationMode.rail || DesignNavigationMode.bar => _placeKey(
+            RawNavigationMode.rail || RawNavigationMode.bar => _placeKey(
               context,
               details.states,
               current,
@@ -775,7 +772,7 @@ class KeycapScaffold extends StatelessWidget {
               (face) => _stackedLegend(context, d, face, current),
               width: KeycapNavigationRail.keySize.width,
             ),
-            DesignNavigationMode.sidebar => _placeKey(
+            RawNavigationMode.sidebar => _placeKey(
               context,
               details.states,
               current,
@@ -787,9 +784,9 @@ class KeycapScaffold extends StatelessWidget {
         );
       },
       navigationBuilder: (context, details) => switch (details.mode) {
-        DesignNavigationMode.rail || DesignNavigationMode.bar =>
+        RawNavigationMode.rail || RawNavigationMode.bar =>
           KeycapNavigationRail._shell(details.destinations, action: action),
-        DesignNavigationMode.sidebar => KeycapSideNavigation._shell(
+        RawNavigationMode.sidebar => KeycapSideNavigation._shell(
           details.destinations,
           header: header,
           action: wideAction ?? action,

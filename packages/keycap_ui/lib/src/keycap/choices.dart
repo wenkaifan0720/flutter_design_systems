@@ -154,7 +154,7 @@ class KeycapToggleKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final layered = DesignStyleOf([style, theme.toggleStyle], states);
+    final layered = RawStyleOf([style, theme.toggleStyle], states);
     const side = KeycapCheckbox.size;
     var face = keycapKeyFace(
       theme,
@@ -388,7 +388,7 @@ class KeycapRadioGroup<T> extends StatelessWidget {
                   ),
                   const SizedBox(width: KeycapSpacing.medium),
                   Flexible(
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         labelOf(option),
@@ -466,8 +466,8 @@ class KeycapSwitch extends StatelessWidget {
   /// Whether it takes focus when it first appears.
   final bool autofocus;
 
-  /// Overrides, over [KeycapThemeData.toggleStyle]: [DesignStyle.fill]
-  /// the key's plastic, [DesignStyle.edge] the slot's edge.
+  /// Overrides, over [KeycapThemeData.toggleStyle]: [RawStyle.fill]
+  /// the key's plastic, [RawStyle.edge] the slot's edge.
   final KeycapStyle? style;
 
   /// The slot's width.
@@ -489,7 +489,7 @@ class KeycapSwitch extends StatelessWidget {
       semanticLabel: semanticLabel,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.toggleStyle], states);
+        final layered = RawStyleOf([style, theme.toggleStyle], states);
         final off = states.contains(WidgetState.disabled);
         final focused = states.contains(WidgetState.focused);
         final light = c.brightness == Brightness.light;
@@ -780,7 +780,7 @@ class KeycapRowKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.keyRowStyle],
       {...states, if (latched) WidgetState.selected},
     );
@@ -819,7 +819,7 @@ class KeycapRowKey extends StatelessWidget {
                   const SizedBox(width: KeycapSpacing.small),
                 ],
                 Flexible(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(
                       segment.label,
@@ -847,7 +847,7 @@ double _rowKeyWidth(
   KeycapSegment<Object?> segment,
   KeycapStyle? style,
 ) {
-  final layered = DesignStyleOf([style, theme.keyRowStyle], <WidgetState>{});
+  final layered = RawStyleOf([style, theme.keyRowStyle], <WidgetState>{});
   final direction = Directionality.of(context);
   final pad =
       layered.padding(direction) ??

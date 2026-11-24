@@ -17,7 +17,7 @@ const String? keycapFontPackage = 'keycap_ui';
 const String keycapFontFamily = 'Rubik';
 
 /// Rubik's capitals as a fraction of its size (its OS/2 cap height, 700, over
-/// its 1000 units per em): what `DesignCapCenter` centres a legend by.
+/// its 1000 units per em): what `RawCapCenter` centres a legend by.
 const double keycapCapHeightFactor = 0.7;
 
 const Map<int, String> _weights = {

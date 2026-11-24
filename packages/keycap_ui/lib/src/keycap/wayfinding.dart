@@ -346,7 +346,7 @@ class _PageKey extends StatelessWidget {
                   ),
                   child: Center(
                     widthFactor: 1,
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         '$page',

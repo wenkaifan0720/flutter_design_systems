@@ -247,7 +247,7 @@ class KeycapPasswordField extends StatelessWidget {
 /// A field with words printed in its well beside the entry: a unit after
 /// it ("kg", "words"), a prefix before it ("https://"), set off from the
 /// entry by a hairline. The whole well takes focus as one field. Built on
-/// ui_core's `DesignInputGroup`.
+/// ui_core's `RawInputGroup`.
 ///
 /// ```dart
 /// KeycapInputGroup(labelText: 'Goal', suffixText: 'words a day', keyboardType: TextInputType.number)
@@ -403,7 +403,7 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
           Flexible(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: pad),
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: theme.capHeightFactor,
                 child: Text(
                   words,
@@ -425,12 +425,12 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
       errorText: widget.errorText,
       enabled: widget.enabled,
       focusNode: _focus,
-      child: DesignInputGroup(
+      child: RawInputGroup(
         focusNode: _focus,
         enabled: widget.enabled,
         isError: wrong,
         builder: (context, states, child) {
-          final layered = DesignStyleOf([
+          final layered = RawStyleOf([
             widget.style,
             theme.textFieldStyle,
           ], states);
@@ -472,12 +472,12 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: pad),
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: Semantics(
                           container: true,
                           label: widget.semanticLabel ?? widget.labelText,
-                          child: DesignTextEntryBox(
+                          child: RawTextEntryBox(
                             minHeight: theme.controlHeight,
                             controller: _controller,
                             hint: widget.hintText == null
@@ -646,7 +646,7 @@ class KeycapOtpField extends StatelessWidget {
           if (here) WidgetState.focused,
           if (slot.isError) WidgetState.error,
         };
-        final layered = DesignStyleOf([style, theme.textFieldStyle], states);
+        final layered = RawStyleOf([style, theme.textFieldStyle], states);
         return SizedBox(
           width: w,
           height: h,
@@ -777,7 +777,7 @@ class KeycapStepper extends StatelessWidget {
         ],
       ),
       fieldBuilder: (context, d) {
-        final layered = DesignStyleOf([style, theme.textFieldStyle], d.states);
+        final layered = RawStyleOf([style, theme.textFieldStyle], d.states);
         final enabled = !d.states.contains(WidgetState.disabled);
         final focused = d.states.contains(WidgetState.focused);
         // The whole well takes a tap into the number, as a text field's
@@ -804,7 +804,7 @@ class KeycapStepper extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         // Material's field keeps a node of its own; the
                         // stepper's node takes the value from here

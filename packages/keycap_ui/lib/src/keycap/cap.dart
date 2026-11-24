@@ -194,11 +194,11 @@ class KeycapFace with Diagnosticable {
   }
 }
 
-/// Lays a part's `style:` over a face it computed: [DesignStyle.fill]
+/// Lays a part's `style:` over a face it computed: [RawStyle.fill]
 /// recolours the cap's plastic (its walls shaded from it),
-/// [DesignStyle.foreground] its legend, [DesignStyle.edge] its edge and a
-/// `RoundedRectangleBorder` [DesignStyle.shape] its corner.
-extension KeycapStyleFace on DesignStyleOf {
+/// [RawStyle.foreground] its legend, [RawStyle.edge] its edge and a
+/// `RoundedRectangleBorder` [RawStyle.shape] its corner.
+extension KeycapStyleFace on RawStyleOf {
   /// [face] with this style's slots laid over it.
   KeycapFace on(KeycapFace face) {
     final fill = this.fill;
@@ -351,7 +351,7 @@ class _AnimatedKeycapCapState extends State<AnimatedKeycapCap>
         : KeycapMotion.colour;
     _from = now;
     _to = widget.face;
-    final policy = DesignMotionPolicy.of(context);
+    final policy = RawMotionPolicy.of(context);
     _t
       ..value = 0
       ..springTo(
@@ -614,9 +614,9 @@ class KeycapWell extends StatelessWidget {
   /// The room between the well's edge and [child].
   final EdgeInsetsGeometry padding;
 
-  /// Overrides for the well: [DesignStyle.fill] its floor,
-  /// [DesignStyle.edge] its edge, a `RoundedRectangleBorder`
-  /// [DesignStyle.shape] its corners.
+  /// Overrides for the well: [RawStyle.fill] its floor,
+  /// [RawStyle.edge] its edge, a `RoundedRectangleBorder`
+  /// [RawStyle.shape] its corners.
   final KeycapStyle? style;
 
   /// Whether [child] is clipped to the well's corners.
@@ -626,7 +626,7 @@ class KeycapWell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.wellStyle], const {});
+    final layered = RawStyleOf([style, theme.wellStyle], const {});
     final shape = layered.shape;
     final corners =
         (shape is RoundedRectangleBorder ? shape.borderRadius : null) ??
@@ -703,7 +703,7 @@ class _AnimatedWellState extends State<_AnimatedWell>
       ..value = 0
       ..springTo(
         1,
-        DesignMotionPolicy.of(context)
+        RawMotionPolicy.of(context)
             .effects(dampingRatio: s.dampingRatio, stiffness: s.stiffness),
       );
   }

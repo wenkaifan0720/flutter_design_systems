@@ -25,7 +25,7 @@ import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
 export 'package:ui_core/ui_core.dart' show RawColorController;
-export 'package:ui_core/ui_core.dart' show DesignOptionSearch;
+export 'package:ui_core/ui_core.dart' show RawOptionSearch;
 
 /// A field's well, as [KeycapTextField] draws it, for [states].
 Widget _fieldWell(
@@ -36,7 +36,7 @@ Widget _fieldWell(
   EdgeInsetsGeometry padding = EdgeInsets.zero,
 }) {
   final c = theme.colors;
-  final layered = DesignStyleOf([style, theme.textFieldStyle], states);
+  final layered = RawStyleOf([style, theme.textFieldStyle], states);
   final focused = states.contains(WidgetState.focused);
   final wrong = states.contains(WidgetState.error);
   final off = states.contains(WidgetState.disabled);
@@ -90,7 +90,7 @@ class _BareField extends StatelessWidget {
     return Semantics(
       container: ownNode,
       label: semanticLabel,
-      child: DesignTextEntryBox(
+      child: RawTextEntryBox(
         minHeight: minHeight,
         controller: controller,
         hint: hint == null
@@ -272,7 +272,7 @@ class KeycapCombobox<T extends Object> extends StatefulWidget {
   final List<T> options;
 
   /// Looks the words up instead of filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs; null runs it at once.
   final Duration? debounceDuration;
@@ -420,7 +420,7 @@ class _KeycapComboboxState<T extends Object> extends State<KeycapCombobox<T>> {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsetsDirectional.only(start: pad),
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       // Whether the options show under it.
                       child: Semantics(
@@ -507,7 +507,7 @@ class KeycapTagInput<T extends Object> extends StatefulWidget {
   final List<T> options;
 
   /// Looks the words up instead of filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs.
   final Duration? debounceDuration;
@@ -734,7 +734,7 @@ class _TagCap extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Flexible(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: Text(
                           label,
@@ -815,7 +815,7 @@ class KeycapChip extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final words = RawWidgetsLocalizations.of(context);
     Widget cap(Set<WidgetState> states, {required bool latched}) {
-      final layered = DesignStyleOf([style, theme.tagStyle], states);
+      final layered = RawStyleOf([style, theme.tagStyle], states);
       var face = keycapKeyFace(
         theme,
         KeycapKind.alpha,
@@ -853,7 +853,7 @@ class KeycapChip extends StatelessWidget {
                   const SizedBox(width: KeycapSpacing.tight + 2),
                 ],
                 Flexible(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(
                       label,

@@ -46,9 +46,11 @@ String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
   return full;
 }
 
-/// A day's cell height at 1x text, and its least width: a finger's 44.
+/// A day's least width: a finger's 44.
 const double _dayHeight = KeycapCalendar.dayExtent;
 
+/// A day's cell height: the look's tap floor where it is pressed (48 under a
+/// finger, so a bordered grid closes up), or taller as the text grows.
 double _dayHeightOf(BuildContext context) {
   final theme = KeycapTheme.of(context);
   final painter = TextPainter(
@@ -57,7 +59,11 @@ double _dayHeightOf(BuildContext context) {
     textScaler: MediaQuery.textScalerOf(context),
     maxLines: 1,
   )..layout();
-  final height = math.max(_dayHeight, painter.height + 2 * KeycapSpacing.tight);
+  final floor = math.max(
+    _dayHeight,
+    RawTapTargets.of(context).floorOn().height,
+  );
+  final height = math.max(floor, painter.height + 2 * KeycapSpacing.tight);
   painter.dispose();
   return height;
 }
@@ -123,7 +129,7 @@ Widget _day(
 ]) {
   final theme = KeycapTheme.of(context);
   final c = theme.colors;
-  final layered = DesignStyleOf([style, theme.calendarStyle], states);
+  final layered = RawStyleOf([style, theme.calendarStyle], states);
   final pressed = states.contains(WidgetState.pressed);
   final focused = states.contains(WidgetState.focused);
   final previewEnd = day.inPreview && day.isPreviewEnd;
@@ -146,11 +152,11 @@ Widget _day(
     padding: const EdgeInsets.symmetric(horizontal: 6),
     child: FittedBox(
       fit: BoxFit.scaleDown,
-      child: DesignCapCenter(
+      child: RawCapCenter(
         capHeightFactor: theme.capHeightFactor,
         child: Text(
           // The reader's digits: Arabic-Indic in Arabic, as the month is named.
-          RawWidgetsLocalizations.of(context).formatDecimal(day.date.day),
+          day.label,
           maxLines: 1,
           softWrap: false,
           style: theme.textTheme.body.copyWith(
@@ -348,7 +354,7 @@ class _PickerKey extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final h = theme.controlHeight;
-    Widget key(DesignOverlayAnchor? anchor) {
+    Widget key(RawOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
       return RawButton(
         onPressed: anchor?.toggle,
@@ -357,7 +363,7 @@ class _PickerKey extends StatelessWidget {
         semanticValue: semanticValue,
         excludeSemantics: true,
         builder: (context, states, _) {
-          final layered = DesignStyleOf(
+          final layered = RawStyleOf(
             [style, theme.selectStyle],
             {...states, if (error) WidgetState.error},
           );
@@ -400,7 +406,7 @@ class _PickerKey extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: theme.capHeightFactor,
                           child: Text(
                             text,

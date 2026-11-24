@@ -145,7 +145,7 @@ class KitSection extends StatelessWidget {
         ],
       ],
     );
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: title,
       startAligned: true,
       child: Column(
@@ -192,7 +192,7 @@ List<Widget> kitSpecimens(List<String> rows) => [
   for (final id in rows)
     if (keycapInventory.entryFor(id)?.builder case final build?)
       KitSection(
-        title: DesignInventoryRow.byId(id)?.name ?? id,
+        title: RawInventoryRow.byId(id)?.name ?? id,
         well: false,
         children: [
           Align(

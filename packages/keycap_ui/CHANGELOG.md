@@ -1,3 +1,12 @@
+## 0.4.0
+
+- Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawCalendarController` for `DesignCalendarController`, `RawOverlayAnchor` for `DesignOverlayAnchor`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.
+- Under a finger a calendar's day is as tall as the look's floor, 48 (`KeycapTheme.tapTargets`), so the month's grid closes up, in `KeycapCalendar` and the date pickers; with a mouse it stays 44.
+- The day numbers in `KeycapCalendar` and the date pickers come from ui_core's calendar (`RawCalendarDayDetails.label`), in the app's language and digits, as before.
+- A `KeycapTooltip` on the key that opens a `KeycapMenu` or a `KeycapPopover` stays away while the menu is open, so a pointer back over the key no longer lays its name over the menu's rows.
+- `KeycapLegendKey`'s legend takes a second line where one can't hold it (a long legend in Arabic on a phone), the key growing by it, its icon on the first line and its value standing clear below it. Before, it was cut short. Keys in a row that should stand equally tall take the row's height (`IntrinsicHeight` and `CrossAxisAlignment.stretch`), as Material's cards do.
+- `KeycapLegendKey`'s value reads at 4.5:1 on its key by night too (4.8:1; it was 4.4:1): it stands a quarter of the way from the legend's ink to the key's top, not three tenths.
+
 ## 0.3.0
 
 - Needs ui_core 0.5.1.

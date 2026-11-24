@@ -154,13 +154,13 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
     final chosen = items.where((i) => i.value == value).firstOrNull;
     final height = KeycapMetrics.grown(
       context,
-      DesignStyleOf([style, theme.selectStyle], const {}).minimumSize?.height ??
+      RawStyleOf([style, theme.selectStyle], const {}).minimumSize?.height ??
           theme.controlHeight,
       theme.textTheme.body,
     );
     final walls = KeycapMetrics.walls(theme.controlHeight);
 
-    Widget key(DesignOverlayAnchor? anchor) {
+    Widget key(RawOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
       return Listener(
         onPointerDown: (_) => _byPointer = true,
@@ -198,7 +198,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
           semanticValue: chosen?.label,
           excludeSemantics: true,
           builder: (context, states, _) {
-            final layered = DesignStyleOf(
+            final layered = RawStyleOf(
               [style, theme.selectStyle],
               {...states, if (errorText != null) WidgetState.error},
             );
@@ -245,7 +245,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: DesignCapCenter(
+                          child: RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
                               chosen?.label ?? hintText ?? '',
@@ -388,7 +388,7 @@ class KeycapMenuPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final style = DesignStyleOf([theme.menuStyle], const {});
+    final style = RawStyleOf([theme.menuStyle], const {});
     const pad = EdgeInsets.all(KeycapSpacing.tight);
     return Padding(
       // Room under the panel for its shadow.
@@ -464,7 +464,7 @@ class KeycapMenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final style = DesignStyleOf(
+    final style = RawStyleOf(
       [theme.menuStyle],
       {
         if (lit) WidgetState.hovered,
@@ -515,12 +515,12 @@ class KeycapMenuRow extends StatelessWidget {
 
   List<Widget> _children(
     KeycapThemeData theme,
-    DesignStyleOf style,
+    RawStyleOf style,
     Color words,
     BoxConstraints? box,
   ) {
     final c = theme.colors;
-    final text = DesignCapCenter(
+    final text = RawCapCenter(
       capHeightFactor: theme.capHeightFactor,
       child: Text(
         label,

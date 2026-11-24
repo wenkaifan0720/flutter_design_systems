@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 /// Rebuilds [builder] with a value springing toward [value] on [spring],
-/// through `DesignMotionPolicy` (critically damped under Reduce Motion;
+/// through `RawMotionPolicy` (critically damped under Reduce Motion;
 /// [spatial] false runs it as an effect: a colour, a fade).
 class KeycapSpringValue extends StatefulWidget {
   /// Springs toward [value].
@@ -49,7 +49,7 @@ class _KeycapSpringValueState extends State<KeycapSpringValue>
   void didUpdateWidget(KeycapSpringValue old) {
     super.didUpdateWidget(old);
     if (old.value == widget.value) return;
-    final policy = DesignMotionPolicy.of(context);
+    final policy = RawMotionPolicy.of(context);
     final s = widget.spring;
     _t.springTo(
       widget.value,
@@ -132,7 +132,7 @@ class _KeycapSpringColorState extends State<KeycapSpringColor>
       ..value = 0
       ..springTo(
         1,
-        DesignMotionPolicy.of(context)
+        RawMotionPolicy.of(context)
             .effects(dampingRatio: s.dampingRatio, stiffness: s.stiffness),
       );
   }
