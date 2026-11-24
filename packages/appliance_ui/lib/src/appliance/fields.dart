@@ -477,7 +477,7 @@ class _ApplianceInputGroupState extends State<ApplianceInputGroup> {
           ),
           child: Center(
             widthFactor: 1,
-            child: DesignCapCenter(
+            child: RawCapCenter(
               capHeightFactor: theme.capHeightFactor,
               child: Text(
                 words,
@@ -497,12 +497,12 @@ class _ApplianceInputGroupState extends State<ApplianceInputGroup> {
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: widget.enabled,
-      control: DesignInputGroup(
+      control: RawInputGroup(
         focusNode: _focus,
         enabled: widget.enabled,
         isError: error,
         builder: (context, states, child) {
-          final layered = DesignStyleOf([
+          final layered = RawStyleOf([
             widget.style,
             theme.textFieldStyle,
           ], states);
@@ -531,12 +531,12 @@ class _ApplianceInputGroupState extends State<ApplianceInputGroup> {
                   padding: const EdgeInsets.symmetric(
                     horizontal: ApplianceSpacing.medium,
                   ),
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Semantics(
                       container: true,
                       label: widget.semanticLabel ?? widget.labelText,
-                      child: DesignTextEntryBox(
+                      child: RawTextEntryBox(
                         minHeight: theme.controlHeight,
                         controller: _controller,
                         maxLines: 1,
@@ -678,7 +678,7 @@ class ApplianceOtpField extends StatelessWidget {
           if (slot.focused && slot.active) WidgetState.focused,
           if (slot.isError) WidgetState.error,
         };
-        final layered = DesignStyleOf([style, theme.displayStyle], states);
+        final layered = RawStyleOf([style, theme.displayStyle], states);
         final face = layered.on(
           ApplianceFace.well(
             c,

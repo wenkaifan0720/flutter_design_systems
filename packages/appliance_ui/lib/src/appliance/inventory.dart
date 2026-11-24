@@ -1,5 +1,5 @@
 /// Appliance's answer to the shared component list (ui_core's
-/// [DesignInventoryRow.all]): for each row the part that answers it, as a
+/// [RawInventoryRow.all]): for each row the part that answers it, as a
 /// small live specimen, or why a household device leaves it out. The
 /// gallery lists it, and a test verifies it (every row answered once, no
 /// reason a to-do).
@@ -35,11 +35,7 @@ import 'wayfinding.dart';
 // The inventory's own types, so an app (and the gallery) can list and
 // verify applianceInventory through the look's barrel.
 export 'package:ui_core/inventory.dart'
-    show
-        DesignInventory,
-        DesignInventoryEntry,
-        DesignInventoryGallery,
-        DesignInventoryRow;
+    show RawInventory, RawInventoryEntry, RawInventoryGallery, RawInventoryRow;
 
 void _none() {}
 
@@ -55,7 +51,7 @@ SingleActivator _primary(LogicalKeyboardKey key) {
 /// [_primary]'s shortcut as the platform writes it, in words (Barlow draws
 /// no ⌘).
 String _label(BuildContext context, LogicalKeyboardKey key) =>
-    designShortcutLabel(context, _primary(key), appleSymbols: false);
+    rawShortcutLabel(context, _primary(key), appleSymbols: false);
 
 /// A value a specimen holds and changes, so it can be worked.
 class _Held<T> extends StatefulWidget {
@@ -180,15 +176,15 @@ abstract final class _Why {
 
 /// Appliance's inventory: every row of the shared component list,
 /// answered.
-final DesignInventory applianceInventory = DesignInventory(
+final RawInventory applianceInventory = RawInventory(
   look: 'Appliance',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (_) => const ApplianceButton.filled('Start', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (_) => const ApplianceIconButton(
         icon: Icon(LucideIcons.timer),
@@ -196,8 +192,8 @@ final DesignInventory applianceInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    const DesignInventoryEntry.absent('FloatingActionButton', _Why.fab),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.absent('FloatingActionButton', _Why.fab),
+    RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const ApplianceToolbar(
         semanticLabel: 'Text',
@@ -220,7 +216,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (_) => _Held<Set<String>>(
         const {'eco'},
@@ -236,7 +232,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (_) => const ApplianceSplitButton(
         label: 'Save',
@@ -248,20 +244,20 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (_) => const ApplianceLink('Delivery and returns', onPressed: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Kbd',
       (_) => ApplianceKbd.shortcut(_primary(LogicalKeyboardKey.keyK)),
     ),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (_) => const ApplianceTextField(labelText: 'Name', hintText: 'Ada Brook'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (_) => const ApplianceTextField(
         labelText: 'Delivery note',
@@ -270,15 +266,15 @@ final DesignInventory applianceInventory = DesignInventory(
         minLines: 3,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (_) => const ApplianceSearchField(hintText: 'Search the shop'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (_) => const AppliancePasswordField(),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (_) => const ApplianceInputGroup(
         labelText: 'Budget',
@@ -286,8 +282,8 @@ final DesignInventory applianceInventory = DesignInventory(
         suffix: 'a month',
       ),
     ),
-    DesignInventoryEntry.present('InputOtp', (_) => const ApplianceOtpField()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('InputOtp', (_) => const ApplianceOtpField()),
+    RawInventoryEntry.present(
       'NumberField',
       (_) => _Held<int>(
         2,
@@ -300,7 +296,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (_) => _Held<String>(
         'standard',
@@ -316,7 +312,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (_) => _Held<String?>(
         null,
@@ -328,7 +324,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (_) => _Held<List<String>>(
         const ['Kitchen'],
@@ -340,7 +336,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (_) => _Held<bool>(
         true,
@@ -351,7 +347,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (_) => _Held<String>(
         'standard',
@@ -364,7 +360,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (_) => _Held<bool>(
         true,
@@ -375,7 +371,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (_) => _Held<double>(
         0.4,
@@ -387,7 +383,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (_) => _Held<RawRangeValues>(
         const RawRangeValues(20, 60),
@@ -401,7 +397,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (_) => _Held<String>(
         'grid',
@@ -415,7 +411,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (_) => _Held<bool>(
         true,
@@ -428,7 +424,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (_) => _Held<double>(
         4,
@@ -436,7 +432,7 @@ final DesignInventory applianceInventory = DesignInventory(
             ApplianceRating(value: v, onChanged: (n) => set(n.toDouble())),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (_) => const ApplianceDropZone(
         label: 'Drop a photo of the receipt',
@@ -445,7 +441,7 @@ final DesignInventory applianceInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (_) => _Held<DateTime?>(
         DateTime(2026, 11, 20),
@@ -459,7 +455,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (_) => _Held<RawDateRange?>(
         RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
@@ -473,14 +469,14 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (_) => _Held<RawTimeOfDay>(
         const RawTimeOfDay(hour: 18, minute: 30),
         (context, v, set) => ApplianceTimePicker(value: v, onChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (_) => _Owned<RawCalendarController>(
         () => RawCalendarController(
@@ -493,7 +489,7 @@ final DesignInventory applianceInventory = DesignInventory(
             SizedBox(width: 308, child: ApplianceCalendar(controller: c)),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'WheelPicker',
       (_) => _Held<String>(
         'medium',
@@ -509,7 +505,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ColorPicker',
       (_) => _Owned<RawColorController>(
         () => RawColorController(const Color(0xFFEE6A26)),
@@ -517,7 +513,7 @@ final DesignInventory applianceInventory = DesignInventory(
             SizedBox(width: 280, child: ApplianceColorPicker(controller: c)),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (_) => const ApplianceField(
         labelText: 'Postcode',
@@ -527,11 +523,11 @@ final DesignInventory applianceInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (_) => const ApplianceAppBar(title: 'Kitchen timer', onBack: _none),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (_) => _Held<int>(
         0,
@@ -542,7 +538,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (_) => _Held<int>(
         0,
@@ -556,7 +552,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => _Held<int>(
         0,
@@ -567,7 +563,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (_) => _Held<String>(
         'open',
@@ -581,7 +577,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (_) => const ApplianceBreadcrumb(
         crumbs: [
@@ -591,7 +587,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (_) => _Held<int>(
         3,
@@ -599,14 +595,14 @@ final DesignInventory applianceInventory = DesignInventory(
             AppliancePagination(page: p, pageCount: 9, onChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (_) => const ApplianceStepProgress(
         steps: ['Basket', 'Delivery', 'Payment', 'Done'],
         current: 1,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (_) => _Held<int>(
         1,
@@ -614,7 +610,7 @@ final DesignInventory applianceInventory = DesignInventory(
             AppliancePageDots(count: 4, index: i, onChanged: set),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MenuBar',
       (context) => ApplianceMenuBar(
         menus: [
@@ -642,7 +638,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Command',
       (context) => SizedBox(
         width: 340,
@@ -669,7 +665,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (_) => _Held<int>(
         0,
@@ -682,11 +678,11 @@ final DesignInventory applianceInventory = DesignInventory(
       ),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (_) => const AppliancePanel(child: Text('Descale the kettle monthly.')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (_) => const ApplianceListTile(
         title: 'Order updates',
@@ -694,7 +690,7 @@ final DesignInventory applianceInventory = DesignInventory(
         onTap: _none,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (_) => const ApplianceListGroup(
         header: 'Account',
@@ -704,18 +700,18 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (_) => const ApplianceSectionHeader('Recently viewed'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (_) => const ApplianceDisclosure(
         title: 'Care and cleaning',
         child: Text('Descale monthly; wipe the outside with a damp cloth.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (_) => const ApplianceTable(
         columns: [
@@ -728,7 +724,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DataTable',
       (_) => _Owned<RawDataTableController<_Line>>(
         () => RawDataTableController<_Line>(
@@ -755,9 +751,9 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present('Divider', (_) => const ApplianceDivider()),
-    DesignInventoryEntry.present('ScrollArea', (_) => const _Scrolled()),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Divider', (_) => const ApplianceDivider()),
+    RawInventoryEntry.present('ScrollArea', (_) => const _Scrolled()),
+    RawInventoryEntry.present(
       'Resizable',
       (_) => const ApplianceSplitView(
         minFirst: 80,
@@ -766,7 +762,7 @@ final DesignInventory applianceInventory = DesignInventory(
         second: Center(child: Text('Order 1042')),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CarouselView',
       (_) => ApplianceCarousel(
         itemCount: 3,
@@ -776,7 +772,7 @@ final DesignInventory applianceInventory = DesignInventory(
             Center(child: Text(const ['Kettles', 'Toasters', 'Teapots'][i])),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (_) => _Held<List<String>>(
         const ['Milk', 'Eggs', 'Bread'],
@@ -793,7 +789,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SwipeActions',
       (_) => const ApplianceSwipeActions(
         endActions: [
@@ -802,7 +798,7 @@ final DesignInventory applianceInventory = DesignInventory(
         child: ApplianceListTile(title: 'Kettle', trailingText: '£48'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RefreshIndicator',
       (_) => ApplianceRefresh(
         onRefresh: () => Future<void>.delayed(const Duration(seconds: 1)),
@@ -814,10 +810,10 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TreeView',
-      (_) => _Owned<DesignTreeController<String>>(
-        () => DesignTreeController<String>(
+      (_) => _Owned<RawTreeController<String>>(
+        () => RawTreeController<String>(
           roots: const ['Kitchen', 'Hall'],
           expanded: const ['Kitchen'],
           childrenOf: (node) => switch (node) {
@@ -829,7 +825,7 @@ final DesignInventory applianceInventory = DesignInventory(
         (context, c) => ApplianceTree<String>(controller: c, labelOf: (n) => n),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (_) => const ApplianceTimeline(
         entries: [
@@ -847,18 +843,18 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (_) => const ApplianceAvatar(name: 'Ada Brook'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (_) => const ApplianceAvatarGroup(
         names: ['Ada Brook', 'Sam Lee', 'Kit Ward', 'Jo Hart', 'Ravi Shah'],
       ),
     ),
-    DesignInventoryEntry.present('Badge', (_) => const ApplianceBadge('3')),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Badge', (_) => const ApplianceBadge('3')),
+    RawInventoryEntry.present(
       'Tag',
       (_) => const Wrap(
         spacing: ApplianceSpacing.small,
@@ -869,7 +865,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Media',
       (_) => const SizedBox(
         width: 240,
@@ -881,7 +877,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (_) => const ApplianceEmptyState(
         title: 'Your basket is empty',
@@ -889,7 +885,7 @@ final DesignInventory applianceInventory = DesignInventory(
         action: ApplianceButton('Browse the shop', onPressed: _none),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (_) => const ApplianceDescriptionList(
         items: [
@@ -900,7 +896,7 @@ final DesignInventory applianceInventory = DesignInventory(
       ),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (_) => const ApplianceDialog(
         title: 'Remove this item?',
@@ -911,7 +907,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (_) => const ApplianceSheet(
         title: 'Filter',
@@ -919,7 +915,7 @@ final DesignInventory applianceInventory = DesignInventory(
         child: Text('In stock only'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (_) => const SizedBox(
         width: 300,
@@ -930,7 +926,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (_) => const ApplianceActionSheet(
         title: 'Order 1042',
@@ -945,7 +941,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (_) => AppliancePopover(
         semanticLabel: 'Delivery note',
@@ -955,14 +951,14 @@ final DesignInventory applianceInventory = DesignInventory(
             const Text('Leave parcels by the back door.'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'HoverCard',
       (_) => ApplianceHoverCard(
         card: (context) => const Text('Ships in two days from Leith.'),
         child: const ApplianceLink('Kettle', onPressed: _none),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (_) => const ApplianceTooltip(
         message: 'Keeps warm for 30 minutes',
@@ -973,7 +969,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (_) => ApplianceMenu(
         semanticLabel: 'Order',
@@ -994,14 +990,14 @@ final DesignInventory applianceInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (context) => ApplianceButton(
         'Show a toast',
         onPressed: () => showApplianceToast(context, 'Added to the basket'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (_) => const ApplianceBanner(
         title: 'Card expiring',
@@ -1011,15 +1007,15 @@ final DesignInventory applianceInventory = DesignInventory(
       ),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (_) => const ApplianceProgressBar(value: 0.4, semanticLabel: 'Uploading'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (_) => const ApplianceProgressRing(semanticLabel: 'Saving'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (_) => const Row(
         children: [
@@ -1038,7 +1034,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (_) => const ApplianceStatusView(
         status: ApplianceStatus.error,
@@ -1047,7 +1043,7 @@ final DesignInventory applianceInventory = DesignInventory(
         actions: [ApplianceButton.filled('Try again', onPressed: _none)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (_) => const ApplianceMeter(
         value: 0.62,
@@ -1056,7 +1052,7 @@ final DesignInventory applianceInventory = DesignInventory(
       ),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (_) => ApplianceLineChart(
         semanticLabel: 'Spending by month',
@@ -1068,7 +1064,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (_) => const ApplianceBarChart(
         semanticLabel: 'Items by room',
@@ -1078,7 +1074,7 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (_) => const ApplianceAreaChart(
         semanticLabel: 'Orders by week',
@@ -1088,14 +1084,14 @@ final DesignInventory applianceInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (_) => const ApplianceDonutChart(
         semanticLabel: 'Spending by room',
         slices: [('Kitchen', 120), ('Hall', 40), ('Garden', 64)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (_) => const ApplianceSparkline(
         values: [3, 5, 4, 7, 6, 9],

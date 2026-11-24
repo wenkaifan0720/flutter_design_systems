@@ -72,7 +72,7 @@ class ApplianceAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.avatarStyle], const {});
+    final layered = RawStyleOf([style, theme.avatarStyle], const {});
     final initials = Center(
       child: Text(
         _initials(name),
@@ -162,7 +162,7 @@ class ApplianceAvatarGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).avatarStyle,
     ], const {});
@@ -280,7 +280,7 @@ class ApplianceTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tagStyle], const {});
+    final layered = RawStyleOf([style, theme.tagStyle], const {});
     final (ink, lamp) = switch (tone) {
       ApplianceTagTone.neutral => (c.printMuted, null),
       ApplianceTagTone.signal => (c.signalInk, c.signal),
@@ -369,7 +369,7 @@ class ApplianceMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).panelStyle,
     ], const {});
@@ -490,7 +490,7 @@ class ApplianceDescriptionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).listTileStyle,
     ], const {});

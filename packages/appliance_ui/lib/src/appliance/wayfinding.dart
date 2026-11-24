@@ -22,8 +22,7 @@ import 'theme.dart';
 export 'package:ui_core/ui_core.dart' show RawCommand;
 export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 // A menu's or a command's shortcut words, as the platform writes them.
-export 'package:ui_core/ui_core.dart'
-    show designShortcutKeys, designShortcutLabel;
+export 'package:ui_core/ui_core.dart' show rawShortcutKeys, rawShortcutLabel;
 
 /// A chevron to the end side (the start side when [back]), mirrored for
 /// right-to-left text.
@@ -133,10 +132,7 @@ class ApplianceBreadcrumb extends StatelessWidget {
                 semanticLabel: crumb.label,
                 excludeSemantics: true,
                 builder: (context, states, _) {
-                  final layered = DesignStyleOf([
-                    style,
-                    theme.linkStyle,
-                  ], states);
+                  final layered = RawStyleOf([style, theme.linkStyle], states);
                   final ink =
                       layered.foreground ??
                       (states.contains(WidgetState.pressed)
@@ -211,7 +207,7 @@ class _PageKey extends StatelessWidget {
       semanticLabel: semanticLabel,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([theme.navigationStyle], states);
+        final layered = RawStyleOf([theme.navigationStyle], states);
         final face = layered.on(
           applianceKeyFace(
             c,
@@ -303,7 +299,7 @@ class AppliancePagination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).buttonStyle,
     ], const {});
@@ -365,7 +361,7 @@ class AppliancePagination extends StatelessWidget {
                       semanticLabel: 'Page $p of $pageCount',
                       current: p == page,
                       onPressed: p == page ? null : () => onChanged(p),
-                      child: (ink) => DesignCapCenter(
+                      child: (ink) => RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: Text(
                           '$p',
@@ -429,7 +425,7 @@ class ApplianceStepProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).progressStyle,
     ], const {});
@@ -581,7 +577,7 @@ class AppliancePageDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).progressStyle,
     ], const {});
@@ -673,7 +669,7 @@ class ApplianceMenuBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).menuStyle,
     ], const {});
@@ -739,7 +735,7 @@ class ApplianceMenuBar extends StatelessWidget {
                 ),
                 child: Center(
                   widthFactor: 1,
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(
                       entry.label,
@@ -873,7 +869,7 @@ class ApplianceCommandPalette extends StatelessWidget {
 class _PaletteWell extends StatelessWidget {
   const _PaletteWell({required this.field, required this.hint});
 
-  final DesignComboboxField field;
+  final RawComboboxField field;
   final String hint;
 
   @override
@@ -897,7 +893,7 @@ class _PaletteWell extends StatelessWidget {
             ),
             const SizedBox(width: ApplianceSpacing.small),
             Expanded(
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: theme.capHeightFactor,
                 child: ApplianceBareField(
                   controller: field.controller,
@@ -929,7 +925,7 @@ Future<void> showApplianceCommandPalette({
   String hint = 'Type a command',
 }) {
   final c = ApplianceTheme.of(context).colors;
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: c.scrim,
     palette: (run) => RawCommandPalette(

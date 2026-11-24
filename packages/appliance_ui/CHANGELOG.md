@@ -1,3 +1,13 @@
+## 0.4.0
+
+- Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawStyleOf` for `DesignStyleOf`, `RawChartValueFormat` for `DesignChartValueFormat`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.
+- Under a finger a calendar's day is as tall as the look's floor, 48 on a phone (`RawTapTargets`), in `ApplianceCalendar` and the date pickers' plates; with a mouse it stays 44.
+- The day numbers in `ApplianceCalendar` and the date pickers come from ui_core's calendar (`RawCalendarDayDetails.label`), in the app's language and digits: Arabic-Indic in Arabic.
+- `ApplianceDatePicker` and `ApplianceDateRangePicker` open their plate from the label and the key together: opened above, the plate stands over the label rather than on it; opened below, it still hangs from the key.
+- A chart's day labels stand under the glass, the first and last no longer running under the scale's figures at its side.
+- At large text a key grows with its words, as Material's buttons do: `ApplianceButton` (not `ApplianceButton.text`) and the keys of `ApplianceToggleGroup`. Before, a desktop key held its words on its foot at text scale 2.
+- When `ApplianceToggleGroup` runs its keys onto a second row, the rows stand as far apart as the keys in a row. Before, the second row stood three times as far.
+
 ## 0.3.0
 
 - Needs ui_core 0.5.1.

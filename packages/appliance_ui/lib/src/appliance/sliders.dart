@@ -114,7 +114,7 @@ class _Cap extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.sliderStyle],
       {
         if (!enabled) WidgetState.disabled,
@@ -336,7 +336,7 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
                         top: 0,
                         width: _capReach,
                         height: theme.controlHeight,
-                        child: DesignValueHandle(
+                        child: RawValueHandle(
                           value: widget.value
                               .clamp(widget.min, widget.max)
                               .toDouble(),
@@ -700,7 +700,7 @@ class _ApplianceKnobState<T> extends State<ApplianceKnob<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       widget.style,
       ApplianceTheme.of(context).sliderStyle,
     ], const {});
@@ -778,7 +778,7 @@ class _ApplianceKnobState<T> extends State<ApplianceKnob<T>> {
               onPanUpdate: enabled
                   ? (e) => _turnTo(e.localPosition, Offset(d / 2, d / 2))
                   : null,
-              child: DesignValueHandle(
+              child: RawValueHandle(
                 value: _index.toDouble(),
                 onChanged: enabled ? (v) => _go(v.round()) : null,
                 max: widget.options.length - 1.0,
@@ -927,7 +927,7 @@ class _ApplianceRatingState extends State<ApplianceRating> {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       widget.style,
       ApplianceTheme.of(context).sliderStyle,
     ], const {});

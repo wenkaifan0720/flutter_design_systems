@@ -76,7 +76,7 @@ class ApplianceMenuRow extends StatelessWidget {
     final down =
         on && (states.contains(WidgetState.pressed) || (choice && lit));
     final lamp = on && !choice ? applianceControlLight(states) : 0.0;
-    final row = DesignStyleOf([style, theme.menuStyle], states);
+    final row = RawStyleOf([style, theme.menuStyle], states);
     final words =
         row.foreground ??
         (!on
@@ -111,7 +111,7 @@ class ApplianceMenuRow extends StatelessWidget {
                 const SizedBox(width: ApplianceSpacing.medium),
               ],
               Expanded(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: theme.capHeightFactor,
                   child: Text(
                     label,

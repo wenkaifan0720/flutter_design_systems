@@ -22,15 +22,15 @@ import 'page_transitions.dart';
 /// ```dart
 /// final wide = ApplianceStyle(padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32)));
 /// ```
-typedef ApplianceStyle = DesignStyle;
+typedef ApplianceStyle = RawStyle;
 
-/// How tight Appliance's controls stand: [DesignDensity.standard] (a 48 px
-/// key), [DesignDensity.comfortable] (44) or [DesignDensity.compact] (40).
+/// How tight Appliance's controls stand: [RawDensity.standard] (a 48 px
+/// key), [RawDensity.comfortable] (44) or [RawDensity.compact] (40).
 /// A control's tap target stays at the floor for the input whatever the
 /// density. [ApplianceThemeData.density] defaults to
-/// [DesignDensity.adaptivePlatformDensity]: compact on a desktop, standard
+/// [RawDensity.adaptivePlatformDensity]: compact on a desktop, standard
 /// on a phone.
-typedef ApplianceDensity = DesignDensity;
+typedef ApplianceDensity = RawDensity;
 
 /// The depth a part stands at, lit from the top: every part uses one, and a
 /// change of state moves it between them (a press sinks a raised key).
@@ -73,7 +73,7 @@ abstract final class ApplianceMetrics {
   /// A lid's corner (a dialog, a sheet's top, a menu).
   static const double lidRadius = 16;
 
-  /// A key's height at [DesignDensity.standard], before density.
+  /// A key's height at [RawDensity.standard], before density.
   static const double controlHeight = 48;
 
   /// How far a pressed key travels into the panel.
@@ -101,7 +101,7 @@ abstract final class ApplianceMetrics {
   static const double readingWidth = 560;
 }
 
-/// Appliance's spacing, on a 4 px grid ([DesignSpacingScope] declares it).
+/// Appliance's spacing, on a 4 px grid ([RawSpacingScope] declares it).
 abstract final class ApplianceSpacing {
   /// The grid every gap, inset and offset stands on.
   static const double grid = 4;
@@ -147,7 +147,7 @@ abstract final class ApplianceSpacing {
 /// Appliance's motion: springs from the physics of its objects. A key goes
 /// down firmly and comes back with a little spring; a switch or a selector's
 /// block snaps through to its detent; a lamp warms up and cools down; a lid
-/// rises and settles. Run them through `DesignMotionPolicy`, which critically
+/// rises and settles. Run them through `RawMotionPolicy`, which critically
 /// damps every spring under Reduce Motion.
 abstract final class ApplianceMotion {
   /// A key going down: firm, no bounce.
@@ -878,7 +878,7 @@ class ApplianceThemeData with Diagnosticable {
   ApplianceThemeData({
     required this.colors,
     ApplianceTextTheme? textTheme,
-    DesignDensity? density,
+    RawDensity? density,
     this.texture = true,
     this.buttonStyle,
     this.filledButtonStyle,
@@ -909,14 +909,14 @@ class ApplianceThemeData with Diagnosticable {
     this.avatarStyle,
     this.calendarStyle,
   }) : textTheme = textTheme ?? ApplianceTextTheme.from(colors),
-       density = density ?? DesignDensity.adaptivePlatformDensity;
+       density = density ?? RawDensity.adaptivePlatformDensity;
 
   /// Warm-white plastic by day.
-  factory ApplianceThemeData.light({DesignDensity? density}) =>
+  factory ApplianceThemeData.light({RawDensity? density}) =>
       ApplianceThemeData(colors: ApplianceColors.light, density: density);
 
   /// The same plastic in a dim room.
-  factory ApplianceThemeData.dark({DesignDensity? density}) =>
+  factory ApplianceThemeData.dark({RawDensity? density}) =>
       ApplianceThemeData(colors: ApplianceColors.dark, density: density);
 
   /// The look's presets by name: one, `warm` (light and dark).
@@ -950,7 +950,7 @@ class ApplianceThemeData with Diagnosticable {
     Color? signal,
     String? fontFamily,
     String? fontPackage,
-    DesignDensity? density,
+    RawDensity? density,
   }) {
     final colors = ApplianceColors.from(
       brightness: brightness,
@@ -977,7 +977,7 @@ class ApplianceThemeData with Diagnosticable {
   final ApplianceTextTheme textTheme;
 
   /// How tight the controls stand.
-  final DesignDensity density;
+  final RawDensity density;
 
   /// Whether the housing carries its fine moulded grain. Off under the
   /// platform's high contrast whatever this says.
@@ -1083,7 +1083,7 @@ class ApplianceThemeData with Diagnosticable {
   ApplianceThemeData copyWith({
     ApplianceColors? colors,
     ApplianceTextTheme? textTheme,
-    DesignDensity? density,
+    RawDensity? density,
     bool? texture,
     ApplianceStyle? buttonStyle,
     ApplianceStyle? filledButtonStyle,
@@ -1192,11 +1192,11 @@ class ApplianceThemeData with Diagnosticable {
     if (identical(a, b)) return a;
     final x = a._styles;
     final y = b._styles;
-    ApplianceStyle? at(int i) => DesignStyle.lerp(x[i], y[i], t);
+    ApplianceStyle? at(int i) => RawStyle.lerp(x[i], y[i], t);
     return ApplianceThemeData(
       colors: ApplianceColors.lerp(a.colors, b.colors, t),
       textTheme: ApplianceTextTheme.lerp(a.textTheme, b.textTheme, t),
-      density: DesignDensity.lerp(a.density, b.density, t),
+      density: RawDensity.lerp(a.density, b.density, t),
       texture: t < 0.5 ? a.texture : b.texture,
       buttonStyle: at(0),
       filledButtonStyle: at(1),
@@ -1248,7 +1248,7 @@ class ApplianceThemeData with Diagnosticable {
     properties
       ..add(DiagnosticsProperty<ApplianceColors>('colors', colors))
       ..add(DiagnosticsProperty<ApplianceTextTheme>('textTheme', textTheme))
-      ..add(DiagnosticsProperty<DesignDensity>('density', density))
+      ..add(DiagnosticsProperty<RawDensity>('density', density))
       ..add(FlagProperty('texture', value: texture, ifFalse: 'no texture'));
   }
 }
@@ -1257,7 +1257,7 @@ class ApplianceThemeData with Diagnosticable {
 /// (`MaterialApp(builder: (context, child) => ApplianceTheme(data: ..., child: child!))`).
 ///
 /// It sets the words, the glyphs and the text selection in the look's
-/// print, declares the look's 4 px grid ([DesignSpacingScope]) and its tap
+/// print, declares the look's 4 px grid ([RawSpacingScope]) and its tap
 /// floors ([tapTargets]), and lays a Material theme under the look (its
 /// density pinned, its ink off, its page change Appliance's) so the
 /// Material parts it draws with never show.
@@ -1277,7 +1277,7 @@ class ApplianceTheme extends StatelessWidget {
 
   /// The tap floors every Appliance control stands at: 48 by 48 for a
   /// finger, 24 by 24 for a pointer.
-  static const DesignTapTargets tapTargets = DesignTapTargets(
+  static const RawTapTargets tapTargets = RawTapTargets(
     touch: Size(48, 48),
     pointer: Size(24, 24),
   );
@@ -1311,9 +1311,9 @@ class ApplianceTheme extends StatelessWidget {
       theme: this,
       child: Theme(
         data: material,
-        child: DesignSpacingScope(
-          spacing: DesignSpacing.fallback,
-          child: DesignTapTargetScope(
+        child: RawSpacingScope(
+          spacing: RawSpacing.fallback,
+          child: RawTapTargetScope(
             targets: tapTargets,
             child: DefaultSelectionStyle(
               cursorColor: colors.signal,
@@ -1471,7 +1471,7 @@ class _AnimatedApplianceThemeState extends State<AnimatedApplianceTheme>
       ..value = 0
       ..springTo(
         1,
-        designSpring(
+        rawSpring(
           dampingRatio: 1,
           stiffness: ApplianceMotion.lamp.stiffness / 4,
         ),

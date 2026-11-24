@@ -12,7 +12,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
@@ -64,7 +63,7 @@ class ApplianceDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final narrow = MediaQuery.sizeOf(context).width < 600;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: maxWidth),
@@ -182,7 +181,7 @@ class _Lid extends StatelessWidget {
 }
 
 /// Shows [builder]'s dialog (usually an [ApplianceDialog]) over the dimmed
-/// housing, in the middle of the screen, on ui_core's [DesignDialogRoute]:
+/// housing, in the middle of the screen, on ui_core's [RawModalDialogRoute]:
 /// the lid rises a little on its spring ([ApplianceMotion.lid]) and comes
 /// to rest (under Reduce Motion it fades). Focus moves into it and stays
 /// there, and goes back to what held it as it closes. Escape and Back close
@@ -201,7 +200,7 @@ Future<T?> showApplianceDialog<T>({
 }) {
   final theme = ApplianceTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       isAlert: isAlert,
       barrierDismissible: barrierDismissible,
       barrierColor: theme.colors.scrim,
@@ -360,7 +359,7 @@ class ApplianceSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final media = MediaQuery.of(context);
     final words = RawWidgetsLocalizations.of(context);
     return ConstrainedBox(
@@ -413,7 +412,7 @@ class ApplianceSheet extends StatelessWidget {
                               icon: const Icon(LucideIcons.x),
                               semanticLabel: words.closeButtonLabel,
                               onPressed: onClose,
-                              style: const DesignStyle(
+                              style: const RawStyle(
                                 minimumSize: WidgetStatePropertyAll(
                                   Size.square(40),
                                 ),
@@ -629,7 +628,7 @@ class _Toast extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final t = details.toast;
-    final layered = DesignStyleOf([style, theme.toastStyle], const {});
+    final layered = RawStyleOf([style, theme.toastStyle], const {});
     final glass = layered.fill ?? c.display;
     final legend = layered.foreground ?? c.onDisplay;
     final words = RawWidgetsLocalizations.of(context);
@@ -830,7 +829,7 @@ class ApplianceSideSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final words = RawWidgetsLocalizations.of(context);
     final media = MediaQuery.of(context);
     const r = Radius.circular(ApplianceMetrics.lidRadius);
@@ -899,7 +898,7 @@ class ApplianceSideSheet extends StatelessWidget {
                           icon: const Icon(LucideIcons.x),
                           semanticLabel: words.closeButtonLabel,
                           onPressed: onClose,
-                          style: const DesignStyle(
+                          style: const RawStyle(
                             minimumSize: WidgetStatePropertyAll(
                               Size.square(40),
                             ),
@@ -1043,7 +1042,7 @@ class ApplianceActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).dialogStyle,
     ], const {});

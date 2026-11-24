@@ -82,7 +82,7 @@ class ApplianceBareField extends StatelessWidget {
       child: Semantics(
         label: semanticLabel,
         expanded: expanded,
-        child: DesignTextEntryBox(
+        child: RawTextEntryBox(
           minHeight: minHeight,
           controller: controller,
           maxLines: 1,

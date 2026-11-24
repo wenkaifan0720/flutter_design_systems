@@ -50,7 +50,7 @@ class _ApplianceSpringValueState extends State<ApplianceSpringValue>
   void didUpdateWidget(ApplianceSpringValue old) {
     super.didUpdateWidget(old);
     if (old.value == widget.value) return;
-    final policy = DesignMotionPolicy.of(context);
+    final policy = RawMotionPolicy.of(context);
     final s = widget.spring;
     _t.springTo(
       widget.value,

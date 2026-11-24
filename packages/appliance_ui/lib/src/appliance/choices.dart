@@ -88,7 +88,7 @@ class ApplianceCheckbox extends StatelessWidget {
       semanticLabel: semanticLabel,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.toggleStyle], states);
+        final layered = RawStyleOf([style, theme.toggleStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final latched = value != false;
         final down = latched || states.contains(WidgetState.pressed);
@@ -303,7 +303,7 @@ class _PresetKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.toggleStyle], states);
+    final layered = RawStyleOf([style, theme.toggleStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     final down = chosen || states.contains(WidgetState.pressed);
     var face = down
@@ -662,7 +662,7 @@ class ApplianceSwitch extends StatelessWidget {
       semanticLabel: semanticLabel,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.toggleStyle], states);
+        final layered = RawStyleOf([style, theme.toggleStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final held = states.contains(WidgetState.pressed);
         // On, the slot is lit in the signal (dimmed while disabled).
@@ -942,7 +942,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
     final c = theme.colors;
     final layers = [style, theme.selectorStyle];
     final off = onChanged == null;
-    final frame = DesignStyleOf(layers, {if (off) WidgetState.disabled});
+    final frame = RawStyleOf(layers, {if (off) WidgetState.disabled});
     final words = frame.text(
       theme.textTheme.label.copyWith(fontSize: 15, height: 20 / 15),
     );
@@ -1107,7 +1107,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
     );
   }
 
-  static ApplianceFace _troughFace(DesignStyleOf frame, ApplianceFace face) =>
+  static ApplianceFace _troughFace(RawStyleOf frame, ApplianceFace face) =>
       frame.fill == null && frame.edge == null && frame.side == null
       ? face
       : face.copyWith(
@@ -1181,7 +1181,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
     bool stacked,
   ) {
     final c = theme.colors;
-    final layered = DesignStyleOf(layers, states);
+    final layered = RawStyleOf(layers, states);
     final disabled = states.contains(WidgetState.disabled);
     final ink =
         layered.foreground ??
@@ -1202,7 +1202,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
       size: _segmentLamp,
       color: disabled ? c.printDisabled : null,
     );
-    final legend = DesignCapCenter(
+    final legend = RawCapCenter(
       capHeightFactor: theme.capHeightFactor,
       child: Text(
         s.label,
@@ -1615,7 +1615,7 @@ class ApplianceStepper extends StatelessWidget {
     final c = theme.colors;
     final off = onChanged == null;
     final layers = [style, theme.stepperStyle];
-    final frame = DesignStyleOf(layers, {if (off) WidgetState.disabled});
+    final frame = RawStyleOf(layers, {if (off) WidgetState.disabled});
     final figure = frame.text(
       theme.textTheme.figure.copyWith(
         fontSize: 18,
@@ -1658,7 +1658,7 @@ class ApplianceStepper extends StatelessWidget {
         semanticLabel: label,
         excludeSemantics: true,
         builder: (context, states, _) {
-          final layered = DesignStyleOf(layers, states);
+          final layered = RawStyleOf(layers, states);
           final disabled = states.contains(WidgetState.disabled);
           final pressed = states.contains(WidgetState.pressed);
           final base = pressed
@@ -1714,7 +1714,7 @@ class ApplianceStepper extends StatelessWidget {
                 child: ApplianceSurface(
                   face: window,
                   child: Center(
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         shown(value),

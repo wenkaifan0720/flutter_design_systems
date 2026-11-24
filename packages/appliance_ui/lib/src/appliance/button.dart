@@ -118,7 +118,7 @@ class ApplianceButton extends StatelessWidget {
       semanticLabel: label,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final face = layered.on(
           _keyFace(theme, states, _kind, isDestructiveAction),
         );
@@ -127,9 +127,13 @@ class ApplianceButton extends StatelessWidget {
             layered.padding(Directionality.of(context)) ??
             (text
                 ? EdgeInsets.zero
+                // Above and below, room for the words' descenders: at large
+                // text the key grows with its words rather than holding them
+                // on its foot.
                 : EdgeInsets.symmetric(
                     horizontal:
                         ApplianceSpacing.large + theme.density.paddingDelta,
+                    vertical: ApplianceSpacing.tight,
                   ));
         final minimum =
             layered.minimumSize ??
@@ -151,7 +155,7 @@ class ApplianceButton extends StatelessWidget {
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: theme.capHeightFactor,
             child: Text(label),
           ),
@@ -338,7 +342,7 @@ class ApplianceIconButton extends StatelessWidget {
       excludeSemantics: true,
       selected: selected ?? false,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
+        final layered = RawStyleOf([style, theme.iconButtonStyle], states);
         final latched = selected ?? false;
         var face = _keyFace(
           theme,

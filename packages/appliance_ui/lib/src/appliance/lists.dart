@@ -68,7 +68,7 @@ class AppliancePanel extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     Widget plate(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.panelStyle], states);
+      final layered = RawStyleOf([style, theme.panelStyle], states);
       final pressed = states.contains(WidgetState.pressed);
       final face = layered.on(
         ApplianceFace.plate(c).copyWith(
@@ -151,7 +151,7 @@ class ApplianceSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
-    final layered = DesignStyleOf([style], const {});
+    final layered = RawStyleOf([style], const {});
     final legend = Semantics(
       header: true,
       label: text,
@@ -304,7 +304,7 @@ class ApplianceDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).listTileStyle,
     ], const {});
@@ -476,7 +476,7 @@ class ApplianceListTile extends StatelessWidget {
       // glyphs let it through to the key beneath.
       Widget passive(Widget part) =>
           under == null ? part : IgnorePointer(child: part);
-      final layered = DesignStyleOf(
+      final layered = RawStyleOf(
         [style, theme.listTileStyle],
         {...states, if (selected) WidgetState.selected},
       );
@@ -564,7 +564,7 @@ class ApplianceListTile extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                DesignCapCenter(
+                                RawCapCenter(
                                   capHeightFactor: theme.capHeightFactor,
                                   child: Text(
                                     title,

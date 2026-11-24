@@ -54,7 +54,7 @@ SingleActivator kitShortcut(LogicalKeyboardKey key) {
 /// [kitShortcut]'s words, as a menu's or a command's shortcut: Appliance's
 /// face draws no ⌘, so Apple's keys go by their names.
 String kitShortcutLabel(BuildContext context, LogicalKeyboardKey key) =>
-    designShortcutLabel(context, kitShortcut(key), appleSymbols: false);
+    rawShortcutLabel(context, kitShortcut(key), appleSymbols: false);
 
 /// [home] as an app of its own, lit by [brightness]: the theme over the
 /// navigator, toasts over the app. It stands in a semantics container, so
@@ -174,7 +174,7 @@ class KitSection extends StatelessWidget {
         ],
       ],
     );
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: title,
       startAligned: true,
       child: Column(

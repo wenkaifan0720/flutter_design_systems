@@ -32,7 +32,7 @@ export 'package:ui_core/ui_core.dart'
         RawDataColumn,
         RawDataTableController;
 export 'package:ui_core/ui_core.dart' show RawSwipeAction;
-export 'package:ui_core/ui_core.dart' show DesignTreeController;
+export 'package:ui_core/ui_core.dart' show RawTreeController;
 
 /// A chevron that turns from pointing to the end ([turn] 0) to pointing
 /// down ([turn] 1), mirrored for right-to-left text.
@@ -143,7 +143,7 @@ class _ApplianceDisclosureState extends State<ApplianceDisclosure> {
             semanticLabel: widget.title,
             excludeSemantics: true,
             builder: (context, states, _) {
-              final layered = DesignStyleOf([
+              final layered = RawStyleOf([
                 widget.style,
                 theme.listTileStyle,
               ], states);
@@ -309,7 +309,7 @@ class ApplianceTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tableStyle], const {});
+    final layered = RawStyleOf([style, theme.tableStyle], const {});
     final pad =
         layered.padding(Directionality.of(context)) ??
         const EdgeInsets.symmetric(
@@ -542,7 +542,7 @@ class ApplianceDataTable<R> extends StatelessWidget {
         child: _cell(context, cellText(row, column), numeric: column.numeric),
       ),
       rowBuilder: (context, row, rowCells) {
-        final layered = DesignStyleOf([style, theme.tableStyle], row.states);
+        final layered = RawStyleOf([style, theme.tableStyle], row.states);
         final lit = row.selected || row.states.contains(WidgetState.pressed);
         return Container(
           decoration: BoxDecoration(
@@ -887,7 +887,7 @@ class ApplianceCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).displayStyle,
     ], const {});
@@ -1252,7 +1252,7 @@ class ApplianceRefresh extends StatelessWidget {
 /// the arrows walk and open it.
 ///
 /// ```dart
-/// ApplianceTree<String>(controller: DesignTreeController<String>(roots: const ['Kitchen'], childrenOf: (node) => const []), labelOf: (node) => node)
+/// ApplianceTree<String>(controller: RawTreeController<String>(roots: const ['Kitchen'], childrenOf: (node) => const []), labelOf: (node) => node)
 /// ```
 class ApplianceTree<T extends Object> extends StatelessWidget {
   /// A tree view of [controller].
@@ -1266,7 +1266,7 @@ class ApplianceTree<T extends Object> extends StatelessWidget {
   });
 
   /// The nodes, and which are open and chosen; yours to dispose.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A node's words.
   final String Function(T node) labelOf;
@@ -1282,13 +1282,13 @@ class ApplianceTree<T extends Object> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).tableStyle,
     ], const {});
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
@@ -1334,7 +1334,7 @@ class ApplianceTree<T extends Object> extends StatelessWidget {
                         : null,
                   ),
                   Expanded(
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         labelOf(item.row.node),
@@ -1418,7 +1418,7 @@ class ApplianceTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).listTileStyle,
     ], const {});

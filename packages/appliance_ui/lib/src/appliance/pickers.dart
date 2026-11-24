@@ -23,7 +23,7 @@ import 'internal/field_frame.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
 export 'package:ui_core/ui_core.dart' show RawColorController;
-export 'package:ui_core/ui_core.dart' show DesignOptionSearch;
+export 'package:ui_core/ui_core.dart' show RawOptionSearch;
 
 /// A well's face in [states], as a text field draws it.
 ApplianceFace _wellFace(
@@ -168,7 +168,7 @@ class ApplianceCombobox<T extends Object> extends StatefulWidget {
   final List<T> options;
 
   /// Looks the words up instead of filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs; null runs it at once.
   final Duration? debounceDuration;
@@ -301,7 +301,7 @@ class _ApplianceComboboxState<T extends Object>
             if (field.focusNode.hasFocus) WidgetState.focused,
             if (error) WidgetState.error,
           };
-          final layered = DesignStyleOf([
+          final layered = RawStyleOf([
             widget.style,
             theme.textFieldStyle,
           ], states);
@@ -318,7 +318,7 @@ class _ApplianceComboboxState<T extends Object>
                 child: Row(
                   children: [
                     Expanded(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: ApplianceBareField(
                           controller: field.controller,
@@ -351,7 +351,7 @@ class _ApplianceComboboxState<T extends Object>
 class _ListLegend extends StatelessWidget {
   const _ListLegend({required this.field, required this.enabled});
 
-  final DesignComboboxField field;
+  final RawComboboxField field;
   final bool enabled;
 
   void _open(BuildContext context) {
@@ -427,7 +427,7 @@ class ApplianceTagInput<T extends Object> extends StatefulWidget {
   final List<T> options;
 
   /// Looks the words up instead of filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long the typing rests before [search] runs; null runs it at once.
   final Duration? debounceDuration;
@@ -504,7 +504,7 @@ class _ApplianceTagInputState<T extends Object>
       if (_within) WidgetState.focused,
       if (error) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
+    final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     return applianceFieldFrame(
       labelText: widget.labelText,
       semanticLabel: widget.semanticLabel,
@@ -660,7 +660,7 @@ class _TagKey extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                DesignCapCenter(
+                RawCapCenter(
                   capHeightFactor: theme.capHeightFactor,
                   child: Text(
                     label,
@@ -753,7 +753,7 @@ class ApplianceChip extends StatelessWidget {
     final words = TextPainter(
       text: TextSpan(
         text: label,
-        style: DesignStyleOf([
+        style: RawStyleOf([
           style,
           theme.chipStyle,
         ], const {}).text(theme.textTheme.secondary),
@@ -772,7 +772,7 @@ class ApplianceChip extends StatelessWidget {
     final latches = onSelected != null || this.selected != null;
     final selected = this.selected ?? false;
     Widget body(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.chipStyle], states);
+      final layered = RawStyleOf([style, theme.chipStyle], states);
       final down =
           (latches && selected) || states.contains(WidgetState.pressed);
       final disabled = states.contains(WidgetState.disabled);
@@ -816,7 +816,7 @@ class ApplianceChip extends StatelessWidget {
               ),
               const SizedBox(width: ApplianceSpacing.small),
             ],
-            DesignCapCenter(
+            RawCapCenter(
               capHeightFactor: theme.capHeightFactor,
               child: Text(
                 label,
@@ -965,7 +965,7 @@ class ApplianceDropZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).panelStyle,
     ], const {});
@@ -1050,7 +1050,7 @@ class ApplianceDropZone extends StatelessWidget {
                         ),
                         child: Center(
                           widthFactor: 1,
-                          child: DesignCapCenter(
+                          child: RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
                               buttonLabel,
@@ -1245,7 +1245,7 @@ class _ApplianceColorPickerState extends State<ApplianceColorPicker> {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       widget.style,
       ApplianceTheme.of(context).displayStyle,
     ], const {});

@@ -64,7 +64,7 @@ class ApplianceToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).toggleStyle,
     ], const {});
@@ -210,16 +210,18 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
           semanticLabel: semanticLabel,
           minimumSize: Size(height, theme.controlHeight),
           // One row while the keys fit; with large words, a second row of
-          // keys in the same strip rather than keys past its end.
+          // keys in the same strip rather than keys past its end. Each key
+          // reaches over the inset above and below it, so a row takes back
+          // one inset: the rows' faces stand as far apart as the keys'.
           layoutBuilder: (context, items) => Wrap(
             spacing: ApplianceMetrics.capInset,
-            runSpacing: ApplianceMetrics.capInset,
+            runSpacing: -ApplianceMetrics.capInset,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: items,
           ),
           itemBuilder: (context, value, states) {
             final option = byValue[value]!;
-            final layered = DesignStyleOf([style, theme.buttonStyle], states);
+            final layered = RawStyleOf([style, theme.buttonStyle], states);
             final down = states.contains(WidgetState.selected);
             final disabled = states.contains(WidgetState.disabled);
             final held = states.contains(WidgetState.pressed);
@@ -238,13 +240,15 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                 vertical: ApplianceMetrics.capInset,
               ),
-              child: SizedBox(
-                height: height,
+              // The key's height, or taller as its words grow.
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: height),
                 child: AnimatedApplianceSurface(
                   face: face,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: ApplianceSpacing.medium,
+                      vertical: ApplianceSpacing.tight,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -268,7 +272,7 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
                         ],
                         if (option.showLabel) ...[
                           const SizedBox(width: ApplianceSpacing.small),
-                          DesignCapCenter(
+                          RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
                               option.label,
@@ -351,7 +355,7 @@ class ApplianceSplitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).filledButtonStyle,
     ], const {});
@@ -402,7 +406,7 @@ class ApplianceSplitButton extends StatelessWidget {
                       ),
                       child: Center(
                         widthFactor: 1,
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: theme.capHeightFactor,
                           child: Text(
                             label,
@@ -539,7 +543,7 @@ class ApplianceLink extends StatelessWidget {
       button: false,
       link: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.linkStyle], states);
+        final layered = RawStyleOf([style, theme.linkStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final ink =
             layered.foreground ??
@@ -627,9 +631,9 @@ class ApplianceKbd extends StatelessWidget {
     final keys = shortcut;
     if (keys == null) return _cap(context, label);
     // Barlow draws no ⌘ ⌥ ⇧ ⌃: Apple's keys go by their names.
-    final caps = designShortcutKeys(context, keys, appleSymbols: false);
+    final caps = rawShortcutKeys(context, keys, appleSymbols: false);
     return Semantics(
-      label: designShortcutLabel(context, keys, appleSymbols: false),
+      label: rawShortcutLabel(context, keys, appleSymbols: false),
       child: ExcludeSemantics(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -645,7 +649,7 @@ class ApplianceKbd extends StatelessWidget {
   }
 
   Widget _cap(BuildContext context, String legend) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).tagStyle,
     ], const {});

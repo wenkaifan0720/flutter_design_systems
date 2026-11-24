@@ -49,7 +49,7 @@ class ApplianceStatePlate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).displayStyle,
     ], const {});

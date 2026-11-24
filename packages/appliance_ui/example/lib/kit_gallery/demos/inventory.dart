@@ -39,7 +39,7 @@ class _Inventory extends StatelessWidget {
         alignment: AlignmentDirectional.topStart,
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 720 + 2 * margin),
-          child: DesignInventoryGallery(
+          child: RawInventoryGallery(
             inventory: applianceInventory,
             padding: EdgeInsets.fromLTRB(
               margin,
@@ -75,7 +75,7 @@ class _Inventory extends StatelessWidget {
                         )
                       else
                         Text(
-                          DesignInventory.absentLabel(reason ?? 'Missing'),
+                          RawInventory.absentLabel(reason ?? 'Missing'),
                           style: t.secondary,
                         ),
                     ],

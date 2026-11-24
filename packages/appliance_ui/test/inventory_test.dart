@@ -21,7 +21,7 @@ void main() {
     applianceInventory.verify();
     expect(
       applianceInventory.presentCount + applianceInventory.absentCount,
-      DesignInventoryRow.all.length,
+      RawInventoryRow.all.length,
     );
     expect(applianceInventory.absentCount, 1);
   });

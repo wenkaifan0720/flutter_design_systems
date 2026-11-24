@@ -17,7 +17,7 @@ import 'select.dart';
 import 'theme.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignOverlayAnchor;
+export 'package:ui_core/ui_core.dart' show RawOverlayAnchor;
 
 /// A plate lifted off the panel, holding [child] with room round it.
 class _Plate extends StatelessWidget {
@@ -31,7 +31,7 @@ class _Plate extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.popoverStyle], const {});
+    final layered = RawStyleOf([style, theme.popoverStyle], const {});
     return Padding(
       padding: const EdgeInsets.only(bottom: ApplianceSpacing.tight),
       child: ApplianceSurface(
@@ -80,8 +80,7 @@ class AppliancePopover extends StatelessWidget {
   });
 
   /// Builds the opener; `anchor.toggle` opens and closes it.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
-  builder;
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor) builder;
 
   /// Builds what it holds; `close` shuts it.
   final Widget Function(BuildContext context, VoidCallback close) content;
@@ -219,7 +218,7 @@ class ApplianceTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
+    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
     return RawTooltipPlacement(
       placement: const RawPopoverPlacement(
         side: RawPopoverSide.above,
@@ -384,8 +383,7 @@ class ApplianceMenu extends StatelessWidget {
   final List<RawMenuEntry> entries;
 
   /// Builds the key that opens it; `anchor.toggle` opens and closes it.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
-  builder;
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor) builder;
 
   /// Its name for a screen reader.
   final String? semanticLabel;
@@ -533,7 +531,7 @@ class ApplianceBanner extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final layered = DesignStyleOf([style, theme.bannerStyle], const {});
+    final layered = RawStyleOf([style, theme.bannerStyle], const {});
     final lamp = switch (tone) {
       ApplianceBannerTone.info => c.signal,
       ApplianceBannerTone.ready => c.ready,

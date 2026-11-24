@@ -67,7 +67,7 @@ Color _faint(ApplianceColors c, double night) =>
 /// How the charts write a value with no words of the caller's: in the
 /// reader's digits, at its scale's decimals on the axis and its own (up to
 /// three) in the readout.
-const DesignChartValueFormat _values = DesignChartValueFormat();
+const RawChartValueFormat _values = RawChartValueFormat();
 
 /// The window a chart stands in, and what it shows while loading or empty.
 class _Window extends StatelessWidget {
@@ -87,7 +87,7 @@ class _Window extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    final layered = RawStyleOf([style, theme.chartStyle], const {});
     return SizedBox(
       height: height,
       child: ApplianceSurface(
@@ -281,21 +281,21 @@ class _SeriesChartState extends State<_SeriesChart> {
         applianceLabelSize(context, label, axisStyle).width + 8,
       ),
     );
-    final chart = DesignChart(
+    final chart = RawChart(
       semanticLabel: widget.semanticLabel,
       series: [
         for (final s in widget.series)
-          DesignChartSeries(
+          RawChartSeries(
             label: s.label,
             points: [
               for (final (i, v) in s.values.take(_count).indexed)
-                DesignChartPoint(i.toDouble(), v),
+                RawChartPoint(i.toDouble(), v),
             ],
           ),
       ],
       xAxis: widget.mark == _Mark.bar
-          ? DesignChartXAxis.band
-          : DesignChartXAxis.linear,
+          ? RawChartXAxis.band
+          : RawChartXAxis.linear,
       categories: widget.labels,
       formatX: (x) {
         final i = x.round();
@@ -308,7 +308,7 @@ class _SeriesChartState extends State<_SeriesChart> {
       // needs; the labels at the foot.
       yLabelGutter: (ticks) => math.max(
         34 * factor,
-        DesignScaleTick.widestLabel(
+        RawScaleTick.widestLabel(
               ticks,
               style: axisStyle,
               textScaler: scale,
@@ -394,7 +394,7 @@ class _SeriesChartState extends State<_SeriesChart> {
 /// [child] (the readout) at the top of [chart]'s plot, on the far side from
 /// point [at]: past the plot's middle it stands at the plot's left, else at
 /// its right.
-Widget _farFrom(DesignChartDetails chart, int at, Widget child) {
+Widget _farFrom(RawChartDetails chart, int at, Widget child) {
   final plot = chart.plotArea;
   final left = chart.x.map(at.toDouble()) > plot.center.dx;
   return Positioned(
@@ -479,7 +479,7 @@ class _SeriesPainter extends CustomPainter {
   final _Mark mark;
 
   // ui_core's plot, scales, ticks, the values as drawn and the pick.
-  final DesignChartDetails chart;
+  final RawChartDetails chart;
   final List<Color> colours;
   final Color grid;
   final TextStyle scale;
@@ -490,14 +490,15 @@ class _SeriesPainter extends CustomPainter {
   final double foot;
   final Color glass;
 
-  // [within]: the width the words keep inside (a label at the plot's end
-  // stays on the glass rather than running off its edge).
+  // [within]: the start and the end the words keep between (a label at
+  // either end of the plot stays on the glass, clear of the scale's figures,
+  // rather than running under them or off the edge).
   void _text(
     Canvas canvas,
     String s,
     Offset at, {
     double align = 0,
-    double? within,
+    (double, double)? within,
   }) {
     final tp = TextPainter(
       text: TextSpan(text: s, style: scale),
@@ -505,8 +506,8 @@ class _SeriesPainter extends CustomPainter {
       textScaler: textScaler,
     )..layout();
     var left = at.dx - tp.width * align;
-    if (within != null) {
-      left = left.clamp(0.0, math.max(0.0, within - tp.width));
+    if (within case (final start, final end)) {
+      left = left.clamp(start, math.max(start, end - tp.width));
     }
     tp
       ..paint(canvas, Offset(left, at.dy - tp.height / 2))
@@ -538,7 +539,8 @@ class _SeriesPainter extends CustomPainter {
         align: rtl ? 0 : 1,
       );
     }
-    // The labels under it: every one that fits.
+    // The labels under it: every one that fits, within the glass's width, so
+    // the first and last stand clear of the scale's figures at its side.
     final every = math.max(
       1,
       (count * labelSpacing / math.max(plot.width, 1)).ceil(),
@@ -549,7 +551,7 @@ class _SeriesPainter extends CustomPainter {
         labels[i],
         Offset(x(i), size.height - foot / 2 + 2),
         align: 0.5,
-        within: size.width,
+        within: (plot.left, plot.right),
       );
     }
     // The cursor at the readout's point.
@@ -565,7 +567,7 @@ class _SeriesPainter extends CustomPainter {
     }
     if (mark == _Mark.bar) {
       final n = series.length;
-      final band = (chart.x as DesignBandScale).step.abs();
+      final band = (chart.x as RawBandScale).step.abs();
       final gap = band * 0.24;
       final w = (band - gap) / n;
       for (final (si, values) in series.indexed) {
@@ -928,11 +930,11 @@ class _ApplianceDonutChartState extends State<ApplianceDonutChart> {
         ),
       );
     } else {
-      ring = DesignPieChart(
+      ring = RawPieChart(
         semanticLabel: widget.semanticLabel,
         slices: [
           for (final (label, value) in widget.slices)
-            DesignPieSlice(label: label, value: math.max(0.0, value)),
+            RawPieSlice(label: label, value: math.max(0.0, value)),
         ],
         holeRadius: 0.5,
         formatValue: _text,
@@ -1030,7 +1032,7 @@ class _DonutPainter extends CustomPainter {
 
   // ui_core's centre, radius, angles (counter-clockwise right to left) and
   // the pick.
-  final DesignPieChartDetails pie;
+  final RawPieChartDetails pie;
   final List<Color> colours;
   final Color slot;
 
@@ -1107,7 +1109,7 @@ class ApplianceSparkline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).chartStyle,
     ], const {});

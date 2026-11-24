@@ -118,7 +118,7 @@ class _TablesState extends State<_Tables> {
       ),
     ],
   );
-  final _tree = DesignTreeController<String>(
+  final _tree = RawTreeController<String>(
     roots: const ['Kitchen', 'Hall', 'Garden'],
     expanded: const ['Kitchen'],
     childrenOf: (node) => switch (node) {

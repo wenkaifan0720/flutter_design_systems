@@ -170,13 +170,10 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
     final enabled = onChanged != null;
     final chosen = items.where((i) => i.value == value).firstOrNull;
     final height =
-        DesignStyleOf([
-          style,
-          theme.selectStyle,
-        ], const {}).minimumSize?.height ??
+        RawStyleOf([style, theme.selectStyle], const {}).minimumSize?.height ??
         theme.controlHeight;
 
-    Widget face(DesignOverlayAnchor? anchor) {
+    Widget face(RawOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
       return Listener(
         onPointerDown: (_) => _byPointer = true,
@@ -214,7 +211,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
           semanticValue: chosen?.label,
           excludeSemantics: true,
           builder: (context, states, _) {
-            final layered = DesignStyleOf(
+            final layered = RawStyleOf(
               [style, theme.selectStyle],
               {...states, if (errorText != null) WidgetState.error},
             );
@@ -250,7 +247,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: DesignCapCenter(
+                          child: RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
                               chosen?.label ?? hintText ?? '',
@@ -411,7 +408,7 @@ class ApplianceMenuPlate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
-    final panel = DesignStyleOf([theme.menuStyle], const {});
+    final panel = RawStyleOf([theme.menuStyle], const {});
     final face = panel.on(
       ApplianceFace(
         top: theme.colors.keyTop,
@@ -580,7 +577,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                   semanticLabel: item.label,
                   excludeSemantics: true,
                   builder: (context, states, _) {
-                    final row = DesignStyleOf([theme.menuStyle], states);
+                    final row = RawStyleOf([theme.menuStyle], states);
                     final chosen = item.value == widget.value;
                     final lit =
                         item.enabled &&
@@ -616,7 +613,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                           child: Row(
                             children: [
                               Expanded(
-                                child: DesignCapCenter(
+                                child: RawCapCenter(
                                   capHeightFactor: theme.capHeightFactor,
                                   child: Text(
                                     item.label,

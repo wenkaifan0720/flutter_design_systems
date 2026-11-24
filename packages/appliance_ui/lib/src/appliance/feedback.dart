@@ -96,10 +96,7 @@ class _ApplianceProgressBarState extends State<ApplianceProgressBar>
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([
-      widget.style,
-      theme.progressStyle,
-    ], const {});
+    final layered = RawStyleOf([widget.style, theme.progressStyle], const {});
     final value = widget.value;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return Semantics(
@@ -277,10 +274,7 @@ class _ApplianceProgressRingState extends State<ApplianceProgressRing>
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([
-      widget.style,
-      theme.progressStyle,
-    ], const {});
+    final layered = RawStyleOf([widget.style, theme.progressStyle], const {});
     final value = widget.value;
     return Semantics(
       label: widget.semanticLabel,
@@ -416,7 +410,7 @@ class _ApplianceSkeletonState extends State<ApplianceSkeleton>
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final plate =
-        DesignStyleOf([widget.style, theme.progressStyle], const {}).fill ??
+        RawStyleOf([widget.style, theme.progressStyle], const {}).fill ??
         c.trough;
     return ExcludeSemantics(
       child: AnimatedBuilder(
@@ -500,7 +494,7 @@ class ApplianceStatusView extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final layered = DesignStyleOf([style, theme.displayStyle], const {});
+    final layered = RawStyleOf([style, theme.displayStyle], const {});
     final lamp =
         layered.foreground ??
         switch (status) {
@@ -619,7 +613,7 @@ class ApplianceMeter extends StatelessWidget {
     final c = theme.colors;
     final t = theme.textTheme;
     final words = valueText ?? '${(value * 100).round()}%';
-    final layered = DesignStyleOf([style, theme.displayStyle], const {});
+    final layered = RawStyleOf([style, theme.displayStyle], const {});
     return Semantics(
       label: label,
       value: words,

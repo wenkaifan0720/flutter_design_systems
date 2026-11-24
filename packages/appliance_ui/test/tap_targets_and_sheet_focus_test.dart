@@ -44,7 +44,7 @@ void main() {
     expect(find.byType(ApplianceNavigationRail), findsOneWidget);
     const DesignTapTargetCheck(
       look: 'Appliance',
-      input: DesignInput.pointer,
+      input: RawInput.pointer,
     ).check(tester.element(find.byType(ApplianceNavigationRail))).verify();
   });
 
@@ -72,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
     const DesignTapTargetCheck(
       look: 'Appliance',
-      input: DesignInput.touch,
+      input: RawInput.touch,
     ).check(tester.element(find.byType(ApplianceSheet))).verify();
   });
 
@@ -84,7 +84,7 @@ void main() {
     await tester.pumpAndSettle();
     const DesignTapTargetCheck(
       look: 'Appliance',
-      input: DesignInput.touch,
+      input: RawInput.touch,
     ).check(tester.element(find.byType(ApplianceRating))).verify();
   });
 

@@ -16,6 +16,7 @@ import 'actions.dart';
 import 'lists.dart';
 import 'material.dart';
 import 'select.dart';
+import 'text_field.dart' show ApplianceFieldLabel;
 import 'theme.dart';
 import 'internal/field_frame.dart';
 
@@ -46,8 +47,8 @@ String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
 /// A day cell's height at 1x text.
 const double _dayHeight = 44;
 
-/// A day cell's height: 44, or taller as the text grows so its key holds a
-/// two-figure day whole.
+/// A day cell's height: 44, or the look's floor under a finger (48), or
+/// taller as the text grows so its key holds a two-figure day whole.
 double _dayHeightOf(BuildContext context) {
   final theme = ApplianceTheme.of(context);
   final painter = TextPainter(
@@ -57,7 +58,7 @@ double _dayHeightOf(BuildContext context) {
     maxLines: 1,
   )..layout();
   final height = math.max(
-    _dayHeight,
+    math.max(_dayHeight, RawTapTargets.of(context).floorOn().height),
     painter.height + 2 * ApplianceSpacing.tight + 2 * ApplianceSpacing.hair,
   );
   painter.dispose();
@@ -201,7 +202,7 @@ Widget _day(
 ]) {
   final theme = ApplianceTheme.of(context);
   final c = theme.colors;
-  final layered = DesignStyleOf([style, theme.calendarStyle], states);
+  final layered = RawStyleOf([style, theme.calendarStyle], states);
   final pressed = states.contains(WidgetState.pressed);
   final focused = states.contains(WidgetState.focused);
   final previewEnd = day.inPreview && day.isPreviewEnd;
@@ -281,10 +282,10 @@ Widget _day(
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: Text(
-                          '${day.date.day}',
+                          day.label,
                           maxLines: 1,
                           softWrap: false,
                           style: layered.text(
@@ -472,7 +473,12 @@ class _PickerKey extends StatelessWidget {
     required this.semanticValue,
     required this.plate,
     required this.style,
+    this.labelText,
   });
+
+  /// The words over the key, drawn with it: a plate that opens above stands
+  /// over them rather than on them.
+  final String? labelText;
 
   final String text;
   final bool empty;
@@ -487,7 +493,7 @@ class _PickerKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    Widget face(DesignOverlayAnchor? anchor) {
+    Widget face(RawOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
       return RawButton(
         onPressed: anchor?.toggle,
@@ -496,7 +502,7 @@ class _PickerKey extends StatelessWidget {
         semanticValue: semanticValue,
         excludeSemantics: true,
         builder: (context, states, _) {
-          final layered = DesignStyleOf(
+          final layered = RawStyleOf(
             [style, theme.selectStyle],
             {...states, if (error) WidgetState.error},
           );
@@ -534,7 +540,7 @@ class _PickerKey extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: theme.capHeightFactor,
                           child: Text(
                             text,
@@ -567,7 +573,22 @@ class _PickerKey extends StatelessWidget {
       );
     }
 
-    if (!enabled) return face(null);
+    // The label and the key are what the plate opens from: above, it stands
+    // clear of the label; below, it hangs from the key, over the help.
+    Widget labelled(Widget key) {
+      final label = labelText;
+      if (label == null) return key;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ExcludeSemantics(child: ApplianceFieldLabel(label, enabled: enabled)),
+          key,
+        ],
+      );
+    }
+
+    if (!enabled) return labelled(face(null));
     return RawPopover(
       semanticLabel: semanticLabel,
       placement: const RawPopoverPlacement(
@@ -580,7 +601,7 @@ class _PickerKey extends StatelessWidget {
       ),
       dampingRatio: ApplianceMotion.lid.dampingRatio,
       stiffness: ApplianceMotion.lid.stiffness,
-      anchorBuilder: (context, anchor) => face(anchor),
+      anchorBuilder: (context, anchor) => labelled(face(anchor)),
       overlayBuilder: (context, info) => ApplianceMenuReveal(
         animation: info.animation,
         below: info.side != RawPopoverSide.above,
@@ -727,12 +748,13 @@ class ApplianceDatePicker extends StatelessWidget {
     final chosen = value;
     final words = RawWidgetsLocalizations.of(context);
     return applianceFieldFrame(
-      labelText: labelText,
-      semanticLabel: semanticLabel,
+      // The key draws the label: the plate opens from both.
+      semanticLabel: semanticLabel ?? labelText,
       helperText: helperText,
       errorText: errorText,
       enabled: enabled,
       control: _PickerKey(
+        labelText: labelText,
         text: chosen == null ? hintText : _dateLabel(words, chosen),
         empty: chosen == null,
         enabled: enabled,
@@ -841,12 +863,13 @@ class ApplianceDateRangePicker extends StatelessWidget {
     }
 
     return applianceFieldFrame(
-      labelText: labelText,
-      semanticLabel: semanticLabel,
+      // The key draws the label: the plate opens from both.
+      semanticLabel: semanticLabel ?? labelText,
       helperText: helperText,
       errorText: errorText,
       enabled: enabled,
       control: _PickerKey(
+        labelText: labelText,
         text: range == null ? hintText : rangeText(range),
         empty: range == null,
         enabled: enabled,
@@ -961,7 +984,7 @@ class _TimeDigits extends StatelessWidget {
       children: [
         ExcludeSemantics(child: arrow(up: true)),
         const SizedBox(height: ApplianceSpacing.tight),
-        DesignValueHandle(
+        RawValueHandle(
           value: value.toDouble(),
           min: 0,
           max: max.toDouble(),
@@ -1069,7 +1092,7 @@ class ApplianceTimePicker extends StatelessWidget {
   );
 
   Widget _picker(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).displayStyle,
     ], const {});

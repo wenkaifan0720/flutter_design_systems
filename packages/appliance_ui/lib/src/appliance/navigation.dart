@@ -81,7 +81,7 @@ class ApplianceAppBar extends StatelessWidget {
         ),
         semanticLabel: RawWidgetsLocalizations.of(context).backButtonTooltip,
         onPressed: onBack,
-        style: const DesignStyle(
+        style: const RawStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(40)),
         ),
       );
@@ -96,7 +96,7 @@ class ApplianceAppBar extends StatelessWidget {
         icon: const Icon(LucideIcons.x),
         semanticLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
         onPressed: onClose,
-        style: const DesignStyle(
+        style: const RawStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(40)),
         ),
       );
@@ -123,7 +123,7 @@ class ApplianceAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
-    final layered = DesignStyleOf([style], const {});
+    final layered = RawStyleOf([style], const {});
     final media = MediaQuery.of(context);
     final margin = ApplianceSpacing.pageMargin(media.size.width);
     final start = onBack != null ? backKey(context, onBack!) : leading;
@@ -158,7 +158,7 @@ class ApplianceAppBar extends StatelessWidget {
                           ? const SizedBox()
                           : Semantics(
                               header: true,
-                              child: DesignCapCenter(
+                              child: RawCapCenter(
                                 capHeightFactor: theme.capHeightFactor,
                                 child: Text(
                                   title!,
@@ -264,7 +264,7 @@ class ApplianceBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = DesignStyleOf([
+    final look = RawStyleOf([
       style,
       ApplianceTheme.of(context).tagStyle,
     ], const {});
@@ -462,7 +462,7 @@ class _ActKey extends StatelessWidget {
 typedef _KeyContent = Widget Function(
   BuildContext context,
   ApplianceFace face,
-  DesignStyleOf layered,
+  RawStyleOf layered,
 );
 
 class _NavKey extends StatelessWidget {
@@ -510,7 +510,7 @@ Widget _navKeyPaint(
   _KeyContent content,
 ) {
   final theme = ApplianceTheme.of(context);
-  final layered = DesignStyleOf(layers, {
+  final layered = RawStyleOf(layers, {
     ...states,
     if (current) WidgetState.selected,
   });
@@ -525,7 +525,7 @@ Widget _navKeyPaint(
   );
 }
 
-TextStyle _navLabel(BuildContext context, DesignStyleOf style) => style.text(
+TextStyle _navLabel(BuildContext context, RawStyleOf style) => style.text(
   ApplianceTheme.of(context).textTheme.secondary
       .copyWith(fontSize: 12, height: 16 / 12, fontWeight: FontWeight.w500),
 );
@@ -540,7 +540,7 @@ double _navigationKeyWidth(
     <WidgetState>{},
     {WidgetState.selected},
   ]) {
-    final label = _navLabel(context, DesignStyleOf(layers, states));
+    final label = _navLabel(context, RawStyleOf(layers, states));
     // Measured as the keys set their names: at most 1.3x.
     final scaler = MediaQuery.textScalerOf(context)
         .clamp(maxScaleFactor: _navigationTextScale);
@@ -564,7 +564,7 @@ Widget _stackedKey(
   ApplianceDestination d,
   bool current,
   ApplianceFace face,
-  DesignStyleOf layered, {
+  RawStyleOf layered, {
   bool rail = false,
 }) {
   final name = Text(
@@ -589,7 +589,7 @@ Widget _stackedFace(
   ApplianceDestination d,
   bool current,
   ApplianceFace face,
-  DesignStyleOf layered,
+  RawStyleOf layered,
   Widget name, {
   required bool rail,
 }) {
@@ -642,7 +642,7 @@ Widget _rowKey(
   ApplianceDestination d,
   bool current,
   ApplianceFace face,
-  DesignStyleOf layered,
+  RawStyleOf layered,
 ) {
   final theme = ApplianceTheme.of(context);
   return SizedBox(
@@ -656,7 +656,7 @@ Widget _rowKey(
           Icon(d.icon, size: layered.iconSize ?? 18, color: face.foreground),
           const SizedBox(width: ApplianceSpacing.medium),
           Expanded(
-            child: DesignCapCenter(
+            child: RawCapCenter(
               capHeightFactor: theme.capHeightFactor,
               child: Text(
                 d.label,
@@ -1047,7 +1047,7 @@ class ApplianceSideNavigation extends StatelessWidget {
 /// start; wider, an [ApplianceSideNavigation] with [header] and
 /// [sideFooter].
 ///
-/// From 600 px it stands on ui_core's [DesignAdaptiveShell]: the rail's or
+/// From 600 px it stands on ui_core's [RawAdaptiveShell]: the rail's or
 /// the side panel's places are one tab stop, the arrows moving along them,
 /// each a tab to a screen reader ("Tab 2 of 4"), the side panel named the
 /// navigation menu; F6 moves focus between the places and the page. A
@@ -1149,15 +1149,13 @@ class ApplianceScaffold extends StatelessWidget {
         ],
       );
     }
-    return DesignAdaptiveShell(
+    return RawAdaptiveShell(
       // Appliance's widths: a rail to 1024, the side panel wider.
-      mode: width < 1024
-          ? DesignNavigationMode.rail
-          : DesignNavigationMode.sidebar,
+      mode: width < 1024 ? RawNavigationMode.rail : RawNavigationMode.sidebar,
       showNavigation: showNavigation,
       destinations: [
         for (final d in destinations)
-          DesignNavigationDestination(
+          RawNavigationDestination(
             label: d.badge == null ? d.label : '${d.label}, ${d.badge}',
             icon: d.icon,
           ),
@@ -1175,9 +1173,15 @@ class ApplianceScaffold extends StatelessWidget {
             current,
             layers,
             (context, face, layered) => switch (details.mode) {
-              DesignNavigationMode.rail || DesignNavigationMode.bar =>
-                _stackedKey(context, d, current, face, layered, rail: true),
-              DesignNavigationMode.sidebar => _rowKey(
+              RawNavigationMode.rail || RawNavigationMode.bar => _stackedKey(
+                context,
+                d,
+                current,
+                face,
+                layered,
+                rail: true,
+              ),
+              RawNavigationMode.sidebar => _rowKey(
                 context,
                 d,
                 current,
@@ -1189,8 +1193,8 @@ class ApplianceScaffold extends StatelessWidget {
         );
       },
       navigationBuilder: (context, details) => switch (details.mode) {
-        DesignNavigationMode.rail ||
-        DesignNavigationMode.bar => ApplianceNavigationRail._shell(
+        RawNavigationMode.rail ||
+        RawNavigationMode.bar => ApplianceNavigationRail._shell(
           destinations: destinations,
           keys: details.destinations,
           leading: act == null
@@ -1206,7 +1210,7 @@ class ApplianceScaffold extends StatelessWidget {
                   ],
                 ),
         ),
-        DesignNavigationMode.sidebar => ApplianceSideNavigation._shell(
+        RawNavigationMode.sidebar => ApplianceSideNavigation._shell(
           keys: details.destinations,
           header: act == null
               ? top

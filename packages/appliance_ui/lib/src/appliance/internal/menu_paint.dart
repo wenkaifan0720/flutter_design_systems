@@ -95,7 +95,7 @@ class MenuShortcut extends StatelessWidget {
   /// The caps of [keys].
   const MenuShortcut(this.keys, {super.key});
 
-  /// The shortcut's label, as `designShortcutLabel` writes it.
+  /// The shortcut's label, as `rawShortcutLabel` writes it.
   final String keys;
 
   /// [keys] cut into its caps: at each `+` between two keys; with none, at

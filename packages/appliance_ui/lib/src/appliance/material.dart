@@ -510,7 +510,7 @@ class AnimatedApplianceSurface extends StatefulWidget {
 
   /// Whether it is a control's face (a key, a well) or a surface whose
   /// contents are read on their own (a faceplate, a row). A control's face
-  /// is marked as one item ([DesignKeylineFace]) for the layout checks in
+  /// is marked as one item ([RawKeylineFace]) for the layout checks in
   /// `package:ui_core_test`; the mark lays out and paints nothing.
   final bool control;
 
@@ -548,7 +548,7 @@ class _AnimatedApplianceSurfaceState extends State<AnimatedApplianceSurface>
     final up = going.lift > _to.lift || going.travel < _to.travel;
     _from = _now;
     _to = going;
-    final policy = DesignMotionPolicy.of(context);
+    final policy = RawMotionPolicy.of(context);
     final token = down
         ? ApplianceMotion.press
         : up
@@ -581,7 +581,7 @@ class _AnimatedApplianceSurfaceState extends State<AnimatedApplianceSurface>
     animation: _t,
     builder: (context, child) {
       final surface = ApplianceSurface(face: _now, child: child);
-      return widget.control ? DesignKeylineFace(child: surface) : surface;
+      return widget.control ? RawKeylineFace(child: surface) : surface;
     },
     child: widget.child,
   );
@@ -838,7 +838,7 @@ class _ApplianceLampState extends State<ApplianceLamp>
     if (old.lit == widget.lit) return;
     _t.springTo(
       widget.lit ? 1 : 0,
-      DesignMotionPolicy.of(context).effects(
+      RawMotionPolicy.of(context).effects(
         dampingRatio: ApplianceMotion.lamp.dampingRatio,
         stiffness: ApplianceMotion.lamp.stiffness,
       ),
@@ -938,7 +938,7 @@ class _LampPainter extends CustomPainter {
 /// plastic, top and bottom), its `foreground` (the legend), its `edge` or
 /// its `side`'s colour (a fine edge over the rim). The depth, the light and
 /// the corners stay the look's.
-extension ApplianceStyleFace on DesignStyleOf {
+extension ApplianceStyleFace on RawStyleOf {
   /// [face] in these layers' colours.
   ApplianceFace on(ApplianceFace face) {
     final fill = this.fill;
