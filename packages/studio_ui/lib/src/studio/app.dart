@@ -197,31 +197,35 @@ class StudioScreen extends StatelessWidget {
         if (hug) Flexible(child: content) else Expanded(child: content),
         if (foot != null)
           // The foot: a strip of the bar's metal, its action at the end
-          // on a desk, the width of the page on a phone.
-          StudioSurface(
-            face: StudioFace(
-              fill: c.bar,
-              fillLow: c.barLow,
-              depth: StudioDepth.level,
-              radius: 0,
-              brushed: !sheet,
-            ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                margin,
-                StudioSpacing.medium,
-                margin,
-                StudioSpacing.medium + media.padding.bottom,
+          // on a desk, the width of the page on a phone. A toast stands
+          // above it, as a Scaffold keeps a snackbar above its persistent
+          // footer buttons.
+          RawToasterKeepClear(
+            child: StudioSurface(
+              face: StudioFace(
+                fill: c.bar,
+                fillLow: c.barLow,
+                depth: StudioDepth.level,
+                radius: 0,
+                brushed: !sheet,
               ),
-              child: framed
-                  ? Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 360),
-                        child: foot,
-                      ),
-                    )
-                  : foot,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  margin,
+                  StudioSpacing.medium,
+                  margin,
+                  StudioSpacing.medium + media.padding.bottom,
+                ),
+                child: framed
+                    ? Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 360),
+                          child: foot,
+                        ),
+                      )
+                    : foot,
+              ),
             ),
           ),
       ],
