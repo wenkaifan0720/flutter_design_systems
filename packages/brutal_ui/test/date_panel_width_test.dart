@@ -1,10 +1,11 @@
 // A date field's calendar stands edge to edge with its field, as a select's
-// list does, while the field is at most half again the calendar's own width
+// list does, while the field is at most half again the panel's own width
 // (360 a month, Material's docked date picker's); under a wider field it
 // stands at its own width from the field's start. It meets the field on the
-// field's rule, its own ruled table the only frame: it stood 4 below the
-// field in a padded frame of its own, and under a 640 field on a desk window
-// it spread 640 wide over the form's actions.
+// field's rule, the month in a panel of its own at the look's medium inset,
+// as a menu stands (date_panel_surface_test.dart): it stood 4 below the
+// field, and under a 640 field on a desk window it spread 640 wide over the
+// form's actions.
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -66,11 +67,12 @@ void main() {
       ),
     ),
   };
-  // (window, field, the calendar's width for a date, for a span): a span
-  // on a window of 600 or more shows two months, at least 600.
+  // (window, field, the panel's width for a date, for a span): a span on a
+  // window of 600 or more shows two months, at least 600 and the panel's
+  // inset (628).
   const cases = [
     (390.0, 358.0, 358.0, 358.0),
-    (1440.0, 480.0, 480.0, 600.0),
+    (1440.0, 480.0, 480.0, 628.0),
     (1440.0, 640.0, 360.0, 640.0),
   ];
   for (final MapEntry(key: kind, value: (icon, picker)) in pickers.entries) {
@@ -122,10 +124,13 @@ void main() {
             moreOrLessEquals(expected, epsilon: .5),
             reason: 'panel $panel, field $field',
           );
-          // On the field's own rule, its table its only frame.
+          // On the field's own rule, the month at the panel's inset.
           final w = BrutalThemeData.light().borderWidth;
           expect(panel.top, moreOrLessEquals(field.bottom - w, epsilon: .5));
-          expect(tester.getRect(find.byType(BrutalCalendar)), panel);
+          expect(
+            tester.getRect(find.byType(BrutalCalendar)),
+            panel.deflate(w + BrutalSpacing.medium),
+          );
         });
       }
     }

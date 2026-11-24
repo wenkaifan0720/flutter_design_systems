@@ -1,3 +1,8 @@
+## 0.5.1
+
+- `BrutalDatePicker`'s and `BrutalDateRangePicker`'s calendar drops in a panel of its own, as a menu does: the look's rule round the panel's fill on the hard ink shadow, the month's ruled table inside at the look's medium inset. It still meets its field on the field's rule, edge to edge with a phone's field, and stands 360 wide from a wide field's start (a span's two months at least 628). A popover over a form reads as one surface standing over it. In 0.5.0 the month's table was its only frame: on a phone, a calendar that opened above its field ended partway into the field above it, with a strip of half-cut words over its top rule.
+- A toast stands above `BrutalScreen`'s `footer` (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its persistent footer buttons. It stood over the page's one action.
+
 ## 0.5.0
 
 - Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).

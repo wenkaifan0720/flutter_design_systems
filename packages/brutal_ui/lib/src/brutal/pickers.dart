@@ -698,14 +698,17 @@ class _PickerField extends StatelessWidget {
   }
 }
 
-/// The table a picker drops: the calendar's own ruled table raised on the
-/// hard ink shadow, its ground from [layers], its rules the only frame.
+/// The panel a picker drops: one raised panel, as a menu's, in the look's
+/// rule on the hard ink shadow, its ground and rule from [layers], the
+/// calendar's ruled table inside at the look's medium inset. It stands over
+/// the form as one surface: where it opens above its field its own fill and
+/// rule end it, not the table's first rule over the words beneath.
 ///
 /// It stands as wide as its field, edge to edge with it, as a select's list
-/// does (never under the least its [months] take), while the field is at
-/// most half again the calendar's own width; under a wider field (a desk
-/// window's form) it stands at its own width from the field's start, 360 a
-/// month, as Material's docked date picker does.
+/// does (never under the least its [months] and its inset take), while the
+/// field is at most half again the panel's own width; under a wider field (a
+/// desk window's form) it stands at its own width from the field's start,
+/// 360 a month, as Material's docked date picker does.
 Widget _panel(
   BuildContext context,
   RawPopoverInfo info,
@@ -716,7 +719,8 @@ Widget _panel(
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
   final layered = RawStyleOf(layers, const {});
-  final least = months == 1 ? 320.0 : 600.0;
+  final inset = BrutalSpacing.medium + theme.borderWidth;
+  final least = (months == 1 ? 320.0 : 600.0) + 2 * inset;
   final own = 360.0 * months;
   final field = info.anchorRect.width;
   final width = math.min(
@@ -734,19 +738,22 @@ Widget _panel(
       child: BrutalSurface(
         face: BrutalFace(
           fill: layered.fill ?? c.surface,
-          border: c.ink.withValues(alpha: 0),
-          borderWidth: 0,
+          border: layered.side?.color ?? layered.edge ?? c.ink,
           foreground: c.ink,
           shadow: c.ink,
         ),
-        child: SingleChildScrollView(primary: false, child: child),
+        child: SingleChildScrollView(
+          primary: false,
+          padding: const EdgeInsets.all(BrutalSpacing.medium),
+          child: child,
+        ),
       ),
     ),
   );
 }
 
-// How much wider than the calendar's own width a field may be and still
-// have its calendar stand edge to edge with it.
+// How much wider than the panel's own width a field may be and still have
+// its calendar stand edge to edge with it.
 const double _fieldWideUpTo = 1.5;
 
 /// A label, a field and its message round [field], as the look's fields

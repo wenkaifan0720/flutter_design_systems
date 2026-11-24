@@ -192,26 +192,37 @@ class BrutalScreen extends StatelessWidget {
           children: [
             ?bar,
             if (sheet) Flexible(child: content) else Expanded(child: content),
-            if (foot != null) ...[
-              const BrutalRule(),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  margin,
-                  BrutalSpacing.regular,
-                  margin,
-                  BrutalSpacing.regular + media.padding.bottom,
+            // The foot, on its rule. A toast stands above it, as a Scaffold
+            // keeps a snackbar above its persistent footer buttons.
+            if (foot != null)
+              RawToasterKeepClear(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const BrutalRule(),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        margin,
+                        BrutalSpacing.regular,
+                        margin,
+                        BrutalSpacing.regular + media.padding.bottom,
+                      ),
+                      child: framed
+                          ? Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 360,
+                                ),
+                                child: foot,
+                              ),
+                            )
+                          : foot,
+                    ),
+                  ],
                 ),
-                child: framed
-                    ? Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 360),
-                          child: foot,
-                        ),
-                      )
-                    : foot,
               ),
-            ],
           ],
         ),
       ),
