@@ -1,4 +1,4 @@
-/// Live examples of the Clay parts in [DesignInventoryRow.all]: each one
+/// Live examples of the Clay parts in [RawInventoryRow.all]: each one
 /// answers to its keys, pointer and screen reader as it will in an app.
 library;
 
@@ -36,8 +36,8 @@ const _places = [
 final _first = DateTime(2026);
 final _last = DateTime(2027, 12, 31);
 
-DesignInventoryEntry _row(String id, WidgetBuilder builder) =>
-    DesignInventoryEntry.present(id, builder);
+RawInventoryEntry _row(String id, WidgetBuilder builder) =>
+    RawInventoryEntry.present(id, builder);
 
 /// A value an example keeps, so it answers as it will in an app.
 class _Live<T> extends StatefulWidget {
@@ -62,10 +62,10 @@ class _LiveState<T> extends State<_Live<T>> {
 /// The component examples in the Clay inventory.
 abstract final class ClayInventory {
   /// Component rows with their example builders and availability.
-  static final DesignInventory registry = _registry();
+  static final RawInventory registry = _registry();
 }
 
-DesignInventory _registry() => DesignInventory(
+RawInventory _registry() => RawInventory(
   look: 'Clay',
   entries: [
     // Actions.
@@ -81,7 +81,7 @@ DesignInventory _registry() => DesignInventory(
         tooltip: 'Edit',
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       "Clay's one action is the coral ball at the dock's end",
     ),

@@ -204,7 +204,7 @@ class _ClaySliderState extends State<ClaySlider> {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final enabled = widget.onChanged != null;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.sliderStyle],
       {if (!enabled) WidgetState.disabled},
     );
@@ -270,7 +270,7 @@ class _ClaySliderState extends State<ClaySlider> {
                   PositionedDirectional(
                     start: fraction * usable,
                     top: (_slot - _ball) / 2,
-                    child: DesignValueHandle(
+                    child: RawValueHandle(
                       value: widget.value,
                       min: widget.min,
                       max: widget.max,
@@ -380,7 +380,7 @@ class ClayRangeSlider extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final enabled = onChanged != null;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.sliderStyle],
       {if (!enabled) WidgetState.disabled},
     );
@@ -548,7 +548,7 @@ class _ClayRatingState extends State<ClayRating> {
         ),
       ),
       itemBuilder: (context, item) {
-        final layered = DesignStyleOf([
+        final layered = RawStyleOf([
           widget.style,
           theme.ratingStyle,
         ], item.states);
@@ -746,7 +746,7 @@ class ClayFileDrop extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final enabled = onChoose != null;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.fileDropStyle],
       {if (!enabled) WidgetState.disabled},
     );
@@ -818,7 +818,7 @@ class ClayFileDrop extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: DesignCapCenter(
+                              child: RawCapCenter(
                                 capHeightFactor: clayCapHeightFactor,
                                 child: Text(
                                   file.name,

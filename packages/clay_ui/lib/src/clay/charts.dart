@@ -24,16 +24,16 @@ import 'surface.dart';
 import 'theme.dart';
 
 /// A named run of points, in order along x.
-typedef ClayChartSeries = DesignChartSeries;
+typedef ClayChartSeries = RawChartSeries;
 
 /// A point of a [ClayChartSeries]: x and y, or a gap where y is null.
-typedef ClayChartPoint = DesignChartPoint;
+typedef ClayChartPoint = RawChartPoint;
 
 /// What a chart's x values are: numbers, times or categories.
-typedef ClayChartXAxis = DesignChartXAxis;
+typedef ClayChartXAxis = RawChartXAxis;
 
 /// A slice of a [ClayPieChart].
-typedef ClayPieSlice = DesignPieSlice;
+typedef ClayPieSlice = RawPieSlice;
 
 /// The pastels after the accent, in the order a chart takes them: each one
 /// a hue away from the one before it.
@@ -145,7 +145,7 @@ Color _oklch(double lightness, double chroma, double hue) {
 /// when [pastel].
 List<Color> _palette(
   ClayColors c,
-  DesignStyleOf layered,
+  RawStyleOf layered,
   int count, {
   bool pastel = false,
 }) => [
@@ -203,7 +203,7 @@ Path _smooth(List<Offset> p) {
 }
 
 /// The runs of [s] between its gaps, as drawn.
-List<List<Offset>> _runs(DesignChartDetails d, DesignChartSeries s) {
+List<List<Offset>> _runs(RawChartDetails d, RawChartSeries s) {
   final runs = <List<Offset>>[];
   var run = <Offset>[];
   for (final p in s.points) {
@@ -311,7 +311,7 @@ abstract class _AxesPainter extends CustomPainter {
     required this.direction,
   });
 
-  final DesignChartDetails details;
+  final RawChartDetails details;
   final ClayColors colors;
   final TextStyle labelStyle;
   final TextDirection direction;
@@ -464,7 +464,7 @@ class _LinePainter extends _AxesPainter {
         if (a.index >= s.points.length || s.points[a.index].y == null) {
           continue;
         }
-        final at = d.positionOf(DesignChartPointRef(i, a.index));
+        final at = d.positionOf(RawChartPointRef(i, a.index));
         _ball(canvas, c, at, palette[i], i == a.series ? 7 : 5);
       }
     }
@@ -481,10 +481,10 @@ class _LinePainter extends _AxesPainter {
 /// Where each bar of [d] stands: series side by side in their band, each
 /// at most 56 wide, from zero to its value.
 List<({int series, int index, Rect rect})> _bars(
-  DesignChartDetails d,
+  RawChartDetails d,
   TextDirection direction,
 ) {
-  final band = d.x as DesignBandScale;
+  final band = d.x as RawBandScale;
   final base = d.y.map(d.y.min <= 0 && d.y.max >= 0 ? 0 : d.y.min);
   final n = math.max(1, d.series.length);
   final inner = n > 1 ? 4.0 : 0.0;
@@ -529,7 +529,7 @@ class _BarPainter extends _AxesPainter {
   void paint(Canvas canvas, Size size) {
     final d = details;
     final c = colors;
-    final band = d.x as DesignBandScale;
+    final band = d.x as RawBandScale;
     final plot = d.plotArea;
     final a = d.active;
     if (a != null) {
@@ -712,14 +712,14 @@ String _xWords(
 ) {
   if (format != null) return format(x);
   switch (axis) {
-    case DesignChartXAxis.band:
+    case RawChartXAxis.band:
       final i = x.round();
       return categories != null && i >= 0 && i < categories.length
           ? categories[i]
           : l.formatDecimal(i + 1.0);
-    case DesignChartXAxis.time:
+    case RawChartXAxis.time:
       return l.formatFullDate(DateTime.fromMillisecondsSinceEpoch(x.round()));
-    case DesignChartXAxis.linear:
+    case RawChartXAxis.linear:
       return l.formatDecimal(x);
   }
 }
@@ -754,15 +754,15 @@ class _Cartesian extends StatelessWidget {
   final List<Color> palette;
   final Color? labelColor;
   final CustomPainter Function(
-    DesignChartDetails details,
+    RawChartDetails details,
     TextStyle labels,
     TextDirection direction,
   )
   paint;
-  final List<Widget> Function(DesignChartDetails details)? marks;
+  final List<Widget> Function(RawChartDetails details)? marks;
   final bool yIncludesZero;
   final String? semanticSummary;
-  final ValueChanged<DesignChartPointRef?>? onActivePointChanged;
+  final ValueChanged<RawChartPointRef?>? onActivePointChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -776,7 +776,7 @@ class _Cartesian extends StatelessWidget {
     );
     final chart = SizedBox(
       height: height,
-      child: DesignChart(
+      child: RawChart(
         series: series,
         semanticLabel: semanticLabel,
         semanticSummary: semanticSummary,
@@ -864,7 +864,7 @@ class ClayLineChart extends StatelessWidget {
     super.key,
     required this.series,
     required this.semanticLabel,
-    this.xAxis = DesignChartXAxis.linear,
+    this.xAxis = RawChartXAxis.linear,
     this.categories,
     this.formatX,
     this.formatY,
@@ -903,7 +903,7 @@ class ClayLineChart extends StatelessWidget {
   final String? semanticSummary;
 
   /// The picked point changed.
-  final ValueChanged<DesignChartPointRef?>? onActivePointChanged;
+  final ValueChanged<RawChartPointRef?>? onActivePointChanged;
 
   /// This chart's own style, over [ClayThemeData.lineChartStyle]: `fill`
   /// the first series, `foreground` the axes' words.
@@ -922,7 +922,7 @@ class ClayLineChart extends StatelessWidget {
     required ClayStyle? themeStyle,
   }) {
     final c = ClayTheme.of(context).colors;
-    final layered = DesignStyleOf([style, themeStyle], const {});
+    final layered = RawStyleOf([style, themeStyle], const {});
     final palette = _palette(c, layered, series.length);
     return _Cartesian(
       series: series,
@@ -1030,7 +1030,7 @@ class ClayBarChart extends StatelessWidget {
   final String? semanticSummary;
 
   /// The picked bar changed.
-  final ValueChanged<DesignChartPointRef?>? onActivePointChanged;
+  final ValueChanged<RawChartPointRef?>? onActivePointChanged;
 
   /// This chart's own style, over [ClayThemeData.barChartStyle]: `fill` the
   /// first series, `foreground` the axes' words.
@@ -1040,13 +1040,13 @@ class ClayBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.barChartStyle], const {});
+    final layered = RawStyleOf([style, theme.barChartStyle], const {});
     final palette = _palette(c, layered, series.length, pastel: true);
     return _Cartesian(
       series: series,
       semanticLabel: semanticLabel,
       semanticSummary: semanticSummary,
-      xAxis: DesignChartXAxis.band,
+      xAxis: RawChartXAxis.band,
       categories: categories,
       formatX: null,
       formatY: formatY,
@@ -1114,7 +1114,7 @@ class _DonutPainter extends CustomPainter {
     required this.mirrored,
   });
 
-  final DesignPieChartDetails details;
+  final RawPieChartDetails details;
   final ClayColors colors;
   final List<Color> palette;
 
@@ -1124,17 +1124,17 @@ class _DonutPainter extends CustomPainter {
 
   /// The ring's outer edge, inside the chart's radius: room for a piece to
   /// ease out and for its shadow.
-  static double outerOf(DesignPieChartDetails d) => math.max(0, d.radius - 8);
+  static double outerOf(RawPieChartDetails d) => math.max(0, d.radius - 8);
 
   /// The ring's inner edge: the hole's, or for a pie a small hub of the
   /// ground the pieces part round.
-  static double innerOf(DesignPieChartDetails d) => d.holeRadius > 0
+  static double innerOf(RawPieChartDetails d) => d.holeRadius > 0
       ? math.min(d.holeRadius, outerOf(d) - 1)
       : math.min(6, outerOf(d) / 8);
 
   /// The well pressed into the hole, a ring of the ground inside the
   /// pieces; null when the hole is too small for one.
-  static double? wellOf(DesignPieChartDetails d) {
+  static double? wellOf(RawPieChartDetails d) {
     if (d.holeRadius <= 0) return null;
     final r = innerOf(d) - 7;
     return r >= 8 ? r : null;
@@ -1219,7 +1219,7 @@ class _Donut extends StatefulWidget {
     required this.palette,
   });
 
-  final DesignPieChartDetails details;
+  final RawPieChartDetails details;
   final ClayColors colors;
   final List<Color> palette;
 
@@ -1248,7 +1248,7 @@ class _DonutState extends State<_Donut> with SingleTickerProviderStateMixin {
     _from = [for (var i = 0; i < widget.details.slices.length; i++) _lift(i)];
     _active = a;
     _t.value = 0;
-    final policy = DesignMotionPolicy.of(context);
+    final policy = RawMotionPolicy.of(context);
     unawaited(
       _t.springTo(
         1,
@@ -1352,7 +1352,7 @@ class ClayPieChart extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final l = RawWidgetsLocalizations.of(context);
-    final layered = DesignStyleOf([style, theme.pieChartStyle], const {});
+    final layered = RawStyleOf([style, theme.pieChartStyle], const {});
     final palette = _palette(c, layered, slices.length, pastel: true);
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     String value(double v) => formatValue?.call(v) ?? l.formatDecimal(v);
@@ -1364,7 +1364,7 @@ class ClayPieChart extends StatelessWidget {
         Center(
           child: SizedBox.square(
             dimension: size,
-            child: DesignPieChart(
+            child: RawPieChart(
               slices: slices,
               semanticLabel: semanticLabel,
               semanticSummary: semanticSummary,
@@ -1444,7 +1444,7 @@ class _SparkPainter extends CustomPainter {
     required this.color,
   });
 
-  final DesignChartDetails details;
+  final RawChartDetails details;
   final ClayColors colors;
   final Color color;
 
@@ -1465,7 +1465,7 @@ class _SparkPainter extends CustomPainter {
       _ball(
         canvas,
         c,
-        d.positionOf(DesignChartPointRef(0, i)),
+        d.positionOf(RawChartPointRef(0, i)),
         color,
         a == null ? 3.5 : 5,
       );
@@ -1520,19 +1520,19 @@ class ClaySparkline extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.sparklineStyle], const {});
+    final layered = RawStyleOf([style, theme.sparklineStyle], const {});
     final color = layered.fill ?? c.accent;
     return SizedBox(
       width: width,
       height: height,
-      child: DesignChart(
+      child: RawChart(
         semanticLabel: semanticLabel,
         series: [
-          DesignChartSeries(
+          RawChartSeries(
             label: semanticLabel,
             points: [
               for (final (i, v) in values.indexed)
-                DesignChartPoint(i.toDouble(), v),
+                RawChartPoint(i.toDouble(), v),
             ],
           ),
         ],

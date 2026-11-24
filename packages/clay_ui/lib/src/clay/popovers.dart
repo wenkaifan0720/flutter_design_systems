@@ -216,7 +216,7 @@ class ClayContextMenu extends StatelessWidget {
         context,
         rows,
         maxHeight: info.maxSize.height.clamp(120.0, 420.0),
-        fill: DesignStyleOf([
+        fill: RawStyleOf([
           style,
           ClayTheme.of(context).contextMenuStyle,
         ], const {}).fill,
@@ -244,7 +244,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.popoverStyle], const {});
+    final layered = RawStyleOf([style, theme.popoverStyle], const {});
     return SizedBox(
       width: width,
       child: ClaySurface(
@@ -518,7 +518,7 @@ class _TipPresenceState extends State<_TipPresence>
     _showing = showing;
     _presence.springTo(
       showing ? 1 : 0,
-      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+      RawMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
     );
   }
 
@@ -576,7 +576,7 @@ class _Tip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
+    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
     final fill = layered.fill ?? c.inverse;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 260),

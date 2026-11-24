@@ -232,7 +232,7 @@ class _ClaySearchFieldState extends State<ClaySearchField>
           if (!widget.enabled) WidgetState.disabled,
           if (focused) WidgetState.focused,
         };
-        final layered = DesignStyleOf([
+        final layered = RawStyleOf([
           widget.style,
           theme.searchFieldStyle,
         ], states);
@@ -363,7 +363,7 @@ class _ClayPasswordFieldState extends State<ClayPasswordField>
               if (focused) WidgetState.focused,
               if (widget.errorText != null) WidgetState.error,
             };
-            final layered = DesignStyleOf([
+            final layered = RawStyleOf([
               widget.style,
               theme.textFieldStyle,
             ], states);
@@ -544,7 +544,7 @@ class _ClayInputGroupState extends State<ClayInputGroup>
               padding: const EdgeInsets.symmetric(
                 horizontal: ClaySpacing.medium,
               ),
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: clayCapHeightFactor,
                 child: Text(
                   words,
@@ -571,12 +571,12 @@ class _ClayInputGroupState extends State<ClayInputGroup>
       enabled: widget.enabled,
       helper: widget.helperText,
       error: widget.errorText,
-      field: DesignInputGroup(
+      field: RawInputGroup(
         focusNode: focusNode,
         enabled: widget.enabled,
         isError: widget.errorText != null,
         builder: (context, states, child) {
-          final layered = DesignStyleOf([
+          final layered = RawStyleOf([
             widget.style,
             theme.inputGroupStyle,
           ], states);
@@ -765,7 +765,7 @@ class ClayOtpField extends StatelessWidget {
             if (slot.focused && slot.active) WidgetState.focused,
             if (slot.isError) WidgetState.error,
           };
-          final layered = DesignStyleOf([style, theme.otpFieldStyle], states);
+          final layered = RawStyleOf([style, theme.otpFieldStyle], states);
           return SizedBox(
             width: 44,
             height: theme.controlHeight + 8,
@@ -886,7 +886,7 @@ class ClayNumberField extends StatelessWidget {
       autofocus: autofocus,
       semanticLabel: semanticLabel,
       fieldBuilder: (context, field) {
-        final layered = DesignStyleOf([
+        final layered = RawStyleOf([
           style,
           theme.numberFieldStyle,
         ], field.states);
@@ -942,7 +942,7 @@ class ClayNumberField extends StatelessWidget {
         );
       },
       buttonBuilder: (context, button) {
-        final layered = DesignStyleOf([
+        final layered = RawStyleOf([
           style,
           theme.numberFieldStyle,
         ], button.states);
@@ -1112,7 +1112,7 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
 
   /// Finds the options for a query itself (a server's search), instead of
   /// filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// The option taken.
   final T? value;
@@ -1193,7 +1193,7 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
               if (focused) WidgetState.focused,
               if (errorText != null) WidgetState.error,
             };
-            final layered = DesignStyleOf([style, theme.comboboxStyle], states);
+            final layered = RawStyleOf([style, theme.comboboxStyle], states);
             return ClayEntryWell(
               focusNode: field.focusNode,
               enabled: enabled,
@@ -1308,7 +1308,7 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
   final Iterable<T> options;
 
   /// Finds the suggestions for a query itself.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// Makes a tag of typed words; null: only suggestions become tags.
   final T? Function(String text)? onCreate;
@@ -1474,7 +1474,7 @@ class _TagWellState extends State<_TagWell> {
       if (_focused) WidgetState.focused,
       if (widget.error) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.tagInputStyle], states);
+    final layered = RawStyleOf([widget.style, theme.tagInputStyle], states);
     return Focus(
       canRequestFocus: false,
       skipTraversal: true,
@@ -1556,7 +1556,7 @@ class _Tag extends StatelessWidget {
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   widthFactor: 1,
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: clayCapHeightFactor,
                     child: Text(
                       label,
@@ -1614,7 +1614,7 @@ class _Tag extends StatelessWidget {
 
 /// A form: [ClayFormField]s inside it are checked together, and a failed
 /// submit moves the focus to the first one that is wrong.
-typedef ClayForm = DesignForm;
+typedef ClayForm = RawForm;
 
 /// Any control with its label, help and error, as one field: the label
 /// above it names it to a screen reader, the error under it is announced
@@ -1674,7 +1674,7 @@ class ClayFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.formFieldStyle],
       {if (!enabled) WidgetState.disabled},
     );

@@ -163,9 +163,9 @@ class ClayEntryText extends StatelessWidget {
     final words = theme.textTheme.body
         .merge(textStyle)
         .copyWith(color: enabled ? c.ink : c.inkDisabled);
-    return DesignCapCenter(
+    return RawCapCenter(
       capHeightFactor: clayCapHeightFactor,
-      child: DesignTextEntryBox(
+      child: RawTextEntryBox(
         minHeight: minHeight ?? theme.controlHeight,
         controller: controller,
         hint: hintText == null
@@ -404,7 +404,7 @@ class ClayFieldDecorator extends StatelessWidget {
         Widget? message;
         if (words != null) {
           final error = parts.error != null;
-          final layered = DesignStyleOf(
+          final layered = RawStyleOf(
             [style, theme.fieldMessageStyle],
             {if (error) WidgetState.error},
           );

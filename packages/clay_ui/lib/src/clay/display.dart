@@ -89,7 +89,7 @@ class _ClayDisclosureState extends State<ClayDisclosure> {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final grouped = _InGroup.of(context);
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.disclosureStyle],
       {if (_expanded) WidgetState.selected},
     );
@@ -249,7 +249,7 @@ class ClayDisclosureGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    final layered = DesignStyleOf([style, theme.disclosureStyle], const {});
+    final layered = RawStyleOf([style, theme.disclosureStyle], const {});
     return ClaySurface(
       face: ClayFace.raised(
         theme.colors,
@@ -325,7 +325,7 @@ class ClayTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tableStyle], const {});
+    final layered = RawStyleOf([style, theme.tableStyle], const {});
     final headStyle = theme.textTheme.caption.copyWith(
       color: c.inkSecondary,
       fontWeight: FontWeight.w600,
@@ -457,10 +457,7 @@ class ClayDescriptionList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([
-      style,
-      theme.descriptionListStyle,
-    ], const {});
+    final layered = RawStyleOf([style, theme.descriptionListStyle], const {});
     final said = theme.textTheme.body
         .merge(layered.textStyle)
         .copyWith(color: layered.foreground ?? c.ink);
@@ -565,7 +562,7 @@ class ClayTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.timelineStyle], const {});
+    final layered = RawStyleOf([style, theme.timelineStyle], const {});
     final fill = layered.fill ?? c.accent;
     const ball = 20.0;
     return Column(
@@ -711,7 +708,7 @@ class ClayAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.avatarStyle], const {});
+    final layered = RawStyleOf([style, theme.avatarStyle], const {});
     final picked =
         tint ??
         ClayTint.values[name.codeUnits.fold<int>(0, (a, b) => a + b) %
@@ -794,7 +791,7 @@ class ClayAvatarGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.avatarGroupStyle], const {});
+    final layered = RawStyleOf([style, theme.avatarGroupStyle], const {});
     final shown = avatars.take(max).toList();
     final rest = avatars.length - shown.length;
     // Each face over a sixth of the one before: enough to read as a group,
@@ -901,7 +898,7 @@ class ClayBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.badgeStyle], const {});
+    final layered = RawStyleOf([style, theme.badgeStyle], const {});
     final fill = layered.fill ?? c.accent;
     final words = count > maxCount ? '$maxCount+' : '$count';
     final pill = count <= 0
@@ -1015,7 +1012,7 @@ class ClayTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tagStyle], const {});
+    final layered = RawStyleOf([style, theme.tagStyle], const {});
     final (hue, ink) = switch (tone) {
       ClayTagTone.neutral => (c.track, c.inkSecondary),
       ClayTagTone.accent => (c.accent, c.accentInk),
@@ -1045,7 +1042,7 @@ class ClayTag extends StatelessWidget {
                 Icon(icon, size: 14, color: words),
                 const SizedBox(width: ClaySpacing.tight),
               ],
-              DesignCapCenter(
+              RawCapCenter(
                 capHeightFactor: clayCapHeightFactor,
                 child: Text(
                   label,
@@ -1118,7 +1115,7 @@ class ClayMedia extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.mediaStyle], const {});
+    final layered = RawStyleOf([style, theme.mediaStyle], const {});
     final radius = clayRadiusOf(layered.shape, this.radius);
     final blank = Center(
       child: Icon(
@@ -1220,10 +1217,7 @@ class _ClaySkeletonState extends State<ClaySkeleton>
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([
-      widget.style,
-      theme.skeletonStyle,
-    ], const {});
+    final layered = RawStyleOf([widget.style, theme.skeletonStyle], const {});
     final base = layered.fill ?? Color.lerp(c.well, c.track, 0.25)!;
     return ExcludeSemantics(
       child: SizedBox(
@@ -1289,7 +1283,7 @@ class ClayMeter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.meterStyle], const {});
+    final layered = RawStyleOf([style, theme.meterStyle], const {});
     final share = max <= 0 ? 0.0 : (value / max).clamp(0.0, 1.0);
     final over = high != null && value > high!;
     final fill = over ? c.danger : (layered.fill ?? c.accent);
@@ -1417,7 +1411,7 @@ class ClayBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.bannerStyle], const {});
+    final layered = RawStyleOf([style, theme.bannerStyle], const {});
     final (hue, glyph) = switch (tone) {
       ClayBannerTone.info => (c.tint(ClayTint.sky), LucideIcons.info),
       ClayBannerTone.success => (c.success, LucideIcons.circleCheck),
@@ -1556,7 +1550,7 @@ class ClayStateView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.stateViewStyle], const {});
+    final layered = RawStyleOf([style, theme.stateViewStyle], const {});
     const ball = 72.0;
     final glyph =
         icon ??

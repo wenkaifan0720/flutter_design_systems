@@ -27,17 +27,17 @@ import 'page_transitions.dart';
 /// ```dart
 /// const ClayStyle(padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32)))
 /// ```
-typedef ClayStyle = DesignStyle;
+typedef ClayStyle = RawStyle;
 
-/// How tight Clay's controls stand: [DesignDensity.standard] (a 48 px
-/// control), [DesignDensity.comfortable] (44) or [DesignDensity.compact] (40).
+/// How tight Clay's controls stand: [RawDensity.standard] (a 48 px
+/// control), [RawDensity.comfortable] (44) or [RawDensity.compact] (40).
 /// The default adapts: compact on a desktop, standard on touch. A control's
 /// tap target stays at the floor for the input whatever the density.
-typedef ClayDensity = DesignDensity;
+typedef ClayDensity = RawDensity;
 
 /// Clay's constants: its heights and breakpoints. They are not settings.
 abstract final class ClayMetrics {
-  /// A control's height at [DesignDensity.standard], before density.
+  /// A control's height at [RawDensity.standard], before density.
   static const double controlHeight = 48;
 
   /// Where a field's words start inside it, from its edge; its label, help,
@@ -128,7 +128,7 @@ abstract final class ClaySpacing {
 }
 
 /// Clay's motion tokens: springs, each a damping ratio and a stiffness, run
-/// through ui_core's `DesignMotionPolicy` (so Reduce Motion critically damps
+/// through ui_core's `RawMotionPolicy` (so Reduce Motion critically damps
 /// them). Calm: nothing bounces; a press is short.
 abstract final class ClayMotion {
   /// A press squashing in and coming back.
@@ -1621,7 +1621,7 @@ class ClayTheme extends StatelessWidget {
 
   /// Clay's tap floors: 44 by 44 for a finger, 24 by 24 for a pointer, as
   /// ui_core's defaults.
-  static const DesignTapTargets tapTargets = DesignTapTargets.fallback;
+  static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   static final ClayThemeData _fallback = ClayThemeData.light();
 
@@ -1649,10 +1649,10 @@ class ClayTheme extends StatelessWidget {
       theme: this,
       child: Theme(
         data: material,
-        child: DesignSpacingScope(
+        child: RawSpacingScope(
           // Clay keeps ui_core's 4 px grid.
-          spacing: DesignSpacing.fallback,
-          child: DesignTapTargetScope(
+          spacing: RawSpacing.fallback,
+          child: RawTapTargetScope(
             targets: tapTargets,
             child: DefaultSelectionStyle(
               cursorColor: colors.accentInk,

@@ -89,7 +89,7 @@ class ClayCheckbox extends StatelessWidget {
           value: value,
           states: states,
           isError: isError,
-          style: DesignStyleOf([style, theme.checkboxStyle], states),
+          style: RawStyleOf([style, theme.checkboxStyle], states),
         ),
       ),
     );
@@ -134,7 +134,7 @@ class ClayCheckMark extends StatelessWidget {
   final bool isError;
 
   /// Its resolved style.
-  final DesignStyleOf? style;
+  final RawStyleOf? style;
 
   @override
   Widget build(BuildContext context) {
@@ -425,7 +425,7 @@ class ClayRadioMark extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.radioStyle], states);
+    final layered = RawStyleOf([style, theme.radioStyle], states);
     final side = layered.minimumSize?.width ?? 24;
     final disabled = states.contains(WidgetState.disabled);
     final fill = layered.fill ?? c.accent;
@@ -682,7 +682,7 @@ class _ClaySwitchState extends State<ClaySwitch>
   void _settle(bool on) {
     _position.springTo(
       on ? 1 : 0,
-      DesignMotionPolicy.of(context).spatial(
+      RawMotionPolicy.of(context).spatial(
         dampingRatio: ClayMotion.slideDamping,
         stiffness: ClayMotion.slideStiffness,
       ),
@@ -725,10 +725,7 @@ class _ClaySwitchState extends State<ClaySwitch>
       toggled: widget.value,
       semanticLabel: widget.semanticLabel,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([
-          widget.style,
-          theme.switchStyle,
-        ], states);
+        final layered = RawStyleOf([widget.style, theme.switchStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed) || _dragging;
         final focused = states.contains(WidgetState.focused);
@@ -927,7 +924,7 @@ class ClaySegmentedButton<T> extends StatelessWidget {
           WidgetState.selected,
           if (!enabled) WidgetState.disabled,
         };
-        final layered = DesignStyleOf([
+        final layered = RawStyleOf([
           style,
           theme.segmentedButtonStyle,
         ], thumbStates);
@@ -1050,7 +1047,7 @@ class _Segment<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.segmentedButtonStyle], states);
+    final layered = RawStyleOf([style, theme.segmentedButtonStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     final words = disabled
         ? c.inkDisabled
@@ -1087,7 +1084,7 @@ class _Segment<T> extends StatelessWidget {
                         const SizedBox(width: ClaySpacing.small),
                       ],
                       Flexible(
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: clayCapHeightFactor,
                           child: Text(
                             segment.label,
@@ -1200,7 +1197,7 @@ class ClayChip extends StatelessWidget {
       semanticLabel: label,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.chipStyle], states);
+        final layered = RawStyleOf([style, theme.chipStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final on = filter && selected;
         final fill = layered.fill ?? (on ? clayChosenFill(c) : c.clay);
@@ -1245,7 +1242,7 @@ class ClayChip extends StatelessWidget {
                       const SizedBox(width: ClaySpacing.small),
                     ],
                     Flexible(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: clayCapHeightFactor,
                         child: Text(
                           label,

@@ -195,7 +195,7 @@ class ClayButtonFace extends StatelessWidget {
   ) {
     final c = theme.colors;
     final filled = kind == ClayButtonKind.filled;
-    final layered = DesignStyleOf([
+    final layered = RawStyleOf([
       style,
       filled ? theme.filledButtonStyle : theme.buttonStyle,
     ], states);
@@ -256,7 +256,7 @@ class ClayButtonFace extends StatelessWidget {
     Set<WidgetState> states,
   ) {
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.textButtonStyle], states);
+    final layered = RawStyleOf([style, theme.textButtonStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     final colour =
         layered.foreground ??
@@ -295,7 +295,7 @@ class ClayButtonFace extends StatelessWidget {
     );
   }
 
-  Widget _content(ClayThemeData theme, Color colour, DesignStyleOf layered) {
+  Widget _content(ClayThemeData theme, Color colour, RawStyleOf layered) {
     final weight = FontWeight.w600;
     final text = theme.textTheme.label
         .copyWith(
@@ -318,7 +318,7 @@ class ClayButtonFace extends StatelessWidget {
             const SizedBox(width: ClaySpacing.small),
           ],
           Flexible(
-            child: DesignCapCenter(
+            child: RawCapCenter(
               capHeightFactor: clayCapHeightFactor,
               child: Text(
                 label,
@@ -389,7 +389,7 @@ class _ClayPressDepthState extends State<ClayPressDepth>
   void didUpdateWidget(ClayPressDepth old) {
     super.didUpdateWidget(old);
     if (old.pressed != widget.pressed) {
-      final policy = DesignMotionPolicy.of(context);
+      final policy = RawMotionPolicy.of(context);
       _depth.springTo(
         widget.pressed ? 1 : 0,
         policy.spatial(
@@ -429,7 +429,7 @@ class _FocusUnderline extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TweenAnimationBuilder<double>(
     tween: Tween(end: focused ? 1 : 0),
-    duration: designReduceMotionOf(context)
+    duration: rawReduceMotionOf(context)
         ? const Duration(milliseconds: 90)
         : const Duration(milliseconds: 140),
     builder: (context, t, child) => CustomPaint(
@@ -546,7 +546,7 @@ class ClayIconButton extends StatelessWidget {
       semanticLabel: tooltip,
       excludeSemantics: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
+        final layered = RawStyleOf([style, theme.iconButtonStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final focused = states.contains(WidgetState.focused);

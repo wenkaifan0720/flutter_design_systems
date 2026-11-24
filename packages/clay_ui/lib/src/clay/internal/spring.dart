@@ -48,7 +48,7 @@ class _ClaySpringState extends State<ClaySpring>
     if (old.target != widget.target) {
       _value.springTo(
         widget.target,
-        DesignMotionPolicy.of(context)
+        RawMotionPolicy.of(context)
             .spatial(dampingRatio: widget.damping, stiffness: widget.stiffness),
       );
     }

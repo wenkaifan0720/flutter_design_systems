@@ -230,7 +230,7 @@ class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
                       const SizedBox(width: ClaySpacing.medium),
                     ],
                     Expanded(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: clayCapHeightFactor,
                         child: Text(
                           e.label,
@@ -422,7 +422,7 @@ class ClayMenuRow extends StatelessWidget {
                 const SizedBox(width: ClaySpacing.medium),
               ],
               Expanded(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: clayCapHeightFactor,
                   child: Text(
                     label,

@@ -326,7 +326,7 @@ class _ClayCalendarState extends State<ClayCalendar> {
           ],
         ),
         dayBuilder: (context, day, states) {
-          final layered = DesignStyleOf(layers, states);
+          final layered = RawStyleOf(layers, states);
           // A waiting range's preview ends as a finished range does: a ball
           // on the day under the pointer (or the keys), the groove stopping
           // at it.
@@ -398,8 +398,7 @@ class _ClayCalendarState extends State<ClayCalendar> {
                               child: Text(
                                 // The reader's digits: Arabic-Indic in
                                 // Arabic, as the month is named.
-                                RawWidgetsLocalizations.of(context)
-                                    .formatDecimal(day.date.day),
+                                day.label,
                                 maxLines: 1,
                                 softWrap: false,
                                 style: theme.textTheme.body.copyWith(
@@ -454,7 +453,7 @@ class _PickerField extends StatelessWidget {
     required this.styles,
   });
 
-  final DesignOverlayAnchor anchor;
+  final RawOverlayAnchor anchor;
   final String? text;
   final String? hint;
   final IconData icon;
@@ -477,7 +476,7 @@ class _PickerField extends StatelessWidget {
       builder: (context, states, _) {
         final open = anchor.isOpen;
         final pressed = states.contains(WidgetState.pressed);
-        final layered = DesignStyleOf(styles, states);
+        final layered = RawStyleOf(styles, states);
         final well = clayEntryFace(
           theme,
           {
@@ -505,7 +504,7 @@ class _PickerField extends StatelessWidget {
                       top: 6,
                       bottom: 6,
                     ),
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: clayCapHeightFactor,
                       child: Text(
                         text ?? hint ?? '',
@@ -837,7 +836,7 @@ Widget _drums(
   required bool shared,
   String? semanticLabel,
   Widget Function(BuildContext context, List<Widget> columns)? layout,
-  DesignStyleOf? layered,
+  RawStyleOf? layered,
 }) {
   final theme = ClayTheme.of(context);
   final c = theme.colors;
@@ -1015,7 +1014,7 @@ class ClayWheelPicker<T> extends StatelessWidget {
         rows: visibleRows,
         width: width,
         shared: false,
-        layered: DesignStyleOf([style, theme.wheelPickerStyle], const {}),
+        layered: RawStyleOf([style, theme.wheelPickerStyle], const {}),
         layout: (context, columns) => columns.single,
         onChanged: onChanged == null
             ? null
@@ -1070,7 +1069,7 @@ class ClayTimePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.timePickerStyle], const {});
+    final layered = RawStyleOf([style, theme.timePickerStyle], const {});
     final h24 = MediaQuery.maybeAlwaysUse24HourFormatOf(context) ?? false;
     final minutes = [for (var m = 0; m < 60; m += minuteInterval) m];
     final minuteAt = math.max(0, minutes.indexWhere((m) => m >= value.minute));
@@ -1238,7 +1237,7 @@ class ClayTimeField extends StatelessWidget {
         autofocus: autofocus,
         semanticLabel: labelText,
         frameBuilder: (context, states, segments) {
-          final layered = DesignStyleOf([style, theme.timeFieldStyle], states);
+          final layered = RawStyleOf([style, theme.timeFieldStyle], states);
           return SizedBox(
             height: theme.controlHeight,
             child: AnimatedClaySurface(
@@ -1436,7 +1435,7 @@ class _ClayColorPickerState extends State<ClayColorPicker> {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([
+    final layered = RawStyleOf([
       widget.style,
       theme.colorPickerStyle,
     ], const {});

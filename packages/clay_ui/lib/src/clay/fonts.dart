@@ -17,7 +17,7 @@ const String? clayFontPackage = 'clay_ui';
 const String clayFontFamily = 'Rubik';
 
 /// Rubik's capitals as a fraction of its size (its OS/2 cap height, 700, over
-/// its 1000 units per em): what `DesignCapCenter` centres a label by.
+/// its 1000 units per em): what `RawCapCenter` centres a label by.
 const double clayCapHeightFactor = 0.70;
 
 /// [family] under the name Flutter registers it by: `Rubik` when the app

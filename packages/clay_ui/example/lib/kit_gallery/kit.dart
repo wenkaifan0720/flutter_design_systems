@@ -155,7 +155,7 @@ class KitSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: title,
       startAligned: true,
       child: Column(

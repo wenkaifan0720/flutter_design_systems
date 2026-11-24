@@ -12,7 +12,6 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
@@ -112,7 +111,7 @@ class ClayTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.topBarStyle], const {});
+    final layered = RawStyleOf([style, theme.topBarStyle], const {});
     final top = MediaQuery.paddingOf(context).top;
     final width = MediaQuery.sizeOf(context).width;
     final margin = ClaySpacing.pageMargin(width);
@@ -148,7 +147,7 @@ class ClayTopBar extends StatelessWidget {
                       alignment: AlignmentDirectional.centerStart,
                       child: Semantics(
                         header: true,
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: clayCapHeightFactor,
                           child: Text(
                             title,
@@ -294,7 +293,7 @@ class _DockFace extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final chosen = states.contains(WidgetState.selected);
-    final layered = DesignStyleOf([style, theme.navigationBarStyle], states);
+    final layered = RawStyleOf([style, theme.navigationBarStyle], states);
     final ink = chosen ? (layered.foreground ?? c.ink) : c.inkSecondary;
     final weight = chosen ? FontWeight.w600 : FontWeight.w500;
     final pill = layered.fill ?? clayChosenFill(c);
@@ -370,7 +369,7 @@ class _RailFace extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final chosen = states.contains(WidgetState.selected);
-    final layered = DesignStyleOf([style, theme.navigationRailStyle], states);
+    final layered = RawStyleOf([style, theme.navigationRailStyle], states);
     final ink = chosen ? (layered.foreground ?? c.ink) : c.inkSecondary;
     final weight = chosen ? FontWeight.w600 : FontWeight.w500;
     final hovered = states.contains(WidgetState.hovered);
@@ -445,7 +444,7 @@ class _SideFace extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final chosen = states.contains(WidgetState.selected);
-    final layered = DesignStyleOf([style, theme.sidebarStyle], states);
+    final layered = RawStyleOf([style, theme.sidebarStyle], states);
     final ink = chosen ? (layered.foreground ?? c.ink) : c.inkSecondary;
     final weight = chosen ? FontWeight.w600 : FontWeight.w500;
     final hovered = states.contains(WidgetState.hovered);
@@ -486,7 +485,7 @@ class _SideFace extends StatelessWidget {
                 ),
                 const SizedBox(width: ClaySpacing.medium),
                 Expanded(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: clayCapHeightFactor,
                     child: Text(
                       destination.label,
@@ -902,7 +901,7 @@ class ClayScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final ground =
-        DesignStyleOf([style, theme.scaffoldStyle], const {}).fill ??
+        RawStyleOf([style, theme.scaffoldStyle], const {}).fill ??
         theme.colors.ground;
     final width = MediaQuery.sizeOf(context).width;
     final places = destinations.isNotEmpty && onDestinationSelected != null;
@@ -981,11 +980,11 @@ class ClayScaffold extends StatelessWidget {
     final wide = width >= ClayMetrics.sidebarBreakpoint;
     return ColoredBox(
       color: ground,
-      child: DesignAdaptiveShell(
-        mode: wide ? DesignNavigationMode.sidebar : DesignNavigationMode.rail,
+      child: RawAdaptiveShell(
+        mode: wide ? RawNavigationMode.sidebar : RawNavigationMode.rail,
         destinations: [
           for (final d in destinations)
-            DesignNavigationDestination(
+            RawNavigationDestination(
               label: d.label,
               icon: d.icon,
               selectedIcon: d.selectedIcon,
@@ -998,7 +997,7 @@ class ClayScaffold extends StatelessWidget {
           final d = destination.data! as ClayDestination;
           return KeyedSubtree(
             key: d.key,
-            child: details.mode == DesignNavigationMode.sidebar
+            child: details.mode == RawNavigationMode.sidebar
                 ? _SideFace(destination: d, states: details.states, style: null)
                 : _RailFace(
                     destination: d,
@@ -1176,7 +1175,7 @@ class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
     final slot =
         widest * MediaQuery.textScalerOf(context).scale(1) +
         2 * ClaySpacing.roomy;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.tabBarStyle],
       const {WidgetState.selected},
     );
@@ -1223,7 +1222,7 @@ class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final chosen = details.selection >= 0.5;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.tabBarStyle],
       {...details.states, if (chosen) WidgetState.selected},
     );
@@ -1245,7 +1244,7 @@ class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
               ),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: clayCapHeightFactor,
                   child: Text(
                     tab.label,

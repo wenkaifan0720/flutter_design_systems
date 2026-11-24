@@ -107,7 +107,7 @@ class ClaySelect<T> extends StatelessWidget {
       semanticLabel: labelText,
       semanticValue: chosen?.label,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [style, theme.selectStyle],
           {...states, if (errorText != null) WidgetState.error},
         );
@@ -166,7 +166,7 @@ class ClaySelect<T> extends StatelessWidget {
                     const SizedBox(width: ClaySpacing.medium),
                   ],
                   Expanded(
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: clayCapHeightFactor,
                       child: Text(
                         chosen?.label ?? hintText ?? '',

@@ -125,7 +125,7 @@ class ClayDataTable<R> extends StatelessWidget {
     final t = theme.textTheme;
     final words = RawWidgetsLocalizations.of(context);
     final layers = [style, theme.dataTableStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     int flex(RawDataColumn<R> col) => (col as ClayDataColumn<R>).flex;
     const pad = EdgeInsets.symmetric(
       horizontal: ClaySpacing.medium,
@@ -238,7 +238,7 @@ class ClayDataTable<R> extends StatelessWidget {
         ),
       ),
       rowBuilder: (context, row, cells) {
-        final layered = DesignStyleOf(layers, {
+        final layered = RawStyleOf(layers, {
           ...row.states,
           if (row.selected) WidgetState.selected,
         });
@@ -475,7 +475,7 @@ class ClayScrollArea extends StatelessWidget {
       ),
       thumbBuilder: (context, thumb) {
         final held = thumb.states.contains(WidgetState.pressed);
-        final fill = DesignStyleOf(layers, thumb.states).fill;
+        final fill = RawStyleOf(layers, thumb.states).fill;
         return AnimatedOpacity(
           opacity: thumb.visible ? 1 : 0,
           duration: const Duration(milliseconds: 160),
@@ -599,9 +599,9 @@ class ClaySplitView extends StatelessWidget {
       hitExtent: _reach,
       dividerBuilder: (context, states, axis) {
         final along = axis == Axis.horizontal;
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final held = states.contains(WidgetState.pressed);
-        final touch = DesignTapTargets.of(context).floorOn().height >= 44;
+        final touch = RawTapTargets.of(context).floorOn().height >= 44;
         final shown =
             touch ||
             held ||
@@ -700,7 +700,7 @@ class ClayCarousel extends StatelessWidget {
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final layered = DesignStyleOf([style, theme.carouselStyle], const {});
+    final layered = RawStyleOf([style, theme.carouselStyle], const {});
     final radius = clayRadiusOf(layered.shape, ClayRadius.large);
     return RawCarousel(
       itemCount: itemCount,
@@ -814,10 +814,7 @@ class ClayReorderableList<T extends Object> extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final rowHeight = theme.controlHeight + 8;
-    final layered = DesignStyleOf([
-      style,
-      theme.reorderableListStyle,
-    ], const {});
+    final layered = RawStyleOf([style, theme.reorderableListStyle], const {});
     final radius = clayRadiusOf(layered.shape, ClayRadius.large);
     return ClaySurface(
       face: ClayFace.raised(c, color: layered.fill, radius: radius),
@@ -948,7 +945,7 @@ class ClaySwipeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.swipeRowStyle], const {});
+    final layered = RawStyleOf([style, theme.swipeRowStyle], const {});
     RawSwipeAction wrap(ClaySwipeAction a) => RawSwipeAction(
       label: a.label,
       onPressed: a.onPressed,
@@ -1044,7 +1041,7 @@ class ClayPullToRefresh extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.pullToRefreshStyle], const {});
+    final layered = RawStyleOf([style, theme.pullToRefreshStyle], const {});
     final warm = layered.fill ?? c.accent;
     return RawRefreshIndicator(
       onRefresh: onRefresh,
@@ -1095,7 +1092,7 @@ class ClayPullToRefresh extends StatelessWidget {
 
 /// The nodes of a [ClayTree], which open, and which is chosen; the caller
 /// makes it and disposes it.
-class ClayTreeController<T extends Object> extends DesignTreeController<T> {
+class ClayTreeController<T extends Object> extends RawTreeController<T> {
   /// A controller over [roots], each node's children by [childrenOf].
   ClayTreeController({
     required super.roots,
@@ -1149,14 +1146,14 @@ class ClayTree<T extends Object> extends StatelessWidget {
     final layers = [style, theme.treeStyle];
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
       semanticLabel: semanticLabel,
       rowBuilder: (context, item) {
         final states = item.states;
-        final layered = DesignStyleOf(layers, {
+        final layered = RawStyleOf(layers, {
           ...states,
           if (item.selected) WidgetState.selected,
         });

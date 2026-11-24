@@ -619,7 +619,7 @@ class _AnimatedClaySurfaceState extends State<AnimatedClaySurface>
     if (old.face == widget.face) return;
     _from = ClayFace.lerp(_from, old.face, _t.value);
     _t.value = 0;
-    final policy = DesignMotionPolicy.of(context);
+    final policy = RawMotionPolicy.of(context);
     _t.springTo(
       1,
       policy.reduceMotion

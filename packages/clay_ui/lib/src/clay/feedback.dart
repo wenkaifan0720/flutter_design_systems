@@ -53,7 +53,7 @@ class ClayProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.progressStyle], const {});
+    final layered = RawStyleOf([style, theme.progressStyle], const {});
     final fill = color ?? layered.fill ?? c.accent;
     final v = value.clamp(0.0, 1.0);
     return Semantics(
@@ -149,7 +149,7 @@ class ClayProgressRing extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.progressStyle], const {});
+    final layered = RawStyleOf([style, theme.progressStyle], const {});
     final fill = color ?? layered.fill ?? c.accent;
     final v = value.clamp(0.0, 1.0);
     return Semantics(
@@ -334,8 +334,8 @@ class _ClaySpinnerState extends State<ClaySpinner>
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([widget.style, theme.spinnerStyle], const {});
-    final still = designReduceMotionOf(context);
+    final layered = RawStyleOf([widget.style, theme.spinnerStyle], const {});
+    final still = rawReduceMotionOf(context);
     final s = widget.size;
     final ball = s * 0.32;
     return Semantics(

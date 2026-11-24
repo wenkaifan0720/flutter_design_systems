@@ -47,7 +47,7 @@ class ClayFieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.fieldLabelStyle],
       {if (!enabled) WidgetState.disabled},
     );
@@ -118,7 +118,7 @@ class ClayFieldMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [this.style, theme.fieldMessageStyle],
       {if (errorText != null) WidgetState.error},
     );
@@ -357,7 +357,7 @@ class _ClayTextFieldState extends State<ClayTextField> {
       if (_hovered && widget.enabled) WidgetState.hovered,
       if (errorText) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
+    final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     final words = theme.textTheme.body
         .merge(layered.textStyle)
         .copyWith(color: widget.enabled ? c.ink : c.inkDisabled);
@@ -370,7 +370,7 @@ class _ClayTextFieldState extends State<ClayTextField> {
       focusColor: errorText ? c.danger : (layered.edge ?? c.focus),
       focus: focused || errorText ? 1 : 0,
     );
-    final entry = DesignTextEntryBox(
+    final entry = RawTextEntryBox(
       minHeight: theme.controlHeight,
       controller: _controller,
       maxLines: widget.maxLines,
@@ -466,7 +466,7 @@ class _ClayTextFieldState extends State<ClayTextField> {
                             : ClaySpacing.regular,
                       ),
                   child: oneLine
-                      ? DesignCapCenter(
+                      ? RawCapCenter(
                           capHeightFactor: clayCapHeightFactor,
                           child: entry,
                         )

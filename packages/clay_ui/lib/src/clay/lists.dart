@@ -36,7 +36,7 @@ class ClaySectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    final layered = DesignStyleOf([style, theme.sectionHeaderStyle], const {});
+    final layered = RawStyleOf([style, theme.sectionHeaderStyle], const {});
     final words = theme.textTheme.label
         .copyWith(
           fontSize: 14,
@@ -117,7 +117,7 @@ class ClayGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.groupStyle], const {});
+    final layered = RawStyleOf([style, theme.groupStyle], const {});
     final first = children.isEmpty ? null : children.first;
     final indent =
         dividerIndent ??
@@ -125,7 +125,7 @@ class ClayGroup extends StatelessWidget {
             ? ClayListTile.leadingExtent
             : ClaySpacing.roomy);
     final radius = clayRadiusOf(layered.shape, ClayRadius.large);
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: header ?? 'Group',
       indents: [indent],
       child: Column(
@@ -205,7 +205,7 @@ class ClayGroove extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final night = c.brightness == Brightness.dark;
-    final layered = DesignStyleOf([style, theme.grooveStyle], const {});
+    final layered = RawStyleOf([style, theme.grooveStyle], const {});
     final side = layered.side;
     return Padding(
       padding: EdgeInsetsDirectional.only(start: indent, end: endIndent),
@@ -320,7 +320,7 @@ class ClayListTile extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     Widget body(Set<WidgetState> states) {
-      final layered = DesignStyleOf(
+      final layered = RawStyleOf(
         [style, theme.listTileStyle],
         {...states, if (selected) WidgetState.selected},
       );
@@ -410,7 +410,7 @@ class ClayListTile extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            DesignCapCenter(
+                            RawCapCenter(
                               capHeightFactor: clayCapHeightFactor,
                               child: Text(title, style: titleStyle),
                             ),
@@ -627,7 +627,7 @@ class ClayIconTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.iconTileStyle], const {});
+    final layered = RawStyleOf([style, theme.iconTileStyle], const {});
     final fill = layered.fill ?? color ?? c.tint(tint);
     return SizedBox.square(
       dimension: size,
@@ -696,7 +696,7 @@ class ClayCard extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     Widget face(Set<WidgetState> states) {
-      final layered = DesignStyleOf([style, theme.cardStyle], states);
+      final layered = RawStyleOf([style, theme.cardStyle], states);
       final fill = color ?? layered.fill ?? c.clay;
       final radius = clayRadiusOf(layered.shape, ClayRadius.large);
       return AnimatedClaySurface(

@@ -70,7 +70,7 @@ class ClayButtonGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.buttonGroupStyle], const {});
+    final layered = RawStyleOf([style, theme.buttonGroupStyle], const {});
     final radius = clayRadiusOf(layered.shape, ClayRadius.control);
     return Semantics(
       container: true,
@@ -195,7 +195,7 @@ class _DentKey extends StatelessWidget {
       onPressed: onPressed,
       semanticLabel: iconOnly ? label : null,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, themeStyle], states);
+        final layered = RawStyleOf([style, themeStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final words = layered.foreground ?? (disabled ? c.inkDisabled : c.ink);
         return TapTargetPadding(
@@ -245,7 +245,7 @@ class _KeyLabel extends StatelessWidget {
   final IconData? icon;
   final bool iconOnly;
   final Color color;
-  final DesignStyleOf layered;
+  final RawStyleOf layered;
   final FontWeight weight;
 
   @override
@@ -269,7 +269,7 @@ class _KeyLabel extends StatelessWidget {
               if (icon != null && !iconOnly)
                 const SizedBox(width: ClaySpacing.small),
               if (!iconOnly)
-                DesignCapCenter(
+                RawCapCenter(
                   capHeightFactor: clayCapHeightFactor,
                   child: Text(
                     label,
@@ -389,7 +389,7 @@ class ClayToggleGroup<T> extends StatelessWidget {
         );
     Widget toggleFace(T value, Set<WidgetState> states) {
       final toggle = byValue[value]!;
-      final layered = DesignStyleOf([style, theme.toggleGroupStyle], states);
+      final layered = RawStyleOf([style, theme.toggleGroupStyle], states);
       final on = states.contains(WidgetState.selected);
       final disabled = states.contains(WidgetState.disabled);
       final inner = radius - _inset;
@@ -559,7 +559,7 @@ class ClaySplitButton extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final height = theme.controlHeight;
-    final layered = DesignStyleOf([style, theme.splitButtonStyle], const {});
+    final layered = RawStyleOf([style, theme.splitButtonStyle], const {});
     final fill = layered.fill ?? (filled ? c.accent : c.clay);
     final radius = clayRadiusOf(layered.shape, ClayRadius.control);
     final words = layered.foreground ?? (filled ? c.onColor(fill) : c.ink);
@@ -681,7 +681,7 @@ class ClayLink extends StatelessWidget {
       button: false,
       link: true,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.linkStyle], states);
+        final layered = RawStyleOf([style, theme.linkStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final hovered = states.contains(WidgetState.hovered);
@@ -767,7 +767,7 @@ class ClayKbd extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.kbdStyle], const {});
+    final layered = RawStyleOf([style, theme.kbdStyle], const {});
     final ink = layered.foreground ?? c.inkSecondary;
     return Semantics(
       label: semanticLabel ?? label,

@@ -56,7 +56,7 @@ class ClayBreadcrumb extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.breadcrumbStyle], const {});
+    final layered = RawStyleOf([style, theme.breadcrumbStyle], const {});
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return Semantics(
       container: true,
@@ -80,7 +80,7 @@ class ClayBreadcrumb extends StatelessWidget {
               Semantics(
                 // The place the reader is: said as the current page.
                 selected: i == crumbs.length - 1,
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: clayCapHeightFactor,
                   child: Text(
                     crumb.label,
@@ -290,7 +290,7 @@ class _PageKey extends StatelessWidget {
       // The current page is said, not pressed.
       enabled: onPressed != null || current,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [style, theme.paginationStyle],
           {...states, if (current) WidgetState.selected},
         );
@@ -380,7 +380,7 @@ class ClayStepProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.stepProgressStyle], const {});
+    final layered = RawStyleOf([style, theme.stepProgressStyle], const {});
     final done = layered.fill ?? c.accent;
     const ball = 32.0;
     return Semantics(
@@ -587,7 +587,7 @@ class ClayPageDots extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.pageDotsStyle], const {});
+    final layered = RawStyleOf([style, theme.pageDotsStyle], const {});
     final fill = layered.fill ?? c.accent;
     Widget dot(int i, Set<WidgetState> states) {
       final current = i == page;
@@ -697,7 +697,7 @@ class ClayMenuBar extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.menuBarStyle];
-    final bar = DesignStyleOf(layers, const {});
+    final bar = RawStyleOf(layers, const {});
     const inset = 4.0;
     return RawMenuBar(
       menus: [
@@ -719,7 +719,7 @@ class ClayMenuBar extends StatelessWidget {
       barBuilder: (context, items) => SizedBox(
         height: math.max(
           bar.minimumSize?.height ?? 44,
-          DesignTapTargets.of(context).floorOn().height + 2 * inset,
+          RawTapTargets.of(context).floorOn().height + 2 * inset,
         ),
         child: ClaySurface(
           face: ClayFace.raised(
@@ -748,7 +748,7 @@ class ClayMenuBar extends StatelessWidget {
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );
         }
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final open = states.contains(WidgetState.selected);
         final pressed = states.contains(WidgetState.pressed);
         final hovered = states.contains(WidgetState.hovered);
@@ -768,7 +768,7 @@ class ClayMenuBar extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: ClaySpacing.medium),
             child: Center(
               widthFactor: 1,
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: clayCapHeightFactor,
                 child: Text(
                   entry.label,
@@ -983,7 +983,7 @@ class ClayCommandPalette extends StatelessWidget {
 Widget _palettePanel(BuildContext context, ClayStyle? style, Widget child) {
   final theme = ClayTheme.of(context);
   final c = theme.colors;
-  final layered = DesignStyleOf([style, theme.commandPaletteStyle], const {});
+  final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 560),
     child: ClaySurface(
@@ -1010,7 +1010,7 @@ Future<void> showClayCommandPalette(
   ClayStyle? style,
 }) {
   final theme = ClayTheme.of(context);
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: theme.colors.scrim,
     palette: (run) => ClayCommandPalette(

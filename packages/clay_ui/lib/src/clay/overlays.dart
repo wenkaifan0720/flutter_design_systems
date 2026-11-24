@@ -5,7 +5,6 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
@@ -75,8 +74,8 @@ class ClayDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
-    final routed = ModalRoute.of(context) is DesignDialogRoute;
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
+    final routed = ModalRoute.of(context) is RawModalDialogRoute;
     final dialog = RawAlertDialog(
       title: title,
       content: content == null
@@ -121,7 +120,7 @@ class ClayDialog extends StatelessWidget {
           color: layered.fill,
           radius: clayRadiusOf(layered.shape, ClayRadius.extraLarge),
         ),
-        child: DesignKeylineRegion(
+        child: RawKeylineRegion(
           label: 'Dialog',
           child: Padding(
             padding: const EdgeInsets.all(ClaySpacing.large),
@@ -165,7 +164,7 @@ class ClayDialog extends StatelessWidget {
 }
 
 /// Clay's scrim: the ground dimmed in the ink's own hue as a surface arrives.
-DesignBarrierBuilder _scrim(Color color) =>
+RawBarrierBuilder _scrim(Color color) =>
     (context, animation) => AnimatedBuilder(
       animation: animation,
       builder: (context, _) => ColoredBox(
@@ -237,7 +236,7 @@ Future<T?> showClayDialog<T>({
 }) {
   final theme = ClayTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       isAlert: isAlert,
       barrierDismissible: barrierDismissible,
       barrierLabel: RawWidgetsLocalizations.of(context)
@@ -360,7 +359,7 @@ class _Sheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.sheetStyle], const {});
+    final layered = RawStyleOf([style, theme.sheetStyle], const {});
     final size = MediaQuery.sizeOf(context);
     final pad = MediaQuery.paddingOf(context);
     final framed = size.width >= 600;
@@ -435,7 +434,7 @@ class _Sheet extends StatelessWidget {
                   ? ClaySpacing.regular
                   : ClaySpacing.large + (framed ? 0 : pad.bottom),
             ),
-            child: DesignKeylineRegion(
+            child: RawKeylineRegion(
               label: title ?? 'Sheet',
               child: DefaultTextStyle.merge(
                 style: theme.textTheme.body.copyWith(color: c.ink),
@@ -624,7 +623,7 @@ class _PageSheet extends StatelessWidget {
     final sheet = ClaySurface(
       face: ClayFace.floating(
         c,
-        color: DesignStyleOf([theme.sheetStyle], const {}).fill,
+        color: RawStyleOf([theme.sheetStyle], const {}).fill,
         radius: radius,
       ),
       child: framed
@@ -739,7 +738,7 @@ class _SidePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.sheetStyle], const {});
+    final layered = RawStyleOf([style, theme.sheetStyle], const {});
     final words = RawWidgetsLocalizations.of(context);
     final pad = MediaQuery.paddingOf(context);
     // It floats a little in from the window's edges, as every Clay slab
@@ -807,7 +806,7 @@ class _SidePanel extends StatelessWidget {
                   ClaySpacing.large,
                   ClaySpacing.large,
                 ),
-                child: DesignKeylineRegion(
+                child: RawKeylineRegion(
                   label: title ?? 'Side sheet',
                   child: DefaultTextStyle.merge(
                     style: theme.textTheme.body.copyWith(color: c.ink),
@@ -1051,7 +1050,7 @@ class _Toast extends StatelessWidget {
     final c = theme.colors;
     final t = details.toast;
     final words = RawWidgetsLocalizations.of(context);
-    final layered = DesignStyleOf([style, theme.toastStyle], const {});
+    final layered = RawStyleOf([style, theme.toastStyle], const {});
     final face = ClayFace.floating(
       c,
       color: layered.fill,
