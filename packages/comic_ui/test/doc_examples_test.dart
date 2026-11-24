@@ -711,7 +711,7 @@ final Map<String, DocExample> _examples = {
   },
   'ComicTreeView': (context) {
     final tree = _own(
-      DesignTreeController<String>(
+      RawTreeController<String>(
         roots: const ['Issues'],
         childrenOf: (node) => node == 'Issues' ? const ['Twelve'] : const [],
       ),

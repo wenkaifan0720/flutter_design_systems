@@ -484,7 +484,7 @@ class ComicKbd extends StatelessWidget {
   /// Creates a [ComicKbd] for [keys], pressed together.
   const ComicKbd(this.keys, {super.key}) : shortcut = null;
 
-  /// Creates a [ComicKbd] for the keys of [shortcut]: ui_core's `designShortcutKeys`, spelled in words on every
+  /// Creates a [ComicKbd] for the keys of [shortcut]: ui_core's `rawShortcutKeys`, spelled in words on every
   /// platform (Ctrl, Shift, Command, Enter), as Comic's faces draw none of Apple's ⌃ ⌥ ⇧ ⌘ ↵.
   const ComicKbd.shortcut(MenuSerializableShortcut this.shortcut, {super.key})
     : keys = const [];
@@ -496,7 +496,7 @@ class ComicKbd extends StatelessWidget {
   final MenuSerializableShortcut? shortcut;
 
   /// [shortcut] as a menu row writes it ("Ctrl+N" here, "Command+N" on a Mac), for a menu entry's or a command's
-  /// `shortcut`: ui_core's `designShortcutLabel`, in the words [ComicKbd.shortcut] uses.
+  /// `shortcut`: ui_core's `rawShortcutLabel`, in the words [ComicKbd.shortcut] uses.
   ///
   /// ```dart
   /// RawMenuEntry(label: 'New', shortcut: ComicKbd.labelOf(context, const SingleActivator(LogicalKeyboardKey.keyN, control: true)))
@@ -506,7 +506,7 @@ class ComicKbd extends StatelessWidget {
     MenuSerializableShortcut shortcut,
   ) => _enterInWords(
     context,
-    designShortcutLabel(context, shortcut, appleSymbols: false),
+    rawShortcutLabel(context, shortcut, appleSymbols: false),
   );
 
   // Off Apple's platforms ui_core writes Enter as ↵ even with its symbols off; Comic's faces draw no ↵, so Enter is
@@ -520,7 +520,7 @@ class ComicKbd extends StatelessWidget {
     final keys = switch (shortcut) {
       null => this.keys,
       final shortcut => [
-        for (final key in designShortcutKeys(
+        for (final key in rawShortcutKeys(
           context,
           shortcut,
           appleSymbols: false,

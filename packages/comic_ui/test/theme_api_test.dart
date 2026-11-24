@@ -56,7 +56,7 @@ void main() {
       expect(b.colors, ComicThemeData.sunday().colors);
       expect(b.width, a.width);
       expect(a.copyWith(width: 1100).desk, isTrue);
-      expect(a.copyWith(width: 1100).window, DesignWindowSizeClass.expanded);
+      expect(a.copyWith(width: 1100).window, RawWindowSizeClass.expanded);
     });
 
     test('lerp: the ends are the themes, the middle blends and flips', () {
@@ -101,14 +101,14 @@ void main() {
 
     test('the window classes are ui_core\'s, Material\'s breakpoints', () {
       for (final (width, window) in const [
-        (390.0, DesignWindowSizeClass.compact),
-        (599.9, DesignWindowSizeClass.compact),
-        (600.0, DesignWindowSizeClass.medium),
-        (839.0, DesignWindowSizeClass.medium),
-        (840.0, DesignWindowSizeClass.expanded),
-        (1199.0, DesignWindowSizeClass.expanded),
-        (1200.0, DesignWindowSizeClass.large),
-        (1600.0, DesignWindowSizeClass.extraLarge),
+        (390.0, RawWindowSizeClass.compact),
+        (599.9, RawWindowSizeClass.compact),
+        (600.0, RawWindowSizeClass.medium),
+        (839.0, RawWindowSizeClass.medium),
+        (840.0, RawWindowSizeClass.expanded),
+        (1199.0, RawWindowSizeClass.expanded),
+        (1200.0, RawWindowSizeClass.large),
+        (1600.0, RawWindowSizeClass.extraLarge),
       ]) {
         expect(ComicThemeData.sunday().copyWith(width: width).window, window);
       }
@@ -250,7 +250,7 @@ void main() {
       );
       final t = _read(tester);
       expect(t.desk, isTrue);
-      expect(t.window, DesignWindowSizeClass.large);
+      expect(t.window, RawWindowSizeClass.large);
     });
 
     testWidgets('AnimatedComicTheme eases to a new theme through lerp', (

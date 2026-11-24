@@ -588,7 +588,7 @@ class ComicScaffold extends StatelessWidget {
             ],
           );
     // The page body is one keyline region: its panels and words hold the page's margins.
-    final Widget region = DesignKeylineRegion(
+    final Widget region = RawKeylineRegion(
       label: 'Page',
       child: Padding(padding: inset, child: inner),
     );

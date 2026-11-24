@@ -624,7 +624,7 @@ List<MatrixRow> matrixRows() {
       return _Owned(
         key: ValueKey(f),
         () {
-          final tree = DesignTreeController<String>(
+          final tree = RawTreeController<String>(
             roots: const ['Issue 12', 'Issue 13'],
             expanded: const ['Issue 12'],
             childrenOf: (node) =>
@@ -668,7 +668,7 @@ List<MatrixRow> matrixRows() {
           height: 120,
           child: ComicScrollArea(
             controller: held,
-            visibility: DesignScrollbarVisibility.always,
+            visibility: RawScrollbarVisibility.always,
             child: ListView(
               controller: held,
               children: [

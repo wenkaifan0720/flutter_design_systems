@@ -1,5 +1,5 @@
 // Keylines: the example's ordinary screens, opened the way a person opens them, at a phone's and a desk's
-// width; every panel, card, section and the page body is a DesignKeylineRegion, and ui_core's check holds each one to
+// width; every panel, card, section and the page body is a RawKeylineRegion, and ui_core's check holds each one to
 // one leading and one trailing keyline and each row of controls to one height and centre line.
 import 'dart:io';
 import 'dart:math' as math;

@@ -120,8 +120,8 @@ class ComicChart extends StatefulWidget {
   final double height;
 
   /// How values read in the accessible summary, on the value axis and on the plate, in the reader's digits, with
-  /// their unit (`DesignChartValueFormat(suffix: ' h')`); null: whole numbers.
-  final DesignChartValueFormat? valueFormat;
+  /// their unit (`RawChartValueFormat(suffix: ' h')`); null: whole numbers.
+  final RawChartValueFormat? valueFormat;
 
   /// The values are on their way: the plot holds its place, quietly.
   final bool loading;
@@ -152,7 +152,7 @@ class ComicChart extends StatefulWidget {
       ..add(StringProperty('summary', summary, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 180))
       ..add(
-        DiagnosticsProperty<DesignChartValueFormat>(
+        DiagnosticsProperty<RawChartValueFormat>(
           'valueFormat',
           valueFormat,
           defaultValue: null,
@@ -210,7 +210,7 @@ class ComicLineChart extends StatelessWidget {
   final double height;
 
   /// See [ComicChart.valueFormat].
-  final DesignChartValueFormat? valueFormat;
+  final RawChartValueFormat? valueFormat;
 
   /// See [ComicChart.loading].
   final bool loading;
@@ -244,7 +244,7 @@ class ComicLineChart extends StatelessWidget {
       ..add(StringProperty('summary', summary, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 180))
       ..add(
-        DiagnosticsProperty<DesignChartValueFormat>(
+        DiagnosticsProperty<RawChartValueFormat>(
           'valueFormat',
           valueFormat,
           defaultValue: null,
@@ -379,7 +379,7 @@ class _ComicChartState extends State<ComicChart> {
     // The reader's own figures: Arabic-Indic digits on an Arabic page, the locale's grouping.
     final digits = RawWidgetsLocalizations.of(context);
     final valueFormat =
-        widget.valueFormat ?? const DesignChartValueFormat(fractionDigits: 0);
+        widget.valueFormat ?? const RawChartValueFormat(fractionDigits: 0);
     String fmt(double n) => valueFormat.format(n, digits);
     final nothing = values.isEmpty && !widget.loading;
     final read =
@@ -433,11 +433,11 @@ class _ComicChartState extends State<ComicChart> {
     // beside it, 4 of air inside each, so its points stand where the ink draws them.
     final plot = SizedBox(
       height: widget.height,
-      child: DesignChart(
+      child: RawChart(
         focusNode: _focus,
         semanticLabel: widget.label,
         semanticSummary: read,
-        xAxis: widget._bars ? DesignChartXAxis.band : DesignChartXAxis.linear,
+        xAxis: widget._bars ? RawChartXAxis.band : RawChartXAxis.linear,
         categories: widget._bars
             ? [for (var i = 0; i < slots; i++) slotName(i)]
             : null,
@@ -448,11 +448,11 @@ class _ComicChartState extends State<ComicChart> {
             ? const []
             : [
                 for (final s in widget.series)
-                  DesignChartSeries(
+                  RawChartSeries(
                     label: s.label,
                     points: [
                       for (var i = 0; i < slots; i++)
-                        DesignChartPoint(
+                        RawChartPoint(
                           i.toDouble(),
                           i < s.values.length &&
                                   s.values[i] != null &&
@@ -1057,14 +1057,14 @@ class ComicSparkline extends StatelessWidget {
 
   /// How the values a screen reader hears read, in the reader's digits;
   /// null: whole numbers.
-  final DesignChartValueFormat? valueFormat;
+  final RawChartValueFormat? valueFormat;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final digits = RawWidgetsLocalizations.of(context);
     final valueFormat =
-        this.valueFormat ?? const DesignChartValueFormat(fractionDigits: 0);
+        this.valueFormat ?? const RawChartValueFormat(fractionDigits: 0);
     String fmt(double n) => valueFormat.format(n, digits);
     final finite = [
       for (final v in values)
@@ -1117,7 +1117,7 @@ class ComicSparkline extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<DesignChartValueFormat>(
+        DiagnosticsProperty<RawChartValueFormat>(
           'valueFormat',
           valueFormat,
           defaultValue: null,

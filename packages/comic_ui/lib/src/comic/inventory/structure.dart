@@ -405,7 +405,7 @@ Future<void> showComicCommand(
     context,
     Navigator.of(context, rootNavigator: true),
   );
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     // Screened with dots (law 1), over an overprint of the ground at night.
     barrierBuilder: (context, animation) => ComicScreenScrim(
@@ -668,7 +668,7 @@ class ComicScrollArea extends StatelessWidget {
     required this.controller,
     required this.child,
     this.axis = Axis.vertical,
-    this.visibility = DesignScrollbarVisibility.auto,
+    this.visibility = RawScrollbarVisibility.auto,
     this.label,
     this.focusNode,
     this.autofocus = false,
@@ -684,7 +684,7 @@ class ComicScrollArea extends StatelessWidget {
   final Axis axis;
 
   /// When the bar shows.
-  final DesignScrollbarVisibility visibility;
+  final RawScrollbarVisibility visibility;
 
   /// What a screen reader calls the region.
   final String? label;
@@ -737,10 +737,10 @@ class ComicScrollArea extends StatelessWidget {
       ..add(DiagnosticsProperty<ScrollController>('controller', controller))
       ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
       ..add(
-        EnumProperty<DesignScrollbarVisibility>(
+        EnumProperty<RawScrollbarVisibility>(
           'visibility',
           visibility,
-          defaultValue: DesignScrollbarVisibility.auto,
+          defaultValue: RawScrollbarVisibility.auto,
         ),
       )
       ..add(StringProperty('label', label, defaultValue: null))
@@ -1349,7 +1349,7 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
   });
 
   /// The nodes, what is open and what is picked.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
   /// A node's words.
   final String Function(T node) labelOf;
@@ -1363,7 +1363,7 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
@@ -1411,9 +1411,7 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawTreeController<T>>('controller', controller))
       ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
       ..add(StringProperty('label', label, defaultValue: null));

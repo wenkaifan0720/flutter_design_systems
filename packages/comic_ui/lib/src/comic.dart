@@ -86,7 +86,7 @@ export 'comic/inventory/structure.dart';
 
 // The design kit's value types a Comic row takes or gives.
 export 'package:ui_core/ui_core.dart'
-    show RawPopoverAlign, DesignOverlayAnchor, RawPopoverSide;
+    show RawPopoverAlign, RawOverlayAnchor, RawPopoverSide;
 export 'package:ui_core/ui_core.dart'
     show RawCalendarController, RawCalendarMode, RawDateRange;
 export 'package:ui_core/ui_core.dart' show RawColorController;
@@ -101,11 +101,11 @@ export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 export 'package:ui_core/ui_core.dart'
     show RawWidgetsLocalizations, DefaultRawWidgetsLocalizations;
 export 'package:ui_core/ui_core.dart' show RawRangeValues;
-export 'package:ui_core/ui_core.dart' show DesignScrollbarVisibility;
+export 'package:ui_core/ui_core.dart' show RawScrollbarVisibility;
 export 'package:ui_core/ui_core.dart' show RawSheetEdge;
-export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
+export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 export 'package:ui_core/ui_core.dart' show RawSwipeAction;
-export 'package:ui_core/ui_core.dart' show DesignTreeController;
+export 'package:ui_core/ui_core.dart' show RawTreeController;
 
 export 'comic/component_themes.dart' hide comicStates;
 export 'comic/styled.dart'

@@ -541,7 +541,7 @@ Widget kitScrollArea() => Builder(
         bleed: true,
         child: ComicScrollArea(
           controller: held,
-          visibility: DesignScrollbarVisibility.always,
+          visibility: RawScrollbarVisibility.always,
           label: kitSay(context, 'Letters to the editor'),
           child: ListView(
             controller: held,
@@ -670,8 +670,8 @@ Widget kitRefresh() => Builder(
   ),
 );
 
-Widget kitSpecimenTree() => _Held<DesignTreeController<String>>(
-  create: () => DesignTreeController<String>(
+Widget kitSpecimenTree() => _Held<RawTreeController<String>>(
+  create: () => RawTreeController<String>(
     roots: const ['Issue 12', 'Issue 13'],
     expanded: const ['Issue 12'],
     childrenOf: (node) => switch (node) {

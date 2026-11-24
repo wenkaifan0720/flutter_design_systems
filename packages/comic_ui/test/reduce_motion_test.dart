@@ -1,5 +1,5 @@
 // iOS's Reduce Motion alone. Flutter 3.47 sets only dart:ui's reduceMotion there, never MediaQuery's
-// disableAnimations. Comic's motion reads ui_core's designReduceMotionOf, so its cuts, its loops and its presses calm
+// disableAnimations. Comic's motion reads ui_core's rawReduceMotionOf, so its cuts, its loops and its presses calm
 // with that flag alone, and a flip while a loop runs reaches the loop as a build.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -255,7 +255,7 @@ class ComicPopover extends StatelessWidget {
   });
 
   /// Draws what opens it: call the anchor's `toggle` when pressed.
-  final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
+  final Widget Function(BuildContext context, RawOverlayAnchor anchor)
   anchorBuilder;
 
   /// Draws what the panel holds; `close` closes it.

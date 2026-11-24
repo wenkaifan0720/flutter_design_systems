@@ -29,6 +29,7 @@ import 'tell.dart';
 import 'tones.dart';
 import 'internal/footer_clear.dart';
 import 'internal/list_open.dart';
+import 'internal/message_line.dart';
 import 'internal/cap_label.dart';
 import 'print.dart' show ComicScreenGrid;
 import 'internal/lettering.dart' show comicDisplayFor;
@@ -484,7 +485,7 @@ class _SheetScope extends InheritedWidget {
 
 /// A dialog that springs into view over a [ComicScreenScrim].
 /// The dialog appears immediately when reduced motion is enabled.
-class ComicDialogRoute<T> extends DesignDialogRoute<T> {
+class ComicDialogRoute<T> extends RawModalDialogRoute<T> {
   /// Creates a [ComicDialogRoute] whose face [builder] builds.
   ComicDialogRoute({
     required Color screenInk,
@@ -1679,7 +1680,7 @@ class ComicTooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.isEmpty) return child;
-    final spring = DesignMotionPolicy.of(context)
+    final spring = RawMotionPolicy.of(context)
         .effects(dampingRatio: 1, stiffness: 1600);
     // The balloon comes and goes on its own spring. RawTooltip's animation says only whether it shows: at once when it
     // shows, and while it hides, as long as the spring takes to close from open, so the balloon stays until it has
@@ -1708,7 +1709,7 @@ class ComicTooltip extends StatelessWidget {
                 builder: (context, face) => presence.isDismissed
                     ? const SizedBox.shrink()
                     : Transform.scale(
-                        scale: designReduceMotionOf(context)
+                        scale: rawReduceMotionOf(context)
                             ? 1
                             : .92 + .08 * presence.value.clamp(0, 1),
                         child: face,
@@ -1725,7 +1726,7 @@ class ComicTooltip extends StatelessWidget {
 
   // How long [spring] takes to close the balloon from open: until its simulation is done, to the millisecond above.
   static Duration _settleTime(SpringDescription spring) {
-    final closing = designSpringSimulation(spring, from: 1, to: 0);
+    final closing = rawSpringSimulation(spring, from: 1, to: 0);
     var ms = 1;
     while (ms < 5000 && !closing.isDone(ms / 1000)) {
       ms++;
@@ -1922,9 +1923,12 @@ class ComicSnackBar extends StatelessWidget {
           onPressed: onDismiss,
         ),
     ];
-    // On a desktop an announcement with no heading is one strip: its actions stand at the end of the message's line,
-    // not on a second line under it, which would make a tall bar at desktop width.
-    final inline = t.desk && title == null && actions.isNotEmpty;
+    // An announcement with no heading keeps its actions at the end of the message's line, as a Material SnackBar
+    // does, while the words fit beside them or the actions take at most a quarter of a phone's bar (the words then
+    // wrap beside them); past that they stand on a line under the words. On a desktop it is one strip whatever its
+    // words: a second line would make a tall bar at desktop width. On a phone the actions always stood under the
+    // words, a tall box for "Changes saved" and its dismiss.
+    final inline = title == null && actions.isNotEmpty;
     return Semantics(
       liveRegion: _live,
       child: _RaisedFrame(
@@ -1934,15 +1938,14 @@ class ComicSnackBar extends StatelessWidget {
         shape: t.shapes.medium,
         plate: true,
         child: inline
-            ? Row(
-                children: [
-                  Expanded(child: words),
-                  const SizedBox(width: ComicSpace.gap),
-                  for (final (i, action) in actions.indexed) ...[
-                    if (i > 0) const SizedBox(width: ComicSpace.close),
-                    action,
-                  ],
-                ],
+            ? ComicMessageLine(
+                gap: ComicSpace.gap,
+                // The message's descenders stood on the action's rim: a beat of room between the words and the
+                // actions under them.
+                runGap: ComicSpace.near,
+                actionOverflowThreshold: t.desk ? 1 : .25,
+                message: words,
+                actions: _actionRun(actions),
               )
             : Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1962,22 +1965,25 @@ class ComicSnackBar extends StatelessWidget {
                   // actions.
                   if (actions.isNotEmpty) ...[
                     const SizedBox(height: ComicSpace.near),
-                    Wrap(
-                      alignment: WrapAlignment.end,
-                      // Centred across the run: the dismiss keeps a full finger's target around a face that density
-                      // makes shorter; on the run's top its face would stand 2 px under the action's at the comfortable
-                      // and compact densities, as ui_core's DesignRowCheck measures.
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: ComicSpace.close,
-                      runSpacing: ComicSpace.close,
-                      children: actions,
-                    ),
+                    _actionRun(actions),
                   ],
                 ],
               ),
       ),
     );
   }
+
+  // The actions in one run, at the end of the room they are given.
+  static Widget _actionRun(List<Widget> actions) => Wrap(
+    alignment: WrapAlignment.end,
+    // Centred across the run: the dismiss keeps a full finger's target around a face that density makes shorter; on
+    // the run's top its face would stand 2 px under the action's at the comfortable and compact densities, as
+    // ui_core's DesignRowCheck measures.
+    crossAxisAlignment: WrapCrossAlignment.center,
+    spacing: ComicSpace.close,
+    runSpacing: ComicSpace.close,
+    children: actions,
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -2742,7 +2748,7 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
   /// Finds the options for the typed words in place of matching [options]: ui_core's `RawCombobox.search`. Only
   /// the latest words' answer shows; while it is on its way the list says it is looking, and if it throws, the list
   /// says the search failed and offers Try again, the field keeping the focus.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs: one search a pause, not one a letter. Null runs it at every change.
   final Duration? debounceDuration;
@@ -2816,7 +2822,7 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
           defaultValue: false,
         ),
       )
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         DiagnosticsProperty<Duration>(
           'debounceDuration',

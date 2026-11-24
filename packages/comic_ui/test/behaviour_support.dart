@@ -476,7 +476,7 @@ final _parts = <String, _Part>{
   'ComicTreeView': _Part(
     (hit) => ComicTreeView<String>(
       controller: _own(
-        DesignTreeController<String>(
+        RawTreeController<String>(
           roots: const ['Issue 12'],
           childrenOf: (node) => const [],
         ),

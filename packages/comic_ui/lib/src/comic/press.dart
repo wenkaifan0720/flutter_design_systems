@@ -42,7 +42,7 @@ extension ComicPressStates on Set<WidgetState> {
 
 /// Minimum hit areas for Comic controls, in logical pixels.
 /// [ComicTheme] uses 44 for a pointer and 48 for touch. An enclosing
-/// [DesignTapTargetScope] can supply different sizes.
+/// [RawTapTargetScope] can supply different sizes.
 abstract final class ComicTapTarget {
   /// Every control's least target for a pointer.
   static const double target = 44;
@@ -51,20 +51,20 @@ abstract final class ComicTapTarget {
   static const double touchTarget = 48;
 
   /// Comic's floors: [touchTarget] for a finger, [target] for a pointer, the input by platform.
-  static const DesignTapTargets targets = DesignTapTargets(
+  static const RawTapTargets targets = RawTapTargets(
     touch: Size.square(touchTarget),
     pointer: Size.square(target),
   );
 
-  /// Whether a finger reaches the controls at [context] (by the nearest [DesignTapTargetScope], else by platform).
+  /// Whether a finger reaches the controls at [context] (by the nearest [RawTapTargetScope], else by platform).
   static bool padded(BuildContext context) =>
-      DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+      RawTapTargets.of(context).inputOn() == RawInput.touch;
 
   /// The least target at [context]: the floor for what reaches the controls there, [touchTarget] or [target] under
   /// Comic's own floors. None inside a row that takes the press itself (a check row's box).
   static double targetOf(BuildContext context) => RowMark.inRow(context)
       ? 0
-      : DesignTapTargets.of(context).floorOn().shortestSide;
+      : RawTapTargets.of(context).floorOn().shortestSide;
 }
 
 /// The curve every change of a face's state moves on: a quick cut that lands without a drift.

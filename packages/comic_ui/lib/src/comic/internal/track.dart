@@ -9,7 +9,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/ui_core.dart' show designReduceMotionOf;
+import 'package:ui_core/ui_core.dart' show rawReduceMotionOf;
 
 import '../press.dart';
 import '../styled.dart';
@@ -100,7 +100,7 @@ class ComicTrack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final inner = cellShape(shape, rim, gap);
-    final still = designReduceMotionOf(context);
+    final still = rawReduceMotionOf(context);
     final motion = ComicMotion.of(context);
     final height = minHeight ?? fieldHeight(context);
     final lit = this.lit;

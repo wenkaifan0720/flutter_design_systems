@@ -82,7 +82,7 @@ theme carries `comicPageTransitions`: `theme: ThemeData(pageTransitionsTheme: co
 comicPageTransitions))`. The one map fits both Materials' `PageTransitionsTheme`. On iOS a page still pops with a swipe
 from the screen's leading edge, the page following the finger: the map wraps the cut there in ui_core's
 `SwipeBackPageTransitionsBuilder`. A map of your own built on `ComicPageTransitionsBuilder` keeps the swipe the
-same way, or with `designSwipeBack(map)`.
+same way, or with `rawSwipeBack(map)`.
 
 With `CupertinoApp`:
 

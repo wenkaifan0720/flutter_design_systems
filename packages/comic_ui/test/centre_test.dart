@@ -151,7 +151,7 @@ void main() {
             if (width == 390 && scale == 2) {
               expect(action.top, greaterThan(meta.bottom));
             } else {
-              // To half a pixel: the title's DesignCapCenter keeps room round it to put its capitals on its middle,
+              // To half a pixel: the title's RawCapCenter keeps room round it to put its capitals on its middle,
               // so the words' painted block stands up to 0.2 px off the row's centre, where the action stands.
               expect(
                 action.center.dy,

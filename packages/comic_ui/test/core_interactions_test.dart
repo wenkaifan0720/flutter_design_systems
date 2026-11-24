@@ -36,7 +36,7 @@ void main() {
         await t.pumpAndSettle();
         focus.requestFocus();
         await t.pump();
-        final chart = find.byType(DesignChart);
+        final chart = find.byType(RawChart);
         final center = t.getCenter(chart);
         final pointer = await t.createGesture(kind: device);
         addTearDown(pointer.removePointer);

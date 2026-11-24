@@ -49,7 +49,7 @@ void main() {
   testWidgets(
     'a tree rings the keyboard row and keeps the fill for the picked one',
     (tester) async {
-      final tree = DesignTreeController<String>(
+      final tree = RawTreeController<String>(
         roots: const ['Issue 12', 'Issue 13'],
         expanded: const ['Issue 12'],
         childrenOf: (node) =>

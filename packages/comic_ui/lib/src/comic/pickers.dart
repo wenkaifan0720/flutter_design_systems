@@ -22,6 +22,7 @@ import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/cap_label.dart';
+import 'internal/lamp_line.dart';
 import 'internal/lettering.dart'
     show comicCalendarScaleMost, comicTimeScaleMost;
 import 'knobs.dart' show ComicSpace;
@@ -322,8 +323,9 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
         ], const {}).shapes(t.shapes.small),
         builder: (context, states) {
           final look = comicStyleOf([widget.style, t.datePickerTheme], states);
-          // The chosen day's lamp keeps the ink contour every lit fill has, by night too: the night line's cream
-          // on the yellow stood 1.2:1, the day's edge gone.
+          // The chosen day's lamp keeps the ink contour every lit fill has: the night line's cream on the yellow
+          // stood 1.2:1, the day's edge gone. At night the night line is laid over the ink's outer edge, which the
+          // page swallowed (comicLampNightLine).
           final rim = comicRim(
             t,
             look,
@@ -368,54 +370,65 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                       : BorderSide.none,
                 ),
               ),
-              // A day is as tall as it is wide, as a month's days in the calendar: its number stands in the middle.
-              child: Container(
-                height: ComicDatePicker.dayWidth,
-                alignment: Alignment.center,
-                padding:
-                    (look.padding(Directionality.of(context)) ??
-                            EdgeInsets.zero)
-                        .add(
-                          EdgeInsets.symmetric(
-                            vertical: reserve,
-                            horizontal: reserve / 2,
-                          ),
-                        ),
-                // The number alone sets the cell, its capitals on the middle; today's dot is laid over the cell
-                // under it, so today stands as tall as the days beside it (ui_core's DesignRowCheck: 4 px taller).
-                child: Stack(
-                  clipBehavior: Clip.none,
+              child: ComicStateDecoration(
+                position: DecorationPosition.foreground,
+                decoration: ShapeDecoration(
+                  shape: (shape ?? const RoundedRectangleBorder()).copyWith(
+                    side: selected
+                        ? comicLampNightLine(t.colors)
+                        : BorderSide.none,
+                  ),
+                ),
+                // A day is as tall as it is wide, as a month's days in the calendar: its number stands in the middle.
+                child: Container(
+                  height: ComicDatePicker.dayWidth,
                   alignment: Alignment.center,
-                  children: [
-                    CapLabel(
-                      display: false,
-                      child: Text(
-                        '$day',
-                        style: t.type.body
-                            .merge(look.textStyle)
-                            .copyWith(
-                              color:
-                                  look.foreground ??
-                                  (selected
-                                      ? t.colors.onCaption
-                                      : t.colors.text),
+                  padding:
+                      (look.padding(Directionality.of(context)) ??
+                              EdgeInsets.zero)
+                          .add(
+                            EdgeInsets.symmetric(
+                              vertical: reserve,
+                              horizontal: reserve / 2,
                             ),
-                      ),
-                    ),
-                    if (date == _today)
-                      Positioned(
-                        bottom: -5,
-                        child: ComicStateDecoration(
-                          decoration: ShapeDecoration(
-                            color: selected
-                                ? t.colors.onCaption
-                                : t.colors.text,
-                            shape: t.shapes.full,
                           ),
-                          child: const SizedBox(width: 4, height: 4),
+                  // The number alone sets the cell, its capitals on the middle; today's dot is laid over the cell
+                  // under it, so today stands as tall as the days beside it (ui_core's DesignRowCheck: 4 px taller).
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      CapLabel(
+                        display: false,
+                        child: Text(
+                          RawWidgetsLocalizations.of(context)
+                              .formatDecimal(day),
+                          style: t.type.body
+                              .merge(look.textStyle)
+                              .copyWith(
+                                color:
+                                    look.foreground ??
+                                    (selected
+                                        ? t.colors.onCaption
+                                        : t.colors.text),
+                              ),
                         ),
                       ),
-                  ],
+                      if (date == _today)
+                        Positioned(
+                          bottom: -5,
+                          child: ComicStateDecoration(
+                            decoration: ShapeDecoration(
+                              color: selected
+                                  ? t.colors.onCaption
+                                  : t.colors.text,
+                              shape: t.shapes.full,
+                            ),
+                            child: const SizedBox(width: 4, height: 4),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

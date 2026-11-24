@@ -812,7 +812,7 @@ class _ComicBurstState extends State<ComicBurst> {
   // A jagged star's ink never reaches its box's edges: the keyline check takes the figure by its box.
   @override
   Widget build(BuildContext context) =>
-      DesignKeylineFace(child: Builder(builder: _figure));
+      RawKeylineFace(child: Builder(builder: _figure));
 
   Widget _figure(BuildContext context) {
     _claim();

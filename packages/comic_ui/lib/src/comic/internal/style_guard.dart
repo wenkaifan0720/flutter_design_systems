@@ -8,8 +8,8 @@ bool comicFlatInk(Color? color) =>
     color == null || color.a == 0 || color.a == 1;
 
 /// Resolves [layers] for [states] and checks that fills and overlays are opaque in debug mode.
-DesignStyleOf comicStyleOf(List<DesignStyle?> layers, Set<WidgetState> states) {
-  final look = DesignStyleOf(layers, states);
+RawStyleOf comicStyleOf(List<RawStyle?> layers, Set<WidgetState> states) {
+  final look = RawStyleOf(layers, states);
   assert(
     comicFlatInk(look.fill),
     "Comic's first law is flat opaque inks, nothing see-through: a part's fill resolved to ${look.fill}. Give an "

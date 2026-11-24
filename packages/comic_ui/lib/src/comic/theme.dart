@@ -87,9 +87,9 @@ class ComicMotion {
   );
 
   /// The tokens in force at [context]: [still] under Reduce Motion, whichever platform asked (ui_core's
-  /// `designReduceMotionOf`: Android's Remove animations, the web's prefers-reduced-motion, iOS's Reduce Motion).
+  /// `rawReduceMotionOf`: Android's Remove animations, the web's prefers-reduced-motion, iOS's Reduce Motion).
   /// [context] builds again when it changes; iOS's change comes as a build, so read it in `build` or as you act.
-  static ComicMotion of(BuildContext context) => designReduceMotionOf(context)
+  static ComicMotion of(BuildContext context) => rawReduceMotionOf(context)
       ? still
       : ComicTheme.maybeOf(context)?.motion ?? const ComicMotion();
 
@@ -176,7 +176,7 @@ class ComicMotion {
 
   /// [d], or a cut where motion is off at [context].
   static Duration durationOf(BuildContext context, Duration d) =>
-      designReduceMotionOf(context) ? Duration.zero : d;
+      rawReduceMotionOf(context) ? Duration.zero : d;
 }
 
 /// The keyboard's focus ink and room. A focused part pops: it lifts up and to the start off a hard print of its
@@ -1743,7 +1743,7 @@ class ComicThemeData with Diagnosticable {
   /// The window class of the page this theme was built for: ui_core's, Material's breakpoints (compact under 600,
   /// medium under 840, expanded under 1200, large under 1600, extra large above). Comic's 12-column desktop starts at
   /// [comicDeskWidth], inside expanded.
-  DesignWindowSizeClass get window => DesignWindowSizeClass.fromWidth(width);
+  RawWindowSizeClass get window => RawWindowSizeClass.fromWidth(width);
 
   late final ComicFocusRing _focus = ComicFocusRing(
     color: _comicFocusColor(colors),
@@ -2123,11 +2123,8 @@ class _ComicInstall extends StatelessWidget {
       );
     }
     // Comic's tap floors (44 for a pointer, 48 for a finger), unless the app declares its own above.
-    if (DesignTapTargets.maybeOf(context) == null) {
-      under = DesignTapTargetScope(
-        targets: ComicTapTarget.targets,
-        child: under,
-      );
+    if (RawTapTargets.maybeOf(context) == null) {
+      under = RawTapTargetScope(targets: ComicTapTarget.targets, child: under);
     }
     final scoped = data.atWidth(MediaQuery.sizeOf(context).width);
     return Theme(

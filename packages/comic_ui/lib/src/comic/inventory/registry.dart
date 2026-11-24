@@ -83,15 +83,15 @@ Widget _scrollArea(BuildContext context) => _Owned(
 );
 
 /// Every row of the shared component inventory, each answered by a live Comic part.
-final DesignInventory comicInventory = DesignInventory(
+final RawInventory comicInventory = RawInventory(
   look: 'Comic',
   entries: [
     // Actions
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (context) => const ComicButton('Save', onPressed: _tap),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'IconButton',
       (context) => const ComicIconButton(
         ComicGlyphs.share,
@@ -99,11 +99,11 @@ final DesignInventory comicInventory = DesignInventory(
         onPressed: _tap,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       'a circle floating over the page belongs to no layer of a comic page; its one filled action stands in its tier',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ButtonGroup',
       (context) => const ComicButtonGroup(
         label: 'Text',
@@ -113,7 +113,7 @@ final DesignInventory comicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ToggleGroup',
       (context) => ComicToggleGroup<String>(
         label: 'Style',
@@ -124,7 +124,7 @@ final DesignInventory comicInventory = DesignInventory(
         onSelectionChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SplitButton',
       (context) => const ComicSplitButton(
         'Save',
@@ -132,35 +132,35 @@ final DesignInventory comicInventory = DesignInventory(
         actions: [ComicSplitAction('Save as copy', onPressed: _tap)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Link',
       (context) => const ComicLink('Read more', onPressed: _tap),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Kbd',
       (context) => const ComicKbd.shortcut(
         SingleActivator(LogicalKeyboardKey.keyK, control: true),
       ),
     ),
     // Inputs
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (context) =>
           const ComicTextField(labelText: 'Name', hintText: 'Your name'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextArea',
       (context) => const ComicTextArea(labelText: 'Notes'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SearchField',
       (context) => const ComicSearchField(hintText: 'Search issues'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PasswordField',
       (context) => const ComicPasswordField(labelText: 'Password'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputGroup',
       (context) => const ComicInputGroup(
         labelText: 'Price',
@@ -168,16 +168,16 @@ final DesignInventory comicInventory = DesignInventory(
         leading: [Text('USD')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'InputOtp',
       (context) => const ComicInputOtp(labelText: 'Code'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NumberField',
       (context) =>
           ComicNumberField(value: 6, unit: 'copies', onChanged: (_) => _tap()),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (context) => const ComicSelect<String>(
         labelText: 'Format',
@@ -189,14 +189,14 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (context) => const ComicCombobox<String>(
         labelText: 'City',
         options: ['Lisbon', 'London', 'Lyon'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MultiSelect',
       (context) => const ComicMultiSelect<String>(
         labelText: 'Genres',
@@ -205,7 +205,7 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (context) => const ComicCheckbox(
         value: true,
@@ -213,7 +213,7 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RadioGroup',
       (context) => const ComicRadioGroup<String>(
         labelText: 'Format',
@@ -225,17 +225,17 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Switch',
       (context) =>
           const ComicSwitch(value: true, label: 'Alerts', onChanged: _take),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Slider',
       (context) =>
           const ComicSlider(label: 'Volume', value: .5, onChanged: _take),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RangeSlider',
       (context) => const ComicRangeSlider(
         label: 'Price',
@@ -243,7 +243,7 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SegmentedButton',
       (context) => const ComicSegmentedButton<String>(
         label: 'View',
@@ -255,21 +255,21 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Chip',
       (context) => const ComicChip('Noir', onPressed: _tap),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Rating',
       (context) =>
           const ComicRating(label: 'Rating', value: 3, onChanged: _take),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FileUpload',
       (context) =>
           const ComicFileUpload(labelText: 'Cover art', onChoose: _tap),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (context) => ComicDatePicker(
         value: DateTime(2026, 11, 10),
@@ -278,7 +278,7 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DateRangePicker',
       (context) => ComicDateRangePicker(
         firstDate: DateTime(2026),
@@ -286,11 +286,11 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TimePicker',
       (context) => const ComicTimePicker(onChanged: _take),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Calendar',
       (context) => _Owned(
         () => RawCalendarController(
@@ -300,7 +300,7 @@ final DesignInventory comicInventory = DesignInventory(
         (calendar) => ComicCalendar(controller: calendar, onChanged: (_) {}),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'WheelPicker',
       (context) => ComicWheelPicker<int>(
         label: 'Copies',
@@ -310,11 +310,11 @@ final DesignInventory comicInventory = DesignInventory(
         onChanged: _take,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'ColorPicker',
       'a continuous field of colour can\'t be printed in process inks; a swatch picker in the inks can come later',
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (context) => const ComicFormField(
         'Your name',
@@ -322,58 +322,58 @@ final DesignInventory comicInventory = DesignInventory(
       ),
     ),
     // Navigation
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AppBar',
       (context) => const ComicAppBar(title: 'The plan'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationBar',
       (context) => const ComicNavigationBar(
         destinations: _places,
         onDestinationSelected: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationRail',
       (context) => const ComicNavigationRail(
         destinations: _places,
         onDestinationSelected: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'NavigationDrawer',
       (context) => const ComicNavigationDrawer(
         destinations: _places,
         onDestinationSelected: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (context) => const ComicTabBar(tabs: ['All', 'Saved'], onTap: _take),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Breadcrumb',
       (context) => const ComicBreadcrumb([
         ComicCrumb('Shop', onPressed: _tap),
         ComicCrumb('Issue 12'),
       ]),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Pagination',
       (context) =>
           const ComicPagination(pageCount: 5, page: 0, onPageChanged: _take),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StepProgress',
       (context) =>
           const ComicStepProgress(count: 3, currentStep: 1, name: 'Your order'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PageDots',
       (context) =>
           const ComicPageDots(pageCount: 3, selectedIndex: 0, label: 'Pages'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'MenuBar',
       (context) => ComicMenuBar(
         menus: [
@@ -393,29 +393,29 @@ final DesignInventory comicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Command',
       (context) => const ComicCommand(
         commands: [RawCommand(label: 'New issue', onPressed: _tap)],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Scaffold',
       (context) => const ComicScaffold(body: Text('Issue 12')),
     ),
     // Containers
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Card',
       (context) => const ComicCard(
         title: 'This issue',
         children: [Text('Twelve pages')],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListTile',
       (context) => const ComicListTile(title: 'First'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ListSection',
       (context) => const ComicListSection(
         children: [
@@ -424,18 +424,18 @@ final DesignInventory comicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SectionHeader',
       (context) => const ComicSectionHeader('New this week'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Disclosure',
       (context) => const ComicDisclosure(
         title: 'More about this issue',
         child: Text('The full story'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Table',
       (context) => const ComicTable(
         columns: ['Issue', 'Pages'],
@@ -445,15 +445,15 @@ final DesignInventory comicInventory = DesignInventory(
         ],
       ),
     ),
-    const DesignInventoryEntry.present('DataTable', _table),
-    DesignInventoryEntry.present('Divider', (context) => const ComicDivider()),
-    const DesignInventoryEntry.present('ScrollArea', _scrollArea),
-    DesignInventoryEntry.present(
+    const RawInventoryEntry.present('DataTable', _table),
+    RawInventoryEntry.present('Divider', (context) => const ComicDivider()),
+    const RawInventoryEntry.present('ScrollArea', _scrollArea),
+    RawInventoryEntry.present(
       'Resizable',
       (context) =>
           const ComicResizable(first: Text('List'), second: Text('Detail')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CarouselView',
       (context) => const ComicCarouselView(
         label: 'This week',
@@ -463,7 +463,7 @@ final DesignInventory comicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (context) => ComicReorderableListView<String>(
         items: const ['Pencils', 'Inks'],
@@ -473,7 +473,7 @@ final DesignInventory comicInventory = DesignInventory(
         itemBuilder: (context, item) => Text(item),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SwipeActions',
       (context) => const ComicSwipeActions(
         endActions: [
@@ -482,17 +482,17 @@ final DesignInventory comicInventory = DesignInventory(
         child: ComicListTile(title: 'Issue 12'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'RefreshIndicator',
       (context) => ComicRefreshIndicator(
         onRefresh: _settle,
         child: ListView(children: const [Text('Issue 12')]),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TreeView',
       (context) => _Owned(
-        () => DesignTreeController<String>(
+        () => RawTreeController<String>(
           roots: const ['Issues'],
           childrenOf: (node) => node == 'Issues' ? const ['Twelve'] : const [],
           expanded: const ['Issues'],
@@ -501,7 +501,7 @@ final DesignInventory comicInventory = DesignInventory(
             ComicTreeView<String>(controller: tree, labelOf: (node) => node),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Timeline',
       (context) => const ComicTimeline(
         entries: [
@@ -514,31 +514,31 @@ final DesignInventory comicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Avatar',
       (context) => const ComicAvatar('NW', name: 'Nia Walker'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AvatarGroup',
       (context) => const ComicAvatarGroup([
         ComicFace('NW'),
         ComicFace('AK'),
       ], label: 'Contributors'),
     ),
-    DesignInventoryEntry.present('Badge', (context) => const ComicBadge(3)),
-    DesignInventoryEntry.present('Tag', (context) => const ComicTag('New')),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present('Badge', (context) => const ComicBadge(3)),
+    RawInventoryEntry.present('Tag', (context) => const ComicTag('New')),
+    RawInventoryEntry.present(
       'Media',
       (context) => const ComicMedia(slotId: 'cover', label: 'Cover'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'EmptyState',
       (context) => const ComicEmptyState(
         title: 'All caught up',
         body: 'No new messages.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DescriptionList',
       (context) => const ComicDescriptionList(
         entries: [
@@ -548,24 +548,24 @@ final DesignInventory comicInventory = DesignInventory(
       ),
     ),
     // Overlays
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Dialog',
       (context) => const ComicDialog(
         title: 'Remove issue?',
         message: 'This cannot be undone.',
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (context) =>
           const ComicBottomSheet(title: 'Details', child: Text('Issue 12')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sheet',
       (context) =>
           const ComicSheet(title: 'Filters', child: Text('Only unread')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ActionSheet',
       (context) => const ComicActionSheet<String>(
         title: 'Issue 12',
@@ -573,7 +573,7 @@ final DesignInventory comicInventory = DesignInventory(
         onSelected: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Popover',
       (context) => ComicPopover(
         anchorBuilder: (context, anchor) =>
@@ -581,57 +581,57 @@ final DesignInventory comicInventory = DesignInventory(
         builder: (context, close) => const Text('Only unread'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'HoverCard',
       (context) => const ComicHoverCard(
         card: Text('Inker, issue 12 on'),
         child: Text('Ada'),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (context) => const ComicTooltip(message: 'Share', child: Text('Share')),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (context) => const ComicMenu<String>(
         items: [ComicMenuItem('save', 'Save')],
         onSelected: _take,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (context) => const ComicSnackBar('Saved to your collection'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Banner',
       (context) => const ComicBanner('Your issue ships Friday'),
     ),
     // Feedback
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LinearProgressIndicator',
       (context) =>
           const ComicLinearProgressIndicator(value: .4, label: 'Saving'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'CircularProgressIndicator',
       (context) =>
           const ComicCircularProgressIndicator(value: .4, label: 'Saving'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Skeleton',
       (context) => const ComicSkeleton(width: 120),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'StatusView',
       (context) => const ComicStatusView.empty(title: 'Nothing here yet'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Meter',
       (context) => const ComicMeter(label: 'Pages read', value: .6),
     ),
     // Charts
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'LineChart',
       (context) => const ComicLineChart(
         label: 'Pages read',
@@ -639,7 +639,7 @@ final DesignInventory comicInventory = DesignInventory(
         series: _pages,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BarChart',
       (context) => const ComicBarChart(
         label: 'Pages read',
@@ -647,7 +647,7 @@ final DesignInventory comicInventory = DesignInventory(
         series: _pages,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'AreaChart',
       (context) => const ComicAreaChart(
         label: 'Pages read',
@@ -655,7 +655,7 @@ final DesignInventory comicInventory = DesignInventory(
         series: _pages,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'PieChart',
       (context) => const ComicPieChart(
         centre: '417',
@@ -666,7 +666,7 @@ final DesignInventory comicInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Sparkline',
       (context) =>
           const ComicSparkline(label: 'Pages', values: [12, 18, 16, 22]),

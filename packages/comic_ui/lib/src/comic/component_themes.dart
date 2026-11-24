@@ -41,8 +41,8 @@ import 'package:ui_core/ui_core.dart';
 /// )
 /// ```
 ///
-/// An alias for [DesignStyle].
-typedef ComicStyle = DesignStyle;
+/// An alias for [RawStyle].
+typedef ComicStyle = RawStyle;
 
 /// Every component theme in one, as `ThemeData` holds Material's: what `ComicThemeData` carries and lerps.
 @immutable

@@ -484,12 +484,12 @@ void main() {
     (tester) async {
       Future<(double, double)> heights(
         ComicThemeData theme,
-        DesignInput reach,
+        RawInput reach,
       ) async {
         await tester.pumpWidget(
           _host(
             theme,
-            DesignTapTargetScope(
+            RawTapTargetScope(
               targets: ComicTapTarget.targets.copyWith(input: reach),
               child: ComicButton('Go', onPressed: () {}),
             ),
@@ -503,7 +503,7 @@ void main() {
       }
 
       final compact = base.copyWith(density: ComicDensity.compact);
-      const pointer = DesignInput.pointer, touch = DesignInput.touch;
+      const pointer = RawInput.pointer, touch = RawInput.touch;
       final (own, _) = await heights(base, pointer);
       final (lower, _) = await heights(compact, pointer);
       expect(lower, lessThan(own));

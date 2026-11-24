@@ -1,4 +1,4 @@
-// A control's one-line label drawn with its capitals on its box's middle (ui_core's DesignCapCenter), at the cap height
+// A control's one-line label drawn with its capitals on its box's middle (ui_core's RawCapCenter), at the cap height
 // of the face it is set in. Every face wraps its label once, here, never its icon or its row; page code never does.
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -29,7 +29,7 @@ class CapLabel extends StatelessWidget {
         display ??
         (family != null &&
             (family == face.display || family.endsWith('/${face.display}')));
-    return DesignCapCenter(
+    return RawCapCenter(
       capHeightFactor: lettered ? face.displayCapHeight : face.textCapHeight,
       child: child,
     );

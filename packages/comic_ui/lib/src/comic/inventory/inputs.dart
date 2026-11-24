@@ -19,6 +19,7 @@ import '../component_themes.dart';
 import '../controls.dart';
 import '../internal/cap_label.dart';
 import '../internal/field_icon.dart';
+import '../internal/lamp_line.dart';
 import '../internal/list_open.dart';
 import '../internal/lettering.dart'
     show comicCalendarScaleMost, comicDisplayFor;
@@ -673,7 +674,7 @@ class _ComicInputGroupState extends State<ComicInputGroup>
       label: widget.labelText,
       helper: widget.helperText,
       error: widget.errorText,
-      child: DesignInputGroup(
+      child: RawInputGroup(
         focusNode: focus,
         enabled: widget.enabled,
         isError: widget.errorText != null,
@@ -1472,7 +1473,11 @@ class ComicCalendar extends StatelessWidget {
       // A day's number grows at most twice, as Material's calendar on a phone: larger, it filled its cell to the rules.
       dayBuilder: (context, day, states) => MediaQuery.withClampedTextScaling(
         maxScaleFactor: comicCalendarScaleMost,
-        child: _CalendarDay(day: day, states: states),
+        child: _CalendarDay(
+          day: day,
+          states: states,
+          firstWeekday: firstWeekday,
+        ),
       ),
     );
     return onChanged != null
@@ -1517,7 +1522,11 @@ class ComicCalendar extends StatelessWidget {
 /// so a choice never moves the rows.
 class _CalendarDay extends StatelessWidget {
   /// Creates a [_CalendarDay].
-  const _CalendarDay({required this.day, required this.states});
+  const _CalendarDay({
+    required this.day,
+    required this.states,
+    required this.firstWeekday,
+  });
 
   /// The day's facts.
   final RawCalendarDayDetails day;
@@ -1525,24 +1534,44 @@ class _CalendarDay extends StatelessWidget {
   /// Its press states.
   final Set<WidgetState> states;
 
+  /// The day the calendar's weeks start on, which sets the day's column.
+  final int firstWeekday;
+
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     final end = day.selected || day.isRangeStart || day.isRangeEnd;
     final between = !end && (day.inRange || day.inPreview);
-    // A lit day's contour is the ink on its lamp, which reads by night too: the night line's cream stood 1.2:1 on
-    // the yellow.
+    // A lit day's contour is the ink on its lamp: the night line's cream stood 1.2:1 on the yellow. At night the
+    // night line is laid over its outer edge, where the ink was lost on the page (comicLampNightLine).
     final rim = end
         ? BorderSide(color: c.onCaption, width: 2.5)
-        : day.inMonth
-        ? BorderSide(color: c.divider, width: 1)
         : BorderSide.none;
+    final shape = t.shapes.small;
+    // A resting day draws its share of the month's rules (_DayRule): two days side by side, or one over another, meet
+    // on one rule. Each drew its whole outline, two rules deep where days met.
+    final last = DateTime(day.date.year, day.date.month + 1, 0).day;
+    final column = (day.date.weekday - firstWeekday) % 7;
+    final rules = end || !day.inMonth
+        ? null
+        : _DayRule(
+            shape: shape,
+            color: c.divider,
+            after: column < 6 && day.date.day < last,
+            below: day.date.day + 7 <= last,
+            direction: Directionality.of(context),
+          );
+    // Every day keeps the room its old outline took, so the numbers stand where they stood.
+    final reserve = end
+        ? 2.5
+        : day.inMonth
+        ? 1.0
+        : 0.0;
     final ink = end
         ? c.onCaption
         : day.inMonth
         ? c.text
         : c.textSecondary;
-    final shape = t.shapes.small;
     return ComicScreened(
       on: !day.enabled,
       child: ComicHighlight(
@@ -1550,7 +1579,7 @@ class _CalendarDay extends StatelessWidget {
         shape: shape,
         // The cell is every day's face, whatever it draws: a plain day's faint rule cannot show it in pixels, and
         // ui_core's row check read a span's end inside its heavy rim, 2.5 px short of the days beside it.
-        child: DesignKeylineFace(
+        child: RawKeylineFace(
           child: DecoratedBox(
             decoration: ShapeDecoration(
               color: end
@@ -1560,46 +1589,57 @@ class _CalendarDay extends StatelessWidget {
                   : null,
               shape: shape.copyWith(side: rim),
             ),
-            child: Container(
-              constraints: const BoxConstraints(
-                minHeight: ComicDatePicker.dayWidth,
-              ),
-              alignment: Alignment.center,
-              padding: EdgeInsets.all(2.5 - rim.width + 4),
-              // The number alone sets the cell, its capitals on the middle, so today (and its dot, laid over the
-              // cell under the number) stands as tall as every day beside it (ui_core's DesignRowCheck).
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  // A number never breaks: large text that outgrows the cell shrinks it whole.
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: CapLabel(
-                      display: false,
-                      child: Text(
-                        '${day.date.day}',
-                        maxLines: 1,
-                        softWrap: false,
-                        style: t.type.body.copyWith(
-                          color: ink,
-                          fontWeight: end ? FontWeight.w800 : null,
-                        ),
-                      ),
-                    ),
+            child: CustomPaint(
+              foregroundPainter: rules,
+              child: DecoratedBox(
+                position: DecorationPosition.foreground,
+                decoration: ShapeDecoration(
+                  shape: shape.copyWith(
+                    side: end ? comicLampNightLine(c) : BorderSide.none,
                   ),
-                  if (day.isToday)
-                    Positioned(
-                      bottom: -3,
-                      child: DecoratedBox(
-                        decoration: ShapeDecoration(
-                          color: ink,
-                          shape: t.shapes.full,
+                ),
+                child: Container(
+                  constraints: const BoxConstraints(
+                    minHeight: ComicDatePicker.dayWidth,
+                  ),
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.all(2.5 - reserve + 4),
+                  // The number alone sets the cell, its capitals on the middle, so today (and its dot, laid over the
+                  // cell under the number) stands as tall as every day beside it (ui_core's DesignRowCheck).
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      // A number never breaks: large text that outgrows the cell shrinks it whole.
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: CapLabel(
+                          display: false,
+                          child: Text(
+                            day.label,
+                            maxLines: 1,
+                            softWrap: false,
+                            style: t.type.body.copyWith(
+                              color: ink,
+                              fontWeight: end ? FontWeight.w800 : null,
+                            ),
+                          ),
                         ),
-                        child: const SizedBox(width: 4, height: 4),
                       ),
-                    ),
-                ],
+                      if (day.isToday)
+                        Positioned(
+                          bottom: -3,
+                          child: DecoratedBox(
+                            decoration: ShapeDecoration(
+                              color: ink,
+                              shape: t.shapes.full,
+                            ),
+                            child: const SizedBox(width: 4, height: 4),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -1607,6 +1647,59 @@ class _CalendarDay extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A resting day's share of its month's rules: its outline in the theme's shape, laid inside its edges, less its end
+/// and its foot where a day of the month follows there (that day's start or top is the rule between them). So two days
+/// meet on one rule, and the month's outer edges are each a day's own.
+class _DayRule extends CustomPainter {
+  _DayRule({
+    required this.shape,
+    required this.color,
+    required this.after,
+    required this.below,
+    required this.direction,
+  });
+
+  final OutlinedBorder shape;
+  final Color color;
+
+  /// Whether a day of the month follows at the day's end, and under it.
+  final bool after, below;
+  final TextDirection direction;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rtl = direction == TextDirection.rtl;
+    // Where a day follows, the outline runs on under that day's rule and is
+    // cut at this day's edge: its top and start reach the next day's whole,
+    // so the rules cross unbroken, and no rule is laid over another.
+    final outline = Rect.fromLTRB(
+      rtl && after ? -1 : 0,
+      0,
+      !rtl && after ? size.width + 1 : size.width,
+      below ? size.height + 1 : size.height,
+    );
+    canvas
+      ..save()
+      ..clipRect(Offset.zero & size)
+      ..drawPath(
+        shape.getOuterPath(outline.deflate(.5), textDirection: direction),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = color,
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_DayRule oldDelegate) =>
+      oldDelegate.shape != shape ||
+      oldDelegate.color != color ||
+      oldDelegate.after != after ||
+      oldDelegate.below != below ||
+      oldDelegate.direction != direction;
 }
 
 /// A span of days on a [ComicCalendar] in range mode, with the span written above it. The first press starts it, the
@@ -1993,6 +2086,14 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
                           shape: band.copyWith(
                             side: BorderSide(color: c.onCaption, width: 2.5),
                           ),
+                        ),
+                        // At night the night line round the lamp's ink, which the page swallowed.
+                        child: DecoratedBox(
+                          position: DecorationPosition.foreground,
+                          decoration: ShapeDecoration(
+                            shape: band.copyWith(side: comicLampNightLine(c)),
+                          ),
+                          child: const SizedBox.expand(),
                         ),
                       ),
                     ),

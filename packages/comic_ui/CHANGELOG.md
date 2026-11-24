@@ -1,3 +1,12 @@
+## 0.6.0
+
+- Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).
+- Types take ui_core 0.6.0's names: each `style` parameter and style field is a `RawStyle` (it was `DesignStyle`); `comicStyleOf` and `comicRim` give a `RawStyleOf`; the charts' (`ComicChart`, `ComicLineChart`, `ComicAreaChart`, `ComicBarChart`, `ComicSparkline`) `valueFormat` is a `RawChartValueFormat`, `ComicScrollArea.visibility` a `RawScrollbarVisibility`, `ComicThemeData.window` a `RawWindowSizeClass`, `ComicTapTarget.targets` a `RawTapTargets`, `ComicTreeView.controller` a `RawTreeController` and `comicInventory` a `RawInventory`; `ComicPopover.anchorBuilder` takes a `RawOverlayAnchor`, and `ComicDialogRoute` extends `RawModalDialogRoute`. ui_core keeps each old name but `DesignInventory` as a deprecated alias of the same type, and `dart fix --apply` moves them all.
+- At night the chosen day of a `ComicDatePicker`, a `ComicCalendar` or a `ComicDateRangePicker`, and the chosen row of a `ComicWheelPicker`, carry the night line round their dark edge: the edge reads on the yellow and the cream on the night page. The dark edge alone was lost against the page.
+- A `ComicCalendar`'s and a `ComicDateRangePicker`'s days meet on one rule, as a `ComicDatePicker`'s do: each resting day draws its top and start, and its end or foot where no day of the month follows. Where two days met, their two outlines stood a double rule.
+- A calendar writes its days in the app's digits, as Material's does: `ComicCalendar` and `ComicDateRangePicker` by ui_core's `RawCalendarDayDetails.label`, `ComicDatePicker` by `RawWidgetsLocalizations.formatDecimal`. In Arabic the 20th reads ٢٠, not 20.
+- A `showComicSnackBar` announcement with no title keeps its action and dismiss at the end of the message's line, as a Material `SnackBar` does, while the words fit beside them or the actions take at most a quarter of a phone's bar. Past that they stand on a line under the words. On a phone they always stood under the words, so "Changes saved" and its dismiss made a tall box.
+
 ## 0.5.1
 
 - `showComicDatePicker`'s dialog is as wide as its calendar, as Material's is: on a wide screen it left an empty strip of paper at the month's end.

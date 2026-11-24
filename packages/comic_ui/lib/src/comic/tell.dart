@@ -202,14 +202,14 @@ class _ComicCircularProgressState extends State<ComicCircularProgressIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _motion = AnimationController(vsync: this);
   // Run from build: iOS's Reduce Motion comes as a build, never as didChangeDependencies
-  // (designReduceMotionOf).
+  // (rawReduceMotionOf).
   void _sync() {
     final duration = ComicMotion.of(context).spinner;
     final changed = _motion.duration != duration;
     _motion.duration = duration;
     if (widget.value == null &&
         duration > Duration.zero &&
-        !designReduceMotionOf(context) &&
+        !rawReduceMotionOf(context) &&
         TickerMode.valuesOf(context).enabled) {
       if (!_motion.isAnimating || changed) _motion.repeat();
     } else if (_motion.isAnimating || _motion.value != 0) {
@@ -378,14 +378,14 @@ class _ComicLinearProgressIndicatorState
     with SingleTickerProviderStateMixin {
   late final AnimationController _motion = AnimationController(vsync: this);
   // Run from build: iOS's Reduce Motion comes as a build, never as didChangeDependencies
-  // (designReduceMotionOf).
+  // (rawReduceMotionOf).
   void _sync() {
     final duration = ComicMotion.of(context).progress;
     final changed = _motion.duration != duration;
     _motion.duration = duration;
     if (widget.value == null &&
         duration > Duration.zero &&
-        !designReduceMotionOf(context) &&
+        !rawReduceMotionOf(context) &&
         TickerMode.valuesOf(context).enabled) {
       if (!_motion.isAnimating || changed) _motion.repeat(reverse: true);
     } else if (_motion.isAnimating || _motion.value != 0) {
@@ -481,13 +481,13 @@ class _ComicSkeletonState extends State<ComicSkeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _motion = AnimationController(vsync: this);
   // Run from build: iOS's Reduce Motion comes as a build, never as didChangeDependencies
-  // (designReduceMotionOf).
+  // (rawReduceMotionOf).
   void _sync() {
     final duration = ComicMotion.of(context).pulse;
     final changed = _motion.duration != duration;
     _motion.duration = duration;
     if (duration > Duration.zero &&
-        !designReduceMotionOf(context) &&
+        !rawReduceMotionOf(context) &&
         TickerMode.valuesOf(context).enabled) {
       if (!_motion.isAnimating || changed) _motion.repeat(reverse: true);
     } else if (_motion.isAnimating || _motion.value != 0) {
