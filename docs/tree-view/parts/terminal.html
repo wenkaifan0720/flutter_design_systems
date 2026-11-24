@@ -35,7 +35,7 @@
 }
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_BrowseFoldersState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">BrowseFolders</span>&gt; </span>{
-  <span class="hljs-keyword">final</span> folders = DesignTreeController&lt;<span class="hljs-built_in">String</span>&gt;(
+  <span class="hljs-keyword">final</span> folders = RawTreeController&lt;<span class="hljs-built_in">String</span>&gt;(
     roots: <span class="hljs-keyword">const</span> [<span class="hljs-string">'Files'</span>],
     childrenOf: (folder) =&gt;
         folder == <span class="hljs-string">'Files'</span> ? <span class="hljs-keyword">const</span> [<span class="hljs-string">'Notes'</span>, <span class="hljs-string">'Maps'</span>] : <span class="hljs-keyword">const</span> [],

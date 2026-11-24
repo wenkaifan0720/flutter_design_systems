@@ -1,22 +1,22 @@
 ((a,b)=>{a[b]=a[b]||{}})(self,"$__dart_deferred_initializers__")
 $__dart_deferred_initializers__.current=function(a,b,c,$){var C,B={
-Ds(d){var y
-if(d<600)y=A.uP
-else if(d<840)y=A.a6T
-else if(d<1200)y=A.a6U
-else y=d<1600?A.bfA:A.bfB
+Et(d){var y
+if(d<600)y=A.vY
+else if(d<840)y=A.avp
+else if(d<1200)y=A.avq
+else y=d<1600?A.cWX:A.cWY
 return y},
-YW:function YW(d,e){this.a=d
+a6l:function a6l(d,e){this.a=d
 this.b=e}},A
 C=c[0]
 B=a.updateHolder(c[224],B)
 A=c[610]
-B.YW.prototype={
-X(){return"DesignWindowSizeClass."+this.b}}
+B.a6l.prototype={
+Y(){return"RawWindowSizeClass."+this.b}}
 var z=a.updateTypes([]);(function inheritance(){var y=a.inherit
-y(B.YW,C.em)})();(function constants(){A.uP=new B.YW(0,"compact")
-A.a6T=new B.YW(1,"medium")
-A.a6U=new B.YW(2,"expanded")
-A.bfA=new B.YW(3,"large")
-A.bfB=new B.YW(4,"extraLarge")})()};
-(a=>{a["sLTkI4zQrXJK88leAedrcb/kar0="]=a.current})($__dart_deferred_initializers__);
+y(B.a6l,C.em)})();(function constants(){A.vY=new B.a6l(0,"compact")
+A.avp=new B.a6l(1,"medium")
+A.avq=new B.a6l(2,"expanded")
+A.cWX=new B.a6l(3,"large")
+A.cWY=new B.a6l(4,"extraLarge")})()};
+(a=>{a["W6lrdpQ5Qvz4v68vVkfgKPR3iPU="]=a.current})($__dart_deferred_initializers__);
