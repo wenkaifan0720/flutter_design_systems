@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -69,7 +70,7 @@ class BrutalButtonGroup extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.buttonGroupStyle];
-    final strip = DesignStyleOf(layers, const {});
+    final strip = RawStyleOf(layers, const {});
     final height = strip.minimumSize?.height ?? theme.controlHeight;
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: _maxTextScale,
@@ -133,7 +134,7 @@ class BrutalButtonGroup extends StatelessWidget {
         semanticLabel: item.label ?? item.tooltip,
         excludeSemantics: true,
         builder: (context, states, _) {
-          final layered = DesignStyleOf(layers, states);
+          final layered = RawStyleOf(layers, states);
           final disabled = states.contains(WidgetState.disabled);
           final lit = states.contains(WidgetState.pressed);
           final words =
@@ -179,7 +180,7 @@ class BrutalButtonGroup extends StatelessWidget {
                       if (item.icon != null && item.label != null)
                         const SizedBox(width: BrutalSpacing.small),
                       if (item.label != null)
-                        DesignCapCenter(
+                        RawCapCenter(
                           capHeightFactor: BrutalTheme.of(context)
                               .capHeightFactor,
                           child: Text(
@@ -270,7 +271,7 @@ class BrutalToggleGroup<T> extends StatelessWidget {
     final c = theme.colors;
     final enabled = onSelectionChanged != null;
     final layers = [style, theme.toggleGroupStyle];
-    final strip = DesignStyleOf(layers, {if (!enabled) WidgetState.disabled});
+    final strip = RawStyleOf(layers, {if (!enabled) WidgetState.disabled});
     final rule =
         strip.side?.color ?? strip.edge ?? (enabled ? c.ink : c.disabled);
     final height = strip.minimumSize?.height ?? theme.controlHeight;
@@ -315,7 +316,7 @@ class BrutalToggleGroup<T> extends StatelessWidget {
               ),
             ),
             itemBuilder: (context, value, states) {
-              final layered = DesignStyleOf(layers, states);
+              final layered = RawStyleOf(layers, states);
               final disabled = states.contains(WidgetState.disabled);
               final on = states.contains(WidgetState.selected);
               final lit = on || states.contains(WidgetState.pressed);
@@ -359,7 +360,7 @@ class BrutalToggleGroup<T> extends StatelessWidget {
                                   const EdgeInsets.symmetric(
                                     horizontal: BrutalSpacing.regular,
                                   ),
-                              child: DesignCapCenter(
+                              child: RawCapCenter(
                                 capHeightFactor: BrutalTheme.of(context)
                                     .capHeightFactor,
                                 child: Text(
@@ -458,7 +459,7 @@ class BrutalLink extends StatelessWidget {
         semanticLabel: text,
         excludeSemantics: true,
         builder: (context, states, _) {
-          final layered = DesignStyleOf([style, theme.linkStyle], states);
+          final layered = RawStyleOf([style, theme.linkStyle], states);
           final disabled = states.contains(WidgetState.disabled);
           final pressed = states.contains(WidgetState.pressed);
           final words =
@@ -475,7 +476,7 @@ class BrutalLink extends StatelessWidget {
               foreground: words,
               borderWidth: 0,
               focus: states.contains(WidgetState.focused)
-                  ? c.ink
+                  ? brutalFocusInk(c, pressed ? c.ink : c.surface)
                   : c.ink.withValues(alpha: 0),
             ),
             child: Text(
@@ -510,7 +511,7 @@ class BrutalLink extends StatelessWidget {
 /// Keys to press together, each a small raised cap in the rule over its
 /// hard shadow. [BrutalKbd.shortcut] prints a keyboard shortcut's keys in
 /// the platform's order and the reader's words (ui_core's
-/// [designShortcutKeys]: `⇧ ⌘ N` on a Mac, `Ctrl Shift N` elsewhere); the
+/// [rawShortcutKeys]: `⇧ ⌘ N` on a Mac, `Ctrl Shift N` elsewhere); the
 /// plain constructor prints the [keys] it is given. A screen reader hears
 /// [semanticLabel], or the shortcut in words, or the keys one after another.
 ///
@@ -550,18 +551,18 @@ class BrutalKbd extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.kbdStyle], const {});
+    final layered = RawStyleOf([style, theme.kbdStyle], const {});
     final minimum = layered.minimumSize ?? const Size(28, 28);
     final activator = this.activator;
     final keys = activator == null
         ? this.keys
-        : designShortcutKeys(context, activator);
+        : rawShortcutKeys(context, activator);
     return Semantics(
       label:
           semanticLabel ??
           (activator == null
               ? keys.join(' ')
-              : designShortcutLabel(context, activator, appleSymbols: false)),
+              : rawShortcutLabel(context, activator, appleSymbols: false)),
       excludeSemantics: true,
       child: Padding(
         // The shadows' room, so a line under the caps does not run into them.
@@ -597,7 +598,7 @@ class BrutalKbd extends StatelessWidget {
                     child: Center(
                       widthFactor: 1,
                       heightFactor: 1,
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: BrutalTheme.of(context)
                             .capHeightFactor,
                         child: Text(

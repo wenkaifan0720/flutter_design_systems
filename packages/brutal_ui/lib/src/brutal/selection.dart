@@ -46,7 +46,7 @@ class _Track extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = BrutalTheme.of(context).colors;
-    final layered = DesignStyleOf(layers, {if (!enabled) WidgetState.disabled});
+    final layered = RawStyleOf(layers, {if (!enabled) WidgetState.disabled});
     final ink = layered.foreground ?? (enabled ? c.ink : c.disabled);
     final rule = layered.side?.color ?? layered.edge ?? ink;
     return SizedBox(
@@ -88,7 +88,7 @@ Widget _thumbFace(
 ) {
   final disabled = states.contains(WidgetState.disabled);
   final pressed = dragging || states.contains(WidgetState.pressed);
-  final layered = DesignStyleOf(layers, {
+  final layered = RawStyleOf(layers, {
     ...states,
     if (dragging) WidgetState.pressed,
   });
@@ -264,7 +264,7 @@ class _BrutalSliderState extends State<BrutalSlider> {
               : null,
           // The whole slider is the one control the keyboard and a screen
           // reader find, as Flutter's own; the thumb is its face.
-          child: DesignValueHandle(
+          child: RawValueHandle(
             value: widget.value.clamp(widget.min, widget.max),
             min: widget.min,
             max: widget.max,
@@ -488,7 +488,7 @@ class BrutalChip extends StatelessWidget {
         builder: (context, states, _) {
           final disabled = states.contains(WidgetState.disabled);
           final lit = selected || states.contains(WidgetState.pressed);
-          final layered = DesignStyleOf(
+          final layered = RawStyleOf(
             [style, theme.chipStyle],
             {...states, if (selected) WidgetState.selected},
           );
@@ -539,7 +539,7 @@ class BrutalChip extends StatelessWidget {
                       Icon(icon, size: layered.iconSize ?? 16, color: words),
                       const SizedBox(width: BrutalSpacing.small),
                     ],
-                    DesignCapCenter(
+                    RawCapCenter(
                       capHeightFactor: BrutalTheme.of(context).capHeightFactor,
                       child: Text(
                         label,
@@ -627,7 +627,7 @@ class BrutalRating extends StatelessWidget {
     final c = theme.colors;
     final enabled = onChanged != null;
     final layers = [style, theme.ratingStyle];
-    final strip = DesignStyleOf(layers, {if (!enabled) WidgetState.disabled});
+    final strip = RawStyleOf(layers, {if (!enabled) WidgetState.disabled});
     final rule =
         strip.side?.color ?? strip.edge ?? (enabled ? c.ink : c.disabled);
     final side = strip.minimumSize?.height ?? 40.0;
@@ -649,7 +649,7 @@ class BrutalRating extends StatelessWidget {
         itemBuilder: (context, item) {
           focused = item.states.contains(WidgetState.focused);
           final on = item.fill >= 0.5;
-          final cell = DesignStyleOf(layers, {
+          final cell = RawStyleOf(layers, {
             ...item.states.difference(const {WidgetState.focused}),
             if (on) WidgetState.selected,
           });
@@ -791,7 +791,7 @@ class BrutalFileDrop extends StatelessWidget {
     final c = theme.colors;
     final t = theme.textTheme;
     final layers = [style, theme.fileDropStyle];
-    final rest = DesignStyleOf(layers, {
+    final rest = RawStyleOf(layers, {
       if (onChoose == null) WidgetState.disabled,
     });
     final fileRule = rest.side?.color ?? rest.edge ?? c.ink;
@@ -806,7 +806,7 @@ class BrutalFileDrop extends StatelessWidget {
       builder: (context, states, _) {
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final ink =
             layered.foreground ??
             (disabled
@@ -821,7 +821,12 @@ class BrutalFileDrop extends StatelessWidget {
                 layered.edge ??
                 (disabled ? c.disabled : c.ink),
             fill: pressed && !disabled ? c.ink : (layered.fill ?? c.surface),
-            focus: states.contains(WidgetState.focused) ? c.ink : null,
+            focus: states.contains(WidgetState.focused)
+                ? brutalFocusInk(
+                    c,
+                    pressed && !disabled ? c.ink : (layered.fill ?? c.surface),
+                  )
+                : null,
             width: theme.borderWidth,
           ),
           child: Padding(

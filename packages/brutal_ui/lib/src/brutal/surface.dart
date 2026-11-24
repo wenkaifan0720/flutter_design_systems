@@ -226,7 +226,7 @@ class _SurfacePainter extends CustomPainter {
 /// spring ([BrutalMotion.pressStiffness]), from wherever it is: a press, a
 /// release, a focus, a change of fill. A new face mid-way turns from where
 /// the surface stands, with no jump back. Under Reduce Motion the change is
-/// a short fade, as `DesignMotionPolicy` says.
+/// a short fade, as `RawMotionPolicy` says.
 ///
 /// ```dart
 /// AnimatedBrutalSurface(face: pressed ? resting.copyWith(travel: 1) : resting, child: const Text('Buy'))
@@ -271,7 +271,7 @@ class _AnimatedBrutalSurfaceState extends State<AnimatedBrutalSurface>
     _controller.value = 0;
     _controller.springTo(
       1,
-      DesignMotionPolicy.of(context).effects(
+      RawMotionPolicy.of(context).effects(
         dampingRatio: BrutalMotion.dampingRatio,
         stiffness: widget.stiffness,
       ),
@@ -327,11 +327,11 @@ class BrutalInsetFocusPainter extends CustomPainter {
   bool shouldRepaint(BrutalInsetFocusPainter old) => old.color != color;
 }
 
-/// A part's two style layers ([DesignStyleOf]) put on a [BrutalFace]: the
+/// A part's two style layers ([RawStyleOf]) put on a [BrutalFace]: the
 /// style's `fill`, its `foreground`, and its `edge` (or its `side`'s colour)
 /// for the rule. Nothing else of a style reaches a face: the rule's weight,
 /// the hard shadow and the square corners are the look's.
-extension BrutalStyleFace on DesignStyleOf {
+extension BrutalStyleFace on RawStyleOf {
   /// [face] in these layers' colours.
   BrutalFace on(BrutalFace face) {
     final fill = this.fill;

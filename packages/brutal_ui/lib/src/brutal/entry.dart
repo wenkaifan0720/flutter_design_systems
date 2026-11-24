@@ -7,6 +7,8 @@
 /// inside a field).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -17,6 +19,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'feedback.dart';
 import 'internal/drop_mark.dart';
 import 'internal/field_frame.dart';
+import 'internal/focus_ink.dart';
 import 'lists.dart';
 import 'menu.dart';
 import 'surface.dart';
@@ -69,7 +72,7 @@ class BrutalFieldButton extends StatelessWidget {
         semanticLabel: semanticLabel,
         builder: (context, states, _) {
           final pressed = states.contains(WidgetState.pressed);
-          final layered = DesignStyleOf([style, theme.textFieldStyle], states);
+          final layered = RawStyleOf([style, theme.textFieldStyle], states);
           final glyph = states.contains(WidgetState.disabled)
               ? c.disabled
               : pressed
@@ -538,13 +541,13 @@ class _Entry extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(layers, {if (!enabled) WidgetState.disabled});
+    final layered = RawStyleOf(layers, {if (!enabled) WidgetState.disabled});
     final words = layered
         .text(theme.textTheme.body)
         .copyWith(color: enabled ? layered.foreground ?? c.ink : c.disabled);
-    return DesignCapCenter(
+    return RawCapCenter(
       capHeightFactor: theme.capHeightFactor,
-      child: DesignTextEntryBox(
+      child: RawTextEntryBox(
         minHeight:
             (layered.minimumSize?.height ?? theme.controlHeight) -
             2 * theme.borderWidth,
@@ -733,7 +736,7 @@ class _BrutalInputGroupState extends State<BrutalInputGroup> {
               ),
               child: Center(
                 widthFactor: 1,
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: theme.capHeightFactor,
                   child: Text(
                     words,
@@ -755,7 +758,7 @@ class _BrutalInputGroupState extends State<BrutalInputGroup> {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [widget.style, theme.textFieldStyle];
-    final rest = DesignStyleOf(layers, {
+    final rest = RawStyleOf(layers, {
       if (!widget.enabled) WidgetState.disabled,
       if (widget.errorText != null) WidgetState.error,
     });
@@ -781,18 +784,23 @@ class _BrutalInputGroupState extends State<BrutalInputGroup> {
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: widget.enabled,
-      child: DesignInputGroup(
+      child: RawInputGroup(
         focusNode: _focus,
         enabled: widget.enabled,
         isError: widget.errorText != null,
         builder: (context, states, child) => AnimatedBrutalSurface(
           stiffness: BrutalMotion.colorStiffness,
           face: BrutalFace(
-            fill: DesignStyleOf(layers, states).fill ?? c.surface,
+            fill: RawStyleOf(layers, states).fill ?? c.surface,
             border: rule,
             foreground: c.ink,
             focus: states.contains(WidgetState.focused)
-                ? rule
+                ? (widget.errorText != null
+                      ? c.danger
+                      : brutalFocusInk(
+                          c,
+                          RawStyleOf(layers, states).fill ?? c.surface,
+                        ))
                 : rule.withValues(alpha: 0),
           ),
           child: child,
@@ -1064,7 +1072,7 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [widget.style, theme.textFieldStyle],
       {
         if (!widget.enabled) WidgetState.disabled,
@@ -1102,7 +1110,11 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
           fill: layered.fill ?? c.surface,
           border: rule,
           foreground: c.ink,
-          focus: _focus.hasFocus ? rule : rule.withValues(alpha: 0),
+          focus: _focus.hasFocus
+              ? (widget.errorText != null
+                    ? c.danger
+                    : brutalFocusInk(c, layered.fill ?? c.surface))
+              : rule.withValues(alpha: 0),
         ),
         child: SizedBox(
           height: height - 2 * theme.borderWidth,
@@ -1176,7 +1188,7 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
 Widget _suggestions(BuildContext context, Widget list, {GlobalKey? field}) {
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
-  final panel = DesignStyleOf([theme.menuStyle], const {});
+  final panel = RawStyleOf([theme.menuStyle], const {});
   final rule = panel.side?.color ?? panel.edge ?? c.ink;
   // As the select's list: the rule is drawn over the panel, so the panel is
   // the field's width from the field's edge as drawn too; its rows stand
@@ -1427,7 +1439,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
 
   /// Finds the options for the words typed, in place of filtering
   /// [options]: a future for a search that takes time, which may fail.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs; null runs it at every
   /// letter.
@@ -1546,7 +1558,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
@@ -1604,7 +1616,7 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
 
   /// Finds the suggestions for the words typed, in place of filtering
   /// [options]: a future for a search that takes time, which may fail.
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// How long typing rests before [search] runs; null runs it at every
   /// letter.
@@ -1649,7 +1661,7 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
       )
       ..add(IterableProperty<T>('options', options))
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         DiagnosticsProperty<Duration>(
           'debounceDuration',
@@ -1703,7 +1715,7 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [widget.style, theme.textFieldStyle];
-    final layered = DesignStyleOf(layers, {
+    final layered = RawStyleOf(layers, {
       if (!widget.enabled) WidgetState.disabled,
       if (widget.errorText != null) WidgetState.error,
       if (_focus.hasFocus) WidgetState.focused,
@@ -1751,7 +1763,11 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
                 fill: layered.fill ?? c.surface,
                 border: rule,
                 foreground: c.ink,
-                focus: _focus.hasFocus ? rule : rule.withValues(alpha: 0),
+                focus: _focus.hasFocus
+                    ? (widget.errorText != null
+                          ? c.danger
+                          : brutalFocusInk(c, layered.fill ?? c.surface))
+                    : rule.withValues(alpha: 0),
               ),
               child: Padding(
                 padding: const EdgeInsetsDirectional.only(
@@ -1760,6 +1776,15 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
                 ),
                 child: Wrap(
                   spacing: BrutalSpacing.small,
+                  // Where the entry takes a line of its own under the tags,
+                  // the room between gives its node the look's tap floor:
+                  // the line and the rule under it come to 2 under a
+                  // finger's 48.
+                  runSpacing: math.max(
+                    0.0,
+                    RawTapTargets.of(context).floorOn().height -
+                        (theme.controlHeight - theme.borderWidth),
+                  ),
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     ...tags,
@@ -1861,7 +1886,7 @@ class _Tag extends StatelessWidget {
                       start: BrutalSpacing.small,
                       end: BrutalSpacing.medium,
                     ),
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         label,

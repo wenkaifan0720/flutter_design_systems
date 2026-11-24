@@ -15,7 +15,7 @@ import 'lists.dart';
 import 'surface.dart';
 import 'theme.dart';
 
-bool _still(BuildContext context) => designReduceMotionOf(context);
+bool _still(BuildContext context) => rawReduceMotionOf(context);
 
 /// A heading that opens to show [child] under it: a row with a square
 /// cell holding a plus (a minus while open). A press anywhere on the row,
@@ -106,7 +106,7 @@ class _BrutalDisclosureState extends State<BrutalDisclosure> {
             onPressed: _toggle,
             builder: (context, states, _) {
               final lit = states.contains(WidgetState.pressed);
-              final layered = DesignStyleOf(
+              final layered = RawStyleOf(
                 [widget.style, theme.disclosureStyle],
                 {...states, if (open) WidgetState.selected},
               );
@@ -256,7 +256,7 @@ class BrutalDisclosureGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.disclosureStyle], const {});
+    final layered = RawStyleOf([style, theme.disclosureStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     return BrutalSurface(
       face: BrutalFace(
@@ -357,7 +357,7 @@ class BrutalTable extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final layered = DesignStyleOf([style, theme.dataTableStyle], const {});
+    final layered = RawStyleOf([style, theme.dataTableStyle], const {});
     final pad =
         layered.padding(Directionality.of(context)) ??
         const EdgeInsets.symmetric(
@@ -515,10 +515,7 @@ class BrutalDescriptionList extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final layered = DesignStyleOf([
-      style,
-      theme.descriptionListStyle,
-    ], const {});
+    final layered = RawStyleOf([style, theme.descriptionListStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -632,7 +629,7 @@ class BrutalTimeline extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final layered = DesignStyleOf([style, theme.timelineStyle], const {});
+    final layered = RawStyleOf([style, theme.timelineStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     final next = entries.indexWhere((e) => !e.done);
     return Column(
@@ -778,13 +775,13 @@ class BrutalAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.avatarStyle], const {});
+    final layered = RawStyleOf([style, theme.avatarStyle], const {});
     final blocks = [c.lime, c.blue, c.pink, c.violet];
     final fill =
         layered.fill ?? blocks[name.codeUnits.fold(0, (a, b) => a + b) % 4];
     final words = layered.foreground ?? c.onColor(fill);
     final initials = Center(
-      child: DesignCapCenter(
+      child: RawCapCenter(
         capHeightFactor: BrutalTheme.of(context).capHeightFactor,
         child: Text(
           initialsOf(name),
@@ -871,7 +868,7 @@ class BrutalAvatarGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.avatarStyle], const {});
+    final layered = RawStyleOf([style, theme.avatarStyle], const {});
     final countFill = layered.fill ?? c.ink;
     final countWords = layered.foreground ?? c.onColor(countFill);
     final shown = avatars.take(max).toList();
@@ -986,7 +983,7 @@ class BrutalBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.badgeStyle], const {});
+    final layered = RawStyleOf([style, theme.badgeStyle], const {});
     final fill = layered.fill ?? c.signal;
     final words =
         layered.foreground ??
@@ -1092,7 +1089,7 @@ class BrutalMedia extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.mediaStyle], const {});
+    final layered = RawStyleOf([style, theme.mediaStyle], const {});
     final ground = layered.fill ?? c.surface;
     final mark = layered.foreground ?? c.inkMuted;
     final standIn = CustomPaint(
@@ -1236,7 +1233,7 @@ class _BrutalSkeletonState extends State<BrutalSkeleton>
   );
 
   // From build: iOS's Reduce Motion changes arrive as a build, never as
-  // didChangeDependencies (designReduceMotionOf).
+  // didChangeDependencies (rawReduceMotionOf).
   void _sync() {
     if (!_still(context)) {
       if (!_breath.isAnimating) _breath.repeat(reverse: true);
@@ -1258,7 +1255,7 @@ class _BrutalSkeletonState extends State<BrutalSkeleton>
     _sync();
     final theme = BrutalTheme.of(context);
     final fill =
-        DesignStyleOf([widget.style, theme.skeletonStyle], const {}).fill ??
+        RawStyleOf([widget.style, theme.skeletonStyle], const {}).fill ??
         theme.colors.disabled;
     return ExcludeSemantics(
       child: FadeTransition(
@@ -1325,7 +1322,7 @@ class BrutalMeter extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final layered = DesignStyleOf([style, theme.meterStyle], const {});
+    final layered = RawStyleOf([style, theme.meterStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     final f = (value / max).clamp(0.0, 1.0);
     final over = high != null && value >= high!;

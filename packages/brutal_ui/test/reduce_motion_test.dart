@@ -1,6 +1,6 @@
 // iOS's Reduce Motion alone calms Brutal. Flutter 3.47 sets only dart:ui's
 // reduceMotion on iOS, never MediaQuery's disableAnimations; Brutal reads
-// ui_core's designReduceMotionOf, which hears either. Each test sets only the
+// ui_core's rawReduceMotionOf, which hears either. Each test sets only the
 // iOS flag. A colour spring becomes a short fade, a theme change and a select's
 // chevron cut, and the loops stop and start again as the flag flips while they
 // run (the flip reaches them as a build).

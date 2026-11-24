@@ -1,3 +1,16 @@
+## 0.5.0
+
+- Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).
+- Types take ui_core 0.6.0's names: each `style` parameter and the theme's style fields are a `RawStyle` (it was `DesignStyle`), the charts' `valueFormat` a `RawChartValueFormat` and their `painter` a `RawStyleOf`, `BrutalThemeData.density` a `RawDensity`, `BrutalTheme.tapTargets` a `RawTapTargets` and `BrutalInventory.registry` a `RawInventory`; `BrutalTreeController` extends `RawTreeController`. ui_core keeps each old name but `DesignInventory` as a deprecated alias of the same type, and `dart fix --apply` moves them all.
+- Under a finger a calendar's day stands 48 tall, the look's tap floor, so each day's face fills the tap target ui_core 0.6.0 gives it and the rules between the weeks meet; under a pointer it stays 44. At 44 the weeks stood apart, each rule broken by a strip of the page, and on a phone's fractional pixel ratio a white pixel showed beside the chosen day.
+- A calendar's rules run a device pixel on under the next cell's, and a chosen day's fill under its own rules, so on a phone's fractional pixel ratio the chosen day, a span's ends and the rules round them meet with nothing of the page between, by day and by night. Where a column fell on a fraction of a pixel, a grey line ran down each side of the chosen day.
+- A calendar writes its days in the app's digits (`RawCalendarDayDetails.label`), as Material's does: in Arabic the 20th reads ٢٠, not 20.
+- `BrutalDatePicker`'s and `BrutalDateRangePicker`'s calendar meets its field on the field's own rule, below it or above it, its ruled table the only frame on the hard shadow. It stood 4 off the field in a padded frame of its own.
+- Under a field more than half again the calendar's own width (360 a month) the calendar stands at its own width from the field's start, as Material's docked date picker does; under a phone's field it stays edge to edge with it. On a desk window it spread the field's whole width, over the form's actions.
+- `BrutalMenuBar` spans the width it is given, its menus from the start, as a desk app's menu bar spans its window; a rule closes each menu but the last where it meets the bar's end rule. It hugged its menus, and the last menu's rule stood doubled against the bar's own.
+- Keyboard focus marks a field's lower edge in the look's accent, as on `BrutalTextField`: `BrutalDatePicker`, `BrutalDateRangePicker`, `BrutalSelect`, `BrutalInputGroup`, `BrutalCodeField`, `BrutalTagInput`, `BrutalFileDrop` and `BrutalLink`, and a calendar's keyed day and turns, as a segmented button's cells. They marked it in ink (paper on ink): an open date field's bar read as another kind of mark than a combobox's, and a calendar's keyed day as today's underline.
+- Where a `BrutalTagInput`'s entry takes a line of its own under the tags, it reaches the look's 48 tap floor. It reached 46.
+
 ## 0.4.1
 
 - `BrutalDatePicker`'s and `BrutalDateRangePicker`'s calendar stands as wide as its field, edge to edge with it, as a select's list does, on a phone and on a wide window. It stood a fixed width: about 10 narrower than a phone's field, and about half as wide as a wide one.

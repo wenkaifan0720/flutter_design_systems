@@ -9,7 +9,6 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'internal/focus_ink.dart';
@@ -101,7 +100,7 @@ class BrutalDialogAction extends StatelessWidget {
                 horizontal: BrutalSpacing.regular,
               ),
               child: Center(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: BrutalTheme.of(context).capHeightFactor,
                   child: Text(
                     label,
@@ -191,7 +190,7 @@ class BrutalDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.dialogStyle], const {});
+    final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final face = layered.on(
       BrutalFace(
         fill: c.surface,
@@ -209,7 +208,7 @@ class BrutalDialog extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: maxWidth),
         child: BrutalSurface(
           face: face,
-          child: DesignKeylineRegion(
+          child: RawKeylineRegion(
             label: 'Dialog',
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -297,7 +296,7 @@ class BrutalDialog extends StatelessWidget {
 }
 
 /// Shows [builder]'s dialog (usually a [BrutalDialog]) over a scrim, in the
-/// middle of the screen, on ui_core's [DesignDialogRoute]: it arrives on a
+/// middle of the screen, on ui_core's [RawModalDialogRoute]: it arrives on a
 /// spring, sliding up out of its shadow's direction and fading in, quickly
 /// (a fade alone under Reduce Motion). Tapping the scrim closes it when
 /// [barrierDismissible]; Escape and Back always do, and a `PopScope` in it
@@ -315,7 +314,7 @@ Future<T?> showBrutalDialog<T>({
 }) {
   final theme = BrutalTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       barrierDismissible: barrierDismissible,
       barrierLabel: RawWidgetsLocalizations.of(context)
           .modalBarrierDismissLabel,
@@ -418,7 +417,7 @@ class _ArriveState extends State<_Arrive> {
 
   @override
   Widget build(BuildContext context) {
-    final reduce = designReduceMotionOf(context);
+    final reduce = rawReduceMotionOf(context);
     return FadeTransition(
       opacity: _solid,
       child: reduce
@@ -636,7 +635,7 @@ class _SheetFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([theme.bottomSheetStyle], const {});
+    final layered = RawStyleOf([theme.bottomSheetStyle], const {});
     final face = layered.on(
       BrutalFace(
         fill: c.surface,
@@ -753,7 +752,7 @@ class BrutalSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.bottomSheetStyle], const {});
+    final layered = RawStyleOf([style, theme.bottomSheetStyle], const {});
     final face = layered.on(
       BrutalFace(
         fill: c.surface,
@@ -844,7 +843,7 @@ class BrutalSheet extends StatelessWidget {
           Flexible(
             // Given a height, the body takes what the head and foot leave.
             fit: constraints.minHeight > 0 ? FlexFit.tight : FlexFit.loose,
-            child: DesignKeylineRegion(label: title ?? 'Sheet', child: body),
+            child: RawKeylineRegion(label: title ?? 'Sheet', child: body),
           ),
           if (footer.isNotEmpty)
             Padding(
@@ -999,7 +998,7 @@ class _Toast extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final t = details.toast;
-    final layered = DesignStyleOf([style, theme.toastStyle], const {});
+    final layered = RawStyleOf([style, theme.toastStyle], const {});
     // A raised Brutal surface, as a dialog, a menu and a list are: the
     // surface in the ink rule, on the hard ink shadow.
     final block = layered.fill ?? c.surface;

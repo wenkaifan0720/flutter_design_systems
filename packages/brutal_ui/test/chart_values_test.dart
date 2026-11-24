@@ -92,7 +92,7 @@ void main() {
           BrutalSeries('Hours', [2, 6, 3]),
         ],
         semanticLabel: 'Hours a day',
-        valueFormat: DesignChartValueFormat(suffix: ' h'),
+        valueFormat: RawChartValueFormat(suffix: ' h'),
       ),
     );
     expect(_axis(tester).$2, closeTo(_width('6 h') + 8, 0.01));

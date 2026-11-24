@@ -26,7 +26,7 @@ Widget _box(
 ) {
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
-  final layered = DesignStyleOf([style, theme.popoverStyle], const {});
+  final layered = RawStyleOf([style, theme.popoverStyle], const {});
   final face = layered.on(
     BrutalFace(
       fill: c.surface,
@@ -226,7 +226,7 @@ class BrutalTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
+    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
     return MergeSemantics(
       child: RawTooltipPlacement(
         placement: _placement,
@@ -351,7 +351,7 @@ class _TipFadeState extends State<_TipFade>
     _shown = shown;
     _opacity.springTo(
       shown ? 1 : 0,
-      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+      RawMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
     );
   }
 
@@ -421,7 +421,7 @@ class _SidePanel extends StatelessWidget {
     final c = theme.colors;
     final pad = MediaQuery.paddingOf(context);
     final words = RawWidgetsLocalizations.of(context);
-    final layered = DesignStyleOf([style, theme.sideSheetStyle], const {});
+    final layered = RawStyleOf([style, theme.sideSheetStyle], const {});
     final edge = layered.side?.color ?? layered.edge ?? c.ink;
     final ink0 = layered.foreground ?? c.ink;
     final rule = BorderSide(color: edge, width: theme.borderWidth);
@@ -506,7 +506,7 @@ class _SidePanel extends StatelessWidget {
                 padding:
                     layered.padding(Directionality.of(context)) ??
                     const EdgeInsets.all(BrutalSpacing.large),
-                child: DesignKeylineRegion(
+                child: RawKeylineRegion(
                   label: title,
                   child: DefaultTextStyle.merge(
                     style: theme.textTheme.body.copyWith(color: ink0),
@@ -574,7 +574,7 @@ Future<T?> showBrutalActionSheet<T>({
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.actionSheetStyle];
-    final box = DesignStyleOf(layers, const {});
+    final box = RawStyleOf(layers, const {});
     final edge = box.side?.color ?? box.edge ?? c.ink;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -600,7 +600,7 @@ Future<T?> showBrutalActionSheet<T>({
                   onPressed: () => Navigator.of(context).pop(a.value),
                   semanticLabel: a.label,
                   builder: (context, states, _) {
-                    final layered = DesignStyleOf(layers, states);
+                    final layered = RawStyleOf(layers, states);
                     final lit = states.contains(WidgetState.pressed);
                     final tone = a.isDestructiveAction ? c.danger : c.ink;
                     final ink =

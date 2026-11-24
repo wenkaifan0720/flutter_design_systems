@@ -106,7 +106,7 @@ class BrutalDataTable<R> extends StatelessWidget {
     final c = theme.colors;
     final t = theme.textTheme;
     final layers = [style, theme.dataTableStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge ?? c.ink;
     BrutalDataColumn<R> brutal(RawDataColumn<R> col) =>
         col as BrutalDataColumn<R>;
@@ -245,7 +245,7 @@ class BrutalDataTable<R> extends StatelessWidget {
       ),
       rowBuilder: (context, row, cells) {
         final pressed = row.states.contains(WidgetState.pressed);
-        final layered = DesignStyleOf(layers, {
+        final layered = RawStyleOf(layers, {
           ...row.states,
           if (row.selected) WidgetState.selected,
         });
@@ -399,7 +399,7 @@ class BrutalScrollArea extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.scrollAreaStyle];
-    final track = DesignStyleOf(layers, const {});
+    final track = RawStyleOf(layers, const {});
     final rule = track.side?.color ?? track.edge;
     return RawScrollArea(
       controller: controller,
@@ -423,7 +423,7 @@ class BrutalScrollArea extends StatelessWidget {
           duration: const Duration(milliseconds: 120),
           child: ColoredBox(
             color:
-                DesignStyleOf(layers, thumb.states).foreground ??
+                RawStyleOf(layers, thumb.states).foreground ??
                 (held ? c.ink : c.inkMuted),
           ),
         );
@@ -523,7 +523,7 @@ class BrutalSplitView extends StatelessWidget {
             states.contains(WidgetState.pressed) ||
             states.contains(WidgetState.focused);
         final along = axis == Axis.horizontal;
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final rule = layered.side?.color ?? layered.edge ?? c.ink;
         return Stack(
           clipBehavior: Clip.none,
@@ -613,7 +613,7 @@ class BrutalCarousel extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.carouselStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge ?? c.ink;
     Widget turn(IconData icon, String label, VoidCallback? onPressed) =>
         RawButton(
@@ -622,7 +622,7 @@ class BrutalCarousel extends StatelessWidget {
           builder: (context, states, _) {
             final disabled = onPressed == null;
             final lit = states.contains(WidgetState.pressed);
-            final layered = DesignStyleOf(layers, states);
+            final layered = RawStyleOf(layers, states);
             final ink = disabled
                 ? c.inkMuted
                 : lit
@@ -760,10 +760,7 @@ class BrutalReorderableList<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([
-      style,
-      theme.reorderableListStyle,
-    ], const {});
+    final layered = RawStyleOf([style, theme.reorderableListStyle], const {});
     final fill = layered.fill ?? c.surface;
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     final words = layered.foreground ?? c.ink;
@@ -929,7 +926,7 @@ class BrutalSwipeRow extends StatelessWidget {
         actionBuilder: (context, action, details) {
           final a = action.data! as BrutalSwipeAction;
           final pressed = details.states.contains(WidgetState.pressed);
-          final layered = DesignStyleOf(layers, details.states);
+          final layered = RawStyleOf(layers, details.states);
           final fill = action.destructive ? c.danger : layered.fill ?? c.ink;
           final words = action.destructive
               ? c.onDanger
@@ -1026,7 +1023,7 @@ class BrutalPullToRefresh extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.pullToRefreshStyle], const {});
+    final layered = RawStyleOf([style, theme.pullToRefreshStyle], const {});
     return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, details) {
@@ -1103,7 +1100,7 @@ class BrutalPullToRefresh extends StatelessWidget {
 /// ```dart
 /// final tree = BrutalTreeController<String>(roots: const ['Posters', 'Tickets'], childrenOf: (folder) => folders[folder] ?? const <String>[]);
 /// ```
-class BrutalTreeController<T extends Object> extends DesignTreeController<T> {
+class BrutalTreeController<T extends Object> extends RawTreeController<T> {
   /// A tree from [roots], each node's children from [childrenOf].
   BrutalTreeController({
     required super.roots,
@@ -1161,7 +1158,7 @@ class BrutalTree<T extends Object> extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.treeStyle];
-    return DesignTree<T>(
+    return RawTree<T>(
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
@@ -1169,7 +1166,7 @@ class BrutalTree<T extends Object> extends StatelessWidget {
       rowBuilder: (context, item) {
         final states = item.states;
         final lit = item.selected || states.contains(WidgetState.pressed);
-        final layered = DesignStyleOf(layers, {
+        final layered = RawStyleOf(layers, {
           ...states,
           if (item.selected) WidgetState.selected,
         });

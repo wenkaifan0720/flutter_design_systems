@@ -37,7 +37,7 @@ class BrutalSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
-    final layered = DesignStyleOf([style, theme.sectionHeaderStyle], const {});
+    final layered = RawStyleOf([style, theme.sectionHeaderStyle], const {});
     return Padding(
       padding:
           layered.padding(Directionality.of(context)) ??
@@ -110,9 +110,9 @@ class BrutalListGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.listGroupStyle], const {});
+    final layered = RawStyleOf([style, theme.listGroupStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
-    return DesignKeylineRegion(
+    return RawKeylineRegion(
       label: header ?? 'List group',
       indents: const [BrutalListTile.leadingExtent],
       child: Column(
@@ -184,7 +184,7 @@ class BrutalRule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
-    final layered = DesignStyleOf([style, theme.ruleStyle], const {});
+    final layered = RawStyleOf([style, theme.ruleStyle], const {});
     final colour =
         color ?? layered.side?.color ?? layered.edge ?? theme.colors.ink;
     return SizedBox(
@@ -287,7 +287,7 @@ class BrutalListTile extends StatelessWidget {
     final c = theme.colors;
     final named = semanticLabel != null;
     Widget body(Set<WidgetState> states) {
-      final layered = DesignStyleOf(
+      final layered = RawStyleOf(
         [style, theme.listTileStyle],
         {...states, if (selected) WidgetState.selected},
       );
@@ -362,7 +362,7 @@ class BrutalListTile extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          DesignCapCenter(
+                          RawCapCenter(
                             capHeightFactor: BrutalTheme.of(context)
                                 .capHeightFactor,
                             child: Text(

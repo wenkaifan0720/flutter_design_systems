@@ -42,7 +42,7 @@ class BrutalFieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [style, theme.fieldLabelStyle],
       {if (!enabled) WidgetState.disabled},
     );
@@ -113,7 +113,7 @@ class BrutalFieldMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf(
+    final layered = RawStyleOf(
       [this.style, theme.fieldMessageStyle],
       {if (errorText != null) WidgetState.error},
     );
@@ -402,7 +402,7 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
       if (_focus.hasFocus) WidgetState.focused,
       if (widget.errorText != null) WidgetState.error,
     };
-    final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
+    final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     final words = theme.textTheme.body
         .merge(layered.textStyle)
         .copyWith(
@@ -430,7 +430,7 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
     // The field's name stands round the whole entry box, the control's full
     // height (its rule is drawn behind it, not round it), so the field a
     // screen reader outlines, and a finger finds, is the box.
-    final Widget entryBox = DesignTextEntryBox(
+    final Widget entryBox = RawTextEntryBox(
       minHeight: layered.minimumSize?.height ?? theme.controlHeight,
       controller: _controller,
       maxLines: widget.maxLines,
@@ -526,7 +526,7 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
                             horizontal: BrutalSpacing.medium,
                           ),
                           child: oneLine
-                              ? DesignCapCenter(
+                              ? RawCapCenter(
                                   capHeightFactor: BrutalTheme.of(context)
                                       .capHeightFactor,
                                   child: entry,

@@ -78,7 +78,7 @@ class BrutalBlock extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final raised = lead || onTap != null;
-    BrutalFace face(DesignStyleOf layered, Set<WidgetState> states) {
+    BrutalFace face(RawStyleOf layered, Set<WidgetState> states) {
       final fill = color ?? layered.fill ?? c.surface;
       return BrutalFace(
         fill: fill,
@@ -93,7 +93,7 @@ class BrutalBlock extends StatelessWidget {
       );
     }
 
-    Widget inside(DesignStyleOf layered) => DesignKeylineRegion(
+    Widget inside(RawStyleOf layered) => RawKeylineRegion(
       label: label ?? 'Block',
       child: Padding(
         padding:
@@ -105,7 +105,7 @@ class BrutalBlock extends StatelessWidget {
     );
     final layers = [style, theme.blockStyle];
     if (onTap == null) {
-      final layered = DesignStyleOf(layers, const {});
+      final layered = RawStyleOf(layers, const {});
       return BrutalSurface(
         face: face(layered, const {}),
         child: inside(layered),
@@ -117,7 +117,7 @@ class BrutalBlock extends StatelessWidget {
       // Named, it is read by its name alone, not its name and then its words.
       excludeSemantics: semanticLabel != null,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         return AnimatedBrutalSurface(
           face: face(layered, states),
           child: inside(layered),
@@ -190,7 +190,7 @@ class BrutalTag extends StatelessWidget {
       BrutalTagTone.signal => (c.signal, c.onSignal),
       BrutalTagTone.danger => (c.danger, c.onDanger),
     };
-    final layered = DesignStyleOf([style, theme.tagStyle], const {});
+    final layered = RawStyleOf([style, theme.tagStyle], const {});
     final face = layered.on(
       BrutalFace(fill: fill, border: c.ink, foreground: words),
     );
@@ -203,7 +203,7 @@ class BrutalTag extends StatelessWidget {
               horizontal: BrutalSpacing.small,
               vertical: BrutalSpacing.tight,
             ),
-        child: DesignCapCenter(
+        child: RawCapCenter(
           capHeightFactor: BrutalTheme.of(context).capHeightFactor,
           child: Text(
             text.toUpperCase(),

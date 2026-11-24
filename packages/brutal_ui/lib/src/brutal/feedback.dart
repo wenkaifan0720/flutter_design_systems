@@ -98,7 +98,7 @@ class BrutalNotice extends StatelessWidget {
     final urgent =
         live ??
         (tone == BrutalNoticeTone.warning || tone == BrutalNoticeTone.danger);
-    final layered = DesignStyleOf([style, theme.noticeStyle], const {});
+    final layered = RawStyleOf([style, theme.noticeStyle], const {});
     final face = layered.on(
       BrutalFace(fill: c.surface, border: c.ink, foreground: c.ink),
     );
@@ -272,7 +272,7 @@ class BrutalStateView extends StatelessWidget {
       BrutalState.loading => (c.surface, null),
       BrutalState.success => (c.lime, LucideIcons.check),
     };
-    final layered = DesignStyleOf([style, theme.stateViewStyle], const {});
+    final layered = RawStyleOf([style, theme.stateViewStyle], const {});
     final face = layered.on(
       BrutalFace(fill: fill, border: c.ink, foreground: c.onColor(fill)),
     );
@@ -385,9 +385,9 @@ class _BrutalSpinnerState extends State<BrutalSpinner>
   );
 
   // From build: iOS's Reduce Motion changes arrive as a build, never as
-  // didChangeDependencies (designReduceMotionOf).
+  // didChangeDependencies (rawReduceMotionOf).
   void _sync() {
-    if (!designReduceMotionOf(context)) {
+    if (!rawReduceMotionOf(context)) {
       if (!_turn.isAnimating) _turn.repeat();
     } else if (_turn.isAnimating || _turn.value != 0) {
       _turn
@@ -408,10 +408,7 @@ class _BrutalSpinnerState extends State<BrutalSpinner>
     final theme = BrutalTheme.of(context);
     final ink =
         widget.color ??
-        DesignStyleOf([
-          widget.style,
-          theme.spinnerStyle,
-        ], const {}).foreground ??
+        RawStyleOf([widget.style, theme.spinnerStyle], const {}).foreground ??
         DefaultTextStyle.of(context).style.color ??
         theme.colors.ink;
     final spinner = SizedBox.square(
@@ -509,7 +506,7 @@ class BrutalProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.progressBarStyle], const {});
+    final layered = RawStyleOf([style, theme.progressBarStyle], const {});
     final fill = color ?? layered.foreground ?? c.ink;
     final v = value?.clamp(0.0, 1.0);
     return Semantics(
@@ -527,7 +524,7 @@ class BrutalProgressBar extends StatelessWidget {
               ? _Sliding(color: fill)
               : TweenAnimationBuilder<double>(
                   tween: Tween(end: v),
-                  duration: designReduceMotionOf(context)
+                  duration: rawReduceMotionOf(context)
                       ? Duration.zero
                       : const Duration(milliseconds: 280),
                   curve: Curves.easeOutCubic,
@@ -567,9 +564,9 @@ class _SlidingState extends State<_Sliding>
   );
 
   // From build: iOS's Reduce Motion changes arrive as a build, never as
-  // didChangeDependencies (designReduceMotionOf).
+  // didChangeDependencies (rawReduceMotionOf).
   void _sync() {
-    if (!designReduceMotionOf(context)) {
+    if (!rawReduceMotionOf(context)) {
       if (!_run.isAnimating) _run.repeat();
     } else if (_run.isAnimating || _run.value != 0.5) {
       _run

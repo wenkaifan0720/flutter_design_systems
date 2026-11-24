@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'lists.dart';
@@ -45,7 +44,7 @@ class _Cell extends StatelessWidget {
     BuildContext context,
     Color words,
     bool lit,
-    DesignStyleOf layered,
+    RawStyleOf layered,
   )
   builder;
 
@@ -83,14 +82,14 @@ class _CellFace extends StatelessWidget {
     BuildContext context,
     Color words,
     bool lit,
-    DesignStyleOf layered,
+    RawStyleOf layered,
   )
   builder;
 
   @override
   Widget build(BuildContext context) {
     final c = BrutalTheme.of(context).colors;
-    final layered = DesignStyleOf(layers, {
+    final layered = RawStyleOf(layers, {
       ...states,
       if (chosen) WidgetState.selected,
     });
@@ -251,7 +250,7 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.appBarStyle], const {});
+    final layered = RawStyleOf([style, theme.appBarStyle], const {});
     final rule = layered.side?.color ?? layered.edge;
     final words = layered.foreground ?? c.ink;
     final top = MediaQuery.paddingOf(context).top;
@@ -279,7 +278,7 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
                       alignment: AlignmentDirectional.centerStart,
                       child: Semantics(
                         header: true,
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: BrutalTheme.of(context)
                               .capHeightFactor,
                           child: Text(
@@ -386,7 +385,7 @@ class _ExitCell extends StatelessWidget {
     final layers =
         context.getInheritedWidgetOfExactType<_BarLayers>()?.layers ??
         [theme.appBarStyle];
-    final bar = DesignStyleOf(layers, const {});
+    final bar = RawStyleOf(layers, const {});
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return _Cell(
@@ -486,7 +485,7 @@ class BrutalNavigationBar extends StatelessWidget {
     BuildContext context,
     BrutalDestination d,
     Color words,
-    DesignStyleOf layered,
+    RawStyleOf layered,
   ) => Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -515,7 +514,7 @@ class BrutalNavigationBar extends StatelessWidget {
   ) {
     final theme = BrutalTheme.of(context);
     final bottom = MediaQuery.paddingOf(context).bottom;
-    final bar = DesignStyleOf(layers, const {});
+    final bar = RawStyleOf(layers, const {});
     final rule = bar.side?.color ?? bar.edge;
     return ColoredBox(
       color: theme.colors.paper,
@@ -622,7 +621,7 @@ class BrutalNavigationRail extends StatelessWidget {
     BuildContext context,
     BrutalDestination d,
     Color words,
-    DesignStyleOf layered,
+    RawStyleOf layered,
   ) => Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -655,7 +654,7 @@ class BrutalNavigationRail extends StatelessWidget {
   ) {
     final theme = BrutalTheme.of(context);
     final pad = MediaQuery.paddingOf(context);
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge;
     return ColoredBox(
       color: theme.colors.paper,
@@ -775,7 +774,7 @@ class BrutalSideNavigation extends StatelessWidget {
     BuildContext context,
     BrutalDestination d,
     Color words,
-    DesignStyleOf layered,
+    RawStyleOf layered,
   ) {
     final theme = BrutalTheme.of(context);
     return Padding(
@@ -785,7 +784,7 @@ class BrutalSideNavigation extends StatelessWidget {
           Icon(d.icon, size: layered.iconSize ?? 20, color: words),
           const SizedBox(width: BrutalSpacing.medium),
           Expanded(
-            child: DesignCapCenter(
+            child: RawCapCenter(
               capHeightFactor: theme.capHeightFactor,
               child: Text(
                 d.label,
@@ -813,7 +812,7 @@ class BrutalSideNavigation extends StatelessWidget {
   ) {
     final theme = BrutalTheme.of(context);
     final pad = MediaQuery.paddingOf(context);
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge;
     return ColoredBox(
       color: theme.colors.paper,
@@ -903,7 +902,7 @@ class BrutalSideNavigation extends StatelessWidget {
 /// [BrutalSideNavigation]; [appBar] over [body] beside or above them, and
 /// the screen's one [floatingButton] over the body's bottom end.
 ///
-/// The frame is ui_core's ([DesignAdaptiveShell]): the places are one tab
+/// The frame is ui_core's ([RawAdaptiveShell]): the places are one tab
 /// stop, on the chosen one; the arrows along them move the keyboard
 /// (wrapping, Home and End to the ends) and Enter or Space chooses; F6 moves
 /// between the places and the body. A screen reader hears each place as a
@@ -1005,25 +1004,25 @@ class BrutalScaffold extends StatelessWidget {
     // Brutal's widths: the bar under 600, the rail to 1024, the side list
     // past it.
     final mode = width < 600
-        ? DesignNavigationMode.bar
+        ? RawNavigationMode.bar
         : width < 1024
-        ? DesignNavigationMode.rail
-        : DesignNavigationMode.sidebar;
-    List<BrutalStyle?> layers(DesignNavigationMode mode) => [
+        ? RawNavigationMode.rail
+        : RawNavigationMode.sidebar;
+    List<BrutalStyle?> layers(RawNavigationMode mode) => [
       switch (mode) {
-        DesignNavigationMode.bar => theme.navigationBarStyle,
-        DesignNavigationMode.rail => theme.navigationRailStyle,
-        DesignNavigationMode.sidebar => theme.sideNavigationStyle,
+        RawNavigationMode.bar => theme.navigationBarStyle,
+        RawNavigationMode.rail => theme.navigationRailStyle,
+        RawNavigationMode.sidebar => theme.sideNavigationStyle,
       },
     ];
-    final content = DesignAdaptiveShell(
+    final content = RawAdaptiveShell(
       mode: mode,
       showNavigation: showNavigation,
       dampingRatio: BrutalMotion.dampingRatio,
       stiffness: BrutalMotion.overlayStiffness,
       destinations: [
         for (final d in destinations)
-          DesignNavigationDestination(label: d.label, icon: d.icon, data: d),
+          RawNavigationDestination(label: d.label, icon: d.icon, data: d),
       ],
       selectedIndex: selectedIndex,
       onDestinationSelected: onDestinationSelected!,
@@ -1036,19 +1035,19 @@ class BrutalScaffold extends StatelessWidget {
             chosen: details.states.contains(WidgetState.selected),
             layers: layers(details.mode),
             builder: (context, words, _, layered) => switch (details.mode) {
-              DesignNavigationMode.bar => BrutalNavigationBar._barContent(
+              RawNavigationMode.bar => BrutalNavigationBar._barContent(
                 context,
                 d,
                 words,
                 layered,
               ),
-              DesignNavigationMode.rail => BrutalNavigationRail._railContent(
+              RawNavigationMode.rail => BrutalNavigationRail._railContent(
                 context,
                 d,
                 words,
                 layered,
               ),
-              DesignNavigationMode.sidebar => BrutalSideNavigation._sideContent(
+              RawNavigationMode.sidebar => BrutalSideNavigation._sideContent(
                 context,
                 d,
                 words,
@@ -1059,18 +1058,18 @@ class BrutalScaffold extends StatelessWidget {
         );
       },
       navigationBuilder: (context, details) => switch (details.mode) {
-        DesignNavigationMode.bar => BrutalNavigationBar._barLayout(
+        RawNavigationMode.bar => BrutalNavigationBar._barLayout(
           context,
           layers(details.mode),
           details.destinations,
         ),
-        DesignNavigationMode.rail => BrutalNavigationRail._railLayout(
+        RawNavigationMode.rail => BrutalNavigationRail._railLayout(
           context,
           layers(details.mode),
           brand,
           details.destinations,
         ),
-        DesignNavigationMode.sidebar => BrutalSideNavigation._sideLayout(
+        RawNavigationMode.sidebar => BrutalSideNavigation._sideLayout(
           context,
           layers(details.mode),
           brand,
@@ -1223,9 +1222,9 @@ class _BrutalTabBarState extends State<BrutalTabBar>
     final tabs = widget.tabs;
     final wide = widget.expand ?? MediaQuery.sizeOf(context).width < 600;
     final layers = [widget.style, theme.tabBarStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge;
-    final boldLayer = DesignStyleOf(layers, const {WidgetState.selected});
+    final boldLayer = RawStyleOf(layers, const {WidgetState.selected});
     final textScaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
     final base = DefaultTextStyle.of(context).style;
@@ -1253,7 +1252,7 @@ class _BrutalTabBarState extends State<BrutalTabBar>
       final i = details.index;
       final chosen = details.selection >= 0.5;
       final states = details.states;
-      final layered = DesignStyleOf(layers, {
+      final layered = RawStyleOf(layers, {
         ...states,
         if (chosen) WidgetState.selected,
       });
@@ -1303,7 +1302,7 @@ class _BrutalTabBarState extends State<BrutalTabBar>
                         widthFactor: 1,
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: DesignCapCenter(
+                          child: RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
                               tabs[i],

@@ -455,7 +455,7 @@ class _PageArriveState extends State<_PageArrive> {
 
   @override
   Widget build(BuildContext context) {
-    if (designReduceMotionOf(context)) {
+    if (rawReduceMotionOf(context)) {
       return widget.child;
     }
     final end = Directionality.of(context) == TextDirection.rtl ? -1.0 : 1.0;

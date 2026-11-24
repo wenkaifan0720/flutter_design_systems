@@ -12,6 +12,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'internal/drop_mark.dart';
 import 'internal/field_frame.dart';
+import 'internal/focus_ink.dart';
 import 'internal/keep_in_view.dart';
 import 'internal/keyed_row.dart';
 import 'internal/type_ahead.dart';
@@ -159,14 +160,14 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
     final enabled = onChanged != null;
     final chosen = items.where((i) => i.value == value).firstOrNull;
     final height =
-        DesignStyleOf([
+        RawStyleOf([
           style,
           theme.textFieldStyle,
         ], const {}).minimumSize?.height ??
         theme.controlHeight;
     // The box. Disabled (no [onChanged]) it opens nothing, so it is drawn
     // without the overlay and says nothing about opening.
-    Widget face(DesignOverlayAnchor? anchor) {
+    Widget face(RawOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
       return RawButton(
         onPressed: anchor == null
@@ -201,7 +202,7 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
         // Named by its field (ui_core's RawInputDecorator), with its help.
         semanticValue: chosen?.label,
         builder: (context, states, _) {
-          final layered = DesignStyleOf(
+          final layered = RawStyleOf(
             [style, theme.textFieldStyle],
             {...states, if (errorText != null) WidgetState.error},
           );
@@ -226,7 +227,9 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
                 // Focused and closed: open, the list says so and the
                 // keyboard is in it (a ring would stub out beside its top).
                 focus: states.contains(WidgetState.focused) && !open
-                    ? rule
+                    ? (errorText != null
+                          ? c.danger
+                          : brutalFocusInk(c, layered.fill ?? c.surface))
                     : rule.withValues(alpha: 0),
               ),
               child: Row(
@@ -238,7 +241,7 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
                           const EdgeInsets.symmetric(
                             horizontal: BrutalSpacing.medium,
                           ),
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: BrutalTheme.of(context)
                             .capHeightFactor,
                         child: Text(
@@ -386,7 +389,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
     final onChosen = widget.onChosen;
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final panel = DesignStyleOf([theme.menuStyle], const {});
+    final panel = RawStyleOf([theme.menuStyle], const {});
     final ruleColor = panel.side?.color ?? panel.edge ?? c.ink;
     // The rule is drawn over the list, so the list itself is the field's
     // width from the field's edge; its rows stand inside the rule.
@@ -446,7 +449,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                         semanticSelected: item.value == value,
                         semanticLabel: item.label,
                         builder: (context, states, _) {
-                          final row = DesignStyleOf([theme.menuStyle], states);
+                          final row = RawStyleOf([theme.menuStyle], states);
                           // Ink is the chosen item, or the one pressed on the way
                           // to choosing it; where the pointer or the keyboard is,
                           // a line inside the row: never a second ink row.
@@ -498,7 +501,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                                   child: Row(
                                     children: [
                                       Expanded(
-                                        child: DesignCapCenter(
+                                        child: RawCapCenter(
                                           capHeightFactor: BrutalTheme.of(
                                             context,
                                           ).capHeightFactor,

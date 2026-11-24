@@ -15,7 +15,7 @@ const String? brutalFontPackage = 'brutal_ui';
 const String brutalFontFamily = 'SpaceGrotesk';
 
 /// Space Grotesk's capitals as a fraction of its size (its OS/2 cap height,
-/// 700, over its 1000 units per em): what `DesignCapCenter` centres a label by.
+/// 700, over its 1000 units per em): what `RawCapCenter` centres a label by.
 const double brutalCapHeightFactor = 0.7;
 
 /// [family] under the name Flutter registers it by: `SpaceGrotesk` when the

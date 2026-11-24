@@ -1,6 +1,10 @@
-// A date field's calendar stands as wide as its field, edge to edge with
-// it, as a select's list does, on a phone and on a wide window: it stood a
-// fixed 320 (348 with its frame) under a 358 field, and under a 640 one.
+// A date field's calendar stands edge to edge with its field, as a select's
+// list does, while the field is at most half again the calendar's own width
+// (360 a month, Material's docked date picker's); under a wider field it
+// stands at its own width from the field's start. It meets the field on the
+// field's rule, its own ruled table the only frame: it stood 4 below the
+// field in a padded frame of its own, and under a 640 field on a desk window
+// it spread 640 wide over the form's actions.
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -62,24 +66,31 @@ void main() {
       ),
     ),
   };
+  // (window, field, the calendar's width for a date, for a span): a span
+  // on a window of 600 or more shows two months, at least 600.
+  const cases = [
+    (390.0, 358.0, 358.0, 358.0),
+    (1440.0, 480.0, 480.0, 600.0),
+    (1440.0, 640.0, 360.0, 640.0),
+  ];
   for (final MapEntry(key: kind, value: (icon, picker)) in pickers.entries) {
-    for (final width in [390.0, 1440.0]) {
+    for (final (window, fieldWidth, date, span) in cases) {
+      final expected = kind == 'date' ? date : span;
       for (final direction in TextDirection.values) {
-        testWidgets('a $kind field at ${width.round()}, ${direction.name}: '
-            'its calendar stands from its start, as wide as it', (
-          tester,
-        ) async {
+        testWidgets('a $kind field ${fieldWidth.round()} wide at '
+            '${window.round()}, ${direction.name}: its calendar stands '
+            '${expected.round()} from its start, on its rule', (tester) async {
           await _pump(
             tester,
             Align(
               alignment: AlignmentDirectional.topStart,
               child: Padding(
                 padding: const EdgeInsetsDirectional.only(start: 16, top: 24),
-                child: SizedBox(width: width < 600 ? 358 : 640, child: picker),
+                child: SizedBox(width: fieldWidth, child: picker),
               ),
             ),
-            width: width,
-            height: width < 600 ? 844 : 900,
+            width: window,
+            height: window < 600 ? 844 : 900,
             direction: direction,
           );
           final field = tester.getRect(
@@ -108,9 +119,13 @@ void main() {
           );
           expect(
             panel.width,
-            moreOrLessEquals(field.width, epsilon: .5),
+            moreOrLessEquals(expected, epsilon: .5),
             reason: 'panel $panel, field $field',
           );
+          // On the field's own rule, its table its only frame.
+          final w = BrutalThemeData.light().borderWidth;
+          expect(panel.top, moreOrLessEquals(field.bottom - w, epsilon: .5));
+          expect(tester.getRect(find.byType(BrutalCalendar)), panel);
         });
       }
     }

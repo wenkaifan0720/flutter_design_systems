@@ -18,13 +18,13 @@ import 'fonts.dart';
 /// ```dart
 /// final wide = BrutalStyle(padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32)));
 /// ```
-typedef BrutalStyle = DesignStyle;
+typedef BrutalStyle = RawStyle;
 
-/// How tight Brutal's controls stand: [DesignDensity.standard] (a 48 px
-/// control), [DesignDensity.comfortable] (44) or [DesignDensity.compact] (40).
+/// How tight Brutal's controls stand: [RawDensity.standard] (a 48 px
+/// control), [RawDensity.comfortable] (44) or [RawDensity.compact] (40).
 /// A control's tap target stays at the floor for the input whatever the
 /// density.
-typedef BrutalDensity = DesignDensity;
+typedef BrutalDensity = RawDensity;
 
 /// The look's measures: one rule and one shadow, the same on every part.
 ///
@@ -61,14 +61,14 @@ abstract final class BrutalMetrics {
   /// The thickness of a focus bar.
   static const double focusWidth = 2;
 
-  /// A control's height at [DesignDensity.standard], before density.
+  /// A control's height at [RawDensity.standard], before density.
   static const double controlHeight = 48;
 
   /// The widest a form, a dialog or a reading column stands.
   static const double readingWidth = 560;
 }
 
-/// Brutal's spacing, on a 4 px grid ([DesignSpacingScope] declares it).
+/// Brutal's spacing, on a 4 px grid ([RawSpacingScope] declares it).
 abstract final class BrutalSpacing {
   /// The grid every gap, inset and offset stands on.
   static const double grid = 4;
@@ -104,7 +104,7 @@ abstract final class BrutalSpacing {
 }
 
 /// Brutal's motion: springs only, all critically damped, so nothing
-/// overshoots or bounces. Run them through `DesignMotionPolicy`, which honours
+/// overshoots or bounces. Run them through `RawMotionPolicy`, which honours
 /// Reduce Motion.
 abstract final class BrutalMotion {
   /// Every spring's damping ratio: 1, so a face stops dead where it goes.
@@ -1315,189 +1315,161 @@ class BrutalThemeData with Diagnosticable {
       density: BrutalDensity.lerp(a.density, b.density, t),
       borderWidth: between(a.borderWidth, b.borderWidth),
       shadowOffset: between(a.shadowOffset, b.shadowOffset),
-      filledButtonStyle: DesignStyle.lerp(
+      filledButtonStyle: RawStyle.lerp(
         a.filledButtonStyle,
         b.filledButtonStyle,
         t,
       ),
-      framedButtonStyle: DesignStyle.lerp(
+      framedButtonStyle: RawStyle.lerp(
         a.framedButtonStyle,
         b.framedButtonStyle,
         t,
       ),
-      textButtonStyle: DesignStyle.lerp(
-        a.textButtonStyle,
-        b.textButtonStyle,
-        t,
-      ),
-      destructiveButtonStyle: DesignStyle.lerp(
+      textButtonStyle: RawStyle.lerp(a.textButtonStyle, b.textButtonStyle, t),
+      destructiveButtonStyle: RawStyle.lerp(
         a.destructiveButtonStyle,
         b.destructiveButtonStyle,
         t,
       ),
-      iconButtonStyle: DesignStyle.lerp(
-        a.iconButtonStyle,
-        b.iconButtonStyle,
-        t,
-      ),
-      floatingButtonStyle: DesignStyle.lerp(
+      iconButtonStyle: RawStyle.lerp(a.iconButtonStyle, b.iconButtonStyle, t),
+      floatingButtonStyle: RawStyle.lerp(
         a.floatingButtonStyle,
         b.floatingButtonStyle,
         t,
       ),
-      buttonGroupStyle: DesignStyle.lerp(
+      buttonGroupStyle: RawStyle.lerp(
         a.buttonGroupStyle,
         b.buttonGroupStyle,
         t,
       ),
-      toggleGroupStyle: DesignStyle.lerp(
+      toggleGroupStyle: RawStyle.lerp(
         a.toggleGroupStyle,
         b.toggleGroupStyle,
         t,
       ),
-      linkStyle: DesignStyle.lerp(a.linkStyle, b.linkStyle, t),
-      kbdStyle: DesignStyle.lerp(a.kbdStyle, b.kbdStyle, t),
-      blockStyle: DesignStyle.lerp(a.blockStyle, b.blockStyle, t),
-      tagStyle: DesignStyle.lerp(a.tagStyle, b.tagStyle, t),
-      chartStyle: DesignStyle.lerp(a.chartStyle, b.chartStyle, t),
-      checkboxStyle: DesignStyle.lerp(a.checkboxStyle, b.checkboxStyle, t),
-      radioStyle: DesignStyle.lerp(a.radioStyle, b.radioStyle, t),
-      switchStyle: DesignStyle.lerp(a.switchStyle, b.switchStyle, t),
-      segmentedButtonStyle: DesignStyle.lerp(
+      linkStyle: RawStyle.lerp(a.linkStyle, b.linkStyle, t),
+      kbdStyle: RawStyle.lerp(a.kbdStyle, b.kbdStyle, t),
+      blockStyle: RawStyle.lerp(a.blockStyle, b.blockStyle, t),
+      tagStyle: RawStyle.lerp(a.tagStyle, b.tagStyle, t),
+      chartStyle: RawStyle.lerp(a.chartStyle, b.chartStyle, t),
+      checkboxStyle: RawStyle.lerp(a.checkboxStyle, b.checkboxStyle, t),
+      radioStyle: RawStyle.lerp(a.radioStyle, b.radioStyle, t),
+      switchStyle: RawStyle.lerp(a.switchStyle, b.switchStyle, t),
+      segmentedButtonStyle: RawStyle.lerp(
         a.segmentedButtonStyle,
         b.segmentedButtonStyle,
         t,
       ),
-      stepperStyle: DesignStyle.lerp(a.stepperStyle, b.stepperStyle, t),
-      dataTableStyle: DesignStyle.lerp(a.dataTableStyle, b.dataTableStyle, t),
-      scrollAreaStyle: DesignStyle.lerp(
-        a.scrollAreaStyle,
-        b.scrollAreaStyle,
-        t,
-      ),
-      splitViewStyle: DesignStyle.lerp(a.splitViewStyle, b.splitViewStyle, t),
-      carouselStyle: DesignStyle.lerp(a.carouselStyle, b.carouselStyle, t),
-      reorderableListStyle: DesignStyle.lerp(
+      stepperStyle: RawStyle.lerp(a.stepperStyle, b.stepperStyle, t),
+      dataTableStyle: RawStyle.lerp(a.dataTableStyle, b.dataTableStyle, t),
+      scrollAreaStyle: RawStyle.lerp(a.scrollAreaStyle, b.scrollAreaStyle, t),
+      splitViewStyle: RawStyle.lerp(a.splitViewStyle, b.splitViewStyle, t),
+      carouselStyle: RawStyle.lerp(a.carouselStyle, b.carouselStyle, t),
+      reorderableListStyle: RawStyle.lerp(
         a.reorderableListStyle,
         b.reorderableListStyle,
         t,
       ),
-      swipeRowStyle: DesignStyle.lerp(a.swipeRowStyle, b.swipeRowStyle, t),
-      pullToRefreshStyle: DesignStyle.lerp(
+      swipeRowStyle: RawStyle.lerp(a.swipeRowStyle, b.swipeRowStyle, t),
+      pullToRefreshStyle: RawStyle.lerp(
         a.pullToRefreshStyle,
         b.pullToRefreshStyle,
         t,
       ),
-      treeStyle: DesignStyle.lerp(a.treeStyle, b.treeStyle, t),
-      disclosureStyle: DesignStyle.lerp(
-        a.disclosureStyle,
-        b.disclosureStyle,
-        t,
-      ),
-      descriptionListStyle: DesignStyle.lerp(
+      treeStyle: RawStyle.lerp(a.treeStyle, b.treeStyle, t),
+      disclosureStyle: RawStyle.lerp(a.disclosureStyle, b.disclosureStyle, t),
+      descriptionListStyle: RawStyle.lerp(
         a.descriptionListStyle,
         b.descriptionListStyle,
         t,
       ),
-      timelineStyle: DesignStyle.lerp(a.timelineStyle, b.timelineStyle, t),
-      avatarStyle: DesignStyle.lerp(a.avatarStyle, b.avatarStyle, t),
-      badgeStyle: DesignStyle.lerp(a.badgeStyle, b.badgeStyle, t),
-      mediaStyle: DesignStyle.lerp(a.mediaStyle, b.mediaStyle, t),
-      skeletonStyle: DesignStyle.lerp(a.skeletonStyle, b.skeletonStyle, t),
-      meterStyle: DesignStyle.lerp(a.meterStyle, b.meterStyle, t),
-      textFieldStyle: DesignStyle.lerp(a.textFieldStyle, b.textFieldStyle, t),
-      fieldLabelStyle: DesignStyle.lerp(
-        a.fieldLabelStyle,
-        b.fieldLabelStyle,
-        t,
-      ),
-      fieldMessageStyle: DesignStyle.lerp(
+      timelineStyle: RawStyle.lerp(a.timelineStyle, b.timelineStyle, t),
+      avatarStyle: RawStyle.lerp(a.avatarStyle, b.avatarStyle, t),
+      badgeStyle: RawStyle.lerp(a.badgeStyle, b.badgeStyle, t),
+      mediaStyle: RawStyle.lerp(a.mediaStyle, b.mediaStyle, t),
+      skeletonStyle: RawStyle.lerp(a.skeletonStyle, b.skeletonStyle, t),
+      meterStyle: RawStyle.lerp(a.meterStyle, b.meterStyle, t),
+      textFieldStyle: RawStyle.lerp(a.textFieldStyle, b.textFieldStyle, t),
+      fieldLabelStyle: RawStyle.lerp(a.fieldLabelStyle, b.fieldLabelStyle, t),
+      fieldMessageStyle: RawStyle.lerp(
         a.fieldMessageStyle,
         b.fieldMessageStyle,
         t,
       ),
-      noticeStyle: DesignStyle.lerp(a.noticeStyle, b.noticeStyle, t),
-      stateViewStyle: DesignStyle.lerp(a.stateViewStyle, b.stateViewStyle, t),
-      spinnerStyle: DesignStyle.lerp(a.spinnerStyle, b.spinnerStyle, t),
-      progressBarStyle: DesignStyle.lerp(
+      noticeStyle: RawStyle.lerp(a.noticeStyle, b.noticeStyle, t),
+      stateViewStyle: RawStyle.lerp(a.stateViewStyle, b.stateViewStyle, t),
+      spinnerStyle: RawStyle.lerp(a.spinnerStyle, b.spinnerStyle, t),
+      progressBarStyle: RawStyle.lerp(
         a.progressBarStyle,
         b.progressBarStyle,
         t,
       ),
-      toastStyle: DesignStyle.lerp(a.toastStyle, b.toastStyle, t),
-      sectionHeaderStyle: DesignStyle.lerp(
+      toastStyle: RawStyle.lerp(a.toastStyle, b.toastStyle, t),
+      sectionHeaderStyle: RawStyle.lerp(
         a.sectionHeaderStyle,
         b.sectionHeaderStyle,
         t,
       ),
-      listGroupStyle: DesignStyle.lerp(a.listGroupStyle, b.listGroupStyle, t),
-      ruleStyle: DesignStyle.lerp(a.ruleStyle, b.ruleStyle, t),
-      listTileStyle: DesignStyle.lerp(a.listTileStyle, b.listTileStyle, t),
-      menuStyle: DesignStyle.lerp(a.menuStyle, b.menuStyle, t),
-      appBarStyle: DesignStyle.lerp(a.appBarStyle, b.appBarStyle, t),
-      navigationBarStyle: DesignStyle.lerp(
+      listGroupStyle: RawStyle.lerp(a.listGroupStyle, b.listGroupStyle, t),
+      ruleStyle: RawStyle.lerp(a.ruleStyle, b.ruleStyle, t),
+      listTileStyle: RawStyle.lerp(a.listTileStyle, b.listTileStyle, t),
+      menuStyle: RawStyle.lerp(a.menuStyle, b.menuStyle, t),
+      appBarStyle: RawStyle.lerp(a.appBarStyle, b.appBarStyle, t),
+      navigationBarStyle: RawStyle.lerp(
         a.navigationBarStyle,
         b.navigationBarStyle,
         t,
       ),
-      navigationRailStyle: DesignStyle.lerp(
+      navigationRailStyle: RawStyle.lerp(
         a.navigationRailStyle,
         b.navigationRailStyle,
         t,
       ),
-      sideNavigationStyle: DesignStyle.lerp(
+      sideNavigationStyle: RawStyle.lerp(
         a.sideNavigationStyle,
         b.sideNavigationStyle,
         t,
       ),
-      tabBarStyle: DesignStyle.lerp(a.tabBarStyle, b.tabBarStyle, t),
-      dialogStyle: DesignStyle.lerp(a.dialogStyle, b.dialogStyle, t),
-      bottomSheetStyle: DesignStyle.lerp(
+      tabBarStyle: RawStyle.lerp(a.tabBarStyle, b.tabBarStyle, t),
+      dialogStyle: RawStyle.lerp(a.dialogStyle, b.dialogStyle, t),
+      bottomSheetStyle: RawStyle.lerp(
         a.bottomSheetStyle,
         b.bottomSheetStyle,
         t,
       ),
-      sideSheetStyle: DesignStyle.lerp(a.sideSheetStyle, b.sideSheetStyle, t),
-      actionSheetStyle: DesignStyle.lerp(
+      sideSheetStyle: RawStyle.lerp(a.sideSheetStyle, b.sideSheetStyle, t),
+      actionSheetStyle: RawStyle.lerp(
         a.actionSheetStyle,
         b.actionSheetStyle,
         t,
       ),
-      calendarStyle: DesignStyle.lerp(a.calendarStyle, b.calendarStyle, t),
-      wheelPickerStyle: DesignStyle.lerp(
+      calendarStyle: RawStyle.lerp(a.calendarStyle, b.calendarStyle, t),
+      wheelPickerStyle: RawStyle.lerp(
         a.wheelPickerStyle,
         b.wheelPickerStyle,
         t,
       ),
-      colorPickerStyle: DesignStyle.lerp(
+      colorPickerStyle: RawStyle.lerp(
         a.colorPickerStyle,
         b.colorPickerStyle,
         t,
       ),
-      popoverStyle: DesignStyle.lerp(a.popoverStyle, b.popoverStyle, t),
-      tooltipStyle: DesignStyle.lerp(a.tooltipStyle, b.tooltipStyle, t),
-      sliderStyle: DesignStyle.lerp(a.sliderStyle, b.sliderStyle, t),
-      chipStyle: DesignStyle.lerp(a.chipStyle, b.chipStyle, t),
-      ratingStyle: DesignStyle.lerp(a.ratingStyle, b.ratingStyle, t),
-      fileDropStyle: DesignStyle.lerp(a.fileDropStyle, b.fileDropStyle, t),
-      breadcrumbStyle: DesignStyle.lerp(
-        a.breadcrumbStyle,
-        b.breadcrumbStyle,
-        t,
-      ),
-      paginationStyle: DesignStyle.lerp(
-        a.paginationStyle,
-        b.paginationStyle,
-        t,
-      ),
-      stepProgressStyle: DesignStyle.lerp(
+      popoverStyle: RawStyle.lerp(a.popoverStyle, b.popoverStyle, t),
+      tooltipStyle: RawStyle.lerp(a.tooltipStyle, b.tooltipStyle, t),
+      sliderStyle: RawStyle.lerp(a.sliderStyle, b.sliderStyle, t),
+      chipStyle: RawStyle.lerp(a.chipStyle, b.chipStyle, t),
+      ratingStyle: RawStyle.lerp(a.ratingStyle, b.ratingStyle, t),
+      fileDropStyle: RawStyle.lerp(a.fileDropStyle, b.fileDropStyle, t),
+      breadcrumbStyle: RawStyle.lerp(a.breadcrumbStyle, b.breadcrumbStyle, t),
+      paginationStyle: RawStyle.lerp(a.paginationStyle, b.paginationStyle, t),
+      stepProgressStyle: RawStyle.lerp(
         a.stepProgressStyle,
         b.stepProgressStyle,
         t,
       ),
-      pageDotsStyle: DesignStyle.lerp(a.pageDotsStyle, b.pageDotsStyle, t),
-      menuBarStyle: DesignStyle.lerp(a.menuBarStyle, b.menuBarStyle, t),
-      commandPaletteStyle: DesignStyle.lerp(
+      pageDotsStyle: RawStyle.lerp(a.pageDotsStyle, b.pageDotsStyle, t),
+      menuBarStyle: RawStyle.lerp(a.menuBarStyle, b.menuBarStyle, t),
+      commandPaletteStyle: RawStyle.lerp(
         a.commandPaletteStyle,
         b.commandPaletteStyle,
         t,
@@ -1644,7 +1616,7 @@ class BrutalTheme extends StatelessWidget {
 
   /// The tap floors every Brutal control stands at: 48 by 48 for a finger,
   /// 24 by 24 for a pointer.
-  static const DesignTapTargets tapTargets = DesignTapTargets(
+  static const RawTapTargets tapTargets = RawTapTargets(
     touch: Size(48, 48),
     pointer: Size(24, 24),
   );
@@ -1682,10 +1654,10 @@ class BrutalTheme extends StatelessWidget {
       theme: this,
       child: Theme(
         data: material,
-        child: DesignSpacingScope(
+        child: RawSpacingScope(
           // Brutal keeps ui_core's 4 px grid.
-          spacing: DesignSpacing.fallback,
-          child: DesignTapTargetScope(
+          spacing: RawSpacing.fallback,
+          child: RawTapTargetScope(
             targets: tapTargets,
             child: DefaultSelectionStyle(
               cursorColor: colors.ink,
@@ -1841,9 +1813,7 @@ class _AnimatedBrutalThemeState
 
   @override
   Widget build(BuildContext context) => BrutalTheme(
-    data: designReduceMotionOf(context)
-        ? widget.data
-        : _data!.evaluate(animation),
+    data: rawReduceMotionOf(context) ? widget.data : _data!.evaluate(animation),
     child: widget.child,
   );
 }

@@ -16,6 +16,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'internal/field_frame.dart';
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -87,25 +88,70 @@ class BrutalTime {
 
 /// Draws a rule [width] wide along a cell's top and start sides; the table
 /// round the cells draws the end and bottom ones.
+/// A cell's top and start rules. Each runs on a device [pixel] past the
+/// cell's end and foot, under the next cell's rule, so where two cells meet
+/// on a fraction of a pixel their rules overlap rather than share it.
 class _TopStart extends CustomPainter {
-  _TopStart(this.color, this.direction, this.width);
+  _TopStart(this.color, this.direction, this.width, this.pixel);
 
   final Color color;
   final TextDirection direction;
   final double width;
+  final double pixel;
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = width;
+    final rtl = direction == TextDirection.rtl;
     final paint = Paint()..color = color;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, w), paint);
-    final x = direction == TextDirection.rtl ? size.width - w : 0.0;
-    canvas.drawRect(Rect.fromLTWH(x, 0, w, size.height), paint);
+    canvas.drawRect(
+      Rect.fromLTWH(rtl ? -pixel : 0, 0, size.width + pixel, w),
+      paint,
+    );
+    final x = rtl ? size.width - w : 0.0;
+    canvas.drawRect(Rect.fromLTWH(x, 0, w, size.height + pixel), paint);
   }
 
   @override
   bool shouldRepaint(_TopStart old) =>
-      old.color != color || old.direction != direction || old.width != width;
+      old.color != color ||
+      old.direction != direction ||
+      old.width != width ||
+      old.pixel != pixel;
+}
+
+/// A cell's fill, from a device [pixel] under its own top and start rules to
+/// a pixel past its end and foot, as [_TopStart]'s rules run, so a chosen day
+/// meets the rules round it with no seam of the page between.
+class _Fill extends CustomPainter {
+  _Fill(this.color, this.direction, this.width, this.pixel);
+
+  final Color color;
+  final TextDirection direction;
+  final double width;
+  final double pixel;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rtl = direction == TextDirection.rtl;
+    final under = width - pixel;
+    canvas.drawRect(
+      Rect.fromLTRB(
+        rtl ? -pixel : under,
+        under,
+        rtl ? size.width - under : size.width + pixel,
+        size.height + pixel,
+      ),
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_Fill old) =>
+      old.color != color ||
+      old.direction != direction ||
+      old.width != width ||
+      old.pixel != pixel;
 }
 
 /// A cell of the calendar's table: its top and start rules, [fill] inside
@@ -131,10 +177,12 @@ class _Cell extends StatelessWidget {
     final c = theme.colors;
     final w = theme.borderWidth;
     final direction = Directionality.of(context);
+    final pixel = 1 / MediaQuery.devicePixelRatioOf(context);
     return SizedBox(
       height: height,
       child: CustomPaint(
-        foregroundPainter: _TopStart(rule, direction, w),
+        painter: fill == null ? null : _Fill(fill!, direction, w, pixel),
+        foregroundPainter: _TopStart(rule, direction, w, pixel),
         child: Padding(
           padding: EdgeInsetsDirectional.only(start: w, top: w),
           child: CustomPaint(
@@ -364,14 +412,20 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
-    final frame = DesignStyleOf(layers, const {});
+    final frame = RawStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge ?? c.ink;
     final w = theme.borderWidth;
     // A day's row grows with its figure (at large text, to twice its
-    // size), never under 44.
+    // size), never under 44 nor under the look's tap floor where it stands
+    // (48 for a finger), so each day's face fills its tap target and the
+    // rows' rules meet.
     final scaler = MediaQuery.textScalerOf(context)
         .clamp(maxScaleFactor: _maxTextScale);
-    final dayHeight = math.max(44.0, scaler.scale(15) * 20 / 15 + 3 * w + 4);
+    final floor = RawTapTargets.of(context).floorOn().height;
+    final dayHeight = math.max(
+      math.max(44.0, floor),
+      scaler.scale(15) * 20 / 15 + 3 * w + 4,
+    );
     Widget turn(IconData icon, String label, VoidCallback? onPressed) =>
         TapTargetPadding(
           child: RawButton(
@@ -389,7 +443,7 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
                 rule: rule,
                 fill: pressed ? c.ink : null,
                 focus: states.contains(WidgetState.focused)
-                    ? (pressed ? c.paper : c.ink)
+                    ? brutalFocusInk(c, pressed ? c.ink : c.surface)
                     : null,
                 child: Transform.flip(
                   flipX: rtl,
@@ -429,7 +483,7 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
                   child: _Cell(
                     height: dayHeight + w,
                     rule: rule,
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: BrutalTheme.of(context).capHeightFactor,
                       child: Text(header.label, maxLines: 1, style: t.label),
                     ),
@@ -462,7 +516,7 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
                 day.isRangeEnd ||
                 day.isPreviewEnd;
             final middle = !end && (day.inRange || day.inPreview);
-            final layered = DesignStyleOf(layers, {
+            final layered = RawStyleOf(layers, {
               ...states,
               if (end) WidgetState.selected,
             });
@@ -489,7 +543,7 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
               rule: rule,
               fill: fill,
               focus: states.contains(WidgetState.focused)
-                  ? (fill == c.ink ? c.paper : c.ink)
+                  ? brutalFocusInk(c, fill ?? c.surface)
                   : null,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -500,7 +554,7 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        '${day.date.day}',
+                        day.label,
                         maxLines: 1,
                         softWrap: false,
                         style: layered
@@ -547,7 +601,7 @@ class _PickerField extends StatelessWidget {
     required this.error,
   });
 
-  final DesignOverlayAnchor anchor;
+  final RawOverlayAnchor anchor;
   final String? text;
   final String? hint;
   final IconData icon;
@@ -559,14 +613,14 @@ class _PickerField extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final height =
-        DesignStyleOf([theme.textFieldStyle], const {}).minimumSize?.height ??
+        RawStyleOf([theme.textFieldStyle], const {}).minimumSize?.height ??
         theme.controlHeight;
     return RawButton(
       onPressed: enabled ? anchor.toggle : null,
       expanded: anchor.isOpen,
       semanticValue: text,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [theme.textFieldStyle],
           {...states, if (error) WidgetState.error},
         );
@@ -591,7 +645,9 @@ class _PickerField extends StatelessWidget {
               border: rule,
               foreground: ink,
               focus: states.contains(WidgetState.focused) || anchor.isOpen
-                  ? rule
+                  ? (error
+                        ? c.danger
+                        : brutalFocusInk(c, layered.fill ?? c.surface))
                   : rule.withValues(alpha: 0),
             ),
             child: Row(
@@ -604,7 +660,7 @@ class _PickerField extends StatelessWidget {
                           horizontal: BrutalSpacing.medium,
                           vertical: BrutalSpacing.small,
                         ),
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         text ?? hint ?? '',
@@ -642,22 +698,29 @@ class _PickerField extends StatelessWidget {
   }
 }
 
-/// The raised panel a picker drops, its ground and rule from [layers].
+/// The table a picker drops: the calendar's own ruled table raised on the
+/// hard ink shadow, its ground from [layers], its rules the only frame.
+///
+/// It stands as wide as its field, edge to edge with it, as a select's list
+/// does (never under the least its [months] take), while the field is at
+/// most half again the calendar's own width; under a wider field (a desk
+/// window's form) it stands at its own width from the field's start, 360 a
+/// month, as Material's docked date picker does.
 Widget _panel(
   BuildContext context,
   RawPopoverInfo info,
   List<BrutalStyle?> layers,
   Widget child, {
-  required double month,
+  required int months,
 }) {
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
-  final layered = DesignStyleOf(layers, const {});
-  // As wide as its field, edge to edge with it, as a select's list stands;
-  // never under the calendar's own width.
-  final edges = 2 * (BrutalSpacing.medium + theme.borderWidth);
+  final layered = RawStyleOf(layers, const {});
+  final least = months == 1 ? 320.0 : 600.0;
+  final own = 360.0 * months;
+  final field = info.anchorRect.width;
   final width = math.min(
-    math.max(info.anchorRect.width, month + edges),
+    field <= own * _fieldWideUpTo ? math.max(field, least) : own,
     info.maxSize.width,
   );
   return FadeTransition(
@@ -671,19 +734,20 @@ Widget _panel(
       child: BrutalSurface(
         face: BrutalFace(
           fill: layered.fill ?? c.surface,
-          border: layered.side?.color ?? layered.edge ?? c.ink,
+          border: c.ink.withValues(alpha: 0),
+          borderWidth: 0,
           foreground: c.ink,
           shadow: c.ink,
         ),
-        child: SingleChildScrollView(
-          primary: false,
-          padding: const EdgeInsets.all(BrutalSpacing.medium),
-          child: child,
-        ),
+        child: SingleChildScrollView(primary: false, child: child),
       ),
     ),
   );
 }
+
+// How much wider than the calendar's own width a field may be and still
+// have its calendar stand edge to edge with it.
+const double _fieldWideUpTo = 1.5;
 
 /// A label, a field and its message round [field], as the look's fields
 /// stand.
@@ -768,8 +832,10 @@ class BrutalDatePicker extends StatelessWidget {
         // The calendar opens where its whole month fits: below while below
         // holds it, else above; it shrinks and scrolls only where neither
         // side does.
-        placement: const RawPopoverPlacement(
-          gap: BrutalSpacing.small,
+        // It meets the field on the field's own rule, below it or above
+        // it, as a select's list meets its button.
+        placement: RawPopoverPlacement(
+          gap: -BrutalTheme.of(context).borderWidth,
           margin: BrutalSpacing.small,
           matchAnchorWidth: false,
           fit: RawPopoverFit.whole,
@@ -800,7 +866,7 @@ class BrutalDatePicker extends StatelessWidget {
               onChanged?.call(d);
             },
           ),
-          month: 320,
+          months: 1,
         ),
       ),
       label: labelText,
@@ -916,8 +982,10 @@ class BrutalDateRangePicker extends StatelessWidget {
         // The calendar opens where its whole month fits: below while below
         // holds it, else above; it shrinks and scrolls only where neither
         // side does.
-        placement: const RawPopoverPlacement(
-          gap: BrutalSpacing.small,
+        // It meets the field on the field's own rule, below it or above
+        // it, as a select's list meets its button.
+        placement: RawPopoverPlacement(
+          gap: -BrutalTheme.of(context).borderWidth,
           margin: BrutalSpacing.small,
           matchAnchorWidth: false,
           fit: RawPopoverFit.whole,
@@ -949,7 +1017,7 @@ class BrutalDateRangePicker extends StatelessWidget {
               onChanged?.call(r);
             },
           ),
-          month: two ? 600 : 320,
+          months: two ? 2 : 1,
         ),
       ),
       label: labelText,
@@ -1027,7 +1095,7 @@ Widget _wheels(
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
   final enabled = onChanged != null;
-  final box = DesignStyleOf(layers, const {});
+  final box = RawStyleOf(layers, const {});
   final rule = enabled ? box.side?.color ?? box.edge ?? c.ink : c.disabled;
   final half = theme.borderWidth / 2;
   final last = labels.length - 1;
@@ -1064,7 +1132,7 @@ Widget _wheels(
         dampingRatio: BrutalMotion.dampingRatio,
         stiffness: BrutalMotion.moveStiffness,
         itemBuilder: (context, row) {
-          final layered = DesignStyleOf(layers, {
+          final layered = RawStyleOf(layers, {
             if (!enabled) WidgetState.disabled,
           });
           return Padding(
@@ -1092,7 +1160,7 @@ Widget _wheels(
           );
         },
         columnBuilder: (context, column, wheel) {
-          final layered = DesignStyleOf(layers, column.states);
+          final layered = RawStyleOf(layers, column.states);
           final band = enabled
               ? layered.side?.color ?? layered.edge ?? c.ink
               : c.disabled;
@@ -1219,7 +1287,7 @@ class BrutalWheelPicker<T> extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.wheelPickerStyle];
-    final box = DesignStyleOf(layers, const {});
+    final box = RawStyleOf(layers, const {});
     return Align(
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
@@ -1311,7 +1379,7 @@ class BrutalTimePicker extends StatelessWidget {
     final c = theme.colors;
     final enabled = onChanged != null;
     final layers = [style, theme.wheelPickerStyle];
-    final box = DesignStyleOf(layers, const {});
+    final box = RawStyleOf(layers, const {});
     final rule = enabled ? box.side?.color ?? box.edge ?? c.ink : c.disabled;
     // The wheels' spoken names, in the reader's language.
     final words = RawWidgetsLocalizations.of(context);
@@ -1481,7 +1549,7 @@ class _BrutalColorPickerState extends State<BrutalColorPicker> {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final w = theme.borderWidth;
-    final layered = DesignStyleOf([
+    final layered = RawStyleOf([
       widget.style,
       theme.colorPickerStyle,
     ], const {});

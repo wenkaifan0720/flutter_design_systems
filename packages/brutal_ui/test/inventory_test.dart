@@ -1,4 +1,4 @@
-// Brutal in ui_core's shared inventory (DesignInventory): every row answered once, none left out, and every live
+// Brutal in ui_core's shared inventory (RawInventory): every row answered once, none left out, and every live
 // specimen building and laying out on a phone and a desk, by day and by night, right to left, and at 200% text on a
 // phone, with nothing thrown.
 // ignore_for_file: avoid_relative_lib_imports
@@ -43,7 +43,7 @@ void main() {
     final inventory = BrutalInventory.registry;
     inventory.verify();
     expect(inventory.absentCount, 0);
-    expect(inventory.presentCount, DesignInventoryRow.all.length);
+    expect(inventory.presentCount, RawInventoryRow.all.length);
   });
 
   const cases = [

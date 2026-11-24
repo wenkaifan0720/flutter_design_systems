@@ -52,10 +52,7 @@ class BrutalBreadcrumb extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([
-      this.style,
-      theme.breadcrumbStyle,
-    ], const {});
+    final layered = RawStyleOf([this.style, theme.breadcrumbStyle], const {});
     final style = layered.text(
       theme.textTheme.label.copyWith(fontSize: 15, height: 20 / 15),
     );
@@ -134,15 +131,14 @@ class _StripCell extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final side =
-        DesignStyleOf(layers, const {}).minimumSize?.height ??
-        theme.controlHeight;
+        RawStyleOf(layers, const {}).minimumSize?.height ?? theme.controlHeight;
     return TapTargetPadding(
       child: RawButton(
         onPressed: onPressed,
         selected: chosen,
         semanticLabel: semanticLabel,
         builder: (context, states, _) {
-          final layered = DesignStyleOf(layers, {
+          final layered = RawStyleOf(layers, {
             ...states,
             if (chosen) WidgetState.selected,
           });
@@ -208,7 +204,7 @@ Widget _strip(
   List<Widget> cells,
 ) {
   final c = theme.colors;
-  final strip = DesignStyleOf(layers, const {});
+  final strip = RawStyleOf(layers, const {});
   final rule = strip.side?.color ?? strip.edge ?? c.ink;
   return Align(
     alignment: AlignmentDirectional.centerStart,
@@ -292,8 +288,7 @@ class BrutalPagination extends StatelessWidget {
         if (p >= 1 && p <= pageCount) p,
     }.toList()..sort();
     final side =
-        DesignStyleOf(layers, const {}).minimumSize?.height ??
-        theme.controlHeight;
+        RawStyleOf(layers, const {}).minimumSize?.height ?? theme.controlHeight;
     // The strip's width for [pages] between back and next: square cells,
     // a narrow gap where pages are skipped, a rule between each two and
     // round them.
@@ -434,7 +429,7 @@ class BrutalStepProgress extends StatelessWidget {
   Widget _measured(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.stepProgressStyle], const {});
+    final layered = RawStyleOf([style, theme.stepProgressStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     if (steps.isEmpty) return const SizedBox.shrink();
     return Semantics(
@@ -500,7 +495,7 @@ class BrutalStepProgress extends StatelessWidget {
 
   TextStyle _nameStyle(
     BrutalThemeData theme,
-    DesignStyleOf layered,
+    RawStyleOf layered,
     bool current,
   ) => layered.text(
     theme.textTheme.label.copyWith(
@@ -513,7 +508,7 @@ class BrutalStepProgress extends StatelessWidget {
   Widget _step(
     BuildContext context,
     BrutalThemeData theme,
-    DesignStyleOf layered,
+    RawStyleOf layered,
     int i,
     String name, {
     bool stacked = false,
@@ -643,7 +638,7 @@ class BrutalPageDots extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
-    final reduce = designReduceMotionOf(context);
+    final reduce = rawReduceMotionOf(context);
     final layers = [style, theme.pageDotsStyle];
     Widget dot(int i) => AnimatedContainer(
       duration: reduce ? Duration.zero : const Duration(milliseconds: 200),
@@ -651,7 +646,7 @@ class BrutalPageDots extends StatelessWidget {
       width: i == page ? 24 : 8,
       height: 8,
       color:
-          DesignStyleOf(layers, {
+          RawStyleOf(layers, {
             if (i == page) WidgetState.selected,
           }).foreground ??
           (i == page ? c.ink : c.inkMuted),
@@ -710,6 +705,36 @@ class BrutalPageDots extends StatelessWidget {
   }
 }
 
+/// The rule after a menu bar's last menu, where the bar runs on past it:
+/// where the menus fill the bar, the bar's own end rule closes the last.
+class _EndRule extends CustomPainter {
+  _EndRule(this.color, this.width, this.direction, this.room);
+
+  final Color color;
+  final double width;
+  final TextDirection direction;
+  final double room;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Only where the bar runs on past it: a rule beside the bar's own end
+    // rule would read as one rule doubled.
+    if (!room.isFinite || room - size.width < 3 * width) return;
+    final x = direction == TextDirection.rtl ? -width : size.width;
+    canvas.drawRect(
+      Rect.fromLTWH(x, 0, width, size.height),
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_EndRule old) =>
+      old.color != color ||
+      old.width != width ||
+      old.direction != direction ||
+      old.room != room;
+}
+
 /// One menu of a [BrutalMenuBar]: its name on the bar and its items.
 @immutable
 class BrutalMenuBarMenu {
@@ -750,7 +775,7 @@ class BrutalMenuBar extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.menuBarStyle];
-    final bar = DesignStyleOf(layers, const {});
+    final bar = RawStyleOf(layers, const {});
     final rule = bar.side?.color ?? bar.edge ?? c.ink;
     return RawMenuBar(
       menus: [
@@ -769,6 +794,9 @@ class BrutalMenuBar extends StatelessWidget {
             ],
           ),
       ],
+      // The bar spans the width it is given, as a desk app's menu bar spans
+      // its window, its menus from the start; a rule closes each menu, but
+      // the last where it meets the bar's own end rule.
       barBuilder: (context, items) => BrutalSurface(
         face: BrutalFace(
           fill: bar.fill ?? c.surface,
@@ -777,22 +805,46 @@ class BrutalMenuBar extends StatelessWidget {
         ),
         child: SizedBox(
           height: bar.minimumSize?.height ?? theme.controlHeight,
-          // Menus wider than the bar (large text on a phone) scroll along
-          // it.
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final item in items) ...[
-                  item,
-                  SizedBox(
-                    width: theme.borderWidth,
-                    child: ColoredBox(color: rule),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final room = constraints.maxWidth;
+              // Menus wider than the bar (large text on a phone) scroll
+              // along it.
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: room.isFinite ? room : 0,
                   ),
-                ],
-              ],
-            ),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: 1,
+                    child: CustomPaint(
+                      foregroundPainter: _EndRule(
+                        rule,
+                        theme.borderWidth,
+                        Directionality.of(context),
+                        room,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final (i, item) in items.indexed) ...[
+                            if (i > 0)
+                              SizedBox(
+                                width: theme.borderWidth,
+                                child: ColoredBox(color: rule),
+                              ),
+                            item,
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -807,7 +859,7 @@ class BrutalMenuBar extends StatelessWidget {
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );
         }
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final lit =
             states.contains(WidgetState.selected) ||
             states.contains(WidgetState.pressed);
@@ -826,7 +878,7 @@ class BrutalMenuBar extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: BrutalSpacing.medium),
               child: Center(
                 widthFactor: 1,
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: BrutalTheme.of(context).capHeightFactor,
                   child: Text(
                     entry.label,
@@ -985,7 +1037,7 @@ class BrutalCommandPalette extends StatelessWidget {
       child: Text(
         group.toUpperCase(),
         style:
-            DesignStyleOf([
+            RawStyleOf([
               style,
               BrutalTheme.of(context).commandPaletteStyle,
             ], const {}).text(
@@ -1046,7 +1098,7 @@ class BrutalCommandPalette extends StatelessWidget {
 Widget _panel(BuildContext context, BrutalStyle? style, Widget child) {
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
-  final layered = DesignStyleOf([style, theme.commandPaletteStyle], const {});
+  final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 560),
     child: BrutalSurface(
@@ -1082,7 +1134,7 @@ Future<void> showBrutalCommandPalette(
   BrutalStyle? style,
 }) {
   final scrim = BrutalTheme.of(context).colors.scrim;
-  return showDesignCommandPalette(
+  return showRawCommandPalette(
     context: context,
     barrierColor: scrim,
     palette: (run) => BrutalCommandPalette(

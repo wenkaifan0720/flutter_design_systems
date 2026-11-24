@@ -52,15 +52,14 @@ class BrutalMenuItem {
 
   /// The shortcut that runs it, shown at the row's end in the platform's
   /// order and the reader's words when there is no [shortcut] (ui_core's
-  /// [designShortcutLabel]: `⌘S` on a Mac, `Ctrl+S` elsewhere). It only
+  /// [rawShortcutLabel]: `⌘S` on a Mac, `Ctrl+S` elsewhere). It only
   /// shows the keys: binding them is the app's.
   final MenuSerializableShortcut? activator;
 
   /// What its row shows at its end: [shortcut], else [activator]'s keys.
   String? shortcutLabel(BuildContext context) {
     final keys = activator;
-    return shortcut ??
-        (keys == null ? null : designShortcutLabel(context, keys));
+    return shortcut ?? (keys == null ? null : rawShortcutLabel(context, keys));
   }
 
   /// Whether it destroys something: its words in the danger colour.
@@ -109,7 +108,7 @@ class BrutalMenuPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.menuStyle], const {});
+    final layered = RawStyleOf([style, theme.menuStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     return _OnPanel(
       child: BrutalSurface(
@@ -174,9 +173,10 @@ class _OnPanel extends InheritedWidget {
 /// A menu row with a label, an optional [icon] and a [trailing] widget.
 ///
 /// A selected or pressed row fills with ink. A destructive row uses the
-/// danger colour and a disabled row uses muted ink. A narrow bar in the
-/// row's own ink marks the focused row (paper on a filled row). Moving the
-/// pointer inside a [BrutalMenuPanel] transfers keyboard focus to that row.
+/// danger colour and a disabled row uses muted ink. A rule round the row,
+/// inset, in its own ink marks the row the keyboard is on (paper on a
+/// filled row). Moving the pointer inside a [BrutalMenuPanel] transfers
+/// keyboard focus to that row.
 ///
 /// Reads [style]'s `fill` and `foreground` in its states, `padding`,
 /// `minimumSize` (its height), `textStyle` and `iconSize`, then
@@ -220,7 +220,7 @@ class BrutalMenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.menuStyle], states);
+    final layered = RawStyleOf([style, theme.menuStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     // Ink is the chosen row, or the one pressed on the way to choosing it;
     // where the pointer or the keyboard is, a rule round it.
@@ -284,7 +284,7 @@ class BrutalMenuRow extends StatelessWidget {
                   const SizedBox(width: BrutalSpacing.medium),
                 ],
                 Expanded(
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: BrutalTheme.of(context).capHeightFactor,
                     child: Text(
                       label,

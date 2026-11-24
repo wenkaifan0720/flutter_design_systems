@@ -54,7 +54,7 @@ String _readOut(
   List<String> labels,
   List<BrutalSeries> series,
   RawWidgetsLocalizations numbers,
-  DesignChartValueFormat valueFormat,
+  RawChartValueFormat valueFormat,
 ) => [
   for (final s in series)
     '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${valueFormat.format(v, numbers)}'].join(', ')}',
@@ -74,7 +74,7 @@ class _Framed extends StatelessWidget {
   final String readOut;
   final List<(String, Color)> legend;
   final Widget chart;
-  final DesignStyleOf layered;
+  final RawStyleOf layered;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -99,7 +99,7 @@ class _Legend extends StatelessWidget {
   const _Legend({required this.entries, required this.layered});
 
   final List<(String, Color)> entries;
-  final DesignStyleOf layered;
+  final RawStyleOf layered;
 
   @override
   Widget build(BuildContext context) {
@@ -174,12 +174,12 @@ abstract class _AxesPainter extends CustomPainter {
 
   /// How the value axis writes its ticks: in the reader's digits, at the
   /// scale's decimals, with the chart's unit.
-  final DesignChartValueFormat valueFormat;
+  final RawChartValueFormat valueFormat;
 
   // The value axis: from 0 to a whole tick over the largest value, about
   // four steps of 1, 2 or 5 × 10ⁿ (ui_core's nice scale), mapped 0 to 1;
   // 0 to 1 when nothing is above 0.
-  late final DesignLinearScale scale = DesignLinearScale.nice(
+  late final RawLinearScale scale = RawLinearScale.nice(
     min: 0,
     max: switch (series.expand((s) => s.values).fold<double>(0, math.max)) {
       > 0 && final most => most,
@@ -239,7 +239,7 @@ abstract class _AxesPainter extends CustomPainter {
     // The numbers' room beside the plot, at the reading start (flipped
     // right to left with the rest).
     final gutter =
-        DesignScaleTick.widestLabel(
+        RawScaleTick.widestLabel(
           scaled,
           style: _labelStyle,
           textScaler: textScaler,
@@ -465,7 +465,7 @@ abstract class _AxesChart extends StatelessWidget {
     required this.series,
     required this.semanticLabel,
     required this.height,
-    this.valueFormat = const DesignChartValueFormat(),
+    this.valueFormat = const RawChartValueFormat(),
     this.style,
   });
 
@@ -476,16 +476,16 @@ abstract class _AxesChart extends StatelessWidget {
 
   /// How a value is written on the value axis and in what a screen reader
   /// hears: in the reader's digits, each tick at its scale's decimals, with
-  /// a unit (`DesignChartValueFormat(suffix: ' h')`). Defaults to the figure
+  /// a unit (`RawChartValueFormat(suffix: ' h')`). Defaults to the figure
   /// alone.
-  final DesignChartValueFormat valueFormat;
+  final RawChartValueFormat valueFormat;
 
   /// Its style, over [BrutalThemeData.chartStyle].
   final BrutalStyle? style;
 
   CustomPainter painter(
     BrutalThemeData theme,
-    DesignStyleOf layered,
+    RawStyleOf layered,
     TextDirection direction,
     RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
@@ -494,7 +494,7 @@ abstract class _AxesChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
-    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    final layered = RawStyleOf([style, theme.chartStyle], const {});
     return _Framed(
       layered: layered,
       semanticLabel: semanticLabel,
@@ -553,7 +553,7 @@ class BrutalLineChart extends _AxesChart {
   @override
   CustomPainter painter(
     BrutalThemeData theme,
-    DesignStyleOf layered,
+    RawStyleOf layered,
     TextDirection direction,
     RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
@@ -593,7 +593,7 @@ class BrutalAreaChart extends _AxesChart {
   @override
   CustomPainter painter(
     BrutalThemeData theme,
-    DesignStyleOf layered,
+    RawStyleOf layered,
     TextDirection direction,
     RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
@@ -633,7 +633,7 @@ class BrutalBarChart extends _AxesChart {
   @override
   CustomPainter painter(
     BrutalThemeData theme,
-    DesignStyleOf layered,
+    RawStyleOf layered,
     TextDirection direction,
     RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
@@ -704,7 +704,7 @@ class BrutalPieChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    final layered = RawStyleOf([style, theme.chartStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     final blocks = [c.blue, c.pink, c.lime, c.violet, c.signal, c.ink];
     final total = slices.fold<double>(0, (a, s) => a + s.value);
@@ -902,13 +902,13 @@ class BrutalSparkline extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    final layered = RawStyleOf([style, theme.chartStyle], const {});
     return Semantics(
       label: semanticLabel,
       value: values.isEmpty
           ? null
-          : 'from ${const DesignChartValueFormat().format(values.first, RawWidgetsLocalizations.of(context))} '
-                'to ${const DesignChartValueFormat().format(values.last, RawWidgetsLocalizations.of(context))}',
+          : 'from ${const RawChartValueFormat().format(values.first, RawWidgetsLocalizations.of(context))} '
+                'to ${const RawChartValueFormat().format(values.last, RawWidgetsLocalizations.of(context))}',
       excludeSemantics: true,
       child: SizedBox(
         width: width,

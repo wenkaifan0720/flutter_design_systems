@@ -63,17 +63,17 @@ const _places = [
 final _first = DateTime(2026, 11);
 final _last = DateTime(2026, 12, 31);
 
-DesignInventoryEntry _row(String id, WidgetBuilder builder) =>
-    DesignInventoryEntry.present(id, builder);
+RawInventoryEntry _row(String id, WidgetBuilder builder) =>
+    RawInventoryEntry.present(id, builder);
 
-/// Brutal's inventory: every row of [DesignInventoryRow.all] answered with
+/// Brutal's inventory: every row of [RawInventoryRow.all] answered with
 /// a live specimen.
 abstract final class BrutalInventory {
   /// The registry.
-  static final DesignInventory registry = _registry();
+  static final RawInventory registry = _registry();
 }
 
-DesignInventory _registry() => DesignInventory(
+RawInventory _registry() => RawInventory(
   look: 'Brutal',
   entries: [
     // Actions.

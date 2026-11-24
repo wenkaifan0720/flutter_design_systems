@@ -20,7 +20,7 @@ abstract final class BrutalChromeMetrics {
   /// The floor in effect at [context]: the finger's or the pointer's, by
   /// what reaches the controls there.
   static double targetOf(BuildContext context) =>
-      DesignTapTargets.of(context).floorOn().shortestSide;
+      RawTapTargets.of(context).floorOn().shortestSide;
 
   /// A one-line field's box, and every control's height at the standard
   /// density.

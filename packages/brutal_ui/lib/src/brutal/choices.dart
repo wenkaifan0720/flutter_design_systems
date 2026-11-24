@@ -44,7 +44,7 @@ class _SpringState extends State<_Spring> with SingleTickerProviderStateMixin {
     if (old.value != widget.value) {
       _t.springTo(
         widget.value,
-        DesignMotionPolicy.of(context).spatial(
+        RawMotionPolicy.of(context).spatial(
           dampingRatio: BrutalMotion.dampingRatio,
           stiffness: widget.stiffness,
         ),
@@ -124,7 +124,7 @@ class BrutalCheckbox extends StatelessWidget {
       isError: isError,
       semanticLabel: semanticLabel,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [style, theme.checkboxStyle],
           {
             ...states,
@@ -372,10 +372,7 @@ class _BrutalRadioState<T> extends State<_BrutalRadio<T>> {
             if (state.downPosition != null) WidgetState.pressed,
           };
           final chosen = states.contains(WidgetState.selected);
-          final layered = DesignStyleOf([
-            radio.style,
-            theme.radioStyle,
-          ], states);
+          final layered = RawStyleOf([radio.style, theme.radioStyle], states);
           final disabled = states.contains(WidgetState.disabled);
           final focused = states.contains(WidgetState.focused);
           final pressed = states.contains(WidgetState.pressed) && !disabled;
@@ -550,7 +547,7 @@ class BrutalSwitch extends StatelessWidget {
       toggled: value,
       semanticLabel: semanticLabel,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           [style, theme.switchStyle],
           {...states, if (value) WidgetState.selected},
         );
@@ -712,7 +709,7 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [this.style, theme.segmentedButtonStyle];
-    final frame = DesignStyleOf(layers, {
+    final frame = RawStyleOf(layers, {
       if (onChanged == null) WidgetState.disabled,
     });
     final style = frame.text(
@@ -877,7 +874,7 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
     List<BrutalStyle?> layers,
   ) {
     final c = theme.colors;
-    final layered = DesignStyleOf(layers, states);
+    final layered = RawStyleOf(layers, states);
     final disabled = states.contains(WidgetState.disabled);
     final lit = chosen || states.contains(WidgetState.pressed);
     final words =
@@ -923,7 +920,7 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
                 Flexible(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: BrutalTheme.of(context).capHeightFactor,
                       child: Text(
                         s.label,
@@ -1113,7 +1110,7 @@ class BrutalStepper extends StatelessWidget {
     final c = theme.colors;
     final off = onChanged == null;
     final layers = [style, theme.stepperStyle];
-    final frame = DesignStyleOf(layers, {if (off) WidgetState.disabled});
+    final frame = RawStyleOf(layers, {if (off) WidgetState.disabled});
     final ruleColor =
         frame.side?.color ?? frame.edge ?? (off ? c.disabled : c.ink);
     final numberStyle = frame.text(
@@ -1147,7 +1144,7 @@ class BrutalStepper extends StatelessWidget {
     widest.dispose();
     Widget cell(RawNumberFieldButtonDetails button) {
       final states = button.states;
-      final layered = DesignStyleOf(layers, states);
+      final layered = RawStyleOf(layers, states);
       final disabled = states.contains(WidgetState.disabled);
       final lit = states.contains(WidgetState.pressed);
       return SizedBox(
@@ -1216,7 +1213,7 @@ class BrutalStepper extends StatelessWidget {
                       ? BrutalInsetFocusPainter(c.ink)
                       : null,
                   child: Center(
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Material(
                         type: MaterialType.transparency,

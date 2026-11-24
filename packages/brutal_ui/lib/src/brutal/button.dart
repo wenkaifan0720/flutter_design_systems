@@ -136,7 +136,7 @@ class BrutalButton extends StatelessWidget {
       autofocus: autofocus,
       semanticValue: busy ? 'busy' : null,
       builder: (context, states, _) {
-        final layered = DesignStyleOf(
+        final layered = RawStyleOf(
           _buttonLayers(theme, _kind, isDestructiveAction, style),
           states,
         );
@@ -158,7 +158,7 @@ class BrutalButton extends StatelessWidget {
               .merge(layered.textStyle),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: BrutalTheme.of(context).capHeightFactor,
             child: Text(label),
           ),
@@ -282,7 +282,7 @@ BrutalFace _buttonFace(
   List<BrutalStyle?>? layers,
 }) {
   final c = theme.colors;
-  final layered = DesignStyleOf(
+  final layered = RawStyleOf(
     layers ?? _buttonLayers(theme, kind, destructive, style),
     states,
   );
@@ -366,7 +366,7 @@ class _UnderlinedState extends State<_Underlined>
     if (old.pressed != widget.pressed) {
       _press.springTo(
         widget.pressed ? 1 : 0,
-        DesignMotionPolicy.of(context).spatial(
+        RawMotionPolicy.of(context).spatial(
           dampingRatio: BrutalMotion.dampingRatio,
           stiffness: BrutalMotion.pressStiffness,
         ),
@@ -489,7 +489,7 @@ class BrutalIconButton extends StatelessWidget {
       semanticSelected: isSelected,
       semanticLabel: tooltip,
       builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
+        final layered = RawStyleOf([style, theme.iconButtonStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final on = states.contains(WidgetState.selected);
@@ -635,7 +635,7 @@ class BrutalSplitButton extends StatelessWidget {
           ...states,
           if (open && part == RawSplitPart.toggle) WidgetState.pressed,
         };
-        final layered = DesignStyleOf(layers, now);
+        final layered = RawStyleOf(layers, now);
         final face = _buttonFace(
           theme,
           now,
@@ -659,7 +659,7 @@ class BrutalSplitButton extends StatelessWidget {
                           ),
                       child: Center(
                         widthFactor: 1,
-                        child: DesignCapCenter(
+                        child: RawCapCenter(
                           capHeightFactor: BrutalTheme.of(context)
                               .capHeightFactor,
                           child: Text(
@@ -732,7 +732,7 @@ class _Turned extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TweenAnimationBuilder<double>(
     tween: Tween(end: open ? 0.5 : 0),
-    duration: designReduceMotionOf(context)
+    duration: rawReduceMotionOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 140),
     builder: (context, turns, child) =>
@@ -807,7 +807,7 @@ class BrutalFloatingButton extends StatelessWidget {
       excludeSemantics: true,
       builder: (context, states, _) {
         final layers = [style, theme.floatingButtonStyle];
-        final layered = DesignStyleOf(layers, states);
+        final layered = RawStyleOf(layers, states);
         final face = _buttonFace(
           theme,
           states,
@@ -840,7 +840,7 @@ class BrutalFloatingButton extends StatelessWidget {
                   ),
                   if (label != null) ...[
                     const SizedBox(width: BrutalSpacing.medium),
-                    DesignCapCenter(
+                    RawCapCenter(
                       capHeightFactor: BrutalTheme.of(context).capHeightFactor,
                       child: Text(
                         label!,
