@@ -1,3 +1,18 @@
+## 0.4.1
+
+- At a large text size on a phone, parts keep their words whole and inside their shapes, following Material at the same size:
+  - `ClayAvatar`'s initials and `ClayAvatarGroup`'s count keep their size at every text scale, as `CircleAvatar`'s do.
+  - `ClayBadge`'s count grows with the text up to 1.3 times, as `NavigationBar` caps its labels. Its pill starts 12 inside its child's top end corner and a longer count runs on outward, as `Badge`'s does, rather than back over the child.
+  - `ClayTag` and `ClayTagInput`'s tags grow taller with their words, as Material's chips do.
+  - `ClayTable` keeps a numeric cell's figures on one line ("6 of 7"); a table too wide for the phone scrolls sideways.
+  - `ClayListTile`: from 1.5 times the text size, on a row narrower than twelve of its words' ems (a phone's), the row's `trailing` or `trailingText` stands under its words at the row's end and the words take the row's whole width. A list's rows share their width, so they all do it or none do. On a wider row (a desk's pane) the end stays beside the words where both fit and a part too wide for that goes under them, as in 0.4.0. The chevron stays beside them.
+  - `ClayProgressRing`'s child, `ClayPieChart`'s centre words and `ClayStepProgress`'s figures shrink when they must to stay inside their round.
+  - `ClayCalendar` draws all of a month's days at one size, the size its widest day fits at, and its days grow to twice their size at most, as Material's day grid does.
+  - `ClayTimePicker`'s columns widen with their figures, so AM and PM keep clear of the pill's ends.
+  - `ClayTimeField`'s well and its pills grow taller with the figures, as a text field's well does, rather than cut them at the foot.
+  - `ClayNavigationBar`'s place names keep clear of the chosen pill's round ends when they shrink to fit.
+- Example: Today's ring card, the sparklines and the settings' profile set their side part above or below the words when the words would break beside it. A habit's month grows each day's ball with its number, up to 44, so two-figure days keep inside it.
+
 ## 0.4.0
 
 - Requires ui_core 0.6.0, whose parts that still began with `Design` take `Raw` names (`DesignStyleOf` is `RawStyleOf`, `DesignDialogRoute` is `RawModalDialogRoute`). Clay's code and docs say the new names. The old names stay through ui_core 0.6 as deprecated aliases, and `dart fix --apply` moves an app's code.

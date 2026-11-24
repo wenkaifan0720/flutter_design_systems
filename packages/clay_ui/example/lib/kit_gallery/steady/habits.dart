@@ -2,6 +2,8 @@
 /// (its streaks, its month, its note), and on a desk the two side by side.
 library;
 
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:clay_ui/clay_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -516,6 +518,23 @@ class _Calendar extends StatelessWidget {
     final first = month ? DateTime(2026, 10, 26) : DateTime(2026, 10, 19);
     final weeks = month ? 6 : 5;
     final tint = c.tint(habit.tint);
+    // A day's ball grows with its number at a large text size, up to a
+    // finger's width, so the number keeps inside its round.
+    final scaler = MediaQuery.textScalerOf(context);
+    var widest = 0.0;
+    var line = 0.0;
+    for (var n = 1; n <= 31; n++) {
+      final painter = TextPainter(
+        text: TextSpan(text: '$n', style: _Day.numberStyle(theme, bold: true)),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      widest = math.max(widest, painter.width);
+      line = painter.height;
+      painter.dispose();
+    }
+    final ball = (math.max(widest, line) * math.sqrt2).clamp(32.0, 44.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -560,6 +579,7 @@ class _Calendar extends StatelessWidget {
                             tint: tint,
                             shown: !month || day.month == 11,
                             today: day == _today,
+                            ball: ball,
                           );
                         },
                       ),
@@ -621,6 +641,7 @@ class _Day extends StatelessWidget {
     required this.tint,
     required this.shown,
     required this.today,
+    required this.ball,
   });
 
   final DateTime day;
@@ -628,6 +649,18 @@ class _Day extends StatelessWidget {
   final Color tint;
   final bool shown;
   final bool today;
+
+  /// The ball's width.
+  final double ball;
+
+  /// A day's number, bolder for today.
+  static TextStyle numberStyle(ClayThemeData theme, {required bool bold}) {
+    final weight = bold ? FontWeight.w600 : FontWeight.w400;
+    return theme.textTheme.caption.copyWith(
+      fontWeight: weight,
+      fontVariations: clayWeight(weight),
+    );
+  }
 
   static const _months = [
     'January',
@@ -648,21 +681,22 @@ class _Day extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.clayTheme;
     final c = theme.colors;
-    if (!shown) return const SizedBox.square(dimension: 32);
+    if (!shown) return SizedBox.square(dimension: ball);
     final done = this.done;
     final state = done == null ? 'to come' : (done ? 'done' : 'missed');
-    final weight = today ? FontWeight.w600 : FontWeight.w400;
-    final number = FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Text(
-        '${day.day}',
-        maxLines: 1,
-        style: theme.textTheme.caption.copyWith(
-          color: done == null
-              ? c.inkDisabled
-              : (done ? c.onColor(tint) : c.inkSecondary),
-          fontWeight: weight,
-          fontVariations: clayWeight(weight),
+    // The number keeps to the square inside the ball's round.
+    final number = SizedBox.square(
+      dimension: ball / math.sqrt2,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          '${day.day}',
+          maxLines: 1,
+          style: numberStyle(theme, bold: today).copyWith(
+            color: done == null
+                ? c.inkDisabled
+                : (done ? c.onColor(tint) : c.inkSecondary),
+          ),
         ),
       ),
     );
@@ -677,7 +711,7 @@ class _Day extends StatelessWidget {
           '$state',
       excludeSemantics: true,
       child: SizedBox.square(
-        dimension: 32,
+        dimension: ball,
         child: face == null
             ? Center(child: number)
             : ClaySurface(

@@ -1526,11 +1526,31 @@ class _Tag extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
-    final height = _tagHeight(theme);
-    // The pill stands in a slot a finger's height; the key that removes it
-    // is the slot's whole square at the pill's end.
+    final style = theme.textTheme.secondary.copyWith(
+      color: enabled ? c.ink : c.inkDisabled,
+    );
+    // The pill is a control's height less the room round it, and taller
+    // with a large text size, as Material's input chips grow: its words keep
+    // 4 clear above and below, never cut.
+    final line = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: DefaultTextStyle.of(context).style.merge(style),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final height = math.max(
+      _tagHeight(theme),
+      line.height + 2 * ClaySpacing.tight,
+    );
+    line.dispose();
+    // The pill stands in a slot a finger's height (or the pill's and the
+    // room round it); the key that removes it is a finger's square at the
+    // pill's end.
     return SizedBox(
-      height: _tagSlot,
+      height: math.max(_tagSlot, height + _tagSlot - _tagHeight(theme)),
       child: Stack(
         alignment: AlignmentDirectional.centerStart,
         children: [
@@ -1558,12 +1578,7 @@ class _Tag extends StatelessWidget {
                   widthFactor: 1,
                   child: RawCapCenter(
                     capHeightFactor: clayCapHeightFactor,
-                    child: Text(
-                      label,
-                      style: theme.textTheme.secondary.copyWith(
-                        color: enabled ? c.ink : c.inkDisabled,
-                      ),
-                    ),
+                    child: Text(label, maxLines: 1, style: style),
                   ),
                 ),
               ),

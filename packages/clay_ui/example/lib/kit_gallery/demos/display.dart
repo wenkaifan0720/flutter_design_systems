@@ -171,7 +171,10 @@ class _Faces extends StatelessWidget {
         ],
       ),
       SizedBox(height: ClaySpacing.large),
+      // A count runs on past its part's corner, as Material's badges do:
+      // the row leaves it room.
       KitRow(
+        spacing: ClaySpacing.extraLarge,
         children: [
           ClayBadge(count: 3, child: Icon(LucideIcons.bell, size: 24)),
           ClayBadge(count: 120, child: Icon(LucideIcons.inbox, size: 24)),

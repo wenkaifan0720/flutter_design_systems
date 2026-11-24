@@ -439,6 +439,79 @@ class ClayListTile extends StatelessWidget {
                     return math.min(lead + w + 1, width / 2);
                   }
 
+                  final chevronMark = Transform.flip(
+                    flipX: Directionality.of(context) == TextDirection.rtl,
+                    child: SizedBox(
+                      width: 8,
+                      height: 14,
+                      child: CustomPaint(
+                        painter: ClayChevronRightPainter(
+                          disabled ? c.inkDisabled : c.inkSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                  final valueStyle = theme.textTheme.body.copyWith(
+                    color: muted,
+                  );
+                  // Under large text, on a row narrower than twelve of its
+                  // words' ems (a phone's), the row's end (its value, its
+                  // control) stands under its words at the row's end, as
+                  // list rows stack at large text: the words keep the row's
+                  // width rather than break a word a line beside it. A list's
+                  // rows share their width, so they all stack or none do. On
+                  // a wider row (a desk's pane) the end stays beside its
+                  // words where both fit, and a part too wide for that goes
+                  // under them. The chevron stays beside.
+                  final scaler = MediaQuery.textScalerOf(context);
+                  final em = scaler.scale(titleStyle.fontSize ?? 16);
+                  final narrow = box.maxWidth < 12 * em;
+                  if (largeText &&
+                      narrow &&
+                      (trailing != null || trailingText != null)) {
+                    final under = Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (trailingText != null)
+                          Flexible(
+                            child: Text(
+                              trailingText!,
+                              textAlign: TextAlign.end,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: valueStyle,
+                            ),
+                          ),
+                        if (trailing != null) ...[
+                          if (trailingText != null)
+                            const SizedBox(width: ClaySpacing.medium),
+                          Flexible(child: trailing!),
+                        ],
+                      ],
+                    );
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              heading,
+                              const SizedBox(height: ClaySpacing.small),
+                              Align(
+                                alignment: AlignmentDirectional.centerEnd,
+                                child: under,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (chevron) ...[
+                          const SizedBox(width: ClaySpacing.small),
+                          chevronMark,
+                        ],
+                      ],
+                    );
+                  }
                   final end = [
                     if (trailingText != null)
                       ConstrainedBox(
@@ -452,7 +525,7 @@ class ClayListTile extends StatelessWidget {
                           textAlign: TextAlign.end,
                           maxLines: largeText ? 2 : 1,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.body.copyWith(color: muted),
+                          style: valueStyle,
                         ),
                       ),
                     if (trailing != null) ...[
@@ -464,8 +537,8 @@ class ClayListTile extends StatelessWidget {
                         Flexible(child: trailing!)
                       else
                         // The title keeps its one line beside it (up to half
-                        // the row): a wide part shrinks rather than crush
-                        // the title into a column of letters.
+                        // the row): a wide part shrinks rather than crush the
+                        // title into a column of letters.
                         ConstrainedBox(
                           constraints: BoxConstraints(
                             maxWidth: math.max(
@@ -482,18 +555,7 @@ class ClayListTile extends StatelessWidget {
                     if (chevron) ...[
                       if (trailingText != null || trailing != null)
                         const SizedBox(width: ClaySpacing.small),
-                      Transform.flip(
-                        flipX: Directionality.of(context) == TextDirection.rtl,
-                        child: SizedBox(
-                          width: 8,
-                          height: 14,
-                          child: CustomPaint(
-                            painter: ClayChevronRightPainter(
-                              disabled ? c.inkDisabled : c.inkSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
+                      chevronMark,
                     ],
                   ];
                   if (largeText && trailing != null) {

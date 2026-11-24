@@ -174,7 +174,26 @@ class ClayProgressRing extends StatelessWidget {
                 thickness: thickness,
                 rtl: Directionality.of(context) == TextDirection.rtl,
               ),
-              child: Center(child: child),
+              // What stands in the middle keeps inside the hole: it grows
+              // with the text until it fills the square the hole holds,
+              // then holds there rather than run into the ring.
+              child: child == null
+                  ? null
+                  : Center(
+                      child: SizedBox.square(
+                        dimension:
+                            math.max(0, size / 2 - thickness) * math.sqrt2,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints.loose(
+                              Size.square(size),
+                            ),
+                            child: child,
+                          ),
+                        ),
+                      ),
+                    ),
             ),
           ),
         ),

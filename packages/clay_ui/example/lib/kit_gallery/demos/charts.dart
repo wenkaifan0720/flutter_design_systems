@@ -141,44 +141,98 @@ String _minutes(double v) => '${v.round()} min';
 class _Sparks extends StatelessWidget {
   const _Sparks();
 
+  static const _rows = [
+    ('Water', '6.7 a day', <double>[5, 7, 6, 8, 7, 8, 6]),
+    ('Sleep', '7 h 10', <double>[6.5, 7, 7.5, 6.8, 7.2, 8, 7.1]),
+  ];
+
+  static const double _sparkWidth = 140;
+
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    Widget row(String label, String figure, List<double> values) => Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: theme.textTheme.secondary),
-              Text(
-                figure,
-                style: theme.textTheme.headline.copyWith(
-                  color: theme.colors.ink,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: ClaySpacing.regular),
-        ClaySparkline(
-          semanticLabel: '$label this week',
-          width: 140,
-          values: values,
-        ),
-      ],
+    final labelStyle = theme.textTheme.secondary;
+    final figureStyle = theme.textTheme.headline.copyWith(
+      color: theme.colors.ink,
     );
+    // The widest of the rows' words, as they are drawn.
+    double widest() {
+      final painter = TextPainter(
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        maxLines: 1,
+      );
+      final base = DefaultTextStyle.of(context).style;
+      var width = 0.0;
+      for (final (label, figure, _) in _rows) {
+        for (final (text, style) in [
+          (label, labelStyle),
+          (figure, figureStyle),
+        ]) {
+          painter
+            ..text = TextSpan(text: text, style: base.merge(style))
+            ..layout();
+          width = width > painter.width ? width : painter.width;
+        }
+      }
+      painter.dispose();
+      return width;
+    }
+
     return ClayCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          row('Water', '6.7 a day', const [5, 7, 6, 8, 7, 8, 6]),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: ClaySpacing.regular),
-            child: ClayGroove(),
-          ),
-          row('Sleep', '7 h 10', const [6.5, 7, 7.5, 6.8, 7.2, 8, 7.1]),
-        ],
+      child: LayoutBuilder(
+        builder: (context, box) {
+          // Each week beside its figure; under it, every row alike, where a
+          // figure would break beside it (large text on a phone).
+          final beside =
+              widest() + ClaySpacing.regular + _sparkWidth <= box.maxWidth;
+          Widget row(String label, String figure, List<double> values) {
+            final words = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: labelStyle),
+                Text(figure, style: figureStyle),
+              ],
+            );
+            final spark = ClaySparkline(
+              semanticLabel: '$label this week',
+              width: _sparkWidth,
+              values: values,
+            );
+            return beside
+                ? Row(
+                    children: [
+                      Expanded(child: words),
+                      const SizedBox(width: ClaySpacing.regular),
+                      spark,
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      words,
+                      const SizedBox(height: ClaySpacing.medium),
+                      spark,
+                    ],
+                  );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final (i, (label, figure, values)) in _rows.indexed) ...[
+                if (i > 0)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: ClaySpacing.regular,
+                    ),
+                    child: ClayGroove(),
+                  ),
+                row(label, figure, values),
+              ],
+            ],
+          );
+        },
       ),
     );
   }

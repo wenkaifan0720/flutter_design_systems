@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:clay_ui/clay_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../kit.dart';
 import 'data.dart';
 import 'editor.dart';
 import 'habits.dart';
@@ -186,57 +187,55 @@ class _DayCard extends StatelessWidget {
     final theme = context.clayTheme;
     final c = theme.colors;
     final left = of - done;
+    // The ring beside the words; above them where a line of the words would
+    // break beside it (large text on a phone).
     return ClayCard(
-      child: Row(
-        children: [
-          ClayProgressRing(
-            value: of == 0 ? 0 : done / of,
-            size: 96,
-            thickness: 12,
-            semanticLabel: 'Habits done today',
-            child: Text(
-              '$done/$of',
+      child: KitBeside(
+        gap: ClaySpacing.roomy,
+        lead: ClayProgressRing(
+          value: of == 0 ? 0 : done / of,
+          size: 96,
+          thickness: 12,
+          semanticLabel: 'Habits done today',
+          child: Text(
+            '$done/$of',
+            style: theme.textTheme.title.copyWith(color: c.ink),
+          ),
+        ),
+        words: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              left == 0 ? 'All done. Rest well.' : 'Keep it steady',
               style: theme.textTheme.title.copyWith(color: c.ink),
             ),
-          ),
-          const SizedBox(width: ClaySpacing.roomy),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  left == 0 ? 'All done. Rest well.' : 'Keep it steady',
-                  style: theme.textTheme.title.copyWith(color: c.ink),
-                ),
-                const SizedBox(height: ClaySpacing.tight),
-                Text(
-                  left == 0
-                      ? 'Every habit ticked today.'
-                      : clayPlural(
-                          context,
-                          left,
-                          one: '1 habit left today',
-                          other: '$left habits left today',
-                        ),
-                  style: theme.textTheme.secondary,
-                ),
-                const SizedBox(height: ClaySpacing.medium),
-                Row(
-                  children: [
-                    Icon(LucideIcons.flame, size: 18, color: c.accentInk),
-                    const SizedBox(width: ClaySpacing.tight),
-                    Flexible(
-                      child: Text(
-                        '21-day best run',
-                        style: theme.textTheme.secondary.copyWith(color: c.ink),
-                      ),
+            const SizedBox(height: ClaySpacing.tight),
+            Text(
+              left == 0
+                  ? 'Every habit ticked today.'
+                  : clayPlural(
+                      context,
+                      left,
+                      one: '1 habit left today',
+                      other: '$left habits left today',
                     ),
-                  ],
+              style: theme.textTheme.secondary,
+            ),
+            const SizedBox(height: ClaySpacing.medium),
+            Row(
+              children: [
+                Icon(LucideIcons.flame, size: 18, color: c.accentInk),
+                const SizedBox(width: ClaySpacing.tight),
+                Flexible(
+                  child: Text(
+                    '21-day best run',
+                    style: theme.textTheme.secondary.copyWith(color: c.ink),
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

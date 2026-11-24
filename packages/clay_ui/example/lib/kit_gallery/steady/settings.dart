@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:clay_ui/clay_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../kit.dart';
 import 'data.dart';
 import 'steady.dart';
 
@@ -34,36 +35,40 @@ class SteadySettings extends StatelessWidget {
         ],
       ),
     );
+    // The face, the name and the address on a line, the key to edit at its
+    // end; where the address would break there (large text on a phone), the
+    // face and the key share a line above the name and the address.
     final profile = ClayCard(
-      child: Row(
-        children: [
-          const SteadyAvatar(size: 52),
-          const SizedBox(width: ClaySpacing.regular),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  steadyOwner.name,
-                  style: theme.textTheme.title.copyWith(color: c.ink),
-                ),
-                Text(steadyOwner.email, style: theme.textTheme.secondary),
-              ],
+      child: KitBeside(
+        lead: const SteadyAvatar(size: 52),
+        endGap: 0,
+        words: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              steadyOwner.name,
+              style: theme.textTheme.title.copyWith(color: c.ink),
             ),
-          ),
-          if (desk) ...[
-            figure('${habits.length}', 'Habits'),
-            figure(
-              '${habits.map((h) => h.streak).reduce((a, b) => a > b ? a : b)} days',
-              'Longest streak',
+            Text(steadyOwner.email, style: theme.textTheme.secondary),
+          ],
+        ),
+        end: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (desk) ...[
+              figure('${habits.length}', 'Habits'),
+              figure(
+                '${habits.map((h) => h.streak).reduce((a, b) => a > b ? a : b)} days',
+                'Longest streak',
+              ),
+            ],
+            ClayIconButton(
+              onPressed: () {},
+              icon: const Icon(LucideIcons.pencil),
+              tooltip: 'Edit profile',
             ),
           ],
-          ClayIconButton(
-            onPressed: () {},
-            icon: const Icon(LucideIcons.pencil),
-            tooltip: 'Edit profile',
-          ),
-        ],
+        ),
       ),
     );
     final you = <Widget>[

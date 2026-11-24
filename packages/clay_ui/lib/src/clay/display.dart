@@ -384,22 +384,32 @@ class ClayTable extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: ClaySpacing.small),
         child: LayoutBuilder(
           builder: (context, box) {
-            // Each column as wide as its widest word (large text on a phone)
-            // and [minColumnWidth]: narrower, the table scrolls rather than
-            // break a word.
+            // Each column as wide as its widest word (large text on a phone),
+            // a figure whole ("6 of 7" on one line), and [minColumnWidth]:
+            // narrower, the table scrolls rather than break a word or a
+            // figure, as a Material table scrolls.
             final shares = columns.fold(0, (sum, col) => sum + col.flex);
             var least = columns.length * minColumnWidth;
             for (final (i, col) in columns.indexed) {
               final word = math.max(
                 clayWidestWord(context, [col.label], headStyle),
-                clayWidestWord(context, [
-                  for (final cells in rows)
-                    if (i < cells.length) cells[i],
-                ], bodyStyle(col)),
+                clayWidestWord(
+                  context,
+                  [
+                    for (final cells in rows)
+                      if (i < cells.length) cells[i],
+                  ],
+                  bodyStyle(col),
+                  whole: col.numeric,
+                ),
               );
               least = math.max(
                 least,
-                (word + 2 * ClaySpacing.small) * shares / math.max(1, col.flex),
+                // A pixel spare: text widths round, and a figure a hair too
+                // wide breaks.
+                (word + 1 + 2 * ClaySpacing.small) *
+                    shares /
+                    math.max(1, col.flex),
               );
             }
             least += 2 * ClaySpacing.small;
@@ -733,13 +743,20 @@ class ClayAvatar extends StatelessWidget {
                     child: Image(image: image!, fit: BoxFit.cover),
                   ),
                 )
+              // The initials keep their size at any text size, as Material's
+              // CircleAvatar keeps them: the ball is fixed, and letters grown
+              // with the text would break and spill out of it.
               : Center(
-                  child: Text(
-                    _initials(name),
-                    style: theme.textTheme.label.copyWith(
-                      color: layered.foreground ?? c.onColor(fill),
-                      fontSize: size * 0.38,
-                      height: 1,
+                  child: MediaQuery.withNoTextScaling(
+                    child: Text(
+                      _initials(name),
+                      maxLines: 1,
+                      softWrap: false,
+                      style: theme.textTheme.label.copyWith(
+                        color: layered.foreground ?? c.onColor(fill),
+                        fontSize: size * 0.38,
+                        height: 1,
+                      ),
                     ),
                   ),
                 ),
@@ -840,13 +857,18 @@ class ClayAvatarGroup extends StatelessWidget {
                         color: layered.fill,
                         radius: size / 2,
                       ),
+                      // The count keeps its size, as a face's initials do.
                       child: Center(
-                        child: Text(
-                          '+$rest',
-                          style: theme.textTheme.caption.copyWith(
-                            color: layered.foreground ?? c.ink,
-                            fontWeight: FontWeight.w600,
-                            fontVariations: clayWeight(FontWeight.w600),
+                        child: MediaQuery.withNoTextScaling(
+                          child: Text(
+                            '+$rest',
+                            maxLines: 1,
+                            softWrap: false,
+                            style: theme.textTheme.caption.copyWith(
+                              color: layered.foreground ?? c.ink,
+                              fontWeight: FontWeight.w600,
+                              fontVariations: clayWeight(FontWeight.w600),
+                            ),
                           ),
                         ),
                       ),
@@ -919,8 +941,15 @@ class ClayBadge extends StatelessWidget {
                   ),
                   child: Center(
                     widthFactor: 1,
+                    // The count grows with the text up to 1.3 times, as
+                    // Material's NavigationBar caps its labels: past that a
+                    // count would outgrow the small mark it is.
                     child: Text(
                       words,
+                      maxLines: 1,
+                      softWrap: false,
+                      textScaler: MediaQuery.textScalerOf(context)
+                          .clamp(maxScaleFactor: 1.3),
                       style: theme.textTheme.caption.copyWith(
                         color: layered.foreground ?? c.onColor(fill),
                         fontWeight: FontWeight.w600,
@@ -947,11 +976,20 @@ class ClayBadge extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           child!,
+          // The pill starts 12 inside the part's top end corner and a longer
+          // count runs on past it, as Material's Badge grows: the part it
+          // marks stays in sight.
           if (pill != null)
             PositionedDirectional(
               top: -6,
-              end: -8,
-              child: ExcludeSemantics(child: pill),
+              end: 12,
+              width: 0,
+              height: 20,
+              child: OverflowBox(
+                alignment: AlignmentDirectional.centerStart,
+                maxWidth: double.infinity,
+                child: ExcludeSemantics(child: pill),
+              ),
             ),
         ],
       ),
@@ -1023,17 +1061,20 @@ class ClayTag extends StatelessWidget {
         layered.fill ??
         Color.lerp(c.well, hue, tone == ClayTagTone.neutral ? 0.3 : 0.22)!;
     final words = layered.foreground ?? ink;
-    return SizedBox(
-      height: 26,
+    // 26 high, and taller with a large text size, as Material's chips grow:
+    // the word is never cut. Any height is a pill.
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 26),
       child: ClaySurface(
         face: ClayFace.well(
           c,
           color: fill,
-          radius: 13,
+          radius: 999,
         ).copyWith(shadeOpacity: 0.5),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: ClaySpacing.small + 2,
+            vertical: ClaySpacing.tight,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

@@ -1377,6 +1377,11 @@ class ClayPieChart extends StatelessWidget {
                 final big = a == null ? centerLabel : share(slices[a].value);
                 final small = a == null ? centerCaption : slices[a].label;
                 final well = _DonutPainter.wellOf(d);
+                final bigStyle = theme.textTheme.headline.copyWith(
+                  color: c.ink,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                );
+                final smallStyle = theme.textTheme.caption;
                 return Stack(
                   children: [
                     _Donut(details: d, colors: c, palette: palette),
@@ -1384,7 +1389,9 @@ class ClayPieChart extends StatelessWidget {
                         well != null &&
                         (big != null || small != null))
                       Positioned.fromRect(
-                        rect: Rect.fromCircle(
+                        rect: _inCircle(
+                          context,
+                          [(big, bigStyle), (small, smallStyle)],
                           center: d.centre,
                           radius: well * 0.9,
                         ),
@@ -1394,18 +1401,9 @@ class ClayPieChart extends StatelessWidget {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (big != null)
-                                  Text(
-                                    big,
-                                    style: theme.textTheme.headline.copyWith(
-                                      color: c.ink,
-                                      fontFeatures: const [
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                    ),
-                                  ),
+                                if (big != null) Text(big, style: bigStyle),
                                 if (small != null)
-                                  Text(small, style: theme.textTheme.caption),
+                                  Text(small, style: smallStyle),
                               ],
                             ),
                           ),
@@ -1435,6 +1433,41 @@ class ClayPieChart extends StatelessWidget {
       ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IntProperty('slices', slices.length));
   }
+}
+
+// The box, of the shape [lines] make set one under another, that stands in
+// the circle of [radius] at [center] corner to corner: the hole's words
+// shrink into it rather than reach the ring at a large text size.
+Rect _inCircle(
+  BuildContext context,
+  List<(String?, TextStyle)> lines, {
+  required Offset center,
+  required double radius,
+}) {
+  final painter = TextPainter(
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    locale: Localizations.maybeLocaleOf(context),
+    maxLines: 1,
+  );
+  final base = DefaultTextStyle.of(context).style;
+  var width = 0.0, height = 0.0;
+  for (final (text, style) in lines) {
+    if (text == null) continue;
+    painter
+      ..text = TextSpan(text: text, style: base.merge(style))
+      ..layout();
+    width = math.max(width, painter.width);
+    height += painter.height;
+  }
+  painter.dispose();
+  final diagonal = math.sqrt(width * width + height * height);
+  if (diagonal <= 0) return Rect.fromCircle(center: center, radius: radius);
+  return Rect.fromCenter(
+    center: center,
+    width: 2 * radius * width / diagonal,
+    height: 2 * radius * height / diagonal,
+  );
 }
 
 class _SparkPainter extends CustomPainter {

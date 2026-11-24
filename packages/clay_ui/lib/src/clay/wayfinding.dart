@@ -450,18 +450,32 @@ class ClayStepProgress extends StatelessWidget {
                                             size: 16,
                                             color: c.onColor(done),
                                           )
-                                        : Text(
-                                            '${i + 1}',
-                                            style: theme.textTheme.secondary
-                                                .copyWith(
-                                                  color: i == currentStep
-                                                      ? c.ink
-                                                      : c.inkSecondary,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontVariations: clayWeight(
-                                                    FontWeight.w600,
-                                                  ),
-                                                ),
+                                        // The figure grows with the text
+                                        // until it fills the square the
+                                        // ball holds, then holds there,
+                                        // inside the ball.
+                                        : SizedBox.square(
+                                            dimension: ball / math.sqrt2,
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: Text(
+                                                '${i + 1}',
+                                                maxLines: 1,
+                                                softWrap: false,
+                                                style: theme.textTheme.secondary
+                                                    .copyWith(
+                                                      color: i == currentStep
+                                                          ? c.ink
+                                                          : c.inkSecondary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontVariations:
+                                                          clayWeight(
+                                                            FontWeight.w600,
+                                                          ),
+                                                    ),
+                                              ),
+                                            ),
                                           ),
                                   ),
                                 ),

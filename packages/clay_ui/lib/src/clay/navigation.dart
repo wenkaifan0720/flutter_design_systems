@@ -330,16 +330,22 @@ class _DockFace extends StatelessWidget {
               ),
               const SizedBox(height: ClaySpacing.hairline),
               // A name too wide for its place (large text) shrinks to fit
-              // whole, rather than lose its end to an ellipsis.
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  destination.label,
-                  maxLines: 1,
-                  style: theme.textTheme.caption.copyWith(
-                    color: ink,
-                    fontWeight: weight,
-                    fontVariations: clayWeight(weight),
+              // whole, rather than lose its end to an ellipsis, and keeps
+              // clear of its pill's round ends.
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ClaySpacing.tight,
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    destination.label,
+                    maxLines: 1,
+                    style: theme.textTheme.caption.copyWith(
+                      color: ink,
+                      fontWeight: weight,
+                      fontVariations: clayWeight(weight),
+                    ),
                   ),
                 ),
               ),

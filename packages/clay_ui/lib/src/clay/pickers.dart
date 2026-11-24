@@ -16,6 +16,7 @@ import 'button.dart';
 import 'fonts.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu.dart';
+import 'internal/words_fit.dart';
 import 'select.dart' show ClayMenuReveal;
 import 'surface.dart';
 import 'theme.dart';
@@ -246,10 +247,24 @@ class _ClayCalendarState extends State<ClayCalendar> {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
+    // The days' figures grow to twice their size and no further, as
+    // Material's day grid caps them on a phone.
+    final dayScaler = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 2);
     // A day is a finger's height at least (its ball a little less).
-    final dayHeight = math.max(
-      44.0,
-      MediaQuery.textScalerOf(context).scale(15) * 1.4 + 12,
+    final dayHeight = math.max(44.0, dayScaler.scale(15) * 1.4 + 12);
+    final dayFontSize = theme.textTheme.body.fontSize ?? 16;
+    // The widest day a month shows, in the reader's digits and the chosen
+    // day's weight: every day is drawn at the one size that fits it, so 1
+    // to 9 stand no bigger than 10 to 31.
+    final widestDay = _widestDay(
+      context,
+      words,
+      theme.textTheme.body.copyWith(
+        fontWeight: FontWeight.w600,
+        fontVariations: clayWeight(FontWeight.w600),
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+      dayScaler,
     );
     const turnStyle = ClayStyle(
       minimumSize: WidgetStatePropertyAll(Size(40, 40)),
@@ -357,57 +372,73 @@ class _ClayCalendarState extends State<ClayCalendar> {
               : c.ink;
           final weight = end || day.isToday ? FontWeight.w600 : FontWeight.w400;
           final ball = dayHeight - 4;
-          return SizedBox(
-            height: dayHeight,
-            child: Stack(
-              fit: StackFit.expand,
-              clipBehavior: Clip.none,
-              children: [
-                // A range's groove runs behind its days, end to end; each
-                // day's piece reaches a pixel into its neighbours, so the
-                // days' fractional edges leave no seam.
-                if (within || bandFrom || bandTo)
-                  PositionedDirectional(
-                    top: 5,
-                    bottom: 5,
-                    start: bandFrom ? 20 : -1,
-                    end: bandTo ? 20 : -1,
-                    child: ColoredBox(color: band),
-                  ),
-                Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints.loose(Size.square(ball)),
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: AnimatedClaySurface(
-                        face: _dayFace(
-                          c,
-                          states,
-                          end: end,
-                          radius: ball / 2,
-                          fill: fill,
-                        ),
-                        // At a large text size the figures shrink to keep
-                        // inside their ball, so a row's days never run
-                        // together on a phone.
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                // The reader's digits: Arabic-Indic in
-                                // Arabic, as the month is named.
-                                day.label,
-                                maxLines: 1,
-                                softWrap: false,
-                                style: theme.textTheme.body.copyWith(
-                                  color: ink,
-                                  fontWeight: weight,
-                                  fontVariations: clayWeight(weight),
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures(),
-                                  ],
+          return LayoutBuilder(
+            builder: (context, box) {
+              // The ball is as wide as the day, at most [ball]; its figures
+              // keep 8 from its sides.
+              final side = math.min(ball, math.min(box.maxWidth, dayHeight));
+              final scaler = clayScalerToFit(
+                dayScaler,
+                fontSize: dayFontSize,
+                widest: widestDay,
+                room: side - 16,
+              );
+              return SizedBox(
+                height: dayHeight,
+                child: Stack(
+                  fit: StackFit.expand,
+                  clipBehavior: Clip.none,
+                  children: [
+                    // A range's groove runs behind its days, end to end; each
+                    // day's piece reaches a pixel into its neighbours, so the
+                    // days' fractional edges leave no seam.
+                    if (within || bandFrom || bandTo)
+                      PositionedDirectional(
+                        top: 5,
+                        bottom: 5,
+                        start: bandFrom ? 20 : -1,
+                        end: bandTo ? 20 : -1,
+                        child: ColoredBox(color: band),
+                      ),
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints.loose(Size.square(ball)),
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: AnimatedClaySurface(
+                            face: _dayFace(
+                              c,
+                              states,
+                              end: end,
+                              radius: ball / 2,
+                              fill: fill,
+                            ),
+                            // At a large text size the figures shrink to keep
+                            // inside their ball, all of them alike, so a row's
+                            // days never run together on a phone.
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              child: Center(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    // The reader's digits: Arabic-Indic in
+                                    // Arabic, as the month is named.
+                                    day.label,
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    textScaler: scaler,
+                                    style: theme.textTheme.body.copyWith(
+                                      color: ink,
+                                      fontWeight: weight,
+                                      fontVariations: clayWeight(weight),
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -415,28 +446,54 @@ class _ClayCalendarState extends State<ClayCalendar> {
                         ),
                       ),
                     ),
-                  ),
-                ),
-                if (day.isToday && !end)
-                  Align(
-                    alignment: const Alignment(0, 0.8),
-                    child: SizedBox.square(
-                      dimension: 4,
-                      child: DecoratedBox(
-                        decoration: ShapeDecoration(
-                          shape: const CircleBorder(),
-                          color: c.accentInk,
+                    if (day.isToday && !end)
+                      Align(
+                        alignment: const Alignment(0, 0.8),
+                        child: SizedBox.square(
+                          dimension: 4,
+                          child: DecoratedBox(
+                            decoration: ShapeDecoration(
+                              shape: const CircleBorder(),
+                              color: c.accentInk,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              );
+            },
           );
         },
       ),
     );
   }
+}
+
+// The widest of a month's days, 1 to 31, as [words] writes them in [style]
+// at [scaler].
+double _widestDay(
+  BuildContext context,
+  RawWidgetsLocalizations words,
+  TextStyle style,
+  TextScaler scaler,
+) {
+  final painter = TextPainter(
+    textDirection: Directionality.of(context),
+    textScaler: scaler,
+    locale: Localizations.maybeLocaleOf(context),
+    maxLines: 1,
+  );
+  final drawn = DefaultTextStyle.of(context).style.merge(style);
+  var widest = 0.0;
+  for (var d = 1; d <= 31; d++) {
+    painter
+      ..text = TextSpan(text: words.formatDecimal(d), style: drawn)
+      ..layout();
+    widest = math.max(widest, painter.width);
+  }
+  painter.dispose();
+  return widest;
 }
 
 /// The well a picker field shows its value in, with a clay ball at its end
@@ -1146,7 +1203,24 @@ class ClayTimePicker extends StatelessWidget {
               columns: columns,
               selection: selection,
               rows: 5,
-              width: 64,
+              // 64 a column, wider at a large text size: its widest figure
+              // (AM, PM) keeps 12 clear of each side, inside the pill.
+              width: math.max(
+                64,
+                clayWidestWord(
+                      context,
+                      [
+                        for (final col in columns)
+                          for (var i = 0; i < col.itemCount; i++)
+                            col.itemLabel(i),
+                      ],
+                      theme.textTheme.title.copyWith(
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                      whole: true,
+                    ) +
+                    2 * ClaySpacing.medium,
+              ),
               shared: true,
               layered: layered,
               semanticLabel: semanticLabel,
@@ -1223,6 +1297,26 @@ class ClayTimeField extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final enabled = onChanged != null;
+    // The pills, and the well round them, grow by as much as the figures'
+    // line grows at a large text size, as a text field's well grows round
+    // its words.
+    double lineAt(TextScaler scaler) {
+      final painter = TextPainter(
+        text: TextSpan(text: '0', style: theme.textTheme.body),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+      );
+      final line = painter.preferredLineHeight;
+      painter.dispose();
+      return line;
+    }
+
+    final grown = math.max(
+      0.0,
+      lineAt(MediaQuery.textScalerOf(context)) - lineAt(TextScaler.noScaling),
+    );
+    final pill = theme.controlHeight - 12 + grown;
+    final height = theme.controlHeight + grown;
     return _fieldColumn(
       label: labelText,
       enabled: enabled,
@@ -1239,7 +1333,7 @@ class ClayTimeField extends StatelessWidget {
         frameBuilder: (context, states, segments) {
           final layered = RawStyleOf([style, theme.timeFieldStyle], states);
           return SizedBox(
-            height: theme.controlHeight,
+            height: height,
             child: AnimatedClaySurface(
               face: clayEntryFace(
                 theme,
@@ -1285,11 +1379,11 @@ class ClayTimeField extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minWidth: 44),
               child: SizedBox(
-                height: theme.controlHeight,
+                height: height,
                 child: Center(
                   widthFactor: 1,
                   child: SizedBox(
-                    height: theme.controlHeight - 12,
+                    height: pill,
                     child: AnimatedClaySurface(
                       face: focused
                           ? _pill(c, const {}).copyWith(radius: 10)
