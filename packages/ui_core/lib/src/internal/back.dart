@@ -15,9 +15,9 @@ import 'package:flutter/widgets.dart';
 /// submenu after its menu, a field's list after the popover round it)
 /// closes, so each back closes one, and the back after the last pops the
 /// page.
-class DesignBackHold extends PopEntry<Object?> {
+class RawBackHold extends PopEntry<Object?> {
   /// A hold that runs [onBack] on a back while it is held.
-  DesignBackHold(this.onBack);
+  RawBackHold(this.onBack);
 
   /// Closes the surface.
   final VoidCallback onBack;
@@ -25,7 +25,7 @@ class DesignBackHold extends PopEntry<Object?> {
   ModalRoute<Object?>? _route;
 
   // Every hold, in the order taken.
-  static final List<DesignBackHold> _held = [];
+  static final List<RawBackHold> _held = [];
 
   /// Whether a route holds this.
   bool get isHeld => _route != null;

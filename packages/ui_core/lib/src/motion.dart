@@ -5,9 +5,9 @@
 /// Motion is springs only. Nothing in this API takes a duration or an
 /// easing curve: a system's motion tokens are (ζ, k) pairs — Material's come
 /// from Compose's `ExpressiveMotionTokens` / `StandardMotionTokens` — and a
-/// component runs them through [designSpring], [DesignMotionPolicy] and
-/// [DesignSpringDrive.springTo]. Whether the reader asked for reduced
-/// motion is one read, [designReduceMotionOf], whichever platform asked.
+/// component runs them through [rawSpring], [RawMotionPolicy] and
+/// [RawSpringDrive.springTo]. Whether the reader asked for reduced
+/// motion is one read, [rawReduceMotionOf], whichever platform asked.
 library;
 
 import 'package:flutter/physics.dart' show SpringSimulation, Tolerance;
@@ -24,9 +24,9 @@ import 'package:flutter/widgets.dart';
 /// as it acts, not once in `didChangeDependencies`.
 ///
 /// ```dart
-/// designReduceMotionOf(context) ? Duration.zero : const Duration(milliseconds: 200)
+/// rawReduceMotionOf(context) ? Duration.zero : const Duration(milliseconds: 200)
 /// ```
-bool designReduceMotionOf(BuildContext context) {
+bool rawReduceMotionOf(BuildContext context) {
   // Both read, so [context] hears either change.
   final disabled = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
   final reduced = _PlatformReduceMotion.of(context);
@@ -99,7 +99,7 @@ final class _PlatformReduceMotion with WidgetsBindingObserver {
 /// `SpringDescription.withDampingRatio(mass: 1, stiffness: k, ratio: ζ)`,
 /// so damping = 2ζ√k. Compose's `spring(dampingRatio, stiffness)` is
 /// written against unit mass, so the two run the same curve.
-SpringDescription designSpring({
+SpringDescription rawSpring({
   required double dampingRatio,
   required double stiffness,
 }) => SpringDescription.withDampingRatio(
@@ -110,7 +110,7 @@ SpringDescription designSpring({
 
 /// The Reduce Motion policy: which spring a component actually runs.
 ///
-/// Under Reduce Motion ([designReduceMotionOf]) every SPATIAL
+/// Under Reduce Motion ([rawReduceMotionOf]) every SPATIAL
 /// spring — one that moves, resizes or reshapes something — is critically
 /// damped: ζ = 1 at the token's stiffness, so nothing overshoots or
 /// bounces and it still arrives on the token's timescale. EFFECTS springs
@@ -121,18 +121,18 @@ SpringDescription designSpring({
 /// stiffness.
 ///
 /// ```dart
-/// controller.springTo(1, DesignMotionPolicy.of(context).spatial(dampingRatio: 0.6, stiffness: 800))
+/// controller.springTo(1, RawMotionPolicy.of(context).spatial(dampingRatio: 0.6, stiffness: 800))
 /// ```
 @immutable
-class DesignMotionPolicy {
-  /// Creates a [DesignMotionPolicy].
-  const DesignMotionPolicy({this.reduceMotion = false});
+class RawMotionPolicy {
+  /// Creates a [RawMotionPolicy].
+  const RawMotionPolicy({this.reduceMotion = false});
 
   /// The policy in force at [context]: Reduce Motion when the reader asked
-  /// for it, on any platform ([designReduceMotionOf]); [context] builds again
+  /// for it, on any platform ([rawReduceMotionOf]); [context] builds again
   /// when that changes.
-  factory DesignMotionPolicy.of(BuildContext context) =>
-      DesignMotionPolicy(reduceMotion: designReduceMotionOf(context));
+  factory RawMotionPolicy.of(BuildContext context) =>
+      RawMotionPolicy(reduceMotion: rawReduceMotionOf(context));
 
   /// Whether the reader asked for reduced motion.
   final bool reduceMotion;
@@ -142,14 +142,14 @@ class DesignMotionPolicy {
   SpringDescription spatial({
     required double dampingRatio,
     required double stiffness,
-  }) => designSpring(
+  }) => rawSpring(
     dampingRatio: reduceMotion ? 1 : dampingRatio,
     stiffness: stiffness,
   );
 
   /// The least stiffness an effects spring runs at under Reduce Motion:
   /// critically damped at k = 3800 (Material's fastest effects token), a
-  /// spring settles within [designSpringTolerance] in 150 ms.
+  /// spring settles within [rawSpringTolerance] in 150 ms.
   static const double reducedEffectsStiffness = 3800;
 
   /// The spring an effects token (ζ, k) runs under this policy: the token's
@@ -159,17 +159,17 @@ class DesignMotionPolicy {
     required double dampingRatio,
     required double stiffness,
   }) => reduceMotion
-      ? designSpring(
+      ? rawSpring(
           dampingRatio: 1,
           stiffness: stiffness > reducedEffectsStiffness
               ? stiffness
               : reducedEffectsStiffness,
         )
-      : designSpring(dampingRatio: dampingRatio, stiffness: stiffness);
+      : rawSpring(dampingRatio: dampingRatio, stiffness: stiffness);
 
   @override
   bool operator ==(Object other) =>
-      other is DesignMotionPolicy && other.reduceMotion == reduceMotion;
+      other is RawMotionPolicy && other.reduceMotion == reduceMotion;
 
   @override
   int get hashCode => reduceMotion.hashCode;
@@ -188,19 +188,16 @@ class DesignMotionPolicy {
 ///
 /// On settling the controller lands exactly on the target
 /// ([SpringSimulation]'s `snapToEnd`).
-const Tolerance designSpringTolerance = Tolerance(
-  distance: 0.001,
-  velocity: 0.1,
-);
+const Tolerance rawSpringTolerance = Tolerance(distance: 0.001, velocity: 0.1);
 
 /// The simulation of [spring] from [from] to [to], starting at [velocity]
 /// units per second, that settles at [tolerance] and lands exactly on [to].
-SpringSimulation designSpringSimulation(
+SpringSimulation rawSpringSimulation(
   SpringDescription spring, {
   required double from,
   required double to,
   double velocity = 0,
-  Tolerance tolerance = designSpringTolerance,
+  Tolerance tolerance = rawSpringTolerance,
 }) => SpringSimulation(
   spring,
   from,
@@ -211,10 +208,10 @@ SpringSimulation designSpringSimulation(
 );
 
 /// Runs an [AnimationController] on a spring instead of a duration.
-extension DesignSpringDrive on AnimationController {
+extension RawSpringDrive on AnimationController {
   /// Drives the controller from its current value to [target] on
   /// [spring] (`animateWith(SpringSimulation)`), settling at [tolerance]
-  /// ([designSpringTolerance]) exactly on [target]. [velocity] defaults to the
+  /// ([rawSpringTolerance]) exactly on [target]. [velocity] defaults to the
   /// controller's own, so a spring retargeted mid-flight keeps its
   /// momentum.
   ///
@@ -224,9 +221,9 @@ extension DesignSpringDrive on AnimationController {
     double target,
     SpringDescription spring, {
     double? velocity,
-    Tolerance tolerance = designSpringTolerance,
+    Tolerance tolerance = rawSpringTolerance,
   }) => animateWith(
-    designSpringSimulation(
+    rawSpringSimulation(
       spring,
       from: value,
       to: target,

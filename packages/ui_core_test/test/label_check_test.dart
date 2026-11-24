@@ -82,7 +82,7 @@ Widget _control(
 const _roboto = 1456 / 2048;
 
 // Words centred by their capitals, as a look's faces draw them.
-Widget _words(String words, [TextStyle style = _lower]) => DesignCapCenter(
+Widget _words(String words, [TextStyle style = _lower]) => RawCapCenter(
   capHeightFactor: _roboto,
   child: Text(words, style: style),
 );
@@ -227,7 +227,7 @@ Widget _onRuledPage(BuildContext context, {double factor = _roboto}) {
               width: 140,
               height: face,
               child: Center(
-                child: DesignCapCenter(
+                child: RawCapCenter(
                   capHeightFactor: factor,
                   child: const Text('Try again', style: _lower),
                 ),
@@ -603,7 +603,7 @@ void main() {
           ),
         ),
       );
-      if (marked) face = DesignKeylineFace(child: face);
+      if (marked) face = RawKeylineFace(child: face);
       return Semantics(button: true, label: 'Share', child: face);
     }
 
@@ -723,7 +723,7 @@ void main() {
             RegExp(
               '^$density · a button "Try again": the capitals of "Try again" '
               r"are drawn (19\.[5-9]|20\.[0-4]) device px high; its "
-              r"DesignCapCenter's capHeightFactor gives 16\.8$",
+              r"RawCapCenter's capHeightFactor gives 16\.8$",
             ),
           ),
         ),

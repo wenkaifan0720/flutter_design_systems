@@ -1,0 +1,98 @@
+// Each name ui_core 0.6.0 renamed (Raw* for all), used once; dart fix renames it (ui_core_060.dart.expect).
+import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
+
+RawAdaptiveShell? w0;
+RawBandScale? w1;
+RawBarrierBuilder? w2;
+RawBranchBackBehavior? w3;
+RawCapCenter? w4;
+RawChart? w5;
+RawChartBuilder? w6;
+RawChartDetails? w7;
+RawChartFormat? w8;
+RawChartPoint? w9;
+RawChartPointRef? w10;
+RawChartSeries? w11;
+RawChartTable? w12;
+RawChartTableCellBuilder? w13;
+RawChartTableCellDetails? w14;
+RawChartValueBuilder? w15;
+RawChartValueFormat? w16;
+RawChartXAxis? w17;
+RawComboboxField? w18;
+RawComboboxFieldBuilder? w19;
+RawControlBox? w20;
+RawDensity? w21;
+RawDestinationBuilder? w22;
+RawDestinationDetails? w23;
+RawDialogBuilder? w24;
+RawDialogDetails? w25;
+RawModalDialogRoute<Object?>? w26;
+RawForm? w27;
+RawFormField<Object?>? w28;
+RawFormState? w29;
+RawHandleBuilder? w30;
+RawHaptics? w31;
+RawHapticsScope? w32;
+RawInput? w33;
+RawInputGroup? w34;
+RawInputGroupBuilder? w35;
+RawKeylineFace? w36;
+RawKeylineRegion? w37;
+RawLinearScale? w38;
+RawListDetail<Object>? w39;
+RawMotionPolicy? w40;
+RawNavigationBuilder? w41;
+RawNavigationDestination? w42;
+RawNavigationDetails? w43;
+RawNavigationMode? w44;
+RawOptionSearch<Object?>? w45;
+RawOverlayAnchor? w46;
+RawOverlayAnchorBuilder? w47;
+RawPieChart? w48;
+RawPieChartBuilder? w49;
+RawPieChartDetails? w50;
+RawPieSlice? w51;
+RawPieSliceDetails? w52;
+RawScale? w53;
+RawScaleTick? w54;
+RawScrollbarVisibility? w55;
+RawSpacing? w56;
+RawSpacingScope? w57;
+RawStyle? w58;
+RawStyleOf? w59;
+RawTapTargets? w60;
+RawTapTargetScope? w61;
+RawTextEntryBox? w62;
+RawTimeScale? w63;
+RawTree<Object>? w64;
+RawTreeController<Object>? w65;
+RawTreeItem<Object>? w66;
+RawTreeRow<Object>? w67;
+RawValueHandle? w68;
+RawWindowSizeClass? w69;
+RenderCapCenter? w70;
+RenderSemanticsProxy? w71;
+
+void uses(
+  BuildContext context,
+  AnimationController controller,
+  SpringDescription spring,
+  MenuSerializableShortcut shortcut,
+) {
+  rawReduceMotionOf(context);
+  rawSpring(dampingRatio: 1, stiffness: 400);
+  rawSpringSimulation(spring, from: 0, to: 1);
+  rawMatchScore('Save', 'sa');
+  rawShortcutKeys(context, shortcut);
+  rawShortcutLabel(context, shortcut);
+  rawSwipeBack(const {});
+  showRawCommandPalette(
+    context: context,
+    palette: (run) => throw UnimplementedError(),
+  );
+  RawSpringDrive(controller).springTo(1, spring);
+}
+
+const Tolerance tolerance = rawSpringTolerance;

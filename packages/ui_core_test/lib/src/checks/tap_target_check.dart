@@ -4,7 +4,7 @@ part of '../alignment.dart';
 /// pointer and a screen reader are told it is: the area a tap reaches is at
 /// least the floor for what reaches the controls ([input]: 44 by 44 for a
 /// finger, 24 by 24 for a pointer, or the look's own from its
-/// [DesignTapTargetScope]), and it is the box a screen reader outlines,
+/// [RawTapTargetScope]), and it is the box a screen reader outlines,
 /// whatever the input.
 ///
 /// Flutter's tap-target guidelines (`androidTapTargetGuideline`,
@@ -53,14 +53,14 @@ part of '../alignment.dart';
 /// A phone's screen is read for a finger, a desk's for a pointer:
 ///
 /// ```dart
-/// const DesignTapTargetCheck(look: 'Comic', input: DesignInput.pointer)
+/// const DesignTapTargetCheck(look: 'Comic', input: RawInput.pointer)
 ///     .check(tester.element(find.byType(SettingsScreen)))
 ///     .verify();
 /// ```
 ///
 /// See also:
 ///
-///  * [DesignTapTargets], the floors a look declares.
+///  * [RawTapTargets], the floors a look declares.
 ///  * [TapTargetPadding], which lays a control out at its floor, so the
 ///    check holds.
 ///
@@ -78,13 +78,13 @@ class DesignTapTargetCheck {
   /// The look's name, for messages.
   final String look;
 
-  /// What reaches the controls; null: the [DesignTapTargetScope]'s, else
-  /// the platform's ([DesignInput.forPlatform]).
-  final DesignInput? input;
+  /// What reaches the controls; null: the [RawTapTargetScope]'s, else
+  /// the platform's ([RawInput.forPlatform]).
+  final RawInput? input;
 
   /// The least area a tap must reach; null: the floor for [input] that the
-  /// [DesignTapTargetScope] round the screen declares, else
-  /// [DesignTapTargets.fallback]'s (44 by 44 for a finger, 24 by 24 for a
+  /// [RawTapTargetScope] round the screen declares, else
+  /// [RawTapTargets.fallback]'s (44 by 44 for a finger, 24 by 24 for a
   /// pointer).
   final Size? floor;
 
@@ -95,10 +95,8 @@ class DesignTapTargetCheck {
   /// Checks every live tap target under [context].
   DesignAlignmentReport check(BuildContext context) {
     final targets =
-        context
-            .getInheritedWidgetOfExactType<DesignTapTargetScope>()
-            ?.targets ??
-        DesignTapTargets.fallback;
+        context.getInheritedWidgetOfExactType<RawTapTargetScope>()?.targets ??
+        RawTapTargets.fallback;
     final by = input ?? targets.inputOn();
     return _TapReader(
       look: look,
@@ -119,13 +117,13 @@ class _TapReader {
   });
 
   final String look;
-  final DesignInput input;
+  final RawInput input;
   final Size floor;
   final double tolerance;
 
   String get _needs => switch (input) {
-    DesignInput.touch => 'a finger needs',
-    DesignInput.pointer => 'a pointer needs',
+    RawInput.touch => 'a finger needs',
+    RawInput.pointer => 'a pointer needs',
   };
 
   DesignAlignmentReport _check(BuildContext context) {

@@ -7,8 +7,8 @@ library;
 // does not become the look's.
 export 'package:ui_core/ui_core.dart'
     show
-        DesignDensity,
-        DesignStyle,
+        RawDensity,
+        RawStyle,
         RawDialogAction,
         RawMenuEntry,
         RawToast,

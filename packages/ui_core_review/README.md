@@ -35,21 +35,21 @@ Controls that share a line drift apart in ways no one control's test sees: two c
 pixels apart, a label a pixel low, a field that shrinks on desktop. `DesignAlignmentMatrix` checks a design system's
 controls row by row, as Android, iOS and macOS, from their drawn pixels, and `DesignAlignmentSheet` draws them four
 times their size for review; `DesignTextEntryCheck` checks each text entry the same way. ui_core's README says
-what keeps a line straight (`DesignControlBox`, `DesignTextEntryBox`, `DesignCapCenter`).
+what keeps a line straight (`RawControlBox`, `RawTextEntryBox`, `RawCapCenter`).
 
 What the eye compares in a row is the capitals: a 13 px button label and a 14 px field's text look level when their
 capitals' middles are, whatever their baselines. So the alignment matrix holds baselines only among labels of one size
 and style, and every label's and text entry's capitals on the row's centre line, as drawn, to half a device pixel; a
-design system whose labels and entries are wrapped in `DesignCapCenter` passes.
+design system whose labels and entries are wrapped in `RawCapCenter` passes.
 
 A card's contents drift the same way across rows: a title at 16, rows' words at 26, a checkbox at 22, a chevron that
 stops short of the switches above it. A design system's card and section widgets put ui_core's
-`DesignKeylineRegion` around their content; `DesignKeylineCheck` then checks every such card on a screen: each row's
+`RawKeylineRegion` around their content; `DesignKeylineCheck` then checks every such card on a screen: each row's
 first edge on the leading keyline, its last on the trailing one, and the controls a row holds one height on one centre
 line. Words are read by their line boxes, a control by its drawn face (not its tap box or its shadow), an icon that
 ends a row by its ink; what lies inside a face or a well (a field's, a table's) is not an item of the card around it.
 A look marks a face its pixels cannot show (one the colour of the ground, a pane of glass) or a picture with things
-placed on it with `DesignKeylineFace`, which both checks take as it is. A gallery marks each section's column of
+placed on it with `RawKeylineFace`, which both checks take as it is. A gallery marks each section's column of
 examples with `startAligned: true`, and runs the check on each gallery page too: there every row starts on the
 leading keyline, so a stepper, a sum or a line of words centred in the column (or set at its end) is named, where a
 card may centre an empty state. `DesignKeylineSheet` draws the keylines over a screen.
@@ -66,7 +66,7 @@ holds only its icon, an icon whose only face is its badge, a tab whose face show
 outline to compare and is read by its capitals, or its icon's middle, on that line. Words and icons drawn over a face
 are never read as it, whichever control holds them; a card's title over its body is placed, not centred; a text
 field's own parts (its entry and the toggle or switch inside its face) are one field, not a row. A row inside a
-`DesignKeylineRegion` whose `mixedHeights` says why its controls differ (a gallery's ladder of one control per
+`RawKeylineRegion` whose `mixedHeights` says why its controls differ (a gallery's ladder of one control per
 size) is not held. The chips of a `Wrap` are read run by run, each run a row; a control a clip partly hides (a
 week scrolled in its strip, its weekend past the strip's edge) is not held, as what shows of it is not its outline;
 nor is a control another surface covers (a window in front of it, a later child of a `Stack`). Run on a screen's
@@ -95,6 +95,6 @@ round its entry and toggle, and a disabled field has nothing to check.
   sides, and the parts of one field that stand in a row share one height (within 1 px): a date field's segments, or
   its frame, and the button that opens its picker; a stepper's buttons and its field. Run it at 100% and 200% text.
 - `DesignSpacingCheck`: a page's margin, the insets of shapes set in shapes (concentric corners), and gaps on the
-  grid; `literals` reads a look's sources for spacing off the grid its `DesignSpacingScope` declares.
+  grid; `literals` reads a look's sources for spacing off the grid its `RawSpacingScope` declares.
 
-The grid they hold a look to is ui_core's (`DesignSpacingScope`), which a look declares in its theme.
+The grid they hold a look to is ui_core's (`RawSpacingScope`), which a look declares in its theme.

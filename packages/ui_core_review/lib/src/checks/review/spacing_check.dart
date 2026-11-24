@@ -36,7 +36,7 @@ part of '../../review.dart';
 ///
 /// and, from a look's sources ([literals]), each spacing written as a
 /// number in place of a token, and each off the look's grid ([grid], else
-/// the one its [DesignSpacingScope] declares, else 4).
+/// the one its [RawSpacingScope] declares, else 4).
 ///
 /// What other checks hold is not read again: a row of controls' heights,
 /// centres and capitals ([DesignRowCheck]), a region's leading and trailing
@@ -78,8 +78,8 @@ class DesignSpacingCheck {
   final double tolerance;
 
   /// The step every spacing token is a multiple of; null: the look's, from
-  /// the [DesignSpacingScope] [literals] is given the context of, else 4
-  /// ([DesignSpacing.fallback]).
+  /// the [RawSpacingScope] [literals] is given the context of, else 4
+  /// ([RawSpacing.fallback]).
   final double? grid;
 
   /// How far in from the screen's side a face or a word still starts on
@@ -103,7 +103,7 @@ class DesignSpacingCheck {
   final bool failOnGaps;
 
   /// Checks the screen under [context]. A face whose corners only its
-  /// pixels show (a look's own painter, marked as a [DesignKeylineFace]) is
+  /// pixels show (a look's own painter, marked as a [RawKeylineFace]) is
   /// read from the screen, so a test passes its tester's `runAsync`; null
   /// reads directly, as an app does.
   Future<DesignAlignmentReport> check(
@@ -500,7 +500,7 @@ class DesignSpacingCheck {
   /// is a declaration (`static const gap = 12;`), so the values a look
   /// names are read for the grid only.
   ///
-  /// The grid is [grid], else the look's: the [DesignSpacingScope] over
+  /// The grid is [grid], else the look's: the [RawSpacingScope] over
   /// [context] (any element under the look's theme, such as a pumped
   /// screen's), else 4.
   ///
@@ -525,8 +525,8 @@ class DesignSpacingCheck {
   }) {
     final grid =
         this.grid ??
-        (context == null ? null : DesignSpacing.maybeOf(context))?.grid ??
-        DesignSpacing.fallback.grid;
+        (context == null ? null : RawSpacing.maybeOf(context))?.grid ??
+        RawSpacing.fallback.grid;
     final found = <String>[];
     final declaration = RegExp(
       r'^\s*(static\s+)?(const|final)\s+([\w<>?,]+\s+)?\w+\s*=',

@@ -59,7 +59,7 @@ class RawMenuEntry {
   /// Its submenu's items; null: it is a command.
   final List<RawMenuEntry>? children;
 
-  /// Its key, for the look to show ("Ctrl+S"). `designShortcutLabel` spells
+  /// Its key, for the look to show ("Ctrl+S"). `rawShortcutLabel` spells
   /// a [SingleActivator] as the platform's own menus do ("⌘ S" on macOS).
   final String? shortcut;
 
@@ -353,11 +353,11 @@ class _DesignMenuBarState extends State<RawMenuBar> {
                 widget.itemBuilder(context, entry, RawMenuLevel.bar, states),
           ),
         ),
-        overlayBuilder: (context, info) => DesignMenuItems(
+        overlayBuilder: (context, info) => RawMenuItems(
           info: info,
           entries: entry.children ?? const [],
           root: _menus[i],
-          painters: DesignMenuPainters(
+          painters: RawMenuPainters(
             itemBuilder: widget.itemBuilder,
             surfaceBuilder: (context, info, items) => MouseRegion(
               onEnter: (_) => _highlightTitle(i, true),

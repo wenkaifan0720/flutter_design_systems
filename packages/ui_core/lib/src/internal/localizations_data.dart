@@ -5,10 +5,10 @@
 // (Unicode-3.0); see THIRD_PARTY_NOTICES.
 // ignore_for_file: lines_longer_than_80_chars
 
-/// One locale's words and dates, as [designLocaleData] holds them.
-class DesignLocaleData {
+/// One locale's words and dates, as [rawLocaleData] holds them.
+class RawLocaleData {
   /// One locale's data.
-  const DesignLocaleData({
+  const RawLocaleData({
     required this.plural,
     required this.words,
     required this.plurals,
@@ -143,9 +143,8 @@ class DesignLocaleData {
 /// The 30 locales ui_core speaks, by language (and `zh_TW` for
 /// Traditional Chinese): 62 messages each from its ARB, 43 from
 /// Flutter's Material translations, and the dates from Flutter's date data.
-const Map<String, DesignLocaleData>
-designLocaleData = <String, DesignLocaleData>{
-  'en': DesignLocaleData(
+const Map<String, RawLocaleData> rawLocaleData = <String, RawLocaleData>{
+  'en': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Alert',
@@ -384,7 +383,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'ar': DesignLocaleData(
+  'ar': RawLocaleData(
     plural: 'arabic',
     words: <String, String>{
       'alertDialogLabel': 'تنبيه',
@@ -653,7 +652,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'bn': DesignLocaleData(
+  'bn': RawLocaleData(
     plural: 'zeroOne',
     words: <String, String>{
       'alertDialogLabel': 'সতর্কতা',
@@ -895,7 +894,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'cs': DesignLocaleData(
+  'cs': RawLocaleData(
     plural: 'czech',
     words: <String, String>{
       'alertDialogLabel': 'Upozornění',
@@ -1131,7 +1130,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'H:mm:ss',
     time24WithSeconds: 'H:mm:ss',
   ),
-  'de': DesignLocaleData(
+  'de': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Benachrichtigung',
@@ -1362,7 +1361,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'el': DesignLocaleData(
+  'el': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Ειδοποίηση',
@@ -1599,7 +1598,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'es': DesignLocaleData(
+  'es': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Alerta',
@@ -1838,7 +1837,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'H:mm:ss',
     time24WithSeconds: 'H:mm:ss',
   ),
-  'fa': DesignLocaleData(
+  'fa': RawLocaleData(
     plural: 'zeroOne',
     words: <String, String>{
       'alertDialogLabel': 'هشدار',
@@ -2081,7 +2080,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'H:mm:ss',
     time24WithSeconds: 'H:mm:ss',
   ),
-  'fil': DesignLocaleData(
+  'fil': RawLocaleData(
     plural: 'filipino',
     words: <String, String>{
       'alertDialogLabel': 'Alerto',
@@ -2318,7 +2317,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'fr': DesignLocaleData(
+  'fr': RawLocaleData(
     plural: 'zeroOne',
     words: <String, String>{
       'alertDialogLabel': 'Alerte',
@@ -2565,7 +2564,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'he': DesignLocaleData(
+  'he': RawLocaleData(
     plural: 'hebrew',
     words: <String, String>{
       'alertDialogLabel': 'התראה',
@@ -2818,7 +2817,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'H:mm:ss',
     time24WithSeconds: 'H:mm:ss',
   ),
-  'hi': DesignLocaleData(
+  'hi': RawLocaleData(
     plural: 'zeroOne',
     words: <String, String>{
       'alertDialogLabel': 'अलर्ट',
@@ -3062,7 +3061,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'id': DesignLocaleData(
+  'id': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': 'Notifikasi',
@@ -3288,7 +3287,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH.mm.ss',
     time24WithSeconds: 'HH.mm.ss',
   ),
-  'it': DesignLocaleData(
+  'it': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Avviso',
@@ -3525,7 +3524,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'ja': DesignLocaleData(
+  'ja': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': '通知',
@@ -3733,7 +3732,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'H:mm:ss',
     time24WithSeconds: 'H:mm:ss',
   ),
-  'ko': DesignLocaleData(
+  'ko': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': '알림',
@@ -3943,7 +3942,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'a h:mm:ss',
     time24WithSeconds: 'H시 m분 s초',
   ),
-  'ms': DesignLocaleData(
+  'ms': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': 'Makluman',
@@ -4171,7 +4170,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'nl': DesignLocaleData(
+  'nl': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Melding',
@@ -4400,7 +4399,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'pl': DesignLocaleData(
+  'pl': RawLocaleData(
     plural: 'polish',
     words: <String, String>{
       'alertDialogLabel': 'Alert',
@@ -4657,7 +4656,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'pt': DesignLocaleData(
+  'pt': RawLocaleData(
     plural: 'zeroOne',
     words: <String, String>{
       'alertDialogLabel': 'Alerta',
@@ -4902,7 +4901,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'ro': DesignLocaleData(
+  'ro': RawLocaleData(
     plural: 'romanian',
     words: <String, String>{
       'alertDialogLabel': 'Alertă',
@@ -5155,7 +5154,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'ru': DesignLocaleData(
+  'ru': RawLocaleData(
     plural: 'eastSlavic',
     words: <String, String>{
       'alertDialogLabel': 'Оповещение',
@@ -5398,7 +5397,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'sv': DesignLocaleData(
+  'sv': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Varning',
@@ -5643,7 +5642,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'th': DesignLocaleData(
+  'th': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': 'การแจ้งเตือน',
@@ -5869,7 +5868,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'tr': DesignLocaleData(
+  'tr': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'Uyarı',
@@ -6104,7 +6103,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'uk': DesignLocaleData(
+  'uk': RawLocaleData(
     plural: 'eastSlavic',
     words: <String, String>{
       'alertDialogLabel': 'Сповіщення',
@@ -6345,7 +6344,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'ur': DesignLocaleData(
+  'ur': RawLocaleData(
     plural: 'one',
     words: <String, String>{
       'alertDialogLabel': 'الرٹ',
@@ -6590,7 +6589,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'h:mm:ss a',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'vi': DesignLocaleData(
+  'vi': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': 'Thông báo',
@@ -6832,7 +6831,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'zh': DesignLocaleData(
+  'zh': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': '提醒',
@@ -7039,7 +7038,7 @@ designLocaleData = <String, DesignLocaleData>{
     timeWithSeconds: 'HH:mm:ss',
     time24WithSeconds: 'HH:mm:ss',
   ),
-  'zh_TW': DesignLocaleData(
+  'zh_TW': RawLocaleData(
     plural: 'none',
     words: <String, String>{
       'alertDialogLabel': '警告',

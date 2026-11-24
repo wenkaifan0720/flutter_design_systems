@@ -612,13 +612,13 @@ void main() {
     }
     var submitted = 0;
     final saved = <String>[];
-    late DesignFormState form;
+    late RawFormState form;
     Widget field(
       String label,
       FocusNode node,
       TextEditingController text,
       String? Function(String) check,
-    ) => DesignFormField<String>(
+    ) => RawFormField<String>(
       focusNode: node,
       initialValue: '',
       validator: (value) => check(value ?? ''),
@@ -637,11 +637,11 @@ void main() {
     );
     await tester.pumpWidget(
       harness(
-        DesignForm(
+        RawForm(
           onSubmit: () => submitted++,
           child: Builder(
             builder: (context) {
-              form = DesignForm.of(context);
+              form = RawForm.of(context);
               return Column(
                 children: [
                   field(

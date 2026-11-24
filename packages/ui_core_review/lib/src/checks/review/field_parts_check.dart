@@ -719,8 +719,7 @@ class DesignFieldPartsCheck {
         (a.top >= b.bottom - 1 || b.top >= a.bottom - 1);
     // ui_core's proxy round a field's control has no words of its own.
     final named =
-        field is RenderSemanticsAnnotations &&
-        field is! RenderDesignSemanticsProxy;
+        field is RenderSemanticsAnnotations && field is! RenderSemanticsProxy;
     final name = 'a stepper ${_label(named ? field : value)}'.trimRight();
     if (stacked) {
       final pair = a.expandToInclude(b).height;

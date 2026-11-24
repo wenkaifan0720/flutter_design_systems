@@ -1,4 +1,4 @@
-// DesignValueHandle's states: a caller's WidgetStatesController watches and
+// RawValueHandle's states: a caller's WidgetStatesController watches and
 // drives them, and a drag adds dragged beside pressed, as Flutter's Slider
 // and Scrollbar do.
 import 'package:flutter/gestures.dart';
@@ -16,7 +16,7 @@ Widget _handle({
   bool enabled = true,
 }) => harness(
   Center(
-    child: DesignValueHandle(
+    child: RawValueHandle(
       value: 0.5,
       onChanged: enabled ? (_) {} : null,
       dragging: dragging,

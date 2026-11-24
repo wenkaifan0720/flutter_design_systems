@@ -2,7 +2,7 @@
 
 ui_core's component checklist (`package:ui_core/inventory.dart`) names every
 component an ordinary app expects from a design system: one
-`DesignInventoryRow` each, grouped as Actions, Inputs, Navigation, Containers,
+`RawInventoryRow` each, grouped as Actions, Inputs, Navigation, Containers,
 Overlays, Feedback and Charts. A complete look answers every row: a live
 specimen for each part it carries, or the reason it deliberately leaves the
 part out.
@@ -16,8 +16,8 @@ on** names the ui_core or Flutter API the part paints. A part drawn by the
 look still takes its press from `RawButton` wherever it acts.
 
 The checklist itself is outside semantic versioning: rows can be added in any
-ui_core release. Read `DesignInventoryRow.all` from the version you depend on;
-`DesignInventory.verify()` names any row the look has not answered.
+ui_core release. Read `RawInventoryRow.all` from the version you depend on;
+`RawInventory.verify()` names any row the look has not answered.
 
 ## What every part carries
 
@@ -40,7 +40,7 @@ ui_core release. Read `DesignInventoryRow.all` from the version you depend on;
 
 Absent rows need a designer's reason, written for the person choosing the
 look: "Material vocabulary; the page's main action sits in its top bar" is a
-reason. "Not built yet" is not, and `DesignInventory` rejects it.
+reason. "Not built yet" is not, and `RawInventory` rejects it.
 
 ## Stage 1: the parts that set the system
 
@@ -53,13 +53,13 @@ later part reuses what they decide.
 | `Button` | Button (filled/outlined/text/danger) | MCS | `RawButton` |
 | `IconButton` | Icon button | MCS | `RawButton` |
 | `Link` | Link | S | `RawButton(link: true)` |
-| `TextField` | Text field | MCS | `TextField`, `DesignTextEntryBox` |
+| `TextField` | Text field | MCS | `TextField`, `RawTextEntryBox` |
 | `FormField` | Form + field (label, help, error) | MCS | `RawInputDecorator` (`labelText`, `helperText`, `errorText`, `required`, `invalid`) |
 | `Checkbox` | Checkbox | MCS | `RawButton(checked:, mixed:)` |
 | `RadioGroup` | Radio group | MCS | `RadioGroup`, `RawRadio`, `RadioGroupKeyboardFix` |
 | `Switch` | Switch | MCS | `RawButton(toggled:)` |
 | `Tooltip` | Tooltip | MS | `RawTooltip`, `RawTooltipPlacement`, `RawTooltipFocusFix` |
-| `Dialog` | Dialog / alert dialog | MCS | `DesignDialogRoute`, `RawAlertDialog` (actions on `RawActionBar`) |
+| `Dialog` | Dialog / alert dialog | MCS | `RawModalDialogRoute`, `RawAlertDialog` (actions on `RawActionBar`) |
 
 ## Stage 2: actions
 
@@ -79,16 +79,16 @@ Each input stands at the control height, takes the field's rule and its focus tr
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
-| `TextArea` | Text area | S | `TextField`, `DesignTextEntryBox(maxLines:)` |
-| `SearchField` | Search field / search bar | MC | `TextField`, `DesignTextEntryBox` |
+| `TextArea` | Text area | S | `TextField`, `RawTextEntryBox(maxLines:)` |
+| `SearchField` | Search field / search bar | MC | `TextField`, `RawTextEntryBox` |
 | `PasswordField` | Password field (reveal) | S | `RawPasswordReveal` |
-| `InputGroup` | Input group (prefix/suffix add-ons) | S | `DesignInputGroup` |
+| `InputGroup` | Input group (prefix/suffix add-ons) | S | `RawInputGroup` |
 | `InputOtp` | OTP / PIN code | S | `RawOtpField` |
 | `NumberField` | Number field / quantity stepper | – | `RawNumberField` |
 | `Select` | Select / dropdown | MS | `RawPopover`, `RawButton` (the chosen option `autofocus`) |
 | `Combobox` | Combobox / autocomplete | MS | `RawCombobox` (`field.isOpen`) |
 | `MultiSelect` | Multi-select / tag input | – | `RawTagInput` |
-| `Slider` | Slider | MCS | `DesignValueHandle` (the thumb's keys and screen reader; the look draws the track and turns drags into values) |
+| `Slider` | Slider | MCS | `RawValueHandle` (the thumb's keys and screen reader; the look draws the track and turns drags into values) |
 | `RangeSlider` | Range slider | M | `RawRangeSlider` |
 | `SegmentedButton` | Segmented control | MC | `RawSegmentedButton` |
 | `Chip` | Chips (filter/choice/input) | M | `RawButton` |
@@ -103,14 +103,14 @@ Each input stands at the control height, takes the field's rule and its focus tr
 
 ## Stage 4: navigation
 
-`DesignAdaptiveShell` switches between a bottom bar at phone widths, a rail at tablet widths and a sidebar on desktop; the look paints each. Tabs, menubar and command palette take arrows, Home and End through their ui_core APIs.
+`RawAdaptiveShell` switches between a bottom bar at phone widths, a rail at tablet widths and a sidebar on desktop; the look paints each. Tabs, menubar and command palette take arrows, Home and End through their ui_core APIs.
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
 | `AppBar` | App bar (incl. large/collapsing) | MC | drawn by the look |
-| `NavigationBar` | Bottom navigation bar | MC | `DesignAdaptiveShell` |
-| `NavigationRail` | Navigation rail | M | `DesignAdaptiveShell` |
-| `NavigationDrawer` | Navigation drawer / sidebar | MS | `DesignAdaptiveShell` |
+| `NavigationBar` | Bottom navigation bar | MC | `RawAdaptiveShell` |
+| `NavigationRail` | Navigation rail | M | `RawAdaptiveShell` |
+| `NavigationDrawer` | Navigation drawer / sidebar | MS | `RawAdaptiveShell` |
 | `TabBar` | Tabs | MCS | `RawTabBar`; `RawTabGroup` for tabs the look lays out |
 | `Breadcrumb` | Breadcrumbs | S | drawn by the look |
 | `Pagination` | Pagination | S | drawn by the look |
@@ -118,7 +118,7 @@ Each input stands at the control height, takes the field's rule and its focus tr
 | `PageDots` | Page indicator dots | – | drawn by the look |
 | `MenuBar` | Menubar (desktop) | MS | `RawMenuBar` |
 | `Command` | Command palette | S | `RawCommandPalette` |
-| `Scaffold` | Adaptive app shell / scaffold | MC | `DesignAdaptiveShell` |
+| `Scaffold` | Adaptive app shell / scaffold | MC | `RawAdaptiveShell` |
 
 ## Stage 5: containers
 
@@ -140,7 +140,7 @@ Rows and cards that act are `RawButton`s with the row's whole face as the target
 | `ReorderableListView` | Reorderable list | M | `RawReorderableList` |
 | `SwipeActions` | Swipe actions / dismissible | C | `RawSwipeActions` |
 | `RefreshIndicator` | Pull to refresh | MC | `RawRefreshIndicator` |
-| `TreeView` | Tree view | – | `DesignTree` |
+| `TreeView` | Tree view | – | `RawTree` |
 | `Timeline` | Timeline | – | drawn by the look |
 | `Avatar` | Avatar | MS | drawn by the look |
 | `AvatarGroup` | Avatar group / face pile | – | drawn by the look |
@@ -179,29 +179,29 @@ Progress and spinners stop moving under Reduce Motion (a static or pulsing state
 
 ## Stage 8: charts
 
-`DesignChart` and `DesignPieChart` carry scales, hit testing, keyboard inspection and semantics; the look paints marks, axes and the tooltip, passes the app's `formatX` and `formatY` through (units, the locale's digits), and draws an all-zero series on ui_core's 0 to 4 scale.
+`RawChart` and `RawPieChart` carry scales, hit testing, keyboard inspection and semantics; the look paints marks, axes and the tooltip, passes the app's `formatX` and `formatY` through (units, the locale's digits), and draws an all-zero series on ui_core's 0 to 4 scale.
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
-| `LineChart` | Line chart | – | `DesignChart` |
-| `BarChart` | Bar chart | – | `DesignChart` |
-| `AreaChart` | Area chart | – | `DesignChart` |
-| `PieChart` | Donut / pie | – | `DesignPieChart` |
-| `Sparkline` | Sparkline | – | `DesignChart` |
+| `LineChart` | Line chart | – | `RawChart` |
+| `BarChart` | Bar chart | – | `RawChart` |
+| `AreaChart` | Area chart | – | `RawChart` |
+| `PieChart` | Donut / pie | – | `RawPieChart` |
+| `Sparkline` | Sparkline | – | `RawChart` |
 
 
 ## Answering the inventory
 
 ```dart
-final DesignInventory lookInventory = DesignInventory(
+final RawInventory lookInventory = RawInventory(
   look: 'Look',
   entries: [
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (context) => LookButton('Save', onPressed: () {}),
     ),
 // ...
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
 ```
 
@@ -210,5 +210,5 @@ is missing, any entry for an unknown row, and any reason that only says the
 part is not built. The inventory stands beside the look, not in its API: in
 `lib/src` without an export, or in the example app, since
 `package:ui_core/inventory.dart` stays out of the look's public signatures. The gallery lists the same inventory with
-`DesignInventoryGallery`, so a person choosing the look sees every part it
+`RawInventoryGallery`, so a person choosing the look sees every part it
 has and the reason for every part it does not.

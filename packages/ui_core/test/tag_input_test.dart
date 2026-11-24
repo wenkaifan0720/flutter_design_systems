@@ -705,8 +705,8 @@ void main() {
             width: 360,
             child: floor == null
                 ? field
-                : DesignTapTargetScope(
-                    targets: DesignTapTargets(touch: floor),
+                : RawTapTargetScope(
+                    targets: RawTapTargets(touch: floor),
                     child: field,
                   ),
           ),

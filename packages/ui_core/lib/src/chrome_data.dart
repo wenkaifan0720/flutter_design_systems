@@ -12,6 +12,10 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'route_presentation.dart';
+
+export 'route_presentation.dart';
+
 /// One tab of the shell's navigation: a branch's root, with the glyph and
 /// the words it wears. The runtime emits one per `StatefulShellBranch`, in
 /// branch order; the system decides how it looks.
@@ -104,71 +108,6 @@ enum PreviewPlatform {
     android => TargetPlatform.android,
     ios => TargetPlatform.iOS,
   };
-}
-
-/// How a route is presented, which is what a screen derives its bar from:
-/// the title on a [root], the back affordance on a [pushed] page, the
-/// dismiss affordance on a [sheet]. A page never authors its own back or
-/// close; it reads its presentation ([of]).
-enum RoutePresentation {
-  /// A route nothing sits beneath in its navigator: a shell branch's root,
-  /// or an app's first page.
-  root,
-
-  /// A route pushed over another.
-  pushed,
-
-  /// A route raised as a sheet or a full-screen cover.
-  sheet;
-
-  /// The presentation in force at [context]: the one a
-  /// [RoutePresentationScope] publishes (a sheet page publishes [sheet]), else the route's own
-  /// position — [pushed] when the route implies a dismissal (a route stands
-  /// below it in its navigator), [root] otherwise, and [root] outside any
-  /// route.
-  ///
-  /// Asked of the route, never of the navigator's `canPop`: a sheet raised
-  /// over a root on the same navigator makes `canPop` true for the root
-  /// too, which would give the root a back affordance under the sheet.
-  static RoutePresentation of(BuildContext context) {
-    final published = RoutePresentationScope.maybeOf(context);
-    if (published != null) return published;
-    final route = ModalRoute.of(context);
-    return (route?.impliesAppBarDismissal ?? false) ? pushed : root;
-  }
-}
-
-/// Publishes the [RoutePresentation] of the route it stands in, overriding
-/// what the route's position implies. A system's sheet page wraps its child
-/// in one with [RoutePresentation.sheet]; a preview or a hand-built
-/// navigator may publish any presentation.
-class RoutePresentationScope extends InheritedWidget {
-  /// Creates a [RoutePresentationScope].
-  const RoutePresentationScope({
-    required this.presentation,
-    required super.child,
-    super.key,
-  });
-
-  /// How the route is presented.
-  final RoutePresentation presentation;
-
-  /// The nearest published presentation, or null when none is.
-  static RoutePresentation? maybeOf(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<RoutePresentationScope>()
-      ?.presentation;
-
-  @override
-  bool updateShouldNotify(RoutePresentationScope oldWidget) =>
-      presentation != oldWidget.presentation;
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(
-      EnumProperty<RoutePresentation>('presentation', presentation),
-    );
-  }
 }
 
 /// The ground a page stands on, which is what its chrome is drawn against:

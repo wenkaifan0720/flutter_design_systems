@@ -9,7 +9,7 @@ wires each part to the right ui_core API, designs every state in the look's
 own material, and proves each part with
 [ui_core_test](https://pub.dev/packages/ui_core_test) and screenshots.
 
-Written for ui_core 0.5.x and ui_core_test 0.3.x, on Flutter 3.47 or later.
+Written for ui_core 0.6.x and ui_core_test 0.4.x, on Flutter 3.47 or later.
 
 ## Install
 
@@ -24,8 +24,8 @@ The agent then reads it when asked to build, extend or review a design
 system that is neither Material nor Cupertino. `SKILL.md` is the entry
 point; it says which page to read for each step.
 
-The package it builds depends on ui_core ^0.5.6 and material_ui, and
-dev-depends on ui_core_test ^0.3.0, leak_tracker_flutter_testing and
+The package it builds depends on ui_core ^0.6.0 and material_ui, and
+dev-depends on ui_core_test ^0.4.0, leak_tracker_flutter_testing and
 flutter_lints.
 
 ## Contents

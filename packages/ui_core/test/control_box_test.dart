@@ -28,7 +28,7 @@ final _renderEditable = find.byWidgetPredicate(
 );
 
 void main() {
-  group('DesignControlBox', () {
+  group('RawControlBox', () {
     final content = find.byKey(const Key('content'));
     const small = SizedBox(key: Key('content'), width: 20, height: 16);
 
@@ -43,13 +43,13 @@ void main() {
               height: 200,
               child: Align(
                 alignment: Alignment.topLeft,
-                child: DesignControlBox(minHeight: 40, child: small),
+                child: RawControlBox(minHeight: 40, child: small),
               ),
             ),
           ),
         ),
       );
-      expect(tester.getSize(find.byType(DesignControlBox)), const Size(20, 40));
+      expect(tester.getSize(find.byType(RawControlBox)), const Size(20, 40));
       expect(_rect(tester, content).top, 12);
     });
 
@@ -58,14 +58,14 @@ void main() {
         harness(
           const Align(
             alignment: Alignment.topLeft,
-            child: DesignControlBox(
+            child: RawControlBox(
               minHeight: 40,
               child: SizedBox(width: 20, height: 60),
             ),
           ),
         ),
       );
-      expect(tester.getSize(find.byType(DesignControlBox)).height, 60);
+      expect(tester.getSize(find.byType(RawControlBox)).height, 60);
     });
 
     testWidgets('alignment places the child by the reading direction', (
@@ -75,7 +75,7 @@ void main() {
         alignment: Alignment.topLeft,
         child: SizedBox(
           width: 200,
-          child: DesignControlBox(
+          child: RawControlBox(
             minHeight: 40,
             alignment: AlignmentDirectional.centerStart,
             child: small,
@@ -97,7 +97,7 @@ void main() {
             textHeightBehavior: const TextHeightBehavior(
               applyHeightToFirstAscent: false,
             ),
-            child: DesignControlBox(
+            child: RawControlBox(
               minHeight: 40,
               child: Builder(
                 builder: (context) {
@@ -115,7 +115,7 @@ void main() {
     });
   });
 
-  group('DesignTextEntryBox', () {
+  group('RawTextEntryBox', () {
     late TextEditingController controller;
     setUp(() => controller = TextEditingController());
     tearDown(() => controller.dispose());
@@ -125,7 +125,7 @@ void main() {
       int? maxLines = 1,
       TextStyle hintStyle = _field,
       FocusNode? focusNode,
-    }) => DesignTextEntryBox(
+    }) => RawTextEntryBox(
       minHeight: minHeight,
       controller: controller,
       hint: Text('HINT', style: hintStyle),
@@ -139,7 +139,7 @@ void main() {
       ),
     );
 
-    final box = find.byType(DesignTextEntryBox);
+    final box = find.byType(RawTextEntryBox);
     final editable = find.byType(EditableText);
 
     // The second form: the decoration draws its own hint.
@@ -222,7 +222,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _app(
-          DesignTextEntryBox(
+          RawTextEntryBox(
             minHeight: 40,
             child: TextField(
               controller: controller,
@@ -331,7 +331,7 @@ void main() {
 
     test('a hint needs the controller that says when it shows', () {
       expect(
-        () => DesignTextEntryBox(
+        () => RawTextEntryBox(
           minHeight: 40,
           hint: const SizedBox(),
           child: const SizedBox(),

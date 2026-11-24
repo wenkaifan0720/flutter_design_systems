@@ -28,9 +28,9 @@ const Widget _nothing = SizedBox.shrink();
 /// and [focusNode] to the look's text input, and [submit] to its
 /// `onEditingComplete` (and give it no `onSubmitted`; see [submit]).
 @immutable
-class DesignComboboxField {
+class RawComboboxField {
   /// The field's wiring.
-  const DesignComboboxField({
+  const RawComboboxField({
     required this.controller,
     required this.focusNode,
     required this.submit,
@@ -58,7 +58,7 @@ class DesignComboboxField {
 
   /// Whether the field's options show under it: the list, or its loading,
   /// no-match or failure view. A look turns its chevron by it, as a select's
-  /// anchor does by `DesignOverlayAnchor.isOpen`, and says it on its text
+  /// anchor does by `RawOverlayAnchor.isOpen`, and says it on its text
   /// input, where a screen reader hears it, as a select says it on its
   /// button:
   ///
@@ -81,9 +81,9 @@ class DesignComboboxField {
 }
 
 /// Paints the field.
-typedef DesignComboboxFieldBuilder = Widget Function(
+typedef RawComboboxFieldBuilder = Widget Function(
   BuildContext context,
-  DesignComboboxField field,
+  RawComboboxField field,
 );
 
 /// Paints one option for its [states]: [WidgetState.focused] while it is
@@ -103,7 +103,7 @@ typedef RawOptionsSurfaceBuilder = Widget Function(
 );
 
 /// Searches for the options matching [query].
-typedef DesignOptionSearch<T> = FutureOr<Iterable<T>> Function(String query);
+typedef RawOptionSearch<T> = FutureOr<Iterable<T>> Function(String query);
 
 /// A search that failed, as a combobox's or a tag input's `errorBuilder`
 /// gets it: paint a message and a "Try again"
@@ -199,7 +199,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
   }) : assert(optionsMaxHeight > 0);
 
   /// Paints the field.
-  final DesignComboboxFieldBuilder fieldBuilder;
+  final RawComboboxFieldBuilder fieldBuilder;
 
   /// Paints one option.
   final RawOptionBuilder<T> optionBuilder;
@@ -208,7 +208,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
   final Iterable<T> options;
 
   /// Finds the options for a query, in place of filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// An option's text: what the filter matches and the field shows once it
   /// is taken.
@@ -303,7 +303,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignComboboxFieldBuilder>.has(
+        ObjectFlagProperty<RawComboboxFieldBuilder>.has(
           'fieldBuilder',
           fieldBuilder,
         ),
@@ -317,7 +317,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
       ..add(
         IterableProperty<T>('options', options, defaultValue: const <Never>[]),
       )
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         ObjectFlagProperty<String Function(T option)>.has(
           'displayStringForOption',
@@ -402,10 +402,10 @@ class RawCombobox<T extends Object> extends StatefulWidget {
 class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
-  final DesignListKeys _keys = DesignListKeys();
+  final RawListKeys _keys = RawListKeys();
   // The input, heard while it stands: focus given back to the field opens
   // no list.
-  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
+  final RawFocusHearing _hearing = RawFocusVisible.hold();
   // The text of the option last taken from the list.
   String? _taken;
   // The query of the options the autocomplete was last asked for.
@@ -413,9 +413,9 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
   // What a search finds for no query: every option, as it says.
   List<T>? _all;
   // The search's states, when the list shows them.
-  final DesignSearchRun<T> _run = DesignSearchRun<T>();
+  final RawSearchRun<T> _run = RawSearchRun<T>();
   // Whether the list opens on the other side from the one it asks for:
-  // its own side can't hold it (DesignListSide).
+  // its own side can't hold it (RawListSide).
   bool _flipped = false;
 
   TextEditingController get _controller =>
@@ -547,7 +547,7 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
     if (!_enabled(option)) return;
     _taken = widget.displayStringForOption(option);
     _keys.closed();
-    select(DesignPick(option));
+    select(RawPick(option));
   }
 
   @override
@@ -558,17 +558,17 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
       optionsBuilder: _matches,
       // Enter on "no matches" leaves the words as they are and takes nothing.
       displayStringForOption: (option) => switch (option) {
-        DesignPick(:final option) => widget.displayStringForOption(option as T),
+        RawPick(:final option) => widget.displayStringForOption(option as T),
         _ when identical(option, _noMatch) || identical(option, _searching) =>
           _controller.text,
         _ => widget.displayStringForOption(option as T),
       },
-      optionsViewOpenDirection: designListDirection(
+      optionsViewOpenDirection: rawListDirection(
         widget.optionsViewOpenDirection,
         flipped: _flipped,
       ),
       onSelected: (option) {
-        final taken = option is DesignPick ? option.option : option;
+        final taken = option is RawPick ? option.option : option;
         if (!identical(taken, _noMatch) && !identical(taken, _searching)) {
           widget.onSelected?.call(taken as T);
         }
@@ -588,7 +588,7 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
                 valueListenable: _keys.opened,
                 builder: (context, open, _) => widget.fieldBuilder(
                   context,
-                  DesignComboboxField(
+                  RawComboboxField(
                     controller: controller,
                     focusNode: focusNode,
                     submit: () {
@@ -603,7 +603,7 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
       optionsViewBuilder: (context, onSelected, options) {
         if (options.length == 1 && identical(options.single, _searching)) {
           return _onItsSide(
-            DesignSearchScope(
+            RawSearchScope(
               run: _run,
               child: ListenableBuilder(
                 listenable: _run,
@@ -624,11 +624,11 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
   Widget _onItsSide(Widget list) {
     final asked = widget.optionsViewOpenDirection;
     if (asked == OptionsViewOpenDirection.mostSpace) return list;
-    return DesignListSide(
+    return RawListSide(
       field: context,
       asked: asked,
       opensUp:
-          designListDirection(asked, flipped: _flipped) ==
+          rawListDirection(asked, flipped: _flipped) ==
           OptionsViewOpenDirection.up,
       onFlip: (flipped) {
         if (mounted && flipped != _flipped) {
@@ -648,12 +648,12 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
     final pending = _run.loading || _run.dropped;
     final loading = widget.loadingBuilder;
     if (pending && loading != null) {
-      return designSearchLoading(context, loading, widget.surfaceBuilder);
+      return rawSearchLoading(context, loading, widget.surfaceBuilder);
     }
     final error = _run.error;
     final failed = widget.errorBuilder;
     if (error != null && failed != null && !pending) {
-      return DesignSearchFailure(
+      return RawSearchFailure(
         keys: _keys,
         error: error,
         stackTrace: _run.stackTrace,
@@ -696,7 +696,7 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
       return widget.surfaceBuilder?.call(context, said) ?? said;
     }
     final shown = _shown(options);
-    return DesignOptionList<T>(
+    return RawOptionList<T>(
       keys: _keys,
       options: shown,
       start: _start(shown),

@@ -94,10 +94,10 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Carousel | `RawCarousel` | `CarouselView` |
 | Colour picker | `RawColorPicker`, `RawColorArea`, `RawColorSlider` | |
 | Combobox | `RawCombobox` | `RawAutocomplete` |
-| Command palette | `RawCommandPalette`, `showDesignCommandPalette` | |
+| Command palette | `RawCommandPalette`, `showRawCommandPalette` | |
 | Data table | `RawDataTable`, `RawDataTableController` | `DataTable` |
-| Form field | `RawInputDecorator`, `DesignForm`, `DesignFormField` | `InputDecorator`, `Form` |
-| Input group | `DesignInputGroup` | |
+| Form field | `RawInputDecorator`, `RawForm`, `RawFormField` | `InputDecorator`, `Form` |
+| Input group | `RawInputGroup` | |
 | Menu bar | `RawMenuBar` | `MenuBar` |
 | One-time code | `RawOtpField` | |
 | Password reveal | `RawPasswordReveal` | |
@@ -114,29 +114,29 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | A bar toasts keep clear of | `RawToasterKeepClear` | `Scaffold.bottomNavigationBar` |
 | Toggle group | `RawSegmentedButton` | `SegmentedButton` |
 | Radio group | `RadioGroupKeyboardFix`, inside Flutter's `RadioGroup`, round its `RawRadio`s | `RadioGroup` |
-| Tree | `DesignTree`, `DesignTreeController` | `TreeSliver` |
-| Haptics | `DesignHaptics`, `DesignHapticsScope` | `HapticFeedback` |
+| Tree | `RawTree`, `RawTreeController` | `TreeSliver` |
+| Haptics | `RawHaptics`, `RawHapticsScope` | `HapticFeedback` |
 | Overlay padding (a look's chrome a surface keeps clear of) | `RawPopoverPadding` | `MediaQuery.padding` |
 | Context menu | `RawContextMenu` | `ContextMenuController` |
 | Tooltip | `RawTooltipFocusFix` and `RawTooltipPlacement`, round Flutter's `RawTooltip`, in a `MergeSemantics` | `Tooltip` |
-| Shortcut label (a menu row's keys) | `designShortcutLabel`, `designShortcutKeys` | `MenuItemButton`'s |
+| Shortcut label (a menu row's keys) | `rawShortcutLabel`, `rawShortcutKeys` | `MenuItemButton`'s |
 | Bottom sheet | `RawBottomSheetRoute`, `RawBottomSheetController`, `RawBottomSheetDragHandle` | `ModalBottomSheetRoute`, `DraggableScrollableSheet` |
 | Full-screen sheet | `RawSheetRoute` | `PageRoute` |
-| Dialog and alert | `DesignDialogRoute`, `RawAlertDialog` | `DialogRoute`, `AlertDialog` |
+| Dialog and alert | `RawModalDialogRoute`, `RawAlertDialog` | `DialogRoute`, `AlertDialog` |
 | Swipe actions, from outside | `RawSwipeActionsController` | |
 | Tabs | `RawTabController`, `RawTabBar`, `RawTabBarView`; `RawTabGroup<T>`, `RawTabGroupTab<T>` round tabs the caller lays out | `TabController`, `TabBar`, `TabBarView` |
 | A group's arrows (one tab stop) | `RawRovingFocusGroup`, `RawRovingFocusItem`, `RawRovingFocusIntent` | `RadioGroup`'s, `TabBar`'s |
-| Semantics-only proxies, by one type | `RenderDesignSemanticsProxy`, a `RenderSemanticsAnnotations` | `RenderSemanticsAnnotations`, `RenderMergeSemantics` |
-| Adaptive shell | `DesignAdaptiveShell`, `DesignWindowSizeClass`, `DesignNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
-| List and detail | `DesignListDetail` | |
+| Semantics-only proxies, by one type | `RenderSemanticsProxy`, a `RenderSemanticsAnnotations` | `RenderSemanticsAnnotations`, `RenderMergeSemantics` |
+| Adaptive shell | `RawAdaptiveShell`, `RawWindowSizeClass`, `RawNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
+| List and detail | `RawListDetail` | |
 | Wheel picker | `RawPicker`, `RawPickerColumn` | `CupertinoPicker` |
 | Dialog and sheet actions | `RawActionBar` | `OverflowBar` |
 | Date and time fields | `RawDateField`, `RawTimeField`, `RawTimeOfDay` | `InputDatePickerFormField`, `TimeOfDay` |
 | Number field | `RawNumberField` | `TextField` with `keyboardType: number` |
 | Rating | `RawRating` | (none) |
-| Charts | `DesignChart`, `DesignPieChart`, `DesignChartTable`; `DesignLinearScale`, `DesignTimeScale`, `DesignBandScale` | (none) |
+| Charts | `RawChart`, `RawPieChart`, `RawChartTable`; `RawLinearScale`, `RawTimeScale`, `RawBandScale` | (none) |
 
-They are built from `RawButton` (a press, focus, hover and semantics on any widget) and `DesignValueHandle`
+They are built from `RawButton` (a press, focus, hover and semantics on any widget) and `RawValueHandle`
 (a value dragged or stepped with the keys). Each class's documentation has an example.
 
 ## Flutter's conventions
@@ -163,14 +163,14 @@ Controls expose their label, value, role and available actions to assistive tech
 
 ## Motion
 
-Motion is springs only: a look's motion tokens are (damping ratio, stiffness) pairs, run through `designSpring`,
-`DesignMotionPolicy` and `springTo`, and nothing takes a duration or an easing curve. Under Reduce Motion,
-`DesignMotionPolicy.of(context)` critically damps every spatial spring (one that moves, resizes or reshapes
+Motion is springs only: a look's motion tokens are (damping ratio, stiffness) pairs, run through `rawSpring`,
+`RawMotionPolicy` and `springTo`, and nothing takes a duration or an easing curve. Under Reduce Motion,
+`RawMotionPolicy.of(context)` critically damps every spatial spring (one that moves, resizes or reshapes
 something) at its own stiffness, so nothing overshoots or bounces, and turns every effects spring (opacity, colour)
-into a short fade: critically damped at a stiffness of at least 3800 (`DesignMotionPolicy.reducedEffectsStiffness`),
+into a short fade: critically damped at a stiffness of at least 3800 (`RawMotionPolicy.reducedEffectsStiffness`),
 settled within 150 ms, so nothing lingers. Neither is cut to an instant change, which reads as a flash.
 
-Whether the reader asked for reduced motion is one read, `designReduceMotionOf(context)`, and every part of
+Whether the reader asked for reduced motion is one read, `rawReduceMotionOf(context)`, and every part of
 ui_core reads it. The platforms ask differently:
 
 | Platform | The setting | What Flutter sets |
@@ -180,7 +180,7 @@ ui_core reads it. The platforms ask differently:
 | iOS | Reduce Motion | only dart:ui's `AccessibilityFeatures.reduceMotion`, which MediaQuery does not carry |
 
 So `MediaQuery.disableAnimationsOf(context)` alone misses an iPhone with Reduce Motion on; read
-`designReduceMotionOf(context)` (or `DesignMotionPolicy.of(context)`) instead. A widget that read it builds again
+`rawReduceMotionOf(context)` (or `RawMotionPolicy.of(context)`) instead. A widget that read it builds again
 when either setting changes. iOS's change comes as a build, not as `didChangeDependencies`, so read it in `build`
 or as you act, not once in `didChangeDependencies`.
 
@@ -205,7 +205,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
 On iOS a page pops with a swipe from the screen's leading edge, and the swipe lives in Cupertino's page transition,
 which a look's own push replaces. `SwipeBackPageTransitionsBuilder` keeps it round any builder: while a finger
 drives the swipe, the page follows it and the page under it shows, as on every iOS screen; otherwise the look's push
-and pop play. `designSwipeBack(map)` wraps a map's iOS entry the same way, for a map built at run time.
+and pop play. `rawSwipeBack(map)` wraps a map's iOS entry the same way, for a map built at run time.
 
 Its example and its README put it in the app's `ThemeData`, Flutter's or material_ui's, whichever the app is on:
 
@@ -222,21 +222,27 @@ MaterialApp(
 push on every platform, and without it a Mac's plays the Cupertino slide; on iOS, a swipe from the left edge past half
 way pops the page, and one let go short of it settles back. A look's example copies the test with its own map.
 
+An app that builds its own routes, or a router's page list, takes `RawPage` (`RawPageRoute` for `Navigator.push`), as a
+Material app takes `MaterialPage`: given the look's bare builder, it adds iOS's swipe back once, on iOS only, and fades
+under Reduce Motion. `RawBottomSheetPage` puts a `RawBottomSheetRoute` in the same page list. A screen's bar reads
+where the screen stands from `RoutePresentation.of(context)`, a root, a pushed page or a sheet, and the words its back
+or close control says from `dismissLabel(context)`, in the app's language.
+
 ## Haptics
 
-The moments a behaviour marks with a haptic are one table, `DesignHaptics`: `selectionChanged` (a wheel's row crossing
+The moments a behaviour marks with a haptic are one table, `RawHaptics`: `selectionChanged` (a wheel's row crossing
 its centre, a slider's thumb crossing a division, a rating's step while dragged), `longPress` (a long press that opened
 something) and `thresholdCrossed` (a drag passing the point where letting go acts). Each is a callback that defaults
-to the platform's own feedback; null plays nothing. A `DesignHapticsScope` swaps the table for its subtree:
-`DesignHaptics.silent()` for none, or your own callbacks. Under flutter_test nothing plays; a test that checks a
+to the platform's own feedback; null plays nothing. A `RawHapticsScope` swaps the table for its subtree:
+`RawHaptics.silent()` for none, or your own callbacks. Under flutter_test nothing plays; a test that checks a
 haptic gives a scope a table that records.
 
 ## Styling a part
 
-A look's parts take a `style:` of one shape, `DesignStyle`, as Material's buttons take a `ButtonStyle`: ten slots
+A look's parts take a `style:` of one shape, `RawStyle`, as Material's buttons take a `ButtonStyle`: ten slots
 (fill, foreground, edge, overlay, side, shape, padding, minimumSize, textStyle, iconSize), each a
 `WidgetStateProperty` that resolves for the part's states. A part reads each slot from its `style:`, then its
-component theme, then the look's theme-wide knobs, then the look's default; `DesignStyleOf` reads the first two
+component theme, then the look's theme-wide knobs, then the look's default; `RawStyleOf` reads the first two
 for a part's states. Each look names it as its own (`ComicStyle`, `FrostedStyle`), so a style is written and read
 the same way in every look.
 
@@ -280,20 +286,20 @@ For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPerc
 
 ## Tap targets, density and spacing
 
-A look declares the floors its controls stand at once, as a theme does: `DesignTapTargetScope` holds
-`DesignTapTargets` (44 by 44 for a finger, 24 by 24 for a pointer, unless the look says otherwise), and
+A look declares the floors its controls stand at once, as a theme does: `RawTapTargetScope` holds
+`RawTapTargets` (44 by 44 for a finger, 24 by 24 for a pointer, unless the look says otherwise), and
 `TapTargetPadding` lays a control out at the floor, as Material's padded tap target size does: its face keeps its
 size, aligned where you say (centred by default), and the room round it takes the taps and is what a screen reader
 outlines and Flutter's tap-target guideline measures, so the hit area, the semantics and the layout agree. Whether a finger or a pointer
-reaches the controls is `DesignInput`, by platform unless the look decides. `DesignDensity` tightens a control's
+reaches the controls is `RawInput`, by platform unless the look decides. `RawDensity` tightens a control's
 face in steps (-4 to 4), never its target: a compact face stands in the same target, with more room round it.
 
-`DesignSpacingScope` declares the grid a look's spacing stands on (`DesignSpacing`, 4 pt by default; a look whose values
-sit on 2 pt declares 2), read by `DesignSpacing.of` and by ui_core_test's spacing check.
+`RawSpacingScope` declares the grid a look's spacing stands on (`RawSpacing`, 4 pt by default; a look whose values
+sit on 2 pt declares 2), read by `RawSpacing.of` and by ui_core_test's spacing check.
 
 ## Testing your design system
 
-Add `ui_core_test` to your test dependencies to check alignment, widths, tap targets and clipping on rendered screens. Use `DesignKeylineRegion` to identify a card or section, and `DesignKeylineFace` for a visible face that blends into its background. [ui_core_test on pub.dev](https://pub.dev/packages/ui_core_test)
+Add `ui_core_test` to your test dependencies to check alignment, widths, tap targets and clipping on rendered screens. Use `RawKeylineRegion` to identify a card or section, and `RawKeylineFace` for a visible face that blends into its background. [ui_core_test on pub.dev](https://pub.dev/packages/ui_core_test)
 
 ## Lining controls up
 
@@ -312,31 +318,31 @@ pixels (its README says how each reads a screen). What keeps a line straight:
   one line centred by alignment, and its icons, counter, help and error the design system's own widgets: a decoration
   field left unset is filled from the platform and the host theme.
 
-`DesignControlBox` is that box for a control, its content centred and its text given even leading.
-`DesignTextEntryBox` is the same for a text entry: one line centred, several starting where one stands, the hint on
+`RawControlBox` is that box for a control, its content centred and its text given even leading.
+`RawTextEntryBox` is the same for a text entry: one line centred, several starting where one stands, the hint on
 the typed text's baseline. Both paint nothing.
 
 A label centred by its line box still looks off: the box is the font's ascent and descent, not its capitals, and the
 engine puts the baseline on a whole pixel, so the capitals land a pixel or two from the middle, by a different amount
-in each typeface and size. `DesignCapCenter` wraps a one-line label, keeps its size, and draws it so that its
+in each typeface and size. `RawCapCenter` wraps a one-line label, keeps its size, and draws it so that its
 capitals' middle, where the engine will draw it, is its box's middle: whatever centres the box (a row, a button's
 face, a tab, a title bar) then centres the capitals, within half a device pixel (an engine that hints the font, such
 as FreeType, also snaps the capitals' top to the pixel grid, which can add up to half a pixel). It takes the
 typeface's cap height as
 a fraction of its font size (`capHeightFactor`, the font's OS/2 cap height over its units per em). An icon beside
-the label is not moved. Around a one-line `TextField` (or `DesignTextEntryBox`) it does the same for the typed
+the label is not moved. Around a one-line `TextField` (or `RawTextEntryBox`) it does the same for the typed
 text and the hint, and the caret, the selection and taps move with them.
 
 What the eye compares in a row is the capitals: a 13 px button label and a 14 px field's text look level when their
 capitals' middles are, whatever their baselines. A design system whose labels and entries are wrapped in
-`DesignCapCenter` holds them on a row's centre line to half a device pixel.
+`RawCapCenter` holds them on a row's centre line to half a device pixel.
 
 A card's contents drift the same way across rows: a title at 16, rows' words at 26, a checkbox at 22, a chevron that
 stops short of the switches above it. A keyline is the line what starts a row (or ends one) sits on. A design
-system's card and section widgets put `DesignKeylineRegion` around their content (it lays out and paints nothing,
+system's card and section widgets put `RawKeylineRegion` around their content (it lays out and paints nothing,
 and names any nested level the card means, such as words after an avatar), so ui_core_test's keyline check can read
 every card on a screen; a face its pixels cannot show (one the colour of the ground, a pane of glass), or a picture
-with things placed on it, wears `DesignKeylineFace`. A gallery marks each section's column of examples with
+with things placed on it, wears `RawKeylineFace`. A gallery marks each section's column of examples with
 `startAligned: true`.
 
 ## Who disposes what
@@ -346,13 +352,13 @@ parameter's documentation says what the behaviour does given none (most make the
 
 ## Libraries
 
-- `package:ui_core/ui_core.dart`: the behaviours, motion, the words, a part's style (`DesignStyle`), `DesignCapCenter`, which centres a label
-  by its capitals, `DesignKeylineRegion`, which marks a card for the keyline check, and `DesignKeylineFace`,
+- `package:ui_core/ui_core.dart`: the behaviours, motion, the words, a part's style (`RawStyle`), `RawCapCenter`, which centres a label
+  by its capitals, `RawKeylineRegion`, which marks a card for the keyline check, and `RawKeylineFace`,
   which marks a face its pixels cannot show.
 - `package:ui_core/host.dart`: the scaffold contract the look packages share. It is not meant for apps and leaves
   the package in a later minor version.
 - `package:ui_core/inventory.dart`: the checklist of components an ordinary app expects from a design system, and
-  `DesignInventoryGallery`, which lists a design system's answers to it. A design system's own tests and gallery
+  `RawInventoryGallery`, which lists a design system's answers to it. A design system's own tests and gallery
   use it; an app does not.
 - The checks (`package:ui_core/alignment.dart` until 0.2) are `package:ui_core_test/ui_core_test.dart`, a package
   of their own.

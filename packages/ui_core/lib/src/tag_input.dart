@@ -74,7 +74,7 @@ typedef RawTagLayoutBuilder = Widget Function(
 /// beside its text (a clear key) is not merged: the words are read on the
 /// entry's node, round the text field's node and the control's. The entry's
 /// node, and the area a tap on it reaches, is at least a touch target
-/// (`DesignTapTargets.floorOn`) about the entry's middle, inside the tag
+/// (`RawTapTargets.floorOn`) about the entry's middle, inside the tag
 /// input and off the tags: a look's entry may be a text line as short as
 /// its tags' labels.
 ///
@@ -118,7 +118,7 @@ class RawTagInput<T extends Object> extends StatefulWidget {
   final ValueChanged<List<T>> onChanged;
 
   /// Paints the field.
-  final DesignComboboxFieldBuilder fieldBuilder;
+  final RawComboboxFieldBuilder fieldBuilder;
 
   /// Paints one suggestion.
   final RawOptionBuilder<T> optionBuilder;
@@ -131,7 +131,7 @@ class RawTagInput<T extends Object> extends StatefulWidget {
   final Iterable<T> options;
 
   /// Finds suggestions for a query, in place of filtering [options].
-  final DesignOptionSearch<T>? search;
+  final RawOptionSearch<T>? search;
 
   /// Whether a suggestion can be taken; null: all can. A disabled one shows
   /// [WidgetState.disabled]; the highlight passes over it, and neither a tap
@@ -212,7 +212,7 @@ class RawTagInput<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
       )
       ..add(
-        ObjectFlagProperty<DesignComboboxFieldBuilder>.has(
+        ObjectFlagProperty<RawComboboxFieldBuilder>.has(
           'fieldBuilder',
           fieldBuilder,
         ),
@@ -227,7 +227,7 @@ class RawTagInput<T extends Object> extends StatefulWidget {
       ..add(
         IterableProperty<T>('options', options, defaultValue: const <Never>[]),
       )
-      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(ObjectFlagProperty<RawOptionSearch<T>>.has('search', search))
       ..add(
         ObjectFlagProperty<bool Function(T option)>.has(
           'isOptionEnabled',
@@ -323,16 +323,16 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   final List<FocusNode> _tagNodes = [];
-  final DesignListKeys _keys = DesignListKeys();
+  final RawListKeys _keys = RawListKeys();
   // The input, heard while it stands: focus given back to the field opens
   // no list.
-  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
+  final RawFocusHearing _hearing = RawFocusVisible.hold();
   int? _focusedTag;
   bool _picked = false;
   // The search's states, when the list shows them.
-  final DesignSearchRun<T> _run = DesignSearchRun<T>();
+  final RawSearchRun<T> _run = RawSearchRun<T>();
   // Whether the suggestions open above, below having too little room for
-  // them (DesignListSide).
+  // them (RawListSide).
   bool _above = false;
 
   TextEditingController get _controller =>
@@ -543,7 +543,7 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
       ),
       onKeyEvent: (node, event) => _tagKey(index, event),
       // The entry's reach stays off each tag.
-      child: DesignFieldWordsTag(
+      child: RawFieldWordsTag(
         child: Semantics(
           container: true,
           customSemanticsActions: {
@@ -611,11 +611,11 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
   @override
   Widget build(BuildContext context) {
     // The words of a RawInputDecorator round it, which the entry carries.
-    final words = DesignFieldWords.maybeOf(context);
+    final words = RawFieldWords.maybeOf(context);
     final field = RawAutocomplete<Object>(
       // Below the tags and the field, as a combobox's list, unless only
       // above has room for them.
-      optionsViewOpenDirection: designListDirection(
+      optionsViewOpenDirection: rawListDirection(
         OptionsViewOpenDirection.down,
         flipped: _above,
       ),
@@ -625,11 +625,11 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
       displayStringForOption: (option) => identical(option, _searching)
           ? _controller.text
           : widget.displayStringForOption(
-              (option is DesignPick ? option.option : option) as T,
+              (option is RawPick ? option.option : option) as T,
             ),
       onSelected: (picked) {
         if (identical(picked, _searching)) return;
-        final option = (picked is DesignPick ? picked.option : picked) as T;
+        final option = (picked is RawPick ? picked.option : picked) as T;
         if (!_enabled(option)) return;
         _picked = true;
         _add(option);
@@ -654,7 +654,7 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
               valueListenable: _keys.opened,
               builder: (context, open, _) => widget.fieldBuilder(
                 context,
-                DesignComboboxField(
+                RawComboboxField(
                   controller: controller,
                   focusNode: focusNode,
                   submit: () => _submit(onSubmitted),
@@ -670,8 +670,8 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
         // own; the tags beside it keep theirs, each with its remove action.
         final entry = words == null
             ? field
-            : DesignFieldWordsCarried(
-                child: DesignFieldWordsEntry(
+            : RawFieldWordsCarried(
+                child: RawFieldWordsEntry(
                   name: words.name,
                   hint: words.hint,
                   invalid: words.invalid,
@@ -696,10 +696,10 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
         // reach a touch target's size where no tag stands.
         return Semantics(
           explicitChildNodes: true,
-          child: words == null ? laid : DesignFieldWordsRoom(child: laid),
+          child: words == null ? laid : RawFieldWordsRoom(child: laid),
         );
       },
-      optionsViewBuilder: (context, onSelected, options) => DesignListSide(
+      optionsViewBuilder: (context, onSelected, options) => RawListSide(
         field: this.context,
         asked: OptionsViewOpenDirection.down,
         opensUp: _above,
@@ -707,7 +707,7 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
           if (mounted && above != _above) setState(() => _above = above);
         },
         child: options.length == 1 && identical(options.single, _searching)
-            ? DesignSearchScope(
+            ? RawSearchScope(
                 run: _run,
                 child: ListenableBuilder(
                   listenable: _run,
@@ -734,12 +734,12 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
     final pending = _run.loading || _run.dropped;
     final loading = widget.loadingBuilder;
     if (pending && loading != null) {
-      return designSearchLoading(context, loading, widget.surfaceBuilder);
+      return rawSearchLoading(context, loading, widget.surfaceBuilder);
     }
     final error = _run.error;
     final failed = widget.errorBuilder;
     if (error != null && failed != null && !pending) {
-      return DesignSearchFailure(
+      return RawSearchFailure(
         keys: _keys,
         error: error,
         stackTrace: _run.stackTrace,
@@ -768,14 +768,14 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
   }
 
   Widget _list(List<T> shown, AutocompleteOnSelected<Object> onSelected) {
-    return DesignOptionList<T>(
+    return RawOptionList<T>(
       keys: _keys,
       options: shown,
       start: shown.indexWhere(_enabled),
       onSelected: (option) {
         if (!_enabled(option)) return;
         _keys.closed();
-        onSelected(DesignPick(option));
+        onSelected(RawPick(option));
       },
       value: null,
       isOptionEnabled: widget.isOptionEnabled,

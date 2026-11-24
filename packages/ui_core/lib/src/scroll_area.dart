@@ -13,7 +13,7 @@ import 'internal/focus_visible.dart';
 import 'motion.dart';
 
 /// When a [RawScrollArea]'s scrollbar shows.
-enum DesignScrollbarVisibility {
+enum RawScrollbarVisibility {
   /// While it scrolls, and while a pointer is over the scrollbar.
   auto,
 
@@ -82,7 +82,7 @@ class RawScrollArea extends StatefulWidget {
     this.thickness = 12,
     this.minThumbLength = 24,
     this.thumbLength,
-    this.visibility = DesignScrollbarVisibility.auto,
+    this.visibility = RawScrollbarVisibility.auto,
     this.timeToFade = const Duration(milliseconds: 1200),
     this.focusable = true,
     this.focusNode,
@@ -128,9 +128,9 @@ class RawScrollArea extends StatefulWidget {
   final double? thumbLength;
 
   /// When the scrollbar shows.
-  final DesignScrollbarVisibility visibility;
+  final RawScrollbarVisibility visibility;
 
-  /// How long it stays after scrolling stops ([DesignScrollbarVisibility.auto]).
+  /// How long it stays after scrolling stops ([RawScrollbarVisibility.auto]).
   final Duration timeToFade;
 
   /// Whether the area is a tab stop that scrolls by keyboard (on for a
@@ -181,10 +181,10 @@ class RawScrollArea extends StatefulWidget {
       ..add(DoubleProperty('minThumbLength', minThumbLength, defaultValue: 24))
       ..add(DoubleProperty('thumbLength', thumbLength, defaultValue: null))
       ..add(
-        EnumProperty<DesignScrollbarVisibility>(
+        EnumProperty<RawScrollbarVisibility>(
           'visibility',
           visibility,
-          defaultValue: DesignScrollbarVisibility.auto,
+          defaultValue: RawScrollbarVisibility.auto,
         ),
       )
       ..add(
@@ -233,7 +233,7 @@ class _DesignScrollAreaState extends State<RawScrollArea> {
   bool _dragging = false;
   // The area's focus, shown as a browser's :focus-visible shows it.
   bool _focused = false;
-  late final DesignFocusShown _focus = DesignFocusShown(
+  late final RawFocusShown _focus = RawFocusShown(
     (on) => setState(() => _focused = on),
   );
   Timer? _hide;
@@ -266,7 +266,7 @@ class _DesignScrollAreaState extends State<RawScrollArea> {
     final p = _position;
     if (p == null) return;
     final target = pixels.clamp(p.minScrollExtent, p.maxScrollExtent);
-    if (!animate || designReduceMotionOf(context)) {
+    if (!animate || rawReduceMotionOf(context)) {
       p.jumpTo(target);
     } else {
       p.animateTo(
@@ -330,9 +330,9 @@ class _DesignScrollAreaState extends State<RawScrollArea> {
     final along = ((p.pixels - p.minScrollExtent) / range).clamp(0.0, 1.0);
     final offset = (track - thumb) * along;
     final visible = switch (widget.visibility) {
-      DesignScrollbarVisibility.always => true,
-      DesignScrollbarVisibility.never => false,
-      DesignScrollbarVisibility.auto => _scrolling || _hovered || _dragging,
+      RawScrollbarVisibility.always => true,
+      RawScrollbarVisibility.never => false,
+      RawScrollbarVisibility.auto => _scrolling || _hovered || _dragging,
     };
     final info = RawScrollbarThumbDetails(
       axis: widget.axis,

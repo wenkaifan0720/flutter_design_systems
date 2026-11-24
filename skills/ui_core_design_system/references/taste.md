@@ -129,7 +129,7 @@ released half-way turns back from where it stands, with no jump.
 arrival, its sheet's rise. The iOS edge swipe still pops a page.
 
 **Reduce Motion:** nothing overshoots, bounces or travels far; effects settle
-within 150 ms. Follow `DesignMotionPolicy` (spatial springs critically
+within 150 ms. Follow `RawMotionPolicy` (spatial springs critically
 damped, effects a short fade); swap a long travel (a page sliding across) for
 a fade.
 
@@ -146,8 +146,8 @@ height, dialog buttons included. Pin Material's `VisualDensity` under the
 look so a platform's density cannot shift parts that use Material pieces, and
 check the compact (desktop) density as well as the standard one.
 
-**Content is centred by construction.** `DesignControlBox` for the box,
-`DesignCapCenter` with the family's factor for one-line labels, even leading
+**Content is centred by construction.** `RawControlBox` for the box,
+`RawCapCenter` with the family's factor for one-line labels, even leading
 for every label. Glyphs sit on the middle of the capitals beside them. Rows
 centre their children; never bottom-align a row of controls.
 
@@ -381,7 +381,7 @@ name, value, state); checkables never also say "button".
 
 Customisation goes as far as Material's and no further than the laws allow:
 
-- a style per part (`style:` taking the look's `DesignStyle`), for the slots
+- a style per part (`style:` taking the look's `RawStyle`), for the slots
   that mean something in the material;
 - a component theme slot per part in the theme data;
 - theme-wide knobs the look decides on (accent, corner, density);

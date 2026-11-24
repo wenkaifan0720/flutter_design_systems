@@ -65,7 +65,7 @@ void main() {
     // Under Reduce Motion it is asked to play: it must not.
     build: (c) => Builder(
       builder: (context) => _view(
-        autoplayInterval: designReduceMotionOf(context)
+        autoplayInterval: rawReduceMotionOf(context)
             ? const Duration(milliseconds: 300)
             : null,
       ),

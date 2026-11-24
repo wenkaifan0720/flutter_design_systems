@@ -84,7 +84,7 @@ enum RawPopoverFit {
 
 /// What opens an anchored surface.
 enum RawPopoverTrigger {
-  /// The anchor's press toggles it ([DesignOverlayAnchor.toggle]): a popover
+  /// The anchor's press toggles it ([RawOverlayAnchor.toggle]): a popover
   /// or a menu.
   press,
 
@@ -197,9 +197,9 @@ class RawPopoverPlacement {
 
 /// The anchor, as [RawPopover.anchorBuilder] gets it.
 @immutable
-class DesignOverlayAnchor {
+class RawOverlayAnchor {
   /// The anchor of an overlay driven by [controller].
-  const DesignOverlayAnchor({
+  const RawOverlayAnchor({
     required this.controller,
     required this.isOpen,
     required this.open,
@@ -416,9 +416,9 @@ class RawPopoverPadding extends InheritedWidget {
 }
 
 /// Paints the anchor.
-typedef DesignOverlayAnchorBuilder = Widget Function(
+typedef RawOverlayAnchorBuilder = Widget Function(
   BuildContext context,
-  DesignOverlayAnchor anchor,
+  RawOverlayAnchor anchor,
 );
 
 /// Paints the surface.
@@ -564,8 +564,8 @@ class RawPopover extends StatefulWidget {
     this.positionDelegate,
   }) : assert(dampingRatio > 0 && stiffness > 0);
 
-  /// Paints the anchor; a press trigger calls [DesignOverlayAnchor.toggle].
-  final DesignOverlayAnchorBuilder anchorBuilder;
+  /// Paints the anchor; a press trigger calls [RawOverlayAnchor.toggle].
+  final RawOverlayAnchorBuilder anchorBuilder;
 
   /// Paints the surface.
   final RawPopoverOverlayBuilder overlayBuilder;
@@ -669,7 +669,7 @@ class RawPopover extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignOverlayAnchorBuilder>.has(
+        ObjectFlagProperty<RawOverlayAnchorBuilder>.has(
           'anchorBuilder',
           anchorBuilder,
         ),
@@ -775,7 +775,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
   late final FocusScopeNode _scope = FocusScopeNode(debugLabel: 'RawPopover');
   // The input, heard while it stands: a keyboard's focus shows a hover
   // card, a pointer's does not; a surface a pointer opened shows no focus.
-  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
+  final RawFocusHearing _hearing = RawFocusVisible.hold();
   // The surface itself, inside [_scope]: a menu a pointer opened holds the
   // keys here, no item lit.
   final FocusNode _surfaceNode = FocusNode(
@@ -783,7 +783,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     skipTraversal: true,
   );
   // Where the surface landed, for the look's tail.
-  final DesignSurfaceRect _placed = DesignSurfaceRect();
+  final RawSurfaceRect _placed = RawSurfaceRect();
   // The surface's extent along its side's axis as last laid out, measured
   // in the larger room round its anchor: what its side must hold.
   double? _extent;
@@ -813,7 +813,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
   // spring, the surface takes no pointer and nothing in it takes the focus
   // again (built again with it).
   bool _closing = false;
-  DesignOpenedBy _openedBy = DesignOpenedBy.other;
+  RawOpenedBy _openedBy = RawOpenedBy.other;
   // A pointer resting on the anchor (any trigger): a click that arrives as a
   // semantics tap with no press (the web, semantics on) is the pointer's.
   bool _anchorHovered = false;
@@ -843,8 +843,8 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     if (_anchorArea.hasFocus) return current;
     // A region's (a context menu's): where it was, as a right click there
     // moves no focus.
-    if (widget.key is DesignRegionAnchorKey) return current;
-    if (_anchorPressed || _openedBy == DesignOpenedBy.pointer) {
+    if (widget.key is RawRegionAnchorKey) return current;
+    if (_anchorPressed || _openedBy == RawOpenedBy.pointer) {
       for (final node in _anchorArea.descendants) {
         if (node.canRequestFocus && !node.skipTraversal) return node;
       }
@@ -855,7 +855,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
   // While the surface is open, the anchor's route holds [_back]: a system
   // back (Android's button or gesture) closes it, innermost first, and the
   // page stays; the next back pops the page.
-  late final DesignBackHold _back = DesignBackHold(() {
+  late final RawBackHold _back = RawBackHold(() {
     if (mounted && _controller.isOpen) _controller.close();
   });
   ModalRoute<Object?>? _route;
@@ -993,16 +993,13 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     super.dispose();
   }
 
-  SpringDescription get _spring => DesignMotionPolicy.of(context)
+  SpringDescription get _spring => RawMotionPolicy.of(context)
       .spatial(dampingRatio: widget.dampingRatio, stiffness: widget.stiffness);
 
   void _onOpenRequested(Offset? position, VoidCallback showOverlay) {
     _closing = false;
-    _openedBy = designOpenedBy(
-      pressed: _anchorPressed,
-      hovered: _anchorHovered,
-    );
-    _byPointer.value = _openedBy == DesignOpenedBy.pointer;
+    _openedBy = rawOpenedBy(pressed: _anchorPressed, hovered: _anchorHovered);
+    _byPointer.value = _openedBy == RawOpenedBy.pointer;
     _placed.value = null;
     final current = FocusManager.instance.primaryFocus;
     if (current != null && !_scope.hasFocus && !_scope.hasPrimaryFocus) {
@@ -1035,7 +1032,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
           _keepInView(primary);
           return;
         }
-        if (widget.arrowKeyNavigation && _openedBy == DesignOpenedBy.pointer) {
+        if (widget.arrowKeyNavigation && _openedBy == RawOpenedBy.pointer) {
           _focusSurface();
         } else {
           _focusEdge(first: true);
@@ -1108,7 +1105,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     if (!inside) return;
     if (target != null && target.context != null && target.canRequestFocus) {
       // Given back, not given by the user: a field's list stays closed.
-      DesignQuietFocus.restore(target);
+      RawQuietFocus.restore(target);
     } else {
       _scope.unfocus();
     }
@@ -1230,7 +1227,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
 
   Widget _surface(BuildContext context, RawMenuOverlayInfo raw) {
     final direction = Directionality.of(context);
-    final bounds = designOverlayBounds(
+    final bounds = rawOverlayBounds(
       overlaySize: raw.overlaySize,
       view: _overlayView(context),
       padding: RawPopoverPadding.of(context),
@@ -1248,7 +1245,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
             0,
           );
     final gap = widget.placement.gap;
-    final side = designResolveSide(
+    final side = rawResolveSide(
       anchor,
       bounds,
       widget.placement,
@@ -1260,7 +1257,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     // large as the bounds, not one side's room.
     final maxSize = delegate != null
         ? bounds.size
-        : designOverlayMaxSize(anchor, bounds, side, gap, direction);
+        : rawOverlayMaxSize(anchor, bounds, side, gap, direction);
     final info = RawPopoverInfo(
       side: side,
       anchorRect: raw.anchorRect,
@@ -1277,7 +1274,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       role: widget.role,
       child: widget.overlayBuilder(context, info),
     );
-    surface = DesignSurfaceFocus(
+    surface = RawSurfaceFocus(
       focusSurface: _focusSurface,
       byPointer: _byPointer,
       onKey: _surfaceKeys,
@@ -1365,7 +1362,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       onTapOutside: (_) => _close(),
       child: surface,
     );
-    final layout = DesignOverlayLayout(
+    final layout = RawOverlayLayout(
       anchor: anchor,
       bounds: bounds,
       side: side,
@@ -1390,14 +1387,14 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     );
     return ConstrainedBox(
       constraints: BoxConstraints.loose(raw.overlaySize),
-      child: DesignOverlayPlace(
+      child: RawOverlayPlace(
         layout: layout,
         onExtent: _onExtent,
         // Its own layer: a surface over the page repaints on its own, and
         // the alignment checks read its pixels. A list from a field is as
         // wide as its widest item within the layout's least and most.
         child: layout.matchesAnchor
-            ? DesignListWidth(child: RepaintBoundary(child: surface))
+            ? RawListWidth(child: RepaintBoundary(child: surface))
             : RepaintBoundary(child: surface),
       ),
     );
@@ -1418,7 +1415,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
         void toggle() => _open ? controller.close() : controller.open();
         Widget anchor = widget.anchorBuilder(
           context,
-          DesignOverlayAnchor(
+          RawOverlayAnchor(
             controller: controller,
             isOpen: _open,
             open: controller.open,
@@ -1458,7 +1455,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
               onFocusChange: (focused) {
                 // A keyboard's focus shows the card; a tap's or a click's
                 // does not, as for :focus-visible, nor focus given back.
-                final keyboard = DesignFocusVisible.keyboardArrival;
+                final keyboard = RawFocusVisible.keyboardArrival;
                 if (focused && keyboard) {
                   intent.enter();
                 } else if (!focused) {

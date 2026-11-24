@@ -9,14 +9,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// One region's hold on the browser's menu.
-class DesignBrowserMenuHold {
+class RawBrowserMenuHold {
   bool _held = false;
 
   /// Holds the browser's menu off while [on]; lets it go when not.
   void hold(bool on) {
     if (on == _held) return;
     _held = on;
-    on ? DesignBrowserMenu._take() : DesignBrowserMenu._give();
+    on ? RawBrowserMenu._take() : RawBrowserMenu._give();
   }
 
   /// Lets it go, for good.
@@ -25,7 +25,7 @@ class DesignBrowserMenuHold {
 
 /// The count of holds across regions, and the switches it throws, which a
 /// test swaps.
-abstract final class DesignBrowserMenu {
+abstract final class RawBrowserMenu {
   /// Whether the app runs in a browser; a test sets it.
   @visibleForTesting
   static bool onWeb = kIsWeb;

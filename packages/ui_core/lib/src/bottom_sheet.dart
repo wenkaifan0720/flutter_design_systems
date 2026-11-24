@@ -153,7 +153,7 @@ abstract interface class _SheetHost {
 /// content supplies its own autofocus. A screen reader hears
 /// it named by [semanticLabel], and can dismiss it.
 ///
-/// The haptics table ([DesignHaptics]) plays `thresholdCrossed` as a drag
+/// The haptics table ([RawHaptics]) plays `thresholdCrossed` as a drag
 /// passes the point where letting go closes it, and `selectionChanged` as a
 /// drag settles it on another size.
 ///
@@ -261,7 +261,7 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
 
   /// Paints the barrier in place of the barrier colour (a look's own
   /// screen); null: the colour.
-  final DesignBarrierBuilder? barrierBuilder;
+  final RawBarrierBuilder? barrierBuilder;
 
   /// What a screen reader calls it; null:
   /// [RawWidgetsLocalizations.bottomSheetLabel].
@@ -435,7 +435,7 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
     final s = _size!;
     if (s.value == to) return Future<void>.value();
     return s.animateWith(
-      designSpringSimulation(
+      rawSpringSimulation(
         _spring.springAt(_here),
         from: s.value,
         to: to,
@@ -508,7 +508,7 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
     }
     final armed = c.value < 0.5;
     if (armed && !_armed) {
-      DesignHaptics.of(_here).thresholdCrossed?.call();
+      RawHaptics.of(_here).thresholdCrossed?.call();
     }
     _armed = armed;
     return 0;
@@ -576,7 +576,7 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
     final c = controller!;
     final s = _size!;
     final here = _here;
-    if (to != _from) DesignHaptics.of(here).selectionChanged?.call();
+    if (to != _from) RawHaptics.of(here).selectionChanged?.call();
     if (c.value < 1) {
       _spring.settle(
         here,
@@ -586,7 +586,7 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
     }
     if (s.value != to) {
       s.animateWith(
-        designSpringSimulation(
+        rawSpringSimulation(
           _spring.springAt(here),
           from: s.value,
           to: to,
@@ -682,6 +682,144 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
   ) => _spring.reduced && !_dragged
       ? FadeTransition(opacity: animation, child: child)
       : child;
+}
+
+/// A [RawBottomSheetRoute] as a page of a [Navigator]'s page list, so a
+/// sheet joins a router's pages: each parameter is the route's, and the
+/// route reads the page it holds now for [builder], [semanticLabel] and
+/// [barrierDismissible] (a router that gives the same key a new page
+/// rebuilds the panel in place). The sizes, the springs, the drag and the
+/// barrier's paint are the route's from when it was made.
+///
+/// A sheet over a page, its pop leaving the page list as the navigator's
+/// `onDidRemovePage` says:
+///
+/// ```dart
+/// Navigator(
+///   pages: [
+///     const RawPage<void>(
+///       transitionsBuilder: FadeUpwardsPageTransitionsBuilder(),
+///       child: Text('Recipe'),
+///     ),
+///     RawBottomSheetPage<void>(
+///       builder: (context, details) => const Text('Share'),
+///     ),
+///   ],
+///   onDidRemovePage: (page) {},
+/// )
+/// ```
+class RawBottomSheetPage<T> extends Page<T> {
+  /// A sheet page whose panel [builder] paints.
+  const RawBottomSheetPage({
+    required this.builder,
+    this.snapSizes,
+    this.initialSize,
+    this.sheetController,
+    this.enableDrag = true,
+    this.useSafeArea = false,
+    this.dampingRatio = 1,
+    this.stiffness = 700,
+    this.closeDampingRatio,
+    this.closeStiffness,
+    this.barrierColor = const Color(0x66000000),
+    this.barrierBuilder,
+    this.barrierLabel,
+    this.barrierDismissible = true,
+    this.semanticLabel,
+    super.key,
+    super.canPop,
+    super.onPopInvoked,
+    super.name,
+    super.arguments,
+    super.restorationId,
+  });
+
+  /// Paints the panel ([RawBottomSheetRoute.builder]).
+  final RawBottomSheetBuilder builder;
+
+  /// The sizes it rests at ([RawBottomSheetRoute.snapSizes]); null: one
+  /// rest at its content's own height.
+  final List<double>? snapSizes;
+
+  /// The size it opens at ([RawBottomSheetRoute.initialSize]).
+  final double? initialSize;
+
+  /// Moves it from outside ([RawBottomSheetRoute.sheetController]).
+  final RawBottomSheetController? sheetController;
+
+  /// Whether a drag moves it. Defaults to true.
+  final bool enableDrag;
+
+  /// Whether its room stops under the screen's top inset. Defaults to
+  /// false.
+  final bool useSafeArea;
+
+  /// The spring's damping ratio (ζ). Defaults to 1.
+  final double dampingRatio;
+
+  /// The spring's stiffness (k). Defaults to 700.
+  final double stiffness;
+
+  /// The close spring's damping ratio (ζ); null: [dampingRatio].
+  final double? closeDampingRatio;
+
+  /// The close spring's stiffness (k); null: [stiffness].
+  final double? closeStiffness;
+
+  /// The barrier's colour.
+  final Color barrierColor;
+
+  /// Paints the barrier in place of [barrierColor].
+  final RawBarrierBuilder? barrierBuilder;
+
+  /// What a screen reader calls the barrier; null:
+  /// [RawWidgetsLocalizations.modalBarrierDismissLabel].
+  final String? barrierLabel;
+
+  /// Whether a barrier tap closes it. Defaults to true.
+  final bool barrierDismissible;
+
+  /// What a screen reader calls it; null:
+  /// [RawWidgetsLocalizations.bottomSheetLabel].
+  final String? semanticLabel;
+
+  @override
+  Route<T> createRoute(BuildContext context) =>
+      _PageBasedRawBottomSheetRoute<T>(this);
+}
+
+// RawBottomSheetPage's route: it reads the page it holds now.
+class _PageBasedRawBottomSheetRoute<T> extends RawBottomSheetRoute<T> {
+  _PageBasedRawBottomSheetRoute(RawBottomSheetPage<T> page)
+    : super(
+        builder: page.builder,
+        snapSizes: page.snapSizes,
+        initialSize: page.initialSize,
+        sheetController: page.sheetController,
+        enableDrag: page.enableDrag,
+        useSafeArea: page.useSafeArea,
+        dampingRatio: page.dampingRatio,
+        stiffness: page.stiffness,
+        closeDampingRatio: page.closeDampingRatio,
+        closeStiffness: page.closeStiffness,
+        barrierColor: page.barrierColor,
+        barrierBuilder: page.barrierBuilder,
+        barrierLabel: page.barrierLabel,
+        barrierDismissible: page.barrierDismissible,
+        semanticLabel: page.semanticLabel,
+        settings: page,
+      );
+
+  RawBottomSheetPage<T> get _page => settings as RawBottomSheetPage<T>;
+
+  @override
+  RawBottomSheetBuilder get builder => _page.builder;
+
+  @override
+  String? get semanticLabel => _page.semanticLabel;
+
+  @override
+  bool get barrierDismissible => _page.barrierDismissible;
 }
 
 /// A full-screen sheet presented as an opaque page of the navigator. The

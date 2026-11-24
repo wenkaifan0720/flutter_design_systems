@@ -20,17 +20,17 @@ const List<(double, double)> _tokens = <(double, double)>[
   (0.9, 300),
 ];
 
-Future<DesignMotionPolicy> _policyUnder(
+Future<RawMotionPolicy> _policyUnder(
   WidgetTester tester, {
   required bool disableAnimations,
 }) async {
-  late DesignMotionPolicy policy;
+  late RawMotionPolicy policy;
   await tester.pumpWidget(
     MediaQuery(
       data: MediaQueryData(disableAnimations: disableAnimations),
       child: Builder(
         builder: (context) {
-          policy = DesignMotionPolicy.of(context);
+          policy = RawMotionPolicy.of(context);
           return const SizedBox();
         },
       ),
@@ -52,9 +52,9 @@ Future<void> _runFrames(
 }
 
 void main() {
-  test('designSpring maps (ζ, k) to mass 1, stiffness k, damping 2ζ√k', () {
+  test('rawSpring maps (ζ, k) to mass 1, stiffness k, damping 2ζ√k', () {
     for (final (ratio, stiffness) in _tokens) {
-      final spring = designSpring(dampingRatio: ratio, stiffness: stiffness);
+      final spring = rawSpring(dampingRatio: ratio, stiffness: stiffness);
       expect(spring.mass, 1, reason: '$ratio/$stiffness');
       expect(spring.stiffness, stiffness, reason: '$ratio/$stiffness');
       expect(
@@ -69,13 +69,13 @@ void main() {
       );
     }
     // One spelled out: Expressive's fast spatial spring.
-    final fast = designSpring(dampingRatio: 0.6, stiffness: 800);
+    final fast = rawSpring(dampingRatio: 0.6, stiffness: 800);
     expect(fast.damping, closeTo(33.941125496954285, 1e-12));
   });
 
-  group('DesignMotionPolicy', () {
+  group('RawMotionPolicy', () {
     test('runs every token as written without Reduce Motion', () {
-      const policy = DesignMotionPolicy();
+      const policy = RawMotionPolicy();
       for (final (ratio, stiffness) in _tokens) {
         final spatial = policy.spatial(
           dampingRatio: ratio,
@@ -91,7 +91,7 @@ void main() {
     });
 
     test('critically damps spatial springs under Reduce Motion', () {
-      const policy = DesignMotionPolicy(reduceMotion: true);
+      const policy = RawMotionPolicy(reduceMotion: true);
       for (final (ratio, stiffness) in _tokens) {
         final spatial = policy.spatial(
           dampingRatio: ratio,
@@ -105,7 +105,7 @@ void main() {
 
     test('under Reduce Motion an effects spring is a short fade: no '
         'overshoot, settled within 150 ms', () {
-      const policy = DesignMotionPolicy(reduceMotion: true);
+      const policy = RawMotionPolicy(reduceMotion: true);
       for (final (ratio, stiffness) in [
         ..._tokens,
         // A slow fade a look might write, and a bouncy colour change.
@@ -116,13 +116,10 @@ void main() {
           dampingRatio: ratio,
           stiffness: stiffness,
         );
-        final k = math.max(
-          stiffness,
-          DesignMotionPolicy.reducedEffectsStiffness,
-        );
+        final k = math.max(stiffness, RawMotionPolicy.reducedEffectsStiffness);
         expect(effects.stiffness, k, reason: '$ratio/$stiffness');
         expect(effects.damping, 2 * math.sqrt(k), reason: 'ζ = 1');
-        final fade = designSpringSimulation(effects, from: 0, to: 1);
+        final fade = rawSpringSimulation(effects, from: 0, to: 1);
         for (var t = 0.0; t < .15; t += .005) {
           expect(fade.x(t), lessThanOrEqualTo(1), reason: 'no overshoot');
         }
@@ -137,15 +134,15 @@ void main() {
     ) async {
       expect(
         await _policyUnder(tester, disableAnimations: true),
-        const DesignMotionPolicy(reduceMotion: true),
+        const RawMotionPolicy(reduceMotion: true),
       );
       expect(
         await _policyUnder(tester, disableAnimations: false),
-        const DesignMotionPolicy(),
+        const RawMotionPolicy(),
       );
     });
 
-    testWidgets('designReduceMotionOf: Android\'s Remove animations, the '
+    testWidgets('rawReduceMotionOf: Android\'s Remove animations, the '
         'web\'s prefers-reduced-motion (both flags), or iOS\'s Reduce Motion '
         'alone', (tester) async {
       addTearDown(
@@ -166,7 +163,7 @@ void main() {
             view: tester.view,
             child: Builder(
               builder: (context) {
-                reduced = designReduceMotionOf(context);
+                reduced = rawReduceMotionOf(context);
                 return const SizedBox();
               },
             ),
@@ -196,7 +193,7 @@ void main() {
           view: tester.view,
           child: Builder(
             builder: (context) {
-              seen.add(DesignMotionPolicy.of(context).reduceMotion);
+              seen.add(RawMotionPolicy.of(context).reduceMotion);
               return const SizedBox();
             },
           ),
@@ -215,29 +212,26 @@ void main() {
 
     test('equal policies share a hash; reduced and full differ', () {
       expect(
-        DesignMotionPolicy(reduceMotion: DateTime.now().year > 0).hashCode,
-        const DesignMotionPolicy(reduceMotion: true).hashCode,
+        RawMotionPolicy(reduceMotion: DateTime.now().year > 0).hashCode,
+        const RawMotionPolicy(reduceMotion: true).hashCode,
       );
       expect(
-        const DesignMotionPolicy(reduceMotion: true),
-        isNot(const DesignMotionPolicy()),
+        const RawMotionPolicy(reduceMotion: true),
+        isNot(const RawMotionPolicy()),
       );
     });
   });
 
   test('the settle tolerance is a thousandth in distance, 0.1/s in speed', () {
-    expect(designSpringTolerance.distance, 0.001);
-    expect(designSpringTolerance.velocity, 0.1);
+    expect(rawSpringTolerance.distance, 0.001);
+    expect(rawSpringTolerance.velocity, 0.1);
     // The velocity bound sits above ω₀ × distance for the stiffest token.
-    expect(
-      designSpringTolerance.velocity,
-      greaterThan(math.sqrt(3800) * 0.001),
-    );
+    expect(rawSpringTolerance.velocity, greaterThan(math.sqrt(3800) * 0.001));
   });
 
   test('a spring simulation lands exactly on its target once settled', () {
-    final simulation = designSpringSimulation(
-      designSpring(dampingRatio: 0.6, stiffness: 800),
+    final simulation = rawSpringSimulation(
+      rawSpring(dampingRatio: 0.6, stiffness: 800),
       from: 0,
       to: 1,
     );
@@ -256,7 +250,7 @@ void main() {
       var peak = 0.0;
       controller.addListener(() => peak = math.max(peak, controller.value));
       unawaited(
-        controller.springTo(1, designSpring(dampingRatio: 0.6, stiffness: 800)),
+        controller.springTo(1, rawSpring(dampingRatio: 0.6, stiffness: 800)),
       );
       // Frame by frame: e^(−ζπ/√(1−ζ²)) ≈ 9.5 % peak overshoot at ζ = 0.6.
       await _runFrames(tester, controller);
@@ -275,7 +269,7 @@ void main() {
       unawaited(
         controller.springTo(
           1,
-          const DesignMotionPolicy(reduceMotion: true)
+          const RawMotionPolicy(reduceMotion: true)
               .spatial(dampingRatio: 0.6, stiffness: 800),
         ),
       );
@@ -289,7 +283,7 @@ void main() {
     ) async {
       final controller = AnimationController.unbounded(vsync: tester);
       addTearDown(controller.dispose);
-      final spring = designSpring(dampingRatio: 0.8, stiffness: 380);
+      final spring = rawSpring(dampingRatio: 0.8, stiffness: 380);
       unawaited(controller.springTo(1, spring));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 48));

@@ -348,7 +348,7 @@ void behaviourContract(
           if (ios) iosReduceMotion(tester);
           final p = await pump(tester, reduceMotion: !ios);
           await motion!(p);
-          // Spatial springs run critically damped (DesignMotionPolicy): they
+          // Spatial springs run critically damped (RawMotionPolicy): they
           // arrive without overshoot on the token's timescale, well inside a
           // second. "Still moving" is a frame asked for: an open overlay keeps
           // a frame callback for its deferred layout (OverlayPortal) that asks

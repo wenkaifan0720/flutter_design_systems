@@ -169,7 +169,7 @@ void main() {
                     children: [
                       SizedBox(
                         width: 120,
-                        child: DesignKeylineFace(
+                        child: RawKeylineFace(
                           child: CustomPaint(
                             painter: _Plate(plateRadius),
                             child: const SizedBox.expand(),
@@ -419,8 +419,8 @@ class Metrics {
       reason: 'with no grid declared, 4',
     );
     await tester.pumpWidget(
-      const DesignSpacingScope(
-        spacing: DesignSpacing(grid: 2),
+      const RawSpacingScope(
+        spacing: RawSpacing(grid: 2),
         child: SizedBox(key: Key('screen')),
       ),
     );
@@ -442,25 +442,23 @@ class Metrics {
     );
   });
 
-  testWidgets('DesignSpacing.of reads the nearest scope, else 4', (
-    tester,
-  ) async {
-    late DesignSpacing outside;
-    late DesignSpacing inside;
+  testWidgets('RawSpacing.of reads the nearest scope, else 4', (tester) async {
+    late RawSpacing outside;
+    late RawSpacing inside;
     await tester.pumpWidget(
       Column(
         children: [
           Builder(
             builder: (context) {
-              outside = DesignSpacing.of(context);
+              outside = RawSpacing.of(context);
               return const SizedBox();
             },
           ),
-          DesignSpacingScope(
-            spacing: const DesignSpacing(grid: 2),
+          RawSpacingScope(
+            spacing: const RawSpacing(grid: 2),
             child: Builder(
               builder: (context) {
-                inside = DesignSpacing.of(context);
+                inside = RawSpacing.of(context);
                 return const SizedBox();
               },
             ),
@@ -468,11 +466,11 @@ class Metrics {
         ],
       ),
     );
-    expect(outside, DesignSpacing.fallback);
+    expect(outside, RawSpacing.fallback);
     expect(outside.grid, 4);
-    expect(inside, const DesignSpacing(grid: 2));
+    expect(inside, const RawSpacing(grid: 2));
     expect(inside.copyWith(grid: 8).grid, 8);
-    expect(inside.hashCode, const DesignSpacing(grid: 2).hashCode);
+    expect(inside.hashCode, const RawSpacing(grid: 2).hashCode);
     expect(inside.toString(), contains('grid: 2.0'));
   });
 

@@ -1829,25 +1829,24 @@ void main() {
     testWidgets('a custom-painted field and its list at a fractional x '
         'are measured inside their faces', (tester) async {
       const menu = ValueKey('menu');
-      Widget field(BuildContext context, DesignOverlayAnchor anchor) =>
-          Semantics(
-            button: true,
-            label: 'Europe',
-            child: GestureDetector(
-              key: _fieldKey,
-              onTap: anchor.toggle,
-              child: CustomPaint(
-                painter: const _Framed(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _words('Europe'),
-                  ),
-                ),
+      Widget field(BuildContext context, RawOverlayAnchor anchor) => Semantics(
+        button: true,
+        label: 'Europe',
+        child: GestureDetector(
+          key: _fieldKey,
+          onTap: anchor.toggle,
+          child: CustomPaint(
+            painter: const _Framed(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: _words('Europe'),
               ),
             ),
-          );
+          ),
+        ),
+      );
 
       // The Fluent Forms field starts at 397⅓ in a transparent layer. Its
       // 250 px menu has its own layer with a different pixel origin.

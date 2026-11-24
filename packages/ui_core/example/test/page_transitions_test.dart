@@ -95,7 +95,7 @@ void main() {
   );
 
   // iOS's swipe back from the screen's leading edge lives in Cupertino's
-  // page transition, which the look's map replaces; designSwipeBack puts it
+  // page transition, which the look's map replaces; rawSwipeBack puts it
   // back round the look's push. A look's example wraps its map in it.
   group("iOS's swipe back", () {
     // A drag from the screen's left edge, [by] to the right, slow enough not
@@ -127,7 +127,7 @@ void main() {
       'the page, the one under it showing as it goes',
       (tester) async {
         await tester.pumpWidget(
-          _app(transitions: designSwipeBack(_lookPageTransitions)),
+          _app(transitions: rawSwipeBack(_lookPageTransitions)),
         );
         final width =
             tester.view.physicalSize.width / tester.view.devicePixelRatio;
@@ -153,7 +153,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        _app(transitions: designSwipeBack(_lookPageTransitions)),
+        _app(transitions: rawSwipeBack(_lookPageTransitions)),
       );
       await open(tester);
       final gesture = await drag(tester, 100);

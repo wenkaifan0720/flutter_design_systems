@@ -1,6 +1,10 @@
-# ui_core's renames, which `dart fix` makes: each old name a deprecated typedef of its new one (deprecated.dart).
-# Generated from the 0.4.0 rename table. Do not edit by hand. Each lists ui_core.dart and the published looks'
-# libraries that re-export it, as dart fix renames a name only where it is imported through a listed library.
+# ui_core's renames, which `dart fix` makes. The old names of the 0.4.0 rename table: ui_core 0.6.0 removed them but
+# DesignLocalizations (still a deprecated typedef, deprecated.dart), and a fix renames a removed name as it renames a
+# deprecated one. Then 0.6.0's: each Design* name it gave a Raw* name (deprecated.dart, and inventory.dart's own),
+# the functions and the extension among them. Each lists the ui_core library that exports it (ui_core.dart, or
+# inventory.dart for the inventory's) and the published looks' libraries that re-export it, as dart fix renames a name
+# only in a file that imports a listed library itself: it follows no re-export. Generated from the rename tables
+# (renames.json). Do not edit by hand.
 version: 1
 transforms:
   - title: "Rename to 'DefaultRawWidgetsLocalizations'"
@@ -1187,3 +1191,715 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'RenderTapTargetPadding'
+  - title: "Rename to 'RawAdaptiveShell'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignAdaptiveShell'
+    changes:
+      - kind: 'rename'
+        newName: 'RawAdaptiveShell'
+  - title: "Rename to 'RawBandScale'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignBandScale'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBandScale'
+  - title: "Rename to 'RawBarrierBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignBarrierBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBarrierBuilder'
+  - title: "Rename to 'RawBranchBackBehavior'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignBranchBackBehavior'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBranchBackBehavior'
+  - title: "Rename to 'RawCapCenter'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignCapCenter'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCapCenter'
+  - title: "Rename to 'RawChart'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChart'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChart'
+  - title: "Rename to 'RawChartBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartBuilder'
+  - title: "Rename to 'RawChartDetails'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartDetails'
+  - title: "Rename to 'RawChartFormat'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartFormat'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartFormat'
+  - title: "Rename to 'RawChartPoint'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartPoint'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartPoint'
+  - title: "Rename to 'RawChartPointRef'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartPointRef'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartPointRef'
+  - title: "Rename to 'RawChartSeries'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartSeries'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartSeries'
+  - title: "Rename to 'RawChartTable'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartTable'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartTable'
+  - title: "Rename to 'RawChartTableCellBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartTableCellBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartTableCellBuilder'
+  - title: "Rename to 'RawChartTableCellDetails'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartTableCellDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartTableCellDetails'
+  - title: "Rename to 'RawChartValueBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartValueBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartValueBuilder'
+  - title: "Rename to 'RawChartValueFormat'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartValueFormat'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartValueFormat'
+  - title: "Rename to 'RawChartXAxis'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignChartXAxis'
+    changes:
+      - kind: 'rename'
+        newName: 'RawChartXAxis'
+  - title: "Rename to 'RawComboboxField'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignComboboxField'
+    changes:
+      - kind: 'rename'
+        newName: 'RawComboboxField'
+  - title: "Rename to 'RawComboboxFieldBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignComboboxFieldBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawComboboxFieldBuilder'
+  - title: "Rename to 'RawControlBox'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignControlBox'
+    changes:
+      - kind: 'rename'
+        newName: 'RawControlBox'
+  - title: "Rename to 'RawDensity'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignDensity'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDensity'
+  - title: "Rename to 'RawDestinationBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignDestinationBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDestinationBuilder'
+  - title: "Rename to 'RawDestinationDetails'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignDestinationDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDestinationDetails'
+  - title: "Rename to 'RawDialogBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignDialogBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDialogBuilder'
+  - title: "Rename to 'RawDialogDetails'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignDialogDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDialogDetails'
+  - title: "Rename to 'RawModalDialogRoute'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignDialogRoute'
+    changes:
+      - kind: 'rename'
+        newName: 'RawModalDialogRoute'
+  - title: "Rename to 'RawForm'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignForm'
+    changes:
+      - kind: 'rename'
+        newName: 'RawForm'
+  - title: "Rename to 'RawFormField'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'RawFormField'
+  - title: "Rename to 'RawFormState'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignFormState'
+    changes:
+      - kind: 'rename'
+        newName: 'RawFormState'
+  - title: "Rename to 'RawHandleBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignHandleBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawHandleBuilder'
+  - title: "Rename to 'RawHaptics'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignHaptics'
+    changes:
+      - kind: 'rename'
+        newName: 'RawHaptics'
+  - title: "Rename to 'RawHapticsScope'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignHapticsScope'
+    changes:
+      - kind: 'rename'
+        newName: 'RawHapticsScope'
+  - title: "Rename to 'RawInput'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignInput'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInput'
+  - title: "Rename to 'RawInputGroup'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInputGroup'
+  - title: "Rename to 'RawInputGroupBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignInputGroupBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInputGroupBuilder'
+  - title: "Rename to 'RawInventory'"
+    date: 2026-11-23
+    element:
+      uris: ['inventory.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DesignInventory'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInventory'
+  - title: "Rename to 'RawInventoryEntry'"
+    date: 2026-11-23
+    element:
+      uris: ['inventory.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DesignInventoryEntry'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInventoryEntry'
+  - title: "Rename to 'RawInventoryError'"
+    date: 2026-11-23
+    element:
+      uris: ['inventory.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DesignInventoryError'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInventoryError'
+  - title: "Rename to 'RawInventoryGallery'"
+    date: 2026-11-23
+    element:
+      uris: ['inventory.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DesignInventoryGallery'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInventoryGallery'
+  - title: "Rename to 'RawInventoryGroupBuilder'"
+    date: 2026-11-23
+    element:
+      uris: ['inventory.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DesignInventoryGroupBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInventoryGroupBuilder'
+  - title: "Rename to 'RawInventoryRow'"
+    date: 2026-11-23
+    element:
+      uris: ['inventory.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DesignInventoryRow'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInventoryRow'
+  - title: "Rename to 'RawInventoryRowBuilder'"
+    date: 2026-11-23
+    element:
+      uris: ['inventory.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DesignInventoryRowBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInventoryRowBuilder'
+  - title: "Rename to 'RawKeylineFace'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignKeylineFace'
+    changes:
+      - kind: 'rename'
+        newName: 'RawKeylineFace'
+  - title: "Rename to 'RawKeylineRegion'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignKeylineRegion'
+    changes:
+      - kind: 'rename'
+        newName: 'RawKeylineRegion'
+  - title: "Rename to 'RawLinearScale'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignLinearScale'
+    changes:
+      - kind: 'rename'
+        newName: 'RawLinearScale'
+  - title: "Rename to 'RawListDetail'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignListDetail'
+    changes:
+      - kind: 'rename'
+        newName: 'RawListDetail'
+  - title: "Rename to 'rawMatchScore'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'designMatchScore'
+    changes:
+      - kind: 'rename'
+        newName: 'rawMatchScore'
+  - title: "Rename to 'RawMotionPolicy'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignMotionPolicy'
+    changes:
+      - kind: 'rename'
+        newName: 'RawMotionPolicy'
+  - title: "Rename to 'RawNavigationBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignNavigationBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNavigationBuilder'
+  - title: "Rename to 'RawNavigationDestination'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignNavigationDestination'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNavigationDestination'
+  - title: "Rename to 'RawNavigationDetails'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignNavigationDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNavigationDetails'
+  - title: "Rename to 'RawNavigationMode'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignNavigationMode'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNavigationMode'
+  - title: "Rename to 'RawOptionSearch'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignOptionSearch'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOptionSearch'
+  - title: "Rename to 'RawOverlayAnchor'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignOverlayAnchor'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOverlayAnchor'
+  - title: "Rename to 'RawOverlayAnchorBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignOverlayAnchorBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOverlayAnchorBuilder'
+  - title: "Rename to 'RawPieChart'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignPieChart'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPieChart'
+  - title: "Rename to 'RawPieChartBuilder'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignPieChartBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPieChartBuilder'
+  - title: "Rename to 'RawPieChartDetails'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignPieChartDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPieChartDetails'
+  - title: "Rename to 'RawPieSlice'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignPieSlice'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPieSlice'
+  - title: "Rename to 'RawPieSliceDetails'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignPieSliceDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPieSliceDetails'
+  - title: "Rename to 'rawReduceMotionOf'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'designReduceMotionOf'
+    changes:
+      - kind: 'rename'
+        newName: 'rawReduceMotionOf'
+  - title: "Rename to 'RawScale'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignScale'
+    changes:
+      - kind: 'rename'
+        newName: 'RawScale'
+  - title: "Rename to 'RawScaleTick'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignScaleTick'
+    changes:
+      - kind: 'rename'
+        newName: 'RawScaleTick'
+  - title: "Rename to 'RawScrollbarVisibility'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignScrollbarVisibility'
+    changes:
+      - kind: 'rename'
+        newName: 'RawScrollbarVisibility'
+  - title: "Rename to 'rawShortcutKeys'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'designShortcutKeys'
+    changes:
+      - kind: 'rename'
+        newName: 'rawShortcutKeys'
+  - title: "Rename to 'rawShortcutLabel'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'designShortcutLabel'
+    changes:
+      - kind: 'rename'
+        newName: 'rawShortcutLabel'
+  - title: "Rename to 'RawSpacing'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignSpacing'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSpacing'
+  - title: "Rename to 'RawSpacingScope'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignSpacingScope'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSpacingScope'
+  - title: "Rename to 'rawSpring'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'designSpring'
+    changes:
+      - kind: 'rename'
+        newName: 'rawSpring'
+  - title: "Rename to 'RawSpringDrive'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      extension: 'DesignSpringDrive'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSpringDrive'
+  - title: "Rename to 'rawSpringSimulation'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'designSpringSimulation'
+    changes:
+      - kind: 'rename'
+        newName: 'rawSpringSimulation'
+  - title: "Rename to 'rawSpringTolerance'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      variable: 'designSpringTolerance'
+    changes:
+      - kind: 'rename'
+        newName: 'rawSpringTolerance'
+  - title: "Rename to 'RawStyle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignStyle'
+    changes:
+      - kind: 'rename'
+        newName: 'RawStyle'
+  - title: "Rename to 'RawStyleOf'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignStyleOf'
+    changes:
+      - kind: 'rename'
+        newName: 'RawStyleOf'
+  - title: "Rename to 'rawSwipeBack'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'designSwipeBack'
+    changes:
+      - kind: 'rename'
+        newName: 'rawSwipeBack'
+  - title: "Rename to 'RawTapTargets'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTapTargets'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTapTargets'
+  - title: "Rename to 'RawTapTargetScope'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTapTargetScope'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTapTargetScope'
+  - title: "Rename to 'RawTextEntryBox'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTextEntryBox'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTextEntryBox'
+  - title: "Rename to 'RawTimeScale'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTimeScale'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTimeScale'
+  - title: "Rename to 'RawTree'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTree'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTree'
+  - title: "Rename to 'RawTreeController'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTreeController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTreeController'
+  - title: "Rename to 'RawTreeItem'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTreeItem'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTreeItem'
+  - title: "Rename to 'RawTreeRow'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignTreeRow'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTreeRow'
+  - title: "Rename to 'RawValueHandle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignValueHandle'
+    changes:
+      - kind: 'rename'
+        newName: 'RawValueHandle'
+  - title: "Rename to 'RawWindowSizeClass'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'DesignWindowSizeClass'
+    changes:
+      - kind: 'rename'
+        newName: 'RawWindowSizeClass'
+  - title: "Rename to 'RenderCapCenter'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'RenderDesignCapCenter'
+    changes:
+      - kind: 'rename'
+        newName: 'RenderCapCenter'
+  - title: "Rename to 'RenderSemanticsProxy'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      typedef: 'RenderDesignSemanticsProxy'
+    changes:
+      - kind: 'rename'
+        newName: 'RenderSemanticsProxy'
+  - title: "Rename to 'showRawCommandPalette'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'showDesignCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'showRawCommandPalette'

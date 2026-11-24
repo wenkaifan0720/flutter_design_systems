@@ -23,6 +23,7 @@ import 'internal/announce.dart';
 import 'internal/focus_visible.dart';
 import 'localizations.dart';
 import 'pressable.dart';
+import 'tap_target.dart';
 
 /// [d] as a calendar day: local midnight.
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -292,8 +293,13 @@ class RawCalendarController extends ChangeNotifier {
     return RawDateRange(r.start, h);
   }
 
-  /// [day] as the grid paints it.
-  RawCalendarDayDetails dayOf(DateTime day, {required DateTime inMonth}) {
+  /// [day] as the grid paints it, its number written as [label] (see
+  /// [RawCalendarDayDetails.label]; null: in ASCII digits).
+  RawCalendarDayDetails dayOf(
+    DateTime day, {
+    required DateTime inMonth,
+    String? label,
+  }) {
     final d = _dateOnly(day);
     final r = _range;
     final p = preview;
@@ -315,6 +321,7 @@ class RawCalendarController extends ChangeNotifier {
       isPreviewEnd: p != null && _sameDay(d, p.end),
       enabled: isSelectable(d),
       focused: _sameDay(d, _focused),
+      label: label,
     );
   }
 
@@ -350,6 +357,7 @@ class RawCalendarDayDetails {
     required this.isPreviewEnd,
     required this.enabled,
     required this.focused,
+    this._label,
   });
 
   /// The day.
@@ -392,6 +400,17 @@ class RawCalendarDayDetails {
   /// Whether the keyboard is on it (ring it while the grid has focus; the
   /// cell's states carry [WidgetState.focused] then).
   final bool focused;
+
+  /// The day's number as the grid writes it, in the app's digits: what
+  /// [RawWidgetsLocalizations.formatDecimal] writes for the day of the month
+  /// (English's 20, Arabic's ٢٠), as Material's day picker writes it.
+  ///
+  /// A [RawCalendarDatePicker.dayBuilder] paints this rather than
+  /// `'${date.day}'`, which stays in ASCII digits in every language. A day
+  /// made without one reads its number in ASCII digits. A screen reader says
+  /// the whole date instead ([RawCalendarDatePicker.dayLabel]).
+  String get label => _label ?? '${date.day}';
+  final String? _label;
 }
 
 /// Paints one day for its [states] ([WidgetState.selected] when chosen,
@@ -432,7 +451,7 @@ class RawCalendarHeaderDetails {
 /// One or more month grids over a [RawCalendarController].
 ///
 /// ```dart
-/// RawCalendarDatePicker(controller: controller, dayBuilder: (context, day, states) => Text('${day.date.day}'))
+/// RawCalendarDatePicker(controller: controller, dayBuilder: (context, day, states) => Text(day.label))
 /// ```
 class RawCalendarDatePicker extends StatefulWidget {
   /// A calendar over [controller].
@@ -466,6 +485,14 @@ class RawCalendarDatePicker extends StatefulWidget {
   final RawCalendarController controller;
 
   /// Paints a day.
+  ///
+  /// The day stands in a tap target at least the look's floor tall (what
+  /// [RawTapTargets.of] and [RawTapTargets.floorOn] read: 44 by 44 for a
+  /// finger and 24 by 24 for a pointer, unless the look's [RawTapTargetScope]
+  /// sets its own), as wide as its column. A smaller face is centred in it,
+  /// and a tap anywhere in it picks the day. A face that draws the grid's
+  /// rules (borders that meet the next row's) is built at the floor's height,
+  /// or the rules gap between rows.
   final RawCalendarDayBuilder dayBuilder;
 
   /// Paints a month's header; null shows its label.
@@ -624,7 +651,7 @@ class _DesignCalendarState extends State<RawCalendarDatePicker> {
   // browser's :focus-visible shows it (a popover a click opened lights no
   // day until a key).
   bool _keyboard = false;
-  late final DesignFocusShown _focus;
+  late final RawFocusShown _focus;
 
   FocusNode get _node =>
       widget.focusNode ??
@@ -633,7 +660,7 @@ class _DesignCalendarState extends State<RawCalendarDatePicker> {
   @override
   void initState() {
     super.initState();
-    _focus = DesignFocusShown((on) => setState(() => _keyboard = on));
+    _focus = RawFocusShown((on) => setState(() => _keyboard = on));
     widget.controller.addListener(_changed);
   }
 
@@ -700,7 +727,7 @@ class _DesignCalendarState extends State<RawCalendarDatePicker> {
     // The keyboard's day is no node's focus: a screen reader is told it,
     // and what scrolls round the grid shows it.
     if (c.focusedDay != day) {
-      designAnnounce(context, _dayLabel(c.focusedDay));
+      rawAnnounce(context, _dayLabel(c.focusedDay));
       WidgetsBinding.instance.addPostFrameCallback((_) => _reveal());
     }
     return KeyEventResult.handled;
@@ -733,23 +760,32 @@ class _DesignCalendarState extends State<RawCalendarDatePicker> {
     ];
     final focusShows = _keyboard && _node.hasFocus;
     Widget cell(DateTime date) {
-      final day = c.dayOf(date, inMonth: month);
+      final day = c.dayOf(
+        date,
+        inMonth: month,
+        label: RawWidgetsLocalizations.of(context).formatDecimal(date.day),
+      );
       if (!day.inMonth && !widget.showOutsideDays) {
         return const SizedBox.shrink();
       }
       final lit = day.focused && day.inMonth && focusShows;
-      Widget face = RawButton(
-        onPressed: day.enabled ? () => _select(date) : null,
-        selected: day.selected,
-        semanticLabel: _dayLabel(date),
-        semanticSelected: day.selected || day.inRange,
-        enableFeedback: false,
-        excludeSemantics: true,
-        builder: (context, states, _) => widget.dayBuilder(context, day, {
-          ...states,
-          if (lit) WidgetState.focused,
-        }),
+      // The day is a tap target at the floor: a face smaller than it stands
+      // in a target as tall as the floor and as wide as its column.
+      Widget face = TapTargetPadding(
+        child: RawButton(
+          onPressed: day.enabled ? () => _select(date) : null,
+          selected: day.selected,
+          semanticLabel: _dayLabel(date),
+          semanticSelected: day.selected || day.inRange,
+          enableFeedback: false,
+          excludeSemantics: true,
+          builder: (context, states, _) => widget.dayBuilder(context, day, {
+            ...states,
+            if (lit) WidgetState.focused,
+          }),
+        ),
       );
+      // Above the target, so a neighbour's day leaves no empty node.
       if (!day.inMonth) face = ExcludeSemantics(child: face);
       if (c.mode == RawCalendarMode.range && day.enabled) {
         face = MouseRegion(onEnter: (_) => c.hovered = date, child: face);
@@ -825,7 +861,7 @@ class _DesignCalendarState extends State<RawCalendarDatePicker> {
       onFocusChange: (focused) {
         _focus.focused(focused);
         if (focused) {
-          designAnnounce(context, _dayLabel(widget.controller.focusedDay));
+          rawAnnounce(context, _dayLabel(widget.controller.focusedDay));
         }
       },
       child: MouseRegion(

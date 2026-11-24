@@ -387,8 +387,8 @@ void main() {
     final log = <String>[];
     await tester.pumpWidget(
       harness(
-        DesignHapticsScope(
-          haptics: DesignHaptics(selectionChanged: () => log.add('step')),
+        RawHapticsScope(
+          haptics: RawHaptics(selectionChanged: () => log.add('step')),
           child: const _Host(),
         ),
       ),

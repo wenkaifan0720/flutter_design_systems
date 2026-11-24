@@ -18,25 +18,25 @@ import 'package:flutter/widgets.dart';
 /// (desktop, the web) ignore them.
 ///
 /// A behaviour reads the table where it plays, with [of]; a
-/// [DesignHapticsScope] above it swaps the table for its subtree:
-/// [DesignHaptics.silent] for none, or a table of the look's or the app's
+/// [RawHapticsScope] above it swaps the table for its subtree:
+/// [RawHaptics.silent] for none, or a table of the look's or the app's
 /// own. Under flutter_test no haptic plays (the platform message has no
 /// receiver); a test that checks one gives a table that records.
 ///
 /// ```dart
-/// DesignHaptics.of(context).selectionChanged?.call();
+/// RawHaptics.of(context).selectionChanged?.call();
 /// ```
 @immutable
-class DesignHaptics {
+class RawHaptics {
   /// A table of the given callbacks; each defaults to the platform's own.
-  const DesignHaptics({
+  const RawHaptics({
     this.selectionChanged = HapticFeedback.selectionClick,
     this.longPress = _longPress,
     this.thresholdCrossed = HapticFeedback.lightImpact,
   });
 
   /// A table that plays nothing.
-  const DesignHaptics.silent()
+  const RawHaptics.silent()
     : selectionChanged = null,
       longPress = null,
       thresholdCrossed = null;
@@ -54,17 +54,15 @@ class DesignHaptics {
   /// a sheet's dismiss). Null plays nothing.
   final VoidCallback? thresholdCrossed;
 
-  /// The table in force at [context]: the nearest [DesignHapticsScope]'s,
-  /// else the platform's own (`const DesignHaptics()`).
-  static DesignHaptics of(BuildContext context) =>
-      context
-          .dependOnInheritedWidgetOfExactType<DesignHapticsScope>()
-          ?.haptics ??
-      const DesignHaptics();
+  /// The table in force at [context]: the nearest [RawHapticsScope]'s,
+  /// else the platform's own (`const RawHaptics()`).
+  static RawHaptics of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<RawHapticsScope>()?.haptics ??
+      const RawHaptics();
 
   @override
   bool operator ==(Object other) =>
-      other is DesignHaptics &&
+      other is RawHaptics &&
       other.selectionChanged == selectionChanged &&
       other.longPress == longPress &&
       other.thresholdCrossed == thresholdCrossed;
@@ -92,29 +90,29 @@ void _longPress() {
 }
 
 /// Puts [haptics] in force for [child]: the table every ui_core behaviour
-/// below reads with [DesignHaptics.of].
+/// below reads with [RawHaptics.of].
 ///
 /// ```dart
-/// const DesignHapticsScope(haptics: DesignHaptics.silent(), child: Text('Quiet'))
+/// const RawHapticsScope(haptics: RawHaptics.silent(), child: Text('Quiet'))
 /// ```
-class DesignHapticsScope extends InheritedWidget {
+class RawHapticsScope extends InheritedWidget {
   /// Puts [haptics] in force for [child].
-  const DesignHapticsScope({
+  const RawHapticsScope({
     super.key,
     required this.haptics,
     required super.child,
   });
 
   /// The table for the subtree.
-  final DesignHaptics haptics;
+  final RawHaptics haptics;
 
   @override
-  bool updateShouldNotify(DesignHapticsScope oldWidget) =>
+  bool updateShouldNotify(RawHapticsScope oldWidget) =>
       haptics != oldWidget.haptics;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<DesignHaptics>('haptics', haptics));
+    properties.add(DiagnosticsProperty<RawHaptics>('haptics', haptics));
   }
 }

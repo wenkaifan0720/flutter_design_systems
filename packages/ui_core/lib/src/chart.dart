@@ -20,15 +20,15 @@ import 'internal/announce.dart';
 import 'localizations.dart';
 import 'motion.dart';
 
-/// A point of a [DesignChartSeries]: [x] and [y], or a gap where [y] is
+/// A point of a [RawChartSeries]: [x] and [y], or a gap where [y] is
 /// null.
 @immutable
-class DesignChartPoint {
+class RawChartPoint {
   /// A point at [x] (a number, or on a band axis a category's index).
-  const DesignChartPoint(this.x, this.y);
+  const RawChartPoint(this.x, this.y);
 
   /// A point at a time: [x] holds its milliseconds since the epoch.
-  DesignChartPoint.time(DateTime x, this.y)
+  RawChartPoint.time(DateTime x, this.y)
     : x = x.millisecondsSinceEpoch.toDouble();
 
   /// Where it stands along x.
@@ -39,30 +39,30 @@ class DesignChartPoint {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignChartPoint && other.x == x && other.y == y;
+      other is RawChartPoint && other.x == x && other.y == y;
 
   @override
   int get hashCode => Object.hash(x, y);
 
   @override
-  String toString() => 'DesignChartPoint($x, $y)';
+  String toString() => 'RawChartPoint($x, $y)';
 }
 
 /// A named run of points, in order along x.
 @immutable
-class DesignChartSeries {
+class RawChartSeries {
   /// A series called [label].
-  const DesignChartSeries({required this.label, required this.points});
+  const RawChartSeries({required this.label, required this.points});
 
   /// Its name, as a legend and a screen reader say it ("Revenue").
   final String label;
 
   /// Its points, in order along x.
-  final List<DesignChartPoint> points;
+  final List<RawChartPoint> points;
 
   @override
   bool operator ==(Object other) =>
-      other is DesignChartSeries &&
+      other is RawChartSeries &&
       other.label == label &&
       listEquals(other.points, points);
 
@@ -70,28 +70,28 @@ class DesignChartSeries {
   int get hashCode => Object.hash(label, Object.hashAll(points));
 
   @override
-  String toString() => 'DesignChartSeries($label, ${points.length} points)';
+  String toString() => 'RawChartSeries($label, ${points.length} points)';
 }
 
-/// What a [DesignChart]'s x values are.
-enum DesignChartXAxis {
-  /// Numbers ([DesignLinearScale]).
+/// What a [RawChart]'s x values are.
+enum RawChartXAxis {
+  /// Numbers ([RawLinearScale]).
   linear,
 
-  /// Times, as milliseconds since the epoch ([DesignTimeScale]).
+  /// Times, as milliseconds since the epoch ([RawTimeScale]).
   time,
 
-  /// Categories, by index ([DesignBandScale]): bars.
+  /// Categories, by index ([RawBandScale]): bars.
   band,
 }
 
 /// A point of a chart: the [index]th point of the [series]th series.
 @immutable
-class DesignChartPointRef {
+class RawChartPointRef {
   /// A reference to a point.
-  const DesignChartPointRef(this.series, this.index);
+  const RawChartPointRef(this.series, this.index);
 
-  /// The series, by its place in [DesignChart.series].
+  /// The series, by its place in [RawChart.series].
   final int series;
 
   /// The point, by its place in its series.
@@ -99,7 +99,7 @@ class DesignChartPointRef {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignChartPointRef &&
+      other is RawChartPointRef &&
       other.series == series &&
       other.index == index;
 
@@ -107,14 +107,14 @@ class DesignChartPointRef {
   int get hashCode => Object.hash(series, index);
 
   @override
-  String toString() => 'DesignChartPointRef($series, $index)';
+  String toString() => 'RawChartPointRef($series, $index)';
 }
 
-/// A [DesignChart] as its look draws it.
+/// A [RawChart] as its look draws it.
 @immutable
-class DesignChartDetails {
+class RawChartDetails {
   /// The chart's details.
-  const DesignChartDetails({
+  const RawChartDetails({
     required this.size,
     required this.plotArea,
     required this.x,
@@ -132,8 +132,8 @@ class DesignChartDetails {
   /// The chart's whole size.
   final Size size;
 
-  /// Where the marks go: the size, less [DesignChart.padding] and, at the
-  /// reading start, [DesignChart.yLabelGutter]'s room for the y labels.
+  /// Where the marks go: the size, less [RawChart.padding] and, at the
+  /// reading start, [RawChart.yLabelGutter]'s room for the y labels.
   final Rect plotArea;
 
   /// The reader's direction, which the chart is laid out in: the x scale
@@ -144,24 +144,24 @@ class DesignChartDetails {
 
   /// The x scale, ranged to [plotArea]'s width: right to left when the
   /// reader's direction is.
-  final DesignScale x;
+  final RawScale x;
 
   /// The y scale, ranged to [plotArea]'s height, its least value at the
   /// bottom.
-  final DesignLinearScale y;
+  final RawLinearScale y;
 
   /// The x axis's ticks, labelled.
-  final List<DesignScaleTick> xTicks;
+  final List<RawScaleTick> xTicks;
 
   /// The y axis's ticks, labelled.
-  final List<DesignScaleTick> yTicks;
+  final List<RawScaleTick> yTicks;
 
   /// The values as drawn now: between the old data and the new while a
   /// change springs.
-  final List<DesignChartSeries> series;
+  final List<RawChartSeries> series;
 
   /// The point a pointer, a finger or the keys picked; null, none.
-  final DesignChartPointRef? active;
+  final RawChartPointRef? active;
 
   /// Where [active] stands: the readout's anchor.
   final Offset? activePosition;
@@ -175,24 +175,24 @@ class DesignChartDetails {
   final Set<WidgetState> states;
 
   /// Where [point] stands, as drawn (a gap at the y scale's least value).
-  Offset positionOf(DesignChartPointRef point) {
+  Offset positionOf(RawChartPointRef point) {
     final p = series[point.series].points[point.index];
     return Offset(x.map(p.x), y.map(p.y ?? y.min));
   }
 }
 
 /// Draws a chart from its details.
-typedef DesignChartBuilder = Widget Function(
+typedef RawChartBuilder = Widget Function(
   BuildContext context,
-  DesignChartDetails details,
+  RawChartDetails details,
 );
 
 /// Formats a value for labels, readouts and speech.
-typedef DesignChartFormat = String Function(double value);
+typedef RawChartFormat = String Function(double value);
 
 // The smallest step between neighbouring x values: how finely a time axis's
 // points are told apart.
-double _xGapOf(List<DesignChartSeries> series) {
+double _xGapOf(List<RawChartSeries> series) {
   var gap = double.infinity;
   for (final s in series) {
     for (var i = 1; i < s.points.length; i++) {
@@ -208,21 +208,21 @@ double _xGapOf(List<DesignChartSeries> series) {
 String _xText(
   double x,
   RawWidgetsLocalizations l, {
-  required DesignChartXAxis axis,
+  required RawChartXAxis axis,
   required List<String>? categories,
-  required DesignChartFormat? format,
+  required RawChartFormat? format,
   required double gap,
 }) {
   if (format != null) return format(x);
   switch (axis) {
-    case DesignChartXAxis.linear:
+    case RawChartXAxis.linear:
       return l.formatDecimal(x);
-    case DesignChartXAxis.band:
+    case RawChartXAxis.band:
       final i = x.round();
       return categories != null && i >= 0 && i < categories.length
           ? categories[i]
           : l.formatDecimal(i + 1);
-    case DesignChartXAxis.time:
+    case RawChartXAxis.time:
       final at = DateTime.fromMillisecondsSinceEpoch(x.round());
       const day = 86400000;
       if (gap.isInfinite) return l.formatFullDate(at);
@@ -252,22 +252,22 @@ String _xText(
 /// [semanticSummary] overrides it), or the picked point ("Mar 2026,
 /// Revenue: 1,240"); increase and decrease step through the points, series
 /// after series, each said, and "Show data table" ([onShowTable]) offers a
-/// [DesignChartTable].
+/// [RawChartTable].
 ///
 /// The chart fills the width it is given (300 when unbounded) and the
 /// height (half its width when unbounded).
 ///
 /// ```dart
-/// DesignChart(semanticLabel: 'Revenue', series: const [DesignChartSeries(label: 'Revenue', points: [DesignChartPoint(0, 820), DesignChartPoint(1, 1240)])], builder: (context, chart) => CustomPaint(size: chart.size))
+/// RawChart(semanticLabel: 'Revenue', series: const [RawChartSeries(label: 'Revenue', points: [RawChartPoint(0, 820), RawChartPoint(1, 1240)])], builder: (context, chart) => CustomPaint(size: chart.size))
 /// ```
-class DesignChart extends StatefulWidget {
+class RawChart extends StatefulWidget {
   /// A chart of [series].
-  const DesignChart({
+  const RawChart({
     super.key,
     required this.series,
     required this.builder,
     required this.semanticLabel,
-    this.xAxis = DesignChartXAxis.linear,
+    this.xAxis = RawChartXAxis.linear,
     this.categories,
     this.padding = EdgeInsets.zero,
     this.yIncludesZero = true,
@@ -286,16 +286,16 @@ class DesignChart extends StatefulWidget {
   });
 
   /// The data, each series in order along x.
-  final List<DesignChartSeries> series;
+  final List<RawChartSeries> series;
 
   /// Draws the chart.
-  final DesignChartBuilder builder;
+  final RawChartBuilder builder;
 
   /// The chart's name, said first ("Revenue by month").
   final String semanticLabel;
 
   /// What the x values are. Defaults to numbers.
-  final DesignChartXAxis xAxis;
+  final RawChartXAxis xAxis;
 
   /// A band axis's category names, by index; null: their numbers.
   final List<String>? categories;
@@ -313,24 +313,24 @@ class DesignChart extends StatefulWidget {
 
   /// The x values' labels, readout and speech; null: the scale's own (the
   /// reader's numbers, dates, or [categories]).
-  final DesignChartFormat? formatX;
+  final RawChartFormat? formatX;
 
   /// The y values' labels, readout and speech, in place of [valueFormat];
   /// null: [valueFormat]'s.
-  final DesignChartFormat? formatY;
+  final RawChartFormat? formatY;
 
   /// How the y values are written on the axis, in the readout and what a
-  /// screen reader hears, with their unit (`DesignChartValueFormat(suffix:
+  /// screen reader hears, with their unit (`RawChartValueFormat(suffix:
   /// ' h')`): in the reader's digits, each tick at its scale's decimals.
   /// Null: the reader's numbers alone.
-  final DesignChartValueFormat? valueFormat;
+  final RawChartValueFormat? valueFormat;
 
   /// The room the y labels take beside the plot, at the reading start (the
   /// left, or the right when the reader's direction is right to left),
   /// within [padding]: given the y ticks as labelled, it gives the width of
-  /// the widest as the look sets it ([DesignScaleTick.widestLabel]) and
+  /// the widest as the look sets it ([RawScaleTick.widestLabel]) and
   /// any gap. Null: none, [padding] alone.
-  final double Function(List<DesignScaleTick> yTicks)? yLabelGutter;
+  final double Function(List<RawScaleTick> yTicks)? yLabelGutter;
 
   /// What a screen reader hears of the data; null: a sentence built from
   /// it.
@@ -338,7 +338,7 @@ class DesignChart extends StatefulWidget {
 
   /// Called as the picked point changes (null: none), for a readout
   /// elsewhere or a linked chart.
-  final ValueChanged<DesignChartPointRef?>? onActivePointChanged;
+  final ValueChanged<RawChartPointRef?>? onActivePointChanged;
 
   /// Shows the data as a table: offered to a screen reader as "Show data
   /// table". Null: not offered.
@@ -359,13 +359,13 @@ class DesignChart extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<DesignChart> createState() => _DesignChartState();
+  State<RawChart> createState() => _DesignChartState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(ObjectFlagProperty<DesignChartBuilder>.has('builder', builder))
+      ..add(ObjectFlagProperty<RawChartBuilder>.has('builder', builder))
       ..add(
         IterableProperty<String>('categories', categories, defaultValue: null),
       )
@@ -385,17 +385,17 @@ class DesignChart extends StatefulWidget {
         ),
       )
       ..add(IntProperty('tickCount', tickCount, defaultValue: 5))
-      ..add(ObjectFlagProperty<DesignChartFormat>.has('formatX', formatX))
-      ..add(ObjectFlagProperty<DesignChartFormat>.has('formatY', formatY))
+      ..add(ObjectFlagProperty<RawChartFormat>.has('formatX', formatX))
+      ..add(ObjectFlagProperty<RawChartFormat>.has('formatY', formatY))
       ..add(
-        DiagnosticsProperty<DesignChartValueFormat>(
+        DiagnosticsProperty<RawChartValueFormat>(
           'valueFormat',
           valueFormat,
           defaultValue: null,
         ),
       )
       ..add(
-        ObjectFlagProperty<double Function(List<DesignScaleTick>)>.has(
+        ObjectFlagProperty<double Function(List<RawScaleTick>)>.has(
           'yLabelGutter',
           yLabelGutter,
         ),
@@ -404,7 +404,7 @@ class DesignChart extends StatefulWidget {
         StringProperty('semanticSummary', semanticSummary, defaultValue: null),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignChartPointRef?>>.has(
+        ObjectFlagProperty<ValueChanged<RawChartPointRef?>>.has(
           'onActivePointChanged',
           onActivePointChanged,
         ),
@@ -421,7 +421,7 @@ class DesignChart extends StatefulWidget {
       ..add(DoubleProperty('stiffness', stiffness, defaultValue: 400))
       ..add(IntProperty('series', series.length))
       ..add(StringProperty('semanticLabel', semanticLabel))
-      ..add(EnumProperty<DesignChartXAxis>('xAxis', xAxis))
+      ..add(EnumProperty<RawChartXAxis>('xAxis', xAxis))
       ..add(
         FlagProperty(
           'autofocus',
@@ -612,18 +612,18 @@ mixin _Picking<W extends StatefulWidget> on State<W> {
   }
 }
 
-class _DesignChartState extends State<DesignChart>
-    with SingleTickerProviderStateMixin, _Picking<DesignChart> {
+class _DesignChartState extends State<RawChart>
+    with SingleTickerProviderStateMixin, _Picking<RawChart> {
   late final AnimationController _motion = AnimationController.unbounded(
     vsync: this,
     value: 1,
   )..addListener(() => setState(() {}));
   // What a change springs from: the series and the extent as drawn.
-  List<DesignChartSeries> _from = const [];
+  List<RawChartSeries> _from = const [];
   _Domain? _fromDomain;
-  DesignChartPointRef? _active;
+  RawChartPointRef? _active;
   // The last layout, for picking.
-  DesignChartDetails? _details;
+  RawChartDetails? _details;
 
   @override
   FocusNode? get givenNode => widget.focusNode;
@@ -641,7 +641,7 @@ class _DesignChartState extends State<DesignChart>
   }
 
   @override
-  void didUpdateWidget(DesignChart oldWidget) {
+  void didUpdateWidget(RawChart oldWidget) {
     super.didUpdateWidget(oldWidget);
     updatePicking(oldWidget.focusNode);
     if (listEquals(oldWidget.series, widget.series) &&
@@ -657,7 +657,7 @@ class _DesignChartState extends State<DesignChart>
     unawaited(
       _motion.springTo(
         1,
-        DesignMotionPolicy.of(context).spatial(
+        RawMotionPolicy.of(context).spatial(
           dampingRatio: widget.dampingRatio,
           stiffness: widget.stiffness,
         ),
@@ -679,18 +679,18 @@ class _DesignChartState extends State<DesignChart>
     super.dispose();
   }
 
-  bool _live(DesignChartPointRef ref) =>
+  bool _live(RawChartPointRef ref) =>
       ref.series >= 0 &&
       ref.series < widget.series.length &&
       ref.index >= 0 &&
       ref.index < widget.series[ref.series].points.length &&
       widget.series[ref.series].points[ref.index].y != null;
 
-  static int _bands(DesignChart w) =>
+  static int _bands(RawChart w) =>
       w.categories?.length ??
       w.series.fold(0, (n, s) => math.max(n, s.points.length));
 
-  static _Domain _domainOf(DesignChart w) {
+  static _Domain _domainOf(RawChart w) {
     var xMin = double.infinity;
     var xMax = double.negativeInfinity;
     var yMin = double.infinity;
@@ -705,7 +705,7 @@ class _DesignChartState extends State<DesignChart>
         yMax = math.max(yMax, y);
       }
     }
-    if (w.xAxis == DesignChartXAxis.band) {
+    if (w.xAxis == RawChartXAxis.band) {
       xMin = 0;
       xMax = math.max(0, _bands(w) - 1).toDouble();
     }
@@ -717,7 +717,7 @@ class _DesignChartState extends State<DesignChart>
       yMin = 0;
       yMax = 1;
     }
-    final y = DesignLinearScale.nice(
+    final y = RawLinearScale.nice(
       min: yMin,
       max: yMax,
       start: 0,
@@ -728,7 +728,7 @@ class _DesignChartState extends State<DesignChart>
     return _Domain(xMin, xMax, y.min, y.max);
   }
 
-  _Domain _drawnDomain(double t, DesignChart w) {
+  _Domain _drawnDomain(double t, RawChart w) {
     final to = _domainOf(w);
     final from = _fromDomain;
     if (from == null || t >= 1) return to;
@@ -737,13 +737,13 @@ class _DesignChartState extends State<DesignChart>
 
   // The series as drawn at [t] of the spring towards [w]'s: each point from
   // where it was drawn; a new one, or one out of a gap, from the baseline.
-  List<DesignChartSeries> _drawn(double t, DesignChart w) {
+  List<RawChartSeries> _drawn(double t, RawChart w) {
     if (t >= 1 || _from.isEmpty) return w.series;
     final domain = _domainOf(w);
     final baseline = 0.0.clamp(domain.yMin, domain.yMax);
     return [
       for (var i = 0; i < w.series.length; i++)
-        DesignChartSeries(
+        RawChartSeries(
           label: w.series[i].label,
           points: [
             for (var j = 0; j < w.series[i].points.length; j++)
@@ -756,7 +756,7 @@ class _DesignChartState extends State<DesignChart>
                   case (final from, final to))
                 to.y == null
                     ? to
-                    : DesignChartPoint(
+                    : RawChartPoint(
                         lerpDouble(from?.x ?? to.x, to.x, t)!,
                         lerpDouble(from?.y ?? baseline, to.y, t),
                       ),
@@ -781,7 +781,7 @@ class _DesignChartState extends State<DesignChart>
       widget.valueFormat?.format(y, l) ??
       l.formatDecimal(y);
 
-  String _pointLabel(DesignChartPointRef ref, RawWidgetsLocalizations l) {
+  String _pointLabel(RawChartPointRef ref, RawWidgetsLocalizations l) {
     final s = widget.series[ref.series];
     final p = s.points[ref.index];
     return l.chartPointLabel(_xLabel(p.x, l), s.label, _yLabel(p.y!, l));
@@ -817,7 +817,7 @@ class _DesignChartState extends State<DesignChart>
   // ---- Picking.
 
   void _setActive(
-    DesignChartPointRef? ref,
+    RawChartPointRef? ref,
     PointerDeviceKind? by, {
     bool say = false,
   }) {
@@ -831,20 +831,20 @@ class _DesignChartState extends State<DesignChart>
     if (!changed) return;
     widget.onActivePointChanged?.call(ref);
     if (say && ref != null) {
-      designAnnounce(
+      rawAnnounce(
         context,
         _pointLabel(ref, RawWidgetsLocalizations.of(context)),
       );
     }
   }
 
-  DesignChartPointRef? _nearest(Offset at) {
+  RawChartPointRef? _nearest(Offset at) {
     final d = _details;
     if (d == null) return null;
     final x = d.x;
-    final band = x is DesignBandScale ? x.indexAt(at.dx) : null;
-    if (x is DesignBandScale && band == null) return null;
-    DesignChartPointRef? best;
+    final band = x is RawBandScale ? x.indexAt(at.dx) : null;
+    if (x is RawBandScale && band == null) return null;
+    RawChartPointRef? best;
     var bestDx = double.infinity;
     var bestDy = double.infinity;
     for (var i = 0; i < widget.series.length; i++) {
@@ -856,7 +856,7 @@ class _DesignChartState extends State<DesignChart>
         final dx = (x.map(points[j].x) - at.dx).abs();
         final dy = (d.y.map(y) - at.dy).abs();
         if (dx < bestDx - 0.5 || (dx <= bestDx + 0.5 && dy < bestDy)) {
-          best = DesignChartPointRef(i, j);
+          best = RawChartPointRef(i, j);
           bestDx = math.min(dx, bestDx);
           bestDy = dy;
         }
@@ -867,21 +867,21 @@ class _DesignChartState extends State<DesignChart>
 
   // The live point [way] (1 after, -1 before) [from] in its series; [from]'s
   // index may be one past either end.
-  DesignChartPointRef? _along(DesignChartPointRef from, int way) {
+  RawChartPointRef? _along(RawChartPointRef from, int way) {
     final points = widget.series[from.series].points;
     for (var j = from.index + way; j >= 0 && j < points.length; j += way) {
-      if (points[j].y != null) return DesignChartPointRef(from.series, j);
+      if (points[j].y != null) return RawChartPointRef(from.series, j);
     }
     return null;
   }
 
   // The first (or last) live point of [series], or of the next series that
   // has one.
-  DesignChartPointRef? _end(int series, {required bool last}) {
+  RawChartPointRef? _end(int series, {required bool last}) {
     for (var i = series; i < widget.series.length; i++) {
       final length = widget.series[i].points.length;
       final found = _along(
-        DesignChartPointRef(i, last ? length : -1),
+        RawChartPointRef(i, last ? length : -1),
         last ? -1 : 1,
       );
       if (found != null) return found;
@@ -890,14 +890,14 @@ class _DesignChartState extends State<DesignChart>
   }
 
   // Through every point, series after series: a screen reader's steps.
-  DesignChartPointRef? _stepThrough(int way) {
+  RawChartPointRef? _stepThrough(int way) {
     final a = _active;
     final next = a == null ? null : _along(a, way);
     if (next != null) return next;
     final from = a == null ? (way > 0 ? -1 : widget.series.length) : a.series;
     for (var i = from + way; i >= 0 && i < widget.series.length; i += way) {
       final length = widget.series[i].points.length;
-      final found = _along(DesignChartPointRef(i, way > 0 ? -1 : length), way);
+      final found = _along(RawChartPointRef(i, way > 0 ? -1 : length), way);
       if (found != null) return found;
     }
     return null;
@@ -905,10 +905,10 @@ class _DesignChartState extends State<DesignChart>
 
   // The series above (or below, [way] -1) [from] at its x: the nearest
   // greater (or lesser) value; ties by series order.
-  DesignChartPointRef? _across(DesignChartPointRef from, int way) {
+  RawChartPointRef? _across(RawChartPointRef from, int way) {
     final here = widget.series[from.series].points[from.index];
     final y0 = here.y!;
-    DesignChartPointRef? best;
+    RawChartPointRef? best;
     double? bestY;
     for (var i = 0; i < widget.series.length; i++) {
       if (i == from.series) continue;
@@ -920,7 +920,7 @@ class _DesignChartState extends State<DesignChart>
             ? (y > y0 || (y == y0 && i > from.series))
             : (y < y0 || (y == y0 && i < from.series));
         if (beyond && (bestY == null || (way > 0 ? y < bestY : y > bestY))) {
-          best = DesignChartPointRef(i, j);
+          best = RawChartPointRef(i, j);
           bestY = y;
         }
       }
@@ -931,7 +931,7 @@ class _DesignChartState extends State<DesignChart>
   KeyEventResult _onKey(LogicalKeyboardKey key) {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final a = _active;
-    DesignChartPointRef? to;
+    RawChartPointRef? to;
     if (key == LogicalKeyboardKey.escape) {
       if (a == null) return KeyEventResult.ignored;
       clearPick();
@@ -954,7 +954,7 @@ class _DesignChartState extends State<DesignChart>
     return KeyEventResult.handled;
   }
 
-  DesignChartDetails _layout(Size size, RawWidgetsLocalizations l) {
+  RawChartDetails _layout(Size size, RawWidgetsLocalizations l) {
     final t = _motion.value;
     final domain = _drawnDomain(t, widget);
     final direction = Directionality.of(context);
@@ -962,20 +962,20 @@ class _DesignChartState extends State<DesignChart>
     var plot = widget.padding
         .resolve(direction)
         .deflateRect(Offset.zero & size);
-    final y = DesignLinearScale(
+    final y = RawLinearScale(
       min: domain.yMin,
       max: domain.yMax,
       start: plot.bottom,
       end: plot.top,
     );
-    List<DesignScaleTick> labelled(
-      List<DesignScaleTick> ticks,
-      DesignChartFormat? format,
+    List<RawScaleTick> labelled(
+      List<RawScaleTick> ticks,
+      RawChartFormat? format,
     ) => format == null
         ? ticks
         : [
             for (final tick in ticks)
-              DesignScaleTick(
+              RawScaleTick(
                 value: tick.value,
                 position: tick.position,
                 label: format(tick.value),
@@ -1003,20 +1003,20 @@ class _DesignChartState extends State<DesignChart>
     }
     final xStart = rtl ? plot.right : plot.left;
     final xEnd = rtl ? plot.left : plot.right;
-    final DesignScale x = switch (widget.xAxis) {
-      DesignChartXAxis.linear => DesignLinearScale(
+    final RawScale x = switch (widget.xAxis) {
+      RawChartXAxis.linear => RawLinearScale(
         min: domain.xMin,
         max: domain.xMax,
         start: xStart,
         end: xEnd,
       ),
-      DesignChartXAxis.time => DesignTimeScale(
+      RawChartXAxis.time => RawTimeScale(
         min: DateTime.fromMillisecondsSinceEpoch(domain.xMin.round()),
         max: DateTime.fromMillisecondsSinceEpoch(domain.xMax.round()),
         start: xStart,
         end: xEnd,
       ),
-      DesignChartXAxis.band => DesignBandScale(
+      RawChartXAxis.band => RawBandScale(
         count: _bands(widget),
         start: xStart,
         end: xEnd,
@@ -1026,7 +1026,7 @@ class _DesignChartState extends State<DesignChart>
     final series = _drawn(t, widget);
     final a = _active;
     final p = a == null ? null : series[a.series].points[a.index];
-    return DesignChartDetails(
+    return RawChartDetails(
       size: size,
       plotArea: plot,
       x: x,
@@ -1080,11 +1080,11 @@ class _DesignChartState extends State<DesignChart>
   }
 }
 
-/// A slice of a [DesignPieChart]: a [label] and its [value].
+/// A slice of a [RawPieChart]: a [label] and its [value].
 @immutable
-class DesignPieSlice {
+class RawPieSlice {
   /// A slice.
-  const DesignPieSlice({required this.label, required this.value});
+  const RawPieSlice({required this.label, required this.value});
 
   /// Its name ("Rent").
   final String label;
@@ -1094,20 +1094,20 @@ class DesignPieSlice {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignPieSlice && other.label == label && other.value == value;
+      other is RawPieSlice && other.label == label && other.value == value;
 
   @override
   int get hashCode => Object.hash(label, value);
 
   @override
-  String toString() => 'DesignPieSlice($label, $value)';
+  String toString() => 'RawPieSlice($label, $value)';
 }
 
 /// A slice as drawn.
 @immutable
-class DesignPieSliceDetails {
+class RawPieSliceDetails {
   /// A slice's details.
-  const DesignPieSliceDetails({
+  const RawPieSliceDetails({
     required this.label,
     required this.value,
     required this.share,
@@ -1136,11 +1136,11 @@ class DesignPieSliceDetails {
   double get midAngle => startAngle + sweepAngle / 2;
 }
 
-/// A [DesignPieChart] as its look draws it.
+/// A [RawPieChart] as its look draws it.
 @immutable
-class DesignPieChartDetails {
+class RawPieChartDetails {
   /// The pie's details.
-  const DesignPieChartDetails({
+  const RawPieChartDetails({
     required this.size,
     required this.centre,
     required this.radius,
@@ -1165,7 +1165,7 @@ class DesignPieChartDetails {
   final double holeRadius;
 
   /// The slices, in order.
-  final List<DesignPieSliceDetails> slices;
+  final List<RawPieSliceDetails> slices;
 
   /// The slice a pointer, a finger or the keys picked; null, none.
   final int? active;
@@ -1182,9 +1182,9 @@ class DesignPieChartDetails {
 }
 
 /// Draws a pie chart from its details.
-typedef DesignPieChartBuilder = Widget Function(
+typedef RawPieChartBuilder = Widget Function(
   BuildContext context,
-  DesignPieChartDetails details,
+  RawPieChartDetails details,
 );
 
 /// A pie or donut: the look draws [slices] from the angles in [builder]'s
@@ -1192,7 +1192,7 @@ typedef DesignPieChartBuilder = Widget Function(
 /// values to the next.
 ///
 /// A pointer or a finger picks the slice under it (by angle, inside the
-/// radius and outside the hole), as [DesignChart] picks a point. Keys (one
+/// radius and outside the hole), as [RawChart] picks a point. Keys (one
 /// tab stop): Right and Down the next slice, Left and Up the previous
 /// (Left and Right mirrored right to left), Home and End the first and
 /// last, Escape lets go. A screen reader hears [semanticLabel], then "4
@@ -1203,11 +1203,11 @@ typedef DesignPieChartBuilder = Widget Function(
 /// height (as tall as wide when unbounded).
 ///
 /// ```dart
-/// DesignPieChart(semanticLabel: 'Spending', slices: const [DesignPieSlice(label: 'Rent', value: 1200), DesignPieSlice(label: 'Food', value: 600)], builder: (context, pie) => CustomPaint(size: pie.size))
+/// RawPieChart(semanticLabel: 'Spending', slices: const [RawPieSlice(label: 'Rent', value: 1200), RawPieSlice(label: 'Food', value: 600)], builder: (context, pie) => CustomPaint(size: pie.size))
 /// ```
-class DesignPieChart extends StatefulWidget {
+class RawPieChart extends StatefulWidget {
   /// A pie of [slices].
-  const DesignPieChart({
+  const RawPieChart({
     super.key,
     required this.slices,
     required this.builder,
@@ -1227,10 +1227,10 @@ class DesignPieChart extends StatefulWidget {
 
   /// The slices, clockwise from twelve o'clock (counter-clockwise right to
   /// left).
-  final List<DesignPieSlice> slices;
+  final List<RawPieSlice> slices;
 
   /// Draws the pie.
-  final DesignPieChartBuilder builder;
+  final RawPieChartBuilder builder;
 
   /// The chart's name, said first ("Spending").
   final String semanticLabel;
@@ -1244,12 +1244,12 @@ class DesignPieChart extends StatefulWidget {
 
   /// The values' readout and speech, in place of [valueFormat]; null:
   /// [valueFormat]'s.
-  final DesignChartFormat? formatValue;
+  final RawChartFormat? formatValue;
 
   /// How the values are written in the readout and what a screen reader
   /// hears, with their unit, in the reader's digits; null: the reader's
   /// numbers alone.
-  final DesignChartValueFormat? valueFormat;
+  final RawChartValueFormat? valueFormat;
 
   /// What a screen reader hears of the data; null: a sentence built from
   /// it.
@@ -1277,13 +1277,13 @@ class DesignPieChart extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<DesignPieChart> createState() => _DesignPieChartState();
+  State<RawPieChart> createState() => _DesignPieChartState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(ObjectFlagProperty<DesignPieChartBuilder>.has('builder', builder))
+      ..add(ObjectFlagProperty<RawPieChartBuilder>.has('builder', builder))
       ..add(
         DiagnosticsProperty<EdgeInsetsGeometry>(
           'padding',
@@ -1291,11 +1291,9 @@ class DesignPieChart extends StatefulWidget {
           defaultValue: EdgeInsets.zero,
         ),
       )
+      ..add(ObjectFlagProperty<RawChartFormat>.has('formatValue', formatValue))
       ..add(
-        ObjectFlagProperty<DesignChartFormat>.has('formatValue', formatValue),
-      )
-      ..add(
-        DiagnosticsProperty<DesignChartValueFormat>(
+        DiagnosticsProperty<RawChartValueFormat>(
           'valueFormat',
           valueFormat,
           defaultValue: null,
@@ -1334,8 +1332,8 @@ class DesignPieChart extends StatefulWidget {
   }
 }
 
-class _DesignPieChartState extends State<DesignPieChart>
-    with SingleTickerProviderStateMixin, _Picking<DesignPieChart> {
+class _DesignPieChartState extends State<RawPieChart>
+    with SingleTickerProviderStateMixin, _Picking<RawPieChart> {
   late final AnimationController _motion = AnimationController.unbounded(
     vsync: this,
     value: 1,
@@ -1343,7 +1341,7 @@ class _DesignPieChartState extends State<DesignPieChart>
   // The values a change springs from, as drawn.
   List<double> _from = const [];
   int? _active;
-  DesignPieChartDetails? _details;
+  RawPieChartDetails? _details;
 
   @override
   FocusNode? get givenNode => widget.focusNode;
@@ -1361,7 +1359,7 @@ class _DesignPieChartState extends State<DesignPieChart>
   }
 
   @override
-  void didUpdateWidget(DesignPieChart oldWidget) {
+  void didUpdateWidget(RawPieChart oldWidget) {
     super.didUpdateWidget(oldWidget);
     updatePicking(oldWidget.focusNode);
     if (listEquals(oldWidget.slices, widget.slices)) return;
@@ -1370,7 +1368,7 @@ class _DesignPieChartState extends State<DesignPieChart>
     unawaited(
       _motion.springTo(
         1,
-        DesignMotionPolicy.of(context).spatial(
+        RawMotionPolicy.of(context).spatial(
           dampingRatio: widget.dampingRatio,
           stiffness: widget.stiffness,
         ),
@@ -1392,14 +1390,14 @@ class _DesignPieChartState extends State<DesignPieChart>
     super.dispose();
   }
 
-  static double _value(DesignPieSlice s) => math.max(0, s.value);
+  static double _value(RawPieSlice s) => math.max(0, s.value);
 
   bool _live(int i) =>
       i >= 0 && i < widget.slices.length && _value(widget.slices[i]) > 0;
 
   // The values as drawn at [t] of the spring towards [w]'s; a new slice
   // grows from nothing.
-  List<double> _drawn(double t, DesignPieChart w) => [
+  List<double> _drawn(double t, RawPieChart w) => [
     for (var i = 0; i < w.slices.length; i++)
       t >= 1
           ? _value(w.slices[i])
@@ -1456,10 +1454,7 @@ class _DesignPieChartState extends State<DesignPieChart>
     if (!changed) return;
     widget.onActiveSliceChanged?.call(i);
     if (say && i != null) {
-      designAnnounce(
-        context,
-        _sliceLabel(i, RawWidgetsLocalizations.of(context)),
-      );
+      rawAnnounce(context, _sliceLabel(i, RawWidgetsLocalizations.of(context)));
     }
   }
 
@@ -1523,7 +1518,7 @@ class _DesignPieChartState extends State<DesignPieChart>
     return KeyEventResult.handled;
   }
 
-  DesignPieChartDetails _layout(Size size) {
+  RawPieChartDetails _layout(Size size) {
     final direction = Directionality.of(context);
     final rtl = direction == TextDirection.rtl;
     final area = widget.padding
@@ -1532,13 +1527,13 @@ class _DesignPieChartState extends State<DesignPieChart>
     final radius = math.max(0.0, math.min(area.width, area.height) / 2);
     final values = _drawn(_motion.value, widget);
     final total = values.fold(0.0, (sum, v) => sum + v);
-    final slices = <DesignPieSliceDetails>[];
+    final slices = <RawPieSliceDetails>[];
     var done = 0.0;
     for (var i = 0; i < values.length; i++) {
       final share = total == 0 ? 0.0 : values[i] / total;
       final sign = rtl ? -1 : 1;
       slices.add(
-        DesignPieSliceDetails(
+        RawPieSliceDetails(
           label: widget.slices[i].label,
           value: values[i],
           share: share,
@@ -1550,7 +1545,7 @@ class _DesignPieChartState extends State<DesignPieChart>
     }
     final a = _active;
     final mid = a == null ? null : slices[a].midAngle;
-    return DesignPieChartDetails(
+    return RawPieChartDetails(
       size: size,
       centre: area.center,
       radius: radius,
@@ -1604,11 +1599,11 @@ class _DesignPieChartState extends State<DesignPieChart>
   }
 }
 
-/// A cell of a [DesignChartTable].
+/// A cell of a [RawChartTable].
 @immutable
-class DesignChartTableCellDetails {
+class RawChartTableCellDetails {
   /// A cell's details.
-  const DesignChartTableCellDetails({
+  const RawChartTableCellDetails({
     required this.row,
     required this.column,
     required this.text,
@@ -1628,30 +1623,30 @@ class DesignChartTableCellDetails {
   final bool isHeader;
 }
 
-/// Paints a cell of a [DesignChartTable].
-typedef DesignChartTableCellBuilder = Widget Function(
+/// Paints a cell of a [RawChartTable].
+typedef RawChartTableCellBuilder = Widget Function(
   BuildContext context,
-  DesignChartTableCellDetails cell,
+  RawChartTableCellDetails cell,
 );
 
 /// A chart's data as a table, the alternative an app shows instead of the
 /// chart (a screen reader's "Show data table"): a row per x value, a
-/// column per series ([DesignChartTable.new]), or a row per slice with its
-/// value and share ([DesignChartTable.slices]). A screen reader reads a
+/// column per series ([RawChartTable.new]), or a row per slice with its
+/// value and share ([RawChartTable.slices]). A screen reader reads a
 /// table, its column headers and cells, a missing value as "Empty";
 /// [cellBuilder] paints each cell, and the columns are as wide as their
 /// widest cell.
 ///
 /// ```dart
-/// DesignChartTable(series: const [DesignChartSeries(label: 'Revenue', points: [DesignChartPoint(0, 820)])], cellBuilder: (context, cell) => Text(cell.text))
+/// RawChartTable(series: const [RawChartSeries(label: 'Revenue', points: [RawChartPoint(0, 820)])], cellBuilder: (context, cell) => Text(cell.text))
 /// ```
-class DesignChartTable extends StatelessWidget {
+class RawChartTable extends StatelessWidget {
   /// A table of [series]: x values down, series across.
-  const DesignChartTable({
+  const RawChartTable({
     super.key,
-    required List<DesignChartSeries> this.series,
+    required List<RawChartSeries> this.series,
     required this.cellBuilder,
-    this.xAxis = DesignChartXAxis.linear,
+    this.xAxis = RawChartXAxis.linear,
     this.categories,
     this.formatX,
     this.formatY,
@@ -1663,46 +1658,46 @@ class DesignChartTable extends StatelessWidget {
        shareHeader = '';
 
   /// A table of [slices]: name, value and share.
-  const DesignChartTable.slices({
+  const RawChartTable.slices({
     super.key,
-    required List<DesignPieSlice> this.slices,
+    required List<RawPieSlice> this.slices,
     required this.cellBuilder,
-    DesignChartFormat? formatValue,
+    RawChartFormat? formatValue,
     this.valueFormat,
     this.xHeader = '',
     this.valueHeader = '',
     this.shareHeader = '',
     this.semanticLabel,
   }) : series = null,
-       xAxis = DesignChartXAxis.linear,
+       xAxis = RawChartXAxis.linear,
        categories = null,
        formatX = null,
        formatY = formatValue;
 
-  /// The series, for [DesignChartTable.new].
-  final List<DesignChartSeries>? series;
+  /// The series, for [RawChartTable.new].
+  final List<RawChartSeries>? series;
 
-  /// The slices, for [DesignChartTable.slices].
-  final List<DesignPieSlice>? slices;
+  /// The slices, for [RawChartTable.slices].
+  final List<RawPieSlice>? slices;
 
   /// Paints each cell.
-  final DesignChartTableCellBuilder cellBuilder;
+  final RawChartTableCellBuilder cellBuilder;
 
-  /// What the x values are, as [DesignChart.xAxis].
-  final DesignChartXAxis xAxis;
+  /// What the x values are, as [RawChart.xAxis].
+  final RawChartXAxis xAxis;
 
-  /// A band axis's category names, as [DesignChart.categories].
+  /// A band axis's category names, as [RawChart.categories].
   final List<String>? categories;
 
-  /// The x values' words, as [DesignChart.formatX].
-  final DesignChartFormat? formatX;
+  /// The x values' words, as [RawChart.formatX].
+  final RawChartFormat? formatX;
 
-  /// The values' words, as [DesignChart.formatY] (a slice's value, as
-  /// [DesignPieChart.formatValue]).
-  final DesignChartFormat? formatY;
+  /// The values' words, as [RawChart.formatY] (a slice's value, as
+  /// [RawPieChart.formatValue]).
+  final RawChartFormat? formatY;
 
-  /// How the values are written, as [DesignChart.valueFormat].
-  final DesignChartValueFormat? valueFormat;
+  /// How the values are written, as [RawChart.valueFormat].
+  final RawChartValueFormat? valueFormat;
 
   /// The first column's header ("Month"); empty by default.
   final String xHeader;
@@ -1773,7 +1768,7 @@ class DesignChartTable extends StatelessWidget {
         child: ExcludeSemantics(
           child: cellBuilder(
             context,
-            DesignChartTableCellDetails(
+            RawChartTableCellDetails(
               row: row,
               column: column,
               text: text,
@@ -1804,25 +1799,25 @@ class DesignChartTable extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignChartTableCellBuilder>.has(
+        ObjectFlagProperty<RawChartTableCellBuilder>.has(
           'cellBuilder',
           cellBuilder,
         ),
       )
       ..add(
-        EnumProperty<DesignChartXAxis>(
+        EnumProperty<RawChartXAxis>(
           'xAxis',
           xAxis,
-          defaultValue: DesignChartXAxis.linear,
+          defaultValue: RawChartXAxis.linear,
         ),
       )
       ..add(
         IterableProperty<String>('categories', categories, defaultValue: null),
       )
-      ..add(ObjectFlagProperty<DesignChartFormat>.has('formatX', formatX))
-      ..add(ObjectFlagProperty<DesignChartFormat>.has('formatY', formatY))
+      ..add(ObjectFlagProperty<RawChartFormat>.has('formatX', formatX))
+      ..add(ObjectFlagProperty<RawChartFormat>.has('formatY', formatY))
       ..add(
-        DiagnosticsProperty<DesignChartValueFormat>(
+        DiagnosticsProperty<RawChartValueFormat>(
           'valueFormat',
           valueFormat,
           defaultValue: null,

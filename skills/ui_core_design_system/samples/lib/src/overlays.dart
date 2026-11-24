@@ -66,7 +66,7 @@ class LookTooltip extends StatelessWidget {
 }
 
 /// Opens an alert or a dialog over the page and completes with what its
-/// actions pop: ui_core's [DesignDialogRoute] (spring, focus, Escape, back,
+/// actions pop: ui_core's [RawModalDialogRoute] (spring, focus, Escape, back,
 /// barrier) holding a [RawAlertDialog] (layout, safe focus, and actions in a
 /// [RawActionBar]: one row while they fit, else one column of one width
 /// with the confirming action on top), drawn in the look's hand.
@@ -96,7 +96,7 @@ Future<T?> showLookDialog<T>(
   // opener's themes (a LookTheme nested in a page) over to it.
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push(
-    DesignDialogRoute<T>(
+    RawModalDialogRoute<T>(
       isAlert: isAlert,
       barrierLabel: words.modalBarrierDismissLabel,
       barrierColor: theme.colors.ink.withValues(alpha: .32),
@@ -154,9 +154,9 @@ Future<T?> showLookDialog<T>(
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: DesignControlBox(
+                child: RawControlBox(
                   minHeight: theme.controlHeight,
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
                     child: Text(action.label, style: theme.label),
                   ),
@@ -251,7 +251,7 @@ Future<T?> showLookSheet<T>(
 /// page, a picture shown large) and completes with what it pops: ui_core's
 /// [RawModalRoute] (spring, focus, Escape, back, barrier, Tab kept inside),
 /// whose page states no role. A screen reader hears the panel's own words,
-/// its heading first, where a [DesignDialogRoute] would call it a dialog.
+/// its heading first, where a [RawModalDialogRoute] would call it a dialog.
 ///
 /// ```dart
 /// showLookPanel<void>(

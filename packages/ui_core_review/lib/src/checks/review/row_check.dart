@@ -17,7 +17,7 @@ part of '../../review.dart';
 /// dark rim colours. This preserves the full outline when one rim is close
 /// to the background. A face no pixel of which
 /// reaches the floor (a fill a hue apart from its ground, a pane of glass)
-/// is read by its box, as is one a look marks with [DesignKeylineFace].
+/// is read by its box, as is one a look marks with [RawKeylineFace].
 /// Controls of one kind touching side by side in one track drawn round
 /// them (a segmented control's segments, a joined strip's buttons: a fill
 /// or a stroke all round, no more than 8 px round them, holding nothing
@@ -74,7 +74,7 @@ part of '../../review.dart';
 /// middle or an edge's reaches is painted after it, and fills), is not
 /// read. A row
 /// inside a region that says why its controls may differ in height or
-/// centre ([DesignKeylineRegion.mixedHeights]: a gallery's ladder of one
+/// centre ([RawKeylineRegion.mixedHeights]: a gallery's ladder of one
 /// control per size) is not held; a to-do there is named. To free one row
 /// only, put the region round that row.
 ///
@@ -185,11 +185,11 @@ class DesignRowCheck {
         );
     final found = <String>[];
     final fallback = <String>[];
-    final toDo = <DesignKeylineRegion>{};
+    final toDo = <RawKeylineRegion>{};
     for (final (node, controls) in rows) {
       // A region that says why its controls differ is not held.
       if (_regionOf(node, regions)
-          case DesignKeylineRegion(:final mixedHeights?) && final region) {
+          case RawKeylineRegion(:final mixedHeights?) && final region) {
         if (isToDoReason(mixedHeights) && toDo.add(region)) {
           found.add(
             '${_rowOf(controls)}: "$mixedHeights" is a to-do, not a reason '
@@ -288,10 +288,10 @@ class DesignRowCheck {
 }
 
 // The boxes of the DesignKeylineRegions under [context], with them.
-Map<RenderBox, DesignKeylineRegion> _regionBoxes(BuildContext context) {
-  final found = <RenderBox, DesignKeylineRegion>{};
+Map<RenderBox, RawKeylineRegion> _regionBoxes(BuildContext context) {
+  final found = <RenderBox, RawKeylineRegion>{};
   void visit(Element element) {
-    if (element.widget case final DesignKeylineRegion region) {
+    if (element.widget case final RawKeylineRegion region) {
       final box = element.findRenderObject();
       if (box is RenderBox && box.attached && box.hasSize && _isShown(box)) {
         // Of two round one box, the inner.
@@ -307,9 +307,9 @@ Map<RenderBox, DesignKeylineRegion> _regionBoxes(BuildContext context) {
 
 // The nearest of [regions] round [node] (or [node]'s own); null outside
 // all of them.
-DesignKeylineRegion? _regionOf(
+RawKeylineRegion? _regionOf(
   RenderObject node,
-  Map<RenderBox, DesignKeylineRegion> regions,
+  Map<RenderBox, RawKeylineRegion> regions,
 ) {
   for (RenderObject? up = node; up != null; up = up.parent) {
     if (regions[up] case final region?) return region;

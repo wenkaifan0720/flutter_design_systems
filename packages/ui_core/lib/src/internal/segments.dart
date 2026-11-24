@@ -1,4 +1,4 @@
-// Date and time patterns (CLDR's, as DesignLocaleData holds them): read
+// Date and time patterns (CLDR's, as RawLocaleData holds them): read
 // into the segments a field types in and the text between, and written out
 // for a date or a time in a locale's names and digits.
 import 'package:flutter/foundation.dart';
@@ -135,7 +135,7 @@ List<PatternPart> parsePattern(String pattern) {
 }
 
 /// [n] in the locale's digits, [width] wide (zero-padded).
-String localDigits(DesignLocaleData data, int n, {int width = 1}) {
+String localDigits(RawLocaleData data, int n, {int width = 1}) {
   final ascii = n.toString().padLeft(width, '0');
   final zero = data.zeroDigit;
   if (zero == null) return ascii;
@@ -150,7 +150,7 @@ String localDigits(DesignLocaleData data, int n, {int width = 1}) {
 String formatPattern(
   String pattern,
   DateTime when, {
-  required DesignLocaleData data,
+  required RawLocaleData data,
   required String am,
   required String pm,
 }) {

@@ -108,12 +108,12 @@ class LookFieldTrigger extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
-            child: DesignControlBox(
+            child: RawControlBox(
               minHeight: theme.density.height(theme.controlHeight),
               child: Row(
                 children: [
                   Expanded(
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         value ?? '',
@@ -240,13 +240,13 @@ Widget lookOptionRow(
     shape: const RoundedRectangleBorder(),
     child: Padding(
       padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
-      child: DesignControlBox(
+      child: RawControlBox(
         minHeight: theme.density.height(theme.controlHeight),
         alignment: AlignmentDirectional.centerStart,
         child: Row(
           children: [
             Expanded(
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: theme.capHeightFactor,
                 child: Text(
                   label,
@@ -580,12 +580,12 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: DesignCapCenter(
+                          child: RawCapCenter(
                             capHeightFactor: theme.capHeightFactor,
-                            child: DesignTextEntryBox(
+                            child: RawTextEntryBox(
                               minHeight: math.max(
                                 theme.density.height(theme.controlHeight),
-                                DesignTapTargets.of(context).floorOn().height,
+                                RawTapTargets.of(context).floorOn().height,
                               ),
                               controller: field.controller,
                               child: entry,

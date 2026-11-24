@@ -58,7 +58,7 @@ class SettingsCard extends StatelessWidget {
     ),
     child: const Padding(
       padding: EdgeInsets.all(16),
-      child: DesignKeylineRegion(
+      child: RawKeylineRegion(
         label: 'Settings',
         child: Column(
           mainAxisSize: MainAxisSize.min,

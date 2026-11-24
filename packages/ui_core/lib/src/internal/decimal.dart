@@ -1,6 +1,6 @@
 // Decimal numbers for the value behaviours: a step in scaled integers (0.1
 // on from 0.2 is 0.3, not 0.30000000000000004), and a number written and
-// read in a locale's symbols and digits (CLDR's, as DesignLocaleData holds
+// read in a locale's symbols and digits (CLDR's, as RawLocaleData holds
 // them).
 import 'package:flutter/foundation.dart';
 
@@ -21,7 +21,7 @@ class DecimalSymbols {
   });
 
   /// [data]'s symbols, in its digits.
-  DecimalSymbols.of(DesignLocaleData data)
+  DecimalSymbols.of(RawLocaleData data)
     : this(
         zeroDigit: data.zeroDigit ?? '0',
         decimalSeparator: data.decimalSeparator,

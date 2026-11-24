@@ -5,8 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 /// How one part of the look looks, slot by slot, for its states: ui_core's
-/// [DesignStyle] under the look's own name.
-typedef LookStyle = DesignStyle;
+/// [RawStyle] under the look's own name.
+typedef LookStyle = RawStyle;
 
 /// The look's colours for one preset, by day or by night.
 @immutable
@@ -121,7 +121,7 @@ class LookColors with Diagnosticable {
 }
 
 /// The look's motion tokens: springs, each a damping ratio and a stiffness,
-/// as ui_core runs them ([designSpring], [DesignMotionPolicy]).
+/// as ui_core runs them ([rawSpring], [RawMotionPolicy]).
 @immutable
 class LookMotion {
   /// Tokens given one by one.
@@ -173,7 +173,7 @@ class LookThemeData with Diagnosticable {
     this.capHeightFactor = 0.711,
     this.controlHeight = 44,
     this.radius = 8,
-    this.density = DesignDensity.standard,
+    this.density = RawDensity.standard,
     this.motion = const LookMotion(),
     this.buttonStyle,
   });
@@ -199,7 +199,7 @@ class LookThemeData with Diagnosticable {
   /// look never depends on one.
   final String fontFamily;
 
-  /// [fontFamily]'s cap height over its font size, for [DesignCapCenter].
+  /// [fontFamily]'s cap height over its font size, for [RawCapCenter].
   final double capHeightFactor;
 
   /// The one height every control that can share a row stands at.
@@ -209,7 +209,7 @@ class LookThemeData with Diagnosticable {
   final double radius;
 
   /// How compact the controls' faces stand; never their tap targets.
-  final DesignDensity density;
+  final RawDensity density;
 
   /// The springs.
   final LookMotion motion;
@@ -249,7 +249,7 @@ class LookThemeData with Diagnosticable {
     double? capHeightFactor,
     double? controlHeight,
     double? radius,
-    DesignDensity? density,
+    RawDensity? density,
     LookMotion? motion,
     LookStyle? buttonStyle,
   }) => LookThemeData(
@@ -272,9 +272,9 @@ class LookThemeData with Diagnosticable {
         capHeightFactor: t < .5 ? a.capHeightFactor : b.capHeightFactor,
         controlHeight: lerpDouble(a.controlHeight, b.controlHeight, t)!,
         radius: lerpDouble(a.radius, b.radius, t)!,
-        density: DesignDensity.lerp(a.density, b.density, t),
+        density: RawDensity.lerp(a.density, b.density, t),
         motion: t < .5 ? a.motion : b.motion,
-        buttonStyle: DesignStyle.lerp(a.buttonStyle, b.buttonStyle, t),
+        buttonStyle: RawStyle.lerp(a.buttonStyle, b.buttonStyle, t),
       );
 
   @override
@@ -348,10 +348,10 @@ class LookTheme extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _LookScope(
     theme: this,
-    child: DesignTapTargetScope(
-      targets: DesignTapTargets.fallback,
-      child: DesignSpacingScope(
-        spacing: DesignSpacing.fallback,
+    child: RawTapTargetScope(
+      targets: RawTapTargets.fallback,
+      child: RawSpacingScope(
+        spacing: RawSpacing.fallback,
         child: DefaultTextStyle(
           style: data.body,
           child: IconTheme(

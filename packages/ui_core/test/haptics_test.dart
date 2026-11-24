@@ -31,7 +31,7 @@ List<String> _platformHaptics(WidgetTester tester) {
 }
 
 /// A table that records each moment it is asked to play.
-DesignHaptics _recording(List<String> log) => DesignHaptics(
+RawHaptics _recording(List<String> log) => RawHaptics(
   selectionChanged: () => log.add('selection'),
   longPress: () => log.add('long press'),
   thresholdCrossed: () => log.add('threshold'),
@@ -40,7 +40,7 @@ DesignHaptics _recording(List<String> log) => DesignHaptics(
 /// A value handle with ten divisions, dragged by its parent to [value].
 Widget _handle(double value, {bool dragging = true, int? divisions = 10}) =>
     Center(
-      child: DesignValueHandle(
+      child: RawValueHandle(
         value: value,
         divisions: divisions,
         dragging: dragging,
@@ -51,22 +51,22 @@ Widget _handle(double value, {bool dragging = true, int? divisions = 10}) =>
 
 void main() {
   test('the default table is the platform\'s, and silent is none', () {
-    const table = DesignHaptics();
+    const table = RawHaptics();
     expect(table.selectionChanged, HapticFeedback.selectionClick);
     expect(table.thresholdCrossed, HapticFeedback.lightImpact);
     expect(table.longPress, isNotNull);
-    const silent = DesignHaptics.silent();
+    const silent = RawHaptics.silent();
     expect(silent.selectionChanged, isNull);
     expect(silent.longPress, isNull);
     expect(silent.thresholdCrossed, isNull);
-    expect(silent, const DesignHaptics.silent());
-    expect(silent.hashCode, const DesignHaptics.silent().hashCode);
+    expect(silent, const RawHaptics.silent());
+    expect(silent.hashCode, const RawHaptics.silent().hashCode);
     expect(silent == table, isFalse);
   });
 
   testWidgets('each default plays the platform\'s haptic', (tester) async {
     final sent = _platformHaptics(tester);
-    const table = DesignHaptics();
+    const table = RawHaptics();
     table.selectionChanged!();
     table.thresholdCrossed!();
     await tester.pump();
@@ -80,7 +80,7 @@ void main() {
     final sent = _platformHaptics(tester);
     for (final platform in TargetPlatform.values) {
       debugDefaultTargetPlatformOverride = platform;
-      const DesignHaptics().longPress!();
+      const RawHaptics().longPress!();
     }
     debugDefaultTargetPlatformOverride = null;
     await tester.pump();
@@ -94,13 +94,13 @@ void main() {
   testWidgets('a scope swaps the table, and tells who read it', (tester) async {
     final log = <String>[];
     var builds = 0;
-    late DesignHaptics read;
-    Widget app(DesignHaptics haptics) => DesignHapticsScope(
+    late RawHaptics read;
+    Widget app(RawHaptics haptics) => RawHapticsScope(
       haptics: haptics,
       child: Builder(
         builder: (context) {
           builds++;
-          read = DesignHaptics.of(context);
+          read = RawHaptics.of(context);
           return const SizedBox();
         },
       ),
@@ -108,12 +108,12 @@ void main() {
     await tester.pumpWidget(
       Builder(
         builder: (context) {
-          read = DesignHaptics.of(context);
+          read = RawHaptics.of(context);
           return const SizedBox();
         },
       ),
     );
-    expect(read, const DesignHaptics(), reason: 'no scope: the platform\'s');
+    expect(read, const RawHaptics(), reason: 'no scope: the platform\'s');
 
     final recording = _recording(log);
     await tester.pumpWidget(app(recording));
@@ -124,13 +124,11 @@ void main() {
     final before = builds;
     await tester.pumpWidget(app(recording));
     expect(builds, before + 1, reason: 'its parent built it');
-    await tester.pumpWidget(app(const DesignHaptics.silent()));
+    await tester.pumpWidget(app(const RawHaptics.silent()));
     expect(read.selectionChanged, isNull);
 
-    final scope = tester.widget<DesignHapticsScope>(
-      find.byType(DesignHapticsScope),
-    );
-    expect(scope.toString(), contains('DesignHapticsScope'));
+    final scope = tester.widget<RawHapticsScope>(find.byType(RawHapticsScope));
+    expect(scope.toString(), contains('RawHapticsScope'));
     expect(
       scope.toDiagnosticsNode().getProperties().map((p) => p.name),
       contains('haptics'),
@@ -143,7 +141,7 @@ void main() {
     ) async {
       final log = <String>[];
       Widget at(double v, {bool dragging = true, int? divisions = 10}) =>
-          DesignHapticsScope(
+          RawHapticsScope(
             haptics: _recording(log),
             child: _handle(v, dragging: dragging, divisions: divisions),
           );
@@ -167,7 +165,7 @@ void main() {
       var values = const RawRangeValues(20, 80);
       await tester.pumpWidget(
         harness(
-          DesignHapticsScope(
+          RawHapticsScope(
             haptics: _recording(log),
             child: StatefulBuilder(
               builder: (context, setState) => Align(

@@ -104,8 +104,8 @@ Widget _app(
   textScale: textScale,
   wrap: played == null
       ? null
-      : (context, navigator) => DesignHapticsScope(
-          haptics: DesignHaptics(
+      : (context, navigator) => RawHapticsScope(
+          haptics: RawHaptics(
             selectionChanged: () => played.add('selectionChanged'),
             longPress: () => played.add('longPress'),
             thresholdCrossed: () => played.add('thresholdCrossed'),

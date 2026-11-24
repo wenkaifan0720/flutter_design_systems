@@ -58,7 +58,7 @@ typedef RawButtonBuilder = Widget Function(
 /// lets it go at once: a scroll took the pointer. A long press holds it
 /// until the finger lifts.
 ///
-/// It is as large as its face, or [minimumSize]: a `DesignTapTargetScope`'s
+/// It is as large as its face, or [minimumSize]: a `RawTapTargetScope`'s
 /// floors reach it only through a `TapTargetPadding` round it. A small icon
 /// (16 by 16) under a touch scope stays 16 by 16 to a finger and to a
 /// screen reader until it is wrapped:
@@ -422,12 +422,12 @@ class RawButtonState extends State<RawButton> {
   // The focus shown as a browser's :focus-visible shows it: not after a
   // pointer's press (a dialog a click opened, its safe action focused),
   // until a key.
-  late final DesignFocusShown _focus;
+  late final RawFocusShown _focus;
 
   @override
   void initState() {
     super.initState();
-    _focus = DesignFocusShown((shown) => _set(WidgetState.focused, shown));
+    _focus = RawFocusShown((shown) => _set(WidgetState.focused, shown));
     _controller.addListener(_changed);
     _sync();
   }
@@ -741,7 +741,7 @@ class _FaceSemantics extends SingleChildRenderObjectWidget {
 // shows that repeats the button's label or value is dropped from what a
 // screen reader hears, so the button's name is read once; the face's other
 // words (a subtitle) stay.
-class _RenderFaceSemantics extends RenderDesignSemanticsProxy {
+class _RenderFaceSemantics extends RenderSemanticsProxy {
   _RenderFaceSemantics({String? label, String? value}) {
     _label = label;
     _value = value;

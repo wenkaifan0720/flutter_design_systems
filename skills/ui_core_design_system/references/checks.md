@@ -16,7 +16,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.3.0
+  ui_core_test: ^0.4.0
 ```
 
 `analysis_options.yaml`, the options the analyzer holds every package to:
@@ -169,7 +169,7 @@ labels.verify();
 ```
 
 `drawnTolerance: 0.5` holds the capitals to half a device pixel as drawn,
-which parts wrapped in `DesignCapCenter` meet. `checkDensities` runs the same
+which parts wrapped in `RawCapCenter` meet. `checkDensities` runs the same
 check under each density the look offers.
 
 ### The radio group check drives the keys
@@ -359,7 +359,7 @@ dev_dependencies:
 | `DesignAlignmentMatrix`, `DesignAlignmentSheet` | Every control of one size at one height and one centre, labels' capitals on it, per platform; the sheet draws them four times their size |
 | `DesignTextEntryCheck` | A text entry's line, hint and caret on the row's centre |
 | `DesignRowCheck` | Controls in a row (dialog actions, a field and its button) one height by their drawn outline |
-| `DesignKeylineCheck`, `DesignKeylineSheet` | A card's rows on its leading and trailing keylines (`DesignKeylineRegion`) |
+| `DesignKeylineCheck`, `DesignKeylineSheet` | A card's rows on its leading and trailing keylines (`RawKeylineRegion`) |
 | `DesignWidthCheck` | From 600 px wide, no select, button, stepper or segmented control stretched to its column |
 | `DesignSpacingCheck` | Gaps on the look's grid |
 | `DesignFieldPartsCheck` | A field's own parts (prefix, suffix, segments) with room |

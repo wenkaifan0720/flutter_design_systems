@@ -161,7 +161,7 @@ class _LookDateFieldState extends State<LookDateField> {
                   ],
                 ),
                 dayBuilder: (context, day, states) =>
-                    _lookDay(theme, words, day, states),
+                    _lookDay(theme, day, states),
               ),
             ),
           ),
@@ -178,7 +178,6 @@ const double _day = 44;
 /// its rule heavier under the keyboard.
 Widget _lookDay(
   LookThemeData theme,
-  RawWidgetsLocalizations words,
   RawCalendarDayDetails day,
   Set<WidgetState> states,
 ) {
@@ -205,8 +204,8 @@ Widget _lookDay(
       ),
       shape: const CircleBorder(),
       child: Center(
-        // The reader's digits: Arabic-Indic in Arabic.
-        child: Text(words.formatDecimal(day.date.day), style: theme.label),
+        // The day's number in the reader's digits: Arabic-Indic in Arabic.
+        child: Text(day.label, style: theme.label),
       ),
     ),
   );

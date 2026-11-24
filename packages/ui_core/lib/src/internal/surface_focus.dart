@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 /// What opened a surface.
-enum DesignOpenedBy {
+enum RawOpenedBy {
   /// A key: focus starts on the first item.
   keys,
 
@@ -28,26 +28,26 @@ enum DesignOpenedBy {
 /// else a key held, else a pointer resting on the anchor ([hovered]: on the
 /// web with semantics on, a click arrives as a semantics tap with no press,
 /// and a mouse has moved over the anchor first), else neither.
-DesignOpenedBy designOpenedBy({required bool pressed, required bool hovered}) {
-  if (pressed) return DesignOpenedBy.pointer;
+RawOpenedBy rawOpenedBy({required bool pressed, required bool hovered}) {
+  if (pressed) return RawOpenedBy.pointer;
   if (HardwareKeyboard.instance.logicalKeysPressed.isNotEmpty) {
-    return DesignOpenedBy.keys;
+    return RawOpenedBy.keys;
   }
-  return hovered ? DesignOpenedBy.pointer : DesignOpenedBy.other;
+  return hovered ? RawOpenedBy.pointer : RawOpenedBy.other;
 }
 
 /// The key of an anchored overlay whose anchor is a region, not a control
 /// (a context menu's): focus goes back where it was when its surface
 /// closes, never to the region's first control.
-class DesignRegionAnchorKey extends ValueKey<String> {
+class RawRegionAnchorKey extends ValueKey<String> {
   /// The key.
-  const DesignRegionAnchorKey() : super('region anchor');
+  const RawRegionAnchorKey() : super('region anchor');
 }
 
 /// What an open surface shares with the rows inside it.
-class DesignSurfaceFocus extends InheritedWidget {
+class RawSurfaceFocus extends InheritedWidget {
   /// Shares [focusSurface], [byPointer] and [onKey] with [child].
-  const DesignSurfaceFocus({
+  const RawSurfaceFocus({
     super.key,
     required this.focusSurface,
     required this.byPointer,
@@ -68,11 +68,11 @@ class DesignSurfaceFocus extends InheritedWidget {
   final ValueNotifier<FocusOnKeyEventCallback?> onKey;
 
   /// The nearest surface's, or null outside one.
-  static DesignSurfaceFocus? maybeOf(BuildContext context) =>
-      context.getInheritedWidgetOfExactType<DesignSurfaceFocus>();
+  static RawSurfaceFocus? maybeOf(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<RawSurfaceFocus>();
 
   @override
-  bool updateShouldNotify(DesignSurfaceFocus oldWidget) =>
+  bool updateShouldNotify(RawSurfaceFocus oldWidget) =>
       focusSurface != oldWidget.focusSurface ||
       byPointer != oldWidget.byPointer ||
       onKey != oldWidget.onKey;

@@ -49,10 +49,10 @@ void main() {
   });
 
   test('a pattern writes a date and a time in the locale\'s names', () {
-    final en = designLocaleData['en']!;
-    final ar = designLocaleData['ar']!;
+    final en = rawLocaleData['en']!;
+    final ar = rawLocaleData['ar']!;
     final at = DateTime(2026, 11, 16, 0, 5, 9);
-    String f(String pattern, [DesignLocaleData? data]) =>
+    String f(String pattern, [RawLocaleData? data]) =>
         formatPattern(pattern, at, data: data ?? en, am: 'AM', pm: 'PM');
     expect(f('EEEE, MMMM d, y'), 'Monday, November 16, 2026');
     expect(f('EEE MMM dd yy'), 'Mon Nov 16 26');

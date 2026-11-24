@@ -105,25 +105,25 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
     focusNode: node,
     autofocus: autofocus,
   ),
-  'DesignChart': (node, autofocus) => SizedBox(
+  'RawChart': (node, autofocus) => SizedBox(
     width: 200,
     height: 100,
-    child: DesignChart(
+    child: RawChart(
       semanticLabel: 'Chart',
       series: const [
-        DesignChartSeries(label: 'A', points: [DesignChartPoint(0, 1)]),
+        RawChartSeries(label: 'A', points: [RawChartPoint(0, 1)]),
       ],
       builder: (context, chart) => const SizedBox.expand(),
       focusNode: node,
       autofocus: autofocus,
     ),
   ),
-  'DesignPieChart': (node, autofocus) => SizedBox(
+  'RawPieChart': (node, autofocus) => SizedBox(
     width: 100,
     height: 100,
-    child: DesignPieChart(
+    child: RawPieChart(
       semanticLabel: 'Pie',
-      slices: const [DesignPieSlice(label: 'A', value: 1)],
+      slices: const [RawPieSlice(label: 'A', value: 1)],
       builder: (context, pie) => const SizedBox.expand(),
       focusNode: node,
       autofocus: autofocus,

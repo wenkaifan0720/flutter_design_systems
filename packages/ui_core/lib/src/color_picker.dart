@@ -1,6 +1,6 @@
 /// A colour picker, headless: a controller over hue, saturation, brightness
 /// and alpha (with hex in and out), a saturation-brightness area, channel
-/// sliders on [DesignValueHandle], and [RawColorPicker] composing them.
+/// sliders on [RawValueHandle], and [RawColorPicker] composing them.
 /// Every part takes the keyboard (arrows a step, Shift ten) and tells a
 /// screen reader its value; the hex text is the look's own field on
 /// [RawColorController.hex] and [RawColorController.setHex].
@@ -223,14 +223,14 @@ class RawColorArea extends StatefulWidget {
 class _DesignColorAreaState extends State<RawColorArea> {
   bool _focused = false;
   // Shown as a browser's :focus-visible shows it (internal/focus_visible.dart).
-  late final DesignFocusShown _focus;
+  late final RawFocusShown _focus;
   bool _hovered = false;
   bool _dragging = false;
 
   @override
   void initState() {
     super.initState();
-    _focus = DesignFocusShown((on) => setState(() => _focused = on));
+    _focus = RawFocusShown((on) => setState(() => _focused = on));
   }
 
   @override
@@ -392,7 +392,7 @@ class RawColorSlider extends StatefulWidget {
   trackBuilder;
 
   /// Paints the thumb.
-  final DesignHandleBuilder thumbBuilder;
+  final RawHandleBuilder thumbBuilder;
 
   /// What a screen reader calls it; null:
   /// [RawWidgetsLocalizations.colorChannelLabel].
@@ -428,10 +428,7 @@ class RawColorSlider extends StatefulWidget {
         >.has('trackBuilder', trackBuilder),
       )
       ..add(
-        ObjectFlagProperty<DesignHandleBuilder>.has(
-          'thumbBuilder',
-          thumbBuilder,
-        ),
+        ObjectFlagProperty<RawHandleBuilder>.has('thumbBuilder', thumbBuilder),
       )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
@@ -521,7 +518,7 @@ class _DesignColorSliderState extends State<RawColorSlider> {
                       top: 0,
                       width: t.width,
                       height: t.height,
-                      child: DesignValueHandle(
+                      child: RawValueHandle(
                         value: ch.of(hsv),
                         max: ch.max,
                         step: ch == RawColorChannel.hue ? 1 : 0.01,
@@ -592,7 +589,7 @@ class RawColorPicker extends StatelessWidget {
   trackBuilder;
 
   /// Paints a slider's thumb.
-  final DesignHandleBuilder thumbBuilder;
+  final RawHandleBuilder thumbBuilder;
 
   /// Whether it has an alpha slider.
   final bool showAlpha;
@@ -663,10 +660,7 @@ class RawColorPicker extends StatelessWidget {
         >.has('trackBuilder', trackBuilder),
       )
       ..add(
-        ObjectFlagProperty<DesignHandleBuilder>.has(
-          'thumbBuilder',
-          thumbBuilder,
-        ),
+        ObjectFlagProperty<RawHandleBuilder>.has('thumbBuilder', thumbBuilder),
       )
       ..add(
         FlagProperty(

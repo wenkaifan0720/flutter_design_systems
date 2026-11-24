@@ -16,9 +16,9 @@ import 'surface_focus.dart';
 
 /// How a menu's rows and panels are painted, handed down its submenus.
 @immutable
-class DesignMenuPainters {
+class RawMenuPainters {
   /// The painters of a menu.
-  const DesignMenuPainters({
+  const RawMenuPainters({
     required this.itemBuilder,
     required this.surfaceBuilder,
     this.dividerBuilder,
@@ -47,7 +47,7 @@ class DesignMenuPainters {
 /// the pointer moved last ([byPointer]) and focused when the keys did (as
 /// [states] says: in the keyboard's highlight mode); no other row hovered
 /// or focused.
-Set<WidgetState> designMenuRowStates(
+Set<WidgetState> rawMenuRowStates(
   Set<WidgetState> states, {
   required bool current,
   required bool byPointer,
@@ -68,10 +68,10 @@ Set<WidgetState> designMenuRowStates(
 /// A menu's row: a [RawButton] that, with [highlightFollowsPointer],
 /// takes the keys as a pointer moves over it (a disabled one gives them to
 /// the surface: no row lit), lights none as the pointer leaves it for no
-/// other row, and paints [designMenuRowStates].
-class DesignMenuRow extends StatefulWidget {
+/// other row, and paints [rawMenuRowStates].
+class RawMenuRow extends StatefulWidget {
   /// A row [semanticLabel]led, that [onPressed] presses; null disables it.
-  const DesignMenuRow({
+  const RawMenuRow({
     super.key,
     required this.onPressed,
     required this.semanticLabel,
@@ -116,10 +116,10 @@ class DesignMenuRow extends StatefulWidget {
   final Widget Function(BuildContext context, Set<WidgetState> states) builder;
 
   @override
-  State<DesignMenuRow> createState() => _DesignMenuRowState();
+  State<RawMenuRow> createState() => _DesignMenuRowState();
 }
 
-class _DesignMenuRowState extends State<DesignMenuRow> {
+class _DesignMenuRowState extends State<RawMenuRow> {
   FocusNode? _own;
 
   FocusNode get _node =>
@@ -133,7 +133,7 @@ class _DesignMenuRowState extends State<DesignMenuRow> {
 
   // The pointer over the row: the keys come here, or, on a disabled row,
   // go to the surface (none lit).
-  void _over(DesignSurfaceFocus shared) {
+  void _over(RawSurfaceFocus shared) {
     if (widget.onPressed == null || !_node.canRequestFocus) {
       shared.focusSurface();
     } else if (!_node.hasPrimaryFocus) {
@@ -143,7 +143,7 @@ class _DesignMenuRowState extends State<DesignMenuRow> {
 
   // The pointer left the row: none lit, unless the keys moved last (or the
   // next row takes it, in the same dispatch).
-  void _left(DesignSurfaceFocus shared) {
+  void _left(RawSurfaceFocus shared) {
     if (!mounted || !shared.byPointer.value || !_node.hasPrimaryFocus) return;
     shared.focusSurface();
   }
@@ -151,7 +151,7 @@ class _DesignMenuRowState extends State<DesignMenuRow> {
   @override
   Widget build(BuildContext context) {
     final shared = widget.highlightFollowsPointer
-        ? DesignSurfaceFocus.maybeOf(context)
+        ? RawSurfaceFocus.maybeOf(context)
         : null;
     final node = _node;
     Widget row = RawButton(
@@ -169,7 +169,7 @@ class _DesignMenuRowState extends State<DesignMenuRow> {
           listenable: Listenable.merge([shared.byPointer, node]),
           builder: (context, _) => widget.builder(
             context,
-            designMenuRowStates(
+            rawMenuRowStates(
               states,
               current: node.hasPrimaryFocus,
               byPointer: shared.byPointer.value,
@@ -196,9 +196,9 @@ class _DesignMenuRowState extends State<DesignMenuRow> {
 
 /// A menu's panel of [entries], painted by [painters]: its rows and typed
 /// letters. A command closes [root] (the whole menu) and runs.
-class DesignMenuItems extends StatefulWidget {
+class RawMenuItems extends StatefulWidget {
   /// The panel of [entries] in the surface [info] describes.
-  const DesignMenuItems({
+  const RawMenuItems({
     super.key,
     required this.info,
     required this.entries,
@@ -216,17 +216,17 @@ class DesignMenuItems extends StatefulWidget {
   final MenuController root;
 
   /// How it is painted.
-  final DesignMenuPainters painters;
+  final RawMenuPainters painters;
 
   @override
-  State<DesignMenuItems> createState() => _DesignMenuItemsState();
+  State<RawMenuItems> createState() => _DesignMenuItemsState();
 }
 
 // A menu's items' focus, and its typed letters: a letter goes to the next
 // item its label starts with, round past the end, so the same letter steps
 // through the items it starts; letters typed in a run (each within [_run]
 // of the last) spell the start, the item on it kept while it fits.
-class _DesignMenuItemsState extends State<DesignMenuItems> {
+class _DesignMenuItemsState extends State<RawMenuItems> {
   final List<FocusNode> _nodes = [];
   String _typed = '';
   Timer? _pause;
@@ -238,7 +238,7 @@ class _DesignMenuItemsState extends State<DesignMenuItems> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final onKey = DesignSurfaceFocus.maybeOf(context)?.onKey;
+    final onKey = RawSurfaceFocus.maybeOf(context)?.onKey;
     if (!identical(onKey, _onKey)) {
       _release();
       _onKey = onKey;
@@ -325,7 +325,7 @@ class _DesignMenuItemsState extends State<DesignMenuItems> {
             focusNode: _nodes[i],
           )
         else
-          DesignMenuRow(
+          RawMenuRow(
             focusNode: _nodes[i],
             highlightFollowsPointer: painters.highlightFollowsPointer,
             onPressed: e.enabled
@@ -374,7 +374,7 @@ class _Submenu extends StatefulWidget {
   });
 
   final RawMenuEntry entry;
-  final DesignMenuPainters painters;
+  final RawMenuPainters painters;
   final MenuController root;
 
   // Its row's focus, its menu's (for the typed letters).
@@ -428,7 +428,7 @@ class _SubmenuState extends State<_Submenu> {
         semanticLabel: e.label,
         placement: const RawPopoverPlacement(side: RawPopoverSide.end, gap: 0),
         onOpenChanged: (_) => setState(() {}),
-        anchorBuilder: (context, anchor) => DesignMenuRow(
+        anchorBuilder: (context, anchor) => RawMenuRow(
           focusNode: _node,
           highlightFollowsPointer: painters.highlightFollowsPointer,
           onPressed: e.enabled ? anchor.toggle : null,
@@ -446,7 +446,7 @@ class _SubmenuState extends State<_Submenu> {
           builder: (context, states) =>
               painters.itemBuilder(context, e, RawMenuLevel.menu, states),
         ),
-        overlayBuilder: (context, info) => DesignMenuItems(
+        overlayBuilder: (context, info) => RawMenuItems(
           info: info,
           entries: e.children ?? const [],
           root: widget.root,

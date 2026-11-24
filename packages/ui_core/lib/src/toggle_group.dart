@@ -21,10 +21,10 @@ typedef RawSegmentBuilder<T> = Widget Function(
 /// A row (or column) of toggles over [options].
 ///
 /// With [multiSelectionEnabled] false it is one choice and answers as
-/// [DesignRadioGroup] and Flutter's [RadioGroup] do: a screen reader hears
-/// a radio group of radios, all four arrows move and choose (mirrored right
-/// to left), and a press on the chosen item keeps it unless
-/// [emptySelectionAllowed]. With [multiSelectionEnabled] true each item
+/// Flutter's [RadioGroup] does: a screen reader hears a radio group of
+/// radios, all four arrows move and choose (mirrored right to left), and a
+/// press on the chosen item keeps it unless [emptySelectionAllowed]. With
+/// [multiSelectionEnabled] true each item
 /// toggles on its own: the arrows along [direction] move without pressing.
 ///
 /// Tab reaches the group once, at its chosen item (its first chosen one

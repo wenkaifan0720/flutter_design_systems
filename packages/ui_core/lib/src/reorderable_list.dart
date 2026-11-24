@@ -213,7 +213,7 @@ class _ReorderHandle extends StatefulWidget {
 }
 
 class _ReorderHandleState extends State<_ReorderHandle> {
-  late final DesignFocusShown _shown = DesignFocusShown((shown) {
+  late final RawFocusShown _shown = RawFocusShown((shown) {
     if (mounted && shown != _focused) setState(() => _focused = shown);
   });
   FocusNode? _node;
@@ -324,7 +324,7 @@ class _DesignReorderableListState<T extends Object>
     WidgetsBinding.instance
       ..addPostFrameCallback((_) => _pending = null)
       ..ensureVisualUpdate();
-    designAnnounce(
+    rawAnnounce(
       context,
       (widget.movedMessage ??
           RawWidgetsLocalizations.of(context)

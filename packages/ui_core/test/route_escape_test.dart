@@ -14,11 +14,11 @@ const _page = ValueKey('page');
 
 // Each route, its barrier not dismissing, holding [child].
 final _routes = <String, PopupRoute<void> Function(Widget child)>{
-  'dialog': (child) => DesignDialogRoute<void>(
+  'dialog': (child) => RawModalDialogRoute<void>(
     barrierDismissible: false,
     builder: (context, details) => Center(child: child),
   ),
-  'alert': (child) => DesignDialogRoute<void>(
+  'alert': (child) => RawModalDialogRoute<void>(
     isAlert: true,
     builder: (context, details) => Center(child: child),
   ),

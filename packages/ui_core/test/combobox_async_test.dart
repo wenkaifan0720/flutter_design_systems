@@ -43,7 +43,7 @@ class _Searches {
 
 bool? _open;
 
-Widget _field(DesignComboboxField field) {
+Widget _field(RawComboboxField field) {
   _focus = field.focusNode;
   _open = field.isOpen;
   return SizedBox(
@@ -79,7 +79,7 @@ Widget _failure(BuildContext context, RawSearchError error) {
 }
 
 Widget _combobox(
-  DesignOptionSearch<String> search, {
+  RawOptionSearch<String> search, {
   Duration? debounce,
   bool loading = true,
   bool failure = true,
@@ -323,7 +323,7 @@ void main() {
       searches.fail('fi', StateError('offline'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isA<StateError>());
-      expect(find.byType(DesignOptionList<String>), findsNothing);
+      expect(find.byType(RawOptionList<String>), findsNothing);
     });
 
     testWidgets('a search that throws at once fails the same way', (
@@ -410,7 +410,7 @@ void main() {
       await tester.pump();
       await tester.enterText(find.byType(EditableText), 'fi');
     },
-    node: () => find.byType(DesignSearchFailure),
+    node: () => find.byType(RawSearchFailure),
     semantics: isSemantics(label: "Couldn't load results", isLiveRegion: true),
     noDisabledState:
         'a failed search has no disabled state; its field has one, and a '
@@ -421,7 +421,7 @@ void main() {
       await p.key(LogicalKeyboardKey.arrowUp);
       expect(_error!.focused, isTrue, reason: 'one row: it stays lit');
       await p.key(LogicalKeyboardKey.escape);
-      expect(find.byType(DesignSearchFailure), findsNothing);
+      expect(find.byType(RawSearchFailure), findsNothing);
       expect(_focus.hasFocus, isTrue);
     },
     motion: (p) async {

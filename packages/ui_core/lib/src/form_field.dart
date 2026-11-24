@@ -5,7 +5,7 @@
 /// its hint, with the control marked invalid; a tap on the label focuses
 /// the control; the look gets whether anything in the field has focus.
 ///
-/// [DesignFormField] and [DesignForm] add validation on the widgets layer's
+/// [RawFormField] and [RawForm] add validation on the widgets layer's
 /// [Form]: a submit that fails shows every error, moves focus to the first
 /// field that is wrong, and tells a screen reader how many need attention.
 ///
@@ -14,11 +14,11 @@
 /// - [RawInputDecorator] alone, for a control whose label, help and error the app
 ///   sets itself (a settings switch, a search box): it carries the words and
 ///   their semantics, and validates nothing.
-/// - A [DesignFormField] round the [RawInputDecorator], for a value the form
+/// - A [RawFormField] round the [RawInputDecorator], for a value the form
 ///   checks: it registers with the [Form] above it, runs its validator and
 ///   hands its `errorText` to the [RawInputDecorator], whose control takes the
-///   [DesignFormField.focusNode].
-/// - [DesignForm] round the fields: it submits them, and on a submit that
+///   [RawFormField.focusNode].
+/// - [RawForm] round the fields: it submits them, and on a submit that
 ///   fails focuses the first field that is wrong.
 library;
 
@@ -273,7 +273,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
     // takes announcements; elsewhere its line is a live region).
     final error = widget.errorText;
     if (error != null && error != oldWidget.errorText) {
-      designAnnounce(context, error);
+      rawAnnounce(context, error);
     }
   }
 
@@ -317,7 +317,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
         hint: hint.isEmpty ? null : hint,
         invalid: invalid,
         textDirection: Directionality.maybeOf(context),
-        child: DesignFieldWords(
+        child: RawFieldWords(
           name: name,
           hint: told.isEmpty ? null : told,
           invalid: invalid,
@@ -385,7 +385,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
   }
 }
 
-/// A [FormField] whose control [DesignForm] can focus: give [focusNode]
+/// A [FormField] whose control [RawForm] can focus: give [focusNode]
 /// to the control.
 ///
 /// It validates and registers; it draws no label, help or error and adds
@@ -394,11 +394,11 @@ class _DesignFieldState extends State<RawInputDecorator> {
 /// control's hint.
 ///
 /// ```dart
-/// DesignFormField<String>(validator: (value) => (value ?? '').isEmpty ? 'Required' : null, builder: (field) => Text(field.errorText ?? ''))
+/// RawFormField<String>(validator: (value) => (value ?? '').isEmpty ? 'Required' : null, builder: (field) => Text(field.errorText ?? ''))
 /// ```
-class DesignFormField<T> extends FormField<T> {
+class RawFormField<T> extends FormField<T> {
   /// A form field validated by [validator], built by [builder].
-  DesignFormField({
+  RawFormField({
     super.key,
     required FormFieldBuilder<T> builder,
     this.focusNode,
@@ -437,12 +437,12 @@ class _Registered extends StatefulWidget {
 }
 
 class _RegisteredState extends State<_Registered> {
-  DesignFormState? _form;
+  RawFormState? _form;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final form = DesignForm.maybeOf(context);
+    final form = RawForm.maybeOf(context);
     if (form != _form) {
       _form?._fields.remove(this);
       _form = form;
@@ -466,11 +466,11 @@ class _RegisteredState extends State<_Registered> {
 /// as the reader edits.
 ///
 /// ```dart
-/// DesignForm(onSubmit: () {}, child: const SizedBox())
+/// RawForm(onSubmit: () {}, child: const SizedBox())
 /// ```
-class DesignForm extends StatefulWidget {
+class RawForm extends StatefulWidget {
   /// A form around [child].
-  const DesignForm({
+  const RawForm({
     super.key,
     required this.child,
     this.onSubmit,
@@ -480,7 +480,7 @@ class DesignForm extends StatefulWidget {
   /// The fields, laid out by the look.
   final Widget child;
 
-  /// Called by [DesignFormState.submit] when every field is fine, after
+  /// Called by [RawFormState.submit] when every field is fine, after
   /// each field's `onSaved`.
   final VoidCallback? onSubmit;
 
@@ -489,18 +489,18 @@ class DesignForm extends StatefulWidget {
   final String Function(int count)? problemsMessage;
 
   /// The nearest form's state, or null.
-  static DesignFormState? maybeOf(BuildContext context) =>
+  static RawFormState? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_DesignFormScope>()?.state;
 
   /// The nearest form's state.
-  static DesignFormState of(BuildContext context) {
+  static RawFormState of(BuildContext context) {
     final state = maybeOf(context);
-    assert(state != null, 'No DesignForm above this context.');
+    assert(state != null, 'No RawForm above this context.');
     return state!;
   }
 
   @override
-  State<DesignForm> createState() => DesignFormState();
+  State<RawForm> createState() => RawFormState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -516,14 +516,14 @@ class DesignForm extends StatefulWidget {
   }
 }
 
-/// The state of a [DesignForm]: submit and reset it.
-class DesignFormState extends State<DesignForm> {
+/// The state of a [RawForm]: submit and reset it.
+class RawFormState extends State<RawForm> {
   final _key = GlobalKey<FormState>();
   final List<_RegisteredState> _fields = [];
   AutovalidateMode _mode = AutovalidateMode.disabled;
 
   /// Validates every field; when all are fine saves them and calls
-  /// [DesignForm.onSubmit] and returns true, else focuses the first that is
+  /// [RawForm.onSubmit] and returns true, else focuses the first that is
   /// wrong and returns false.
   bool submit() {
     final form = _key.currentState!;
@@ -544,7 +544,7 @@ class DesignFormState extends State<DesignForm> {
           alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
         ).ignore();
       }
-      designAnnounce(
+      rawAnnounce(
         context,
         (widget.problemsMessage ??
             RawWidgetsLocalizations.of(context)
@@ -570,7 +570,7 @@ class DesignFormState extends State<DesignForm> {
 class _DesignFormScope extends InheritedWidget {
   const _DesignFormScope({required this.state, required super.child});
 
-  final DesignFormState state;
+  final RawFormState state;
 
   @override
   bool updateShouldNotify(_DesignFormScope old) => state != old.state;
@@ -637,8 +637,8 @@ class _FieldSemantics extends SingleChildRenderObjectWidget {
   }
 }
 
-class _RenderFieldSemantics extends RenderDesignSemanticsProxy
-    implements DesignFieldSays {
+class _RenderFieldSemantics extends RenderSemanticsProxy
+    implements RawFieldSays {
   _RenderFieldSemantics(
     this._label,
     this._words,
@@ -729,7 +729,7 @@ class _RenderFieldSemantics extends RenderDesignSemanticsProxy
     // The node is the field's text entry, whose input the web marks
     // required from the flag: the flag says it, not the words.
     final flagged =
-        required && DesignRequiredFlag.heard && (shape.lone || shape.entry);
+        required && RawRequiredFlag.heard && (shape.lone || shape.entry);
     final label = flagged ? _words : _label;
     if (label != null && !shape.said) config.label = label;
     final hint = [
@@ -854,7 +854,7 @@ class _RenderFieldSemantics extends RenderDesignSemanticsProxy
       // A control of ui_core's marks its entry's node as the one that
       // carries the words, above or below the presses round it (a tag
       // input's entry, a number field's).
-      if (n is RenderDesignFieldWordsCarried) carried = true;
+      if (n is RenderFieldWordsCarried) carried = true;
       final bounded = below || _bounds(n);
       if (_pressOnly(n) && holdsEntry(n)) {
         carried = carried || _carries(n);
@@ -898,7 +898,7 @@ class _RenderFieldSemantics extends RenderDesignSemanticsProxy
   // field's words.
   static bool _carries(RenderObject n) {
     if (n is RenderExcludeSemantics && n.excluding) return false;
-    if (n is RenderDesignFieldWordsCarried) return true;
+    if (n is RenderFieldWordsCarried) return true;
     var found = false;
     n.visitChildrenForSemantics((c) => found = found || _carries(c));
     return found;

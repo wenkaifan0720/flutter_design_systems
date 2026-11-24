@@ -18,7 +18,7 @@ Widget _group({
   bool enabled = true,
   bool error = false,
   VoidCallback? onClear,
-}) => DesignInputGroup(
+}) => RawInputGroup(
   focusNode: field,
   enabled: enabled,
   isError: error,
@@ -59,7 +59,7 @@ void main() {
     groupText.dispose();
   });
   behaviourContract(
-    'DesignInputGroup',
+    'RawInputGroup',
     build: (c) => Center(
       child: _group(
         field: groupField,
@@ -69,7 +69,7 @@ void main() {
       ),
     ),
     node: () => find.byType(EditableText),
-    root: () => find.byType(DesignInputGroup),
+    root: () => find.byType(RawInputGroup),
     semantics: isSemantics(isTextField: true, isFocusable: true),
     // A text field's node always says focusable (RenderEditable); Tab
     // passing the whole group by is the check.

@@ -20,7 +20,7 @@ typedef _Make = PopupRoute<void> Function({
 // Each route on its own default open token, its page a plain box.
 final _routes = <String, _Make>{
   'dialog': ({closeDampingRatio, closeStiffness, seen}) =>
-      DesignDialogRoute<void>(
+      RawModalDialogRoute<void>(
         closeDampingRatio: closeDampingRatio,
         closeStiffness: closeStiffness,
         builder: (context, details) => AnimatedBuilder(

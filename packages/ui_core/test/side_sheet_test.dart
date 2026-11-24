@@ -35,7 +35,7 @@ Widget _app({
   RawSheetEdge edge = RawSheetEdge.end,
   TextDirection direction = TextDirection.ltr,
   bool reduceMotion = false,
-  DesignBarrierBuilder? barrierBuilder,
+  RawBarrierBuilder? barrierBuilder,
 }) => harness(
   Builder(
     builder: (context) => Center(

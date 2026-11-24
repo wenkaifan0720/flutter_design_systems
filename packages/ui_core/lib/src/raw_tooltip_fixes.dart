@@ -29,7 +29,7 @@ import 'internal/placement.dart';
 /// `semanticsTooltip` on a [Semantics] round the control, and a control with
 /// a node of its own (a button, a link) leaves it outside that node, so a
 /// screen reader hears the tip apart from the control. Merged, the tip is on
-/// the control's own node, as `DesignTooltip`, which merged its own, said it.
+/// the control's own node, and a screen reader hears it with the control.
 ///
 /// ```dart
 /// RawTooltip(semanticsTooltip: 'Save the report', tooltipBuilder: (context, animation) => const Text('Save the report'), child: RawTooltipFocusFix(child: Focus(child: const Text('Save'))))
@@ -57,7 +57,7 @@ class _RawTooltipFocusFixState extends State<RawTooltipFocusFix> {
 
   // The input, heard while it stands: the keys' focus shows the tip, a
   // pointer's does not.
-  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
+  final RawFocusHearing _hearing = RawFocusVisible.hold();
 
   // Flutter 3.47's RawTooltip does not hide on Escape (3.50's does, flutter
   // #192966 and #193192), so this does while the tip it showed shows.
@@ -97,10 +97,7 @@ class _RawTooltipFocusFixState extends State<RawTooltipFocusFix> {
     // opened, its safe action focused; a click on the web, which focuses
     // the node before the press), as for :focus-visible, nor focus given
     // back as a dialog closes.
-    if (!mounted ||
-        !_focused ||
-        _shown ||
-        !DesignFocusVisible.keyboardArrival) {
+    if (!mounted || !_focused || _shown || !RawFocusVisible.keyboardArrival) {
       return;
     }
     final tooltip = context.findAncestorStateOfType<RawTooltipState>();
@@ -213,20 +210,20 @@ class _RawTooltipPlacementState extends State<RawTooltipPlacement> {
       width: tip.targetSize.width,
       height: tip.targetSize.height,
     );
-    final bounds = designOverlayBounds(
+    final bounds = rawOverlayBounds(
       overlaySize: tip.overlaySize,
       view: _view?.removeViewInsets(removeBottom: true),
       padding: _padding,
       margin: placement.margin,
     );
-    final side = designResolveSide(anchor, bounds, placement, _direction);
-    final layout = DesignOverlayLayout(
+    final side = rawResolveSide(anchor, bounds, placement, _direction);
+    final layout = RawOverlayLayout(
       anchor: anchor,
       bounds: bounds,
       side: side,
       placement: placement,
       textDirection: _direction,
-      maxSize: designOverlayMaxSize(
+      maxSize: rawOverlayMaxSize(
         anchor,
         bounds,
         side,

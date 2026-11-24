@@ -56,7 +56,7 @@ abstract class RawWidgetsLocalizations {
   /// The words for [locale]: its language's (Traditional Chinese for `zh`
   /// written in Hant, or in Taiwan, Hong Kong or Macau), else English.
   static RawWidgetsLocalizations forLocale(Locale locale) {
-    final data = designLocaleData[_key(locale)];
+    final data = rawLocaleData[_key(locale)];
     if (data == null || locale.languageCode == 'en') {
       return const DefaultRawWidgetsLocalizations();
     }
@@ -231,7 +231,7 @@ abstract class RawWidgetsLocalizations {
   String get commandPaletteLabel;
 
   /// The barrier's label behind a shown command palette
-  /// (`showDesignCommandPalette`'s `barrierLabel`).
+  /// (`showRawCommandPalette`'s `barrierLabel`).
   String get commandPaletteBarrierLabel;
 
   /// What is announced when the palette's results change to [count]
@@ -261,7 +261,7 @@ abstract class RawWidgetsLocalizations {
   String get requiredHint;
 
   /// What is announced when a form's submit finds [count] fields wrong
-  /// (`DesignForm.problemsMessage`).
+  /// (`RawForm.problemsMessage`).
   String formProblemsMessage(int count);
 
   /// The label of a password field's reveal toggle while the text is
@@ -319,10 +319,10 @@ abstract class RawWidgetsLocalizations {
   String get toasterRegionLabel;
 
   /// A tree row's hint: [level] (from 1), and [position] (from 1) of the
-  /// [count] rows beside it (`DesignTree.levelHint`).
+  /// [count] rows beside it (`RawTree.levelHint`).
   String treeLevelHint(int level, int position, int count);
 
-  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
 
   /// The Alt key, in a shortcut's label (Material's `keyboardKeyAlt`).
   String get keyboardKeyAlt;
@@ -387,7 +387,7 @@ abstract class RawWidgetsLocalizations {
   // MaterialLocalizations' names.
 
   /// What a screen reader calls an alert that names itself no other way
-  /// (`DesignDialogRoute` with `isAlert`) ("Alert").
+  /// (`RawModalDialogRoute` with `isAlert`) ("Alert").
   String get alertDialogLabel;
 
   /// What a screen reader calls a bottom sheet that names itself no other
@@ -395,11 +395,11 @@ abstract class RawWidgetsLocalizations {
   String get bottomSheetLabel;
 
   /// What a screen reader calls a dialog that names itself no other way
-  /// (`DesignDialogRoute`) ("Dialog").
+  /// (`RawModalDialogRoute`) ("Dialog").
   String get dialogLabel;
 
   /// What a screen reader calls a side navigation
-  /// (`DesignAdaptiveShell`'s sidebar) ("Navigation menu").
+  /// (`RawAdaptiveShell`'s sidebar) ("Navigation menu").
   String get drawerLabel;
 
   /// What a screen reader calls a bottom sheet's drag handle
@@ -783,7 +783,7 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
   String treeLevelHint(int level, int position, int count) =>
       'level $level, $position of $count';
 
-  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
 
   @override
   String get keyboardKeyAlt => 'Alt';
@@ -871,7 +871,7 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
 
   // The data the numbers, dates and times read: English's here, a
   // translation's own in _TranslatedDesignLocalizations.
-  DesignLocaleData get _valueData => designLocaleData['en']!;
+  RawLocaleData get _valueData => rawLocaleData['en']!;
 
   decimal.DecimalSymbols get _symbols => decimal.DecimalSymbols.of(_valueData);
 
@@ -1038,12 +1038,12 @@ class _DesignLocalizationsDelegate
   String toString() => 'RawWidgetsLocalizations.delegate(30 locales)';
 }
 
-// One locale's words from its table (designLocaleData), English for a word
+// One locale's words from its table (rawLocaleData), English for a word
 // the table lacks.
 class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
   const _TranslatedDesignLocalizations(this._data);
 
-  final DesignLocaleData _data;
+  final RawLocaleData _data;
 
   String _word(String key, String english) => _data.words[key] ?? english;
 
@@ -1365,7 +1365,7 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
     {'level': level, 'position': position, 'count': count},
   );
 
-  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
 
   @override
   String get keyboardKeyAlt => _word('keyboardKeyAlt', super.keyboardKeyAlt);
@@ -1471,7 +1471,7 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
   // 0.3.0 values
 
   @override
-  DesignLocaleData get _valueData => _data;
+  RawLocaleData get _valueData => _data;
 
   // A counted value message: as _plural, its count grouped as a number.
   String _countedValue(String key, int count, String english) {

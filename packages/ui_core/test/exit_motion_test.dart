@@ -1,9 +1,6 @@
 // Each ui_core overlay runs its look's exit motion before it unmounts: asked
 // to close, its surface stays drawn while its animation runs down, and
 // leaves the tree only once the motion has ended, never at once.
-// DesignTooltip is deprecated in the package, which keeps its tests for its
-// one last release.
-// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
@@ -77,28 +74,11 @@ void main() {
     await _leavesWithItsMotion(tester);
   });
 
-  testWidgets('a tooltip', (tester) async {
-    await tester.pumpWidget(
-      harness(
-        Center(
-          child: DesignTooltip(
-            message: 'Save the report',
-            tooltipBuilder: (context, info) =>
-                _drawn(info.animation, info.close),
-            child: plainFace('Save'),
-          ),
-        ),
-      ),
-    );
-    await tester.longPress(find.text('Save'));
-    await _leavesWithItsMotion(tester);
-  });
-
   testWidgets('a dialog', (tester) async {
     await tester.pumpWidget(
       _opener(
         (context) => Navigator.of(context).push(
-          DesignDialogRoute<void>(
+          RawModalDialogRoute<void>(
             semanticLabel: 'Rename',
             builder: (context, d) => _drawn(d.animation, d.close),
           ),

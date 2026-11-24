@@ -286,7 +286,7 @@ class LookRadioGroup<T> extends StatelessWidget {
       onChanged: (next) {
         if (change == null || next == null || next == value) return;
         // The look's haptic for a choice, from the table an app can swap.
-        DesignHaptics.of(context).selectionChanged?.call();
+        RawHaptics.of(context).selectionChanged?.call();
         change(next);
       },
       child: RadioGroupKeyboardFix<T>(
@@ -405,4 +405,130 @@ class _LookRadioState<T> extends State<_LookRadio<T>> {
       ),
     );
   }
+}
+
+/// What a [LookDrawnChoice] draws: the page's own picture of the choice,
+/// chosen or not, in its [states].
+typedef LookChoiceDrawing = Widget Function(
+  BuildContext context,
+  bool chosen,
+  Set<WidgetState> states,
+);
+
+/// One choice of a [LookDrawnChoices].
+@immutable
+class LookDrawnChoice<T> {
+  /// A choice standing for [value], drawn by [drawing] and named [label].
+  const LookDrawnChoice({
+    required this.value,
+    required this.label,
+    required this.drawing,
+  });
+
+  /// What choosing it chooses.
+  final T value;
+
+  /// What a screen reader calls it.
+  final String label;
+
+  /// Its picture, chosen or not.
+  final LookChoiceDrawing drawing;
+}
+
+/// Choices a page draws itself (a converted page's own picture of each
+/// choice) with a radio group's behaviour, the look's [LookRadioGroup]
+/// without its mark: Flutter's [RadioGroup], a [RawRadio] per drawing and
+/// [RadioGroupKeyboardFix] round them. Tab stops once, the arrows choose
+/// and wrap (right to left too), and each choice is read as a radio.
+class LookDrawnChoices<T> extends StatelessWidget {
+  /// A row choosing [value] among [choices].
+  const LookDrawnChoices({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    required this.choices,
+  });
+
+  /// The chosen value.
+  final T value;
+
+  /// Called with the value chosen.
+  final ValueChanged<T> onChanged;
+
+  /// The choices, in reading order.
+  final List<LookDrawnChoice<T>> choices;
+
+  @override
+  Widget build(BuildContext context) => RadioGroup<T>(
+    groupValue: value,
+    onChanged: (next) {
+      if (next != null && next != value) onChanged(next);
+    },
+    child: RadioGroupKeyboardFix<T>(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final choice in choices)
+            _DrawnChoice<T>(key: ValueKey<T>(choice.value), choice: choice),
+        ],
+      ),
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<T>('value', value));
+  }
+}
+
+class _DrawnChoice<T> extends StatefulWidget {
+  const _DrawnChoice({super.key, required this.choice});
+
+  final LookDrawnChoice<T> choice;
+
+  @override
+  State<_DrawnChoice<T>> createState() => _DrawnChoiceState<T>();
+}
+
+class _DrawnChoiceState<T> extends State<_DrawnChoice<T>> {
+  final FocusNode _node = FocusNode(debugLabel: 'LookDrawnChoice');
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => TapTargetPadding(
+    // One node: the radio, named for its choice.
+    child: MergeSemantics(
+      child: Semantics(
+        label: widget.choice.label,
+        child: RawRadio<T>(
+          value: widget.choice.value,
+          mouseCursor: WidgetStateMouseCursor.clickable,
+          toggleable: false,
+          focusNode: _node,
+          autofocus: false,
+          groupRegistry: RadioGroup.maybeOf<T>(context),
+          enabled: true,
+          // The page's drawing on a box hit all over: a press between its
+          // painted parts still chooses it. The label names it; the drawing's
+          // own words are not read.
+          builder: (context, radio) => MetaData(
+            behavior: HitTestBehavior.opaque,
+            child: ExcludeSemantics(
+              child: widget.choice.drawing(
+                context,
+                radio.value ?? false,
+                radio.states,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

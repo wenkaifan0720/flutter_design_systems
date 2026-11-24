@@ -1,7 +1,7 @@
 /// A value handle, headless: the focusable thumb of a slider, a range
 /// slider, a split view's divider or a colour picker's channel. It holds the
-/// keys (arrows by [DesignValueHandle.step], Page Up and Down by
-/// [DesignValueHandle.pageStep], Home and End to the ends), the screen
+/// keys (arrows by [RawValueHandle.step], Page Up and Down by
+/// [RawValueHandle.pageStep], Home and End to the ends), the screen
 /// reader's slider (its value, increase and decrease) and the face's states;
 /// its parent turns pointer drags into values, since only it knows the
 /// track.
@@ -17,7 +17,7 @@ import 'localizations.dart';
 
 /// Builds a handle's face for its [states] (focused while the keyboard is
 /// on it, hovered, pressed and dragged while dragged, disabled).
-typedef DesignHandleBuilder = Widget Function(
+typedef RawHandleBuilder = Widget Function(
   BuildContext context,
   Set<WidgetState> states,
 );
@@ -28,11 +28,11 @@ typedef DesignHandleBuilder = Widget Function(
 /// to left). Along a vertical one, the arrow toward [growsToward] raises it.
 ///
 /// ```dart
-/// DesignValueHandle(value: 0.5, onChanged: (value) {}, semanticLabel: 'Volume', builder: (context, states) => const SizedBox(width: 20, height: 20))
+/// RawValueHandle(value: 0.5, onChanged: (value) {}, semanticLabel: 'Volume', builder: (context, states) => const SizedBox(width: 20, height: 20))
 /// ```
-class DesignValueHandle extends StatefulWidget {
+class RawValueHandle extends StatefulWidget {
   /// A handle at [value].
-  const DesignValueHandle({
+  const RawValueHandle({
     super.key,
     required this.value,
     required this.onChanged,
@@ -77,7 +77,7 @@ class DesignValueHandle extends StatefulWidget {
   final ValueChanged<double>? onChanged;
 
   /// Paints the handle.
-  final DesignHandleBuilder builder;
+  final RawHandleBuilder builder;
 
   /// The least value.
   final double min;
@@ -148,7 +148,7 @@ class DesignValueHandle extends StatefulWidget {
   final WidgetStatesController? statesController;
 
   @override
-  State<DesignValueHandle> createState() => _DesignValueHandleState();
+  State<RawValueHandle> createState() => _DesignValueHandleState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -158,7 +158,7 @@ class DesignValueHandle extends StatefulWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
       )
-      ..add(ObjectFlagProperty<DesignHandleBuilder>.has('builder', builder))
+      ..add(ObjectFlagProperty<RawHandleBuilder>.has('builder', builder))
       ..add(DoubleProperty('min', min, defaultValue: 0))
       ..add(DoubleProperty('max', max, defaultValue: 1))
       ..add(DoubleProperty('step', step, defaultValue: null))
@@ -249,7 +249,7 @@ class DesignValueHandle extends StatefulWidget {
   }
 }
 
-class _DesignValueHandleState extends State<DesignValueHandle> {
+class _DesignValueHandleState extends State<RawValueHandle> {
   WidgetStatesController? _own;
 
   WidgetStatesController get _controller =>
@@ -258,14 +258,14 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
   bool _hovered = false;
   bool _focused = false;
   // Shown as a browser's :focus-visible shows it (internal/focus_visible.dart).
-  late final DesignFocusShown _focus;
+  late final RawFocusShown _focus;
 
   bool get _enabled => widget.onChanged != null;
 
   @override
   void initState() {
     super.initState();
-    _focus = DesignFocusShown((on) {
+    _focus = RawFocusShown((on) {
       _focused = on;
       _putState(WidgetState.focused, _enabled && on);
     });
@@ -293,9 +293,9 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
 
   // Brings the states a change of the widget makes in line, during
   // build-time updates (no listener runs mid-build): disabled with
-  // [DesignValueHandle.onChanged], pressed and dragged with
-  // [DesignValueHandle.dragging]. What the pointer and the focus bring stays.
-  void _sync(DesignValueHandle? old) {
+  // [RawValueHandle.onChanged], pressed and dragged with
+  // [RawValueHandle.dragging]. What the pointer and the focus bring stays.
+  void _sync(RawValueHandle? old) {
     final v = _controller.value;
     void put(WidgetState state, bool on) => on ? v.add(state) : v.remove(state);
     final enabled = _enabled;
@@ -328,9 +328,9 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
   }
 
   // 0.3.0 values: a dragged thumb crossing a division plays the haptic
-  // table's step (DesignHaptics.selectionChanged).
+  // table's step (RawHaptics.selectionChanged).
   @override
-  void didUpdateWidget(DesignValueHandle oldWidget) {
+  void didUpdateWidget(RawValueHandle oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.statesController != widget.statesController) {
       (oldWidget.statesController ?? _own)?.removeListener(_changed);
@@ -353,7 +353,7 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
     if (!widget.dragging || d == null || _range == 0) return;
     int division(double v) => ((v - widget.min) / (_range / d)).round();
     if (division(widget.value) != division(oldWidget.value)) {
-      DesignHaptics.of(context).selectionChanged?.call();
+      RawHaptics.of(context).selectionChanged?.call();
     }
   }
 

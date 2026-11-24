@@ -317,16 +317,16 @@ void main() {
   test('the row states: one current row, as the pointer or the keys left '
       'it', () {
     const both = {WidgetState.hovered, WidgetState.focused};
-    expect(designMenuRowStates(both, current: false, byPointer: true), isEmpty);
-    expect(designMenuRowStates(both, current: true, byPointer: true), {
+    expect(rawMenuRowStates(both, current: false, byPointer: true), isEmpty);
+    expect(rawMenuRowStates(both, current: true, byPointer: true), {
       WidgetState.hovered,
     });
-    expect(designMenuRowStates(both, current: true, byPointer: false), {
+    expect(rawMenuRowStates(both, current: true, byPointer: false), {
       WidgetState.focused,
     });
     // In the touch highlight mode the keys' focus is not shown.
     expect(
-      designMenuRowStates(
+      rawMenuRowStates(
         const {WidgetState.pressed},
         current: true,
         byPointer: false,

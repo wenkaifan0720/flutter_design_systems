@@ -25,7 +25,7 @@ LookFace lookButtonFace(
   LookStyle? style,
 }) {
   final c = theme.colors;
-  final look = DesignStyleOf([style, theme.buttonStyle], states);
+  final look = RawStyleOf([style, theme.buttonStyle], states);
   final tone = destructive ? c.danger : c.accent;
   final onTone = destructive ? c.onDanger : c.onAccent;
   if (states.contains(WidgetState.disabled)) {
@@ -107,7 +107,7 @@ class LookButton extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         builder: (context, states, _) {
-          final look = DesignStyleOf([style, theme.buttonStyle], states);
+          final look = RawStyleOf([style, theme.buttonStyle], states);
           return AnimatedLookSurface(
             face: lookButtonFace(
               theme,
@@ -127,7 +127,7 @@ class LookButton extends StatelessWidget {
                   theme.density.padding(
                     const EdgeInsets.symmetric(horizontal: 16),
                   ),
-              child: DesignControlBox(
+              child: RawControlBox(
                 minHeight:
                     look.minimumSize?.height ??
                     theme.density.height(theme.controlHeight),
@@ -139,7 +139,7 @@ class LookButton extends StatelessWidget {
                       const SizedBox(width: 8),
                     ],
                     Flexible(
-                      child: DesignCapCenter(
+                      child: RawCapCenter(
                         capHeightFactor: theme.capHeightFactor,
                         child: Text(
                           label,

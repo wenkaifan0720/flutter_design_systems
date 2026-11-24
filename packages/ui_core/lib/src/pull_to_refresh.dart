@@ -154,7 +154,7 @@ class RawRefreshIndicatorState extends State<RawRefreshIndicator>
   }
 
   void _go(double to) {
-    if (designReduceMotionOf(context)) {
+    if (rawReduceMotionOf(context)) {
       _extent.value = to;
     } else {
       _extent.animateTo(
@@ -170,7 +170,7 @@ class RawRefreshIndicatorState extends State<RawRefreshIndicator>
     if (_mode == RawRefreshIndicatorMode.refresh) return;
     setState(() => _mode = RawRefreshIndicatorMode.refresh);
     _go(widget.restExtent);
-    designAnnounce(
+    rawAnnounce(
       context,
       widget.refreshingMessage ??
           RawWidgetsLocalizations.of(context).refreshingMessage,
@@ -180,7 +180,7 @@ class RawRefreshIndicatorState extends State<RawRefreshIndicator>
     } finally {
       if (mounted) {
         setState(() => _mode = RawRefreshIndicatorMode.done);
-        designAnnounce(
+        rawAnnounce(
           context,
           widget.doneMessage ??
               RawWidgetsLocalizations.of(context).refreshedMessage,

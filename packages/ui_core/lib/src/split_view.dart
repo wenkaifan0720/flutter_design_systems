@@ -1,5 +1,5 @@
 /// A resizable split, headless: two panes and a divider between them that a
-/// drag, the arrows (a [DesignValueHandle]) and a screen reader's slider
+/// drag, the arrows (a [RawValueHandle]) and a screen reader's slider
 /// move, and Enter collapses the first pane and brings it back. Nest one
 /// in another for three or more panes.
 library;
@@ -204,7 +204,7 @@ class _DesignSplitViewState extends State<RawSplitView> {
           _set((_fraction.clamp(lo, hi) + delta / total).clamp(lo, hi));
         }
 
-        final handle = DesignValueHandle(
+        final handle = RawValueHandle(
           value: f,
           min: lo,
           max: hi,

@@ -219,9 +219,7 @@ Widget _label(
     style: style,
     textScaler: TextScaler.linear(textScale),
   );
-  return centred
-      ? DesignCapCenter(capHeightFactor: _roboto, child: text)
-      : text;
+  return centred ? RawCapCenter(capHeightFactor: _roboto, child: text) : text;
 }
 
 void main() {
@@ -386,16 +384,14 @@ void main() {
         Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
-            child: DesignCapCenter(capHeightFactor: _roboto, child: child),
+            child: RawCapCenter(capHeightFactor: _roboto, child: child),
           ),
         ),
       );
-      final outer = tester.renderObject<RenderBox>(
-        find.byType(DesignCapCenter),
-      );
+      final outer = tester.renderObject<RenderBox>(find.byType(RawCapCenter));
       final inner = tester.renderObject<RenderBox>(
         find.descendant(
-          of: find.byType(DesignCapCenter),
+          of: find.byType(RawCapCenter),
           matching: find.byWidget(child),
         ),
       );
@@ -424,7 +420,7 @@ void main() {
         Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
-            child: DesignCapCenter(
+            child: RawCapCenter(
               capHeightFactor: factor,
               child: Text('H', style: _style(16, 24)),
             ),
@@ -447,7 +443,7 @@ void main() {
       child: MediaQuery(
         data: MediaQueryData(textScaler: TextScaler.linear(scale)),
         child: Center(
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: _roboto,
             // A box of fixed size: the label lays out in it alone.
             child: SizedBox(
@@ -460,8 +456,8 @@ void main() {
       ),
     );
     double shift() {
-      final cap = tester.renderObject<RenderDesignCapCenter>(
-        find.byType(DesignCapCenter),
+      final cap = tester.renderObject<RenderCapCenter>(
+        find.byType(RawCapCenter),
       );
       final m = Matrix4.identity();
       cap.applyPaintTransform(cap.child!, m);
@@ -493,7 +489,7 @@ void main() {
       Directionality(
         textDirection: TextDirection.ltr,
         child: Center(
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: _roboto,
             child: GestureDetector(
               onTap: () => taps++,
@@ -533,7 +529,7 @@ void main() {
                   child: SizedBox(
                     width: 200,
                     height: height,
-                    child: DesignCapCenter(
+                    child: RawCapCenter(
                       capHeightFactor: _roboto,
                       child: Align(
                         alignment: AlignmentDirectional.centerStart,

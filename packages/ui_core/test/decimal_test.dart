@@ -71,7 +71,7 @@ void main() {
     expect(DecimalSymbols.secondaryGroup('#,##,##0.###'), 2);
     expect(DecimalSymbols.primaryGroup('0.###'), 0);
     expect(DecimalSymbols.secondaryGroup('0.###'), 0);
-    final none = DecimalSymbols.of(designLocaleData['en']!);
+    final none = DecimalSymbols.of(rawLocaleData['en']!);
     final ungrouped = DecimalSymbols(
       zeroDigit: none.zeroDigit,
       decimalSeparator: '.',

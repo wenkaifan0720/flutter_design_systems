@@ -58,7 +58,7 @@ typedef RawRatingLayoutBuilder = Widget Function(
 /// mirrored right to left); a tap on the value already set changes
 /// nothing. Hovering previews the value a tap would set; a drag sweeps
 /// across, changing it as it goes, a step played at each
-/// ([DesignHaptics.selectionChanged]). Keys (a single tab stop): Right and
+/// ([RawHaptics.selectionChanged]). Keys (a single tab stop): Right and
 /// Up step up, Left and Down back (Right and Left as drawn, so mirrored
 /// right to left), End sets [itemCount], Home or 0 clears it, a digit
 /// sets that many. A screen reader hears a slider, "Rating, 3 of 5"
@@ -330,7 +330,7 @@ class _DesignRatingState extends State<RawRating> {
     _press(at);
     if (at == null || at == _dragged) return;
     _dragged = at;
-    DesignHaptics.of(context).selectionChanged?.call();
+    RawHaptics.of(context).selectionChanged?.call();
     widget.onChanged?.call(at);
     setState(() {});
   }

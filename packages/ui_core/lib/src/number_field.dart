@@ -575,9 +575,9 @@ class _DesignNumberFieldState extends State<RawNumberField> {
     final increment = _button(true);
     // The field's words, when a RawInputDecorator round it gives them to this
     // field's node.
-    final words = DesignFieldWords.maybeOf(context);
+    final words = RawFieldWords.maybeOf(context);
     final entry = _Entry(
-      child: words == null ? field : DesignFieldWordsCarried(child: field),
+      child: words == null ? field : RawFieldWordsCarried(child: field),
     );
     return _FieldNode(
       properties: SemanticsProperties(

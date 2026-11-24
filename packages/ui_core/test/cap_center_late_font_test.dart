@@ -1,5 +1,5 @@
 // A label's font arriving after its first layout, as fonts load on the web:
-// DesignCapCenter over a text entry with a hint lays out and paints again
+// RawCapCenter over a text entry with a hint lays out and paints again
 // with the new font's metrics, its capitals on the middle.
 import 'dart:io';
 
@@ -41,9 +41,9 @@ Widget _entry(TextEditingController controller, FocusNode focus) {
         child: SizedBox(
           width: 240,
           height: 48,
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: 0.7,
-            child: DesignTextEntryBox(
+            child: RawTextEntryBox(
               minHeight: 48,
               controller: controller,
               hint: const Text('Search', style: style),
@@ -64,9 +64,7 @@ Widget _entry(TextEditingController controller, FocusNode focus) {
 
 // How far the cap centre moves its label down.
 double _shift(WidgetTester tester) {
-  final cap = tester.renderObject<RenderDesignCapCenter>(
-    find.byType(DesignCapCenter),
-  );
+  final cap = tester.renderObject<RenderCapCenter>(find.byType(RawCapCenter));
   final m = Matrix4.identity();
   cap.applyPaintTransform(cap.child!, m);
   return m.getTranslation().y;
@@ -122,7 +120,7 @@ void main() {
           child: SizedBox(
             width: 240,
             height: 48,
-            child: DesignCapCenter(
+            child: RawCapCenter(
               capHeightFactor: 0.7,
               child: Center(
                 // A line of a fixed size: the new font moves only its

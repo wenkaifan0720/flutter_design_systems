@@ -19,11 +19,11 @@ import 'pressable.dart';
 /// and disposes it; a widget it is given to only listens to it.
 ///
 /// ```dart
-/// DesignTreeController<String>(roots: const ['src'], childrenOf: (node) => const [])
+/// RawTreeController<String>(roots: const ['src'], childrenOf: (node) => const [])
 /// ```
-class DesignTreeController<T extends Object> extends ChangeNotifier {
+class RawTreeController<T extends Object> extends ChangeNotifier {
   /// A tree from [roots], each node's children from [childrenOf].
-  DesignTreeController({
+  RawTreeController({
     required List<T> roots,
     required this.childrenOf,
     Iterable<T> expanded = const [],
@@ -40,7 +40,7 @@ class DesignTreeController<T extends Object> extends ChangeNotifier {
   List<T> _roots;
   final Set<T> _expanded;
   final Set<T> _selected = {};
-  List<DesignTreeRow<T>>? _rows;
+  List<RawTreeRow<T>>? _rows;
 
   /// The top nodes.
   List<T> get roots => List.unmodifiable(_roots);
@@ -114,15 +114,15 @@ class DesignTreeController<T extends Object> extends ChangeNotifier {
   }
 
   /// The rows shown: every node whose ancestors are all open, in order.
-  List<DesignTreeRow<T>> get rows {
+  List<RawTreeRow<T>> get rows {
     final cached = _rows;
     if (cached != null) return cached;
-    final out = <DesignTreeRow<T>>[];
+    final out = <RawTreeRow<T>>[];
     void walk(List<T> nodes, int depth, T? parent) {
       for (var i = 0; i < nodes.length; i++) {
         final n = nodes[i];
         out.add(
-          DesignTreeRow._(
+          RawTreeRow._(
             node: n,
             depth: depth,
             parent: parent,
@@ -141,8 +141,8 @@ class DesignTreeController<T extends Object> extends ChangeNotifier {
 
 /// A shown row of a tree.
 @immutable
-class DesignTreeRow<T extends Object> {
-  const DesignTreeRow._({
+class RawTreeRow<T extends Object> {
+  const RawTreeRow._({
     required this.node,
     required this.depth,
     required this.parent,
@@ -168,9 +168,9 @@ class DesignTreeRow<T extends Object> {
 
 /// A row's paint state.
 @immutable
-class DesignTreeItem<T extends Object> {
+class RawTreeItem<T extends Object> {
   /// The row's state; the tree makes it.
-  const DesignTreeItem({
+  const RawTreeItem({
     required this.row,
     required this.hasChildren,
     required this.expanded,
@@ -180,7 +180,7 @@ class DesignTreeItem<T extends Object> {
   });
 
   /// The row.
-  final DesignTreeRow<T> row;
+  final RawTreeRow<T> row;
 
   /// Whether it has children (the look draws a disclosure).
   final bool hasChildren;
@@ -202,11 +202,11 @@ class DesignTreeItem<T extends Object> {
 /// The open rows of [controller], one tab stop for all of them.
 ///
 /// ```dart
-/// DesignTree<String>(controller: controller, labelOf: (node) => node, rowBuilder: (context, item) => Text(item.row.node))
+/// RawTree<String>(controller: controller, labelOf: (node) => node, rowBuilder: (context, item) => Text(item.row.node))
 /// ```
-class DesignTree<T extends Object> extends StatefulWidget {
+class RawTree<T extends Object> extends StatefulWidget {
   /// A tree view of [controller].
-  const DesignTree({
+  const RawTree({
     super.key,
     required this.controller,
     required this.rowBuilder,
@@ -218,11 +218,10 @@ class DesignTree<T extends Object> extends StatefulWidget {
 
   /// The nodes, and which are open and selected. The caller
   /// makes it, keeps it across rebuilds and disposes it.
-  final DesignTreeController<T> controller;
+  final RawTreeController<T> controller;
 
-  /// Paints a row (indent it by [DesignTreeRow.depth]).
-  final Widget Function(BuildContext context, DesignTreeItem<T> item)
-  rowBuilder;
+  /// Paints a row (indent it by [RawTreeRow.depth]).
+  final Widget Function(BuildContext context, RawTreeItem<T> item) rowBuilder;
 
   /// What a screen reader calls a node.
   final String Function(T node) labelOf;
@@ -238,18 +237,16 @@ class DesignTree<T extends Object> extends StatefulWidget {
   final String? semanticLabel;
 
   @override
-  State<DesignTree<T>> createState() => _DesignTreeState<T>();
+  State<RawTree<T>> createState() => _DesignTreeState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawTreeController<T>>('controller', controller))
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignTreeItem<T> item)
+          Widget Function(BuildContext context, RawTreeItem<T> item)
         >.has('rowBuilder', rowBuilder),
       )
       ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
@@ -263,7 +260,7 @@ class DesignTree<T extends Object> extends StatefulWidget {
   }
 }
 
-class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
+class _DesignTreeState<T extends Object> extends State<RawTree<T>> {
   final Map<T, FocusNode> _nodes = {};
   T? _current;
 
@@ -274,7 +271,7 @@ class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
   }
 
   @override
-  void didUpdateWidget(DesignTree<T> oldWidget) {
+  void didUpdateWidget(RawTree<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_changed);
@@ -294,7 +291,7 @@ class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
   void _changed() => setState(() {});
 
   FocusNode _node(T node) =>
-      _nodes.putIfAbsent(node, () => FocusNode(debugLabel: 'DesignTree row'));
+      _nodes.putIfAbsent(node, () => FocusNode(debugLabel: 'RawTree row'));
 
   void _focus(T node) {
     setState(() => _current = node);
@@ -303,7 +300,7 @@ class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
     });
   }
 
-  void _press(DesignTreeRow<T> row) {
+  void _press(RawTreeRow<T> row) {
     final c = widget.controller;
     setState(() => _current = row.node);
     c.select(row.node);
@@ -314,7 +311,7 @@ class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
     }
   }
 
-  KeyEventResult _key(DesignTreeRow<T> row, int index, KeyEvent event) {
+  KeyEventResult _key(RawTreeRow<T> row, int index, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
@@ -423,7 +420,7 @@ class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
           excludeSemantics: true,
           builder: (context, states, _) => widget.rowBuilder(
             context,
-            DesignTreeItem(
+            RawTreeItem(
               row: row,
               hasChildren: c.hasChildren(node),
               expanded: c.isExpanded(node),

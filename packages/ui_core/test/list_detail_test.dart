@@ -24,7 +24,7 @@ class _HostState extends State<_Host> {
   void choose(String? item) => setState(() => selected = item);
 
   @override
-  Widget build(BuildContext context) => DesignListDetail<String>(
+  Widget build(BuildContext context) => RawListDetail<String>(
     selectedItem: selected,
     onSelectedItemChanged: (item) {
       _told.add(item);
@@ -112,7 +112,7 @@ void main() {
       await _width(tester, width);
       await tester.pumpWidget(
         harness(
-          DesignListDetail<String>(
+          RawListDetail<String>(
             selectedItem: item,
             onSelectedItemChanged: (_) {},
             listBuilder: (context) => headingAndText(),
@@ -239,7 +239,7 @@ void main() {
   });
 
   test('it describes itself', () {
-    final text = DesignListDetail<String>(
+    final text = RawListDetail<String>(
       selectedItem: 'A',
       onSelectedItemChanged: (_) {},
       listBuilder: (context) => const SizedBox(),

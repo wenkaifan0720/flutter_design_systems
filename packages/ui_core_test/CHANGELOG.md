@@ -1,3 +1,8 @@
+## 0.4.0
+
+- **Breaking:** needs ui_core 0.6.0.
+- The checks name ui_core's 0.6.0 names in their messages and docs (`RawTapTargets`, `RawTapTargetScope`, `RawInput`); the checks keep their own names.
+
 ## 0.3.0
 
 - **Breaking:** needs ui_core 0.5.0.

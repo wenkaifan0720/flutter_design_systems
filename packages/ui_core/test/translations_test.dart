@@ -64,7 +64,7 @@ final Map<String, String Function(RawWidgetsLocalizations l)> _words = {
   'tagInputDeleteLabel': (l) => l.tagInputDeleteLabel,
   'toasterRegionLabel': (l) => l.toasterRegionLabel,
   'treeLevelHint': (l) => l.treeLevelHint(3, 2, 5),
-  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
   'keyboardKeyAlt': (l) => l.keyboardKeyAlt,
   'keyboardKeyControl': (l) => l.keyboardKeyControl,
   'keyboardKeyShift': (l) => l.keyboardKeyShift,
@@ -206,7 +206,7 @@ void main() {
     expect(RawWidgetsLocalizations.supportedLocales, hasLength(30));
     expect(
       RawWidgetsLocalizations.supportedLocales.map(_key).toSet(),
-      designLocaleData.keys.toSet(),
+      rawLocaleData.keys.toSet(),
     );
   });
 
@@ -214,7 +214,7 @@ void main() {
       'digits', () {
     for (final locale in RawWidgetsLocalizations.supportedLocales) {
       if (locale.languageCode == 'en') continue;
-      final data = designLocaleData[_key(locale)]!;
+      final data = rawLocaleData[_key(locale)]!;
       final l = RawWidgetsLocalizations.forLocale(locale);
       expect(
         l.runtimeType,
@@ -240,7 +240,7 @@ void main() {
   test('English: the template ARB says what DefaultRawWidgetsLocalizations '
       'says', () {
     const en = DefaultRawWidgetsLocalizations();
-    final data = designLocaleData['en']!;
+    final data = rawLocaleData['en']!;
     for (final MapEntry(:key, :value) in _words.entries) {
       expect(value(en), _fill(data.words[key]!, _filled), reason: key);
     }

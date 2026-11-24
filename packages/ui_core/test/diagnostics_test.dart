@@ -1,9 +1,6 @@
 // The description every public part gives of itself in the inspector and
 // in a failing test's tree: each field it is built with, a field at its
 // default hidden.
-// DesignRadioGroup is deprecated in the package, which keeps its tests for
-// its one last release.
-// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -54,8 +51,8 @@ final Map<String, List<Object>> _expected = {
     'has score',
   ],
   'RawCommandShortcut': ['has onOpen'],
-  'DesignControlBox': ['minHeight: 48.0'],
-  'DesignTextEntryBox': ['minHeight: 48.0'],
+  'RawControlBox': ['minHeight: 48.0'],
+  'RawTextEntryBox': ['minHeight: 48.0'],
   'RawDataTable': [
     'controller: Instance of \'RawDataTableController<String>\'',
     'has headerBuilder',
@@ -63,11 +60,11 @@ final Map<String, List<Object>> _expected = {
     'has rowBuilder',
   ],
   'RawInputDecorator': ['has builder'],
-  'DesignForm': [],
-  'DesignInputGroup': [startsWith('focusNode: FocusNode#'), 'has builder'],
+  'RawForm': [],
+  'RawInputGroup': [startsWith('focusNode: FocusNode#'), 'has builder'],
   'RawPasswordReveal': ['has builder'],
-  'DesignInventoryGallery': ['inventory: Instance of \'DesignInventory\''],
-  'DesignKeylineRegion': [],
+  'RawInventoryGallery': ['inventory: Instance of \'RawInventory\''],
+  'RawKeylineRegion': [],
   'MediaSlotImage': ['slotId: "hero"'],
   'RawMenuBar': ['menus: []', 'has itemBuilder', 'has surfaceBuilder'],
   'RawOtpField': ['has slotBuilder'],
@@ -108,24 +105,18 @@ final Map<String, List<Object>> _expected = {
     'has displayStringForOption',
   ],
   'RawToaster': ['has toastBuilder'],
-  'DesignRadioGroup': [
-    'options: Day, Week',
-    'has onChanged',
-    'has itemBuilder',
-    'has focusNodeFor',
-  ],
   'RawSegmentedButton': [
     'options: Day, Week',
     'selected: Day',
     'has onSelectionChanged',
     'has itemBuilder',
   ],
-  'DesignTree': [
-    'controller: Instance of \'DesignTreeController<String>\'',
+  'RawTree': [
+    'controller: Instance of \'RawTreeController<String>\'',
     'has rowBuilder',
     'has labelOf',
   ],
-  'DesignValueHandle': ['value: 0.5', 'has builder'],
+  'RawValueHandle': ['value: 0.5', 'has builder'],
 };
 
 // The widget classes of the package's public libraries, read from its source.
@@ -191,7 +182,7 @@ void main() {
   test('a value handle says each field set off its default', () {
     expect(
       _description(
-        DesignValueHandle(
+        RawValueHandle(
           value: .25,
           onChanged: (_) {},
           builder: _b2,
@@ -245,22 +236,22 @@ void main() {
   group('a value out of its range asserts', () {
     final cases = <String, Object? Function()>{
       'a handle past its max': () =>
-          DesignValueHandle(value: 2, onChanged: null, builder: _b2),
-      'a handle whose min passes its max': () => DesignValueHandle(
+          RawValueHandle(value: 2, onChanged: null, builder: _b2),
+      'a handle whose min passes its max': () => RawValueHandle(
         value: .5,
         min: 1,
         max: 0,
         onChanged: null,
         builder: _b2,
       ),
-      'a handle of no divisions': () => DesignValueHandle(
+      'a handle of no divisions': () => RawValueHandle(
         value: .5,
         divisions: 0,
         onChanged: null,
         builder: _b2,
       ),
       'a handle of no step': () =>
-          DesignValueHandle(value: .5, step: 0, onChanged: null, builder: _b2),
+          RawValueHandle(value: .5, step: 0, onChanged: null, builder: _b2),
       'a range whose start passes its end': () => RawRangeValues(.8, .2),
       'a range slider whose min passes its max': () => RawRangeSlider(
         values: const RawRangeValues(.2, .8),
@@ -459,8 +450,8 @@ Map<String, Widget> _parts() {
       itemBuilder: _b3,
     ),
     'RawCommandShortcut': RawCommandShortcut(onOpen: () {}, child: _box),
-    'DesignControlBox': const DesignControlBox(minHeight: 48, child: _box),
-    'DesignTextEntryBox': const DesignTextEntryBox(minHeight: 48, child: _box),
+    'RawControlBox': const RawControlBox(minHeight: 48, child: _box),
+    'RawTextEntryBox': const RawTextEntryBox(minHeight: 48, child: _box),
     'RawDataTable': RawDataTable<String>(
       controller: held(
         RawDataTableController<String>(rows: const [], columns: const []),
@@ -470,17 +461,17 @@ Map<String, Widget> _parts() {
       cellBuilder: _b3,
     ),
     'RawInputDecorator': const RawInputDecorator(builder: _b2, child: _box),
-    'DesignForm': const DesignForm(child: _box),
-    'DesignInputGroup': DesignInputGroup(
+    'RawForm': const RawForm(child: _box),
+    'RawInputGroup': RawInputGroup(
       focusNode: held(FocusNode()),
       builder: _b3,
       child: _box,
     ),
     'RawPasswordReveal': const RawPasswordReveal(builder: _b2),
-    'DesignInventoryGallery': const DesignInventoryGallery(
-      inventory: DesignInventory(look: 'Test', entries: []),
+    'RawInventoryGallery': const RawInventoryGallery(
+      inventory: RawInventory(look: 'Test', entries: []),
     ),
-    'DesignKeylineRegion': const DesignKeylineRegion(child: _box),
+    'RawKeylineRegion': const RawKeylineRegion(child: _box),
     'MediaSlotImage': const MediaSlotImage(slotId: 'hero', fallback: _box),
     'RawMenuBar': const RawMenuBar(
       menus: [],
@@ -539,30 +530,20 @@ Map<String, Widget> _parts() {
       tagBuilder: _b3,
     ),
     'RawToaster': const RawToaster(toastBuilder: _b2, child: _box),
-    'DesignRadioGroup': DesignRadioGroup<String>(
-      options: const ['Day', 'Week'],
-      value: null,
-      onChanged: (_) {},
-      itemBuilder: _b4,
-      focusNodeFor: (_) => null,
-    ),
     'RawSegmentedButton': const RawSegmentedButton<String>(
       options: ['Day', 'Week'],
       selected: {'Day'},
       onSelectionChanged: _chose,
       itemBuilder: _b3,
     ),
-    'DesignTree': DesignTree<String>(
+    'RawTree': RawTree<String>(
       controller: held(
-        DesignTreeController<String>(
-          roots: const [],
-          childrenOf: (_) => const [],
-        ),
+        RawTreeController<String>(roots: const [], childrenOf: (_) => const []),
       ),
       labelOf: (node) => node,
       rowBuilder: _b2,
     ),
-    'DesignValueHandle': const DesignValueHandle(
+    'RawValueHandle': const RawValueHandle(
       value: .5,
       onChanged: null,
       builder: _b2,

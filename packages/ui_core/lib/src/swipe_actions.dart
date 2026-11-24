@@ -393,13 +393,13 @@ class _DesignSwipeActionsState extends State<RawSwipeActions>
     double velocity = 0,
     bool quick = false,
   }) {
-    if (designReduceMotionOf(context)) {
+    if (rawReduceMotionOf(context)) {
       controller.value = to;
       return TickerFuture.complete();
     }
     return controller.animateWith(
-      designSpringSimulation(
-        const DesignMotionPolicy().spatial(
+      rawSpringSimulation(
+        const RawMotionPolicy().spatial(
           dampingRatio: widget.dampingRatio,
           stiffness: widget.stiffness * (quick ? 2 : 1),
         ),
@@ -492,7 +492,7 @@ class _DesignSwipeActionsState extends State<RawSwipeActions>
     _offset.value = next;
     final armed = _armed(next);
     if (armed && !_armedNow) {
-      DesignHaptics.of(context).thresholdCrossed?.call();
+      RawHaptics.of(context).thresholdCrossed?.call();
     }
     _arming(armed);
   }

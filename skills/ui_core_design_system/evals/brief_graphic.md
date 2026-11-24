@@ -4,7 +4,7 @@ A loud look, where character must not cost usability.
 
 ## The brief, as given to the agent
 
-> Build `riso_ui`, a Flutter design-system package on ui_core ^0.5.0, in the
+> Build `riso_ui`, a Flutter design-system package on ui_core ^0.6.0, in the
 > language of two-colour risograph printing: fluorescent pink and teal spot
 > colours (and where they overprint, the colour they make), on off-white
 > paper by day and on black by night; thick rounded type; shapes cut as if
@@ -17,7 +17,7 @@ A loud look, where character must not cost usability.
 > desktop. Use the `ui_core_design_system` skill.
 >
 > Deliver the package at `riso_ui/` with an example app at `riso_ui/example/`
-> whose `lib/inventory.dart` defines `final DesignInventory inventory` (the
+> whose `lib/inventory.dart` defines `final RawInventory inventory` (the
 > look's answers) and
 > `Widget lookHost(BuildContext context, Widget child, Brightness brightness)`
 > (the look's theme round `child`, as the app's `MaterialApp.builder` puts

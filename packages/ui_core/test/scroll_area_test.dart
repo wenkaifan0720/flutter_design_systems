@@ -15,7 +15,7 @@ RawScrollbarThumbDetails? _last;
 // keyboard is on the area.
 Widget _area(
   ScrollController c, {
-  DesignScrollbarVisibility visibility = DesignScrollbarVisibility.auto,
+  RawScrollbarVisibility visibility = RawScrollbarVisibility.auto,
   TextDirection direction = TextDirection.ltr,
   bool reduceMotion = false,
 }) => harness(
@@ -72,7 +72,7 @@ void main() {
         child: RawScrollArea(
           controller: areaController,
           semanticLabel: 'Terms',
-          visibility: DesignScrollbarVisibility.always,
+          visibility: RawScrollbarVisibility.always,
           thumbBuilder: (context, thumb) =>
               const ColoredBox(key: _thumbKey, color: Color(0xFF808080)),
           child: ListView.builder(
@@ -158,7 +158,7 @@ void main() {
               child: RawScrollArea(
                 controller: c,
                 thumbLength: thumbLength,
-                visibility: DesignScrollbarVisibility.always,
+                visibility: RawScrollbarVisibility.always,
                 thumbBuilder: (context, thumb) {
                   seen.add(thumb.thumbExtent);
                   return const ColoredBox(color: Color(0xFF808080));
@@ -192,7 +192,7 @@ void main() {
     final c = ScrollController();
     addTearDown(c.dispose);
     await tester.pumpWidget(
-      _area(c, visibility: DesignScrollbarVisibility.always),
+      _area(c, visibility: RawScrollbarVisibility.always),
     );
     await tester.pump();
     final gesture = await tester.startGesture(
@@ -274,7 +274,7 @@ void main() {
     final c = ScrollController();
     addTearDown(c.dispose);
     await tester.pumpWidget(
-      _area(c, visibility: DesignScrollbarVisibility.always),
+      _area(c, visibility: RawScrollbarVisibility.always),
     );
     await tester.pump();
     final area = tester.getSemantics(find.bySemanticsLabel('Terms'));

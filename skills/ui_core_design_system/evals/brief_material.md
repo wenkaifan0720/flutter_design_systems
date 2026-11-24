@@ -4,7 +4,7 @@ A look made of a physical material, where every state must stay true to it.
 
 ## The brief, as given to the agent
 
-> Build `porcelain_ui`, a Flutter design-system package on ui_core ^0.5.0,
+> Build `porcelain_ui`, a Flutter design-system package on ui_core ^0.6.0,
 > made of glazed porcelain: white bodies with a soft glaze highlight, cobalt
 > blue painted lines and fills, parts that sit slightly raised from a
 > matt bisque ground, gentle rounded edges. Light falls from the top left;
@@ -21,7 +21,7 @@ A look made of a physical material, where every state must stay true to it.
 >
 > Deliver the package at `porcelain_ui/` with an example app at
 > `porcelain_ui/example/` whose `lib/inventory.dart` defines
-> `final DesignInventory inventory` (the look's answers) and
+> `final RawInventory inventory` (the look's answers) and
 > `Widget lookHost(BuildContext context, Widget child, Brightness brightness)`
 > (the look's theme round `child`, as the app's `MaterialApp.builder` puts
 > it). Finish when the skill's checks pass and you have read every picture.

@@ -37,7 +37,7 @@ Most apps add a look, which brings `ui_core` with it. To build a look of your ow
 
 ```yaml
 dependencies:
-  ui_core: ^0.5.0
+  ui_core: ^0.6.0
 ```
 
 `ui_core`'s README shows a button of your own, the behaviours, and who disposes what.

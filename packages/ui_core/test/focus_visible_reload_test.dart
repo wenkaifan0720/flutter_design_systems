@@ -1,7 +1,7 @@
 // What ui_core hears focus by, over a binding that outlives it: App
 // Preview draws each page with ui_core instantiated afresh (its statics
 // new) over one Flutter framework, whose pointer router, keyboard and
-// semantics binding live on. DesignFocusVisible.debugForget stands for that
+// semantics binding live on. RawFocusVisible.debugForget stands for that
 // fresh instance. Each page watches without an assertion, and leaves
 // nothing registered once it goes.
 import 'package:flutter/gestures.dart';
@@ -40,13 +40,13 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     final before = _routes;
     for (var page = 0; page < 4; page++) {
-      DesignFocusVisible.debugForget();
+      RawFocusVisible.debugForget();
       await tester.pumpWidget(_page(page));
       expect(tester.takeException(), isNull, reason: 'page $page');
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      expect(DesignFocusVisible.shown, isTrue, reason: 'page $page');
+      expect(RawFocusVisible.shown, isTrue, reason: 'page $page');
       await _press(tester);
-      expect(DesignFocusVisible.shown, isFalse, reason: 'page $page');
+      expect(RawFocusVisible.shown, isFalse, reason: 'page $page');
     }
     await tester.pumpWidget(const SizedBox());
     expect(_routes, before);
@@ -57,7 +57,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     final before = _routes;
     await tester.pumpWidget(Column(children: [_page(0)]));
-    DesignFocusVisible.debugForget();
+    RawFocusVisible.debugForget();
     await tester.pumpWidget(Column(children: [_page(0), _page(1)]));
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(Column(children: [_page(1)]));
@@ -69,8 +69,8 @@ void main() {
       'the last has gone', (tester) async {
     var told = 0;
     void tell() => told++;
-    DesignFocusVisible.addListener(tell);
-    addTearDown(() => DesignFocusVisible.removeListener(tell));
+    RawFocusVisible.addListener(tell);
+    addTearDown(() => RawFocusVisible.removeListener(tell));
     Future<void> switchMode() async {
       // A touch, then a key: the key's handler, then the mode switch.
       await tester.tapAt(const Offset(5, 5));

@@ -80,8 +80,8 @@ Widget _button(
 Future<DesignAlignmentReport> _check(
   WidgetTester tester,
   Widget row, {
-  DesignInput? input,
-  DesignTapTargets? targets,
+  RawInput? input,
+  RawTapTargets? targets,
 }) async {
   final semantics = tester.ensureSemantics();
   Widget page = Directionality(
@@ -89,7 +89,7 @@ Future<DesignAlignmentReport> _check(
     child: Center(key: const Key('page'), child: row),
   );
   if (targets != null) {
-    page = DesignTapTargetScope(targets: targets, child: page);
+    page = RawTapTargetScope(targets: targets, child: page);
   }
   await tester.pumpWidget(page);
   final report = DesignTapTargetCheck(
@@ -199,7 +199,7 @@ void main() {
     final pointer = await _check(
       tester,
       _button('Add'),
-      input: DesignInput.pointer,
+      input: RawInput.pointer,
     );
     expect(pointer.problems, isEmpty);
     final touch = await _check(tester, _button('Add'));
@@ -207,7 +207,7 @@ void main() {
     final small = await _check(
       tester,
       _button('Add', size: 16),
-      input: DesignInput.pointer,
+      input: RawInput.pointer,
     );
     expect(
       small.problems.single,
@@ -219,7 +219,7 @@ void main() {
     final report = await _check(
       tester,
       _button('Add', size: 44),
-      targets: const DesignTapTargets(touch: Size.square(48)),
+      targets: const RawTapTargets(touch: Size.square(48)),
     );
     expect(report.problems.single, contains('under the 48 × 48 a finger'));
   });
@@ -235,7 +235,7 @@ void main() {
         height: 46,
         child: _button('Add', size: 46, slop: true, outline: 56),
       ),
-      input: DesignInput.pointer,
+      input: RawInput.pointer,
     );
     expect(
       report.problems.single,

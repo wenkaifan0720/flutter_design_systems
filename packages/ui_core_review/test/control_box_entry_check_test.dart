@@ -1,4 +1,4 @@
-// DesignTextEntryCheck over DesignTextEntryBox: both of its forms pass the
+// DesignTextEntryCheck over RawTextEntryBox: both of its forms pass the
 // text entry check. Split from ui_core's control_box_test.dart, which tests
 // the box itself.
 import 'package:material_ui/material_ui.dart';
@@ -69,9 +69,9 @@ void main() {
         // 0.75 em high), as a look puts its line's capitals on the middle.
         'Bare': (context, controller, hint) => SizedBox(
           width: 200,
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: 0.75,
-            child: DesignTextEntryBox(
+            child: RawTextEntryBox(
               minHeight: 40,
               controller: controller,
               hint: Text(hint, style: _field),
@@ -85,9 +85,9 @@ void main() {
         ),
         'Pinned': (context, controller, hint) => SizedBox(
           width: 200,
-          child: DesignCapCenter(
+          child: RawCapCenter(
             capHeightFactor: 0.75,
-            child: DesignTextEntryBox(
+            child: RawTextEntryBox(
               minHeight: 40,
               child: TextField(
                 controller: controller,

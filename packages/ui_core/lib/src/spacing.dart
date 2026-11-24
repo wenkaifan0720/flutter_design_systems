@@ -6,13 +6,13 @@ import 'package:flutter/widgets.dart';
 ///
 /// Most systems keep a 4 pt grid ([fallback]). A look that keeps a finer
 /// one (iOS's and the classic Mac's 2 pt values: 6, 10, 14, 22) declares
-/// it with a [DesignSpacingScope] round the app, in its theme, beside its
-/// `DesignTapTargetScope`, and `DesignSpacingCheck` holds its sources to
+/// it with a [RawSpacingScope] round the app, in its theme, beside its
+/// `RawTapTargetScope`, and `DesignSpacingCheck` holds its sources to
 /// it.
 ///
 /// ```dart
-/// DesignSpacingScope(
-///   spacing: const DesignSpacing(grid: 2),
+/// RawSpacingScope(
+///   spacing: const RawSpacing(grid: 2),
 ///   child: app,
 /// )
 /// ```
@@ -22,32 +22,30 @@ import 'package:flutter/widgets.dart';
 ///  * `DesignSpacingCheck.literals`, which reads a look's sources for
 ///    spacing off its grid.
 @immutable
-class DesignSpacing with Diagnosticable {
+class RawSpacing with Diagnosticable {
   /// A look's spacing on a [grid] of so many logical pixels.
-  const DesignSpacing({this.grid = 4})
+  const RawSpacing({this.grid = 4})
     : assert(grid > 0, 'a spacing grid is positive');
 
   /// The spacing with no look's own: a 4 pt grid.
-  static const DesignSpacing fallback = DesignSpacing();
+  static const RawSpacing fallback = RawSpacing();
 
   /// The step every spacing token is a multiple of.
   final double grid;
 
-  /// The spacing in effect at [context]: the nearest [DesignSpacingScope]'s,
+  /// The spacing in effect at [context]: the nearest [RawSpacingScope]'s,
   /// else [fallback].
-  static DesignSpacing of(BuildContext context) => maybeOf(context) ?? fallback;
+  static RawSpacing of(BuildContext context) => maybeOf(context) ?? fallback;
 
-  /// The nearest [DesignSpacingScope]'s spacing, or null when there is none.
-  static DesignSpacing? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<DesignSpacingScope>()?.spacing;
+  /// The nearest [RawSpacingScope]'s spacing, or null when there is none.
+  static RawSpacing? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<RawSpacingScope>()?.spacing;
 
   /// This with the given fields changed.
-  DesignSpacing copyWith({double? grid}) =>
-      DesignSpacing(grid: grid ?? this.grid);
+  RawSpacing copyWith({double? grid}) => RawSpacing(grid: grid ?? this.grid);
 
   @override
-  bool operator ==(Object other) =>
-      other is DesignSpacing && other.grid == grid;
+  bool operator ==(Object other) => other is RawSpacing && other.grid == grid;
 
   @override
   int get hashCode => grid.hashCode;
@@ -60,29 +58,29 @@ class DesignSpacing with Diagnosticable {
 }
 
 /// Declares the [spacing] a look's parts stand on for the subtree, as a
-/// theme does; [DesignSpacing.of] reads it.
-class DesignSpacingScope extends InheritedTheme {
+/// theme does; [RawSpacing.of] reads it.
+class RawSpacingScope extends InheritedTheme {
   /// Declares [spacing] for [child].
-  const DesignSpacingScope({
+  const RawSpacingScope({
     super.key,
     required this.spacing,
     required super.child,
   });
 
   /// The spacing under it.
-  final DesignSpacing spacing;
+  final RawSpacing spacing;
 
   @override
   Widget wrap(BuildContext context, Widget child) =>
-      DesignSpacingScope(spacing: spacing, child: child);
+      RawSpacingScope(spacing: spacing, child: child);
 
   @override
-  bool updateShouldNotify(DesignSpacingScope oldWidget) =>
+  bool updateShouldNotify(RawSpacingScope oldWidget) =>
       spacing != oldWidget.spacing;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<DesignSpacing>('spacing', spacing));
+    properties.add(DiagnosticsProperty<RawSpacing>('spacing', spacing));
   }
 }

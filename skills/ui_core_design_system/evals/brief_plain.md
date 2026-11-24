@@ -4,7 +4,7 @@ A quiet look, where restraint and alignment are the whole test.
 
 ## The brief, as given to the agent
 
-> Build `grid_ui`, a Flutter design-system package on ui_core ^0.5.0, in the
+> Build `grid_ui`, a Flutter design-system package on ui_core ^0.6.0, in the
 > International Typographic Style: a strict 8 px grid, one sans-serif family
 > (any the app loads; Inter by default), black and white with one red, flat
 > surfaces with hairline rules, square corners, no shadows, no gradients.
@@ -16,7 +16,7 @@ A quiet look, where restraint and alignment are the whole test.
 > desktop. Use the `ui_core_design_system` skill.
 >
 > Deliver the package at `grid_ui/` with an example app at `grid_ui/example/`
-> whose `lib/inventory.dart` defines `final DesignInventory inventory` (the
+> whose `lib/inventory.dart` defines `final RawInventory inventory` (the
 > look's answers) and
 > `Widget lookHost(BuildContext context, Widget child, Brightness brightness)`
 > (the look's theme round `child`, as the app's `MaterialApp.builder` puts

@@ -3,7 +3,7 @@
 /// whose node spans the entry alone so that a tap through the semantics
 /// tree on a step button reaches no node in the button's place, and a tag
 /// input's entry, whose node stands beside the tags' own and merges a field
-/// the look builds round its text ([DesignFieldWordsEntry]). Inside ui_core;
+/// the look builds round its text ([RawFieldWordsEntry]). Inside ui_core;
 /// not exported.
 library;
 
@@ -20,7 +20,7 @@ import '../tap_target.dart';
 /// text field's input included. Android's, iOS's, macOS's, Windows' and
 /// Linux's embedders carry the flag and say nothing of it, so a required
 /// field keeps its words there.
-abstract final class DesignRequiredFlag {
+abstract final class RawRequiredFlag {
   /// Whether the flag is heard: on the web. A test sets it.
   static bool heard = kIsWeb;
 }
@@ -28,9 +28,9 @@ abstract final class DesignRequiredFlag {
 /// The field's name (its label, and that it is required), its hint (the
 /// error, then the help), whether it is required and whether it is invalid,
 /// for the control under it that carries them.
-class DesignFieldWords extends InheritedWidget {
+class RawFieldWords extends InheritedWidget {
   /// The words of the field round [child].
-  const DesignFieldWords({
+  const RawFieldWords({
     super.key,
     required this.name,
     required this.hint,
@@ -54,11 +54,11 @@ class DesignFieldWords extends InheritedWidget {
   final bool required;
 
   /// The words of the nearest field round [context], or null outside one.
-  static DesignFieldWords? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<DesignFieldWords>();
+  static RawFieldWords? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<RawFieldWords>();
 
   @override
-  bool updateShouldNotify(DesignFieldWords oldWidget) =>
+  bool updateShouldNotify(RawFieldWords oldWidget) =>
       name != oldWidget.name ||
       hint != oldWidget.hint ||
       invalid != oldWidget.invalid ||
@@ -67,23 +67,23 @@ class DesignFieldWords extends InheritedWidget {
 
 /// Marks [child] as the control that carries its field's words, so the
 /// field says them on no node of its own.
-class DesignFieldWordsCarried extends SingleChildRenderObjectWidget {
+class RawFieldWordsCarried extends SingleChildRenderObjectWidget {
   /// Marks [child].
-  const DesignFieldWordsCarried({super.key, required super.child});
+  const RawFieldWordsCarried({super.key, required super.child});
 
   @override
-  RenderDesignFieldWordsCarried createRenderObject(BuildContext context) =>
-      RenderDesignFieldWordsCarried();
+  RenderFieldWordsCarried createRenderObject(BuildContext context) =>
+      RenderFieldWordsCarried();
 }
 
-/// The render object of [DesignFieldWordsCarried]: a field that finds one
+/// The render object of [RawFieldWordsCarried]: a field that finds one
 /// under it says its words on no node of its own.
-class RenderDesignFieldWordsCarried extends RenderProxyBox {}
+class RenderFieldWordsCarried extends RenderProxyBox {}
 
 /// What a field round a control says on its own node (a
 /// [RawInputDecorator]'s label and hint), for a node that carries other
 /// words over it not to say the same again.
-abstract interface class DesignFieldSays {
+abstract interface class RawFieldSays {
   /// The label it says; null: none.
   String? get saysLabel;
 
@@ -99,9 +99,9 @@ abstract interface class DesignFieldSays {
 /// the entry says already (its own label, a hint that is the help) are not
 /// said twice. An entry that holds a control besides its text (a clear key)
 /// is not merged, so each control keeps its own node and action.
-class DesignFieldWordsEntry extends SingleChildRenderObjectWidget {
+class RawFieldWordsEntry extends SingleChildRenderObjectWidget {
   /// The words of the field round the entry [child].
-  const DesignFieldWordsEntry({
+  const RawFieldWordsEntry({
     super.key,
     required this.name,
     required this.hint,
@@ -110,10 +110,10 @@ class DesignFieldWordsEntry extends SingleChildRenderObjectWidget {
     required super.child,
   });
 
-  /// The field's name ([DesignFieldWords.name]).
+  /// The field's name ([RawFieldWords.name]).
   final String? name;
 
-  /// Its error, then its help ([DesignFieldWords.hint]).
+  /// Its error, then its help ([RawFieldWords.hint]).
   final String? hint;
 
   /// Whether it shows an error.
@@ -123,20 +123,20 @@ class DesignFieldWordsEntry extends SingleChildRenderObjectWidget {
   final bool required;
 
   @override
-  RenderDesignFieldWordsEntry createRenderObject(BuildContext context) =>
-      RenderDesignFieldWordsEntry(
+  RenderFieldWordsEntry createRenderObject(BuildContext context) =>
+      RenderFieldWordsEntry(
         name,
         hint,
         invalid,
         required,
         Directionality.maybeOf(context),
-        DesignTapTargets.of(context).floorOn(),
+        RawTapTargets.of(context).floorOn(),
       );
 
   @override
   void updateRenderObject(
     BuildContext context,
-    RenderDesignFieldWordsEntry renderObject,
+    RenderFieldWordsEntry renderObject,
   ) {
     renderObject
       ..name = name
@@ -144,24 +144,24 @@ class DesignFieldWordsEntry extends SingleChildRenderObjectWidget {
       ..invalid = invalid
       ..required = required
       ..textDirection = Directionality.maybeOf(context)
-      ..floor = DesignTapTargets.of(context).floorOn()
+      ..floor = RawTapTargets.of(context).floorOn()
       // What the entry holds may change (a label of its own, a clear key)
       // while the words stay: describe it again.
       ..markNeedsSemanticsUpdate();
   }
 }
 
-/// The render object of [DesignFieldWordsEntry].
+/// The render object of [RawFieldWordsEntry].
 ///
 /// Its node spans the entry's reach ([reach]), which may be larger than the
 /// entry's box: a short entry beside its tags (a bare text line) is still a
 /// touch target tall, as a lone text field is. A tap in the reach that no
-/// tag takes reaches the entry ([DesignFieldWordsRoom]).
-class RenderDesignFieldWordsEntry extends RenderProxyBox {
+/// tag takes reaches the entry ([RawFieldWordsRoom]).
+class RenderFieldWordsEntry extends RenderProxyBox {
   /// The node for a field's name and hint round its child: invalid and
   /// required as given, its words read in the text direction given, at
   /// least [floor] large.
-  RenderDesignFieldWordsEntry(
+  RenderFieldWordsEntry(
     this._name,
     this._hint,
     this._invalid,
@@ -173,7 +173,7 @@ class RenderDesignFieldWordsEntry extends RenderProxyBox {
   Size _floor;
 
   /// The least size of the entry's node and of the area a tap on it
-  /// reaches ([DesignTapTargets.floorOn]).
+  /// reaches ([RawTapTargets.floorOn]).
   Size get floor => _floor;
   set floor(Size value) {
     if (value == _floor) return;
@@ -184,7 +184,7 @@ class RenderDesignFieldWordsEntry extends RenderProxyBox {
   /// The area the entry's node spans and a tap reaches, in its own units:
   /// its box, and any larger node a descendant it merges declares (a look's
   /// own lane round its line), grown to [floor] about its middle; kept
-  /// inside the [DesignFieldWordsRoom] round the tags and the entry, and off
+  /// inside the [RawFieldWordsRoom] round the tags and the entry, and off
   /// every tag's box, so a tag keeps its own taps and its own node.
   Rect get reach {
     if (!hasSize) return Rect.zero;
@@ -282,9 +282,9 @@ class RenderDesignFieldWordsEntry extends RenderProxyBox {
     return area;
   }
 
-  RenderDesignFieldWordsRoom? get _room {
+  RenderFieldWordsRoom? get _room {
     for (var node = parent; node != null; node = node.parent) {
-      if (node is RenderDesignFieldWordsRoom) return node;
+      if (node is RenderFieldWordsRoom) return node;
     }
     return null;
   }
@@ -376,7 +376,7 @@ class RenderDesignFieldWordsEntry extends RenderProxyBox {
       if ((label && hint) || (n is RenderExcludeSemantics && n.excluding)) {
         return;
       }
-      if (n case final DesignFieldSays field) {
+      if (n case final RawFieldSays field) {
         label = label || says(field.saysLabel, name);
         hint = hint || says(field.saysHint, help);
       }
@@ -443,22 +443,22 @@ class RenderDesignFieldWordsEntry extends RenderProxyBox {
 }
 
 /// The tags and the entry of a tag input in a field, as it lays them out:
-/// a tap in the entry's reach ([RenderDesignFieldWordsEntry.reach]) that
+/// a tap in the entry's reach ([RenderFieldWordsEntry.reach]) that
 /// nothing under it takes goes to the entry, on its middle row across from
 /// the tap.
-class DesignFieldWordsRoom extends SingleChildRenderObjectWidget {
+class RawFieldWordsRoom extends SingleChildRenderObjectWidget {
   /// The room round [child], the tags and the entry.
-  const DesignFieldWordsRoom({super.key, required super.child});
+  const RawFieldWordsRoom({super.key, required super.child});
 
   @override
-  RenderDesignFieldWordsRoom createRenderObject(BuildContext context) =>
-      RenderDesignFieldWordsRoom();
+  RenderFieldWordsRoom createRenderObject(BuildContext context) =>
+      RenderFieldWordsRoom();
 }
 
-/// One tag in a [DesignFieldWordsRoom]: the entry's reach stays off it.
-class DesignFieldWordsTag extends SingleChildRenderObjectWidget {
+/// One tag in a [RawFieldWordsRoom]: the entry's reach stays off it.
+class RawFieldWordsTag extends SingleChildRenderObjectWidget {
   /// Marks [child] as a tag.
-  const DesignFieldWordsTag({super.key, required super.child});
+  const RawFieldWordsTag({super.key, required super.child});
 
   @override
   RenderProxyBox createRenderObject(BuildContext context) => _RenderTag();
@@ -466,13 +466,13 @@ class DesignFieldWordsTag extends SingleChildRenderObjectWidget {
 
 class _RenderTag extends RenderProxyBox {}
 
-/// The render object of [DesignFieldWordsRoom].
-class RenderDesignFieldWordsRoom extends RenderProxyBox {
+/// The render object of [RawFieldWordsRoom].
+class RenderFieldWordsRoom extends RenderProxyBox {
   /// The tags under it, in paint order.
   List<RenderBox> get tags {
     final found = <RenderBox>[];
     void visit(RenderObject n) {
-      if (n is RenderDesignFieldWordsRoom) return;
+      if (n is RenderFieldWordsRoom) return;
       if (n is _RenderTag) {
         found.add(n);
         return;
@@ -485,11 +485,11 @@ class RenderDesignFieldWordsRoom extends RenderProxyBox {
   }
 
   // The entry under it: the first one not in a room of its own.
-  RenderDesignFieldWordsEntry? _entry() {
-    RenderDesignFieldWordsEntry? found;
+  RenderFieldWordsEntry? _entry() {
+    RenderFieldWordsEntry? found;
     void visit(RenderObject n) {
-      if (found != null || n is RenderDesignFieldWordsRoom) return;
-      if (n is RenderDesignFieldWordsEntry) {
+      if (found != null || n is RenderFieldWordsRoom) return;
+      if (n is RenderFieldWordsEntry) {
         found = n;
         return;
       }

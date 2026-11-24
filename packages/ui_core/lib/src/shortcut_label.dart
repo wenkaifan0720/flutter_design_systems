@@ -31,9 +31,9 @@ import 'localizations.dart';
 /// [RawWidgetsLocalizations.of] at [context].
 ///
 /// ```dart
-/// designShortcutKeys(context, const SingleActivator(LogicalKeyboardKey.keyN, meta: true, shift: true))
+/// rawShortcutKeys(context, const SingleActivator(LogicalKeyboardKey.keyN, meta: true, shift: true))
 /// ```
-List<String> designShortcutKeys(
+List<String> rawShortcutKeys(
   BuildContext context,
   MenuSerializableShortcut shortcut, {
   TargetPlatform? platform,
@@ -71,14 +71,14 @@ List<String> designShortcutKeys(
   ];
 }
 
-/// [designShortcutKeys] joined as a menu row shows them: "⌃ ⇧ N" with
+/// [rawShortcutKeys] joined as a menu row shows them: "⌃ ⇧ N" with
 /// Apple's symbols (Flutter's spacing), "Shift+Command+N" in words on
 /// macOS and iOS, "Ctrl+Shift+N" elsewhere.
 ///
 /// ```dart
-/// designShortcutLabel(context, const SingleActivator(LogicalKeyboardKey.keyS, control: true))
+/// rawShortcutLabel(context, const SingleActivator(LogicalKeyboardKey.keyS, control: true))
 /// ```
-String designShortcutLabel(
+String rawShortcutLabel(
   BuildContext context,
   MenuSerializableShortcut shortcut, {
   TargetPlatform? platform,
@@ -87,7 +87,7 @@ String designShortcutLabel(
   final on = platform ?? defaultTargetPlatform;
   final symbols =
       appleSymbols && (on == TargetPlatform.macOS || on == TargetPlatform.iOS);
-  return designShortcutKeys(
+  return rawShortcutKeys(
     context,
     shortcut,
     platform: on,

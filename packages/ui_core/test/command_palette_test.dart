@@ -190,7 +190,7 @@ void main() {
     },
     motion: (p) async {
       unawaited(
-        showDesignCommandPalette(
+        showRawCommandPalette(
           context: p.tester.element(p.node),
           palette: (run) => _palette(onSelected: run),
         ),
@@ -201,14 +201,14 @@ void main() {
 
   test('a prefix beats a word start, which beats a substring, which beats '
       'letters in order', () {
-    final prefix = designMatchScore('Theme', 'the')!;
-    final word = designMatchScore('Toggle theme', 'the')!;
-    final inside = designMatchScore('Aesthetic', 'the')!;
-    final spread = designMatchScore('Tab here', 'the')!;
+    final prefix = rawMatchScore('Theme', 'the')!;
+    final word = rawMatchScore('Toggle theme', 'the')!;
+    final inside = rawMatchScore('Aesthetic', 'the')!;
+    final spread = rawMatchScore('Tab here', 'the')!;
     expect(prefix, greaterThan(word));
     expect(word, greaterThan(inside));
     expect(inside, greaterThan(spread));
-    expect(designMatchScore('Zoom', 'the'), isNull);
+    expect(rawMatchScore('Zoom', 'the'), isNull);
   });
 
   testWidgets('focus stays in the field; arrows move the highlight past a '
@@ -359,7 +359,7 @@ void main() {
             child: Text('dots'),
           ),
         );
-    final DesignBarrierBuilder builder = dots;
+    final RawBarrierBuilder builder = dots;
     await tester.pumpWidget(
       harness(
         Builder(
@@ -371,7 +371,7 @@ void main() {
       ),
     );
     unawaited(
-      showDesignCommandPalette(
+      showRawCommandPalette(
         context: app,
         palette: (run) => _palette(onSelected: run),
         barrierBuilder: builder,
@@ -411,7 +411,7 @@ void main() {
         ),
       );
       unawaited(
-        showDesignCommandPalette(
+        showRawCommandPalette(
           context: app,
           palette: (run) => _palette(onSelected: run),
           surfaceBuilder: (context, palette) =>
@@ -446,7 +446,7 @@ void main() {
       ),
     );
     unawaited(
-      showDesignCommandPalette(
+      showRawCommandPalette(
         context: app,
         palette: (run) => _palette(onSelected: run),
         surfaceBuilder: (context, palette) =>
@@ -469,7 +469,7 @@ void main() {
     late BuildContext app;
     final opener = FocusNode();
     addTearDown(opener.dispose);
-    Future<void> open() => showDesignCommandPalette(
+    Future<void> open() => showRawCommandPalette(
       context: app,
       palette: (run) => _palette(onSelected: run),
       surfaceBuilder: (context, palette) =>

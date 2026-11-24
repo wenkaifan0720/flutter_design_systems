@@ -129,10 +129,10 @@ void main() {
   );
 
   behaviourContract(
-    'DesignValueHandle',
+    'RawValueHandle',
     build: (c) => StatefulBuilder(
       builder: (context, setState) => Center(
-        child: DesignValueHandle(
+        child: RawValueHandle(
           value: _handle,
           step: 0.1,
           semanticLabel: 'Volume',
@@ -194,7 +194,7 @@ void main() {
               RawWidgetsLocalizations.delegate,
               DefaultWidgetsLocalizations.delegate,
             ],
-            child: DesignValueHandle(
+            child: RawValueHandle(
               semanticLabel: 'Gain',
               value: 14,
               min: 10,
@@ -435,7 +435,7 @@ void main() {
       harness(
         StatefulBuilder(
           builder: (context, setState) => Center(
-            child: DesignValueHandle(
+            child: RawValueHandle(
               value: value,
               axis: Axis.vertical,
               growsToward: VerticalDirection.down,
@@ -454,7 +454,7 @@ void main() {
     await _press(tester, LogicalKeyboardKey.arrowUp);
     await _press(tester, LogicalKeyboardKey.arrowUp);
     expect(value, closeTo(0.4, 1e-9));
-    expect(tester.getSize(find.byType(DesignValueHandle)), const Size(44, 44));
+    expect(tester.getSize(find.byType(RawValueHandle)), const Size(44, 44));
   });
 
   for (final turnedOff in [false, true]) {

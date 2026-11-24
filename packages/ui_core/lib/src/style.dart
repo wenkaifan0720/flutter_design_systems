@@ -12,7 +12,7 @@ import 'package:flutter/widgets.dart';
 /// component theme, then from the theme-wide knobs (shapes, strokes,
 /// density, typeface), then from the look's own default. A slot that is
 /// null, or resolves to null for the states at hand, falls through to the
-/// next. [DesignStyleOf] reads the first two layers for a part.
+/// next. [RawStyleOf] reads the first two layers for a part.
 ///
 /// | slot | what it sets |
 /// |---|---|
@@ -28,11 +28,11 @@ import 'package:flutter/widgets.dart';
 /// | [iconSize] | an icon's size |
 ///
 /// Each part's doc says which slots it reads. A look names this class as its
-/// own (`typedef ComicStyle = DesignStyle;`), so every look's parts take the
+/// own (`typedef ComicStyle = RawStyle;`), so every look's parts take the
 /// same style, read the same way.
 ///
 /// ```dart
-/// final style = DesignStyle(
+/// final style = RawStyle(
 ///   fill: WidgetStateProperty.resolveWith(
 ///     (states) => states.contains(WidgetState.pressed)
 ///         ? const Color(0xFF1D4ED8)
@@ -44,9 +44,9 @@ import 'package:flutter/widgets.dart';
 ///
 /// A look that needs a slot of its own (a groove's depth, a glow) leaves the
 /// alias for a subclass under the same name, which keeps every call that
-/// builds one compiling and passes where a [DesignStyle] is read:
+/// builds one compiling and passes where a [RawStyle] is read:
 ///
-/// `class NeumorphicStyle extends DesignStyle { const NeumorphicStyle({super.fill, …, this.depth}); final WidgetStateProperty<double?>? depth; }`
+/// `class NeumorphicStyle extends RawStyle { const NeumorphicStyle({super.fill, …, this.depth}); final WidgetStateProperty<double?>? depth; }`
 ///
 /// It then overrides [copyWith], [merge], [lerp] (as a static of its own),
 /// `==`, [hashCode] and [debugFillProperties] for the new slot, and reads it
@@ -54,12 +54,12 @@ import 'package:flutter/widgets.dart';
 ///
 /// See also:
 ///
-///  * [DesignStyleOf], a part's layers read at its states.
+///  * [RawStyleOf], a part's layers read at its states.
 ///  * `ButtonStyle`, Material's counterpart, which this follows.
 @immutable
-class DesignStyle with Diagnosticable {
+class RawStyle with Diagnosticable {
   /// Every slot null: the next layer's, down to the look's own.
-  const DesignStyle({
+  const RawStyle({
     this.fill,
     this.foreground,
     this.edge,
@@ -79,14 +79,12 @@ class DesignStyle with Diagnosticable {
   /// through inside a slot, state by state.
   ///
   /// ```dart
-  /// final forwarded = DesignStyle.layered([style, themed]);
+  /// final forwarded = RawStyle.layered([style, themed]);
   /// ```
-  factory DesignStyle.layered(List<DesignStyle?> layers) {
-    final source = List<DesignStyle>.unmodifiable(
-      layers.whereType<DesignStyle>(),
-    );
+  factory RawStyle.layered(List<RawStyle?> layers) {
+    final source = List<RawStyle>.unmodifiable(layers.whereType<RawStyle>());
     WidgetStateProperty<T?>? combine<T>(
-      WidgetStateProperty<T?>? Function(DesignStyle) slot,
+      WidgetStateProperty<T?>? Function(RawStyle) slot,
     ) {
       final values = source
           .map(slot)
@@ -103,7 +101,7 @@ class DesignStyle with Diagnosticable {
       });
     }
 
-    return DesignStyle(
+    return RawStyle(
       fill: combine((s) => s.fill),
       foreground: combine((s) => s.foreground),
       edge: combine((s) => s.edge),
@@ -174,12 +172,12 @@ class DesignStyle with Diagnosticable {
   ///
   /// ```dart
   /// final fill =
-  ///     DesignStyle.first([style, themed], (s) => s.fill, states) ??
+  ///     RawStyle.first([style, themed], (s) => s.fill, states) ??
   ///     const Color(0xFFFFFFFF);
   /// ```
   static T? first<T>(
-    Iterable<DesignStyle?> layers,
-    WidgetStateProperty<T?>? Function(DesignStyle style) slot,
+    Iterable<RawStyle?> layers,
+    WidgetStateProperty<T?>? Function(RawStyle style) slot,
     Set<WidgetState> states,
   ) {
     for (final layer in layers) {
@@ -191,7 +189,7 @@ class DesignStyle with Diagnosticable {
   }
 
   /// This with the named slots changed.
-  DesignStyle copyWith({
+  RawStyle copyWith({
     WidgetStateProperty<Color?>? fill,
     WidgetStateProperty<Color?>? foreground,
     WidgetStateProperty<Color?>? edge,
@@ -202,7 +200,7 @@ class DesignStyle with Diagnosticable {
     WidgetStateProperty<Size?>? minimumSize,
     WidgetStateProperty<TextStyle?>? textStyle,
     WidgetStateProperty<double?>? iconSize,
-  }) => DesignStyle(
+  }) => RawStyle(
     fill: fill ?? this.fill,
     foreground: foreground ?? this.foreground,
     edge: edge ?? this.edge,
@@ -216,8 +214,8 @@ class DesignStyle with Diagnosticable {
   );
 
   /// This, with [other]'s slots where this has none, as `ButtonStyle.merge`:
-  /// a slot is kept whole. [DesignStyle.layered] falls through within one.
-  DesignStyle merge(DesignStyle? other) {
+  /// a slot is kept whole. [RawStyle.layered] falls through within one.
+  RawStyle merge(RawStyle? other) {
     if (other == null) return this;
     return copyWith(
       fill: fill ?? other.fill,
@@ -237,7 +235,7 @@ class DesignStyle with Diagnosticable {
   /// sides, insets, sizes and type blend; shapes morph where their borders
   /// can (`OutlinedBorder.lerp`) and snap at the middle where they cannot; a
   /// value on one side only snaps at the middle.
-  static DesignStyle? lerp(DesignStyle? a, DesignStyle? b, double t) {
+  static RawStyle? lerp(RawStyle? a, RawStyle? b, double t) {
     if (identical(a, b) || t == 0) return a;
     if (t == 1) return b;
     T? either<T>(T? x, T? y, T Function(T, T) f) =>
@@ -247,7 +245,7 @@ class DesignStyle with Diagnosticable {
       WidgetStateProperty<T?>? y,
       T Function(T, T) f,
     ) => WidgetStateProperty.lerp<T?>(x, y, t, (p, q, t) => either<T>(p, q, f));
-    return DesignStyle(
+    return RawStyle(
       fill: l<Color>(a?.fill, b?.fill, (x, y) => Color.lerp(x, y, t)!),
       foreground: l<Color>(
         a?.foreground,
@@ -302,7 +300,7 @@ class DesignStyle with Diagnosticable {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other.runtimeType == runtimeType &&
-          other is DesignStyle &&
+          other is RawStyle &&
           listEquals(other._slots, _slots);
 
   @override
@@ -337,22 +335,22 @@ class DesignStyle with Diagnosticable {
 /// default.
 ///
 /// ```dart
-/// final look = DesignStyleOf([style, themed], states);
+/// final look = RawStyleOf([style, themed], states);
 /// final fill = look.fill ?? const Color(0xFFFFFFFF);
 /// ```
 @immutable
-class DesignStyleOf {
+class RawStyleOf {
   /// The [layers] read at [states].
-  const DesignStyleOf(this.layers, this.states);
+  const RawStyleOf(this.layers, this.states);
 
   /// The styles, first wins.
-  final List<DesignStyle?> layers;
+  final List<RawStyle?> layers;
 
   /// The part's states.
   final Set<WidgetState> states;
 
-  T? _first<T>(WidgetStateProperty<T?>? Function(DesignStyle s) slot) =>
-      DesignStyle.first(layers, slot, states);
+  T? _first<T>(WidgetStateProperty<T?>? Function(RawStyle s) slot) =>
+      RawStyle.first(layers, slot, states);
 
   /// The face.
   Color? get fill => _first((s) => s.fill);
@@ -387,12 +385,12 @@ class DesignStyleOf {
   WidgetStateProperty<Color?>? get overlay =>
       layers.any((l) => l?.overlay != null)
       ? WidgetStateProperty.resolveWith(
-          (states) => DesignStyle.first(layers, (s) => s.overlay, states),
+          (states) => RawStyle.first(layers, (s) => s.overlay, states),
         )
       : null;
 
   /// The same layers at other [states].
-  DesignStyleOf at(Set<WidgetState> states) => DesignStyleOf(layers, states);
+  RawStyleOf at(Set<WidgetState> states) => RawStyleOf(layers, states);
 
   /// The shape for any states, as a press reads it for its ring and wash;
   /// [fallback] when no layer gives one.
@@ -402,10 +400,10 @@ class DesignStyleOf {
   /// The values resolved at [states], as one style, so a grouped part can
   /// hand its states to a part inside it (a list row's checkbox drawn as the
   /// row is pressed).
-  DesignStyle freeze() {
+  RawStyle freeze() {
     WidgetStateProperty<T?>? fixed<T>(T? value) =>
         value == null ? null : WidgetStatePropertyAll(value);
-    return DesignStyle(
+    return RawStyle(
       fill: fixed(fill),
       foreground: fixed(foreground),
       edge: fixed(edge),

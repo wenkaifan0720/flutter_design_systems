@@ -17,7 +17,7 @@ late FocusNode _focus;
 late TextEditingController _text;
 
 // The field as the doc examples wire it: Enter in onEditingComplete.
-Widget _field(DesignComboboxField field) {
+Widget _field(RawComboboxField field) {
   _focus = field.focusNode;
   _text = field.controller;
   return SizedBox(

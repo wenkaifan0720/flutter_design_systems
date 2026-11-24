@@ -11,32 +11,32 @@ import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
 const _quarters = [
-  DesignChartSeries(
+  RawChartSeries(
     label: 'Revenue',
     points: [
-      DesignChartPoint(0, 820),
-      DesignChartPoint(1, 1240),
-      DesignChartPoint(2, 1640),
-      DesignChartPoint(3, 1100),
+      RawChartPoint(0, 820),
+      RawChartPoint(1, 1240),
+      RawChartPoint(2, 1640),
+      RawChartPoint(3, 1100),
     ],
   ),
-  DesignChartSeries(
+  RawChartSeries(
     label: 'Costs',
     points: [
-      DesignChartPoint(0, 600),
-      DesignChartPoint(1, 700),
-      DesignChartPoint(2, 900),
-      DesignChartPoint(3, 800),
+      RawChartPoint(0, 600),
+      RawChartPoint(1, 700),
+      RawChartPoint(2, 900),
+      RawChartPoint(3, 800),
     ],
   ),
 ];
 
 const _summary = '2 series, 4 points, 0 to 3, lowest 600, highest 1,640';
 
-DesignChartDetails? _last;
+RawChartDetails? _last;
 
 // The bare reference painter: the y ticks' labels down the start edge.
-Widget _plain(BuildContext context, DesignChartDetails d) {
+Widget _plain(BuildContext context, RawChartDetails d) {
   _last = d;
   return Stack(
     children: [
@@ -52,16 +52,16 @@ class _Host extends StatefulWidget {
   const _Host({
     super.key,
     this.series = _quarters,
-    this.xAxis = DesignChartXAxis.linear,
+    this.xAxis = RawChartXAxis.linear,
     this.categories,
     this.formatY,
     this.focusNode,
   });
 
-  final List<DesignChartSeries> series;
-  final DesignChartXAxis xAxis;
+  final List<RawChartSeries> series;
+  final RawChartXAxis xAxis;
   final List<String>? categories;
-  final DesignChartFormat? formatY;
+  final RawChartFormat? formatY;
   final FocusNode? focusNode;
 
   @override
@@ -69,11 +69,11 @@ class _Host extends StatefulWidget {
 }
 
 class _HostState extends State<_Host> {
-  late List<DesignChartSeries> series = widget.series;
-  final List<DesignChartPointRef?> picked = [];
+  late List<RawChartSeries> series = widget.series;
+  final List<RawChartPointRef?> picked = [];
   int tables = 0;
 
-  void show(List<DesignChartSeries> next) => setState(() => series = next);
+  void show(List<RawChartSeries> next) => setState(() => series = next);
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +83,7 @@ class _HostState extends State<_Host> {
       child: SizedBox(
         width: 300,
         height: 150,
-        child: DesignChart(
+        child: RawChart(
           semanticLabel: 'Revenue by quarter',
           series: series,
           xAxis: widget.xAxis,
@@ -104,23 +104,23 @@ class _HostState extends State<_Host> {
 // Where [ref] is drawn, on screen, nudged [by].
 Offset _at(
   WidgetTester tester,
-  DesignChartPointRef ref, [
+  RawChartPointRef ref, [
   Offset by = Offset.zero,
-]) => tester.getTopLeft(find.byType(DesignChart)) + _last!.positionOf(ref) + by;
+]) => tester.getTopLeft(find.byType(RawChart)) + _last!.positionOf(ref) + by;
 
 SemanticsNode _node(WidgetTester tester) =>
     semanticsOf(tester, find.bySemanticsLabel('Revenue by quarter'));
 
-const _p = DesignChartPointRef.new;
+const _p = RawChartPointRef.new;
 
 void main() {
   setUp(() => _last = null);
 
   behaviourContract(
-    'DesignChart',
+    'RawChart',
     build: (c) => const _Host(),
     node: () => find.bySemanticsLabel('Revenue by quarter'),
-    root: () => find.byType(DesignChart),
+    root: () => find.byType(RawChart),
     semantics: isSemantics(
       label: 'Revenue by quarter',
       value: _summary,
@@ -192,9 +192,9 @@ void main() {
     },
     motion: (p) async {
       _host.show(const [
-        DesignChartSeries(
+        RawChartSeries(
           label: 'Revenue',
-          points: [DesignChartPoint(0, 400), DesignChartPoint(1, 300)],
+          points: [RawChartPoint(0, 400), RawChartPoint(1, 300)],
         ),
       ]);
       await p.tester.pump();
@@ -249,8 +249,8 @@ void main() {
         await tester.pumpWidget(harness(const _Host()));
         await tester.tapAt(_at(tester, _p(0, 1)));
         await tester.pump();
-        Navigator.of(tester.element(find.byType(DesignChart))).push(
-          DesignDialogRoute<void>(builder: (_, _) => const Text('Covered')),
+        Navigator.of(tester.element(find.byType(RawChart))).push(
+          RawModalDialogRoute<void>(builder: (_, _) => const Text('Covered')),
         );
         await tester.pumpAndSettle();
         await tester.sendKeyEvent(LogicalKeyboardKey.escape);
@@ -359,7 +359,7 @@ void main() {
         ),
       );
       await tester.drag(
-        find.byType(DesignChart),
+        find.byType(RawChart),
         const Offset(0, -100),
         kind: PointerDeviceKind.touch,
       );
@@ -387,12 +387,12 @@ void main() {
       await tester.pumpWidget(
         harness(
           const _Host(
-            xAxis: DesignChartXAxis.band,
+            xAxis: RawChartXAxis.band,
             categories: ['Q1', 'Q2', 'Q3', 'Q4'],
           ),
         ),
       );
-      final x = _last!.x as DesignBandScale;
+      final x = _last!.x as RawBandScale;
       expect(x.count, 4);
       expect(_last!.xTicks.map((t) => t.label), ['Q1', 'Q2', 'Q3', 'Q4']);
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
@@ -461,13 +461,13 @@ void main() {
     await tester.pumpWidget(
       harness(
         _Host(
-          xAxis: DesignChartXAxis.band,
+          xAxis: RawChartXAxis.band,
           categories: const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
           series: [
-            DesignChartSeries(
+            RawChartSeries(
               label: 'Hours',
               points: [
-                for (var i = 0; i < 5; i++) DesignChartPoint(i.toDouble(), 0),
+                for (var i = 0; i < 5; i++) RawChartPoint(i.toDouble(), 0),
               ],
             ),
           ],
@@ -486,12 +486,12 @@ void main() {
       harness(
         const _Host(
           series: [
-            DesignChartSeries(
+            RawChartSeries(
               label: 'Steps',
               points: [
-                DesignChartPoint(0, 4000),
-                DesignChartPoint(1, null),
-                DesignChartPoint(2, 6000),
+                RawChartPoint(0, 4000),
+                RawChartPoint(1, null),
+                RawChartPoint(2, 6000),
               ],
             ),
           ],
@@ -528,22 +528,22 @@ void main() {
     await tester.pump();
     expect(_last!.active, _p(0, 3));
     final next = [
-      const DesignChartSeries(
+      const RawChartSeries(
         label: 'Revenue',
         points: [
-          DesignChartPoint(0, 1820),
-          DesignChartPoint(1, 1240),
-          DesignChartPoint(2, 1000),
+          RawChartPoint(0, 1820),
+          RawChartPoint(1, 1240),
+          RawChartPoint(2, 1000),
         ],
       ),
-      const DesignChartSeries(
+      const RawChartSeries(
         label: 'Costs',
         points: [
-          DesignChartPoint(0, 600),
-          DesignChartPoint(1, 700),
-          DesignChartPoint(2, 900),
-          DesignChartPoint(3, 800),
-          DesignChartPoint(4, 1000),
+          RawChartPoint(0, 600),
+          RawChartPoint(1, 700),
+          RawChartPoint(2, 900),
+          RawChartPoint(3, 800),
+          RawChartPoint(4, 1000),
         ],
       ),
     ];
@@ -571,16 +571,13 @@ void main() {
   });
 
   group('words', () {
-    Future<String> said(
-      WidgetTester tester,
-      List<DesignChartPoint> points,
-    ) async {
+    Future<String> said(WidgetTester tester, List<RawChartPoint> points) async {
       await tester.pumpWidget(
         harness(
           _Host(
             key: UniqueKey(),
-            xAxis: DesignChartXAxis.time,
-            series: [DesignChartSeries(label: 'Visits', points: points)],
+            xAxis: RawChartXAxis.time,
+            series: [RawChartSeries(label: 'Visits', points: points)],
           ),
         ),
       );
@@ -594,36 +591,36 @@ void main() {
       expect(
         await said(tester, [
           for (var m = 1; m <= 12; m++)
-            DesignChartPoint.time(DateTime(2026, m), m * 10),
+            RawChartPoint.time(DateTime(2026, m), m * 10),
         ]),
         'January 2026, Visits: 10',
       );
       final months = _node(tester).getSemanticsData();
       expect(months.increasedValue, 'February 2026, Visits: 20');
-      expect(_last!.x, isA<DesignTimeScale>());
+      expect(_last!.x, isA<RawTimeScale>());
       expect(
         await said(tester, [
-          DesignChartPoint.time(DateTime(2026, 11, 16), 1),
-          DesignChartPoint.time(DateTime(2026, 11, 17), 2),
+          RawChartPoint.time(DateTime(2026, 11, 16), 1),
+          RawChartPoint.time(DateTime(2026, 11, 17), 2),
         ]),
         'Monday, 16 November 2026, Visits: 1',
       );
       expect(
         await said(tester, [
-          DesignChartPoint.time(DateTime(2026, 11, 16, 15), 1),
-          DesignChartPoint.time(DateTime(2026, 11, 16, 16), 2),
+          RawChartPoint.time(DateTime(2026, 11, 16, 15), 1),
+          RawChartPoint.time(DateTime(2026, 11, 16, 16), 2),
         ]),
         'Nov 16, 3:00 PM, Visits: 1',
       );
       expect(
         await said(tester, [
-          DesignChartPoint.time(DateTime(2025), 1),
-          DesignChartPoint.time(DateTime(2026), 2),
+          RawChartPoint.time(DateTime(2025), 1),
+          RawChartPoint.time(DateTime(2026), 2),
         ]),
         '2025, Visits: 1',
       );
       expect(
-        await said(tester, [DesignChartPoint.time(DateTime(2026, 11, 16), 1)]),
+        await said(tester, [RawChartPoint.time(DateTime(2026, 11, 16), 1)]),
         'Monday, 16 November 2026, Visits: 1',
         reason: 'one point: its whole date',
       );
@@ -654,7 +651,7 @@ void main() {
               alignment: Alignment.topLeft,
               child: SizedBox(
                 width: 200,
-                child: DesignChart(
+                child: RawChart(
                   semanticLabel: 'Empty',
                   series: [],
                   semanticSummary: 'No visits yet',
@@ -681,11 +678,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           const UnconstrainedBox(
-            child: DesignChart(
-              semanticLabel: 'None',
-              series: [],
-              builder: _plain,
-            ),
+            child: RawChart(semanticLabel: 'None', series: [], builder: _plain),
           ),
         ),
       );
@@ -724,29 +717,26 @@ void main() {
   });
 
   test('values say what they are', () {
-    const point = DesignChartPoint(1, 2);
-    expect(point, const DesignChartPoint(1, 2));
-    expect(point.hashCode, const DesignChartPoint(1, 2).hashCode);
-    expect('$point', 'DesignChartPoint(1.0, 2.0)');
-    expect(
-      DesignChartPoint.time(DateTime.utc(1970, 1, 1, 0, 0, 1), null).x,
-      1000,
-    );
-    const series = DesignChartSeries(label: 'A', points: [point]);
-    expect(series, const DesignChartSeries(label: 'A', points: [point]));
+    const point = RawChartPoint(1, 2);
+    expect(point, const RawChartPoint(1, 2));
+    expect(point.hashCode, const RawChartPoint(1, 2).hashCode);
+    expect('$point', 'RawChartPoint(1.0, 2.0)');
+    expect(RawChartPoint.time(DateTime.utc(1970, 1, 1, 0, 0, 1), null).x, 1000);
+    const series = RawChartSeries(label: 'A', points: [point]);
+    expect(series, const RawChartSeries(label: 'A', points: [point]));
     expect(
       series.hashCode,
-      const DesignChartSeries(label: 'A', points: [point]).hashCode,
+      const RawChartSeries(label: 'A', points: [point]).hashCode,
     );
-    expect('$series', 'DesignChartSeries(A, 1 points)');
+    expect('$series', 'RawChartSeries(A, 1 points)');
     expect(_p(1, 2), _p(1, 2));
     expect(_p(1, 2).hashCode, _p(1, 2).hashCode);
-    expect('${_p(1, 2)}', 'DesignChartPointRef(1, 2)');
-    const chart = DesignChart(
+    expect('${_p(1, 2)}', 'RawChartPointRef(1, 2)');
+    const chart = RawChart(
       semanticLabel: 'A',
       series: [series],
       builder: _plain,
-      xAxis: DesignChartXAxis.band,
+      xAxis: RawChartXAxis.band,
       autofocus: true,
     );
     expect(
@@ -761,17 +751,17 @@ void main() {
 
 // ---- The pie.
 
-DesignPieChartDetails? _lastPie;
+RawPieChartDetails? _lastPie;
 
-Widget _plainPie(BuildContext context, DesignPieChartDetails d) {
+Widget _plainPie(BuildContext context, RawPieChartDetails d) {
   _lastPie = d;
   return const Center(child: Text('Legend'));
 }
 
 const _spending = [
-  DesignPieSlice(label: 'Rent', value: 1200),
-  DesignPieSlice(label: 'Food', value: 600),
-  DesignPieSlice(label: 'Fun', value: 200),
+  RawPieSlice(label: 'Rent', value: 1200),
+  RawPieSlice(label: 'Food', value: 600),
+  RawPieSlice(label: 'Fun', value: 200),
 ];
 
 late _PieHostState _pieHost;
@@ -786,10 +776,10 @@ class _PieHost extends StatefulWidget {
 }
 
 class _PieHostState extends State<_PieHost> {
-  List<DesignPieSlice> slices = _spending;
+  List<RawPieSlice> slices = _spending;
   final List<int?> picked = [];
 
-  void show(List<DesignPieSlice> next) => setState(() => slices = next);
+  void show(List<RawPieSlice> next) => setState(() => slices = next);
 
   @override
   Widget build(BuildContext context) {
@@ -799,7 +789,7 @@ class _PieHostState extends State<_PieHost> {
       child: SizedBox(
         width: 200,
         height: 200,
-        child: DesignPieChart(
+        child: RawPieChart(
           semanticLabel: 'Spending',
           slices: slices,
           holeRadius: widget.holeRadius,
@@ -820,14 +810,14 @@ Offset _clock(double degrees, [double fraction = 0.8]) {
 }
 
 void _pie() {
-  group('DesignPieChart', () {
+  group('RawPieChart', () {
     setUp(() => _lastPie = null);
 
     behaviourContract(
-      'DesignPieChart',
+      'RawPieChart',
       build: (c) => const _PieHost(),
       node: () => find.bySemanticsLabel('Spending'),
-      root: () => find.byType(DesignPieChart),
+      root: () => find.byType(RawPieChart),
       semantics: isSemantics(
         label: 'Spending',
         value: '3 slices, lowest 200, highest 1,200',
@@ -886,7 +876,7 @@ void _pie() {
         await mouse.removePointer();
       },
       motion: (p) async {
-        _pieHost.show(const [DesignPieSlice(label: 'Rent', value: 100)]);
+        _pieHost.show(const [RawPieSlice(label: 'Rent', value: 100)]);
         await p.tester.pump();
       },
     );
@@ -936,9 +926,9 @@ void _pie() {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(harness(const _PieHost()));
       _pieHost.show(const [
-        DesignPieSlice(label: 'Rent', value: 1200),
-        DesignPieSlice(label: 'Gifts', value: 0),
-        DesignPieSlice(label: 'Fun', value: 300),
+        RawPieSlice(label: 'Rent', value: 1200),
+        RawPieSlice(label: 'Gifts', value: 0),
+        RawPieSlice(label: 'Fun', value: 300),
       ]);
       await tester.pumpAndSettle();
       final said = <String>[];
@@ -970,8 +960,8 @@ void _pie() {
       await tester.pump();
       expect(_lastPie!.active, 2);
       _pieHost.show(const [
-        DesignPieSlice(label: 'Rent', value: 600),
-        DesignPieSlice(label: 'Food', value: 600),
+        RawPieSlice(label: 'Rent', value: 600),
+        RawPieSlice(label: 'Food', value: 600),
       ]);
       await tester.pump();
       expect(_lastPie!.active, isNull);
@@ -980,9 +970,9 @@ void _pie() {
       await tester.pumpAndSettle();
       expect(_lastPie!.slices.map((s) => s.share), [0.5, 0.5]);
       _pieHost.show(const [
-        DesignPieSlice(label: 'Rent', value: 600),
-        DesignPieSlice(label: 'Food', value: 600),
-        DesignPieSlice(label: 'New', value: 600),
+        RawPieSlice(label: 'Rent', value: 600),
+        RawPieSlice(label: 'Food', value: 600),
+        RawPieSlice(label: 'New', value: 600),
       ]);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
@@ -1004,7 +994,7 @@ void _pie() {
       await tester.pumpWidget(
         harness(
           SingleChildScrollView(
-            child: DesignPieChart(
+            child: RawPieChart(
               semanticLabel: 'Pie',
               slices: _spending,
               semanticSummary: 'Mostly rent',
@@ -1018,7 +1008,7 @@ void _pie() {
       final node = semanticsOf(tester, find.bySemanticsLabel('Pie'));
       expect(node.getSemanticsData().value, 'Mostly rent');
       expect(node.getSemanticsData().increasedValue, '60%, Rent: €1200');
-      const pie = DesignPieChart(
+      const pie = RawPieChart(
         semanticLabel: 'Pie',
         slices: _spending,
         builder: _plainPie,
@@ -1029,21 +1019,21 @@ void _pie() {
         pie.toDiagnosticsNode().getProperties().map((p) => p.name),
         containsAll(['slices', 'semanticLabel', 'holeRadius', 'autofocus']),
       );
-      expect(_spending.first, const DesignPieSlice(label: 'Rent', value: 1200));
+      expect(_spending.first, const RawPieSlice(label: 'Rent', value: 1200));
       expect(
         _spending.first.hashCode,
-        const DesignPieSlice(label: 'Rent', value: 1200).hashCode,
+        const RawPieSlice(label: 'Rent', value: 1200).hashCode,
       );
-      expect('${_spending.first}', 'DesignPieSlice(Rent, 1200.0)');
+      expect('${_spending.first}', 'RawPieSlice(Rent, 1200.0)');
     });
   });
 }
 
 // ---- The table.
 
-final List<DesignChartTableCellDetails> _cells = [];
+final List<RawChartTableCellDetails> _cells = [];
 
-Widget _cell(BuildContext context, DesignChartTableCellDetails cell) {
+Widget _cell(BuildContext context, RawChartTableCellDetails cell) {
   _cells.add(cell);
   return Padding(padding: const EdgeInsets.all(4), child: Text(cell.text));
 }
@@ -1070,7 +1060,7 @@ List<List<String>> _read(WidgetTester tester) {
 }
 
 void _table() {
-  group('DesignChartTable', () {
+  group('RawChartTable', () {
     setUp(_cells.clear);
 
     testWidgets('a row per x, a column per series; a missing value is '
@@ -1078,23 +1068,23 @@ void _table() {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         harness(
-          const DesignChartTable(
+          const RawChartTable(
             semanticLabel: 'Revenue by quarter',
             xHeader: 'Quarter',
-            xAxis: DesignChartXAxis.band,
+            xAxis: RawChartXAxis.band,
             categories: ['Q1', 'Q2', 'Q3'],
             series: [
-              DesignChartSeries(
+              RawChartSeries(
                 label: 'Revenue',
                 points: [
-                  DesignChartPoint(0, 820),
-                  DesignChartPoint(1, 1240),
-                  DesignChartPoint(2, null),
+                  RawChartPoint(0, 820),
+                  RawChartPoint(1, 1240),
+                  RawChartPoint(2, null),
                 ],
               ),
-              DesignChartSeries(
+              RawChartSeries(
                 label: 'Costs',
-                points: [DesignChartPoint(0, 600), DesignChartPoint(1, 700)],
+                points: [RawChartPoint(0, 600), RawChartPoint(1, 700)],
               ),
             ],
             cellBuilder: _cell,
@@ -1119,7 +1109,7 @@ void _table() {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         harness(
-          DesignChartTable.slices(
+          RawChartTable.slices(
             slices: _spending,
             xHeader: 'Category',
             valueHeader: 'Amount',
@@ -1142,14 +1132,14 @@ void _table() {
       tester,
     ) async {
       final handle = tester.ensureSemantics();
-      final table = DesignChartTable(
-        xAxis: DesignChartXAxis.time,
+      final table = RawChartTable(
+        xAxis: RawChartXAxis.time,
         series: [
-          DesignChartSeries(
+          RawChartSeries(
             label: 'Visits',
             points: [
-              DesignChartPoint.time(DateTime(2026), 1),
-              DesignChartPoint.time(DateTime(2026, 2), 2),
+              RawChartPoint.time(DateTime(2026), 1),
+              RawChartPoint.time(DateTime(2026, 2), 2),
             ],
           ),
         ],

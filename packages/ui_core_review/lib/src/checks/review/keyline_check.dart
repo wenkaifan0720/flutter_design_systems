@@ -1,6 +1,6 @@
 part of '../../review.dart';
 
-/// Whether the content of each [DesignKeylineRegion] on a screen starts on
+/// Whether the content of each [RawKeylineRegion] on a screen starts on
 /// one leading keyline and ends on one trailing keyline (or on an indent
 /// the region declares), and whether controls that share a row there share
 /// a height and a centre line, by their faces' boxes ([DesignRowCheck] holds
@@ -17,7 +17,7 @@ part of '../../review.dart';
 ///   a centre, not an ink edge); a bare icon that ends a row (a chevron, a
 ///   "more") by its ink, which is what ends on the keyline while its tap box
 ///   hangs out;
-/// - a control by its face: a [DesignKeylineFace] in it, or else the
+/// - a control by its face: a [RawKeylineFace] in it, or else the
 ///   largest box inside it that paints a decoration, a colour, a material, a
 ///   backdrop or a custom paint. A shadow outside that box never counts; a
 ///   custom paint (a switch's track, a checkbox in its 48 px tap box) is
@@ -30,12 +30,12 @@ part of '../../review.dart';
 ///   it holds: an avatar, a chip, an inset divider, a field's well around
 ///   its editable, a list's or a table's well, a segmented control's track.
 ///   Nothing inside a face is an item of the region around it (a
-///   [DesignKeylineRegion] inside one is judged on its own). A face across
+///   [RawKeylineRegion] inside one is judged on its own). A face across
 ///   the region from side to side and at least half its height is the
 ///   region's ground, and what it holds is read. A `Container`'s colour
 ///   counts where it differs from what is around it; a box the colour of
 ///   what is around it is not an item, and what it holds is;
-/// - a [DesignKeylineFace] as one item at its box, before its pixels are
+/// - a [RawKeylineFace] as one item at its box, before its pixels are
 ///   looked at, unless it fills the region. A look marks its face and well
 ///   widgets with it where their pixels cannot show them (a face the colour
 ///   of the ground drawn only by shadows, glass), and a picture with things
@@ -56,7 +56,7 @@ part of '../../review.dart';
 /// ragged is not held at that end by reaching across: a text's, a `Wrap`'s
 /// run of items (chips over two lines, each keeping to its words), and a
 /// group of two or more choices side by side. In a region marked
-/// [DesignKeylineRegion.startAligned] (a gallery section's column of
+/// [RawKeylineRegion.startAligned] (a gallery section's column of
 /// examples), what starts each row is held to the leading keyline however
 /// it is aligned, so an example centred in its column (a stepper, a sum, a
 /// line of words centred in its box) or set in from it is off.
@@ -117,7 +117,7 @@ class DesignKeylineCheck {
   /// The scale faces and icons are drawn at to read their pixels.
   final double pixelRatio;
 
-  /// Measures every [DesignKeylineRegion] under [context] (the regions
+  /// Measures every [RawKeylineRegion] under [context] (the regions
   /// must be on screen, under a repaint boundary as every route is) and
   /// reports each edge off its region's keylines and each row of controls
   /// whose heights or centres differ. A test passes its tester's `runAsync`
@@ -134,7 +134,7 @@ class DesignKeylineCheck {
   }
 }
 
-/// Draws [child] with each [DesignKeylineRegion] in it outlined, its
+/// Draws [child] with each [RawKeylineRegion] in it outlined, its
 /// keylines (leading blue, trailing green) and every edge off them (red),
 /// for a look's review page. It measures after each layout of [child]
 /// (reading pixels takes a moment), so the lines appear a frame late.
@@ -333,17 +333,17 @@ Future<List<_KeylineRegion>> _measureKeylines(
   BuildContext context,
   Future<T?> Function<T>(Future<T> Function() work)? runAsync,
 ) async {
-  final regions = <(DesignKeylineRegion, RenderBox, TextDirection)>[];
+  final regions = <(RawKeylineRegion, RenderBox, TextDirection)>[];
   final marked = <RenderBox>{};
   void visit(Element element) {
     final widget = element.widget;
-    if (widget is DesignKeylineFace) {
+    if (widget is RawKeylineFace) {
       final box = element.findRenderObject();
       if (box is RenderBox && box.attached && box.hasSize && _isShown(box)) {
         marked.add(box);
       }
     }
-    if (widget is DesignKeylineRegion) {
+    if (widget is RawKeylineRegion) {
       final box = element.findRenderObject();
       if (box is RenderBox && box.attached && box.hasSize && _isShown(box)) {
         regions.add((
@@ -411,11 +411,11 @@ class _KeylineReader extends _DrawnReader {
   ) : area = _global(box);
 
   final DesignKeylineCheck check;
-  final DesignKeylineRegion region;
+  final RawKeylineRegion region;
   final String name;
   final RenderBox box;
   final TextDirection direction;
-  final Map<RenderBox, DesignKeylineRegion> named;
+  final Map<RenderBox, RawKeylineRegion> named;
   final Rect area;
 
   double get tolerance => check.tolerance;

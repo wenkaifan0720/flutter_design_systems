@@ -32,11 +32,11 @@ Widget _evenLeading(BuildContext context, Widget child) {
 /// padding and press are the design system's own.
 ///
 /// ```dart
-/// const DesignControlBox(minHeight: 40, child: Text('Save'))
+/// const RawControlBox(minHeight: 40, child: Text('Save'))
 /// ```
-class DesignControlBox extends StatelessWidget {
+class RawControlBox extends StatelessWidget {
   /// A box at least [minHeight] tall around [child].
-  const DesignControlBox({
+  const RawControlBox({
     super.key,
     required this.minHeight,
     this.alignment = Alignment.center,
@@ -94,7 +94,7 @@ class DesignControlBox extends StatelessWidget {
 ///
 /// The box centres the line by its line box. What the eye compares in a row
 /// is the capitals: to put them on the box's middle, beside a button's
-/// cap-centred label, wrap this box in a `DesignCapCenter` with the field's
+/// cap-centred label, wrap this box in a `RawCapCenter` with the field's
 /// typeface's factor. The typed text, [hint], the caret and taps then move
 /// together.
 ///
@@ -105,11 +105,11 @@ class DesignControlBox extends StatelessWidget {
 /// `Semantics(hint: ...)`.
 ///
 /// ```dart
-/// DesignTextEntryBox(minHeight: 40, controller: controller, hint: const Text('Search'), child: TextField(controller: controller, decoration: null))
+/// RawTextEntryBox(minHeight: 40, controller: controller, hint: const Text('Search'), child: TextField(controller: controller, decoration: null))
 /// ```
-class DesignTextEntryBox extends StatelessWidget {
+class RawTextEntryBox extends StatelessWidget {
   /// A box at least [minHeight] tall around the editable [child].
-  const DesignTextEntryBox({
+  const RawTextEntryBox({
     super.key,
     required this.minHeight,
     this.controller,

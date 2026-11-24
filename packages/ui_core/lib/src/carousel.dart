@@ -286,12 +286,12 @@ class _DesignCarouselState extends State<RawCarousel> {
   bool _focusWithin = false;
   // The slides' focus, shown as a browser's :focus-visible shows it.
   bool _focused = false;
-  late final DesignFocusShown _focus = DesignFocusShown(
+  late final RawFocusShown _focus = RawFocusShown(
     (on) => setState(() => _focused = on),
   );
   Timer? _timer;
 
-  bool get _still => designReduceMotionOf(context);
+  bool get _still => rawReduceMotionOf(context);
 
   bool get _running =>
       widget.autoplayInterval != null &&
@@ -459,7 +459,7 @@ class _DesignCarouselState extends State<RawCarousel> {
             // A turn the reader made (a key, a control, a swipe) is told;
             // autoplay's are not, as a live region turns off while a
             // carousel rotates.
-            if (!_running) designAnnounce(context, _slideLabel(p, n));
+            if (!_running) rawAnnounce(context, _slideLabel(p, n));
             setState(() => _page = p);
             widget.onPageChanged?.call(p);
           },

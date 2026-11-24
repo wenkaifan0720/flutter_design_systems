@@ -11,7 +11,7 @@
 /// [FocusHighlightStrategy.alwaysTraditional] shows focus whatever the
 /// input, as Flutter's own widgets do.
 ///
-/// And how the focus arrived ([DesignFocusArrival]): from the keys, from a
+/// And how the focus arrived ([RawFocusArrival]): from the keys, from a
 /// pointer, or given back as what held it closed or went (a dialog's route,
 /// Flutter's or ui_core's, a popover, a removed control). A tip shows for
 /// the keys' arrival alone, and a field's list opens for no focus given
@@ -27,7 +27,7 @@ import 'package:flutter/widgets.dart';
 import 'quiet_focus.dart';
 
 /// How the primary focus arrived.
-enum DesignFocusArrival {
+enum RawFocusArrival {
   /// The keys moved it, or moved last: a Tab, an arrow, a key that opened a
   /// surface that took it.
   keyboard,
@@ -42,10 +42,10 @@ enum DesignFocusArrival {
 }
 
 /// The last input's word on whether focus is shown.
-abstract final class DesignFocusVisible {
+abstract final class RawFocusVisible {
   // What hears the input now: started by the first part to hold it, gone
   // with the last to let go.
-  static DesignFocusHearing? _hearing;
+  static RawFocusHearing? _hearing;
   static FocusManager? _manager;
   static bool _shown = true;
   static final ObserverList<VoidCallback> _listeners =
@@ -71,15 +71,15 @@ abstract final class DesignFocusVisible {
     _manager = manager;
     _shown = true;
     _primary = manager.primaryFocus;
-    _arrival = DesignFocusArrival.keyboard;
+    _arrival = RawFocusArrival.keyboard;
   }
 
   static FocusNode? _primary;
-  static DesignFocusArrival _arrival = DesignFocusArrival.keyboard;
+  static RawFocusArrival _arrival = RawFocusArrival.keyboard;
 
   /// How the primary focus arrived. Read as soon as a focus change is told
   /// (a node's `onFocusChange`), it is already the new focus's.
-  static DesignFocusArrival get arrival {
+  static RawFocusArrival get arrival {
     _meet(FocusManager.instance);
     _classify();
     return _arrival;
@@ -90,9 +90,9 @@ abstract final class DesignFocusVisible {
   /// traditional highlight mode for good shows it for a pointer's too.
   static bool get keyboardArrival {
     if (!shown) return false;
-    final arrival = DesignFocusVisible.arrival;
-    if (arrival == DesignFocusArrival.restore) return false;
-    return arrival == DesignFocusArrival.keyboard ||
+    final arrival = RawFocusVisible.arrival;
+    if (arrival == RawFocusArrival.restore) return false;
+    return arrival == RawFocusArrival.keyboard ||
         FocusManager.instance.highlightStrategy ==
             FocusHighlightStrategy.alwaysTraditional;
   }
@@ -106,14 +106,14 @@ abstract final class DesignFocusVisible {
     if (now == null) return;
     // Given back: what held it closed or went. Focus that rests on a scope
     // (no control) and then moves on was moved by the input, as any other.
-    if (DesignQuietFocus.isRestoring ||
+    if (RawQuietFocus.isRestoring ||
         (old != null && old is! FocusScopeNode && _lost(old))) {
-      _arrival = DesignFocusArrival.restore;
+      _arrival = RawFocusArrival.restore;
     } else {
       _arrival =
           _shown && manager.highlightMode == FocusHighlightMode.traditional
-          ? DesignFocusArrival.keyboard
-          : DesignFocusArrival.pointer;
+          ? RawFocusArrival.keyboard
+          : RawFocusArrival.pointer;
     }
   }
 
@@ -144,9 +144,9 @@ abstract final class DesignFocusVisible {
   /// bindings. A page drawn with ui_core instantiated afresh over a binding
   /// that lives on (App Preview's) neither meets the last page's
   /// registration nor leaves its own.
-  static DesignFocusHearing hold() {
+  static RawFocusHearing hold() {
     _meet(FocusManager.instance);
-    final hearing = _hearing ??= DesignFocusHearing._().._start();
+    final hearing = _hearing ??= RawFocusHearing._().._start();
     hearing._holds++;
     return hearing;
   }
@@ -160,7 +160,7 @@ abstract final class DesignFocusVisible {
     _manager = null;
     _shown = true;
     _primary = null;
-    _arrival = DesignFocusArrival.keyboard;
+    _arrival = RawFocusArrival.keyboard;
   }
 
   /// Calls [listener] when [shown] may have changed.
@@ -216,13 +216,13 @@ abstract final class DesignFocusVisible {
   }
 }
 
-/// What [DesignFocusVisible] hears the input by while parts hold it: its
+/// What [RawFocusVisible] hears the input by while parts hold it: its
 /// own pointer route, key handler, semantics action listener, focus manager
 /// listener and highlight mode listener (each this object's, so equal to no
 /// other's), registered as the first part holds it and removed as the last
 /// [release]s it.
-final class DesignFocusHearing {
-  DesignFocusHearing._();
+final class RawFocusHearing {
+  RawFocusHearing._();
 
   int _holds = 0;
   late final PointerRouter _router;
@@ -251,21 +251,20 @@ final class DesignFocusHearing {
     _semantics.removeSemanticsActionListener(_action);
     _focus.removeListener(_focusChanged);
     _focus.removeHighlightModeListener(_modeChanged);
-    if (identical(DesignFocusVisible._hearing, this)) {
-      DesignFocusVisible._hearing = null;
+    if (identical(RawFocusVisible._hearing, this)) {
+      RawFocusVisible._hearing = null;
     }
   }
 
-  bool _key(KeyEvent event) => DesignFocusVisible._key(event);
+  bool _key(KeyEvent event) => RawFocusVisible._key(event);
 
-  void _pointer(PointerEvent event) => DesignFocusVisible._pointer(event);
+  void _pointer(PointerEvent event) => RawFocusVisible._pointer(event);
 
-  void _action(SemanticsActionEvent event) =>
-      DesignFocusVisible._semantics(event);
+  void _action(SemanticsActionEvent event) => RawFocusVisible._semantics(event);
 
   void _modeChanged(FocusHighlightMode mode) {
     if (identical(_focus, FocusManager.instance)) {
-      DesignFocusVisible._modeSwitched();
+      RawFocusVisible._modeSwitched();
     }
   }
 
@@ -273,24 +272,24 @@ final class DesignFocusHearing {
     // A focus manager that is not the one in use (one a test swapped out)
     // classifies nothing.
     if (identical(_focus, FocusManager.instance)) {
-      DesignFocusVisible._classify();
+      RawFocusVisible._classify();
     }
   }
 }
 
 /// One part's focus, shown or not: whether the part has the focus Flutter
-/// would highlight ([focused]) and [DesignFocusVisible.shown] says focus is
+/// would highlight ([focused]) and [RawFocusVisible.shown] says focus is
 /// shown now. [onChanged] hears each change, a key pressed while the part
 /// has the focus included.
-class DesignFocusShown {
+class RawFocusShown {
   /// Tells [onChanged] whether the part shows its focus, hearing the input
   /// until [dispose].
-  DesignFocusShown(this.onChanged) : _hearing = DesignFocusVisible.hold();
+  RawFocusShown(this.onChanged) : _hearing = RawFocusVisible.hold();
 
   /// Hears whether the part shows its focus, as it changes.
   final ValueChanged<bool> onChanged;
 
-  DesignFocusHearing? _hearing;
+  RawFocusHearing? _hearing;
 
   bool _focused = false;
   bool _value = false;
@@ -305,15 +304,15 @@ class DesignFocusShown {
     if (on != _focused) {
       _focused = on;
       on
-          ? DesignFocusVisible.addListener(_update)
-          : DesignFocusVisible.removeListener(_update);
+          ? RawFocusVisible.addListener(_update)
+          : RawFocusVisible.removeListener(_update);
     }
-    _value = on && DesignFocusVisible.shown;
+    _value = on && RawFocusVisible.shown;
     onChanged(_value);
   }
 
   void _update() {
-    final value = _focused && DesignFocusVisible.shown;
+    final value = _focused && RawFocusVisible.shown;
     if (value == _value) return;
     _value = value;
     onChanged(value);
@@ -321,7 +320,7 @@ class DesignFocusShown {
 
   /// Stops hearing the input.
   void dispose() {
-    DesignFocusVisible.removeListener(_update);
+    RawFocusVisible.removeListener(_update);
     _hearing?.release();
     _hearing = null;
   }

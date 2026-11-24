@@ -1,302 +1,35 @@
-// The names ui_core renamed or reshaped, kept one release with what to use. `dart fix` makes each rename
-// (lib/fix_data.yaml); a reshaped name's message says what to write instead.
+// The names ui_core renamed that it still carries, each with what to use: 0.4.0's DesignLocalizations, and the
+// Design* names 0.6.0 gave Raw* names (the inventory's are in inventory.dart). `dart fix` makes each rename
+// (lib/fix_data.yaml), the renames of the names ui_core 0.6.0 removed among them.
+import 'package:flutter/physics.dart' show SpringSimulation, Tolerance;
+import 'package:flutter/widgets.dart';
+
+import 'adaptive_shell.dart';
 import 'anchored_overlay.dart';
-import 'bottom_sheet.dart';
-import 'calendar.dart';
-import 'carousel.dart';
-import 'color_picker.dart';
+import 'barrier.dart';
+import 'cap_center.dart';
+import 'chart.dart';
+import 'chart_scale.dart';
 import 'combobox.dart';
 import 'command_palette.dart';
-import 'context_menu.dart';
-import 'data_table.dart';
-import 'date_field.dart';
+import 'control_box.dart';
 import 'dialog.dart';
 import 'form_field.dart';
+import 'haptics.dart';
 import 'input_group.dart';
+import 'keyline_region.dart';
+import 'list_detail.dart';
 import 'localizations.dart';
-import 'menubar.dart';
-import 'number_field.dart';
-import 'otp.dart';
+import 'motion.dart';
 import 'page_transitions.dart';
-import 'pressable.dart';
-import 'pull_to_refresh.dart';
-import 'range_slider.dart';
-import 'rating.dart';
-import 'reorderable_list.dart';
 import 'scroll_area.dart';
-import 'side_sheet.dart';
-import 'split_button.dart';
-import 'split_view.dart';
-import 'swipe_actions.dart';
-import 'tabs.dart';
-import 'tag_input.dart';
+import 'semantics_proxy.dart';
+import 'shortcut_label.dart';
+import 'spacing.dart';
+import 'style.dart';
 import 'tap_target.dart';
-import 'toast.dart';
-import 'toggle_group.dart';
-import 'wheel_picker.dart';
-
-// The renames: generated from the 0.4.0 rename table. Do not edit by hand.
-/// Renamed [DefaultRawWidgetsLocalizations] in ui_core 0.4.0.
-@Deprecated(
-  'Use DefaultRawWidgetsLocalizations. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DefaultDesignLocalizations = DefaultRawWidgetsLocalizations;
-
-/// Renamed [RawPopover] in ui_core 0.4.0.
-@Deprecated('Use RawPopover. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignAnchoredOverlay = RawPopover;
-
-/// Renamed [RawBottomSheetBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawBottomSheetBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignBottomSheetBuilder = RawBottomSheetBuilder;
-
-/// Renamed [RawBottomSheetController] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawBottomSheetController. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignBottomSheetController = RawBottomSheetController;
-
-/// Renamed [RawBottomSheetDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawBottomSheetDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignBottomSheetDetails = RawBottomSheetDetails;
-
-/// Renamed [RawBottomSheetDragHandle] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawBottomSheetDragHandle. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignBottomSheetDragHandle = RawBottomSheetDragHandle;
-
-/// Renamed [RawBottomSheetRoute] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawBottomSheetRoute. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignBottomSheetRoute<T> = RawBottomSheetRoute<T>;
-
-/// Renamed [RawCalendarDatePicker] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCalendarDatePicker. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCalendar = RawCalendarDatePicker;
-
-/// Renamed [RawCalendarController] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCalendarController. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCalendarController = RawCalendarController;
-
-/// Renamed [RawCalendarDayDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCalendarDayDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCalendarDay = RawCalendarDayDetails;
-
-/// Renamed [RawCalendarDayBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCalendarDayBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCalendarDayBuilder = RawCalendarDayBuilder;
-
-/// Renamed [RawCalendarHeaderDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCalendarHeaderDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCalendarHeader = RawCalendarHeaderDetails;
-
-/// Renamed [RawCalendarMode] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCalendarMode. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCalendarMode = RawCalendarMode;
-
-/// Renamed [RawCarousel] in ui_core 0.4.0.
-@Deprecated('Use RawCarousel. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignCarousel = RawCarousel;
-
-/// Renamed [RawCarouselDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCarouselDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCarouselControls = RawCarouselDetails;
-
-/// Renamed [RawColorArea] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawColorArea. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignColorArea = RawColorArea;
-
-/// Renamed [RawColorAreaDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawColorAreaDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignColorAreaDetails = RawColorAreaDetails;
-
-/// Renamed [RawColorChannel] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawColorChannel. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignColorChannel = RawColorChannel;
-
-/// Renamed [RawColorController] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawColorController. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignColorController = RawColorController;
-
-/// Renamed [RawColorPicker] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawColorPicker. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignColorPicker = RawColorPicker;
-
-/// Renamed [RawColorSlider] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawColorSlider. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignColorSlider = RawColorSlider;
-
-/// Renamed [RawCombobox] in ui_core 0.4.0.
-@Deprecated('Use RawCombobox. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignCombobox<T extends Object> = RawCombobox<T>;
-
-/// Renamed [RawCommand] in ui_core 0.4.0.
-@Deprecated('Use RawCommand. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignCommand = RawCommand;
-
-/// Renamed [RawCommandPalette] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCommandPalette. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCommandPalette = RawCommandPalette;
-
-/// Renamed [RawCommandShortcut] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawCommandShortcut. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignCommandShortcut = RawCommandShortcut;
-
-/// Renamed [RawContextMenu] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawContextMenu. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignContextMenu = RawContextMenu;
-
-/// Renamed [RawDataTable] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDataTable. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDataTable<R> = RawDataTable<R>;
-
-/// Renamed [RawDateField] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDateField. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDateField = RawDateField;
-
-/// Renamed [RawDateFieldFrameBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDateFieldFrameBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDateFieldFrameBuilder = RawDateFieldFrameBuilder;
-
-/// Renamed [RawDateLiteralBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDateLiteralBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDateLiteralBuilder = RawDateLiteralBuilder;
-
-/// Renamed [RawDateRange] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDateRange. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDateRange = RawDateRange;
-
-/// Renamed [RawDateSegmentBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDateSegmentBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDateSegmentBuilder = RawDateSegmentBuilder;
-
-/// Renamed [RawDateSegmentDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDateSegmentDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDateSegmentDetails = RawDateSegmentDetails;
-
-/// Renamed [RawDateSegmentType] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDateSegmentType. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDateSegmentType = RawDateSegmentType;
-
-/// Renamed [RawAlertDialog] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawAlertDialog. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDialog = RawAlertDialog;
-
-/// Renamed [RawDialogAction] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDialogAction. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDialogAction = RawDialogAction;
-
-/// Renamed [RawDialogActionBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDialogActionBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDialogActionBuilder = RawDialogActionBuilder;
-
-/// Renamed [RawDialogActionDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDialogActionDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDialogActionDetails = RawDialogActionDetails;
-
-/// Renamed [RawAlertDialogFrameDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawAlertDialogFrameDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDialogFrameDetails = RawAlertDialogFrameDetails;
-
-/// Renamed [RawAlertDialogPartBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawAlertDialogPartBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDialogPartBuilder = RawAlertDialogPartBuilder;
-
-/// Renamed [RawDividerBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDividerBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignDividerBuilder = RawDividerBuilder;
-
-/// Renamed [RawInputDecorator] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawInputDecorator. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignField = RawInputDecorator;
-
-/// Renamed [RawInputDecoratorBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawInputDecoratorBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignFieldBuilder = RawInputDecoratorBuilder;
-
-/// Renamed [RawInputDecoratorDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawInputDecoratorDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignFieldParts = RawInputDecoratorDetails;
-
-/// Renamed [RawOptionsSurfaceBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawOptionsSurfaceBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignListSurfaceBuilder = RawOptionsSurfaceBuilder;
+import 'tree.dart';
+import 'value_handle.dart';
 
 /// Renamed [RawWidgetsLocalizations] in ui_core 0.4.0.
 @Deprecated(
@@ -304,592 +37,530 @@ typedef DesignListSurfaceBuilder = RawOptionsSurfaceBuilder;
 )
 typedef DesignLocalizations = RawWidgetsLocalizations;
 
-/// Renamed [RawMenuBar] in ui_core 0.4.0.
-@Deprecated('Use RawMenuBar. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignMenuBar = RawMenuBar;
-
-/// Renamed [RawMenuEntry] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawMenuEntry. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignMenuEntry = RawMenuEntry;
-
-/// Renamed [RawMenuItemBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawMenuItemBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignMenuItemBuilder = RawMenuItemBuilder;
-
-/// Renamed [RawMenuLevel] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawMenuLevel. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignMenuLevel = RawMenuLevel;
-
-/// Renamed [RawMenuBarOverlayBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawMenuBarOverlayBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignMenuSurfaceBuilder = RawMenuBarOverlayBuilder;
-
-/// Renamed [RawNumberField] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawNumberField. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignNumberField = RawNumberField;
-
-/// Renamed [RawNumberFieldBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawNumberFieldBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignNumberFieldBuilder = RawNumberFieldBuilder;
-
-/// Renamed [RawNumberFieldButtonBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawNumberFieldButtonBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignNumberFieldButtonBuilder = RawNumberFieldButtonBuilder;
-
-/// Renamed [RawNumberFieldButtonDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawNumberFieldButtonDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignNumberFieldButtonDetails = RawNumberFieldButtonDetails;
-
-/// Renamed [RawNumberFieldDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawNumberFieldDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignNumberFieldDetails = RawNumberFieldDetails;
-
-/// Renamed [RawNumberFieldLayoutBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawNumberFieldLayoutBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignNumberFieldLayoutBuilder = RawNumberFieldLayoutBuilder;
-
-/// Renamed [RawOptionBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawOptionBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignOptionBuilder<T> = RawOptionBuilder<T>;
-
-/// Renamed [RawOtpContextMenuBuilder] in ui_core 0.4.0.
+/// Renamed [RawAdaptiveShell] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawOtpContextMenuBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawAdaptiveShell. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOtpContextMenuBuilder = RawOtpContextMenuBuilder;
+typedef DesignAdaptiveShell = RawAdaptiveShell;
 
-/// Renamed [RawOtpController] in ui_core 0.4.0.
+/// Renamed [RawBandScale] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawOtpController. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawBandScale. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOtpController = RawOtpController;
+typedef DesignBandScale = RawBandScale;
 
-/// Renamed [RawOtpField] in ui_core 0.4.0.
-@Deprecated('Use RawOtpField. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignOtpField = RawOtpField;
-
-/// Renamed [RawOtpLayoutBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawOtpLayoutBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignOtpLayoutBuilder = RawOtpLayoutBuilder;
-
-/// Renamed [RawOtpSlot] in ui_core 0.4.0.
-@Deprecated('Use RawOtpSlot. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignOtpSlot = RawOtpSlot;
-
-/// Renamed [RawOtpSlotBuilder] in ui_core 0.4.0.
+/// Renamed [RawBarrierBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawOtpSlotBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawBarrierBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOtpSlotBuilder = RawOtpSlotBuilder;
+typedef DesignBarrierBuilder = RawBarrierBuilder;
 
-/// Renamed [RawPopoverAlign] in ui_core 0.4.0.
+/// Renamed [RawBranchBackBehavior] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPopoverAlign. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawBranchBackBehavior. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOverlayAlign = RawPopoverAlign;
+typedef DesignBranchBackBehavior = RawBranchBackBehavior;
 
-/// Renamed [RawPopoverInfo] in ui_core 0.4.0.
+/// Renamed [RawCapCenter] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPopoverInfo. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawCapCenter. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOverlayInfo = RawPopoverInfo;
+typedef DesignCapCenter = RawCapCenter;
 
-/// Renamed [RawPopoverPadding] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawPopoverPadding. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignOverlayPadding = RawPopoverPadding;
+/// Renamed [RawChart] in ui_core 0.6.0.
+@Deprecated('Use RawChart. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignChart = RawChart;
 
-/// Renamed [RawPopoverPlacement] in ui_core 0.4.0.
+/// Renamed [RawChartBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPopoverPlacement. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOverlayPlacement = RawPopoverPlacement;
+typedef DesignChartBuilder = RawChartBuilder;
 
-/// Renamed [RawPopoverSide] in ui_core 0.4.0.
+/// Renamed [RawChartDetails] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPopoverSide. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartDetails. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOverlaySide = RawPopoverSide;
+typedef DesignChartDetails = RawChartDetails;
 
-/// Renamed [RawPopoverOverlayBuilder] in ui_core 0.4.0.
+/// Renamed [RawChartFormat] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPopoverOverlayBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartFormat. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOverlaySurfaceBuilder = RawPopoverOverlayBuilder;
+typedef DesignChartFormat = RawChartFormat;
 
-/// Renamed [RawPopoverTrigger] in ui_core 0.4.0.
+/// Renamed [RawChartPoint] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPopoverTrigger. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartPoint. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignOverlayTrigger = RawPopoverTrigger;
+typedef DesignChartPoint = RawChartPoint;
 
-/// Renamed [RawPaletteLayoutBuilder] in ui_core 0.4.0.
+/// Renamed [RawChartPointRef] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPaletteLayoutBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartPointRef. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPaletteLayoutBuilder = RawPaletteLayoutBuilder;
+typedef DesignChartPointRef = RawChartPointRef;
 
-/// Renamed [RawPasswordController] in ui_core 0.4.0.
+/// Renamed [RawChartSeries] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPasswordController. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartSeries. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPasswordController = RawPasswordController;
+typedef DesignChartSeries = RawChartSeries;
 
-/// Renamed [RawPasswordDetails] in ui_core 0.4.0.
+/// Renamed [RawChartTable] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPasswordDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartTable. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPasswordDetails = RawPasswordDetails;
+typedef DesignChartTable = RawChartTable;
 
-/// Renamed [RawPasswordReveal] in ui_core 0.4.0.
+/// Renamed [RawChartTableCellBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPasswordReveal. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartTableCellBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPasswordReveal = RawPasswordReveal;
-
-/// Renamed [RawButton] in ui_core 0.4.0.
-@Deprecated('Use RawButton. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignPressable = RawButton;
+typedef DesignChartTableCellBuilder = RawChartTableCellBuilder;
 
-/// Renamed [RawButtonBuilder] in ui_core 0.4.0.
+/// Renamed [RawChartTableCellDetails] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawButtonBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartTableCellDetails. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPressableBuilder = RawButtonBuilder;
+typedef DesignChartTableCellDetails = RawChartTableCellDetails;
 
-/// Renamed [RawButtonState] in ui_core 0.4.0.
+/// Renamed [RawChartValueBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawButtonState. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartValueBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPressableState = RawButtonState;
+typedef DesignChartValueBuilder = RawChartValueBuilder;
 
-/// Renamed [RawRefreshIndicator] in ui_core 0.4.0.
+/// Renamed [RawChartValueFormat] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRefreshIndicator. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartValueFormat. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPullToRefresh = RawRefreshIndicator;
+typedef DesignChartValueFormat = RawChartValueFormat;
 
-/// Renamed [RawRefreshIndicatorState] in ui_core 0.4.0.
+/// Renamed [RawChartXAxis] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRefreshIndicatorState. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawChartXAxis. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignPullToRefreshState = RawRefreshIndicatorState;
+typedef DesignChartXAxis = RawChartXAxis;
 
-/// Renamed [RawRangeSlider] in ui_core 0.4.0.
+/// Renamed [RawComboboxField] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRangeSlider. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawComboboxField. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRangeSlider = RawRangeSlider;
+typedef DesignComboboxField = RawComboboxField;
 
-/// Renamed [RawRangeSliderTrackDetails] in ui_core 0.4.0.
+/// Renamed [RawComboboxFieldBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRangeSliderTrackDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawComboboxFieldBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRangeTrack = RawRangeSliderTrackDetails;
+typedef DesignComboboxFieldBuilder = RawComboboxFieldBuilder;
 
-/// Renamed [RawRangeValues] in ui_core 0.4.0.
+/// Renamed [RawControlBox] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRangeValues. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawControlBox. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRangeValues = RawRangeValues;
+typedef DesignControlBox = RawControlBox;
 
-/// Renamed [RawRating] in ui_core 0.4.0.
-@Deprecated('Use RawRating. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignRating = RawRating;
+/// Renamed [RawDensity] in ui_core 0.6.0.
+@Deprecated('Use RawDensity. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignDensity = RawDensity;
 
-/// Renamed [RawRatingItemBuilder] in ui_core 0.4.0.
+/// Renamed [RawDestinationBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRatingItemBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawDestinationBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRatingItemBuilder = RawRatingItemBuilder;
+typedef DesignDestinationBuilder = RawDestinationBuilder;
 
-/// Renamed [RawRatingItemDetails] in ui_core 0.4.0.
+/// Renamed [RawDestinationDetails] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRatingItemDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawDestinationDetails. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRatingItemDetails = RawRatingItemDetails;
+typedef DesignDestinationDetails = RawDestinationDetails;
 
-/// Renamed [RawRatingLayoutBuilder] in ui_core 0.4.0.
+/// Renamed [RawDialogBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRatingLayoutBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawDialogBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRatingLayoutBuilder = RawRatingLayoutBuilder;
+typedef DesignDialogBuilder = RawDialogBuilder;
 
-/// Renamed [RawRefreshIndicatorDetails] in ui_core 0.4.0.
+/// Renamed [RawDialogDetails] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRefreshIndicatorDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawDialogDetails. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRefreshDetails = RawRefreshIndicatorDetails;
+typedef DesignDialogDetails = RawDialogDetails;
 
-/// Renamed [RawRefreshIndicatorMode] in ui_core 0.4.0.
+/// Renamed [RawModalDialogRoute] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawRefreshIndicatorMode. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawModalDialogRoute. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignRefreshMode = RawRefreshIndicatorMode;
+typedef DesignDialogRoute<T> = RawModalDialogRoute<T>;
 
-/// Renamed [RawReorderItemDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawReorderItemDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignReorderItem = RawReorderItemDetails;
-
-/// Renamed [RawReorderableList] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawReorderableList. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignReorderableList<T extends Object> = RawReorderableList<T>;
+/// Renamed [RawForm] in ui_core 0.6.0.
+@Deprecated('Use RawForm. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignForm = RawForm;
 
-/// Renamed [RawScrollArea] in ui_core 0.4.0.
+/// Renamed [RawFormField] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawScrollArea. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawFormField. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignScrollArea = RawScrollArea;
+typedef DesignFormField<T> = RawFormField<T>;
 
-/// Renamed [RawScrollbarThumbDetails] in ui_core 0.4.0.
+/// Renamed [RawFormState] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawScrollbarThumbDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawFormState. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignScrollThumb = RawScrollbarThumbDetails;
+typedef DesignFormState = RawFormState;
 
-/// Renamed [RawScrollbarThumbBuilder] in ui_core 0.4.0.
+/// Renamed [RawHandleBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawScrollbarThumbBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawHandleBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignScrollbarBuilder = RawScrollbarThumbBuilder;
+typedef DesignHandleBuilder = RawHandleBuilder;
 
-/// Renamed [RawSearchError] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawSearchError. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignSearchError = RawSearchError;
+/// Renamed [RawHaptics] in ui_core 0.6.0.
+@Deprecated('Use RawHaptics. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignHaptics = RawHaptics;
 
-/// Renamed [RawSearchErrorBuilder] in ui_core 0.4.0.
+/// Renamed [RawHapticsScope] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSearchErrorBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawHapticsScope. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSearchErrorBuilder = RawSearchErrorBuilder;
+typedef DesignHapticsScope = RawHapticsScope;
 
-/// Renamed [RawDataTableSelection] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawDataTableSelection. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignSelection = RawDataTableSelection;
+/// Renamed [RawInput] in ui_core 0.6.0.
+@Deprecated('Use RawInput. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignInput = RawInput;
 
-/// Renamed [RawSheetEdge] in ui_core 0.4.0.
+/// Renamed [RawInputGroup] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSheetEdge. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawInputGroup. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSheetEdge = RawSheetEdge;
+typedef DesignInputGroup = RawInputGroup;
 
-/// Renamed [RawSideSheetDetails] in ui_core 0.4.0.
+/// Renamed [RawInputGroupBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSideSheetDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawInputGroupBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSheetInfo = RawSideSheetDetails;
+typedef DesignInputGroupBuilder = RawInputGroupBuilder;
 
-/// Renamed [RawSheetRoute] in ui_core 0.4.0.
+/// Renamed [RawKeylineFace] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSheetRoute. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawKeylineFace. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSheetPageRoute<T> = RawSheetRoute<T>;
+typedef DesignKeylineFace = RawKeylineFace;
 
-/// Renamed [RawSideSheetRoute] in ui_core 0.4.0.
+/// Renamed [RawKeylineRegion] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSideSheetRoute. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawKeylineRegion. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSideSheetRoute<T> = RawSideSheetRoute<T>;
+typedef DesignKeylineRegion = RawKeylineRegion;
 
-/// Renamed [RawSortDirection] in ui_core 0.4.0.
+/// Renamed [RawLinearScale] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSortDirection. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawLinearScale. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSortDirection = RawSortDirection;
+typedef DesignLinearScale = RawLinearScale;
 
-/// Renamed [RawSplitAction] in ui_core 0.4.0.
+/// Renamed [RawListDetail] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSplitAction. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawListDetail. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSplitAction = RawSplitAction;
+typedef DesignListDetail<T extends Object> = RawListDetail<T>;
 
-/// Renamed [RawSplitButton] in ui_core 0.4.0.
+/// Renamed [rawMatchScore] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSplitButton. This feature was deprecated after ui_core 0.4.0.',
+  'Use rawMatchScore. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSplitButton = RawSplitButton;
+int? designMatchScore(String text, String query) => rawMatchScore(text, query);
 
-/// Renamed [RawSplitPart] in ui_core 0.4.0.
+/// Renamed [RawMotionPolicy] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSplitPart. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawMotionPolicy. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSplitPart = RawSplitPart;
+typedef DesignMotionPolicy = RawMotionPolicy;
 
-/// Renamed [RawSplitView] in ui_core 0.4.0.
+/// Renamed [RawNavigationBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSplitView. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawNavigationBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSplitView = RawSplitView;
+typedef DesignNavigationBuilder = RawNavigationBuilder;
 
-/// Renamed [RawSwipeAction] in ui_core 0.4.0.
+/// Renamed [RawNavigationDestination] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSwipeAction. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawNavigationDestination. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSwipeAction = RawSwipeAction;
+typedef DesignNavigationDestination = RawNavigationDestination;
 
-/// Renamed [RawSwipeActionBuilder] in ui_core 0.4.0.
+/// Renamed [RawNavigationDetails] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSwipeActionBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawNavigationDetails. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSwipeActionBuilder = RawSwipeActionBuilder;
+typedef DesignNavigationDetails = RawNavigationDetails;
 
-/// Renamed [RawSwipeActionDetails] in ui_core 0.4.0.
+/// Renamed [RawNavigationMode] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSwipeActionDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawNavigationMode. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSwipeActionDetails = RawSwipeActionDetails;
+typedef DesignNavigationMode = RawNavigationMode;
 
-/// Renamed [RawSwipeActions] in ui_core 0.4.0.
+/// Renamed [RawOptionSearch] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSwipeActions. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawOptionSearch. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSwipeActions = RawSwipeActions;
+typedef DesignOptionSearch<T> = RawOptionSearch<T>;
 
-/// Renamed [RawSwipeActionsController] in ui_core 0.4.0.
+/// Renamed [RawOverlayAnchor] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSwipeActionsController. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawOverlayAnchor. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSwipeActionsController = RawSwipeActionsController;
+typedef DesignOverlayAnchor = RawOverlayAnchor;
 
-/// Renamed [SwipeBackPageTransitionsBuilder] in ui_core 0.4.0.
+/// Renamed [RawOverlayAnchorBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use SwipeBackPageTransitionsBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawOverlayAnchorBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignSwipeBackPageTransitionsBuilder = SwipeBackPageTransitionsBuilder;
+typedef DesignOverlayAnchorBuilder = RawOverlayAnchorBuilder;
 
-/// Renamed [RawTab] in ui_core 0.4.0.
-@Deprecated('Use RawTab. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignTab = RawTab;
+/// Renamed [RawPieChart] in ui_core 0.6.0.
+@Deprecated('Use RawPieChart. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignPieChart = RawPieChart;
 
-/// Renamed [RawTabBar] in ui_core 0.4.0.
-@Deprecated('Use RawTabBar. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignTabBar = RawTabBar;
-
-/// Renamed [RawTabBuilder] in ui_core 0.4.0.
+/// Renamed [RawPieChartBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawTabBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawPieChartBuilder. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTabBuilder = RawTabBuilder;
+typedef DesignPieChartBuilder = RawPieChartBuilder;
 
-/// Renamed [RawTabController] in ui_core 0.4.0.
+/// Renamed [RawPieChartDetails] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawTabController. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawPieChartDetails. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTabController = RawTabController;
+typedef DesignPieChartDetails = RawPieChartDetails;
 
-/// Renamed [RawTabDetails] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawTabDetails. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignTabDetails = RawTabDetails;
+/// Renamed [RawPieSlice] in ui_core 0.6.0.
+@Deprecated('Use RawPieSlice. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignPieSlice = RawPieSlice;
 
-/// Renamed [RawTabIndicatorBuilder] in ui_core 0.4.0.
+/// Renamed [RawPieSliceDetails] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawTabIndicatorBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawPieSliceDetails. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTabIndicatorBuilder = RawTabIndicatorBuilder;
+typedef DesignPieSliceDetails = RawPieSliceDetails;
 
-/// Renamed [RawTabIndicatorDetails] in ui_core 0.4.0.
+/// Renamed [rawReduceMotionOf] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawTabIndicatorDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use rawReduceMotionOf. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTabIndicatorDetails = RawTabIndicatorDetails;
+bool designReduceMotionOf(BuildContext context) => rawReduceMotionOf(context);
 
-/// Renamed [RawTabBarView] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawTabBarView. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignTabView = RawTabBarView;
+/// Renamed [RawScale] in ui_core 0.6.0.
+@Deprecated('Use RawScale. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignScale = RawScale;
 
-/// Renamed [RawDataColumn] in ui_core 0.4.0.
+/// Renamed [RawScaleTick] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawDataColumn. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawScaleTick. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTableColumn<R> = RawDataColumn<R>;
+typedef DesignScaleTick = RawScaleTick;
 
-/// Renamed [RawDataTableController] in ui_core 0.4.0.
+/// Renamed [RawScrollbarVisibility] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawDataTableController. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawScrollbarVisibility. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTableController<R> = RawDataTableController<R>;
+typedef DesignScrollbarVisibility = RawScrollbarVisibility;
 
-/// Renamed [RawDataTableHeaderBuilder] in ui_core 0.4.0.
+/// Renamed [rawShortcutKeys] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawDataTableHeaderBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use rawShortcutKeys. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTableHeaderBuilder<R> = RawDataTableHeaderBuilder<R>;
+List<String> designShortcutKeys(
+  BuildContext context,
+  MenuSerializableShortcut shortcut, {
+  TargetPlatform? platform,
+  bool appleSymbols = true,
+}) => rawShortcutKeys(
+  context,
+  shortcut,
+  platform: platform,
+  appleSymbols: appleSymbols,
+);
 
-/// Renamed [RawDataRowDetails] in ui_core 0.4.0.
+/// Renamed [rawShortcutLabel] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawDataRowDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use rawShortcutLabel. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTableRow<R> = RawDataRowDetails<R>;
+String designShortcutLabel(
+  BuildContext context,
+  MenuSerializableShortcut shortcut, {
+  TargetPlatform? platform,
+  bool appleSymbols = true,
+}) => rawShortcutLabel(
+  context,
+  shortcut,
+  platform: platform,
+  appleSymbols: appleSymbols,
+);
 
-/// Renamed [RawTagBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawTagBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignTagBuilder<T> = RawTagBuilder<T>;
+/// Renamed [RawSpacing] in ui_core 0.6.0.
+@Deprecated('Use RawSpacing. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignSpacing = RawSpacing;
 
-/// Renamed [RawTagDetails] in ui_core 0.4.0.
+/// Renamed [RawSpacingScope] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawTagDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawSpacingScope. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTagDetails = RawTagDetails;
+typedef DesignSpacingScope = RawSpacingScope;
 
-/// Renamed [RawTagInput] in ui_core 0.4.0.
-@Deprecated('Use RawTagInput. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignTagInput<T extends Object> = RawTagInput<T>;
+/// Renamed [rawSpring] in ui_core 0.6.0.
+@Deprecated('Use rawSpring. This feature was deprecated after ui_core 0.6.0.')
+SpringDescription designSpring({
+  required double dampingRatio,
+  required double stiffness,
+}) => rawSpring(dampingRatio: dampingRatio, stiffness: stiffness);
 
-/// Renamed [RawTagLayoutBuilder] in ui_core 0.4.0.
+/// Renamed [RawSpringDrive] in ui_core 0.6.0. An extension has no alias, so
+/// this one forwards to it; it is on a nullable controller, so [RawSpringDrive]
+/// is the one a call picks wherever both are in scope.
 @Deprecated(
-  'Use RawTagLayoutBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawSpringDrive. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTagLayoutBuilder = RawTagLayoutBuilder;
+extension DesignSpringDrive on AnimationController? {
+  /// [RawSpringDrive.springTo].
+  TickerFuture springTo(
+    double target,
+    SpringDescription spring, {
+    double? velocity,
+    Tolerance tolerance = rawSpringTolerance,
+  }) =>
+      RawSpringDrive(this!)
+          .springTo(target, spring, velocity: velocity, tolerance: tolerance);
+}
 
-/// Renamed [TapTargetPadding] in ui_core 0.4.0.
+/// Renamed [rawSpringSimulation] in ui_core 0.6.0.
 @Deprecated(
-  'Use TapTargetPadding. This feature was deprecated after ui_core 0.4.0.',
+  'Use rawSpringSimulation. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTapTarget = TapTargetPadding;
+SpringSimulation designSpringSimulation(
+  SpringDescription spring, {
+  required double from,
+  required double to,
+  double velocity = 0,
+  Tolerance tolerance = rawSpringTolerance,
+}) => rawSpringSimulation(
+  spring,
+  from: from,
+  to: to,
+  velocity: velocity,
+  tolerance: tolerance,
+);
 
-/// Renamed [RawTimeField] in ui_core 0.4.0.
+/// Renamed [rawSpringTolerance] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawTimeField. This feature was deprecated after ui_core 0.4.0.',
+  'Use rawSpringTolerance. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignTimeField = RawTimeField;
+const Tolerance designSpringTolerance = rawSpringTolerance;
 
-/// Renamed [RawTimeOfDay] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawTimeOfDay. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignTimeOfDay = RawTimeOfDay;
+/// Renamed [RawStyle] in ui_core 0.6.0.
+@Deprecated('Use RawStyle. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignStyle = RawStyle;
 
-/// Renamed [RawToast] in ui_core 0.4.0.
-@Deprecated('Use RawToast. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignToast = RawToast;
+/// Renamed [RawStyleOf] in ui_core 0.6.0.
+@Deprecated('Use RawStyleOf. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignStyleOf = RawStyleOf;
 
-/// Renamed [RawToastBuilder] in ui_core 0.4.0.
+/// Renamed [rawSwipeBack] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawToastBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use rawSwipeBack. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignToastBuilder = RawToastBuilder;
+Map<TargetPlatform, PageTransitionsBuilder> designSwipeBack(
+  Map<TargetPlatform, PageTransitionsBuilder> builders, {
+  Set<TargetPlatform> platforms = const {TargetPlatform.iOS},
+}) => rawSwipeBack(builders, platforms: platforms);
 
-/// Renamed [RawToastClosedReason] in ui_core 0.4.0.
+/// Renamed [RawTapTargets] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawToastClosedReason. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawTapTargets. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignToastClosedReason = RawToastClosedReason;
+typedef DesignTapTargets = RawTapTargets;
 
-/// Renamed [RawToastDetails] in ui_core 0.4.0.
+/// Renamed [RawTapTargetScope] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawToastDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawTapTargetScope. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignToastDetails = RawToastDetails;
+typedef DesignTapTargetScope = RawTapTargetScope;
 
-/// Renamed [RawToastController] in ui_core 0.4.0.
+/// Renamed [RawTextEntryBox] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawToastController. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawTextEntryBox. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignToastHandle = RawToastController;
+typedef DesignTextEntryBox = RawTextEntryBox;
 
-/// Renamed [RawToastStackBuilder] in ui_core 0.4.0.
+/// Renamed [RawTimeScale] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawToastStackBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawTimeScale. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignToastStackBuilder = RawToastStackBuilder;
-
-/// Renamed [RawToaster] in ui_core 0.4.0.
-@Deprecated('Use RawToaster. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignToaster = RawToaster;
+typedef DesignTimeScale = RawTimeScale;
 
-/// Renamed [RawToasterState] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawToasterState. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignToasterState = RawToasterState;
+/// Renamed [RawTree] in ui_core 0.6.0.
+@Deprecated('Use RawTree. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignTree<T extends Object> = RawTree<T>;
 
-/// Renamed [RawSegmentedButton] in ui_core 0.4.0.
+/// Renamed [RawTreeController] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawSegmentedButton. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawTreeController. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignToggleGroup<T> = RawSegmentedButton<T>;
+typedef DesignTreeController<T extends Object> = RawTreeController<T>;
 
-/// Renamed [RawSegmentBuilder] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawSegmentBuilder. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignToggleItemBuilder<T> = RawSegmentBuilder<T>;
+/// Renamed [RawTreeItem] in ui_core 0.6.0.
+@Deprecated('Use RawTreeItem. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignTreeItem<T extends Object> = RawTreeItem<T>;
 
-/// Renamed [RawPickerColumn] in ui_core 0.4.0.
-@Deprecated(
-  'Use RawPickerColumn. This feature was deprecated after ui_core 0.4.0.',
-)
-typedef DesignWheelColumn = RawPickerColumn;
+/// Renamed [RawTreeRow] in ui_core 0.6.0.
+@Deprecated('Use RawTreeRow. This feature was deprecated after ui_core 0.6.0.')
+typedef DesignTreeRow<T extends Object> = RawTreeRow<T>;
 
-/// Renamed [RawPickerColumnBuilder] in ui_core 0.4.0.
+/// Renamed [RawValueHandle] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPickerColumnBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawValueHandle. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignWheelColumnBuilder = RawPickerColumnBuilder;
+typedef DesignValueHandle = RawValueHandle;
 
-/// Renamed [RawPickerColumnDetails] in ui_core 0.4.0.
+/// Renamed [RawWindowSizeClass] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPickerColumnDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RawWindowSizeClass. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignWheelColumnDetails = RawPickerColumnDetails;
+typedef DesignWindowSizeClass = RawWindowSizeClass;
 
-/// Renamed [RawPickerItemBuilder] in ui_core 0.4.0.
+/// Renamed [RenderCapCenter] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPickerItemBuilder. This feature was deprecated after ui_core 0.4.0.',
+  'Use RenderCapCenter. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignWheelItemBuilder = RawPickerItemBuilder;
+typedef RenderDesignCapCenter = RenderCapCenter;
 
-/// Renamed [RawPickerItemDetails] in ui_core 0.4.0.
+/// Renamed [RenderSemanticsProxy] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawPickerItemDetails. This feature was deprecated after ui_core 0.4.0.',
+  'Use RenderSemanticsProxy. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef DesignWheelItemDetails = RawPickerItemDetails;
-
-/// Renamed [RawPicker] in ui_core 0.4.0.
-@Deprecated('Use RawPicker. This feature was deprecated after ui_core 0.4.0.')
-typedef DesignWheelPicker = RawPicker;
+typedef RenderDesignSemanticsProxy = RenderSemanticsProxy;
 
-/// Renamed [RenderTapTargetPadding] in ui_core 0.4.0.
+/// Renamed [showRawCommandPalette] in ui_core 0.6.0.
 @Deprecated(
-  'Use RenderTapTargetPadding. This feature was deprecated after ui_core 0.4.0.',
+  'Use showRawCommandPalette. This feature was deprecated after ui_core 0.6.0.',
 )
-typedef RenderDesignTapTarget = RenderTapTargetPadding;
+Future<void> showDesignCommandPalette({
+  required BuildContext context,
+  required RawCommandPalette Function(ValueChanged<RawCommand> run) palette,
+  Widget Function(BuildContext context, Widget palette)? surfaceBuilder,
+  Color barrierColor = const Color(0x66000000),
+  RawBarrierBuilder? barrierBuilder,
+  String? barrierLabel,
+  AlignmentGeometry alignment = const Alignment(0, -0.6),
+}) => showRawCommandPalette(
+  context: context,
+  palette: palette,
+  surfaceBuilder: surfaceBuilder,
+  barrierColor: barrierColor,
+  barrierBuilder: barrierBuilder,
+  barrierLabel: barrierLabel,
+  alignment: alignment,
+);

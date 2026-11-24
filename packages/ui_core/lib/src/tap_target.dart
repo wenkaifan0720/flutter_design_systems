@@ -9,16 +9,16 @@ import 'package:flutter/widgets.dart';
 ///
 /// Material's `MaterialTapTargetSize` decides the same by platform: padded
 /// on Android, iOS and Fuchsia, shrink-wrapped on desktops.
-enum DesignInput {
-  /// A finger: a target at least [DesignTapTargets.touch].
+enum RawInput {
+  /// A finger: a target at least [RawTapTargets.touch].
   touch,
 
-  /// A pointer: a target at least [DesignTapTargets.pointer].
+  /// A pointer: a target at least [RawTapTargets.pointer].
   pointer;
 
   /// The input [platform] is reached by: [touch] on Android, iOS and
   /// Fuchsia, [pointer] on macOS, Windows and Linux.
-  static DesignInput forPlatform(TargetPlatform platform) => switch (platform) {
+  static RawInput forPlatform(TargetPlatform platform) => switch (platform) {
     TargetPlatform.android ||
     TargetPlatform.iOS ||
     TargetPlatform.fuchsia => touch,
@@ -34,14 +34,14 @@ enum DesignInput {
 ///
 /// A look may raise either (Android's 48 for a finger, 44 for a pointer
 /// that a look keeps roomy) and declares its floors with a
-/// [DesignTapTargetScope] round the app, in its theme; [TapTargetPadding]
+/// [RawTapTargetScope] round the app, in its theme; [TapTargetPadding]
 /// lays a control out at the floor, and `DesignTapTargetCheck` holds every
 /// screen to it. Density never moves the floor: a compact face stands in
 /// the same target, with more room round it.
 ///
 /// ```dart
-/// DesignTapTargetScope(
-///   targets: const DesignTapTargets(touch: Size.square(48)),
+/// RawTapTargetScope(
+///   targets: const RawTapTargets(touch: Size.square(48)),
 ///   child: app,
 /// )
 /// ```
@@ -49,11 +49,11 @@ enum DesignInput {
 /// See also:
 ///
 ///  * [TapTargetPadding], which lays a control out at the floor.
-///  * [DesignDensity], which tightens a control's face, never its target.
+///  * [RawDensity], which tightens a control's face, never its target.
 @immutable
-class DesignTapTargets with Diagnosticable {
+class RawTapTargets with Diagnosticable {
   /// Floors for [touch] and [pointer]; [input] null reads the platform's.
-  const DesignTapTargets({
+  const RawTapTargets({
     this.touch = const Size.square(44),
     this.pointer = const Size.square(24),
     this.input,
@@ -61,7 +61,7 @@ class DesignTapTargets with Diagnosticable {
 
   /// The floors with no look's own: 44 for a finger, 24 for a pointer, the
   /// input by platform.
-  static const DesignTapTargets fallback = DesignTapTargets();
+  static const RawTapTargets fallback = RawTapTargets();
 
   /// The least area a finger's tap reaches.
   final Size touch;
@@ -70,36 +70,34 @@ class DesignTapTargets with Diagnosticable {
   final Size pointer;
 
   /// What reaches the controls; null: by the platform
-  /// ([DesignInput.forPlatform]).
-  final DesignInput? input;
+  /// ([RawInput.forPlatform]).
+  final RawInput? input;
 
   /// What reaches the controls on [platform] (the running one when null).
-  DesignInput inputOn([TargetPlatform? platform]) =>
-      input ?? DesignInput.forPlatform(platform ?? defaultTargetPlatform);
+  RawInput inputOn([TargetPlatform? platform]) =>
+      input ?? RawInput.forPlatform(platform ?? defaultTargetPlatform);
 
   /// The floor for [input].
-  Size floorFor(DesignInput input) => switch (input) {
-    DesignInput.touch => touch,
-    DesignInput.pointer => pointer,
+  Size floorFor(RawInput input) => switch (input) {
+    RawInput.touch => touch,
+    RawInput.pointer => pointer,
   };
 
   /// The floor for what reaches the controls on [platform] (the running one
   /// when null).
   Size floorOn([TargetPlatform? platform]) => floorFor(inputOn(platform));
 
-  /// The floors in effect at [context]: the nearest [DesignTapTargetScope]'s,
+  /// The floors in effect at [context]: the nearest [RawTapTargetScope]'s,
   /// else [fallback].
-  static DesignTapTargets of(BuildContext context) =>
-      maybeOf(context) ?? fallback;
+  static RawTapTargets of(BuildContext context) => maybeOf(context) ?? fallback;
 
-  /// The nearest [DesignTapTargetScope]'s floors, or null when there is none.
-  static DesignTapTargets? maybeOf(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<DesignTapTargetScope>()
-      ?.targets;
+  /// The nearest [RawTapTargetScope]'s floors, or null when there is none.
+  static RawTapTargets? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<RawTapTargetScope>()?.targets;
 
   /// This with the given fields changed.
-  DesignTapTargets copyWith({Size? touch, Size? pointer, DesignInput? input}) =>
-      DesignTapTargets(
+  RawTapTargets copyWith({Size? touch, Size? pointer, RawInput? input}) =>
+      RawTapTargets(
         touch: touch ?? this.touch,
         pointer: pointer ?? this.pointer,
         input: input ?? this.input,
@@ -107,7 +105,7 @@ class DesignTapTargets with Diagnosticable {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignTapTargets &&
+      other is RawTapTargets &&
       other.touch == touch &&
       other.pointer == pointer &&
       other.input == input;
@@ -129,40 +127,40 @@ class DesignTapTargets with Diagnosticable {
           defaultValue: fallback.pointer,
         ),
       )
-      ..add(EnumProperty<DesignInput>('input', input, defaultValue: null));
+      ..add(EnumProperty<RawInput>('input', input, defaultValue: null));
   }
 }
 
 /// Declares the [targets] a look's controls stand at for the subtree, as a
-/// theme does; [DesignTapTargets.of] reads them.
-class DesignTapTargetScope extends InheritedTheme {
+/// theme does; [RawTapTargets.of] reads them.
+class RawTapTargetScope extends InheritedTheme {
   /// Declares [targets] for [child].
-  const DesignTapTargetScope({
+  const RawTapTargetScope({
     super.key,
     required this.targets,
     required super.child,
   });
 
   /// The floors under it.
-  final DesignTapTargets targets;
+  final RawTapTargets targets;
 
   @override
   Widget wrap(BuildContext context, Widget child) =>
-      DesignTapTargetScope(targets: targets, child: child);
+      RawTapTargetScope(targets: targets, child: child);
 
   @override
-  bool updateShouldNotify(DesignTapTargetScope oldWidget) =>
+  bool updateShouldNotify(RawTapTargetScope oldWidget) =>
       targets != oldWidget.targets;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<DesignTapTargets>('targets', targets));
+    properties.add(DiagnosticsProperty<RawTapTargets>('targets', targets));
   }
 }
 
 /// Lays [child] out at least [minSize] (the floor for what reaches the
-/// controls, [DesignTapTargets.of], when null), placed by [alignment], and
+/// controls, [RawTapTargets.of], when null), placed by [alignment], and
 /// sends a tap anywhere in that area to the child's centre: the control's
 /// layout, the area a tap reaches and the box a screen reader outlines are
 /// one.
@@ -209,7 +207,7 @@ class DesignTapTargetScope extends InheritedTheme {
 ///
 /// See also:
 ///
-///  * [DesignTapTargets], the floors a look declares.
+///  * [RawTapTargets], the floors a look declares.
 ///  * `DesignTapTargetCheck`, which holds a screen to them.
 class TapTargetPadding extends SingleChildRenderObjectWidget {
   /// Lays [child] out at least [minSize], placed by [alignment].
@@ -221,7 +219,7 @@ class TapTargetPadding extends SingleChildRenderObjectWidget {
   });
 
   /// The least size; null: the floor for what reaches the controls
-  /// ([DesignTapTargets.floorOn]).
+  /// ([RawTapTargets.floorOn]).
   final Size? minSize;
 
   /// Where the face stands in its target, which grows away from the edges
@@ -229,7 +227,7 @@ class TapTargetPadding extends SingleChildRenderObjectWidget {
   final AlignmentGeometry alignment;
 
   Size _floor(BuildContext context) =>
-      minSize ?? DesignTapTargets.of(context).floorOn();
+      minSize ?? RawTapTargets.of(context).floorOn();
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
@@ -494,20 +492,20 @@ class RenderTapTargetPadding extends RenderShiftedBox {
 /// -4 (tightest) to 4 (roomiest).
 ///
 /// Density tightens a control's face, never its tap target
-/// ([DesignTapTargets]): a compact face stands in the same target, with
+/// ([RawTapTargets]): a compact face stands in the same target, with
 /// more room round it.
 ///
 /// ```dart
-/// final height = DesignDensity.compact.height(44); // 36
+/// final height = RawDensity.compact.height(44); // 36
 /// ```
 ///
 /// See also:
 ///
-///  * [DesignTapTargets], the floors density leaves alone.
+///  * [RawTapTargets], the floors density leaves alone.
 @immutable
-class DesignDensity with Diagnosticable {
+class RawDensity with Diagnosticable {
   /// Steps from the look's own, each between -4 and 4.
-  const DesignDensity({
+  const RawDensity({
     this.horizontal = 0,
     this.vertical = 0,
     this.heightStep = 4,
@@ -517,30 +515,27 @@ class DesignDensity with Diagnosticable {
        assert(heightStep >= 0 && paddingStep >= 0);
 
   /// The look's own.
-  static const DesignDensity standard = DesignDensity();
+  static const RawDensity standard = RawDensity();
 
   /// One step in: a step off a control's height.
-  static const DesignDensity comfortable = DesignDensity(
+  static const RawDensity comfortable = RawDensity(
     horizontal: -1,
     vertical: -1,
   );
 
   /// Two steps in: two steps off a control's height and its padding.
-  static const DesignDensity compact = DesignDensity(
-    horizontal: -2,
-    vertical: -2,
-  );
+  static const RawDensity compact = RawDensity(horizontal: -2, vertical: -2);
 
   /// The density [platform] expects, as Material's: [compact] on macOS,
   /// Windows and Linux, [standard] on Android, iOS and Fuchsia.
-  static DesignDensity defaultDensityForPlatform(TargetPlatform platform) =>
-      switch (DesignInput.forPlatform(platform)) {
-        DesignInput.touch => standard,
-        DesignInput.pointer => compact,
+  static RawDensity defaultDensityForPlatform(TargetPlatform platform) =>
+      switch (RawInput.forPlatform(platform)) {
+        RawInput.touch => standard,
+        RawInput.pointer => compact,
       };
 
   /// [defaultDensityForPlatform] for the running platform.
-  static DesignDensity get adaptivePlatformDensity =>
+  static RawDensity get adaptivePlatformDensity =>
       defaultDensityForPlatform(defaultTargetPlatform);
 
   /// The horizontal step.
@@ -581,12 +576,12 @@ class DesignDensity with Diagnosticable {
   }
 
   /// This with the given fields changed.
-  DesignDensity copyWith({
+  RawDensity copyWith({
     double? horizontal,
     double? vertical,
     double? heightStep,
     double? paddingStep,
-  }) => DesignDensity(
+  }) => RawDensity(
     horizontal: horizontal ?? this.horizontal,
     vertical: vertical ?? this.vertical,
     heightStep: heightStep ?? this.heightStep,
@@ -594,10 +589,10 @@ class DesignDensity with Diagnosticable {
   );
 
   /// Between [a] and [b].
-  static DesignDensity lerp(DesignDensity a, DesignDensity b, double t) {
+  static RawDensity lerp(RawDensity a, RawDensity b, double t) {
     if (identical(a, b)) return a;
     double l(double x, double y) => x + (y - x) * t;
-    return DesignDensity(
+    return RawDensity(
       horizontal: l(a.horizontal, b.horizontal),
       vertical: l(a.vertical, b.vertical),
       heightStep: l(a.heightStep, b.heightStep),
@@ -607,7 +602,7 @@ class DesignDensity with Diagnosticable {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignDensity &&
+      other is RawDensity &&
       other.horizontal == horizontal &&
       other.vertical == vertical &&
       other.heightStep == heightStep &&

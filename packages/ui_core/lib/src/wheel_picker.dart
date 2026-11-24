@@ -222,7 +222,7 @@ typedef RawPickerColumnBuilder = Widget Function(
 /// on a row, a screen reader's step and a parent's new [selection] turn the
 /// wheel on a spring ([dampingRatio], [stiffness]), critically damped under
 /// Reduce Motion. A row crossing the centre plays
-/// [DesignHaptics.selectionChanged], at most once a frame (a fast turn's
+/// [RawHaptics.selectionChanged], at most once a frame (a fast turn's
 /// rows would blur into one anyway).
 ///
 /// Keys, each column one tab stop: Down and Up the next and previous live
@@ -404,7 +404,7 @@ class _DesignWheelPickerState extends State<RawPicker> {
   final List<bool> _forward = [];
   final List<bool> _focused = [];
   // Each column's focus, shown as a browser's :focus-visible shows it.
-  final List<DesignFocusShown> _focus = [];
+  final List<RawFocusShown> _focus = [];
   final List<bool> _hovered = [];
   final List<bool> _dragged = [];
   late List<RawPickerColumn> _columns;
@@ -456,7 +456,7 @@ class _DesignWheelPickerState extends State<RawPicker> {
       _forward.add(true);
       _focused.add(false);
       _focus.add(
-        DesignFocusShown((on) {
+        RawFocusShown((on) {
           if (mounted) setState(() => _focused[c] = on);
         }),
       );
@@ -535,14 +535,14 @@ class _DesignWheelPickerState extends State<RawPicker> {
     }
     if (_heading[c] == target && position.isScrollingNotifier.value) return;
     _heading[c] = target;
-    final spring = DesignMotionPolicy.of(
+    final spring = RawMotionPolicy.of(
       context,
     ).spatial(dampingRatio: widget.dampingRatio, stiffness: widget.stiffness);
     // A spring retargeted mid-turn keeps its momentum.
     final running = _springs[c];
     final activity = BallisticScrollActivity(
       position,
-      designSpringSimulation(
+      rawSpringSimulation(
         spring,
         from: position.pixels,
         to: pixels,
@@ -609,7 +609,7 @@ class _DesignWheelPickerState extends State<RawPicker> {
   void _onCentre(int c, int row) {
     if (_centre[c] == row) return;
     setState(() => _centre[c] = row);
-    DesignHaptics.of(context).selectionChanged?.call();
+    RawHaptics.of(context).selectionChanged?.call();
   }
 
   bool _onScroll(int c, ScrollNotification n) {

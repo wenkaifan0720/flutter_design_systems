@@ -36,7 +36,7 @@ void main() {
     text = TextEditingController();
   });
   tearDown(() {
-    DesignRequiredFlag.heard = false;
+    RawRequiredFlag.heard = false;
     node.dispose();
     text.dispose();
   });
@@ -80,7 +80,7 @@ void main() {
   testWidgets("where the flag is heard (the web's aria-required), a text "
       "entry's name drops the words: the flag says them", (tester) async {
     final semantics = tester.ensureSemantics();
-    DesignRequiredFlag.heard = true;
+    RawRequiredFlag.heard = true;
     await tester.pumpWidget(field());
     final data = entry(tester);
     expect(data.flagsCollection.isRequired, Tristate.isTrue);
@@ -91,7 +91,7 @@ void main() {
   testWidgets('where the flag is heard, a group keeps its words: the web '
       'reads no aria-required on a group', (tester) async {
     final semantics = tester.ensureSemantics();
-    DesignRequiredFlag.heard = true;
+    RawRequiredFlag.heard = true;
     await tester.pumpWidget(
       field(
         child: Row(
@@ -126,7 +126,7 @@ void main() {
   testWidgets('merged whole, or a group of its own: the flag on the '
       "field's node, the words kept", (tester) async {
     final semantics = tester.ensureSemantics();
-    DesignRequiredFlag.heard = true;
+    RawRequiredFlag.heard = true;
     for (final merge in [true, false]) {
       await tester.pumpWidget(field(mergeSemantics: merge));
       final data = tester
@@ -295,7 +295,7 @@ void main() {
     testWidgets("where the flag is heard, the text entry's node drops the "
         'words: the flag says them', (tester) async {
       final semantics = tester.ensureSemantics();
-      DesignRequiredFlag.heard = true;
+      RawRequiredFlag.heard = true;
       await tester.pumpWidget(unnamed(child: drawn()));
       final data = entry(tester);
       expect(data.flagsCollection.isRequired, Tristate.isTrue);

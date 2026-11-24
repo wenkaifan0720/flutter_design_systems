@@ -1,24 +1,27 @@
 /// iOS's swipe back from a screen's leading edge, kept round a look's own
-/// page transitions. The swipe lives in Cupertino's page transition, which a
-/// look's push of its own drops; this puts it back on the widgets layer,
-/// round any [PageTransitionsBuilder].
+/// page transitions, and the page and route that play a look's transition
+/// with it. The swipe lives in Cupertino's page transition, which a look's
+/// push of its own drops; this puts it back on the widgets layer, round any
+/// [PageTransitionsBuilder].
 library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/gesture_focus.dart';
+import 'motion.dart';
 
 /// [builders] with the entries for [platforms] (iOS, by default) wrapped in
 /// [SwipeBackPageTransitionsBuilder], so a page there pops with a
 /// swipe from the screen's leading edge and otherwise plays the look's push.
 ///
 /// ```dart
-/// designSwipeBack({TargetPlatform.iOS: const FadeUpwardsPageTransitionsBuilder()})
+/// rawSwipeBack({TargetPlatform.iOS: const FadeUpwardsPageTransitionsBuilder()})
 /// ```
-Map<TargetPlatform, PageTransitionsBuilder> designSwipeBack(
+Map<TargetPlatform, PageTransitionsBuilder> rawSwipeBack(
   Map<TargetPlatform, PageTransitionsBuilder> builders, {
   Set<TargetPlatform> platforms = const {TargetPlatform.iOS},
 }) => {
@@ -299,4 +302,218 @@ class _SwipeBackRoute extends InheritedWidget {
   @override
   bool updateShouldNotify(_SwipeBackRoute oldWidget) =>
       !identical(route, oldWidget.route);
+}
+
+/// A page of a look's own screens in a [Navigator]'s page list (a router's
+/// page builder), as Material's `MaterialPage` is a Material app's: its
+/// route plays [transitionsBuilder], the look's page transition, with iOS's
+/// swipe back round it on iOS only, and fades under Reduce Motion.
+///
+/// - **The transition.** [transitionsBuilder] is the look's bare page
+///   transition; its durations are the route's. A look's
+///   [PageTransitionsBuilder] is what it would put in a
+///   `PageTransitionsTheme`.
+/// - **Swipe back.** On iOS the route wraps the transition in a
+///   [SwipeBackPageTransitionsBuilder], once: a builder that is one already
+///   is played as it is. Elsewhere the transition is played as given.
+/// - **Reduce Motion.** While the reader asks for reduced motion
+///   (`rawReduceMotionOf`), the page fades in and out on the route's
+///   animation in place of the look's transition; on iOS the swipe back
+///   stays.
+/// - **The page it holds now.** The route reads this page as the navigator
+///   holds it: a router that gives the same key a new page (a new [child])
+///   rebuilds the screen in place, its state kept.
+/// - **Semantics.** The page is a route's scope to a screen reader, its
+///   children's nodes its own, as a Material page's.
+///
+/// A route the next page plays over is one it can transition to: a page
+/// pushed over it plays its secondary animation, a [fullscreenDialog] page
+/// does not, as on iOS a sheet does not move the page under it.
+///
+/// ```dart
+/// Navigator(pages: const [RawPage<void>(transitionsBuilder: FadeUpwardsPageTransitionsBuilder(), child: Text('Recipes'))], onDidRemovePage: (page) {})
+/// ```
+///
+/// See also:
+///
+///  * [RawPageRoute], the same route pushed with `Navigator.push`.
+class RawPage<T> extends Page<T> {
+  /// A page showing [child], played in by [transitionsBuilder].
+  const RawPage({
+    required this.child,
+    required this.transitionsBuilder,
+    this.maintainState = true,
+    this.fullscreenDialog = false,
+    this.allowSnapshotting = true,
+    super.key,
+    super.canPop,
+    super.onPopInvoked,
+    super.name,
+    super.arguments,
+    super.restorationId,
+  });
+
+  /// The screen.
+  final Widget child;
+
+  /// The look's page transition, bare: the route adds iOS's swipe back on
+  /// iOS.
+  final PageTransitionsBuilder transitionsBuilder;
+
+  /// Whether the route keeps its screen's state while another covers it
+  /// ([ModalRoute.maintainState]). Defaults to true.
+  final bool maintainState;
+
+  /// Whether the page is a full-screen dialog: it takes no swipe back, and
+  /// the page under it does not move as it comes in
+  /// ([PageRoute.fullscreenDialog]). Defaults to false.
+  final bool fullscreenDialog;
+
+  /// Whether the route may be drawn from a snapshot while it transitions
+  /// ([ModalRoute.allowSnapshotting]). Defaults to true.
+  final bool allowSnapshotting;
+
+  @override
+  Route<T> createRoute(BuildContext context) => _PageBasedRawPageRoute<T>(this);
+}
+
+/// A route that plays a look's page transition, with iOS's swipe back round
+/// it on iOS only, and a fade under Reduce Motion: [RawPage]'s, pushed with
+/// `Navigator.push`, as `MaterialPageRoute` is `MaterialPage`'s.
+///
+/// ```dart
+/// RawPageRoute<void>(transitionsBuilder: const FadeUpwardsPageTransitionsBuilder(), builder: (context) => const Text('Recipe'))
+/// ```
+class RawPageRoute<T> extends PageRoute<T> with _RawPageTransitions<T> {
+  /// A route whose screen [builder] builds, played in by
+  /// [transitionsBuilder].
+  RawPageRoute({
+    required this.builder,
+    required this.transitionsBuilder,
+    this.maintainState = true,
+    super.settings,
+    super.fullscreenDialog,
+    super.allowSnapshotting,
+    super.requestFocus,
+    super.barrierDismissible,
+  });
+
+  /// Builds the screen.
+  final WidgetBuilder builder;
+
+  /// The look's page transition, bare: the route adds iOS's swipe back on
+  /// iOS.
+  @override
+  final PageTransitionsBuilder transitionsBuilder;
+
+  @override
+  final bool maintainState;
+
+  @override
+  Widget _content(BuildContext context) => builder(context);
+
+  @override
+  String get debugLabel => '${super.debugLabel}(${settings.name})';
+}
+
+// RawPage's route: it reads the page it holds now.
+class _PageBasedRawPageRoute<T> extends PageRoute<T>
+    with _RawPageTransitions<T> {
+  _PageBasedRawPageRoute(RawPage<T> page)
+    : super(settings: page, allowSnapshotting: page.allowSnapshotting);
+
+  RawPage<T> get _page => settings as RawPage<T>;
+
+  @override
+  PageTransitionsBuilder get transitionsBuilder => _page.transitionsBuilder;
+
+  @override
+  bool get maintainState => _page.maintainState;
+
+  @override
+  bool get fullscreenDialog => _page.fullscreenDialog;
+
+  @override
+  Widget _content(BuildContext context) => _page.child;
+
+  @override
+  String get debugLabel => '${super.debugLabel}(${_page.name})';
+}
+
+// What RawPage's route and RawPageRoute share: the look's transition, with
+// the swipe back on iOS and a fade under Reduce Motion.
+mixin _RawPageTransitions<T> on PageRoute<T> {
+  PageTransitionsBuilder get transitionsBuilder;
+
+  Widget _content(BuildContext context);
+
+  @override
+  Duration get transitionDuration => transitionsBuilder.transitionDuration;
+
+  @override
+  Duration get reverseTransitionDuration =>
+      transitionsBuilder.reverseTransitionDuration;
+
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition =>
+      transitionsBuilder.delegatedTransition;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool canTransitionTo(TransitionRoute<dynamic> nextRoute) =>
+      nextRoute is PageRoute && !nextRoute.fullscreenDialog;
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => Semantics(
+    scopesRoute: true,
+    explicitChildNodes: true,
+    child: _content(context),
+  );
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final given = transitionsBuilder;
+    final swipe = given is SwipeBackPageTransitionsBuilder;
+    final bare = swipe ? given.builder : given;
+    final PageTransitionsBuilder played = rawReduceMotionOf(context)
+        ? const _FadePageTransitionsBuilder()
+        : bare;
+    final onIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    return (onIOS || swipe ? SwipeBackPageTransitionsBuilder(played) : played)
+        .buildTransitions<T>(
+          this,
+          context,
+          animation,
+          secondaryAnimation,
+          child,
+        );
+  }
+}
+
+// Reduce Motion's page transition: a fade on the route's animation.
+class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => FadeTransition(opacity: animation, child: child);
 }

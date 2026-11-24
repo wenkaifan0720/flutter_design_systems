@@ -142,9 +142,9 @@ void main() {
   );
 
   behaviourContract(
-    'DesignDialogRoute',
+    'RawModalDialogRoute',
     build: (c) => _opener(
-      () => DesignDialogRoute<bool>(
+      () => RawModalDialogRoute<bool>(
         isAlert: true,
         semanticLabel: 'Delete draft',
         builder: (context, details) => _alert(),
@@ -253,11 +253,11 @@ void main() {
   testWidgets('it opens on a spring: an underdamped token overshoots in '
       'the details, the route itself stays within 0 and 1', (tester) async {
     final seen = <double>[];
-    late DesignDialogRoute<void> route;
+    late RawModalDialogRoute<void> route;
     await tester.pumpWidget(
       harness(
         _opener(
-          () => route = DesignDialogRoute<void>(
+          () => route = RawModalDialogRoute<void>(
             dampingRatio: 0.4,
             stiffness: 600,
             builder: (context, details) => AnimatedBuilder(
@@ -289,7 +289,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         _opener(
-          () => DesignDialogRoute<void>(
+          () => RawModalDialogRoute<void>(
             dampingRatio: 0.4,
             builder: (context, details) {
               seen.add(details.animation.value);
@@ -322,7 +322,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           _opener(
-            () => DesignDialogRoute<void>(
+            () => RawModalDialogRoute<void>(
               isAlert: alert,
               builder: (context, details) => _alert(),
             ),
@@ -353,7 +353,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         _opener(
-          () => DesignDialogRoute<void>(
+          () => RawModalDialogRoute<void>(
             builder: (context, details) {
               close = details.close;
               return PopScope<void>(
@@ -392,7 +392,7 @@ void main() {
               minimumSize: const Size(44, 44),
               onPressed: () async {
                 answer = await Navigator.of(context).push(
-                  DesignDialogRoute<bool>(
+                  RawModalDialogRoute<bool>(
                     builder: (context, details) => _alert(
                       actions: [
                         RawDialogAction(
@@ -431,7 +431,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           _opener(
-            () => DesignDialogRoute<void>(
+            () => RawModalDialogRoute<void>(
               isAlert: true,
               builder: (context, details) => _alert(title: title),
             ),
@@ -460,7 +460,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         _opener(
-          () => DesignDialogRoute<void>(
+          () => RawModalDialogRoute<void>(
             builder: (context, details) => _alert(
               scrollController: scroll,
               content: Column(
@@ -503,7 +503,7 @@ void main() {
           ),
           child: harness(
             _opener(
-              () => DesignDialogRoute<void>(
+              () => RawModalDialogRoute<void>(
                 builder: (context, details) => _alert(
                   actions: [
                     RawDialogAction(label: 'Keep editing', onPressed: () {}),
@@ -559,7 +559,7 @@ void main() {
         ),
         child: harness(
           _opener(
-            () => DesignDialogRoute<void>(
+            () => RawModalDialogRoute<void>(
               builder: (context, details) => _alert(),
             ),
           ),
@@ -580,7 +580,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         _opener(
-          () => DesignDialogRoute<void>(
+          () => RawModalDialogRoute<void>(
             barrierBuilder: (context, animation) => const ColoredBox(
               key: ValueKey('screen'),
               color: Color(0x33000000),
@@ -605,7 +605,7 @@ void main() {
     expect(find.byKey(const ValueKey('screen')), findsOneWidget);
     final route =
         ModalRoute.of(tester.element(find.text('[Rename]')))!
-            as DesignDialogRoute<void>;
+            as RawModalDialogRoute<void>;
     expect(route.barrierColor, isNull);
     expect(route.barrierLabel, 'Dismiss');
     expect(route.transitionDuration, isNot(Duration.zero));
@@ -686,7 +686,7 @@ void main() {
             await tester.pumpWidget(
               harness(
                 _opener(
-                  () => DesignDialogRoute<void>(
+                  () => RawModalDialogRoute<void>(
                     isAlert: true,
                     builder: (context, details) => _alert(
                       content: Column(

@@ -2,34 +2,33 @@
 
 ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core 0.5.6 carries, how to
+look's face for them. This page lists what ui_core 0.6.0 carries, how to
 wire each kind of part, and the three shims a look puts in place until
 Flutter's own fixes reach its minimum version.
 
-Names: ui_core names its behaviour widgets in Flutter's `Raw*` form
-(`RawButton`, `RawTabBar`, `RawAlertDialog`, `RawMenuEntry`,
-`RawWidgetsLocalizations`) and keeps `Design*` for what has no Flutter
-counterpart (`DesignStyle`, `DesignDialogRoute`, `DesignCapCenter`). Older
-`Design*` names for the behaviours (`DesignMenuEntry`, `DesignCombobox`)
-remain as deprecated typedefs that `dart fix --apply` renames. Write new code
-with the `Raw*` names only.
+Names: ui_core names its public parts in Flutter's `Raw*` form, as Flutter
+names its unstyled widgets (`RawButton`, `RawTabBar`, `RawAlertDialog`,
+`RawStyle`, `RawModalDialogRoute`, `RawCapCenter`,
+`RawWidgetsLocalizations`). Older `Design*` names stay through 0.6 as
+deprecated aliases, and `dart fix --apply` renames them. Write new code with
+the `Raw*` names only.
 
 ## What ui_core carries
 
 | Concern | ui_core | The look |
 |---|---|---|
 | Pressing | `RawButton`: tap, long press, Enter and Space, focus, hover, the press shown at once for a mouse and after `kPressTimeout` for a touch in a scroll view, haptics, semantics | The face for each state |
-| Tap targets | `TapTargetPadding`, `DesignTapTargetScope`, `DesignTapTargets` (44 touch, 24 pointer by default), `DesignInput` | Its floors, if not the defaults |
+| Tap targets | `TapTargetPadding`, `RawTapTargetScope`, `RawTapTargets` (44 touch, 24 pointer by default), `RawInput` | Its floors, if not the defaults |
 | Choosing one | Flutter's `RadioGroup` and `RawRadio`, with `RadioGroupKeyboardFix` | The mark and the row |
-| Text entry | Flutter's `TextField` (from material_ui) with `decoration: null`; `DesignTextEntryBox`, `RawInputDecorator` (label, help, error, required, invalid, read with the field), `DesignForm`, `DesignFormField` | The box, rule, label, help, error |
-| Layout | `DesignControlBox`, `DesignCapCenter`, `DesignDensity`, `DesignSpacingScope`, `DesignKeylineRegion` | Its control height, padding, grid |
-| Style | `DesignStyle` (ten `WidgetStateProperty` slots), `DesignStyleOf` | A typedef, a slot per part in its theme, its defaults |
-| Motion | `designSpring`, `DesignMotionPolicy`, `springTo`, `designReduceMotionOf` | Its tokens |
-| Raised surfaces | `DesignDialogRoute`, `RawModalRoute` (a modal page with no role), `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawActionBar` (a dialog's or a sheet's actions), `RawPopover` (`RawPopoverFit.whole` for a picker, `positionDelegate` for a place of the look's own, `role` for a menu), `RawContextMenu`, `RawToaster` with `RawToasterKeepClear`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
+| Text entry | Flutter's `TextField` (from material_ui) with `decoration: null`; `RawTextEntryBox`, `RawInputDecorator` (label, help, error, required, invalid, read with the field), `RawForm`, `RawFormField` | The box, rule, label, help, error |
+| Layout | `RawControlBox`, `RawCapCenter`, `RawDensity`, `RawSpacingScope`, `RawKeylineRegion` | Its control height, padding, grid |
+| Style | `RawStyle` (ten `WidgetStateProperty` slots), `RawStyleOf` | A typedef, a slot per part in its theme, its defaults |
+| Motion | `rawSpring`, `RawMotionPolicy`, `springTo`, `rawReduceMotionOf` | Its tokens |
+| Raised surfaces | `RawModalDialogRoute`, `RawModalRoute` (a modal page with no role), `RawAlertDialog`, `RawBottomSheetRoute` (`RawBottomSheetPage` in a page list), `RawSideSheetRoute`, `RawActionBar` (a dialog's or a sheet's actions), `RawPopover` (`RawPopoverFit.whole` for a picker, `positionDelegate` for a place of the look's own, `role` for a menu), `RawContextMenu`, `RawToaster` with `RawToasterKeepClear`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
 | Lists | `RawPopover` (a select's list, a menu), `RawCombobox`, `RawTagInput`, `RawMenuEntry` (with `isDestructiveAction`): placement below the field, keys, highlight, the chosen option focused, announcements | One list surface, one row, the destructive tone |
-| Navigation | `RawTabBar`, `RawTabGroup` (tabs the look lays out), `RawRovingFocusGroup` (a toolbar, a grid of choices), `RawMenuBar`, `RawCommandPalette`, `DesignAdaptiveShell`, `SwipeBackPageTransitionsBuilder` | Tabs, bars, rails, page motion |
+| Navigation | `RawTabBar`, `RawTabGroup` (tabs the look lays out), `RawRovingFocusGroup` (a toolbar, a grid of choices), `RawMenuBar`, `RawCommandPalette`, `RawAdaptiveShell`, `SwipeBackPageTransitionsBuilder`, `RawPage` and `RawPageRoute`, `RoutePresentation` (where a screen stands) | Tabs, bars, rails, page motion, the back or close key |
 | Words | `RawWidgetsLocalizations` (30 languages) | Its own words, if any |
-| Checklist | `package:ui_core/inventory.dart`: `DesignInventoryRow`, `DesignInventory`, `DesignInventoryGallery` | Its answers |
+| Checklist | `package:ui_core/inventory.dart`: `RawInventoryRow`, `RawInventory`, `RawInventoryGallery` | Its answers |
 
 `package:ui_core/inventory.dart` and `package:ui_core/host.dart` are outside
 semantic versioning: use them in tests and galleries, never in the look's
@@ -84,7 +83,7 @@ row button's states through its `statesController`.
 
 Where ui_core adds only semantics round a control (a labelled `RawButton`'s
 face, a `RawInputDecorator`'s control, a `RawTabGroup`'s tabs), the
-render object it puts there is a `RenderDesignSemanticsProxy`: it lays out,
+render object it puts there is a `RenderSemanticsProxy`: it lays out,
 paints and takes hits as its child. A look never makes one; a layout that
 looks through render objects by type (one that hosts nested flows) names
 that one type for all of them.
@@ -106,25 +105,25 @@ selected: isSelected ?? false,
 semanticSelected: isSelected,
 ```
 
-## Style: `DesignStyle` and `DesignStyleOf`
+## Style: `RawStyle` and `RawStyleOf`
 
-`DesignStyle` has ten slots, each a `WidgetStateProperty`: `fill`,
+`RawStyle` has ten slots, each a `WidgetStateProperty`: `fill`,
 `foreground`, `edge`, `overlay`, `side`, `shape`, `padding`, `minimumSize`,
 `textStyle`, `iconSize`. It has `copyWith`, `merge` and `lerp`;
-`DesignStyle.layered(layers)` forwards several layers as one style and
-`DesignStyle.first(layers, slot, states)` reads one slot through them. A look gives it its own name and puts one slot per part in its
+`RawStyle.layered(layers)` forwards several layers as one style and
+`RawStyle.first(layers, slot, states)` reads one slot through them. A look gives it its own name and puts one slot per part in its
 theme:
 
 ```dart
-typedef LookStyle = DesignStyle;
+typedef LookStyle = RawStyle;
 ```
 
-`DesignStyleOf(layers, states)` resolves the layers nearest first, slot by
+`RawStyleOf(layers, states)` resolves the layers nearest first, slot by
 slot: the part's own `style:`, then its theme slot, then any theme-wide
 knob. A slot no layer sets is null, and the look's default fills it:
 
 ```dart
-final look = DesignStyleOf([style, theme.buttonStyle], states);
+final look = RawStyleOf([style, theme.buttonStyle], states);
 ```
 
 ```dart
@@ -144,51 +143,51 @@ something in its material (a glass look may not take a `side`).
 ## Tap targets and layout
 
 **`TapTargetPadding`** lays a part out at the floor for the input that
-reaches it (`DesignTapTargets.of(context).floorOn()`), centring its face in
+reaches it (`RawTapTargets.of(context).floorOn()`), centring its face in
 the larger box, so layout, hit testing and the semantics box agree. Put it
 outermost, outside `RawButton`. `alignment: AlignmentDirectional.centerStart`
 keeps a checkbox's or radio's box at the start edge of its row. A row whose
 gaps should also take the press wraps its content in
 `MetaData(behavior: HitTestBehavior.opaque)`.
 
-A text field is reached through its box: `DesignTextEntryBox` passes a press
+A text field is reached through its box: `RawTextEntryBox` passes a press
 anywhere in it to the editable, so make the box itself at least the floor
 tall, and let a press on the rest of the face focus the entry:
 
 ```dart
 minHeight: math.max(
   theme.density.height(theme.controlHeight),
-  DesignTapTargets.of(context).floorOn().height,
+  RawTapTargets.of(context).floorOn().height,
 ),
 ```
 
-**`DesignControlBox(minHeight:, alignment:, child:)`** stands a control's
+**`RawControlBox(minHeight:, alignment:, child:)`** stands a control's
 content in a box of the control height, centred, with even leading.
 
-**`DesignCapCenter(capHeightFactor:, child:)`** moves a one-line label so its
+**`RawCapCenter(capHeightFactor:, child:)`** moves a one-line label so its
 capitals, not its line box, sit on the face's middle. The factor is the
 family's cap height over its size (Roboto 0.711; read it from the font's
 `OS/2` table for another family). Use the same factor for every label and for
 the text field's entry, so a row of mixed parts lines up.
 
-**`DesignDensity`** shrinks or grows faces (`height`, `padding`,
+**`RawDensity`** shrinks or grows faces (`height`, `padding`,
 `heightDelta`, `paddingDelta`; `standard`, `comfortable`, `compact`; `lerp`).
 It never moves the tap-target floor. So a compact density is for the
 pointer: on touch the floor holds a field's box at 44 while a compact button
 shrinks below it, and a row loses its one height. Offer compact where the
 pointer is the input (desktop and the web on a desktop), as Material's
-`VisualDensity.adaptivePlatformDensity` does, and keep standard on touch. **`DesignSpacingScope`** carries the
-spacing grid. **`DesignKeylineRegion`** and **`DesignKeylineFace`** mark the
+`VisualDensity.adaptivePlatformDensity` does, and keep standard on touch. **`RawSpacingScope`** carries the
+spacing grid. **`RawKeylineRegion`** and **`RawKeylineFace`** mark the
 faces a keyline check compares.
 
 ## Motion
 
 ui_core runs motion on springs, written as a damping ratio and a stiffness:
-`designSpring(dampingRatio:, stiffness:)`, and
-`controller.springTo(target, spring)` (the `DesignSpringDrive` extension on
-`AnimationController`), settling within `designSpringTolerance`.
+`rawSpring(dampingRatio:, stiffness:)`, and
+`controller.springTo(target, spring)` (the `RawSpringDrive` extension on
+`AnimationController`), settling within `rawSpringTolerance`.
 
-`DesignMotionPolicy.of(context)` turns a token into the spring to run:
+`RawMotionPolicy.of(context)` turns a token into the spring to run:
 
 - `spatial(...)` for anything that moves, resizes or reshapes. Under Reduce
   Motion it is critically damped: no overshoot, no bounce.
@@ -197,14 +196,14 @@ ui_core runs motion on springs, written as a damping ratio and a stiffness:
 
 Read the policy where the motion starts (`didUpdateWidget`, a callback),
 which is under the current `MediaQuery`. A widget that builds differently
-under Reduce Motion reads `designReduceMotionOf(context)` in `build`, so it
+under Reduce Motion reads `rawReduceMotionOf(context)` in `build`, so it
 rebuilds when the setting changes.
 
 ```dart
 final motion = LookTheme.of(context).motion;
 _controller.springTo(
   widget.value,
-  DesignMotionPolicy.of(context).spatial(
+  RawMotionPolicy.of(context).spatial(
     dampingRatio: motion.stateDampingRatio,
     stiffness: motion.stateStiffness,
   ),
@@ -225,7 +224,7 @@ return RadioGroup<T>(
   onChanged: (next) {
     if (change == null || next == null || next == value) return;
     // The look's haptic for a choice, from the table an app can swap.
-    DesignHaptics.of(context).selectionChanged?.call();
+    RawHaptics.of(context).selectionChanged?.call();
     change(next);
   },
   child: RadioGroupKeyboardFix<T>(
@@ -248,16 +247,42 @@ child: RawRadio<T>(
 `RadioGroup` takes no null `onChanged`: a group offered nothing gives a
 no-op and draws its radios turned off.
 
+The same group serves choices a page draws itself, a picture for each choice
+with no mark of the look's (a converted page's own drawings): the radio's
+builder returns the drawing for `radio.value` and `radio.states`, on a box
+hit all over, so a press between the drawing's painted parts still chooses
+it. Name each choice with a `Semantics(label:)` round the `RawRadio` in a
+`MergeSemantics`, and leave the drawing's own words out. Nothing else is
+needed: Flutter's group gives the radio-group role, the arrows, wrapping and
+Space, and the fix the Tab stop and right-to-left arrows.
+
+```dart
+builder: (context, radio) => MetaData(
+  behavior: HitTestBehavior.opaque,
+  child: ExcludeSemantics(
+    child: widget.choice.drawing(
+      context,
+      radio.value ?? false,
+      radio.states,
+    ),
+  ),
+),
+```
+
+A part that needs to know whether it stands in a group asks
+`RadioGroup.maybeOf<T>(context)`, or `RawTabGroup.maybeOf<T>(context)` for a
+tab group: neither needs an `InheritedWidget` of the look's own.
+
 ## Text fields
 
 Typing is Flutter's `TextField`: the IME, selection, autofill, spell check,
 the text-field role. The look sets its `decoration` to null and draws
 everything round it.
 
-- **`DesignTextEntryBox`** stands the editable at the control height with
+- **`RawTextEntryBox`** stands the editable at the control height with
   one line centred, the hint drawn on the typed text's baseline while the
   text is empty, and a press anywhere in the box reaching the editable. Wrap
-  it in `DesignCapCenter` with the family's factor, and in
+  it in `RawCapCenter` with the family's factor, and in
   `Semantics(hint:)`, since the drawn hint is not heard.
 - **`RawInputDecorator`** takes the field's words and reads them with the
   field, as Material's `TextField` does: `labelText` names the entry,
@@ -278,7 +303,7 @@ everything round it.
   `labelText`, `hintText`, `helperText`, `errorText`, as `InputDecoration`
   has them. In Flutter `label`, `hint`, `helper` and `error` are `Widget`
   slots, so a `String label` on a field reads as the wrong kind of slot.
-- **`DesignForm`** and **`DesignFormField`** validate and save a form.
+- **`RawForm`** and **`RawFormField`** validate and save a form.
 - `TextField` asks for a `Material` above it; a look on no Material adds a
   transparent one.
 - **A press anywhere on the face focuses the entry**, the side padding too.
@@ -329,9 +354,9 @@ error: parts.invalid,
 ```dart
 child: Semantics(
   hint: widget.hintText,
-  child: DesignCapCenter(
+  child: RawCapCenter(
     capHeightFactor: theme.capHeightFactor,
-    child: DesignTextEntryBox(
+    child: RawTextEntryBox(
 ```
 
 ```dart
@@ -346,9 +371,9 @@ only those, and drop them when the caller hands one in later.
 
 ## Dialogs
 
-`DesignDialogRoute<T>` raises a dialog: barrier, spring in and out, Escape
+`RawModalDialogRoute<T>` raises a dialog: barrier, spring in and out, Escape
 and Android back, Tab kept inside, focus back to the opener, and the dialog
-named for a screen reader. Its `builder` gets `DesignDialogDetails`
+named for a screen reader. Its `builder` gets `RawDialogDetails`
 (`animation`, `isAlert`, `close`). It takes `isAlert`, `semanticLabel`,
 `dampingRatio` and `stiffness` (and `closeDampingRatio`, `closeStiffness`),
 `barrierColor` or `barrierBuilder`, `barrierLabel`, `barrierDismissible`,
@@ -360,7 +385,10 @@ same arguments but `isAlert` and `semanticLabel`, and its `builder` gets
 `RawModalDetails` (`animation`, `close`). Its page is a route's scope
 that says nothing of itself: a screen reader hears the page's own words,
 so give it a heading that names the route, as a page's title does.
-`DesignDialogRoute` is a `RawModalRoute` that says dialog.
+`RawModalDialogRoute` is a `RawModalRoute` that says dialog. Either takes
+`closeOnEscape: false` for a page whose Escape is its own (a form that asks
+before it discards, an editor): Escape then stays with the page, and back, a
+barrier tap and `close` still close the route.
 
 ```dart
 // A modal page with no role: the route scopes what a reader hears, and
@@ -403,20 +431,122 @@ The look draws it through four builders:
   dialog's width; `details.stacked` is there for a look that draws a stack
   apart (a divider between keys, say).
 
-```dart
-// A gap on the grid between the words and the actions, and a
-// rule over the actions while the words scroll under them.
-actionsBuilder: (context, frame, bar) => DecoratedBox(
-```
-
-```dart
-// The dialog makes each action's press and lays the actions
-// out; the look draws each face.
-actionBuilder: (context, action, details) => AnimatedLookSurface(
-```
-
 The route builds under the navigator, not under the opener: capture the
-opener's themes and wrap the dialog in them.
+opener's themes and wrap the dialog in them. The samples' `showLookDialog` is
+the whole of it: the route, the alert with its title as words, and the look's
+frame, title and actions.
+
+```dart
+Future<T?> showLookDialog<T>(
+  BuildContext context, {
+  required String title,
+  Widget? content,
+  required List<RawDialogAction> Function(BuildContext context) actions,
+  bool isAlert = true,
+}) {
+  final theme = LookTheme.of(context);
+  final words = RawWidgetsLocalizations.of(context);
+  final navigator = Navigator.of(context);
+  // The route builds under the navigator, not under the opener: carry the
+  // opener's themes (a LookTheme nested in a page) over to it.
+  final themes = InheritedTheme.capture(from: context, to: navigator.context);
+  return navigator.push(
+    RawModalDialogRoute<T>(
+      isAlert: isAlert,
+      barrierLabel: words.modalBarrierDismissLabel,
+      barrierColor: theme.colors.ink.withValues(alpha: .32),
+      dampingRatio: theme.motion.routeDampingRatio,
+      stiffness: theme.motion.routeStiffness,
+      builder: (context, details) => themes.wrap(
+        FadeTransition(
+          opacity: details.animation,
+          child: RawAlertDialog(
+            title: title,
+            content: content,
+            actions: actions(context),
+            titleBuilder: (context, title) => Text(title, style: theme.title),
+            frameBuilder: (context, frame, child) => LookSurface(
+              face: LookFace(
+                fill: theme.colors.surface,
+                rule: theme.colors.rule,
+                foreground: theme.colors.ink,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(theme.radius * 1.5),
+              ),
+              child: Padding(padding: const EdgeInsets.all(24), child: child),
+            ),
+            // A gap on the grid between the words and the actions, and a
+            // rule over the actions while the words scroll under them.
+            actionsBuilder: (context, frame, bar) => DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: frame.overflows
+                        ? theme.colors.rule
+                        : const Color(0x00000000),
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 24),
+                child: bar,
+              ),
+            ),
+            // The dialog makes each action's press and lays the actions
+            // out; the look draws each face.
+            actionBuilder: (context, action, details) => AnimatedLookSurface(
+              face: lookButtonFace(
+                theme,
+                details.states,
+                variant: details.index == details.count - 1
+                    ? LookButtonVariant.filled
+                    : LookButtonVariant.outlined,
+                destructive: action.isDestructiveAction,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(theme.radius),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: RawControlBox(
+                  minHeight: theme.controlHeight,
+                  child: RawCapCenter(
+                    capHeightFactor: theme.capHeightFactor,
+                    child: Text(action.label, style: theme.label),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+```
+
+A call gives the title as a `String` and each action by name, dismissive
+first, confirming last:
+
+```dart
+answer = await showLookDialog<bool>(
+  context,
+  title: 'Delete the draft?',
+  content: const Text('It cannot be brought back.'),
+  actions: (context) => [
+    RawDialogAction(
+      label: 'Cancel',
+      onPressed: () => Navigator.pop(context, false),
+    ),
+    RawDialogAction(
+      label: 'Delete',
+      isDestructiveAction: true,
+      onPressed: () => Navigator.pop(context, true),
+    ),
+  ],
+);
+```
 
 ### A look's own footer: `RawActionBar`
 
@@ -466,7 +596,7 @@ builder: (context, toast) => Opacity(
 ```
 
 A toast never covers a bar along the screen's foot or top. A
-`DesignAdaptiveShell` keeps its phone bar clear by itself, and not its rail
+`RawAdaptiveShell` keeps its phone bar clear by itself, and not its rail
 or sidebar: a part down the screen's side is no bar, even under an app's top
 bar, where it reaches the foot alone. A bar the look
 draws itself (a bottom app bar, a docked composer, its own scaffold's
@@ -701,7 +831,7 @@ fieldBuilder: (context, field) {
 
 A look owns its push and pop. It writes a `PageTransitionsBuilder` and gives
 apps a map for `PageTransitionsTheme(builders:)`, keeping the iOS swipe back
-with `SwipeBackPageTransitionsBuilder` (or `designSwipeBack(map)`, which wraps
+with `SwipeBackPageTransitionsBuilder` (or `rawSwipeBack(map)`, which wraps
 a map's iOS entry and leaves one already wrapped alone):
 
 ```dart
@@ -711,14 +841,52 @@ TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
 ```
 
 Swipe back is wrapped once, on iOS only. Export the bare builder beside the
-map: an app's own page route that wraps `SwipeBackPageTransitionsBuilder`
-round the look's push (a go_router `Page`, say) takes the bare builder,
-not the map's iOS entry. A route wrapped twice still takes one swipe (the
-outermost plays it), but the second wrap is dead weight.
+map, and a page of the look's own on ui_core's `RawPage`, for an app that
+builds its own routes or its router's pages (a go_router `pageBuilder`):
+`RawPage` plays the bare builder, wraps the swipe back round it on iOS
+alone, fades under Reduce Motion, and rebuilds in place when the router
+gives its key a new page. `RawPageRoute` is the same route for
+`Navigator.push`, and `RawBottomSheetPage` puts a sheet in the same page
+list.
+
+```dart
+class LookPage<T> extends RawPage<T> {
+// ...
+  const LookPage({
+    required super.child,
+    super.fullscreenDialog,
+    super.key,
+    super.name,
+    super.arguments,
+  }) : super(transitionsBuilder: const LookPageTransitionsBuilder());
+}
+```
 
 Drive transitions with `animation.drive(...)` rather than a
 `CurvedAnimation` made in `buildTransitions`: a `CurvedAnimation` must be
 disposed, and leak tracking reports one made per build.
+
+## Where a screen stands
+
+A screen's bar follows how its route is presented, which the route says and
+the page never decides: `RoutePresentation.of(context)` is `root` (nothing
+below it in its navigator: a title, no back or close), `pushed` (a back key)
+or `sheet` (a popup, a full-screen dialog page, or a look's own sheet page
+that publishes `RoutePresentationScope(presentation:
+RoutePresentation.sheet)`: a close key). `dismissLabel(context)` gives that
+key's words in the app's language. Never read the navigator's `canPop`: a
+sheet over a root makes it true for the root too.
+
+```dart
+final at = RoutePresentation.of(context);
+final label = at.dismissLabel(context);
+if (label == null) return const SizedBox.shrink();
+return LookIconButton(
+  icon: at == RoutePresentation.sheet ? Icons.close : Icons.arrow_back,
+  semanticLabel: label,
+  onPressed: () => Navigator.maybePop(context),
+);
+```
 
 ## Words and languages
 
@@ -742,13 +910,13 @@ supportedLocales: RawWidgetsLocalizations.supportedLocales,
 ## Haptics
 
 `RawButton` plays the platform's feedback on a press when `enableFeedback`
-is true. `DesignHaptics` is the table of the other moments ui_core marks with
+is true. `RawHaptics` is the table of the other moments ui_core marks with
 a haptic: `selectionChanged` (a step, a choice), `longPress` and
 `thresholdCrossed` (a drag passing the point where letting go acts). A look's
 own behaviours play from the same table,
-`DesignHaptics.of(context).selectionChanged?.call()`, so an app can swap or
-silence every haptic at once with a `DesignHapticsScope`
-(`const DesignHaptics.silent()` for none).
+`RawHaptics.of(context).selectionChanged?.call()`, so an app can swap or
+silence every haptic at once with a `RawHapticsScope`
+(`const RawHaptics.silent()` for none).
 
 ## Parts painted on a ui_core behaviour
 
@@ -760,20 +928,20 @@ Each row on the left is built on the API on the right, painted by the look.
 | Toggle group, segmented control | `RawSegmentedButton` |
 | Split button | `RawSplitButton` |
 | Password field | `RawPasswordReveal` |
-| Input group (add-ons) | `DesignInputGroup` |
+| Input group (add-ons) | `RawInputGroup` |
 | One-time code | `RawOtpField` |
 | Number field, stepper | `RawNumberField` |
 | Combobox | `RawCombobox` |
 | Multi-select, tag input | `RawTagInput` |
 | Range slider | `RawRangeSlider` |
 | Rating | `RawRating` |
-| Calendar, date and date-range picker | `RawCalendarDatePicker` |
+| Calendar, date and date-range picker | `RawCalendarDatePicker` (a day paints `day.label`, its number in the app's digits) |
 | Date field (a date typed in segments) | `RawDateField` |
 | Time field | `RawTimeField` |
 | Wheel picker | `RawPicker` |
 | Colour picker | `RawColorPicker` |
 | Form field | `RawInputDecorator` |
-| App shell, navigation bar, rail, drawer | `DesignAdaptiveShell` |
+| App shell, navigation bar, rail, drawer | `RawAdaptiveShell` |
 | Tabs | `RawTabBar` |
 | Menubar | `RawMenuBar` |
 | Command palette | `RawCommandPalette` |
@@ -784,8 +952,8 @@ Each row on the left is built on the API on the right, painted by the look.
 | Reorderable list | `RawReorderableList` |
 | Swipe actions | `RawSwipeActions` |
 | Pull to refresh | `RawRefreshIndicator` |
-| Tree | `DesignTree` |
-| Dialog | `DesignDialogRoute`, `RawAlertDialog` |
+| Tree | `RawTree` |
+| Dialog | `RawModalDialogRoute`, `RawAlertDialog` |
 | Modal page, not a dialog | `RawModalRoute` |
 | Bottom sheet | `RawBottomSheetRoute` |
 | Side sheet | `RawSideSheetRoute` |
@@ -793,12 +961,12 @@ Each row on the left is built on the API on the right, painted by the look.
 | Menu, context menu | `RawContextMenu` |
 | Toast | `RawToaster` |
 | Tooltip | `RawTooltip`, `RawTooltipPlacement` |
-| Charts | `DesignChart`, `DesignPieChart` |
+| Charts | `RawChart`, `RawPieChart` |
 
 Read each API's own documentation before painting it: it says which states
 its builder gets, what it already announces, and which keys it takes.
 
-Charts: `DesignChart` scales its axis with `DesignLinearScale.nice`, which
+Charts: `RawChart` scales its axis with `RawLinearScale.nice`, which
 counts an all-zero series (an empty week) 0 to 4 in whole steps, as a week
 with data counts; `yIncludesZero` is on by default. Pass the caller's
 `formatX` and `formatY` through, so an app can name its unit (hours, €) and
@@ -832,5 +1000,5 @@ version includes the fix.
 Each shim adds no layout, semantics or focus of its own, so removing it
 changes nothing but the fault it fixed.
 
-`DesignRadioGroup` and `DesignTooltip`, the older wrappers these replace,
-are deprecated.
+The older wrappers these replaced, a radio group and a tooltip of ui_core's
+own, are gone since ui_core 0.6.0.

@@ -8,8 +8,8 @@ physical material ([brief_material.md](brief_material.md)).
 
 ## Running a brief
 
-Run the briefs only against published packages: ui_core ^0.5.0 and
-ui_core_test ^0.3.0 on pub.dev, and Flutter 3.47 or later.
+Run the briefs only against published packages: ui_core ^0.6.0 and
+ui_core_test ^0.4.0 on pub.dev, and Flutter 3.47 or later.
 
 1. Start a fresh agent with this skill installed and nothing else about the
    looks: no other look's source, no earlier run's output.
@@ -24,7 +24,7 @@ ui_core_test ^0.3.0 on pub.dev, and Flutter 3.47 or later.
    `score.sh` copies the package, runs the gates G1 to G10 of
    [rubric.md](rubric.md) on the copy, and prints one line per gate with its
    log. G3 to G5 read the example's `lib/inventory.dart`, which each brief
-   asks for: `final DesignInventory inventory` and
+   asks for: `final RawInventory inventory` and
    `Widget lookHost(BuildContext context, Widget child, Brightness brightness)`.
    G5 runs [sweep.dart](sweep.dart), which pumps every present part alone
    under each of sixteen conditions (390 and 1440 wide, day and night, left

@@ -20,8 +20,8 @@ const _rtl = {'ar', 'fa', 'he', 'ur'};
 
 const RawWidgetsLocalizations _en = DefaultRawWidgetsLocalizations();
 
-DesignChartDetails? _last;
-DesignPieChartDetails? _lastPie;
+RawChartDetails? _last;
+RawPieChartDetails? _lastPie;
 
 void main() {
   test('linear: nice bounds hold the data, ticks on whole steps', () {
@@ -31,7 +31,7 @@ void main() {
       final a = (random.nextDouble() * 2 - 1) * magnitude;
       final b = a + random.nextDouble() * magnitude * 3;
       final count = 2 + random.nextInt(9);
-      final s = DesignLinearScale.nice(
+      final s = RawLinearScale.nice(
         min: a,
         max: b,
         start: 0,
@@ -78,7 +78,7 @@ void main() {
       // 3 s to 300 years, evenly in log.
       final seconds = math.pow(10, 0.5 + random.nextDouble() * 9.5);
       final end = start.add(Duration(seconds: seconds.round()));
-      final s = DesignTimeScale.nice(min: start, max: end, start: 0, end: 1);
+      final s = RawTimeScale.nice(min: start, max: end, start: 0, end: 1);
       final reason = '$start → $end: $s';
       expect(s.min.isAfter(start), isFalse, reason: reason);
       expect(s.max.isBefore(end), isFalse, reason: reason);
@@ -104,10 +104,7 @@ void main() {
       for (var round = 0; round < 8; round++) {
         final slices = [
           for (var i = 0; i < 2 + random.nextInt(6); i++)
-            DesignPieSlice(
-              label: 'S$i',
-              value: 1 + random.nextInt(50).toDouble(),
-            ),
+            RawPieSlice(label: 'S$i', value: 1 + random.nextInt(50).toDouble()),
         ];
         await tester.pumpWidget(
           harness(
@@ -116,7 +113,7 @@ void main() {
               child: SizedBox(
                 width: 200,
                 height: 200,
-                child: DesignPieChart(
+                child: RawPieChart(
                   key: UniqueKey(),
                   semanticLabel: 'Pie',
                   slices: slices,
@@ -157,7 +154,7 @@ void main() {
   });
 
   for (final locale in RawWidgetsLocalizations.supportedLocales) {
-    for (final axis in DesignChartXAxis.values) {
+    for (final axis in RawChartXAxis.values) {
       final direction = _rtl.contains(locale.languageCode)
           ? TextDirection.rtl
           : TextDirection.ltr;
@@ -166,16 +163,16 @@ void main() {
         final handle = tester.ensureSemantics();
         final series = [
           for (final name in ['A', 'B'])
-            DesignChartSeries(
+            RawChartSeries(
               label: name,
               points: [
                 for (var i = 0; i < 6; i++)
-                  axis == DesignChartXAxis.time
-                      ? DesignChartPoint.time(
+                  axis == RawChartXAxis.time
+                      ? RawChartPoint.time(
                           DateTime(2026, i + 1),
                           1000.5 * (i + 1) + (name == 'A' ? 0 : 300),
                         )
-                      : DesignChartPoint(
+                      : RawChartPoint(
                           i.toDouble(),
                           1000.5 * (i + 1) + (name == 'A' ? 0 : 300),
                         ),
@@ -197,7 +194,7 @@ void main() {
                   child: SizedBox(
                     width: 320,
                     height: 160,
-                    child: DesignChart(
+                    child: RawChart(
                       semanticLabel: 'Chart',
                       series: series,
                       xAxis: axis,
@@ -237,7 +234,7 @@ void main() {
               : LogicalKeyboardKey.arrowRight,
         );
         await tester.pump();
-        expect(_last!.active, const DesignChartPointRef(0, 0));
+        expect(_last!.active, const RawChartPointRef(0, 0));
         final said = semanticsOf(
           tester,
           find.bySemanticsLabel('Chart'),
@@ -252,7 +249,7 @@ void main() {
 
 // Whether the canvas angle [a] falls within [slice]'s arc, either way
 // round.
-bool _within(double a, DesignPieSliceDetails slice) {
+bool _within(double a, RawPieSliceDetails slice) {
   final lo = math.min(slice.startAngle, slice.startAngle + slice.sweepAngle);
   final hi = math.max(slice.startAngle, slice.startAngle + slice.sweepAngle);
   const edge = 1e-3;

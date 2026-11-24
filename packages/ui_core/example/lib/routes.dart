@@ -35,7 +35,7 @@ class _RoutesPageState extends State<RoutesPage>
 
   Future<void> _deleteDraft() async {
     final delete = await Navigator.of(context).push(
-      DesignDialogRoute<bool>(
+      RawModalDialogRoute<bool>(
         isAlert: true,
         builder: (context, details) => _Pop(
           animation: details.animation,
@@ -361,14 +361,14 @@ class _MailAppState extends State<_MailApp> {
   String? _open;
 
   static const _destinations = [
-    DesignNavigationDestination(label: 'Inbox', icon: IconData(0xe156)),
-    DesignNavigationDestination(label: 'Settings', icon: IconData(0xe57f)),
+    RawNavigationDestination(label: 'Inbox', icon: IconData(0xe156)),
+    RawNavigationDestination(label: 'Settings', icon: IconData(0xe57f)),
   ];
 
   @override
   Widget build(BuildContext context) => ColoredBox(
     color: _paper,
-    child: DesignAdaptiveShell.branches(
+    child: RawAdaptiveShell.branches(
       destinations: _destinations,
       selectedIndex: _destination,
       onDestinationSelected: (i) => setState(() => _destination = i),
@@ -394,16 +394,16 @@ class _MailAppState extends State<_MailApp> {
         ),
         child: SafeArea(
           child: switch (details.mode) {
-            DesignNavigationMode.bar => Row(
+            RawNavigationMode.bar => Row(
               children: [
                 for (final d in details.destinations) Expanded(child: d),
               ],
             ),
-            DesignNavigationMode.rail => SizedBox(
+            RawNavigationMode.rail => SizedBox(
               width: 88,
               child: Column(children: details.destinations),
             ),
-            DesignNavigationMode.sidebar => SizedBox(
+            RawNavigationMode.sidebar => SizedBox(
               width: 240,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -414,7 +414,7 @@ class _MailAppState extends State<_MailApp> {
         ),
       ),
       branches: [
-        (context) => DesignListDetail<String>(
+        (context) => RawListDetail<String>(
           selectedItem: _open,
           onSelectedItemChanged: (item) => setState(() => _open = item),
           listBuilder: (context) => ListView(

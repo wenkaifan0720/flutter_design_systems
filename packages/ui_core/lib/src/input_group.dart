@@ -1,6 +1,6 @@
 /// An input group and a password reveal, headless.
 ///
-/// [DesignInputGroup] makes one control of a field and its add-ons (an
+/// [RawInputGroup] makes one control of a field and its add-ons (an
 /// icon, a unit, a button): one frame whose states say whether anything in
 /// it has focus, a pointer over it, and whether it is disabled or wrong; a
 /// tap on the frame or a plain add-on puts the caret in the field.
@@ -17,7 +17,7 @@ import 'localizations.dart';
 /// Builds the group's frame around [child] (the field and its add-ons) for
 /// [states]: [WidgetState.focused] while anything inside has focus,
 /// [WidgetState.hovered], [WidgetState.disabled] and [WidgetState.error].
-typedef DesignInputGroupBuilder = Widget Function(
+typedef RawInputGroupBuilder = Widget Function(
   BuildContext context,
   Set<WidgetState> states,
   Widget child,
@@ -26,11 +26,11 @@ typedef DesignInputGroupBuilder = Widget Function(
 /// A field and its add-ons as one control.
 ///
 /// ```dart
-/// DesignInputGroup(focusNode: focusNode, builder: (context, states, child) => child, child: const Text('kg'))
+/// RawInputGroup(focusNode: focusNode, builder: (context, states, child) => child, child: const Text('kg'))
 /// ```
-class DesignInputGroup extends StatefulWidget {
+class RawInputGroup extends StatefulWidget {
   /// A group around [child], whose field takes [focusNode].
-  const DesignInputGroup({
+  const RawInputGroup({
     super.key,
     required this.focusNode,
     required this.builder,
@@ -46,7 +46,7 @@ class DesignInputGroup extends StatefulWidget {
   final FocusNode focusNode;
 
   /// Draws the frame.
-  final DesignInputGroupBuilder builder;
+  final RawInputGroupBuilder builder;
 
   /// The field and its add-ons, laid out by the look.
   final Widget child;
@@ -62,14 +62,14 @@ class DesignInputGroup extends StatefulWidget {
   final MouseCursor mouseCursor;
 
   @override
-  State<DesignInputGroup> createState() => _DesignInputGroupState();
+  State<RawInputGroup> createState() => _DesignInputGroupState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<FocusNode>('focusNode', focusNode))
-      ..add(ObjectFlagProperty<DesignInputGroupBuilder>.has('builder', builder))
+      ..add(ObjectFlagProperty<RawInputGroupBuilder>.has('builder', builder))
       ..add(
         FlagProperty(
           'enabled',
@@ -96,12 +96,12 @@ class DesignInputGroup extends StatefulWidget {
   }
 }
 
-class _DesignInputGroupState extends State<DesignInputGroup> {
+class _DesignInputGroupState extends State<RawInputGroup> {
   bool _focused = false;
   bool _hovered = false;
 
   @override
-  void didUpdateWidget(DesignInputGroup oldWidget) {
+  void didUpdateWidget(RawInputGroup oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!widget.enabled && widget.focusNode.hasFocus) {
       widget.focusNode.unfocus();

@@ -1,5 +1,5 @@
 /// Where the engine draws a one-line label's or text entry's capitals: what
-/// `DesignCapCenter` places and the checks in ui_core_test read. A line is a
+/// `RawCapCenter` places and the checks in ui_core_test read. A line is a
 /// [RenderParagraph] or a [RenderEditable]. Internal; not exported.
 ///
 /// ui_core and ui_core_test each carry a copy of this file, written from one

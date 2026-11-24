@@ -27,9 +27,9 @@ import 'tabs.dart' show RawTabGroup;
 ///
 /// A look never makes one; an app's own may extend it to be looked through
 /// the same way.
-abstract class RenderDesignSemanticsProxy extends RenderSemanticsAnnotations {
+abstract class RenderSemanticsProxy extends RenderSemanticsAnnotations {
   /// A proxy round [child].
-  RenderDesignSemanticsProxy([RenderBox? child])
+  RenderSemanticsProxy([RenderBox? child])
     : super(
         child: child,
         properties: const SemanticsProperties(),

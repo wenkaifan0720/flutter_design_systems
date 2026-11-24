@@ -123,7 +123,7 @@ class RawSideSheetRoute<T> extends PopupRoute<T> {
 
   /// Paints the barrier in place of the barrier colour (a look's own
   /// screen); null: the colour.
-  final DesignBarrierBuilder? barrierBuilder;
+  final RawBarrierBuilder? barrierBuilder;
 
   final Color _scrim;
   final bool _dismissOnBarrier;
@@ -295,7 +295,7 @@ class RawSideSheetRoute<T> extends PopupRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    if (designReduceMotionOf(context)) {
+    if (rawReduceMotionOf(context)) {
       return FadeTransition(opacity: animation, child: child);
     }
     // The page is the screen's width; the panel moves its own, so a finger

@@ -146,7 +146,7 @@ void main() {
               child: _tipped(
                 'Open',
                 onPressed: () => Navigator.of(context).push(
-                  DesignDialogRoute<void>(
+                  RawModalDialogRoute<void>(
                     builder: (context, details) =>
                         Center(child: _button('Close', autofocus: true)),
                   ),

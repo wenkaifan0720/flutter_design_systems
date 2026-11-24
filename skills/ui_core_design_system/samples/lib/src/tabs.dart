@@ -139,13 +139,13 @@ Widget _lookTab(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: DesignControlBox(
+            child: RawControlBox(
               // The tab is its own target: it stands at the floor.
               minHeight: math.max(
                 theme.density.height(theme.controlHeight),
-                DesignTapTargets.of(context).floorOn().height,
+                RawTapTargets.of(context).floorOn().height,
               ),
-              child: DesignCapCenter(
+              child: RawCapCenter(
                 capHeightFactor: theme.capHeightFactor,
                 child: Text(label, style: theme.label),
               ),

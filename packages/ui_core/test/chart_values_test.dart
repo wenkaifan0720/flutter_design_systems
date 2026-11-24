@@ -4,30 +4,30 @@ import 'package:ui_core/ui_core.dart';
 
 // A week of hours, Monday first.
 const _week = [
-  DesignChartSeries(
+  RawChartSeries(
     label: 'Hours',
     points: [
-      DesignChartPoint(0, 2.5),
-      DesignChartPoint(1, 4),
-      DesignChartPoint(2, 0),
-      DesignChartPoint(3, 6),
-      DesignChartPoint(4, 3),
-      DesignChartPoint(5, 0),
-      DesignChartPoint(6, 1),
+      RawChartPoint(0, 2.5),
+      RawChartPoint(1, 4),
+      RawChartPoint(2, 0),
+      RawChartPoint(3, 6),
+      RawChartPoint(4, 3),
+      RawChartPoint(5, 0),
+      RawChartPoint(6, 1),
     ],
   ),
 ];
 const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-DesignChartDetails? _last;
+RawChartDetails? _last;
 
 // A chart in [locale], read in [direction], 400 by 200.
 Widget _host({
   Locale locale = const Locale('en'),
   TextDirection direction = TextDirection.ltr,
-  DesignChartValueFormat? valueFormat,
-  DesignChartFormat? formatY,
-  double Function(List<DesignScaleTick> yTicks)? yLabelGutter,
+  RawChartValueFormat? valueFormat,
+  RawChartFormat? formatY,
+  double Function(List<RawScaleTick> yTicks)? yLabelGutter,
   EdgeInsetsGeometry padding = const EdgeInsets.all(8),
 }) => Localizations(
   locale: locale,
@@ -42,10 +42,10 @@ Widget _host({
       child: SizedBox(
         width: 400,
         height: 200,
-        child: DesignChart(
+        child: RawChart(
           semanticLabel: 'Hours this week',
           series: _week,
-          xAxis: DesignChartXAxis.band,
+          xAxis: RawChartXAxis.band,
           categories: _days,
           padding: padding,
           valueFormat: valueFormat,
@@ -62,27 +62,27 @@ Widget _host({
 );
 
 void main() {
-  group('DesignChartValueFormat', () {
+  group('RawChartValueFormat', () {
     final en = RawWidgetsLocalizations.forLocale(const Locale('en'));
     final ar = RawWidgetsLocalizations.forLocale(const Locale('ar'));
 
     test('writes a value in the reader\'s digits with its unit', () {
-      const hours = DesignChartValueFormat(suffix: ' h');
+      const hours = RawChartValueFormat(suffix: ' h');
       expect(hours.format(4, en), '4 h');
       expect(hours.format(2.5, en), '2.5 h');
       expect(hours.format(4, ar), '٤ h');
       expect(
-        const DesignChartValueFormat(prefix: r'$').format(1240, en),
+        const RawChartValueFormat(prefix: r'$').format(1240, en),
         r'$1,240',
       );
     });
 
     test('takes the decimals it is given, else its own, else the '
         'value\'s', () {
-      const plain = DesignChartValueFormat();
+      const plain = RawChartValueFormat();
       expect(plain.format(2, en, fractionDigits: 1), '2.0');
       expect(
-        const DesignChartValueFormat(fractionDigits: 2).format(2, en),
+        const RawChartValueFormat(fractionDigits: 2).format(2, en),
         '2.00',
       );
       expect(plain.format(0.25, en), '0.25');
@@ -90,7 +90,7 @@ void main() {
 
     test('a builder gets the figure in the reader\'s digits', () {
       // Gloss's compact figures: 1.2k past a thousand.
-      final compact = DesignChartValueFormat.custom(
+      final compact = RawChartValueFormat.custom(
         (value, figure, words) => value.abs() >= 1000
             ? '${words.formatDecimal(value / 1000, fractionDigits: 1)}k'
             : figure,
@@ -101,10 +101,10 @@ void main() {
     });
 
     test('labels a scale\'s ticks at the scale\'s decimals', () {
-      final scale = DesignLinearScale.nice(min: 0, max: 1, start: 0, end: 100);
+      final scale = RawLinearScale.nice(min: 0, max: 1, start: 0, end: 100);
       final ticks = scale.ticks(en);
       expect(ticks.map((t) => t.fractionDigits).toSet(), {1});
-      const hours = DesignChartValueFormat(suffix: ' h');
+      const hours = RawChartValueFormat(suffix: ' h');
       expect(hours.labelTicks(ticks, en).map((t) => t.label), [
         '0.0 h',
         '0.2 h',
@@ -123,14 +123,14 @@ void main() {
       _host(
         locale: const Locale('ar'),
         direction: TextDirection.rtl,
-        valueFormat: const DesignChartValueFormat(suffix: ' س'),
+        valueFormat: const RawChartValueFormat(suffix: ' س'),
       ),
     );
     await tester.pump();
     final labels = _last!.yTicks.map((t) => t.label).toList();
     expect(labels.first, '٠ س');
     expect(labels, contains('٦ س'));
-    final node = tester.getSemantics(find.byType(DesignChart));
+    final node = tester.getSemantics(find.byType(RawChart));
     expect(node.value, contains('٦ س'));
     expect(node.value, isNot(contains('6')));
     semantics.dispose();
@@ -139,7 +139,7 @@ void main() {
   testWidgets('formatY still wins over valueFormat', (tester) async {
     await tester.pumpWidget(
       _host(
-        valueFormat: const DesignChartValueFormat(suffix: ' h'),
+        valueFormat: const RawChartValueFormat(suffix: ' h'),
         formatY: (v) => 'y$v',
       ),
     );
@@ -166,13 +166,13 @@ void main() {
 
   testWidgets('left to right, the gutter stands at the left, as wide as '
       'the widest value label measures', (tester) async {
-    late List<DesignScaleTick> given;
+    late List<RawScaleTick> given;
     await tester.pumpWidget(
       _host(
-        valueFormat: const DesignChartValueFormat(suffix: ' h'),
+        valueFormat: const RawChartValueFormat(suffix: ' h'),
         yLabelGutter: (ticks) {
           given = ticks;
-          return DesignScaleTick.widestLabel(
+          return RawScaleTick.widestLabel(
             ticks,
             style: const TextStyle(fontSize: 10),
           );
@@ -182,7 +182,7 @@ void main() {
     final d = _last!;
     expect(d.textDirection, TextDirection.ltr);
     expect(given.map((t) => t.label), contains('6 h'));
-    final widest = DesignScaleTick.widestLabel(
+    final widest = RawScaleTick.widestLabel(
       given,
       style: const TextStyle(fontSize: 10),
     );
@@ -193,12 +193,12 @@ void main() {
 
   test('widestLabel follows the text scale', () {
     const ticks = [
-      DesignScaleTick(value: 0, position: 0, label: '0 h'),
-      DesignScaleTick(value: 10, position: 1, label: '10 h'),
+      RawScaleTick(value: 0, position: 0, label: '0 h'),
+      RawScaleTick(value: 10, position: 1, label: '10 h'),
     ];
     const style = TextStyle(fontSize: 10);
-    final one = DesignScaleTick.widestLabel(ticks, style: style);
-    final two = DesignScaleTick.widestLabel(
+    final one = RawScaleTick.widestLabel(ticks, style: style);
+    final two = RawScaleTick.widestLabel(
       ticks,
       style: style,
       textScaler: const TextScaler.linear(2),
@@ -220,20 +220,20 @@ void main() {
           child: SizedBox(
             width: 200,
             height: 200,
-            child: DesignPieChart(
+            child: RawPieChart(
               semanticLabel: 'Time',
               slices: const [
-                DesignPieSlice(label: 'Design', value: 6),
-                DesignPieSlice(label: 'Review', value: 2),
+                RawPieSlice(label: 'Design', value: 6),
+                RawPieSlice(label: 'Review', value: 2),
               ],
-              valueFormat: const DesignChartValueFormat(suffix: ' س'),
+              valueFormat: const RawChartValueFormat(suffix: ' س'),
               builder: (context, d) => const SizedBox.expand(),
             ),
           ),
         ),
       ),
     );
-    final node = tester.getSemantics(find.byType(DesignPieChart));
+    final node = tester.getSemantics(find.byType(RawPieChart));
     expect(node.value, contains('٦ س'));
     semantics.dispose();
   });
@@ -241,7 +241,7 @@ void main() {
   test('a scale tick says its decimals; a band\'s and a time\'s say none', () {
     final en = RawWidgetsLocalizations.forLocale(const Locale('en'));
     expect(
-      DesignLinearScale.nice(
+      RawLinearScale.nice(
         min: 0,
         max: 100,
         start: 0,
@@ -250,7 +250,7 @@ void main() {
       0,
     );
     expect(
-      const DesignBandScale(
+      const RawBandScale(
         count: 2,
         start: 0,
         end: 1,
@@ -259,9 +259,9 @@ void main() {
     );
     // A tick with no decimals of its own takes the value's.
     expect(
-      const DesignChartValueFormat(suffix: '%')
+      const RawChartValueFormat(suffix: '%')
           .labelTicks(const [
-            DesignScaleTick(value: 5, position: 0, label: 'x'),
+            RawScaleTick(value: 5, position: 0, label: 'x'),
           ], en)
           .single
           .label,

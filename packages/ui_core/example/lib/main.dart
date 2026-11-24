@@ -402,12 +402,12 @@ class _ReportFile extends StatelessWidget {
             menuChildren: [
               RawMenuEntry(
                 label: 'Open',
-                shortcut: designShortcutLabel(context, openKeys),
+                shortcut: rawShortcutLabel(context, openKeys),
                 onPressed: open,
               ),
               RawMenuEntry(
                 label: 'Duplicate',
-                shortcut: designShortcutLabel(context, duplicateKeys),
+                shortcut: rawShortcutLabel(context, duplicateKeys),
                 onPressed: duplicate,
               ),
               const RawMenuEntry.divider(),

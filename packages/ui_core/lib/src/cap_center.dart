@@ -51,12 +51,12 @@ import 'internal/label_line.dart';
 /// the move (or clips nothing round the entry).
 ///
 /// ```dart
-/// DesignCapCenter(capHeightFactor: 0.711, child: Text('Save'))
+/// RawCapCenter(capHeightFactor: 0.711, child: Text('Save'))
 /// ```
-class DesignCapCenter extends SingleChildRenderObjectWidget {
+class RawCapCenter extends SingleChildRenderObjectWidget {
   /// Draws [child], a one-line label or text entry, with its capitals on its
   /// box's middle.
-  const DesignCapCenter({
+  const RawCapCenter({
     super.key,
     required this.capHeightFactor,
     required Widget super.child,
@@ -74,14 +74,11 @@ class DesignCapCenter extends SingleChildRenderObjectWidget {
   final double capHeightFactor;
 
   @override
-  RenderDesignCapCenter createRenderObject(BuildContext context) =>
-      RenderDesignCapCenter(capHeightFactor);
+  RenderCapCenter createRenderObject(BuildContext context) =>
+      RenderCapCenter(capHeightFactor);
 
   @override
-  void updateRenderObject(
-    BuildContext context,
-    RenderDesignCapCenter renderObject,
-  ) {
+  void updateRenderObject(BuildContext context, RenderCapCenter renderObject) {
     renderObject.capHeightFactor = capHeightFactor;
   }
 
@@ -92,14 +89,14 @@ class DesignCapCenter extends SingleChildRenderObjectWidget {
   }
 }
 
-/// The render object of [DesignCapCenter]: keeps its child's size and
+/// The render object of [RawCapCenter]: keeps its child's size and
 /// paints it moved up or down so that its one-line label's capitals sit on
 /// the box's middle.
 ///
 /// Public, as [RenderBaseline] is [Baseline]'s, so that a check reading the
 /// drawn pixels (`DesignLabelCheck` and `DesignRowCheck` in
 /// `package:ui_core_test`) can find the cap center a label is drawn in and
-/// read the [capHeightFactor] it was given. A look writes [DesignCapCenter],
+/// read the [capHeightFactor] it was given. A look writes [RawCapCenter],
 /// never this.
 ///
 /// The move is worked out where it is used (paint, hit testing, transforms),
@@ -108,16 +105,16 @@ class DesignCapCenter extends SingleChildRenderObjectWidget {
 /// is measured once for each layout of its line and kept between those uses;
 /// this box lays out again when the system's fonts change, as the label
 /// does.
-class RenderDesignCapCenter extends RenderProxyBox
+class RenderCapCenter extends RenderProxyBox
     with RelayoutWhenSystemFontsChangeMixin {
   /// Draws its child's label with its capitals on its middle, at
   /// [capHeightFactor] of its font size.
-  RenderDesignCapCenter(this._capHeightFactor);
+  RenderCapCenter(this._capHeightFactor);
 
   double _capHeightFactor;
 
   /// The label's cap height as a fraction of its font size
-  /// ([DesignCapCenter.capHeightFactor]).
+  /// ([RawCapCenter.capHeightFactor]).
   double get capHeightFactor => _capHeightFactor;
   set capHeightFactor(double value) {
     if (value == _capHeightFactor) return;

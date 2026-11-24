@@ -130,7 +130,7 @@ Future<void> _screenChecks(WidgetTester tester) async {
       .verify();
   const DesignTapTargetCheck(
     look: 'Comic',
-    input: DesignInput.pointer,
+    input: RawInput.pointer,
   ).check(tester.element(find.byType(SettingsScreen))).verify();
   final report = await const DesignShadowClipCheck(look: 'Comic').check(
     tester.element(find.byType(SettingsScreen)),

@@ -5,18 +5,15 @@ import 'package:ui_core/inventory.dart';
 import 'behaviour_harness.dart';
 
 // Every row answered: the B rows live, the rest gaps with a reason.
-List<DesignInventoryEntry> _complete() => [
-  for (final row in DesignInventoryRow.all)
+List<RawInventoryEntry> _complete() => [
+  for (final row in RawInventoryRow.all)
     row.isBehaviour
-        ? DesignInventoryEntry.present(
-            row.id,
-            (context) => Text('live ${row.id}'),
-          )
-        : DesignInventoryEntry.absent(row.id, 'Out of this look\'s vocabulary'),
+        ? RawInventoryEntry.present(row.id, (context) => Text('live ${row.id}'))
+        : RawInventoryEntry.absent(row.id, 'Out of this look\'s vocabulary'),
 ];
 
-DesignInventory _bare(List<DesignInventoryEntry> entries) =>
-    DesignInventory(look: 'Bare', entries: entries);
+RawInventory _bare(List<RawInventoryEntry> entries) =>
+    RawInventory(look: 'Bare', entries: entries);
 
 // A look's classes, as small as a class can be.
 /// A look's button.
@@ -41,7 +38,7 @@ void main() {
   test(
     'the rows: 89, ids unique labels, every group known, the B rows named',
     () {
-      final rows = DesignInventoryRow.all;
+      final rows = RawInventoryRow.all;
       expect(rows, hasLength(89));
       expect(rows.map((r) => r.id).toSet(), hasLength(89));
       expect(
@@ -50,7 +47,7 @@ void main() {
         reason: 'an id reads as a component\'s name',
       );
       expect(
-        rows.every((r) => DesignInventoryRow.groups.contains(r.group)),
+        rows.every((r) => RawInventoryRow.groups.contains(r.group)),
         isTrue,
       );
       // 0.3.0: 26, and the overlays' tooltip and context menu; the routes'
@@ -82,13 +79,10 @@ void main() {
         'ToggleGroup',
         'Sheet',
       ]) {
-        expect(DesignInventoryRow.byId(id), isNotNull, reason: id);
+        expect(RawInventoryRow.byId(id), isNotNull, reason: id);
       }
-      expect(
-        DesignInventoryRow.byId('InputOtp'),
-        same(DesignInventoryRow.inputOtp),
-      );
-      expect(DesignInventoryRow.byId('otp'), isNull);
+      expect(RawInventoryRow.byId('InputOtp'), same(RawInventoryRow.inputOtp));
+      expect(RawInventoryRow.byId('otp'), isNull);
     },
   );
 
@@ -104,20 +98,20 @@ void main() {
   test('it names every way an inventory is wrong', () {
     final entries = _complete()
       ..removeWhere((e) => e.row == 'FloatingActionButton' || e.row == 'Kbd')
-      ..add(const DesignInventoryEntry('Kbd'))
-      ..add(DesignInventoryEntry('Link', builder: (_) => const Text('x')))
+      ..add(const RawInventoryEntry('Kbd'))
+      ..add(RawInventoryEntry('Link', builder: (_) => const Text('x')))
       ..add(
-        DesignInventoryEntry(
+        RawInventoryEntry(
           'Meter',
           builder: (_) => const Text('x'),
           absentReason: 'both',
         ),
       )
-      ..add(const DesignInventoryEntry.absent('CarouselView', 'Not built yet'))
-      ..add(const DesignInventoryEntry.absent('Tooltip', 'TODO'))
-      ..add(const DesignInventoryEntry.absent('fancyThing', 'unknown'))
-      ..add(const DesignInventoryEntry.absent('fab', 'An old id'));
-    final inventory = DesignInventory(look: 'Broken', entries: entries);
+      ..add(const RawInventoryEntry.absent('CarouselView', 'Not built yet'))
+      ..add(const RawInventoryEntry.absent('Tooltip', 'TODO'))
+      ..add(const RawInventoryEntry.absent('fancyThing', 'unknown'))
+      ..add(const RawInventoryEntry.absent('fab', 'An old id'));
+    final inventory = RawInventory(look: 'Broken', entries: entries);
     final problems = inventory.problems.join('\n');
     expect(problems, contains('FloatingActionButton: missing'));
     expect(
@@ -136,7 +130,7 @@ void main() {
     expect(
       inventory.verify,
       throwsA(
-        isA<DesignInventoryError>().having(
+        isA<RawInventoryError>().having(
           (e) => e.toString(),
           'message',
           contains('Broken inventory'),
@@ -146,7 +140,7 @@ void main() {
   });
 
   test('a real reason with a soft word in it is a reason', () {
-    const entry = DesignInventoryEntry.absent(
+    const entry = RawInventoryEntry.absent(
       'FloatingActionButton',
       'Material vocabulary; a later Material spec moved it to the app bar',
     );
@@ -157,14 +151,11 @@ void main() {
     expect(inventory.problems, isEmpty);
   });
 
-  List<DesignInventoryEntry> answer(Map<String, WidgetBuilder> present) => [
-    for (final row in DesignInventoryRow.all)
+  List<RawInventoryEntry> answer(Map<String, WidgetBuilder> present) => [
+    for (final row in RawInventoryRow.all)
       present.containsKey(row.id)
-          ? DesignInventoryEntry.present(row.id, present[row.id]!)
-          : DesignInventoryEntry.absent(
-              row.id,
-              'Out of this look\'s vocabulary',
-            ),
+          ? RawInventoryEntry.present(row.id, present[row.id]!)
+          : RawInventoryEntry.absent(row.id, 'Out of this look\'s vocabulary'),
   ];
 
   test('a specimen may be any class: the inventory names none', () {
@@ -188,7 +179,7 @@ void main() {
         }).where((e) => e.row != 'Card').toList(),
       );
       await tester.pumpWidget(
-        harness(DesignInventoryGallery(inventory: inventory)),
+        harness(RawInventoryGallery(inventory: inventory)),
       );
       expect(find.text('Actions (1/8)'), findsOneWidget);
       expect(
@@ -217,10 +208,7 @@ void main() {
   testWidgets('a gallery of the behaviour rows only', (tester) async {
     await tester.pumpWidget(
       harness(
-        DesignInventoryGallery(
-          inventory: _bare(_complete()),
-          behaviourOnly: true,
-        ),
+        RawInventoryGallery(inventory: _bare(_complete()), behaviourOnly: true),
       ),
     );
     expect(find.text('live ToggleGroup'), findsOneWidget);

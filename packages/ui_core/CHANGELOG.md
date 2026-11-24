@@ -1,3 +1,110 @@
+## 0.6.0
+
+- `RawPage<T>` is a page of a look's screens in a `Navigator`'s page list (a router's page builder), as Material's `MaterialPage` is a Material app's, and `RawPageRoute<T>` is its route for `Navigator.push`, as `MaterialPageRoute` is. Each plays the look's `PageTransitionsBuilder` (`transitionsBuilder`), wrapped once in iOS's swipe back, on iOS only (a `SwipeBackPageTransitionsBuilder` given already plays as it is), and under Reduce Motion fades the page in and out in its place. A router that gives the same key a new page rebuilds the screen in place, its state kept. A full-screen dialog page (`fullscreenDialog`) does not move the page under it. An app no longer writes its own `PageRoute` with a platform switch, the swipe and the fade.
+- `RawBottomSheetPage<T>` puts a `RawBottomSheetRoute` in a page list, so a sheet joins a router's pages; its pop leaves the list as the navigator's `onDidRemovePage` says. The route reads the page it holds now for `builder`, `semanticLabel` and `barrierDismissible`.
+- `RoutePresentation` and `RoutePresentationScope` are exported from `package:ui_core/ui_core.dart` (they were in `host.dart` alone, which still exports them). `RoutePresentation.of` reads a full-screen dialog page and a popup (a sheet, a dialog) raised over a page as a `sheet`, whose bar closes it, as Material's `AppBar` does; it read them as `pushed`. A published `RoutePresentationScope` still wins, and a root and a pushed page read as before. `RoutePresentation.dismissLabel(context)` gives the words of the screen's back or close control in the app's language: `RawWidgetsLocalizations.backButtonTooltip` on a pushed page, `closeButtonLabel` on a sheet, none on a root.
+- `RawTabGroup.maybeOf<T>(context)` gives the nearest tab group round a part, or null outside one, with its `groupValue`, `onChanged` and `orientation`, as Flutter's `RadioGroup.maybeOf` gives a radio group. The part builds again when they change.
+- `RawModalRoute.closeOnEscape`, and `RawModalDialogRoute`'s: false leaves Escape to the page (a form that asks first, an editor whose Escape is its own), and Escape that nothing in the page takes does nothing. Android's back, a barrier tap and `RawModalDetails.close` still close the route. True by default, as before.
+- `RawCalendarDatePicker`'s days are tap targets at least the look's `RawTapTargets` floor tall (44 by 44 for a finger, 24 by 24 for a pointer, unless the look sets its own), as wide as their column: a small day face no longer makes a small target. The face is centred in its target, a tap anywhere in the target picks the day, and the day's one node spans it. A row too narrow for seven floors keeps each day its seventh. A look whose day face draws the grid's rules (borders that meet the next row's) builds the face at its floor's height (`RawTapTargets.of(context).floorOn()`), or the rules gap between rows.
+- `RawCalendarDayDetails.label`: a day's number in the app's digits (`RawWidgetsLocalizations.formatDecimal`: English's 20, Arabic's ٢٠), as Material's day picker writes it. A day builder paints `day.label`; `'${day.date.day}'` stays in ASCII digits in every language. `RawCalendarController.dayOf` takes it as `label`, and a day made without one reads its number in ASCII digits. The month's header (`RawCalendarHeaderDetails.label`, from `formatMonthYear`) already writes its year in the app's digits.
+- **Renamed:** the public names that still began with `Design` take `Raw` names, as 0.4.0's did: 89 in all (the table below), `package:ui_core/inventory.dart` and `package:ui_core/host.dart` included. Four take another name where `Raw` would clash or read wrongly: `DesignDialogRoute` is `RawModalDialogRoute` (Flutter has a `RawDialogRoute`), `RenderDesignCapCenter` and `RenderDesignSemanticsProxy` are `RenderCapCenter` and `RenderSemanticsProxy` (render objects take no `Raw`), and `showDesignCommandPalette` is `showRawCommandPalette`. Each old name stays through 0.6 as a deprecated typedef, function or constant of its new one, and `dart fix --apply` renames it (`lib/fix_data.yaml`). `DesignSpringDrive`, an extension, has no alias: it stays as a deprecated extension whose `springTo` runs `RawSpringDrive`'s, and `RawSpringDrive` is the one a call takes wherever both are in scope. A name in a string (a test that finds a widget by its type's name, `'DesignCapCenter'`) is renamed by hand. ui_core_test's checks keep their names.
+- A package that re-exports ui_core names with `show` (`export 'package:ui_core/ui_core.dart' show …`) runs `dart fix --apply` and then renames what is left by hand, by the table below. dart fix renames a name only in a file that imports ui_core, or a published look's library, itself; it follows no re-export. So it renames the name in the package's own `show`, but not in the package's files that take the name through that `show`, and those files then name something the `show` no longer gives.
+- **Removed:** the names 0.4.0 deprecated: its 147 rename typedefs (0.4.0's table), `DesignRadioGroup` and `DesignRadioItemBuilder` (Flutter's `RadioGroup` with `RawRadio` and `RadioGroupKeyboardFix`), and `DesignTooltip` (Flutter's `RawTooltip` with `RawTooltipFocusFix` and `RawTooltipPlacement`). `dart fix --apply` still renames the 147. `DesignLocalizations` stays deprecated through 0.6; use `RawWidgetsLocalizations`.
+
+### The 0.6.0 renames
+
+| 0.5 name | 0.6 name |
+|---|---|
+| `DesignAdaptiveShell` | `RawAdaptiveShell` |
+| `DesignBandScale` | `RawBandScale` |
+| `DesignBarrierBuilder` | `RawBarrierBuilder` |
+| `DesignBranchBackBehavior` | `RawBranchBackBehavior` |
+| `DesignCapCenter` | `RawCapCenter` |
+| `DesignChart` | `RawChart` |
+| `DesignChartBuilder` | `RawChartBuilder` |
+| `DesignChartDetails` | `RawChartDetails` |
+| `DesignChartFormat` | `RawChartFormat` |
+| `DesignChartPoint` | `RawChartPoint` |
+| `DesignChartPointRef` | `RawChartPointRef` |
+| `DesignChartSeries` | `RawChartSeries` |
+| `DesignChartTable` | `RawChartTable` |
+| `DesignChartTableCellBuilder` | `RawChartTableCellBuilder` |
+| `DesignChartTableCellDetails` | `RawChartTableCellDetails` |
+| `DesignChartValueBuilder` | `RawChartValueBuilder` |
+| `DesignChartValueFormat` | `RawChartValueFormat` |
+| `DesignChartXAxis` | `RawChartXAxis` |
+| `DesignComboboxField` | `RawComboboxField` |
+| `DesignComboboxFieldBuilder` | `RawComboboxFieldBuilder` |
+| `DesignControlBox` | `RawControlBox` |
+| `DesignDensity` | `RawDensity` |
+| `DesignDestinationBuilder` | `RawDestinationBuilder` |
+| `DesignDestinationDetails` | `RawDestinationDetails` |
+| `DesignDialogBuilder` | `RawDialogBuilder` |
+| `DesignDialogDetails` | `RawDialogDetails` |
+| `DesignDialogRoute` | `RawModalDialogRoute` |
+| `DesignForm` | `RawForm` |
+| `DesignFormField` | `RawFormField` |
+| `DesignFormState` | `RawFormState` |
+| `DesignHandleBuilder` | `RawHandleBuilder` |
+| `DesignHaptics` | `RawHaptics` |
+| `DesignHapticsScope` | `RawHapticsScope` |
+| `DesignInput` | `RawInput` |
+| `DesignInputGroup` | `RawInputGroup` |
+| `DesignInputGroupBuilder` | `RawInputGroupBuilder` |
+| `DesignInventory` | `RawInventory` |
+| `DesignInventoryEntry` | `RawInventoryEntry` |
+| `DesignInventoryError` | `RawInventoryError` |
+| `DesignInventoryGallery` | `RawInventoryGallery` |
+| `DesignInventoryGroupBuilder` | `RawInventoryGroupBuilder` |
+| `DesignInventoryRow` | `RawInventoryRow` |
+| `DesignInventoryRowBuilder` | `RawInventoryRowBuilder` |
+| `DesignKeylineFace` | `RawKeylineFace` |
+| `DesignKeylineRegion` | `RawKeylineRegion` |
+| `DesignLinearScale` | `RawLinearScale` |
+| `DesignListDetail` | `RawListDetail` |
+| `designMatchScore` | `rawMatchScore` |
+| `DesignMotionPolicy` | `RawMotionPolicy` |
+| `DesignNavigationBuilder` | `RawNavigationBuilder` |
+| `DesignNavigationDestination` | `RawNavigationDestination` |
+| `DesignNavigationDetails` | `RawNavigationDetails` |
+| `DesignNavigationMode` | `RawNavigationMode` |
+| `DesignOptionSearch` | `RawOptionSearch` |
+| `DesignOverlayAnchor` | `RawOverlayAnchor` |
+| `DesignOverlayAnchorBuilder` | `RawOverlayAnchorBuilder` |
+| `DesignPieChart` | `RawPieChart` |
+| `DesignPieChartBuilder` | `RawPieChartBuilder` |
+| `DesignPieChartDetails` | `RawPieChartDetails` |
+| `DesignPieSlice` | `RawPieSlice` |
+| `DesignPieSliceDetails` | `RawPieSliceDetails` |
+| `designReduceMotionOf` | `rawReduceMotionOf` |
+| `DesignScale` | `RawScale` |
+| `DesignScaleTick` | `RawScaleTick` |
+| `DesignScrollbarVisibility` | `RawScrollbarVisibility` |
+| `designShortcutKeys` | `rawShortcutKeys` |
+| `designShortcutLabel` | `rawShortcutLabel` |
+| `DesignSpacing` | `RawSpacing` |
+| `DesignSpacingScope` | `RawSpacingScope` |
+| `designSpring` | `rawSpring` |
+| `DesignSpringDrive` | `RawSpringDrive` |
+| `designSpringSimulation` | `rawSpringSimulation` |
+| `designSpringTolerance` | `rawSpringTolerance` |
+| `DesignStyle` | `RawStyle` |
+| `DesignStyleOf` | `RawStyleOf` |
+| `designSwipeBack` | `rawSwipeBack` |
+| `DesignTapTargets` | `RawTapTargets` |
+| `DesignTapTargetScope` | `RawTapTargetScope` |
+| `DesignTextEntryBox` | `RawTextEntryBox` |
+| `DesignTimeScale` | `RawTimeScale` |
+| `DesignTree` | `RawTree` |
+| `DesignTreeController` | `RawTreeController` |
+| `DesignTreeItem` | `RawTreeItem` |
+| `DesignTreeRow` | `RawTreeRow` |
+| `DesignValueHandle` | `RawValueHandle` |
+| `DesignWindowSizeClass` | `RawWindowSizeClass` |
+| `RenderDesignCapCenter` | `RenderCapCenter` |
+| `RenderDesignSemanticsProxy` | `RenderSemanticsProxy` |
+| `showDesignCommandPalette` | `showRawCommandPalette` |
+
 ## 0.5.6
 
 - `DesignAdaptiveShell` keeps the toasts clear of its navigation only as a bar, as `Scaffold` keeps a snackbar above its `bottomNavigationBar` alone. A rail or a sidebar under an app's top bar reached the window's bottom edge and not its top, so `RawToasterKeepClear` took it for a bottom bar as tall as the window less the top bar, and the toasts stood at the top of the window, half under the top bar; they now stand where they would with no navigation. A bar keeps them above it as before.

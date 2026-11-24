@@ -134,7 +134,7 @@ Widget _label(
   String text, {
   double size = 14,
   Color colour = const Color(0xFF101010),
-}) => DesignCapCenter(
+}) => RawCapCenter(
   capHeightFactor: _roboto,
   child: Text(
     text,
@@ -1138,10 +1138,10 @@ void main() {
     );
   });
 
-  testWidgets('a face marked with DesignKeylineFace is taken as it is', (
+  testWidgets('a face marked with RawKeylineFace is taken as it is', (
     tester,
   ) async {
-    final glass = DesignKeylineFace(
+    final glass = RawKeylineFace(
       child: _face(
         fill: const Color(0xFFC9D1DE),
         ring: const Color(0xFFF1F3F7),
@@ -2099,7 +2099,7 @@ void main() {
       await _checkRow(
         tester,
         ladder,
-        wrap: (row) => DesignKeylineRegion(
+        wrap: (row) => RawKeylineRegion(
           mixedHeights: 'one button per size, side by side on purpose',
           child: row,
         ),
@@ -2111,7 +2111,7 @@ void main() {
         tester,
         ladder,
         wrap: (row) =>
-            DesignKeylineRegion(mixedHeights: 'TODO level these', child: row),
+            RawKeylineRegion(mixedHeights: 'TODO level these', child: row),
       ),
       [
         'a row of a button "S", a button "M" and a button "L": "TODO level '
@@ -2198,7 +2198,7 @@ void main() {
                                 alignment: AlignmentDirectional.centerStart,
                                 child: Padding(
                                   padding: EdgeInsets.only(top: nudge),
-                                  child: DesignCapCenter(
+                                  child: RawCapCenter(
                                     capHeightFactor: _roboto,
                                     child: TextField(
                                       controller: controller,

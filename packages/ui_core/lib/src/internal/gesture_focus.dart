@@ -78,7 +78,7 @@ class GestureFocus {
           return;
         }
         _navigator = null;
-        DesignQuietFocus.restore(scope);
+        RawQuietFocus.restore(scope);
       }, debugLabel: 'GestureFocus')
       ..ensureVisualUpdate();
   }

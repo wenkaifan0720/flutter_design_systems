@@ -28,7 +28,7 @@ bool reduceMotionNow(BuildContext context) {
 /// and [presence], the same spring unclamped, so a panel shows an
 /// underdamped token's overshoot. Closing (to 0) runs on the close token,
 /// the open token unless the route gives its own. Under Reduce Motion the
-/// route fades on the effects spring instead ([DesignMotionPolicy.effects]).
+/// route fades on the effects spring instead ([RawMotionPolicy.effects]).
 class RouteSpring {
   /// The motion of a route whose token is ([dampingRatio], [stiffness]),
   /// closing on ([closeDampingRatio], [closeStiffness]) when given.
@@ -74,7 +74,7 @@ class RouteSpring {
   /// spring.
   SpringDescription springAt(BuildContext context, {bool closing = false}) {
     reduced = reduceMotionNow(context);
-    final policy = DesignMotionPolicy(reduceMotion: reduced);
+    final policy = RawMotionPolicy(reduceMotion: reduced);
     final zeta = closing ? closeDampingRatio : dampingRatio;
     final k = closing ? closeStiffness : stiffness;
     return reduced
@@ -92,7 +92,7 @@ class RouteSpring {
     double? velocity,
   }) {
     final c = _controller!;
-    return _simulation = designSpringSimulation(
+    return _simulation = rawSpringSimulation(
       springAt(context, closing: to <= 0),
       from: c.value,
       to: to,
@@ -156,7 +156,7 @@ class RouteFocusReturn {
     final node = _opener;
     _opener = null;
     if (node == null || node.context == null || !node.canRequestFocus) return;
-    DesignQuietFocus.restore(node);
+    RawQuietFocus.restore(node);
   }
 }
 
@@ -170,10 +170,21 @@ class RouteFocusReturn {
 /// stays theirs. Place it at the top of the route's page, under the route's
 /// focus scope and no other.
 Widget escapeCloses(BuildContext context, Widget child) =>
-    _EscapeCloses(child: child);
+    _EscapeCloses(closes: true, child: child);
+
+/// [child] with Escape leaving its route open, for a route whose own
+/// controls must answer it: Escape does nothing however the focus sits, the
+/// route's barrier dismissing or not, and Escape that something in the
+/// route handles (a list's, a field's) stays theirs. Back (`maybePop`)
+/// still closes the route. Place it where [escapeCloses] would go.
+Widget escapeKept(BuildContext context, Widget child) =>
+    _EscapeCloses(closes: false, child: child);
 
 class _EscapeCloses extends StatefulWidget {
-  const _EscapeCloses({required this.child});
+  const _EscapeCloses({required this.closes, required this.child});
+
+  // Whether Escape closes the route; else it is taken and does nothing.
+  final bool closes;
 
   final Widget child;
 
@@ -232,16 +243,18 @@ class _EscapeClosesState extends State<_EscapeCloses> {
         !route.isCurrent) {
       return KeyEventResult.ignored;
     }
-    unawaited(Navigator.of(context).maybePop());
+    if (widget.closes) unawaited(Navigator.of(context).maybePop());
     return KeyEventResult.handled;
   }
 
   @override
   Widget build(BuildContext context) => Actions(
     actions: {
-      DismissIntent: CallbackAction<DismissIntent>(
-        onInvoke: (_) => Navigator.of(context).maybePop(),
-      ),
+      DismissIntent: widget.closes
+          ? CallbackAction<DismissIntent>(
+              onInvoke: (_) => Navigator.of(context).maybePop(),
+            )
+          : DoNothingAction(),
     },
     child: widget.child,
   );

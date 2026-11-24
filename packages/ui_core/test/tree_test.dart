@@ -16,7 +16,7 @@ const Map<String, List<String>> _files = {
 
 final Map<String, Set<WidgetState>> _states = {};
 
-DesignTreeController<String> _controller() => DesignTreeController(
+RawTreeController<String> _controller() => RawTreeController(
   roots: const ['src', 'test', 'README.md'],
   childrenOf: (node) => _files[node] ?? const [],
 );
@@ -24,13 +24,13 @@ DesignTreeController<String> _controller() => DesignTreeController(
 // The bare reference painter: the name indented 16 px a level, a sign for
 // open and closed folders.
 Widget _tree(
-  DesignTreeController<String> c, {
+  RawTreeController<String> c, {
   ValueChanged<String>? onActivate,
   TextDirection direction = TextDirection.ltr,
 }) => harness(_view(c, onActivate: onActivate), textDirection: direction);
 
 Widget _view(
-  DesignTreeController<String> c, {
+  RawTreeController<String> c, {
   ValueChanged<String>? onActivate,
 }) => Align(
   alignment: AlignmentDirectional.topStart,
@@ -40,7 +40,7 @@ Widget _view(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        DesignTree<String>(
+        RawTree<String>(
           controller: c,
           labelOf: (node) => node,
           onActivate: onActivate,
@@ -60,7 +60,7 @@ Widget _view(
   ),
 );
 
-late DesignTreeController<String> _tc;
+late RawTreeController<String> _tc;
 
 bool _lit(String node) => _states[node]?.contains(WidgetState.focused) ?? false;
 
@@ -82,8 +82,8 @@ void main() {
       Tristate.isTrue;
 
   behaviourContract(
-    'DesignTree',
-    build: (c) => Owned<DesignTreeController<String>>(
+    'RawTree',
+    build: (c) => Owned<RawTreeController<String>>(
       create: () => _tc = _controller(),
       builder: (context, c) => _view(c),
     ),
@@ -97,7 +97,7 @@ void main() {
       isExpanded: false,
     ),
     hidden: const ['+ src', '- src'],
-    root: () => find.byType(DesignTree<String>),
+    root: () => find.byType(RawTree<String>),
     noDisabledState: 'a tree is never disabled; a look greys a row',
     keyboard: (p) async {
       final t = p.tester;

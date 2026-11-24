@@ -20,9 +20,9 @@ import 'focus_visible.dart';
 /// An option taken from the list, as a [RawAutocomplete]'s `onSelected` gets
 /// it: a new object each time, so the autocomplete never skips an option it
 /// took before (it compares with the last), and always closes the list.
-class DesignPick {
+class RawPick {
   /// Takes [option].
-  DesignPick(this.option);
+  RawPick(this.option);
 
   /// The option taken.
   final Object option;
@@ -37,7 +37,7 @@ class DesignPick {
 /// of them pass over a disabled option. On a closed list each opens it
 /// without moving, and its highlight starts where the list's `start` says (a
 /// combobox's value). Home, End and letters stay with the text.
-class DesignListKeys {
+class RawListKeys {
   _KeyedRows? _list;
   bool _shown = false;
   BuildContext? _field;
@@ -128,7 +128,7 @@ class DesignListKeys {
   // the user's: the list closes again before it is built, and Down, a press
   // or typing opens it.
   void _focusChanged(bool focused) {
-    if (!focused || DesignFocusVisible.arrival != DesignFocusArrival.restore) {
+    if (!focused || RawFocusVisible.arrival != RawFocusArrival.restore) {
       return;
     }
     // After the autocomplete has heard the focus too.
@@ -147,7 +147,7 @@ class DesignListKeys {
   // While the list is open, the field's route holds this: a system back
   // (Android's button or gesture) closes the list as Escape does, focus
   // staying in the field, and the page stays; the next back pops the page.
-  late final DesignBackHold _back = DesignBackHold(() {
+  late final RawBackHold _back = RawBackHold(() {
     const intent = DismissIntent();
     final field = _field;
     if (!isOpen || field == null || !field.mounted) return;
@@ -242,7 +242,7 @@ class DesignListKeys {
 class _Surface extends StatefulWidget {
   const _Surface({required this.keys, required this.child});
 
-  final DesignListKeys keys;
+  final RawListKeys keys;
   final Widget child;
 
   @override
@@ -278,7 +278,7 @@ class _SurfaceState extends State<_Surface> {
 class _ListKeyAction<I extends Intent> extends ContextAction<I> {
   _ListKeyAction(this.keys, this.move);
 
-  final DesignListKeys keys;
+  final RawListKeys keys;
   final void Function(_KeyedRows list) move;
 
   // Open: these keys move it. Closed: as the autocomplete's, which opens it
@@ -317,7 +317,7 @@ class _ListKeyAction<I extends Intent> extends ContextAction<I> {
 class _DismissAction extends ContextAction<DismissIntent> {
   _DismissAction(this.keys);
 
-  final DesignListKeys keys;
+  final RawListKeys keys;
 
   @override
   bool isEnabled(DismissIntent intent, [BuildContext? context]) =>
@@ -338,10 +338,10 @@ class _DismissAction extends ContextAction<DismissIntent> {
 /// and a tag input show under their field, as a [RawAutocomplete]'s options
 /// view. [keys] move the highlight; the item under it scrolls into view and
 /// is announced.
-class DesignOptionList<T extends Object> extends StatefulWidget {
+class RawOptionList<T extends Object> extends StatefulWidget {
   /// A list of [options]; a tap or Enter on an enabled one calls
   /// [onSelected].
-  const DesignOptionList({
+  const RawOptionList({
     super.key,
     required this.keys,
     required this.options,
@@ -358,7 +358,7 @@ class DesignOptionList<T extends Object> extends StatefulWidget {
   });
 
   /// The keys that move the highlight and take the highlighted option.
-  final DesignListKeys keys;
+  final RawListKeys keys;
 
   /// The options shown.
   final List<T> options;
@@ -397,7 +397,7 @@ class DesignOptionList<T extends Object> extends StatefulWidget {
   final String? semanticLabel;
 
   @override
-  State<DesignOptionList<T>> createState() => _OptionListState<T>();
+  State<RawOptionList<T>> createState() => _OptionListState<T>();
 }
 
 // What the keys move through: a list's options, or a failed search's one
@@ -410,12 +410,12 @@ abstract class _KeyedRows {
   void _restart();
 }
 
-class _OptionListState<T extends Object> extends State<DesignOptionList<T>>
+class _OptionListState<T extends Object> extends State<RawOptionList<T>>
     implements _KeyedRows {
   late int _highlighted = widget.start;
   int? _announced;
 
-  final DesignRowReveal _reveal = DesignRowReveal();
+  final RawRowReveal _reveal = RawRowReveal();
   // The row last brought into view for the highlight.
   late int _shownRow = _highlighted;
 
@@ -430,7 +430,7 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>>
   }
 
   @override
-  void didUpdateWidget(DesignOptionList<T> oldWidget) {
+  void didUpdateWidget(RawOptionList<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.keys, widget.keys)) {
       oldWidget.keys._detach(this);
@@ -511,7 +511,7 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>>
         widget.options[highlighted],
       );
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) designAnnounce(context, message);
+        if (mounted) rawAnnounce(context, message);
       });
     }
     _announced = highlighted;
@@ -570,7 +570,7 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>>
 /// first scrolled to where the rows measured so far put it, then shown
 /// exactly once it is built. Only the list moves, not the scrollables
 /// around it (a command palette on a page).
-class DesignRowReveal {
+class RawRowReveal {
   /// The list's scrolling.
   final ScrollController controller = ScrollController();
 
@@ -651,7 +651,7 @@ class _RevealRow extends StatefulWidget {
     required this.child,
   });
 
-  final DesignRowReveal reveal;
+  final RawRowReveal reveal;
   final int index;
   final Widget child;
 
@@ -697,7 +697,7 @@ class _RevealRowState extends State<_RevealRow> {
 /// A search as a combobox or a tag input runs it: after its debounce, the
 /// latest query's result only (an earlier one that arrives late is
 /// dropped), and a failure kept for the list to show.
-class DesignSearchRun<T extends Object> extends ChangeNotifier {
+class RawSearchRun<T extends Object> extends ChangeNotifier {
   String _query = '';
   bool _loading = false;
   List<T> _found = const [];
@@ -707,7 +707,7 @@ class DesignSearchRun<T extends Object> extends ChangeNotifier {
   int _retries = 0;
   Timer? _wait;
   Completer<void>? _waiting;
-  DesignOptionSearch<T>? _search;
+  RawOptionSearch<T>? _search;
   bool _dropped = false;
   bool _disposed = false;
 
@@ -740,7 +740,7 @@ class DesignSearchRun<T extends Object> extends ChangeNotifier {
   /// [FlutterError.reportError]).
   Future<List<T>?> run(
     String query,
-    DesignOptionSearch<T> search, {
+    RawOptionSearch<T> search, {
     Duration? debounce,
     bool report = false,
   }) async {
@@ -837,7 +837,7 @@ void _report(Object error, StackTrace stackTrace) => FlutterError.reportError(
 
 /// The list's surface while a search is pending: [builder]'s painting, read
 /// as [RawWidgetsLocalizations.loadingLabel], as it appears.
-Widget designSearchLoading(
+Widget rawSearchLoading(
   BuildContext context,
   WidgetBuilder builder,
   RawOptionsSurfaceBuilder? surfaceBuilder,
@@ -858,9 +858,9 @@ Widget designSearchLoading(
 /// there, Enter runs [retry]); a screen reader hears
 /// [RawWidgetsLocalizations.searchFailedMessage] as it appears, and the focus
 /// stays in the field.
-class DesignSearchFailure extends StatefulWidget {
+class RawSearchFailure extends StatefulWidget {
   /// A failure of [error], with [retry].
-  const DesignSearchFailure({
+  const RawSearchFailure({
     super.key,
     required this.keys,
     required this.error,
@@ -871,7 +871,7 @@ class DesignSearchFailure extends StatefulWidget {
   });
 
   /// The keys that reach "Try again".
-  final DesignListKeys keys;
+  final RawListKeys keys;
 
   /// What the search threw.
   final Object error;
@@ -889,10 +889,10 @@ class DesignSearchFailure extends StatefulWidget {
   final RawOptionsSurfaceBuilder? surfaceBuilder;
 
   @override
-  State<DesignSearchFailure> createState() => _SearchFailureState();
+  State<RawSearchFailure> createState() => _SearchFailureState();
 }
 
-class _SearchFailureState extends State<DesignSearchFailure>
+class _SearchFailureState extends State<RawSearchFailure>
     implements _KeyedRows {
   bool _lit = false;
 
@@ -902,7 +902,7 @@ class _SearchFailureState extends State<DesignSearchFailure>
     widget.keys._attach(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        designAnnounce(
+        rawAnnounce(
           context,
           RawWidgetsLocalizations.of(context).searchFailedMessage,
         );
@@ -911,7 +911,7 @@ class _SearchFailureState extends State<DesignSearchFailure>
   }
 
   @override
-  void didUpdateWidget(DesignSearchFailure oldWidget) {
+  void didUpdateWidget(RawSearchFailure oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.keys, widget.keys)) {
       oldWidget.keys._detach(this);
@@ -930,10 +930,7 @@ class _SearchFailureState extends State<DesignSearchFailure>
   void _light() {
     if (_lit) return;
     setState(() => _lit = true);
-    designAnnounce(
-      context,
-      RawWidgetsLocalizations.of(context).retryButtonLabel,
-    );
+    rawAnnounce(context, RawWidgetsLocalizations.of(context).retryButtonLabel);
   }
 
   @override
@@ -978,21 +975,21 @@ class _SearchFailureState extends State<DesignSearchFailure>
 
 /// Keeps a live list's search while it shows, and drops a pending one when
 /// it closes.
-class DesignSearchScope extends StatefulWidget {
+class RawSearchScope extends StatefulWidget {
   /// [child], over [run].
-  const DesignSearchScope({super.key, required this.run, required this.child});
+  const RawSearchScope({super.key, required this.run, required this.child});
 
   /// The search.
-  final DesignSearchRun<Object> run;
+  final RawSearchRun<Object> run;
 
   /// The list.
   final Widget child;
 
   @override
-  State<DesignSearchScope> createState() => _SearchScopeState();
+  State<RawSearchScope> createState() => _SearchScopeState();
 }
 
-class _SearchScopeState extends State<DesignSearchScope> {
+class _SearchScopeState extends State<RawSearchScope> {
   @override
   void initState() {
     super.initState();

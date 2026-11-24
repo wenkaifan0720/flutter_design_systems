@@ -126,8 +126,8 @@ Future<void> _shiftF10(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-DesignHaptics _recording(List<String> log) =>
-    DesignHaptics(longPress: () => log.add('longPress'));
+RawHaptics _recording(List<String> log) =>
+    RawHaptics(longPress: () => log.add('longPress'));
 
 void main() {
   setUp(() {
@@ -240,7 +240,7 @@ void main() {
     ) async {
       final log = <String>[];
       await tester.pumpWidget(
-        _app(DesignHapticsScope(haptics: _recording(log), child: _menu())),
+        _app(RawHapticsScope(haptics: _recording(log), child: _menu())),
       );
       await tester.longPressAt(const Offset(150, 100));
       await tester.pumpAndSettle();
@@ -253,7 +253,7 @@ void main() {
       final log = <String>[];
       await tester.pumpWidget(
         _app(
-          DesignHapticsScope(
+          RawHapticsScope(
             haptics: _recording(log),
             child: _menu(enableFeedback: false),
           ),
@@ -420,21 +420,21 @@ void main() {
     setUp(() {
       calls = [];
       appEnabled = true;
-      DesignBrowserMenu.onWeb = true;
-      DesignBrowserMenu.disable = () async {
+      RawBrowserMenu.onWeb = true;
+      RawBrowserMenu.disable = () async {
         calls.add('off');
         appEnabled = false;
       };
-      DesignBrowserMenu.enable = () async {
+      RawBrowserMenu.enable = () async {
         calls.add('on');
         appEnabled = true;
       };
-      DesignBrowserMenu.enabled = () => appEnabled;
+      RawBrowserMenu.enabled = () => appEnabled;
       addTearDown(() {
-        DesignBrowserMenu.onWeb = kIsWeb;
-        DesignBrowserMenu.disable = BrowserContextMenu.disableContextMenu;
-        DesignBrowserMenu.enable = BrowserContextMenu.enableContextMenu;
-        DesignBrowserMenu.enabled = () => BrowserContextMenu.enabled;
+        RawBrowserMenu.onWeb = kIsWeb;
+        RawBrowserMenu.disable = BrowserContextMenu.disableContextMenu;
+        RawBrowserMenu.enable = BrowserContextMenu.enableContextMenu;
+        RawBrowserMenu.enabled = () => BrowserContextMenu.enabled;
       });
     });
 
@@ -459,7 +459,7 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(calls, ['off', 'on', 'off', 'on']);
-      expect(DesignBrowserMenu.holds, 0);
+      expect(RawBrowserMenu.holds, 0);
     });
 
     testWidgets('two regions hold it as one; an app that shut it keeps it '
@@ -479,7 +479,7 @@ void main() {
       await mouse.addPointer(location: const Offset(700, 500));
       await mouse.moveTo(const Offset(250, 170));
       await tester.pump();
-      expect(DesignBrowserMenu.holds, 2);
+      expect(RawBrowserMenu.holds, 2);
       expect(calls, ['off']);
       await mouse.moveTo(const Offset(20, 20));
       await tester.pump();
@@ -505,7 +505,7 @@ void main() {
       expect(calls, ['off']);
       await tester.pumpWidget(_app(const SizedBox()));
       expect(calls, ['off', 'on']);
-      expect(DesignBrowserMenu.holds, 0);
+      expect(RawBrowserMenu.holds, 0);
     });
   });
 

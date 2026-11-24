@@ -14,7 +14,7 @@ import 'split_view.dart';
 /// A list ([listBuilder]) and the detail of [selectedItem] ([detailBuilder]),
 /// as Compose's ListDetailPaneScaffold.
 ///
-/// Side by side ([sideBySide], or from [DesignWindowSizeClass.expanded]'s
+/// Side by side ([sideBySide], or from [RawWindowSizeClass.expanded]'s
 /// 840 up in its own width), the list [listWidth] wide at the start, the
 /// detail beside it (with nothing chosen, [emptyDetailBuilder]); given a
 /// [dividerBuilder], a [RawSplitView] the reader can resize. Narrow, the
@@ -24,11 +24,11 @@ import 'split_view.dart';
 /// list; wide to narrow with an item chosen, it is pushed.
 ///
 /// ```dart
-/// DesignListDetail<String>(selectedItem: null, onSelectedItemChanged: (item) {}, listBuilder: (context) => const Text('Inbox'), detailBuilder: (context, item) => Text(item), detailRouteBuilder: (builder) => PageRouteBuilder<void>(pageBuilder: (context, _, _) => builder(context)))
+/// RawListDetail<String>(selectedItem: null, onSelectedItemChanged: (item) {}, listBuilder: (context) => const Text('Inbox'), detailBuilder: (context, item) => Text(item), detailRouteBuilder: (builder) => PageRouteBuilder<void>(pageBuilder: (context, _, _) => builder(context)))
 /// ```
-class DesignListDetail<T extends Object> extends StatefulWidget {
+class RawListDetail<T extends Object> extends StatefulWidget {
   /// A list and its chosen item's detail.
-  const DesignListDetail({
+  const RawListDetail({
     super.key,
     required this.selectedItem,
     required this.onSelectedItemChanged,
@@ -72,7 +72,7 @@ class DesignListDetail<T extends Object> extends StatefulWidget {
   final double listWidth;
 
   @override
-  State<DesignListDetail<T>> createState() => _DesignListDetailState<T>();
+  State<RawListDetail<T>> createState() => _DesignListDetailState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -122,10 +122,9 @@ class DesignListDetail<T extends Object> extends StatefulWidget {
   }
 }
 
-class _DesignListDetailState<T extends Object>
-    extends State<DesignListDetail<T>> {
+class _DesignListDetailState<T extends Object> extends State<RawListDetail<T>> {
   // The list keeps its state (its scroll) as the layout changes.
-  final GlobalKey _list = GlobalKey(debugLabel: 'DesignListDetail list');
+  final GlobalKey _list = GlobalKey(debugLabel: 'RawListDetail list');
   Route<void>? _pushed;
   T? _pushedItem;
   bool _wide = false;
@@ -182,8 +181,8 @@ class _DesignListDetailState<T extends Object>
 
   bool _wideAt(double width) =>
       widget.sideBySide ??
-      DesignWindowSizeClass.fromWidth(width).index >=
-          DesignWindowSizeClass.expanded.index;
+      RawWindowSizeClass.fromWidth(width).index >=
+          RawWindowSizeClass.expanded.index;
 
   @override
   Widget build(BuildContext context) {
@@ -213,14 +212,14 @@ class _DesignListDetailState<T extends Object>
     final list = KeyedSubtree(
       key: _list,
       child: Pane(
-        debugLabel: 'DesignListDetail list',
+        debugLabel: 'RawListDetail list',
         child: Builder(builder: widget.listBuilder),
       ),
     );
     if (!_wide) return PaneCycle(child: list);
     final item = widget.selectedItem;
     final Widget detail = Pane(
-      debugLabel: 'DesignListDetail detail',
+      debugLabel: 'RawListDetail detail',
       child: item == null
           ? (widget.emptyDetailBuilder?.call(context) ??
                 const SizedBox.expand())

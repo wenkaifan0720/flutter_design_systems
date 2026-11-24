@@ -142,9 +142,9 @@ class DesignAlignmentMatrix {
   /// and a 14 px field's text sit on one line when their capitals' middles
   /// do, whatever their baselines. They are read as [DesignLabelCheck]
   /// reads them: their baseline where the engine draws it, their height the
-  /// `capHeightFactor` of the [DesignCapCenter] around them, else read from
+  /// `capHeightFactor` of the [RawCapCenter] around them, else read from
   /// their flat-topped capitals' pixels. A look whose labels and entries are
-  /// each wrapped in a [DesignCapCenter] holds them within half a device
+  /// each wrapped in a [RawCapCenter] holds them within half a device
   /// pixel.
   final double drawnTolerance;
 
@@ -573,8 +573,8 @@ typedef DesignTextEntryBuilder = Widget Function(
 /// What the eye compares in a row is the capitals, so the line is read by
 /// them, not by its line box: their baseline where the engine draws it (on
 /// a whole logical pixel below the line's top), their height the
-/// [DesignCapCenter]'s around the field, else the usual 0.7 of its font
-/// size. A field wrapped in a [DesignCapCenter] holds its capitals on its
+/// [RawCapCenter]'s around the field, else the usual 0.7 of its font
+/// size. A field wrapped in a [RawCapCenter] holds its capitals on its
 /// middle whatever its typeface; one centred by its line box sits off by
 /// the typeface's ascent and descent.
 ///
@@ -850,7 +850,7 @@ class _Entry {
     double? laidLine;
     if (typedEditable != null) {
       final b = _TextBox(typedEditable, icon: false).baseline;
-      // Its capitals: the cap height its DesignCapCenter gives, else the
+      // Its capitals: the cap height its RawCapCenter gives, else the
       // usual one; their baseline as laid out, and where the engine draws
       // it (on a whole logical pixel below the line's top).
       final factor =
@@ -1001,9 +1001,9 @@ String _onOrOff(double v) =>
     _px(v).replaceFirst('-', '') == '0' ? 'on it' : _px(v, signed: true);
 
 // The cap center [box] is drawn in, below [root]; null outside one.
-RenderDesignCapCenter? _capCentredIn(RenderObject box, RenderObject root) {
+RenderCapCenter? _capCentredIn(RenderObject box, RenderObject root) {
   for (RenderObject? up = box.parent; up != null; up = up.parent) {
-    if (up case final RenderDesignCapCenter centred) return centred;
+    if (up case final RenderCapCenter centred) return centred;
     if (identical(up, root)) break;
   }
   return null;

@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 /// Focus given back by ui_core, which a field's list does not open on.
-abstract final class DesignQuietFocus {
+abstract final class RawQuietFocus {
   static FocusNode? _node;
 
   /// Focuses [node], noted as given back.

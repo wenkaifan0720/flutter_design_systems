@@ -210,15 +210,15 @@ class _LookTextFieldState extends State<LookTextField> {
       ),
       child: Semantics(
         hint: widget.hintText,
-        child: DesignCapCenter(
+        child: RawCapCenter(
           capHeightFactor: theme.capHeightFactor,
-          child: DesignTextEntryBox(
+          child: RawTextEntryBox(
             // A press anywhere in the box reaches the entry, so the box
             // itself is the tap target: at least the floor for the input
             // the platform reaches it with, whatever the density.
             minHeight: math.max(
               theme.density.height(theme.controlHeight),
-              DesignTapTargets.of(context).floorOn().height,
+              RawTapTargets.of(context).floorOn().height,
             ),
             controller: _controller,
             hint: widget.hintText == null

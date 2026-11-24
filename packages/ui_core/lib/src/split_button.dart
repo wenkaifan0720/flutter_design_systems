@@ -187,7 +187,7 @@ class RawSplitButton extends StatelessWidget {
         ),
         child: surfaceBuilder(context, info, [
           for (final a in actions)
-            DesignMenuRow(
+            RawMenuRow(
               highlightFollowsPointer: highlightFollowsPointer,
               onPressed: a.enabled
                   ? () {

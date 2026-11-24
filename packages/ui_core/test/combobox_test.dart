@@ -35,7 +35,7 @@ Widget _combobox({
   Iterable<String> options = _fruit,
   double optionsMaxHeight = 300,
   WidgetBuilder? emptyBuilder,
-  DesignOptionSearch<String>? search,
+  RawOptionSearch<String>? search,
   bool Function(String option)? isOptionEnabled,
   bool highlightFollowsPointer = false,
 }) => RawCombobox<String>(

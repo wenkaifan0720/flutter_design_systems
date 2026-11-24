@@ -14,7 +14,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:ui_core/inventory.dart';
-import 'package:ui_core/ui_core.dart' show DesignInput, RawWidgetsLocalizations;
+import 'package:ui_core/ui_core.dart' show RawInput, RawWidgetsLocalizations;
 import 'package:ui_core_test/ui_core_test.dart';
 
 /// Puts [child] under the look's theme for [brightness]: what the
@@ -71,7 +71,7 @@ final List<SweepCondition> sweepConditions = [
 /// finding. Empty when every part holds everywhere.
 Future<List<String>> sweepInventory(
   WidgetTester tester, {
-  required DesignInventory inventory,
+  required RawInventory inventory,
   required LookHost host,
   List<SweepCondition>? conditions,
 }) async {
@@ -132,7 +132,7 @@ Future<List<String>> sweepInventory(
         DesignFieldSemanticsCheck(look: look).check(screen),
         DesignTapTargetCheck(
           look: look,
-          input: condition.touch ? DesignInput.touch : DesignInput.pointer,
+          input: condition.touch ? RawInput.touch : RawInput.pointer,
         ).check(screen),
         if (!condition.touch) DesignCursorCheck(look: look).check(screen),
         DesignOverflowCheck(look: look).check(screen),
@@ -246,7 +246,7 @@ class _Fonts {
   /// family they ask for, before any part is measured or drawn: a part that
   /// measures its words as it builds keeps the test font's measure.
   Future<void> prime(
-    DesignInventory inventory,
+    RawInventory inventory,
     Widget Function(Widget child) wrap,
   ) async {
     final names = <String>{};
@@ -306,7 +306,7 @@ Future<void> _savePng(
 /// Returns the files written.
 Future<List<String>> shootInventory(
   WidgetTester tester, {
-  required DesignInventory inventory,
+  required RawInventory inventory,
   required LookHost host,
   required String outDir,
   List<SweepCondition>? conditions,

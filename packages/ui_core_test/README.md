@@ -89,7 +89,7 @@ What a control says and does, from the semantics tree, layout boxes and hit test
   says more (a text field's text cursor, a handle's grab, a divider's resize), and over an off control nothing of
   its own.
 
-The floors are ui_core's (`DesignTapTargetScope`), which a look declares in its theme.
+The floors are ui_core's (`RawTapTargetScope`), which a look declares in its theme.
 
 What is drawn wrong, from the painted pixels where only they show it (each check's documentation says what it reads):
 
@@ -99,7 +99,7 @@ What is drawn wrong, from the painted pixels where only they show it (each check
   drawn. A label beside a text entry of more than one line (a note field) stands on the entry's first line and is held
   to that line's capitals instead. A painted mark that starts the row of a control's words (a way back's triangle,
   drawn by a custom paint holding no words) is read by its ink, as an icon is. Its `checkDensities` runs a screen
-  under each density the look ships. Given a `drawnTolerance` (a look that wraps its labels in `DesignCapCenter` gives
+  under each density the look ships. Given a `drawnTolerance` (a look that wraps its labels in `RawCapCenter` gives
   0.5), it holds each label's capitals, as drawn, to the middle of its face in device pixels, and an icon or a painted
   mark beside a label to the label's capitals.
 - `DesignWordBreakCheck` names a word broken across two lines ("Groce" over "ries"): a box too narrow for its longest

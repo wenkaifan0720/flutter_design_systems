@@ -55,7 +55,7 @@ RawButton _button(
 
 int _cancelled = 0;
 
-DesignDialogRoute<void> _dialog() => DesignDialogRoute<void>(
+RawModalDialogRoute<void> _dialog() => RawModalDialogRoute<void>(
   isAlert: true,
   semanticLabel: 'Discard changes',
   builder: (context, details) => RawAlertDialog(

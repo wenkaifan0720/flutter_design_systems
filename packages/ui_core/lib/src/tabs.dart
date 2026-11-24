@@ -114,8 +114,8 @@ class RawTabController extends ChangeNotifier {
     notifyListeners();
     _animation
         .animateWith(
-          designSpringSimulation(
-            DesignMotionPolicy(reduceMotion: _reduceMotion)
+          rawSpringSimulation(
+            RawMotionPolicy(reduceMotion: _reduceMotion)
                 .spatial(dampingRatio: dampingRatio, stiffness: stiffness),
             from: _animation.value,
             to: value.toDouble(),
@@ -327,6 +327,22 @@ class RawTabGroup<T> extends StatelessWidget {
   /// The tabs, laid out as given, and what stands between them.
   final Widget child;
 
+  /// The nearest [RawTabGroup] of type [T] round [context], or null when
+  /// [context] stands in none: whether a part is inside a tab group, and
+  /// the group's [groupValue], [onChanged] and [orientation], as Flutter's
+  /// `RadioGroup.maybeOf` answers for a radio group. [context] builds again
+  /// when the group's value, its [onChanged], its [orientation] or its
+  /// [selectionFollowsFocus] change.
+  ///
+  /// The type is matched exactly: a `RawTabGroup<String>` is found by
+  /// `maybeOf<String>` alone.
+  ///
+  /// ```dart
+  /// RawTabGroup.maybeOf<String>(context)?.groupValue
+  /// ```
+  static RawTabGroup<T>? maybeOf<T>(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_TabGroupScope<T>>()?.group;
+
   @override
   Widget build(BuildContext context) => _TabBarSemantics(
     label: semanticLabel,
@@ -389,7 +405,7 @@ class _TabBarSemantics extends SingleChildRenderObjectWidget {
   }
 }
 
-class _RenderTabBarSemantics extends RenderDesignSemanticsProxy {
+class _RenderTabBarSemantics extends RenderSemanticsProxy {
   _RenderTabBarSemantics(this._label, this._wordsDirection);
 
   String? _label;
@@ -462,6 +478,7 @@ class _TabGroupScope<T> extends InheritedWidget {
   bool updateShouldNotify(_TabGroupScope<T> oldWidget) =>
       group.groupValue != oldWidget.group.groupValue ||
       group.onChanged != oldWidget.group.onChanged ||
+      group.orientation != oldWidget.group.orientation ||
       group.selectionFollowsFocus != oldWidget.group.selectionFollowsFocus;
 }
 
@@ -842,8 +859,8 @@ class _DesignTabBarState extends State<RawTabBar>
     _strip
       ..value = position.pixels
       ..animateWith(
-        designSpringSimulation(
-          DesignMotionPolicy.of(context).spatial(
+        rawSpringSimulation(
+          RawMotionPolicy.of(context).spatial(
             dampingRatio: _controller.dampingRatio,
             stiffness: _controller.stiffness,
           ),
@@ -865,7 +882,7 @@ class _DesignTabBarState extends State<RawTabBar>
       widget.tabs.length == _controller.length,
       'a RawTabBar has one tab per controller tab',
     );
-    _controller._reduceMotion = designReduceMotionOf(context);
+    _controller._reduceMotion = rawReduceMotionOf(context);
     final n = widget.tabs.length;
     while (_nodes.length < n) {
       _nodes.add(FocusNode(debugLabel: 'RawTabBar ${_nodes.length}'));
@@ -1581,9 +1598,9 @@ class _DesignTabViewState extends State<RawTabBarView> {
       widget.children.length == _controller.length,
       'a RawTabBarView has one page per controller tab',
     );
-    final reduceMotion = designReduceMotionOf(context);
+    final reduceMotion = rawReduceMotionOf(context);
     _controller._reduceMotion = reduceMotion;
-    final spring = DesignMotionPolicy(reduceMotion: reduceMotion).spatial(
+    final spring = RawMotionPolicy(reduceMotion: reduceMotion).spatial(
       dampingRatio: _controller.dampingRatio,
       stiffness: _controller.stiffness,
     );

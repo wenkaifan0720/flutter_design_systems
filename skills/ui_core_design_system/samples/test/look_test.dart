@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +10,7 @@ import 'package:look_ui/look_ui.dart';
 import 'package:look_ui/src/inventory.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart'
-    show RawCalendarDatePicker, TapTargetPadding;
+    show RawCalendarDatePicker, RawPageRoute, TapTargetPadding;
 import 'package:ui_core_test/guidelines.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 
@@ -1344,4 +1345,122 @@ void main() {
     expect(problems, isNotEmpty);
     expect(problems.every((p) => p.contains(': missing (')), isTrue);
   });
+
+  testWidgets(
+    "a LookPage plays the look's push, and on iOS alone a swipe takes it back",
+    (tester) async {
+      var pages = <Page<void>>[
+        const LookPage<void>(key: ValueKey('inbox'), child: Text('Inbox')),
+        const LookPage<void>(key: ValueKey('thread'), child: Text('Thread')),
+      ];
+      await tester.pumpWidget(
+        lookApp(
+          home: StatefulBuilder(
+            builder: (context, setState) => Navigator(
+              pages: pages,
+              onDidRemovePage: (page) =>
+                  setState(() => pages = [...pages]..remove(page)),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Thread'), findsOneWidget);
+      await tester.dragFrom(const Offset(4, 300), const Offset(600, 0));
+      await tester.pumpAndSettle();
+      final ios = defaultTargetPlatform == TargetPlatform.iOS;
+      expect(find.text('Thread'), ios ? findsNothing : findsOneWidget);
+    },
+    variant: const TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
+  );
+
+  testWidgets(
+    "the dismiss key says back on a pushed page, close on a sheet, nothing on a root",
+    (tester) async {
+      await tester.pumpWidget(lookApp(home: const LookDismissKey()));
+      expect(find.byType(LookIconButton), findsNothing);
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      unawaited(
+        navigator.push(
+          RawPageRoute<void>(
+            transitionsBuilder: const LookPageTransitionsBuilder(),
+            builder: (context) => const LookDismissKey(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Back'), findsOneWidget);
+      unawaited(
+        navigator.push(
+          RawPageRoute<void>(
+            transitionsBuilder: const LookPageTransitionsBuilder(),
+            fullscreenDialog: true,
+            builder: (context) => const LookDismissKey(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Close'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Close'));
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Back'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    "drawn choices answer as a radio group: arrows choose, a press between a drawing's parts chooses",
+    (tester) async {
+      var size = 'S';
+      LookChoiceDrawing drawing(String text) =>
+          (BuildContext context, bool chosen, Set<WidgetState> states) =>
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(chosen ? '[$text' : text),
+                    const SizedBox(width: 24),
+                    const Text(']'),
+                  ],
+                ),
+              );
+      await tester.pumpWidget(
+        lookApp(
+          home: Center(
+            child: StatefulBuilder(
+              builder: (context, setState) => LookDrawnChoices<String>(
+                value: size,
+                onChanged: (next) => setState(() => size = next),
+                choices: [
+                  for (final s in const ['S', 'M', 'L'])
+                    LookDrawnChoice(value: s, label: s, drawing: drawing(s)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(size, 'M');
+      // Between the words and the bracket of L's drawing: nothing painted.
+      final left = tester.getTopRight(find.text('L'));
+      await tester.tapAt(left + const Offset(12, 0));
+      await tester.pumpAndSettle();
+      expect(size, 'L');
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('L')),
+        isSemantics(
+          label: 'L',
+          isInMutuallyExclusiveGroup: true,
+          hasCheckedState: true,
+          isChecked: true,
+        ),
+      );
+    },
+  );
 }

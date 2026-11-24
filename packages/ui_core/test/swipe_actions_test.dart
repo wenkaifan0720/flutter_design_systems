@@ -391,8 +391,8 @@ void main() {
       ScrollController? scroll,
       List<String> played = const [],
     }) => harness(
-      DesignHapticsScope(
-        haptics: DesignHaptics(
+      RawHapticsScope(
+        haptics: RawHaptics(
           selectionChanged: () => played.add('selectionChanged'),
           longPress: () => played.add('longPress'),
           thresholdCrossed: () => played.add('thresholdCrossed'),

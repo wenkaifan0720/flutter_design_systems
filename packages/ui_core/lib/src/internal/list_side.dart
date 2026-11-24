@@ -14,12 +14,12 @@ import '../anchored_overlay.dart';
 
 /// The least a side must hold of a list that is longer, before the list
 /// takes the other side: a popover's [RawPopoverPlacement.preferredExtent].
-const double designListLeast = 200;
+const double rawListLeast = 200;
 
 /// The direction a `RawAutocomplete` gets for a list that asks for [asked],
 /// [flipped] to the other side or not. [OptionsViewOpenDirection.mostSpace]
 /// is Flutter's own and never flips.
-OptionsViewOpenDirection designListDirection(
+OptionsViewOpenDirection rawListDirection(
   OptionsViewOpenDirection asked, {
   required bool flipped,
 }) => switch (asked) {
@@ -32,16 +32,16 @@ OptionsViewOpenDirection designListDirection(
 /// Measures a `RawAutocomplete`'s list (its options view) where it is laid
 /// out and tells [onFlip] when the list should be on the other side of its
 /// field: when its [asked] side can't hold the list's own height, or
-/// [designListLeast] of a longer list, and the other side has more room. A
+/// [rawListLeast] of a longer list, and the other side has more room. A
 /// list on the wrong side is not painted or hit until it is built there.
 ///
 /// [field] is the autocomplete's own context: its box is the field's, in the
 /// nearest overlay, as the autocomplete places the list. The rooms are its
 /// own: from the field to the overlay's edge, less the safe area and the
 /// on-screen keyboard.
-class DesignListSide extends SingleChildRenderObjectWidget {
+class RawListSide extends SingleChildRenderObjectWidget {
   /// Watches the side of [child], laid out [opensUp] or not.
-  const DesignListSide({
+  const RawListSide({
     super.key,
     required this.field,
     required this.asked,
@@ -180,7 +180,7 @@ class _RenderListSide extends RenderProxyBox {
       extent = child.size.height;
       super.performLayout();
     }
-    final flip = room < math.min(extent, designListLeast) && other > room;
+    final flip = room < math.min(extent, rawListLeast) && other > room;
     _wrongSide = (flip ? !up : up) != _opensUp;
     if (_wrongSide) {
       WidgetsBinding.instance

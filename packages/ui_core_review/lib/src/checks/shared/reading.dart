@@ -172,7 +172,7 @@ class _DrawnReader {
   final RenderRepaintBoundary? boundary;
   final DrawnPixels? pixels;
 
-  // The boxes a look marked as faces (DesignKeylineFace): faces whatever
+  // The boxes a look marked as faces (RawKeylineFace): faces whatever
   // their pixels show.
   final Set<RenderBox> marked;
 
@@ -577,10 +577,10 @@ class _DrawnReader {
   }
 
   // The cap center [p] is drawn in, inside this control; null outside one.
-  RenderDesignCapCenter? _capCentred(RenderBox p) {
+  RenderCapCenter? _capCentred(RenderBox p) {
     RenderObject? up = p.parent;
     while (up != null && up != boundary) {
-      if (up case final RenderDesignCapCenter centred) return centred;
+      if (up case final RenderCapCenter centred) return centred;
       up = up.parent;
     }
     return null;
@@ -694,11 +694,11 @@ class _DrawnReader {
   }
 }
 
-// The boxes marked as faces (DesignKeylineFace) under [context].
+// The boxes marked as faces (RawKeylineFace) under [context].
 Set<RenderBox> _markedFaces(BuildContext context) {
   final found = <RenderBox>{};
   void visit(Element element) {
-    if (element.widget is DesignKeylineFace) {
+    if (element.widget is RawKeylineFace) {
       final box = element.findRenderObject();
       if (box is RenderBox && box.attached && box.hasSize && _isShown(box)) {
         found.add(box);

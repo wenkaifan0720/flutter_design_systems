@@ -6,9 +6,6 @@
 //
 // An example may name `controller` or `focusNode`: the caller's own, which
 // its entry makes first, as the docs say the caller does.
-// DesignRadioGroup and DesignTooltip are deprecated in the package, which
-// keeps their tests for their one last release.
-// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:material_ui/material_ui.dart'
     show DefaultMaterialLocalizations, Material, TextField;
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
@@ -32,9 +29,9 @@ T _own<T extends ChangeNotifier>(T value) {
 }
 
 final Map<String, DocExample> _examples = {
-  'DesignControlBox': (context) =>
-      const DesignControlBox(minHeight: 40, child: Text('Save')),
-  'DesignTextEntryBox': (context) {
+  'RawControlBox': (context) =>
+      const RawControlBox(minHeight: 40, child: Text('Save')),
+  'RawTextEntryBox': (context) {
     final controller = _own(TextEditingController());
     return Localizations(
       locale: const Locale('en'),
@@ -43,7 +40,7 @@ final Map<String, DocExample> _examples = {
         DefaultWidgetsLocalizations.delegate,
       ],
       child: Material(
-        child: DesignTextEntryBox(
+        child: RawTextEntryBox(
           minHeight: 40,
           controller: controller,
           hint: const Text('Search'),
@@ -66,16 +63,11 @@ final Map<String, DocExample> _examples = {
         Column(mainAxisSize: MainAxisSize.min, children: items),
     child: const Text('Report.pdf'),
   ),
-  'DesignTooltip': (context) => DesignTooltip(
-    message: 'Save the report',
-    tooltipBuilder: (context, info) => const Text('Save the report'),
-    child: const Text('Save'),
-  ),
-  'designShortcutKeys': (context) => designShortcutKeys(
+  'rawShortcutKeys': (context) => rawShortcutKeys(
     context,
     const SingleActivator(LogicalKeyboardKey.keyN, meta: true, shift: true),
   ),
-  'designShortcutLabel': (context) => designShortcutLabel(
+  'rawShortcutLabel': (context) => rawShortcutLabel(
     context,
     const SingleActivator(LogicalKeyboardKey.keyS, control: true),
   ),
@@ -92,7 +84,7 @@ final Map<String, DocExample> _examples = {
     );
     return RawCalendarDatePicker(
       controller: controller,
-      dayBuilder: (context, day, states) => Text('${day.date.day}'),
+      dayBuilder: (context, day, states) => Text(day.label),
     );
   },
   'RawCalendarController': (context) => _own(
@@ -194,31 +186,30 @@ final Map<String, DocExample> _examples = {
         Column(children: [?parts.label, parts.control]),
     child: const Text('field'),
   ),
-  'DesignForm': (context) =>
-      DesignForm(onSubmit: () {}, child: const SizedBox()),
-  'DesignFormField': (context) => DesignFormField<String>(
+  'RawForm': (context) => RawForm(onSubmit: () {}, child: const SizedBox()),
+  'RawFormField': (context) => RawFormField<String>(
     validator: (value) => (value ?? '').isEmpty ? 'Required' : null,
     builder: (field) => Text(field.errorText ?? ''),
   ),
-  'DesignInputGroup': (context) {
+  'RawInputGroup': (context) {
     final focusNode = _own(FocusNode());
-    return DesignInputGroup(
+    return RawInputGroup(
       focusNode: focusNode,
       builder: (context, states, child) => child,
       child: const Text('kg'),
     );
   },
-  'DesignInventory': (context) => const DesignInventory(
+  'RawInventory': (context) => const RawInventory(
     look: 'Comic',
     entries: [
-      DesignInventoryEntry.absent(
+      RawInventoryEntry.absent(
         'FloatingActionButton',
         'A floating action button is Material vocabulary',
       ),
     ],
   ),
-  'DesignInventoryEntry': (context) =>
-      DesignInventoryEntry.present('Link', (context) => const Text('Terms')),
+  'RawInventoryEntry': (context) =>
+      RawInventoryEntry.present('Link', (context) => const Text('Terms')),
   'RawMenuBar': (context) => RawMenuBar(
     menus: [
       RawMenuEntry(
@@ -240,13 +231,46 @@ final Map<String, DocExample> _examples = {
   ),
   'RawPasswordController': (context) =>
       _own(RawPasswordController(obscured: false)),
-  'designSwipeBack': (context) => designSwipeBack({
+  'rawSwipeBack': (context) => rawSwipeBack({
     TargetPlatform.iOS: const FadeUpwardsPageTransitionsBuilder(),
   }),
   'SwipeBackPageTransitionsBuilder': (context) =>
       const SwipeBackPageTransitionsBuilder(
         FadeUpwardsPageTransitionsBuilder(),
       ),
+  'RawPage': (context) => Navigator(
+    pages: const [
+      RawPage<void>(
+        transitionsBuilder: FadeUpwardsPageTransitionsBuilder(),
+        child: Text('Recipes'),
+      ),
+    ],
+    onDidRemovePage: (page) {},
+  ),
+  'RawPageRoute': (context) => RawPageRoute<void>(
+    transitionsBuilder: const FadeUpwardsPageTransitionsBuilder(),
+    builder: (context) => const Text('Recipe'),
+  ),
+  'RoutePresentation': (context) => Builder(
+    builder: (context) {
+      final at = RoutePresentation.of(context);
+      final label = at.dismissLabel(context);
+      if (label == null) return const SizedBox.shrink();
+      return Semantics(
+        button: true,
+        label: label,
+        onTap: () => Navigator.maybePop(context),
+        child: Text(at == RoutePresentation.sheet ? '×' : '‹'),
+      );
+    },
+  ),
+  'RoutePresentation.of': (context) => RoutePresentation.of(context),
+  'RoutePresentation.dismissLabel': (context) =>
+      RoutePresentation.of(context).dismissLabel(context),
+  'RoutePresentationScope': (context) => const RoutePresentationScope(
+    presentation: RoutePresentation.sheet,
+    child: Text('Share'),
+  ),
   'RawButton': (context) => RawButton(
     onPressed: () {},
     semanticLabel: 'Save',
@@ -255,17 +279,14 @@ final Map<String, DocExample> _examples = {
       child: const Text('Save'),
     ),
   ),
-  'DesignSpacing': (context) {
+  'RawSpacing': (context) {
     const app = Text('App');
-    return const DesignSpacingScope(
-      spacing: DesignSpacing(grid: 2),
-      child: app,
-    );
+    return const RawSpacingScope(spacing: RawSpacing(grid: 2), child: app);
   },
-  'DesignTapTargetScope': (context) {
+  'RawTapTargetScope': (context) {
     const app = Text('App');
-    return const DesignTapTargetScope(
-      targets: DesignTapTargets(touch: Size.square(48)),
+    return const RawTapTargetScope(
+      targets: RawTapTargets(touch: Size.square(48)),
       child: app,
     );
   },
@@ -296,8 +317,8 @@ final Map<String, DocExample> _examples = {
       child: RawButton(onPressed: onPressed, builder: face),
     );
   },
-  'DesignStyle': (context) {
-    final style = DesignStyle(
+  'RawStyle': (context) {
+    final style = RawStyle(
       fill: WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.pressed)
             ? const Color(0xFF1D4ED8)
@@ -307,27 +328,27 @@ final Map<String, DocExample> _examples = {
         EdgeInsets.symmetric(horizontal: 20),
       ),
     );
-    const themed = DesignStyle();
+    const themed = RawStyle();
     const states = <WidgetState>{};
-    final forwarded = DesignStyle.layered([style, themed]);
+    final forwarded = RawStyle.layered([style, themed]);
     final fill =
-        DesignStyle.first([style, themed], (s) => s.fill, states) ??
+        RawStyle.first([style, themed], (s) => s.fill, states) ??
         const Color(0xFFFFFFFF);
     return ColoredBox(
       color: fill,
       child: SizedBox(height: forwarded.isEmpty ? 0 : 40),
     );
   },
-  'DesignStyleOf': (context) {
-    const style = DesignStyle();
-    const themed = DesignStyle();
+  'RawStyleOf': (context) {
+    const style = RawStyle();
+    const themed = RawStyle();
     const states = <WidgetState>{};
-    final look = const DesignStyleOf([style, themed], states);
+    final look = const RawStyleOf([style, themed], states);
     final fill = look.fill ?? const Color(0xFFFFFFFF);
     return ColoredBox(color: fill);
   },
-  'DesignDensity': (context) {
-    final height = DesignDensity.compact.height(44); // 36
+  'RawDensity': (context) {
+    final height = RawDensity.compact.height(44); // 36
     return SizedBox(height: height, child: const Text('Row'));
   },
   'RawRefreshIndicator': (context) => RawRefreshIndicator(
@@ -419,22 +440,6 @@ final Map<String, DocExample> _examples = {
     toastBuilder: (context, details) => Text(details.toast.message),
     child: const SizedBox(),
   ),
-  'DesignRadioGroup': (context) {
-    var chosen = 'Day';
-    void choose(String value) => chosen = value;
-    return DesignRadioGroup<String>(
-      options: const ['Day', 'Week'],
-      value: chosen,
-      onChanged: choose,
-      itemBuilder: (context, option, node, select) => RawButton(
-        focusNode: node,
-        onPressed: select,
-        checked: option == chosen,
-        inMutuallyExclusiveGroup: true,
-        builder: (context, states, _) => Text(option),
-      ),
-    );
-  },
   'RawTooltipFocusFix': (context) => RawTooltip(
     semanticsTooltip: 'Save the report',
     tooltipBuilder: (context, animation) => const Text('Save the report'),
@@ -502,26 +507,26 @@ final Map<String, DocExample> _examples = {
     onSelectionChanged: (next) {},
     itemBuilder: (context, value, states) => Text(value),
   ),
-  'DesignTree': (context) {
+  'RawTree': (context) {
     final controller = _own(
-      DesignTreeController<String>(
+      RawTreeController<String>(
         roots: const ['src'],
         childrenOf: (node) => const [],
       ),
     );
-    return DesignTree<String>(
+    return RawTree<String>(
       controller: controller,
       labelOf: (node) => node,
       rowBuilder: (context, item) => Text(item.row.node),
     );
   },
-  'DesignTreeController': (context) => _own(
-    DesignTreeController<String>(
+  'RawTreeController': (context) => _own(
+    RawTreeController<String>(
       roots: const ['src'],
       childrenOf: (node) => const [],
     ),
   ),
-  'DesignValueHandle': (context) => DesignValueHandle(
+  'RawValueHandle': (context) => RawValueHandle(
     value: 0.5,
     onChanged: (value) {},
     semanticLabel: 'Volume',
@@ -543,15 +548,15 @@ final Map<String, DocExample> _examples = {
     slotId: 'hero',
     fallback: ColoredBox(color: Color(0xFFDDDDDD)),
   ),
-  'designReduceMotionOf': (context) => designReduceMotionOf(context)
+  'rawReduceMotionOf': (context) => rawReduceMotionOf(context)
       ? Duration.zero
       : const Duration(milliseconds: 200),
-  'DesignMotionPolicy': (context) {
+  'RawMotionPolicy': (context) {
     final controller = AnimationController(vsync: const TestVSync());
     _disposers.add(controller.dispose);
     return controller.springTo(
       1,
-      DesignMotionPolicy.of(context).spatial(dampingRatio: 0.6, stiffness: 800),
+      RawMotionPolicy.of(context).spatial(dampingRatio: 0.6, stiffness: 800),
     );
   },
   'PreviewFrame': (context) => const PreviewFrame(
@@ -565,24 +570,22 @@ final Map<String, DocExample> _examples = {
     ),
     child: const Text('Details'),
   ),
-  'DesignKeylineRegion': (context) => const DesignKeylineRegion(
+  'RawKeylineRegion': (context) => const RawKeylineRegion(
     label: 'Settings',
     indents: [40],
     child: Text('Settings'),
   ),
-  'DesignKeylineFace': (context) =>
-      const DesignKeylineFace(child: SizedBox(width: 120, height: 40)),
-  'DesignCapCenter': (context) =>
-      const DesignCapCenter(capHeightFactor: 0.711, child: Text('Save')),
+  'RawKeylineFace': (context) =>
+      const RawKeylineFace(child: SizedBox(width: 120, height: 40)),
+  'RawCapCenter': (context) =>
+      const RawCapCenter(capHeightFactor: 0.711, child: Text('Save')),
   // 0.3.0 values
-  'DesignHaptics': (context) {
-    DesignHaptics.of(context).selectionChanged?.call();
+  'RawHaptics': (context) {
+    RawHaptics.of(context).selectionChanged?.call();
     return null;
   },
-  'DesignHapticsScope': (context) => const DesignHapticsScope(
-    haptics: DesignHaptics.silent(),
-    child: Text('Quiet'),
-  ),
+  'RawHapticsScope': (context) =>
+      const RawHapticsScope(haptics: RawHaptics.silent(), child: Text('Quiet')),
   'RawPickerColumn': (context) => RawPickerColumn(
     itemCount: 12,
     itemLabel: (index) => 'Month ${index + 1}',
@@ -637,36 +640,36 @@ final Map<String, DocExample> _examples = {
     onChanged: (value) {},
     itemBuilder: (context, item) => Text(item.fill >= 1 ? '★' : '☆'),
   ),
-  'DesignScale': (context) =>
-      const DesignLinearScale(min: 0, max: 100, start: 0, end: 300).map(50),
-  'DesignLinearScale': (context) =>
-      DesignLinearScale.nice(min: 3, max: 97, start: 300, end: 0),
-  'DesignTimeScale': (context) => DesignTimeScale(
+  'RawScale': (context) =>
+      const RawLinearScale(min: 0, max: 100, start: 0, end: 300).map(50),
+  'RawLinearScale': (context) =>
+      RawLinearScale.nice(min: 3, max: 97, start: 300, end: 0),
+  'RawTimeScale': (context) => RawTimeScale(
     min: DateTime(2026),
     max: DateTime(2026, 12),
     start: 0,
     end: 300,
   ),
-  'DesignBandScale': (context) => const DesignBandScale(
+  'RawBandScale': (context) => const RawBandScale(
     count: 4,
     start: 0,
     end: 400,
     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
   ).map(2),
-  'DesignChartValueFormat': (context) =>
-      const DesignChartValueFormat(suffix: ' h')
+  'RawChartValueFormat': (context) =>
+      const RawChartValueFormat(suffix: ' h')
           .format(4, RawWidgetsLocalizations.of(context)),
-  'DesignScaleTick.widestLabel': (context) => DesignChart(
+  'RawScaleTick.widestLabel': (context) => RawChart(
     semanticLabel: 'Hours',
     series: const [
-      DesignChartSeries(label: 'Hours', points: [DesignChartPoint(0, 4)]),
+      RawChartSeries(label: 'Hours', points: [RawChartPoint(0, 4)]),
     ],
     builder: (context, details) => Text(
-      '${DesignScaleTick.widestLabel(details.yTicks, style: const TextStyle(fontSize: 12), textScaler: MediaQuery.textScalerOf(context))}',
+      '${RawScaleTick.widestLabel(details.yTicks, style: const TextStyle(fontSize: 12), textScaler: MediaQuery.textScalerOf(context))}',
     ),
   ),
-  'DesignComboboxField.isOpen': (context) {
-    final field = DesignComboboxField(
+  'RawComboboxField.isOpen': (context) {
+    final field = RawComboboxField(
       controller: _own(TextEditingController()),
       focusNode: _own(FocusNode()),
       submit: () {},
@@ -698,33 +701,33 @@ final Map<String, DocExample> _examples = {
   'RawActionBar': (context) => const RawActionBar(
     children: [Text('Cancel'), Text('Discard'), Text('Save changes')],
   ),
-  'DesignChart': (context) => DesignChart(
+  'RawChart': (context) => RawChart(
     semanticLabel: 'Revenue',
     series: const [
-      DesignChartSeries(
+      RawChartSeries(
         label: 'Revenue',
-        points: [DesignChartPoint(0, 820), DesignChartPoint(1, 1240)],
+        points: [RawChartPoint(0, 820), RawChartPoint(1, 1240)],
       ),
     ],
     builder: (context, chart) => CustomPaint(size: chart.size),
   ),
-  'DesignPieChart': (context) => DesignPieChart(
+  'RawPieChart': (context) => RawPieChart(
     semanticLabel: 'Spending',
     slices: const [
-      DesignPieSlice(label: 'Rent', value: 1200),
-      DesignPieSlice(label: 'Food', value: 600),
+      RawPieSlice(label: 'Rent', value: 1200),
+      RawPieSlice(label: 'Food', value: 600),
     ],
     builder: (context, pie) => CustomPaint(size: pie.size),
   ),
-  'DesignChartTable': (context) => DesignChartTable(
+  'RawChartTable': (context) => RawChartTable(
     series: const [
-      DesignChartSeries(label: 'Revenue', points: [DesignChartPoint(0, 820)]),
+      RawChartSeries(label: 'Revenue', points: [RawChartPoint(0, 820)]),
     ],
     cellBuilder: (context, cell) => Text(cell.text),
   ),
   // 0.3.0 values end
   // 0.3.0 routes
-  'DesignDialogRoute': (context) => DesignDialogRoute<bool>(
+  'RawModalDialogRoute': (context) => RawModalDialogRoute<bool>(
     isAlert: true,
     builder: (context, details) => RawAlertDialog(
       title: 'Delete the draft?',
@@ -753,6 +756,10 @@ final Map<String, DocExample> _examples = {
       ),
     ),
   ),
+  'RawModalRoute.closeOnEscape': (context) => RawModalRoute<void>(
+    closeOnEscape: false,
+    builder: (context, details) => const Text('Unsaved changes'),
+  ),
   'RawAlertDialog': (context) => RawAlertDialog(
     title: 'Discard changes?',
     content: const Text('Your edits to this note will be lost.'),
@@ -778,6 +785,18 @@ final Map<String, DocExample> _examples = {
       controller: details.scrollController,
       children: [for (var i = 0; i < 30; i++) Text('Row $i')],
     ),
+  ),
+  'RawBottomSheetPage': (context) => Navigator(
+    pages: [
+      const RawPage<void>(
+        transitionsBuilder: FadeUpwardsPageTransitionsBuilder(),
+        child: Text('Recipe'),
+      ),
+      RawBottomSheetPage<void>(
+        builder: (context, details) => const Text('Share'),
+      ),
+    ],
+    onDidRemovePage: (page) {},
   ),
   'RawBottomSheetDragHandle': (context) => RawBottomSheetDragHandle(
     builder: (context, states) => const SizedBox(width: 32, height: 4),
@@ -879,6 +898,8 @@ final Map<String, DocExample> _examples = {
       ],
     ),
   ),
+  'RawTabGroup.maybeOf': (context) =>
+      RawTabGroup.maybeOf<String>(context)?.groupValue,
   'RawTabGroupTab': (context) => RawTabGroup<String>(
     groupValue: 'overview',
     child: RawTabGroupTab(
@@ -886,11 +907,11 @@ final Map<String, DocExample> _examples = {
       builder: (context, states, _) => const Text('Overview'),
     ),
   ),
-  'DesignWindowSizeClass': (context) => DesignWindowSizeClass.fromWidth(900),
-  'DesignAdaptiveShell': (context) => DesignAdaptiveShell(
+  'RawWindowSizeClass': (context) => RawWindowSizeClass.fromWidth(900),
+  'RawAdaptiveShell': (context) => RawAdaptiveShell(
     destinations: const [
-      DesignNavigationDestination(label: 'Home', icon: IconData(0xe318)),
-      DesignNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
+      RawNavigationDestination(label: 'Home', icon: IconData(0xe318)),
+      RawNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
     ],
     selectedIndex: 0,
     onDestinationSelected: (index) {},
@@ -900,10 +921,10 @@ final Map<String, DocExample> _examples = {
         Row(children: details.destinations),
     body: const Text('Home'),
   ),
-  'DesignAdaptiveShell.branches': (context) => DesignAdaptiveShell.branches(
+  'RawAdaptiveShell.branches': (context) => RawAdaptiveShell.branches(
     destinations: const [
-      DesignNavigationDestination(label: 'Home', icon: IconData(0xe318)),
-      DesignNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
+      RawNavigationDestination(label: 'Home', icon: IconData(0xe318)),
+      RawNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
     ],
     selectedIndex: 0,
     onDestinationSelected: (index) {},
@@ -916,7 +937,7 @@ final Map<String, DocExample> _examples = {
       (context) => const Text('Mail'),
     ],
   ),
-  'DesignListDetail': (context) => DesignListDetail<String>(
+  'RawListDetail': (context) => RawListDetail<String>(
     selectedItem: null,
     onSelectedItemChanged: (item) {},
     listBuilder: (context) => const Text('Inbox'),

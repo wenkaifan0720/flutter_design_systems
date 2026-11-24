@@ -90,7 +90,7 @@ class LookSurface extends StatelessWidget {
 /// A [LookSurface] that moves to each new [face] on the theme's state
 /// spring, from wherever it stands: a press, a release, a focus or a change
 /// of colour turns mid-way with no jump. Under Reduce Motion the change is a
-/// short fade, as [DesignMotionPolicy] says.
+/// short fade, as [RawMotionPolicy] says.
 class AnimatedLookSurface extends StatefulWidget {
   /// [child] on a face that moves to [face].
   const AnimatedLookSurface({
@@ -135,7 +135,7 @@ class _AnimatedLookSurfaceState extends State<AnimatedLookSurface>
       ..value = 0
       ..springTo(
         1,
-        DesignMotionPolicy.of(context).effects(
+        RawMotionPolicy.of(context).effects(
           dampingRatio: motion.stateDampingRatio,
           stiffness: motion.stateStiffness,
         ),
@@ -159,7 +159,7 @@ class _AnimatedLookSurfaceState extends State<AnimatedLookSurface>
 
 /// Builds with a number that moves to each new [value] on the theme's state
 /// spring: a thumb's travel, a mark's scale. A spatial motion, so under
-/// Reduce Motion it arrives without overshoot ([DesignMotionPolicy.spatial]).
+/// Reduce Motion it arrives without overshoot ([RawMotionPolicy.spatial]).
 class LookSpringBuilder extends StatefulWidget {
   /// Builds [builder] with a number springing to [value].
   const LookSpringBuilder({
@@ -196,7 +196,7 @@ class _LookSpringBuilderState extends State<LookSpringBuilder>
     final motion = LookTheme.of(context).motion;
     _controller.springTo(
       widget.value,
-      DesignMotionPolicy.of(context).spatial(
+      RawMotionPolicy.of(context).spatial(
         dampingRatio: motion.stateDampingRatio,
         stiffness: motion.stateStiffness,
       ),

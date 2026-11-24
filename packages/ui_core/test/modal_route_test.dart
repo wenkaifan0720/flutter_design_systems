@@ -161,14 +161,14 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('a DesignDialogRoute over the same page still says dialog', (
+  testWidgets('a RawModalDialogRoute over the same page still says dialog', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
       harness(
         _opener(
-          () => DesignDialogRoute<void>(
+          () => RawModalDialogRoute<void>(
             builder: (context, details) => _recipe(details),
           ),
         ),

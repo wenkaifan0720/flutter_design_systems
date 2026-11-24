@@ -25,7 +25,7 @@ return RawButton(
   autofocus: autofocus,
   semanticValue: busy ? 'busy' : null,
   builder: (context, states, _) {
-    final layered = DesignStyleOf(
+    // ...
       _buttonLayers(theme, _kind, isDestructiveAction, style),
       states,
     );
@@ -40,7 +40,7 @@ return RawButton(
           .merge(layered.textStyle),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      child: DesignCapCenter(
+      // ...
         capHeightFactor: BrutalTheme.of(context).capHeightFactor,
         child: Text(label),
       ),
@@ -58,7 +58,7 @@ return RawButton(
   keeps its focus and says "busy" as its value rather than turning off.
 - The builder resolves the style layers for the states, computes one face,
   and draws it. Nothing in it remembers anything.
-- The label is centred by its capitals (`DesignCapCenter`), and the control
+- The label is centred by its capitals (`RawCapCenter`), and the control
   stands at the theme's one control height.
 - `TapTargetPadding` lays the whole part out at the floor, so the hit area
   and the screen reader's box agree.
@@ -85,7 +85,7 @@ List<BrutalStyle?> _buttonLayers(
 
 - The button's own `style:` wins, then a destructive slot, then the slot for
   its kind; the look's defaults fill whatever no layer sets.
-- `BrutalStyle` is ui_core's `DesignStyle` under the look's name.
+- `BrutalStyle` is ui_core's `RawStyle` under the look's name.
 
 ## A face that springs between states (brutal_ui)
 
@@ -102,7 +102,7 @@ void didUpdateWidget(AnimatedBrutalSurface old) {
   _controller.value = 0;
   _controller.springTo(
     1,
-    DesignMotionPolicy.of(context).effects(
+    // ...
       dampingRatio: BrutalMotion.dampingRatio,
       stiffness: widget.stiffness,
     ),
@@ -113,7 +113,7 @@ void didUpdateWidget(AnimatedBrutalSurface old) {
 - A face is a value with a `lerp`; the surface springs from wherever it
   stands (`_now`) to the new face, so a press released mid-way turns back
   without a jump.
-- `DesignMotionPolicy.effects` makes the same code honour Reduce Motion.
+- `RawMotionPolicy.effects` makes the same code honour Reduce Motion.
 - One mechanism serves every part of the look.
 
 ## Focus in the look's own idiom (brutal_ui)
@@ -236,7 +236,7 @@ return navigator.push(
 );
 ```
 
-- `DesignDialogRoute` (here a subclass) carries the barrier, Escape, back,
+- `RawModalDialogRoute` (here a subclass) carries the barrier, Escape, back,
   focus trap and focus return; the look gives the veil's colour, the
   stiffness from its motion tokens, and the transition.
 - The opener's themes are carried into the route, which builds under the

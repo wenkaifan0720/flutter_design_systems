@@ -37,7 +37,7 @@ List<String> _keys(
   MenuSerializableShortcut shortcut,
   TargetPlatform platform, {
   bool appleSymbols = true,
-}) => designShortcutKeys(
+}) => rawShortcutKeys(
   _context,
   shortcut,
   platform: platform,
@@ -48,7 +48,7 @@ String _label(
   MenuSerializableShortcut shortcut,
   TargetPlatform platform, {
   bool appleSymbols = true,
-}) => designShortcutLabel(
+}) => rawShortcutLabel(
   _context,
   shortcut,
   platform: platform,
@@ -241,7 +241,7 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
     try {
       expect(
-        designShortcutLabel(
+        rawShortcutLabel(
           _context,
           const SingleActivator(LogicalKeyboardKey.keyC, meta: true),
         ),

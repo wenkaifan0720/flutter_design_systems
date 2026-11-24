@@ -11,7 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'action_bar.dart';
-import 'adaptive_shell.dart' show DesignWindowSizeClass;
+import 'adaptive_shell.dart' show RawWindowSizeClass;
 import 'barrier.dart';
 import 'internal/painted_barrier.dart';
 import 'internal/route_spring.dart';
@@ -20,9 +20,9 @@ import 'pressable.dart';
 
 /// Builds a dialog route's page: the look's dialog, which [details] lets it
 /// move as the route opens and closes.
-typedef DesignDialogBuilder = Widget Function(
+typedef RawDialogBuilder = Widget Function(
   BuildContext context,
-  DesignDialogDetails details,
+  RawDialogDetails details,
 );
 
 /// Builds a [RawModalRoute]'s page: what the look paints over the barrier,
@@ -50,18 +50,18 @@ class RawModalDetails {
   final VoidCallback close;
 }
 
-/// What a [DesignDialogRoute]'s builder paints from: a [RawModalDetails]
+/// What a [RawModalDialogRoute]'s builder paints from: a [RawModalDetails]
 /// that says whether the dialog is an alert.
 @immutable
-class DesignDialogDetails extends RawModalDetails {
+class RawDialogDetails extends RawModalDetails {
   /// The route's details; the route makes them.
-  const DesignDialogDetails({
+  const RawDialogDetails({
     required super.animation,
     required this.isAlert,
     required super.close,
   });
 
-  /// Whether the route is an alert ([DesignDialogRoute.isAlert]).
+  /// Whether the route is an alert ([RawModalDialogRoute.isAlert]).
   final bool isAlert;
 }
 
@@ -70,24 +70,25 @@ class DesignDialogDetails extends RawModalDetails {
 /// dialog. Push it with `Navigator.push`; its page is `builder`'s, over a
 /// barrier.
 ///
-/// It is the route [DesignDialogRoute] builds on, without the dialog. It
+/// It is the route [RawModalDialogRoute] builds on, without the dialog. It
 /// opens on a spring ([dampingRatio], [stiffness]) and closes on the same
 /// one, or on its own ([closeDampingRatio], [closeStiffness]), from wherever
 /// it is when it turns; under Reduce Motion it fades instead
-/// (`designReduceMotionOf`). As it opens it takes focus and keeps Tab
+/// (`rawReduceMotionOf`). As it opens it takes focus and keeps Tab
 /// inside it, on the web too, where a route lets Tab leave the page by
 /// default; as it closes, focus goes back to the node that held it when it
 /// was pushed.
 ///
-/// Escape, Android's back, a barrier tap (when [barrierDismissible]) and
-/// [RawModalDetails.close] all close it through `Navigator.maybePop`, so a
-/// `PopScope` in it may refuse any of them.
+/// Escape (unless [closeOnEscape] is false), Android's back, a barrier tap
+/// (when [barrierDismissible]) and [RawModalDetails.close] all close it
+/// through `Navigator.maybePop`, so a `PopScope` in it may refuse any of
+/// them.
 ///
 /// To a screen reader it is a route: a scope that keeps the page under it out
 /// of reach while it is open, with no role, named as its page names it (a
 /// `Semantics` with `namesRoute` round its title). Flutter's
 /// `RawDialogRoute` states no role either: a dialog says so from the widget
-/// on its page, as [DesignDialogRoute] does from this route.
+/// on its page, as [RawModalDialogRoute] does from this route.
 ///
 /// A recipe laid over the page from the bottom, pushed with
 /// `Navigator.of(context).push(route)`:
@@ -117,6 +118,7 @@ class RawModalRoute<T> extends PopupRoute<T> {
     String? barrierLabel,
     bool barrierDismissible = true,
     this.anchorPoint,
+    this.closeOnEscape = true,
     super.settings,
   }) : assert(dampingRatio > 0 && stiffness > 0),
        assert((closeDampingRatio ?? 1) > 0 && (closeStiffness ?? 1) > 0),
@@ -149,11 +151,21 @@ class RawModalRoute<T> extends PopupRoute<T> {
 
   /// Paints the barrier in place of the barrier colour (a look's own
   /// screen); null: the colour.
-  final DesignBarrierBuilder? barrierBuilder;
+  final RawBarrierBuilder? barrierBuilder;
 
   /// Which half of a folding screen it opens on: the half nearest this
   /// point (`DisplayFeatureSubScreen`); null: the reading start's.
   final Offset? anchorPoint;
+
+  /// Whether Escape closes it. Defaults to true. False leaves Escape to the
+  /// page (a form that asks first, an editor whose Escape is its own);
+  /// Android's back, a barrier tap and [RawModalDetails.close] still close
+  /// it.
+  ///
+  /// ```dart
+  /// RawModalRoute<void>(closeOnEscape: false, builder: (context, details) => const Text('Unsaved changes'))
+  /// ```
+  final bool closeOnEscape;
 
   final RawModalBuilder _page;
   final Color _scrim;
@@ -228,24 +240,22 @@ class RawModalRoute<T> extends PopupRoute<T> {
     Animation<double> secondaryAnimation,
   ) {
     final reduced = _spring.reduced;
-    return DisplayFeatureSubScreen(
-      anchorPoint: anchorPoint,
-      child: escapeCloses(
-        context,
-        _scope(
-          Builder(
-            builder: (context) => _page(
-              context,
-              RawModalDetails(
-                animation: reduced
-                    ? kAlwaysCompleteAnimation
-                    : _spring.presence,
-                close: () => Navigator.of(context).maybePop(),
-              ),
-            ),
+    final page = _scope(
+      Builder(
+        builder: (context) => _page(
+          context,
+          RawModalDetails(
+            animation: reduced ? kAlwaysCompleteAnimation : _spring.presence,
+            close: () => Navigator.of(context).maybePop(),
           ),
         ),
       ),
+    );
+    return DisplayFeatureSubScreen(
+      anchorPoint: anchorPoint,
+      child: closeOnEscape
+          ? escapeCloses(context, page)
+          : escapeKept(context, page),
     );
   }
 
@@ -266,14 +276,14 @@ class RawModalRoute<T> extends PopupRoute<T> {
 /// It opens on a spring ([dampingRatio], [stiffness]) and closes on the
 /// same one, or on its own ([closeDampingRatio], [closeStiffness]), from
 /// wherever it is when it turns; under Reduce Motion it fades instead
-/// (`designReduceMotionOf`). As it opens it takes focus and keeps Tab
+/// (`rawReduceMotionOf`). As it opens it takes focus and keeps Tab
 /// inside it; as it closes, focus goes back to the node that held it when
 /// it was pushed (the button that opened it, when the keyboard pressed it).
 ///
-/// Escape, Android's back, a barrier tap (when [barrierDismissible]) and
-/// [DesignDialogDetails.close] all close it through `Navigator.maybePop`, so
-/// a `PopScope` in it may refuse any of them. Escape closes an alert too,
-/// though its barrier does not.
+/// Escape (unless [closeOnEscape] is false), Android's back, a barrier tap
+/// (when [barrierDismissible]) and [RawDialogDetails.close] all close it
+/// through `Navigator.maybePop`, so a `PopScope` in it may refuse any of
+/// them. Escape closes an alert too, though its barrier does not.
 ///
 /// A screen reader hears a dialog (an alert when [isAlert]) named by
 /// [semanticLabel]; with none, a [RawAlertDialog] inside names it by its
@@ -283,7 +293,7 @@ class RawModalRoute<T> extends PopupRoute<T> {
 /// `Navigator.of(context).push(route)`; the push's future answers true:
 ///
 /// ```dart
-/// DesignDialogRoute<bool>(
+/// RawModalDialogRoute<bool>(
 ///   isAlert: true,
 ///   builder: (context, details) => RawAlertDialog(
 ///     title: 'Delete the draft?',
@@ -303,10 +313,10 @@ class RawModalRoute<T> extends PopupRoute<T> {
 ///   ),
 /// )
 /// ```
-class DesignDialogRoute<T> extends RawModalRoute<T> {
+class RawModalDialogRoute<T> extends RawModalRoute<T> {
   /// A dialog whose page [builder] paints. A barrier tap closes a dialog,
   /// and an alert only when [barrierDismissible] is true.
-  DesignDialogRoute({
+  RawModalDialogRoute({
     required this.builder,
     this.isAlert = false,
     this.semanticLabel,
@@ -319,11 +329,12 @@ class DesignDialogRoute<T> extends RawModalRoute<T> {
     super.barrierLabel,
     bool? barrierDismissible,
     super.anchorPoint,
+    super.closeOnEscape,
     super.settings,
   }) : super(
          builder: (context, details) => builder(
            context,
-           DesignDialogDetails(
+           RawDialogDetails(
              animation: details.animation,
              isAlert: isAlert,
              close: details.close,
@@ -334,7 +345,7 @@ class DesignDialogRoute<T> extends RawModalRoute<T> {
 
   /// Paints the dialog's page, which fills the screen: a [RawAlertDialog]
   /// places itself in it.
-  final DesignDialogBuilder builder;
+  final RawDialogBuilder builder;
 
   /// Whether it is an alert, which asks for an answer: a screen reader hears
   /// an alert (`SemanticsRole.alertDialog`; the web's `alertdialog`) and a
@@ -543,7 +554,7 @@ class RawAlertDialog extends StatefulWidget {
   }) : assert(actionSpacing >= 0 && stackedActionSpacing >= 0);
 
   /// The heading, a screen reader's header; it names the route when the
-  /// [DesignDialogRoute] has no `semanticLabel`. Null: none.
+  /// [RawModalDialogRoute] has no `semanticLabel`. Null: none.
   final String? title;
 
   /// The body, under the title; it scrolls with it when long. Null: none.
@@ -756,8 +767,7 @@ class _DesignDialogState extends State<RawAlertDialog> {
       bar = RawActionBar(
         spacing: widget.actionSpacing,
         overflowSpacing: widget.stackedActionSpacing,
-        expanded:
-            DesignWindowSizeClass.of(context) == DesignWindowSizeClass.compact,
+        expanded: RawWindowSizeClass.of(context) == RawWindowSizeClass.compact,
         onStackedChanged: _onStacked,
         children: [
           ...widget.actionWidgets,

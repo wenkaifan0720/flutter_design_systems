@@ -1,7 +1,7 @@
 /// Chart scales: values (a number, a time's milliseconds, a category's
 /// index) to positions on screen and back, and the ticks between, labelled
-/// in the reader's numbers and dates, and [DesignChartValueFormat], a
-/// value's words with its unit. No widgets: [DesignChart] makes them for its
+/// in the reader's numbers and dates, and [RawChartValueFormat], a
+/// value's words with its unit. No widgets: [RawChart] makes them for its
 /// plot, and a look may make its own.
 library;
 
@@ -16,9 +16,9 @@ import 'localizations.dart';
 
 /// A tick on a scale: a [value], its [position], its [label].
 @immutable
-class DesignScaleTick {
+class RawScaleTick {
   /// A tick.
-  const DesignScaleTick({
+  const RawScaleTick({
     required this.value,
     required this.position,
     required this.label,
@@ -37,19 +37,19 @@ class DesignScaleTick {
 
   /// The decimals its scale writes every tick's value with (a step of 0.2
   /// writes 1), so a format writes them alike
-  /// ([DesignChartValueFormat.labelTicks]); null for a category's or a
+  /// ([RawChartValueFormat.labelTicks]); null for a category's or a
   /// time's tick.
   final int? fractionDigits;
 
   /// The width of the widest of [ticks]' labels set in [style] at
   /// [textScaler], for the room a look keeps for them beside a plot
-  /// ([DesignChart.yLabelGutter]); 0 when there are none.
+  /// ([RawChart.yLabelGutter]); 0 when there are none.
   ///
   /// ```dart
-  /// DesignScaleTick.widestLabel(details.yTicks, style: const TextStyle(fontSize: 12), textScaler: MediaQuery.textScalerOf(context))
+  /// RawScaleTick.widestLabel(details.yTicks, style: const TextStyle(fontSize: 12), textScaler: MediaQuery.textScalerOf(context))
   /// ```
   static double widestLabel(
-    Iterable<DesignScaleTick> ticks, {
+    Iterable<RawScaleTick> ticks, {
     required TextStyle style,
     TextScaler textScaler = TextScaler.noScaling,
     TextDirection textDirection = TextDirection.ltr,
@@ -71,7 +71,7 @@ class DesignScaleTick {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignScaleTick &&
+      other is RawScaleTick &&
       other.value == value &&
       other.position == position &&
       other.label == label &&
@@ -81,17 +81,17 @@ class DesignScaleTick {
   int get hashCode => Object.hash(value, position, label, fractionDigits);
 
   @override
-  String toString() => 'DesignScaleTick($label at $position)';
+  String toString() => 'RawScaleTick($label at $position)';
 }
 
 /// Values to positions and back.
 ///
 /// ```dart
-/// const DesignLinearScale(min: 0, max: 100, start: 0, end: 300).map(50)
+/// const RawLinearScale(min: 0, max: 100, start: 0, end: 300).map(50)
 /// ```
-abstract class DesignScale {
+abstract class RawScale {
   /// A scale over the positions [start] to [end].
-  const DesignScale({required this.start, required this.end});
+  const RawScale({required this.start, required this.end});
 
   /// The position of the least value (left, or right when the scale runs
   /// right to left; the bottom of a y scale).
@@ -107,7 +107,7 @@ abstract class DesignScale {
   double invert(double position);
 
   /// About [count] ticks across the scale, labelled for [localizations].
-  List<DesignScaleTick> ticks(
+  List<RawScaleTick> ticks(
     RawWidgetsLocalizations localizations, {
     int count = 5,
   });
@@ -116,11 +116,11 @@ abstract class DesignScale {
 /// A number line: [min] at [start], [max] at [end].
 ///
 /// ```dart
-/// DesignLinearScale.nice(min: 3, max: 97, start: 300, end: 0)
+/// RawLinearScale.nice(min: 3, max: 97, start: 300, end: 0)
 /// ```
-class DesignLinearScale extends DesignScale {
+class RawLinearScale extends RawScale {
   /// A scale from [min] to [max] exactly.
-  const DesignLinearScale({
+  const RawLinearScale({
     required this.min,
     required this.max,
     required super.start,
@@ -136,7 +136,7 @@ class DesignLinearScale extends DesignScale {
   /// ticks, or one step per division), never below zero. With [divisions],
   /// the scale covers the data in exactly that many equal intervals,
   /// rounding the span up to 1, 2, 2.5 or 5 × 10ⁿ.
-  factory DesignLinearScale.nice({
+  factory RawLinearScale.nice({
     required double min,
     required double max,
     required double start,
@@ -159,7 +159,7 @@ class DesignLinearScale extends DesignScale {
           _tickStep(0, ones.toDouble(), tickCount) < 1) {
         ones++;
       }
-      return DesignLinearScale(
+      return RawLinearScale(
         min: 0,
         max: ones.toDouble(),
         start: start,
@@ -188,7 +188,7 @@ class DesignLinearScale extends DesignScale {
           : aligned + span >= hi
           ? aligned
           : lo;
-      return DesignLinearScale(
+      return RawLinearScale(
         min: lower,
         max: math.max(hi, lower + span),
         start: start,
@@ -207,7 +207,7 @@ class DesignLinearScale extends DesignScale {
       hi = decimal.roundTo((hi / step).ceilToDouble() * step, digits);
       last = step;
     }
-    return DesignLinearScale(min: lo, max: hi, start: start, end: end);
+    return RawLinearScale(min: lo, max: hi, start: start, end: end);
   }
 
   /// The least value.
@@ -233,13 +233,13 @@ class DesignLinearScale extends DesignScale {
   }
 
   @override
-  List<DesignScaleTick> ticks(
+  List<RawScaleTick> ticks(
     RawWidgetsLocalizations localizations, {
     int count = 5,
   }) {
     if (max <= min) {
       return [
-        DesignScaleTick(
+        RawScaleTick(
           value: min,
           position: map(min),
           label: localizations.formatDecimal(min),
@@ -256,7 +256,7 @@ class DesignLinearScale extends DesignScale {
       return [
         for (var i = 0; i <= n; i++)
           if ((i == n ? max : min + i * step) case final value)
-            DesignScaleTick(
+            RawScaleTick(
               value: value,
               position: map(value),
               label: localizations.formatDecimal(value, fractionDigits: digits),
@@ -271,7 +271,7 @@ class DesignLinearScale extends DesignScale {
     return [
       for (var i = first; i <= last; i++)
         if (decimal.roundTo(i * step, digits) case final value)
-          DesignScaleTick(
+          RawScaleTick(
             value: value,
             position: map(value),
             label: localizations.formatDecimal(value, fractionDigits: digits),
@@ -281,7 +281,7 @@ class DesignLinearScale extends DesignScale {
   }
 
   @override
-  String toString() => 'DesignLinearScale($min–$max → $start–$end)';
+  String toString() => 'RawLinearScale($min–$max → $start–$end)';
 }
 
 // A 1, 2 or 5 × 10ⁿ step giving about [count] ticks from [lo] to [hi]
@@ -345,16 +345,16 @@ int _approxMs(_Unit unit, int n) =>
 /// reader's times and dates.
 ///
 /// ```dart
-/// DesignTimeScale(min: DateTime(2026), max: DateTime(2026, 12), start: 0, end: 300)
+/// RawTimeScale(min: DateTime(2026), max: DateTime(2026, 12), start: 0, end: 300)
 /// ```
-class DesignTimeScale extends DesignScale {
+class RawTimeScale extends RawScale {
   /// A scale from [min] to [max] exactly.
-  DesignTimeScale({
+  RawTimeScale({
     required this.min,
     required this.max,
     required super.start,
     required super.end,
-  }) : _linear = DesignLinearScale(
+  }) : _linear = RawLinearScale(
          min: min.millisecondsSinceEpoch.toDouble(),
          max: max.millisecondsSinceEpoch.toDouble(),
          start: start,
@@ -363,7 +363,7 @@ class DesignTimeScale extends DesignScale {
 
   /// A scale widened to the calendar steps around [min] and [max] that
   /// give about [tickCount] ticks (a month's first day, a year's).
-  factory DesignTimeScale.nice({
+  factory RawTimeScale.nice({
     required DateTime min,
     required DateTime max,
     required double start,
@@ -387,7 +387,7 @@ class DesignTimeScale extends DesignScale {
       lo = _floor(lo, unit, n);
       last = step;
     }
-    return DesignTimeScale(min: lo, max: hi, start: start, end: end);
+    return RawTimeScale(min: lo, max: hi, start: start, end: end);
   }
 
   /// The earliest time.
@@ -396,7 +396,7 @@ class DesignTimeScale extends DesignScale {
   /// The latest time.
   final DateTime max;
 
-  final DesignLinearScale _linear;
+  final RawLinearScale _linear;
 
   /// The position of [time].
   double mapDate(DateTime time) => map(time.millisecondsSinceEpoch.toDouble());
@@ -408,18 +408,18 @@ class DesignTimeScale extends DesignScale {
   double invert(double position) => _linear.invert(position);
 
   @override
-  List<DesignScaleTick> ticks(
+  List<RawScaleTick> ticks(
     RawWidgetsLocalizations localizations, {
     int count = 5,
   }) {
     final (unit, n) = _stepFor(min, max, count);
-    final ticks = <DesignScaleTick>[];
+    final ticks = <RawScaleTick>[];
     var at = _floor(min, unit, n);
     if (at.isBefore(min)) at = _add(at, unit, n);
     while (!at.isAfter(max) && ticks.length < 1000) {
       final value = at.millisecondsSinceEpoch.toDouble();
       ticks.add(
-        DesignScaleTick(
+        RawScaleTick(
           value: value,
           position: map(value),
           label: _label(localizations, at, unit),
@@ -505,7 +505,7 @@ class DesignTimeScale extends DesignScale {
   };
 
   @override
-  String toString() => 'DesignTimeScale($min–$max → $start–$end)';
+  String toString() => 'RawTimeScale($min–$max → $start–$end)';
 }
 
 /// Categories side by side (bars): [count] bands from [start] to [end],
@@ -513,11 +513,11 @@ class DesignTimeScale extends DesignScale {
 /// ends. A value is a band's index; [map] gives its centre.
 ///
 /// ```dart
-/// const DesignBandScale(count: 4, start: 0, end: 400, labels: ['Q1', 'Q2', 'Q3', 'Q4']).map(2)
+/// const RawBandScale(count: 4, start: 0, end: 400, labels: ['Q1', 'Q2', 'Q3', 'Q4']).map(2)
 /// ```
-class DesignBandScale extends DesignScale {
+class RawBandScale extends RawScale {
   /// A band scale.
-  const DesignBandScale({
+  const RawBandScale({
     required this.count,
     required super.start,
     required super.end,
@@ -572,12 +572,12 @@ class DesignBandScale extends DesignScale {
   }
 
   @override
-  List<DesignScaleTick> ticks(
+  List<RawScaleTick> ticks(
     RawWidgetsLocalizations localizations, {
     int count = 5,
   }) => [
     for (var i = 0; i < this.count; i++)
-      DesignScaleTick(
+      RawScaleTick(
         value: i.toDouble(),
         position: map(i.toDouble()),
         label: labels != null && i < labels!.length
@@ -587,12 +587,12 @@ class DesignBandScale extends DesignScale {
   ];
 
   @override
-  String toString() => 'DesignBandScale($count bands, $start–$end)';
+  String toString() => 'RawBandScale($count bands, $start–$end)';
 }
 
 /// The words for a value of [value] given as [figure]: the value in the
 /// reader's digits at the scale's decimals; [localizations] writes others.
-typedef DesignChartValueBuilder = String Function(
+typedef RawChartValueBuilder = String Function(
   double value,
   String figure,
   RawWidgetsLocalizations localizations,
@@ -601,20 +601,20 @@ typedef DesignChartValueBuilder = String Function(
 /// How a chart writes a value, on its axis, in what a screen reader hears
 /// and in its table: in the reader's digits and separators (Arabic-Indic in
 /// Arabic), at its scale's decimals (or [fractionDigits]), with a unit
-/// ([prefix], [suffix]), or as [DesignChartValueFormat.custom] builds it.
+/// ([prefix], [suffix]), or as [RawChartValueFormat.custom] builds it.
 ///
 /// A look's own painter writes its ticks with [labelTicks] and a value with
-/// [format]; [DesignChart.valueFormat] and [DesignPieChart.valueFormat] take
+/// [format]; [RawChart.valueFormat] and [RawPieChart.valueFormat] take
 /// one. The unit is the app's words, in the reader's language: a format
 /// writes digits for the locale, not units.
 ///
 /// ```dart
-/// const DesignChartValueFormat(suffix: ' h').format(4, RawWidgetsLocalizations.of(context))
+/// const RawChartValueFormat(suffix: ' h').format(4, RawWidgetsLocalizations.of(context))
 /// ```
 @immutable
-class DesignChartValueFormat {
+class RawChartValueFormat {
   /// A value with [prefix] before it and [suffix] after (r'$', ' h', '%').
-  const DesignChartValueFormat({
+  const RawChartValueFormat({
     this.prefix = '',
     this.suffix = '',
     this.fractionDigits,
@@ -623,8 +623,8 @@ class DesignChartValueFormat {
 
   /// A value as [builder] writes it, from the figure in the reader's digits
   /// (a compact 1.2k past a thousand, say).
-  const DesignChartValueFormat.custom(
-    DesignChartValueBuilder builder, {
+  const RawChartValueFormat.custom(
+    RawChartValueBuilder builder, {
     this.fractionDigits,
   }) : _builder = builder,
        prefix = '',
@@ -642,7 +642,7 @@ class DesignChartValueFormat {
   /// the value has, up to three.
   final int? fractionDigits;
 
-  final DesignChartValueBuilder? _builder;
+  final RawChartValueBuilder? _builder;
 
   /// [value]'s words for [localizations], with [fractionDigits] decimals
   /// when this format sets none (a scale's tick's).
@@ -661,12 +661,12 @@ class DesignChartValueFormat {
   }
 
   /// [ticks] labelled by this format, each at its scale's decimals.
-  List<DesignScaleTick> labelTicks(
-    List<DesignScaleTick> ticks,
+  List<RawScaleTick> labelTicks(
+    List<RawScaleTick> ticks,
     RawWidgetsLocalizations localizations,
   ) => [
     for (final tick in ticks)
-      DesignScaleTick(
+      RawScaleTick(
         value: tick.value,
         position: tick.position,
         label: format(
@@ -680,7 +680,7 @@ class DesignChartValueFormat {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignChartValueFormat &&
+      other is RawChartValueFormat &&
       other.prefix == prefix &&
       other.suffix == suffix &&
       other.fractionDigits == fractionDigits &&
@@ -691,8 +691,8 @@ class DesignChartValueFormat {
 
   @override
   String toString() => _builder != null
-      ? 'DesignChartValueFormat.custom()'
-      : 'DesignChartValueFormat(${prefix.isEmpty ? '' : 'prefix: "$prefix", '}'
+      ? 'RawChartValueFormat.custom()'
+      : 'RawChartValueFormat(${prefix.isEmpty ? '' : 'prefix: "$prefix", '}'
             '${suffix.isEmpty ? '' : 'suffix: "$suffix", '}'
             'fractionDigits: $fractionDigits)';
 }

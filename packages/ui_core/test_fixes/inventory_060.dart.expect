@@ -1,0 +1,10 @@
+// Each inventory name ui_core 0.6.0 renamed, used once; dart fix renames it (inventory_060.dart.expect).
+import 'package:ui_core/inventory.dart';
+
+RawInventory? i0;
+RawInventoryEntry? i1;
+RawInventoryError? i2;
+RawInventoryGallery? i3;
+RawInventoryGroupBuilder? i4;
+RawInventoryRow? i5;
+RawInventoryRowBuilder? i6;

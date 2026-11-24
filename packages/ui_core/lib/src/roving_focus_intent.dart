@@ -1,11 +1,10 @@
-/// The move the arrow keys make in a [DesignRadioGroup], a
-/// [RawSegmentedButton], a [RawTabBar] or any [RawRovingFocusGroup], as an
-/// [Intent], so an app changes a key the Flutter way.
+/// The move the arrow keys make in a [RawSegmentedButton], a [RawTabBar] or
+/// any [RawRovingFocusGroup], as an [Intent], so an app changes a key the
+/// Flutter way.
 library;
 
 import 'package:flutter/widgets.dart';
 
-import 'radio_group.dart' show DesignRadioGroup;
 import 'roving_focus.dart' show RawRovingFocusGroup;
 import 'tabs.dart' show RawTabBar;
 import 'toggle_group.dart' show RawSegmentedButton;
@@ -25,13 +24,11 @@ enum RawRovingFocusMove {
   last,
 }
 
-/// Moves the focus to another item of a [DesignRadioGroup], a
-/// [RawSegmentedButton] or a [RawTabBar] (and, in a radio group and a
-/// one-choice toggle group, chooses it).
+/// Moves the focus to another item of a [RawSegmentedButton] or a
+/// [RawTabBar] (and, in a one-choice toggle group, chooses it).
 ///
-/// The group binds its arrows (and, but for a radio group, Home and End) to
-/// it, with a [Shortcuts] inside it, as Flutter's `RadioGroup` binds its
-/// arrows. To change what a move does, put an [Actions] with an action for
+/// The group binds its arrows, Home and End to it, with a [Shortcuts] inside
+/// it, as Flutter's `RadioGroup` binds its arrows. To change what a move does, put an [Actions] with an action for
 /// this intent round the group: the group's own action is
 /// [Action.overridable], so the app's runs in its place. To add a key, bind
 /// it to this intent in a [Shortcuts] round the group: the intent is

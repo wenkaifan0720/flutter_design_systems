@@ -21,7 +21,7 @@ import '../anchored_overlay.dart';
 /// [view] is the overlay's own media query, not the anchor's: a page's
 /// scaffold may have taken the keyboard's inset or the status bar's padding
 /// out of what its body (and so the anchor) sees.
-Rect designOverlayBounds({
+Rect rawOverlayBounds({
   required Size overlaySize,
   required MediaQueryData? view,
   required EdgeInsets padding,
@@ -51,8 +51,8 @@ Rect designOverlayBounds({
 /// ([RawPopoverFit.whole]: a calendar, a grid) needs its whole [extent]:
 /// until it is measured, or while it fills its side's room (capped there,
 /// it may be taller), it takes the roomier side. [bounds] is
-/// [designOverlayBounds].
-RawPopoverSide designResolveSide(
+/// [rawOverlayBounds].
+RawPopoverSide rawResolveSide(
   Rect anchor,
   Rect bounds,
   RawPopoverPlacement placement,
@@ -62,8 +62,8 @@ RawPopoverSide designResolveSide(
   final side = placement.side;
   if (!placement.flip) return side;
   final gap = placement.gap;
-  final room = designOverlayRoom(anchor, bounds, side, gap, textDirection);
-  final other = designOverlayRoom(
+  final room = rawOverlayRoom(anchor, bounds, side, gap, textDirection);
+  final other = rawOverlayRoom(
     anchor,
     bounds,
     side.opposite,
@@ -86,26 +86,20 @@ RawPopoverSide designResolveSide(
 
 /// The side whose room is the larger: where a surface is measured, as it
 /// is laid out there when it flips.
-RawPopoverSide designRoomierSide(
+RawPopoverSide rawRoomierSide(
   Rect anchor,
   Rect bounds,
   RawPopoverSide side,
   double gap,
   TextDirection direction,
 ) {
-  final room = designOverlayRoom(anchor, bounds, side, gap, direction);
-  final other = designOverlayRoom(
-    anchor,
-    bounds,
-    side.opposite,
-    gap,
-    direction,
-  );
+  final room = rawOverlayRoom(anchor, bounds, side, gap, direction);
+  final other = rawOverlayRoom(anchor, bounds, side.opposite, gap, direction);
   return other > room ? side.opposite : side;
 }
 
 /// The room on [side] of [anchor] inside [bounds], along the side's axis.
-double designOverlayRoom(
+double rawOverlayRoom(
   Rect anchor,
   Rect bounds,
   RawPopoverSide side,
@@ -129,14 +123,14 @@ double designOverlayRoom(
 
 /// The most room a surface on [side] of [anchor] has: the room on that side
 /// along its axis, the bounds across it.
-Size designOverlayMaxSize(
+Size rawOverlayMaxSize(
   Rect anchor,
   Rect bounds,
   RawPopoverSide side,
   double gap,
   TextDirection direction,
 ) {
-  final room = designOverlayRoom(anchor, bounds, side, gap, direction);
+  final room = rawOverlayRoom(anchor, bounds, side, gap, direction);
   return side.isVertical ? Size(bounds.width, room) : Size(room, bounds.height);
 }
 
@@ -146,7 +140,7 @@ Size designOverlayMaxSize(
 /// A vertical menu that would cross the screen edge aligns its opposite
 /// edge with the anchor when it fits there and [flipAlignment] allows it.
 /// A context menu tries the other side of its pointer before shifting.
-Offset designPlaceOverlay({
+Offset rawPlaceOverlay({
   required Rect anchor,
   required Rect bounds,
   required Size size,
@@ -211,8 +205,7 @@ Offset designPlaceOverlay({
 
 /// Where a surface was placed, told to its listeners as it is laid out:
 /// [RawPopoverInfo.surfaceRect]'s value.
-class DesignSurfaceRect extends ChangeNotifier
-    implements ValueListenable<Rect?> {
+class RawSurfaceRect extends ChangeNotifier implements ValueListenable<Rect?> {
   Rect? _value;
 
   @override
@@ -230,9 +223,9 @@ class DesignSurfaceRect extends ChangeNotifier
 /// delegate: its constraints (the room on its side; a list from a field at
 /// least the field's width and at most its cap) and its offset, told to
 /// [placed] as it lands.
-class DesignOverlayLayout extends SingleChildLayoutDelegate {
+class RawOverlayLayout extends SingleChildLayoutDelegate {
   /// The layout of a surface on [side] of [anchor] within [bounds].
-  DesignOverlayLayout({
+  RawOverlayLayout({
     required this.anchor,
     required this.bounds,
     required this.side,
@@ -262,9 +255,9 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
   final Size maxSize;
 
   /// Told where the surface lands.
-  final DesignSurfaceRect? placed;
+  final RawSurfaceRect? placed;
 
-  /// Where the surface goes, from its size, in place of [designPlaceOverlay]'s
+  /// Where the surface goes, from its size, in place of [rawPlaceOverlay]'s
   /// (a caller's `RawPopover.positionDelegate`); null: its own.
   final Offset Function(Size childSize)? placeAt;
 
@@ -277,7 +270,7 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
       return BoxConstraints(maxWidth: maxSize.width, maxHeight: maxSize.height);
     }
     // A list from a field: the field's width, wider only to its cap
-    // (DesignListWidth picks within), never past the room on screen.
+    // (RawListWidth picks within), never past the room on screen.
     final least = anchor.width.clamp(0.0, maxSize.width);
     final most = math
         .max(anchor.width, placement.maxWidth)
@@ -294,7 +287,7 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
     final at = placeAt;
     final offset = at != null
         ? at(childSize)
-        : designPlaceOverlay(
+        : rawPlaceOverlay(
             flipAlignment:
                 placement.flip &&
                 placement.matchAnchorWidth &&
@@ -312,7 +305,7 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
   }
 
   @override
-  bool shouldRelayout(DesignOverlayLayout oldDelegate) =>
+  bool shouldRelayout(RawOverlayLayout oldDelegate) =>
       anchor != oldDelegate.anchor ||
       bounds != oldDelegate.bounds ||
       side != oldDelegate.side ||
@@ -325,17 +318,17 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
 
 /// Told a surface's own extent along its side's axis, as measured in the
 /// larger of the rooms on its two sides, and whether [layout]'s side is
-/// wrong for it ([designResolveSide] with that extent picks the other).
-typedef DesignExtentCallback = void Function(double extent, bool wrongSide);
+/// wrong for it ([rawResolveSide] with that extent picks the other).
+typedef RawExtentCallback = void Function(double extent, bool wrongSide);
 
 /// Lays a surface out round its anchor by [layout], as a
 /// [CustomSingleChildLayout] would, measuring it first: laid out in the
 /// larger of the rooms on its two sides, its extent is what it needs, and
 /// [onExtent] is told it. A surface on the wrong side for that extent is not
 /// painted or hit until it is built again with it.
-class DesignOverlayPlace extends SingleChildRenderObjectWidget {
+class RawOverlayPlace extends SingleChildRenderObjectWidget {
   /// Places [child] by [layout].
-  const DesignOverlayPlace({
+  const RawOverlayPlace({
     super.key,
     required this.layout,
     this.onExtent,
@@ -343,10 +336,10 @@ class DesignOverlayPlace extends SingleChildRenderObjectWidget {
   });
 
   /// Where the surface goes.
-  final DesignOverlayLayout layout;
+  final RawOverlayLayout layout;
 
   /// Told the surface's extent at each layout.
-  final DesignExtentCallback? onExtent;
+  final RawExtentCallback? onExtent;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
@@ -363,15 +356,15 @@ class DesignOverlayPlace extends SingleChildRenderObjectWidget {
 class _RenderOverlayPlace extends RenderShiftedBox {
   _RenderOverlayPlace(this._layout, this.onExtent) : super(null);
 
-  DesignOverlayLayout _layout;
-  set placement(DesignOverlayLayout value) {
+  RawOverlayLayout _layout;
+  set placement(RawOverlayLayout value) {
     if (identical(value, _layout)) return;
     final relayout = value.shouldRelayout(_layout);
     _layout = value;
     if (relayout) markNeedsLayout();
   }
 
-  DesignExtentCallback? onExtent;
+  RawExtentCallback? onExtent;
 
   // Laid out on the wrong side for its extent: built again next frame.
   bool _wrongSide = false;
@@ -388,7 +381,7 @@ class _RenderOverlayPlace extends RenderShiftedBox {
     final placement = layout.placement;
     double? extent;
     if (placement.flip) {
-      final roomier = designRoomierSide(
+      final roomier = rawRoomierSide(
         layout.anchor,
         layout.bounds,
         layout.side,
@@ -396,13 +389,13 @@ class _RenderOverlayPlace extends RenderShiftedBox {
         layout.textDirection,
       );
       if (roomier != layout.side) {
-        final measure = DesignOverlayLayout(
+        final measure = RawOverlayLayout(
           anchor: layout.anchor,
           bounds: layout.bounds,
           side: roomier,
           placement: placement,
           textDirection: layout.textDirection,
-          maxSize: designOverlayMaxSize(
+          maxSize: rawOverlayMaxSize(
             layout.anchor,
             layout.bounds,
             roomier,
@@ -424,7 +417,7 @@ class _RenderOverlayPlace extends RenderShiftedBox {
     if (placement.flip) {
       // On the larger side, the layout itself measured it.
       extent ??= _extentOf(child.size, layout.side);
-      final side = designResolveSide(
+      final side = rawResolveSide(
         layout.anchor,
         layout.bounds,
         placement,
@@ -461,9 +454,9 @@ class _RenderOverlayPlace extends RenderShiftedBox {
 /// and its cap at most, from its first frame. A child that can't say its
 /// width ahead (a viewport: a lazy `ListView`, a `CustomScrollView`; a
 /// `LayoutBuilder`) takes the least.
-class DesignListWidth extends SingleChildRenderObjectWidget {
+class RawListWidth extends SingleChildRenderObjectWidget {
   /// Sizes [child] to its widest line.
-  const DesignListWidth({super.key, required Widget super.child});
+  const RawListWidth({super.key, required Widget super.child});
 
   @override
   RenderObject createRenderObject(BuildContext context) => _RenderListWidth();

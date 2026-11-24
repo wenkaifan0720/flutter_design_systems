@@ -1,4 +1,4 @@
-// RenderDesignSemanticsProxy: the one public type of every render object
+// RenderSemanticsProxy: the one public type of every render object
 // ui_core puts round a control only to add semantics (round a labelled
 // RawButton's face, a RawInputDecorator's control, a RawTabGroup's tabs),
 // so a layout that looks through such proxies by type (css_box hosts
@@ -12,10 +12,10 @@ import 'package:ui_core/ui_core.dart';
 
 import 'behaviour_harness.dart';
 
-List<RenderDesignSemanticsProxy> _proxies(WidgetTester tester, Finder at) {
-  final found = <RenderDesignSemanticsProxy>[];
+List<RenderSemanticsProxy> _proxies(WidgetTester tester, Finder at) {
+  final found = <RenderSemanticsProxy>[];
   void visit(RenderObject node) {
-    if (node is RenderDesignSemanticsProxy) found.add(node);
+    if (node is RenderSemanticsProxy) found.add(node);
     node.visitChildren(visit);
   }
 

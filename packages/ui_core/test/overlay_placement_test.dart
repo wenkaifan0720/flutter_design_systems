@@ -20,7 +20,7 @@ const _surfaceKey = ValueKey('surface');
 const _loose = RawPopoverPlacement(matchAnchorWidth: false);
 
 late RawPopoverInfo _info;
-DesignSurfaceFocus? _shared;
+RawSurfaceFocus? _shared;
 
 // The reference painter: a pressable anchor of [anchorSize] that opens the
 // surface at [at] (in the anchor) or from the anchor, and a surface of
@@ -60,7 +60,7 @@ Widget _menu({
         children: [
           Builder(
             builder: (context) {
-              _shared = DesignSurfaceFocus.maybeOf(context);
+              _shared = RawSurfaceFocus.maybeOf(context);
               return const SizedBox.shrink();
             },
           ),
@@ -138,7 +138,7 @@ void main() {
     test('bounds: the larger of the safe area and the keyboard, then a '
         'look\'s padding and the margin', () {
       expect(
-        designOverlayBounds(
+        rawOverlayBounds(
           overlaySize: overlay,
           view: null,
           padding: EdgeInsets.zero,
@@ -147,7 +147,7 @@ void main() {
         const Rect.fromLTRB(8, 8, 792, 592),
       );
       expect(
-        designOverlayBounds(
+        rawOverlayBounds(
           overlaySize: overlay,
           view: const MediaQueryData(
             padding: EdgeInsets.only(top: 40, bottom: 30),
@@ -160,7 +160,7 @@ void main() {
       );
       // Padding past the overlay leaves an empty rectangle, never an
       // inverted one.
-      final none = designOverlayBounds(
+      final none = rawOverlayBounds(
         overlaySize: overlay,
         view: null,
         padding: const EdgeInsets.only(left: 900, top: 700),
@@ -174,7 +174,7 @@ void main() {
         'extent and the other more', () {
       const bounds = Rect.fromLTRB(8, 8, 792, 592);
       RawPopoverSide sideFor(Rect anchor, RawPopoverPlacement p) =>
-          designResolveSide(anchor, bounds, p, TextDirection.ltr);
+          rawResolveSide(anchor, bounds, p, TextDirection.ltr);
       const low = Rect.fromLTWH(100, 500, 100, 44);
       expect(sideFor(low, _loose), RawPopoverSide.above);
       expect(
@@ -187,7 +187,7 @@ void main() {
         RawPopoverSide.end,
       );
       expect(
-        designResolveSide(
+        rawResolveSide(
           left,
           bounds,
           const RawPopoverPlacement(side: RawPopoverSide.end),
@@ -197,7 +197,7 @@ void main() {
         reason: 'right to left, the end is the left',
       );
       expect(
-        designOverlayMaxSize(
+        rawOverlayMaxSize(
           left,
           bounds,
           RawPopoverSide.end,
@@ -217,7 +217,7 @@ void main() {
         RawPopoverSide side = RawPopoverSide.below,
         RawPopoverAlign align = RawPopoverAlign.start,
         TextDirection direction = TextDirection.ltr,
-      }) => designPlaceOverlay(
+      }) => rawPlaceOverlay(
         anchor: Rect.fromLTWH(point.dx, point.dy, 0, 0),
         bounds: bounds,
         size: size,
@@ -264,7 +264,7 @@ void main() {
         'anchor before shifting into view', () {
       const bounds = Rect.fromLTRB(8, 8, 792, 592);
       Offset place(Size size, TextDirection direction, {bool flip = true}) =>
-          designPlaceOverlay(
+          rawPlaceOverlay(
             anchor: const Rect.fromLTWH(700, 100, 80, 40),
             flipAlignment: flip,
             bounds: bounds,
@@ -284,7 +284,7 @@ void main() {
     });
 
     test('a surface rectangle tells its listeners only when it moves', () {
-      final placed = DesignSurfaceRect();
+      final placed = RawSurfaceRect();
       addTearDown(placed.dispose);
       var told = 0;
       placed.addListener(() => told++);
@@ -699,12 +699,12 @@ void main() {
     });
 
     testWidgets('outside a surface there is none to share', (tester) async {
-      DesignSurfaceFocus? outside;
+      RawSurfaceFocus? outside;
       await tester.pumpWidget(
         harness(
           Builder(
             builder: (context) {
-              outside = DesignSurfaceFocus.maybeOf(context);
+              outside = RawSurfaceFocus.maybeOf(context);
               return const SizedBox();
             },
           ),

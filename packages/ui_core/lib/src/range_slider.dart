@@ -1,4 +1,4 @@
-/// A range slider, headless: two [DesignValueHandle]s on one track that
+/// A range slider, headless: two [RawValueHandle]s on one track that
 /// cannot cross. A drag or a press on the track moves the nearer thumb.
 library;
 
@@ -311,7 +311,7 @@ class _DesignRangeSliderState extends State<RawRangeSlider> {
           top: 0,
           width: thumb.width,
           height: thumb.height,
-          child: DesignValueHandle(
+          child: RawValueHandle(
             value: index == 0 ? r.start : r.end,
             min: widget.min,
             max: widget.max,

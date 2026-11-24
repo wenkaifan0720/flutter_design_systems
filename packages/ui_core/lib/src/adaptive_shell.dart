@@ -3,7 +3,7 @@
 /// sidebar on a desktop (Material's window size classes), the body beside
 /// or above it. The destinations are one tab stop, the arrows moving along
 /// them; F6 moves focus between the navigation and the body. Given each
-/// destination's root page ([DesignAdaptiveShell.branches]), each keeps its
+/// destination's root page ([RawAdaptiveShell.branches]), each keeps its
 /// own stack, and back pops the selected one.
 library;
 
@@ -20,7 +20,7 @@ import 'pressable.dart';
 import 'toast.dart';
 
 /// Material's window size classes, by width in logical pixels.
-enum DesignWindowSizeClass {
+enum RawWindowSizeClass {
   /// Under 600: a phone held upright.
   compact,
 
@@ -39,9 +39,9 @@ enum DesignWindowSizeClass {
   /// The class of a window [width] wide.
   ///
   /// ```dart
-  /// DesignWindowSizeClass.fromWidth(900)
+  /// RawWindowSizeClass.fromWidth(900)
   /// ```
-  static DesignWindowSizeClass fromWidth(double width) => width < 600
+  static RawWindowSizeClass fromWidth(double width) => width < 600
       ? compact
       : width < 840
       ? medium
@@ -53,12 +53,12 @@ enum DesignWindowSizeClass {
 
   /// The class of the window [context] is in ([MediaQuery]'s size); [context]
   /// builds again when the width changes.
-  static DesignWindowSizeClass of(BuildContext context) =>
+  static RawWindowSizeClass of(BuildContext context) =>
       fromWidth(MediaQuery.sizeOf(context).width);
 }
 
 /// How a shell shows its destinations.
-enum DesignNavigationMode {
+enum RawNavigationMode {
   /// A bar along the bottom (compact).
   bar,
 
@@ -69,19 +69,19 @@ enum DesignNavigationMode {
   sidebar;
 
   /// The mode for a shell [width] wide.
-  static DesignNavigationMode fromWidth(double width) =>
-      switch (DesignWindowSizeClass.fromWidth(width)) {
-        DesignWindowSizeClass.compact => bar,
-        DesignWindowSizeClass.medium || DesignWindowSizeClass.expanded => rail,
+  static RawNavigationMode fromWidth(double width) =>
+      switch (RawWindowSizeClass.fromWidth(width)) {
+        RawWindowSizeClass.compact => bar,
+        RawWindowSizeClass.medium || RawWindowSizeClass.expanded => rail,
         _ => sidebar,
       };
 }
 
 /// A destination: its name and glyphs, as Material's NavigationDestination.
 @immutable
-class DesignNavigationDestination {
+class RawNavigationDestination {
   /// A destination named [label].
-  const DesignNavigationDestination({
+  const RawNavigationDestination({
     required this.label,
     required this.icon,
     this.selectedIcon,
@@ -108,9 +108,9 @@ class DesignNavigationDestination {
 
 /// What a look paints a destination from.
 @immutable
-class DesignDestinationDetails {
+class RawDestinationDetails {
   /// The state; the shell makes it.
-  const DesignDestinationDetails({
+  const RawDestinationDetails({
     required this.states,
     required this.mode,
     required this.index,
@@ -122,7 +122,7 @@ class DesignDestinationDetails {
   final Set<WidgetState> states;
 
   /// Where it shows: a bar, a rail or a sidebar.
-  final DesignNavigationMode mode;
+  final RawNavigationMode mode;
 
   /// Its place: 0 first.
   final int index;
@@ -133,9 +133,9 @@ class DesignDestinationDetails {
 
 /// What a look lays the navigation out from.
 @immutable
-class DesignNavigationDetails {
+class RawNavigationDetails {
   /// The state; the shell makes it.
-  const DesignNavigationDetails({
+  const RawNavigationDetails({
     required this.mode,
     required this.destinations,
     required this.selectedIndex,
@@ -143,7 +143,7 @@ class DesignNavigationDetails {
   });
 
   /// A bar, a rail or a sidebar.
-  final DesignNavigationMode mode;
+  final RawNavigationMode mode;
 
   /// The destinations, built: each presses, takes the keys and speaks round
   /// the look's paint. A bar lays them in a row, a rail or a sidebar in a
@@ -154,7 +154,7 @@ class DesignNavigationDetails {
   final int selectedIndex;
 
   /// How far the bar is shown, on the shell's spring, as
-  /// [DesignAdaptiveShell.showNavigation] changes: 1 shown, 0 gone. An
+  /// [RawAdaptiveShell.showNavigation] changes: 1 shown, 0 gone. An
   /// underdamped spring runs past either; clamp it before an opacity.
   final Animation<double> visibility;
 
@@ -166,7 +166,7 @@ class DesignNavigationDetails {
   /// alone, the action outside it. Without it the shell takes the whole bar
   /// for the tab bar. In a rail or a sidebar it adds nothing.
   Widget group(Widget destinations) => _DestinationGroup(
-    bar: mode == DesignNavigationMode.bar,
+    bar: mode == RawNavigationMode.bar,
     child: destinations,
   );
 }
@@ -249,7 +249,7 @@ class _RenderNavigationNode extends RenderProxyBox {
   }
 }
 
-// [DesignNavigationDetails.group]: in a bar, the tab bar round the
+// [RawNavigationDetails.group]: in a bar, the tab bar round the
 // destinations alone; it tells the navigation's node it is there.
 class _DestinationGroup extends SingleChildRenderObjectWidget {
   const _DestinationGroup({required this.bar, required super.child});
@@ -312,20 +312,20 @@ class _RenderDestinationGroup extends RenderProxyBox {
 }
 
 /// Paints a destination.
-typedef DesignDestinationBuilder = Widget Function(
+typedef RawDestinationBuilder = Widget Function(
   BuildContext context,
-  DesignNavigationDestination destination,
-  DesignDestinationDetails details,
+  RawNavigationDestination destination,
+  RawDestinationDetails details,
 );
 
 /// Lays out and paints the navigation round its destinations.
-typedef DesignNavigationBuilder = Widget Function(
+typedef RawNavigationBuilder = Widget Function(
   BuildContext context,
-  DesignNavigationDetails details,
+  RawNavigationDetails details,
 );
 
 /// Where back goes from a branch at its root page.
-enum DesignBranchBackBehavior {
+enum RawBranchBackBehavior {
   /// To the first destination, then out of the app (Material's rule).
   firstDestination,
 
@@ -337,7 +337,7 @@ enum DesignBranchBackBehavior {
 }
 
 /// An app's frame: [destinations] in a bar, a rail or a sidebar by the
-/// shell's width ([DesignNavigationMode.fromWidth], or [mode]), and the
+/// shell's width ([RawNavigationMode.fromWidth], or [mode]), and the
 /// app's [body] beside it (above a bar). The look paints each destination
 /// ([destinationBuilder]) and the navigation round them
 /// ([navigationBuilder]); the shell gives them their keys, their meaning
@@ -348,21 +348,21 @@ enum DesignBranchBackBehavior {
 /// sidebar), wrapping, Home and End to the ends, disabled ones skipped;
 /// Enter or Space chooses, as switching a destination is heavy. F6 (Shift+F6
 /// back) moves focus between the navigation and the body, and the panes
-/// inside it ([DesignListDetail]'s list and detail, a shown toaster's toasts).
+/// inside it ([RawListDetail]'s list and detail, a shown toaster's toasts).
 /// A screen reader hears each destination as a tab, selected or not, and its
 /// place ("Tab 1 of 3"); a bar is a tab bar (its destinations alone, when
-/// the look places [DesignNavigationDetails.group] round them), a sidebar is
+/// the look places [RawNavigationDetails.group] round them), a sidebar is
 /// named "Navigation menu".
 ///
 /// [body] is the app's: an `IndexedStack` of its own, or go_router's
 /// `StatefulNavigationShell`.
 ///
 /// ```dart
-/// DesignAdaptiveShell(destinations: const [DesignNavigationDestination(label: 'Home', icon: IconData(0xe318)), DesignNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), body: const Text('Home'))
+/// RawAdaptiveShell(destinations: const [RawNavigationDestination(label: 'Home', icon: IconData(0xe318)), RawNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), body: const Text('Home'))
 /// ```
-class DesignAdaptiveShell extends StatefulWidget {
+class RawAdaptiveShell extends StatefulWidget {
   /// A shell over the app's own [body].
-  const DesignAdaptiveShell({
+  const RawAdaptiveShell({
     super.key,
     required this.destinations,
     required this.selectedIndex,
@@ -376,7 +376,7 @@ class DesignAdaptiveShell extends StatefulWidget {
     this.stiffness = 700,
   }) : branches = null,
        navigatorKeys = null,
-       backBehavior = DesignBranchBackBehavior.firstDestination,
+       backBehavior = RawBranchBackBehavior.firstDestination,
        assert(dampingRatio > 0 && stiffness > 0);
 
   /// A shell whose body is one [Navigator] per destination, each starting
@@ -386,9 +386,9 @@ class DesignAdaptiveShell extends StatefulWidget {
   /// branch, then at its root goes where [backBehavior] says, then leaves.
   ///
   /// ```dart
-  /// DesignAdaptiveShell.branches(destinations: const [DesignNavigationDestination(label: 'Home', icon: IconData(0xe318)), DesignNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), branches: [(context) => const Text('Home'), (context) => const Text('Mail')])
+  /// RawAdaptiveShell.branches(destinations: const [RawNavigationDestination(label: 'Home', icon: IconData(0xe318)), RawNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), branches: [(context) => const Text('Home'), (context) => const Text('Mail')])
   /// ```
-  const DesignAdaptiveShell.branches({
+  const RawAdaptiveShell.branches({
     super.key,
     required this.destinations,
     required this.selectedIndex,
@@ -397,7 +397,7 @@ class DesignAdaptiveShell extends StatefulWidget {
     required this.navigationBuilder,
     required List<WidgetBuilder> this.branches,
     this.navigatorKeys,
-    this.backBehavior = DesignBranchBackBehavior.firstDestination,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
     this.mode,
     this.showNavigation = true,
     this.dampingRatio = 1,
@@ -406,7 +406,7 @@ class DesignAdaptiveShell extends StatefulWidget {
        assert(dampingRatio > 0 && stiffness > 0);
 
   /// The destinations.
-  final List<DesignNavigationDestination> destinations;
+  final List<RawNavigationDestination> destinations;
 
   /// The selected destination.
   final int selectedIndex;
@@ -416,10 +416,10 @@ class DesignAdaptiveShell extends StatefulWidget {
   final ValueChanged<int>? onDestinationSelected;
 
   /// Paints a destination.
-  final DesignDestinationBuilder destinationBuilder;
+  final RawDestinationBuilder destinationBuilder;
 
   /// Lays out and paints the navigation round its destinations.
-  final DesignNavigationBuilder navigationBuilder;
+  final RawNavigationBuilder navigationBuilder;
 
   /// The app's body; null with [branches].
   final Widget? body;
@@ -432,10 +432,10 @@ class DesignAdaptiveShell extends StatefulWidget {
   final List<GlobalKey<NavigatorState>>? navigatorKeys;
 
   /// Where back goes from a branch at its root page.
-  final DesignBranchBackBehavior backBehavior;
+  final RawBranchBackBehavior backBehavior;
 
   /// How the destinations show; null: by the shell's width.
-  final DesignNavigationMode? mode;
+  final RawNavigationMode? mode;
 
   /// Whether the bar shows: false while a page is pushed over a root, and the
   /// bar springs away (a rail or a sidebar stays).
@@ -448,7 +448,7 @@ class DesignAdaptiveShell extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<DesignAdaptiveShell> createState() => _DesignAdaptiveShellState();
+  State<RawAdaptiveShell> createState() => _DesignAdaptiveShellState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -467,13 +467,13 @@ class DesignAdaptiveShell extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDestinationBuilder>.has(
+        ObjectFlagProperty<RawDestinationBuilder>.has(
           'destinationBuilder',
           destinationBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignNavigationBuilder>.has(
+        ObjectFlagProperty<RawNavigationBuilder>.has(
           'navigationBuilder',
           navigationBuilder,
         ),
@@ -487,15 +487,13 @@ class DesignAdaptiveShell extends StatefulWidget {
         ),
       )
       ..add(
-        EnumProperty<DesignBranchBackBehavior>(
+        EnumProperty<RawBranchBackBehavior>(
           'backBehavior',
           backBehavior,
-          defaultValue: DesignBranchBackBehavior.firstDestination,
+          defaultValue: RawBranchBackBehavior.firstDestination,
         ),
       )
-      ..add(
-        EnumProperty<DesignNavigationMode>('mode', mode, defaultValue: null),
-      )
+      ..add(EnumProperty<RawNavigationMode>('mode', mode, defaultValue: null))
       ..add(
         FlagProperty(
           'showNavigation',
@@ -509,12 +507,12 @@ class DesignAdaptiveShell extends StatefulWidget {
   }
 }
 
-class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
+class _DesignAdaptiveShellState extends State<RawAdaptiveShell>
     with SingleTickerProviderStateMixin {
-  final RovingFocus _focus = RovingFocus('DesignAdaptiveShell');
+  final RovingFocus _focus = RovingFocus('RawAdaptiveShell');
 
   // The body keeps its state as the mode changes and the frame with it.
-  final GlobalKey _body = GlobalKey(debugLabel: 'DesignAdaptiveShell body');
+  final GlobalKey _body = GlobalKey(debugLabel: 'RawAdaptiveShell body');
   late final AnimationController _visibility = AnimationController.unbounded(
     vsync: this,
     value: widget.showNavigation ? 1 : 0,
@@ -526,17 +524,17 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
   final List<GlobalKey<NavigatorState>> _keys = [];
   final Map<int, bool> _deep = {};
 
-  // The destinations chosen before ([DesignBranchBackBehavior.history]).
+  // The destinations chosen before ([RawBranchBackBehavior.history]).
   final List<int> _history = [];
   bool _goingBack = false;
 
   @override
-  void didUpdateWidget(DesignAdaptiveShell oldWidget) {
+  void didUpdateWidget(RawAdaptiveShell oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.showNavigation != widget.showNavigation) {
       _visibility.animateWith(
-        designSpringSimulation(
-          DesignMotionPolicy.of(context).spatial(
+        rawSpringSimulation(
+          RawMotionPolicy.of(context).spatial(
             dampingRatio: widget.dampingRatio,
             stiffness: widget.stiffness,
           ),
@@ -547,8 +545,7 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
       );
     }
     if (oldWidget.selectedIndex != widget.selectedIndex) {
-      if (!_goingBack &&
-          widget.backBehavior == DesignBranchBackBehavior.history) {
+      if (!_goingBack && widget.backBehavior == RawBranchBackBehavior.history) {
         _history
           ..remove(oldWidget.selectedIndex)
           ..add(oldWidget.selectedIndex);
@@ -596,12 +593,12 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
     return null;
   }
 
-  KeyEventResult _key(int i, KeyEvent event, DesignNavigationMode mode) {
+  KeyEventResult _key(int i, KeyEvent event, RawNavigationMode mode) {
     final to = RovingFocus.target(
       event,
       from: i,
       count: widget.destinations.length,
-      axis: mode == DesignNavigationMode.bar ? Axis.horizontal : Axis.vertical,
+      axis: mode == RawNavigationMode.bar ? Axis.horizontal : Axis.vertical,
       textDirection: Directionality.of(context),
       enabled: _enabled,
     );
@@ -618,9 +615,9 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
     }
     if (_deep[widget.selectedIndex] ?? false) return true;
     return switch (widget.backBehavior) {
-      DesignBranchBackBehavior.firstDestination => widget.selectedIndex != 0,
-      DesignBranchBackBehavior.history => _history.isNotEmpty,
-      DesignBranchBackBehavior.none => false,
+      RawBranchBackBehavior.firstDestination => widget.selectedIndex != 0,
+      RawBranchBackBehavior.history => _history.isNotEmpty,
+      RawBranchBackBehavior.none => false,
     };
   }
 
@@ -631,13 +628,13 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
       return;
     }
     switch (widget.backBehavior) {
-      case DesignBranchBackBehavior.firstDestination:
+      case RawBranchBackBehavior.firstDestination:
         if (selected != 0) widget.onDestinationSelected?.call(0);
-      case DesignBranchBackBehavior.history:
+      case RawBranchBackBehavior.history:
         if (_history.isEmpty) return;
         _goingBack = true;
         widget.onDestinationSelected?.call(_history.removeLast());
-      case DesignBranchBackBehavior.none:
+      case RawBranchBackBehavior.none:
         break;
     }
   }
@@ -719,13 +716,13 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
             : MediaQuery.sizeOf(context).width;
         return _build(
           context,
-          widget.mode ?? DesignNavigationMode.fromWidth(width),
+          widget.mode ?? RawNavigationMode.fromWidth(width),
         );
       },
     );
   }
 
-  Widget _build(BuildContext context, DesignNavigationMode mode) {
+  Widget _build(BuildContext context, RawNavigationMode mode) {
     final n = widget.destinations.length;
     _focus
       ..sync(n)
@@ -748,7 +745,7 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
               child: widget.destinationBuilder(
                 context,
                 widget.destinations[i],
-                DesignDestinationDetails(
+                RawDestinationDetails(
                   states: states,
                   mode: mode,
                   index: i,
@@ -759,11 +756,11 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
           ),
         ),
     ];
-    final bar = mode == DesignNavigationMode.bar;
+    final bar = mode == RawNavigationMode.bar;
     final hidden = bar && !widget.showNavigation;
     Widget navigation = widget.navigationBuilder(
       context,
-      DesignNavigationDetails(
+      RawNavigationDetails(
         mode: mode,
         destinations: destinations,
         selectedIndex: widget.selectedIndex,
@@ -774,11 +771,11 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
     // them); a sidebar is the navigation menu.
     navigation = _NavigationNode(
       bar: bar,
-      label: mode == DesignNavigationMode.sidebar ? words.drawerLabel : null,
+      label: mode == RawNavigationMode.sidebar ? words.drawerLabel : null,
       child: navigation,
     );
     navigation = Pane(
-      debugLabel: 'DesignAdaptiveShell navigation',
+      debugLabel: 'RawAdaptiveShell navigation',
       child: ExcludeFocus(
         excluding: hidden,
         child: ExcludeSemantics(
@@ -796,7 +793,7 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
     Widget body = branches == null ? widget.body! : _branches(branches);
     body = Pane(
       key: _body,
-      debugLabel: 'DesignAdaptiveShell body',
+      debugLabel: 'RawAdaptiveShell body',
       child: MediaQuery.removePadding(
         context: context,
         // The navigation takes the safe inset on its side.

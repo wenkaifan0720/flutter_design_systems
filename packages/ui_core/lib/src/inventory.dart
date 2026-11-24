@@ -1,14 +1,14 @@
 /// The component inventory: a checklist of the components an ordinary app
-/// expects from a design system, one [DesignInventoryRow] each, and a
-/// look's [DesignInventory], which answers every row with a live specimen
+/// expects from a design system, one [RawInventoryRow] each, and a
+/// look's [RawInventory], which answers every row with a live specimen
 /// or the reason the look deliberately leaves it out.
 ///
 /// A row's id is a label for the thing (Material's name where Material has
 /// it, shadcn's where only shadcn does), not a name a look must use: each
 /// look names its own components, and their API is its own.
 ///
-/// A look's test calls [DesignInventory.verify]; its gallery lists the
-/// inventory with [DesignInventoryGallery], so an absent row reads
+/// A look's test calls [RawInventory.verify]; its gallery lists the
+/// inventory with [RawInventoryGallery], so an absent row reads
 /// `Deliberately absent: <reason>` rather than going missing.
 library;
 
@@ -18,8 +18,8 @@ import 'package:flutter/widgets.dart';
 /// One row of the inventory: a component every look either carries or
 /// leaves out with a reason.
 @immutable
-class DesignInventoryRow {
-  const DesignInventoryRow._(
+class RawInventoryRow {
+  const RawInventoryRow._(
     this.id,
     this.group,
     this.name, {
@@ -50,10 +50,10 @@ class DesignInventoryRow {
   bool get isBehaviour => behaviour != null;
 
   @override
-  String toString() => 'DesignInventoryRow($id)';
+  String toString() => 'RawInventoryRow($id)';
 
   /// Button (filled, outlined, text, danger).
-  static const button = DesignInventoryRow._(
+  static const button = RawInventoryRow._(
     'Button',
     'Actions',
     'Button (filled/outlined/text/danger)',
@@ -61,7 +61,7 @@ class DesignInventoryRow {
   );
 
   /// Icon button.
-  static const iconButton = DesignInventoryRow._(
+  static const iconButton = RawInventoryRow._(
     'IconButton',
     'Actions',
     'Icon button',
@@ -69,7 +69,7 @@ class DesignInventoryRow {
   );
 
   /// Floating action button (extended, menu).
-  static const floatingActionButton = DesignInventoryRow._(
+  static const floatingActionButton = RawInventoryRow._(
     'FloatingActionButton',
     'Actions',
     'Floating action button (+extended, menu)',
@@ -77,7 +77,7 @@ class DesignInventoryRow {
   );
 
   /// Button group or toolbar.
-  static const buttonGroup = DesignInventoryRow._(
+  static const buttonGroup = RawInventoryRow._(
     'ButtonGroup',
     'Actions',
     'Button group / toolbar',
@@ -85,7 +85,7 @@ class DesignInventoryRow {
   );
 
   /// Toggle button or toggle group; a single-choice one is the [segmentedButton].
-  static const toggleGroup = DesignInventoryRow._(
+  static const toggleGroup = RawInventoryRow._(
     'ToggleGroup',
     'Actions',
     'Toggle button / toggle group',
@@ -94,7 +94,7 @@ class DesignInventoryRow {
   );
 
   /// Split button.
-  static const splitButton = DesignInventoryRow._(
+  static const splitButton = RawInventoryRow._(
     'SplitButton',
     'Actions',
     'Split button',
@@ -103,15 +103,10 @@ class DesignInventoryRow {
   );
 
   /// Link.
-  static const link = DesignInventoryRow._(
-    'Link',
-    'Actions',
-    'Link',
-    refs: 'S',
-  );
+  static const link = RawInventoryRow._('Link', 'Actions', 'Link', refs: 'S');
 
   /// Keyboard key (Kbd).
-  static const kbd = DesignInventoryRow._(
+  static const kbd = RawInventoryRow._(
     'Kbd',
     'Actions',
     'Keyboard key (Kbd)',
@@ -119,7 +114,7 @@ class DesignInventoryRow {
   );
 
   /// Text field.
-  static const textField = DesignInventoryRow._(
+  static const textField = RawInventoryRow._(
     'TextField',
     'Inputs',
     'Text field',
@@ -127,7 +122,7 @@ class DesignInventoryRow {
   );
 
   /// Text area.
-  static const textArea = DesignInventoryRow._(
+  static const textArea = RawInventoryRow._(
     'TextArea',
     'Inputs',
     'Text area',
@@ -135,7 +130,7 @@ class DesignInventoryRow {
   );
 
   /// Search field or search bar.
-  static const searchField = DesignInventoryRow._(
+  static const searchField = RawInventoryRow._(
     'SearchField',
     'Inputs',
     'Search field / search bar',
@@ -143,7 +138,7 @@ class DesignInventoryRow {
   );
 
   /// Password field with reveal.
-  static const passwordField = DesignInventoryRow._(
+  static const passwordField = RawInventoryRow._(
     'PasswordField',
     'Inputs',
     'Password field (reveal)',
@@ -152,16 +147,16 @@ class DesignInventoryRow {
   );
 
   /// Input group (prefix and suffix add-ons).
-  static const inputGroup = DesignInventoryRow._(
+  static const inputGroup = RawInventoryRow._(
     'InputGroup',
     'Inputs',
     'Input group (prefix/suffix add-ons)',
     refs: 'S',
-    behaviour: 'DesignInputGroup',
+    behaviour: 'RawInputGroup',
   );
 
   /// OTP or PIN code.
-  static const inputOtp = DesignInventoryRow._(
+  static const inputOtp = RawInventoryRow._(
     'InputOtp',
     'Inputs',
     'OTP / PIN code',
@@ -170,7 +165,7 @@ class DesignInventoryRow {
   );
 
   /// Number field or quantity stepper.
-  static const numberField = DesignInventoryRow._(
+  static const numberField = RawInventoryRow._(
     'NumberField',
     'Inputs',
     'Number field / quantity stepper',
@@ -180,7 +175,7 @@ class DesignInventoryRow {
   );
 
   /// Select or dropdown.
-  static const select = DesignInventoryRow._(
+  static const select = RawInventoryRow._(
     'Select',
     'Inputs',
     'Select / dropdown',
@@ -188,7 +183,7 @@ class DesignInventoryRow {
   );
 
   /// Combobox or autocomplete.
-  static const combobox = DesignInventoryRow._(
+  static const combobox = RawInventoryRow._(
     'Combobox',
     'Inputs',
     'Combobox / autocomplete',
@@ -197,7 +192,7 @@ class DesignInventoryRow {
   );
 
   /// Multi-select or tag input.
-  static const multiSelect = DesignInventoryRow._(
+  static const multiSelect = RawInventoryRow._(
     'MultiSelect',
     'Inputs',
     'Multi-select / tag input',
@@ -205,7 +200,7 @@ class DesignInventoryRow {
   );
 
   /// Checkbox.
-  static const checkbox = DesignInventoryRow._(
+  static const checkbox = RawInventoryRow._(
     'Checkbox',
     'Inputs',
     'Checkbox',
@@ -213,7 +208,7 @@ class DesignInventoryRow {
   );
 
   /// Radio group.
-  static const radioGroup = DesignInventoryRow._(
+  static const radioGroup = RawInventoryRow._(
     'RadioGroup',
     'Inputs',
     'Radio group',
@@ -221,7 +216,7 @@ class DesignInventoryRow {
   );
 
   /// Switch.
-  static const switchControl = DesignInventoryRow._(
+  static const switchControl = RawInventoryRow._(
     'Switch',
     'Inputs',
     'Switch',
@@ -229,7 +224,7 @@ class DesignInventoryRow {
   );
 
   /// Slider.
-  static const slider = DesignInventoryRow._(
+  static const slider = RawInventoryRow._(
     'Slider',
     'Inputs',
     'Slider',
@@ -237,7 +232,7 @@ class DesignInventoryRow {
   );
 
   /// Range slider.
-  static const rangeSlider = DesignInventoryRow._(
+  static const rangeSlider = RawInventoryRow._(
     'RangeSlider',
     'Inputs',
     'Range slider',
@@ -246,7 +241,7 @@ class DesignInventoryRow {
   );
 
   /// Segmented control: a single-choice [toggleGroup].
-  static const segmentedButton = DesignInventoryRow._(
+  static const segmentedButton = RawInventoryRow._(
     'SegmentedButton',
     'Inputs',
     'Segmented control',
@@ -255,7 +250,7 @@ class DesignInventoryRow {
   );
 
   /// Chips (filter, choice, input).
-  static const chip = DesignInventoryRow._(
+  static const chip = RawInventoryRow._(
     'Chip',
     'Inputs',
     'Chips (filter/choice/input)',
@@ -263,7 +258,7 @@ class DesignInventoryRow {
   );
 
   /// Rating.
-  static const rating = DesignInventoryRow._(
+  static const rating = RawInventoryRow._(
     'Rating',
     'Inputs',
     'Rating',
@@ -273,14 +268,14 @@ class DesignInventoryRow {
   );
 
   /// File upload or drop zone.
-  static const fileUpload = DesignInventoryRow._(
+  static const fileUpload = RawInventoryRow._(
     'FileUpload',
     'Inputs',
     'File upload / drop zone',
   );
 
   /// Date picker.
-  static const datePicker = DesignInventoryRow._(
+  static const datePicker = RawInventoryRow._(
     'DatePicker',
     'Inputs',
     'Date picker',
@@ -288,7 +283,7 @@ class DesignInventoryRow {
   );
 
   /// Date range picker.
-  static const dateRangePicker = DesignInventoryRow._(
+  static const dateRangePicker = RawInventoryRow._(
     'DateRangePicker',
     'Inputs',
     'Date range picker',
@@ -297,7 +292,7 @@ class DesignInventoryRow {
   );
 
   /// Time picker.
-  static const timePicker = DesignInventoryRow._(
+  static const timePicker = RawInventoryRow._(
     'TimePicker',
     'Inputs',
     'Time picker',
@@ -308,7 +303,7 @@ class DesignInventoryRow {
   );
 
   /// Inline calendar.
-  static const calendar = DesignInventoryRow._(
+  static const calendar = RawInventoryRow._(
     'Calendar',
     'Inputs',
     'Inline calendar',
@@ -317,7 +312,7 @@ class DesignInventoryRow {
   );
 
   /// Wheel picker.
-  static const wheelPicker = DesignInventoryRow._(
+  static const wheelPicker = RawInventoryRow._(
     'WheelPicker',
     'Inputs',
     'Wheel picker',
@@ -328,7 +323,7 @@ class DesignInventoryRow {
   );
 
   /// Color picker.
-  static const colorPicker = DesignInventoryRow._(
+  static const colorPicker = RawInventoryRow._(
     'ColorPicker',
     'Inputs',
     'Color picker',
@@ -336,7 +331,7 @@ class DesignInventoryRow {
   );
 
   /// Form and field (label, help, error).
-  static const formField = DesignInventoryRow._(
+  static const formField = RawInventoryRow._(
     'FormField',
     'Inputs',
     'Form + field (label, help, error)',
@@ -345,7 +340,7 @@ class DesignInventoryRow {
   );
 
   /// App bar, large and collapsing included.
-  static const appBar = DesignInventoryRow._(
+  static const appBar = RawInventoryRow._(
     'AppBar',
     'Navigation',
     'App bar (incl. large/collapsing)',
@@ -353,37 +348,37 @@ class DesignInventoryRow {
   );
 
   /// Bottom navigation bar.
-  static const navigationBar = DesignInventoryRow._(
+  static const navigationBar = RawInventoryRow._(
     'NavigationBar',
     'Navigation',
     'Bottom navigation bar',
     refs: 'MC',
     // 0.3.0 routes
-    behaviour: 'DesignAdaptiveShell',
+    behaviour: 'RawAdaptiveShell',
   );
 
   /// Navigation rail.
-  static const navigationRail = DesignInventoryRow._(
+  static const navigationRail = RawInventoryRow._(
     'NavigationRail',
     'Navigation',
     'Navigation rail',
     refs: 'M',
     // 0.3.0 routes
-    behaviour: 'DesignAdaptiveShell',
+    behaviour: 'RawAdaptiveShell',
   );
 
   /// Navigation drawer or sidebar.
-  static const navigationDrawer = DesignInventoryRow._(
+  static const navigationDrawer = RawInventoryRow._(
     'NavigationDrawer',
     'Navigation',
     'Navigation drawer / sidebar',
     refs: 'MS',
     // 0.3.0 routes
-    behaviour: 'DesignAdaptiveShell',
+    behaviour: 'RawAdaptiveShell',
   );
 
   /// Tabs.
-  static const tabBar = DesignInventoryRow._(
+  static const tabBar = RawInventoryRow._(
     'TabBar',
     'Navigation',
     'Tabs',
@@ -393,7 +388,7 @@ class DesignInventoryRow {
   );
 
   /// Breadcrumbs.
-  static const breadcrumb = DesignInventoryRow._(
+  static const breadcrumb = RawInventoryRow._(
     'Breadcrumb',
     'Navigation',
     'Breadcrumbs',
@@ -401,7 +396,7 @@ class DesignInventoryRow {
   );
 
   /// Pagination.
-  static const pagination = DesignInventoryRow._(
+  static const pagination = RawInventoryRow._(
     'Pagination',
     'Navigation',
     'Pagination',
@@ -409,7 +404,7 @@ class DesignInventoryRow {
   );
 
   /// Step progress or wizard.
-  static const stepProgress = DesignInventoryRow._(
+  static const stepProgress = RawInventoryRow._(
     'StepProgress',
     'Navigation',
     'Step progress / wizard',
@@ -417,14 +412,14 @@ class DesignInventoryRow {
   );
 
   /// Page indicator dots.
-  static const pageDots = DesignInventoryRow._(
+  static const pageDots = RawInventoryRow._(
     'PageDots',
     'Navigation',
     'Page indicator dots',
   );
 
   /// Menubar (desktop).
-  static const menuBar = DesignInventoryRow._(
+  static const menuBar = RawInventoryRow._(
     'MenuBar',
     'Navigation',
     'Menubar (desktop)',
@@ -433,7 +428,7 @@ class DesignInventoryRow {
   );
 
   /// Command palette.
-  static const command = DesignInventoryRow._(
+  static const command = RawInventoryRow._(
     'Command',
     'Navigation',
     'Command palette',
@@ -442,17 +437,17 @@ class DesignInventoryRow {
   );
 
   /// Adaptive app shell or scaffold.
-  static const scaffold = DesignInventoryRow._(
+  static const scaffold = RawInventoryRow._(
     'Scaffold',
     'Navigation',
     'Adaptive app shell / scaffold',
     refs: 'MC',
     // 0.3.0 routes
-    behaviour: 'DesignAdaptiveShell',
+    behaviour: 'RawAdaptiveShell',
   );
 
   /// Card.
-  static const card = DesignInventoryRow._(
+  static const card = RawInventoryRow._(
     'Card',
     'Containers',
     'Card',
@@ -460,7 +455,7 @@ class DesignInventoryRow {
   );
 
   /// List row or list tile.
-  static const listTile = DesignInventoryRow._(
+  static const listTile = RawInventoryRow._(
     'ListTile',
     'Containers',
     'List row / list tile',
@@ -468,7 +463,7 @@ class DesignInventoryRow {
   );
 
   /// Grouped or inset list.
-  static const listSection = DesignInventoryRow._(
+  static const listSection = RawInventoryRow._(
     'ListSection',
     'Containers',
     'Grouped / inset list',
@@ -476,7 +471,7 @@ class DesignInventoryRow {
   );
 
   /// Section header.
-  static const sectionHeader = DesignInventoryRow._(
+  static const sectionHeader = RawInventoryRow._(
     'SectionHeader',
     'Containers',
     'Section header',
@@ -484,7 +479,7 @@ class DesignInventoryRow {
   );
 
   /// Accordion, expansion or collapsible.
-  static const disclosure = DesignInventoryRow._(
+  static const disclosure = RawInventoryRow._(
     'Disclosure',
     'Containers',
     'Accordion / expansion / collapsible',
@@ -492,7 +487,7 @@ class DesignInventoryRow {
   );
 
   /// Table.
-  static const table = DesignInventoryRow._(
+  static const table = RawInventoryRow._(
     'Table',
     'Containers',
     'Table',
@@ -500,7 +495,7 @@ class DesignInventoryRow {
   );
 
   /// Data table (sort, select, paginate).
-  static const dataTable = DesignInventoryRow._(
+  static const dataTable = RawInventoryRow._(
     'DataTable',
     'Containers',
     'Data table (sort, select, paginate)',
@@ -509,7 +504,7 @@ class DesignInventoryRow {
   );
 
   /// Divider or separator.
-  static const divider = DesignInventoryRow._(
+  static const divider = RawInventoryRow._(
     'Divider',
     'Containers',
     'Divider / separator',
@@ -517,7 +512,7 @@ class DesignInventoryRow {
   );
 
   /// Scroll area or scrollbar.
-  static const scrollArea = DesignInventoryRow._(
+  static const scrollArea = RawInventoryRow._(
     'ScrollArea',
     'Containers',
     'Scroll area / scrollbar',
@@ -526,7 +521,7 @@ class DesignInventoryRow {
   );
 
   /// Resizable panels or split view.
-  static const resizable = DesignInventoryRow._(
+  static const resizable = RawInventoryRow._(
     'Resizable',
     'Containers',
     'Resizable panels / split view',
@@ -535,7 +530,7 @@ class DesignInventoryRow {
   );
 
   /// Carousel.
-  static const carouselView = DesignInventoryRow._(
+  static const carouselView = RawInventoryRow._(
     'CarouselView',
     'Containers',
     'Carousel',
@@ -544,7 +539,7 @@ class DesignInventoryRow {
   );
 
   /// Reorderable list.
-  static const reorderableListView = DesignInventoryRow._(
+  static const reorderableListView = RawInventoryRow._(
     'ReorderableListView',
     'Containers',
     'Reorderable list',
@@ -553,7 +548,7 @@ class DesignInventoryRow {
   );
 
   /// Swipe actions or dismissible.
-  static const swipeActions = DesignInventoryRow._(
+  static const swipeActions = RawInventoryRow._(
     'SwipeActions',
     'Containers',
     'Swipe actions / dismissible',
@@ -562,7 +557,7 @@ class DesignInventoryRow {
   );
 
   /// Pull to refresh.
-  static const refreshIndicator = DesignInventoryRow._(
+  static const refreshIndicator = RawInventoryRow._(
     'RefreshIndicator',
     'Containers',
     'Pull to refresh',
@@ -571,22 +566,22 @@ class DesignInventoryRow {
   );
 
   /// Tree view.
-  static const treeView = DesignInventoryRow._(
+  static const treeView = RawInventoryRow._(
     'TreeView',
     'Containers',
     'Tree view',
-    behaviour: 'DesignTree',
+    behaviour: 'RawTree',
   );
 
   /// Timeline.
-  static const timeline = DesignInventoryRow._(
+  static const timeline = RawInventoryRow._(
     'Timeline',
     'Containers',
     'Timeline',
   );
 
   /// Avatar.
-  static const avatar = DesignInventoryRow._(
+  static const avatar = RawInventoryRow._(
     'Avatar',
     'Containers',
     'Avatar',
@@ -594,14 +589,14 @@ class DesignInventoryRow {
   );
 
   /// Avatar group or face pile.
-  static const avatarGroup = DesignInventoryRow._(
+  static const avatarGroup = RawInventoryRow._(
     'AvatarGroup',
     'Containers',
     'Avatar group / face pile',
   );
 
   /// Badge (count).
-  static const badge = DesignInventoryRow._(
+  static const badge = RawInventoryRow._(
     'Badge',
     'Containers',
     'Badge (count)',
@@ -609,7 +604,7 @@ class DesignInventoryRow {
   );
 
   /// Tag or label pill.
-  static const tag = DesignInventoryRow._(
+  static const tag = RawInventoryRow._(
     'Tag',
     'Containers',
     'Tag / label pill',
@@ -617,14 +612,14 @@ class DesignInventoryRow {
   );
 
   /// Image or media with a fallback.
-  static const media = DesignInventoryRow._(
+  static const media = RawInventoryRow._(
     'Media',
     'Containers',
     'Image / media with fallback',
   );
 
   /// Empty state.
-  static const emptyState = DesignInventoryRow._(
+  static const emptyState = RawInventoryRow._(
     'EmptyState',
     'Containers',
     'Empty state',
@@ -632,24 +627,24 @@ class DesignInventoryRow {
   );
 
   /// Key-value or description list.
-  static const descriptionList = DesignInventoryRow._(
+  static const descriptionList = RawInventoryRow._(
     'DescriptionList',
     'Containers',
     'Key-value / description list',
   );
 
   /// Dialog or alert dialog.
-  static const dialog = DesignInventoryRow._(
+  static const dialog = RawInventoryRow._(
     'Dialog',
     'Overlays',
     'Dialog / alert dialog',
     refs: 'MCS',
     // 0.3.0 routes
-    behaviour: 'DesignDialogRoute',
+    behaviour: 'RawModalDialogRoute',
   );
 
   /// Bottom sheet or modal sheet.
-  static const bottomSheet = DesignInventoryRow._(
+  static const bottomSheet = RawInventoryRow._(
     'BottomSheet',
     'Overlays',
     'Bottom sheet / modal sheet',
@@ -659,7 +654,7 @@ class DesignInventoryRow {
   );
 
   /// Side sheet or drawer overlay.
-  static const sheet = DesignInventoryRow._(
+  static const sheet = RawInventoryRow._(
     'Sheet',
     'Overlays',
     'Side sheet / drawer overlay',
@@ -668,7 +663,7 @@ class DesignInventoryRow {
   );
 
   /// Action sheet.
-  static const actionSheet = DesignInventoryRow._(
+  static const actionSheet = RawInventoryRow._(
     'ActionSheet',
     'Overlays',
     'Action sheet',
@@ -676,7 +671,7 @@ class DesignInventoryRow {
   );
 
   /// Popover.
-  static const popover = DesignInventoryRow._(
+  static const popover = RawInventoryRow._(
     'Popover',
     'Overlays',
     'Popover',
@@ -685,7 +680,7 @@ class DesignInventoryRow {
   );
 
   /// Hover card.
-  static const hoverCard = DesignInventoryRow._(
+  static const hoverCard = RawInventoryRow._(
     'HoverCard',
     'Overlays',
     'Hover card',
@@ -694,7 +689,7 @@ class DesignInventoryRow {
   );
 
   /// Tooltip.
-  static const tooltip = DesignInventoryRow._(
+  static const tooltip = RawInventoryRow._(
     'Tooltip',
     'Overlays',
     'Tooltip',
@@ -703,7 +698,7 @@ class DesignInventoryRow {
   );
 
   /// Menu or context menu.
-  static const menu = DesignInventoryRow._(
+  static const menu = RawInventoryRow._(
     'Menu',
     'Overlays',
     'Menu / context menu',
@@ -712,7 +707,7 @@ class DesignInventoryRow {
   );
 
   /// Toast or snackbar, stacking.
-  static const snackBar = DesignInventoryRow._(
+  static const snackBar = RawInventoryRow._(
     'SnackBar',
     'Overlays',
     'Toast / snackbar (stacking)',
@@ -721,7 +716,7 @@ class DesignInventoryRow {
   );
 
   /// Banner or inline alert.
-  static const banner = DesignInventoryRow._(
+  static const banner = RawInventoryRow._(
     'Banner',
     'Overlays',
     'Banner / inline alert',
@@ -729,7 +724,7 @@ class DesignInventoryRow {
   );
 
   /// Linear progress.
-  static const linearProgressIndicator = DesignInventoryRow._(
+  static const linearProgressIndicator = RawInventoryRow._(
     'LinearProgressIndicator',
     'Feedback',
     'Linear progress',
@@ -737,7 +732,7 @@ class DesignInventoryRow {
   );
 
   /// Circular progress or spinner.
-  static const circularProgressIndicator = DesignInventoryRow._(
+  static const circularProgressIndicator = RawInventoryRow._(
     'CircularProgressIndicator',
     'Feedback',
     'Circular progress / spinner',
@@ -745,7 +740,7 @@ class DesignInventoryRow {
   );
 
   /// Skeleton.
-  static const skeleton = DesignInventoryRow._(
+  static const skeleton = RawInventoryRow._(
     'Skeleton',
     'Feedback',
     'Skeleton',
@@ -753,71 +748,67 @@ class DesignInventoryRow {
   );
 
   /// Loading, error and success states.
-  static const statusView = DesignInventoryRow._(
+  static const statusView = RawInventoryRow._(
     'StatusView',
     'Feedback',
     'Loading / error / success states',
   );
 
   /// Meter or gauge.
-  static const meter = DesignInventoryRow._(
-    'Meter',
-    'Feedback',
-    'Meter / gauge',
-  );
+  static const meter = RawInventoryRow._('Meter', 'Feedback', 'Meter / gauge');
 
   /// Line chart.
-  static const lineChart = DesignInventoryRow._(
+  static const lineChart = RawInventoryRow._(
     'LineChart',
     'Charts',
     'Line chart',
     // 0.3.0 values
-    behaviour: 'DesignChart',
+    behaviour: 'RawChart',
     // 0.3.0 values end
   );
 
   /// Bar chart.
-  static const barChart = DesignInventoryRow._(
+  static const barChart = RawInventoryRow._(
     'BarChart',
     'Charts',
     'Bar chart',
     // 0.3.0 values
-    behaviour: 'DesignChart',
+    behaviour: 'RawChart',
     // 0.3.0 values end
   );
 
   /// Area chart.
-  static const areaChart = DesignInventoryRow._(
+  static const areaChart = RawInventoryRow._(
     'AreaChart',
     'Charts',
     'Area chart',
     // 0.3.0 values
-    behaviour: 'DesignChart',
+    behaviour: 'RawChart',
     // 0.3.0 values end
   );
 
   /// Donut or pie.
-  static const pieChart = DesignInventoryRow._(
+  static const pieChart = RawInventoryRow._(
     'PieChart',
     'Charts',
     'Donut / pie',
     // 0.3.0 values
-    behaviour: 'DesignPieChart',
+    behaviour: 'RawPieChart',
     // 0.3.0 values end
   );
 
   /// Sparkline.
-  static const sparkline = DesignInventoryRow._(
+  static const sparkline = RawInventoryRow._(
     'Sparkline',
     'Charts',
     'Sparkline',
     // 0.3.0 values
-    behaviour: 'DesignChart',
+    behaviour: 'RawChart',
     // 0.3.0 values end
   );
 
   /// Every row, group by group in [groups]' order.
-  static const List<DesignInventoryRow> all = [
+  static const List<RawInventoryRow> all = [
     button,
     iconButton,
     floatingActionButton,
@@ -910,7 +901,7 @@ class DesignInventoryRow {
   ];
 
   /// The row with [id], or null when no row has it.
-  static DesignInventoryRow? byId(String id) {
+  static RawInventoryRow? byId(String id) {
     for (final row in all) {
       if (row.id == id) return row;
     }
@@ -933,25 +924,25 @@ class DesignInventoryRow {
 /// the look leaves it out ([absentReason]).
 ///
 /// ```dart
-/// DesignInventoryEntry.present('Link', (context) => const Text('Terms'))
+/// RawInventoryEntry.present('Link', (context) => const Text('Terms'))
 /// ```
 @immutable
-class DesignInventoryEntry {
-  /// An entry for [row] (a [DesignInventoryRow.id]). Give exactly one of
-  /// [builder] and [absentReason]; [DesignInventory.verify] fails otherwise.
-  const DesignInventoryEntry(this.row, {this.builder, this.absentReason});
+class RawInventoryEntry {
+  /// An entry for [row] (a [RawInventoryRow.id]). Give exactly one of
+  /// [builder] and [absentReason]; [RawInventory.verify] fails otherwise.
+  const RawInventoryEntry(this.row, {this.builder, this.absentReason});
 
   /// [row] is present: [builder] makes a live specimen of it, in whatever
   /// class the look gives the component (the gallery frames it).
-  const DesignInventoryEntry.present(this.row, WidgetBuilder this.builder)
+  const RawInventoryEntry.present(this.row, WidgetBuilder this.builder)
     : absentReason = null;
 
   /// [row] is deliberately absent, for [absentReason] ("a floating action
   /// button is Material vocabulary"; "not built yet" is not a reason).
-  const DesignInventoryEntry.absent(this.row, String this.absentReason)
+  const RawInventoryEntry.absent(this.row, String this.absentReason)
     : builder = null;
 
-  /// The row's id ([DesignInventoryRow.id]).
+  /// The row's id ([RawInventoryRow.id]).
   final String row;
 
   /// Makes a live specimen of the row, in the look's own hand.
@@ -964,10 +955,10 @@ class DesignInventoryEntry {
   bool get isPresent => builder != null;
 }
 
-/// Thrown by [DesignInventory.verify]: the rows an inventory answers wrong.
-class DesignInventoryError extends Error {
+/// Thrown by [RawInventory.verify]: the rows an inventory answers wrong.
+class RawInventoryError extends Error {
   /// An error listing [problems].
-  DesignInventoryError(this.look, this.problems);
+  RawInventoryError(this.look, this.problems);
 
   /// The look whose inventory it is.
   final String look;
@@ -980,24 +971,24 @@ class DesignInventoryError extends Error {
       '$look inventory: ${problems.length} problem(s)\n${problems.join('\n')}';
 }
 
-/// A look's inventory: one entry per [DesignInventoryRow].
+/// A look's inventory: one entry per [RawInventoryRow].
 ///
 /// ```dart
-/// const DesignInventory(look: 'Comic', entries: [DesignInventoryEntry.absent('FloatingActionButton', 'A floating action button is Material vocabulary')])
+/// const RawInventory(look: 'Comic', entries: [RawInventoryEntry.absent('FloatingActionButton', 'A floating action button is Material vocabulary')])
 /// ```
 @immutable
-class DesignInventory {
+class RawInventory {
   /// The inventory of [look].
-  const DesignInventory({required this.look, required this.entries});
+  const RawInventory({required this.look, required this.entries});
 
   /// The look's display name.
   final String look;
 
   /// One entry per row, in any order.
-  final List<DesignInventoryEntry> entries;
+  final List<RawInventoryEntry> entries;
 
   /// The entry for the row [id], or null when the inventory has none.
-  DesignInventoryEntry? entryFor(String id) {
+  RawInventoryEntry? entryFor(String id) {
     for (final entry in entries) {
       if (entry.row == id) return entry;
     }
@@ -1028,7 +1019,7 @@ class DesignInventory {
     final out = <String>[];
     final seen = <String>{};
     for (final entry in entries) {
-      final row = DesignInventoryRow.byId(entry.row);
+      final row = RawInventoryRow.byId(entry.row);
       if (row == null) {
         out.add('unknown row id "${entry.row}"');
         continue;
@@ -1050,7 +1041,7 @@ class DesignInventory {
         );
       }
     }
-    for (final row in DesignInventoryRow.all) {
+    for (final row in RawInventoryRow.all) {
       if (!seen.contains(row.id)) {
         out.add('${row.id}: missing (${row.name})');
       }
@@ -1058,34 +1049,34 @@ class DesignInventory {
     return out;
   }
 
-  /// Throws a [DesignInventoryError] naming every [problems] line; a look's
+  /// Throws a [RawInventoryError] naming every [problems] line; a look's
   /// test calls it.
   void verify() {
     final found = problems;
-    if (found.isNotEmpty) throw DesignInventoryError(look, found);
+    if (found.isNotEmpty) throw RawInventoryError(look, found);
   }
 }
 
-/// Builds a group's heading in a [DesignInventoryGallery]: [present] of
+/// Builds a group's heading in a [RawInventoryGallery]: [present] of
 /// [total] rows carried.
-typedef DesignInventoryGroupBuilder = Widget Function(
+typedef RawInventoryGroupBuilder = Widget Function(
   BuildContext context,
   String group,
   int present,
   int total,
 );
 
-/// Builds one row in a [DesignInventoryGallery]. [entry] is null when the
+/// Builds one row in a [RawInventoryGallery]. [entry] is null when the
 /// inventory does not answer the row; [specimen] is the entry's live
 /// specimen, built, when it has one.
-typedef DesignInventoryRowBuilder = Widget Function(
+typedef RawInventoryRowBuilder = Widget Function(
   BuildContext context,
-  DesignInventoryRow row,
-  DesignInventoryEntry? entry,
+  RawInventoryRow row,
+  RawInventoryEntry? entry,
   Widget? specimen,
 );
 
-/// Lists an inventory, group by group in [DesignInventoryRow.groups]' order: each row's
+/// Lists an inventory, group by group in [RawInventoryRow.groups]' order: each row's
 /// live specimen, or `Deliberately absent: <reason>` for a gap, or
 /// "Missing" for a row the inventory does not answer. Lazy: a row builds
 /// when it scrolls in.
@@ -1093,9 +1084,9 @@ typedef DesignInventoryRowBuilder = Widget Function(
 /// The look paints it through [groupBuilder] and [rowBuilder]; without
 /// them each row is its name over its specimen or its reason, in the
 /// ambient text style.
-class DesignInventoryGallery extends StatelessWidget {
+class RawInventoryGallery extends StatelessWidget {
   /// A gallery of [inventory].
-  const DesignInventoryGallery({
+  const RawInventoryGallery({
     super.key,
     required this.inventory,
     this.groupBuilder,
@@ -1106,13 +1097,13 @@ class DesignInventoryGallery extends StatelessWidget {
   });
 
   /// The inventory to list.
-  final DesignInventory inventory;
+  final RawInventory inventory;
 
   /// Draws a group's heading.
-  final DesignInventoryGroupBuilder? groupBuilder;
+  final RawInventoryGroupBuilder? groupBuilder;
 
   /// Draws a row.
-  final DesignInventoryRowBuilder? rowBuilder;
+  final RawInventoryRowBuilder? rowBuilder;
 
   /// Space around the list.
   final EdgeInsetsGeometry padding;
@@ -1127,8 +1118,8 @@ class DesignInventoryGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <Object>[];
-    for (final group in DesignInventoryRow.groups) {
-      final rows = DesignInventoryRow.all
+    for (final group in RawInventoryRow.groups) {
+      final rows = RawInventoryRow.all
           .where((r) => r.group == group && (!behaviourOnly || r.isBehaviour))
           .toList();
       if (rows.isEmpty) continue;
@@ -1143,7 +1134,7 @@ class DesignInventoryGallery extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = items[index];
         if (item is String) {
-          final rows = DesignInventoryRow.all.where((r) => r.group == item);
+          final rows = RawInventoryRow.all.where((r) => r.group == item);
           final present = rows.where(
             (r) => inventory.entryFor(r.id)?.isPresent ?? false,
           );
@@ -1162,7 +1153,7 @@ class DesignInventoryGallery extends StatelessWidget {
                 ),
           );
         }
-        final row = item as DesignInventoryRow;
+        final row = item as RawInventoryRow;
         final entry = inventory.entryFor(row.id);
         final specimen = entry?.builder?.call(context);
         final builder = rowBuilder;
@@ -1183,7 +1174,7 @@ class DesignInventoryGallery extends StatelessWidget {
                 specimen ??
                     Text(
                       entry?.absentReason != null
-                          ? DesignInventory.absentLabel(entry!.absentReason!)
+                          ? RawInventory.absentLabel(entry!.absentReason!)
                           : 'Missing: the inventory does not answer this row',
                     ),
               ],
@@ -1198,15 +1189,15 @@ class DesignInventoryGallery extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignInventory>('inventory', inventory))
+      ..add(DiagnosticsProperty<RawInventory>('inventory', inventory))
       ..add(
-        ObjectFlagProperty<DesignInventoryGroupBuilder>.has(
+        ObjectFlagProperty<RawInventoryGroupBuilder>.has(
           'groupBuilder',
           groupBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignInventoryRowBuilder>.has(
+        ObjectFlagProperty<RawInventoryRowBuilder>.has(
           'rowBuilder',
           rowBuilder,
         ),
@@ -1235,3 +1226,45 @@ class DesignInventoryGallery extends StatelessWidget {
       );
   }
 }
+
+/// Renamed [RawInventory] in ui_core 0.6.0.
+@Deprecated(
+  'Use RawInventory. This feature was deprecated after ui_core 0.6.0.',
+)
+typedef DesignInventory = RawInventory;
+
+/// Renamed [RawInventoryEntry] in ui_core 0.6.0.
+@Deprecated(
+  'Use RawInventoryEntry. This feature was deprecated after ui_core 0.6.0.',
+)
+typedef DesignInventoryEntry = RawInventoryEntry;
+
+/// Renamed [RawInventoryError] in ui_core 0.6.0.
+@Deprecated(
+  'Use RawInventoryError. This feature was deprecated after ui_core 0.6.0.',
+)
+typedef DesignInventoryError = RawInventoryError;
+
+/// Renamed [RawInventoryGallery] in ui_core 0.6.0.
+@Deprecated(
+  'Use RawInventoryGallery. This feature was deprecated after ui_core 0.6.0.',
+)
+typedef DesignInventoryGallery = RawInventoryGallery;
+
+/// Renamed [RawInventoryGroupBuilder] in ui_core 0.6.0.
+@Deprecated(
+  'Use RawInventoryGroupBuilder. This feature was deprecated after ui_core 0.6.0.',
+)
+typedef DesignInventoryGroupBuilder = RawInventoryGroupBuilder;
+
+/// Renamed [RawInventoryRow] in ui_core 0.6.0.
+@Deprecated(
+  'Use RawInventoryRow. This feature was deprecated after ui_core 0.6.0.',
+)
+typedef DesignInventoryRow = RawInventoryRow;
+
+/// Renamed [RawInventoryRowBuilder] in ui_core 0.6.0.
+@Deprecated(
+  'Use RawInventoryRowBuilder. This feature was deprecated after ui_core 0.6.0.',
+)
+typedef DesignInventoryRowBuilder = RawInventoryRowBuilder;

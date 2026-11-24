@@ -239,7 +239,7 @@ class RawToaster extends StatefulWidget {
   final ShortcutActivator? focusShortcut;
 
   /// The presence spring's damping ratio (ζ); critically damped under
-  /// Reduce Motion ([DesignMotionPolicy]).
+  /// Reduce Motion ([RawMotionPolicy]).
   final double dampingRatio;
 
   /// The presence spring's stiffness (k).
@@ -492,7 +492,7 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
     if (changed) setState(() {});
   }
 
-  SpringDescription _spring() => DesignMotionPolicy.of(context)
+  SpringDescription _spring() => RawMotionPolicy.of(context)
       .spatial(dampingRatio: widget.dampingRatio, stiffness: widget.stiffness);
 
   bool _held(_ToastRecord record) {
@@ -576,7 +576,7 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
     setState(() => record.swiped = true);
     record.presence!.animateTo(
       0,
-      duration: designReduceMotionOf(context) ? Duration.zero : _swipeResize,
+      duration: rawReduceMotionOf(context) ? Duration.zero : _swipeResize,
       curve: _swipeResizeCurve,
     );
   }
@@ -829,7 +829,7 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 /// both (a rail, a sidebar), keeps nothing clear. The covered edge takes
 /// the place of the screen's safe inset there (a bar takes that inset
 /// itself); [RawToaster.padding] stays between the bar and the toasts.
-/// `DesignAdaptiveShell` keeps its bar clear, and not its rail or sidebar,
+/// `RawAdaptiveShell` keeps its bar clear, and not its rail or sidebar,
 /// whatever stands above or below them.
 ///
 /// ```dart

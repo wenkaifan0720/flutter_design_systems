@@ -19,11 +19,11 @@ import 'package:flutter/widgets.dart';
 /// [startAligned], so every example starts on the column's edge.
 ///
 /// ```dart
-/// DesignKeylineRegion(label: 'Settings', indents: const [40], child: const Text('Settings'))
+/// RawKeylineRegion(label: 'Settings', indents: const [40], child: const Text('Settings'))
 /// ```
-class DesignKeylineRegion extends StatelessWidget {
+class RawKeylineRegion extends StatelessWidget {
   /// Marks [child].
-  const DesignKeylineRegion({
+  const RawKeylineRegion({
     super.key,
     this.label,
     this.indents = const [],
@@ -107,15 +107,15 @@ class DesignKeylineRegion extends StatelessWidget {
 /// keys) are not items to line up. `DesignKeylineCheck` takes the marked
 /// box as one item, before it looks at pixels, and reads nothing inside it
 /// as an item of the region around it; to have what a well holds judged
-/// by keylines of its own, put a [DesignKeylineRegion] inside it.
+/// by keylines of its own, put a [RawKeylineRegion] inside it.
 /// `DesignLabelCheck` takes it as the face of the control it is in.
 ///
 /// ```dart
-/// DesignKeylineFace(child: SizedBox(width: 120, height: 40))
+/// RawKeylineFace(child: SizedBox(width: 120, height: 40))
 /// ```
-class DesignKeylineFace extends StatelessWidget {
+class RawKeylineFace extends StatelessWidget {
   /// Marks [child].
-  const DesignKeylineFace({super.key, required this.child});
+  const RawKeylineFace({super.key, required this.child});
 
   /// The face, the well or the picture.
   final Widget child;

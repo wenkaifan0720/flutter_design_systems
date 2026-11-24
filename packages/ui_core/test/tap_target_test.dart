@@ -3,45 +3,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 
 void main() {
-  group('DesignTapTargets', () {
+  group('RawTapTargets', () {
     test('a finger by default on phones, a pointer on desks', () {
-      expect(DesignInput.forPlatform(TargetPlatform.iOS), DesignInput.touch);
-      expect(
-        DesignInput.forPlatform(TargetPlatform.android),
-        DesignInput.touch,
-      );
-      expect(
-        DesignInput.forPlatform(TargetPlatform.macOS),
-        DesignInput.pointer,
-      );
-      const targets = DesignTapTargets.fallback;
+      expect(RawInput.forPlatform(TargetPlatform.iOS), RawInput.touch);
+      expect(RawInput.forPlatform(TargetPlatform.android), RawInput.touch);
+      expect(RawInput.forPlatform(TargetPlatform.macOS), RawInput.pointer);
+      const targets = RawTapTargets.fallback;
       expect(targets.floorOn(TargetPlatform.iOS), const Size.square(44));
       expect(targets.floorOn(TargetPlatform.windows), const Size.square(24));
-      const pinned = DesignTapTargets(input: DesignInput.touch);
+      const pinned = RawTapTargets(input: RawInput.touch);
       expect(pinned.floorOn(TargetPlatform.macOS), const Size.square(44));
     });
 
     testWidgets('of reads the nearest scope, else the fallback', (
       tester,
     ) async {
-      late DesignTapTargets inside;
-      late DesignTapTargets outside;
-      DesignTapTargets? none;
+      late RawTapTargets inside;
+      late RawTapTargets outside;
+      RawTapTargets? none;
       await tester.pumpWidget(
         Column(
           children: [
             Builder(
               builder: (context) {
-                outside = DesignTapTargets.of(context);
-                none = DesignTapTargets.maybeOf(context);
+                outside = RawTapTargets.of(context);
+                none = RawTapTargets.maybeOf(context);
                 return const SizedBox();
               },
             ),
-            DesignTapTargetScope(
-              targets: const DesignTapTargets(touch: Size.square(48)),
+            RawTapTargetScope(
+              targets: const RawTapTargets(touch: Size.square(48)),
               child: Builder(
                 builder: (context) {
-                  inside = DesignTapTargets.of(context);
+                  inside = RawTapTargets.of(context);
                   return const SizedBox();
                 },
               ),
@@ -49,22 +43,16 @@ void main() {
           ],
         ),
       );
-      expect(outside, DesignTapTargets.fallback);
+      expect(outside, RawTapTargets.fallback);
       expect(none, isNull);
       expect(inside.touch, const Size.square(48));
       expect(inside.pointer, const Size.square(24));
     });
 
     test('equality, copyWith and diagnostics', () {
-      const a = DesignTapTargets(touch: Size.square(48));
-      expect(
-        a,
-        DesignTapTargets.fallback.copyWith(touch: const Size.square(48)),
-      );
-      expect(
-        a.hashCode,
-        const DesignTapTargets(touch: Size.square(48)).hashCode,
-      );
+      const a = RawTapTargets(touch: Size.square(48));
+      expect(a, RawTapTargets.fallback.copyWith(touch: const Size.square(48)));
+      expect(a.hashCode, const RawTapTargets(touch: Size.square(48)).hashCode);
       final description = a.toDiagnosticsNode().toStringDeep();
       expect(description, contains('touch: Size(48.0, 48.0)'));
       expect(description, isNot(contains('pointer')));
@@ -214,14 +202,14 @@ void main() {
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
-      Widget page(Widget control, [DesignTapTargets? targets]) {
+      Widget page(Widget control, [RawTapTargets? targets]) {
         final Widget centred = Directionality(
           textDirection: TextDirection.ltr,
           child: Center(child: control),
         );
         return targets == null
             ? centred
-            : DesignTapTargetScope(targets: targets, child: centred);
+            : RawTapTargetScope(targets: targets, child: centred);
       }
 
       Widget face(Size size) => Semantics(
@@ -251,10 +239,7 @@ void main() {
             alignment: AlignmentDirectional.centerStart,
             child: face(const Size(28, 28)),
           ),
-          const DesignTapTargets(
-            touch: Size.square(48),
-            input: DesignInput.touch,
-          ),
+          const RawTapTargets(touch: Size.square(48), input: RawInput.touch),
         ),
       );
       await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
@@ -268,7 +253,7 @@ void main() {
       await tester.pumpWidget(
         page(
           TapTargetPadding(child: face(const Size(16, 16))),
-          const DesignTapTargets(input: DesignInput.pointer),
+          const RawTapTargets(input: RawInput.pointer),
         ),
       );
       await expectLater(tester, meetsGuideline(pointer));
@@ -295,8 +280,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const DesignTapTargetScope(
-          targets: DesignTapTargets(input: DesignInput.pointer),
+        const RawTapTargetScope(
+          targets: RawTapTargets(input: RawInput.pointer),
           child: Align(
             alignment: Alignment.topLeft,
             child: TapTargetPadding(child: SizedBox.square(dimension: 16)),
@@ -307,38 +292,38 @@ void main() {
     });
   });
 
-  group('DesignDensity', () {
+  group('RawDensity', () {
     test('a step takes from the height and the padding, never past least', () {
-      expect(DesignDensity.standard.height(44), 44);
-      expect(DesignDensity.compact.height(44), 36);
-      expect(DesignDensity.compact.height(20), 16);
+      expect(RawDensity.standard.height(44), 44);
+      expect(RawDensity.compact.height(44), 36);
+      expect(RawDensity.compact.height(20), 16);
       expect(
-        DesignDensity.compact.padding(
+        RawDensity.compact.padding(
           const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
         const EdgeInsets.fromLTRB(12, 6, 12, 6),
       );
-      expect(const DesignDensity(vertical: -1, heightStep: 2).height(40), 38);
+      expect(const RawDensity(vertical: -1, heightStep: 2).height(40), 38);
     });
 
     test('desks are compact, phones standard', () {
       expect(
-        DesignDensity.defaultDensityForPlatform(TargetPlatform.macOS),
-        DesignDensity.compact,
+        RawDensity.defaultDensityForPlatform(TargetPlatform.macOS),
+        RawDensity.compact,
       );
       expect(
-        DesignDensity.defaultDensityForPlatform(TargetPlatform.iOS),
-        DesignDensity.standard,
+        RawDensity.defaultDensityForPlatform(TargetPlatform.iOS),
+        RawDensity.standard,
       );
     });
 
     test('lerp, equality and diagnostics', () {
       expect(
-        DesignDensity.lerp(DesignDensity.standard, DesignDensity.compact, .5),
-        DesignDensity.comfortable,
+        RawDensity.lerp(RawDensity.standard, RawDensity.compact, .5),
+        RawDensity.comfortable,
       );
       expect(
-        DesignDensity.compact.toDiagnosticsNode().toStringDeep(),
+        RawDensity.compact.toDiagnosticsNode().toStringDeep(),
         allOf(contains('horizontal: -2.0'), isNot(contains('heightStep'))),
       );
     });

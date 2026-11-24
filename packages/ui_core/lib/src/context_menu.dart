@@ -24,7 +24,7 @@ import 'menubar.dart';
 ///
 /// - A right click (a secondary tap: a two-finger click on a trackpad)
 ///   opens it at the pointer, and so does a long press of a finger or a
-///   stylus, with the long press's haptic ([DesignHaptics.longPress]) when
+///   stylus, with the long press's haptic ([RawHaptics.longPress]) when
 ///   [enableFeedback]. The menu opens below the point from its start in
 ///   reading order, above it or towards its other end where there is no
 ///   room, and never under it. No row is lit until the pointer or a key
@@ -99,7 +99,7 @@ class RawContextMenu extends StatefulWidget {
   /// [RawMenuBar.highlightFollowsPointer].
   final bool highlightFollowsPointer;
 
-  /// Whether a long press that opens it plays [DesignHaptics.longPress];
+  /// Whether a long press that opens it plays [RawHaptics.longPress];
   /// true by default.
   final bool enableFeedback;
 
@@ -185,7 +185,7 @@ const Set<PointerDeviceKind> _touchKinds = {
 class _DesignContextMenuState extends State<RawContextMenu> {
   MenuController? _own;
   final GlobalKey _region = GlobalKey(debugLabel: 'RawContextMenu region');
-  final DesignBrowserMenuHold _browser = DesignBrowserMenuHold();
+  final RawBrowserMenuHold _browser = RawBrowserMenuHold();
   bool _hovered = false;
   bool _pressed = false;
   bool _focusedIn = false;
@@ -226,7 +226,7 @@ class _DesignContextMenuState extends State<RawContextMenu> {
 
   void _longPress(LongPressStartDetails details) {
     if (!_enabled) return;
-    if (widget.enableFeedback) DesignHaptics.of(context).longPress?.call();
+    if (widget.enableFeedback) RawHaptics.of(context).longPress?.call();
     _openAt(details.localPosition);
   }
 
@@ -354,7 +354,7 @@ class _DesignContextMenuState extends State<RawContextMenu> {
     return RawPopover(
       // Its anchor is a region, not a control: focus goes back where it
       // was, never to the region's first control.
-      key: const DesignRegionAnchorKey(),
+      key: const RawRegionAnchorKey(),
       controller: _controller,
       trigger: RawPopoverTrigger.manual,
       arrowKeyNavigation: true,
@@ -366,11 +366,11 @@ class _DesignContextMenuState extends State<RawContextMenu> {
       dampingRatio: widget.dampingRatio,
       stiffness: widget.stiffness,
       anchorBuilder: (context, anchor) => _regionOf(context),
-      overlayBuilder: (context, info) => DesignMenuItems(
+      overlayBuilder: (context, info) => RawMenuItems(
         info: info,
         entries: widget.menuChildren,
         root: _controller,
-        painters: DesignMenuPainters(
+        painters: RawMenuPainters(
           itemBuilder: widget.itemBuilder,
           surfaceBuilder: widget.surfaceBuilder,
           dividerBuilder: widget.dividerBuilder,

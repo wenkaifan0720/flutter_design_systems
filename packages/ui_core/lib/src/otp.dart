@@ -446,7 +446,7 @@ class _DesignOtpFieldState extends State<RawOtpField> {
       widget.controller ?? (_own ??= RawOtpController(length: widget.length));
 
   FocusNode get _focus =>
-      widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'DesignOtp'));
+      widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'RawOtpField'));
 
   @override
   void initState() {

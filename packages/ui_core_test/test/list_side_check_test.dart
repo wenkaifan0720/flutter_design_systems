@@ -35,7 +35,7 @@ Widget _row(BuildContext context, String name) =>
 // A combobox whose list opens in [direction], else as the combobox's
 // default has it.
 Widget _combobox({OptionsViewOpenDirection? direction}) {
-  Widget field(BuildContext context, DesignComboboxField field) => plainField(
+  Widget field(BuildContext context, RawComboboxField field) => plainField(
     key: _fieldKey,
     controller: field.controller,
     focusNode: field.focusNode,

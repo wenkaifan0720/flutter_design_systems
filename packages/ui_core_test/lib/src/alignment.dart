@@ -119,7 +119,7 @@ class DesignAlignmentError extends Error {
 ///
 /// A label is read by its capitals, never its ink's bounds, so its
 /// descenders ("Spending", "Light") do not count: its baseline where the
-/// engine draws it, and their height from the [DesignCapCenter] around it,
+/// engine draws it, and their height from the [RawCapCenter] around it,
 /// else read from its capitals flat on the cap height (B, E, H; not V or
 /// Y, whose middles meet their arms below it), else the height its style
 /// shows on the screen (every line in one family, weight, slant and size
@@ -243,7 +243,7 @@ class DesignLabelCheck {
   /// The capitals are read as the engine draws them: their baseline where
   /// the engine puts it (rounded to a whole logical pixel below the line's
   /// top, then to the nearest device pixel), their height the
-  /// `capHeightFactor` of the [DesignCapCenter] around the label or, outside
+  /// `capHeightFactor` of the [RawCapCenter] around the label or, outside
   /// one, read from the pixels of its capitals flat on the cap height (B, E,
   /// H and the like: a round one overshoots it, a V's or a Y's middle meets
   /// its arms below it). Where both are known and
@@ -258,7 +258,7 @@ class DesignLabelCheck {
   /// its own.
   ///
   /// A look turns it on once its faces wrap their labels in
-  /// [DesignCapCenter], which draws them within half a device pixel: 0.5.
+  /// [RawCapCenter], which draws them within half a device pixel: 0.5.
   final double? drawnTolerance;
 
   /// The scale the screen is drawn at to read its pixels.
@@ -709,7 +709,7 @@ class _LabelReader extends _DrawnReader {
             (read - given).abs() > 2 * drawnTolerance + 1) {
           found.add(
             '$name: the capitals of $words are drawn '
-            '${read.toStringAsFixed(1)} device px high; its DesignCapCenter\'s '
+            '${read.toStringAsFixed(1)} device px high; its RawCapCenter\'s '
             'capHeightFactor gives ${given.toStringAsFixed(1)}',
           );
         }

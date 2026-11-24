@@ -10,19 +10,19 @@ import 'package:ui_core/src/internal/panes.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-const List<DesignNavigationDestination> _destinations = [
-  DesignNavigationDestination(label: 'Home', icon: IconData(0xe318)),
-  DesignNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
-  DesignNavigationDestination(label: 'Settings', icon: IconData(0xe57f)),
+const List<RawNavigationDestination> _destinations = [
+  RawNavigationDestination(label: 'Home', icon: IconData(0xe318)),
+  RawNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
+  RawNavigationDestination(label: 'Settings', icon: IconData(0xe57f)),
 ];
 
-final Map<int, DesignDestinationDetails> _seen = {};
-DesignNavigationDetails? _navigation;
+final Map<int, RawDestinationDetails> _seen = {};
+RawNavigationDetails? _navigation;
 
 Widget _destination(
   BuildContext context,
-  DesignNavigationDestination destination,
-  DesignDestinationDetails details,
+  RawNavigationDestination destination,
+  RawDestinationDetails details,
 ) {
   _seen[details.index] = details;
   return SizedBox(
@@ -34,22 +34,22 @@ Widget _destination(
 
 // The bare reference painter: a 64-high bar of equal destinations, an
 // 80-wide rail, a 240-wide sidebar.
-Widget _navigationOf(BuildContext context, DesignNavigationDetails details) {
+Widget _navigationOf(BuildContext context, RawNavigationDetails details) {
   _navigation = details;
   return switch (details.mode) {
-    DesignNavigationMode.bar => SizedBox(
+    RawNavigationMode.bar => SizedBox(
       key: const ValueKey('nav'),
       height: 64,
       child: Row(
         children: [for (final d in details.destinations) Expanded(child: d)],
       ),
     ),
-    DesignNavigationMode.rail => SizedBox(
+    RawNavigationMode.rail => SizedBox(
       key: const ValueKey('nav'),
       width: 80,
       child: Column(children: details.destinations),
     ),
-    DesignNavigationMode.sidebar => SizedBox(
+    RawNavigationMode.sidebar => SizedBox(
       key: const ValueKey('nav'),
       width: 240,
       child: Column(children: details.destinations),
@@ -83,15 +83,15 @@ class _Host extends StatefulWidget {
     this.enabled = true,
     this.disabled = const {},
     this.branches = false,
-    this.backBehavior = DesignBranchBackBehavior.firstDestination,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
     this.navigatorKeys,
   });
 
-  final DesignNavigationMode? mode;
+  final RawNavigationMode? mode;
   final bool enabled;
   final Set<int> disabled;
   final bool branches;
-  final DesignBranchBackBehavior backBehavior;
+  final RawBranchBackBehavior backBehavior;
   final List<GlobalKey<NavigatorState>>? navigatorKeys;
 
   @override
@@ -117,7 +117,7 @@ class _HostState extends State<_Host> {
     final destinations = [
       for (var i = 0; i < _destinations.length; i++)
         widget.disabled.contains(i)
-            ? DesignNavigationDestination(
+            ? RawNavigationDestination(
                 label: _destinations[i].label,
                 icon: _destinations[i].icon,
                 enabled: false,
@@ -125,7 +125,7 @@ class _HostState extends State<_Host> {
             : _destinations[i],
     ];
     if (widget.branches) {
-      return DesignAdaptiveShell.branches(
+      return RawAdaptiveShell.branches(
         destinations: destinations,
         selectedIndex: selected,
         onDestinationSelected: widget.enabled ? _choose : null,
@@ -144,7 +144,7 @@ class _HostState extends State<_Host> {
         ],
       );
     }
-    return DesignAdaptiveShell(
+    return RawAdaptiveShell(
       destinations: destinations,
       selectedIndex: selected,
       onDestinationSelected: widget.enabled ? _choose : null,
@@ -186,8 +186,8 @@ void main() {
   });
 
   behaviourContract(
-    'DesignAdaptiveShell',
-    build: (c) => _Host(mode: DesignNavigationMode.bar, enabled: c.enabled),
+    'RawAdaptiveShell',
+    build: (c) => _Host(mode: RawNavigationMode.bar, enabled: c.enabled),
     node: () => find.byKey(const ValueKey('dest Home')),
     semantics: isSemantics(
       label: 'Home\nTab 1 of 3',
@@ -244,58 +244,58 @@ void main() {
     expect(
       [
         for (final w in [0.0, 599, 600, 839, 840, 1199, 1200, 1599, 1600])
-          DesignWindowSizeClass.fromWidth(w.toDouble()),
+          RawWindowSizeClass.fromWidth(w.toDouble()),
       ],
       [
-        DesignWindowSizeClass.compact,
-        DesignWindowSizeClass.compact,
-        DesignWindowSizeClass.medium,
-        DesignWindowSizeClass.medium,
-        DesignWindowSizeClass.expanded,
-        DesignWindowSizeClass.expanded,
-        DesignWindowSizeClass.large,
-        DesignWindowSizeClass.large,
-        DesignWindowSizeClass.extraLarge,
+        RawWindowSizeClass.compact,
+        RawWindowSizeClass.compact,
+        RawWindowSizeClass.medium,
+        RawWindowSizeClass.medium,
+        RawWindowSizeClass.expanded,
+        RawWindowSizeClass.expanded,
+        RawWindowSizeClass.large,
+        RawWindowSizeClass.large,
+        RawWindowSizeClass.extraLarge,
       ],
     );
     expect(
       [
         for (final w in [390.0, 768, 1000, 1440, 1920])
-          DesignNavigationMode.fromWidth(w.toDouble()),
+          RawNavigationMode.fromWidth(w.toDouble()),
       ],
       [
-        DesignNavigationMode.bar,
-        DesignNavigationMode.rail,
-        DesignNavigationMode.rail,
-        DesignNavigationMode.sidebar,
-        DesignNavigationMode.sidebar,
+        RawNavigationMode.bar,
+        RawNavigationMode.rail,
+        RawNavigationMode.rail,
+        RawNavigationMode.sidebar,
+        RawNavigationMode.sidebar,
       ],
     );
   });
 
   testWidgets('a phone has a bar along the bottom, a tablet a rail at the '
       'start, a desktop a sidebar; the body keeps its state', (tester) async {
-    late DesignWindowSizeClass size;
+    late RawWindowSizeClass size;
     await _width(tester, 390);
     await tester.pumpWidget(
       harness(
         Builder(
           builder: (context) {
-            size = DesignWindowSizeClass.of(context);
+            size = RawWindowSizeClass.of(context);
             return const _Host();
           },
         ),
       ),
     );
-    expect(size, DesignWindowSizeClass.compact);
-    expect(_navigation!.mode, DesignNavigationMode.bar);
+    expect(size, RawWindowSizeClass.compact);
+    expect(_navigation!.mode, RawNavigationMode.bar);
     final nav = tester.getRect(find.byKey(const ValueKey('nav')));
     expect(nav, const Rect.fromLTWH(0, 636, 390, 64));
     expect(
       tester.getRect(find.byKey(const ValueKey('body Home'))).bottom,
       lessThanOrEqualTo(636),
     );
-    expect(_seen[0]!.mode, DesignNavigationMode.bar);
+    expect(_seen[0]!.mode, RawNavigationMode.bar);
     expect(_seen[0]!.count, 3);
     expect(_seen[0]!.states, contains(WidgetState.selected));
 
@@ -311,8 +311,8 @@ void main() {
     );
     final body = field();
     await _width(tester, 768);
-    expect(size, DesignWindowSizeClass.medium);
-    expect(_navigation!.mode, DesignNavigationMode.rail);
+    expect(size, RawWindowSizeClass.medium);
+    expect(_navigation!.mode, RawNavigationMode.rail);
     expect(
       tester.getRect(find.byKey(const ValueKey('nav'))),
       const Rect.fromLTWH(0, 0, 80, 700),
@@ -320,7 +320,7 @@ void main() {
     expect(tester.getRect(find.byKey(const ValueKey('body Mail'))).left, 80);
     expect(field(), same(body), reason: 'the body moved with its state');
     await _width(tester, 1440);
-    expect(_navigation!.mode, DesignNavigationMode.sidebar);
+    expect(_navigation!.mode, RawNavigationMode.sidebar);
     expect(tester.getSize(find.byKey(const ValueKey('nav'))).width, 240);
   });
 
@@ -343,13 +343,13 @@ void main() {
     tester,
   ) async {
     late EdgeInsets padding;
-    Widget app(DesignNavigationMode mode) => harness(
+    Widget app(RawNavigationMode mode) => harness(
       MediaQuery(
         data: const MediaQueryData(
           size: Size(800, 600),
           padding: EdgeInsets.fromLTRB(20, 0, 0, 34),
         ),
-        child: DesignAdaptiveShell(
+        child: RawAdaptiveShell(
           destinations: _destinations,
           selectedIndex: 0,
           onDestinationSelected: (_) {},
@@ -365,9 +365,9 @@ void main() {
         ),
       ),
     );
-    await tester.pumpWidget(app(DesignNavigationMode.bar));
+    await tester.pumpWidget(app(RawNavigationMode.bar));
     expect(padding, const EdgeInsets.only(left: 20));
-    await tester.pumpWidget(app(DesignNavigationMode.rail));
+    await tester.pumpWidget(app(RawNavigationMode.rail));
     expect(padding, const EdgeInsets.only(bottom: 34));
   });
 
@@ -418,15 +418,15 @@ void main() {
       'it; in a rail the group adds nothing', (tester) async {
     final semantics = tester.ensureSemantics();
     await _width(tester, 390);
-    Widget shell(DesignNavigationMode mode) => harness(
-      DesignAdaptiveShell(
+    Widget shell(RawNavigationMode mode) => harness(
+      RawAdaptiveShell(
         mode: mode,
         destinations: _destinations,
         selectedIndex: 0,
         onDestinationSelected: (_) {},
         destinationBuilder: _destination,
         navigationBuilder: (context, details) {
-          final bar = details.mode == DesignNavigationMode.bar;
+          final bar = details.mode == RawNavigationMode.bar;
           final destinations = details.group(
             Flex(
               direction: bar ? Axis.horizontal : Axis.vertical,
@@ -462,7 +462,7 @@ void main() {
         body: _body('Home'),
       ),
     );
-    await tester.pumpWidget(shell(DesignNavigationMode.bar));
+    await tester.pumpWidget(shell(RawNavigationMode.bar));
     expect(tester.takeException(), isNull);
     final tab = tester.getSemantics(find.byKey(const ValueKey('dest Home')));
     final tabBar = tab.parent!;
@@ -481,7 +481,7 @@ void main() {
     expect(compose.parent!.role, isNot(SemanticsRole.tabBar));
     // A rail: the destinations and the action in the navigation, no tab
     // bar.
-    await tester.pumpWidget(shell(DesignNavigationMode.rail));
+    await tester.pumpWidget(shell(RawNavigationMode.rail));
     expect(tester.takeException(), isNull);
     final railTab = tester.getSemantics(
       find.byKey(const ValueKey('dest Home')),
@@ -504,7 +504,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      harness(const _Host(mode: DesignNavigationMode.bar, disabled: {0, 1})),
+      harness(const _Host(mode: RawNavigationMode.bar, disabled: {0, 1})),
     );
     // The body's field, then the destinations' one stop.
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -537,7 +537,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        harness(const _Host(mode: DesignNavigationMode.bar, branches: true)),
+        harness(const _Host(mode: RawNavigationMode.bar, branches: true)),
       );
       expect(_branchBuilds.toSet(), {'Home'});
       unawaited((await navigator(tester, 'Home')).push(page('Home')));
@@ -562,7 +562,7 @@ void main() {
     testWidgets('back pops the branch, then goes to the first destination, '
         'then leaves', (tester) async {
       await tester.pumpWidget(
-        harness(const _Host(mode: DesignNavigationMode.bar, branches: true)),
+        harness(const _Host(mode: RawNavigationMode.bar, branches: true)),
       );
       await tester.tap(find.text('Settings'));
       await tester.pumpAndSettle();
@@ -584,9 +584,9 @@ void main() {
       await tester.pumpWidget(
         harness(
           const _Host(
-            mode: DesignNavigationMode.bar,
+            mode: RawNavigationMode.bar,
             branches: true,
-            backBehavior: DesignBranchBackBehavior.history,
+            backBehavior: RawBranchBackBehavior.history,
           ),
         ),
       );
@@ -609,9 +609,9 @@ void main() {
       await tester.pumpWidget(
         harness(
           _Host(
-            mode: DesignNavigationMode.bar,
+            mode: RawNavigationMode.bar,
             branches: true,
-            backBehavior: DesignBranchBackBehavior.none,
+            backBehavior: RawBranchBackBehavior.none,
             navigatorKeys: keys,
           ),
         ),
@@ -629,7 +629,7 @@ void main() {
     ) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(
-        harness(const _Host(mode: DesignNavigationMode.bar, branches: true)),
+        harness(const _Host(mode: RawNavigationMode.bar, branches: true)),
       );
       await tester.tap(find.text('Mail'));
       await tester.pumpAndSettle();
@@ -738,7 +738,7 @@ void main() {
       await _width(tester, width);
       await tester.pumpWidget(
         harness(
-          DesignAdaptiveShell(
+          RawAdaptiveShell(
             destinations: _destinations,
             selectedIndex: 0,
             onDestinationSelected: (_) {},
@@ -897,15 +897,15 @@ void main() {
   });
 
   test('it describes itself', () {
-    final text = DesignAdaptiveShell.branches(
+    final text = RawAdaptiveShell.branches(
       destinations: _destinations,
       selectedIndex: 1,
       onDestinationSelected: null,
       destinationBuilder: _destination,
       navigationBuilder: _navigationOf,
       branches: [for (final _ in _destinations) (context) => const SizedBox()],
-      backBehavior: DesignBranchBackBehavior.history,
-      mode: DesignNavigationMode.rail,
+      backBehavior: RawBranchBackBehavior.history,
+      mode: RawNavigationMode.rail,
       showNavigation: false,
       dampingRatio: .5,
     ).toDiagnosticsNode().toStringDeep();

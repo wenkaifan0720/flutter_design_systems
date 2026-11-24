@@ -15,14 +15,14 @@ import 'tabs.dart';
 /// each row it carries, a reason for each it leaves out. A complete look
 /// answers every row; this one answers a few, and its test reads the rest as
 /// missing.
-final DesignInventory lookInventory = DesignInventory(
+final RawInventory lookInventory = RawInventory(
   look: 'Look',
   entries: [
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Button',
       (context) => LookButton('Save', onPressed: () {}),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ButtonGroup',
       (context) => LookToolbar(
         toggles: [
@@ -41,16 +41,16 @@ final DesignInventory lookInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Checkbox',
       (context) =>
           LookCheckbox(value: true, onChanged: (_) {}, label: 'Email me'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TextField',
       (context) => const LookTextField(labelText: 'Name'),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'FormField',
       (context) => const LookTextField(
         labelText: 'Email',
@@ -58,14 +58,14 @@ final DesignInventory lookInventory = DesignInventory(
         required: true,
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Tooltip',
       (context) => LookTooltip(
         message: 'Archive',
         child: LookButton('Archive', onPressed: () {}),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Select',
       (context) => LookSelect<String>(
         labelText: 'Plan',
@@ -74,14 +74,14 @@ final DesignInventory lookInventory = DesignInventory(
         onChanged: (_) {},
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Combobox',
       (context) => const LookCombobox<String>(
         labelText: 'Owner',
         options: ['Ada', 'Grace', 'Katherine'],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'DatePicker',
       (context) => LookDateField(
         labelText: 'Due',
@@ -91,7 +91,7 @@ final DesignInventory lookInventory = DesignInventory(
         onChanged: (_) {},
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'TabBar',
       (context) => LookTabs<String>(
         value: 'all',
@@ -103,7 +103,7 @@ final DesignInventory lookInventory = DesignInventory(
         ],
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'Menu',
       (context) => LookMenu(
         entries: [
@@ -122,7 +122,7 @@ final DesignInventory lookInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'BottomSheet',
       (context) => LookButton(
         'Share',
@@ -141,7 +141,7 @@ final DesignInventory lookInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'ReorderableListView',
       (context) => LookReorderableList<String>(
         items: const ['Milk', 'Eggs', 'Bread'],
@@ -150,7 +150,7 @@ final DesignInventory lookInventory = DesignInventory(
         itemBuilder: (context, item) => Text(item),
       ),
     ),
-    DesignInventoryEntry.present(
+    RawInventoryEntry.present(
       'SnackBar',
       (context) => LookButton(
         'Save draft',
@@ -160,7 +160,7 @@ final DesignInventory lookInventory = DesignInventory(
                 .show(const RawToast(message: 'Draft saved')),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    const RawInventoryEntry.absent(
       'FloatingActionButton',
       'A floating action button is Material vocabulary; the page puts its '
           'main action in its top bar.',

@@ -14,7 +14,7 @@ const _testCaps = 0.75;
 // [child] with its capitals on its box's middle, as a look draws its labels
 // and entries.
 Widget _caps(Widget child) =>
-    DesignCapCenter(capHeightFactor: _testCaps, child: child);
+    RawCapCenter(capHeightFactor: _testCaps, child: child);
 
 // The bare reference painter: a grey box [height] high, as wide as its
 // label and its padding, the label centred in it by its capitals (by its
@@ -135,7 +135,7 @@ void main() {
   });
 
   testWidgets('a label centred by its line box, not its capitals, fails; one '
-      'in a DesignCapCenter passes', (tester) async {
+      'in a RawCapCenter passes', (tester) async {
     // The test font's glyphs stand 12 above the baseline and 4 below it: a
     // 16 px line box centred in the face puts the capitals' middle 2 px
     // above the face's, and the baseline 2 px above the cap-centred one's.
@@ -193,7 +193,7 @@ void main() {
           'medium · standard · $platform · $kind: $problem',
     ];
 
-    testWidgets('is paid in advance by DesignCapCenter', (tester) async {
+    testWidgets('is paid in advance by RawCapCenter', (tester) async {
       expect(await problems(tester, both(lower, 0)), isEmpty);
       expect(await problems(tester, both(higher, 0)), isEmpty);
     });

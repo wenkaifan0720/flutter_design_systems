@@ -5,7 +5,7 @@ description: Build a complete, production-grade Flutter design-system package (a
 
 # Building a design system on ui_core
 
-Written for ui_core 0.5.x and ui_core_test 0.3.x, on Flutter 3.47 or later.
+Written for ui_core 0.6.x and ui_core_test 0.4.x, on Flutter 3.47 or later.
 
 This skill builds a Flutter package that is a whole design language: a
 theme, every part an ordinary app needs, in every state, on every screen size,
@@ -18,8 +18,8 @@ The package it builds starts from:
 
 ```text
 flutter create --template=package <name>_ui
-flutter pub add ui_core:^0.5.6 material_ui
-flutter pub add 'dev:ui_core_test:^0.3.0' dev:leak_tracker_flutter_testing dev:flutter_lints
+flutter pub add ui_core:^0.6.0 material_ui
+flutter pub add 'dev:ui_core_test:^0.4.0' dev:leak_tracker_flutter_testing dev:flutter_lints
 ```
 
 A design system on ui_core splits the work in two:
@@ -38,11 +38,47 @@ or `GestureDetector` button misses the semantics, the focus-visible rule, the
 press-inside-a-scroll rule and the tap-target floor that `RawButton` and
 `TapTargetPadding` already hold, and the checks will find it.
 
+## Flutter habits that differ
+
+Each line is a Flutter or Material habit that is wrong on ui_core, and the
+right form.
+
+- A dialog's title is a `String`, which the look draws:
+  `RawAlertDialog(title: 'Delete?', titleBuilder: (context, title) => Text(title, style: …))`,
+  never `title: Text(…)`.
+- An action is words and a callback, by name:
+  `RawDialogAction(label: 'Delete', onPressed: …)`. `actions:` takes
+  `RawDialogAction`s, not buttons; the look draws each one in `actionBuilder`.
+- A dialog opens on a route:
+  `Navigator.of(context).push(RawModalDialogRoute(builder: (context, details) => …))`,
+  or the look's own `show<Look>Dialog`, not Material's `showDialog`.
+- A segmented control is
+  `RawSegmentedButton(options: […], selected: {…}, onSelectionChanged: …, itemBuilder: (context, value, states) => …)`.
+  ui_core has no `segments:`, `ButtonSegment` or `RawButtonSegment` (those are
+  Material's `SegmentedButton`). `segmentBuilder` belongs to `RawDateField`
+  and `RawTimeField`. The 0.3 names `DesignToggleGroup` and
+  `DesignToggleItemBuilder` are `RawSegmentedButton` and `RawSegmentBuilder`,
+  and `dart fix --apply` renames them.
+- A screen is pushed with `RawPageRoute` (or listed as a `RawPage`), not
+  `MaterialPageRoute` or `CupertinoPageRoute`: it plays the look's transition,
+  and the swipe back on iOS.
+- A calendar is
+  `RawCalendarDatePicker(controller: RawCalendarController(firstDate: …, lastDate: …), dayBuilder: …)`.
+  The controller holds the month and the selection, and `onChanged` reports a
+  pick; there is no `initialDate` or `onDateChanged`. Each day stands in a
+  tap target at least the look's floor tall
+  (`RawTapTargets.of(context).floorOn()`), its face centred: a day face that
+  draws the grid's rules (borders that meet the next row's) is built at that
+  height, or the rules gap between rows. A day's number is `day.label` (the
+  app's digits, Arabic-Indic in Arabic), not `'${day.date.day}'`.
+- Built-in words come from `RawWidgetsLocalizations.of(context)`, not
+  `MaterialLocalizations`.
+
 ## Pages
 
 | Page | Read it when |
 |---|---|
-| [references/contract.md](references/contract.md) | Wiring any part: each `Raw*` widget, the builder pattern, `DesignStyleOf` layering, tap targets, motion, lists and menus, the Flutter shims. |
+| [references/contract.md](references/contract.md) | Wiring any part: each `Raw*` widget, the builder pattern, `RawStyleOf` layering, tap targets, motion, lists and menus, the Flutter shims. |
 | [references/inventory.md](references/inventory.md) | Planning and tracking scope: every component an app expects, in build order. |
 | [references/taste.md](references/taste.md) | Designing any state, size or motion; making parts read as one family; deciding what to leave out. |
 | [references/checks.md](references/checks.md) | Proving a part: the ui_core_test checks, the analyzer, docs, publish, and the screenshot review. |
@@ -86,8 +122,8 @@ leave it plainer. See [taste.md](references/taste.md).
   README.md  CHANGELOG.md  LICENSE
 ```
 
-Depend on `ui_core: ^0.5.6` and, for the text editing and the localizations a
-look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.3.0`,
+Depend on `ui_core: ^0.6.0` and, for the text editing and the localizations a
+look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.4.0`,
 `leak_tracker_flutter_testing` and `flutter_lints`. Turn on `strict-casts`,
 `strict-inference`, `strict-raw-types` and `public_member_api_docs`, and leak
 tracking for every test. [checks.md](references/checks.md) has the files.
@@ -98,8 +134,8 @@ plus what an app needs to set it up:
 ```dart
 export 'package:ui_core/ui_core.dart'
     show
-        DesignDensity,
-        DesignStyle,
+        RawDensity,
+        RawStyle,
         RawDialogAction,
         RawMenuEntry,
         RawToast,
@@ -117,23 +153,23 @@ it. It holds:
 - colours by role, a day set and a night set chosen separately (not
   inverted);
 - a type ramp that works with any family the app loads, and that family's
-  cap-height factor for `DesignCapCenter`;
+  cap-height factor for `RawCapCenter`;
 - **one control height** every part that can share a row stands at, and a
-  `DesignDensity` that moves faces, never tap targets;
+  `RawDensity` that moves faces, never tap targets;
 - motion tokens as springs (damping ratio and stiffness);
-- a style slot per part (`DesignStyle`, aliased to the look's name).
+- a style slot per part (`RawStyle`, aliased to the look's name).
 
 The theme widget also installs the tap-target floors and the spacing grid:
 
 ```dart
-child: DesignTapTargetScope(
-  targets: DesignTapTargets.fallback,
-  child: DesignSpacingScope(
-    spacing: DesignSpacing.fallback,
+child: RawTapTargetScope(
+  targets: RawTapTargets.fallback,
+  child: RawSpacingScope(
+    spacing: RawSpacing.fallback,
 ```
 
-`DesignSpacing.fallback` is a 4 px grid; a look on another unit names it
-(`DesignSpacing(grid: 8)` for an 8 px grid), and its gaps, insets and
+`RawSpacing.fallback` is a 4 px grid; a look on another unit names it
+(`RawSpacing(grid: 8)` for an 8 px grid), and its gaps, insets and
 control heights are multiples of it.
 
 Apps install it in their app widget's `builder`, so every route and overlay
@@ -170,7 +206,7 @@ _controller
   ..value = 0
   ..springTo(
     1,
-    DesignMotionPolicy.of(context).effects(
+    RawMotionPolicy.of(context).effects(
       dampingRatio: motion.stateDampingRatio,
       stiffness: motion.stateStiffness,
     ),
@@ -187,16 +223,16 @@ return TapTargetPadding(
     focusNode: focusNode,
     autofocus: autofocus,
     builder: (context, states, _) {
-      final look = DesignStyleOf([style, theme.buttonStyle], states);
+      final look = RawStyleOf([style, theme.buttonStyle], states);
       return AnimatedLookSurface(
         face: lookButtonFace(
 // ...
-          child: DesignControlBox(
+          child: RawControlBox(
             minHeight:
                 look.minimumSize?.height ??
                 theme.density.height(theme.controlHeight),
 // ...
-                  child: DesignCapCenter(
+                  child: RawCapCenter(
                     capHeightFactor: theme.capHeightFactor,
 ```
 
@@ -205,9 +241,9 @@ return TapTargetPadding(
 - `RawButton` gives the states: `pressed`, `hovered`, `focused` (only while
   focus should show, as a browser's focus-visible), `disabled`, `selected`,
   `error`.
-- `DesignStyleOf` reads the part's own `style:`, then the theme's slot, then
+- `RawStyleOf` reads the part's own `style:`, then the theme's slot, then
   the look's default, state by state.
-- `DesignControlBox` and `DesignCapCenter` put the label's capitals on the
+- `RawControlBox` and `RawCapCenter` put the label's capitals on the
   face's middle, so a button, a field and a chip in one row line up.
 
 ### 5. Build the rest in inventory order
@@ -238,7 +274,7 @@ navigation, containers, overlays, feedback and charts. For each part:
 Each raised part (dialog, sheet, menu, popover, tooltip, toast) is shown by a
 `show<Look>…` function or a widget that owns its route or overlay, scrim,
 motion, dismissal (Escape, Android back, a tap outside where it applies) and
-the return of focus to its opener. Build dialogs on `DesignDialogRoute` with
+the return of focus to its opener. Build dialogs on `RawModalDialogRoute` with
 `RawAlertDialog`; carry the opener's themes into the route:
 
 ```dart
@@ -253,7 +289,12 @@ final themes = InheritedTheme.capture(from: context, to: navigator.context);
   picture shown large is pushed on `RawModalRoute`: the barrier, spring,
   Escape, back, Tab kept inside and focus back of a dialog, with no role, so
   a screen reader hears the page's own words and never "dialog". Its
-  heading names it (`namesRoute`).
+  heading names it (`namesRoute`). `closeOnEscape: false` leaves Escape to
+  a page that answers it itself.
+- **Pages and their bars.** A look ships a page of its own on `RawPage`
+  (its push, the swipe back on iOS, a fade under Reduce Motion), and its bar
+  shows back or close from `RoutePresentation.of(context)`, never from
+  `canPop` (contract.md, "Page transitions" and "Where a screen stands").
 - **Pickers.** A calendar or a grid raised from a field opens with
   `RawPopoverPlacement(fit: RawPopoverFit.whole)`, so it lands whole on
   the side that holds it; a list keeps the default and scrolls.
@@ -302,13 +343,13 @@ the whole list and what each check catches.
 
 ### 8. Answer the inventory
 
-A `DesignInventory` names a live specimen for every row the look carries and
+A `RawInventory` names a live specimen for every row the look carries and
 a reason for every row it leaves out. Its test calls `verify()`; a gallery
-lists it with `DesignInventoryGallery`, so an absent part reads as a decision,
+lists it with `RawInventoryGallery`, so an absent part reads as a decision,
 not a gap:
 
 ```dart
-const DesignInventoryEntry.absent(
+const RawInventoryEntry.absent(
   'FloatingActionButton',
   'A floating action button is Material vocabulary; the page puts its '
       'main action in its top bar.',
@@ -335,7 +376,7 @@ const DesignInventoryEntry.absent(
 ## Done means
 
 - [ ] Every inventory row is present with a live specimen, or absent with a
-      reason a designer would give; `DesignInventory.verify()` passes.
+      reason a designer would give; `RawInventory.verify()` passes.
 - [ ] Every interactive part has rest, hover, focus, pressed, disabled and,
       where it has them, selected, error and busy, day and night; each differs
       from rest; each change animates on the look's springs.
@@ -369,7 +410,7 @@ const DesignInventoryEntry.absent(
   cursor and, at most, a quiet change the material allows.
 - **Faces at different heights in one row.** One control height per density;
   the field's box, the button and the select all use it.
-- **A label nudged by padding until it looks centred.** Use `DesignCapCenter`
+- **A label nudged by padding until it looks centred.** Use `RawCapCenter`
   with the family's factor and even leading; check it with `DesignLabelCheck`.
 - **A selection that fills part of its cell.** A chosen day, segment or row
   fills its whole cell, concentric with its container's corners.

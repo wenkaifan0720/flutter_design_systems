@@ -1,4 +1,4 @@
-// DesignLabelCheck over DesignCapCenter: a label cap-centred in Roboto, and a
+// DesignLabelCheck over RawCapCenter: a label cap-centred in Roboto, and a
 // glyph beside it, read from the drawn pixels. Split from ui_core's
 // cap_center_test.dart, which tests the placement itself.
 import 'dart:io';
@@ -55,9 +55,7 @@ Widget _label(
     style: style,
     textScaler: TextScaler.linear(textScale),
   );
-  return centred
-      ? DesignCapCenter(capHeightFactor: _roboto, child: text)
-      : text;
+  return centred ? RawCapCenter(capHeightFactor: _roboto, child: text) : text;
 }
 
 void main() {
@@ -162,7 +160,7 @@ void main() {
   // colour: read against the face's colour, every row of the sheen above
   // the capitals stood out by more than a sixteenth of the ink, so the
   // capitals read from the top of the line box (30.1 device px high where
-  // their DesignCapCenter gave 25.2). The ground is the sheen: the row of
+  // their RawCapCenter gave 25.2). The ground is the sheen: the row of
   // the words' box nearest the face's colour.
   testWidgets("DesignLabelCheck reads a label's capitals from the sheen "
       'under them, not from the face round it', (tester) async {

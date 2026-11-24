@@ -67,7 +67,7 @@ void main() {
   group('a value handle', () {
     Widget handle({bool enabled = true, bool dragging = false}) => harness(
       Center(
-        child: DesignValueHandle(
+        child: RawValueHandle(
           value: 0.5,
           dragging: dragging,
           semanticLabel: 'Volume',
@@ -96,7 +96,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           Center(
-            child: DesignValueHandle(
+            child: RawValueHandle(
               value: 0.5,
               mouseCursor: SystemMouseCursors.precise,
               onChanged: (_) {},

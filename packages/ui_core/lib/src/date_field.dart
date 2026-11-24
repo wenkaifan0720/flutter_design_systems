@@ -515,7 +515,7 @@ class _DesignDateFieldState extends _SegmentedFieldState<RawDateField> {
   void afterChange() {
     final out = _outOfRange;
     if (out && !_wasOutOfRange) {
-      designAnnounce(
+      rawAnnounce(
         context,
         RawWidgetsLocalizations.of(context).dateOutOfRangeLabel,
       );

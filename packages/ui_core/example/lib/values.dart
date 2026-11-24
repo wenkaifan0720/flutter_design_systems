@@ -23,8 +23,8 @@ const List<Color> _series = [
   Color(0xFF8250DF),
 ];
 
-final List<DesignChartSeries> _visits = [
-  DesignChartSeries(
+final List<RawChartSeries> _visits = [
+  RawChartSeries(
     label: 'Web',
     points: [
       for (final (m, v) in [
@@ -35,10 +35,10 @@ final List<DesignChartSeries> _visits = [
         (5, 1380),
         (6, 1500),
       ])
-        DesignChartPoint.time(DateTime(2026, m), v.toDouble()),
+        RawChartPoint.time(DateTime(2026, m), v.toDouble()),
     ],
   ),
-  DesignChartSeries(
+  RawChartSeries(
     label: 'App',
     points: [
       for (final (m, v) in [
@@ -49,28 +49,28 @@ final List<DesignChartSeries> _visits = [
         (5, 980),
         (6, 1210),
       ])
-        DesignChartPoint.time(DateTime(2026, m), v.toDouble()),
+        RawChartPoint.time(DateTime(2026, m), v.toDouble()),
     ],
   ),
 ];
 
-const List<DesignChartSeries> _orders = [
-  DesignChartSeries(
+const List<RawChartSeries> _orders = [
+  RawChartSeries(
     label: 'Orders',
     points: [
-      DesignChartPoint(0, 42),
-      DesignChartPoint(1, 58),
-      DesignChartPoint(2, 37),
-      DesignChartPoint(3, 64),
+      RawChartPoint(0, 42),
+      RawChartPoint(1, 58),
+      RawChartPoint(2, 37),
+      RawChartPoint(3, 64),
     ],
   ),
 ];
 
-const List<DesignPieSlice> _spending = [
-  DesignPieSlice(label: 'Rent', value: 1200),
-  DesignPieSlice(label: 'Food', value: 600),
-  DesignPieSlice(label: 'Travel', value: 400),
-  DesignPieSlice(label: 'Fun', value: 200),
+const List<RawPieSlice> _spending = [
+  RawPieSlice(label: 'Rent', value: 1200),
+  RawPieSlice(label: 'Food', value: 600),
+  RawPieSlice(label: 'Travel', value: 400),
+  RawPieSlice(label: 'Fun', value: 200),
 ];
 
 const List<String> _months = [
@@ -253,10 +253,10 @@ class _ValuesPageState extends State<ValuesPage> {
           if (_visitsTable)
             Align(
               alignment: AlignmentDirectional.centerStart,
-              child: DesignChartTable(
+              child: RawChartTable(
                 semanticLabel: 'Visits by month',
                 xHeader: 'Month',
-                xAxis: DesignChartXAxis.time,
+                xAxis: RawChartXAxis.time,
                 series: _visits,
                 cellBuilder: _cell,
               ),
@@ -264,10 +264,10 @@ class _ValuesPageState extends State<ValuesPage> {
           else
             SizedBox(
               height: 200,
-              child: DesignChart(
+              child: RawChart(
                 semanticLabel: 'Visits by month',
                 series: _visits,
-                xAxis: DesignChartXAxis.time,
+                xAxis: RawChartXAxis.time,
                 padding: const EdgeInsetsDirectional.fromSTEB(44, 12, 12, 24),
                 onShowTable: () => setState(() => _visitsTable = true),
                 builder: _lines,
@@ -278,10 +278,10 @@ class _ValuesPageState extends State<ValuesPage> {
           const SizedBox(height: 6),
           const SizedBox(
             height: 180,
-            child: DesignChart(
+            child: RawChart(
               semanticLabel: 'Orders by quarter',
               series: _orders,
-              xAxis: DesignChartXAxis.band,
+              xAxis: RawChartXAxis.band,
               categories: ['Q1', 'Q2', 'Q3', 'Q4'],
               padding: EdgeInsetsDirectional.fromSTEB(36, 12, 12, 24),
               builder: _bars,
@@ -295,7 +295,7 @@ class _ValuesPageState extends State<ValuesPage> {
             child: SizedBox(
               width: 200,
               height: 200,
-              child: DesignPieChart(
+              child: RawPieChart(
                 semanticLabel: 'Spending',
                 slices: _spending,
                 holeRadius: 0.6,
@@ -502,7 +502,7 @@ class _Toggle extends StatelessWidget {
 }
 
 // A chart's frame: a ring while the keys are on it.
-Widget _ring(DesignChartDetails chart, Widget child) => DecoratedBox(
+Widget _ring(RawChartDetails chart, Widget child) => DecoratedBox(
   position: DecorationPosition.foreground,
   decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(6),
@@ -514,7 +514,7 @@ Widget _ring(DesignChartDetails chart, Widget child) => DecoratedBox(
 );
 
 // The y ticks' labels down the start edge, the x ticks' along the bottom.
-List<Widget> _axisLabels(DesignChartDetails chart) => [
+List<Widget> _axisLabels(RawChartDetails chart) => [
   for (final tick in chart.yTicks)
     PositionedDirectional(
       start: 0,
@@ -541,7 +541,7 @@ List<Widget> _axisLabels(DesignChartDetails chart) => [
 
 // The picked point's readout: its series and value, above it (clear of a
 // finger when a finger picked it).
-Widget _readout(BuildContext context, DesignChartDetails chart) {
+Widget _readout(BuildContext context, RawChartDetails chart) {
   final active = chart.active!;
   final at = chart.activePosition!;
   final series = chart.series[active.series];
@@ -569,7 +569,7 @@ Widget _readout(BuildContext context, DesignChartDetails chart) {
 
 // Lines: grid lines at the y ticks, a line a series (broken at a gap), a
 // dot and a rule at the picked point.
-Widget _lines(BuildContext context, DesignChartDetails chart) => _ring(
+Widget _lines(BuildContext context, RawChartDetails chart) => _ring(
   chart,
   Stack(
     children: [
@@ -583,7 +583,7 @@ Widget _lines(BuildContext context, DesignChartDetails chart) => _ring(
 class _LinesPainter extends CustomPainter {
   _LinesPainter(this.chart);
 
-  final DesignChartDetails chart;
+  final RawChartDetails chart;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -637,7 +637,7 @@ class _LinesPainter extends CustomPainter {
 
 // Bars: a bar a category, from 0 up, side by side when there are several
 // series; the picked one darker.
-Widget _bars(BuildContext context, DesignChartDetails chart) => _ring(
+Widget _bars(BuildContext context, RawChartDetails chart) => _ring(
   chart,
   Stack(
     children: [
@@ -651,11 +651,11 @@ Widget _bars(BuildContext context, DesignChartDetails chart) => _ring(
 class _BarsPainter extends CustomPainter {
   _BarsPainter(this.chart);
 
-  final DesignChartDetails chart;
+  final RawChartDetails chart;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final x = chart.x as DesignBandScale;
+    final x = chart.x as RawBandScale;
     final width = x.bandwidth / math.max(1, chart.series.length);
     final base = chart.y.map(0);
     for (var i = 0; i < chart.series.length; i++) {
@@ -664,7 +664,7 @@ class _BarsPainter extends CustomPainter {
         final y = points[j].y;
         if (y == null) continue;
         final left = x.map(points[j].x) - x.bandwidth / 2 + width * i;
-        final picked = chart.active == DesignChartPointRef(i, j);
+        final picked = chart.active == RawChartPointRef(i, j);
         canvas.drawRRect(
           RRect.fromRectAndCorners(
             Rect.fromLTRB(left + 1, chart.y.map(y), left + width - 1, base),
@@ -691,7 +691,7 @@ class _BarsPainter extends CustomPainter {
 
 // A donut: an arc a slice, the picked one wider, its name and share in the
 // hole.
-Widget _donut(BuildContext context, DesignPieChartDetails pie) {
+Widget _donut(BuildContext context, RawPieChartDetails pie) {
   final active = pie.active;
   final l = RawWidgetsLocalizations.of(context);
   return Stack(
@@ -722,7 +722,7 @@ Widget _donut(BuildContext context, DesignPieChartDetails pie) {
 class _DonutPainter extends CustomPainter {
   _DonutPainter(this.pie);
 
-  final DesignPieChartDetails pie;
+  final RawPieChartDetails pie;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -749,7 +749,7 @@ class _DonutPainter extends CustomPainter {
 }
 
 // A table cell: a header bold, a figure at the end.
-Widget _cell(BuildContext context, DesignChartTableCellDetails cell) => Padding(
+Widget _cell(BuildContext context, RawChartTableCellDetails cell) => Padding(
   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
   child: Text(
     cell.text,
