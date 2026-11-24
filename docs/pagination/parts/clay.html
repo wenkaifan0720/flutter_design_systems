@@ -45,9 +45,9 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         ClayPagination(
-          count: titles.length,
+          pageCount: titles.length,
           page: page,
-          onChanged: (next) =&gt; setState(() =&gt; page = next),
+          onPageChanged: (next) =&gt; setState(() =&gt; page = next),
         ),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
         Text(<span class="hljs-string">'Page <span class="hljs-subst">$page</span> · <span class="hljs-subst">${titles[page - <span class="hljs-number">1</span>]}</span>'</span>),
@@ -61,5 +61,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;clay_ui&#47;latest&#47;clay_ui&#47;ClayPagination-class.html">ClayPagination API ↗</a></div>
-  <dl><div><dt><code>count</code></dt><dd>How many pages there are.</dd></div><div><dt><code>page</code></dt><dd>The current page, from 1.</dd></div><div><dt><code>onChanged</code></dt><dd>A page chosen; null turns the keys off.</dd></div></dl>
+  <dl><div><dt><code>pageCount</code></dt><dd>How many pages there are.</dd></div><div><dt><code>page</code></dt><dd>The current page, from 1.</dd></div><div><dt><code>onPageChanged</code></dt><dd>A page chosen; null turns the keys off.</dd></div></dl>
 </section>

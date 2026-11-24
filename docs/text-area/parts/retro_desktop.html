@@ -45,7 +45,7 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         RetroDesktopTextArea(
-          label: <span class="hljs-string">'Delivery note'</span>,
+          labelText: <span class="hljs-string">'Delivery note'</span>,
           lines: <span class="hljs-number">3</span>,
           onChanged: (note) =&gt; setState(
             () =&gt; lines = note.isEmpty ? <span class="hljs-number">0</span> : note.split(<span class="hljs-string">'\n'</span>).length,
@@ -63,5 +63,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;retro_desktop_ui&#47;latest&#47;retro_desktop_ui&#47;RetroDesktopTextArea-class.html">RetroDesktopTextArea API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Name that stays with the note.</dd></div><div><dt><code>onChanged</code></dt><dd>Recounts the lines when the note changes.</dd></div><div><dt><code>lines</code></dt><dd>Height of the editing area in lines.</dd></div></dl>
+  <dl><div><dt><code>labelText</code></dt><dd>Name that stays with the note.</dd></div><div><dt><code>onChanged</code></dt><dd>Recounts the lines when the note changes.</dd></div><div><dt><code>lines</code></dt><dd>Height of the editing area in lines.</dd></div></dl>
 </section>

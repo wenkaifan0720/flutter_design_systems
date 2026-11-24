@@ -44,7 +44,7 @@
       GlossTabBar(
         tabs: <span class="hljs-keyword">const</span> [<span class="hljs-string">'Overview'</span>, <span class="hljs-string">'Activity'</span>],
         selectedIndex: selected,
-        onSelected: (index) =&gt; setState(() =&gt; selected = index),
+        onTap: (index) =&gt; setState(() =&gt; selected = index),
       ),
       <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">16</span>),
       Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Private draft'</span> : <span class="hljs-string">'Created today'</span>),
@@ -57,5 +57,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;gloss_ui&#47;latest&#47;gloss_ui&#47;GlossTabBar-class.html">GlossTabBar API ↗</a></div>
-  <dl><div><dt><code>tabs</code></dt><dd>Section names in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the visible section.</dd></div><div><dt><code>onSelected</code></dt><dd>Receives the chosen index.</dd></div><div><dt><code>expand</code></dt><dd>Fills the row or hugs the labels. The default fills a phone-width row.</dd></div><div><dt><code>style</code></dt><dd>Overrides the tab bar’s appearance.</dd></div></dl>
+  <dl><div><dt><code>tabs</code></dt><dd>Section names in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the visible section.</dd></div><div><dt><code>onTap</code></dt><dd>Receives the chosen index.</dd></div><div><dt><code>expand</code></dt><dd>Fills the row or hugs the labels. The default fills a phone-width row.</dd></div><div><dt><code>style</code></dt><dd>Overrides the tab bar’s appearance.</dd></div></dl>
 </section>

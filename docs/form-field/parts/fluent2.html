@@ -42,8 +42,8 @@
     constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">400</span>),
     child: SingleChildScrollView(
       child: Fluent2FormField(
-        label: <span class="hljs-string">'Project name'</span>,
-        helper: <span class="hljs-string">'For example, Field notes.'</span>,
+        labelText: <span class="hljs-string">'Project name'</span>,
+        helperText: <span class="hljs-string">'For example, Field notes.'</span>,
         validationMessage: tooShort ? <span class="hljs-string">'Use at least two letters.'</span> : <span class="hljs-keyword">null</span>,
         validationState: tooShort ? Fluent2ValidationState.error : <span class="hljs-keyword">null</span>,
         child: Fluent2TextField(
@@ -60,5 +60,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2FormField-class.html">Fluent2FormField API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Visible name for the entry.</dd></div><div><dt><code>helper</code></dt><dd>Instruction displayed beside the entry.</dd></div><div><dt><code>validationMessage</code></dt><dd>Validation message for a one-letter project name.</dd></div></dl>
+  <dl><div><dt><code>labelText</code></dt><dd>Visible name for the entry.</dd></div><div><dt><code>helperText</code></dt><dd>Instruction displayed beside the entry.</dd></div><div><dt><code>validationMessage</code></dt><dd>Validation message for a one-letter project name.</dd></div></dl>
 </section>

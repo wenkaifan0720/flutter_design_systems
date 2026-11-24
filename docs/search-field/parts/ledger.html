@@ -54,13 +54,13 @@
       children: [
         <span class="hljs-keyword">if</span> (searching)
           LedgerTextField(
-            label: <span class="hljs-string">'Find a title'</span>,
+            labelText: <span class="hljs-string">'Find a title'</span>,
             autofocus: <span class="hljs-keyword">true</span>,
             onChanged: filter,
           )
         <span class="hljs-keyword">else</span>
           LedgerSearchField(
-            hint: <span class="hljs-string">'Search titles'</span>,
+            hintText: <span class="hljs-string">'Search titles'</span>,
             onTap: () =&gt; setState(() =&gt; searching = <span class="hljs-keyword">true</span>),
           ),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
@@ -78,5 +78,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;ledger_ui&#47;latest&#47;ledger_ui&#47;LedgerSearchField-class.html">LedgerSearchField API ↗</a></div>
-  <dl><div><dt><code>hint</code></dt><dd>Prompt on the search entry.</dd></div><div><dt><code>onTap</code></dt><dd>Opens the editor and puts focus in it.</dd></div></dl>
+  <dl><div><dt><code>hintText</code></dt><dd>Prompt on the search entry.</dd></div><div><dt><code>onTap</code></dt><dd>Opens the editor and puts focus in it.</dd></div></dl>
 </section>

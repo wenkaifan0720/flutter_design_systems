@@ -44,7 +44,7 @@
       ClayTabBar(
         tabs: <span class="hljs-keyword">const</span> [<span class="hljs-string">'Overview'</span>, <span class="hljs-string">'Activity'</span>],
         selectedIndex: selected,
-        onSelected: (index) =&gt; setState(() =&gt; selected = index),
+        onTap: (index) =&gt; setState(() =&gt; selected = index),
       ),
       <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">16</span>),
       Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Private draft'</span> : <span class="hljs-string">'Created today'</span>),
@@ -57,5 +57,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;clay_ui&#47;latest&#47;clay_ui&#47;ClayTabBar-class.html">ClayTabBar API ↗</a></div>
-  <dl><div><dt><code>tabs</code></dt><dd>The tabs&#39; names, two or more.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The current tab.</dd></div><div><dt><code>onSelected</code></dt><dd>Called with the tab chosen.</dd></div><div><dt><code>expand</code></dt><dd>Whether they fill their row; null: below 600 px of window.</dd></div><div><dt><code>style</code></dt><dd>The tabs&#39; own style, over ClayThemeData.tabBarStyle: `fill` the pill, `foreground` the current name.</dd></div></dl>
+  <dl><div><dt><code>tabs</code></dt><dd>The tabs&#39; names, two or more.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The current tab.</dd></div><div><dt><code>onTap</code></dt><dd>Called with the tab chosen.</dd></div><div><dt><code>expand</code></dt><dd>Whether they fill their row; null: below 600 px of window.</dd></div><div><dt><code>style</code></dt><dd>The tabs&#39; own style, over ClayThemeData.tabBarStyle: `fill` the pill, `foreground` the current name.</dd></div></dl>
 </section>

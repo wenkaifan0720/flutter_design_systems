@@ -45,7 +45,7 @@
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          LedgerStepProgress(steps: steps, current: step),
+          LedgerStepProgress(steps: steps, currentStep: step),
           <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
           Text(<span class="hljs-string">'Step <span class="hljs-subst">${step + <span class="hljs-number">1</span>}</span>: <span class="hljs-subst">${steps[step]}</span>'</span>),
           <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
@@ -64,5 +64,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;ledger_ui&#47;latest&#47;ledger_ui&#47;LedgerStepProgress-class.html">LedgerStepProgress API ↗</a></div>
-  <dl><div><dt><code>steps</code></dt><dd>Step labels in the order they are completed.</dd></div><div><dt><code>current</code></dt><dd>Zero-based index of the current step.</dd></div></dl>
+  <dl><div><dt><code>steps</code></dt><dd>Step labels in the order they are completed.</dd></div><div><dt><code>currentStep</code></dt><dd>Zero-based index of the current step.</dd></div></dl>
 </section>

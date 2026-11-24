@@ -45,8 +45,8 @@
       Text(titles[page]),
       <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
       ExpressivePageDots(
-        count: titles.length,
-        selectedIndex: page,
+        pageCount: titles.length,
+        page: page,
         semanticLabel: <span class="hljs-string">'Guide pages'</span>,
         onChanged: (next) =&gt; setState(() =&gt; page = next),
       ),
@@ -59,5 +59,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;material_expressive_ui&#47;latest&#47;material_expressive_ui&#47;ExpressivePageDots-class.html">ExpressivePageDots API ↗</a></div>
-  <dl><div><dt><code>count</code></dt><dd>Total number of pages.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Zero-based position of the current page.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the position requested by a dot.</dd></div></dl>
+  <dl><div><dt><code>pageCount</code></dt><dd>Total number of pages.</dd></div><div><dt><code>page</code></dt><dd>Zero-based position of the current page.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the position requested by a dot.</dd></div></dl>
 </section>

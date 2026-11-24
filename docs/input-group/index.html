@@ -91,7 +91,7 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         ApplianceInputGroup(
-          label: <span class="hljs-string">'Parcel weight in kilograms'</span>,
+          labelText: <span class="hljs-string">'Parcel weight in kilograms'</span>,
           suffix: <span class="hljs-string">'kg'</span>,
           keyboardType: <span class="hljs-keyword">const</span> TextInputType.numberWithOptions(decimal: <span class="hljs-keyword">true</span>),
           onChanged: (value) =&gt; setState(() =&gt; weight = value.trim()),
@@ -108,7 +108,7 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;appliance_ui&#47;latest&#47;appliance_ui&#47;ApplianceInputGroup-class.html">ApplianceInputGroup API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Identifies the value and its unit.</dd></div><div><dt><code>suffix</code></dt><dd>Fixed kilogram unit beside the editable value.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives only the editable portion.</dd></div><div><dt><code>keyboardType</code></dt><dd>Requests a keyboard with decimal input.</dd></div></dl>
+  <dl><div><dt><code>labelText</code></dt><dd>Identifies the value and its unit.</dd></div><div><dt><code>suffix</code></dt><dd>Fixed kilogram unit beside the editable value.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives only the editable portion.</dd></div><div><dt><code>keyboardType</code></dt><dd>Requests a keyboard with decimal input.</dd></div></dl>
 </section></div>
       <section class="behaviour" id="behaviour"><h2>Shared behaviour</h2><ul>
 <li><strong>Keyboard and focus.</strong> Tab into the field and edit the number. The unit is fixed text and has no separate action.</li>

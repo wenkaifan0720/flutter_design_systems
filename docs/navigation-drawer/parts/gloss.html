@@ -53,7 +53,7 @@
             child: GlossSidebar(
               destinations: destinations,
               selectedIndex: selected,
-              onSelected: (next) =&gt; setState(() =&gt; selected = next),
+              onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
             ),
           ),
         ),
@@ -69,5 +69,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;gloss_ui&#47;latest&#47;gloss_ui&#47;GlossSidebar-class.html">GlossSidebar API ↗</a></div>
-  <dl><div><dt><code>destinations</code></dt><dd>The destinations in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Zero-based index of the visible page.</dd></div><div><dt><code>onSelected</code></dt><dd>Receives the index of the chosen destination.</dd></div></dl>
+  <dl><div><dt><code>destinations</code></dt><dd>The destinations in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Zero-based index of the visible page.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Receives the index of the chosen destination.</dd></div></dl>
 </section>

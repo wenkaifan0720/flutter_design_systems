@@ -94,7 +94,7 @@
           max: <span class="hljs-number">100</span>,
           divisions: <span class="hljs-number">20</span>,
           semanticLabel: <span class="hljs-string">'Volume'</span>,
-          valueText: (v) =&gt; <span class="hljs-string">'<span class="hljs-subst">${v.round()}</span>%'</span>,
+          semanticFormatterCallback: (v) =&gt; <span class="hljs-string">'<span class="hljs-subst">${v.round()}</span>%'</span>,
           onChanged: (next) =&gt; setState(() =&gt; volume = next),
         ),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
@@ -109,7 +109,7 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;appliance_ui&#47;latest&#47;appliance_ui&#47;ApplianceSlider-class.html">ApplianceSlider API ↗</a></div>
-  <dl><div><dt><code>value</code></dt><dd>Current volume on the track.</dd></div><div><dt><code>max</code></dt><dd>Highest volume the thumb can reach.</dd></div><div><dt><code>divisions</code></dt><dd>Number of equal intervals on the track.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names the volume control.</dd></div><div><dt><code>valueText</code></dt><dd>Announces the volume as a percentage.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the new volume.</dd></div></dl>
+  <dl><div><dt><code>value</code></dt><dd>Current volume on the track.</dd></div><div><dt><code>max</code></dt><dd>Highest volume the thumb can reach.</dd></div><div><dt><code>divisions</code></dt><dd>Number of equal intervals on the track.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names the volume control.</dd></div><div><dt><code>semanticFormatterCallback</code></dt><dd>Announces the volume as a percentage.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the new volume.</dd></div></dl>
 </section></div>
       <section class="behaviour" id="behaviour"><h2>Shared behaviour</h2><ul>
 <li><strong>Keyboard and focus.</strong> Focus the slider and use the arrows to adjust the volume. Try the same keys again in RTL.</li>

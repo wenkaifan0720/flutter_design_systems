@@ -44,7 +44,7 @@
       ComicTabBar(
         tabs: <span class="hljs-keyword">const</span> [<span class="hljs-string">'Overview'</span>, <span class="hljs-string">'Activity'</span>],
         selectedIndex: selected,
-        onChanged: (index) =&gt; setState(() =&gt; selected = index),
+        onTap: (index) =&gt; setState(() =&gt; selected = index),
       ),
       <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">16</span>),
       Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Private draft'</span> : <span class="hljs-string">'Created today'</span>),
@@ -57,5 +57,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;comic_ui&#47;latest&#47;comic_ui&#47;ComicTabBar-class.html">ComicTabBar API ↗</a></div>
-  <dl><div><dt><code>tabs</code></dt><dd>Labels in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the selected tab.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the chosen index.</dd></div><div><dt><code>label</code></dt><dd>Accessible name for the tab bar.</dd></div></dl>
+  <dl><div><dt><code>tabs</code></dt><dd>Labels in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the selected tab.</dd></div><div><dt><code>onTap</code></dt><dd>Receives the chosen index.</dd></div><div><dt><code>label</code></dt><dd>Accessible name for the tab bar.</dd></div></dl>
 </section>

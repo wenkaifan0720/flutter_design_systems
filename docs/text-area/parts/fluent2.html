@@ -45,7 +45,7 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2FormField(
-          label: <span class="hljs-string">'Delivery note'</span>,
+          labelText: <span class="hljs-string">'Delivery note'</span>,
           child: Fluent2TextArea(
             onChanged: (note) =&gt; setState(
               () =&gt; lines = note.isEmpty ? <span class="hljs-number">0</span> : note.split(<span class="hljs-string">'\n'</span>).length,

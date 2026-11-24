@@ -46,7 +46,7 @@
   Widget build(BuildContext context) =&gt; BrutalScaffold(
     destinations: destinations,
     selectedIndex: selected,
-    onSelected: (next) =&gt; setState(() =&gt; selected = next),
+    onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
     body: Center(child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>)),
   );
 }
@@ -56,5 +56,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;brutal_ui&#47;latest&#47;brutal_ui&#47;BrutalScaffold-class.html">BrutalScaffold API ↗</a></div>
-  <dl><div><dt><code>destinations</code></dt><dd>Main pages available in this shell.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the current page.</dd></div><div><dt><code>onSelected</code></dt><dd>Selects another destination.</dd></div><div><dt><code>body</code></dt><dd>Content for the selected page.</dd></div></dl>
+  <dl><div><dt><code>destinations</code></dt><dd>Main pages available in this shell.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the current page.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Selects another destination.</dd></div><div><dt><code>body</code></dt><dd>Content for the selected page.</dd></div></dl>
 </section>

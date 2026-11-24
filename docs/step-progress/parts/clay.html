@@ -45,7 +45,7 @@
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ClayStepProgress(steps: steps, current: step),
+          ClayStepProgress(steps: steps, currentStep: step),
           <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
           Text(<span class="hljs-string">'Step <span class="hljs-subst">${step + <span class="hljs-number">1</span>}</span>: <span class="hljs-subst">${steps[step]}</span>'</span>),
           <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
@@ -64,5 +64,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;clay_ui&#47;latest&#47;clay_ui&#47;ClayStepProgress-class.html">ClayStepProgress API ↗</a></div>
-  <dl><div><dt><code>steps</code></dt><dd>Each step&#39;s name.</dd></div><div><dt><code>current</code></dt><dd>The step under way, from 0; steps&#39; length once all are done.</dd></div></dl>
+  <dl><div><dt><code>steps</code></dt><dd>Each step&#39;s name.</dd></div><div><dt><code>currentStep</code></dt><dd>The step under way, from 0; steps&#39; length once all are done.</dd></div></dl>
 </section>

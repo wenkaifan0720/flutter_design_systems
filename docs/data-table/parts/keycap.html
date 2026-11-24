@@ -73,7 +73,7 @@
             builder: (context, _) =&gt; KeycapPagination(
               page: stock.page + <span class="hljs-number">1</span>,
               pageCount: stock.pageCount,
-              onChanged: (page) =&gt; stock.goToPage(page - <span class="hljs-number">1</span>),
+              onPageChanged: (page) =&gt; stock.goToPage(page - <span class="hljs-number">1</span>),
             ),
           ),
         ],

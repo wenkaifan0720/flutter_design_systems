@@ -50,7 +50,7 @@
         KeycapRadioGroup&lt;<span class="hljs-built_in">String</span>&gt;(
           semanticLabel: <span class="hljs-string">'Delivery method'</span>,
           options: <span class="hljs-keyword">const</span> [<span class="hljs-string">'Pickup'</span>, <span class="hljs-string">'Courier'</span>],
-          value: delivery,
+          groupValue: delivery,
           labelOf: (name) =&gt; name,
           onChanged: (value) =&gt; setState(() =&gt; delivery = value),
         ),
@@ -66,5 +66,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;keycap_ui&#47;latest&#47;keycap_ui&#47;KeycapRadioGroup-class.html">KeycapRadioGroup API ↗</a></div>
-  <dl><div><dt><code>semanticLabel</code></dt><dd>The group&#39;s name, for a screen reader.</dd></div><div><dt><code>value</code></dt><dd>The chosen one.</dd></div><div><dt><code>onChanged</code></dt><dd>Called with a new choice; null turns the group off.</dd></div><div><dt><code>options</code></dt><dd>The choices.</dd></div><div><dt><code>labelOf</code></dt><dd>A choice&#39;s words.</dd></div></dl>
+  <dl><div><dt><code>semanticLabel</code></dt><dd>The group&#39;s name, for a screen reader.</dd></div><div><dt><code>groupValue</code></dt><dd>The chosen one.</dd></div><div><dt><code>onChanged</code></dt><dd>Called with a new choice; null turns the group off.</dd></div><div><dt><code>options</code></dt><dd>The choices.</dd></div><div><dt><code>labelOf</code></dt><dd>A choice&#39;s words.</dd></div></dl>
 </section>

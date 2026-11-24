@@ -49,7 +49,7 @@
           MinimalToggleItem(<span class="hljs-string">'Grid'</span>, label: <span class="hljs-string">'Grid'</span>),
         ],
         selected: layout,
-        onChanged: (next) =&gt; setState(() =&gt; layout = next),
+        onSelectionChanged: (next) =&gt; setState(() =&gt; layout = next),
       ),
       <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
       Text(<span class="hljs-string">'Layout: <span class="hljs-subst">${layout.single}</span>'</span>),
@@ -62,5 +62,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalToggleGroup-class.html">MinimalToggleGroup API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Names the group.</dd></div><div><dt><code>items</code></dt><dd>List and Grid, in reading order.</dd></div><div><dt><code>selected</code></dt><dd>Current layout.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the new selection.</dd></div></dl>
+  <dl><div><dt><code>label</code></dt><dd>Names the group.</dd></div><div><dt><code>items</code></dt><dd>List and Grid, in reading order.</dd></div><div><dt><code>selected</code></dt><dd>Current layout.</dd></div><div><dt><code>onSelectionChanged</code></dt><dd>Receives the new selection.</dd></div></dl>
 </section>

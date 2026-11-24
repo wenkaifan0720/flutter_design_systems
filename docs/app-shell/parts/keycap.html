@@ -46,7 +46,7 @@
   Widget build(BuildContext context) =&gt; KeycapScaffold(
     destinations: destinations,
     selectedIndex: selected,
-    onSelected: (next) =&gt; setState(() =&gt; selected = next),
+    onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
     body: Center(child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>)),
   );
 }
@@ -56,5 +56,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;keycap_ui&#47;latest&#47;keycap_ui&#47;KeycapScaffold-class.html">KeycapScaffold API ↗</a></div>
-  <dl><div><dt><code>destinations</code></dt><dd>The places.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The current place.</dd></div><div><dt><code>onSelected</code></dt><dd>Called with the place chosen.</dd></div><div><dt><code>body</code></dt><dd>The page.</dd></div></dl>
+  <dl><div><dt><code>destinations</code></dt><dd>The places.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The current place.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Called with the place chosen.</dd></div><div><dt><code>body</code></dt><dd>The page.</dd></div></dl>
 </section>

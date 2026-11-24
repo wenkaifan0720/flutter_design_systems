@@ -45,8 +45,8 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         ComicRadioGroup&lt;<span class="hljs-built_in">String</span>&gt;(
-          label: <span class="hljs-string">'Delivery method'</span>,
-          value: delivery,
+          labelText: <span class="hljs-string">'Delivery method'</span>,
+          groupValue: delivery,
           options: <span class="hljs-keyword">const</span> [
             ComicRadio(<span class="hljs-string">'Pickup'</span>, <span class="hljs-string">'Pickup'</span>),
             ComicRadio(<span class="hljs-string">'Courier'</span>, <span class="hljs-string">'Courier'</span>),
@@ -65,5 +65,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;comic_ui&#47;latest&#47;comic_ui&#47;ComicRadioGroup-class.html">ComicRadioGroup API ↗</a></div>
-  <dl><div><dt><code>options</code></dt><dd>Pickup and Courier in reading order.</dd></div><div><dt><code>value</code></dt><dd>The single chosen delivery method.</dd></div><div><dt><code>onChanged</code></dt><dd>Updates the confirmation when another method is chosen.</dd></div><div><dt><code>label</code></dt><dd>Names the choice the group represents.</dd></div></dl>
+  <dl><div><dt><code>options</code></dt><dd>Pickup and Courier in reading order.</dd></div><div><dt><code>groupValue</code></dt><dd>The single chosen delivery method.</dd></div><div><dt><code>onChanged</code></dt><dd>Updates the confirmation when another method is chosen.</dd></div><div><dt><code>labelText</code></dt><dd>Names the choice the group represents.</dd></div></dl>
 </section>

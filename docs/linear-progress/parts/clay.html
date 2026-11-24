@@ -43,10 +43,7 @@
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ClayProgressBar(
-          value: completed / <span class="hljs-number">4</span>,
-          semanticLabel: <span class="hljs-string">'Uploading files'</span>,
-        ),
+        ClayProgressBar(value: completed / <span class="hljs-number">4</span>, semanticLabel: <span class="hljs-string">'Uploading files'</span>),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
         Text(<span class="hljs-string">'Uploaded <span class="hljs-subst">$completed</span> of 4 files'</span>),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),

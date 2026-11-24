@@ -45,7 +45,7 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         MinimalPasswordField(
-          label: <span class="hljs-string">'Sample password'</span>,
+          labelText: <span class="hljs-string">'Sample password'</span>,
           onChanged: (value) =&gt; setState(() =&gt; entered = value.isNotEmpty),
         ),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
@@ -60,5 +60,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalPasswordField-class.html">MinimalPasswordField API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Identifies the password even when the entry is concealed.</dd></div><div><dt><code>onChanged</code></dt><dd>Updates the confirmation when the entry becomes empty or nonempty.</dd></div></dl>
+  <dl><div><dt><code>labelText</code></dt><dd>Identifies the password even when the entry is concealed.</dd></div><div><dt><code>onChanged</code></dt><dd>Updates the confirmation when the entry becomes empty or nonempty.</dd></div></dl>
 </section>

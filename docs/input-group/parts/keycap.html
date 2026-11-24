@@ -45,8 +45,8 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         KeycapInputGroup(
-          label: <span class="hljs-string">'Parcel weight in kilograms'</span>,
-          suffix: <span class="hljs-string">'kg'</span>,
+          labelText: <span class="hljs-string">'Parcel weight in kilograms'</span>,
+          suffixText: <span class="hljs-string">'kg'</span>,
           keyboardType: <span class="hljs-keyword">const</span> TextInputType.numberWithOptions(decimal: <span class="hljs-keyword">true</span>),
           onChanged: (value) =&gt; setState(() =&gt; weight = value.trim()),
         ),
@@ -62,5 +62,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;keycap_ui&#47;latest&#47;keycap_ui&#47;KeycapInputGroup-class.html">KeycapInputGroup API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>The words over the field.</dd></div><div><dt><code>onChanged</code></dt><dd>Called as the words change.</dd></div><div><dt><code>keyboardType</code></dt><dd>The keyboard to show.</dd></div><div><dt><code>suffix</code></dt><dd>Words printed after it.</dd></div></dl>
+  <dl><div><dt><code>labelText</code></dt><dd>The words over the field.</dd></div><div><dt><code>onChanged</code></dt><dd>Called as the words change.</dd></div><div><dt><code>keyboardType</code></dt><dd>The keyboard to show.</dd></div><div><dt><code>suffixText</code></dt><dd>Words printed after it.</dd></div></dl>
 </section>

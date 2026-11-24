@@ -45,7 +45,7 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         ClayInputGroup(
-          label: <span class="hljs-string">'Parcel weight in kilograms'</span>,
+          labelText: <span class="hljs-string">'Parcel weight in kilograms'</span>,
           suffixText: <span class="hljs-string">'kg'</span>,
           keyboardType: <span class="hljs-keyword">const</span> TextInputType.numberWithOptions(decimal: <span class="hljs-keyword">true</span>),
           onChanged: (value) =&gt; setState(() =&gt; weight = value.trim()),
@@ -62,5 +62,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;clay_ui&#47;latest&#47;clay_ui&#47;ClayInputGroup-class.html">ClayInputGroup API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>The words above the well.</dd></div><div><dt><code>suffixText</code></dt><dd>Words at the well&#39;s end, behind a groove (ml, minutes).</dd></div><div><dt><code>onChanged</code></dt><dd>Each change.</dd></div><div><dt><code>keyboardType</code></dt><dd>The keyboard to show.</dd></div></dl>
+  <dl><div><dt><code>labelText</code></dt><dd>The words above the well.</dd></div><div><dt><code>suffixText</code></dt><dd>Words at the well&#39;s end, behind a groove (ml, minutes).</dd></div><div><dt><code>onChanged</code></dt><dd>Each change.</dd></div><div><dt><code>keyboardType</code></dt><dd>The keyboard to show.</dd></div></dl>
 </section>

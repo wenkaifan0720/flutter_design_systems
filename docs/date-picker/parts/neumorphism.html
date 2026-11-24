@@ -46,11 +46,11 @@
         mainAxisSize: MainAxisSize.min,
         children: [
           NeumorphicDatePicker(
-            first: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>),
-            last: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">12</span>, <span class="hljs-number">31</span>),
+            firstDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>),
+            lastDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">12</span>, <span class="hljs-number">31</span>),
             value: due,
             onChanged: (next) =&gt; setState(() =&gt; due = next),
-            today: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>, <span class="hljs-number">12</span>),
+            currentDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>, <span class="hljs-number">12</span>),
           ),
           <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
           Text(
@@ -67,5 +67,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;neumorphism_ui&#47;latest&#47;neumorphism_ui&#47;NeumorphicDatePicker-class.html">NeumorphicDatePicker API ↗</a></div>
-  <dl><div><dt><code>value</code></dt><dd>Selected due date.</dd></div><div><dt><code>first</code></dt><dd>Earliest available date.</dd></div><div><dt><code>last</code></dt><dd>Latest available date.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the chosen day.</dd></div></dl>
+  <dl><div><dt><code>value</code></dt><dd>Selected due date.</dd></div><div><dt><code>firstDate</code></dt><dd>Earliest available date.</dd></div><div><dt><code>lastDate</code></dt><dd>Latest available date.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the chosen day.</dd></div></dl>
 </section>

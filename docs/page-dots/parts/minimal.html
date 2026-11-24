@@ -45,9 +45,9 @@
       Text(titles[page]),
       <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
       MinimalPageDots(
-        count: titles.length,
-        selectedIndex: page,
-        onChanged: (next) =&gt; setState(() =&gt; page = next),
+        pageCount: titles.length,
+        page: page,
+        onPageChanged: (next) =&gt; setState(() =&gt; page = next),
       ),
     ],
   );
@@ -58,5 +58,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalPageDots-class.html">MinimalPageDots API ↗</a></div>
-  <dl><div><dt><code>count</code></dt><dd>Total number of pages.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Zero-based position of the current page.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the position requested by a dot.</dd></div></dl>
+  <dl><div><dt><code>pageCount</code></dt><dd>Total number of pages.</dd></div><div><dt><code>page</code></dt><dd>Zero-based position of the current page.</dd></div><div><dt><code>onPageChanged</code></dt><dd>Receives the position requested by a dot.</dd></div></dl>
 </section>
