@@ -190,26 +190,35 @@ class GlossScreen extends StatelessWidget {
         children: [
           ?bar,
           if (sheet) Flexible(child: content) else Expanded(child: content),
-          if (foot != null) ...[
-            const GlossDivider(),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                margin,
-                GlossSpacing.medium,
-                margin,
-                GlossSpacing.medium + media.padding.bottom,
+          // The foot, under its hairline. A toast stands above it, as a
+          // Scaffold keeps a snackbar above its persistent footer buttons.
+          if (foot != null)
+            RawToasterKeepClear(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const GlossDivider(),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      margin,
+                      GlossSpacing.medium,
+                      margin,
+                      GlossSpacing.medium + media.padding.bottom,
+                    ),
+                    child: framed
+                        ? Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 360),
+                              child: foot,
+                            ),
+                          )
+                        : foot,
+                  ),
+                ],
               ),
-              child: framed
-                  ? Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 360),
-                        child: foot,
-                      ),
-                    )
-                  : foot,
             ),
-          ],
         ],
       ),
     );

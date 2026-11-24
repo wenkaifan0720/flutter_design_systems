@@ -1,3 +1,7 @@
+## 0.4.1
+
+- A toast stands above `GlossScreen`'s `footer` (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its persistent footer buttons. It stood over the page's one gel key.
+
 ## 0.4.0
 
 - Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).
