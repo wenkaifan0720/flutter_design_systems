@@ -1,3 +1,9 @@
+## 0.6.2
+
+- Requires ui_core 0.6.1.
+- `Fluent2TimePicker` writes its times in the app's digits, as Material's time picker does (ui_core's `formatHour` and `formatMinute`): Arabic's ٩:٣٠ م, or ٢١:٣٠ on the 24-hour clock, in the field and its list. `showFluent2TimePicker`'s hour and minute wheels say ٢١ and ٠٥. English is unchanged ("9:30 PM", "21:30", "21", "05").
+- `showFluent2TimePicker` keeps its hour wheel left of the minutes in a right-to-left app, as a time is written (٢١:٠٥) and as Material's time picker keeps them; before, the wheels mirrored and the chosen row read minutes then hour.
+
 ## 0.6.1
 
 - `Fluent2DateBlock` and `Fluent2WeekStrip` say their weekdays and months in the app's words (ui_core's localizations, as Material's date header reads `MaterialLocalizations`), and are read as the whole date in them: Arabic names and digits in an Arabic app. In English a weekday is ui_core's short name, as the calendar's heads say it ("Fr", was "Fri"), and a day is read "Friday, 20 November 2026" (was "Friday, November 20"). `Fluent2WeekStrip`'s day numbers are in the app's digits too, as the date block's are. The English helpers `Fluent2DateBlock.weekdayOf`, `monthOf` and `spoken` stay.

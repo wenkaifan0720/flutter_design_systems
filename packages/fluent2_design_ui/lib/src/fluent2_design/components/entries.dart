@@ -1155,10 +1155,21 @@ class Fluent2Time {
   @override
   int get hashCode => Object.hash(hour, minute);
 
-  String _say(Fluent2Localizations words, bool use24Hour) {
-    final mm = minute.toString().padLeft(2, '0');
-    if (use24Hour) return '${hour.toString().padLeft(2, '0')}:$mm';
-    final h = hour % 12 == 0 ? 12 : hour % 12;
+  /// The time as a list writes it, in the app's digits: `09:30`, or
+  /// `9:30 AM` on the 12-hour clock (Arabic's ٩:٣٠ م), its figures
+  /// [RawTimeFormatting.formatHour]'s and [RawTimeFormatting.formatMinute]'s.
+  /// The 12-hour clock's hour is 1 to 12 whatever the language's own clock.
+  String _say(
+    Fluent2Localizations words,
+    RawWidgetsLocalizations figures,
+    bool use24Hour,
+  ) {
+    final time = RawTimeOfDay(hour: hour, minute: minute);
+    final mm = figures.formatMinute(time);
+    if (use24Hour) {
+      return '${figures.formatHour(time, alwaysUse24HourFormat: true)}:$mm';
+    }
+    final h = figures.formatDecimal(time.hourOfPeriod);
     return '$h:$mm ${hour < 12 ? words.am : words.pm}';
   }
 }
@@ -1212,6 +1223,7 @@ class Fluent2TimePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = Fluent2Localizations.of(context);
+    final figures = RawWidgetsLocalizations.of(context);
     final clock24 = use24Hour ?? MediaQuery.alwaysUse24HourFormatOf(context);
     final times = <Fluent2Time>[
       for (var m = 0; m < 24 * 60; m += minuteStep)
@@ -1221,7 +1233,7 @@ class Fluent2TimePicker extends StatelessWidget {
     return Fluent2Select<Fluent2Time>(
       options: [
         for (final time in times)
-          Fluent2Option(time, time._say(words, clock24)),
+          Fluent2Option(time, time._say(words, figures, clock24)),
       ],
       value: value,
       onChanged: onChanged,
@@ -1283,11 +1295,16 @@ Future<Fluent2Time?> showFluent2TimePicker(
   var hour = value?.hour ?? 9;
   var minute = value?.minute ?? 0;
   final words = Fluent2Localizations.of(context);
+  // The wheels' figures in the app's digits (Arabic's ٠٩ and ٣٠).
+  final figures = RawWidgetsLocalizations.of(context);
   return showFluent2Dialog<Fluent2Time>(
     context,
     builder: (dialogContext) => Fluent2Dialog(
       title: title ?? words.chooseTime,
+      // Hour on the left, then minutes, in a right-to-left app too, as a time
+      // is written (٢١:٠٥) and as Material's time picker keeps them.
       content: Row(
+        textDirection: TextDirection.ltr,
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: Fluent2Spacing.l,
         children: [
@@ -1298,7 +1315,10 @@ Future<Fluent2Time?> showFluent2TimePicker(
               items: [for (var h = 0; h < 24; h++) h],
               value: hour,
               looping: true,
-              itemLabel: (h) => h.toString().padLeft(2, '0'),
+              itemLabel: (h) => figures.formatHour(
+                RawTimeOfDay(hour: h, minute: 0),
+                alwaysUse24HourFormat: true,
+              ),
               onChanged: (h) => hour = h,
             ),
           ),
@@ -1309,7 +1329,8 @@ Future<Fluent2Time?> showFluent2TimePicker(
               items: [for (var m = 0; m < 60; m++) m],
               value: minute,
               looping: true,
-              itemLabel: (m) => m.toString().padLeft(2, '0'),
+              itemLabel: (m) =>
+                  figures.formatMinute(RawTimeOfDay(hour: 0, minute: m)),
               onChanged: (m) => minute = m,
             ),
           ),

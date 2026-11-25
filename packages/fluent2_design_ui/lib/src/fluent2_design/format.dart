@@ -61,6 +61,10 @@ abstract final class Fluent2Format {
   }
 
   /// The 12-hour clock: "9:41 AM", no leading zero on the hour.
+  ///
+  /// English words in Western digits, as all of [Fluent2Format]; a time in
+  /// the app's language and digits is `RawWidgetsLocalizations`'
+  /// `formatTimeOfDay`, or `formatHour` and `formatMinute` for its parts.
   static String time(DateTime d) {
     final hour = d.hour % 12 == 0 ? 12 : d.hour % 12;
     return '$hour:${_two(d.minute)} ${d.hour < 12 ? 'AM' : 'PM'}';
