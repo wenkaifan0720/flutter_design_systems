@@ -9,6 +9,6 @@ pubspec.lock
 .vscode/
 .DS_Store
 
-# A look's golden images stay in the catalog it is generated from (hundreds of MB across the looks);
-# its golden tests skip themselves when test/goldens is absent.
+# The looks' golden images aren't kept in this repository (hundreds of MB across the looks); a look's golden
+# tests skip themselves when test/goldens is absent.
 packages/*/test/goldens/

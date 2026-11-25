@@ -125,6 +125,31 @@ jobs:
             dart pub publish --dry-run --directory ${{ matrix.dir }}
           fi
 
+
+  latest:
+    # The core packages on Flutter's latest stable as well: a new stable once broke ui_core (0.2.1 on 3.50), so a break
+    # shows here before an app meets it. The looks stay on the version above.
+    name: ${{ matrix.package }} (latest stable)
+    needs: changes
+    if: contains(needs.changes.outputs.packages, '"package":"ui_core"') || contains(needs.changes.outputs.packages, '"package":"ui_core_test"')
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [ui_core, ui_core_test]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve the workspace
+        run: flutter pub get
+      - name: Analyze
+        run: dart analyze --fatal-infos packages/${{ matrix.package }}
+      - name: Test, without the goldens
+        working-directory: packages/${{ matrix.package }}
+        run: flutter test --exclude-tags goldens
   goldens:
     # The pixel goldens were recorded on macOS, so they run there, and only by hand.
     name: Goldens (macOS, by hand)
