@@ -266,7 +266,10 @@ class RawNeutralTones with Diagnosticable {
     this.ownTone,
     this.darkChroma, {
     required bool grey,
-  }) : _grey = grey; // ignore: prefer_initializing_formals
+    // A private field set from a named parameter, which an initializing
+    // formal cannot be.
+    // ignore: prefer_initializing_formals
+  }) : _grey = grey;
 
   /// The neutral's hue, in degrees.
   final double hue;

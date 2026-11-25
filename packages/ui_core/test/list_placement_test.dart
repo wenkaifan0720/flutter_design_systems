@@ -169,7 +169,7 @@ void main() {
         testWidgets('in the middle, with room below and more above: below '
             '($round)', (tester) async {
           _view(tester, size);
-          // The Stint form's Assignee: 300 to 430 px under the field.
+          // A field low in a form: 300 to 430 px under the field.
           final top = size.height - 48 - (scale == 1 ? 330 : 430);
           await tester.pumpWidget(_at(top, _combobox(), textScale: scale));
           await _open(tester);
@@ -288,7 +288,6 @@ void main() {
             controller: field.controller,
             focusNode: field.focusNode,
             onSubmitted: field.submit,
-            width: 200,
           ),
           optionBuilder: (context, option, states) => _row(context, option),
           surfaceBuilder: (context, list) =>

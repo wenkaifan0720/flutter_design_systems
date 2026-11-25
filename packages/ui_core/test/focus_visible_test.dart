@@ -326,7 +326,7 @@ void main() {
         final controller = RawCalendarController(
           firstDate: DateTime(2025),
           lastDate: DateTime(2027, 12, 31),
-          initialMonth: DateTime(2026, 1),
+          initialMonth: DateTime(2026),
           currentDate: DateTime(2026, 1, 15),
         );
         addTearDown(controller.dispose);
@@ -349,7 +349,7 @@ void main() {
         );
         await tester.pumpWidget(_popover(content: calendar));
         await _click(tester, 'Open');
-        expect(controller.focusedDay, DateTime(2026, 1, 1));
+        expect(controller.focusedDay, DateTime(2026));
         expect(lit(1), isFalse, reason: 'no day lit after a click');
         await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
         await tester.pump();
@@ -404,7 +404,7 @@ void main() {
       final controller = RawCalendarController(
         firstDate: DateTime(2025),
         lastDate: DateTime(2027, 12, 31),
-        initialMonth: DateTime(2026, 1),
+        initialMonth: DateTime(2026),
         currentDate: DateTime(2026, 1, 15),
       );
       addTearDown(controller.dispose);
@@ -433,7 +433,7 @@ void main() {
       await tester.tapAt(const Offset(5, 5));
       await tester.pump();
       expect(FocusManager.instance.highlightMode, FocusHighlightMode.touch);
-      expect(controller.focusedDay, DateTime(2026, 1, 1));
+      expect(controller.focusedDay, DateTime(2026));
       expect(lit(1), isFalse, reason: 'no day lit after a touch');
       // The calendar keeps the focus; the arrow moves its day.
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);

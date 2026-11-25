@@ -86,7 +86,7 @@ class DesignRadioGroupCheck {
     final first = radios.indexWhere((r) => r.enabled);
     final start = chosen >= 0 ? chosen : first;
     await enter();
-    var at = reader.focused(radios);
+    final at = reader.focused(radios);
     if (at != start) {
       found.add(
         'Tab from before the group lands '

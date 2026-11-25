@@ -101,7 +101,7 @@ void main() {
         'Today',
       );
       expect(
-        DisplayFormat.relative(DateTime(2026, 8, 27, 23, 0), now: now),
+        DisplayFormat.relative(DateTime(2026, 8, 27, 23), now: now),
         'Yesterday',
       );
       expect(
@@ -166,7 +166,7 @@ void main() {
 
     test('reads Tomorrow and Yesterday on every day of the year', () {
       for (
-        var day = DateTime(2026, 1, 1);
+        var day = DateTime(2026);
         day.year == 2026;
         day = DateTime(day.year, day.month, day.day + 1)
       ) {

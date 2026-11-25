@@ -54,7 +54,7 @@ void main() {
   testWidgets('a dialog route forwards it', (tester) async {
     final route = RawModalDialogRoute<void>(
       closeOnEscape: false,
-      builder: (context, details) => _body(context, details),
+      builder: _body,
     );
     expect(route.closeOnEscape, isFalse);
     await _open(tester, route);

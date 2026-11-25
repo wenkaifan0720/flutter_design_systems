@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -261,9 +259,7 @@ void main() {
             final image = await tester
                 .renderObject<RenderRepaintBoundary>(find.byKey(capture))
                 .toImage();
-            final rgba = (await image.toByteData(
-              format: ui.ImageByteFormat.rawRgba,
-            ))!;
+            final rgba = (await image.toByteData())!;
             final width = image.width;
             image.dispose();
             final x = edge.round() - (left ? 0 : 1);

@@ -1,3 +1,9 @@
+## 0.7.2
+
+- `RawPickerWords` gives a date or a time picker's title in the app's language, under Material's names: `RawWidgetsLocalizations.of(context).datePickerHelpText` ("Select date") and `timePickerDialHelpText` ("Select time"), in Material's words for the 30 languages ui_core speaks. `DefaultRawWidgetsLocalizations` holds them, so an app or a look words them its own way, or in a language ui_core does not speak, by overriding them in its subclass. It is an extension, so a class that implements `RawWidgetsLocalizations` keeps compiling; a later minor makes them members, and reading them stays the same.
+- Deprecated, going in 0.8.0: the `Design*` names renamed `Raw*` in 0.6.0 and `DesignLocalizations` (renamed `RawWidgetsLocalizations` in 0.4.0). Each deprecation now names its replacement and the version it goes in; `dart fix --apply` moves the code.
+- Documentation: the README has an install line and a link to the component docs, its testing section names the checks ui_core_test has, and the API docs no longer name checks it does not ship. `behaviourContract`'s tap-target line says 40 by 40, the floor it checks.
+
 ## 0.7.1
 
 - `RawPalette` holds the palette maths a look's own colour API stands on, in Material's HCT colour space (hue, chroma and tone, as `ColorScheme.fromSeed` reckons them), so a look keeps its own words for its colours (its `from`) and takes the numbers from here. `RawPalette.contrastRatio` gives WCAG 2's ratio, a translucent colour read laid over its ground. `RawPalette.readableTone` gives a colour, or the tone of its hue and chroma nearest it that reads at a ratio (4.5 by default) on every ground it is painted on (a page, a panel, a selected row); its hue stays where HSL's lightness would drift it. `RawPalette.accentFill` gives a filled control's colour and its label's ink for a named accent, by `RawAccentRule`: `scheme` (the default), which pairs them as Material pairs a primary and its on-primary (light words by day on the fill darkened as far as they need, dark words by night on the fill lightened as far as they need; `fromSeed` puts every primary at one tone instead), or `named`, which keeps the named colour as the fill whenever a light or a dark ink reads on it (a gold stays gold, with dark words).
@@ -181,7 +187,7 @@
 
 ## 0.4.2
 
-- A page drawn with ui_core instantiated afresh over a Flutter framework that lives on (a widget-preview host that runs each preview with its own package instances: App Preview, drip's preview) no longer fails its first focus-showing part with `'!_globalRoutes.containsKey(route)': is not true` from `PointerRouter.addGlobalRoute`. What ui_core hears focus by, to show it after a key and hide it after a press as a browser's `:focus-visible` does (a pointer route, a key handler, a semantics action listener), is now held by the parts that show focus: registered afresh as the first of them mounts, each registration its own, and taken away as the last is disposed, so nothing outlives the page that made it. Focus shows and hides as in 0.4.1.
+- A page drawn with ui_core instantiated afresh over a Flutter framework that lives on (a widget-preview host that runs each preview with its own package instances, such as App Preview) no longer fails its first focus-showing part with `'!_globalRoutes.containsKey(route)': is not true` from `PointerRouter.addGlobalRoute`. What ui_core hears focus by, to show it after a key and hide it after a press as a browser's `:focus-visible` does (a pointer route, a key handler, a semantics action listener), is now held by the parts that show focus: registered afresh as the first of them mounts, each registration its own, and taken away as the last is disposed, so nothing outlives the page that made it. Focus shows and hides as in 0.4.1.
 
 ## 0.4.1
 
@@ -425,7 +431,6 @@ clashed with.
   them, in English until it translates them; a class that implements `DesignLocalizations` itself must add them.
 
 ### Overlays
-<!-- 0.3.0 overlays -->
 - A surface opens at a point: `controller.open(position:)` on a `DesignAnchoredOverlay` (an offset in its anchor)
   places it below the point from its start in reading order, above it or towards its other end where there is no
   room, never under the point; `DesignOverlayInfo.position` says where. A list opened at a point does not take its
@@ -484,10 +489,8 @@ clashed with.
   awaiting a native speaker's check) as it appears. Only the latest words' result shows: a search that ends after a
   later one started is dropped, as is one pending when the list closes. A search that fails with no `errorBuilder`
   closes the list and goes to `FlutterError.reportError`, where 0.2 left an unhandled error.
-<!-- 0.3.0 overlays end -->
 
 ### Routes
-<!-- 0.3.0 routes -->
 - A dialog route, `DesignDialogRoute`: it opens and closes on a spring (ζ 1, k 1400 by default; under Reduce Motion it
   fades), keeps Tab inside it and gives focus back to what opened it as it closes. Escape, Android's back, a barrier
   tap and its `close` go through `Navigator.maybePop`, so a `PopScope` may refuse them. An alert (`isAlert`) is heard as
@@ -558,10 +561,8 @@ clashed with.
 - F6 and Shift+F6 move focus between panes: a shell's navigation and body, a list-detail's list and detail, and a
   shown `DesignToaster`'s toasts, landing where each pane last had focus. With no other pane about, a toaster's F6
   still goes to its newest toast.
-<!-- 0.3.0 routes end -->
 
 ### Values
-<!-- 0.3.0 values -->
 - Haptics in one table, `DesignHaptics`: a step (`selectionChanged`), a long press (`longPress`) and a drag past its
   threshold (`thresholdCrossed`), each the platform's own feedback by default, swapped or silenced below a
   `DesignHapticsScope`. A slider's or a range slider's thumb plays a step as a drag crosses each division.
@@ -615,10 +616,8 @@ clashed with.
   point, steps through every point, and is offered "Show data table": `DesignChartTable`, the data as a table with
   its roles. New data springs from the values drawn, critically damped under Reduce Motion; x runs right to left in
   right-to-left text.
-<!-- 0.3.0 values end -->
 
 ### Tooling
-<!-- 0.3.0 tooling -->
 - **Breaking: moved to ui_core_test.** The checks a design system's tests run, and the sheets that draw them for
   review, left `package:ui_core/alignment.dart` for a package of their own, `ui_core_test` (0.1.0, its versions its
   own), which a design system takes as a dev dependency, as an app takes flutter_test. An app compiles, analyzes and
@@ -639,7 +638,6 @@ clashed with.
   stays too: `DesignCapCenter`, `DesignKeylineRegion` and `DesignKeylineFace`.
 - `RenderDesignCapCenter`, `DesignCapCenter`'s render object, is public, as `RenderBaseline` is `Baseline`'s, so that
   a check in ui_core_test can find the cap center a label is drawn in and read its `capHeightFactor`.
-<!-- 0.3.0 tooling end -->
 
 ## 0.2.1
 

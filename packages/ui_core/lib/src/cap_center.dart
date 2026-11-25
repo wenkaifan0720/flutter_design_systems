@@ -43,7 +43,7 @@ import 'internal/label_line.dart';
 /// taller box, it stays where it is laid out, taps and all.
 ///
 /// Around a text entry, wrap its one-line `TextField` (its decoration
-/// collapsed, as `DesignTextEntryCheck` asks), inside the look's own box: the
+/// collapsed), inside the look's own box: the
 /// line is placed by the field's style, whether text is typed or its hint
 /// shows, and the caret, the selection, the hint and taps move with it. A
 /// row that holds a field and a button then holds their capitals on one
@@ -104,8 +104,8 @@ class RawCapCenter extends SingleChildRenderObjectWidget {
 /// the box's middle.
 ///
 /// Public, as [RenderBaseline] is [Baseline]'s, so that a check reading the
-/// drawn pixels (`DesignLabelCheck` and `DesignRowCheck` in
-/// `package:ui_core_test`) can find the cap center a label is drawn in and
+/// drawn pixels (`DesignLabelCheck` in `package:ui_core_test`) can find
+/// the cap center a label is drawn in and
 /// read the [capHeightFactor] it was given. A look writes [RawCapCenter],
 /// never this.
 ///

@@ -170,7 +170,7 @@ void main() {
     expect(report.problems, isEmpty);
   });
 
-  // 0.3.0 tooling: the rest of what the check reads, each case once.
+  // The rest of what the check reads, each case once.
 
   testWidgets("a Material ink response's arrow is the web's click cursor, "
       'and the arrow off the web', (tester) async {

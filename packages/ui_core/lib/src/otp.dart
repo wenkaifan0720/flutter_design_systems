@@ -301,7 +301,7 @@ class RawOtpField extends StatefulWidget {
   final Iterable<String> autofillHints;
 
   @override
-  State<RawOtpField> createState() => _DesignOtpFieldState();
+  State<RawOtpField> createState() => _RawOtpFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -435,7 +435,7 @@ class RawOtpField extends StatefulWidget {
   }
 }
 
-class _DesignOtpFieldState extends State<RawOtpField> {
+class _RawOtpFieldState extends State<RawOtpField> {
   RawOtpController? _own;
   FocusNode? _ownFocus;
   bool _wasComplete = false;
@@ -571,7 +571,6 @@ class _DesignOtpFieldState extends State<RawOtpField> {
       autocorrect: false,
       enableSuggestions: false,
       showCursor: false,
-      maxLines: 1,
       textAlign: TextAlign.center,
       inputFormatters: [
         ...widget.inputFormatters,

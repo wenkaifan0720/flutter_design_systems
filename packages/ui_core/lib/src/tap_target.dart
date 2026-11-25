@@ -310,10 +310,11 @@ class RenderTapTargetPadding extends RenderShiftedBox {
   }) : assert(minSize.isFinite, 'a tap target is finite: $minSize'),
        assert(devicePixelRatio > 0, 'a pixel ratio is positive'),
        _minSize = minSize,
-       // A private named parameter (this._alignment) would need Dart 3.12's
-       // language, which an app the kit is copied into may not have.
+       // Private fields set from named parameters, which initializing
+       // formals cannot be.
        // ignore: prefer_initializing_formals
        _alignment = alignment,
+       // As _alignment.
        // ignore: prefer_initializing_formals
        _textDirection = textDirection,
        _devicePixelRatio = devicePixelRatio,

@@ -118,7 +118,6 @@ void main() {
             commands: [
               RawCommand(label: 'Zoom in', onPressed: () => ran.add('zoom')),
             ],
-            autofocus: true,
             fieldBuilder: (context, field) => _field(field),
             itemBuilder: (context, command, states) =>
                 SizedBox(height: 44, child: Text(command.label)),

@@ -162,7 +162,7 @@ void main() {
   test('weeks start on the chosen weekday and cover the month', () {
     final c = _controller();
     final weeks = c.weeksOf(DateTime(2026, 3), DateTime.sunday);
-    expect(weeks.first.first, DateTime(2026, 3, 1), reason: 'a Sunday');
+    expect(weeks.first.first, DateTime(2026, 3), reason: 'a Sunday');
     expect(weeks.every((w) => w.length == 7), isTrue);
     expect(weeks.last.any((d) => d == DateTime(2026, 3, 31)), isTrue);
     final monday = c.weeksOf(DateTime(2026, 3), DateTime.monday);
@@ -236,12 +236,12 @@ void main() {
     await tester.pump();
     expect(c.month, DateTime(2026, 2), reason: 'the page turned');
     expect(_lit(2, 1), isTrue);
-    expect(_seen[DateTime(2026, 2, 1)]!.$1.inPreview, isTrue);
+    expect(_seen[DateTime(2026, 2)]!.$1.inPreview, isTrue);
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     await tester.pump();
     expect(
       c.selectedRange,
-      RawDateRange(DateTime(2026, 1, 28), DateTime(2026, 2, 1)),
+      RawDateRange(DateTime(2026, 1, 28), DateTime(2026, 2)),
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
@@ -448,10 +448,10 @@ void main() {
       firstDate: DateTime(2025),
       lastDate: DateTime(2027),
       mode: RawCalendarMode.multiple,
-      selectedDates: [DateTime(2026, 2, 3, 8), DateTime(2026, 2, 1)],
+      selectedDates: [DateTime(2026, 2, 3, 8), DateTime(2026, 2)],
     );
     addTearDown(given.dispose);
-    expect(given.selectedDates, [DateTime(2026, 2, 1), DateTime(2026, 2, 3)]);
+    expect(given.selectedDates, [DateTime(2026, 2), DateTime(2026, 2, 3)]);
     expect(given.month, DateTime(2026, 2), reason: 'it opens on a chosen day');
   });
 
@@ -479,7 +479,7 @@ void main() {
     expect(c.month, DateTime(2026, 3));
     expect(told, 0, reason: 'a refused turn says nothing');
     c.turn(-2);
-    expect(c.month, DateTime(2026, 1));
+    expect(c.month, DateTime(2026));
     expect(c.focusedDay, DateTime(2026, 1, 20));
   });
 
@@ -530,13 +530,13 @@ void main() {
       DateTime(2026, 3, 1, 23, 59),
       DateTime(2026, 3, 31, 1),
     );
-    final b = RawDateRange(DateTime(2026, 3, 1), DateTime(2026, 3, 31));
+    final b = RawDateRange(DateTime(2026, 3), DateTime(2026, 3, 31));
     expect(a, b);
     expect(a.hashCode, b.hashCode);
     expect(a.isComplete, isTrue);
     expect(a.dayCount, 31);
     expect(
-      RawDateRange(DateTime(2026, 10, 1), DateTime(2026, 11, 30)).dayCount,
+      RawDateRange(DateTime(2026, 10), DateTime(2026, 11, 30)).dayCount,
       61,
     );
     expect(a, isNot(RawDateRange(DateTime(2026, 3))));
@@ -615,7 +615,7 @@ void main() {
       'view scrolls it the least that shows the day', (tester) async {
     // 1 January 2026 is a Thursday: weeks from Sunday, the 29th is in the
     // fifth row, 4 x 44 under the 1st, below a 200 high view.
-    final c = _controller(month: DateTime(2026, 1, 1));
+    final c = _controller(month: DateTime(2026));
     addTearDown(c.dispose);
     final node = FocusNode();
     addTearDown(node.dispose);

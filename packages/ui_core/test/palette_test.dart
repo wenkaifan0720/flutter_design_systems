@@ -181,7 +181,6 @@ void main() {
         pale,
         brightness: Brightness.dark,
         rule: RawAccentRule.named,
-        lightInk: const Color(0xFFFFFFFF),
         darkInk: black,
         ratio: 1.5,
       );

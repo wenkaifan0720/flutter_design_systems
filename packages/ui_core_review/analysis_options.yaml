@@ -1,5 +1,4 @@
-# ui_core_review's analysis options: ui_core's, and its library's private machinery is a copy of ui_core_test's, of
-# which the review uses a part (what the review alone uses, ui_core_test's copy leaves unused in turn, as written).
+# ui_core_review's analysis options: ui_core's.
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
@@ -25,3 +24,10 @@ linter:
     prefer_const_constructors: true
     unawaited_futures: true
     use_named_constants: true
+    avoid_redundant_argument_values: true
+    avoid_unused_constructor_parameters: true
+    document_ignores: true
+    prefer_final_locals: true
+    unnecessary_lambdas: true
+    unnecessary_null_checks: true
+    unnecessary_parenthesis: true

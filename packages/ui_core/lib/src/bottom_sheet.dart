@@ -1020,7 +1020,7 @@ class _RenderSheetLayout extends RenderShiftedBox {
 
   void _listen() {
     final size = _route._size;
-    _listening = Listenable.merge([?size, _route.animation!]);
+    _listening = Listenable.merge([?size, _route.animation]);
     _listening!.addListener(markNeedsLayout);
   }
 

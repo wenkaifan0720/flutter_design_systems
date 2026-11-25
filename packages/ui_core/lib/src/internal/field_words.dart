@@ -386,9 +386,7 @@ class RenderFieldWordsEntry extends RenderProxyBox {
         if (n.excludeSemantics) return;
       }
       if (n is RenderParagraph) {
-        label =
-            label ||
-            says(n.text.toPlainText(includeSemanticsLabels: true), name);
+        label = label || says(n.text.toPlainText(), name);
       }
       n.visitChildrenForSemantics(visit);
     }

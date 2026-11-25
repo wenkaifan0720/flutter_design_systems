@@ -692,7 +692,7 @@ class _RevealRowState extends State<_RevealRow> {
   Widget build(BuildContext context) => widget.child;
 }
 
-// 0.3.0 overlays: a search's states (debounced, loading, failed).
+// A search's states (debounced, loading, failed).
 
 /// A search as a combobox or a tag input runs it: after its debounce, the
 /// latest query's result only (an earlier one that arrives late is

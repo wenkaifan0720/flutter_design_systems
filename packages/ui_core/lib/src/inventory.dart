@@ -7,7 +7,7 @@
 /// it, shadcn's where only shadcn does), not a name a look must use: each
 /// look names its own components, and their API is its own.
 ///
-/// A look's test calls [RawInventory.verify]; its gallery lists the
+/// A look's test calls [RawInventory.verify]; its example lists the
 /// inventory with [RawInventoryGallery], so an absent row reads
 /// `Deliberately absent: <reason>` rather than going missing.
 library;
@@ -169,9 +169,7 @@ class RawInventoryRow {
     'NumberField',
     'Inputs',
     'Number field / quantity stepper',
-    // 0.3.0 values
     behaviour: 'RawNumberField',
-    // 0.3.0 values end
   );
 
   /// Select or dropdown.
@@ -262,9 +260,7 @@ class RawInventoryRow {
     'Rating',
     'Inputs',
     'Rating',
-    // 0.3.0 values
     behaviour: 'RawRating',
-    // 0.3.0 values end
   );
 
   /// File upload or drop zone.
@@ -297,9 +293,7 @@ class RawInventoryRow {
     'Inputs',
     'Time picker',
     refs: 'MCS',
-    // 0.3.0 values
     behaviour: 'RawTimeField',
-    // 0.3.0 values end
   );
 
   /// Inline calendar.
@@ -317,9 +311,7 @@ class RawInventoryRow {
     'Inputs',
     'Wheel picker',
     refs: 'C',
-    // 0.3.0 values
     behaviour: 'RawPicker',
-    // 0.3.0 values end
   );
 
   /// Color picker.
@@ -353,7 +345,6 @@ class RawInventoryRow {
     'Navigation',
     'Bottom navigation bar',
     refs: 'MC',
-    // 0.3.0 routes
     behaviour: 'RawAdaptiveShell',
   );
 
@@ -363,7 +354,6 @@ class RawInventoryRow {
     'Navigation',
     'Navigation rail',
     refs: 'M',
-    // 0.3.0 routes
     behaviour: 'RawAdaptiveShell',
   );
 
@@ -373,7 +363,6 @@ class RawInventoryRow {
     'Navigation',
     'Navigation drawer / sidebar',
     refs: 'MS',
-    // 0.3.0 routes
     behaviour: 'RawAdaptiveShell',
   );
 
@@ -383,7 +372,6 @@ class RawInventoryRow {
     'Navigation',
     'Tabs',
     refs: 'MCS',
-    // 0.3.0 routes
     behaviour: 'RawTabBar',
   );
 
@@ -442,7 +430,6 @@ class RawInventoryRow {
     'Navigation',
     'Adaptive app shell / scaffold',
     refs: 'MC',
-    // 0.3.0 routes
     behaviour: 'RawAdaptiveShell',
   );
 
@@ -639,7 +626,6 @@ class RawInventoryRow {
     'Overlays',
     'Dialog / alert dialog',
     refs: 'MCS',
-    // 0.3.0 routes
     behaviour: 'RawModalDialogRoute',
   );
 
@@ -649,7 +635,6 @@ class RawInventoryRow {
     'Overlays',
     'Bottom sheet / modal sheet',
     refs: 'MCS',
-    // 0.3.0 routes
     behaviour: 'RawBottomSheetRoute',
   );
 
@@ -762,9 +747,7 @@ class RawInventoryRow {
     'LineChart',
     'Charts',
     'Line chart',
-    // 0.3.0 values
     behaviour: 'RawChart',
-    // 0.3.0 values end
   );
 
   /// Bar chart.
@@ -772,9 +755,7 @@ class RawInventoryRow {
     'BarChart',
     'Charts',
     'Bar chart',
-    // 0.3.0 values
     behaviour: 'RawChart',
-    // 0.3.0 values end
   );
 
   /// Area chart.
@@ -782,9 +763,7 @@ class RawInventoryRow {
     'AreaChart',
     'Charts',
     'Area chart',
-    // 0.3.0 values
     behaviour: 'RawChart',
-    // 0.3.0 values end
   );
 
   /// Donut or pie.
@@ -792,9 +771,7 @@ class RawInventoryRow {
     'PieChart',
     'Charts',
     'Donut / pie',
-    // 0.3.0 values
     behaviour: 'RawPieChart',
-    // 0.3.0 values end
   );
 
   /// Sparkline.
@@ -802,9 +779,7 @@ class RawInventoryRow {
     'Sparkline',
     'Charts',
     'Sparkline',
-    // 0.3.0 values
     behaviour: 'RawChart',
-    // 0.3.0 values end
   );
 
   /// Every row, group by group in [groups]' order.
@@ -1229,42 +1204,42 @@ class RawInventoryGallery extends StatelessWidget {
 
 /// Renamed [RawInventory] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawInventory. This feature was deprecated after ui_core 0.6.0.',
+  'Use RawInventory. To be removed in ui_core 0.8.0. This feature was deprecated after ui_core 0.6.0.',
 )
 typedef DesignInventory = RawInventory;
 
 /// Renamed [RawInventoryEntry] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawInventoryEntry. This feature was deprecated after ui_core 0.6.0.',
+  'Use RawInventoryEntry. To be removed in ui_core 0.8.0. This feature was deprecated after ui_core 0.6.0.',
 )
 typedef DesignInventoryEntry = RawInventoryEntry;
 
 /// Renamed [RawInventoryError] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawInventoryError. This feature was deprecated after ui_core 0.6.0.',
+  'Use RawInventoryError. To be removed in ui_core 0.8.0. This feature was deprecated after ui_core 0.6.0.',
 )
 typedef DesignInventoryError = RawInventoryError;
 
 /// Renamed [RawInventoryGallery] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawInventoryGallery. This feature was deprecated after ui_core 0.6.0.',
+  'Use RawInventoryGallery. To be removed in ui_core 0.8.0. This feature was deprecated after ui_core 0.6.0.',
 )
 typedef DesignInventoryGallery = RawInventoryGallery;
 
 /// Renamed [RawInventoryGroupBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawInventoryGroupBuilder. This feature was deprecated after ui_core 0.6.0.',
+  'Use RawInventoryGroupBuilder. To be removed in ui_core 0.8.0. This feature was deprecated after ui_core 0.6.0.',
 )
 typedef DesignInventoryGroupBuilder = RawInventoryGroupBuilder;
 
 /// Renamed [RawInventoryRow] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawInventoryRow. This feature was deprecated after ui_core 0.6.0.',
+  'Use RawInventoryRow. To be removed in ui_core 0.8.0. This feature was deprecated after ui_core 0.6.0.',
 )
 typedef DesignInventoryRow = RawInventoryRow;
 
 /// Renamed [RawInventoryRowBuilder] in ui_core 0.6.0.
 @Deprecated(
-  'Use RawInventoryRowBuilder. This feature was deprecated after ui_core 0.6.0.',
+  'Use RawInventoryRowBuilder. To be removed in ui_core 0.8.0. This feature was deprecated after ui_core 0.6.0.',
 )
 typedef DesignInventoryRowBuilder = RawInventoryRowBuilder;

@@ -1,4 +1,4 @@
-// Plain paintings of ui_core's value behaviours (0.3.0): a date wheel, a
+// Plain paintings of ui_core's value behaviours: a date wheel, a
 // date field, a time field, a number field, a rating and charts (a line
 // over time, bars, a donut, the data as a table). Every
 // pixel is the example's own; the behaviours give it the keys, the states,

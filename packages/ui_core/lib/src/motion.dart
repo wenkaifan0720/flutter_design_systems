@@ -188,7 +188,7 @@ class RawMotionPolicy {
 ///
 /// On settling the controller lands exactly on the target
 /// ([SpringSimulation]'s `snapToEnd`).
-const Tolerance rawSpringTolerance = Tolerance(distance: 0.001, velocity: 0.1);
+const Tolerance rawSpringTolerance = Tolerance(velocity: 0.1);
 
 /// The simulation of [spring] from [from] to [to], starting at [velocity]
 /// units per second, that settles at [tolerance] and lands exactly on [to].

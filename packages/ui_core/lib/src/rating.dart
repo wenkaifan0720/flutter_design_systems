@@ -141,7 +141,7 @@ class RawRating extends StatefulWidget {
   final MouseCursor? mouseCursor;
 
   @override
-  State<RawRating> createState() => _DesignRatingState();
+  State<RawRating> createState() => _RawRatingState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -224,7 +224,7 @@ class RawRating extends StatefulWidget {
   }
 }
 
-class _DesignRatingState extends State<RawRating> {
+class _RawRatingState extends State<RawRating> {
   FocusNode? _ownNode;
   List<GlobalKey> _keys = const [];
   // The value a hovering pointer would set; null, none.

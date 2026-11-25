@@ -329,7 +329,7 @@ class RawPicker extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<RawPicker> createState() => _DesignWheelPickerState();
+  State<RawPicker> createState() => _RawWheelPickerState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -393,7 +393,7 @@ class RawPicker extends StatefulWidget {
   }
 }
 
-class _DesignWheelPickerState extends State<RawPicker> {
+class _RawWheelPickerState extends State<RawPicker> {
   final List<FixedExtentScrollController> _controllers = [];
   final List<FocusNode> _nodes = [];
   // Per column: the row at the centre now, where a spring is heading, the

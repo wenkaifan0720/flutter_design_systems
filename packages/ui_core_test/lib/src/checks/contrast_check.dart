@@ -660,7 +660,7 @@ class _Px {
         final e = counts.putIfAbsent(k, () => [0, 0]);
         e[0]++;
         e[1] += _alphaAt(x, y);
-        final exact = (colours[k] ??= <int, int>{});
+        final exact = colours[k] ??= <int, int>{};
         exact[c] = (exact[c] ?? 0) + 1;
       }
     }

@@ -11,11 +11,10 @@ import 'package:flutter/widgets.dart';
 /// line, and its switches, chevrons and selects end on another.
 ///
 /// It lays out and paints nothing. A look's own card and section widgets put
-/// it around their content once, so every screen built from them is
-/// checked; `DesignKeylineCheck` in `package:ui_core_test` reads it, and
-/// `DesignKeylineSheet` draws it for review.
+/// it around their content once, so a keyline check can read every screen
+/// built from them.
 ///
-/// A gallery marks each section's column of examples too, with
+/// A page that shows examples in a column marks each section too, with
 /// [startAligned], so every example starts on the column's edge.
 ///
 /// ```dart
@@ -33,7 +32,7 @@ class RawKeylineRegion extends StatelessWidget {
     required this.child,
   });
 
-  /// What the check and the sheet call it.
+  /// What a check calls it in its messages.
   final String? label;
 
   /// The leading keylines allowed besides the first, each this many logical
@@ -46,13 +45,13 @@ class RawKeylineRegion extends StatelessWidget {
   final List<double> trailingIndents;
 
   /// Why controls that share a row here may differ in height or centre
-  /// (a gallery's ladder of one control per size, side by side on
-  /// purpose); null: they may not. `DesignKeylineCheck` and
-  /// `DesignRowCheck` leave such rows unheld, and name a to-do given here.
+  /// (a showcase's ladder of one control per size, side by side on
+  /// purpose); null: they may not. A row check leaves such rows unheld, and
+  /// names a to-do given here.
   final String? mixedHeights;
 
   /// Whether every row here starts on the leading keyline, however it is
-  /// aligned: a gallery section's examples, each on its column's edge,
+  /// aligned: a showcase section's examples, each on its column's edge,
   /// where one centred (a stepper, a sum, a line of words centred in its
   /// box) or set at the trailing end is off. False (a card, a dialog): a
   /// row of one item may stand centred (an empty state) or at the end (a
@@ -104,11 +103,12 @@ class RawKeylineRegion extends StatelessWidget {
 /// paints, so a look marks its own face and well widgets when their pixels
 /// cannot show them: a face in the colour of the ground drawn only by its
 /// shadows, a pane of glass, or a picture whose marks (a floor plan's room
-/// keys) are not items to line up. `DesignKeylineCheck` takes the marked
-/// box as one item, before it looks at pixels, and reads nothing inside it
-/// as an item of the region around it; to have what a well holds judged
-/// by keylines of its own, put a [RawKeylineRegion] inside it.
-/// `DesignLabelCheck` takes it as the face of the control it is in.
+/// keys) are not items to line up. A keyline check takes the marked box as
+/// one item, before it looks at pixels, and reads nothing inside it as an
+/// item of the region around it; to have what a well holds judged by
+/// keylines of its own, put a [RawKeylineRegion] inside it.
+/// `DesignLabelCheck` and `DesignFaceInsetCheck` in `package:ui_core_test`
+/// take it as the face of the control it is in.
 ///
 /// ```dart
 /// RawKeylineFace(child: SizedBox(width: 120, height: 40))

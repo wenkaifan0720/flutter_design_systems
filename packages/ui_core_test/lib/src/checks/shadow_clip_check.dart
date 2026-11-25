@@ -6,10 +6,10 @@ part of '../alignment.dart';
 /// A raised face's shadow reaches past its box. A clip above it (a
 /// `ClipRect`, a rounded clip, a scroll view's edge, a box round a label and
 /// its specimen) cuts the shadow at the clip's edge, a straight line where
-/// a soft falloff belongs: the user found Neumorphism's raised parts cut
-/// flat at the left by day and at the bottom and right by night. A shadow
-/// cast by a square box behind a face with round corners shows as a square
-/// corner behind the round one.
+/// a soft falloff belongs: a raised part cut flat at the side its light
+/// comes from by day, and at its foot by night. A shadow cast by a square
+/// box behind a face with round corners shows as a square corner behind the
+/// round one.
 ///
 /// Each box that casts (a decoration with shadows, a physical model with an
 /// elevation, a custom paint) is painted alone, with room round it, and
@@ -366,7 +366,7 @@ class _Caster {
     final image = await picture.toImage(_width, _height);
     picture.dispose();
     try {
-      _pixels = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      _pixels = await image.toByteData();
     } finally {
       image.dispose();
     }

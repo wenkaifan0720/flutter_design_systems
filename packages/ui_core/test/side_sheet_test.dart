@@ -446,7 +446,6 @@ void main() {
     );
   }
 
-  // 0.3.0 routes
   test('it moves on a spring: critically damped by default, or the one '
       'given', () {
     final sheet = RawSideSheetRoute<void>(
@@ -497,7 +496,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.getRect(find.byKey(_panel)).right, 800);
   });
-  // 0.3.0 routes end
 
   testWidgets('a drag that leaves it open keeps the focus in it, and Escape '
       'still closes it', (tester) async {

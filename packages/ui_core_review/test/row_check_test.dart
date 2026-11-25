@@ -837,7 +837,7 @@ void main() {
 
     testWidgets("a raised face's black bottom and right edges, near the "
         "dialog's colour, are its edges", (tester) async {
-      // Retro Platinum by night (0.3.0 tooling, 11-15): a pale top and left
+      // A raised face by night, as a classic desktop draws one: a pale top and left
       // rim and a black bottom and right one round a fill near the dialog's
       // colour. The black bands are within 64 a channel of the dialog, so
       // read by colour Cancel's face stopped 2 px short of its bottom and
@@ -861,8 +861,8 @@ void main() {
 
     testWidgets('a row in a layer of its own, clear but for its faces, is '
         'read on what lies under the layer', (tester) async {
-      // Retro Platinum's Buttons page by night (0.3.0 tooling, 11-16): its
-      // rows are drawn in repaint boundaries of their own. Read against
+      // A page of buttons by night whose rows are drawn in repaint
+      // boundaries of their own. Read against
       // their clear pixels (taken as black), the raised face's black bottom
       // and right edges were no edge.
       expect(
@@ -1371,8 +1371,8 @@ void main() {
     });
   });
 
-  // 0.3.0 tooling: a window in front (Retro's desk at 1024 paired a button
-  // of the window behind, read from the front window's pixels).
+  // A window in front: a button of the window behind is not paired with
+  // the front window's, read from the front window's pixels.
   group('a control another surface covers is not read', () {
     // A window at [left], [top]: a white face round [child]; one that
     // [ignores] the pointer lets it through to what lies under it.
@@ -1936,7 +1936,7 @@ void main() {
       await _checkRow(tester, [
         row,
         const SizedBox(width: 8),
-        _button('Go', _face(fill: _blue, width: 64, height: 48)),
+        _button('Go', _face(fill: _blue, width: 64)),
       ]),
       isEmpty,
     );

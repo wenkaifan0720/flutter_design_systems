@@ -507,11 +507,10 @@ class DesignFieldPartsCheck {
       final outer = pixels.pixelAt(at(x), y);
       if (DrawnPixels.alike(outer, fill, by: 12)) return x;
       final band = pixels.pixelAt(at(x + inward * step), y);
-      if (!DrawnPixels.alike(outer, band, by: 8)) x += inward * step;
+      if (!DrawnPixels.alike(outer, band)) x += inward * step;
       while (before(x)) {
         final c = pixels.pixelAt(at(x), y);
-        if (DrawnPixels.alike(c, fill, by: 12) ||
-            !DrawnPixels.alike(c, band, by: 8)) {
+        if (DrawnPixels.alike(c, fill, by: 12) || !DrawnPixels.alike(c, band)) {
           break;
         }
         x += inward * step;

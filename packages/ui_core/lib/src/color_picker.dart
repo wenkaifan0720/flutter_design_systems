@@ -176,7 +176,7 @@ class RawColorArea extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<RawColorArea> createState() => _DesignColorAreaState();
+  State<RawColorArea> createState() => _RawColorAreaState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -220,7 +220,7 @@ class RawColorArea extends StatefulWidget {
   }
 }
 
-class _DesignColorAreaState extends State<RawColorArea> {
+class _RawColorAreaState extends State<RawColorArea> {
   bool _focused = false;
   // Shown as a browser's :focus-visible shows it (internal/focus_visible.dart).
   late final RawFocusShown _focus;
@@ -410,7 +410,7 @@ class RawColorSlider extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<RawColorSlider> createState() => _DesignColorSliderState();
+  State<RawColorSlider> createState() => _RawColorSliderState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -456,7 +456,7 @@ class RawColorSlider extends StatefulWidget {
   }
 }
 
-class _DesignColorSliderState extends State<RawColorSlider> {
+class _RawColorSliderState extends State<RawColorSlider> {
   bool _dragging = false;
 
   @override

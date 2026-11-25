@@ -1,10 +1,9 @@
 // A Material app that lists the 30 locales builds under any of them, with
 // its Material library's delegates beside RawWidgetsLocalizations.delegate: its
 // text fields find their words, and Arabic its direction. Without them, a
-// Material text field under German asserts, which is why the delegates line
-// names both: the README's line, which a look's gallery writes too
-// (flutter_localizations, a dev dependency here, as ui_core stays on the
-// widgets layer). A look loads its own material_ui and cupertino_ui words.
+// Material text field under German asserts, which is why the README's
+// delegates line names both. A look loads its own material_ui and
+// cupertino_ui words.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';

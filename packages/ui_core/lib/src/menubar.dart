@@ -166,7 +166,7 @@ class RawMenuBar extends StatefulWidget {
   final bool highlightFollowsPointer;
 
   @override
-  State<RawMenuBar> createState() => _DesignMenuBarState();
+  State<RawMenuBar> createState() => _RawMenuBarState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -201,7 +201,7 @@ class RawMenuBar extends StatefulWidget {
   }
 }
 
-class _DesignMenuBarState extends State<RawMenuBar> {
+class _RawMenuBarState extends State<RawMenuBar> {
   final MenuController _group = MenuController();
   final List<MenuController> _menus = [];
   final List<FocusNode> _nodes = [];

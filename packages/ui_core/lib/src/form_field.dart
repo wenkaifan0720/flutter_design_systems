@@ -209,7 +209,7 @@ class RawInputDecorator extends StatefulWidget {
   final String? requiredHint;
 
   @override
-  State<RawInputDecorator> createState() => _DesignFieldState();
+  State<RawInputDecorator> createState() => _RawFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -263,7 +263,7 @@ class RawInputDecorator extends StatefulWidget {
   }
 }
 
-class _DesignFieldState extends State<RawInputDecorator> {
+class _RawFieldState extends State<RawInputDecorator> {
   bool _focused = false;
 
   @override
@@ -490,7 +490,7 @@ class RawForm extends StatefulWidget {
 
   /// The nearest form's state, or null.
   static RawFormState? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<_DesignFormScope>()?.state;
+      context.dependOnInheritedWidgetOfExactType<_RawFormScope>()?.state;
 
   /// The nearest form's state.
   static RawFormState of(BuildContext context) {
@@ -561,19 +561,19 @@ class RawFormState extends State<RawForm> {
   }
 
   @override
-  Widget build(BuildContext context) => _DesignFormScope(
+  Widget build(BuildContext context) => _RawFormScope(
     state: this,
     child: Form(key: _key, autovalidateMode: _mode, child: widget.child),
   );
 }
 
-class _DesignFormScope extends InheritedWidget {
-  const _DesignFormScope({required this.state, required super.child});
+class _RawFormScope extends InheritedWidget {
+  const _RawFormScope({required this.state, required super.child});
 
   final RawFormState state;
 
   @override
-  bool updateShouldNotify(_DesignFormScope old) => state != old.state;
+  bool updateShouldNotify(_RawFormScope old) => state != old.state;
 }
 
 // The field's own node, shaped by the controls under it: one control is
@@ -789,7 +789,7 @@ class _RenderFieldSemantics extends RenderSemanticsProxy
           if (n.excludeSemantics) return;
         }
         if (n is RenderParagraph) {
-          heard(n.text.toPlainText(includeSemanticsLabels: true));
+          heard(n.text.toPlainText());
         }
         n.visitChildrenForSemantics(hear);
       }

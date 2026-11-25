@@ -52,7 +52,7 @@ Widget _menu({
   ),
   overlayBuilder: (context, info) {
     _info = info;
-    Widget surface = SizedBox(
+    final Widget surface = SizedBox(
       key: _surfaceKey,
       width: surfaceSize.width,
       child: Column(

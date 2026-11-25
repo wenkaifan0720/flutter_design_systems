@@ -62,7 +62,6 @@ extension on RawAlertDialog {
     actionBuilder: actionBuilder,
     frameBuilder: frameBuilder,
     actionSpacing: spacing,
-    stackedActionSpacing: 8,
   );
 }
 

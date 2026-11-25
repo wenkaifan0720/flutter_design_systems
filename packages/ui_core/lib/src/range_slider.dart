@@ -144,7 +144,7 @@ class RawRangeSlider extends StatefulWidget {
   final Size thumbSize;
 
   @override
-  State<RawRangeSlider> createState() => _DesignRangeSliderState();
+  State<RawRangeSlider> createState() => _RawRangeSliderState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -210,7 +210,7 @@ class RawRangeSlider extends StatefulWidget {
   }
 }
 
-class _DesignRangeSliderState extends State<RawRangeSlider> {
+class _RawRangeSliderState extends State<RawRangeSlider> {
   int? _dragging;
 
   // The thumb painted on top where the two meet: the one moved last.

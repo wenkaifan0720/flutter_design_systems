@@ -114,8 +114,9 @@ Future<void> _settleImages(WidgetTester tester) async {
   await tester.pump();
 }
 
-/// The review's files: ui_core_review's own, and part of drip's kit, whose
-/// other files' examples are ui_core's and ui_core_test's.
+/// The review's files: ui_core_review's own, and part of the source tree it
+/// is made from, whose other files' examples are ui_core's and
+/// ui_core_test's.
 const Set<String> _reviewFiles = {
   'review.dart',
   'alignment_matrix.dart',

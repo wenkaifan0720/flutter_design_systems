@@ -1031,6 +1031,125 @@ void main() {
     expect(close.single, contains('from the left side of its face'));
   });
 
+  // A ball its own painter draws (an avatar's), shaded at its end or its foot
+  // toward a dark page by night, lit at its start toward a light page by
+  // day, so its rim stands only a little off the page: its edge is its
+  // box's, and initials well inside it pass. Initials close to that edge are
+  // still named, and a soft shadow a painter casts inside its box, fading
+  // into the page before the box's edge, is not its face.
+  Widget ball(_Ball painter, {Offset shift = Offset.zero}) => ColoredBox(
+    color: painter.page,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: _button(
+        (label) => CustomPaint(
+          painter: painter,
+          child: SizedBox.square(
+            dimension: painter.size,
+            child: Center(
+              child: Transform.translate(offset: shift, child: label),
+            ),
+          ),
+        ),
+        label: 'SO',
+        style: _style.copyWith(fontSize: 10.64, height: 1, color: painter.ink),
+      ),
+    ),
+  );
+  // Each ball with its initials where they keep the room (a little nearer
+  // its lit top, where its rim is widest), then moved close to that edge.
+  for (final (painter, rest, close, edge) in const [
+    (_Ball.nightEnd, Offset.zero, Offset(5, 0), 'right side'),
+    (_Ball.nightFoot, Offset.zero, Offset(0, 8), 'foot'),
+    (_Ball.dayStart, Offset.zero, Offset(-5, 0), 'left side'),
+    (_Ball.dayTop, Offset(0, -3), Offset(0, -6), 'top'),
+  ]) {
+    testWidgets("a painted face's rim shaded toward the page is the face's: "
+        '$painter', (tester) async {
+      expect(await _check(tester, ball(painter, shift: rest)), isEmpty);
+      final named = await _check(tester, ball(painter, shift: close));
+      expect(named, hasLength(1));
+      expect(named.single, contains('from the $edge of its face'));
+    });
+  }
+
+  // A row (a list tile) whose plate paints the page's colour, with an avatar
+  // ball at its start, its rim shaded toward the page: the ball's edge is its
+  // own box's, not the row's, whether the plate holds the ball or the ball is
+  // drawn over the plate beside it.
+  Widget row(_Ball painter, {Offset shift = Offset.zero, bool over = false}) {
+    final ball = CustomPaint(
+      painter: painter,
+      child: SizedBox.square(
+        dimension: painter.size,
+        child: Center(
+          child: Transform.translate(
+            offset: shift,
+            child: Text(
+              'SO',
+              style: _style.copyWith(
+                fontSize: 10.64,
+                height: 1,
+                color: painter.ink,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final content = SizedBox(
+      width: 300,
+      height: 60,
+      child: Row(children: [const SizedBox(width: 12), ball]),
+    );
+    return ColoredBox(
+      color: painter.page,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: RawButton(
+          onPressed: () {},
+          builder: (context, states, _) => over
+              ? Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(painter: _Fill(painter.page)),
+                    ),
+                    content,
+                  ],
+                )
+              : CustomPaint(painter: _Fill(painter.page), child: content),
+        ),
+      ),
+    );
+  }
+
+  for (final over in const [false, true]) {
+    testWidgets("a row's plate that draws nothing of its own: the ball "
+        '${over ? 'drawn over it' : 'it holds'} is read to its own box', (
+      tester,
+    ) async {
+      expect(await _check(tester, row(_Ball.dayStart, over: over)), isEmpty);
+      expect(await _check(tester, row(_Ball.nightEnd, over: over)), isEmpty);
+      final close = await _check(
+        tester,
+        row(_Ball.nightEnd, shift: const Offset(5, 0), over: over),
+      );
+      expect(close, hasLength(1));
+      expect(close.single, contains('from the right side of its face'));
+    });
+  }
+
+  testWidgets("a soft shadow inside a painted face's box is not the face", (
+    tester,
+  ) async {
+    final shadowed = await _check(
+      tester,
+      ball(_Ball.shadowed, shift: const Offset(5, 0)),
+    );
+    expect(shadowed, hasLength(1));
+    expect(shadowed.single, contains('from the right side of its face'));
+  });
+
   testWidgets("an outlined face its painter draws round: its outline's curve "
       'is not ink', (tester) async {
     // A pill its own painter outlines on a page of its fill's colour, its
@@ -1277,6 +1396,115 @@ class _OutlinedPill extends CustomPainter {
 
   @override
   bool shouldRepaint(_OutlinedPill oldDelegate) => false;
+}
+
+// A ball in [face] on [page], painted by its own painter, shaded toward
+// [shade] along [toward] over its last [reach] (lit, at the start); or, with
+// [shadow], a ball [size] less 12 wide in the middle of its box, casting a
+// soft shadow there that fades into the page before the box's edge.
+class _Ball extends CustomPainter {
+  const _Ball({
+    required this.page,
+    required this.face,
+    required this.shade,
+    required this.ink,
+    this.toward = Alignment.centerRight,
+    this.reach = 0.3,
+    this.shadow = false,
+    this.size = 28,
+  });
+
+  // Clay's avatar by night: shaded at its end, or at its foot.
+  static const nightEnd = _Ball(
+    page: Color(0xFF29243F),
+    face: Color(0xFF7B6219),
+    shade: Color(0xFF544313),
+    ink: Color(0xFFF3F0FF),
+  );
+  static const nightFoot = _Ball(
+    page: Color(0xFF29243F),
+    face: Color(0xFF7B6219),
+    shade: Color(0xFF544313),
+    ink: Color(0xFFF3F0FF),
+    toward: Alignment.bottomCenter,
+  );
+
+  // By day: lit at its start.
+  static const dayStart = _Ball(
+    page: Color(0xFFFBFAFF),
+    face: Color(0xFFFFEAAA),
+    shade: Color(0xFFFFF5D6),
+    ink: Color(0xFF2A2440),
+    toward: Alignment.centerLeft,
+    reach: 0.25,
+  );
+
+  static const dayTop = _Ball(
+    page: Color(0xFFFBFAFF),
+    face: Color(0xFFFFEAAA),
+    shade: Color(0xFFFFF5D6),
+    ink: Color(0xFF2A2440),
+    toward: Alignment.topCenter,
+    reach: 0.25,
+  );
+
+  // A flat ball whose soft shadow, darker than the page, falls to its end
+  // inside its box and fades into the page before the box's edge.
+  static const shadowed = _Ball(
+    page: Color(0xFF29243F),
+    face: Color(0xFF7B6219),
+    shade: Color(0xFF000000),
+    ink: Color(0xFFF3F0FF),
+    shadow: true,
+    size: 40,
+  );
+
+  final Color page;
+  final Color face;
+  final Color shade;
+  final Color ink;
+  final Alignment toward;
+  final double reach;
+  final bool shadow;
+  final double size;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final box = Offset.zero & size;
+    if (shadow) {
+      final ball = box.deflate(6);
+      canvas
+        ..drawOval(
+          ball.translate(2, 0),
+          Paint()
+            ..color = shade.withValues(alpha: 0.8)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1),
+        )
+        ..drawOval(ball, Paint()..color = face);
+      return;
+    }
+    canvas.drawOval(
+      box,
+      Paint()
+        ..shader = LinearGradient(
+          begin: -toward,
+          end: toward,
+          colors: [face, face, shade],
+          stops: [0, 1 - reach, 1],
+        ).createShader(box),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_Ball oldDelegate) => false;
+
+  @override
+  String toString() => switch (toward) {
+    Alignment.centerLeft => 'lit at its start by day',
+    Alignment.topCenter => 'lit at its top by day',
+    Alignment.bottomCenter => 'shaded at its foot by night',
+    _ => 'shaded at its end by night',
+  };
 }
 
 // A pill in one colour, its ends round.

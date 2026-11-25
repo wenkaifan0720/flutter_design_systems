@@ -255,7 +255,7 @@ class RawLinearScale extends RawScale {
       );
       return [
         for (var i = 0; i <= n; i++)
-          if ((i == n ? max : min + i * step) case final value)
+          if (i == n ? max : min + i * step case final value)
             RawScaleTick(
               value: value,
               position: map(value),

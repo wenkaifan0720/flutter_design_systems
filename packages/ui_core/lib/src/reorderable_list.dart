@@ -131,8 +131,7 @@ class RawReorderableList<T extends Object> extends StatefulWidget {
   final String Function(String label, int position, int count)? movedMessage;
 
   @override
-  State<RawReorderableList<T>> createState() =>
-      _DesignReorderableListState<T>();
+  State<RawReorderableList<T>> createState() => _RawReorderableListState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -281,7 +280,7 @@ class _MoveIntent extends Intent {
   final int by;
 }
 
-class _DesignReorderableListState<T extends Object>
+class _RawReorderableListState<T extends Object>
     extends State<RawReorderableList<T>> {
   // Each item's focus group, by its key, so a moved item gets focus back.
   final Map<Object, FocusNode> _groups = {};
@@ -418,17 +417,14 @@ class _DesignReorderableListState<T extends Object>
         }
       });
     }
-    final decorate = widget.proxyDecorator;
     return ReorderableList(
       itemCount: widget.items.length,
       shrinkWrap: widget.shrinkWrap,
       controller: widget.controller,
       padding: widget.padding,
-      proxyDecorator: decorate == null
-          ? null
-          : (child, index, animation) => decorate(child, index, animation),
+      proxyDecorator: widget.proxyDecorator,
       // The new place counted after the item left, as onReorder's is.
-      onReorderItem: (from, to) => _move(from, to),
+      onReorderItem: _move,
       itemBuilder: _item,
     );
   }

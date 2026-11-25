@@ -17,8 +17,8 @@ cp -R ui_core_design_system <your app>/.claude/skills/
 The app depends on:
 
 ```text
-flutter pub add ui_core:^0.7.0 material_ui
-flutter pub add 'dev:ui_core_test:^0.5.0' dev:leak_tracker_flutter_testing
+flutter pub add ui_core:^0.7.2 material_ui
+flutter pub add 'dev:ui_core_test:^0.5.2' dev:leak_tracker_flutter_testing
 ```
 
 ## What is inside

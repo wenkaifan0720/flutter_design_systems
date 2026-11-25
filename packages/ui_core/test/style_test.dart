@@ -92,11 +92,7 @@ void main() {
     expect(RawStyle.lerp(a, b, 1), same(b));
     // Round corners morph into each other.
     final shapes = RawStyle.lerp(
-      const RawStyle(
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        ),
-      ),
+      const RawStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder())),
       const RawStyle(
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(

@@ -237,7 +237,7 @@ class RawTree<T extends Object> extends StatefulWidget {
   final String? semanticLabel;
 
   @override
-  State<RawTree<T>> createState() => _DesignTreeState<T>();
+  State<RawTree<T>> createState() => _RawTreeState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -260,7 +260,7 @@ class RawTree<T extends Object> extends StatefulWidget {
   }
 }
 
-class _DesignTreeState<T extends Object> extends State<RawTree<T>> {
+class _RawTreeState<T extends Object> extends State<RawTree<T>> {
   final Map<T, FocusNode> _nodes = {};
   T? _current;
 

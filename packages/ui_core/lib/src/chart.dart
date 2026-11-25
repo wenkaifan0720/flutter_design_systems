@@ -359,7 +359,7 @@ class RawChart extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<RawChart> createState() => _DesignChartState();
+  State<RawChart> createState() => _RawChartState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -612,7 +612,7 @@ mixin _Picking<W extends StatefulWidget> on State<W> {
   }
 }
 
-class _DesignChartState extends State<RawChart>
+class _RawChartState extends State<RawChart>
     with SingleTickerProviderStateMixin, _Picking<RawChart> {
   late final AnimationController _motion = AnimationController.unbounded(
     vsync: this,
@@ -1277,7 +1277,7 @@ class RawPieChart extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<RawPieChart> createState() => _DesignPieChartState();
+  State<RawPieChart> createState() => _RawPieChartState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1332,7 +1332,7 @@ class RawPieChart extends StatefulWidget {
   }
 }
 
-class _DesignPieChartState extends State<RawPieChart>
+class _RawPieChartState extends State<RawPieChart>
     with SingleTickerProviderStateMixin, _Picking<RawPieChart> {
   late final AnimationController _motion = AnimationController.unbounded(
     vsync: this,

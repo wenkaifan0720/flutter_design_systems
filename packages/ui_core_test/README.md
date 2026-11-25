@@ -9,14 +9,14 @@ A design system's tests take it as a dev dependency, as an app takes `flutter_te
 
 ```yaml
 dev_dependencies:
-  ui_core_test: ^0.2.0
+  ui_core_test: ^0.5.2
 ```
 
 ```dart
 import 'package:ui_core_test/ui_core_test.dart';
 ```
 
-A test pumps a screen (a gallery page, an app screen), then checks it from its root:
+A test pumps a screen (a showcase page, an app screen), then checks it from its root:
 
 ```dart
 testWidgets('the settings screen reads right', (tester) async {
@@ -55,7 +55,7 @@ checks also run in an app (each takes the tester's `pump` and `runAsync` as func
 ## The checks
 
 What a control says and does, from the semantics tree, layout boxes and hit testing, each run from a screen's root
-(a gallery page, an app screen), but the radio group check, run on one group:
+(a showcase page, an app screen), but the radio group check, run on one group:
 - `DesignCheckableCheck`: each checkbox, radio and switch says what it is, as Flutter's do: a node that says it is
   checked or toggled does not also say it is a button, and a radio says whether it is checked.
 - `DesignRadioGroupCheck`: a group of radios answers the keyboard as Flutter's `RadioGroup` does: one tab stop, on
@@ -93,7 +93,7 @@ The floors are ui_core's (`RawTapTargetScope`), which a look declares in its the
 
 What is drawn wrong, from the painted pixels where only they show it (each check's documentation says what it reads):
 
-- `DesignLabelCheck` needs no list of controls: on any screen (each gallery page, each app screen) it reads every
+- `DesignLabelCheck` needs no list of controls: on any screen (each showcase page, each app screen) it reads every
   control that draws a face around one line of words or an icon, and checks that the label sits on the middle of the
   face (words by their capitals, so descenders do not count; an icon by its ink), giving the offset as laid out and as
   drawn. A label beside a text entry of more than one line (a note field) stands on the entry's first line and is held
@@ -130,7 +130,7 @@ a screen repainted since its last frame stops a check with that reason.
 
 ## Versions
 
-Version 0.5.0 supports ui_core ^0.7.0 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
+Version 0.5.2 supports ui_core ^0.7.2 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
 review (the alignment matrix, the keyline, row, width, spacing and field-parts checks) holds a look's own grid and
 taste, and is no longer published.
 

@@ -116,10 +116,10 @@ class RawMenuRow extends StatefulWidget {
   final Widget Function(BuildContext context, Set<WidgetState> states) builder;
 
   @override
-  State<RawMenuRow> createState() => _DesignMenuRowState();
+  State<RawMenuRow> createState() => _RawMenuRowState();
 }
 
-class _DesignMenuRowState extends State<RawMenuRow> {
+class _RawMenuRowState extends State<RawMenuRow> {
   FocusNode? _own;
 
   FocusNode get _node =>
@@ -219,14 +219,14 @@ class RawMenuItems extends StatefulWidget {
   final RawMenuPainters painters;
 
   @override
-  State<RawMenuItems> createState() => _DesignMenuItemsState();
+  State<RawMenuItems> createState() => _RawMenuItemsState();
 }
 
 // A menu's items' focus, and its typed letters: a letter goes to the next
 // item its label starts with, round past the end, so the same letter steps
 // through the items it starts; letters typed in a run (each within [_run]
 // of the last) spell the start, the item on it kept while it fits.
-class _DesignMenuItemsState extends State<RawMenuItems> {
+class _RawMenuItemsState extends State<RawMenuItems> {
   final List<FocusNode> _nodes = [];
   String _typed = '';
   Timer? _pause;

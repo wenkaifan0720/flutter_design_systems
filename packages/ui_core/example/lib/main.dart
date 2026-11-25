@@ -10,10 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'ink_proof.dart' show InkProofPage;
 import 'values.dart';
 
-// 0.3.0 routes
 import 'routes.dart';
-
-// 0.3.0 routes end
 
 void main() => runApp(const ExampleApp());
 
@@ -180,7 +177,6 @@ class _ReportPageState extends State<ReportPage> {
                       child: const Text('Save'),
                     ),
                   ),
-                  // 0.3.0 overlays
                   const SizedBox(height: 32),
                   const _ReportFile(),
                   const SizedBox(height: 32),
@@ -191,7 +187,6 @@ class _ReportPageState extends State<ReportPage> {
                     spacing: 16,
                     runSpacing: 16,
                     children: [
-                      // 0.3.0 routes
                       RawButton(
                         onPressed: () => Navigator.of(context).push(
                           PageRouteBuilder<void>(
@@ -205,8 +200,6 @@ class _ReportPageState extends State<ReportPage> {
                           child: const Text('Routes'),
                         ),
                       ),
-                      // 0.3.0 routes end
-                      // 0.3.0 values
                       RawButton(
                         onPressed: () => Navigator.of(context).push(
                           PageRouteBuilder<void>(
@@ -220,7 +213,6 @@ class _ReportPageState extends State<ReportPage> {
                           child: const Text('Values'),
                         ),
                       ),
-                      // 0.3.0 values end
                       RawButton(
                         onPressed: () => Navigator.of(context).push(
                           PageRouteBuilder<void>(
@@ -368,7 +360,7 @@ class _Toast extends StatelessWidget {
   );
 }
 
-// 0.3.0 overlays: a menu at the pointer, a tooltip with a tail.
+// A menu at the pointer, a tooltip with a tail.
 
 /// The report's file: a menu of its actions at the pointer (a right click,
 /// a long press, Shift+F10 or the Menu key), each row with its keys as the

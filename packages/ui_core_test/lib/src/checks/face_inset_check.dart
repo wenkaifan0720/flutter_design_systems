@@ -33,11 +33,16 @@ part of '../alignment.dart';
 /// it. Words across a face's top or foot by more than a quarter of their
 /// line (a legend on a frame's outline) are the frame's, not held in by it,
 /// and a face less than half their em high (a band drawn through them)
-/// holds nothing in. Only the edges a face shows are read: an edge that runs on into the
-/// face's colour (a text button on its page, a row on its card, a field on
-/// the panel it is part of, a key drawn on past the box of the tab over it)
-/// holds nothing in. Only a face the screen shows whole is read; one a
-/// scroll or a clip cuts is read when it comes into view. It reads the drawn pixels. A test passes its tester's `runAsync`:
+/// holds nothing in. Only the edges a face shows are read: an edge that
+/// runs on into the face's colour (a text button on its page, a row on its
+/// card, a field on the panel it is part of, a key drawn on past the box of
+/// the tab over it) holds nothing in. A face its own painter draws reaches
+/// the edge of the box that paints it where its painting runs on unbroken
+/// to that edge (a ball's rim shaded toward the page, darker by night or
+/// lighter by day); a soft shadow inside that box, fading into the page, is
+/// not the face. Only a face the screen shows whole is read; one a scroll
+/// or a clip cuts is read when it comes into view. It reads the drawn
+/// pixels. A test passes its tester's `runAsync`:
 ///
 /// ```dart
 /// final report = await const DesignFaceInsetCheck(look: 'Comic').check(
@@ -111,7 +116,9 @@ extension on _LabelReader {
   ) {
     final face = _face(control);
     if (face == null || !_holdsIn(face.box)) return const [];
-    final faceRect = face.rect;
+    final faceRect = face.read
+        ? _withRim(control, face.box, face.rect)
+        : face.rect;
     // Only a face the screen shows whole: one a scroll or a clip cuts, or
     // past the screen's edge, is read when a walk brings it into view.
     final clip = _clipOf(control, throughScrolls: true);
@@ -370,6 +377,91 @@ extension on _LabelReader {
       }
     }
     return false;
+  }
+
+  // [read], the face its own painter draws in [box] as its pixels show it
+  // ([_face]: where they stand well off what is round it), with a rim it
+  // shades or lights toward that colour (a clay ball's shade at its end and
+  // foot by night, its lit start by day): in some row (or column) every
+  // pixel from [read]'s edge out to the edge of the box it is painted in
+  // ([_paintedIn]) stands off what is round it, so the face runs on to that
+  // box's edge there. A soft shadow a painter casts inside its box, faded
+  // into what is round it before the box's edge, is not the face.
+  Rect _withRim(RenderBox control, RenderBox box, Rect read) {
+    final p = pixels!;
+    final whole = _toBoundary(_paintedIn(control, box, read));
+    final f = _toBoundary(read);
+    final round = p.groundAround(whole, 2);
+    int px(double v) => (v * p.ratio).round();
+    bool off(int x, int y) =>
+        !DrawnPixels.alike(p.colourAt(x, y), round, by: 16);
+    // Whether, in one of the lines [across], every pixel from [from] to [to]
+    // (stepping by [by]) stands off what is round the face: along rows when
+    // [rows], else along columns. False when [read] already reaches the box.
+    bool reaches(
+      int from,
+      int to,
+      int by,
+      List<int> across, {
+      required bool rows,
+    }) {
+      if ((to - from) * by < 0) return false;
+      for (final a in across) {
+        var x = from;
+        while (rows ? off(x, a) : off(a, x)) {
+          if (x == to) return true;
+          x += by;
+        }
+      }
+      return false;
+    }
+
+    final (l, t, r, b) = (px(f.left), px(f.top), px(f.right), px(f.bottom));
+    final rows = [for (var y = t; y < b; y++) y];
+    final columns = [for (var x = l; x < r; x++) x];
+    final local = Rect.fromLTRB(
+      reaches(l - 1, px(whole.left), -1, rows, rows: true)
+          ? whole.left
+          : f.left,
+      reaches(t - 1, px(whole.top), -1, columns, rows: false)
+          ? whole.top
+          : f.top,
+      reaches(r, px(whole.right) - 1, 1, rows, rows: true)
+          ? whole.right
+          : f.right,
+      reaches(b, px(whole.bottom) - 1, 1, columns, rows: false)
+          ? whole.bottom
+          : f.bottom,
+    );
+    return local == f
+        ? read
+        : MatrixUtils.transformRect(boundary!.getTransformTo(null), local);
+  }
+
+  // The box [read] is painted in, in global coordinates: the smallest box
+  // in [control] (short of another control) that paints a face and holds
+  // [read] whole (a ball on a row, or drawn over it, whose own plate draws
+  // nothing that stands off), else [face]'s own.
+  Rect _paintedIn(RenderBox control, RenderBox face, Rect read) {
+    var best = _global(face);
+    bool holds(Rect r) =>
+        read.left >= r.left - 0.5 &&
+        read.top >= r.top - 0.5 &&
+        read.right <= r.right + 0.5 &&
+        read.bottom <= r.bottom + 0.5;
+    void visit(RenderObject n) {
+      if (n is RenderParagraph || n is RenderEditable || _isControl(n)) return;
+      if (n is RenderBox && n.hasSize && _showsFace(n)) {
+        final r = _global(n);
+        if (holds(r) && r.width * r.height < best.width * best.height) {
+          best = r;
+        }
+      }
+      _visitShown(n, visit);
+    }
+
+    _visitShown(control, visit);
+    return best;
   }
 
   // Whether [c] is a stroke's softened edge over a face: a blend of the

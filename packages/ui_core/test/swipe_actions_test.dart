@@ -358,7 +358,6 @@ void main() {
     semantics.dispose();
   });
 
-  // 0.3.0 routes
   group('0.3.0', () {
     Widget row(
       String label, {
@@ -558,5 +557,4 @@ void main() {
       expect(text, contains('dampingRatio: 0.5'));
     });
   });
-  // 0.3.0 routes end
 }

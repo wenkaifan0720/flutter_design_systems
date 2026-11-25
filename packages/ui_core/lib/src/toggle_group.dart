@@ -102,7 +102,7 @@ class RawSegmentedButton<T> extends StatefulWidget {
   final Size minimumSize;
 
   @override
-  State<RawSegmentedButton<T>> createState() => _DesignToggleGroupState<T>();
+  State<RawSegmentedButton<T>> createState() => _RawToggleGroupState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -175,7 +175,7 @@ class RawSegmentedButton<T> extends StatefulWidget {
   }
 }
 
-class _DesignToggleGroupState<T> extends State<RawSegmentedButton<T>> {
+class _RawToggleGroupState<T> extends State<RawSegmentedButton<T>> {
   final List<FocusNode> _nodes = [];
 
   bool _enabled(int i) =>

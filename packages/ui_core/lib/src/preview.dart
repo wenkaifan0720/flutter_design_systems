@@ -3,7 +3,7 @@
 /// inside the frame, the brightness asked for, and the stage a pushed or
 /// sheet page is raised over when previewed alone.
 ///
-/// A system's `GenChrome.preview` wraps everything it builds in a
+/// A design system's preview wraps everything it builds in a
 /// [PreviewFrame]; its host reads [PreviewFrame.targetPlatformOf] for the
 /// platform whose behaviour applies (a Material host passes it to
 /// `ThemeData.platform`, whose scroll behaviour and gestures follow it). The
@@ -17,14 +17,13 @@ import 'package:flutter/widgets.dart';
 import 'chrome_data.dart';
 
 /// The device a platform previews on: its logical size and pixel density.
-/// The oracle captures and the gallery's renders use the same numbers.
 @immutable
 class PreviewDevice {
   /// Creates a [PreviewDevice].
   const PreviewDevice({required this.size, required this.devicePixelRatio});
 
   /// The Android reference phone: 1080 × 2400 px at 420 dpi (DPR 2.625),
-  /// i.e. 411.43 × 914.29 dp — the oracle's `material_oracle` AVD.
+  /// i.e. 411.43 × 914.29 dp.
   static const PreviewDevice android = PreviewDevice(
     size: Size(1080 / 2.625, 2400 / 2.625),
     devicePixelRatio: 2.625,

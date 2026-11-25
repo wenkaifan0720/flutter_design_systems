@@ -150,7 +150,7 @@ class RawTextEntryBox extends StatelessWidget {
         minHeight: minHeight,
         oneLine: maxLines == 1,
         editable: child,
-        hint: showHint ? ExcludeSemantics(child: hint!) : null,
+        hint: showHint ? ExcludeSemantics(child: hint) : null,
       ),
     );
     if (hint == null) return layout(showHint: false);

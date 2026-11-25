@@ -1,13 +1,13 @@
 # ui_core_review
 
-Our looks' layout review on ui_core: whether a look's controls line up where they share a row, its cards keep
+A layout review for the design systems in this repository, on ui_core: whether a look's controls line up where they share a row, its cards keep
 their keylines, its controls take the widths it allows, its gaps sit on its grid and a field's own parts have room.
 These are a look's own rules, its grid and its taste, so each look passes its own numbers; what is wrong in any design
 (a role, a radio group's keys, a field's name, a tap target, a cursor, a clipped word, a cut shadow, an overflow) is
 [ui_core_test](https://pub.dev/packages/ui_core_test)'s.
 
-It lives in the repository alone (`publish_to: none`). A look's tests take it as a dev dependency, and a gallery that
-shows its sheets in its example's dependencies:
+It lives in the repository alone (`publish_to: none`). A look's tests take it as a dev dependency, and an example app
+that shows its sheets in its dependencies:
 
 ```yaml
 dev_dependencies:
@@ -49,8 +49,8 @@ first edge on the leading keyline, its last on the trailing one, and the control
 line. Words are read by their line boxes, a control by its drawn face (not its tap box or its shadow), an icon that
 ends a row by its ink; what lies inside a face or a well (a field's, a table's) is not an item of the card around it.
 A look marks a face its pixels cannot show (one the colour of the ground, a pane of glass) or a picture with things
-placed on it with `RawKeylineFace`, which both checks take as it is. A gallery marks each section's column of
-examples with `startAligned: true`, and runs the check on each gallery page too: there every row starts on the
+placed on it with `RawKeylineFace`, which both checks take as it is. A showcase page marks each section's column of
+examples with `startAligned: true`, and runs the check on each showcase page too: there every row starts on the
 leading keyline, so a stepper, a sum or a line of words centred in the column (or set at its end) is named, where a
 card may centre an empty state. `DesignKeylineSheet` draws the keylines over a screen.
 
@@ -66,11 +66,11 @@ holds only its icon, an icon whose only face is its badge, a tab whose face show
 outline to compare and is read by its capitals, or its icon's middle, on that line. Words and icons drawn over a face
 are never read as it, whichever control holds them; a card's title over its body is placed, not centred; a text
 field's own parts (its entry and the toggle or switch inside its face) are one field, not a row. A row inside a
-`RawKeylineRegion` whose `mixedHeights` says why its controls differ (a gallery's ladder of one control per
+`RawKeylineRegion` whose `mixedHeights` says why its controls differ (a showcase's ladder of one control per
 size) is not held. The chips of a `Wrap` are read run by run, each run a row; a control a clip partly hides (a
 week scrolled in its strip, its weekend past the strip's edge) is not held, as what shows of it is not its outline;
 nor is a control another surface covers (a window in front of it, a later child of a `Stack`). Run on a screen's
-root, so its bars (an app bar, a gallery's own bar) are read with the rest.
+root, so its bars (an app bar, a showcase's own bar) are read with the rest.
 
 On a wide screen a control stretched across its column reads as a banner: a dropdown's closed face spanning a desktop
 page is the common case. From 600 logical pixels wide, `DesignWidthCheck` holds each select, button, stepper and

@@ -148,7 +148,7 @@ class RawValueHandle extends StatefulWidget {
   final WidgetStatesController? statesController;
 
   @override
-  State<RawValueHandle> createState() => _DesignValueHandleState();
+  State<RawValueHandle> createState() => _RawValueHandleState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -249,7 +249,7 @@ class RawValueHandle extends StatefulWidget {
   }
 }
 
-class _DesignValueHandleState extends State<RawValueHandle> {
+class _RawValueHandleState extends State<RawValueHandle> {
   WidgetStatesController? _own;
 
   WidgetStatesController get _controller =>
@@ -327,7 +327,7 @@ class _DesignValueHandleState extends State<RawValueHandle> {
     return p < _step ? _step : p;
   }
 
-  // 0.3.0 values: a dragged thumb crossing a division plays the haptic
+  // A dragged thumb crossing a division plays the haptic
   // table's step (RawHaptics.selectionChanged).
   @override
   void didUpdateWidget(RawValueHandle oldWidget) {

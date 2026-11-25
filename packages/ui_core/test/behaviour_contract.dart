@@ -218,8 +218,8 @@ class _OwnedState<T extends ChangeNotifier> extends State<Owned<T>> {
 /// - [motion] starts what moves (opens, shows, slides); under Reduce Motion
 ///   it must settle within a second and nothing may run on (no autoplay,
 ///   no endless spinner).
-/// - [targets] checks every tap target in the tree is at least 44 by 44
-///   (Flutter's iOS guideline, the kit's minimum) at both text sizes.
+/// - [targets] checks every tap target in the tree is at least 40 by 40
+///   (ui_core's touch floor, `RawTapTargets.fallback`) at both text sizes.
 /// - [root] is the behaviour's subtree: disabled, focus stays out of all of
 ///   it (the node alone when null).
 void behaviourContract(

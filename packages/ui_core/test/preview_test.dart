@@ -117,12 +117,7 @@ void main() {
           textDirection: TextDirection.ltr,
           child: Row(
             children: <Widget>[
-              Expanded(
-                child: PreviewFrame(
-                  platform: PreviewPlatform.android,
-                  child: Text('Android'),
-                ),
-              ),
+              Expanded(child: PreviewFrame(child: Text('Android'))),
               Expanded(
                 child: PreviewFrame(
                   platform: PreviewPlatform.ios,

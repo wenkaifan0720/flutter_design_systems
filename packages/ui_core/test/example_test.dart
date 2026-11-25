@@ -7,11 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 // The example is its own app beside the package, not the package's lib.
 // ignore: avoid_relative_lib_imports
 import '../example/lib/main.dart';
-// 0.3.0 routes
+// As main.dart.
 // ignore: avoid_relative_lib_imports
 import '../example/lib/routes.dart';
-
-// 0.3.0 routes end
 
 void main() {
   testWidgets('the example refuses an empty name, then saves and toasts', (
@@ -51,7 +49,6 @@ void main() {
     semantics.dispose();
   });
 
-  // 0.3.0 routes
   testWidgets('the routes page: an alert, a sheet, tabs and swipe rows', (
     tester,
   ) async {
@@ -102,5 +99,4 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Settings'), findsNWidgets(2));
   });
-  // 0.3.0 routes end
 }

@@ -20,13 +20,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
+import 'internal/dates.dart';
 import 'internal/focus_visible.dart';
 import 'localizations.dart';
 import 'pressable.dart';
 import 'tap_target.dart';
-
-/// [d] as a calendar day: local midnight.
-DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 DateTime _addDays(DateTime d, int days) =>
     DateTime(d.year, d.month, d.day + days);
@@ -55,8 +53,8 @@ bool _sameDay(DateTime? a, DateTime? b) =>
 class RawDateRange {
   /// A range from [start] to [end].
   RawDateRange(DateTime start, [DateTime? end])
-    : start = _dateOnly(start),
-      end = end == null ? null : _dateOnly(end);
+    : start = dateOnly(start),
+      end = end == null ? null : dateOnly(end);
 
   /// The first day.
   final DateTime start;
@@ -69,7 +67,7 @@ class RawDateRange {
 
   /// Whether [day] is in it (its start alone while half chosen).
   bool contains(DateTime day) {
-    final d = _dateOnly(day);
+    final d = dateOnly(day);
     final e = end ?? start;
     return !d.isBefore(start) && !d.isAfter(e);
   }
@@ -131,12 +129,12 @@ class RawCalendarController extends ChangeNotifier {
     Iterable<DateTime> selectedDates = const [],
     this.selectable,
     DateTime? currentDate,
-  }) : firstDate = _dateOnly(firstDate),
-       lastDate = _dateOnly(lastDate),
-       currentDate = _dateOnly(currentDate ?? DateTime.now()),
-       _selected = selectedDate == null ? null : _dateOnly(selectedDate),
+  }) : firstDate = dateOnly(firstDate),
+       lastDate = dateOnly(lastDate),
+       currentDate = dateOnly(currentDate ?? DateTime.now()),
+       _selected = selectedDate == null ? null : dateOnly(selectedDate),
        _range = selectedRange,
-       _days = {for (final d in selectedDates) _dateOnly(d)} {
+       _days = {for (final d in selectedDates) dateOnly(d)} {
     assert(!this.lastDate.isBefore(this.firstDate));
     final start =
         initialMonth ??
@@ -144,7 +142,7 @@ class RawCalendarController extends ChangeNotifier {
         _range?.start ??
         _earliest(_days) ??
         this.currentDate;
-    _focused = _clamp(_dateOnly(start));
+    _focused = _clamp(dateOnly(start));
     _month = _monthOf(_focused);
   }
 
@@ -196,7 +194,7 @@ class RawCalendarController extends ChangeNotifier {
 
   /// Whether [day] is inside the bounds and [selectable].
   bool isSelectable(DateTime day) {
-    final d = _dateOnly(day);
+    final d = dateOnly(day);
     if (d.isBefore(firstDate) || d.isAfter(lastDate)) return false;
     return selectable?.call(d) ?? true;
   }
@@ -223,7 +221,7 @@ class RawCalendarController extends ChangeNotifier {
   /// Puts the keyboard on [day], turning to its month when it is not shown
   /// ([months] shown at once).
   void focus(DateTime day, {int months = 1}) {
-    final d = _clamp(_dateOnly(day));
+    final d = _clamp(dateOnly(day));
     _focused = d;
     final m = _monthOf(d);
     if (m.isBefore(_month)) {
@@ -245,7 +243,7 @@ class RawCalendarController extends ChangeNotifier {
   /// The day a pointer rests on, for a range's preview; null when it
   /// leaves.
   set hovered(DateTime? day) {
-    final d = day == null ? null : _dateOnly(day);
+    final d = day == null ? null : dateOnly(day);
     if (_sameDay(d, _hovered) || (d == null && _hovered == null)) return;
     _hovered = d;
     notifyListeners();
@@ -254,7 +252,7 @@ class RawCalendarController extends ChangeNotifier {
   /// Selects [day] as the mode says: the day; the range's start, then its
   /// end (a day before the start starts again there); or a day toggled.
   void select(DateTime day) {
-    final d = _dateOnly(day);
+    final d = dateOnly(day);
     if (!isSelectable(d)) return;
     _focused = d;
     switch (mode) {
@@ -300,7 +298,7 @@ class RawCalendarController extends ChangeNotifier {
     required DateTime inMonth,
     String? label,
   }) {
-    final d = _dateOnly(day);
+    final d = dateOnly(day);
     final r = _range;
     final p = preview;
     final chosen = switch (mode) {
@@ -552,7 +550,7 @@ class RawCalendarDatePicker extends StatefulWidget {
   final double minDayWidth;
 
   @override
-  State<RawCalendarDatePicker> createState() => _DesignCalendarState();
+  State<RawCalendarDatePicker> createState() => _RawCalendarState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -629,7 +627,7 @@ class RawCalendarDatePicker extends StatefulWidget {
   }
 }
 
-class _DesignCalendarState extends State<RawCalendarDatePicker> {
+class _RawCalendarState extends State<RawCalendarDatePicker> {
   String _dayLabel(DateTime day) =>
       (widget.dayLabel ?? RawWidgetsLocalizations.of(context).formatFullDate)(
         day,

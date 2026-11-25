@@ -62,7 +62,7 @@ class RawInputGroup extends StatefulWidget {
   final MouseCursor mouseCursor;
 
   @override
-  State<RawInputGroup> createState() => _DesignInputGroupState();
+  State<RawInputGroup> createState() => _RawInputGroupState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -96,7 +96,7 @@ class RawInputGroup extends StatefulWidget {
   }
 }
 
-class _DesignInputGroupState extends State<RawInputGroup> {
+class _RawInputGroupState extends State<RawInputGroup> {
   bool _focused = false;
   bool _hovered = false;
 
@@ -229,7 +229,7 @@ class RawPasswordReveal extends StatefulWidget {
   final String? hideLabel;
 
   @override
-  State<RawPasswordReveal> createState() => _DesignPasswordRevealState();
+  State<RawPasswordReveal> createState() => _RawPasswordRevealState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -267,7 +267,7 @@ class RawPasswordReveal extends StatefulWidget {
   }
 }
 
-class _DesignPasswordRevealState extends State<RawPasswordReveal> {
+class _RawPasswordRevealState extends State<RawPasswordReveal> {
   RawPasswordController? _own;
 
   RawPasswordController get _controller =>

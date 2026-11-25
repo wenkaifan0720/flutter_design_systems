@@ -153,7 +153,7 @@ void main() {
     );
   });
 
-  // 0.3.0 tooling: Frosted's chosen filter chip (11-15). Its face is lit a
+  // A chosen filter chip on glass. Its face is lit a
   // little from its left to the middle of its words (a sheen 10 a channel
   // lighter than the face's commonest colour, not past both sides of the
   // words as a rule behind them is), and its words are a grey 116 from that

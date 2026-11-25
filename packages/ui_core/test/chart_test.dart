@@ -358,11 +358,7 @@ void main() {
           ),
         ),
       );
-      await tester.drag(
-        find.byType(RawChart),
-        const Offset(0, -100),
-        kind: PointerDeviceKind.touch,
-      );
+      await tester.drag(find.byType(RawChart), const Offset(0, -100));
       await tester.pump();
       expect(scroll.offset, greaterThan(0));
       expect(_host.picked, isEmpty);
@@ -713,7 +709,7 @@ void main() {
     await tester.pump();
     expect(_last!.states, contains(WidgetState.focused));
     await tester.pumpWidget(harness(const SizedBox()));
-    expect(() => a.requestFocus(), returnsNormally, reason: 'not disposed');
+    expect(a.requestFocus, returnsNormally, reason: 'not disposed');
   });
 
   test('values say what they are', () {

@@ -718,7 +718,7 @@ class RawTabBar extends StatefulWidget {
   final String? semanticLabel;
 
   @override
-  State<RawTabBar> createState() => _DesignTabBarState();
+  State<RawTabBar> createState() => _RawTabBarState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -766,7 +766,7 @@ class RawTabBar extends StatefulWidget {
   }
 }
 
-class _DesignTabBarState extends State<RawTabBar>
+class _RawTabBarState extends State<RawTabBar>
     with SingleTickerProviderStateMixin {
   // One node per tab, the bar's own.
   final List<FocusNode> _nodes = [];
@@ -1437,7 +1437,7 @@ class RawTabBarView extends StatefulWidget {
   final DragStartBehavior dragStartBehavior;
 
   @override
-  State<RawTabBarView> createState() => _DesignTabViewState();
+  State<RawTabBarView> createState() => _RawTabViewState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1461,7 +1461,7 @@ class RawTabBarView extends StatefulWidget {
   }
 }
 
-class _DesignTabViewState extends State<RawTabBarView> {
+class _RawTabViewState extends State<RawTabBarView> {
   late final PageController _pages = PageController(
     initialPage: widget.controller.index,
   );

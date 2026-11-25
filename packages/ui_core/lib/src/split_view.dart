@@ -100,7 +100,7 @@ class RawSplitView extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<RawSplitView> createState() => _DesignSplitViewState();
+  State<RawSplitView> createState() => _RawSplitViewState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -146,7 +146,7 @@ class RawSplitView extends StatefulWidget {
   }
 }
 
-class _DesignSplitViewState extends State<RawSplitView> {
+class _RawSplitViewState extends State<RawSplitView> {
   late double _own = widget.initialFraction;
   double? _restore;
   bool _dragging = false;

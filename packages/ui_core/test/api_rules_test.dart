@@ -80,7 +80,6 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
     focusNode: node,
     autofocus: autofocus,
   ),
-  // 0.3.0 values
   'RawNumberField': (node, autofocus) => RawNumberField(
     value: 2,
     onChanged: (value) {},
@@ -129,7 +128,6 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
       autofocus: autofocus,
     ),
   ),
-  // 0.3.0 values end
 };
 
 class _ScrollHost extends StatefulWidget {

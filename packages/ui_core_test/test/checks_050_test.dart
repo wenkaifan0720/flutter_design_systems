@@ -573,7 +573,7 @@ void main() {
         await tester.pumpWidget(
           harness(
             MediaQuery(
-              data: const MediaQueryData(supportsAnnounce: false),
+              data: const MediaQueryData(),
               child: RawInputDecorator(
                 labelText: 'Email',
                 helperText: 'We never share it',

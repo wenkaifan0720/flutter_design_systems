@@ -498,7 +498,6 @@ void main() {
       );
       final finger = await tester.startGesture(
         tester.getCenter(find.byKey(const ValueKey('face 0'))),
-        kind: PointerDeviceKind.touch,
       );
       await finger.moveBy(const Offset(35, 0));
       await tester.pump();

@@ -72,7 +72,7 @@ class RawListDetail<T extends Object> extends StatefulWidget {
   final double listWidth;
 
   @override
-  State<RawListDetail<T>> createState() => _DesignListDetailState<T>();
+  State<RawListDetail<T>> createState() => _RawListDetailState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -122,7 +122,7 @@ class RawListDetail<T extends Object> extends StatefulWidget {
   }
 }
 
-class _DesignListDetailState<T extends Object> extends State<RawListDetail<T>> {
+class _RawListDetailState<T extends Object> extends State<RawListDetail<T>> {
   // The list keeps its state (its scroll) as the layout changes.
   final GlobalKey _list = GlobalKey(debugLabel: 'RawListDetail list');
   Route<void>? _pushed;

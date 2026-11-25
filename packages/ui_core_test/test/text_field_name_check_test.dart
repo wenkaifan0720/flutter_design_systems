@@ -84,7 +84,7 @@ void main() {
   });
 
   testWidgets("a label a tap target keeps beside the field is not the field's "
-      'name (the 11-19 Ledger fault)', (tester) async {
+      'name', (tester) async {
     final semantics = tester.ensureSemantics();
     final problems = await _problems(
       tester,

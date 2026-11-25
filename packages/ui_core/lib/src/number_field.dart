@@ -215,7 +215,7 @@ class RawNumberField extends StatefulWidget {
   final Duration repeatInterval;
 
   @override
-  State<RawNumberField> createState() => _DesignNumberFieldState();
+  State<RawNumberField> createState() => _RawNumberFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -294,7 +294,7 @@ class RawNumberField extends StatefulWidget {
   }
 }
 
-class _DesignNumberFieldState extends State<RawNumberField> {
+class _RawNumberFieldState extends State<RawNumberField> {
   TextEditingController? _ownController;
   FocusNode? _ownNode;
   bool _hovered = false;

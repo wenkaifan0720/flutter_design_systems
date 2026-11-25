@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart'
     show
@@ -181,7 +180,7 @@ Future<_Drawn> _draw(
       key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final (data, w, h) = (await tester.runAsync(() async {
     final image = await boundary.toImage(pixelRatio: ratio);
-    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final data = await image.toByteData();
     final size = (image.width, image.height);
     image.dispose();
     return (data!, size.$1, size.$2);

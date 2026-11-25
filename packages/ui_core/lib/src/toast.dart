@@ -13,9 +13,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-// 0.3.0 routes
 import 'internal/panes.dart';
-// 0.3.0 routes end
 import 'localizations.dart';
 import 'motion.dart';
 
@@ -394,10 +392,8 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   bool _hovered = false;
   bool _focused = false;
   FocusNode? _returnFocus;
-  // 0.3.0 routes
   // The F6 cycle the toaster's toasts are a pane of.
   final GlobalKey<PaneCycleState> _cycle = GlobalKey();
-  // 0.3.0 routes end
 
   // Where the parts kept clear stand in the toaster ([RawToasterKeepClear]),
   // each part's rect in a box [_keptHeight] tall, and the bands they keep
@@ -610,7 +606,6 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   }
 
   Object? _jump(_JumpToToastIntent intent) {
-    // 0.3.0 routes
     // With other panes about (a shell's), F6 cycles through them all.
     final cycle = _cycle.currentState;
     if (cycle != null && cycle.cycles) {
@@ -623,7 +618,6 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 
   // Focuses the newest toast, remembering where focus was; false with none.
   bool _focusNewest() {
-    // 0.3.0 routes end
     final live = _shown.where((r) => !r.exiting).toList();
     if (live.isEmpty) return false;
     final current = FocusManager.instance.primaryFocus;
@@ -711,7 +705,6 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
       face = Dismissible(
         key: ValueKey<Object>(record.id),
         direction: widget.swipeDirection,
-        resizeDuration: _swipeResize,
         confirmDismiss: (_) async {
           _swipedOut(record);
           return true;
@@ -786,10 +779,8 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
         ),
       );
     }
-    // 0.3.0 routes
     // Shown, the toasts are one of F6's panes, entered at the newest.
     stack = Pane(debugLabel: 'RawToaster', enter: _focusNewest, child: stack);
-    // 0.3.0 routes end
     // The region stays mounted when empty: an unmounted MouseRegion never
     // reports its exit, and the next toast would wait out a stale hover.
     final toaster = Stack(
@@ -813,10 +804,8 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
         ),
       ],
     );
-    // 0.3.0 routes
     // F6 and Shift+F6 cycle the panes: the toasts, and a shell's below.
     return PaneCycle(key: _cycle, child: toaster);
-    // 0.3.0 routes end
   }
 }
 

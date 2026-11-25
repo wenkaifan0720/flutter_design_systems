@@ -24,12 +24,12 @@ class SettingsScreen extends StatelessWidget {
 /// The theme [DesignContrastCheck.sweep]'s example builds.
 class GiltThemeData {
   /// The look's own palette.
-  const GiltThemeData({required this.brightness, this.accent});
+  const GiltThemeData({required this.brightness, this.accent, this.paper});
 
   /// A named palette.
   const GiltThemeData.from({
     required Color this.accent,
-    Color? paper,
+    this.paper,
     required this.brightness,
   });
 
@@ -38,6 +38,9 @@ class GiltThemeData {
 
   /// The accent.
   final Color? accent;
+
+  /// The paper.
+  final Color? paper;
 }
 
 /// The app [DesignContrastCheck.sweep]'s example pumps.
@@ -255,8 +258,9 @@ Future<void> _settleImages(WidgetTester tester) async {
   await tester.pump();
 }
 
-/// The checks' files: ui_core_test's whole lib, and part of drip's kit,
-/// whose other files' examples are ui_core's and the review's.
+/// The checks' files: ui_core_test's whole lib, and part of the source tree
+/// it is made from, whose other files' examples are ui_core's and the
+/// review's.
 const Set<String> _checksFiles = {
   'alignment.dart',
   'checkable_check.dart',

@@ -412,7 +412,7 @@ class RawDataTable<R> extends StatefulWidget {
   final String Function(RawSortDirection direction)? sortedHint;
 
   @override
-  State<RawDataTable<R>> createState() => _DesignDataTableState<R>();
+  State<RawDataTable<R>> createState() => _RawDataTableState<R>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -475,7 +475,7 @@ class _OpenRowIntent extends Intent {
   const _OpenRowIntent();
 }
 
-class _DesignDataTableState<R> extends State<RawDataTable<R>> {
+class _RawDataTableState<R> extends State<RawDataTable<R>> {
   final List<FocusNode> _nodes = [];
   int _current = 0;
 

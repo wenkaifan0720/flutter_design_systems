@@ -721,7 +721,6 @@ class DesignTextEntryCheck {
               empty.currentContext!.findRenderObject()! as _RenderProbe,
               typed.currentContext!.findRenderObject()! as _RenderProbe,
               hint: hint,
-              text: text,
               decorations: _decorationsIn(empty.currentContext!),
             );
             measured[name] = entry;
@@ -825,7 +824,6 @@ class _Entry {
     _RenderProbe empty,
     _RenderProbe typed, {
     required String hint,
-    required String text,
     required Set<RenderObject> decorations,
   }) {
     double top(_RenderProbe probe) => probe.localToGlobal(Offset.zero).dy;

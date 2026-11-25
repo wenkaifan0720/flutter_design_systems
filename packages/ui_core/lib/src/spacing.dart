@@ -7,8 +7,7 @@ import 'package:flutter/widgets.dart';
 /// Most systems keep a 4 pt grid ([fallback]). A look that keeps a finer
 /// one (iOS's and the classic Mac's 2 pt values: 6, 10, 14, 22) declares
 /// it with a [RawSpacingScope] round the app, in its theme, beside its
-/// `RawTapTargetScope`, and `DesignSpacingCheck` holds its sources to
-/// it.
+/// `RawTapTargetScope`.
 ///
 /// ```dart
 /// RawSpacingScope(
@@ -16,11 +15,6 @@ import 'package:flutter/widgets.dart';
 ///   child: app,
 /// )
 /// ```
-///
-/// See also:
-///
-///  * `DesignSpacingCheck.literals`, which reads a look's sources for
-///    spacing off its grid.
 @immutable
 class RawSpacing with Diagnosticable {
   /// A look's spacing on a [grid] of so many logical pixels.

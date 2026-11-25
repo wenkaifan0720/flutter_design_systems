@@ -549,7 +549,7 @@ void main() {
       children: [
         _faced('Country', width: 200, height: 50),
         const SizedBox(width: 8),
-        _faced('Search', width: 40, height: 40),
+        _faced('Search', width: 40),
       ],
     );
     const heights =
@@ -1027,7 +1027,7 @@ void main() {
             children: [
               const DecoratedBox(
                 decoration: BoxDecoration(
-                  border: Border.fromBorderSide(BorderSide(color: _ink)),
+                  border: Border.fromBorderSide(BorderSide()),
                 ),
                 child: SizedBox(width: 18, height: 18),
               ),
@@ -1086,7 +1086,6 @@ void main() {
         Column(
           children: [
             IndexedStack(
-              index: 0,
               children: [
                 _card([_text('Shown')]),
                 off('Hidden screen'),

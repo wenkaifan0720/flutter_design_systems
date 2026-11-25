@@ -362,7 +362,7 @@ void main() {
       await _type(tester, '1/');
       expect(_focusedOn(tester, 'Year'), isTrue);
       await _type(tester, '2025');
-      expect(_date.value, DateTime(2025, 3, 1));
+      expect(_date.value, DateTime(2025, 3));
     });
 
     testWidgets('a day past the month\'s end moves back to its last day', (

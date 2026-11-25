@@ -253,7 +253,7 @@ void main() {
   group('a surface the delegate places is sized by the bounds it keeps to, '
       'not by the room on one side', () {
     testWidgets('a tall menu turned over its anchor near the foot (no flip, '
-        'as w2f places one where its page drew it): every row is laid out '
+        'as an app places one where its page drew it): every row is laid out '
         'whole and takes a press', (tester) async {
       // 10 rows (400) over an anchor at 540 to 580: below it, 8.
       final pressed = <int>[];

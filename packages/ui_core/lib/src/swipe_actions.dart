@@ -25,7 +25,7 @@ import 'pressable.dart';
 /// RawSwipeActions(controller: controller, endActions: [RawSwipeAction(label: 'Archive', onPressed: controller.close)], actionBuilder: (context, action, details) => Text(action.label), child: const Text('Message'))
 /// ```
 class RawSwipeActionsController extends ChangeNotifier {
-  _DesignSwipeActionsState? _row;
+  _RawSwipeActionsState? _row;
   bool _open = false;
 
   /// Whether a side of the row is open (or opening).
@@ -48,7 +48,7 @@ class RawSwipeActionsController extends ChangeNotifier {
 }
 
 // The rows in one Scrollable: one open at a time.
-final Expando<Set<_DesignSwipeActionsState>> _groups = Expando(
+final Expando<Set<_RawSwipeActionsState>> _groups = Expando(
   'RawSwipeActions groups',
 );
 
@@ -144,12 +144,10 @@ class RawSwipeActions extends StatefulWidget {
     this.onOpenChanged,
     this.initiallyOpen = false,
     this.underlap = 0,
-    // 0.3.0 routes
     this.controller,
     this.closeOnScroll = true,
     this.dampingRatio = 1,
     this.stiffness = 700,
-    // 0.3.0 routes end
   }) : assert(actionExtent > 0 && underlap >= 0),
        assert(dampingRatio > 0 && stiffness > 0);
 
@@ -188,8 +186,6 @@ class RawSwipeActions extends StatefulWidget {
   /// [RawSwipeActionDetails.underlap]). 0: the strip stops at the row.
   final double underlap;
 
-  // 0.3.0 routes
-
   /// Opens and closes it from outside; the caller's, never disposed here.
   final RawSwipeActionsController? controller;
 
@@ -204,10 +200,8 @@ class RawSwipeActions extends StatefulWidget {
   /// The slide's spring stiffness (k). Defaults to 700.
   final double stiffness;
 
-  // 0.3.0 routes end
-
   @override
-  State<RawSwipeActions> createState() => _DesignSwipeActionsState();
+  State<RawSwipeActions> createState() => _RawSwipeActionsState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -264,7 +258,6 @@ class RawSwipeActions extends StatefulWidget {
         ),
       )
       ..add(DoubleProperty('underlap', underlap, defaultValue: 0))
-      // 0.3.0 routes
       ..add(
         DiagnosticsProperty<RawSwipeActionsController>(
           'controller',
@@ -282,11 +275,10 @@ class RawSwipeActions extends StatefulWidget {
       )
       ..add(DoubleProperty('dampingRatio', dampingRatio, defaultValue: 1))
       ..add(DoubleProperty('stiffness', stiffness, defaultValue: 700));
-    // 0.3.0 routes end
   }
 }
 
-class _DesignSwipeActionsState extends State<RawSwipeActions>
+class _RawSwipeActionsState extends State<RawSwipeActions>
     with TickerProviderStateMixin {
   // Offset along the reading direction: positive shows the start actions.
   late final AnimationController _offset = AnimationController.unbounded(
@@ -309,7 +301,7 @@ class _DesignSwipeActionsState extends State<RawSwipeActions>
   double _width = 0;
   bool _open = false;
 
-  Set<_DesignSwipeActionsState>? _group;
+  Set<_RawSwipeActionsState>? _group;
   ValueListenable<bool>? _scrolling;
   bool _dragging = false;
 
@@ -333,7 +325,7 @@ class _DesignSwipeActionsState extends State<RawSwipeActions>
     _group?.remove(this);
     _group = scrollable == null
         ? null
-        : (_groups[scrollable] ??= <_DesignSwipeActionsState>{});
+        : (_groups[scrollable] ??= <_RawSwipeActionsState>{});
     _group?.add(this);
     final scrolling = scrollable?.position.isScrollingNotifier;
     if (scrolling != _scrolling) {

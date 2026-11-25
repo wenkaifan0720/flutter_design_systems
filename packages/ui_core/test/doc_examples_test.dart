@@ -14,8 +14,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/inventory.dart';
-// 0.3.0 routes
-// 0.3.0 routes end
 
 import 'behaviour_harness.dart';
 import 'doc_examples.dart';
@@ -264,7 +262,7 @@ final Map<String, DocExample> _examples = {
       );
     },
   ),
-  'RoutePresentation.of': (context) => RoutePresentation.of(context),
+  'RoutePresentation.of': RoutePresentation.of,
   'RoutePresentation.dismissLabel': (context) =>
       RoutePresentation.of(context).dismissLabel(context),
   'RoutePresentationScope': (context) => const RoutePresentationScope(
@@ -587,7 +585,6 @@ final Map<String, DocExample> _examples = {
       const RawKeylineFace(child: SizedBox(width: 120, height: 40)),
   'RawCapCenter': (context) =>
       const RawCapCenter(capHeightFactor: 0.711, child: Text('Save')),
-  // 0.3.0 values
   'RawHaptics': (context) {
     RawHaptics.of(context).selectionChanged?.call();
     return null;
@@ -621,6 +618,8 @@ final Map<String, DocExample> _examples = {
     RawWidgetsLocalizations.of(context)
         .formatMinute(const RawTimeOfDay(hour: 9, minute: 5)),
   ),
+  'RawPickerWords': (context) =>
+      Text(RawWidgetsLocalizations.of(context).datePickerHelpText),
   'RawDateField': (context) => RawDateField(
     value: DateTime(2026, 11, 16),
     onChanged: (day) {},
@@ -737,8 +736,6 @@ final Map<String, DocExample> _examples = {
     ],
     cellBuilder: (context, cell) => Text(cell.text),
   ),
-  // 0.3.0 values end
-  // 0.3.0 routes
   'RawModalDialogRoute': (context) => RawModalDialogRoute<bool>(
     isAlert: true,
     builder: (context, details) => RawAlertDialog(
@@ -958,7 +955,6 @@ final Map<String, DocExample> _examples = {
       pageBuilder: (context, _, _) => builder(context),
     ),
   ),
-  // 0.3.0 routes end
   'RawPalette': (context) {
     const brand = Color(0xFF1F3A68);
     const page = Color(0xFF121212);
@@ -1012,9 +1008,8 @@ const Set<String> _hostAppOnly = {
   'routing.dart',
   'chrome.dart',
   'annotations.dart',
-  // 0.3.0 tooling: the checks' examples are ui_core_test's
-  // (checks_doc_examples_test.dart) and the review's ui_core_review's
-  // (review_doc_examples_test.dart); drip's kit still holds the files.
+  // The checks' examples are ui_core_test's (checks_doc_examples_test.dart)
+  // and the review's ui_core_review's (review_doc_examples_test.dart).
   ..._checksFiles,
 };
 

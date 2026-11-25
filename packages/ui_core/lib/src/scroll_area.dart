@@ -157,7 +157,7 @@ class RawScrollArea extends StatefulWidget {
   frameBuilder;
 
   @override
-  State<RawScrollArea> createState() => _DesignScrollAreaState();
+  State<RawScrollArea> createState() => _RawScrollAreaState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -227,7 +227,7 @@ class RawScrollArea extends StatefulWidget {
   }
 }
 
-class _DesignScrollAreaState extends State<RawScrollArea> {
+class _RawScrollAreaState extends State<RawScrollArea> {
   bool _scrolling = false;
   bool _hovered = false;
   bool _dragging = false;

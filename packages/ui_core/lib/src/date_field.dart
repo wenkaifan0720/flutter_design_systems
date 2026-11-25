@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
+import 'internal/dates.dart';
 import 'internal/segments.dart';
 import 'localizations.dart';
 
@@ -238,7 +239,7 @@ class RawDateField extends StatefulWidget {
   final VoidCallback? onEditingComplete;
 
   @override
-  State<RawDateField> createState() => _DesignDateFieldState();
+  State<RawDateField> createState() => _RawDateFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -359,7 +360,7 @@ class RawTimeField extends StatefulWidget {
   final VoidCallback? onEditingComplete;
 
   @override
-  State<RawTimeField> createState() => _DesignTimeFieldState();
+  State<RawTimeField> createState() => _RawTimeFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -423,9 +424,7 @@ class RawTimeField extends StatefulWidget {
   }
 }
 
-DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
-
-class _DesignDateFieldState extends _SegmentedFieldState<RawDateField> {
+class _RawDateFieldState extends _SegmentedFieldState<RawDateField> {
   bool _wasOutOfRange = false;
 
   @override
@@ -459,7 +458,7 @@ class _DesignDateFieldState extends _SegmentedFieldState<RawDateField> {
   void didUpdateWidget(RawDateField oldWidget) {
     super.didUpdateWidget(oldWidget);
     final v = widget.value;
-    final day = v == null ? null : _dateOnly(v);
+    final day = v == null ? null : dateOnly(v);
     if (oldWidget.value != v && day != _composed()) {
       load();
       sent = day;
@@ -504,8 +503,8 @@ class _DesignDateFieldState extends _SegmentedFieldState<RawDateField> {
     if (day == null) return false;
     final first = widget.firstDate;
     final last = widget.lastDate;
-    return (first != null && day.isBefore(_dateOnly(first))) ||
-        (last != null && day.isAfter(_dateOnly(last)));
+    return (first != null && day.isBefore(dateOnly(first))) ||
+        (last != null && day.isAfter(dateOnly(last)));
   }
 
   @override
@@ -555,7 +554,7 @@ class _DesignDateFieldState extends _SegmentedFieldState<RawDateField> {
       : digitsOf(l, value);
 }
 
-class _DesignTimeFieldState extends _SegmentedFieldState<RawTimeField> {
+class _RawTimeFieldState extends _SegmentedFieldState<RawTimeField> {
   // The clock the hour is held on: its pattern letter.
   String _clock = 'h';
 
@@ -1047,7 +1046,6 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     inputType: _focused == RawDateSegmentType.dayPeriod
         ? TextInputType.text
         : TextInputType.number,
-    inputAction: TextInputAction.done,
     autocorrect: false,
     enableSuggestions: false,
   );

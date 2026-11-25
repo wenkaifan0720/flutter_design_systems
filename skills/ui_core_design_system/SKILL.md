@@ -34,8 +34,8 @@ To install the skill, copy this folder into the project's `.claude/skills/`
 (or `~/.claude/skills/` for every project). The app takes:
 
 ```text
-flutter pub add ui_core:^0.7.0 material_ui
-flutter pub add 'dev:ui_core_test:^0.5.0' dev:leak_tracker_flutter_testing
+flutter pub add ui_core:^0.7.2 material_ui
+flutter pub add 'dev:ui_core_test:^0.5.2' dev:leak_tracker_flutter_testing
 ```
 
 material_ui gives the app `MaterialApp`, `TextField` and Flutter's
@@ -65,9 +65,6 @@ right form.
   `layoutBuilder: (context, items) => Row(children: [for (final i in items) Expanded(child: i)])`,
   and `itemBuilder` returns its face in `SizedBox(width: double.infinity, child: …)`
   (else a face as wide as its words stands in the middle of its share).
-  The 0.3 names `DesignToggleGroup` and
-  `DesignToggleItemBuilder` are `RawSegmentedButton` and `RawSegmentBuilder`,
-  and `dart fix --apply` renames them.
 - A screen is pushed with `RawPageRoute` (or listed as a `RawPage`), not
   `MaterialPageRoute` or `CupertinoPageRoute`: it plays the design's
   transition, and the swipe back on iOS.
@@ -128,7 +125,11 @@ One immutable `ThemeData`-like class for the design (`copyWith`, `lerp`,
 `InheritedTheme` so dialogs and menus carry it. It holds:
 
 - colours by role, a day set and a night set chosen separately (not
-  inverted);
+  inverted); for a brand or a named palette, `RawPalette` gives the numbers:
+  `RawPalette.readableTone(brand, on: [page, panel])` for words that read
+  on every ground they are painted on, `RawPalette.accentFill` for a filled
+  control's colour and its label's ink, and `RawNeutralTones` for a tinted
+  ground's tones by day and by night;
 - a type ramp that works with the family the app loads, and that family's
   cap-height factor for `RawCapCenter`;
 - **one control height** every part that can share a row stands at, and a
@@ -404,6 +405,8 @@ standing above the bar, a radio group's keys (`DesignRadioGroupCheck`).
 | `DesignCursorCheck` | A live part that shows the arrow, or a handle without grab |
 | `DesignRadioGroupCheck` | A radio group that is more than one Tab stop, or whose arrows do not choose, wrap, skip and mirror |
 | `DesignLabelCheck` | A label's ink off its face's middle |
+| `DesignFaceInsetCheck` | A label's ink closer than 4 px to its face's edge |
+| `DesignContrastCheck` | Words, icons or a hint too faint on what is drawn under them; `DesignContrastCheck.sweep` reads a screen in the palettes people name most and the design's own, by day and by night (`contrastFloorGuideline` is the same floor as a guideline) |
 | `DesignWordBreakCheck`, `DesignClipCheck` | A word broken across lines; words or a face cut |
 | `DesignShadowClipCheck` | A shadow cut by its parent's clip |
 

@@ -447,7 +447,7 @@ class _TypedFieldState extends State<_TypedField> {
 
 // A surface whose render box paints its ringed face [inset] in from its
 // edges (room for a shadow round it).
-// A light list's face as Terminal's pane paints one (0.3.0 tooling), in a
+// A light list's face as a framed pane paints one, in a
 // custom paint: white to its edges, its frame line 4 px in (down the middle
 // of its edge cells).
 class _Framed extends CustomPainter {
@@ -876,7 +876,6 @@ void main() {
       unawaited(
         navigator.push(
           RawDialogRoute<void>(
-            barrierDismissible: true,
             barrierLabel: 'Dismiss',
             barrierColor: const Color(0x66000000),
             pageBuilder: (context, _, _) => Center(
@@ -1673,7 +1672,7 @@ void main() {
       ], gap: 8);
       await _pump(tester, page(_row));
       expect(await _widths(tester), isEmpty);
-      await _pump(tester, page((label) => _select(label)));
+      await _pump(tester, page(_select));
       expect(await _widths(tester), hasLength(2));
     });
 
@@ -2084,7 +2083,7 @@ void main() {
 
     // A navigation frame: its navigator's page holds the field, 24 in; its
     // side bar, drawn after that page in the frame's own route, has a row's
-    // 18 px glyph 4 under the field's foot (Ledger's, 11-15).
+    // 18 px glyph 4 under the field's foot.
     Widget framed() => SizedBox(
       height: 400,
       child: Row(
@@ -2316,7 +2315,7 @@ void main() {
         "the page under it: its frame line 4 px in is not its edge", (
       tester,
     ) async {
-      // Terminal's lists on paper (11-15): RawPopover draws the
+      // A list on a paper ground: RawPopover draws the
       // surface in a repaint boundary the list's size, whose own pixels are
       // the list's white to the edge; read against that white, the frame
       // line was taken for the list's edge, 8 px narrower than the field.
@@ -2389,7 +2388,6 @@ void main() {
       // 2 in on each side as drawn, and its list "2 px out past" it (seen on
       // Brutal's own screens; this fixture reads clean either way). It
       // guards the field read against the page round it.
-      const rule = Color(0xFF000000);
       await _pump(
         tester,
         SizedBox(
@@ -2413,7 +2411,7 @@ void main() {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: _white,
-                            border: Border.all(color: rule, width: 2),
+                            border: Border.all(width: 2),
                           ),
                           child: SizedBox(
                             height: 44,
@@ -2434,9 +2432,7 @@ void main() {
                       decoration: const BoxDecoration(color: _white),
                       child: DecoratedBox(
                         position: DecorationPosition.foreground,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: rule, width: 2),
-                        ),
+                        decoration: BoxDecoration(border: Border.all(width: 2)),
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.all(2),
                           child: _options(

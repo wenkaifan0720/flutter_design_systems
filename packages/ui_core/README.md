@@ -4,11 +4,19 @@ Headless controls for Flutter design systems. The package handles input, keyboar
 Your widget builders draw each state using your design system's shapes, colours and typography.
 
 The look packages built on it (`comic_ui`, `fluent2_design_ui`, `frosted_ui`, `neumorphism_ui` and the rest) re-export
-it, so an app that uses a look rarely imports it directly. Import it to build a look of your own:
+it, so an app that uses a look rarely imports it directly. Add it to build a look of your own:
+
+```yaml
+dependencies:
+  ui_core: ^0.7.2
+```
 
 ```dart
 import 'package:ui_core/ui_core.dart';
 ```
+
+The [component docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/) show each behaviour drawn by the
+looks built on it; the API reference is on pub.dev.
 
 A button of your own, for example: `RawButton` keeps the press, the keys, focus, hover and what a screen reader
 hears, and its builder draws the button for each set of states.
@@ -135,6 +143,8 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Number field | `RawNumberField` | `TextField` with `keyboardType: number` |
 | Rating | `RawRating` | (none) |
 | Charts | `RawChart`, `RawPieChart`, `RawChartTable`; `RawLinearScale`, `RawTimeScale`, `RawBandScale` | (none) |
+| Chips and tags under the touch floor | `RawChipGroup` | `Wrap` |
+| A palette's colours (readable tones, a filled control's colour and ink, tinted grounds) | `RawPalette`, `RawAccentRule`, `RawNeutralTones`, `RawHct` | `ColorScheme.fromSeed` |
 
 They are built from `RawButton` (a press, focus, hover and semantics on any widget) and `RawValueHandle`
 (a value dragged or stepped with the keys). Each class's documentation has an example.
@@ -250,14 +260,14 @@ the same way in every look.
 
 The words a behaviour says on its own ("Close sheet", "Slide 2 of 5", a sorted column's hint) come from
 `RawWidgetsLocalizations`, each also a parameter on its behaviour. So do the general words a look shows or says by
-itself (Cancel, Close, Today, Next month, "2 of 5", "3 items selected"), under `MaterialLocalizations`' names where
+itself (Cancel, Close, Today, Next month, Select date, "2 of 5", "3 items selected"), under `MaterialLocalizations`' names where
 Flutter has the word: a look reads them from `RawWidgetsLocalizations.of(context)` rather than writing English. English
 is the default, with nothing to set up under `MaterialApp`, `CupertinoApp` or `WidgetsApp`.
 
 ui_core speaks 30 languages (`RawWidgetsLocalizations.supportedLocales`): its dates, plurals and digits come from
 Unicode CLDR, as Flutter's do, and its words are Material's own translations where Material has the word. Opt in
 with its delegate beside Flutter's, from `flutter_localizations` (add `flutter_localizations: sdk: flutter` to your
-pubspec, as a look's gallery does):
+pubspec):
 
 ```dart
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -278,8 +288,9 @@ the Widgets one gives Arabic, Hebrew, Persian and Urdu their direction. A look s
 Cupertino words in the app's language: it is drawn with `material_ui` and `cupertino_ui`, whose words are types of
 their own, and loads them itself. A locale ui_core does not speak gets English. For a language of your own, or
 words of your own, extend `DefaultRawWidgetsLocalizations`, override the words you translate, and add a delegate for
-your subclass to `localizationsDelegates`; a word added in a later minor version then stays English until you
-translate it. `RawWidgetsLocalizations` also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told
+your subclass to `localizationsDelegates`; a word added in a later version then stays English until you
+translate it. A date or time picker's title (`datePickerHelpText`, `timePickerDialHelpText`) is read through
+`RawPickerWords` and overridden in the same subclass. `RawWidgetsLocalizations` also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told
 otherwise.
 
 For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPercent`. Date and time controls use the locale’s calendar order, digits, separators and first day of the week.
@@ -312,17 +323,20 @@ Chips and tags smaller than the floor go in a `RawChipGroup`, which wraps them a
 between their faces, their targets taking the room between, so a row of small chips does not stand twice as far apart.
 
 `RawSpacingScope` declares the grid a look's spacing stands on (`RawSpacing`, 4 pt by default; a look whose values
-sit on 2 pt declares 2), read by `RawSpacing.of` and by ui_core_test's spacing check.
+sit on 2 pt declares 2), read by `RawSpacing.of`.
 
 ## Testing your design system
 
-Add `ui_core_test` to your test dependencies to check alignment, widths, tap targets and clipping on rendered screens. Use `RawKeylineRegion` to identify a card or section, and `RawKeylineFace` for a visible face that blends into its background. [ui_core_test on pub.dev](https://pub.dev/packages/ui_core_test)
+Add `ui_core_test` to your test dependencies to check rendered screens for what is wrong in any design: roles and
+names, radio groups, tap targets, cursors, labels centred on their faces, clipped words, cut shadows, contrast, and the
+room a label keeps from its face's edges. Mark a visible face that blends into its background with `RawKeylineFace`,
+so the checks read it as a face. [ui_core_test on pub.dev](https://pub.dev/packages/ui_core_test)
 
 ## Lining controls up
 
 Controls that share a line drift apart in ways no one control's test sees: two controls of "the same size" a few
-pixels apart, a label a pixel low, a field that shrinks on desktop. ui_core_test's checks find them from the drawn
-pixels (its README says how each reads a screen). What keeps a line straight:
+pixels apart, a label a pixel low, a field that shrinks on desktop. ui_core_test's label check finds a label off its
+face's centre from the drawn pixels (its README says how it reads a screen). What keeps a line straight:
 - one control height per size and density, taken by every control that can share a line;
 - content centred in a box of that height, rather than padding added to a line height;
 - even leading (`TextLeadingDistribution.even`) on control labels, so a label's line box is centred on its glyphs;
@@ -357,9 +371,9 @@ capitals' middles are, whatever their baselines. A design system whose labels an
 A card's contents drift the same way across rows: a title at 16, rows' words at 26, a checkbox at 22, a chevron that
 stops short of the switches above it. A keyline is the line what starts a row (or ends one) sits on. A design
 system's card and section widgets put `RawKeylineRegion` around their content (it lays out and paints nothing,
-and names any nested level the card means, such as words after an avatar), so ui_core_test's keyline check can read
-every card on a screen; a face its pixels cannot show (one the colour of the ground, a pane of glass), or a picture
-with things placed on it, wears `RawKeylineFace`. A gallery marks each section's column of examples with
+and names any nested level the card means, such as words after an avatar), so a test can read every card's keylines
+on a screen; a face its pixels cannot show (one the colour of the ground, a pane of glass), or a picture with things
+placed on it, wears `RawKeylineFace`. A page that shows examples in a column marks each section with
 `startAligned: true`.
 
 ## Who disposes what
@@ -370,15 +384,14 @@ parameter's documentation says what the behaviour does given none (most make the
 ## Libraries
 
 - `package:ui_core/ui_core.dart`: the behaviours, motion, the words, a part's style (`RawStyle`), `RawCapCenter`, which centres a label
-  by its capitals, `RawKeylineRegion`, which marks a card for the keyline check, and `RawKeylineFace`,
+  by its capitals, `RawKeylineRegion`, which marks a card's keylines, and `RawKeylineFace`,
   which marks a face its pixels cannot show.
-- `package:ui_core/host.dart`: the scaffold contract the look packages share. It is not meant for apps and leaves
-  the package in a later minor version.
+- `package:ui_core/host.dart`: the scaffold contract the look packages share, for design-system authors. It is
+  not meant for apps.
 - `package:ui_core/inventory.dart`: the checklist of components an ordinary app expects from a design system, and
-  `RawInventoryGallery`, which lists a design system's answers to it. A design system's own tests and gallery
+  `RawInventoryGallery`, which lists a design system's answers to it. A design system's own tests and example
   use it; an app does not.
-- The checks (`package:ui_core/alignment.dart` until 0.2) are `package:ui_core_test/ui_core_test.dart`, a package
-  of their own.
+- The checks are `package:ui_core_test/ui_core_test.dart`, a package of their own.
 
 ## Requirements and versions
 

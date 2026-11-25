@@ -9,9 +9,9 @@ part of '../alignment.dart';
 /// cursor of its own that says more (a text field's text cursor, a drag
 /// handle's grab, a divider's resize, a colour area's crosshair). A slider
 /// that shows the click cursor over its thumb but the arrow over its track
-/// reads as a picture of a slider: the user found it on Frosted's and
-/// Ledger's 0.1.0. An off control defers to what is under it: the click
-/// cursor over a disabled button promises a press that never comes.
+/// reads as a picture of a slider. An off control defers to what is under
+/// it: the click cursor over a disabled button promises a press that never
+/// comes.
 ///
 /// Each control (a box whose semantics say it is a button, a link, a
 /// field, a slider, a switch or a checkbox, or that takes a tap) is read at

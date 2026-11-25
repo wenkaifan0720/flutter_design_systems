@@ -131,8 +131,8 @@ void _chose(Set<String> _) {}
 
 void main() {
   test('every public widget describes every public field it is built with', () {
-    // The whole lib: drip's kit lays it under design_kit/, the package under
-    // src/.
+    // The whole lib: the source tree lays it under design_kit/, the package
+    // under src/.
     final lib = Directory('lib');
     final missing = <String>[];
     var widgets = 0;

@@ -94,7 +94,7 @@ class RawTagInput<T extends Object> extends StatefulWidget {
     this.search,
     this.isOptionEnabled,
     this.highlightFollowsPointer = false,
-    this.displayStringForOption = _string,
+    this.displayStringForOption = RawAutocomplete.defaultStringForOption,
     this.onCreate,
     this.layoutBuilder,
     this.surfaceBuilder,
@@ -201,7 +201,7 @@ class RawTagInput<T extends Object> extends StatefulWidget {
   final RawSearchErrorBuilder? errorBuilder;
 
   @override
-  State<RawTagInput<T>> createState() => _DesignTagInputState<T>();
+  State<RawTagInput<T>> createState() => _RawTagInputState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -309,8 +309,6 @@ class RawTagInput<T extends Object> extends StatefulWidget {
   }
 }
 
-String _string(Object value) => value.toString();
-
 /// Stands in the suggestions while a search's states show (loading, failed,
 /// found): the list stays open and paints them itself.
 class _Searching {
@@ -319,7 +317,7 @@ class _Searching {
 
 const Object _searching = _Searching();
 
-class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
+class _RawTagInputState<T extends Object> extends State<RawTagInput<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   final List<FocusNode> _tagNodes = [];

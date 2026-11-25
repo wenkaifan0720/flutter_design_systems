@@ -426,24 +426,21 @@ void main() {
     expect(report.problems, isNotEmpty);
   });
 
-  // 0.3.0 tooling: a physical model's and a physical shape's shadows, as a
-  // decoration's are.
+  // A physical model's and a physical shape's shadows, as a decoration's
+  // are.
   testWidgets("a physical model's and a physical shape's shadows a tight "
       'clip cuts are named', (tester) async {
     const fill = Color(0xFFEEEEEE);
-    const shadow = Color(0xFF000000);
     for (final face in <Widget>[
       const PhysicalModel(
         color: fill,
         elevation: 6,
-        shadowColor: shadow,
         borderRadius: BorderRadius.all(Radius.circular(16)),
         child: SizedBox(width: 120, height: 64),
       ),
       const PhysicalModel(
         color: fill,
         elevation: 6,
-        shadowColor: shadow,
         shape: BoxShape.circle,
         child: SizedBox(width: 64, height: 64),
       ),
@@ -455,7 +452,6 @@ void main() {
         ),
         color: fill,
         elevation: 6,
-        shadowColor: shadow,
         child: SizedBox(width: 120, height: 64),
       ),
     ]) {

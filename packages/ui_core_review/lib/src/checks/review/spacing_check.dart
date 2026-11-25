@@ -13,8 +13,7 @@ part of '../../review.dart';
 ///   foot or its head, outside the page's scroll view) starts on that
 ///   margin, or runs edge to edge: `the
 ///   bar holding "Activity" starts 12 pt in from the screen's left, the
-///   page's margin is 16 pt`. The user found Frosted's tab bar 12 pt in
-///   over a page 16 pt in;
+///   page's margin is 16 pt`;
 /// - a shape inside a shape: a face whose outline is known (a rounded clip,
 ///   a decoration's radius or shape, a physical shape) set inside another
 ///   by a small inset (at most [hugReach], or the outer corner's radius),
@@ -23,8 +22,7 @@ part of '../../review.dart';
 ///   outer one less the inset (concentric corners): `a 89 × 56 face in the
 ///   bar holding "Activity" stands 4 pt from its top but 8 pt from its
 ///   left; its corners are 14 pt round in the bar's 22 pt, 4 pt out:
-///   concentric corners are 18 pt`. The user found Frosted's chosen tab's
-///   plate so;
+///   concentric corners are 18 pt`;
 /// - repeated items (three or more of one kind and one size across, side
 ///   by side in a row or a column, each drawing a face: chips, cards,
 ///   tiles) standing evenly apart, measured by what they draw: by the gaps

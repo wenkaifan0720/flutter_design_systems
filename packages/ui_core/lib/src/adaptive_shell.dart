@@ -448,7 +448,7 @@ class RawAdaptiveShell extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<RawAdaptiveShell> createState() => _DesignAdaptiveShellState();
+  State<RawAdaptiveShell> createState() => _RawAdaptiveShellState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -507,7 +507,7 @@ class RawAdaptiveShell extends StatefulWidget {
   }
 }
 
-class _DesignAdaptiveShellState extends State<RawAdaptiveShell>
+class _RawAdaptiveShellState extends State<RawAdaptiveShell>
     with SingleTickerProviderStateMixin {
   final RovingFocus _focus = RovingFocus('RawAdaptiveShell');
 

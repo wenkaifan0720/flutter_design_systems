@@ -73,7 +73,6 @@ void main() {
       tester,
       () => Navigator.of(context).push(
         PageRouteBuilder<void>(
-          transitionDuration: const Duration(milliseconds: 300),
           pageBuilder: (_, animation, _) => const SizedBox.expand(),
           transitionsBuilder: (_, animation, _, child) {
             at = animation.value;

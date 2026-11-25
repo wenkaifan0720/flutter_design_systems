@@ -1,8 +1,8 @@
 name: ui_core_test
 description: >-
   Checks for Flutter design systems on ui_core of what is wrong in any design: roles, radio groups, field
-  names, tap targets, cursors, labels, clipped words and cut shadows.
-version: 0.5.1
+  names, tap targets, cursors, labels, contrast, clipped words, cut shadows.
+version: 0.5.2
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ui_core_test
@@ -24,7 +24,7 @@ dependencies:
   # Its guidelines extend flutter_test's AccessibilityGuideline (guidelines.dart).
   flutter_test:
     sdk: flutter
-  ui_core: ^0.7.1
+  ui_core: ^0.7.2
 
 dev_dependencies:
   cupertino_ui: ^1.0.0

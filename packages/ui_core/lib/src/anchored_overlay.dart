@@ -662,7 +662,7 @@ class RawPopover extends StatefulWidget {
   final RawPopoverPositionDelegate? positionDelegate;
 
   @override
-  State<RawPopover> createState() => _DesignAnchoredOverlayState();
+  State<RawPopover> createState() => _RawAnchoredOverlayState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -766,7 +766,7 @@ class RawPopover extends StatefulWidget {
   }
 }
 
-class _DesignAnchoredOverlayState extends State<RawPopover>
+class _RawAnchoredOverlayState extends State<RawPopover>
     with SingleTickerProviderStateMixin {
   MenuController? _own;
   late final AnimationController _presence = AnimationController.unbounded(

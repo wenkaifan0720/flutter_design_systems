@@ -107,7 +107,7 @@ void main() {
         contains('under 2.6:1'),
       ),
     ]);
-    expect(() => report.verify(), throwsA(isA<DesignAlignmentError>()));
+    expect(report.verify, throwsA(isA<DesignAlignmentError>()));
   });
 
   testWidgets("words under Material's 4.5:1 are a finding, not a fault", (
@@ -627,7 +627,7 @@ void main() {
     );
   });
 
-  test("the briefs are the five palettes Stint's accent control offers", () {
+  test('the briefs are the five palettes people name most', () {
     expect(DesignPalette.briefs, hasLength(5));
     expect(DesignPalette.briefs.map((p) => p.accent.toARGB32()), [
       0xFF1F3A68,

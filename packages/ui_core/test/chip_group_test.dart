@@ -26,7 +26,7 @@ Future<void> _pump(
     Directionality(
       textDirection: direction,
       child: RawTapTargetScope(
-        targets: const RawTapTargets(touch: _floor, input: RawInput.touch),
+        targets: const RawTapTargets(input: RawInput.touch),
         child: Align(
           alignment: Alignment.topLeft,
           child: SizedBox(width: width, child: group),
@@ -176,7 +176,7 @@ void main() {
       Directionality(
         textDirection: TextDirection.ltr,
         child: RawTapTargetScope(
-          targets: const RawTapTargets(touch: _floor, input: RawInput.touch),
+          targets: const RawTapTargets(input: RawInput.touch),
           child: Align(
             alignment: Alignment.topLeft,
             child: SizedBox(

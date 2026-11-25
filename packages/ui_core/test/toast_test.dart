@@ -327,7 +327,7 @@ void main() {
   testWidgets('a pointer over the stack pauses its time', (tester) async {
     await tester.pumpWidget(_app());
     final handle = _toaster.show(const RawToast(message: 'hover'));
-    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
     var closed = false;
     unawaited(handle.closed.then((_) => closed = true));
 
@@ -368,7 +368,7 @@ void main() {
     expect(field.hasPrimaryFocus, isTrue);
     _toaster.show(const RawToast(message: 'older'));
     final newest = _toaster.show(const RawToast(message: 'newest'));
-    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
 
     await tester.sendKeyEvent(LogicalKeyboardKey.f6);
     await tester.pump();

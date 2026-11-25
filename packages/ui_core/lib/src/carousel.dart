@@ -161,7 +161,7 @@ class RawCarousel extends StatefulWidget {
   final Clip clipBehavior;
 
   @override
-  State<RawCarousel> createState() => _DesignCarouselState();
+  State<RawCarousel> createState() => _RawCarouselState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -250,7 +250,7 @@ class RawCarousel extends StatefulWidget {
   }
 }
 
-class _DesignCarouselState extends State<RawCarousel> {
+class _RawCarouselState extends State<RawCarousel> {
   String _slideLabel(int index, int count) =>
       (widget.slideLabel ??
       RawWidgetsLocalizations.of(context).carouselSlideLabel)(index, count);

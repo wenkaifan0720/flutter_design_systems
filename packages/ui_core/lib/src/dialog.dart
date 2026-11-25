@@ -622,7 +622,7 @@ class RawAlertDialog extends StatefulWidget {
   }
 
   @override
-  State<RawAlertDialog> createState() => _DesignDialogState();
+  State<RawAlertDialog> createState() => _RawDialogState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -682,7 +682,7 @@ class RawAlertDialog extends StatefulWidget {
   }
 }
 
-class _DesignDialogState extends State<RawAlertDialog> {
+class _RawDialogState extends State<RawAlertDialog> {
   ScrollController? _own;
   bool _scrolled = false;
   bool _overflows = false;

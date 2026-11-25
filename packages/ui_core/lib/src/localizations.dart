@@ -104,7 +104,7 @@ abstract class RawWidgetsLocalizations {
   /// look's parts are never left without words, and Flutter warns of no
   /// missing delegate (the words fall back as `WidgetsLocalizations`' do).
   static const LocalizationsDelegate<RawWidgetsLocalizations> delegate =
-      _DesignLocalizationsDelegate();
+      _RawLocalizationsDelegate();
 
   static String _key(Locale locale) => switch (locale.languageCode) {
     'zh'
@@ -322,7 +322,7 @@ abstract class RawWidgetsLocalizations {
   /// [count] rows beside it (`RawTree.levelHint`).
   String treeLevelHint(int level, int position, int count);
 
-  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
+  // A shortcut's keys (rawShortcutKeys).
 
   /// The Alt key, in a shortcut's label (Material's `keyboardKeyAlt`).
   String get keyboardKeyAlt;
@@ -378,12 +378,12 @@ abstract class RawWidgetsLocalizations {
   /// The Tab key, in a shortcut's label (ui_core's own).
   String get keyboardKeyTab;
 
-  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
+  // A search that failed (RawCombobox.errorBuilder).
 
   /// What a screen reader hears as a combobox's or a tag input's search fails (RawCombobox.errorBuilder), in a shortcut's label (ui_core's own).
   String get searchFailedMessage;
 
-  // 0.3.0 routes: the words ui_core's routes, tabs and shell say, under
+  // The words ui_core's routes, tabs and shell say, under
   // MaterialLocalizations' names.
 
   /// What a screen reader calls an alert that names itself no other way
@@ -411,9 +411,7 @@ abstract class RawWidgetsLocalizations {
   /// reads it.
   String tabLabel({required int tabIndex, required int tabCount});
 
-  // 0.3.0 routes end
-
-  // 0.3.0 values: the value behaviours' words, and numbers, dates and times
+  // The value behaviours' words, and numbers, dates and times
   // in the reader's symbols, digits and patterns (CLDR's).
 
   /// The abbreviation for a time before noon ("AM"), as
@@ -542,8 +540,6 @@ abstract class RawWidgetsLocalizations {
     bool alwaysUse24HourFormat = false,
     bool showSeconds = false,
   });
-
-  // 0.3.0 values end
 }
 
 /// The words in English, with no localizations package.
@@ -783,7 +779,7 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
   String treeLevelHint(int level, int position, int count) =>
       'level $level, $position of $count';
 
-  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
+  // A shortcut's keys (rawShortcutKeys).
 
   @override
   String get keyboardKeyAlt => 'Alt';
@@ -839,12 +835,10 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
   @override
   String get keyboardKeyTab => 'Tab';
 
-  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
+  // A search that failed (RawCombobox.errorBuilder).
 
   @override
   String get searchFailedMessage => "Couldn't load results";
-
-  // 0.3.0 routes
 
   @override
   String get alertDialogLabel => 'Alert';
@@ -864,10 +858,6 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
   @override
   String tabLabel({required int tabIndex, required int tabCount}) =>
       'Tab $tabIndex of $tabCount';
-
-  // 0.3.0 routes end
-
-  // 0.3.0 values
 
   // The data the numbers, dates and times read: English's here, a
   // translation's own in _TranslatedDesignLocalizations.
@@ -894,6 +884,16 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
 
   @override
   String get timePickerMinuteLabel => 'Minute';
+
+  /// A date picker's title, as `MaterialLocalizations.datePickerHelpText`
+  /// words it: Select date. [RawPickerWords] reads it from any
+  /// [RawWidgetsLocalizations].
+  String get datePickerHelpText => 'Select date';
+
+  /// A time picker's title, as `MaterialLocalizations.timePickerDialHelpText`
+  /// words it: Select time. [RawPickerWords] reads it from any
+  /// [RawWidgetsLocalizations].
+  String get timePickerDialHelpText => 'Select time';
 
   @override
   String get dateFieldYearLabel => 'Year';
@@ -1014,8 +1014,6 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
       (false, false) => data.time,
     };
   }
-
-  // 0.3.0 values end
 }
 
 /// A time's hour and minute as a look's time picker writes them, in the
@@ -1062,9 +1060,38 @@ extension RawTimeFormatting on RawWidgetsLocalizations {
       digitsFrom(formatDecimal(0), time.minute, width: 2);
 }
 
-class _DesignLocalizationsDelegate
+/// A date or time picker's title, in the app's language: Material's words
+/// (Select date, Select time) and their translations in the 30 languages
+/// ui_core speaks.
+///
+/// [DefaultRawWidgetsLocalizations] holds them: an app or a look words them
+/// its own way, or in a language ui_core does not speak, in its subclass,
+/// overriding [DefaultRawWidgetsLocalizations.datePickerHelpText] and
+/// [DefaultRawWidgetsLocalizations.timePickerDialHelpText] as it overrides
+/// any word. Words of a [RawWidgetsLocalizations] that is not one are
+/// English. A later minor version makes them [RawWidgetsLocalizations]'
+/// own, and reading them stays the same.
+///
+/// ```dart
+/// Text(RawWidgetsLocalizations.of(context).datePickerHelpText)
+/// ```
+extension RawPickerWords on RawWidgetsLocalizations {
+  /// A date picker's title: Select date, in the app's language.
+  String get datePickerHelpText => switch (this) {
+    final DefaultRawWidgetsLocalizations words => words.datePickerHelpText,
+    _ => const DefaultRawWidgetsLocalizations().datePickerHelpText,
+  };
+
+  /// A time picker's title: Select time, in the app's language.
+  String get timePickerDialHelpText => switch (this) {
+    final DefaultRawWidgetsLocalizations words => words.timePickerDialHelpText,
+    _ => const DefaultRawWidgetsLocalizations().timePickerDialHelpText,
+  };
+}
+
+class _RawLocalizationsDelegate
     extends LocalizationsDelegate<RawWidgetsLocalizations> {
-  const _DesignLocalizationsDelegate();
+  const _RawLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
@@ -1076,7 +1103,7 @@ class _DesignLocalizationsDelegate
       );
 
   @override
-  bool shouldReload(_DesignLocalizationsDelegate old) => false;
+  bool shouldReload(_RawLocalizationsDelegate old) => false;
 
   @override
   String toString() => 'RawWidgetsLocalizations.delegate(30 locales)';
@@ -1409,7 +1436,7 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
     {'level': level, 'position': position, 'count': count},
   );
 
-  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
+  // A shortcut's keys (rawShortcutKeys).
 
   @override
   String get keyboardKeyAlt => _word('keyboardKeyAlt', super.keyboardKeyAlt);
@@ -1478,13 +1505,11 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
   @override
   String get keyboardKeyTab => _word('keyboardKeyTab', super.keyboardKeyTab);
 
-  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
+  // A search that failed (RawCombobox.errorBuilder).
 
   @override
   String get searchFailedMessage =>
       _word('searchFailedMessage', super.searchFailedMessage);
-
-  // 0.3.0 routes
 
   @override
   String get alertDialogLabel =>
@@ -1509,10 +1534,6 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
     super.tabLabel(tabIndex: tabIndex, tabCount: tabCount),
     {'tabIndex': tabIndex, 'tabCount': tabCount},
   );
-
-  // 0.3.0 routes end
-
-  // 0.3.0 values
 
   @override
   RawLocaleData get _valueData => _data;
@@ -1543,6 +1564,14 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
   @override
   String get timePickerMinuteLabel =>
       _word('timePickerMinuteLabel', super.timePickerMinuteLabel);
+
+  @override
+  String get datePickerHelpText =>
+      _word('datePickerHelpText', super.datePickerHelpText);
+
+  @override
+  String get timePickerDialHelpText =>
+      _word('timePickerDialHelpText', super.timePickerDialHelpText);
 
   @override
   String get dateFieldYearLabel =>
@@ -1641,8 +1670,6 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
 
   @override
   String get listSeparator => _word('listSeparator', super.listSeparator);
-
-  // 0.3.0 values end
 }
 
 // The plural category of the whole number [n] under [rule] (CLDR's rules,

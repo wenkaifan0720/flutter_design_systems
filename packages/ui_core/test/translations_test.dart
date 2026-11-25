@@ -64,7 +64,7 @@ final Map<String, String Function(RawWidgetsLocalizations l)> _words = {
   'tagInputDeleteLabel': (l) => l.tagInputDeleteLabel,
   'toasterRegionLabel': (l) => l.toasterRegionLabel,
   'treeLevelHint': (l) => l.treeLevelHint(3, 2, 5),
-  // 0.3.0 overlays: a shortcut's keys (rawShortcutKeys).
+  // A shortcut's keys (rawShortcutKeys).
   'keyboardKeyAlt': (l) => l.keyboardKeyAlt,
   'keyboardKeyControl': (l) => l.keyboardKeyControl,
   'keyboardKeyShift': (l) => l.keyboardKeyShift,
@@ -83,25 +83,24 @@ final Map<String, String Function(RawWidgetsLocalizations l)> _words = {
   'keyboardKeyOption': (l) => l.keyboardKeyOption,
   'keyboardKeyEnter': (l) => l.keyboardKeyEnter,
   'keyboardKeyTab': (l) => l.keyboardKeyTab,
-  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
+  // A search that failed (RawCombobox.errorBuilder).
   'searchFailedMessage': (l) => l.searchFailedMessage,
-  // 0.3.0 routes
   'alertDialogLabel': (l) => l.alertDialogLabel,
   'bottomSheetLabel': (l) => l.bottomSheetLabel,
   'dialogLabel': (l) => l.dialogLabel,
   'drawerLabel': (l) => l.drawerLabel,
   'dragHandleLabel': (l) => l.dragHandleLabel,
   'tabLabel': (l) => l.tabLabel(tabIndex: 2, tabCount: 5),
-  // 0.3.0 routes end
   ..._valueWords,
 };
 
-// 0.3.0 values
 final Map<String, String Function(RawWidgetsLocalizations l)> _valueWords = {
   'anteMeridiemAbbreviation': (l) => l.anteMeridiemAbbreviation,
   'postMeridiemAbbreviation': (l) => l.postMeridiemAbbreviation,
   'timePickerHourLabel': (l) => l.timePickerHourLabel,
   'timePickerMinuteLabel': (l) => l.timePickerMinuteLabel,
+  'datePickerHelpText': (l) => l.datePickerHelpText,
+  'timePickerDialHelpText': (l) => l.timePickerDialHelpText,
   'dateFieldYearLabel': (l) => l.dateFieldYearLabel,
   'dateFieldMonthLabel': (l) => l.dateFieldMonthLabel,
   'dateFieldDayLabel': (l) => l.dateFieldDayLabel,
@@ -147,18 +146,14 @@ const Map<String, Set<String>> _latinInRtl = {
     'dateFieldDayPlaceholder',
   },
 };
-// 0.3.0 values end
 const _filled = {
   'position': 2,
   'count': 5,
   'slide': 2,
   'label': 'Milk',
   'level': 3,
-  // 0.3.0 routes
   'tabIndex': 2,
   'tabCount': 5,
-  // 0.3.0 routes end
-  // 0.3.0 values
   'value': 3,
   'from': '1',
   'to': '9',
@@ -174,7 +169,6 @@ final Map<String, String Function(RawWidgetsLocalizations l, int n)> _counted =
       'commandPaletteResultsMessage': (l, n) =>
           l.commandPaletteResultsMessage(n),
       'formProblemsMessage': (l, n) => l.formProblemsMessage(n),
-      // 0.3.0 values
       'chartSeriesCountLabel': (l, n) => l.chartSeriesCountLabel(n),
       'chartPointCountLabel': (l, n) => l.chartPointCountLabel(n),
       'chartSliceCountLabel': (l, n) => l.chartSliceCountLabel(n),

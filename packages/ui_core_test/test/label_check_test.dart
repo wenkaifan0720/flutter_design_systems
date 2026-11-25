@@ -222,7 +222,7 @@ Widget _onRuledPage(BuildContext context, {double factor = _roboto}) {
           button: true,
           label: 'Try again',
           child: DecoratedBox(
-            decoration: BoxDecoration(border: Border.all(color: _black)),
+            decoration: BoxDecoration(border: Border.all()),
             child: SizedBox(
               width: 140,
               height: face,
@@ -559,7 +559,7 @@ void main() {
           height: 44,
           alignment: Alignment.center,
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: _black, width: 2)),
+            border: Border(bottom: BorderSide(width: 2)),
           ),
           child: _words('Meditate'),
         ),
@@ -727,7 +727,6 @@ void main() {
     expect(
       await _labels(tester, [
         IndexedStack(
-          index: 0,
           children: [_control('Shown', _words('Shown')), off('Hidden')],
         ),
         Visibility(visible: false, maintainState: true, child: off('Kept')),

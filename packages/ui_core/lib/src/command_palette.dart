@@ -173,7 +173,7 @@ class RawCommandPalette extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<RawCommandPalette> createState() => _DesignCommandPaletteState();
+  State<RawCommandPalette> createState() => _RawCommandPaletteState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -262,7 +262,7 @@ class _RunIntent extends Intent {
   const _RunIntent();
 }
 
-class _DesignCommandPaletteState extends State<RawCommandPalette> {
+class _RawCommandPaletteState extends State<RawCommandPalette> {
   TextEditingController? _ownText;
   FocusNode? _ownFocus;
   int _highlight = 0;
@@ -526,7 +526,6 @@ Future<void> showRawCommandPalette({
   final chosen = await Navigator.of(context, rootNavigator: true).push(
     _PaletteRoute<RawCommand>(
       barrierPaint: barrierBuilder,
-      barrierDismissible: true,
       barrierLabel:
           barrierLabel ??
           RawWidgetsLocalizations.of(context).commandPaletteBarrierLabel,

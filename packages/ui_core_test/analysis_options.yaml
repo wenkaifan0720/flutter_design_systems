@@ -1,7 +1,6 @@
-# ui_core's analysis options, and the ones a look's package copies (to its catalog module's
-# package/analysis_options.yaml, which look:package then writes for it). pana and pub.dev read a package's own
-# options, never a workspace root's, so they repeat the strict modes. The excludes are the ones Flutter's pub get
-# writes into options that lack them: written here, a fresh workspace's pub get leaves the file as it is.
+# ui_core's analysis options. pana and pub.dev read a package's own options, never a workspace root's, so they
+# repeat the strict modes. The excludes are the ones Flutter's pub get writes into options that lack them: written
+# here, pub get leaves the file as it is.
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
@@ -27,3 +26,10 @@ linter:
     prefer_const_constructors: true
     unawaited_futures: true
     use_named_constants: true
+    avoid_redundant_argument_values: true
+    avoid_unused_constructor_parameters: true
+    document_ignores: true
+    prefer_final_locals: true
+    unnecessary_lambdas: true
+    unnecessary_null_checks: true
+    unnecessary_parenthesis: true

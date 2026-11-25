@@ -143,8 +143,6 @@ typedef RawSearchErrorBuilder = Widget Function(
   RawSearchError error,
 );
 
-String _string(Object option) => option.toString();
-
 /// Stands in the options while nothing matches, so the list stays open to say so.
 class _NoMatch {
   const _NoMatch();
@@ -180,7 +178,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
     required this.optionBuilder,
     this.options = const [],
     this.search,
-    this.displayStringForOption = _string,
+    this.displayStringForOption = RawAutocomplete.defaultStringForOption,
     this.surfaceBuilder,
     this.onSelected,
     this.value,
@@ -296,7 +294,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
   final RawSearchErrorBuilder? errorBuilder;
 
   @override
-  State<RawCombobox<T>> createState() => _DesignComboboxState<T>();
+  State<RawCombobox<T>> createState() => _RawComboboxState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -399,7 +397,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
   }
 }
 
-class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
+class _RawComboboxState<T extends Object> extends State<RawCombobox<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   final RawListKeys _keys = RawListKeys();

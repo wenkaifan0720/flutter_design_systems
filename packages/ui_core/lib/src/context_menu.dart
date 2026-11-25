@@ -107,7 +107,7 @@ class RawContextMenu extends StatefulWidget {
   /// default: the nearest overlay.
   final bool useRootOverlay;
 
-  /// The open and close spring's damping ratio (`DesignMotion`); 1 by
+  /// The open and close spring's damping ratio (a look's motion token); 1 by
   /// default, critically damped.
   final double dampingRatio;
 
@@ -115,7 +115,7 @@ class RawContextMenu extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<RawContextMenu> createState() => _DesignContextMenuState();
+  State<RawContextMenu> createState() => _RawContextMenuState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -182,7 +182,7 @@ const Set<PointerDeviceKind> _touchKinds = {
   PointerDeviceKind.unknown,
 };
 
-class _DesignContextMenuState extends State<RawContextMenu> {
+class _RawContextMenuState extends State<RawContextMenu> {
   MenuController? _own;
   final GlobalKey _region = GlobalKey(debugLabel: 'RawContextMenu region');
   final RawBrowserMenuHold _browser = RawBrowserMenuHold();
