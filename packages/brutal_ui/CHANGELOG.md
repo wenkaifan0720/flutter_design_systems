@@ -1,3 +1,8 @@
+## 0.5.3
+
+- `BrutalTimePicker`'s wheels keep hours before minutes, left to right, under a right-to-left `Directionality` too, as Material's time picker keeps them and as the time reads in a line of text ("٠٩:٠٥"). In Arabic the hour's wheel stood on the right. Left-to-right drawing is unchanged.
+- `BrutalPagination` shows a page where its ellipsis would have stood for that one page alone: on a phone, page 3 of 12 reads 1 2 3 … 12, not 1 … 3 … 12. A gap of two pages or more keeps its ellipsis.
+
 ## 0.5.2
 
 - Requires ui_core 0.6.1.

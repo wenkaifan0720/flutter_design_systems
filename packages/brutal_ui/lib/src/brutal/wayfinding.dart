@@ -281,12 +281,23 @@ class BrutalPagination extends StatelessWidget {
         onPageChanged == null || p < 1 || p > pageCount || p == page
         ? null
         : () => onPageChanged!(p);
-    List<int> near(int reach) => <int>{
-      1,
-      pageCount,
-      for (var p = page - reach; p <= page + reach; p++)
-        if (p >= 1 && p <= pageCount) p,
-    }.toList()..sort();
+    List<int> near(int reach) {
+      final pages = <int>{
+        1,
+        pageCount,
+        for (var p = page - reach; p <= page + reach; p++)
+          if (p >= 1 && p <= pageCount) p,
+      }.toList()..sort();
+      // A gap of one page shows that page: an ellipsis in its place would
+      // hide a page to press and save next to nothing.
+      return [
+        for (final (i, p) in pages.indexed) ...[
+          if (i > 0 && p - pages[i - 1] == 2) p - 1,
+          p,
+        ],
+      ];
+    }
+
     final side =
         RawStyleOf(layers, const {}).minimumSize?.height ?? theme.controlHeight;
     // The strip's width for [pages] between back and next: square cells,

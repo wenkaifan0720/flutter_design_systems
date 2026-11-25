@@ -1099,7 +1099,26 @@ Widget _wheels(
   required List<BrutalStyle?> layers,
   required int rows,
   String? semanticLabel,
+  bool ltr = false,
 }) {
+  if (ltr && Directionality.of(context) != TextDirection.ltr) {
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Builder(
+        builder: (context) => _wheels(
+          context,
+          labels: labels,
+          names: names,
+          widths: widths,
+          selection: selection,
+          onChanged: onChanged,
+          layers: layers,
+          rows: rows,
+          semanticLabel: semanticLabel,
+        ),
+      ),
+    );
+  }
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
   final enabled = onChanged != null;
@@ -1411,8 +1430,12 @@ class BrutalTimePicker extends StatelessWidget {
             border: rule,
             foreground: c.ink,
           ),
+          // Hours stand before minutes, left to right, in either direction,
+          // as Material's time picker keeps them and as the same figures
+          // read in a line of text ("٠٩:٠٥").
           child: _wheels(
             context,
+            ltr: true,
             labels: [
               [
                 for (var h = 0; h < 24; h++)
