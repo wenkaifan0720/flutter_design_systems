@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found · Flutter Design Systems</title>
+<meta name="robots" content="noindex">
+<script>
+  // The galleries that lived at /<look>/ are pages of the docs now: an old link to one, at any depth, goes there.
+  const looks = ["appliance","brutal","civic","clay","comic","fluent2","frosted","gloss","keycap","ledger","material_expressive","minimal","neumorphism","retro_desktop","studio","terminal"];
+  const base = location.hostname.endsWith('.github.io') ? '/flutter_design_systems/' : '/';
+  const first = location.pathname.startsWith(base) ? location.pathname.slice(base.length).split('/')[0] : '';
+  if (looks.includes(first)) location.replace(base + 'docs/looks/' + first + '/');
+</script>
+</head>
+<body>
+<h1>Page not found</h1>
+<p>This address has no page. <a href="https://wenkaifan0720.github.io/flutter_design_systems/docs/">Open the Flutter Design Systems docs</a>.</p>
+</body>
+</html>
