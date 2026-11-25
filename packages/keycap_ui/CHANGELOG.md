@@ -1,3 +1,9 @@
+## 0.4.2
+
+- Requires ui_core 0.6.1.
+- `KeycapTimePicker` writes its time and its wheels' hours and minutes in the app's digits, through ui_core's `formatHour` and `formatMinute` (`RawTimeFormatting`), as Material's time picker does through `MaterialLocalizations.formatHour`: in Arabic 09:05 reads ٠٩:٠٥ on the 24-hour face and ٩:٠٥ ص on the 12-hour one, in Persian ۹:۰۵. They were written in Western digits in every language. The face is still the platform's choice (`MediaQuery.alwaysUse24HourFormat`), and on the 12-hour face the hour is the hour of the half day in every language. English reads as before.
+- `KeycapPagination`'s page keys write their pages in the app's digits (ui_core's `formatDecimal`), as their spoken names and a phone's "3 of 12" already did.
+
 ## 0.4.1
 
 - A toast stands above `KeycapScreen`'s `footer` (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its persistent footer buttons, and as it already stands above `KeycapScaffold`'s tab bar. It stood over the page's keys.

@@ -349,7 +349,7 @@ class _PageKey extends StatelessWidget {
                     child: RawCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
-                        '$page',
+                        RawWidgetsLocalizations.of(context).formatDecimal(page),
                         style: theme.textTheme.figure.copyWith(
                           color: face.legend,
                           fontWeight: current

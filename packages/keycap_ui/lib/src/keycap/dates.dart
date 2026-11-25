@@ -774,18 +774,8 @@ class KeycapTimePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final t = value;
     final h24 = MediaQuery.alwaysUse24HourFormatOf(context);
-    String two(int n) => n.toString().padLeft(2, '0');
     final local = RawWidgetsLocalizations.of(context);
-    String label12(RawTimeOfDay v) {
-      final h = v.hour % 12 == 0 ? 12 : v.hour % 12;
-      final half = v.hour < 12
-          ? local.anteMeridiemAbbreviation
-          : local.postMeridiemAbbreviation;
-      return '$h:${two(v.minute)} $half';
-    }
-
-    String words(RawTimeOfDay v) =>
-        h24 ? '${two(v.hour)}:${two(v.minute)}' : label12(v);
+    String words(RawTimeOfDay v) => _clock(local, v, h24: h24);
     return KeycapField(
       labelText: labelText,
       helperText: helperText,
@@ -820,6 +810,34 @@ class KeycapTimePicker extends StatelessWidget {
   }
 }
 
+// [t]'s hour in the app's digits on the face the picker shows: the
+// locale's 24-hour figure ("09", Arabic's "٠٩", Persian's "۹"), or the hour
+// of the half day ("9", "٩"). The face is the platform's choice
+// (MediaQuery's alwaysUse24HourFormat); formatHour alone follows the
+// locale's clock, which is a 24-hour one in Persian.
+String _hourFigure(
+  RawWidgetsLocalizations words,
+  RawTimeOfDay t, {
+  required bool h24,
+}) => h24
+    ? words.formatHour(t, alwaysUse24HourFormat: true)
+    : words.formatDecimal(t.hourOfPeriod);
+
+// [t] as the key writes it: "09:05" on the 24-hour face, "9:05 AM" on the
+// 12-hour one, in the app's digits and day-period words.
+String _clock(
+  RawWidgetsLocalizations words,
+  RawTimeOfDay t, {
+  required bool h24,
+}) {
+  final clock = '${_hourFigure(words, t, h24: h24)}:${words.formatMinute(t)}';
+  if (h24) return clock;
+  final half = t.isPm
+      ? words.postMeridiemAbbreviation
+      : words.anteMeridiemAbbreviation;
+  return '$clock $half';
+}
+
 class _TimePanel extends StatefulWidget {
   const _TimePanel({
     required this.initial,
@@ -844,20 +862,22 @@ class _TimePanelState extends State<_TimePanel> {
 
   @override
   Widget build(BuildContext context) {
-    String two(int n) => n.toString().padLeft(2, '0');
     final words = RawWidgetsLocalizations.of(context);
     final step = widget.minuteStep;
     final h24 = widget.h24;
     final columns = <RawPickerColumn>[
       RawPickerColumn(
         itemCount: h24 ? 24 : 12,
-        itemLabel: (i) => h24 ? two(i) : '${i == 0 ? 12 : i}',
+        // Row i is hour i of the day, or of the half day (row 0 is 12).
+        itemLabel: (i) =>
+            _hourFigure(words, RawTimeOfDay(hour: i, minute: 0), h24: h24),
         semanticLabel: words.timePickerHourLabel,
         looping: true,
       ),
       RawPickerColumn(
         itemCount: 60 ~/ step,
-        itemLabel: (i) => two(i * step),
+        itemLabel: (i) =>
+            words.formatMinute(RawTimeOfDay(hour: 0, minute: i * step)),
         semanticLabel: words.timePickerMinuteLabel,
         looping: true,
       ),
