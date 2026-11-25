@@ -58,10 +58,10 @@ function showChoices() {
     button.setAttribute('aria-pressed', state[button.dataset.toggle] === toggleValues[button.dataset.toggle][0]);
   }
   stage.classList.toggle('night', state.theme === 'night');
-  const floor = effective?.floor || '44';
+  const floor = effective?.floor;
   const notes = [];
   if (state.targets === '1') {
-    notes.push('Tap targets: green meets the ' + floor + ' × ' + floor + ' floor for ' + (floor === '44' ? 'a finger' : 'a pointer') + ' on this device, red is smaller, grey is cut off by its list or panel.');
+    notes.push('Tap targets: green meets ' + (floor ? 'the ' + floor + ' × ' + floor + ' floor' : 'the tap-target floor') + ' on this device, red is smaller, grey is cut off by its list or panel.');
   }
   if (state.reader === '1') notes.push('Screen reader: each stop, with what it announces.');
   quickNote.textContent = notes.join(' ');

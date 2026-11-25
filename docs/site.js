@@ -1,6 +1,6 @@
 const select = document.querySelector('#look');
 const specimens = document.querySelector('#specimens');
-const gallery = document.querySelector('#gallery');
+const packageLink = document.querySelector('#package-link');
 const options = [...select.options];
 const variants = new Map([[page.defaultLook, specimens.innerHTML]]);
 const loadError = document.querySelector('#look-error');
@@ -101,10 +101,8 @@ async function renderLook(id) {
   const option = select.selectedOptions[0];
   document.title = document.querySelector('h1').textContent + ' in ' + option.dataset.name + ' · Flutter Design Systems';
   document.querySelector('#swatch').style.background = option.dataset.swatch;
-  gallery.href = gallery.dataset.galleries + '/' + id + '/';
-  gallery.textContent = option.dataset.name + ' gallery ↗';
-  // Flutter's own libraries have no gallery of ours.
-  gallery.hidden = option.dataset.gallery === 'false';
+  packageLink.href = 'https://pub.dev/packages/' + option.dataset.package;
+  packageLink.firstChild.textContent = option.dataset.name + ' on pub.dev ';
   for (const viewport of specimens.querySelectorAll('.viewport')) {
     const iframe = viewport.querySelector('iframe');
     followFrame(iframe);
