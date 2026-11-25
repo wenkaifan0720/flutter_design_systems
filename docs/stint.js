@@ -12,7 +12,7 @@ let width = ['390', '1440'].includes(params.get('width')) ? params.get('width')
 
 // The app's settings the quick controls change in place, by message: the
 // address keeps each choice, and a new edition opens with them.
-const settingKeys = ['theme', 'scale', 'lang', 'density', 'motion', 'bold', 'targets', 'reader'];
+const settingKeys = ['theme', 'accent', 'scale', 'lang', 'density', 'motion', 'bold', 'targets', 'reader'];
 const toggleValues = {motion: ['reduce', 'full'], bold: ['1', '0'], targets: ['1', '0'], reader: ['1', '0']};
 const chosen = {};
 for (const key of settingKeys) if (params.has(key)) chosen[key] = params.get(key);
@@ -122,6 +122,7 @@ function showStudy() {
   const id = option.value;
   document.title = 'Stint in ' + name + ' · Flutter Design Systems';
   document.querySelector('#swatch').style.background = option.dataset.swatch;
+  quick.querySelector('[data-set="accent"] [data-value="look"] .dot').style.background = option.dataset.swatch;
   document.querySelector('#look-details').href = '../looks/' + id + '/';
   const unavailable = document.querySelector('#unavailable');
   unavailable.querySelector('p').textContent = available ? '' : 'Stint is not available in ' + name + ' yet. Open one of these editions.';
