@@ -28,6 +28,13 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
           'and six pastels for habits (deep and saturated by night).',
       children: [_Palette()],
     ),
+    KitSection(
+      title: 'Palettes',
+      note:
+          'Six palettes, each a clay and a key of its own at the same tones: '
+          'clay, mint, sky, butter, peach and lavender (ClayThemeData.preset).',
+      children: [_Palettes()],
+    ),
     KitSection(title: 'Type', children: [_Type()]),
     KitSection(
       title: 'Motion',
@@ -117,6 +124,87 @@ class _Palette extends StatelessWidget {
         chip('Accent', c.accent),
         chip('Danger', c.danger),
         for (final tint in ClayTint.values) chip(tint.name, c.tint(tint)),
+      ],
+    );
+  }
+}
+
+// Each of Clay's palettes at the page's brightness: its ground, a puck of
+// its clay and its key with the key's words, named under it.
+class _Palettes extends StatelessWidget {
+  const _Palettes();
+
+  @override
+  Widget build(BuildContext context) {
+    final page = ClayTheme.of(context);
+    final brightness = page.colors.brightness;
+    Widget puck(
+      ClayColors c,
+      TextStyle style, {
+      Color? fill,
+      required Color ink,
+    }) => ClaySurface(
+      face: ClayFace.raised(c, color: fill, radius: ClayRadius.control),
+      child: Center(
+        child: Text('Aa', style: style.copyWith(color: ink)),
+      ),
+    );
+    return KitRow(
+      children: [
+        for (final name in ClayThemeData.presets)
+          SizedBox(
+            width: 104,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClayTheme(
+                  data: ClayThemeData.preset(name, brightness),
+                  child: Builder(
+                    builder: (context) {
+                      final theme = ClayTheme.of(context);
+                      final c = theme.colors;
+                      final style = theme.textTheme.caption;
+                      return SizedBox(
+                        height: 64,
+                        child: ClaySurface(
+                          face: ClayFace.flat(
+                            c,
+                            color: c.ground,
+                            radius: ClayRadius.large,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(ClaySpacing.small),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(child: puck(c, style, ink: c.ink)),
+                                const SizedBox(width: ClaySpacing.small),
+                                Expanded(
+                                  child: puck(
+                                    c,
+                                    style,
+                                    fill: c.accent,
+                                    ink: c.onAccent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: ClaySpacing.small),
+                Text(
+                  name,
+                  style: page.textTheme.caption.copyWith(
+                    color: page.colors.inkSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }

@@ -335,14 +335,20 @@ class ClayListTile extends StatelessWidget {
               : isDestructiveAction
               ? c.dangerInk
               : c.ink);
-      final muted = disabled ? c.inkDisabled : c.inkSecondary;
+      final chosen = selected && !disabled;
+      // A chosen row's second words stand on its warm plate: the secondary
+      // ink, as dark (or as light) as reading on the plate takes.
+      final muted = disabled
+          ? c.inkDisabled
+          : chosen
+          ? RawPalette.readableTone(c.inkSecondary, on: [clayChosenFill(c)])
+          : c.inkSecondary;
       final chevron = showChevron ?? (onTap != null && trailing == null);
       final rowHeight = subtitle == null
           ? theme.rowHeight
           : theme.rowHeight + 12;
       final largeText = MediaQuery.textScalerOf(context).scale(10) >= 15;
       final plateRadius = ClayRadius.large - plateInset;
-      final chosen = selected && !disabled;
       final well = ClayFace.well(c, radius: plateRadius);
       final ClayFace plate;
       if (pressed) {
@@ -394,10 +400,7 @@ class ClayListTile extends StatelessWidget {
                     children: [
                       if (leading != null) ...[
                         IconTheme.merge(
-                          data: IconThemeData(
-                            size: 20,
-                            color: disabled ? c.inkDisabled : c.inkSecondary,
-                          ),
+                          data: IconThemeData(size: 20, color: muted),
                           child: SizedBox(
                             width: 36,
                             child: Center(child: leading),
@@ -445,9 +448,7 @@ class ClayListTile extends StatelessWidget {
                       width: 8,
                       height: 14,
                       child: CustomPaint(
-                        painter: ClayChevronRightPainter(
-                          disabled ? c.inkDisabled : c.inkSecondary,
-                        ),
+                        painter: ClayChevronRightPainter(muted),
                       ),
                     ),
                   );

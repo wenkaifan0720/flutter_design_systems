@@ -1060,7 +1060,12 @@ class ClayTag extends StatelessWidget {
     final fill =
         layered.fill ??
         Color.lerp(c.well, hue, tone == ClayTagTone.neutral ? 0.3 : 0.22)!;
-    final words = layered.foreground ?? ink;
+    // The word is read: its tone's ink, as dark (or as light) as reading on
+    // the tag's fill takes, with a hair to spare for the well's inner shade,
+    // which darkens the ground under the word a little.
+    final words =
+        layered.foreground ??
+        RawPalette.readableTone(ink, on: [fill], ratio: 4.6);
     // 26 high, and taller with a large text size, as Material's chips grow:
     // the word is never cut. Any height is a pill.
     return ConstrainedBox(

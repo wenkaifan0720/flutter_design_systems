@@ -1255,17 +1255,18 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
   }
 }
 
-/// The slot a tag or the tag input's line stands in: a finger's height, so
-/// the key that removes a tag and the line itself each take a whole tap.
-const double _tagSlot = 44;
+/// The slot a tag or the tag input's line stands in: a finger's height (the
+/// touch floor, on every input, so the rows keep one rhythm), so the key that
+/// removes a tag and the line itself each take a whole tap.
+double _tagSlot(BuildContext context) => RawTapTargets.of(context).touch.height;
 
 /// A tag's pill: a control's height less the room round it in the well.
 double _tagHeight(ClayThemeData theme) => theme.controlHeight - 14;
 
 /// How far a tag stands in from the well's rim: the same at its start as
 /// above and below it, so the pill sits evenly in the well's corner.
-double _tagInset(ClayThemeData theme) =>
-    (math.max(theme.controlHeight, _tagSlot) - _tagHeight(theme)) / 2;
+double _tagInset(BuildContext context, ClayThemeData theme) =>
+    (math.max(theme.controlHeight, _tagSlot(context)) - _tagHeight(theme)) / 2;
 
 /// Values held as small clay pills raised out of a well, with a line after
 /// them that suggests and makes more. Enter, or a comma, makes the typed
@@ -1387,11 +1388,11 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
           child: Padding(
             padding: EdgeInsetsDirectional.only(
               start: values.isEmpty
-                  ? ClaySpacing.regular - _tagInset(theme)
+                  ? ClaySpacing.regular - _tagInset(context, theme)
                   : ClaySpacing.small,
             ),
             child: SizedBox(
-              height: _tagSlot,
+              height: _tagSlot(context),
               // Enter makes a tag and keeps the focus for the next one.
               // The input says whether its list is open. Its node is the one
               // ui_core gives the field's label, help and error, beside the
@@ -1405,7 +1406,7 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
                   enabled: enabled,
                   semanticLabel: semanticLabel,
                   mergeSemantics: false,
-                  minHeight: _tagSlot,
+                  minHeight: _tagSlot(context),
                   onEditingComplete: field.submit,
                 ),
               ),
@@ -1496,10 +1497,13 @@ class _TagWellState extends State<_TagWell> {
             // well round them is a control's height for one row.
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: _tagInset(theme),
-                vertical: math.max(0, (theme.controlHeight - _tagSlot) / 2),
+                horizontal: _tagInset(context, theme),
+                vertical: math.max(
+                  0,
+                  (theme.controlHeight - _tagSlot(context)) / 2,
+                ),
               ),
-              child: Wrap(
+              child: RawChipGroup(
                 spacing: ClaySpacing.tight,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [...widget.tags, widget.field],
@@ -1550,7 +1554,10 @@ class _Tag extends StatelessWidget {
     // room round it); the key that removes it is a finger's square at the
     // pill's end.
     return SizedBox(
-      height: math.max(_tagSlot, height + _tagSlot - _tagHeight(theme)),
+      height: math.max(
+        _tagSlot(context),
+        height + _tagSlot(context) - _tagHeight(theme),
+      ),
       child: Stack(
         alignment: AlignmentDirectional.centerStart,
         children: [
@@ -1569,9 +1576,9 @@ class _Tag extends StatelessWidget {
                     )
                   : ClayFace.flat(c, radius: height / 2),
               child: Padding(
-                padding: const EdgeInsetsDirectional.only(
+                padding: EdgeInsetsDirectional.only(
                   start: ClaySpacing.medium,
-                  end: _tagSlot - ClaySpacing.small,
+                  end: _tagSlot(context) - ClaySpacing.small,
                 ),
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
@@ -1588,7 +1595,7 @@ class _Tag extends StatelessWidget {
             end: 0,
             top: 0,
             bottom: 0,
-            width: _tagSlot,
+            width: _tagSlot(context),
             child: RawButton(
               onPressed: enabled ? tag.onDeleted : null,
               semanticLabel: '${words.tagInputDeleteLabel} $label',

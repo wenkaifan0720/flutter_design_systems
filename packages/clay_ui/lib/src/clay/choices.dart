@@ -915,9 +915,13 @@ class ClaySegmentedButton<T> extends StatelessWidget {
         final stacked =
             segments.length > 1 &&
             each < widest * scale + 2 * ClaySpacing.small + 2;
-        // Stacked, each row still takes a finger's 44.
+        // Stacked, each row still takes a finger's tap: the touch floor
+        // on every input, as the thumb is drawn at the row's height.
         final row = stacked
-            ? math.max(height - inset * 2, 44.0)
+            ? math.max(
+                height - inset * 2,
+                RawTapTargets.of(context).touch.height,
+              )
             : height - inset * 2;
         final rtl = Directionality.of(context) == TextDirection.rtl;
         final thumbStates = <WidgetState>{
@@ -971,7 +975,7 @@ class ClaySegmentedButton<T> extends StatelessWidget {
                   },
                 ),
                 // The segments reach the groove's whole height (a finger's
-                // 44 and more); each draws its words and rim inset like the
+                // tap and more); each draws its words and rim inset like the
                 // thumb.
                 Positioned.fill(
                   left: inset,

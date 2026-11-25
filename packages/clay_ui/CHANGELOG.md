@@ -1,3 +1,13 @@
+## 0.5.0
+
+- Six palettes, each by day and by night: `clay` (the default), `mint`, `sky`, `butter`, `peach` and `lavender` (`ClayThemeData.presets`, `ClayThemeData.preset`, `ClayColors.preset`). The example's Foundations shows them.
+- Requires ui_core 0.7.1. Parts take ui_core's touch floor, 40 by 40 (was Clay's own 44), or an app's `RawTapTargetScope`: slider and rating slots, calendar days, tags and their remove keys, time-field figures, stacked segments, table headings and the desk menu bar. `ClaySplitView` asks ui_core which input the app is on.
+- `ClayTagInput`'s tags and `ClayBreadcrumb`'s places lay out in `RawChipGroup`.
+- Contrast: a calendar's days outside the month stand 3:1 in a quiet tone of their own (were 2.5:1 by day); a step still to come sits in a plain well and its figure reads 4.5:1 (was 2:1); `ClayTag`'s words and `ClayTimePicker`'s night colon read 4.5:1; a chosen `ClayListTile`'s second line, value, glyph and chevron read 4.5:1 by night (were 3.6:1); `ClaySidebar`'s chosen glyph stands 3:1 in any accent.
+- `ClayThemeData.from` works out its colours with ui_core's `RawPalette` (`RawAccentRule.named`), and a dark brand accent's night chart line lifts to 3:1 in its own hue. Clay's own palette is unchanged.
+- `fontFamilyFallback` on `ClayTextTheme.from` and every `ClayThemeData` factory.
+- `clayContrast` is `RawPalette.contrastRatio`, with the same results.
+
 ## 0.4.2
 
 - A press reads as a dent, as Clay's third law has it. A pressed part sinks 1.5 into the ground, its shadow fades out as it goes in, and its light and its lower trailing shade go. A shade comes up inside its top-leading edge, where the light was (mirrored right to left), and its lower trailing lip catches a little light, as a well's does. A pressed key had kept a shadow and a raised part's shading, and read as raised. This holds for every part a press sinks: keys, balls, rows, selects (an open select stays pressed in), pickers, chips and scrollbar thumbs.

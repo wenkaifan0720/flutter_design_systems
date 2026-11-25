@@ -156,9 +156,12 @@ class ClayDataTable<R> extends StatelessWidget {
       onActivate: onActivate,
       headerBuilder: (context, column, sort, states) => AnimatedClaySurface(
         face: _rowFace(c, states, chosen: false, radius: 10),
-        // A heading sorts on a tap: a finger's height.
+        // A heading sorts on a tap: a finger's height (the touch floor) on
+        // every input, so the heading row keeps one height.
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 44),
+          constraints: BoxConstraints(
+            minHeight: RawTapTargets.of(context).touch.height,
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: ClaySpacing.medium,
@@ -601,7 +604,7 @@ class ClaySplitView extends StatelessWidget {
         final along = axis == Axis.horizontal;
         final layered = RawStyleOf(layers, states);
         final held = states.contains(WidgetState.pressed);
-        final touch = RawTapTargets.of(context).floorOn().height >= 44;
+        final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
         final shown =
             touch ||
             held ||

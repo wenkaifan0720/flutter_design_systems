@@ -52,10 +52,11 @@ const _pastels = [
 /// neighbours by its hue. By day the accent as it is, then each pastel's hue
 /// at the accent's lightness and chroma (as much of it as sRGB holds at that
 /// hue); legends, labels and values carry the data, not contrast. By night
-/// the accent, then the pastels chalky.
+/// the accent (a dark brand accent lifted in its own hue until it stands
+/// 3:1 from the clay), then the pastels chalky.
 Color claySliceColor(ClayColors c, int i) {
   if (c.brightness != Brightness.dark) return _dayColor(c, i);
-  if (i == 0) return c.accent;
+  if (i == 0) return _nightAccent(c);
   final hsl = HSLColor.fromColor(c.tint(_pastels[(i - 1) % _pastels.length]));
   return hsl.withSaturation(0.5).withLightness(0.70).toColor();
 }
@@ -63,21 +64,23 @@ Color claySliceColor(ClayColors c, int i) {
 /// The colour of the [i]th line. By day it is [claySliceColor]'s, so a line,
 /// its area and its legend's ball share one colour and every line weighs as
 /// the accent does. By night the accent first, then the pastel kept matte
-/// (never saturated) and lifted only as far as a line of it needs to stand
-/// 3:1 from the clay.
+/// (never saturated); each lifted only as far as a line of it needs to
+/// stand 3:1 from the clay.
 Color claySeriesColor(ClayColors c, int i) {
   if (c.brightness != Brightness.dark) return _dayColor(c, i);
-  if (i == 0) return c.accent;
+  if (i == 0) return _nightAccent(c);
   final pastel = HSLColor.fromColor(claySliceColor(c, i));
-  var hsl = pastel.withSaturation(math.min(pastel.saturation, 0.42));
-  for (var step = 0; step < 160; step++) {
-    if (clayContrast(hsl.toColor(), c.clay) >= 3) break;
-    final l = hsl.lightness + 0.005;
-    if (l >= 1) break;
-    hsl = hsl.withLightness(l);
-  }
-  return hsl.toColor();
+  final matte = pastel
+      .withSaturation(math.min(pastel.saturation, 0.42))
+      .toColor();
+  return RawPalette.readableTone(matte, on: [c.clay], ratio: 3);
 }
+
+// The accent by night: as it is where it stands 3:1 from the clay (Clay's
+// coral does), a dark brand accent (a navy) lifted in its own hue until it
+// does, as a line or a piece of it would otherwise sink into the clay.
+Color _nightAccent(ClayColors c) =>
+    RawPalette.readableTone(c.accent, on: [c.clay], ratio: 3);
 
 /// By day, the [i]th series: the accent itself first, then each pastel's hue
 /// at the accent's OKLCH lightness and chroma, so every series weighs as the

@@ -181,6 +181,26 @@ enum ClayTint {
   rose,
 }
 
+// The six pastels by day: soft, light enough for dark words.
+const _dayTints = {
+  ClayTint.peach: Color(0xFFFFD9C6),
+  ClayTint.butter: Color(0xFFFFE9A6),
+  ClayTint.mint: Color(0xFFC8EFD9),
+  ClayTint.sky: Color(0xFFCFE3FF),
+  ClayTint.lilac: Color(0xFFE2D8FF),
+  ClayTint.rose: Color(0xFFFFD4E1),
+};
+
+// The six pastels by night: deep and saturated, for light words.
+const _nightTints = {
+  ClayTint.peach: Color(0xFF8E4A33),
+  ClayTint.butter: Color(0xFF7A6118),
+  ClayTint.mint: Color(0xFF22654F),
+  ClayTint.sky: Color(0xFF2B4F86),
+  ClayTint.lilac: Color(0xFF4D3E8C),
+  ClayTint.rose: Color(0xFF833552),
+};
+
 /// Clay's colours: the pale ground, the neutral clay most parts are made of,
 /// the wells pressed into the ground, the inks, the one accent and its
 /// danger twin, and six pastels. Every word colour meets 4.5:1 on what it
@@ -236,14 +256,7 @@ class ClayColors with Diagnosticable {
       onInverse = const Color(0xFFF6F4FF),
       scrim = const Color(0x592A2440),
       light = const Color(0xFFFFFFFF),
-      tints = const {
-        ClayTint.peach: Color(0xFFFFD9C6),
-        ClayTint.butter: Color(0xFFFFE9A6),
-        ClayTint.mint: Color(0xFFC8EFD9),
-        ClayTint.sky: Color(0xFFCFE3FF),
-        ClayTint.lilac: Color(0xFFE2D8FF),
-        ClayTint.rose: Color(0xFFFFD4E1),
-      };
+      tints = _dayTints;
 
   /// Clay by night: the same clay in low light, deep and saturated, darker
   /// shades and no glow.
@@ -269,14 +282,267 @@ class ClayColors with Diagnosticable {
       onInverse = const Color(0xFF221D36),
       scrim = const Color(0x99050310),
       light = const Color(0xFFFFFFFF),
-      tints = const {
-        ClayTint.peach: Color(0xFF8E4A33),
-        ClayTint.butter: Color(0xFF7A6118),
-        ClayTint.mint: Color(0xFF22654F),
-        ClayTint.sky: Color(0xFF2B4F86),
-        ClayTint.lilac: Color(0xFF4D3E8C),
-        ClayTint.rose: Color(0xFF833552),
-      };
+      tints = _nightTints;
+
+  /// The colours of the palette named [name] at [brightness], one of
+  /// [ClayThemeData.presets]: `clay` (Clay's own, [ClayColors.light] and
+  /// [ClayColors.dark]), `mint`, `sky`, `butter`, `peach` and `lavender`.
+  /// Each is Clay's clay moulded in another colour at Clay's own tones, so
+  /// every word reads on it as it does on Clay's, with a key of its own that
+  /// keeps dark words; by night its ground is the same low light in its hue.
+  /// A name Clay has none of gives Clay's own.
+  ///
+  /// ```dart
+  /// ClayColors.preset('mint', Brightness.light)
+  /// ```
+  factory ClayColors.preset(String name, Brightness brightness) {
+    final night = brightness == Brightness.dark;
+    return switch (name) {
+      // Mint: a pale mint clay on a mint-grey ground, a fresh mint key;
+      // by night a deep green-grey ground and the same mint key.
+      'mint' =>
+        night
+            ? const ClayColors._night(
+                ground: Color(0xFF0E1914),
+                groundShade: Color(0xFF000603),
+                clay: Color(0xFF1F2A24),
+                clayShade: Color(0xFF030C08),
+                well: Color(0xFF07120D),
+                ink: Color(0xFFE8F5EB),
+                inkSecondary: Color(0xFFADBAB1),
+                inkDisabled: Color(0xFF636F67),
+                accent: Color(0xFF3CC594),
+                onAccent: Color(0xFF18231D),
+                accentInk: Color(0xFF3CC594),
+                focus: Color(0xFF3CC594),
+                inverse: Color(0xFFE2EFE6),
+                onInverse: Color(0xFF18231D),
+                scrim: Color(0x99000603),
+              )
+            : const ClayColors._day(
+                ground: Color(0xFFE4EEE6),
+                groundShade: Color(0xFF097855),
+                clay: Color(0xFFF8FCF7),
+                clayShade: Color(0xFF268763),
+                well: Color(0xFFD3E4D9),
+                ink: Color(0xFF1A2C23),
+                inkSecondary: Color(0xFF406352),
+                inkDisabled: Color(0xFF88A293),
+                accent: Color(0xFF3CC594),
+                onAccent: Color(0xFF1A2C23),
+                accentInk: Color(0xFF007251),
+                focus: Color(0xFF007251),
+                inverse: Color(0xFF093323),
+                onInverse: Color(0xFFEFF8F0),
+                scrim: Color(0x590A2E20),
+              ),
+      // Sky: a pale blue clay on a cool blue-grey ground, a sky-blue key;
+      // by night a deep navy ground and the same blue key.
+      'sky' =>
+        night
+            ? const ClayColors._night(
+                ground: Color(0xFF0B1826),
+                groundShade: Color(0xFF00040D),
+                clay: Color(0xFF1C2937),
+                clayShade: Color(0xFF010B18),
+                well: Color(0xFF05111E),
+                ink: Color(0xFFECF2FE),
+                inkSecondary: Color(0xFFABB8CB),
+                inkDisabled: Color(0xFF616D7E),
+                accent: Color(0xFF5B9DF5),
+                onAccent: Color(0xFF152130),
+                accentInk: Color(0xFF5B9DF5),
+                focus: Color(0xFF5B9DF5),
+                inverse: Color(0xFFE5ECFA),
+                onInverse: Color(0xFF152130),
+                scrim: Color(0x9900050E),
+              )
+            : const ClayColors._day(
+                ground: Color(0xFFE7ECF5),
+                groundShade: Color(0xFF316CA5),
+                clay: Color(0xFFFAFAFF),
+                clayShade: Color(0xFF437BB5),
+                well: Color(0xFFD8E1EF),
+                ink: Color(0xFF1F2935),
+                inkSecondary: Color(0xFF495E77),
+                inkDisabled: Color(0xFF8F9DB1),
+                accent: Color(0xFF5B9DF5),
+                onAccent: Color(0xFF1F2935),
+                accentInk: Color(0xFF0864B9),
+                focus: Color(0xFF0864B9),
+                inverse: Color(0xFF152E47),
+                onInverse: Color(0xFFF2F5FE),
+                scrim: Color(0x5914293F),
+              ),
+      // Butter: a warm cream clay on a butter ground, a butter-yellow key;
+      // by night a warm charcoal ground and the same yellow key.
+      'butter' =>
+        night
+            ? const ClayColors._night(
+                ground: Color(0xFF191710),
+                groundShade: Color(0xFF050401),
+                clay: Color(0xFF2A2820),
+                clayShade: Color(0xFF0C0A05),
+                well: Color(0xFF12100A),
+                ink: Color(0xFFF8F1E5),
+                inkSecondary: Color(0xFFBDB7AC),
+                inkDisabled: Color(0xFF706C63),
+                accent: Color(0xFFFFC23D),
+                onAccent: Color(0xFF232019),
+                accentInk: Color(0xFFFFC23D),
+                focus: Color(0xFFFFC23D),
+                inverse: Color(0xFFF2EBE0),
+                onInverse: Color(0xFF232019),
+                scrim: Color(0x99060402),
+              )
+            : const ClayColors._day(
+                ground: Color(0xFFF4EBD7),
+                groundShade: Color(0xFF7E6700),
+                clay: Color(0xFFFFFAF6),
+                clayShade: Color(0xFF8F760E),
+                well: Color(0xFFEBDFC3),
+                ink: Color(0xFF2E2812),
+                inkSecondary: Color(0xFF685B30),
+                inkDisabled: Color(0xFFA89B77),
+                accent: Color(0xFFFFC23D),
+                onAccent: Color(0xFF2E2812),
+                accentInk: Color(0xFF825D00),
+                focus: Color(0xFF825D00),
+                inverse: Color(0xFF362C02),
+                onInverse: Color(0xFFFEF5E2),
+                scrim: Color(0x59312703),
+              ),
+      // Peach: a soft peach clay on a blush-apricot ground, an apricot key;
+      // by night a warm charcoal ground and the same apricot key.
+      'peach' =>
+        night
+            ? const ClayColors._night(
+                ground: Color(0xFF1C1512),
+                groundShade: Color(0xFF070302),
+                clay: Color(0xFF2E2622),
+                clayShade: Color(0xFF0F0906),
+                well: Color(0xFF150F0B),
+                ink: Color(0xFFFEEFE8),
+                inkSecondary: Color(0xFFC2B5AF),
+                inkDisabled: Color(0xFF756A65),
+                accent: Color(0xFFFF9A62),
+                onAccent: Color(0xFF271F1B),
+                accentInk: Color(0xFFFF9A62),
+                focus: Color(0xFFFF9A62),
+                inverse: Color(0xFFF8E9E3),
+                onInverse: Color(0xFF271F1B),
+                scrim: Color(0x99080402),
+              )
+            : const ClayColors._day(
+                ground: Color(0xFFFEE7DC),
+                groundShade: Color(0xFFA05526),
+                clay: Color(0xFFFFF9F8),
+                clayShade: Color(0xFFB26434),
+                well: Color(0xFFF9DACB),
+                ink: Color(0xFF382318),
+                inkSecondary: Color(0xFF7B533C),
+                inkDisabled: Color(0xFFBA9481),
+                accent: Color(0xFFFF9A62),
+                onAccent: Color(0xFF382318),
+                accentInk: Color(0xFF9E4D1C),
+                focus: Color(0xFF9E4D1C),
+                inverse: Color(0xFF46240F),
+                onInverse: Color(0xFFFFF3EE),
+                scrim: Color(0x593F200E),
+              ),
+      // Lavender: a warm white clay on a pale stone ground, a lavender key;
+      // by night a warm graphite ground and the same lavender key.
+      'lavender' =>
+        night
+            ? const ClayColors._night(
+                ground: Color(0xFF191613),
+                groundShade: Color(0xFF050402),
+                clay: Color(0xFF2B2723),
+                clayShade: Color(0xFF0C0A07),
+                well: Color(0xFF13100C),
+                ink: Color(0xFFF9F0EA),
+                inkSecondary: Color(0xFFBDB6B0),
+                inkDisabled: Color(0xFF716B66),
+                accent: Color(0xFFA391FA),
+                onAccent: Color(0xFF23201C),
+                accentInk: Color(0xFFA391FA),
+                focus: Color(0xFFA391FA),
+                inverse: Color(0xFFF3EBE4),
+                onInverse: Color(0xFF23201C),
+                scrim: Color(0x99060403),
+              )
+            : const ClayColors._day(
+                ground: Color(0xFFF3EAE3),
+                groundShade: Color(0xFF7C6648),
+                clay: Color(0xFFFFFAF7),
+                clayShade: Color(0xFF8C7456),
+                well: Color(0xFFE9DED5),
+                ink: Color(0xFF30271B),
+                inkSecondary: Color(0xFF665A4C),
+                inkDisabled: Color(0xFFA69A8E),
+                accent: Color(0xFFA391FA),
+                onAccent: Color(0xFF30271B),
+                accentInk: Color(0xFF6654B8),
+                focus: Color(0xFF6654B8),
+                inverse: Color(0xFF352B1D),
+                onInverse: Color(0xFFFCF4ED),
+                scrim: Color(0x5930271B),
+              ),
+      _ => night ? const ClayColors.dark() : const ClayColors.light(),
+    };
+  }
+
+  // A palette's colours by day: Clay's danger, success, light and pastels
+  // with its own clay, inks and key.
+  const ClayColors._day({
+    required this.ground,
+    required this.groundShade,
+    required this.clay,
+    required this.clayShade,
+    required this.well,
+    required this.ink,
+    required this.inkSecondary,
+    required this.inkDisabled,
+    required this.accent,
+    required this.onAccent,
+    required this.accentInk,
+    required this.focus,
+    required this.inverse,
+    required this.onInverse,
+    required this.scrim,
+  }) : brightness = Brightness.light,
+       danger = const Color(0xFFF2617A),
+       onDanger = const Color(0xFF2B0E16),
+       dangerInk = const Color(0xFFB4213C),
+       success = const Color(0xFF2E7D5B),
+       light = const Color(0xFFFFFFFF),
+       tints = _dayTints;
+
+  // A palette's colours by night: Clay's danger, success, light and pastels
+  // with its own clay, inks and key.
+  const ClayColors._night({
+    required this.ground,
+    required this.groundShade,
+    required this.clay,
+    required this.clayShade,
+    required this.well,
+    required this.ink,
+    required this.inkSecondary,
+    required this.inkDisabled,
+    required this.accent,
+    required this.onAccent,
+    required this.accentInk,
+    required this.focus,
+    required this.inverse,
+    required this.onInverse,
+    required this.scrim,
+  }) : brightness = Brightness.dark,
+       danger = const Color(0xFFE85C76),
+       onDanger = const Color(0xFF22080F),
+       dangerInk = const Color(0xFFFF8FA3),
+       success = const Color(0xFF7FD8AE),
+       light = const Color(0xFFFFFFFF),
+       tints = _nightTints;
 
   /// Day or night.
   final Brightness brightness;
@@ -382,7 +648,10 @@ class ClayColors with Diagnosticable {
   Color onColor(Color fill) {
     final dark = brightness == Brightness.dark ? onInverse : ink;
     final pale = brightness == Brightness.dark ? ink : onInverse;
-    return _contrast(dark, fill) >= _contrast(pale, fill) ? dark : pale;
+    return RawPalette.contrastRatio(dark, fill) >=
+            RawPalette.contrastRatio(pale, fill)
+        ? dark
+        : pale;
   }
 
   /// The shade [fill] casts and is shaded by: its own hue, deeper and richer.
@@ -564,19 +833,13 @@ class ClayColors with Diagnosticable {
   }
 }
 
-/// The contrast ratio between [a] and [b] (WCAG), 1 to 21.
-double _contrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-}
-
-/// The contrast ratio between two colours, as WCAG measures it (1 to 21).
+/// The contrast ratio between two colours, as WCAG measures it (1 to 21):
+/// ui_core's [RawPalette.contrastRatio], [a] read on [b].
 ///
 /// ```dart
 /// clayContrast(const Color(0xFF2A2440), const Color(0xFFFF7A5C))
 /// ```
-double clayContrast(Color a, Color b) => _contrast(a, b);
+double clayContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
 
 /// Clay's type: one face (Rubik by default) in seven styles, with even
 /// leading so a one-line label centres in its box.
@@ -594,19 +857,24 @@ class ClayTextTheme with Diagnosticable {
   });
 
   /// Clay's ramp in [family] (the bundled Rubik when null), inked [ink] and
-  /// [secondaryInk].
+  /// [secondaryInk]. [fontFamilyFallback] reaches every style, as
+  /// [ThemeData.fontFamilyFallback] does: the faces a script the face lacks
+  /// is drawn in (a Japanese face for Japanese words, say).
   factory ClayTextTheme.from({
     required Color ink,
     required Color secondaryInk,
     String? family,
     String? package,
+    List<String>? fontFamilyFallback,
   }) {
     final face = family ?? clayFontFamily;
     final from = family == null ? clayFontPackage : package;
     TextStyle s(double size, double height, FontWeight weight, Color colour) =>
         TextStyle(
-          fontFamily: face,
-          package: from,
+          // The package's name prefixes the face by hand: TextStyle.package
+          // would prefix the app's fallback faces too.
+          fontFamily: from == null ? face : 'packages/$from/$face',
+          fontFamilyFallback: fontFamilyFallback,
           fontSize: size,
           height: height / size,
           fontWeight: weight,
@@ -825,25 +1093,61 @@ class ClayThemeData with Diagnosticable {
            ),
        density = density ?? ClayDensity.adaptivePlatformDensity;
 
-  /// Clay by day.
-  factory ClayThemeData.light({ClayDensity? density}) =>
-      ClayThemeData(colors: const ClayColors.light(), density: density);
+  /// Clay by day. [fontFamilyFallback] reaches every text style, as
+  /// [ThemeData.fontFamilyFallback] does.
+  factory ClayThemeData.light({
+    ClayDensity? density,
+    List<String>? fontFamilyFallback,
+  }) => _of(const ClayColors.light(), density, fontFamilyFallback);
 
-  /// Clay by night.
-  factory ClayThemeData.dark({ClayDensity? density}) =>
-      ClayThemeData(colors: const ClayColors.dark(), density: density);
+  /// Clay by night. [fontFamilyFallback] reaches every text style, as
+  /// [ThemeData.fontFamilyFallback] does.
+  factory ClayThemeData.dark({
+    ClayDensity? density,
+    List<String>? fontFamilyFallback,
+  }) => _of(const ClayColors.dark(), density, fontFamilyFallback);
 
   /// The clay preset at [brightness].
-  factory ClayThemeData.clay(Brightness brightness, {ClayDensity? density}) =>
-      brightness == Brightness.dark
-      ? ClayThemeData.dark(density: density)
-      : ClayThemeData.light(density: density);
+  factory ClayThemeData.clay(
+    Brightness brightness, {
+    ClayDensity? density,
+    List<String>? fontFamilyFallback,
+  }) => brightness == Brightness.dark
+      ? ClayThemeData.dark(
+          density: density,
+          fontFamilyFallback: fontFamilyFallback,
+        )
+      : ClayThemeData.light(
+          density: density,
+          fontFamilyFallback: fontFamilyFallback,
+        );
+
+  // A preset's colours, with its type falling back to [fallback] when given.
+  static ClayThemeData _of(
+    ClayColors colors,
+    ClayDensity? density,
+    List<String>? fallback,
+  ) => ClayThemeData(
+    colors: colors,
+    textTheme: fallback == null
+        ? null
+        : ClayTextTheme.from(
+            ink: colors.ink,
+            secondaryInk: colors.inkSecondary,
+            fontFamilyFallback: fallback,
+          ),
+    density: density,
+  );
 
   /// Clay in a brand's own [accent], at [brightness], with the brand's
-  /// [fontFamily] when given. The accent keeps its hue; its words are the
-  /// ink or the light that reads on it at 4.5:1, its text ink is darkened (by
-  /// day) or lightened (by night) until it reads at 4.5:1 on the ground and on
-  /// clay, and the focus rim follows it at 3:1.
+  /// [fontFamily] when given ([fontFamilyFallback] reaches every text
+  /// style). The accent stays the colour of the one key and of what is on or
+  /// chosen wherever Clay's dark ink or its light reads on it at 4.5:1 (a
+  /// gold, a coral or a pastel keeps its colour, with dark words), and moves
+  /// only as far as it must where neither does ([RawAccentRule.named]). Its
+  /// text ink is the nearest tone of its hue that reads at 4.5:1 on the
+  /// ground, on clay and in a well, and the focus rim the nearest that
+  /// stands 3:1 from clay and a well ([RawPalette.readableTone]).
   ///
   /// ```dart
   /// ClayThemeData.from(accent: const Color(0xFF4F7BF7), brightness: Brightness.light)
@@ -853,37 +1157,32 @@ class ClayThemeData with Diagnosticable {
     Brightness brightness = Brightness.light,
     String? fontFamily,
     String? fontPackage,
+    List<String>? fontFamilyFallback,
     ClayDensity? density,
   }) {
-    final base = brightness == Brightness.dark
-        ? const ClayColors.dark()
-        : const ClayColors.light();
-    final onAccent = base.onColor(accent);
-    var ink = HSLColor.fromColor(accent);
-    double readOn(Color c) =>
-        math.min(_contrast(c, base.ground), _contrast(c, base.clay));
-    for (var i = 0; i < 40 && readOn(ink.toColor()) < 4.5; i++) {
-      ink = ink.withLightness(
-        (ink.lightness + (brightness == Brightness.dark ? 0.02 : -0.02)).clamp(
-          0.0,
-          1.0,
-        ),
-      );
-    }
-    var focus = HSLColor.fromColor(ink.toColor());
-    double rimOn(Color c) =>
-        math.min(_contrast(c, base.well), _contrast(c, base.clay));
-    for (var i = 0; i < 40 && rimOn(focus.toColor()) < 3; i++) {
-      focus = focus.withLightness(
-        (focus.lightness + (brightness == Brightness.dark ? 0.02 : -0.02))
-            .clamp(0.0, 1.0),
-      );
-    }
+    final night = brightness == Brightness.dark;
+    final base = night ? const ClayColors.dark() : const ClayColors.light();
+    final key = RawPalette.accentFill(
+      accent,
+      brightness: brightness,
+      rule: RawAccentRule.named,
+      lightInk: night ? base.ink : base.onInverse,
+      darkInk: night ? base.onInverse : base.ink,
+    );
+    final ink = RawPalette.readableTone(
+      accent.withValues(alpha: 1),
+      on: [base.ground, base.clay, base.well],
+    );
+    final focus = RawPalette.readableTone(
+      ink,
+      on: [base.well, base.clay],
+      ratio: 3,
+    );
     final colors = base.copyWith(
-      accent: accent,
-      onAccent: onAccent,
-      accentInk: ink.toColor(),
-      focus: focus.toColor(),
+      accent: key.fill,
+      onAccent: key.ink,
+      accentInk: ink,
+      focus: focus,
     );
     return ClayThemeData(
       colors: colors,
@@ -892,22 +1191,37 @@ class ClayThemeData with Diagnosticable {
         secondaryInk: colors.inkSecondary,
         family: fontFamily,
         package: fontPackage,
+        fontFamilyFallback: fontFamilyFallback,
       ),
       density: density,
     );
   }
 
-  /// The presets' names, the first the default.
-  static const List<String> presets = ['clay'];
+  /// The presets' names, the first the default: Clay's own clay, then its
+  /// clay moulded in five more colours, each with a key of its own
+  /// ([ClayColors.preset]).
+  static const List<String> presets = [
+    'clay',
+    'mint',
+    'sky',
+    'butter',
+    'peach',
+    'lavender',
+  ];
 
   /// The preset named [name] at [brightness].
   factory ClayThemeData.preset(
     String name,
     Brightness brightness, {
     ClayDensity? density,
+    List<String>? fontFamilyFallback,
   }) {
     assert(presets.contains(name), 'Clay has no preset named $name.');
-    return ClayThemeData.clay(brightness, density: density);
+    return _of(
+      ClayColors.preset(name, brightness),
+      density,
+      fontFamilyFallback,
+    );
   }
 
   /// The colours.
@@ -1619,7 +1933,7 @@ class ClayTheme extends StatelessWidget {
   /// What the theme is for.
   final Widget child;
 
-  /// Clay's tap floors: 44 by 44 for a finger, 24 by 24 for a pointer, as
+  /// Clay's tap floors: 40 by 40 for a finger, 24 by 24 for a pointer, as
   /// ui_core's defaults.
   static const RawTapTargets tapTargets = RawTapTargets.fallback;
 

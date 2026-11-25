@@ -61,7 +61,7 @@ class ClayBreadcrumb extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      child: Wrap(
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: ClaySpacing.tight,
         children: [
@@ -438,11 +438,10 @@ class ClayStepProgress extends StatelessWidget {
                                           focus: 1,
                                           focusColor: c.accentInk,
                                         )
-                                      : ClayFace.well(
-                                          c,
-                                          color: c.track,
-                                          radius: ball / 2,
-                                        ),
+                                      // A step to come is pressed in, as a
+                                      // field is: a well, not the off
+                                      // groove (track), so its figure reads.
+                                      : ClayFace.well(c, radius: ball / 2),
                                   child: Center(
                                     child: i < currentStep
                                         ? Icon(
@@ -648,7 +647,7 @@ class ClayPageDots extends StatelessWidget {
                     enabled: true,
                     semanticLabel: 'Page ${words.formatDecimal(i + 1)}',
                     semanticSelected: i == page,
-                    // The platform's floor: a finger's 44, a pointer's 24.
+                    // The platform's floor: a finger's 40, a pointer's 24.
                     builder: (context, states, _) => TapTargetPadding(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -732,7 +731,7 @@ class ClayMenuBar extends StatelessWidget {
       ],
       barBuilder: (context, items) => SizedBox(
         height: math.max(
-          bar.minimumSize?.height ?? 44,
+          bar.minimumSize?.height ?? RawTapTargets.of(context).touch.height,
           RawTapTargets.of(context).floorOn().height + 2 * inset,
         ),
         child: ClaySurface(

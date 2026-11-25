@@ -21,8 +21,9 @@ import 'theme.dart';
 /// The ball a slider rolls: 28 across, in a slot a finger's height.
 const double _ball = 28;
 
-/// How tall a slider stands: a finger's height.
-const double _slot = 44;
+/// How tall a slider stands: a finger's height (the touch floor, on every
+/// input, so a slider keeps one height beside the fields round it).
+double _slot(BuildContext context) => RawTapTargets.of(context).touch.height;
 
 /// The groove's depth across.
 const double _groove = 12;
@@ -230,7 +231,7 @@ class _ClaySliderState extends State<ClaySlider> {
 
         return SizedBox(
           width: width,
-          height: _slot,
+          height: _slot(context),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             excludeFromSemantics: true,
@@ -259,7 +260,7 @@ class _ClaySliderState extends State<ClaySlider> {
                   PositionedDirectional(
                     start: _ball / 2 - _groove / 2,
                     end: _ball / 2 - _groove / 2,
-                    top: (_slot - _groove) / 2,
+                    top: (_slot(context) - _groove) / 2,
                     child: _Groove(
                       start: 0,
                       end: (fraction * usable + _groove) / (usable + _groove),
@@ -269,7 +270,7 @@ class _ClaySliderState extends State<ClaySlider> {
                   ),
                   PositionedDirectional(
                     start: fraction * usable,
-                    top: (_slot - _ball) / 2,
+                    top: (_slot(context) - _ball) / 2,
                     child: RawValueHandle(
                       value: widget.value,
                       min: widget.min,
@@ -400,7 +401,7 @@ class ClayRangeSlider extends StatelessWidget {
       // A ball's width across, as the single slider's: the balls stop with
       // their edges on the column's, so a range lines up with the fields
       // and sliders above and below it. The track takes every press.
-      thumbSize: const Size(_ball, _slot),
+      thumbSize: Size(_ball, _slot(context)),
       // The track runs between the balls' centres at the ends; the groove
       // reaches half its own height past each, so a ball at an end rests
       // on its rounded end, as the single slider's does.
@@ -521,7 +522,9 @@ class _ClayRatingState extends State<ClayRating> {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final enabled = widget.onChanged != null || widget.readOnly;
-    final slot = widget.size < 44 ? 44.0 : widget.size;
+    // Each star stands in a finger's tap at least (the touch floor).
+    final floor = RawTapTargets.of(context).touch.height;
+    final slot = widget.size < floor ? floor : widget.size;
     return RawRating(
       value: widget.value,
       onChanged: widget.onChanged,

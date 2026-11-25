@@ -6,22 +6,37 @@ lists, dialogs, sheets and toasts, with matching light and dark themes.
 
 ![Steady's Today screen on a desk at 1440 and on a phone at 390, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/clay_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/clay/)** ·
-[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/clay/) ·
-[API reference](https://pub.dev/documentation/clay_ui/latest/) ·
-[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/clay/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=clay) · [API reference](https://pub.dev/documentation/clay_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
-```sh
-flutter pub add clay_ui material_ui
+```yaml
+dependencies:
+  clay_ui: ^0.5.0
 ```
 
-The example uses `MaterialApp` from `material_ui`.
+The example uses `MaterialApp` from `material_ui` (`flutter pub add material_ui`).
 
 ## Quick start
 
-Load the bundled font before `runApp`. Wrap the navigator in `ClayTheme` using your app's `builder` so routes and
+The smallest app: Clay's theme round one button.
+
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:flutter/widgets.dart';
+
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFFFF7A5C),
+    builder: (context, _) => ClayTheme(
+      data: ClayThemeData.clay(Brightness.light),
+      child: Center(child: ClayButton.filled('Add habit', onPressed: () {})),
+    ),
+  ),
+);
+```
+
+A fuller app: load the bundled font before `runApp`. Wrap the navigator in `ClayTheme` using your app's `builder` so routes and
 overlays share the same colours and typography. Add `ClayToaster` to show toasts.
 
 ```dart
@@ -168,6 +183,10 @@ if (delete ?? false) showClayToast(context, 'Habit deleted', actionLabel: 'Undo'
 The example app, Steady, uses these widgets to track habits, log a day and set reminders.
 
 ## Customize the theme
+
+Clay comes in six palettes, each designed by day and by night: `clay` (the default), `mint`, `sky`, `butter`, `peach`
+and `lavender`. Pick one with `ClayThemeData.preset('mint', Brightness.light)`; `ClayThemeData.presets` lists them and
+`ClayColors.preset` gives a palette's colours alone.
 
 Use `ClayThemeData.clay(Brightness.dark)` for the night palette. Use `ClayThemeData.from(accent: color)` for a brand
 colour: the factory picks the accent's readable words and keeps its text and focus colours at AA contrast. Every part

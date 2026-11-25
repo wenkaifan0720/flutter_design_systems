@@ -487,7 +487,16 @@ class _SideFace extends StatelessWidget {
                       ? destination.selectedIcon ?? destination.icon
                       : destination.icon,
                   size: 20,
-                  color: chosen ? c.accentInk : ink,
+                  // The chosen place's glyph in the accent's ink, as dark (or
+                  // as light) as standing 3:1 on its risen clay takes: a
+                  // brand's ink that reads on the ground can sink into it.
+                  color: chosen
+                      ? RawPalette.readableTone(
+                          c.accentInk,
+                          on: [layered.fill ?? c.risen],
+                          ratio: 3,
+                        )
+                      : ink,
                 ),
                 const SizedBox(width: ClaySpacing.medium),
                 Expanded(

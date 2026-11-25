@@ -185,6 +185,11 @@ class ClayCalendar extends StatefulWidget {
   }
 }
 
+// How far a neighbouring month's day stands from the calendar's face: about
+// Apple's other-month grey (3.3:1), clear of a faint figure, and less than
+// half the month's own days.
+const double _outsideDayContrast = 3;
+
 class _ClayCalendarState extends State<ClayCalendar> {
   late RawCalendarController _controller = _make();
 
@@ -250,8 +255,13 @@ class _ClayCalendarState extends State<ClayCalendar> {
     // The days' figures grow to twice their size and no further, as
     // Material's day grid caps them on a phone.
     final dayScaler = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 2);
-    // A day is a finger's height at least (its ball a little less).
-    final dayHeight = math.max(44.0, dayScaler.scale(15) * 1.4 + 12);
+    // A day is a finger's height at least (the touch floor, on every input,
+    // as Material's day grid keeps its cells on a desk); its ball a little
+    // less.
+    final dayHeight = math.max(
+      RawTapTargets.of(context).touch.height,
+      dayScaler.scale(15) * 1.4 + 12,
+    );
     final dayFontSize = theme.textTheme.body.fontSize ?? 16;
     // The widest day a month shows, in the reader's digits and the chosen
     // day's weight: every day is drawn at the one size that fits it, so 1
@@ -271,6 +281,14 @@ class _ClayCalendarState extends State<ClayCalendar> {
       iconSize: WidgetStatePropertyAll(18),
     );
     final band = Color.lerp(c.well, c.accent, 0.22)!;
+    // A neighbouring month's day: a quiet tone of its own, lifted from the
+    // disabled ink to [_outsideDayContrast] on the clay and the ground a
+    // calendar sits on, well below the month's own days.
+    final outside = RawPalette.readableTone(
+      c.inkDisabled,
+      on: [c.clay, c.ground],
+      ratio: _outsideDayContrast,
+    );
     // A month is at most 420 wide (its days at 60).
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -365,8 +383,10 @@ class _ClayCalendarState extends State<ClayCalendar> {
               ? c.onColor(fill)
               : !day.enabled
               ? c.inkDisabled
+              // A neighbouring month's day takes a tap: its figure stands in
+              // its own quiet tone, as Cupertino draws its secondary days.
               : !day.inMonth
-              ? c.inkSecondary.withValues(alpha: 0.6)
+              ? outside
               : day.isToday
               ? c.accentInk
               : c.ink;
@@ -1130,9 +1150,19 @@ class ClayTimePicker extends StatelessWidget {
     final h24 = MediaQuery.maybeAlwaysUse24HourFormatOf(context) ?? false;
     final minutes = [for (var m = 0; m < 60; m += minuteInterval) m];
     final minuteAt = math.max(0, minutes.indexWhere((m) => m >= value.minute));
+    final pill = _pill(c, const {}, layered.fill);
+    // The colon is read with the time: secondary words, as dark (or as light)
+    // as reading on the pill takes, with a little to spare for the light the
+    // pill's face catches round it.
     final colon = Text(
       ':',
-      style: theme.textTheme.title.copyWith(color: c.inkSecondary),
+      style: theme.textTheme.title.copyWith(
+        color: RawPalette.readableTone(
+          c.inkSecondary,
+          on: [pill.color],
+          ratio: 4.6,
+        ),
+      ),
     );
     final words = RawWidgetsLocalizations.of(context);
     final columns = [
@@ -1193,7 +1223,7 @@ class ClayTimePicker extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       horizontal: ClaySpacing.tight,
                     ),
-                    child: ClaySurface(face: _pill(c, const {}, layered.fill)),
+                    child: ClaySurface(face: pill),
                   ),
                 ),
               ),
@@ -1372,12 +1402,14 @@ class ClayTimeField extends StatelessWidget {
         ),
         segmentBuilder: (context, segment) {
           final focused = segment.states.contains(WidgetState.focused);
-          // Each segment takes a finger's tap (44 wide, the well's height)
-          // round a pill that fits its figures.
+          // Each segment takes a finger's tap (the touch floor wide, the
+          // well's height) round a pill that fits its figures.
           return MouseRegion(
             cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 44),
+              constraints: BoxConstraints(
+                minWidth: RawTapTargets.of(context).touch.width,
+              ),
               child: SizedBox(
                 height: height,
                 child: Center(
