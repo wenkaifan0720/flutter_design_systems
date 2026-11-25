@@ -118,7 +118,36 @@ String _fieldDate(BuildContext context, DateTime d) {
   );
 }
 
+/// [v] in two Western digits: the date input's MM/DD/YYYY, which takes and
+/// prints Western digits as Compose's `DateInputFormat` does.
 String _two(int v) => v.toString().padLeft(2, '0');
+
+/// [v] in two of the app's digits (07, Arabic's ٠٧): a time selector's,
+/// a time field's and a scroll field's figure, as Compose writes them
+/// (`toLocalString(minDigits = 2)`) and as
+/// [RawTimeFormatting.formatMinute] writes a minute. An hour keeps its two
+/// digits on the 12-hour clock too, where [RawTimeFormatting.formatHour]
+/// writes one.
+String _timeDigits(BuildContext context, int v) {
+  final words = RawWidgetsLocalizations.of(context);
+  final figure = words.formatDecimal(v);
+  return v < 10 ? '${words.formatDecimal(0)}$figure' : figure;
+}
+
+/// [text]'s value when every character is a digit, Western or the app's
+/// ([zero] is its 0: Arabic's ٠); else null. A time field takes either, as
+/// [RawTimeField] does.
+int? _timeDigitsValue(String text, String zero) {
+  if (text.isEmpty) return null;
+  final base = zero.codeUnitAt(0);
+  var value = 0;
+  for (final c in text.codeUnits) {
+    final d = c >= 0x30 && c <= 0x39 ? c - 0x30 : c - base;
+    if (d < 0 || d > 9) return null;
+    value = value * 10 + d;
+  }
+  return value;
+}
 
 /// Which days a picker lets the user choose (Compose's `SelectableDates`
 /// with the bounds the caller gives).
@@ -1959,7 +1988,8 @@ class _Year extends StatelessWidget {
                   .resolve(Directionality.of(context));
               return ExcludeSemantics(
                 child: _PickerLabel(
-                  '$year',
+                  RawWidgetsLocalizations.of(context)
+                      .formatYear(DateTime(year)),
                   singleLine: false,
                   shape: inset == EdgeInsets.zero
                       ? t.shapes.of(
@@ -3590,7 +3620,9 @@ class _TimeSelector extends StatelessWidget {
         height: height,
         child: ExpressiveStyledContent(
           textStyle: style.copyWith(color: content),
-          child: ExcludeSemantics(child: _PickerLabel(_two(value))),
+          child: ExcludeSemantics(
+            child: _PickerLabel(_timeDigits(context, value)),
+          ),
         ),
       ),
     );
@@ -4157,7 +4189,7 @@ class _ClockFaceState extends State<_ClockFace> with TickerProviderStateMixin {
         final angle = _full / values.length * i - _quarter;
         final label = Center(
           child: Text(
-            '$value',
+            RawWidgetsLocalizations.of(context).formatDecimal(value),
             maxLines: 1,
             softWrap: false,
             style: style.copyWith(color: color),
@@ -4544,7 +4576,10 @@ class ExpressiveTimeInput extends StatelessWidget {
 /// out of the hour's or minute's range is not rejected here: the field
 /// shows it with its error text, as Compose does.
 class _TimeDigitsFormatter extends TextInputFormatter {
-  const _TimeDigitsFormatter();
+  const _TimeDigitsFormatter(this.zero);
+
+  /// The app's 0 (Arabic's ٠): its digits are taken beside Western ones.
+  final String zero;
 
   /// `MaxValueForTextField`'s two digits.
   static const int digits = 2;
@@ -4556,7 +4591,7 @@ class _TimeDigitsFormatter extends TextInputFormatter {
   ) {
     var text = newValue.text;
     if (text.isEmpty) return newValue;
-    if (!RegExp(r'^\d+$').hasMatch(text)) return oldValue;
+    if (_timeDigitsValue(text, zero) == null) return oldValue;
     var selection = newValue.selection;
     if (oldValue.selection.isCollapsed &&
         oldValue.text.length == digits &&
@@ -4603,13 +4638,9 @@ class _TimeField extends StatefulWidget {
 }
 
 class _TimeFieldState extends State<_TimeField> {
-  // `rememberTextFieldState(…, initialSelection = TextRange.Zero)`.
-  late final TextEditingController _text = TextEditingController.fromValue(
-    TextEditingValue(
-      text: _two(_value),
-      selection: const TextSelection.collapsed(offset: 0),
-    ),
-  );
+  // `rememberTextFieldState(…, initialSelection = TextRange.Zero)`; its
+  // digits are the app's, written once the localizations can be read.
+  final TextEditingController _text = TextEditingController();
   final FocusNode _focus = FocusNode();
   bool _valid = true;
   bool _hovered = false;
@@ -4619,6 +4650,9 @@ class _TimeFieldState extends State<_TimeField> {
 
   int get _value =>
       _isHour ? widget.controller.hourForDisplay : widget.controller.minute;
+
+  /// The value as the field writes it, in the app's digits.
+  String get _figure => _timeDigits(context, _value);
 
   bool get _selected => widget.controller.selection == widget.selection;
 
@@ -4639,10 +4673,23 @@ class _TimeFieldState extends State<_TimeField> {
   void _focusChanged() => setState(() {});
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The value in the app's digits: on the first build, and again when the
+    // app's language changes while the reader is not typing.
+    if (_valid && !_focus.hasFocus && _text.text != _figure) {
+      _text.value = TextEditingValue(
+        text: _figure,
+        selection: const TextSelection.collapsed(offset: 0),
+      );
+    }
+  }
+
+  @override
   void didUpdateWidget(_TimeField old) {
     super.didUpdateWidget(old);
-    if (_valid && !_focus.hasFocus && _text.text != _two(_value)) {
-      _text.text = _two(_value);
+    if (_valid && !_focus.hasFocus && _text.text != _figure) {
+      _text.text = _figure;
     }
     // Chosen for editing (a tap on its selector, or the hour's two digits
     // moving on): take the keyboard focus once the field is built.
@@ -4674,7 +4721,10 @@ class _TimeFieldState extends State<_TimeField> {
   }
 
   void _changed(String text) {
-    final v = int.tryParse(text);
+    final v = _timeDigitsValue(
+      text,
+      RawWidgetsLocalizations.of(context).formatDecimal(0),
+    );
     final c = widget.controller;
     if (v == null) {
       setState(() => _valid = text.isEmpty);
@@ -4798,8 +4848,11 @@ class _TimeFieldState extends State<_TimeField> {
                             textInputAction: _isHour
                                 ? TextInputAction.next
                                 : TextInputAction.done,
-                            inputFormatters: const <TextInputFormatter>[
-                              _TimeDigitsFormatter(),
+                            inputFormatters: <TextInputFormatter>[
+                              _TimeDigitsFormatter(
+                                RawWidgetsLocalizations.of(context)
+                                    .formatDecimal(0),
+                              ),
                             ],
                             onChanged: _changed,
                             onSubmitted: (_) {
@@ -4945,7 +4998,8 @@ class ExpressiveScrollField extends StatefulWidget {
   /// What the wheel is called to assistive technology.
   final String? label;
 
-  /// The number printed for an index; two digits of the index when null.
+  /// The number printed for an index; when null, the index in two of the
+  /// app's digits (07, Arabic's ٠٧).
   final String Function(int index)? itemLabel;
 
   /// What a screen reader reads for an index; [itemLabel]'s when null.
@@ -5084,7 +5138,8 @@ class _ExpressiveScrollFieldState extends State<ExpressiveScrollField> {
     );
   }
 
-  String _label(int index) => widget.itemLabel?.call(index) ?? _two(index);
+  String _label(int index) =>
+      widget.itemLabel?.call(index) ?? _timeDigits(context, index);
 
   String _spoken(int index) => widget.spokenItem?.call(index) ?? _label(index);
 
@@ -5376,7 +5431,8 @@ class ExpressiveTimeScroll extends StatelessWidget {
                         width: TimePickerBehavior.scrollFieldWidth,
                         height: height,
                         label: ExpressiveLocalizations.of(context).selectHour,
-                        itemLabel: (i) => _two(c.is24Hour ? i : i + 1),
+                        itemLabel: (i) =>
+                            _timeDigits(context, c.is24Hour ? i : i + 1),
                         spokenItem: (i) => _spokenNumber(
                           ExpressiveTimeSelection.hour,
                           strings: ExpressiveLocalizations.of(context),

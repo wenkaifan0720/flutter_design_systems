@@ -197,7 +197,7 @@ The example app includes a Trip planner and an interactive component gallery. Sw
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.6.0 and re-exports it, so `RawWidgetsLocalizations` and the `Raw*` parts come with the one import.
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.6.1 and re-exports it, so `RawWidgetsLocalizations` and the `Raw*` parts come with the one import.
 
 ## Licences
 

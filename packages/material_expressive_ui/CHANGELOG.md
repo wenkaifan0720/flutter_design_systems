@@ -1,3 +1,10 @@
+## 0.6.2
+
+- Requires ui_core 0.6.1.
+- The time pickers write their figures in the app's digits, as Material's time picker writes its own (`formatHour`, `formatMinute`): in Arabic 09:05 is ٠٩ and ٠٥ on `ExpressiveTimePicker`'s selectors, `ExpressiveTimeInput`'s fields and `ExpressiveTimeScroll`'s wheels (Persian's ۰۹ and ۰۵), and the dial reads ١٢, ١ … ١١ and ٠, ٥ … ٥٥. A time field takes digits typed in Western or the app's digits alike. `ExpressiveScrollField` with no `itemLabel` writes its indexes the same way. English is as before.
+- The date picker's year grid writes its years in the app's digits (Arabic's ٢٠٢٩), as Material's does (`formatYear`).
+- `ExpressivePreview`'s status bar writes its clock on the app's clock, in its digits: Arabic's ٧:٣١, Persian's ۱۹:۳۱. English keeps 7:31.
+
 ## 0.6.1
 
 - `ExpressiveHost` comes from `package:material_expressive_ui/material_expressive_ui.dart`, the one import an app needs, under the package's version promise. `material_expressive_host.dart` still exports it, so an app that imports it from there compiles as before.

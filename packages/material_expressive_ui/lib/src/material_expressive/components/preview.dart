@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../icons.dart';
 import '../spacing.dart';
@@ -627,12 +628,15 @@ class _SystemBars extends StatelessWidget {
   final DateTime? clock;
   final _BandStyles styles;
 
-  /// [clock] as the bar shows it: `7:31`, `12:04`.
-  String get _time {
+  /// [clock] as the bar shows it, on the app's clock and in its digits:
+  /// `7:31`, `12:04` (Arabic's ٧:٣١).
+  String _time(BuildContext context) {
     final at = clock;
-    if (at == null) return '12:30';
-    final hour = at.hour % 12 == 0 ? 12 : at.hour % 12;
-    return '$hour:${at.minute.toString().padLeft(2, '0')}';
+    final time = at == null
+        ? const RawTimeOfDay(hour: 12, minute: 30)
+        : RawTimeOfDay(hour: at.hour, minute: at.minute);
+    final words = RawWidgetsLocalizations.of(context);
+    return '${words.formatHour(time)}:${words.formatMinute(time)}';
   }
 
   /// Whether the glyphs [style] asks for are light; null when it does not
@@ -716,7 +720,7 @@ class _SystemBars extends StatelessWidget {
                 Expanded(
                   child: Center(
                     child: Text(
-                      _time,
+                      _time(context),
                       style: t.type.titleMedium.copyWith(
                         color: ink,
                         fontWeight: FontWeight.w600,
@@ -763,7 +767,7 @@ class _SystemBars extends StatelessWidget {
             child: Row(
               children: <Widget>[
                 Text(
-                  _time,
+                  _time(context),
                   style: t.type.labelLarge.copyWith(color: ink),
                   maxLines: 1,
                 ),
