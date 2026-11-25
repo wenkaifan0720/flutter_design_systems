@@ -721,13 +721,17 @@ class ComicTimePicker extends StatelessWidget {
         value: h24 ? time.hour : time.hour % 12,
         options: [
           for (var hour = 0; hour < (h24 ? 24 : 12); hour++)
+            // In the app's digits (Arabic's ٩), on this picker's own clock: formatHour would follow the language's
+            // clock, and Persian's is 24 hours where this picker may show 12.
             ComicSelectOption(
               hour,
-              '${h24
-                  ? hour
-                  : hour == 0
-                  ? 12
-                  : hour}',
+              shared.formatDecimal(
+                h24
+                    ? hour
+                    : hour == 0
+                    ? 12
+                    : hour,
+              ),
             ),
         ],
         onChanged: onChanged == null
@@ -745,7 +749,10 @@ class ComicTimePicker extends StatelessWidget {
         value: time.minute,
         options: [
           for (final minute in minutes)
-            ComicSelectOption(minute, minute.toString().padLeft(2, '0')),
+            ComicSelectOption(
+              minute,
+              shared.formatMinute(RawTimeOfDay(hour: 0, minute: minute)),
+            ),
         ],
         onChanged: onChanged == null
             ? null
@@ -806,14 +813,24 @@ class ComicTimePicker extends StatelessWidget {
               ],
             );
           }
+          // Hour then minute, left to right in every language, as Material's time picker keeps them (a time reads
+          // ٩:٠٥ in Arabic too); AM or PM keeps its place on the reading side.
+          Widget select(int i) => SizedBox(width: each, child: selects[i]);
           return Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (var i = 0; i < n; i++) ...[
-                if (i > 0) const SizedBox(width: gap),
-                SizedBox(width: each, child: selects[i]),
-              ],
+              Row(
+                textDirection: TextDirection.ltr,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  select(0),
+                  const SizedBox(width: gap),
+                  select(1),
+                ],
+              ),
+              if (n > 2) ...[const SizedBox(width: gap), select(2)],
             ],
           );
         },

@@ -1,5 +1,8 @@
 /// Formats English dates, 24-hour times, durations and numbers for Comic captions.
 ///
+/// The shapes and digits are English in every language; an app's own time in its language and digits is
+/// `RawWidgetsLocalizations.formatTimeOfDay` (or `formatHour` and `formatMinute`).
+///
 /// [time] uses `19:30`, [range] uses `19:30–23:00`, and [day] uses
 /// `Thursday 14 March`. [sum] returns a number with two decimal places so
 /// the caller can place a currency symbol or unit alongside it.

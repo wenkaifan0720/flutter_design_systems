@@ -1,3 +1,11 @@
+## 0.6.2
+
+- Requires ui_core 0.6.1.
+- A `ComicTimePicker` writes its hours and minutes in the app's digits (Arabic's ٩ and ٠٥, Persian's ۹ and ۰۵), with ui_core's `formatDecimal` and `formatMinute`, as Material's time picker does, on either clock. Before, they were ASCII digits in every language. English reads as before.
+- A `ComicTimePicker` keeps its hour left of its minutes in every language, as Material's time picker keeps them (a time reads ٩:٠٥ in Arabic too); AM or PM keeps its place on the reading side. Before, right to left put the minutes left of the hour.
+- A `ComicPagination` too narrow for its numbers says where it stands in the app's language and digits (ui_core's `positionLabel`: Arabic's "٦ من ١٢"), as Material's `pageRowsInfoTitle` does; so do its page buttons' spoken names and a `ComicCarouselView`'s slides. Before, they said "Page 6 of 12" in every language. English still does.
+- `ComicFormat`'s documentation says its shapes and digits are English in every language, and points to `RawWidgetsLocalizations.formatTimeOfDay` for an app's own time.
+
 ## 0.6.1
 
 - A snack bar's action is the act (`ComicButton.filled`), as a Material `SnackBarAction` takes the accent; its dismiss stays a plain key. Before, the action and the dismiss looked alike.

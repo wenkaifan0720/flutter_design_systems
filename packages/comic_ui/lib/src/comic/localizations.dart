@@ -332,6 +332,8 @@ class _ComicLocalizationsShared extends ComicLocalizationsEn {
   String rating(int count, int total) =>
       _shared.ratingValueLabel(count.toDouble(), total);
   @override
+  String page(int page, int total) => _shared.positionLabel(page, total);
+  @override
   List<String> get months => [
     for (var month = 1; month <= 12; month++)
       _shared.formatMonth(DateTime(2000, month)),
