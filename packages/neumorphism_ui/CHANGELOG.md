@@ -1,3 +1,9 @@
+## 0.6.3
+
+- Requires ui_core 0.6.1.
+- `NeumorphicTimePicker` writes its time and its hour and minute keys in the app's digits, through ui_core's `formatHour`, `formatMinute` and `formatDecimal` (`RawTimeFormatting`), as its calendar's days are: in Arabic 9:05 reads ٩:٠٥ ص, in Persian ۹:۰۵ ق.ظ., with or without `NeumorphicLocalizations.delegate`. They were written in Western digits in Arabic (intl's Arabic writes them so, and with no delegate the numbers were English's). The face, the half day's words and English are as before.
+- `NeumorphicPagination`'s page keys write their pages in the app's digits (ui_core's `formatDecimal`), as their spoken names already did.
+
 ## 0.6.2
 
 - Keyboard focus by night lights a long part (a wide button, a field, a stepper) with a soft light that falls off over several pixels, as it lights a small part and as every relief light does. Before, a focused part at least 40 tall and half again as wide drew its light as a hard-edged copy of its outline, with a notch at its lower corner. Day drawing is unchanged.

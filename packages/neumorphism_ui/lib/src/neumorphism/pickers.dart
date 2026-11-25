@@ -5,6 +5,9 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawTimeOfDay;
+import 'package:ui_core/ui_core.dart'
+    show RawTimeFormatting, RawWidgetsLocalizations;
 
 import 'controls.dart';
 import 'component_themes.dart';
@@ -641,8 +644,26 @@ class NeumorphicTimePicker extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final partStyle = NeumorphicStyle.layered([style, t.timePickerTheme]);
     final words = NeumorphicLocalizations.of(context);
+    // The figures in the app's digits (ui_core's formatHour, formatMinute
+    // and formatDecimal), as the calendar's days are: intl's Arabic writes
+    // Western digits, and with no delegate the words above are English's.
+    final digits = RawWidgetsLocalizations.of(context);
     final time = value ?? const NeumorphicTime(12, 0);
     final fullDay = twentyFour ?? MediaQuery.alwaysUse24HourFormatOf(context);
+    String minuteOf(int minute) =>
+        digits.formatMinute(RawTimeOfDay(hour: 0, minute: minute));
+    // The heading: "09:05" on the 24-hour face, "9:05 AM" on the 12-hour
+    // one; the half day's words are the look's.
+    String heading(NeumorphicTime v) {
+      final at = RawTimeOfDay(hour: v.hour, minute: v.minute);
+      if (fullDay) {
+        return '${digits.formatHour(at, alwaysUse24HourFormat: true)}:'
+            '${digits.formatMinute(at)}';
+      }
+      return '${digits.formatDecimal(at.hourOfPeriod)}:'
+          '${digits.formatMinute(at)} ${at.isPm ? words.pm : words.am}';
+    }
+
     final minutes = {
       for (var i = 0; i < 60; i += minuteStep) i,
       if (value != null) value!.minute,
@@ -654,8 +675,7 @@ class NeumorphicTimePicker extends StatelessWidget {
         Semantics(
           liveRegion: true,
           child: Text(
-            value?.format(twentyFour: fullDay, localizations: words) ??
-                words.chooseTime,
+            value == null ? words.chooseTime : heading(value!),
             style: t.textTheme.page,
             // On the column's edge, as the hour and minute rows under it start.
             textAlign: TextAlign.start,
@@ -676,7 +696,7 @@ class NeumorphicTimePicker extends StatelessWidget {
             for (var hour = 0; hour < (fullDay ? 24 : 12); hour++)
               NeumorphicButtonSegment(
                 hour,
-                words.formatNumber(!fullDay && hour == 0 ? 12 : hour),
+                digits.formatDecimal(!fullDay && hour == 0 ? 12 : hour),
               ),
           ],
           onChanged: onChanged == null
@@ -696,10 +716,7 @@ class NeumorphicTimePicker extends StatelessWidget {
           value: value?.minute,
           segments: [
             for (final minute in minutes)
-              NeumorphicButtonSegment(
-                minute,
-                words.formatNumber(minute).padLeft(2, words.formatNumber(0)),
-              ),
+              NeumorphicButtonSegment(minute, minuteOf(minute)),
           ],
           onChanged: onChanged == null
               ? null

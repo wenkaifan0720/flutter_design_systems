@@ -891,8 +891,9 @@ class NeumorphicPagination extends StatelessWidget {
                     face: face,
                     target: cell,
                     onPressed: onChanged == null ? null : () => go(p),
+                    // The page in the app's digits, as its spoken name is.
                     child: Text(
-                      '${p + 1}',
+                      RawWidgetsLocalizations.of(context).formatDecimal(p + 1),
                       style: t.textTheme.caption.tabular.copyWith(
                         color: p == page ? t.colors.ink : t.colors.inkSecondary,
                         fontWeight: p == page
