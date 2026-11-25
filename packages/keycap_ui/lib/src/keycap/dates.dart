@@ -896,14 +896,20 @@ class _TimePanelState extends State<_TimePanel> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          KeycapWheelPicker(
-            columns: (_) => columns,
-            selection: selection,
-            separator: ':',
-            onChanged: (s) => setState(() {
-              _minute = s[1];
-              _hour = h24 ? s[0] : s[0] + (_hour < 12 ? 0 : 12);
-            }),
+          // Hours stand before minutes, left to right, in either direction,
+          // as Material's time picker keeps them and as the key above reads
+          // them ("٩:٠٥"); the half day's keys keep the reading side.
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: KeycapWheelPicker(
+              columns: (_) => columns,
+              selection: selection,
+              separator: ':',
+              onChanged: (s) => setState(() {
+                _minute = s[1];
+                _hour = h24 ? s[0] : s[0] + (_hour < 12 ? 0 : 12);
+              }),
+            ),
           ),
           const SizedBox(height: KeycapSpacing.small),
           if (h24)

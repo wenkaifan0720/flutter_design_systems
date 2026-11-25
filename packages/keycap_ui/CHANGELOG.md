@@ -1,3 +1,7 @@
+## 0.4.3
+
+- `KeycapTimePicker`'s wheels keep hours before minutes, left to right, under a right-to-left `Directionality` too, as Material's time picker keeps them and as the key above them reads the time ("٩:٠٥"). In Arabic the hour's wheel stood on the right, so the chosen row read "٠٥ : ٩" under a key reading ٩:٠٥. The half day's keys keep the reading side. Left-to-right drawing is unchanged.
+
 ## 0.4.2
 
 - Requires ui_core 0.6.1.
