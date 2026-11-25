@@ -21,6 +21,10 @@ export 'package:ui_core/ui_core.dart' show RawPickerColumn;
 /// in the yellow ring. Use it where a phone's spinning list is expected;
 /// on a form a select or typed boxes are quicker.
 ///
+/// A time's hour stays left of its minutes in every language, as Material's
+/// time picker keeps them: in a right-to-left app, give the minutes' column
+/// first (as the gallery's Wheel picker does).
+///
 /// Reads [CivicStyle]'s fill (the chosen band) and foreground (its words)
 /// by state: its `style:`, then [CivicThemeData.wheelPickerStyle].
 ///
@@ -28,8 +32,20 @@ export 'package:ui_core/ui_core.dart' show RawPickerColumn;
 /// CivicWheelPicker(
 ///   labelText: 'Arrival time',
 ///   columns: (_) => [
-///     RawPickerColumn(itemCount: 24, itemLabel: (i) => '$i', looping: true),
-///     RawPickerColumn(itemCount: 4, itemLabel: (i) => '${i * 15}'.padLeft(2, '0')),
+///     RawPickerColumn(
+///       itemCount: 24,
+///       itemLabel: (i) => RawWidgetsLocalizations.of(context).formatHour(
+///         RawTimeOfDay(hour: i, minute: 0),
+///         alwaysUse24HourFormat: true,
+///       ),
+///       looping: true,
+///     ),
+///     RawPickerColumn(
+///       itemCount: 4,
+///       itemLabel: (i) =>
+///           RawWidgetsLocalizations.of(context)
+///               .formatMinute(RawTimeOfDay(hour: 0, minute: i * 15)),
+///     ),
 ///   ],
 ///   selection: slot,
 ///   onChanged: (next) => setState(() => slot = next),

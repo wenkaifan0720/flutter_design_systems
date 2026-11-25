@@ -1,7 +1,7 @@
 name: civic_ui
 description: >-
   A Flutter design system for public services: one thing per page, large type, a heavy yellow focus, errors said in words, answers checked before they are sent.
-version: 0.6.0
+version: 0.6.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/civic/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/civic/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/civic_ui
@@ -35,7 +35,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.6.0
+  ui_core: ^0.6.1
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"

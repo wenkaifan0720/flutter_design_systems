@@ -608,26 +608,32 @@ final RawInventory civicInventory = RawInventory(
     RawInventoryEntry.present('Calendar', (_) => const _Days()),
     RawInventoryEntry.present(
       'WheelPicker',
-      // The columns' names in the app's language: ui_core's words.
-      (context) => CivicWheelPicker(
-        labelText: 'Collection time',
-        columns: (_) => [
-          RawPickerColumn(
-            itemCount: 24,
-            itemLabel: (i) => '$i'.padLeft(2, '0'),
-            semanticLabel: RawWidgetsLocalizations.of(context)
-                .timePickerHourLabel,
+      // The columns' names and figures in the app's language and digits: ui_core's words. Hour then minute, left
+      // to right in every language, as Material's time picker keeps them: right to left, the minutes come first.
+      (context) {
+        final words = RawWidgetsLocalizations.of(context);
+        final hour = RawPickerColumn(
+          itemCount: 24,
+          itemLabel: (i) => words.formatHour(
+            RawTimeOfDay(hour: i, minute: 0),
+            alwaysUse24HourFormat: true,
           ),
-          RawPickerColumn(
-            itemCount: 4,
-            itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
-            semanticLabel: RawWidgetsLocalizations.of(context)
-                .timePickerMinuteLabel,
-          ),
-        ],
-        selection: const [9, 2],
-        onChanged: _drop,
-      ),
+          semanticLabel: words.timePickerHourLabel,
+        );
+        final minute = RawPickerColumn(
+          itemCount: 4,
+          itemLabel: (i) =>
+              words.formatMinute(RawTimeOfDay(hour: 0, minute: i * 15)),
+          semanticLabel: words.timePickerMinuteLabel,
+        );
+        final ltr = Directionality.of(context) == TextDirection.ltr;
+        return CivicWheelPicker(
+          labelText: 'Collection time',
+          columns: (_) => ltr ? [hour, minute] : [minute, hour],
+          selection: ltr ? const [9, 2] : const [2, 9],
+          onChanged: _drop,
+        );
+      },
     ),
     RawInventoryEntry.present('ColorPicker', (_) => const _Colour()),
     RawInventoryEntry.present(

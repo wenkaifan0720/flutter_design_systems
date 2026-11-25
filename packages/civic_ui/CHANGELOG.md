@@ -1,3 +1,10 @@
+## 0.6.1
+
+- Requires ui_core 0.6.1.
+- The gallery's and the inventory's `CivicWheelPicker` write their hours and minutes in the app's digits (Arabic's ٠٩ and ٣٠), with ui_core's `formatHour` and `formatMinute`, as Material's time picker does, and the wheel's example in its documentation shows how. Before, they were ASCII digits in every language. English reads as before.
+- The gallery's and the inventory's time wheel keeps its hour left of its minutes in every language, as Material's time picker keeps them (right to left, they give the minutes' column first); the wheel's documentation says so. Before, right to left put the minutes left of the hour.
+- `CivicFormat`'s documentation says its shapes and digits are English in every language, and points to `RawWidgetsLocalizations.formatTimeOfDay` for an app's own time.
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0 (and ui_core_test 0.4.0 in tests).

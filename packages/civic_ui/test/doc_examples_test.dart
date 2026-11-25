@@ -859,10 +859,19 @@ class _Caller {
     'CivicWheelPicker': (context) => CivicWheelPicker(
       labelText: 'Arrival time',
       columns: (_) => [
-        RawPickerColumn(itemCount: 24, itemLabel: (i) => '$i', looping: true),
+        RawPickerColumn(
+          itemCount: 24,
+          itemLabel: (i) => RawWidgetsLocalizations.of(context).formatHour(
+            RawTimeOfDay(hour: i, minute: 0),
+            alwaysUse24HourFormat: true,
+          ),
+          looping: true,
+        ),
         RawPickerColumn(
           itemCount: 4,
-          itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
+          itemLabel: (i) =>
+              RawWidgetsLocalizations.of(context)
+                  .formatMinute(RawTimeOfDay(hour: 0, minute: i * 15)),
         ),
       ],
       selection: slot,

@@ -8,6 +8,10 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
 /// Formats dates, times and numbers in English for Civic services.
+///
+/// The shapes and digits are English in every language; an app's own time in
+/// its language and digits is `RawWidgetsLocalizations.formatTimeOfDay` (or
+/// `formatHour` and `formatMinute`).
 abstract final class CivicFormat {
   /// Formats [minorUnits] with [symbol], for example `€60` or `€62.50`.
   ///

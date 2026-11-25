@@ -104,31 +104,39 @@ class _WheelState extends State<_Wheel> {
   List<int> _slot = const [9, 2];
 
   @override
-  Widget build(BuildContext context) => KitSection(
-    title: 'Wheel picker',
-    caption:
-        'Flat, not a drum: a straight list, the chosen row across the '
-        'middle with the chosen rule down its start.',
-    children: [
-      CivicWheelPicker(
-        labelText: 'Collection time',
-        columns: (_) => [
-          RawPickerColumn(
-            itemCount: 24,
-            itemLabel: (i) => '$i'.padLeft(2, '0'),
-            semanticLabel: RawWidgetsLocalizations.of(context)
-                .timePickerHourLabel,
-          ),
-          RawPickerColumn(
-            itemCount: 4,
-            itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
-            semanticLabel: RawWidgetsLocalizations.of(context)
-                .timePickerMinuteLabel,
-          ),
-        ],
-        selection: _slot,
-        onChanged: (next) => setState(() => _slot = next),
+  Widget build(BuildContext context) {
+    // Hour then minute, left to right in every language, as Material's time
+    // picker keeps them: right to left, the minutes come first.
+    final words = RawWidgetsLocalizations.of(context);
+    final hour = RawPickerColumn(
+      itemCount: 24,
+      itemLabel: (i) => words.formatHour(
+        RawTimeOfDay(hour: i, minute: 0),
+        alwaysUse24HourFormat: true,
       ),
-    ],
-  );
+      semanticLabel: words.timePickerHourLabel,
+    );
+    final minute = RawPickerColumn(
+      itemCount: 4,
+      itemLabel: (i) =>
+          words.formatMinute(RawTimeOfDay(hour: 0, minute: i * 15)),
+      semanticLabel: words.timePickerMinuteLabel,
+    );
+    final ltr = Directionality.of(context) == TextDirection.ltr;
+    return KitSection(
+      title: 'Wheel picker',
+      caption:
+          'Flat, not a drum: a straight list, the chosen row across the '
+          'middle with the chosen rule down its start.',
+      children: [
+        CivicWheelPicker(
+          labelText: 'Collection time',
+          columns: (_) => ltr ? [hour, minute] : [minute, hour],
+          selection: ltr ? _slot : _slot.reversed.toList(),
+          onChanged: (next) =>
+              setState(() => _slot = ltr ? next : next.reversed.toList()),
+        ),
+      ],
+    );
+  }
 }
