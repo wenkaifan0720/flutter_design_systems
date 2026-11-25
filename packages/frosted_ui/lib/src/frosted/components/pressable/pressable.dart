@@ -156,8 +156,8 @@ class FrostedPressable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A control stands at the platform's touch target round its face (48
-    // under a finger, 44 under a pointer), live or not, as Material pads
+    // A control stands at the platform's touch target round its face (the
+    // floor, 40), live or not, as Material pads
     // its targets: its node, its reach and its layout are that square, and
     // going inert never moves what stands round it.
     return _pressable();

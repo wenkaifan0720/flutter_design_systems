@@ -1019,18 +1019,17 @@ void main() {
           isSemantics(isSelected: false, hasTapAction: true),
         );
         expect(_node(t, 'Sam Okoro'), isSemantics(hasTapAction: false));
+        // The pearl steps back as a dimmed avatar does.
         expect(
           t
-              .widget<Opacity>(
-                find
-                    .descendant(
-                      of: find.byType(FrostedPerson).at(2),
-                      matching: find.byType(Opacity),
-                    )
-                    .first,
+              .widget<FrostedAvatar>(
+                find.descendant(
+                  of: find.byType(FrostedPerson).at(2),
+                  matching: find.byType(FrostedAvatar),
+                ),
               )
-              .opacity,
-          FrostedChromeMetrics.personDimOpacity,
+              .dimmed,
+          isTrue,
         );
         // Only the pearl steps back: the name keeps its ink (law 8).
         expect(
@@ -1137,7 +1136,7 @@ void main() {
       // A live check stands in its touch target round its 24 disc.
       expect(
         t.getSize(find.byType(FrostedCheckbox).first),
-        const Size.square(FrostedBreakpoints.touchHitTarget),
+        Size.square(FrostedBreakpoints.targets.touch.height),
       );
       await t.tap(find.byType(FrostedCheckbox).first);
       await t.pump();
@@ -1151,9 +1150,12 @@ void main() {
         isSemantics(isChecked: true, hasTapAction: false),
       );
       expect(find.byIcon(LucideIcons.check), findsNWidgets(2));
-      // The round answers a 44 target round it.
+      // The round answers the target round it (the floor, 40): a press 2
+      // inside its edge.
       final centre = t.getCenter(find.byType(FrostedCheckbox).first);
-      await t.tapAt(centre + const Offset(20, 0));
+      await t.tapAt(
+        centre + Offset(FrostedBreakpoints.targets.touch.width / 2 - 2, 0),
+      );
       await t.pump();
       expect(seen, [true, false, true]);
     });

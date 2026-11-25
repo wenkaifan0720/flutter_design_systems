@@ -7,13 +7,13 @@ import 'package:ui_core/ui_core.dart';
 import '../theme.dart';
 
 /// Lays [child] out at least a [target] square, as Material pads its
-/// targets (ui_core's [TapTargetPadding]): a 32 point disc stands in a 48
-/// square under a finger (44 under a pointer:
-/// `FrostedBreakpoints.hitTargetOf`). Placed inside the control's node and
-/// its gesture (a `FrostedPressable` places its own round its face), the
-/// control's layout, the area a tap reaches and the box a screen reader
-/// outlines are one, and a neighbour stands past the target rather than
-/// inside it. The square is laid out: what stands round it makes room.
+/// targets (ui_core's [TapTargetPadding]): a 32 point disc stands in a 40
+/// square, the floor in force (`FrostedBreakpoints.hitTargetOf`). Placed
+/// inside the control's node and its gesture (a `FrostedPressable` places
+/// its own round its face), the control's layout, the area a tap reaches and
+/// the box a screen reader outlines are one, and a neighbour stands past the
+/// target rather than inside it. The square is laid out: what stands round
+/// it makes room.
 ///
 /// The face stands where the nearest [FrostedTargetSide] says, else at
 /// [alignment], else centred: on a keyline (a bare check at a column's
@@ -170,13 +170,13 @@ class _RenderFieldRoom extends RenderProxyBox {
   }
 }
 
-/// Stands [child] in a lane at least [height] tall (the touch target: 48
-/// under a finger, 44 under a pointer), the child centred in it, and
-/// answers a tap in the lane above or below the child as one at the child's
-/// middle row, as Material redirects a padded chip's margin: a remove key
-/// in a 28 tag answers over the lane's whole height, its node spanning it
-/// too ([FrostedLaneKey]). The lane is laid out: what stands round it makes
-/// room. Plumbing of the components (a tag, an input chip).
+/// Stands [child] in a lane at least [height] tall (the touch target, 40),
+/// the child centred in it, and answers a tap in the lane above or below the
+/// child as one at the child's middle row, as Material redirects a padded
+/// chip's margin: a remove key in a 28 tag answers over the lane's whole
+/// height, its node spanning it too ([FrostedLaneKey]). The lane is laid
+/// out: what stands round it makes room. Plumbing of the components (a tag,
+/// an input chip).
 class FrostedTargetLane extends StatelessWidget {
   /// Stands [child] in its lane.
   const FrostedTargetLane({required this.child, this.height, super.key});
@@ -390,7 +390,7 @@ class _RenderFieldLine extends RenderProxyBox {
 }
 
 /// Its controls stand at a finger's floor on every platform
-/// ([FrostedBreakpoints.touchHitTarget]), as a text entry's well does: an
+/// ([FrostedBreakpoints.touchTargetOf]), as a text entry's well does: an
 /// entry (a composer) keeps one size under a finger and a pointer. Plumbing
 /// of the components.
 class FrostedTouchTargets extends StatelessWidget {

@@ -175,7 +175,8 @@ void main() {
         // A switch also moves its knob, which changes its two places.
         expect(
           marked / all,
-          lessThan(name == 'switch' ? .35 : .2),
+          // A switch's knob is most of its 40-tall target.
+          lessThan(name == 'switch' ? .4 : .2),
           reason: '$marked of $all pixels: a mark, not a fill of ink',
         );
       });

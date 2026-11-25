@@ -18,6 +18,7 @@ import '../../internal/css_shadow.dart';
 import '../../internal/ellipse.dart';
 import '../../internal/face.dart';
 import '../../internal/measure.dart';
+import '../../internal/pane_words.dart';
 import '../wordmark/wordmark.dart';
 import '../../theme.dart';
 import '../marks/marks.dart';
@@ -2037,7 +2038,7 @@ class FrostedPane extends StatelessWidget {
           if (!small || wide)
             _line(
               small ? '$pct%' : share,
-              line.c(hue.ink.withValues(alpha: hue.ink.a * _paneShareOpacity)),
+              line.c(frostedPaneQuiet(t, hue, hue.ink, _paneShareOpacity)),
             ),
         ],
       );
@@ -2140,11 +2141,7 @@ class FrostedPane extends StatelessWidget {
                   ? t.textTheme.labelSmall.semibold.line(15.6).c(hue.ink)
                   : t.textTheme.labelSmall
                         .line(15.6)
-                        .c(
-                          hue.ink.withValues(
-                            alpha: hue.ink.a * _paneMetaOpacity,
-                          ),
-                        ),
+                        .c(frostedPaneQuiet(t, hue, hue.ink, _paneMetaOpacity)),
             ),
         ],
       );

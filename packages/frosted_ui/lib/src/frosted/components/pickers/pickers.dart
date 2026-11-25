@@ -227,6 +227,32 @@ class _WheelBand extends StatelessWidget {
 /// radius. [align] places a column's rows (centred when null); [layout]
 /// lays the columns out (a row of equal ones when null). Inert, and dimmed,
 /// unless [live].
+// A wheel row's figures: the body size on half the row's line.
+TextStyle _wheelStyle(FrostedThemeData t) =>
+    t.textTheme.bodyLarge.line(_wheelRow / 2);
+
+// The room each side of a wheel row's figures.
+const double _wheelInset = FrostedSpacing.s12;
+
+// The width a wheel needs for the widest of [labels], set as the chosen row
+// sets them (the heavier weight), at the reader's text size.
+double _wheelWidth(BuildContext context, Iterable<String> labels) {
+  final style = _wheelStyle(context.frostedTheme).semibold;
+  final scaler = MediaQuery.textScalerOf(context);
+  var widest = 0.0;
+  for (final label in labels) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: style),
+      textDirection: TextDirection.ltr,
+      textScaler: scaler,
+      maxLines: 1,
+    )..layout();
+    widest = math.max(widest, painter.width);
+    painter.dispose();
+  }
+  return widest.ceilToDouble() + 2 * _wheelInset;
+}
+
 Widget _wheels(
   BuildContext context, {
   required bool live,
@@ -237,7 +263,7 @@ Widget _wheels(
   Widget Function(BuildContext context, List<Widget> columns)? layout,
 }) {
   final t = context.frostedTheme;
-  final style = t.textTheme.bodyLarge.line(_wheelRow / 2);
+  final style = _wheelStyle(t);
   return FrostedDim(
     off: !live,
     child: RawPicker(
@@ -255,7 +281,7 @@ Widget _wheels(
       itemBuilder: (context, row) => Align(
         alignment: align?.call(row.column) ?? Alignment.center,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: FrostedSpacing.s12),
+          padding: const EdgeInsets.symmetric(horizontal: _wheelInset),
           child: FrostedDim(
             off: !row.enabled && live,
             child: Text(
@@ -368,28 +394,29 @@ class FrostedTimePicker extends StatelessWidget {
     final am = say(words.am, english.am, shared.anteMeridiemAbbreviation);
     final pm = say(words.pm, english.pm, shared.postMeridiemAbbreviation);
     final halves = [am, pm];
+    // In the reader's digits (Arabic's ٠٩ and ٣٠), as Material's time
+    // picker writes formatHour and formatMinute.
+    String hourLabel(int i) => h24
+        ? shared.formatHour(
+            RawTimeOfDay(hour: i, minute: 0),
+            alwaysUse24HourFormat: true,
+          )
+        : shared.formatDecimal(i + 1);
+    String minuteLabel(int i) =>
+        shared.formatMinute(RawTimeOfDay(hour: 0, minute: i * minuteInterval));
     final wheels = _wheels(
       context,
       live: change != null,
       columns: [
         RawPickerColumn(
           itemCount: h24 ? 24 : 12,
-          // In the reader's digits (Arabic's ٠٩ and ٣٠), as Material's
-          // time picker writes formatHour and formatMinute.
-          itemLabel: (i) => h24
-              ? shared.formatHour(
-                  RawTimeOfDay(hour: i, minute: 0),
-                  alwaysUse24HourFormat: true,
-                )
-              : shared.formatDecimal(i + 1),
+          itemLabel: hourLabel,
           semanticLabel: hourName,
           looping: true,
         ),
         RawPickerColumn(
           itemCount: 60 ~/ minuteInterval,
-          itemLabel: (i) => shared.formatMinute(
-            RawTimeOfDay(hour: 0, minute: i * minuteInterval),
-          ),
+          itemLabel: minuteLabel,
           semanticLabel: minuteName,
           looping: true,
         ),
@@ -422,26 +449,58 @@ class FrostedTimePicker extends StatelessWidget {
         1 => Alignment.centerLeft,
         _ => Alignment.center,
       },
-      layout: (context, columns) => Row(
-        children: [
-          Expanded(child: columns[0]),
-          SizedBox(
-            width: FrostedSpacing.s8,
-            child: Center(
-              child: ExcludeSemantics(
-                child: Text(
-                  ':',
-                  style: t.textTheme.bodyLarge.semibold.c(
-                    t.colorScheme.textPrimary,
-                  ),
+      layout: (context, columns) {
+        final colon = SizedBox(
+          width: FrostedSpacing.s8,
+          child: Center(
+            child: ExcludeSemantics(
+              child: Text(
+                ':',
+                style: t.textTheme.bodyLarge.semibold.c(
+                  t.colorScheme.textPrimary,
                 ),
               ),
             ),
           ),
-          Expanded(child: columns[1]),
-          if (columns.length > 2) Expanded(child: columns[2]),
-        ],
-      ),
+        );
+        // The 24-hour clock's two wheels share the band, the colon at its
+        // centre.
+        if (columns.length < 3) {
+          return Row(
+            children: [
+              Expanded(child: columns[0]),
+              colon,
+              Expanded(child: columns[1]),
+            ],
+          );
+        }
+        // On the 12-hour clock each wheel is as wide as its widest figure
+        // or word and the three stand together at the band's centre (three
+        // equal thirds put the colon a third of the way in and the time
+        // off the centre). In a band too narrow for them they share it by
+        // their widths.
+        Widget wheel(Widget column, double width) => Flexible(
+          flex: width.round(),
+          child: SizedBox(width: width, child: column),
+        );
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            wheel(
+              columns[0],
+              _wheelWidth(context, [for (var i = 0; i < 12; i++) hourLabel(i)]),
+            ),
+            colon,
+            wheel(
+              columns[1],
+              _wheelWidth(context, [
+                for (var i = 0; i < 60 ~/ minuteInterval; i++) minuteLabel(i),
+              ]),
+            ),
+            wheel(columns[2], _wheelWidth(context, halves)),
+          ],
+        );
+      },
     );
     // At most 360 wide, at the start of a wider field: the hour, the minute
     // and the half of the day stay together on one short band.
@@ -495,7 +554,7 @@ Future<FrostedTime?> showFrostedTimePicker(
   return showFrostedDialog<FrostedTime>(
     context,
     builder: (dialogContext) => _PickerCard(
-      title: title ?? FrostedLocalizations.of(dialogContext).selectTime,
+      title: title ?? FrostedSharedWords.of(dialogContext).selectTime,
       onDone: () => Navigator.of(dialogContext).pop(chosen),
       child: StatefulBuilder(
         builder: (context, setState) => FrostedTimePicker(
@@ -537,6 +596,7 @@ class FrostedDatePicker extends StatefulWidget {
     this.firstDate,
     this.lastDate,
     this.currentDate,
+    this.onDisplayedMonthChanged,
     super.key,
   });
 
@@ -554,6 +614,10 @@ class FrostedDatePicker extends StatefulWidget {
 
   /// Today, for its ring; null asks the device's clock.
   final DateTime? currentDate;
+
+  /// Hands over the first day of the month shown each time an arrow steps
+  /// to another (`CalendarDatePicker.onDisplayedMonthChanged`'s role).
+  final ValueChanged<DateTime>? onDisplayedMonthChanged;
 
   @override
   State<FrostedDatePicker> createState() => _FrostedDatePickerState();
@@ -582,8 +646,49 @@ class FrostedDatePicker extends StatefulWidget {
           currentDate,
           defaultValue: null,
         ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has(
+          'onDisplayedMonthChanged',
+          onDisplayedMonthChanged,
+        ),
       );
   }
+}
+
+// A day row's height and the gap under it at [context]: the touch target
+// tall (the floor, 40), never under the source's 44 (its visual row); the
+// rows close up by what the target adds, so the days keep their pitch.
+({double row, double gap}) _dayRows(BuildContext context) {
+  final row = math.max(
+    FrostedChromeMetrics.pickerDayRow,
+    FrostedBreakpoints.hitTargetOf(context),
+  );
+  final gap = math.max(
+    0.0,
+    FrostedSpacing.s4 - (row - FrostedChromeMetrics.pickerDayRow),
+  );
+  return (row: row, gap: gap);
+}
+
+// The weeks [month] spans, its first day in the column of its weekday
+// counted from [firstDayOfWeek] (1 Monday … 7 Sunday): four to six.
+int _weeksIn(DateTime month, int firstDayOfWeek) {
+  final days = DateTime(month.year, month.month + 1, 0).day;
+  final lead = (month.weekday - firstDayOfWeek) % 7;
+  return (lead + days + 6) ~/ 7;
+}
+
+// Around a month raised in a picker card: the month builds its own weeks
+// only, and the card keeps the six-week room about itself.
+class _HugWeeks extends InheritedWidget {
+  const _HugWeeks({required super.child});
+
+  static bool of(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_HugWeeks>() != null;
+
+  @override
+  bool updateShouldNotify(_HugWeeks old) => false;
 }
 
 class _FrostedDatePickerState extends State<FrostedDatePicker> {
@@ -608,8 +713,10 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
     return true;
   }
 
-  void _go(int by) =>
-      setState(() => _month = DateTime(_month.year, _month.month + by));
+  void _go(int by) {
+    setState(() => _month = DateTime(_month.year, _month.month + by));
+    widget.onDisplayedMonthChanged?.call(_month);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -721,11 +828,10 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
       final chosen = widget.value != null && _sameDay(widget.value!, day);
       final isToday = _sameDay(today, day);
       final change = widget.onChanged;
-      final ink = chosen
-          ? t.colorScheme.onButton
-          : isToday
-          ? t.colorScheme.textPrimary
-          : t.colorScheme.textSecondary;
+      // Today's figure is in the days' ink at their weight, its ring marking
+      // it (as Material's today): in the ink it read bolder by night than
+      // the chosen day's dark word on its pill.
+      final ink = chosen ? t.colorScheme.onButton : t.colorScheme.textSecondary;
       Widget draw(Set<WidgetState> states) {
         final s = dayStyle.at(states);
         final fill = s.fill;
@@ -754,7 +860,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
                 digits.formatDecimal(n),
                 style: s.words(() {
                   final figure =
-                      (chosen || isToday
+                      (chosen
                               ? t.textTheme.labelLarge.semibold
                               : t.textTheme.labelLarge)
                           .c(ink)
@@ -791,17 +897,8 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
       );
     }
 
-    // A day's row is the touch target tall (48 under a finger, 44 under a
-    // pointer, never under the source's 44); the rows close up by what the
-    // target adds, so the days keep their pitch and the card its height.
-    final row = math.max(
-      FrostedChromeMetrics.pickerDayRow,
-      FrostedBreakpoints.hitTargetOf(context),
-    );
-    final rowGap = math.max(
-      0.0,
-      FrostedSpacing.s4 - (row - FrostedChromeMetrics.pickerDayRow),
-    );
+    final (:row, gap: rowGap) = _dayRows(context);
+    final hug = _HugWeeks.of(context);
     final rows = <Widget>[];
     for (var start = 1 - lead; start <= days; start += 7) {
       rows.add(
@@ -816,9 +913,26 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
         ),
       );
     }
-    // Six rows always, so the card keeps its height month to month.
-    while (rows.length < 6) {
+    // Six rows always, so the month keeps its height month to month; in a
+    // picker card its own weeks only, growing and shrinking from the top
+    // (the card keeps the six-week room, so its head never moves).
+    while (!hug && rows.length < 6) {
       rows.add(SizedBox(height: row));
+    }
+    Widget weeks = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: rowGap,
+      children: rows,
+    );
+    if (hug) {
+      final motion = FrostedMotion.of(context);
+      weeks = AnimatedSize(
+        duration: motion.base,
+        curve: motion.curve,
+        alignment: Alignment.topCenter,
+        child: weeks,
+      );
     }
 
     // A month stands at most 400 wide, at the start of a wider field, as
@@ -840,12 +954,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
                 head,
                 const SizedBox(height: FrostedSpacing.s4),
                 weekdays,
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: rowGap,
-                  children: rows,
-                ),
+                weeks,
               ],
             ),
           ),
@@ -872,30 +981,52 @@ Future<DateTime?> showFrostedDatePicker(
   String? title,
 }) {
   var chosen = initialDate == null ? null : _day(initialDate);
+  var shown = _monthOf(chosen ?? currentDate ?? DateTime.now());
   return showFrostedDialog<DateTime>(
     context,
     builder: (dialogContext) => StatefulBuilder(
-      builder: (context, setState) => _PickerCard(
-        month: true,
-        title: title ?? FrostedLocalizations.of(dialogContext).selectDate,
-        onDone: chosen == null
-            ? null
-            : () => Navigator.of(dialogContext).pop(chosen),
-        child: FrostedDatePicker(
-          value: chosen,
-          firstDate: first,
-          lastDate: last,
-          currentDate: currentDate,
-          onChanged: (d) => setState(() => chosen = d),
-        ),
-      ),
+      builder: (context, setState) {
+        // The card hugs the weeks of the month it shows and stands at the
+        // top of the room six weeks take, so a month turning moves only
+        // its foot: the head and its arrows stay under the finger (as
+        // Material's month keeps six rows).
+        final (:row, :gap) = _dayRows(context);
+        final weeks = _weeksIn(
+          shown,
+          RawWidgetsLocalizations.of(context).firstDayOfWeek,
+        );
+        final motion = FrostedMotion.of(context);
+        return AnimatedPadding(
+          padding: EdgeInsets.only(bottom: (6 - weeks) * (row + gap)),
+          duration: motion.base,
+          curve: motion.curve,
+          child: _HugWeeks(
+            child: _PickerCard(
+              month: true,
+              title: title ?? FrostedSharedWords.of(dialogContext).selectDate,
+              onDone: chosen == null
+                  ? null
+                  : () => Navigator.of(dialogContext).pop(chosen),
+              child: FrostedDatePicker(
+                value: chosen,
+                firstDate: first,
+                lastDate: last,
+                currentDate: currentDate,
+                onChanged: (d) => setState(() => chosen = d),
+                onDisplayedMonthChanged: (m) => setState(() => shown = m),
+              ),
+            ),
+          ),
+        );
+      },
     ),
   );
 }
 
 /// The card a picker is raised in: the dialog's face, 360 at most, the
-/// [title] over the picker, Cancel and OK at its foot, on the dialog's own
-/// inset and acts so a picker reads as one family with a confirm.
+/// [title] over the picker (none when null, the card then named a dialog),
+/// Cancel and OK at its foot, on the dialog's own inset and acts so a picker
+/// reads as one family with a confirm.
 class _PickerCard extends StatelessWidget {
   const _PickerCard({
     required this.title,
@@ -904,7 +1035,7 @@ class _PickerCard extends StatelessWidget {
     this.month = false,
   });
 
-  final String title;
+  final String? title;
   final VoidCallback? onDone;
   final Widget child;
 
@@ -923,14 +1054,14 @@ class _PickerCard extends StatelessWidget {
       scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
-      label: title,
+      label: title ?? RawWidgetsLocalizations.of(context).dialogLabel,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: _widest),
         child: LayoutBuilder(
           builder: (context, box) {
             // The dialog's inset (24). A month's seven columns keep the
-            // touch target first (48 under a finger, 44 under a pointer):
-            // in a phone's card the inset gives way, to 16 at the least.
+            // touch target first (the floor, 40): in a narrow card the inset
+            // gives way, to 16 at the least.
             final width = math.min(box.maxWidth, _widest);
             final inset = month
                 ? ((width - 2 * FrostedChromeMetrics.outline - 7 * target) / 2)
@@ -965,10 +1096,11 @@ class _PickerCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: FrostedSpacing.s16,
           children: [
-            Semantics(
-              header: true,
-              child: Text(title, style: t.textTheme.titleLarge),
-            ),
+            if (title case final title?)
+              Semantics(
+                header: true,
+                child: Text(title, style: t.textTheme.titleLarge),
+              ),
             child,
             // The dialog's acts, at its gap.
             FrostedActBar([

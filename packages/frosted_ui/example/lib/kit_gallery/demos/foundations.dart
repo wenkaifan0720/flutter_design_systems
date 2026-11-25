@@ -16,6 +16,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Foundations',
   sections: [
+    kitSection('Palettes', children: [const _Palettes()]),
     kitSection('Colour roles', children: [const _Roles()]),
     kitSection('Frosted roles', children: [const _OwnRoles()]),
     kitSection('Spectrum', children: [const _Spectrum()]),
@@ -69,6 +70,105 @@ class _Swatches extends StatelessWidget {
               ],
             ),
           ),
+      ],
+    );
+  }
+}
+
+/// The six presets, each in its own colours in the appearance on show: its
+/// canvas under a pane of its glass with its ink, and its act.
+class _Palettes extends StatelessWidget {
+  const _Palettes();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    return LayoutBuilder(
+      builder: (context, box) {
+        const gap = FrostedSpacing.s12;
+        final across = box.maxWidth >= 600 ? 6 : 3;
+        final each = (box.maxWidth - gap * (across - 1)) / across;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final id in FrostedThemeData.presets)
+              SizedBox(
+                width: each,
+                child: _Palette(id, FrostedThemeData.preset(id, t.brightness)),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _Palette extends StatelessWidget {
+  const _Palette(this.id, this.data);
+
+  final String id;
+  final FrostedThemeData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    final s = data.colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: s.background,
+            gradient: RadialGradient(
+              center: AlignmentDirectional.topStart.resolve(
+                Directionality.of(context),
+              ),
+              radius: 1.2,
+              colors: [data.lights.lilac.withValues(alpha: .35), s.background],
+            ),
+            border: Border.all(color: t.colorScheme.border),
+            borderRadius: BorderRadius.circular(FrostedCorners.r14),
+          ),
+          child: SizedBox(
+            height: 72,
+            child: Padding(
+              padding: const EdgeInsets.all(FrostedSpacing.s8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: data.glass.fill,
+                        border: Border.all(color: data.glass.edge),
+                        borderRadius: BorderRadius.circular(FrostedCorners.r10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Aa',
+                          style: data.textTheme.labelLarge.c(s.textPrimary),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const FrostedGap(FrostedSpacing.s8),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: s.buttonFill,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const SizedBox.square(dimension: 24),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const FrostedGap(FrostedSpacing.s4),
+        Text(
+          id[0].toUpperCase() + id.substring(1),
+          style: t.textTheme.labelMedium,
+        ),
       ],
     );
   }

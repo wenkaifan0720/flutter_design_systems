@@ -27,9 +27,9 @@ abstract final class FrostedStrokes {
 /// How compact the controls stand, as Material's `VisualDensity`: each step
 /// of [vertical] takes 4 from a control's height and each step of
 /// [horizontal] 2 from its padding at either side, from -4 (tightest) to 4
-/// (roomiest). The touch target does not move: 48 where a touch reaches the
-/// control, 44 elsewhere, whatever the density, so a compact face stands in
-/// the same target with room around it.
+/// (roomiest). The touch target does not move: the floor (40), whatever
+/// the density, so a compact face stands in the same target with room
+/// around it.
 ///
 /// ```dart
 /// final theme = FrostedThemeData.opal().copyWith(

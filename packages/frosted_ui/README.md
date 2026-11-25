@@ -1,23 +1,36 @@
 # frosted_ui
 
-Frosted is a Flutter component library for translucent forms, transaction lists, charts and navigation. Choose from seven colour presets, each with a light and dark appearance.
+Frosted is a Flutter component library for translucent forms, transaction lists, charts and navigation. Choose from six colour presets, each with a light and dark appearance.
 
-![Harbor, the gallery's sample app, on its Activity page at 1440 wide and on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/hero.webp)
+![Harbor, the example's sample app, on its Activity page at 1440 wide and on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/frosted/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/frosted/) · [API reference](https://pub.dev/documentation/frosted_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/frosted/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=frosted) · [API reference](https://pub.dev/documentation/frosted_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
 ```sh
-flutter pub add frosted_ui material_ui
+flutter pub add frosted_ui
 ```
+
+A whole app: Frosted's theme over a bare `WidgetsApp`, one screen and one button.
 
 ```dart
+import 'package:flutter/widgets.dart';
 import 'package:frosted_ui/frosted_ui.dart';
+
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFF6E56CF),
+    builder: (context, _) => FrostedTheme(
+      data: FrostedThemeData.opal(),
+      child: FrostedScaffold(body: FrostedButton('Add money', onPressed: () {})),
+    ),
+  ),
+);
 ```
 
-`material_ui` is for the app's `MaterialApp`, as in the set-up below; under a `CupertinoApp` (from `cupertino_ui`) or a
-bare `WidgetsApp`, `frosted_ui` is all an app adds.
+Under a bare `WidgetsApp` or a `CupertinoApp` (from `cupertino_ui`), `frosted_ui` is all an app adds; a `MaterialApp`
+comes from `material_ui` (`flutter pub add material_ui`), as in the set-up below.
 
 ## Set up
 
@@ -79,7 +92,7 @@ To theme just one subtree, wrap it in `FrostedTheme(data: …)`. Its `data` is t
 
 Panes of glass rimmed with light stand on a pale canvas lit by soft washes of colour; one ink act carries the page's
 action, money is set in a display face with its dollars carrying the weight, and a spectrum of pastel hues names the
-categories and objects an app keeps. Seven presets (opal, quartz, garnet, glacier, cobalt, jade and copper), each
+categories and objects an app keeps. Six presets (opal, quartz, garnet, glacier, jade and copper), each
 designed by day and by night, from a phone to a desktop.
 
 | | |
@@ -184,8 +197,8 @@ FrostedNavigationBar(
 `FrostedTheme.of(context)` (or `context.frostedTheme`) returns the `FrostedThemeData` in scope. Restyle a part of the
 tree with a nested `FrostedTheme`, and animate between themes with `AnimatedFrostedTheme`.
 
-- **Presets**: `FrostedThemeData.opal()`, `.quartz()`, `.garnet()`, `.glacier()`, `.cobalt()`, `.jade()` and
-  `.copper()`, each taking a brightness; `FrostedThemeData.preset(id, brightness)` by name.
+- **Presets**: `FrostedThemeData.opal()`, `.quartz()`, `.garnet()`, `.glacier()`, `.jade()` and `.copper()`, each
+  taking a brightness; `FrostedThemeData.preset(id, brightness)` by name. Any other colour is `FrostedThemeData.from`'s.
 - **Your own colours**: `FrostedThemeData.from(accent: plum, brightness: Brightness.dark)` builds the whole palette from
   one colour, moving what it derives until words read 4.5:1 on every ground they stand on.
 - **Groups**: `colorScheme` (the page, its words, the accent, the tones), `textTheme` (`displayLarge` to `labelSmall`,
@@ -194,8 +207,8 @@ tree with a nested `FrostedTheme`, and animate between themes with `AnimatedFros
   deprecated, since a free shadow can make the soft lift a hard one and an opaque tint turns glass into paint.
   `opaqueMaterials: true` is the solid form, for high contrast.
 - **Density**: `FrostedDensity.standard`, `.comfortable` or `.compact`. Unset, it follows the platform
-  (`FrostedDensity.adaptivePlatformDensity`: compact on macOS, Windows and Linux, standard on touch); the 44 and 48 px
-  targets never shrink.
+  (`FrostedDensity.adaptivePlatformDensity`: compact on macOS, Windows and Linux, standard on touch); compact tightens
+  faces, and no target goes under the 40 px floor.
 - **Typeface**: `FrostedTypeface` for a brand's own faces (`FrostedTypeface.app`) or a script the bundled faces lack.
 - **Tokens**: `FrostedCorners` (the radii, and the look's outlines `extraSmall`, `small`, `medium`, `large` and `full`),
   `FrostedSpacing`, `FrostedStrokes` and `FrostedMotion` (its timings, which Reduce Motion turns to cuts) are constants
@@ -242,7 +255,7 @@ FrostedButton.glass(
 ```
 
 What stays Frosted's whatever you set: the canvas's washes of light, the glass's rim of light along its top, the
-spectrum, the ink act's pill, the press read as the face dimming, the 44 and 48 px targets and the motion.
+spectrum, the ink act's pill, the press read as the face dimming, the 40 px target floor and the motion.
 
 ## Composing a page
 
@@ -269,7 +282,8 @@ costs no blur at all. The canvas's washes are painted once and cached.
   clears it a little. Chosen parts stay glass, marked by a printed check or dot and a little more clearing. A row in a
   list or a menu clears within its edge, and the row the keys hold lights its rim. Focus follows the reading order,
   right to left too.
-- **Targets.** 44 px under a pointer and 48 px under a finger (Android, iOS and Fuchsia), as Material pads its targets.
+- **Targets.** 40 px or more under a finger and a pointer (ui_core's floor, WCAG 2.2's target size minimum); chips in a
+  group stand their spacing apart, each target reaching into the room between them.
 - **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop, focused or
   not: the clearing never takes the glass below the ground its words are held on. Focus is a quiet cue: on Frosted's
   own backdrop the cleared glass differs from the resting one by about 1.0:1 to 1.3:1. The lit rim stands out where
@@ -299,8 +313,8 @@ costs no blur at all. The canvas's washes are painted once and cached.
   a field's leading and trailing parts swap. Figures, times and codes stay left to right: an amount keeps its sign and
   `$` in front, a card number, keycaps, badge counts and the clock wheels keep their order, the wordmark does not
   mirror, and charts with their time axes run left to right. Times and dates an app passes in as words are the app's
-  to write in its language. The gallery's Customize panel switches the direction and the text size.
-- **Strings.** Install `RawWidgetsLocalizations.delegate` and `FrostedLocalizations.delegate`, and use `RawWidgetsLocalizations.supportedLocales`, for shared control labels in 30 languages. `FrostedLocalizations` supplies labels specific to the look, including Send, Swap, Pending and Frozen. Its delegate serves every locale with the English labels. Where a part says a word every design system shares (Done, Try again, a day's or a month's name, a time, the time wheel's columns), a reader of another language hears `RawWidgetsLocalizations`' word for it. To translate Frosted's own labels, extend `FrostedLocalizationsEn` and register a delegate for your locale; your words then win. The example gallery includes an Arabic delegate.
+  to write in its language. The example app's Customize panel switches the direction and the text size.
+- **Strings.** Install `RawWidgetsLocalizations.delegate` and `FrostedLocalizations.delegate`, and use `RawWidgetsLocalizations.supportedLocales`, for shared control labels in 30 languages. `FrostedLocalizations` supplies labels specific to the look, including Send, Swap, Pending and Frozen. Its delegate serves every locale with the English labels. Where a part says a word every design system shares (Done, Try again, a day's or a month's name, a time, the time wheel's columns), a reader of another language hears `RawWidgetsLocalizations`' word for it. To translate Frosted's own labels, extend `FrostedLocalizationsEn` and register a delegate for your locale; your words then win. The example app includes an Arabic delegate.
 - **Dates and amounts.** Calendars use `RawWidgetsLocalizations` for the start of the week. For an English reader, `FrostedLocalizations` supplies picker month names, date captions and the 12- or 24-hour clock. For a reader of another language, they come from `RawWidgetsLocalizations` unless your app gives Frosted words of its own. The separate `FrostedFormat` utility formats US English dates and dollar amounts. Supply localized strings to components that accept preformatted text when your app uses another currency or locale.
 - **Other scripts.** Frosted's fonts carry Latin. Arabic, Hebrew, Chinese, Japanese, Hindi and Thai fall back to the
   platform's fonts (on the web, Flutter's Noto fallback).
@@ -311,8 +325,8 @@ Pass a string for a button label and an `IconData` for its optional icon, for ex
 
 ## Example
 
-`example/` is the gallery: every component on its page, in every preset, by day and by night, and its Customize panel
-(preset, your own accent, density, backdrop, direction, text size).
+`example/` sets every component on its page, in each palette, by day and by night, with a Customize panel (palette,
+your own accent, density, backdrop, direction, text size).
 
 ## Requirements
 

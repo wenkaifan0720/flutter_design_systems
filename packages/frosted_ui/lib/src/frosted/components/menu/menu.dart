@@ -659,7 +659,7 @@ class _MenuRow extends StatelessWidget {
               constraints: BoxConstraints(
                 minHeight: math.max(
                   FrostedChromeMetrics.menuItem,
-                  FrostedBreakpoints.touchHitTarget,
+                  FrostedBreakpoints.hitTargetOf(context),
                 ),
               ),
               // Chosen is the brighter glass (law 6), the plate every chosen

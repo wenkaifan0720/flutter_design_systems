@@ -2,6 +2,8 @@
 // value equality; knobs (shapes, strokes, density, typeface, component
 // themes, motion) that reach the parts; one InheritedTheme that mounts under
 // a MaterialApp, a CupertinoApp or a bare WidgetsApp.
+// The retired preset is tested while it resolves.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -27,7 +29,6 @@ void main() {
         'quartz': FrostedThemeData.quartz,
         'garnet': FrostedThemeData.garnet,
         'glacier': FrostedThemeData.glacier,
-        'cobalt': FrostedThemeData.cobalt,
         'jade': FrostedThemeData.jade,
         'copper': FrostedThemeData.copper,
       };
@@ -37,6 +38,15 @@ void main() {
           expect(identical(make(b), FrostedThemeData.preset(id, b)), isTrue);
         }
       });
+    });
+
+    test('cobalt resolves until 0.8.0, outside the presets', () {
+      expect(FrostedThemeData.presets, isNot(contains('cobalt')));
+      for (final b in Brightness.values) {
+        final cobalt = FrostedThemeData.cobalt(b);
+        expect(identical(cobalt, FrostedThemeData.preset('cobalt', b)), isTrue);
+        expect(cobalt.id, 'cobalt');
+      }
     });
 
     test('copyWith with nothing named is an equal value', () {
@@ -62,7 +72,7 @@ void main() {
 
     test('lerp lands on either end and blends between', () {
       final a = FrostedThemeData.opal();
-      final b = FrostedThemeData.cobalt();
+      final b = FrostedThemeData.glacier();
       expect(identical(a.lerp(b, 0), a), isTrue);
       expect(identical(a.lerp(b, 1), b), isTrue);
       expect(a.lerp(null, .5), a);
@@ -435,7 +445,7 @@ void main() {
 
     testWidgets('AnimatedFrostedTheme passes through the lerp', (tester) async {
       final a = FrostedThemeData.opal();
-      final b = FrostedThemeData.cobalt();
+      final b = FrostedThemeData.glacier();
       late BuildContext seen;
       Widget at(FrostedThemeData data) => Directionality(
         textDirection: TextDirection.ltr,

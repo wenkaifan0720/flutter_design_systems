@@ -1,5 +1,5 @@
 // ui_core's shared world checks (world_checks.dart, the same in every look) on a screen of the everyday parts, by day
-// and by night: Flutter's four guidelines (48 and 44 px targets, labelled targets, text contrast), the screen mirrored
+// and by night: the guidelines (the 40 px finger floor, labelled targets, text contrast), the screen mirrored
 // right to left, and nothing overflowing at 200% text. The gallery's own tests run the guidelines on every page and
 // preset (gallery_guidelines_test), the mirror per part (rtl_test) and 200% text per page (gallery_text_scale_test).
 import 'package:material_ui/material_ui.dart';
@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 
+import 'touch_floor.dart';
 import 'world_checks.dart';
 
 void _drop(Object? _) {}
@@ -87,8 +88,7 @@ void main() {
       await t.pumpWidget(_screen(brightness));
       await t.pumpAndSettle();
       final semantics = t.ensureSemantics();
-      await expectLater(t, meetsGuideline(androidTapTargetGuideline));
-      await expectLater(t, meetsGuideline(iOSTapTargetGuideline));
+      await expectLater(t, meetsGuideline(touchFloorGuideline));
       await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
       semantics.dispose();
     });

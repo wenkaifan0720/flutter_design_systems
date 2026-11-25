@@ -1,9 +1,8 @@
 name: frosted_ui
 description: >-
   Frosted glass for Flutter: panes rimmed with light stand on a canvas lit by soft washes of colour, and one ink act carries each page, by day and by night.
-version: 0.6.3
-homepage: https://wenkaifan0720.github.io/flutter_design_systems/frosted/
-documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/frosted/
+version: 0.7.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/frosted/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
@@ -13,7 +12,7 @@ topics:
   - theme
   - glassmorphism
 screenshots:
-  - description: "Harbor, the gallery's sample app, on its Activity page at 1440 wide and on a 390 wide phone, by day."
+  - description: "Harbor, the example's sample app, on its Activity page at 1440 wide and on a 390 wide phone, by day."
     path: screenshots/hero.webp
   - description: "Harbor's Settings page at 1440 wide by night."
     path: screenshots/harbor-settings-desktop-night.webp
@@ -35,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.6.1
+  ui_core: ^0.7.1
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -45,7 +44,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.4.0
+  ui_core_test: ^0.5.1
   # Our looks' layout review, in the repository alone (publish_to: none).
   ui_core_review: ^0.1.0
 

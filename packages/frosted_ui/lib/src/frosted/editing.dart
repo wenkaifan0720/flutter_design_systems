@@ -162,6 +162,8 @@ class FrostedTextContextMenu extends StatelessWidget {
     if (buttonItems.isEmpty) return const SizedBox.shrink();
     final t = FrostedTheme.of(context);
     final touch = frostedTouchEditing(defaultTargetPlatform);
+    // Each item stands at least the floor square: the box a tap reaches.
+    final floor = FrostedBreakpoints.hitTargetOf(context);
     final items = [
       for (final item in buttonItems)
         FrostedPressable(
@@ -169,7 +171,7 @@ class FrostedTextContextMenu extends StatelessWidget {
           label: labelOf(context, item),
           radius: FrostedCorners.r12,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+            constraints: BoxConstraints(minHeight: floor, minWidth: floor),
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: FrostedSpacing.s14,

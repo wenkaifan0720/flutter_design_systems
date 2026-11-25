@@ -659,16 +659,15 @@ class FrostedPerson extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: FrostedChromeMetrics.personGap,
       children: [
-        // One not chosen steps back in its pearl; its words keep their ink
-        // (the source dims the whole person to 0.55, which put a name that
-        // still takes a press under 4.5:1, law 8).
-        Opacity(
-          opacity: dimmed ? FrostedChromeMetrics.personDimOpacity : 1,
-          child: FrostedAvatar(
-            FrostedFormat.initials(name),
-            size: FrostedAvatarSize.large,
-            selected: selected,
-          ),
+        // One not chosen steps back in its pearl, as a dimmed avatar does
+        // (its initials still read 4.5:1 on the faded disc); its words keep
+        // their ink (the source dims the whole person to 0.55, which put a
+        // name that still takes a press under 4.5:1, law 8).
+        FrostedAvatar(
+          FrostedFormat.initials(name),
+          size: FrostedAvatarSize.large,
+          selected: selected,
+          dimmed: dimmed,
         ),
         Column(
           mainAxisSize: MainAxisSize.min,

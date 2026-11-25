@@ -7,13 +7,14 @@ import 'package:flutter/gestures.dart'
     show GestureVelocityTrackerBuilder, MultitouchDragStrategy;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 
 import 'component_themes.dart';
 import 'components/page_motion.dart';
 import 'fonts.dart';
 
+import 'internal/eased_ink.dart';
 import 'internal/platform_words.dart';
 import 'internal/rest_ring.dart';
 import 'internal/themes/atrium.g.dart';
@@ -424,29 +425,28 @@ abstract final class FrostedBreakpoints {
   /// stands as the centred card it is on the desktop.
   static const double medium = 600;
 
-  /// The touch-target floor under a pointer: a mouse or a trackpad.
-  static const double minHitTarget = 44;
-
-  /// The touch-target floor under a finger, as Material pads its targets on
-  /// a phone.
-  static const double touchHitTarget = 48;
-
   /// Frosted's floors, which its theme declares round the app (a
-  /// `RawTapTargetScope`): [touchHitTarget] for a finger,
-  /// [minHitTarget] for a pointer, both above ui_core's 44 and 24.
-  static const RawTapTargets targets = RawTapTargets(
-    touch: Size.square(touchHitTarget),
-    pointer: Size.square(minHitTarget),
+  /// `RawTapTargetScope`): ui_core's floor for a finger (40), and the same
+  /// for a pointer (a mouse or a trackpad), as Material's desktop density
+  /// keeps its targets 40: Frosted's desktop controls stand in a finger's
+  /// room, not ui_core's 24 for a pointer.
+  static final RawTapTargets targets = RawTapTargets(
+    pointer: RawTapTargets.fallback.touch,
   );
 
   /// The floor a target answers on [context]'s platform, from the floors in
-  /// force there (an app's own `RawTapTargetScope`, else [targets]):
-  /// [touchHitTarget] on Android, iOS and Fuchsia, [minHitTarget] on the
-  /// desktop.
+  /// force there (an app's own `RawTapTargetScope`, else [targets]): the
+  /// finger's on Android, iOS and Fuchsia, the pointer's on the desktop.
   static double hitTargetOf(BuildContext context) =>
       (RawTapTargets.maybeOf(context) ?? targets)
           .floorOn(Theme.of(context).platform)
           .shortestSide;
+
+  /// The finger's floor in force at [context] on every platform: what an
+  /// entry (a composer, a search pill) keeps under a pointer too, so it has
+  /// one size wherever it is used.
+  static double touchTargetOf(BuildContext context) =>
+      (RawTapTargets.maybeOf(context) ?? targets).touch.shortestSide;
 
   /// The sidebar's width on the desktop.
   static const double sidebar = 240;
@@ -540,9 +540,10 @@ final class FrostedHue {
 
   /// A hue of the spectrum turned to [degrees] on the wheel, at the source's
   /// pastel lightness, for a record that names no spectrum: its marks at 74%
-  /// and 72% lightness fifteen degrees apart, its ink eased from 36% toward
-  /// [toward] until it reads 4.5:1 on its tint over [ground] (and over each
-  /// of [also], the page's other grounds), its deep ink at 24%.
+  /// and 72% lightness fifteen degrees apart, its ink at 36% (80% when
+  /// [dark]) taken to the nearest tone of its hue that reads 4.5:1 on its
+  /// tint over [ground] (and over each of [also], the page's other grounds),
+  /// its colour easing toward [toward]'s as it goes, its deep ink at 24%.
   factory FrostedHue.turned(
     double degrees,
     double saturation, {
@@ -556,7 +557,7 @@ final class FrostedHue {
     final a = hsl(degrees, saturation * 0.78, 0.74);
     final b = hsl(degrees + 15, saturation * 0.72, 0.72);
     final tint = a.withValues(alpha: 0.2);
-    final ink = FrostedThemeData._reach(
+    final ink = FrostedThemeData._inked(
       hsl(degrees, saturation, dark ? 0.8 : 0.36),
       toward,
       [
@@ -571,7 +572,7 @@ final class FrostedHue {
       // The deep ink stands on the marks themselves (a share's plate): a
       // pale hue's 24% is eased darker until it reads there, with room for
       // the pixel.
-      inkDeep: FrostedThemeData._reach(
+      inkDeep: FrostedThemeData._inked(
         hsl(degrees, saturation, 0.24),
         hsl(degrees, saturation, 0.08),
         [a, b],
@@ -584,8 +585,9 @@ final class FrostedHue {
   }
 
   /// This hue on a dark ground: the marks and the deep ink kept (the marks
-  /// are pastel, the deep ink reads on them), the ink lifted toward [toward]
-  /// until it reads 4.5:1 on its tint over [ground] and each of [also].
+  /// are pastel, the deep ink reads on them), the ink the first mark eased
+  /// toward [toward], at the nearest tone of its hue that reads 4.5:1 on its
+  /// tint over [ground] and each of [also].
   FrostedHue onDark({
     required Color ground,
     required Color toward,
@@ -593,7 +595,7 @@ final class FrostedHue {
   }) => FrostedHue(
     a: a,
     b: b,
-    ink: FrostedThemeData._reach(Color.lerp(a, toward, 0.45)!, toward, [
+    ink: FrostedThemeData._inked(Color.lerp(a, toward, 0.45)!, toward, [
       for (final g in [ground, ...also]) Color.alphaBlend(tint, g),
     ], 4.5),
     inkDeep: inkDeep,
@@ -607,8 +609,9 @@ final class FrostedHue {
   /// dark; the deep ink reads on them), the fill, the small solid and the
   /// hairline a step stronger ([glow], the hairline half that) so a tinted
   /// pane holds its light, a fill of the ink turned to white at its alpha,
-  /// and the ink eased from the first mark toward [toward] until it reads
-  /// 4.5:1 on its fill over [ground] and each of [also].
+  /// and the ink the first mark eased toward [toward], at the nearest tone
+  /// of its hue that reads 4.5:1 on its fill over [ground] and each of
+  /// [also].
   FrostedHue lit({
     required Color ground,
     required Color toward,
@@ -626,7 +629,7 @@ final class FrostedHue {
     return FrostedHue(
       a: a,
       b: b,
-      ink: FrostedThemeData._reach(Color.lerp(a, toward, 0.35)!, toward, [
+      ink: FrostedThemeData._inked(Color.lerp(a, toward, 0.35)!, toward, [
         for (final g in [ground, ...also]) Color.alphaBlend(fill, g),
       ], 4.5),
       inkDeep: inkDeep,
@@ -1845,6 +1848,7 @@ class FrostedThemeData with Diagnosticable {
     required this.components,
     required this.backdrop,
     required this.opaqueMaterials,
+    this.fontFamilyFallback = const [],
   });
 
   /// A theme from every value by name, as the presets and the token rules set
@@ -2144,17 +2148,19 @@ class FrostedThemeData with Diagnosticable {
   ///   `onAccent` cannot read 4.5:1 on the accent's eased words, the act wears
   ///   those words' colour with the page or its ink as its ink, so the act and
   ///   the words stay one ink); its focus ring the surface then the accent; the
-  ///   accent's words (`accentText`) are eased toward the page ink until they
-  ///   read 4.5:1 on the canvas and the tile, where Frosted sets them;
+  ///   accent's words (`accentText`) take the nearest tone of their hue that
+  ///   reads 4.5:1 on the canvas and the tile, where Frosted sets them (each
+  ///   ink here walks so, by ui_core's `RawPalette.readableTone`, its colour
+  ///   easing toward the ink it walks to, so it stays soft);
   /// - the quieter inks (`textSecondary`, `textTertiary`) are
-  ///   the record's, eased toward the page ink until they read 4.5:1, with
+  ///   the record's, at the nearest tone that reads 4.5:1, with
   ///   room to spare, on the glass and on the canvas under the washes of
   ///   light at their peak; the first also on the glass tinted by the
   ///   brand's wash and the money tint (a banner's panes);
   /// - money in is `success`, over budget `danger`, the warning `warning`
   ///   (eased to read 4.5:1 on its own tint, the warning's `warningSubtle`),
   ///   the cold of a frozen card the accent turned to blue (212 degrees),
-  ///   eased toward the page ink until it reads as a word (4.5:1) on its
+  ///   at the nearest tone that reads as a word (4.5:1) on its
   ///   tint (at night each tint 18%, so a chip is lit from within);
   /// - the spectrum is twenty hues turned round the wheel from the accent
   ///   ([FrostedHue.turned], on the light set): the eight categories in
@@ -2230,8 +2236,9 @@ class FrostedThemeData with Diagnosticable {
   factory FrostedThemeData._fromTokens(
     String id,
     FrostedTokens tokens,
-    Brightness brightness,
-  ) {
+    Brightness brightness, {
+    RawAccentFill? seeded,
+  }) {
     final dark = brightness == Brightness.dark;
     final c = dark ? tokens.dark : tokens.light;
     const white = Color(0xFFFFFFFF);
@@ -2271,7 +2278,7 @@ class FrostedThemeData with Diagnosticable {
     );
 
     final accent = HSLColor.fromColor(c.accent);
-    Color turned(double degrees) => _reach(
+    Color turned(double degrees) => FrostedThemeData._inked(
       accent.withHue(degrees % 360).toColor(),
       c.textPrimary,
       grounds,
@@ -2331,16 +2338,25 @@ class FrostedThemeData with Diagnosticable {
     }
 
     final cold = turned(212);
-    final accentText = _reach(c.accentText, c.textPrimary, grounds, 4.5);
+    final accentText = FrostedThemeData._inked(
+      c.accentText,
+      c.textPrimary,
+      grounds,
+      4.5,
+    );
     // The act and the accent's words are one ink: the kit stamps the words'
     // colour as a brand ground under `onAccent`. Where the record's
     // `onAccent` cannot read 4.5:1 on the eased words (a deep act lifted to
     // read on a dark page), the act takes the words' colour and whichever of
     // the page and its ink reads better on it as its own words.
-    final heldAct = contrast(c.onAccent, accentText) >= 4.5;
-    final act = heldAct ? c.accent : accentText;
+    // A seeded theme ([FrostedThemeData.from]) names its act's fill and
+    // words apart from the accent its light and spectrum turn from.
+    final fill = seeded?.fill ?? c.accent;
+    final onFill = seeded?.ink ?? c.onAccent;
+    final heldAct = contrast(onFill, accentText) >= 4.5;
+    final act = heldAct ? fill : accentText;
     final onAct = heldAct
-        ? c.onAccent
+        ? onFill
         : contrast(c.background, accentText) >=
               contrast(c.textPrimary, accentText)
         ? c.background
@@ -2359,10 +2375,11 @@ class FrostedThemeData with Diagnosticable {
     final overTint = a(c.danger, dark ? 0.18 : 0.12);
     final warnTint = a(c.warning, dark ? 0.18 : 0.2);
     final coldTint = a(cold, 0.16);
-    Color onTint(Color ink, Color tint) => _reach(ink, c.textPrimary, [
-      for (final ground in [...grounds, ...washPeaks])
-        Color.alphaBlend(tint, ground),
-    ], 4.5);
+    Color onTint(Color ink, Color tint) =>
+        FrostedThemeData._inked(ink, c.textPrimary, [
+          for (final ground in [...grounds, ...washPeaks])
+            Color.alphaBlend(tint, ground),
+        ], 4.5);
     final moneyInInk = onTint(c.success, moneyInTint);
     FrostedHue night(FrostedHue h) => dark
         ? h.lit(
@@ -2401,7 +2418,9 @@ class FrostedThemeData with Diagnosticable {
     ];
     // The act's top: the act eased 10% toward white, held where its words
     // still read 4.5:1 on it.
-    final actTop = _reach(Color.lerp(act, white, 0.1)!, act, [onAct], 4.5);
+    final actTop = FrostedThemeData._inked(Color.lerp(act, white, 0.1)!, act, [
+      onAct,
+    ], 4.5);
     // A shadow is the ink's own shade by day and black at night.
     const black = Color(0xFF000000);
     final shade = dark ? black : Color.lerp(c.textPrimary, c.accent, 0.3)!;
@@ -2420,14 +2439,19 @@ class FrostedThemeData with Diagnosticable {
       glassOn,
       ...lights.peaksOver(c.background, night: dark),
     ];
-    final tertiary = _reach(c.textTertiary, c.textPrimary, read, 4.6);
+    final tertiary = FrostedThemeData._inked(
+      c.textTertiary,
+      c.textPrimary,
+      read,
+      4.6,
+    );
     // The quieter ink: the record's, eased toward the page ink only as far
     // as it takes to read 4.5:1 (with room for the pixel) on every pane its
     // words sit on: those, and the glass tinted by the brand's wash (a
     // banner's spectrum, its first stop at 22%, its last at 16%), by the
     // money tint, and by the chosen tint (a picked day's figures), and the
     // wash over any of them (a missed day's bead).
-    final secondary = _reach(c.textSecondary, c.textPrimary, [
+    final secondary = FrostedThemeData._inked(c.textSecondary, c.textPrimary, [
       ...read,
       for (final g in read) Color.alphaBlend(a(c.textPrimary, 0.045), g),
       Color.alphaBlend(a(categories[0].a, 0.22), glassOn),
@@ -2484,7 +2508,10 @@ class FrostedThemeData with Diagnosticable {
         ? Color.lerp(c.surface, c.surfaceAlt, 0.5)!
         : c.surfaceInverse;
     final onToast = dark
-        ? _reach(c.textPrimary, white, [toastTop, toastBottom], 4.5)
+        ? FrostedThemeData._inked(c.textPrimary, white, [
+            toastTop,
+            toastBottom,
+          ], 4.5)
         : c.textInverse;
     final display = tokens.display;
     return FrostedThemeData._raw(
@@ -2537,7 +2564,12 @@ class FrostedThemeData with Diagnosticable {
       moneyInTint: moneyInTint,
       // On its chip's tint, and bare on the page under its washes (a
       // field's error).
-      over: _reach(onTint(c.danger, overTint), c.textPrimary, read, 4.5),
+      over: FrostedThemeData._inked(
+        onTint(c.danger, overTint),
+        c.textPrimary,
+        read,
+        4.5,
+      ),
       overTint: overTint,
       cold: onTint(cold, coldTint),
       coldTint: coldTint,
@@ -2577,8 +2609,18 @@ class FrostedThemeData with Diagnosticable {
               Color.lerp(c.danger, white, 0.65)!,
               Color.lerp(c.warning, white, 0.65)!,
             ],
-      pearlInk: _reach(c.textPrimary, dark ? white : black, pearlGrounds, 4.5),
-      pearlInkQuiet: _reach(secondary, c.textPrimary, pearlGrounds, 4.5),
+      pearlInk: FrostedThemeData._inked(
+        c.textPrimary,
+        dark ? white : black,
+        pearlGrounds,
+        4.5,
+      ),
+      pearlInkQuiet: FrostedThemeData._inked(
+        secondary,
+        c.textPrimary,
+        pearlGrounds,
+        4.5,
+      ),
       utilFrom: categories[0].a,
       utilTo: categories[1].b,
       utilTrack: a(c.textPrimary, dark ? 0.12 : 0.08),
@@ -2795,12 +2837,14 @@ class FrostedThemeData with Diagnosticable {
     FrostedComponentThemes? components,
     FrostedBackdrop? backdrop,
     bool? opaqueMaterials,
+    List<String>? fontFamilyFallback,
   }) => FrostedThemeData.opal(brightness).copyWith(
     density: density,
     typeface: typeface,
     components: components,
     backdrop: backdrop,
     opaqueMaterials: opaqueMaterials,
+    fontFamilyFallback: fontFamilyFallback,
   );
 
   /// Opal, the default: the look as it was drawn, a pale canvas under
@@ -2822,6 +2866,12 @@ class FrostedThemeData with Diagnosticable {
   ]) => preset('glacier', brightness);
 
   /// Cobalt: plain greys and a blue act, closest to a platform's own.
+  /// Retired from [presets]: `FrostedThemeData.from(accent:)` dresses the
+  /// glass with any blue.
+  @Deprecated(
+    'Use FrostedThemeData.from(accent: Color(0xFF0668DE)) for a blue act. '
+    'This preset was deprecated in 0.7.0 and is removed in 0.8.0.',
+  )
   factory FrostedThemeData.cobalt([Brightness brightness = Brightness.light]) =>
       preset('cobalt', brightness);
 
@@ -2840,8 +2890,13 @@ class FrostedThemeData with Diagnosticable {
   /// way the presets are (`FrostedThemeData._fromTokens`): the inks eased
   /// until words read 4.5:1 on the glass and under the washes, the spectrum
   /// turned round the wheel from [accent], the washes of light its tints.
-  /// At night each colour is eased toward white until it reads 4.5:1 on the
-  /// dark canvas. Only colour changes: the type is Opal's, the look's own
+  /// The act and its words pair as Material pairs a primary and its
+  /// on-primary (ui_core's `RawPalette.accentFill`): by day white words on
+  /// the nearest tone of [accent] they read 4.5:1 on (a navy stays navy, a
+  /// gold goes olive), by night the day's ink on [accent] lifted as far as
+  /// it must. At night [success], [danger] and [warning] take the nearest
+  /// tone of their hue that reads 4.5:1 on the dark canvas. Only colour
+  /// changes: the type is Opal's, the look's own
   /// (its faces, sizes, weights and tracking), each style in this theme's
   /// inks, so a seeded theme sets every word as the default does.
   ///
@@ -2855,26 +2910,45 @@ class FrostedThemeData with Diagnosticable {
     Color? danger,
     Color? warning,
     String id = 'custom',
+    List<String> fontFamilyFallback = const [],
   }) {
     const base = platinumTokens;
     const white = Color(0xFFFFFFFF);
+    // The act's fill and words, as Material pairs a primary and its
+    // on-primary.
+    RawAccentFill seed(bool dark) => RawPalette.accentFill(
+      accent,
+      brightness: dark ? Brightness.dark : Brightness.light,
+      darkInk: base.light.textPrimary.withValues(alpha: 1),
+    );
     FrostedTokenColors dress(FrostedTokenColors c, bool dark) {
       final grounds = [c.background, c.surface];
-      Color settle(Color ink) => dark ? _reach(ink, white, grounds, 4.5) : ink;
+      Color settle(Color ink) =>
+          dark ? FrostedThemeData._inked(ink, white, grounds, 4.5) : ink;
       Color on(Color fill) => contrast(white, fill) >= 4.5
           ? white
-          : _reach(c.textPrimary, const Color(0xFF000000), [fill], 4.5);
+          : FrostedThemeData._inked(c.textPrimary, const Color(0xFF000000), [
+              fill,
+            ], 4.5);
       Color subtle(Color ink) =>
           Color.alphaBlend(ink.withValues(alpha: dark ? .2 : .1), c.surface);
-      final act = settle(accent);
+      // The named accent, the light and the spectrum turn from (by night
+      // lifted until it reads on the canvas); the act's fill and its words
+      // are the pair `seed` gives.
+      final light = settle(accent);
       final good = success == null ? null : settle(success);
       final bad = danger == null ? null : settle(danger);
       final careful = warning == null ? null : settle(warning);
       return c.copyWith(
-        accent: act,
-        onAccent: on(act),
-        accentSubtle: subtle(act),
-        accentText: _reach(act, c.textPrimary, grounds, 4.5),
+        accent: light,
+        onAccent: seed(dark).ink,
+        accentSubtle: subtle(light),
+        accentText: FrostedThemeData._inked(
+          seed(dark).fill,
+          c.textPrimary,
+          grounds,
+          4.5,
+        ),
         success: good,
         onSuccess: good == null ? null : on(good),
         successSubtle: good == null ? null : subtle(good),
@@ -2906,6 +2980,7 @@ class FrostedThemeData with Diagnosticable {
         shape: base.shape,
       ),
       brightness,
+      seeded: seed(brightness == Brightness.dark),
     );
     // Colour only: Opal's type (the look's own scale and tracking; the base
     // set's tracking widened every label), in the dressed inks.
@@ -2914,6 +2989,7 @@ class FrostedThemeData with Diagnosticable {
         presets.first,
         brightness,
       ).textTheme._inkedAs(dressed.textTheme),
+      fontFamilyFallback: fontFamilyFallback,
     );
   }
 
@@ -2933,6 +3009,7 @@ class FrostedThemeData with Diagnosticable {
           components: components,
           backdrop: backdrop,
           opaqueMaterials: opaqueMaterials,
+          fontFamilyFallback: fontFamilyFallback,
         );
   }
 
@@ -2940,18 +3017,19 @@ class FrostedThemeData with Diagnosticable {
     'frosted dark',
   );
 
-  /// The preset ids, the first the default.
+  /// The preset ids, the first the default: Frosted's six palettes. Any
+  /// other colour is [FrostedThemeData.from]'s.
   static const List<String> presets = <String>[
     'opal',
     'quartz',
     'garnet',
     'glacier',
-    'cobalt',
     'jade',
     'copper',
   ];
 
-  /// The theme for preset [id] in [brightness]; an unknown id throws.
+  /// The theme for preset [id] in [brightness]; an unknown id throws. The
+  /// retired 'cobalt' resolves until 0.8.0.
   static FrostedThemeData preset(String id, Brightness brightness) {
     final dark = brightness == Brightness.dark;
     return switch (id) {
@@ -3112,14 +3190,20 @@ class FrostedThemeData with Diagnosticable {
       if (dark) _Night.surface else _Source.surface,
       ...lights.peaksOver(canvas, night: dark),
     ];
-    // The source's quieter inks, eased toward the page ink as far as it takes
-    // to read 4.5:1 on the washes: under the brightest of them the three meet.
-    Color reading(Color quiet) => _reach(quiet, ink, read, 4.6);
+    // The source's quieter inks, at the nearest tone of their hue that reads
+    // 4.5:1 on the washes and under the page ink's wash over any of them (a
+    // lit day, a missed day's bead), as the other presets' quiet inks do:
+    // under the brightest of them the three meet.
+    final lit = [
+      ...read,
+      for (final g in read) Color.alphaBlend(ink.withValues(alpha: 0.045), g),
+    ];
+    Color reading(Color quiet) => FrostedThemeData._inked(quiet, ink, lit, 4.6);
     final ink2 = reading(dark ? _Night.ink2 : _Source.ink2);
     final ink3 = reading(dark ? _Night.ink3 : _Source.ink3);
     // Money in and over are words too (an amount, an over note): eased the
     // same way, on the washes and on their own tint.
-    Color tone(Color ink0, Color tint) => _reach(ink0, ink, [
+    Color tone(Color ink0, Color tint) => FrostedThemeData._inked(ink0, ink, [
       ...read,
       for (final g in read) Color.alphaBlend(tint, g),
     ], 4.6);
@@ -3146,7 +3230,7 @@ class FrostedThemeData with Diagnosticable {
       pearlSheens.specular,
       Color.alphaBlend(pearlSheens.cardSheen, g),
     );
-    final pearlQuiet = _reach(ink2, ink, [
+    final pearlQuiet = FrostedThemeData._inked(ink2, ink, [
       for (final g in [
         ...pearlBase,
         for (final b in pearlBase)
@@ -3515,6 +3599,17 @@ class FrostedThemeData with Diagnosticable {
   /// reports high contrast.
   final bool opaqueMaterials;
 
+  /// Families every text style falls back on, after Frosted's own faces,
+  /// for the glyphs they lack: as Material's `ThemeData.fontFamilyFallback`
+  /// reaches every style. On the web a face loaded at run time (a Noto Sans
+  /// JP subset, so Japanese shows Japanese forms rather than the engine's
+  /// Chinese ones) is only drawn where a style names it. Empty by default.
+  ///
+  /// ```dart
+  /// FrostedThemeData(fontFamilyFallback: const ['NotoSansJP'])
+  /// ```
+  final List<String> fontFamilyFallback;
+
   /// The theme's glass ([FrostedMaterials.derive]): each material's
   /// blur, tint, rim and shadow, its tint derived from the text.
   FrostedMaterials get materials => _materials[this] ??= frostedMaterialsOf(
@@ -3584,29 +3679,20 @@ class FrostedThemeData with Diagnosticable {
     FrostedTone.info => colorScheme.coldTint,
   };
 
-  /// [ink] eased toward [toward] in steps until it reaches [min]:1 on every
-  /// one of [grounds]; [ink] itself when it already does.
-  static Color _reach(
+  /// [ink] where it reads [ratio]:1 on every one of [grounds], its colour
+  /// easing toward [toward] as its tone walks (`frostedEasedInk`).
+  static Color _inked(
     Color ink,
     Color toward,
-    List<Color> grounds,
-    double min,
-  ) {
-    for (var i = 0; i <= 20; i++) {
-      final c = Color.lerp(ink, toward, i / 20)!;
-      if (grounds.every((g) => contrast(c, g) >= min)) return c;
-    }
-    return toward;
-  }
+    List<Color> grounds, [
+    double ratio = 4.5,
+  ]) => frostedEasedInk(ink, toward, grounds, ratio);
 
   /// The WCAG contrast ratio of [ink] on [ground], 1..21, as it is seen:
-  /// a translucent ink is laid over the ground first. [ground] is opaque.
-  static double contrast(Color ink, Color ground) {
-    final seen = Color.alphaBlend(ink, ground);
-    final la = seen.computeLuminance();
-    final lb = ground.computeLuminance();
-    return la > lb ? (la + 0.05) / (lb + 0.05) : (lb + 0.05) / (la + 0.05);
-  }
+  /// a translucent ink is laid over the ground first. [ground] is read as
+  /// opaque. ui_core's `RawPalette.contrastRatio`.
+  static double contrast(Color ink, Color ground) =>
+      RawPalette.contrastRatio(ink, ground);
 
   /// This theme with the named values replaced, as Material's
   /// `ThemeData.copyWith`. A new [typeface] sets every style of [textTheme]
@@ -3637,18 +3723,28 @@ class FrostedThemeData with Diagnosticable {
     FrostedComponentThemes? components,
     FrostedBackdrop? backdrop,
     bool? opaqueMaterials,
+    List<String>? fontFamilyFallback,
   }) {
     final from = this.typeface;
     final to = typeface ?? from;
+    final was = this.fontFamilyFallback;
+    final fallback = fontFamilyFallback ?? was;
+    var text =
+        textTheme ??
+        (to == from
+            ? this.textTheme
+            : this.textTheme._map((style) => _retyped(style, from, to)));
+    // Every style ends on the theme's fallback: its own faces first (the
+    // display face's falls back on the text face), the theme's after, in
+    // place of the ones it had.
+    if (textTheme != null || to != from || !listEquals(fallback, was)) {
+      text = text._map((style) => _fallingBack(style, was, fallback));
+    }
     return FrostedThemeData._(
       id: id ?? this.id,
       brightness: brightness ?? this.brightness,
       colorScheme: colorScheme ?? this.colorScheme,
-      textTheme:
-          textTheme ??
-          (to == from
-              ? this.textTheme
-              : this.textTheme._map((style) => _retyped(style, from, to))),
+      textTheme: text,
       shadows: shadows,
       glass: glass,
       pearl: pearl,
@@ -3662,7 +3758,22 @@ class FrostedThemeData with Diagnosticable {
       components: components ?? this.components,
       backdrop: backdrop ?? this.backdrop,
       opaqueMaterials: opaqueMaterials ?? this.opaqueMaterials,
+      fontFamilyFallback: fallback,
     );
+  }
+
+  /// [style] falling back on [to] after its own faces, in place of [was].
+  static TextStyle _fallingBack(
+    TextStyle style,
+    List<String> was,
+    List<String> to,
+  ) {
+    final own = [
+      for (final f in style.fontFamilyFallback ?? const <String>[])
+        if (!was.contains(f) && !to.contains(f)) f,
+    ];
+    final all = [...own, ...to];
+    return style.copyWith(fontFamilyFallback: all.isEmpty ? null : all);
   }
 
   /// Between this theme and [other], as Material's `ThemeData.lerp`: every
@@ -3692,6 +3803,7 @@ class FrostedThemeData with Diagnosticable {
       components: FrostedComponentThemes.lerp(a.components, b.components, t),
       backdrop: t < .5 ? a.backdrop : b.backdrop,
       opaqueMaterials: t < .5 ? a.opaqueMaterials : b.opaqueMaterials,
+      fontFamilyFallback: t < .5 ? a.fontFamilyFallback : b.fontFamilyFallback,
     );
   }
 
@@ -3713,6 +3825,7 @@ class FrostedThemeData with Diagnosticable {
     components,
     backdrop,
     opaqueMaterials,
+    fontFamilyFallback,
   ];
 
   @override
@@ -3774,6 +3887,13 @@ class FrostedThemeData with Diagnosticable {
           'opaqueMaterials',
           value: opaqueMaterials,
           ifTrue: 'opaque materials',
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'fontFamilyFallback',
+          fontFamilyFallback,
+          defaultValue: const <String>[],
         ),
       );
   }
@@ -5497,6 +5617,9 @@ ThemeData _materialUnder(FrostedThemeData t, TargetPlatform platform) =>
       // targets (pinned padded below).
       visualDensity: VisualDensity.standard,
       fontFamily: t.textTheme.titleMedium.fontFamily,
+      fontFamilyFallback: t.fontFamilyFallback.isEmpty
+          ? null
+          : t.fontFamilyFallback,
       scaffoldBackgroundColor: t.colorScheme.background,
       canvasColor: t.colorScheme.background,
       splashFactory: NoSplash.splashFactory,
@@ -5740,7 +5863,12 @@ extension FrostedTextStyle on TextStyle {
 
   TextStyle _faced(String face) => copyWith(
     fontFamily: face,
-    fontFamilyFallback: const [FrostedThemeData.textFace],
+    // The text face first, then whatever the style fell back on (the
+    // theme's [FrostedThemeData.fontFamilyFallback]).
+    fontFamilyFallback: [
+      FrostedThemeData.textFace,
+      ...?fontFamilyFallback?.where((f) => f != FrostedThemeData.textFace),
+    ],
     fontVariations: _variations(fontVariations, size: fontSize, face: face),
   );
 
@@ -6269,13 +6397,13 @@ bool _deepEquals(List<Object?> a, List<Object?> b) {
 int _deepHash(Object? value) =>
     value is List ? Object.hashAll(value) : value.hashCode;
 
-/// [hue] with its ink eased toward [toward] until it reads 4.5:1 on its tint
-/// over each of [grounds]; the rest of it kept.
+/// [hue] with its ink at the nearest tone of its hue that reads 4.5:1 on its
+/// tint over each of [grounds], easing toward [toward]; the rest of it kept.
 FrostedHue _heldHue(FrostedHue hue, Color toward, List<Color> grounds) =>
     FrostedHue(
       a: hue.a,
       b: hue.b,
-      ink: FrostedThemeData._reach(hue.ink, toward, [
+      ink: FrostedThemeData._inked(hue.ink, toward, [
         for (final g in grounds) Color.alphaBlend(hue.tint, g),
       ], 4.5),
       inkDeep: hue.inkDeep,

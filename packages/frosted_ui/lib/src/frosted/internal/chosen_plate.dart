@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
 import 'css_shadow.dart';
@@ -44,6 +45,31 @@ class FrostedChosenPlate extends StatelessWidget {
   /// white at a sixth, over the strip's own glass.
   static Color fillOf(FrostedThemeData t) =>
       t.isDark ? const Color(0x29FFFFFF) : t.glass.plane.withValues(alpha: .94);
+
+  static final Expando<Color> _ink = Expando();
+
+  /// The words on the plate: the page's ink where it reads 4.5:1 on the
+  /// plate (and its top light) over the glass or straight on the page, at
+  /// the canvas and under each wash at its peak, else the nearest tone of it
+  /// that does (`RawPalette.readableTone`). By
+  /// night the plate's white lifts the glass under a wash: in the ink, a
+  /// chosen tab read 4.1-4.4:1 in copper and glacier.
+  static Color inkOf(FrostedThemeData t) => _ink[t] ??= () {
+    final page = t.colorScheme.background.withValues(alpha: 1);
+    return RawPalette.readableTone(
+      t.colorScheme.textPrimary,
+      on: [
+        for (final under in [
+          page,
+          ...t.lights.peaksOver(page, night: t.isDark),
+        ])
+          for (final plate in [
+            Color.alphaBlend(fillOf(t), Color.alphaBlend(t.glass.fill, under)),
+            Color.alphaBlend(fillOf(t), under),
+          ]) ...[plate, Color.alphaBlend(lightOf(t), plate)],
+      ],
+    );
+  }();
 
   /// The light along the plate's top edge: whiter than the plate by day,
   /// a third of white by night.

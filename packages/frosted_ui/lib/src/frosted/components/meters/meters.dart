@@ -17,6 +17,7 @@ import '../../chrome_metrics.dart';
 import '../../format.dart';
 import '../../internal/cap.dart';
 import '../../internal/face.dart';
+import '../../internal/pane_words.dart';
 import '../../theme.dart';
 import '../marks/marks.dart';
 import '../money/money.dart';
@@ -2822,7 +2823,7 @@ class FrostedDueLine extends StatelessWidget {
     final color = ink ?? DefaultTextStyle.of(context).style.color ?? hue.ink;
     final words = t.textTheme.labelSmall
         .line(15)
-        .c(color.withValues(alpha: color.a * _dueWordsOpacity));
+        .c(frostedPaneQuiet(t, hue, color, _dueWordsOpacity));
     const bead = FrostedChromeMetrics.dueBead;
     return Semantics(
       label: '$start, $end',

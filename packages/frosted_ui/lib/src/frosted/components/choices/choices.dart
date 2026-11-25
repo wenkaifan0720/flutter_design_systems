@@ -378,7 +378,7 @@ class FrostedRadioGroup<T> extends StatelessWidget {
 /// carries a close at its end, its own target, read as [deleteLabel] (the
 /// localized "Remove" and the label by default). Without [onPressed] it
 /// states; with it, it acts (and with [selected], toggles). Its target is
-/// 44, 48 under a finger.
+/// the floor, 40.
 ///
 /// ```dart
 /// FrostedChip('Vegetarian', selected: veg, onPressed: () => setState(() => veg = !veg))
@@ -1320,7 +1320,9 @@ class FrostedChoices<T> extends StatelessWidget {
       label: label,
       explicitChildNodes: true,
       child: FocusTraversalGroup(
-        child: Wrap(
+        // The chips stand 8 apart, their targets taking the room between
+        // them (ui_core's chip group), so a run reads as one group.
+        child: RawChipGroup(
           spacing: FrostedSpacing.s8,
           runSpacing: FrostedSpacing.s8,
           children: [

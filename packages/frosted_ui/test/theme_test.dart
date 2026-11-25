@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
@@ -199,10 +201,16 @@ void main() {
         (t.colorScheme.cold, const Color(0xFF2F5C8F), t.colorScheme.coldTint),
       ]) {
         expect(ink, isNot(t.colorScheme.textPrimary));
-        expect([
-          for (var i = 0; i <= 20; i++)
-            Color.lerp(source, t.colorScheme.textPrimary, i / 20),
-        ], contains(ink));
+        // ui_core's tone walk: the source's hue, at a tone between its own
+        // and the page ink's.
+        final (own, at, page) = (
+          RawHct.fromColor(source),
+          RawHct.fromColor(ink),
+          RawHct.fromColor(t.colorScheme.textPrimary),
+        );
+        final turn = (at.hue - own.hue).abs() % 360;
+        expect(math.min(turn, 360 - turn), lessThan(10));
+        expect(at.tone, inInclusiveRange(page.tone, own.tone));
         for (final ground in [
           ...t.lights.peaksOver(t.colorScheme.background),
           Color.alphaBlend(tint, t.colorScheme.background),

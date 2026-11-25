@@ -550,8 +550,8 @@ class _FrostedMultiSelectState<T extends Object>
             ),
           ),
           layoutBuilder: (context, tags, field) {
-            // A tag stands in its touch target's lane (48 under a
-            // finger); the lane takes what it reaches past the tag from
+            // A tag stands in its touch target's lane (the floor, 40);
+            // the lane takes what it reaches past the tag from
             // the well's padding and the gap between runs, so one run of
             // tags keeps the field's height wherever the lane allows.
             final tag = frostedGrownHeight(context, 28, t.textTheme.labelLarge);

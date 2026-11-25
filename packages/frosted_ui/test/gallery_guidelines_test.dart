@@ -1,6 +1,6 @@
-// Flutter's four accessibility guidelines on every gallery page, in every preset, by day and by night: Android's 48 px
-// and iOS's 44 px tap targets, a label on every tappable node, and text contrast (4.5:1, 3:1 for large text). Each is
-// evaluated on its own, so one failing never hides another.
+// The accessibility guidelines on every gallery page, in every preset, by day and by night: the 40 px finger floor
+// (ui_core's, touchFloorGuideline), a label on every tappable node, and text contrast (4.5:1, 3:1 for large text). Each
+// is evaluated on its own, so one failing never hides another.
 //
 // Text contrast is read twice. Flutter's guideline reads the ink from a capture at one pixel per logical pixel, where
 // DM Sans's thin strokes at 11 to 13 px are only ever anti-aliased; it flags small words whose ink passes. Where it flags
@@ -24,8 +24,7 @@ void main() {
         await pumpGalleryPage(tester, page, preset, b);
         final failed = <String>[];
         for (final (name, guideline) in [
-          ('Android 48 px targets', androidTapTargetGuideline),
-          ('iOS 44 px targets', iOSTapTargetGuideline),
+          ('40 px targets', touchFloorGuideline),
           ('labelled targets', labeledTapTargetGuideline),
         ]) {
           final result = await guideline.evaluate(tester);

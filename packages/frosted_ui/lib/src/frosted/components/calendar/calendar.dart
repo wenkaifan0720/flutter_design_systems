@@ -285,8 +285,8 @@ class _FrostedMonths extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     const cell = 38.0;
-    // A day's row and its least width are the touch target (48 under a
-    // finger, 44 under a pointer, never under the source's 44): where seven
+    // A day's row and its least width are the touch target (the floor, 40),
+    // never under the source's 44 (its visual row): where seven
     // do not fit, a day overhangs its seventh, centred.
     final target = FrostedBreakpoints.hitTargetOf(context);
     final row = math.max(44.0, target);
@@ -397,11 +397,10 @@ class _FrostedMonths extends StatelessWidget {
             !previewEnd &&
             (states.contains(WidgetState.hovered) ||
                 states.contains(WidgetState.pressed));
-        final ink = ends
-            ? t.colorScheme.onButton
-            : day.isToday
-            ? t.colorScheme.textPrimary
-            : t.colorScheme.textSecondary;
+        // Today's figure is in the days' ink at their weight, its ring
+        // marking it (as Material's today): in the ink it read bolder by
+        // night than the chosen day's dark word on its pill.
+        final ink = ends ? t.colorScheme.onButton : t.colorScheme.textSecondary;
         Widget face = SizedBox.square(
           dimension: cell,
           child: FrostedFace(
@@ -419,7 +418,7 @@ class _FrostedMonths extends StatelessWidget {
                 day.label,
                 style: () {
                   final figure =
-                      (ends || day.isToday
+                      (ends
                               ? t.textTheme.labelLarge.semibold
                               : t.textTheme.labelLarge)
                           .c(ink)

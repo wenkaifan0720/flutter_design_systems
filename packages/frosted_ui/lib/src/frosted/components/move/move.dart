@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
@@ -275,7 +276,15 @@ class FrostedBreadcrumb extends StatelessWidget {
                 selected: last,
                 label: item.label,
                 excludeSemantics: true,
-                child: word,
+                // A step that is not a link stands as tall as the links'
+                // targets, so a line holding only the page steps from the
+                // line above as the links' lines do.
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: FrostedBreakpoints.hitTargetOf(context),
+                  ),
+                  child: Center(widthFactor: 1, child: word),
+                ),
               )
             : FrostedPressable(
                 key: item.key,
@@ -291,7 +300,9 @@ class FrostedBreadcrumb extends StatelessWidget {
       container: true,
       label: label,
       explicitChildNodes: true,
-      child: Wrap(
+      // The crumbs stand 6 apart, their targets taking the room between
+      // them (ui_core's chip group).
+      child: RawChipGroup(
         spacing: FrostedSpacing.s6,
         runSpacing: FrostedSpacing.s4,
         crossAxisAlignment: WrapCrossAlignment.center,
@@ -613,9 +624,10 @@ class FrostedStepProgress extends StatelessWidget {
 
 /// Which of a few pages is shown: [pageCount] dots, the selected one a short
 /// capsule in the ink, the rest small rounds of the strong hairline. With
-/// [onChanged] each dot takes a press (in a 44 or 48 target) and the arrow
-/// keys move along them; read aloud as [label] and the page's place. Given
-/// a [position], the capsule moves with the pages as they slide.
+/// [onChanged] each dot takes a press (in a target of the floor, 40) and
+/// the arrow keys move along them; read aloud as [label] and the page's
+/// place. Given a [position], the capsule moves with the pages as they
+/// slide.
 ///
 /// ```dart
 /// FrostedPageDots(pageCount: 4, selectedIndex: page, label: 'Welcome', onChanged: (i) => controller.animateToPage(i, duration: d, curve: c))

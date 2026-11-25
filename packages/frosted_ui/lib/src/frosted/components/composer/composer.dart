@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show
@@ -187,15 +185,16 @@ class _FrostedComposerState extends State<FrostedComposer>
       0.0,
       double.infinity,
     );
-    // The seat and the attach stand in a finger's target (48) round their
-    // 40 faces, on every platform: the target takes the 4 the well kept
-    // round them, so the well stays 48 tall and each face 4 off its rim,
-    // and the field takes that 4 back where it meets the rim.
-    final reach = math.min(
-      (FrostedBreakpoints.touchHitTarget - FrostedChromeMetrics.roundButton) /
-          2,
-      FrostedChromeMetrics.composerInset,
-    );
+    // The seat and the attach stand in a finger's target round their 40
+    // faces, on every platform: a target over 40 takes from the 4 the well
+    // keeps round them, so the well stays 48 tall and each face 4 off its
+    // rim, and the field takes that back where it meets the rim. At the
+    // floor of 40 the target is the face.
+    final reach =
+        ((FrostedBreakpoints.touchTargetOf(context) -
+                    FrostedChromeMetrics.roundButton) /
+                2)
+            .clamp(0.0, FrostedChromeMetrics.composerInset);
     // The hint is drawn here, not by the field, so the field is named once
     // (by the label) and a screen reader never reads the hint a second time.
     final field = FrostedFieldTarget(

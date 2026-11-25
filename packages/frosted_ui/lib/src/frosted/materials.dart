@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'internal/face.dart';
 import 'theme.dart';
@@ -464,12 +465,7 @@ class FrostedMaterials {
     List<Color> body,
     Color quiet,
   ) {
-    double ratio(Color c, Color g) {
-      final l = c.computeLuminance();
-      final lg = g.computeLuminance();
-      return (math.max(l, lg) + .05) / (math.min(l, lg) + .05);
-    }
-
+    final ratio = RawPalette.contrastRatio;
     for (final behind in _behind) {
       final ground = glass.groundOver(behind);
       for (final g in [ground, Color.alphaBlend(glass.raised, ground)]) {

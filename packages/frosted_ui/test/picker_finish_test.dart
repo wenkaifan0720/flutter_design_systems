@@ -393,15 +393,17 @@ void main() {
         final column =
             (card - 2 * FrostedChromeMetrics.outline - 2 * inset) / 7;
         // The dialog's inset wherever the columns hold the target; else it
-        // gives way, to 16 at the least, and the columns keep 44.
+        // gives way, to 16 at the least, and the columns keep the target.
         if (column >= target) {
           expect(inset, FrostedChromeMetrics.dialogEdge);
         } else {
           expect(inset, lessThan(FrostedChromeMetrics.dialogEdge));
           expect(inset, greaterThanOrEqualTo(16));
         }
-        expect(column, greaterThanOrEqualTo(44));
-        expect(inset, width < 600 ? 16 : FrostedChromeMetrics.dialogEdge);
+        expect(column, greaterThanOrEqualTo(target));
+        // At 390 the floor's seven columns (40) fit inside the dialog's
+        // inset, as they do on the desktop.
+        expect(inset, FrostedChromeMetrics.dialogEdge);
       } finally {
         debugDefaultTargetPlatformOverride = null;
       }

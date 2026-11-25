@@ -312,7 +312,17 @@ class FrostedButton extends StatelessWidget {
       );
       final padding = s.padding;
       final content = padding == null
-          ? _Spill(inset: inset, round: round, height: height, child: row)
+          ? _Spill(
+              inset: inset,
+              round: round,
+              height: height,
+              // The heavier night word's reach past the width it is set
+              // at, either side: the spill's floor keeps it off the ends.
+              overhang: !expand && words.fontWeight != own.fontWeight
+                  ? _overhang(context, label, own, words)
+                  : 0,
+              child: row,
+            )
           : Padding(padding: padding, child: row);
       final fill = s.fill;
       // No edge of the look's own on either: a light rim inside the glass
@@ -500,9 +510,14 @@ class _Spill extends SingleChildRenderObjectWidget {
     required this.round,
     required this.height,
     required super.child,
+    this.overhang = 0,
   });
 
   final double inset;
+
+  /// How far the words draw past their laid-out width, either side (a
+  /// heavier cut set as wide as the lighter one, [_SetAsWide]).
+  final double overhang;
 
   /// The face's corner radius.
   final double round;
@@ -512,18 +527,57 @@ class _Spill extends SingleChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderSpill(inset, round, height);
+      _RenderSpill(inset, round, height, overhang);
 
   @override
   void updateRenderObject(BuildContext context, _RenderSpill renderObject) =>
       renderObject
         ..inset = inset
         ..round = round
-        ..faceHeight = height;
+        ..faceHeight = height
+        ..overhang = overhang;
+}
+
+// The least room a label keeps from its face's edges, as ui_core's
+// DesignFaceInsetCheck asks (4).
+const double _breath = FrostedSpacing.s4;
+
+// How far [label] set in [heavy] reaches past its width set in [own], either
+// side, at the reader's text size.
+double _overhang(
+  BuildContext context,
+  String label,
+  TextStyle own,
+  TextStyle heavy,
+) {
+  double width(TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: DefaultTextStyle.of(context).style.merge(style),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final w = painter.width;
+    painter.dispose();
+    return w;
+  }
+
+  return math.max(0.0, (width(heavy) - width(own)) / 2);
 }
 
 class _RenderSpill extends RenderShiftedBox {
-  _RenderSpill(this._inset, this._round, this._faceHeight) : super(null);
+  _RenderSpill(this._inset, this._round, this._faceHeight, this._overhang)
+    : super(null);
+
+  double _overhang;
+  set overhang(double value) {
+    if (value == _overhang) return;
+    _overhang = value;
+    markNeedsLayout();
+  }
 
   double _inset;
   set inset(double value) {
@@ -547,8 +601,13 @@ class _RenderSpill extends RenderShiftedBox {
   }
 
   /// The least room either side: where the corner's curve stands at the
-  /// content's top and foot (centred in the face), so no word crosses it.
-  double get _floor {
+  /// content's top and foot (centred in the face), so no word crosses it,
+  /// and never under a label's breath (4); a heavier word's [overhang] on
+  /// top, so its ink keeps that room too (at 200% "Transfer $500.00" stood
+  /// 3.6 from the pill's end by day, 1.8 by night).
+  double get _floor => math.max(_curve, _breath) + _overhang;
+
+  double get _curve {
     final c = child;
     if (c == null || !_faceHeight.isFinite) return 0;
     // A corner past half the height draws as half the height.
@@ -571,9 +630,11 @@ class _RenderSpill extends RenderShiftedBox {
     if (c == null || !_faceHeight.isFinite || !width.isFinite) return 0;
     final inner = math.max(0.0, width - 2 * _side(width));
     final own = c.getMaxIntrinsicHeight(inner);
-    // Words that fit the face stand centred in it as they always did; only
-    // taller ones (wrapped at large text) are measured on one line.
-    if (own <= _faceHeight + 0.5) return 0;
+    // Words that fit the face with a label's breath above and below stand
+    // centred in it as they always did; only taller ones (wrapped at large
+    // text) are measured on one line. Two lines of 28 in a 62 face at 200%
+    // stood 3 from its foot.
+    if (own <= _faceHeight - 2 * _breath + 0.5) return 0;
     final line = c.getMaxIntrinsicHeight(double.infinity);
     if (own <= line + 0.5) return 0;
     return math.max(0, (_faceHeight - line) / 2);

@@ -147,7 +147,7 @@ class FrostedSwipeActions extends StatelessWidget {
             Directionality.of(context),
           ),
           // The tiles stand as tall as the row, so the row is at least a
-          // target tall: 48 under a finger, 44 under a pointer.
+          // target tall: the floor, 40.
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: FrostedBreakpoints.hitTargetOf(context),

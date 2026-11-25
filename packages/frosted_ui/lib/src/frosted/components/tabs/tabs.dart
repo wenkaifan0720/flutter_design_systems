@@ -183,7 +183,7 @@ class _FrostedTabBarState extends State<FrostedTabBar>
               child: FrostedEase<TextStyle>(
                 value: s.words(
                   on
-                      ? t.textTheme.labelLarge.c(t.colorScheme.textPrimary)
+                      ? t.textTheme.labelLarge.c(FrostedChosenPlate.inkOf(t))
                       : t.textTheme.link,
                 ),
                 lerp: FrostedEase.words,
@@ -209,9 +209,9 @@ class _FrostedTabBarState extends State<FrostedTabBar>
       tabs: [
         for (final name in widget.tabs) RawTab(label: name, enabled: !inert),
       ],
-      // The face is 40 tall; the tab stands in a row a target tall (48 under
-      // a finger, 44 under a pointer), so its tap reaches the box a screen
-      // reader outlines rather than being cut at the face's 40.
+      // The face is 40 tall; the tab stands in a row a target tall (the
+      // floor, 40, or an app's higher one), so its tap reaches the box a
+      // screen reader outlines rather than being cut at the face's 40.
       tabBuilder: (context, tab, details) => SizedBox(
         height: math.max(height, FrostedBreakpoints.hitTargetOf(context)),
         child: Center(

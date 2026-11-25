@@ -1984,7 +1984,9 @@ class FrostedRecordHero extends StatelessWidget {
                       FrostedChromeMetrics.recordGap -
                       FrostedChromeMetrics.recordChipsPull,
                 ),
-                Wrap(
+                // Chips stand the gap apart, their targets taking the room
+                // between them (ui_core's chip group).
+                RawChipGroup(
                   spacing: FrostedChromeMetrics.recordChipsGap,
                   runSpacing: FrostedChromeMetrics.recordChipsGap,
                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -2049,7 +2051,7 @@ class FrostedRecordHero extends StatelessWidget {
                       FrostedChromeMetrics.transactionFigureBottom +
                       FrostedChromeMetrics.transactionGap,
                 ),
-                Wrap(
+                RawChipGroup(
                   alignment: WrapAlignment.center,
                   spacing: FrostedChromeMetrics.transactionMetaGap,
                   runSpacing: FrostedChromeMetrics.transactionMetaGap,

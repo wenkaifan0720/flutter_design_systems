@@ -188,7 +188,7 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       // stands (the thicker, brighter glass, raised off the row: no
       // outline) while the chip left fades back to its faint glass.
       final round = BorderRadius.circular(height / 2);
-      // A chip is at least its touch target wide (48 under a finger), its
+      // A chip is at least its touch target wide (the floor, 40), its
       // words centred: a short one ("All") in a wider target stood 6 past
       // the line's keyline, and its neighbours 12 further off.
       final face = Container(
@@ -282,8 +282,8 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       );
     } else {
       final gutter = FrostedBreakpoints.gutter(context);
-      // The line stands as tall as a chip's touch target (48 under a
-      // finger), the 32 chips centred in it; the viewport reaches past the
+      // The line stands as tall as a chip's touch target (the floor, 40),
+      // the 32 chips centred in it; the viewport reaches past the
       // line only as far as the shadows reach past the targets.
       final lane = math.max(height, FrostedBreakpoints.hitTargetOf(context));
       final past = math.max(0.0, reach - (lane - height) / 2);
@@ -509,7 +509,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
     // A strip of recessed glass, the chosen word on a brighter pill that
     // slides to the next choice.
     final chosen = segments.indexWhere((item) => item.value == value);
-    // Each segment stands in its touch target (48 under a finger) round its
+    // Each segment stands in its touch target (the floor, 40) round its
     // face, as Material pads a segmented button's: the strip is drawn as a
     // band behind the faces at their height and the inset round them, and
     // the targets reach past it above and below.
@@ -747,7 +747,7 @@ class _RenderSegmentShares extends RenderBox
 /// on. The page owns [value]; a null [onChanged] draws it at the disabled
 /// share (`.tgl:disabled { opacity: .4 }`) and inert, unless [readOnly]
 /// keeps it at full strength as a setting reported, not taken. Lays out at
-/// its own size and answers taps over the 44 point target round it, and
+/// its own size and answers taps over the target floor round it, and
 /// Enter and Space from the keyboard. A screen reader hears a switch named
 /// [label], on or off.
 ///
@@ -1120,8 +1120,8 @@ class FrostedMonthSwitch extends StatelessWidget {
       //   background: var(--wash) }
       // .switch .prev { font: 500 12px/1 var(--font-t);
       //   color: var(--ink-2); padding-left: 4px }
-      // The arrows and the month stand in their touch targets (48 under a
-      // finger) round their 32 faces; the switch is drawn as a band behind
+      // The arrows and the month stand in their touch targets (the floor,
+      // 40) round their 32 faces; the switch is drawn as a band behind
       // them at their height and the inset round them.
       final face = _Band(
         reach:
@@ -1968,7 +1968,7 @@ class _Band extends StatelessWidget {
 /// drawn [drawn] tall stand in taller touch targets: the rows close up by
 /// the difference, so the drawn cells stay [gap] apart. A cell is never
 /// narrower than the touch target while the row can help it: the gaps close
-/// first (to 4 at the least: six icon wells in a card's 326 stay 48 wide),
+/// first (to 4 at the least: six icon wells in a card's 326 stay 40 wide),
 /// then a column moves to the next row.
 class _Grid extends StatelessWidget {
   const _Grid({

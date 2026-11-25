@@ -294,7 +294,8 @@ void main() {
         ),
       );
       final rect = t.getRect(face.first);
-      await t.tapAt(Offset(rect.center.dx, rect.top - 3));
+      // The target (the floor, 40) stands 2 over and under the 36 face.
+      await t.tapAt(Offset(rect.center.dx, rect.top - 1));
       expect(pressed, 1, reason: 'the slop answers round the shorter face');
     });
   });

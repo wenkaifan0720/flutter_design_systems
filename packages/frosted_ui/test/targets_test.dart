@@ -1,7 +1,7 @@
 // Frosted's small controls stand in their touch targets, as Material pads
 // its own (ui_core's TapTargetPadding): a 40 bell, a 24 check and a 44 × 26
-// switch each lay out at 48 under a finger, the face at its own size in the
-// middle, so the box a screen reader outlines, the area a tap reaches and
+// switch each lay out at the finger's floor (40; the switch's track is wider,
+// 44), the face at its own size in the middle, so the box a screen reader outlines, the area a tap reaches and
 // the layout are one; a press in the margin reaches the control, and
 // ui_core's tap check and Flutter's tap-target guidelines both pass.
 import 'package:material_ui/material_ui.dart';
@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
+
+import 'touch_floor.dart';
 
 void main() {
   testWidgets('the bell, a check and a switch stand in their touch targets, '
@@ -42,12 +44,12 @@ void main() {
       ),
     );
     expect(t.takeException(), isNull);
-    const target = Size.square(FrostedBreakpoints.touchHitTarget);
+    final target = Size.square(FrostedBreakpoints.targets.touch.height);
     expect(t.getSize(find.byType(FrostedBell)), target);
     expect(t.getSize(find.byType(FrostedCheckbox)), target);
-    expect(t.getSize(find.byType(FrostedSwitch)), target);
-    await expectLater(t, meetsGuideline(androidTapTargetGuideline));
-    await expectLater(t, meetsGuideline(iOSTapTargetGuideline));
+    // The track is wider than the floor: it keeps its 44.
+    expect(t.getSize(find.byType(FrostedSwitch)), Size(44, target.height));
+    await expectLater(t, meetsGuideline(touchFloorGuideline));
     await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
     final report = const DesignTapTargetCheck(look: 'Frosted')
         .check(t.element(find.byKey(const Key('page'))));
@@ -97,9 +99,8 @@ void main() {
     expect(t.takeException(), isNull);
     final entry = t.getSemantics(find.byType(EditableText));
     expect(entry.getSemanticsData().label, 'Tags');
-    expect(entry.rect.height, FrostedBreakpoints.touchHitTarget);
-    await expectLater(t, meetsGuideline(androidTapTargetGuideline));
-    await expectLater(t, meetsGuideline(iOSTapTargetGuideline));
+    expect(entry.rect.height, FrostedBreakpoints.targets.touch.height);
+    await expectLater(t, meetsGuideline(touchFloorGuideline));
     semantics.dispose();
   });
 }

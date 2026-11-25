@@ -75,7 +75,7 @@ class FrostedDataTable<R> extends StatelessWidget {
     final columns = controller.columns;
     // The header row is at least the touch target tall: its heads sort. The
     // checks' column is at least the target wide, so a check stands in its
-    // whole target (48 under a finger).
+    // whole target (the floor, 40).
     final head0 = math.max(_head, FrostedBreakpoints.hitTargetOf(context));
     // A check stands inset in its column where there is room; on a phone it
     // gives up the inset (down to its bare target) before the columns give up
@@ -397,7 +397,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
             states.contains(WidgetState.hovered) ||
             states.contains(WidgetState.pressed);
         final lead = leadingOf?.call(item.row.node);
-        // A row is at least the touch target tall (48 under a finger).
+        // A row is at least the touch target tall (the floor, 40).
         final face = SizedBox(
           height: math.max(
             FrostedChromeMetrics.menuItem,

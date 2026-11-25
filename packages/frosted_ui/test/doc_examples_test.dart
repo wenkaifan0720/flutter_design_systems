@@ -2008,6 +2008,8 @@ void main() {
         final theme = FrostedThemeData.from(accent: const Color(0xFF0A7CFF));
         return null;
       },
+      'FrostedThemeData.fontFamilyFallback': (context) =>
+          FrostedThemeData(fontFamilyFallback: const ['NotoSansJP']),
       'FrostedThemeData.opal 4': (context) {
         final theme = FrostedThemeData.opal().copyWith(
           colorScheme: FrostedThemeData.opal().colorScheme.copyWith(

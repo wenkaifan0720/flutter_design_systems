@@ -654,9 +654,9 @@ class FrostedReorderableListView<T extends Object> extends StatelessWidget {
                     cursor: SystemMouseCursors.grab,
                     child: Semantics(
                       label: words.reorder,
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
+                      child: SizedBox.square(
+                        // The grip's target: the floor square.
+                        dimension: FrostedBreakpoints.hitTargetOf(context),
                         child: Icon(
                           FrostedGlyphs.grip,
                           size: 18,

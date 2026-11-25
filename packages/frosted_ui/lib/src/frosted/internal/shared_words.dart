@@ -45,6 +45,20 @@ class FrostedSharedWords {
     () => _shared.formatFullDate(day),
   );
 
+  /// The time picker card's title: Frosted's "Select a time", or the app's
+  /// own words for it; null where it would be Frosted's English in another
+  /// language (ui_core speaks no such word yet: the card then shows no
+  /// title and is named a dialog, as Cupertino's time picker has none).
+  String? get selectTime => _sayOrNone(_own.selectTime, _stock.selectTime);
+
+  /// The date picker card's title, as [selectTime] is.
+  String? get selectDate => _sayOrNone(_own.selectDate, _stock.selectDate);
+
+  // A word only Frosted says today: its own, else none. Where ui_core comes
+  // to speak it, its word goes in place of the null.
+  String? _sayOrNone(String own, String stock) =>
+      _english || own != stock ? own : null;
+
   /// A month and its year, as a calendar's head says them.
   String monthYear(DateTime month) => _say(
     '${_own.monthName(month.month)} ${_shared.formatYear(month)}',

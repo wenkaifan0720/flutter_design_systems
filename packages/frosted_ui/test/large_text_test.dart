@@ -462,7 +462,7 @@ void main() {
         await _pump(t, row(), direction: direction);
         expect(
           t.getSize(find.byType(FrostedSwipeActions)).height,
-          greaterThanOrEqualTo(FrostedBreakpoints.touchHitTarget),
+          greaterThanOrEqualTo(FrostedBreakpoints.targets.touch.height),
         );
         expect(Directionality.of(t.element(find.text('DELETE'))), direction);
       }

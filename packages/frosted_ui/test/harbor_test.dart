@@ -1,6 +1,6 @@
 // Harbor, the example's live app: its Activity and its Settings on a phone (390) and at
 // desktop width (1440), by day, by night and over the night sky. On each it draws without an error, keeps Flutter's
-// guidelines (Android's 48 px targets, labelled targets, and every word's contrast read off the glass as drawn), and
+// guidelines (the 40 px finger floor, labelled targets, and every word's contrast read off the glass as drawn), and
 // works: a row opens its transaction (a sheet on a phone, the pane beside the list at desktop width), the tabs move
 // between the screens, the backdrop select sets the theme's backdrop, and Close account asks first. And each screen,
 // grown to its whole page, keeps P's keylines (keylines.dart): one leading and one trailing edge per card, section,
@@ -20,6 +20,7 @@ import 'package:ui_core_review/ui_core_review.dart';
 
 import 'keylines.dart';
 import 'tiers.dart';
+import 'touch_floor.dart';
 
 // Harbor is the example app's; a test reads it from there.
 // ignore_for_file: avoid_relative_lib_imports
@@ -188,7 +189,7 @@ Future<void> _settle(WidgetTester tester) async {
 /// The target guidelines, as laid out.
 Future<void> _guidelines(WidgetTester tester) async {
   final handle = tester.ensureSemantics();
-  await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+  await expectLater(tester, meetsGuideline(touchFloorGuideline));
   await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
   handle.dispose();
 }

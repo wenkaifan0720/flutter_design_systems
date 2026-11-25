@@ -310,7 +310,7 @@ class FrostedAppBar extends StatelessWidget {
     );
 
     // The last act's face stands on the trailing keyline, its target growing
-    // inward (a 36 face in a 44 target stood 4 inside the line); the
+    // inward (a 36 face centred in its target stood inside the line); the
     // account's marks place their own.
     Widget? end(List<Widget> parts) => parts.isEmpty
         ? null
@@ -429,7 +429,7 @@ class FrostedAppBar extends StatelessWidget {
     // space when it has any.
     final trailing = end(actions);
     // The back's column, and the balancing one, are at least its touch
-    // target wide (48 under a finger), so the back stands in its whole
+    // target wide (the floor, 40), so the back stands in its whole
     // target.
     final column = math.max(
       FrostedChromeMetrics.detailColumn,

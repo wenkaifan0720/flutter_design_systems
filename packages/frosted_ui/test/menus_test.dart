@@ -145,7 +145,7 @@ void main() {
 
     await pump(1);
     final rest = tester.getSize(find.byType(FrostedPressable).first).height;
-    expect(rest, FrostedBreakpoints.touchHitTarget);
+    expect(rest, FrostedBreakpoints.targets.touch.height);
     await pump(2);
     for (final month in ['August 2026', 'October 2026']) {
       final words = tester.renderObject<RenderParagraph>(find.text(month));

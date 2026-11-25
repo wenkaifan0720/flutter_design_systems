@@ -1,5 +1,5 @@
-// The example's Customize panel, at every setting it offers: Flutter's four guidelines on every gallery page, by day and
-// by night (Android's 48 px and iOS's 44 px targets, labelled targets, text contrast read with each word's own ink). For
+// The example's Customize panel, at every setting it offers: the guidelines on every gallery page, by day and by night
+// (the 40 px finger floor, labelled targets, text contrast read with each word's own ink). For
 // a compact density, a golden of every section. `flutter test --update-goldens`
 // records them.
 import 'dart:io';
@@ -64,8 +64,7 @@ void main() {
             await pumpGalleryPage(tester, page, 'opal', b);
             final failed = <String>[];
             for (final (what, guideline) in [
-              ('Android 48 px targets', androidTapTargetGuideline),
-              ('iOS 44 px targets', iOSTapTargetGuideline),
+              ('40 px targets', touchFloorGuideline),
               ('labelled targets', labeledTapTargetGuideline),
             ]) {
               final result = await guideline.evaluate(tester);

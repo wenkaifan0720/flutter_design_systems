@@ -804,7 +804,10 @@ void main() {
         t.getRect(find.text(w)).center.dy,
     ];
     for (var i = 1; i < rows.length; i++) {
-      expect(rows[i] - rows[i - 1], greaterThanOrEqualTo(44));
+      expect(
+        rows[i] - rows[i - 1],
+        greaterThanOrEqualTo(FrostedBreakpoints.targets.touch.height),
+      );
     }
     // A row with somewhere to go is a link read as its words.
     expect(

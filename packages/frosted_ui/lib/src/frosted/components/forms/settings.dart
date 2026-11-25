@@ -210,10 +210,11 @@ class FrostedSwitchRow extends StatelessWidget {
       ),
     );
     // The label flips the switch, as the source's <label class="set-row">
-    // does; the words merge into the switch's one node.
+    // does; the words merge into the switch's one node, off with it.
     return MergeSemantics(
       child: Semantics(
         hint: note,
+        enabled: live || readOnly ? null : false,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: live ? () => onChanged!(!value) : null,

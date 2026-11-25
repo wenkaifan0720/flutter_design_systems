@@ -91,8 +91,8 @@ class FrostedFan extends StatelessWidget {
     // fan(): phone 228 tall, the destinations at 96, the bars 8 and 6
     // wide; desktop 280 tall, at 236, the bars 10 and 8. The rows start 12
     // (16) past the destination bars.
-    // Each row's slot is at least a target tall (48 under a finger, 44
-    // under a pointer), so a row's tap reaches its whole outline and no
+    // Each row's slot is at least a target tall (the floor, 40), so a
+    // row's tap reaches its whole outline and no
     // neighbour's; the drawing grows to hold them.
     final target = FrostedBreakpoints.hitTargetOf(context);
     final h = math.max(height ?? (wide ? 280.0 : 228.0), flows.length * target);

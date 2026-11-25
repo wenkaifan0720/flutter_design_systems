@@ -77,7 +77,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
     const inset = FrostedChromeMetrics.segmentsInset;
     final labels = {for (final s in segments) s.value: s.label};
     // The strip is drawn at the plates' height and the inset round them;
-    // each toggle's target (48 under a finger) overhangs it, centred.
+    // each toggle's target (the floor, 40) overhangs it, centred.
     final target = FrostedBreakpoints.hitTargetOf(context);
     final strip = height + 2 * inset;
     final reach = math.max(strip, target);
@@ -394,7 +394,7 @@ class FrostedSplitButton extends StatelessWidget {
     );
     final radius = Radius.circular(height / 2);
     final ink = glass ? t.colorScheme.textPrimary : t.colorScheme.onButton;
-    // Each half answers the touch target (48 under a finger): the chevron's
+    // Each half answers the touch target (the floor, 40): the chevron's
     // half is drawn that wide, and both reach above and below the button.
     final target = FrostedBreakpoints.hitTargetOf(context);
     final reach = math.max(height, target);

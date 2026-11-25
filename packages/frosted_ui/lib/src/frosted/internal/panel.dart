@@ -154,8 +154,8 @@ class _RenderDrawn extends RenderProxyBox {
 }
 
 /// A row of a [FrostedPanel] painted for its [states] (`.menu-i`): 40 tall,
-/// and at least a finger's target (48, on every platform, as Material's
-/// menu rows are), so the row a tap reaches is the row a screen reader
+/// and at least a finger's target on every platform
+/// ([FrostedBreakpoints.touchTargetOf]), so the row a tap reaches is the row a screen reader
 /// outlines and no neighbour's; 10 in, corners 10; the check's column 16 wide when [checkable], then the
 /// [label] in the link type, then [trailing]. The chosen row (`selected`)
 /// stands on the chosen plate, the brighter glass every chosen chip, segment
@@ -207,7 +207,7 @@ class FrostedPanelRow extends StatelessWidget {
   final bool checkable;
 
   /// The row's height, at least a finger's target
-  /// ([FrostedBreakpoints.touchHitTarget]).
+  /// ([FrostedBreakpoints.touchTargetOf]).
   final double height;
 
   @override
@@ -273,7 +273,7 @@ class FrostedPanelRow extends StatelessWidget {
       ],
     );
     final row = SizedBox(
-      height: math.max(height, FrostedBreakpoints.touchHitTarget),
+      height: math.max(height, FrostedBreakpoints.touchTargetOf(context)),
       // The keyboard's row catches the light along its rim; one the pointer
       // holds only clears.
       child: FrostedCleared(

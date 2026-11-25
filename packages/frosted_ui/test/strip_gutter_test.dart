@@ -58,7 +58,7 @@ void main() {
             .first,
       );
       expect(rtl ? 390 - face.right : face.left, gutter);
-      expect(first.height, FrostedBreakpoints.touchHitTarget);
+      expect(first.height, FrostedBreakpoints.targets.touch.height);
       // A point in the far gutter, on the chips' row: the chip drawn there
       // takes the tap.
       final at = Offset(rtl ? gutter / 2 : 390 - gutter / 2, first.center.dy);

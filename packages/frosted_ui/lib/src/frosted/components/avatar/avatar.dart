@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../format.dart';
@@ -125,6 +126,35 @@ class FrostedAvatar extends StatelessWidget {
     final cut = s.shape;
     final fill = s.fill;
     final (edge, edges) = s.edgeOf(t.glass.edge, FrostedStrokes.regular);
+    // Not chosen ([dimmed]), the disc stands at the quieter share, washed
+    // toward the page (a photo faded), its initials in the nearest tone of
+    // the quiet ink that reads 4.5:1 on every colour of the faded disc.
+    // Faded with the disc, the initials fell to 3.7:1 on a seeded theme's
+    // warm disc.
+    const share = FrostedChromeMetrics.personDimOpacity;
+    Color quiet(Color c) =>
+        dimmed ? Color.lerp(t.colorScheme.background, c, share)! : c;
+    final pearl = t.pearl.avatarGradient;
+    final gradient = dimmed
+        ? LinearGradient(
+            begin: pearl.begin,
+            end: pearl.end,
+            colors: [for (final c in pearl.colors) quiet(c)],
+            stops: pearl.stops,
+            tileMode: pearl.tileMode,
+            transform: pearl.transform,
+          )
+        : pearl;
+    final page = t.colorScheme.background.withValues(alpha: 1);
+    final initialsInk = dimmed
+        ? RawPalette.readableTone(
+            t.colorScheme.textSecondary,
+            on: [
+              for (final c in fill == null ? gradient.colors : [quiet(fill)])
+                Color.alphaBlend(c, page),
+            ],
+          )
+        : t.pearl.text;
     Widget disc = SizedBox.square(
       dimension: d,
       child: FrostedFace(
@@ -133,9 +163,11 @@ class FrostedAvatar extends StatelessWidget {
           FrostedStyleLayers.radiusOf(cut, d, d / 2),
         ),
         shape: cut,
-        color: fill,
-        gradients: fill == null ? [t.pearl.avatarGradient] : const <Gradient>[],
-        edge: edge,
+        color: fill == null ? null : quiet(fill),
+        gradients: fill == null ? [gradient] : const <Gradient>[],
+        edge: edge == null || !dimmed
+            ? edge
+            : edge.withValues(alpha: edge.a * share),
         edges: edges,
         sheen: t.glass.rim,
         shadows: selected
@@ -163,29 +195,26 @@ class FrostedAvatar extends StatelessWidget {
                   style: s.words(
                     t.textTheme.monogram
                         .at(size.fontSize)
-                        .c(t.pearl.text)
+                        .c(initialsInk)
                         .copyWith(height: 1),
                   ),
                 ),
               ),
             ),
             if (image case final image?)
-              Image(
-                image: image,
-                fit: BoxFit.cover,
-                excludeFromSemantics: true,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              Opacity(
+                opacity: dimmed ? share : 1,
+                child: Image(
+                  image: image,
+                  fit: BoxFit.cover,
+                  excludeFromSemantics: true,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
               ),
           ],
         ),
       ),
     );
-    if (dimmed) {
-      disc = Opacity(
-        opacity: FrostedChromeMetrics.personDimOpacity,
-        child: disc,
-      );
-    }
     if (onPressed == null) {
       return Semantics(
         label: name ?? initials,

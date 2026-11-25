@@ -1,3 +1,21 @@
+## 0.7.0
+
+- Requires ui_core 0.7.1. Every target's floor is 40 by 40 (WCAG 2.2's minimum) under a finger and a pointer; it was 48 and 44.
+- Removed `FrostedBreakpoints.touchHitTarget` and `FrostedBreakpoints.minHitTarget`; read `FrostedBreakpoints.hitTargetOf`, or the new `touchTargetOf`. `FrostedBreakpoints.targets` is `final`.
+- `FrostedChoices`, `FrostedBreadcrumb` and `FrostedRecordHero`'s chips stand their spacing apart, targets reaching into the room between (ui_core's `RawChipGroup`). A breadcrumb's page stands as tall as its links' targets, so a wrapped trail's lines step evenly.
+- New `FrostedThemeData.fontFamilyFallback` (constructor, `from`, `copyWith`): the fonts every text style falls back to.
+- Colours are walked with ui_core's `RawPalette`; presets move by at most 31/255 on a channel, most by under 8. Opal's quiet ink by night reads on the lit wash too (#C6C3D4 to #D1CFDE).
+- Six palettes: opal (the default), quartz, garnet, glacier, jade and copper. `FrostedThemeData.cobalt` is deprecated and leaves `presets`; use `FrostedThemeData.from(accent: Color(0xFF0668DE))`. The example's Foundations page shows the six.
+- The time and date pickers show no English title in another language; a screen reader names the card a dialog.
+- 12-hour time wheels stand together at the middle; the 24-hour clock is unchanged.
+- The date picker's card holds its month's weeks with its head fixed; new `FrostedDatePicker.onDisplayedMonthChanged`.
+- Today's figure takes the days' ink; its ring marks it.
+- At 200% text a pill and a wrapped button keep their words 4 or more from their edges.
+- A dimmed `FrostedAvatar` or `FrostedPerson` reads 4.5:1 (it was 3.7:1); a disabled `FrostedSwitchRow` says it is off to a screen reader.
+- A chosen tab's words by night, and a pane's share, note and due days, read 4.5:1 (they were 3.5-4.4:1).
+- `FrostedIconPicker`'s wells are each their own target, 8 apart.
+- The README opens with a whole app in 12 lines, and its pictures show this release.
+
 ## 0.6.3
 
 - Requires ui_core 0.6.1. `FrostedTimePicker`'s wheels, and `FrostedTime.format`, write a time in the app's digits through ui_core's `formatHour` and `formatMinute`: Arabic's ٩ (٢١ on the 24-hour clock) and ٠٥, not 9 and 05, also when the app gives Frosted words of its own. English is unchanged. The hour wheel stays left of the minutes in a right-to-left app. `FrostedFormat.time` says it is English and points to `formatTimeOfDay`.

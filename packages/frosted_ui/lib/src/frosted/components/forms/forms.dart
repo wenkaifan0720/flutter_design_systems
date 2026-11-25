@@ -990,13 +990,13 @@ class _SearchPill extends StatelessWidget {
     //   font: 400 16px/1 var(--font-t) }  .search .i { 18px }
     // .search--on { color: var(--ink); background: rgba(255,255,255,.9) }
     // .search-x { margin-right: -6px }
-    // At least a finger's target (48, as a field's well is, on every
-    // platform: the pill is the box a tap reaches and a screen reader
-    // outlines), growing with larger text; the line stands on its centre by
-    // the row's alignment.
+    // The source's 44, at least a finger's target on every platform (the
+    // pill is the box a tap reaches and a screen reader outlines), growing
+    // with larger text; the line stands on its centre by the row's
+    // alignment.
     final height = math.max(
       FrostedChromeMetrics.search,
-      FrostedBreakpoints.touchHitTarget,
+      FrostedBreakpoints.touchTargetOf(context),
     );
     return FrostedFocusRing(
       shown: focused,
@@ -1218,7 +1218,7 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
         constraints: BoxConstraints(
           minHeight: math.max(
             FrostedChromeMetrics.search,
-            FrostedBreakpoints.touchHitTarget,
+            FrostedBreakpoints.touchTargetOf(context),
           ),
         ),
         child: Row(

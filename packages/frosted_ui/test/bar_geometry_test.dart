@@ -136,16 +136,22 @@ Future<(Uint8List, int)> _pixels(WidgetTester t) async {
   }
 
   int? slab;
-  var plate = -1;
-  var most = 7;
+  final offs = <int>[];
   for (final (k, (x, y)) in path.indexed) {
     final i = (y * width + x) * 4;
     slab ??= apart(other, ground, i) >= 5 ? k : null;
-    final off = apart(chosen, other, i);
-    if (off > most) {
-      most = off;
-      plate = k;
-    }
+    offs.add(apart(chosen, other, i));
+  }
+  // The plate's rim is its strongest change; a rim a pixel wide is three
+  // device pixels at 3x, whose levels round a step apart (146, 146, 147):
+  // the first pixel of the run holding the strongest. A step, not two: by day
+  // the faint outer ring under the top's sheen reads two below the rim beside
+  // it (14 by 16) and is not the rim.
+  final most = offs.fold(7, math.max);
+  if (most <= 7) return (slab ?? -1, -1);
+  var plate = offs.indexOf(most);
+  while (plate > 0 && offs[plate - 1] >= most - 1) {
+    plate--;
   }
   return (slab ?? -1, plate);
 }

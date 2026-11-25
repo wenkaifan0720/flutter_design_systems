@@ -80,7 +80,7 @@ class FrostedMenuBar extends StatelessWidget {
     FrostedLastInput.watch();
     final t = context.frostedTheme;
     // The bar is drawn at its 32 high items and the inset round them; each
-    // item's target (48 under a finger) overhangs it, centred.
+    // item's target (the floor, 40) overhangs it, centred.
     const item = 32.0, inset = FrostedSpacing.s4;
     final target = FrostedBreakpoints.hitTargetOf(context);
     final reach = math.max(item + 2 * inset, target);

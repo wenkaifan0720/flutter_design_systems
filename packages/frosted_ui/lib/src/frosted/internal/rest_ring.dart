@@ -1,6 +1,9 @@
 import 'dart:ui' show Color;
 
+import 'package:ui_core/ui_core.dart';
+
 import '../theme.dart';
+import 'eased_ink.dart';
 
 /// The ring a control wears where nothing else says it is there or what
 /// state it is in ([FrostedThemeData.controlEdge]): an empty check, a radio,
@@ -8,7 +11,9 @@ import '../theme.dart';
 /// segment, tab or link. The theme's strong hairline, deepened toward its
 /// quiet ink (and past it toward the ink, if it must) until it reads 3:1 on
 /// the page, the surface, the wash and every glass over any backdrop (WCAG
-/// 1.4.11, a control's boundary). Opaque, so it reads the same on glass.
+/// 1.4.11, a control's boundary): its tone walked by ui_core's
+/// `RawPalette.readableTone`, its colour easing with it. Opaque, so it
+/// reads the same on glass.
 /// Plumbing of the components.
 Color frostedRestRing(FrostedThemeData t) => t.controlEdge;
 
@@ -41,17 +46,10 @@ Color frostedRestRingOn({
   final from = Color.alphaBlend(borderStrong, grounds[1]);
   final quiet = Color.alphaBlend(textTertiary, grounds[1]);
   final ink = Color.alphaBlend(textPrimary, grounds[1]);
-  for (final (a, b) in [(from, quiet), (quiet, ink)]) {
-    for (var i = 0; i <= 40; i++) {
-      final ring = Color.lerp(a, b, i / 40)!;
-      if (grounds.every((g) => _contrast(ring, g) >= _target)) return ring;
-    }
-  }
-  return ink;
-}
-
-double _contrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  return la > lb ? (la + .05) / (lb + .05) : (lb + .05) / (la + .05);
+  bool reads(Color ring) =>
+      grounds.every((g) => RawPalette.contrastRatio(ring, g) >= _target);
+  final toQuiet = frostedEasedInk(from, quiet, grounds, _target);
+  if (reads(toQuiet)) return toQuiet;
+  final toInk = frostedEasedInk(quiet, ink, grounds, _target);
+  return reads(toInk) ? toInk : ink;
 }

@@ -17,6 +17,7 @@ import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/theme.dart';
 
 export '../example/lib/gallery_pages.dart';
+export 'touch_floor.dart';
 
 /// The gallery's phone width.
 const galleryWidth = 390.0;

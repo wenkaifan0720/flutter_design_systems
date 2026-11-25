@@ -141,11 +141,9 @@ void main() {
       _node(t, 'Search, Blue Fern typed'),
       isSemantics(isEnabled: false, hasTapAction: false, value: 'Blue Fern'),
     );
-    // The pill stands a finger's target tall (the source's 44 grows to 48).
-    expect(
-      t.getSize(find.byType(FrostedSearchLink).first).height,
-      FrostedBreakpoints.touchHitTarget,
-    );
+    // The pill stands at the source's 44, over the finger's floor (40).
+    expect(t.getSize(find.byType(FrostedSearchLink).first).height, 44);
+    expect(FrostedBreakpoints.targets.touch.height, lessThanOrEqualTo(44));
     await t.tap(find.text('Search activity'));
     await t.tap(find.text('Blue Fern'));
     expect(opens, 1);
@@ -169,10 +167,8 @@ void main() {
     );
     expect(find.text('Blue Fern'), findsOneWidget);
     expect(_node(t, 'Search activity'), isSemantics(isTextField: true));
-    expect(
-      t.getSize(find.byType(FrostedSearchField)).height,
-      FrostedBreakpoints.touchHitTarget,
-    );
+    // The source's 44, over the finger's floor (40).
+    expect(t.getSize(find.byType(FrostedSearchField)).height, 44);
     await t.enterText(find.byType(TextField), 'Blue');
     await t.pump();
     expect(seen, ['Blue']);
@@ -258,7 +254,7 @@ void main() {
       // A 32 chip in its touch target.
       expect(
         t.getSize(find.widgetWithText(FrostedPressable, 'All')).height,
-        FrostedBreakpoints.touchHitTarget,
+        FrostedBreakpoints.targets.touch.height,
       );
       await t.tap(find.text('Money in'));
       await t.pump();
@@ -375,7 +371,7 @@ void main() {
       );
       // Each segment stands in its touch target round its face; the strip
       // is drawn as a band at the faces' height and its 3 inset round them.
-      const target = FrostedBreakpoints.touchHitTarget;
+      final target = FrostedBreakpoints.targets.touch.height;
       Size face(String word) => t.getSize(
         find
             .descendant(
@@ -400,7 +396,9 @@ void main() {
       );
       final when = t.getSize(find.byType(FrostedSegmentedButton<String>).last);
       expect(when.width, 358);
-      expect(when.height, target);
+      // Its 42 band stands over the finger's floor (40).
+      expect(when.height, 42);
+      expect(target, lessThanOrEqualTo(42));
       expect(band(find.byType(FrostedSegmentedButton<String>).last).height, 42);
       expect(
         t.getSize(find.widgetWithText(FrostedPressable, 'Now')).height,
@@ -446,7 +444,7 @@ void main() {
         // A 38 face in its touch target.
         expect(
           segment.height,
-          FrostedBreakpoints.touchHitTarget,
+          FrostedBreakpoints.targets.touch.height,
           reason: label,
         );
         expect(
@@ -487,7 +485,7 @@ void main() {
         );
         expect(stacked[i].width, stacked[0].width, reason: wide[i]);
         expect(stacked[i].left, stacked[0].left, reason: wide[i]);
-        expect(stacked[i].height, FrostedBreakpoints.touchHitTarget);
+        expect(stacked[i].height, FrostedBreakpoints.targets.touch.height);
         if (i > 0) {
           expect(stacked[i].top, greaterThanOrEqualTo(stacked[i - 1].bottom));
         }
@@ -524,10 +522,11 @@ void main() {
       _node(t, 'Weekly summary'),
       isSemantics(isToggled: false, isEnabled: true, hasTapAction: true),
     );
-    // A live switch stands in its touch target round its 44 × 26 track.
+    // A live switch stands in its touch target round its 44 × 26 track:
+    // the floor's 40 tall, the track's 44 wide.
     expect(
       t.getSize(find.byType(FrostedSwitch).first),
-      const Size.square(FrostedBreakpoints.touchHitTarget),
+      Size(44, FrostedBreakpoints.targets.touch.height),
     );
     await t.tap(find.bySemanticsLabel('Weekly summary'));
     await t.pump();
@@ -770,7 +769,7 @@ void main() {
     // The switch stands in its controls' touch targets, drawn as a 36 band.
     expect(
       t.getSize(find.byType(FrostedMonthSwitch)),
-      const Size(358, FrostedBreakpoints.touchHitTarget),
+      Size(358, FrostedBreakpoints.targets.touch.height),
     );
     expect(
       t
@@ -951,16 +950,16 @@ void main() {
     const across = (358 - 5 * 8) / 6;
     for (var i = 0; i < _icons.length; i++) {
       expect(wells[i].width, moreOrLessEquals(across), reason: '$i');
-      // Each 44 well stands in its touch target (48 under a finger).
-      expect(wells[i].height, FrostedBreakpoints.touchHitTarget, reason: '$i');
+      // Each 44 well stands over the finger's floor (40).
+      expect(wells[i].height, 44, reason: '$i');
       expect(
         wells[i].left,
         moreOrLessEquals(16 + (i % 6) * (across + 8)),
         reason: '$i',
       );
     }
-    // The drawn wells stay 8 apart; their targets close up to 4.
-    expect(wells[6].top - wells[0].bottom, 4);
+    // The wells stay 8 apart, each its own target (44, over the floor).
+    expect(wells[6].top - wells[0].bottom, 8);
     Icon glyph(String label) => t.widget<Icon>(
       find.descendant(of: well(label), matching: find.byType(Icon)),
     );
