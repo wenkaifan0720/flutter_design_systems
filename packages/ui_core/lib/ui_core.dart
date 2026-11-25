@@ -32,6 +32,7 @@ export 'src/motion.dart';
 export 'src/number_field.dart';
 export 'src/otp.dart';
 export 'src/page_transitions.dart';
+export 'src/palette.dart';
 export 'src/pressable.dart';
 export 'src/pull_to_refresh.dart';
 export 'src/radio_group_keyboard_fix.dart';

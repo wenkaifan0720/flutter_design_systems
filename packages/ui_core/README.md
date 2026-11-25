@@ -284,6 +284,21 @@ otherwise.
 
 For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPercent`. Date and time controls use the locale’s calendar order, digits, separators and first day of the week.
 
+## A look's palette
+
+People name a palette (navy and white, black and gold, a pastel), and a look's own colour API takes it in its own
+words. `RawPalette` gives that API its numbers in HCT, the colour space `ColorScheme.fromSeed` builds its
+tones in: `readableTone` walks a colour in its own hue until it reads on every ground it is painted on,
+`accentFill` gives a filled control's colour and its label's ink (the ink following the brightness, as Material's
+on-primary does, or keeping the named colour as the fill, by `RawAccentRule`), and `RawNeutralTones` gives the tones of a tinted ground, a cream's night
+a charcoal, never brown. ui_core_test's `DesignContrastCheck.sweep` reads a screen in each of the palettes people name
+most, by day and by night.
+
+```dart
+final words = RawPalette.readableTone(brand, on: [page, panel]);
+final button = RawPalette.accentFill(brand, brightness: Brightness.dark);
+```
+
 ## Tap targets, density and spacing
 
 A look declares the floors its controls stand at once, as a theme does: `RawTapTargetScope` holds

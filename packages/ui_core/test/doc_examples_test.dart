@@ -959,6 +959,51 @@ final Map<String, DocExample> _examples = {
     ),
   ),
   // 0.3.0 routes end
+  'RawPalette': (context) {
+    const brand = Color(0xFF1F3A68);
+    const page = Color(0xFF121212);
+    const panel = Color(0xFF1E1E1E);
+    final words = RawPalette.readableTone(brand, on: [page, panel]);
+    final button = RawPalette.accentFill(brand, brightness: Brightness.dark);
+    return ColoredBox(
+      color: button.fill,
+      child: Text('Go', style: TextStyle(color: words)),
+    );
+  },
+  'RawPalette.readableTone': (context) {
+    // A navy accent for words on a night page and its raised panel.
+    final accent = RawPalette.readableTone(
+      const Color(0xFF1F3A68),
+      on: const [Color(0xFF121212), Color(0xFF1E1E1E)],
+    );
+    return ColoredBox(color: accent);
+  },
+  'RawPalette.accentFill': (context) {
+    final stop = RawPalette.accentFill(
+      const Color(0xFFC9A227),
+      brightness: Brightness.light,
+      rule: RawAccentRule.named,
+    );
+    // stop.fill is the gold itself and stop.ink the dark ink.
+    return ColoredBox(
+      color: stop.fill,
+      child: Text('Stop', style: TextStyle(color: stop.ink)),
+    );
+  },
+  'RawNeutralTones': (context) {
+    final cream = RawNeutralTones.of(const Color(0xFFFFF4EC));
+    final nightPage = cream.tone(6);
+    final nightPanel = cream.tone(12);
+    return ColoredBox(
+      color: nightPage,
+      child: ColoredBox(color: nightPanel),
+    );
+  },
+  'RawHct': (context) {
+    final brand = RawHct.fromColor(const Color(0xFF2E7D32));
+    final edge = brand.withTone(brand.tone - 12).toColor();
+    return ColoredBox(color: edge);
+  },
 };
 
 /// The host app's own layer (its router, its app chrome and its
@@ -977,6 +1022,7 @@ const Set<String> _hostAppOnly = {
 const Set<String> _checksFiles = {
   'alignment.dart',
   'checkable_check.dart',
+  'contrast_check.dart',
   'cursor_check.dart',
   'dialog_actions_check.dart',
   'face_inset_check.dart',

@@ -28,6 +28,7 @@ import 'internal/drawn_pixels.dart';
 import 'internal/label_line.dart';
 
 part 'checks/checkable_check.dart';
+part 'checks/contrast_check.dart';
 part 'checks/cursor_check.dart';
 part 'checks/dialog_actions_check.dart';
 part 'checks/face_inset_check.dart';

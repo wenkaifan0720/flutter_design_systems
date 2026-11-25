@@ -21,6 +21,40 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) => const SizedBox();
 }
 
+/// The theme [DesignContrastCheck.sweep]'s example builds.
+class GiltThemeData {
+  /// The look's own palette.
+  const GiltThemeData({required this.brightness, this.accent});
+
+  /// A named palette.
+  const GiltThemeData.from({
+    required Color this.accent,
+    Color? paper,
+    required this.brightness,
+  });
+
+  /// Day or night.
+  final Brightness brightness;
+
+  /// The accent.
+  final Color? accent;
+}
+
+/// The app [DesignContrastCheck.sweep]'s example pumps.
+class GiltApp extends StatelessWidget {
+  /// An app showing [home] in [theme].
+  const GiltApp({super.key, required this.theme, required this.home});
+
+  /// Its theme.
+  final GiltThemeData theme;
+
+  /// Its screen.
+  final Widget home;
+
+  @override
+  Widget build(BuildContext context) => home;
+}
+
 /// The form [DesignListSideCheck]'s example checks.
 class TaskForm extends StatelessWidget {
   /// A form.
@@ -95,6 +129,39 @@ Future<void> _fieldNodesCheck(WidgetTester tester) async {
 Future<void> _labelCheck(WidgetTester tester) async {
   final report = await const DesignLabelCheck(look: 'Comic').check(
     tester.element(find.byType(SettingsScreen)),
+    runAsync: tester.runAsync,
+  );
+  report.verify();
+}
+
+/// [DesignContrastCheck]'s examples: they take a tester, so they are
+/// compiled here and run by contrast_check_test.dart's shapes.
+Future<void> _contrastCheck(WidgetTester tester) async {
+  final report = await const DesignContrastCheck(look: 'Gilt').check(
+    tester.element(find.byType(SettingsScreen)),
+    runAsync: tester.runAsync,
+  );
+  report.verify();
+}
+
+/// [DesignContrastCheck.sweep]'s example.
+Future<void> _contrastSweep(WidgetTester tester) async {
+  final report = await const DesignContrastCheck(look: 'Gilt').sweep(
+    show: (palette, brightness) async {
+      // The look's own colour API takes the palette.
+      final theme = palette == null
+          ? GiltThemeData(brightness: brightness)
+          : GiltThemeData.from(
+              accent: palette.accent,
+              paper: palette.neutral,
+              brightness: brightness,
+            );
+      await tester.pumpWidget(
+        GiltApp(theme: theme, home: const SettingsScreen()),
+      );
+      await tester.pumpAndSettle();
+    },
+    screen: () => tester.element(find.byType(SettingsScreen)),
     runAsync: tester.runAsync,
   );
   report.verify();
@@ -193,6 +260,7 @@ Future<void> _settleImages(WidgetTester tester) async {
 const Set<String> _checksFiles = {
   'alignment.dart',
   'checkable_check.dart',
+  'contrast_check.dart',
   'cursor_check.dart',
   'dialog_actions_check.dart',
   'face_inset_check.dart',
@@ -216,6 +284,8 @@ void main() {
   test('the checks the examples call are compiled here', () {
     expect(_labelCheck, isNotNull);
     expect(_faceInsetCheck, isNotNull);
+    expect(_contrastCheck, isNotNull);
+    expect(_contrastSweep, isNotNull);
     expect(_labelDensities, isNotNull);
     expect(_settleImages, isNotNull);
     expect(_fitChecks, isNotNull);

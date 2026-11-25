@@ -32,7 +32,7 @@ class DesignCheckGuideline extends AccessibilityGuideline {
   @override
   final String description;
 
-  /// Checks [screen], the topmost widget of one view, under [tester].
+  /// Checks `screen`, the topmost widget of one view, under `tester`.
   final FutureOr<DesignAlignmentReport> Function(
     WidgetTester tester,
     BuildContext screen,
@@ -112,6 +112,19 @@ const AccessibilityGuideline cursorGuideline = DesignCheckGuideline(
   run: _cursor,
 );
 
+/// No words or icon read under the least any Material or Cupertino words
+/// or icon read in their own palettes (`DesignContrastCheck`'s faults:
+/// words 2.6:1, icons 1.9:1, a hint 1.7:1). Its findings under Material's
+/// bar (4.5:1 and 3:1) don't fail it; Flutter's `textContrastGuideline`
+/// holds every text to that bar, which Cupertino's own colours don't meet.
+/// It reads the drawn pixels.
+const AccessibilityGuideline contrastFloorGuideline = DesignCheckGuideline(
+  description:
+      'No words or icon read under the least Material or Cupertino draws in '
+      'its own palettes.',
+  run: _contrast,
+);
+
 /// Each control's words and icon sit on the middle of its face, as drawn
 /// (`DesignLabelCheck`). It reads the drawn pixels.
 const AccessibilityGuideline labelPlacementGuideline = DesignCheckGuideline(
@@ -185,6 +198,13 @@ DesignAlignmentReport _tapTarget(WidgetTester tester, BuildContext screen) =>
 
 DesignAlignmentReport _cursor(WidgetTester tester, BuildContext screen) =>
     const DesignCursorCheck(look: 'Screen').check(screen);
+
+Future<DesignAlignmentReport> _contrast(
+  WidgetTester tester,
+  BuildContext screen,
+) =>
+    const DesignContrastCheck(look: 'Screen')
+        .check(screen, runAsync: tester.runAsync);
 
 Future<DesignAlignmentReport> _label(
   WidgetTester tester,

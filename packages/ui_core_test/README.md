@@ -2,8 +2,8 @@
 
 Widget-test checks for design systems built on ui_core, of what is wrong in any design: a checkbox that says
 it is a button, a radio group the arrows cannot cross, a text field a screen reader calls "text field" alone, a tap
-target smaller than it looks, a click cursor missing, a label off its face's middle, a word broken mid-word, words
-clipped, a shadow cut flat. Each report names the control and what is wrong with it.
+target smaller than it looks, a click cursor missing, a label off its face's middle, words too faint to read, a word
+broken mid-word, words clipped, a shadow cut flat. Each report names the control and what is wrong with it.
 
 A design system's tests take it as a dev dependency, as an app takes `flutter_test`:
 
@@ -46,8 +46,8 @@ await expectLater(tester, meetsGuideline(textFieldNameGuideline));
 ```
 
 `checkableRoleGuideline`, `fieldSemanticsGuideline`, `textFieldNameGuideline`, `tapTargetReachGuideline`,
-`cursorGuideline`, `labelPlacementGuideline`, `tooltipNodeGuideline`, `listSideGuideline`, `overlayGuideline` and
-`overflowGuideline`. The radio group check
+`cursorGuideline`, `labelPlacementGuideline`, `tooltipNodeGuideline`, `listSideGuideline`, `overlayGuideline`,
+`overflowGuideline` and `contrastFloorGuideline`. The radio group check
 and the field nodes check are not: one presses keys and the other types, and a guideline reads a screen without
 changing it. The guidelines library imports `flutter_test`; the main library does not, so the
 checks also run in an app (each takes the tester's `pump` and `runAsync` as functions).
@@ -104,6 +104,12 @@ What is drawn wrong, from the painted pixels where only they show it (each check
   mark beside a label to the label's capitals.
 - `DesignFaceInsetCheck`: a filled or outlined face keeps its label's ink at least 4 px from its edges, the least
   Material's buttons, chips and segments keep at any text scale.
+- `DesignContrastCheck`: the words and icons a screen draws read on what is drawn under them. Faults, which fail
+  `verify`, are under what Material and Cupertino ever draw in their own palettes (words 2.6:1, icons 1.9:1, a hint or
+  placeholder 1.7:1); findings, listed as advisories, are under Material's bar (4.5:1, and 3:1 for large words and
+  icons), which Cupertino's own tint and secondary words, placeholders and tab labels don't meet. A disabled control
+  is left out, as are words over a ground the read boundary holds translucent. Its `sweep` reads a screen in each of
+  `DesignPalette.briefs`, the palettes people name most, by day and by night.
 - `DesignWordBreakCheck` names a word broken across two lines ("Groce" over "ries"): a box too narrow for its longest
   word.
 - `DesignClipCheck` names a control a clip round it cuts (a month's Saturday cut by the room it is in), giving how
