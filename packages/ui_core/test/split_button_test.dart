@@ -291,8 +291,8 @@ void main() {
     expect(_ran, ['save']);
     expect(
       tester.getSize(find.byType(RawSplitButton)),
-      const Size(56 + 44, 44),
-      reason: 'the toggle\'s one glyph still gets a 44 px target',
+      const Size(56 + 40, 40),
+      reason: 'the toggle\'s one glyph still gets a 40 px target',
     );
     await tester.tap(find.text('v'));
     await tester.pumpAndSettle();

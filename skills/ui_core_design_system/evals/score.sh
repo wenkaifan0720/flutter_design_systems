@@ -52,7 +52,7 @@ fi
 if [ ! -f "$app/lib/screens.dart" ]; then
   gate G3 FAIL "lib/screens.dart is missing"
 else
-  (cd "$app" && flutter pub add 'dev:ui_core_test:^0.4.0' 'dev:flutter_test:{"sdk":"flutter"}') >>"$log/get.txt" 2>&1
+  (cd "$app" && flutter pub add 'dev:ui_core_test:^0.5.0' 'dev:flutter_test:{"sdk":"flutter"}') >>"$log/get.txt" 2>&1
   mkdir -p "$app/test/score"
   cp "$evals/sweep.dart" "$app/test/score/sweep.dart"
   cat >"$app/test/score/score_test.dart" <<EOF

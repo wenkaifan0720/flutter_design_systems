@@ -336,6 +336,38 @@ void main() {
       expect(report.problems, isEmpty);
     });
 
+    testWidgets("reads the dialog's actions, not the page's controls of the "
+        'same words under it', (tester) async {
+      // The page's own "Save changes" over its "Cancel", of two widths: a
+      // stack the check would name, were they the dialog's.
+      final report = await show(
+        tester,
+        SizedBox(
+          width: 390,
+          height: 600,
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _key('Save changes', width: 300),
+                  _key('Cancel', width: 100),
+                ],
+              ),
+              Positioned(
+                left: 20,
+                top: 300,
+                child: Row(
+                  children: [for (final a in actions) _key(a, width: 100)],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      expect(report.problems, isEmpty);
+    });
+
     testWidgets('catches two side by side and one under them (Expressive\'s '
         'and Terminal\'s 2+1)', (tester) async {
       final report = await show(

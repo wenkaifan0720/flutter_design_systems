@@ -77,7 +77,7 @@ class RawRangeSlider extends StatefulWidget {
     this.semanticFormatterCallback,
     this.startLabel,
     this.endLabel,
-    this.thumbSize = const Size(44, 44),
+    this.thumbSize = const Size(40, 40),
   }) : assert(min <= max, 'min is at most max'),
        assert(divisions == null || divisions > 0),
        assert(minGap >= 0),
@@ -204,7 +204,7 @@ class RawRangeSlider extends StatefulWidget {
         DiagnosticsProperty<Size>(
           'thumbSize',
           thumbSize,
-          defaultValue: const Size(44, 44),
+          defaultValue: const Size(40, 40),
         ),
       );
   }

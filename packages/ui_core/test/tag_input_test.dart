@@ -741,12 +741,12 @@ void main() {
         final line = tester.getRect(find.byKey(entryKey));
         expect(line.height, 24);
         final reach = node(tester);
-        expect(reach.size, const Size(120, 44), reason: '${tags.length} tags');
+        expect(reach.size, const Size(120, 40), reason: '${tags.length} tags');
         expect(reach.center, line.center);
         expect(tagInput(tester).expandToInclude(reach), tagInput(tester));
         // Under the line, inside the target: the tap reaches the text.
         final hits = tester.hitTestOnBinding(
-          line.bottomCenter + const Offset(0, 8),
+          line.bottomCenter + const Offset(0, 6),
         );
         expect(
           hits.path.any((entry) => entry.target is RenderEditable),

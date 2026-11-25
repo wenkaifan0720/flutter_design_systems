@@ -607,4 +607,181 @@ void main() {
     );
     await tester.pumpWidget(const SizedBox());
   });
+  // 0.6.2: a label told its face's height (a SizedBox round the Text, as an
+  // app's chip wrote it) draws its line at its box's top; the cap center
+  // centres it all the same.
+  Widget told(double face, Widget label) =>
+      SizedBox(height: face, child: label);
+
+  testWidgets('a one-line label told its face\'s height: its capitals on the '
+      'middle at 1x, 2x and 3x and text scale 1 and 1.3, left to right and '
+      'right to left', (tester) async {
+    var worst = 0.0;
+    for (final (size, line, face) in _faces) {
+      for (final ratio in [1.0, 2.0, 3.0]) {
+        for (final textScale in [1.0, 1.3]) {
+          for (final direction in TextDirection.values) {
+            final drawn = await _draw(
+              tester,
+              content: Directionality(
+                textDirection: direction,
+                child: told(
+                  face,
+                  _label('H', _style(size, line), textScale: textScale),
+                ),
+              ),
+              height: face,
+              ratio: ratio,
+            );
+            final (x0, x1) = _columns(tester, find.text('H'), ratio);
+            final off = drawn
+                .capitals(x0, x1, _roboto * size * textScale * ratio)
+                .abs();
+            expect(
+              off,
+              lessThanOrEqualTo(0.5),
+              reason:
+                  '$size/$line told $face at ${ratio}x, scale '
+                  '$textScale, $direction',
+            );
+            if (off > worst) worst = off;
+          }
+        }
+      }
+    }
+    debugPrint('told its face: worst ${worst.toStringAsFixed(2)} device px');
+  });
+
+  Future<({double shift, RenderBox outer, RenderBox inner})> placed(
+    WidgetTester tester,
+    Widget child,
+  ) async {
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: SizedBox(
+            width: 160,
+            height: 96,
+            child: RawCapCenter(capHeightFactor: _roboto, child: child),
+          ),
+        ),
+      ),
+    );
+    final outer = tester.renderObject<RenderBox>(find.byType(RawCapCenter));
+    final inner = tester.renderObject<RenderBox>(
+      find.descendant(
+        of: find.byType(RawCapCenter),
+        matching: find.byWidget(child),
+      ),
+    );
+    return (
+      shift:
+          inner.localToGlobal(Offset.zero).dy -
+          outer.localToGlobal(Offset.zero).dy,
+      outer: outer,
+      inner: inner,
+    );
+  }
+
+  testWidgets('told a taller box: keeps its child\'s size and moves only the '
+      'paint; a label that wraps, and a text entry, stay where they are laid '
+      'out', (tester) async {
+    final one = await placed(tester, Text('H', style: _style(16, 24)));
+    expect(one.outer.size, const Size(160, 96));
+    expect(one.inner.size, one.outer.size);
+    // The line (24 high) at the top of 96: its capitals near 12, the box's
+    // middle 48.
+    expect(one.shift, moreOrLessEquals(48 - 12, epsilon: 2));
+
+    final wrapped = await placed(
+      tester,
+      Text('Two words that wrap here', style: _style(16, 24)),
+    );
+    expect(
+      wrapped.inner.size.height,
+      96,
+      reason: 'a paragraph told 96 is 96 high',
+    );
+    expect(wrapped.shift, 0);
+
+    final controller = TextEditingController(text: 'Hello');
+    addTearDown(controller.dispose);
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
+    final entry = await placed(
+      tester,
+      EditableText(
+        controller: controller,
+        focusNode: focus,
+        style: _style(16, 24),
+        cursorColor: _black,
+        backgroundCursorColor: _white,
+      ),
+    );
+    expect(entry.shift, 0);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('told a taller box, a label that grows to two lines goes back '
+      'to where it is laid out, and back to the middle at one', (tester) async {
+    Future<double> shift(String words) async =>
+        (await placed(tester, Text(words, style: _style(16, 24)))).shift;
+    final centred = await shift('Save');
+    expect(centred, greaterThan(20));
+    expect(await shift('Save these changes to every list'), 0);
+    expect(await shift('Save'), centred);
+  });
+
+  testWidgets('a chip whose label is told its face\'s height: a screen reader '
+      'reads one button, its rect the face; a label that is its own node '
+      'reaches past the box by the move', (tester) async {
+    final handle = tester.ensureSemantics();
+    final face = GlobalKey();
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: RawButton(
+            onPressed: () {},
+            builder: (context, states, _) => DecoratedBox(
+              key: face,
+              decoration: const BoxDecoration(color: Color(0xFFF3F4F6)),
+              child: SizedBox(
+                height: 36,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: _label('Yoga', _style(14, 20)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final button = tester.getSemantics(find.byType(RawButton));
+    final data = button.getSemanticsData();
+    expect(data.flagsCollection.isButton, isTrue);
+    expect(data.label, 'Yoga');
+    expect(tester.getSemantics(find.text('Yoga')), same(button));
+    final box = tester.renderObject<RenderBox>(find.byKey(face));
+    expect(data.rect, Offset.zero & box.size);
+    expect(box.size.height, 36);
+
+    // The same label alone, a node of its own.
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(child: told(36, _label('Yoga', _style(14, 20)))),
+      ),
+    );
+    final alone = tester.getSemantics(find.text('Yoga'));
+    final cap = tester.renderObject<RenderBox>(find.byType(RawCapCenter));
+    final drawn = tester.getRect(find.text('Yoga'));
+    final boxRect = cap.localToGlobal(Offset.zero) & cap.size;
+    expect(drawn.height, 36, reason: 'the paragraph keeps its 36');
+    expect(drawn.top, greaterThan(boxRect.top + 5), reason: 'moved down');
+    expect(alone.rect.height, 36);
+    handle.dispose();
+  });
 }

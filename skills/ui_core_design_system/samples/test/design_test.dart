@@ -156,9 +156,19 @@ void main() {
     await expectLater(tester, meetsGuideline(textFieldNameGuideline));
     await expectLater(tester, meetsGuideline(fieldSemanticsGuideline));
     await expectLater(tester, meetsGuideline(cursorGuideline));
-    // The design's floor is 44 by 44, Apple's; Flutter's iOS guideline holds
-    // it. A design on Material's 48 holds androidTapTargetGuideline.
-    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    // The design's floor is ui_core's, 40 by 40. A design on Apple's 44
+    // holds iOSTapTargetGuideline; one on Material's 48,
+    // androidTapTargetGuideline.
+    await expectLater(
+      tester,
+      meetsGuideline(
+        const MinimumTapTargetGuideline(
+          size: Size(40, 40),
+          link:
+              'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum',
+        ),
+      ),
+    );
     await expectLater(tester, meetsGuideline(tapTargetReachGuideline));
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
     await expectLater(tester, meetsGuideline(textContrastGuideline));

@@ -52,7 +52,7 @@ class RawSegmentedButton<T> extends StatefulWidget {
     this.semanticLabel,
     this.direction = Axis.horizontal,
     this.layoutBuilder,
-    this.minimumSize = const Size(44, 44),
+    this.minimumSize = const Size(40, 40),
   });
 
   /// The items, in order.
@@ -169,7 +169,7 @@ class RawSegmentedButton<T> extends StatefulWidget {
         DiagnosticsProperty<Size>(
           'minimumSize',
           minimumSize,
-          defaultValue: const Size(44, 44),
+          defaultValue: const Size(40, 40),
         ),
       );
   }

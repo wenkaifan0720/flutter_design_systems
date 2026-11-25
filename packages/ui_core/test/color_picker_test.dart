@@ -224,8 +224,8 @@ void main() {
     addTearDown(c.dispose);
     await tester.pumpWidget(_picker(c, direction: TextDirection.rtl));
     final track = tester.getRect(find.byKey(const ValueKey('track hue')));
-    expect(track.width, 200);
-    await tester.tapAt(Offset(track.left + 50, track.center.dy));
+    expect(track.width, 204);
+    await tester.tapAt(Offset(track.left + 51, track.center.dy));
     await tester.pump();
     expect(c.value.hue, closeTo(270, 0.5), reason: 'a quarter from the right');
     expect(

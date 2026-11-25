@@ -13,6 +13,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'behaviour_harness.dart';
 
+// ui_core's finger floor (RawTapTargets.fallback's touch), 40 by 40: every
+// part at the floor reaches it. Flutter's iOSTapTargetGuideline is Apple's
+// 44, which a look declares in its RawTapTargetScope when it wants it.
+const _touchFloorGuideline = MinimumTapTargetGuideline(
+  size: Size.square(40),
+  link: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum',
+);
+
 /// The switches one reading builds the behaviour with.
 class ContractCase {
   /// A reading: [enabled] and [error] as the behaviour takes them.
@@ -326,14 +334,14 @@ void behaviourContract(
       expect(p.semantics, semantics);
       await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
       if (targets) {
-        await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(_touchFloorGuideline));
       }
     });
 
     if (targets) {
       testWidgets('tap targets', (tester) async {
         await pump(tester);
-        await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(_touchFloorGuideline));
         await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
       });
     }

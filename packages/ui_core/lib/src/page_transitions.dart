@@ -454,9 +454,14 @@ mixin _RawPageTransitions<T> on PageRoute<T> {
   Duration get reverseTransitionDuration =>
       transitionsBuilder.reverseTransitionDuration;
 
+  // A Material or Cupertino page under this one plays its exit only by the
+  // transition this route hands it: the look's own, its secondary animation
+  // alone, where the look's builder hands none. One per builder, so a page
+  // of the same transition under this one plays its own exit, as before.
   @override
   DelegatedTransitionBuilder? get delegatedTransition =>
-      transitionsBuilder.delegatedTransition;
+      transitionsBuilder.delegatedTransition ??
+      (_exits[transitionsBuilder] ??= _exitOf(transitionsBuilder));
 
   @override
   Color? get barrierColor => null;
@@ -502,6 +507,32 @@ mixin _RawPageTransitions<T> on PageRoute<T> {
           child,
         );
   }
+}
+
+// The exit each look's transition plays on a page under its own, by
+// builder.
+final _exits = Expando<DelegatedTransitionBuilder>('exits');
+
+// [given]'s exit, played on the page under one of its pages: its transition
+// with that page entered, moved by the page coming over it. Nothing under
+// Reduce Motion, where a page fades in over the one under it.
+DelegatedTransitionBuilder _exitOf(PageTransitionsBuilder given) {
+  final bare = given is SwipeBackPageTransitionsBuilder ? given.builder : given;
+  return (context, animation, secondaryAnimation, allowSnapshotting, child) {
+    final route = ModalRoute.of<Object?>(context);
+    if (child == null ||
+        route is! PageRoute<Object?> ||
+        rawReduceMotionOf(context)) {
+      return child;
+    }
+    return bare.buildTransitions<Object?>(
+      route,
+      context,
+      kAlwaysCompleteAnimation,
+      secondaryAnimation,
+      child,
+    );
+  };
 }
 
 // Reduce Motion's page transition: a fade on the route's animation.

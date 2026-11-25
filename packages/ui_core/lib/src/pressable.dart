@@ -158,7 +158,7 @@ class RawButton extends StatefulWidget {
   /// under it. A [WidgetStateMouseCursor] resolves against the states.
   final MouseCursor? mouseCursor;
 
-  /// The least area that takes a tap, the face centred in it (44 by 44 for
+  /// The least area that takes a tap, the face centred in it (40 by 40 for
   /// a face drawn smaller than a finger).
   final Size minimumSize;
 

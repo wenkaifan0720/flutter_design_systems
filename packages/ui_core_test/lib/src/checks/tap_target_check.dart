@@ -2,17 +2,17 @@ part of '../alignment.dart';
 
 /// Whether every tap target on a screen takes a tap where a finger, a
 /// pointer and a screen reader are told it is: the area a tap reaches is at
-/// least the floor for what reaches the controls ([input]: 44 by 44 for a
+/// least the floor for what reaches the controls ([input]: 40 by 40 for a
 /// finger, 24 by 24 for a pointer, or the look's own from its
 /// [RawTapTargetScope]), and it is the box a screen reader outlines,
 /// whatever the input.
 ///
 /// Flutter's tap-target guidelines (`androidTapTargetGuideline`,
 /// `iOSTapTargetGuideline`) measure the semantics box alone. A control can
-/// report a 44 pt box that a tap cannot reach: hit testing reaches a child
+/// report a 40 pt box that a tap cannot reach: hit testing reaches a child
 /// only through its parent's bounds, so a 32 pt face that widens its own
-/// hit test to 44 pt inside a 32 pt row takes taps over 32 pt, while a
-/// screen reader outlines, and the guidelines pass, 44 pt. Material's
+/// hit test to 40 pt inside a 32 pt row takes taps over 32 pt, while a
+/// screen reader outlines, and the guidelines pass, 40 pt. Material's
 /// `MaterialTapTargetSize.padded` lays the control out at the floor instead,
 /// so layout, hit area and semantics agree.
 ///
@@ -84,7 +84,7 @@ class DesignTapTargetCheck {
 
   /// The least area a tap must reach; null: the floor for [input] that the
   /// [RawTapTargetScope] round the screen declares, else
-  /// [RawTapTargets.fallback]'s (44 by 44 for a finger, 24 by 24 for a
+  /// [RawTapTargets.fallback]'s (40 by 40 for a finger, 24 by 24 for a
   /// pointer).
   final Size? floor;
 

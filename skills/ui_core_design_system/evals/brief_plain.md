@@ -5,7 +5,7 @@ A quiet design, where restraint and alignment are the whole test.
 ## The brief, as given to the agent
 
 > Build `tally`, a Flutter app for logging a household's shared expenses,
-> with a design of its own on ui_core ^0.6.1, in the International
+> with a design of its own on ui_core ^0.7.0, in the International
 > Typographic Style: a strict 8 px grid, one sans-serif family (Roboto, which
 > Flutter ships), black and white with one red, flat surfaces with hairline
 > rules, square corners, no shadows, no gradients. Hierarchy comes from size,

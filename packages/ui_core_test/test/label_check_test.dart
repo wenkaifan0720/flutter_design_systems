@@ -276,6 +276,50 @@ void main() {
     );
   });
 
+  testWidgets("a label given its face's height draws at the top of that "
+      'box: named, with the fix; RawCapCenter round it centres it', (
+    tester,
+  ) async {
+    // A chip whose words stand in a box the face's height (SizedBox(height:)
+    // round the Text): the line sits at the box's top. At 44 (the bench's
+    // RawControlBox(minHeight: 44) copied as a SizedBox) the words stand
+    // further from the middle than a quarter of the face, where a title
+    // placed at a face's top is passed over: told, they are named all the
+    // same.
+    for (final height in const [36.0, 44.0]) {
+      Widget chip(String name, {required bool capped}) {
+        Widget words = Text(name, style: _lower);
+        if (capped) {
+          words = RawCapCenter(capHeightFactor: _roboto, child: words);
+        }
+        return _control(
+          name,
+          SizedBox(height: height, child: words),
+          height: height,
+          width: 90,
+        );
+      }
+
+      final named = await _labels(tester, [chip('Yoga', capped: false)]);
+      expect(named, [
+        allOf(
+          startsWith('a button "Yoga": the label "Yoga" is '),
+          contains('above the middle of its face'),
+          endsWith(
+            '; its words are laid out in a box ${height.round()} px high and '
+            'drawn at its top: let that box hug their line (a RawControlBox '
+            'centres it)',
+          ),
+        ),
+      ], reason: '${height.round()} px');
+      expect(
+        await _labels(tester, [chip('Pilates', capped: true)]),
+        isEmpty,
+        reason: '${height.round()} px',
+      );
+    }
+  });
+
   testWidgets('a split button: each half is its own control, and the half '
       'whose label is off is named', (tester) async {
     final found = await _labels(tester, [

@@ -9,10 +9,10 @@ void main() {
       expect(RawInput.forPlatform(TargetPlatform.android), RawInput.touch);
       expect(RawInput.forPlatform(TargetPlatform.macOS), RawInput.pointer);
       const targets = RawTapTargets.fallback;
-      expect(targets.floorOn(TargetPlatform.iOS), const Size.square(44));
+      expect(targets.floorOn(TargetPlatform.iOS), const Size.square(40));
       expect(targets.floorOn(TargetPlatform.windows), const Size.square(24));
       const pinned = RawTapTargets(input: RawInput.touch);
-      expect(pinned.floorOn(TargetPlatform.macOS), const Size.square(44));
+      expect(pinned.floorOn(TargetPlatform.macOS), const Size.square(40));
     });
 
     testWidgets('of reads the nearest scope, else the fallback', (
@@ -78,24 +78,24 @@ void main() {
           ),
         ),
       );
-      expect(tester.getSize(find.byType(TapTargetPadding)), const Size(44, 44));
+      expect(tester.getSize(find.byType(TapTargetPadding)), const Size(40, 40));
       expect(
         tester.getTopLeft(find.byKey(const Key('face'))),
-        const Offset(10, 10),
+        const Offset(8, 8),
       );
       // A tap in the margin, past the face, reaches it.
       await tester.tapAt(const Offset(2, 2));
       expect(taps, 1);
       // Past the target, nothing.
-      await tester.tapAt(const Offset(46, 46));
+      await tester.tapAt(const Offset(42, 42));
       expect(taps, 1);
     });
 
     for (final (alignment, ltr, rtl) in const [
-      (AlignmentDirectional.centerStart, Offset(0, 10), Offset(20, 10)),
-      (AlignmentDirectional.centerEnd, Offset(20, 10), Offset(0, 10)),
-      (AlignmentDirectional.topStart, Offset.zero, Offset(20, 0)),
-      (AlignmentDirectional.bottomEnd, Offset(20, 20), Offset(0, 20)),
+      (AlignmentDirectional.centerStart, Offset(0, 8), Offset(16, 8)),
+      (AlignmentDirectional.centerEnd, Offset(16, 8), Offset(0, 8)),
+      (AlignmentDirectional.topStart, Offset.zero, Offset(16, 0)),
+      (AlignmentDirectional.bottomEnd, Offset(16, 16), Offset(0, 16)),
     ]) {
       testWidgets('$alignment: the face stands on those edges and the target '
           'grows away from them; right to left mirrors', (tester) async {
@@ -123,7 +123,7 @@ void main() {
           );
           expect(
             tester.getSize(find.byType(TapTargetPadding)),
-            const Size(44, 44),
+            const Size(40, 40),
           );
           expect(
             tester.getTopLeft(find.byKey(const Key('face'))),
@@ -133,9 +133,9 @@ void main() {
           // Every corner of the target reaches the face.
           for (final corner in const [
             Offset(1, 1),
-            Offset(43, 1),
-            Offset(1, 43),
-            Offset(43, 43),
+            Offset(39, 1),
+            Offset(1, 39),
+            Offset(39, 39),
           ]) {
             await tester.tapAt(corner);
           }
@@ -146,11 +146,11 @@ void main() {
 
     testWidgets('a face stands on whole device pixels, rounded toward its '
         'start edge and the top; right to left mirrors', (tester) async {
-      // A 27 pt face centred in 44 would stand 8.5 in.
+      // A 27 pt face centred in 40 would stand 6.5 in.
       for (final (ratio, ltr, rtl) in const [
-        (1.0, Offset(8, 8), Offset(9, 8)),
-        (2.0, Offset(8.5, 8.5), Offset(8.5, 8.5)),
-        (3.0, Offset(25 / 3, 25 / 3), Offset(17 - 25 / 3, 25 / 3)),
+        (1.0, Offset(6, 6), Offset(7, 6)),
+        (2.0, Offset(6.5, 6.5), Offset(6.5, 6.5)),
+        (3.0, Offset(19 / 3, 19 / 3), Offset(13 - 19 / 3, 19 / 3)),
       ]) {
         for (final (direction, at) in [
           (TextDirection.ltr, ltr),
@@ -193,7 +193,7 @@ void main() {
       );
       expect(
         tester.getTopLeft(find.byKey(const Key('face'))),
-        const Offset(17, 17),
+        const Offset(13, 13),
       );
     });
 
@@ -221,15 +221,28 @@ void main() {
           child: SizedBox.fromSize(size: size),
         ),
       );
+      // ui_core's finger floor, 40: WCAG 2.2's 24 with room for a fingertip.
+      const finger = MinimumTapTargetGuideline(
+        size: Size.square(40),
+        link: 'https://www.w3.org/TR/WCAG22/#target-size-minimum',
+      );
       // Ledger's '1M': a 44 × 26 face.
       await tester.pumpWidget(page(face(const Size(44, 26))));
-      await expectLater(tester, doesNotMeetGuideline(iOSTapTargetGuideline));
+      await expectLater(tester, doesNotMeetGuideline(finger));
       await tester.pumpWidget(
         page(TapTargetPadding(child: face(const Size(44, 26)))),
       );
       expect(
         tester.getSemantics(find.byType(TapTargetPadding)).rect.size,
-        const Size(44, 44),
+        const Size(44, 40),
+      );
+      await expectLater(tester, meetsGuideline(finger));
+      // A look on Apple's 44 declares it, and Flutter's iOS guideline holds.
+      await tester.pumpWidget(
+        page(
+          TapTargetPadding(child: face(const Size(44, 26))),
+          const RawTapTargets(touch: Size.square(44), input: RawInput.touch),
+        ),
       );
       await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
       // A face on its start edge, at Android's 48.

@@ -22,7 +22,9 @@ part of '../alignment.dart';
 ///
 /// Give [actions] their labels as a screen reader reads them, in the order
 /// the dialog takes them: the dismissive one first, the confirming one
-/// last. Each is found as the control whose node says that label. Where
+/// last. Each is found as the control whose node says that label, the one
+/// drawn last where several do: the dialog's, over a page whose own
+/// controls say the same words. Where
 /// side by side, their order is the look's (some put the confirming one
 /// first). It reads layout boxes and the semantics labels on them. A test
 /// opens the dialog at the widths and text sizes it runs at, then:
@@ -68,7 +70,8 @@ class DesignDialogActionsCheck {
       if (n is RenderBox && n.hasSize && _isControl(n)) {
         final label = _labelOf(n);
         if (label != null && actions.contains(label)) {
-          boxes.putIfAbsent(label, () => _global(n));
+          // Drawn in order: the last is on top (a dialog's, over the page).
+          boxes[label] = _global(n);
           return;
         }
       }

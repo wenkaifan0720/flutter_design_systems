@@ -30,6 +30,7 @@ import 'internal/label_line.dart';
 part 'checks/checkable_check.dart';
 part 'checks/cursor_check.dart';
 part 'checks/dialog_actions_check.dart';
+part 'checks/face_inset_check.dart';
 part 'checks/field_nodes_check.dart';
 part 'checks/field_semantics_check.dart';
 part 'checks/field_words_check.dart';
@@ -274,41 +275,7 @@ class DesignLabelCheck {
     final root = context.findRenderObject();
     if (root == null) return DesignAlignmentReport(look, const []);
     final marked = _markedFaces(context);
-    // Each control, with the words and icons it holds itself (not those of
-    // a control inside it).
-    final held = <RenderBox, List<RenderBox>>{};
-    // Each control's painted marks: what a custom paint holding no words
-    // draws in it (a way back's triangle, a chevron drawn, not set).
-    final marks = <RenderBox, List<RenderBox>>{};
-    final entries = <RenderBox>{};
-    void visit(RenderObject node, RenderBox? owner) {
-      if (node is RenderOffstage && node.offstage) return;
-      if (node is RenderOpacity && node.opacity == 0) return;
-      if (node is RenderAnimatedOpacity && node.opacity.value == 0) return;
-      if (_scaledAway(node)) return;
-      var mine = owner;
-      if (node is RenderBox && node.hasSize && _isControl(node)) {
-        mine = node;
-        held[node] = [];
-        marks[node] = [];
-      }
-      if (mine != null && node is RenderEditable) entries.add(mine);
-      if (mine != null && node is RenderParagraph && node.hasSize) {
-        final text = node.text.toPlainText(includeSemanticsLabels: false);
-        if (text.trim().isNotEmpty && !node.size.isEmpty) held[mine]!.add(node);
-      }
-      if (mine != null &&
-          node is RenderCustomPaint &&
-          (node.painter != null || node.foregroundPainter != null) &&
-          node.hasSize &&
-          !node.size.isEmpty &&
-          _shownIn(node).isEmpty) {
-        marks[mine]!.add(node);
-      }
-      _visitShown(node, (child) => visit(child, mine));
-    }
-
-    visit(root, null);
+    final (:held, :marks, :entries) = _controlsIn(root);
     final pixels = <RenderRepaintBoundary, DrawnPixels>{};
     final found = <String>[];
     final fallback = <String>[];
@@ -371,6 +338,50 @@ class DesignLabelCheck {
     }
     return DesignAlignmentReport(look, found);
   }
+}
+
+// Each control under [root] that is shown, with the words and icons it holds
+// itself (not those of a control inside it); its painted marks (what a
+// custom paint holding no words draws in it: a way back's triangle, a
+// chevron drawn, not set); and the controls holding a text entry.
+({
+  Map<RenderBox, List<RenderBox>> held,
+  Map<RenderBox, List<RenderBox>> marks,
+  Set<RenderBox> entries,
+})
+_controlsIn(RenderObject root) {
+  final held = <RenderBox, List<RenderBox>>{};
+  final marks = <RenderBox, List<RenderBox>>{};
+  final entries = <RenderBox>{};
+  void visit(RenderObject node, RenderBox? owner) {
+    if (node is RenderOffstage && node.offstage) return;
+    if (node is RenderOpacity && node.opacity == 0) return;
+    if (node is RenderAnimatedOpacity && node.opacity.value == 0) return;
+    if (_scaledAway(node)) return;
+    var mine = owner;
+    if (node is RenderBox && node.hasSize && _isControl(node)) {
+      mine = node;
+      held[node] = [];
+      marks[node] = [];
+    }
+    if (mine != null && node is RenderEditable) entries.add(mine);
+    if (mine != null && node is RenderParagraph && node.hasSize) {
+      final text = node.text.toPlainText(includeSemanticsLabels: false);
+      if (text.trim().isNotEmpty && !node.size.isEmpty) held[mine]!.add(node);
+    }
+    if (mine != null &&
+        node is RenderCustomPaint &&
+        (node.painter != null || node.foregroundPainter != null) &&
+        node.hasSize &&
+        !node.size.isEmpty &&
+        _shownIn(node).isEmpty) {
+      marks[mine]!.add(node);
+    }
+    _visitShown(node, (child) => visit(child, mine));
+  }
+
+  visit(root, null);
+  return (held: held, marks: marks, entries: entries);
 }
 
 /// Whether every word on a screen stands whole on one line: none broken
@@ -698,8 +709,21 @@ class _LabelReader extends _DrawnReader {
       caps ??= (text: t, middle: c.drawn);
       final words = '"${_short(_plain(t.box))}"';
       final drawn = c.drawn - middleDrawn;
+      // A label told its face's height: its box centred on the face, its
+      // line drawn at that box's top. Held however far its capitals stand
+      // from the middle, and named with the fix.
+      final told =
+          t.told &&
+          (_toBoundary(_global(t.box)).center.dy * p.ratio - middleLaid)
+                  .abs() <=
+              (check.tolerance + 0.5) * p.ratio;
+      final hint = told
+          ? '; its words are laid out in a box '
+                '${_px(t.box.size.height)} px high and drawn at its top: let '
+                'that box hug their line (a RawControlBox centres it)'
+          : '';
       // Far from the middle, it is placed, not centred (a card's title).
-      if (drawn.abs() / p.ratio > faceRect.height / 4) continue;
+      if (!told && drawn.abs() / p.ratio > faceRect.height / 4) continue;
       if (drawnTolerance != null) {
         final (read, given) = (c.read, c.given);
         // A cap height that moves the middle more than the tolerance, beyond
@@ -716,7 +740,7 @@ class _LabelReader extends _DrawnReader {
         if (drawn.abs() > drawnTolerance) {
           found.add(
             '$name: the capitals of $words are drawn ${_devicePx(drawn)} '
-            '$against',
+            '$against$hint',
           );
         }
         continue;
@@ -739,7 +763,7 @@ class _LabelReader extends _DrawnReader {
       found.add(
         '$name: the label $words is ${_against(laidOut, against)} as laid '
         'out, '
-        '${_zero(d) ? 'on it' : _px(d, signed: true)} as drawn',
+        '${_zero(d) ? 'on it' : _px(d, signed: true)} as drawn$hint',
       );
     }
     if (drawnTolerance != null && caps != null) {

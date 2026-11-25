@@ -28,7 +28,7 @@ class InkButton extends StatelessWidget {
     return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
-      minimumSize: const Size(44, 44),
+      minimumSize: const Size(40, 40),
       builder: (context, states, child) {
         final pressed = states.contains(WidgetState.pressed);
         final focused = states.contains(WidgetState.focused);
@@ -287,12 +287,14 @@ For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPerc
 ## Tap targets, density and spacing
 
 A look declares the floors its controls stand at once, as a theme does: `RawTapTargetScope` holds
-`RawTapTargets` (44 by 44 for a finger, 24 by 24 for a pointer, unless the look says otherwise), and
+`RawTapTargets` (40 by 40 for a finger, 24 by 24 for a pointer, unless the look says otherwise), and
 `TapTargetPadding` lays a control out at the floor, as Material's padded tap target size does: its face keeps its
 size, aligned where you say (centred by default), and the room round it takes the taps and is what a screen reader
 outlines and Flutter's tap-target guideline measures, so the hit area, the semantics and the layout agree. Whether a finger or a pointer
 reaches the controls is `RawInput`, by platform unless the look decides. `RawDensity` tightens a control's
 face in steps (-4 to 4), never its target: a compact face stands in the same target, with more room round it.
+Chips and tags smaller than the floor go in a `RawChipGroup`, which wraps them as `Wrap` does but puts its spacing
+between their faces, their targets taking the room between, so a row of small chips does not stand twice as far apart.
 
 `RawSpacingScope` declares the grid a look's spacing stands on (`RawSpacing`, 4 pt by default; a look whose values
 sit on 2 pt declares 2), read by `RawSpacing.of` and by ui_core_test's spacing check.

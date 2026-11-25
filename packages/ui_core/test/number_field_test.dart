@@ -1,4 +1,7 @@
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
+
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -525,56 +528,90 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('beside an input that says itself whether it is enabled (as '
-        "Material's TextField does), the value given round it is the "
-        "field's node's, as its docs say", (tester) async {
+    for (final on in [true, false]) {
+      testWidgets('beside an input that says itself whether it is enabled (as '
+          "Material's TextField does), one node: the field's name and steps "
+          "over the input's text (${on ? 'on' : 'off'})", (tester) async {
+        final handle = tester.ensureSemantics();
+        var value = 2.0;
+        await tester.pumpWidget(
+          harness(
+            StatefulBuilder(
+              builder: (context, setState) => Align(
+                alignment: Alignment.topLeft,
+                child: RawNumberField(
+                  value: value,
+                  semanticLabel: 'Quantity',
+                  onChanged: on
+                      ? (next) => setState(() => value = next ?? value)
+                      : null,
+                  // Material's TextField says on its own node whether it is
+                  // enabled, as ui_core's node does.
+                  fieldBuilder: (context, field) =>
+                      Semantics(enabled: on, child: _field(context, field)),
+                  buttonBuilder: _button,
+                ),
+              ),
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+        final node = semanticsOf(tester, find.byType(RawNumberField));
+        expect(
+          semanticsOf(tester, find.byKey(_fieldKey)).id,
+          node.id,
+          reason: 'the input merges into the field node, no unnamed node',
+        );
+        var data = node.getSemanticsData();
+        expect(data.label, 'Quantity');
+        expect(data.value, '2');
+        expect(data.flagsCollection.isTextField, isTrue);
+        expect(
+          data.flagsCollection.isEnabled,
+          on ? Tristate.isTrue : Tristate.isFalse,
+        );
+        if (!on) {
+          handle.dispose();
+          return;
+        }
+        expect(data.increasedValue, '3');
+        expect(data.decreasedValue, '1');
+        semanticsOwner().performAction(node.id, SemanticsAction.increase);
+        await tester.pump();
+        expect(tester.takeException(), isNull);
+        data = node.getSemanticsData();
+        expect(value, 3);
+        expect(data.value, '3');
+        expect(data.increasedValue, '4');
+        handle.dispose();
+      });
+    }
+
+    testWidgets('an input that says it is on in a field turned off: the '
+        "field's node still says off", (tester) async {
       final handle = tester.ensureSemantics();
-      var value = 2.0;
       await tester.pumpWidget(
         harness(
-          StatefulBuilder(
-            builder: (context, setState) => Align(
-              alignment: Alignment.topLeft,
-              child: RawNumberField(
-                value: value,
-                semanticLabel: 'Quantity',
-                onChanged: (next) => setState(() => value = next ?? value),
-                fieldBuilder: (context, field) => ListenableBuilder(
-                  listenable: field.controller,
-                  builder: (context, child) =>
-                      Semantics(value: field.controller.text, child: child),
-                  // Material's TextField says on its own node that it is
-                  // enabled, as ui_core's node does: the two stay apart.
-                  child: Semantics(
-                    enabled: true,
-                    child: _field(context, field),
-                  ),
-                ),
-                buttonBuilder: _button,
-              ),
+          Align(
+            alignment: Alignment.topLeft,
+            child: RawNumberField(
+              value: 2,
+              semanticLabel: 'Quantity',
+              onChanged: null,
+              fieldBuilder: (context, field) =>
+                  Semantics(enabled: true, child: _field(context, field)),
+              buttonBuilder: _button,
             ),
           ),
         ),
       );
       expect(tester.takeException(), isNull);
-      final node = semanticsOf(tester, find.byType(RawNumberField));
-      expect(
-        semanticsOf(tester, find.byKey(_fieldKey)).id,
-        isNot(node.id),
-        reason: 'the input stands in a node of its own',
-      );
-      var data = node.getSemanticsData();
+      final data = semanticsOf(
+        tester,
+        find.byType(RawNumberField),
+      ).getSemanticsData();
       expect(data.label, 'Quantity');
-      expect(data.value, '2');
-      expect(data.increasedValue, '3');
-      expect(data.decreasedValue, '1');
-      semanticsOwner().performAction(node.id, SemanticsAction.increase);
-      await tester.pump();
-      expect(tester.takeException(), isNull);
-      data = node.getSemanticsData();
-      expect(value, 3);
-      expect(data.value, '3');
-      expect(data.increasedValue, '4');
+      expect(data.flagsCollection.isEnabled, Tristate.isFalse);
       handle.dispose();
     });
   });

@@ -121,14 +121,10 @@ typedef RawNumberFieldLayoutBuilder = Widget Function(
 /// adds no node of its own that says them.
 ///
 /// That node takes its value from the input's, merged into it. An input
-/// that says itself whether it is enabled (Material's `TextField`) does
-/// not merge: Flutter keeps apart two nodes that both say so, and the
-/// field's node is left with next and previous values but no value, which
-/// Flutter 3.47 asserts against. Give the value on the field's node, round
-/// the input in [fieldBuilder]: `ListenableBuilder(listenable:
-/// field.controller, builder: (context, child) => Semantics(value:
-/// field.controller.text, child: child), child: TextField(...))` (the
-/// input then stands in a node of its own under it).
+/// that says itself whether it is enabled (Material's `TextField`) merges
+/// too: the field's node leaves that word to it, as Flutter keeps apart two
+/// nodes that both say it, which would leave the input's text unnamed under
+/// the field's name and steps.
 ///
 /// ```dart
 /// RawNumberField(value: 2, onChanged: (value) {}, min: 0, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, keyboardType: field.keyboardType, inputFormatters: field.inputFormatters, onEditingComplete: field.onEditingComplete, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080)), buttonBuilder: (context, button) => Text(button.isIncrement ? '+' : '−'))
@@ -166,9 +162,8 @@ class RawNumberField extends StatefulWidget {
   /// {@macro design.nullDisables}
   final ValueChanged<double?>? onChanged;
 
-  /// Paints the text input. One that says itself whether it is enabled
-  /// (Material's `TextField`) gives the field's node its value round it
-  /// (see [RawNumberField]).
+  /// Paints the text input, Material's `TextField` among others: its node
+  /// merges into the field's (see [RawNumberField]).
   final RawNumberFieldBuilder fieldBuilder;
 
   /// Paints a step button.
@@ -704,6 +699,36 @@ class _RenderFieldNode extends RenderSemanticsAnnotations {
       box.getTransformTo(this),
       Offset.zero & box.size,
     );
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    // An input that says itself whether it is enabled, as this node does
+    // (Material's TextField), would stand in a node of its own: Flutter
+    // keeps apart two nodes that both say it, the field's name and steps on
+    // one, the input's text unnamed on the other. Its word stands for both.
+    if (_inputSaysEnabled) config.isEnabled = null;
+  }
+
+  bool get _inputSaysEnabled {
+    final enabled = properties.enabled;
+    if (enabled == null) return false;
+    var says = false;
+    void visit(RenderObject c) {
+      if (says || c is _RenderButtonBox) return;
+      if (c is RenderSemanticsAnnotations) {
+        if (c.properties.enabled == enabled) {
+          says = true;
+          return;
+        }
+        if (c.container) return;
+      }
+      c.visitChildren(visit);
+    }
+
+    visitChildren(visit);
+    return says;
   }
 
   @override

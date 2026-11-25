@@ -1156,7 +1156,7 @@ class RawBottomSheetDragHandle extends StatelessWidget {
       return RawButton(
         semanticLabel: label,
         excludeSemantics: true,
-        minimumSize: const Size(44, 44),
+        minimumSize: const Size(40, 40),
         builder: (context, states, _) => builder(context, states),
       );
     }
@@ -1180,7 +1180,7 @@ class RawBottomSheetDragHandle extends StatelessWidget {
                   : () => host.animateToSize(larger ?? stops.first),
               semanticLabel: label,
               excludeSemantics: true,
-              minimumSize: const Size(44, 44),
+              minimumSize: const Size(40, 40),
               shortcuts: const {
                 SingleActivator(LogicalKeyboardKey.arrowUp): _GrowIntent(),
                 SingleActivator(LogicalKeyboardKey.arrowDown): _ShrinkIntent(),

@@ -5,7 +5,7 @@ description: Build a Flutter app's own design on the ui_core package, where ui_c
 
 # An app's own design on ui_core
 
-Written for ui_core 0.6.x and ui_core_test 0.4.x, on Flutter 3.47 or later.
+Written for ui_core 0.7.x and ui_core_test 0.5.x, on Flutter 3.47 or later.
 
 This skill builds one app's design and the screens made of it: the design's
 laws, its theme, the face its parts share, then each part the screens need,
@@ -34,8 +34,8 @@ To install the skill, copy this folder into the project's `.claude/skills/`
 (or `~/.claude/skills/` for every project). The app takes:
 
 ```text
-flutter pub add ui_core:^0.6.1 material_ui
-flutter pub add 'dev:ui_core_test:^0.4.0' dev:leak_tracker_flutter_testing
+flutter pub add ui_core:^0.7.0 material_ui
+flutter pub add 'dev:ui_core_test:^0.5.0' dev:leak_tracker_flutter_testing
 ```
 
 material_ui gives the app `MaterialApp`, `TextField` and Flutter's
@@ -60,7 +60,12 @@ right form.
   `RawSegmentedButton(options: […], selected: {…}, onSelectionChanged: …, itemBuilder: (context, value, states) => …)`.
   ui_core has no `segments:`, `ButtonSegment` or `RawButtonSegment` (those are
   Material's `SegmentedButton`). `segmentBuilder` belongs to `RawDateField`
-  and `RawTimeField`. The 0.3 names `DesignToggleGroup` and
+  and `RawTimeField`. Segments that fill a track share its width, each
+  face filling its share:
+  `layoutBuilder: (context, items) => Row(children: [for (final i in items) Expanded(child: i)])`,
+  and `itemBuilder` returns its face in `SizedBox(width: double.infinity, child: …)`
+  (else a face as wide as its words stands in the middle of its share).
+  The 0.3 names `DesignToggleGroup` and
   `DesignToggleItemBuilder` are `RawSegmentedButton` and `RawSegmentBuilder`,
   and `dart fix --apply` renames them.
 - A screen is pushed with `RawPageRoute` (or listed as a `RawPage`), not
@@ -179,6 +184,11 @@ Widget tendHost(BuildContext context, Widget child, Brightness brightness) {
 
 The same builder works under `CupertinoApp` and `WidgetsApp`.
 
+The builder only installs the design. A sign-in gate goes in the router (a
+`GoRouter` redirect, or the first route), never as
+`account == null ? SignIn() : child` in the builder: that unmounts the
+router, so deep links and page previews can't reach a page.
+
 ### 3. Make the face, then the button
 
 Model what a part looks like at one moment as a value with a `lerp` (a
@@ -225,7 +235,7 @@ return TapTargetPadding(
 ```
 
 - `TapTargetPadding` outermost: the area a tap reaches is the box a screen
-  reader outlines, at least 44 by 44 for touch and 24 by 24 for a pointer.
+  reader outlines, at least 40 by 40 for touch and 24 by 24 for a pointer.
 - `RawButton` gives the states: `pressed`, `hovered`, `focused` (only while
   focus should show, as a browser's focus-visible), `disabled`, `selected`,
   `error`.
@@ -463,6 +473,8 @@ report it to the ui_core maintainers with a test that shows it.
 
 - **A label nudged by padding until it looks centred.** Use `RawCapCenter`
   with the family's factor and even leading; `DesignLabelCheck` measures it.
+  A `Text` given the face's height (`SizedBox(height: 32, child: Text(…))`)
+  draws at its top: give the height to `RawControlBox`, not to the text.
 - **Disposing a controller or focus node the caller handed in.** Own one
   only when none was given; swap it in `didUpdateWidget`.
 - **A control inside a row's button.** `RawButton` merges what it holds into

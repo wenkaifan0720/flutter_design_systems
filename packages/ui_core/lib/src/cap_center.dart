@@ -35,7 +35,12 @@ import 'internal/label_line.dart';
 /// editable line), else the first paragraph that is not an icon's glyph, with
 /// its font size through its own text scaler. A label that wraps to more
 /// than one line, or a child without a paragraph, is drawn where it is laid
-/// out: the middle of two lines' capitals is no one line's.
+/// out: the middle of two lines' capitals is no one line's. A label told more
+/// height than its line (a [SizedBox] of its face's height round the label:
+/// a [Text] draws its line at its box's top) is one line all the same, and
+/// its capitals go to the middle of the box it is given. A text entry is one
+/// line where its box hugs its line, as a `RawTextEntryBox`'s does; told a
+/// taller box, it stays where it is laid out, taps and all.
 ///
 /// Around a text entry, wrap its one-line `TextField` (its decoration
 /// collapsed, as `DesignTextEntryCheck` asks), inside the look's own box: the
@@ -44,11 +49,16 @@ import 'internal/label_line.dart';
 /// row that holds a field and a button then holds their capitals on one
 /// line, whatever their sizes.
 ///
-/// The move is at most a few pixels, and what it paints may reach that far
-/// past the box; hit testing and semantics follow what is painted. So a
-/// clip drawn exactly round a text entry's 48 px reach trims its node by the
-/// move (a tap target test reads 47.7): a look leaves the clip room for
-/// the move (or clips nothing round the entry).
+/// Where the box hugs its label's line, the move is at most a few pixels;
+/// a label told a taller box moves by up to half the room it leaves. What
+/// it paints may reach that far past the box; hit testing and semantics
+/// follow what is painted. So a label that is a node of its own (not merged
+/// into its control's, as a button's is) reports a rect that reaches past
+/// the box by the move: let the box hug the line ([RawControlBox] centres
+/// it) rather than tell the label its face's height. And a clip drawn
+/// exactly round a text entry's 48 px reach trims its node by the move (a
+/// tap target test reads 47.7): a look leaves the clip room for the move (or
+/// clips nothing round the entry).
 ///
 /// ```dart
 /// RawCapCenter(capHeightFactor: 0.711, child: Text('Save'))
@@ -142,6 +152,10 @@ class RenderCapCenter extends RenderProxyBox
   Object? _layout;
   ({double top, double baseline})? _caps;
 
+  // The capitals of [line] when it is one line (null when it is not): a
+  // paragraph by its laid-out lines, so one told a face's height (its line
+  // drawn at its box's top) is one line all the same; an editable by its
+  // box, as a text entry's box centres its line.
   ({double top, double baseline})? _capsOf(RenderBox line) {
     final text = switch (line) {
       RenderParagraph(:final text) => text,
@@ -155,7 +169,8 @@ class RenderCapCenter extends RenderProxyBox
     _line = line;
     _text = text;
     _layout = layout;
-    return _caps = drawnCaps(line, capHeightFactor);
+    final one = isOneLine(line) || laysOneLine(line);
+    return _caps = one ? drawnCaps(line, capHeightFactor) : null;
   }
 
   void _forget() {
@@ -211,7 +226,7 @@ class RenderCapCenter extends RenderProxyBox
     final child = this.child;
     if (child == null || !child.hasSize || !hasSize) return 0;
     final p = labelLine(child);
-    if (p == null || !isOneLine(p)) return 0;
+    if (p == null) return 0;
     final caps = _capsOf(p);
     if (caps == null) return 0;
     // The child is at this box's top left.

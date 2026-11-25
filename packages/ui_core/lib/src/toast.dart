@@ -179,6 +179,14 @@ typedef RawToastStackBuilder = Widget Function(
 /// hovered nor holding focus. [focusShortcut] (F6) moves focus to the newest
 /// toast; Escape there dismisses it and focus goes back where it was.
 ///
+/// At a desk a pane can hold a toaster of its own, as Material scopes a
+/// `ScaffoldMessenger` round a pane: round a list/detail's detail, its
+/// toasts stand in that pane, centred on it and above the parts it keeps
+/// clear ([RawToasterKeepClear] keeps a part clear of the nearest toaster),
+/// rather than centred on the window over both panes. [RawToaster.of] from
+/// inside the pane finds the pane's; the rest of the app keeps the app's,
+/// which the pane's kept parts do not lift.
+///
 /// ```dart
 /// RawToaster(toastBuilder: (context, details) => Text(details.toast.message), child: const SizedBox())
 /// ```

@@ -100,6 +100,16 @@ Future<void> _labelCheck(WidgetTester tester) async {
   report.verify();
 }
 
+/// [DesignFaceInsetCheck]'s example: it takes a tester, so it is compiled
+/// here and run by face_inset_check_test.dart's shape.
+Future<void> _faceInsetCheck(WidgetTester tester) async {
+  final report = await const DesignFaceInsetCheck(look: 'Comic').check(
+    tester.element(find.byType(SettingsScreen)),
+    runAsync: tester.runAsync,
+  );
+  report.verify();
+}
+
 /// [DesignWordBreakCheck]'s and [DesignClipCheck]'s examples, run by
 /// fit_check_test.dart's shape.
 void _fitChecks(WidgetTester tester) {
@@ -185,6 +195,7 @@ const Set<String> _checksFiles = {
   'checkable_check.dart',
   'cursor_check.dart',
   'dialog_actions_check.dart',
+  'face_inset_check.dart',
   'field_nodes_check.dart',
   'field_words_check.dart',
   'field_semantics_check.dart',
@@ -204,6 +215,7 @@ const Set<String> _checksFiles = {
 void main() {
   test('the checks the examples call are compiled here', () {
     expect(_labelCheck, isNotNull);
+    expect(_faceInsetCheck, isNotNull);
     expect(_labelDensities, isNotNull);
     expect(_settleImages, isNotNull);
     expect(_fitChecks, isNotNull);

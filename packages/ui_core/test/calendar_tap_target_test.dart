@@ -58,20 +58,20 @@ Finder _face(int day) => find.byKey(ValueKey('in-1-$day'));
 void main() {
   setUp(_seen.clear);
 
-  testWidgets('under a finger a day is 44 tall, and a tap in its padding '
+  testWidgets('under a finger a day is 40 tall, and a tap in its padding '
       'picks the day', (tester) async {
     final semantics = tester.ensureSemantics();
     final c = _controller();
     addTearDown(c.dispose);
     await tester.pumpWidget(_calendar(c, input: RawInput.touch));
 
-    // Thursday the 15th, and the Thursday under it: a week is 44 apart.
+    // Thursday the 15th, and the Thursday under it: a week is 40 apart.
     final fifteenth = tester.getCenter(_face(15));
-    expect(tester.getCenter(_face(22)).dy - fifteenth.dy, 44);
+    expect(tester.getCenter(_face(22)).dy - fifteenth.dy, 40);
     expect(tester.getSize(_face(15)).height, 16);
 
-    // 18 below the face's centre is past the face but in its target.
-    await tester.tapAt(fifteenth + const Offset(0, 18));
+    // 16 below the face's centre is past the face but in its target.
+    await tester.tapAt(fifteenth + const Offset(0, 16));
     await tester.pump();
     expect(_seen[DateTime(2026, 1, 15)]!.selected, isTrue);
     expect(_seen[DateTime(2026, 1, 22)]!.selected, isFalse);
@@ -79,7 +79,7 @@ void main() {
     // The day's one node spans the target, not the face.
     final node = tester.getSemantics(_face(15)).getSemanticsData();
     expect(node.label, 'Thursday, 15 January 2026');
-    expect(node.rect.height, 44);
+    expect(node.rect.height, 40);
     semantics.dispose();
   });
 
@@ -109,7 +109,7 @@ void main() {
     expect(tester.takeException(), isNull);
     final fifteenth = tester.getCenter(_face(15));
     expect(tester.getCenter(_face(16)).dx - fifteenth.dx, 40);
-    expect(tester.getCenter(_face(22)).dy - fifteenth.dy, 44);
+    expect(tester.getCenter(_face(22)).dy - fifteenth.dy, 40);
   });
 
   testWidgets('the neighbours\' days stay out of the semantics tree', (

@@ -28,12 +28,12 @@ enum RawInput {
   };
 }
 
-/// The least area a tap must reach on a control, by what reaches it: 44 by
-/// 44 for a finger (Apple's Human Interface Guidelines), 24 by 24 for a
-/// pointer (WCAG 2.2, success criterion 2.5.8, level AA).
+/// The least area a tap must reach on a control, by what reaches it: 40 by
+/// 40 for a finger, 24 by 24 for a pointer (WCAG 2.2, success criterion
+/// 2.5.8, level AA).
 ///
-/// A look may raise either (Android's 48 for a finger, 44 for a pointer
-/// that a look keeps roomy) and declares its floors with a
+/// A look may raise either (Apple's 44 or Android's 48 for a finger, 44
+/// for a pointer that a look keeps roomy) and declares its floors with a
 /// [RawTapTargetScope] round the app, in its theme; [TapTargetPadding]
 /// lays a control out at the floor, and `DesignTapTargetCheck` holds every
 /// screen to it. Density never moves the floor: a compact face stands in
@@ -54,12 +54,12 @@ enum RawInput {
 class RawTapTargets with Diagnosticable {
   /// Floors for [touch] and [pointer]; [input] null reads the platform's.
   const RawTapTargets({
-    this.touch = const Size.square(44),
+    this.touch = const Size.square(40),
     this.pointer = const Size.square(24),
     this.input,
   });
 
-  /// The floors with no look's own: 44 for a finger, 24 for a pointer, the
+  /// The floors with no look's own: 40 for a finger, 24 for a pointer, the
   /// input by platform.
   static const RawTapTargets fallback = RawTapTargets();
 
@@ -174,7 +174,7 @@ class RawTapTargetScope extends InheritedTheme {
 /// [AlignmentDirectional.centerEnd]. Both mirror right to left.
 ///
 /// The face stands on whole device pixels: an offset that falls between
-/// them (a 27 pt face centred in 44 stands 8.5 in) is rounded toward the
+/// them (a 27 pt face centred in 40 stands 6.5 in) is rounded toward the
 /// start edge (and the top), so a pixel look's 1 px bevels and a hairline
 /// stay sharp, and right to left mirrors left to right exactly.
 ///
@@ -432,16 +432,25 @@ class RenderTapTargetPadding extends RenderShiftedBox {
     return at + _place(_sized(constraints, face), face).dy;
   }
 
+  /// Where its child, the face, stands in it as last laid out; null with no
+  /// child, or before layout. A parent that lays out its targets by their
+  /// faces (`RawChipGroup`) reads it in its own layout.
+  Rect? get faceRect => _faceRect;
+  Rect? _faceRect;
+
   @override
   void performLayout() {
     final child = this.child;
     if (child == null) {
+      _faceRect = null;
       size = constraints.constrain(minSize);
       return;
     }
     child.layout(constraints, parentUsesSize: true);
     size = _sized(constraints, child.size);
-    (child.parentData! as BoxParentData).offset = _place(size, child.size);
+    final at = _place(size, child.size);
+    (child.parentData! as BoxParentData).offset = at;
+    _faceRect = at & child.size;
   }
 
   // The control's one node spans the target, as a Material padded

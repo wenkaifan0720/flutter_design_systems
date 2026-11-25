@@ -102,6 +102,8 @@ What is drawn wrong, from the painted pixels where only they show it (each check
   under each density the look ships. Given a `drawnTolerance` (a look that wraps its labels in `RawCapCenter` gives
   0.5), it holds each label's capitals, as drawn, to the middle of its face in device pixels, and an icon or a painted
   mark beside a label to the label's capitals.
+- `DesignFaceInsetCheck`: a filled or outlined face keeps its label's ink at least 4 px from its edges, the least
+  Material's buttons, chips and segments keep at any text scale.
 - `DesignWordBreakCheck` names a word broken across two lines ("Groce" over "ries"): a box too narrow for its longest
   word.
 - `DesignClipCheck` names a control a clip round it cuts (a month's Saturday cut by the room it is in), giving how
@@ -122,7 +124,7 @@ a screen repainted since its last frame stops a check with that reason.
 
 ## Versions
 
-Version 0.2.1 supports ui_core ^0.4.0 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
+Version 0.5.0 supports ui_core ^0.7.0 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
 review (the alignment matrix, the keyline, row, width, spacing and field-parts checks) holds a look's own grid and
 taste, and is no longer published.
 

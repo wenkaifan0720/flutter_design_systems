@@ -65,7 +65,7 @@ class RawSplitButton extends StatelessWidget {
     required this.surfaceBuilder,
     this.menuLabel,
     this.layoutBuilder,
-    this.minimumSize = const Size(44, 44),
+    this.minimumSize = const Size(40, 40),
     this.controller,
     this.placement = const RawPopoverPlacement(align: RawPopoverAlign.end),
     this.highlightFollowsPointer = true,
@@ -255,7 +255,7 @@ class RawSplitButton extends StatelessWidget {
         DiagnosticsProperty<Size>(
           'minimumSize',
           minimumSize,
-          defaultValue: const Size(44, 44),
+          defaultValue: const Size(40, 40),
         ),
       )
       ..add(

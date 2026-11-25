@@ -121,6 +121,78 @@ class DrawnPixels {
     return _solids[bounds] = (colour: most.key, share: most.value / all);
   }
 
+  /// The commonest colour inside [rect] (logical, from the boundary's top
+  /// left), leaving out what is inside any of [except], colours a few steps
+  /// apart counted together (a gentle gradient is one colour): the
+  /// commonest of the commonest such run, and the share of the pixels read
+  /// that are in it. Null when every pixel is left out.
+  ({int colour, double share})? solidOutside(Rect rect, List<Rect> except) {
+    final (left, top, right, bottom) = _span(rect);
+    final holes = [for (final r in except) _span(r)];
+    final runs = <int, int>{};
+    final counts = <int, int>{};
+    var all = 0;
+    for (var y = top; y < bottom; y++) {
+      for (var x = left; x < right; x++) {
+        if (_inAny(holes, x, y)) continue;
+        final c = _at(x, y);
+        runs[c & _run] = (runs[c & _run] ?? 0) + 1;
+        counts[c] = (counts[c] ?? 0) + 1;
+        all++;
+      }
+    }
+    if (all == 0) return null;
+    final run = runs.entries.reduce((a, b) => b.value > a.value ? b : a);
+    final most = counts.entries
+        .where((e) => e.key & _run == run.key)
+        .reduce((a, b) => b.value > a.value ? b : a);
+    return (colour: most.key, share: run.value / all);
+  }
+
+  // The channel bits colours a few steps apart share.
+  static const _run = 0xE0E0E0E0;
+
+  /// The commonest colour of each line of pixels across [rect] (logical,
+  /// from the boundary's top left): each row with [rows], else each column,
+  /// leaving out what is inside any of [except]. A line left out whole is
+  /// read whole. A pixel [within] says no to (past a round face's shape) is
+  /// not read; a line with none it keeps yields nothing.
+  Iterable<int> lineGrounds(
+    Rect rect, {
+    required bool rows,
+    List<Rect> except = const [],
+    bool Function(int x, int y)? within,
+  }) sync* {
+    final (left, top, right, bottom) = _span(rect);
+    final holes = [for (final r in except) _span(r)];
+    final (lines, across) = rows
+        ? ((top, bottom), (left, right))
+        : ((left, right), (top, bottom));
+    for (var a = lines.$1; a < lines.$2; a++) {
+      final kept = <int, int>{};
+      final whole = <int, int>{};
+      for (var b = across.$1; b < across.$2; b++) {
+        final (x, y) = rows ? (b, a) : (a, b);
+        if (within != null && !within(x, y)) continue;
+        final c = _at(x, y);
+        whole[c] = (whole[c] ?? 0) + 1;
+        if (!_inAny(holes, x, y)) kept[c] = (kept[c] ?? 0) + 1;
+      }
+      final counts = kept.isEmpty ? whole : kept;
+      if (counts.isEmpty) continue;
+      yield counts.entries.reduce((x, y) => y.value > x.value ? y : x).key;
+    }
+  }
+
+  // Whether pixel [x], [y] is inside any of [holes] (in this image's
+  // pixels).
+  static bool _inAny(List<(int, int, int, int)> holes, int x, int y) {
+    for (final (l, t, r, b) in holes) {
+      if (x >= l && x < r && y >= t && y < b) return true;
+    }
+    return false;
+  }
+
   /// The pixel at [x], [y] (logical, from the boundary's top left), RGBA;
   /// the image's [ground] outside it.
   int pixelAt(double x, double y) {
@@ -243,12 +315,14 @@ class DrawnPixels {
   /// default), leaving out what is inside any of [except]; null when
   /// nothing is. Given a contrast [floor] (as [outline] reads one), a pixel
   /// that reaches it is drawn too, however near [over] its channels are: a
-  /// black edge on a dark ground.
+  /// black edge on a dark ground. A pixel [within] says no to (past a round
+  /// face's shape) is not read.
   Rect? inkIn(
     Rect rect, {
     int? over,
     List<Rect> except = const [],
     double? floor,
+    bool Function(int x, int y)? within,
   }) {
     final face = over ?? ground;
     final faceLuminance = _luminance(face);
@@ -277,6 +351,7 @@ class DrawnPixels {
     for (var y = top; y < bottom; y++) {
       var drawn = false;
       for (var x = left; x < right; x++) {
+        if (within != null && !within(x, y)) continue;
         if (drawnOn(_at(x, y)) && !out(x, y)) {
           drawn = true;
           if (x < minX) minX = x;
@@ -315,9 +390,24 @@ class DrawnPixels {
   /// least half as far from [over] as the row is inside [rects], is passed
   /// over: a rule drawn behind the label (a ruled page through an unfilled
   /// face), not its glyphs.
-  double? inkTopFine(List<Rect> rects, {required int over, Rect? label}) {
+  ///
+  /// With [edge], each row is read from its own commonest colour across
+  /// [rects]: a band a face draws along its edge (an outline, a sheen, a
+  /// gradient down it) is ground where it is drawn, and words drawn into it
+  /// stand off it; and a pixel [within] says no to (past a round face's
+  /// shape: the page in its corners) is neither ground nor ink.
+  double? inkTopFine(
+    List<Rect> rects, {
+    required int over,
+    Rect? label,
+    bool edge = false,
+    bool Function(int x, int y)? within,
+  }) {
+    assert(edge || within == null, 'within reads rows from their own ground');
     final spans = [for (final r in rects) _span(r)];
-    final (ink, far) = _groundedInk(spans, over, label);
+    final (ink, far) = edge
+        ? _rowGroundedInk(spans, within)
+        : _groundedInk(spans, over, label);
     if (far < 64) return null;
     double? best;
     for (final span in spans) {
@@ -337,11 +427,21 @@ class DrawnPixels {
   /// The bottom of what is drawn inside [rects] (logical, from the
   /// boundary's top left) other than [over], in this image's pixels and to
   /// a fraction of one, read as [inkTopFine] reads a top, a rule behind
-  /// [label] passed over likewise: the lowest of [rects]' bottoms; null
-  /// when nothing stands out from [over].
-  double? inkBottomFine(List<Rect> rects, {required int over, Rect? label}) {
+  /// [label] passed over likewise, and each row read from its own ground
+  /// likewise with [edge] (and [within] likewise): the lowest of [rects]'
+  /// bottoms; null when nothing stands out from [over].
+  double? inkBottomFine(
+    List<Rect> rects, {
+    required int over,
+    Rect? label,
+    bool edge = false,
+    bool Function(int x, int y)? within,
+  }) {
+    assert(edge || within == null, 'within reads rows from their own ground');
     final spans = [for (final r in rects) _span(r)];
-    final (ink, far) = _groundedInk(spans, over, label);
+    final (ink, far) = edge
+        ? _rowGroundedInk(spans, within)
+        : _groundedInk(spans, over, label);
     if (far < 64) return null;
     double? best;
     for (final span in spans) {
@@ -355,6 +455,130 @@ class DrawnPixels {
       }
     }
     return best;
+  }
+
+  /// The colour (RGBA) of the image's pixel at [x], [y]; the image's
+  /// [ground] outside it (an edge read a hair past the image's, as a face
+  /// as large as the boundary is).
+  int colourAt(int x, int y) =>
+      x < 0 || y < 0 || x >= width || y >= height ? ground : _at(x, y);
+
+  /// Whether [c] lies between colours [a] and [b], each channel within
+  /// [by] of the span between theirs: a blend of the two (an outline's
+  /// softened edge over the face it lies on).
+  static bool between(int c, int a, int b, {int by = 8}) {
+    for (var shift = 0; shift < 32; shift += 8) {
+      final (v, x, y) = (
+        (c >> shift) & 0xFF,
+        (a >> shift) & 0xFF,
+        (b >> shift) & 0xFF,
+      );
+      if (v < math.min(x, y) - by || v > math.max(x, y) + by) return false;
+    }
+    return true;
+  }
+
+  /// Which pixels of [rect] (logical) lie on a face its own painter draws
+  /// round, with no shape to read it from: in each row, from where the face
+  /// starts past [left] (the colour beyond its left edge, read in from that
+  /// edge) and its softened edge or an outline round it (what is neither
+  /// [face] nor that colour, up to [outline] logical pixels) to where it
+  /// ends likewise before [right], and [inset] logical pixels in from those.
+  /// A row whose face starts within a pixel of its box's edge (a straight
+  /// side) is kept to that edge. Null when neither side is given.
+  bool Function(int x, int y)? faceRuns(
+    Rect rect, {
+    required int face,
+    int? left,
+    int? right,
+    required double inset,
+    double outline = 8,
+  }) {
+    if (left == null && right == null) return null;
+    final (l, t, r, b) = _span(rect);
+    final step = (inset * ratio).ceil();
+    final most = (outline * ratio).ceil();
+    final runs = <int, (int, int)>{};
+    // How far in from [from] (stepping by [by]) the face starts in row [y].
+    int? start(int y, int from, int by, int past) {
+      var x = from;
+      bool inside(int x) => x >= l && x < r;
+      while (inside(x) && alike(_at(x, y), past, by: 16)) {
+        x += by;
+      }
+      if ((x - from).abs() <= 1) return null;
+      final edge = x;
+      while (inside(x) &&
+          (x - edge).abs() < most &&
+          !alike(_at(x, y), face, by: 16) &&
+          !alike(_at(x, y), past, by: 16)) {
+        x += by;
+      }
+      return x + by * step;
+    }
+
+    (int, int) runOf(int y) => runs[y] ??= (
+      left == null ? l : start(y, l, 1, left) ?? l,
+      right == null ? r - 1 : start(y, r - 1, -1, right) ?? r - 1,
+    );
+    return (x, y) {
+      if (y < t || y >= b) return true;
+      final (lo, hi) = runOf(y);
+      return x >= lo && x <= hi;
+    };
+  }
+
+  // How far each row of a span is drawn from that row's commonest colour
+  // across [spans] (its ground there: a face's outline, a sheen, a
+  // gradient), with the furthest any row is. A pixel [within] says no to
+  // is neither ground nor ink. A span's row is read against the spans near
+  // it (16 logical pixels either side): a gradient across a wide face is
+  // ground where it is drawn, not ink at its far end.
+  (int Function((int, int, int, int) span, int y), int) _rowGroundedInk(
+    List<(int, int, int, int)> spans,
+    bool Function(int x, int y)? within,
+  ) {
+    final reach = 16 * ratio;
+    final near = {
+      for (final s in spans)
+        s: [
+          for (final o in spans)
+            if (o.$1 < s.$3 + reach && o.$3 > s.$1 - reach) o,
+        ],
+    };
+    final grounds = <((int, int, int, int), int), int>{};
+    int groundOf((int, int, int, int) span, int y) =>
+        grounds[(span, y)] ??= () {
+          final counts = <int, int>{};
+          for (final (l, t, r, b) in near[span]!) {
+            if (y < t || y >= b) continue;
+            for (var x = l; x < r; x++) {
+              if (within != null && !within(x, y)) continue;
+              final c = _at(x, y);
+              counts[c] = (counts[c] ?? 0) + 1;
+            }
+          }
+          if (counts.isEmpty) return ground;
+          return counts.entries.reduce((a, b) => b.value > a.value ? b : a).key;
+        }();
+
+    int ink((int, int, int, int) span, int y) {
+      final g = groundOf(span, y);
+      var most = 0;
+      for (var x = span.$1; x < span.$3; x++) {
+        if (within != null && !within(x, y)) continue;
+        most = math.max(most, _distance(_at(x, y), g));
+      }
+      return most;
+    }
+
+    var far = 0;
+    for (final span in spans) {
+      for (var y = span.$2; y < span.$4; y++) {
+        far = math.max(far, ink(span, y));
+      }
+    }
+    return (ink, far);
   }
 
   // [_rowInk] read from the ground [spans] are drawn on: less the ink of

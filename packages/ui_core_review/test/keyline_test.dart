@@ -375,10 +375,10 @@ void main() {
           direction: direction,
         ),
         [
-          'Section: a button "Paid" starts 26 px in; the leading keyline is '
+          'Section: a button "Paid" starts 24 px in; the leading keyline is '
               '16 px in',
         ],
-        reason: 'centred, its face stands 10 px in',
+        reason: 'centred, its face stands 8 px in',
       );
       expect(
         await _problems(

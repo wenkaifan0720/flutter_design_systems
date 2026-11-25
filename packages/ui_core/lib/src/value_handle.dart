@@ -53,7 +53,7 @@ class RawValueHandle extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.mouseCursor,
-    this.minimumSize = const Size(44, 44),
+    this.minimumSize = const Size(40, 40),
     this.onKeyEvent,
     this.statesController,
   }) : assert(min <= max, 'min is at most max'),
@@ -231,7 +231,7 @@ class RawValueHandle extends StatefulWidget {
         DiagnosticsProperty<Size>(
           'minimumSize',
           minimumSize,
-          defaultValue: const Size(44, 44),
+          defaultValue: const Size(40, 40),
         ),
       )
       ..add(

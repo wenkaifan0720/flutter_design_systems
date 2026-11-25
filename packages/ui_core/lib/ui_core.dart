@@ -12,6 +12,7 @@ export 'src/cap_center.dart';
 export 'src/carousel.dart';
 export 'src/chart.dart';
 export 'src/chart_scale.dart';
+export 'src/chip_group.dart';
 export 'src/color_picker.dart';
 export 'src/combobox.dart';
 export 'src/command_palette.dart';

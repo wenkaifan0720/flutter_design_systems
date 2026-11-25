@@ -33,7 +33,7 @@ class _HostState extends State<_Host> {
     return Align(
       alignment: Alignment.topLeft,
       child: SizedBox(
-        width: 444,
+        width: 440,
         child: RawRangeSlider(
           values: values,
           max: 100,
@@ -218,10 +218,10 @@ void main() {
   testWidgets('thumbs sit at their values; a press moves the nearer one; a '
       'drag cannot cross the other', (tester) async {
     await tester.pumpWidget(harness(const _Host()));
-    // 400 px of travel from x = 22: 20 at 102, 80 at 342.
-    expect(tester.getCenter(find.byKey(const ValueKey('thumb 0'))).dx, 102);
-    expect(tester.getCenter(find.byKey(const ValueKey('thumb 1'))).dx, 342);
-    await tester.tapAt(const Offset(22 + 300, 22));
+    // 400 px of travel from x = 20: 20 at 100, 80 at 340.
+    expect(tester.getCenter(find.byKey(const ValueKey('thumb 0'))).dx, 100);
+    expect(tester.getCenter(find.byKey(const ValueKey('thumb 1'))).dx, 340);
+    await tester.tapAt(const Offset(20 + 300, 20));
     await tester.pump();
     expect(_host.values, const RawRangeValues(20, 75));
 
@@ -291,7 +291,7 @@ void main() {
     );
     expect(
       tester.getCenter(find.byKey(const ValueKey('thumb 0'))).dx,
-      444 - 102,
+      440 - 100,
       reason: 'the lower end is on the right',
     );
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -454,7 +454,7 @@ void main() {
     await _press(tester, LogicalKeyboardKey.arrowUp);
     await _press(tester, LogicalKeyboardKey.arrowUp);
     expect(value, closeTo(0.4, 1e-9));
-    expect(tester.getSize(find.byType(RawValueHandle)), const Size(44, 44));
+    expect(tester.getSize(find.byType(RawValueHandle)), const Size(40, 40));
   });
 
   for (final turnedOff in [false, true]) {

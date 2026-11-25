@@ -487,7 +487,7 @@ class RawCalendarDatePicker extends StatefulWidget {
   /// Paints a day.
   ///
   /// The day stands in a tap target at least the look's floor tall (what
-  /// [RawTapTargets.of] and [RawTapTargets.floorOn] read: 44 by 44 for a
+  /// [RawTapTargets.of] and [RawTapTargets.floorOn] read: 40 by 40 for a
   /// finger and 24 by 24 for a pointer, unless the look's [RawTapTargetScope]
   /// sets its own), as wide as its column. A smaller face is centred in it,
   /// and a tap anywhere in it picks the day. A face that draws the grid's

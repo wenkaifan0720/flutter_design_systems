@@ -147,7 +147,38 @@ TextStyle? lineStyle(RenderBox line) {
 /// fails Flutter's debug check against a fresh measure as it is read.
 double? laidBaseline(RenderBox line) {
   if (holdsWidgets(line) || !line.hasSize) return null;
-  final painter = switch (line) {
+  final painter = _freshPainter(line);
+  if (painter == null) {
+    return line.getDryBaseline(line.constraints, TextBaseline.alphabetic);
+  }
+  try {
+    return painter.computeDistanceToActualBaseline(TextBaseline.alphabetic);
+  } finally {
+    painter.dispose();
+  }
+}
+
+/// Whether [line], a paragraph, lays its words out on one line, however tall
+/// its box: a paragraph given more height than its line (a [Text] told the
+/// height of a face) draws that line at its box's top. Measured afresh, as
+/// [laidBaseline] is. False with widgets inline, and for an editable.
+bool laysOneLine(RenderBox line) {
+  if (line is! RenderParagraph || holdsWidgets(line) || !line.hasSize) {
+    return false;
+  }
+  final painter = _freshPainter(line)!;
+  try {
+    return painter.computeLineMetrics().length == 1;
+  } finally {
+    painter.dispose();
+  }
+}
+
+// [line]'s words laid out afresh as [line] lays them out, in the fonts the
+// engine has now; null for a box that is neither a paragraph nor an editable
+// holding text. The caller disposes it.
+TextPainter? _freshPainter(RenderBox line) {
+  return switch (line) {
     final RenderParagraph p =>
       TextPainter(
         text: p.text,
@@ -186,14 +217,6 @@ double? laidBaseline(RenderBox line) {
       ),
     _ => null,
   };
-  if (painter == null) {
-    return line.getDryBaseline(line.constraints, TextBaseline.alphabetic);
-  }
-  try {
-    return painter.computeDistanceToActualBaseline(TextBaseline.alphabetic);
-  } finally {
-    painter.dispose();
-  }
 }
 
 // The font size the first words of [span] are set in, unscaled (an empty

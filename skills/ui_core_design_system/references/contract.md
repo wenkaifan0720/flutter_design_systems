@@ -3,7 +3,7 @@
 ui_core gives the design every behaviour a part needs and no paint. The
 design wraps each part's ui_core widget, reads the states it reports, and
 draws its own face for them. This page says how to wire each kind of part
-on ui_core 0.6.1, and ends with the API each kind of part is painted on.
+on ui_core 0.7.0, and ends with the API each kind of part is painted on.
 
 ui_core names its parts in Flutter's `Raw*` form, as Flutter names its
 unstyled widgets. Older `Design*` names stay through 0.6 as deprecated
@@ -109,13 +109,15 @@ that mean something in the material (a glass design may not take a `side`).
 ## Tap targets and layout
 
 **`TapTargetPadding`** lays a part out at the floor for the input that
-reaches it (`RawTapTargets.of(context).floorOn()`: 44 for touch, 24 for a
+reaches it (`RawTapTargets.of(context).floorOn()`: 40 for touch, 24 for a
 pointer by default), centring its face in the larger box, so layout, hit
 testing and the semantics box agree. Put it outermost, outside
 `RawButton`. `alignment: AlignmentDirectional.centerStart` keeps a
 checkbox's or radio's box at the start edge of its row; a row whose gaps
 should also take the press wraps its content in
-`MetaData(behavior: HitTestBehavior.opaque)`.
+`MetaData(behavior: HitTestBehavior.opaque)`. Chips and tags smaller than
+the floor go in a **`RawChipGroup(spacing:, runSpacing:, children:)`**,
+not a `Wrap`: their faces keep the spacing and their targets fill it.
 
 **`RawControlBox(minHeight:, alignment:, child:)`** stands a control's
 content in a box of the control height, centred, with even leading.
@@ -129,7 +131,7 @@ the text field's entry, so a row of mixed parts lines up.
 **`RawDensity`** shrinks or grows faces (`height(double)`,
 `padding(EdgeInsets)`, never directional insets; `standard`,
 `comfortable`, `compact`) and never moves the tap-target floor. So compact
-is for the pointer (on touch the floor holds a field at 44 while a compact
+is for the pointer (on touch the floor holds a field at 40 while a compact
 button shrinks, and a row loses its one height), as Material's
 `VisualDensity.adaptivePlatformDensity` offers it. **`RawSpacingScope`** carries
 the spacing grid.

@@ -37,10 +37,16 @@ class _TextBox {
   // widgets inline, whose layout only its own pass knows.
   double? get baseline => laidBaseline(box);
 
-  // Whether it is one line high: the engine rounds each line's baseline
-  // from that line's own top, so only a single line's rounding is its
-  // first baseline's.
-  bool get oneLine {
+  // Whether it is one line: the engine rounds each line's baseline from
+  // that line's own top, so only a single line's rounding is its first
+  // baseline's. One line high, or [told].
+  bool get oneLine => _oneLineHigh || told;
+
+  // Whether it is a paragraph of one line told more height than its line (a
+  // label given its face's height): it draws its line at its box's top.
+  bool get told => !_oneLineHigh && laysOneLine(box);
+
+  bool get _oneLineHigh {
     final line = switch (box) {
       final RenderParagraph p => p.getFullHeightForCaret(
         const TextPosition(offset: 0),

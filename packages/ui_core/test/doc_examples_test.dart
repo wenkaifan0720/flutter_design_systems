@@ -501,6 +501,14 @@ final Map<String, DocExample> _examples = {
       ),
     );
   },
+  'RawChipGroup': (context) => RawChipGroup(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final tag in const ['Planning', 'Design'])
+        TapTargetPadding(child: Text(tag)),
+    ],
+  ),
   'RawSegmentedButton': (context) => RawSegmentedButton<String>(
     options: const ['day', 'week'],
     selected: const {'day'},
@@ -971,6 +979,7 @@ const Set<String> _checksFiles = {
   'checkable_check.dart',
   'cursor_check.dart',
   'dialog_actions_check.dart',
+  'face_inset_check.dart',
   'field_nodes_check.dart',
   'field_semantics_check.dart',
   'field_words_check.dart',

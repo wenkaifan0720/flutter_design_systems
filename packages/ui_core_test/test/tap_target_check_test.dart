@@ -113,7 +113,7 @@ void main() {
       allOf(
         contains('a button "Add"'),
         contains('a tap reaches it over'),
-        contains('under the 44 × 44 a finger needs'),
+        contains('under the 40 × 40 a finger needs'),
         contains('a screen reader outlines 44 × 44'),
       ),
     );
@@ -132,7 +132,7 @@ void main() {
   });
 
   testWidgets('a target laid out at the floor passes', (tester) async {
-    final report = await _check(tester, _button('Add', size: 44));
+    final report = await _check(tester, _button('Add', size: 40));
     expect(report.problems, isEmpty);
   });
 
@@ -195,7 +195,7 @@ void main() {
   testWidgets('a pointer is held to its own floor, a finger to its', (
     tester,
   ) async {
-    // A 32 pt button: room for a pointer (24), short of a finger (44).
+    // A 32 pt button: room for a pointer (24), short of a finger (40).
     final pointer = await _check(
       tester,
       _button('Add'),
@@ -203,7 +203,7 @@ void main() {
     );
     expect(pointer.problems, isEmpty);
     final touch = await _check(tester, _button('Add'));
-    expect(touch.problems.single, contains('under the 44 × 44 a finger needs'));
+    expect(touch.problems.single, contains('under the 40 × 40 a finger needs'));
     final small = await _check(
       tester,
       _button('Add', size: 16),
@@ -361,7 +361,7 @@ void main() {
     );
     expect(
       report.problems.single,
-      allOf(contains('"Terms"'), contains('under the 44 × 44 a finger needs')),
+      allOf(contains('"Terms"'), contains('under the 40 × 40 a finger needs')),
     );
   });
 
@@ -395,7 +395,7 @@ void main() {
     );
     expect(
       report.problems.single,
-      allOf(contains('"Terms"'), contains('under the 44 × 44 a finger needs')),
+      allOf(contains('"Terms"'), contains('under the 40 × 40 a finger needs')),
     );
   });
 
@@ -415,7 +415,7 @@ void main() {
     expect(report.problems, hasLength(3));
     expect(
       report.problems.last,
-      allOf(contains('"Classical"'), contains('under the 44 × 44')),
+      allOf(contains('"Classical"'), contains('under the 40 × 40')),
     );
   });
 

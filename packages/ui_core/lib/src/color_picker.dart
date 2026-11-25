@@ -141,7 +141,7 @@ class RawColorArea extends StatefulWidget {
     required this.thumbBuilder,
     this.step = 0.01,
     this.semanticLabel,
-    this.thumbSize = const Size(44, 44),
+    this.thumbSize = const Size(40, 40),
     this.focusNode,
     this.autofocus = false,
   }) : assert(step > 0);
@@ -199,7 +199,7 @@ class RawColorArea extends StatefulWidget {
         DiagnosticsProperty<Size>(
           'thumbSize',
           thumbSize,
-          defaultValue: const Size(44, 44),
+          defaultValue: const Size(40, 40),
         ),
       )
       ..add(
@@ -371,7 +371,7 @@ class RawColorSlider extends StatefulWidget {
     required this.trackBuilder,
     required this.thumbBuilder,
     this.semanticLabel,
-    this.thumbSize = const Size(44, 44),
+    this.thumbSize = const Size(40, 40),
     this.focusNode,
     this.autofocus = false,
   });
@@ -435,7 +435,7 @@ class RawColorSlider extends StatefulWidget {
         DiagnosticsProperty<Size>(
           'thumbSize',
           thumbSize,
-          defaultValue: const Size(44, 44),
+          defaultValue: const Size(40, 40),
         ),
       )
       ..add(

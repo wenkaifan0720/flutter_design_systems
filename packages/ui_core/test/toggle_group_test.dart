@@ -244,8 +244,8 @@ void main() {
     );
     expect(
       tester.getSize(find.byType(RawSegmentedButton<String>)).height,
-      greaterThanOrEqualTo(44),
-      reason: '44 px targets',
+      greaterThanOrEqualTo(40),
+      reason: '40 px targets',
     );
     semantics.dispose();
   });
