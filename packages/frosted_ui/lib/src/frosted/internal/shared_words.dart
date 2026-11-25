@@ -53,13 +53,18 @@ class FrostedSharedWords {
   );
 
   /// [hour]:[minute] as a field shows it, on a 24-hour clock when [use24]
-  /// ("9:05 AM", "09:05"; German's "09:05" either way).
+  /// ("9:05 AM", "09:05"; German's "09:05" either way). The figures are
+  /// always the reader's digits (`RawTimeFormatting.formatHour` and
+  /// `formatMinute`), with Frosted's own words for the halves of the day.
   String time(int hour, int minute, {required bool use24}) {
-    String two(int n) => n.toString().padLeft(2, '0');
+    final at = RawTimeOfDay(hour: hour, minute: minute);
+    final mm = _shared.formatMinute(at);
     String told(FrostedLocalizations words) {
-      if (use24) return '${two(hour)}:${two(minute)}';
-      final h = hour % 12 == 0 ? 12 : hour % 12;
-      return '$h:${two(minute)} ${hour < 12 ? words.am : words.pm}';
+      if (use24) {
+        return '${_shared.formatHour(at, alwaysUse24HourFormat: true)}:$mm';
+      }
+      final h = _shared.formatDecimal(at.hourOfPeriod);
+      return '$h:$mm ${hour < 12 ? words.am : words.pm}';
     }
 
     return _say(

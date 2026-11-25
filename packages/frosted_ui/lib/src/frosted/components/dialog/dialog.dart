@@ -186,6 +186,8 @@ class FrostedDialog extends StatelessWidget {
             edge: edge,
             edges: edges,
             ring: frostedSlabRing(t),
+            // By night its rim is lit from above, not a stroke (law 2).
+            litFromAbove: t.isDark,
             sheen: t.glass.rim,
             shadows: t.shadows.dialog,
             clipChild: true,

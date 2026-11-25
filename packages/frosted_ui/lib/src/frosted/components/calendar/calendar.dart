@@ -8,6 +8,7 @@ import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
+import '../../internal/ink_on.dart';
 import '../../internal/today_ring.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
@@ -409,17 +410,22 @@ class _FrostedMonths extends StatelessWidget {
             color: ends ? null : (lit ? t.glass.wash : null),
             gradients: ends ? [t.colorScheme.buttonFill] : const <Gradient>[],
             sheen: ends ? t.colorScheme.buttonSheen : null,
-            shadows: ends ? t.shadows.button : const <BoxShadow>[],
+            // In a grid choosing is ink in place, not a raised act (law 6):
+            // no drop shadow, which smudged the band beside an end.
+            shadows: const <BoxShadow>[],
             child: Center(
               // In the reader's digits (Arabic's ١٨), as its name is read.
               child: Text(
                 day.label,
-                style:
-                    (ends || day.isToday
-                            ? t.textTheme.labelLarge.semibold
-                            : t.textTheme.labelLarge)
-                        .c(ink)
-                        .tabular,
+                style: () {
+                  final figure =
+                      (ends || day.isToday
+                              ? t.textTheme.labelLarge.semibold
+                              : t.textTheme.labelLarge)
+                          .c(ink)
+                          .tabular;
+                  return ends ? frostedInkWord(t, figure) : figure;
+                }(),
               ),
             ),
           ),
@@ -444,10 +450,19 @@ class _FrostedMonths extends StatelessWidget {
         // preview's end has no face of its own to cover the band's end, so
         // the band itself ends round there, at the day's edge.
         final inPreview = previewing && day.inPreview;
+        // By night the accent's wash is laid twice: once, on the night
+        // glass, it read 1.13:1 and a range's run barely showed (Material's
+        // band reads 2:1 by night). By day as it is.
+        final subtle = t.isDark
+            ? Color.alphaBlend(
+                t.colorScheme.accentSubtle,
+                t.colorScheme.accentSubtle,
+              )
+            : t.colorScheme.accentSubtle;
         final band = between || (inPreview && !ends)
-            ? (between ? t.colorScheme.accentSubtle : t.glass.wash)
+            ? (between ? subtle : t.glass.wash)
             : (day.inRange && (day.isRangeStart != day.isRangeEnd))
-            ? t.colorScheme.accentSubtle
+            ? subtle
             : inPreview
             ? t.glass.wash
             : null;

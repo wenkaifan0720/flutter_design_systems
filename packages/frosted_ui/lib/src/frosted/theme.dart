@@ -2841,7 +2841,9 @@ class FrostedThemeData with Diagnosticable {
   /// until words read 4.5:1 on the glass and under the washes, the spectrum
   /// turned round the wheel from [accent], the washes of light its tints.
   /// At night each colour is eased toward white until it reads 4.5:1 on the
-  /// dark canvas.
+  /// dark canvas. Only colour changes: the type is Opal's, the look's own
+  /// (its faces, sizes, weights and tracking), each style in this theme's
+  /// inks, so a seeded theme sets every word as the default does.
   ///
   /// ```dart
   /// final theme = FrostedThemeData.from(accent: const Color(0xFF0A7CFF));
@@ -2884,7 +2886,7 @@ class FrostedThemeData with Diagnosticable {
       );
     }
 
-    return FrostedThemeData._fromTokens(
+    final dressed = FrostedThemeData._fromTokens(
       id,
       FrostedTokens(
         light: dress(base.light, false),
@@ -2904,6 +2906,14 @@ class FrostedThemeData with Diagnosticable {
         shape: base.shape,
       ),
       brightness,
+    );
+    // Colour only: Opal's type (the look's own scale and tracking; the base
+    // set's tracking widened every label), in the dressed inks.
+    return dressed.copyWith(
+      textTheme: preset(
+        presets.first,
+        brightness,
+      ).textTheme._inkedAs(dressed.textTheme),
     );
   }
 
@@ -4358,6 +4368,39 @@ class FrostedTextTheme with Diagnosticable {
   final TextStyle wordmark;
 
   /// Every style passed through [f]: a new typeface set in every slot.
+  /// These styles, each in the colour [inks] gives the same slot.
+  FrostedTextTheme _inkedAs(FrostedTextTheme inks) {
+    TextStyle ink(TextStyle own, TextStyle other) =>
+        own.copyWith(color: other.color);
+    return FrostedTextTheme(
+      displayLarge: ink(displayLarge, inks.displayLarge),
+      displayMedium: ink(displayMedium, inks.displayMedium),
+      displaySmall: ink(displaySmall, inks.displaySmall),
+      headlineLarge: ink(headlineLarge, inks.headlineLarge),
+      headlineMedium: ink(headlineMedium, inks.headlineMedium),
+      headlineSmall: ink(headlineSmall, inks.headlineSmall),
+      titleLarge: ink(titleLarge, inks.titleLarge),
+      titleMedium: ink(titleMedium, inks.titleMedium),
+      titleSmall: ink(titleSmall, inks.titleSmall),
+      bodyLarge: ink(bodyLarge, inks.bodyLarge),
+      bodyMedium: ink(bodyMedium, inks.bodyMedium),
+      bodySmall: ink(bodySmall, inks.bodySmall),
+      labelLarge: ink(labelLarge, inks.labelLarge),
+      labelMedium: ink(labelMedium, inks.labelMedium),
+      labelSmall: ink(labelSmall, inks.labelSmall),
+      overline: ink(overline, inks.overline),
+      stat: ink(stat, inks.stat),
+      amount: ink(amount, inks.amount),
+      amountSmall: ink(amountSmall, inks.amountSmall),
+      link: ink(link, inks.link),
+      tab: ink(tab, inks.tab),
+      mono: ink(mono, inks.mono),
+      monoSmall: ink(monoSmall, inks.monoSmall),
+      monogram: ink(monogram, inks.monogram),
+      wordmark: ink(wordmark, inks.wordmark),
+    );
+  }
+
   FrostedTextTheme _map(TextStyle Function(TextStyle style) f) =>
       FrostedTextTheme(
         displayLarge: f(displayLarge),

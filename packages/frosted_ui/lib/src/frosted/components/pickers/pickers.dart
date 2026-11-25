@@ -21,6 +21,8 @@ import '../../internal/dim.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/shared_words.dart';
+import '../../internal/act_row.dart';
+import '../../internal/ink_on.dart';
 
 // ---------------------------------------------------------------------------
 // Time of day
@@ -372,13 +374,22 @@ class FrostedTimePicker extends StatelessWidget {
       columns: [
         RawPickerColumn(
           itemCount: h24 ? 24 : 12,
-          itemLabel: (i) => h24 ? _two(i) : '${i + 1}',
+          // In the reader's digits (Arabic's ٠٩ and ٣٠), as Material's
+          // time picker writes formatHour and formatMinute.
+          itemLabel: (i) => h24
+              ? shared.formatHour(
+                  RawTimeOfDay(hour: i, minute: 0),
+                  alwaysUse24HourFormat: true,
+                )
+              : shared.formatDecimal(i + 1),
           semanticLabel: hourName,
           looping: true,
         ),
         RawPickerColumn(
           itemCount: 60 ~/ minuteInterval,
-          itemLabel: (i) => _two(i * minuteInterval),
+          itemLabel: (i) => shared.formatMinute(
+            RawTimeOfDay(hour: 0, minute: i * minuteInterval),
+          ),
           semanticLabel: minuteName,
           looping: true,
         ),
@@ -733,19 +744,23 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
             edge: side?.color,
             edges: EdgeInsets.all(side?.width ?? FrostedStrokes.regular),
             sheen: chosen ? t.colorScheme.buttonSheen : null,
-            shadows: chosen ? t.shadows.button : const [],
+            // In a grid choosing is ink in place, not a raised act (law 6):
+            // no drop shadow, which smudged the days beside it.
+            shadows: const [],
             child: Center(
               child: Text(
                 // In the reader's digits (Arabic's ٢٠), as its head's year
                 // and a calendar's days are.
                 digits.formatDecimal(n),
-                style: s.words(
-                  (chosen || isToday
-                          ? t.textTheme.labelLarge.semibold
-                          : t.textTheme.labelLarge)
-                      .c(ink)
-                      .tabular,
-                ),
+                style: s.words(() {
+                  final figure =
+                      (chosen || isToday
+                              ? t.textTheme.labelLarge.semibold
+                              : t.textTheme.labelLarge)
+                          .c(ink)
+                          .tabular;
+                  return chosen ? frostedInkWord(t, figure) : figure;
+                }()),
               ),
             ),
           ),
@@ -861,6 +876,7 @@ Future<DateTime?> showFrostedDatePicker(
     context,
     builder: (dialogContext) => StatefulBuilder(
       builder: (context, setState) => _PickerCard(
+        month: true,
         title: title ?? FrostedLocalizations.of(dialogContext).selectDate,
         onDone: chosen == null
             ? null
@@ -878,71 +894,94 @@ Future<DateTime?> showFrostedDatePicker(
 }
 
 /// The card a picker is raised in: the dialog's face, 360 at most, the
-/// [title] over the picker, Cancel and OK at its foot.
+/// [title] over the picker, Cancel and OK at its foot, on the dialog's own
+/// inset and acts so a picker reads as one family with a confirm.
 class _PickerCard extends StatelessWidget {
   const _PickerCard({
     required this.title,
     required this.onDone,
     required this.child,
+    this.month = false,
   });
 
   final String title;
   final VoidCallback? onDone;
   final Widget child;
 
+  /// Whether [child] is a month of days, whose seven columns keep the touch
+  /// target before the card keeps the dialog's inset.
+  final bool month;
+
+  /// The card's widest.
+  static const double _widest = 360;
+
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
+    final target = FrostedBreakpoints.hitTargetOf(context);
     return Semantics(
       scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
       label: title,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: FrostedFace(
-          material: FrostedMaterial.slab,
-          radius: BorderRadius.circular(FrostedChromeMetrics.sheetWideRadius),
-          // The dialog's rim: the lit hairline by day (law 2).
-          edge: frostedLitEdge(t, t.glass.sheetEdge),
-          ring: frostedSlabRing(t),
-          sheen: t.glass.rim,
-          shadows: t.shadows.dialog,
-          clipChild: true,
-          padding: const EdgeInsets.all(FrostedSpacing.s16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: FrostedSpacing.s16,
-            children: [
-              Semantics(
-                header: true,
-                child: Text(title, style: t.textTheme.titleLarge),
-              ),
-              child,
-              Row(
-                spacing: FrostedSpacing.s8,
-                children: [
-                  Expanded(
-                    child: FrostedButton.glass(
-                      RawWidgetsLocalizations.of(context).cancelButtonLabel,
-                      expand: true,
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  Expanded(
-                    child: FrostedButton(
-                      RawWidgetsLocalizations.of(context).okButtonLabel,
-                      expand: true,
-                      onPressed: onDone,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        constraints: const BoxConstraints(maxWidth: _widest),
+        child: LayoutBuilder(
+          builder: (context, box) {
+            // The dialog's inset (24). A month's seven columns keep the
+            // touch target first (48 under a finger, 44 under a pointer):
+            // in a phone's card the inset gives way, to 16 at the least.
+            final width = math.min(box.maxWidth, _widest);
+            final inset = month
+                ? ((width - 2 * FrostedChromeMetrics.outline - 7 * target) / 2)
+                      .clamp(
+                        FrostedSpacing.s16,
+                        FrostedChromeMetrics.dialogEdge,
+                      )
+                      .toDouble()
+                : FrostedChromeMetrics.dialogEdge;
+            return _face(context, t, inset);
+          },
         ),
       ),
     );
   }
+
+  Widget _face(BuildContext context, FrostedThemeData t, double inset) =>
+      FrostedFace(
+        material: FrostedMaterial.slab,
+        radius: BorderRadius.circular(FrostedChromeMetrics.sheetWideRadius),
+        // The dialog's rim: the lit hairline by day, lit from above by
+        // night (law 2).
+        edge: frostedLitEdge(t, t.glass.sheetEdge),
+        ring: frostedSlabRing(t),
+        litFromAbove: t.isDark,
+        sheen: t.glass.rim,
+        shadows: t.shadows.dialog,
+        clipChild: true,
+        padding: EdgeInsets.all(inset),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: FrostedSpacing.s16,
+          children: [
+            Semantics(
+              header: true,
+              child: Text(title, style: t.textTheme.titleLarge),
+            ),
+            child,
+            // The dialog's acts, at its gap.
+            FrostedActBar([
+              FrostedButton.glass(
+                RawWidgetsLocalizations.of(context).cancelButtonLabel,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              FrostedButton(
+                RawWidgetsLocalizations.of(context).okButtonLabel,
+                onPressed: onDone,
+              ),
+            ]),
+          ],
+        ),
+      );
 }

@@ -115,6 +115,10 @@ abstract final class FrostedFormat {
   }
 
   /// The clock on its twelve-hour face: "8:12 AM", no leading zero.
+  ///
+  /// English words in Western digits, as all of [FrostedFormat]; a time in
+  /// the app's language and digits is `RawWidgetsLocalizations`'
+  /// `formatTimeOfDay`, or `formatHour` and `formatMinute` for its parts.
   static String time(DateTime d) {
     final hour = d.hour % 12 == 0 ? 12 : d.hour % 12;
     final minute = d.minute.toString().padLeft(2, '0');

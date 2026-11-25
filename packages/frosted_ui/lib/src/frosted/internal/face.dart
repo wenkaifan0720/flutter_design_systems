@@ -23,7 +23,8 @@ Color frostedLitEdge(FrostedThemeData t, Color night) =>
 
 /// The ring just inside a dialog's lit edge: by day none (the slab's own
 /// ring, a dark hairline, would stand inside the light), by night the
-/// slab's own light ring.
+/// slab's own light ring, lit from above with its edge
+/// ([FrostedFace.litFromAbove]).
 Color? frostedSlabRing(FrostedThemeData t) =>
     t.isDark ? null : const Color(0x00000000);
 
@@ -648,6 +649,7 @@ class FrostedFace extends StatelessWidget {
     this.edges = const EdgeInsets.all(FrostedChromeMetrics.outline),
     this.sheen,
     this.ring,
+    this.litFromAbove = false,
     this.shadows = const <BoxShadow>[],
     this.padding = EdgeInsets.zero,
     this.clipChild = false,
@@ -689,6 +691,12 @@ class FrostedFace extends StatelessWidget {
 
   /// The ring just inside the face's edge.
   final Color? ring;
+
+  /// Whether the [edge] and the [ring] catch the light from above: at their
+  /// full strength along the top, fading down the sides to nothing at the
+  /// foot, so a raised slab by night wears a lit rim rather than a stroke
+  /// (law 2). False draws them even all round.
+  final bool litFromAbove;
 
   /// The face's outer shadows, as Flutter draws CSS's, in CSS's order: the
   /// first stands on top.
@@ -806,6 +814,7 @@ class FrostedFace extends StatelessWidget {
       path: path,
       edged: edge != null,
       edges: edges,
+      litFromAbove: litFromAbove,
       textDirection: direction,
       duration: motion.fast,
       curve: motion.curve,
@@ -973,6 +982,7 @@ class _FacePaint extends ImplicitlyAnimatedWidget {
     required this.path,
     required this.edged,
     required this.edges,
+    required this.litFromAbove,
     required this.textDirection,
     required this.child,
     required super.duration,
@@ -984,6 +994,7 @@ class _FacePaint extends ImplicitlyAnimatedWidget {
   final OutlinedBorder? path;
   final bool edged;
   final EdgeInsets edges;
+  final bool litFromAbove;
   final TextDirection? textDirection;
   final Widget child;
 
@@ -1022,6 +1033,7 @@ class _FacePaintState extends AnimatedWidgetBaseState<_FacePaint> {
         ring: s.ring,
         glint: s.glint,
         shadows: s.shadows,
+        litFromAbove: widget.litFromAbove,
         textDirection: widget.textDirection,
       ),
       child: widget.child,
@@ -1045,6 +1057,7 @@ class _FacePainter extends CustomPainter {
     required this.ring,
     required this.glint,
     required this.shadows,
+    required this.litFromAbove,
     required this.textDirection,
   });
 
@@ -1067,7 +1080,25 @@ class _FacePainter extends CustomPainter {
   // The light just inside the ring while a dark ring is lit.
   final Color? glint;
   final List<BoxShadow> shadows;
+  final bool litFromAbove;
   final TextDirection? textDirection;
+
+  /// The paint of the edge or the ring: [color] even all round, or, lit
+  /// from above, at its full strength along the top, fading down the sides
+  /// to nothing at the foot.
+  Paint _rim(Color color, Rect rect) => litFromAbove
+      ? (Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              color,
+              color.withValues(alpha: color.a * .3),
+              color.withValues(alpha: 0),
+            ],
+            stops: const [0, .5, 1],
+          ).createShader(rect))
+      : (Paint()..color = color);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1141,7 +1172,7 @@ class _FacePainter extends CustomPainter {
           ..fillType = PathFillType.evenOdd
           ..addRRect(inner)
           ..addRRect(inner.deflate(FrostedChromeMetrics.outline)),
-        Paint()..color = inRing,
+        _rim(inRing, rect),
       );
     }
     final lit = glint;
@@ -1161,7 +1192,7 @@ class _FacePainter extends CustomPainter {
           ..fillType = PathFillType.evenOdd
           ..addRRect(outer)
           ..addRRect(inner),
-        Paint()..color = line,
+        _rim(line, rect),
       );
     }
   }
@@ -1251,7 +1282,7 @@ class _FacePainter extends CustomPainter {
             pathIn(rect, width + FrostedChromeMetrics.outline),
             Offset.zero,
           ),
-        Paint()..color = inRing,
+        _rim(inRing, rect),
       );
     }
     final lit = glint;
@@ -1277,7 +1308,7 @@ class _FacePainter extends CustomPainter {
           ..fillType = PathFillType.evenOdd
           ..addPath(outer, Offset.zero)
           ..addPath(inner, Offset.zero),
-        Paint()..color = line,
+        _rim(line, rect),
       );
     }
   }
@@ -1323,7 +1354,8 @@ class _FacePainter extends CustomPainter {
       old.ring != ring ||
       old.glint != glint ||
       !_same(old.shadows, shadows) ||
-      old.textDirection != textDirection;
+      old.textDirection != textDirection ||
+      old.litFromAbove != litFromAbove;
 
   static bool _same<T>(List<T> a, List<T> b) {
     if (identical(a, b)) return true;

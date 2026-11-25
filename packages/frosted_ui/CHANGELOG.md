@@ -1,3 +1,13 @@
+## 0.6.3
+
+- Requires ui_core 0.6.1. `FrostedTimePicker`'s wheels, and `FrostedTime.format`, write a time in the app's digits through ui_core's `formatHour` and `formatMinute`: Arabic's ٩ (٢١ on the 24-hour clock) and ٠٥, not 9 and 05, also when the app gives Frosted words of its own. English is unchanged. The hour wheel stays left of the minutes in a right-to-left app. `FrostedFormat.time` says it is English and points to `formatTimeOfDay`.
+- A chosen day in a grid casts no drop shadow: `FrostedCalendar`, `FrostedDatePicker` (and so `showFrostedDatePicker`) and a range's ends in `FrostedDateRangePicker` ink the day in place. By day the shadow smudged the band beside a range's ends. Buttons keep their shadow.
+- By night a range's band is the accent's wash laid twice, 1.34:1 on the night canvas, where it was 1.13:1 and a range's run barely showed. By day it is unchanged.
+- By night `FrostedDialog` and the cards `showFrostedDatePicker` and `showFrostedTimePicker` raise wear their rim lit from above: bright along the top, fading down the sides, gone at the foot. It was an even stroke all round, as if lit from every side.
+- By night the ink `FrostedButton`'s word, and a chosen day's figure, set one weight heavier (700, from 600), where they are dark on a light pill: at the same weight they read lighter than the light word on the glass beside them. The act keeps the room it takes by day: the heavier word is centred on its day width, so a pill is as wide by night and nothing beside it moves when the theme turns.
+- `FrostedThemeData.from` changes colour only: every word keeps Opal's type, the look's own (its faces, sizes, weights, lines and tracking), in the seeded theme's inks. It took the base colour set's tracking (0.1 on 13 px), so every label set wider than the default's (about 1.2 px on "Switch task") and a phone's pair of wide acts could stack under a seeded theme where the default kept them side by side.
+- `showFrostedDatePicker`'s and `showFrostedTimePicker`'s cards stand on `FrostedDialog`'s inset (24) and end in its acts: Cancel and OK are the dialog's pair, the same pills and words, 10 apart (16 wide) and stacked when they don't fit side by side. They stood on a 16 inset, 8 apart, as wide acts a size larger than the dialog's. A month's inset gives way, down to 16, only where its seven columns would lose the touch target (a phone under a finger).
+
 ## 0.6.2
 
 - `FrostedDateRangePicker`'s and `FrostedCalendar`'s months side by side each title their month over the centre of its own grid. A month with one arrow kept no room for the other, so its title leaned half an arrow (24 under a finger) toward the gutter.

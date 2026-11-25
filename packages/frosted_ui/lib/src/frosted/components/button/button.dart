@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../../chrome_metrics.dart';
 import '../../internal/act_row.dart';
 import '../../internal/face.dart';
+import '../../internal/ink_on.dart';
 import '../../internal/measure.dart';
 import '../../internal/own_size.dart';
 import '../../internal/styled.dart';
@@ -260,17 +261,35 @@ class FrostedButton extends StatelessWidget {
                   _Face.glass => t.colorScheme.textPrimary,
                   _Face.danger => dangerInk,
                 });
-      final words = s.words(
-        small
-            ? t.textTheme.labelLarge
-                  .at(FrostedChromeMetrics.buttonSmallWord)
-                  .c(ink)
-            : wide
-            ? t.textTheme.labelLarge
-                  .at(FrostedChromeMetrics.buttonWideWord)
-                  .c(ink)
-            : t.textTheme.labelLarge.c(ink),
+      final plain = small
+          ? t.textTheme.labelLarge
+                .at(FrostedChromeMetrics.buttonSmallWord)
+                .c(ink)
+          : wide
+          ? t.textTheme.labelLarge
+                .at(FrostedChromeMetrics.buttonWideWord)
+                .c(ink)
+          : t.textTheme.labelLarge.c(ink);
+      // The ink act's word reads at its neighbours' weight by night.
+      final own = s.words(plain);
+      final words = _face == _Face.ink
+          ? s.words(frostedInkWord(t, plain))
+          : own;
+      Widget word = frostedCapCentred(
+        Text(
+          label,
+          maxLines: expand ? null : 1,
+          overflow: expand ? TextOverflow.visible : TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: words,
+        ),
       );
+      // A pill that hugs its word keeps the width the word takes at its own
+      // weight: the heavier night cut set wider, and a caption beside the act
+      // that fit by day wrapped by night.
+      if (!expand && words.fontWeight != own.fontWeight) {
+        word = _SetAsWide(text: label, style: own, child: word);
+      }
       final row = Row(
         mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -288,17 +307,7 @@ class FrostedButton extends StatelessWidget {
                       : FrostedChromeMetrics.buttonGlyph),
               color: ink,
             ),
-          Flexible(
-            child: frostedCapCentred(
-              Text(
-                label,
-                maxLines: expand ? null : 1,
-                overflow: expand ? TextOverflow.visible : TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: words,
-              ),
-            ),
-          ),
+          Flexible(child: word),
         ],
       );
       final padding = s.padding;
@@ -1036,4 +1045,119 @@ class _Hairline extends CustomPainter {
 
   @override
   bool shouldRepaint(_Hairline oldDelegate) => oldDelegate.color != color;
+}
+
+/// [child], a word drawn a cut heavier than [style] (the ink act's word by
+/// night, [frostedInkWord]), set as wide as [text] sets in [style]: the
+/// heavier word is centred on that width, a pixel or two of it in the pill's
+/// inset, so the pill and all beside it stand where they stand by day. One
+/// line.
+class _SetAsWide extends SingleChildRenderObjectWidget {
+  const _SetAsWide({
+    required this.text,
+    required this.style,
+    required super.child,
+  });
+
+  final String text;
+  final TextStyle style;
+
+  TextPainter _measure(BuildContext context) {
+    var own = DefaultTextStyle.of(context).style.merge(style);
+    if (MediaQuery.boldTextOf(context)) {
+      own = own.merge(const TextStyle(fontWeight: FontWeight.bold));
+    }
+    return TextPainter(
+      text: TextSpan(text: text, style: own),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: 1,
+    );
+  }
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderSetAsWide(_measure(context));
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderSetAsWide renderObject) {
+    renderObject.measure = _measure(context);
+  }
+}
+
+class _RenderSetAsWide extends RenderShiftedBox {
+  _RenderSetAsWide(this._measure) : super(null);
+
+  TextPainter _measure;
+  set measure(TextPainter value) {
+    final old = _measure;
+    if (value.text == old.text &&
+        value.textDirection == old.textDirection &&
+        value.textScaler == old.textScaler &&
+        value.locale == old.locale) {
+      value.dispose();
+      return;
+    }
+    _measure = value;
+    old.dispose();
+    markNeedsLayout();
+  }
+
+  /// The word's width at its own weight, on one line.
+  double get _own => (_measure..layout()).maxIntrinsicWidth;
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _own;
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => _own;
+
+  BoxConstraints _inner(BoxConstraints constraints, RenderBox child) {
+    final width = constraints.constrainWidth(_own);
+    // The heavier word's own room: a word cut short at its own weight is
+    // cut as short heavier, not sooner.
+    final grow = math.max(
+      0.0,
+      child.getMaxIntrinsicWidth(double.infinity) - _own,
+    );
+    return BoxConstraints(
+      maxWidth: width + grow,
+      minHeight: constraints.minHeight,
+      maxHeight: constraints.maxHeight,
+    );
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final child = this.child;
+    if (child == null) return constraints.smallest;
+    final inner = child.getDryLayout(_inner(constraints, child));
+    return constraints.constrain(
+      Size(constraints.constrainWidth(_own), inner.height),
+    );
+  }
+
+  @override
+  void performLayout() {
+    final child = this.child;
+    if (child == null) {
+      size = constraints.smallest;
+      return;
+    }
+    child.layout(_inner(constraints, child), parentUsesSize: true);
+    size = constraints.constrain(
+      Size(constraints.constrainWidth(_own), child.size.height),
+    );
+    (child.parentData! as BoxParentData).offset = Offset(
+      (size.width - child.size.width) / 2,
+      (size.height - child.size.height) / 2,
+    );
+  }
+
+  @override
+  void dispose() {
+    _measure.dispose();
+    super.dispose();
+  }
 }
