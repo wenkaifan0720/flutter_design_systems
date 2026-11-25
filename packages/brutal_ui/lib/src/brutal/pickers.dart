@@ -971,10 +971,11 @@ class BrutalDateRangePicker extends StatelessWidget {
     final a = r.start;
     final b = r.end;
     if (a.year == b.year && a.month == b.month) {
-      return '${a.day} – ${b.day} ${words.formatMonthYear(b)}';
+      return '${words.formatDecimal(a.day)} – ${words.formatDecimal(b.day)} '
+          '${words.formatMonthYear(b)}';
     }
-    return '${a.day} ${words.formatMonthYear(a)} – '
-        '${b.day} ${words.formatMonthYear(b)}';
+    return '${words.formatDecimal(a.day)} ${words.formatMonthYear(a)} – '
+        '${words.formatDecimal(b.day)} ${words.formatMonthYear(b)}';
   }
 
   @override
@@ -1388,10 +1389,11 @@ class BrutalTimePicker extends StatelessWidget {
     final layers = [style, theme.wheelPickerStyle];
     final box = RawStyleOf(layers, const {});
     final rule = enabled ? box.side?.color ?? box.edge ?? c.ink : c.disabled;
-    // The wheels' spoken names, in the reader's language.
+    // The wheels' figures in the app's digits on the locale's 24-hour clock
+    // (formatHour: "09", Arabic's "٠٩", Persian's "۹"), and their spoken
+    // names in the reader's language.
     final words = RawWidgetsLocalizations.of(context);
     final minutes = [for (var m = 0; m < 60; m += minuteInterval) m];
-    String two(int n) => n.toString().padLeft(2, '0');
     final nearest = minutes.lastWhere(
       (m) => m <= value.minute,
       orElse: () => 0,
@@ -1412,8 +1414,17 @@ class BrutalTimePicker extends StatelessWidget {
           child: _wheels(
             context,
             labels: [
-              [for (var h = 0; h < 24; h++) two(h)],
-              [for (final m in minutes) two(m)],
+              [
+                for (var h = 0; h < 24; h++)
+                  words.formatHour(
+                    RawTimeOfDay(hour: h, minute: 0),
+                    alwaysUse24HourFormat: true,
+                  ),
+              ],
+              [
+                for (final m in minutes)
+                  words.formatMinute(RawTimeOfDay(hour: 0, minute: m)),
+              ],
             ],
             names: [words.timePickerHourLabel, words.timePickerMinuteLabel],
             widths: const [88, 88],

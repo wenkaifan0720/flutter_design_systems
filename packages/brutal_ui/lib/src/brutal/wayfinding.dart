@@ -335,7 +335,8 @@ class BrutalPagination extends StatelessWidget {
                     child: Center(
                       widthFactor: 1,
                       child: Text(
-                        '$page / $pageCount',
+                        '${words.formatDecimal(page)} / '
+                        '${words.formatDecimal(pageCount)}',
                         style: theme.textTheme.label.copyWith(
                           color: theme.colors.ink,
                         ),
@@ -360,7 +361,7 @@ class BrutalPagination extends StatelessWidget {
                   chosen: p == page,
                   layers: layers,
                   semanticLabel: words.positionLabel(p, pageCount),
-                  child: Text('$p'),
+                  child: Text(words.formatDecimal(p)),
                 ),
               ],
             _StripCell(

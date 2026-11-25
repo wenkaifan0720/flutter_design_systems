@@ -1,3 +1,10 @@
+## 0.5.2
+
+- Requires ui_core 0.6.1.
+- `BrutalTimePicker`'s wheels write the hours and minutes in the app's digits on the locale's 24-hour clock, through ui_core's `formatHour` and `formatMinute` (`RawTimeFormatting`), as Material's time picker does: in Arabic 09 and 05 read ٠٩ and ٠٥, in Persian ۹ and ۰۵. They were written in Western digits in every language. English reads as before.
+- `BrutalPagination` writes its pages, and "3 / 12" where it is too narrow for its keys, in the app's digits (ui_core's `formatDecimal`), as its spoken words already did.
+- `BrutalDateRangePicker`'s field writes a span's days in the app's digits, as it already wrote the month and year: in Arabic "١٤ – ٢٠ نوفمبر ٢٠٢٦", where it read "14 – 20 نوفمبر ٢٠٢٦".
+
 ## 0.5.1
 
 - `BrutalDatePicker`'s and `BrutalDateRangePicker`'s calendar drops in a panel of its own, as a menu does: the look's rule round the panel's fill on the hard ink shadow, the month's ruled table inside at the look's medium inset. It still meets its field on the field's rule, edge to edge with a phone's field, and stands 360 wide from a wide field's start (a span's two months at least 628). A popover over a form reads as one surface standing over it. In 0.5.0 the month's table was its only frame: on a phone, a calendar that opened above its field ended partway into the field above it, with a strip of half-cut words over its top rule.

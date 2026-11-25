@@ -1,7 +1,8 @@
 // A time picker's wheels are named in the reader's language: ui_core's
 // RawWidgetsLocalizations gives the hour and minute words, so German hears
 // "Stunde" and Arabic "ساعة", where the wheels once said "Hour" and "Minute"
-// in English in every locale.
+// in English in every locale. The values they say are in the app's digits
+// (Arabic's ١٩).
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
@@ -25,17 +26,17 @@ Widget _app(Locale locale) => WidgetsApp(
 );
 
 void main() {
-  for (final (locale, hour, minute) in const [
-    (Locale('en'), 'Hour', 'Minute'),
-    (Locale('de'), 'Stunde', 'Minute'),
-    (Locale('ar'), 'ساعة', 'دقيقة'),
+  for (final (locale, hour, minute, nineteen, thirty) in const [
+    (Locale('en'), 'Hour', 'Minute', '19', '30'),
+    (Locale('de'), 'Stunde', 'Minute', '19', '30'),
+    (Locale('ar'), 'ساعة', 'دقيقة', '١٩', '٣٠'),
   ]) {
     testWidgets('${locale.languageCode}: the wheels are named $hour and '
         '$minute', (tester) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(_app(locale));
       await tester.pumpAndSettle();
-      for (final (name, value) in [(hour, '19'), (minute, '30')]) {
+      for (final (name, value) in [(hour, nineteen), (minute, thirty)]) {
         final node = tester.getSemantics(
           find.bySemanticsLabel(RegExp('^${RegExp.escape(name)}')),
         );
