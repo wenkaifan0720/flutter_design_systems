@@ -5,7 +5,7 @@ description: Build a Flutter app's own design on the ui_core package, where ui_c
 
 # An app's own design on ui_core
 
-Written for ui_core 0.7.x and ui_core_test 0.5.x, on Flutter 3.47 or later.
+Written for ui_core 0.8.x and ui_core_test 0.6.x, on Flutter 3.47 or later.
 
 This skill builds one app's design and the screens made of it: the design's
 laws, its theme, the face its parts share, then each part the screens need,
@@ -34,8 +34,8 @@ To install the skill, copy this folder into the project's `.claude/skills/`
 (or `~/.claude/skills/` for every project). The app takes:
 
 ```text
-flutter pub add ui_core:^0.7.2 material_ui
-flutter pub add 'dev:ui_core_test:^0.5.2' dev:leak_tracker_flutter_testing
+flutter pub add ui_core:^0.8.0 material_ui
+flutter pub add 'dev:ui_core_test:^0.6.0' dev:leak_tracker_flutter_testing
 ```
 
 material_ui gives the app `MaterialApp`, `TextField` and Flutter's
@@ -326,7 +326,8 @@ return PopScope<Object?>(
 ```
 
 - **Figures.** Numbers and dates come from `RawWidgetsLocalizations`
-  (`formatDecimal`, `formatFullDate`), and a time's hour and minute from
+  (`formatDecimal`; `formatMediumDate` for a date shown, `formatFullDate`
+  for one said), and a time's hour and minute from
   its `formatHour` and `formatMinute` (the `RawTimeFormatting`
   extension). Never `n.toString().padLeft(2, '0')`, which stays ASCII in
   every language.
@@ -361,6 +362,7 @@ List<String> problemsOn(WidgetTester tester, {required bool touch}) {
       const DesignCheckableCheck(look: 'Tend').check(screen),
       const DesignTextFieldNameCheck(look: 'Tend').check(screen),
       const DesignFieldSemanticsCheck(look: 'Tend').check(screen),
+      const DesignControlNodesCheck(look: 'Tend').check(screen),
       DesignTapTargetCheck(
         look: 'Tend',
         input: touch ? RawInput.touch : RawInput.pointer,
@@ -396,6 +398,8 @@ standing above the bar, a radio group's keys (`DesignRadioGroupCheck`).
 | `DesignFieldSemanticsCheck` | A field whose label, help or error is not on its node, or is read twice |
 | `DesignFieldNodesCheck` | A field whose text entry moves to another node as its text goes from empty to a letter |
 | `DesignFieldWordsCheck` | A field's help or error read apart from the field; give it the words the screen shows |
+| `DesignControlNodesCheck` | Two controls on one semantics node (a row merged with its switch), so a screen reader's tap reaches one of them |
+| `DesignNavigationCheck` | A shell's destination (a rail's, a sidebar's) that leaves the semantics tree or takes no tap while a page is pushed |
 | `DesignTooltipNodeCheck` | A tooltip read apart from the control it names |
 | `DesignListSideCheck` | An open list above its field while below holds it; a whole picker on a side that cuts it |
 | `DesignOverlayCheck` | A popover, list, menu, tooltip or dialog running off the screen |
@@ -406,6 +410,7 @@ standing above the bar, a radio group's keys (`DesignRadioGroupCheck`).
 | `DesignRadioGroupCheck` | A radio group that is more than one Tab stop, or whose arrows do not choose, wrap, skip and mirror |
 | `DesignLabelCheck` | A label's ink off its face's middle |
 | `DesignFaceInsetCheck` | A label's ink closer than 4 px to its face's edge |
+| `DesignToneCheck` | Two of a design's tones (a signal and a ready) too close to tell apart in one of its palettes, by day or by night |
 | `DesignContrastCheck` | Words, icons or a hint too faint on what is drawn under them; `DesignContrastCheck.sweep` reads a screen in the palettes people name most and the design's own, by day and by night (`contrastFloorGuideline` is the same floor as a guideline) |
 | `DesignWordBreakCheck`, `DesignClipCheck` | A word broken across lines; words or a face cut |
 | `DesignShadowClipCheck` | A shadow cut by its parent's clip |

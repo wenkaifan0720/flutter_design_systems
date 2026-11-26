@@ -364,6 +364,21 @@ void main() {
     );
     expect(l(const Locale('fa')).formatMonthYear(december), 'دسامبر ۲۰۲۵');
 
+    // A medium date with its year, as a field or a list shows a chosen day.
+    // ui_core's English sets the day first, as its full date does.
+    expect(l(const Locale('en')).formatMediumDate(monday), '3 Mar 2025');
+    expect(l(const Locale('de')).formatMediumDate(monday), '3. März 2025');
+    expect(l(const Locale('fr')).formatMediumDate(monday), '3 mars 2025');
+    expect(l(const Locale('ja')).formatMediumDate(monday), '2025年3月3日');
+    expect(l(const Locale('ar')).formatMediumDate(monday), '٣ مارس ٢٠٢٥');
+    for (final locale in RawWidgetsLocalizations.supportedLocales) {
+      expect(
+        l(locale).formatMediumDate(monday),
+        isNot(l(locale).formatMediumDate(DateTime(2026, 3, 3))),
+        reason: '$locale: the year is in a medium date',
+      );
+    }
+
     expect(l(const Locale('de')).firstDayOfWeek, DateTime.monday);
     expect(l(const Locale('ar')).firstDayOfWeek, DateTime.saturday);
     expect(l(const Locale('he')).firstDayOfWeek, DateTime.sunday);

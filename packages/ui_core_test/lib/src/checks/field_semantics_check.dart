@@ -23,9 +23,11 @@ part of '../alignment.dart';
 ///   "Estimate": a tap through the semantics tree on its stepper's button on
 ///   the right lands on "Estimate", not on the button`.
 /// - **The label read once**: the field's label is a line of no more than
-///   one of the nodes over the field, a button's own name aside (a search
-///   field's Search button): `a field "Estimate": its label is read 2
-///   times`.
+///   one of the nodes over the field, the own name of a button beside the
+///   field's control aside (a search field's Search button): `a field
+///   "Estimate": its label is read 2 times`. A field's one control (a
+///   select, a date's button) named as the field, beside the label's own
+///   words, reads it twice.
 ///
 /// It reads the semantics tree, which a widget test has unless it turns it
 /// off ([WidgetTester.ensureSemantics] turns it on). A test pumps a screen,
@@ -155,6 +157,10 @@ class _FieldSemanticsReader {
     final words = field.labelText?.trim().toLowerCase() ?? '';
     if (words.isNotEmpty) {
       final area = _global(box).inflate(1);
+      // A button beside the field's own control (a search field's Search
+      // beside its entry); a field's one control named as the field (a
+      // select, a date's button) reads the label again.
+      final beside = _taps.length > 1;
       var heard = 0;
       for (final (node, rect) in placed) {
         if (node.isMergedIntoParent || !area.contains(rect.center)) continue;
@@ -162,7 +168,9 @@ class _FieldSemanticsReader {
         // A button's own name is the button's (a search field's Search),
         // not a reading of the field's label; a node that merges several
         // says each one's words on a line of its own, and is read by them.
-        if (data.flagsCollection.isButton && !data.label.contains('\n')) {
+        if (beside &&
+            data.flagsCollection.isButton &&
+            !data.label.contains('\n')) {
           continue;
         }
         for (final line in data.label.split('\n')) {

@@ -9,7 +9,7 @@ A design system's tests take it as a dev dependency, as an app takes `flutter_te
 
 ```yaml
 dev_dependencies:
-  ui_core_test: ^0.5.3
+  ui_core_test: ^0.6.0
 ```
 
 ```dart
@@ -47,8 +47,8 @@ await expectLater(tester, meetsGuideline(textFieldNameGuideline));
 
 `checkableRoleGuideline`, `fieldSemanticsGuideline`, `textFieldNameGuideline`, `tapTargetReachGuideline`,
 `cursorGuideline`, `labelPlacementGuideline`, `tooltipNodeGuideline`, `listSideGuideline`, `overlayGuideline`,
-`overflowGuideline` and `contrastFloorGuideline`. The radio group check
-and the field nodes check are not: one presses keys and the other types, and a guideline reads a screen without
+`overflowGuideline`, `controlNodesGuideline` and `contrastFloorGuideline`. The radio group check,
+the field nodes check and the navigation check are not: one presses keys, one types and one needs a page pushed, and a guideline reads a screen without
 changing it. The guidelines library imports `flutter_test`; the main library does not, so the
 checks also run in an app (each takes the tester's `pump` and `runAsync` as functions).
 
@@ -70,6 +70,12 @@ What a control says and does, from the semantics tree, layout boxes and hit test
   first letter, and no node it had goes or changes role (on the web the entry's node is the browser's input, and a
   new one loses the keys typed meanwhile). A test reads the fields, types, then checks them.
 - `DesignTooltipNodeCheck`: each tooltip is on the node of the control it tips, so a screen reader reads them as one.
+- `DesignControlNodesCheck`: each control keeps a node of its own: two controls that come to one node (a row's
+  trailing "more" button merged into the row's node) are named, as a tap through the semantics tree reaches one of
+  them. A checkbox, radio or switch merged into its row is one control with the row, as Flutter's `CheckboxListTile` is.
+- `DesignNavigationCheck`: with a page pushed in the body, each destination of the navigation (a bar's, a rail's, a
+  sidebar's) is still in the semantics tree and takes a tap. A rail painted before the body's navigator drops out
+  under the page's barrier, though it shows.
 - `DesignListSideCheck`: each open list that asks for below opens below its field while the room below holds it, or
   200 px of a longer one, as Material's menus and autocomplete do. A popover is held to its placement: its
   `preferredExtent`, and all of a surface placed with `RawPopoverFit.whole` (a month), which opens above where only
@@ -128,9 +134,29 @@ them, a test loads every font family in the package's FontManifest.json and lets
 check's documentation shows how); text drawn in the test's own font fails the label check once, with that reason, and
 a screen repainted since its last frame stops a check with that reason.
 
+## A package's colours and texts
+
+Four checks read what a test gives them, not a screen:
+
+- `DesignToneCheck`: a look's status tones (info, success, warning, danger and its own) stand apart in each palette,
+  by day and by night: at least 24 apart in Material's HCT colour space, tone and chroma along the hue read as one
+  line (Material's error red and an orange stand about 25 apart; two greens of one lightness, under 24).
+- `DesignDocsCheck`: the package's docs carry none of the words of the design its look was drawn from (a style
+  sheet's class such as `.set-row`, "DERIVED", "the source's", "decision 14"), and each public type opens with a
+  plain sentence.
+- `DesignReadmeCheck`: the README's install line takes the package's version; its Dart blocks import only what the
+  install lines add (not Flutter's own `material.dart`, which Flutter deprecates for `material_ui`); and each block
+  compiles: `libraries` gives each block as a library for the test to analyse on the latest stable Flutter, and
+  `analysis` reads the analyser's errors and deprecations.
+- `DesignExampleDepsCheck`: `example/pubspec.yaml` resolves from pub.dev alone: no dependency by path (the package's
+  own aside) or git, no override, and none that pub.dev does not serve.
+
+Each check's documentation shows the test that reads the files (`dart:io` stays in the test: the checks take the
+texts).
+
 ## Versions
 
-Version 0.5.3 supports ui_core ^0.7.2 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
+Version 0.6.0 supports ui_core ^0.8.0 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
 review (the alignment matrix, the keyline, row, width, spacing and field-parts checks) holds a look's own grid and
 taste, and is no longer published.
 

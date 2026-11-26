@@ -21,7 +21,6 @@ import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
 import 'internal/dates.dart';
-import 'internal/focus_visible.dart';
 import 'localizations.dart';
 import 'pressable.dart';
 import 'tap_target.dart';

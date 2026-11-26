@@ -248,6 +248,15 @@ abstract class RawWidgetsLocalizations {
   /// The name of [date]'s month and year (`RawCalendarDatePicker.monthLabel`).
   String formatMonthYear(DateTime date);
 
+  /// [date] as a field or a list shows a chosen day: the day, its month
+  /// short and the year, in the locale's order ("Nov 26, 2026" in American
+  /// English, "26 nov. 2026" in French, "2026年11月26日" in Japanese).
+  ///
+  /// A look shows a day so wherever it shows one (a date field's value, a
+  /// list's due date), as one format; [formatFullDate] is a day's name in
+  /// full, as a screen reader says it.
+  String formatMediumDate(DateTime date);
+
   /// The calendar's short name for [weekday] ([DateTime.monday] is 1)
   /// (`RawCalendarDatePicker.weekdayLabel`).
   String formatShortWeekday(int weekday);
@@ -717,6 +726,10 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
   @override
   String formatMonthYear(DateTime date) =>
       '${_months[date.month - 1]} ${date.year}';
+
+  @override
+  String formatMediumDate(DateTime date) =>
+      '${date.day} ${_months[date.month - 1].substring(0, 3)} ${date.year}';
 
   @override
   String formatShortWeekday(int weekday) =>
@@ -1357,6 +1370,9 @@ class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
 
   @override
   String formatMonthYear(DateTime date) => _formatDate(_data.monthYear, date);
+
+  @override
+  String formatMediumDate(DateTime date) => _formatDate(_data.mediumDate, date);
 
   @override
   String formatShortWeekday(int weekday) => _data.calendarWeekdays[weekday % 7];

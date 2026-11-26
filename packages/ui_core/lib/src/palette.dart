@@ -1,8 +1,9 @@
-/// Palette maths for a look's own colour API: how well two colours read
-/// together, a colour walked in its own hue until it reads, a filled
-/// control's colour and its label's ink for a named accent, and the neutral
-/// tones of a tinted ground. Each look keeps its own words for its colours
-/// (its `from`); these give it the numbers.
+/// Palettes: the named palettes a look offers an app's palette picker
+/// ([RawNamedPalette]), and the maths for a look's own colour API: how well
+/// two colours read together, a colour walked in its own hue until it reads,
+/// a filled control's colour and its label's ink for a named accent, and the
+/// neutral tones of a tinted ground. Each look keeps its own words for its
+/// colours (its `from`); these give it the numbers.
 library;
 
 import 'dart:math' as math;
@@ -11,6 +12,80 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 import 'internal/hct.dart';
+
+/// A palette a look offers by name: what an app's palette picker shows for
+/// it ([label] and a few [swatches], by day and by night) and the [id] the
+/// app stores. A look lists its own (`<Look>ThemeData.palettes`) and builds
+/// its theme from the one chosen; ui_core paints nothing for it, so a picker
+/// is the app's: a radio group of rows, each its label and its swatches for
+/// the brightness shown.
+///
+/// ```dart
+/// const RawNamedPalette(id: 'harbour', label: 'Harbour', swatches: [Color(0xFF1F5F8B), Color(0xFFF4F1EA)], darkSwatches: [Color(0xFF7FB3D9), Color(0xFF14171A)])
+/// ```
+@immutable
+class RawNamedPalette with Diagnosticable {
+  /// A palette called [label], stored as [id].
+  const RawNamedPalette({
+    required this.id,
+    required this.label,
+    required this.swatches,
+    required this.darkSwatches,
+  });
+
+  /// What an app stores to choose it again: stable from version to version
+  /// of the look ('harbour').
+  final String id;
+
+  /// Its name, as a picker shows it ('Harbour').
+  final String label;
+
+  /// One to four of its colours a picker draws for it by day, the most
+  /// telling first (its accent, then its ground).
+  final List<Color> swatches;
+
+  /// The same by night, as many as [swatches].
+  final List<Color> darkSwatches;
+
+  /// [swatches] or [darkSwatches], for [brightness].
+  List<Color> swatchesFor(Brightness brightness) {
+    assert(
+      swatches.isNotEmpty && swatches.length <= 4,
+      'a palette shows one to four swatches',
+    );
+    assert(
+      darkSwatches.length == swatches.length,
+      'as many swatches by night as by day',
+    );
+    return brightness == Brightness.dark ? darkSwatches : swatches;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is RawNamedPalette &&
+      other.id == id &&
+      other.label == label &&
+      listEquals(other.swatches, swatches) &&
+      listEquals(other.darkSwatches, darkSwatches);
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    label,
+    Object.hashAll(swatches),
+    Object.hashAll(darkSwatches),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('id', id))
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<Color>('swatches', swatches))
+      ..add(IterableProperty<Color>('darkSwatches', darkSwatches));
+  }
+}
 
 /// The palette maths a look's colour API stands on, on Material's HCT
 /// colour space (hue, chroma and tone, as `ColorScheme.fromSeed` reckons

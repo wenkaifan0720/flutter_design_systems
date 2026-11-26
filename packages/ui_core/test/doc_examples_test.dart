@@ -412,6 +412,16 @@ final Map<String, DocExample> _examples = {
     dividerBuilder: (context, states, axis) =>
         const ColoredBox(color: Color(0xFFDDDDDD)),
   ),
+  'RawSwipeActionsSemantics': (context) => RawSwipeActions(
+    endActions: [RawSwipeAction(label: 'Delete', onPressed: () {})],
+    actionBuilder: (context, action, details) => Text(action.label),
+    child: Semantics(
+      container: true,
+      button: true,
+      onTap: () {},
+      child: const RawSwipeActionsSemantics(child: Text('Message')),
+    ),
+  ),
   'RawSwipeActions': (context) => RawSwipeActions(
     endActions: [
       RawSwipeAction(label: 'Delete', onPressed: () {}, destructive: true),
@@ -917,6 +927,23 @@ final Map<String, DocExample> _examples = {
     ),
   ),
   'RawWindowSizeClass': (context) => RawWindowSizeClass.fromWidth(900),
+  'RawNavigationMode.fromWidth': (context) =>
+      RawNavigationMode.fromWidth(900, sidebar: 840),
+  'RawAdaptiveShell.modeForWidth': (context) => RawAdaptiveShell(
+    modeForWidth: (width) =>
+        width < 600 ? RawNavigationMode.bar : RawNavigationMode.top,
+    destinations: const [
+      RawNavigationDestination(label: 'Home', icon: IconData(0xe318)),
+      RawNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
+    ],
+    selectedIndex: 0,
+    onDestinationSelected: (index) {},
+    destinationBuilder: (context, destination, details) =>
+        Text(destination.label),
+    navigationBuilder: (context, details) =>
+        Row(children: details.destinations),
+    body: const Text('Home'),
+  ),
   'RawAdaptiveShell': (context) => RawAdaptiveShell(
     destinations: const [
       RawNavigationDestination(label: 'Home', icon: IconData(0xe318)),
@@ -954,6 +981,12 @@ final Map<String, DocExample> _examples = {
     detailRouteBuilder: (builder) => PageRouteBuilder<void>(
       pageBuilder: (context, _, _) => builder(context),
     ),
+  ),
+  'RawNamedPalette': (context) => const RawNamedPalette(
+    id: 'harbour',
+    label: 'Harbour',
+    swatches: [Color(0xFF1F5F8B), Color(0xFFF4F1EA)],
+    darkSwatches: [Color(0xFF7FB3D9), Color(0xFF14171A)],
   ),
   'RawPalette': (context) {
     const brand = Color(0xFF1F3A68);
@@ -995,6 +1028,7 @@ final Map<String, DocExample> _examples = {
       child: ColoredBox(color: nightPanel),
     );
   },
+  'RawFocusShown': (context) => const LookPressable(child: Text('Row')),
   'RawHct': (context) {
     final brand = RawHct.fromColor(const Color(0xFF2E7D32));
     final edge = brand.withTone(brand.tone - 12).toColor();
@@ -1025,6 +1059,8 @@ const Set<String> _checksFiles = {
   'field_semantics_check.dart',
   'field_words_check.dart',
   'list_side_check.dart',
+  'node_check.dart',
+  'package_check.dart',
   'overflow_check.dart',
   'overlay_check.dart',
   'radio_group_check.dart',
@@ -1043,6 +1079,40 @@ const Set<String> _checksFiles = {
   'spacing_check.dart',
   'width_check.dart',
 };
+
+/// A look's own pressable on a bare [FocusableActionDetector], as
+/// RawFocusShown's example builds it.
+class LookPressable extends StatefulWidget {
+  const LookPressable({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<LookPressable> createState() => _LookPressableState();
+}
+
+class _LookPressableState extends State<LookPressable> {
+  bool _ring = false;
+
+  late final RawFocusShown _focus = RawFocusShown(
+    (shown) => setState(() => _ring = shown),
+  );
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FocusableActionDetector(
+    onShowFocusHighlight: _focus.focused,
+    child: DecoratedBox(
+      decoration: BoxDecoration(border: _ring ? Border.all(width: 2) : null),
+      child: widget.child,
+    ),
+  );
+}
 
 /// A look's radio, as RadioGroupKeyboardFix's example names it: a [RawRadio]
 /// on the group's registry, its face drawn in its builder.

@@ -15,7 +15,8 @@
 /// pointer, or given back as what held it closed or went (a dialog's route,
 /// Flutter's or ui_core's, a popover, a removed control). A tip shows for
 /// the keys' arrival alone, and a field's list opens for no focus given
-/// back. Inside ui_core; not exported.
+/// back. Inside ui_core, but for [RawFocusShown], which a look's own
+/// pressable takes.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -277,10 +278,40 @@ final class RawFocusHearing {
   }
 }
 
-/// One part's focus, shown or not: whether the part has the focus Flutter
-/// would highlight ([focused]) and [RawFocusVisible.shown] says focus is
-/// shown now. [onChanged] hears each change, a key pressed while the part
-/// has the focus included.
+/// Whether a part shows its focus, as ui_core's own parts decide it and a
+/// browser's `:focus-visible` does: shown after a key, hidden after a
+/// pointer's press (a mouse, a finger, a pen) and after a click that reaches
+/// the app as a semantics action (on the web with semantics on), until the
+/// next key.
+///
+/// `RawButton` and the other ui_core parts show their focus by it, and a
+/// look's own pressable on a [FocusableActionDetector] takes it too. The
+/// detector's [FocusableActionDetector.onShowFocusHighlight] follows
+/// Flutter's focus highlight mode, which a mouse leaves traditional, so a
+/// row a click focused, or one a click-opened menu gives the focus back to,
+/// keeps its ring after use. Give that callback to [focused], paint the
+/// focus by what [onChanged] hears, and [dispose] it with the part:
+///
+/// ```dart
+/// late final RawFocusShown _focus = RawFocusShown(
+///   (shown) => setState(() => _ring = shown),
+/// );
+///
+/// @override
+/// void dispose() {
+///   _focus.dispose();
+///   super.dispose();
+/// }
+///
+/// @override
+/// Widget build(BuildContext context) => FocusableActionDetector(
+///   onShowFocusHighlight: _focus.focused,
+///   child: DecoratedBox(
+///     decoration: BoxDecoration(border: _ring ? Border.all(width: 2) : null),
+///     child: widget.child,
+///   ),
+/// );
+/// ```
 class RawFocusShown {
   /// Tells [onChanged] whether the part shows its focus, hearing the input
   /// until [dispose].
@@ -299,7 +330,7 @@ class RawFocusShown {
 
   /// Whether the part has the focus Flutter would highlight: what a
   /// [FocusableActionDetector.onShowFocusHighlight] says, or a focus in the
-  /// traditional highlight mode.
+  /// traditional highlight mode. [onChanged] hears whether it shows.
   void focused(bool on) {
     if (on != _focused) {
       _focused = on;

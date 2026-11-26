@@ -1,10 +1,9 @@
-# ui_core's renames, which `dart fix` makes. The old names of the 0.4.0 rename table: ui_core 0.6.0 removed them but
-# DesignLocalizations (still a deprecated typedef, deprecated.dart), and a fix renames a removed name as it renames a
-# deprecated one. Then 0.6.0's: each Design* name it gave a Raw* name (deprecated.dart, and inventory.dart's own),
-# the functions and the extension among them. Each lists the ui_core library that exports it (ui_core.dart, or
-# inventory.dart for the inventory's) and the published looks' libraries that re-export it, as dart fix renames a name
-# only in a file that imports a listed library itself: it follows no re-export. Generated from the rename tables
-# (renames.json). Do not edit by hand.
+# ui_core's renames, which `dart fix` makes: the old names of the 0.4.0 rename table (removed in 0.6.0, but
+# DesignLocalizations, removed in 0.8.0), and each Design* name 0.6.0 gave a Raw* name (removed in 0.8.0), the functions
+# and the extension among them. A fix renames a removed name as it renames a deprecated one. Each lists the ui_core
+# library that exports it (ui_core.dart, or inventory.dart for the inventory's) and the published looks' libraries that
+# re-export it, as dart fix renames a name only in a file that imports a listed library itself: it follows no
+# re-export. Generated from the rename tables (renames.json). Do not edit by hand.
 version: 1
 transforms:
   - title: "Rename to 'DefaultRawWidgetsLocalizations'"

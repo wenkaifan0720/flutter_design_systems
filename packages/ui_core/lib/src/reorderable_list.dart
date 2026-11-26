@@ -10,7 +10,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
-import 'internal/focus_visible.dart';
 import 'localizations.dart';
 import 'pressable.dart';
 

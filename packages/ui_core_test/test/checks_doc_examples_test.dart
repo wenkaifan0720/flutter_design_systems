@@ -117,6 +117,77 @@ void _checks050(WidgetTester tester) {
   ).check(tester.element(find.byType(SignUpForm))).verify();
 }
 
+/// The app [DesignNavigationCheck]'s example pumps.
+class App extends StatelessWidget {
+  /// An app.
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}
+
+/// The look's status tones [DesignToneCheck]'s example reads.
+abstract final class ApplianceTones {
+  /// The tones of [palette] in [brightness].
+  static Map<String, Color> of(String palette, Brightness brightness) => {
+    'signal': const Color(0xFFEE6A26),
+    'ready': const Color(0xFF2E8540),
+  };
+}
+
+/// [DesignControlNodesCheck]'s and [DesignNavigationCheck]'s examples, run by
+/// node_check_test.dart's shapes.
+void _nodeChecks(WidgetTester tester) {
+  const DesignControlNodesCheck(look: 'Comic')
+      .check(tester.element(find.byType(SettingsScreen)))
+      .verify();
+  const DesignNavigationCheck(look: 'Comic')
+      .check(tester.element(find.byType(App)), destinations: ['Home', 'Mail'])
+      .verify();
+}
+
+/// The examples of the checks that read a package's texts and colours, run
+/// by package_check_test.dart's shapes: each a test of a look's own.
+void _packageChecks() {
+  const DesignToneCheck(look: 'Appliance').check([
+    for (final palette in ['warm', 'mint'])
+      for (final brightness in Brightness.values)
+        DesignToneSet(
+          palette: palette,
+          brightness: brightness,
+          tones: ApplianceTones.of(palette, brightness),
+        ),
+  ]).verify();
+  test('the docs speak to the people who use the package', () {
+    const DesignDocsCheck(look: 'Frosted').check({
+      for (final f in Directory('lib').listSync(recursive: true))
+        if (f is File && f.path.endsWith('.dart')) f.path: f.readAsStringSync(),
+    }).verify();
+  });
+  test('the README works as an adopter follows it', () async {
+    const check = DesignReadmeCheck(look: 'Frosted');
+    final readme = File('README.md').readAsStringSync();
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    check.check(readme, pubspec: pubspec).verify();
+    final dir = Directory('test/readme_blocks')..createSync();
+    addTearDown(() => dir.deleteSync(recursive: true));
+    for (final MapEntry(:key, :value) in check.libraries(readme).entries) {
+      File('${dir.path}/$key').writeAsStringSync(value);
+    }
+    final analysis = await Process.run('dart', ['analyze', dir.path]);
+    check.analysis('${analysis.stdout}').verify();
+  });
+  test('the example resolves from pub.dev alone', () {
+    const DesignExampleDepsCheck(look: 'Keycap')
+        .check(
+          File('example/pubspec.yaml').readAsStringSync(),
+          package: 'keycap_ui',
+          unpublished: {'ui_core_review'},
+        )
+        .verify();
+  });
+}
+
 /// [DesignFieldNodesCheck]'s example: it types, so field_nodes_check_test.dart
 /// runs it in its shape.
 Future<void> _fieldNodesCheck(WidgetTester tester) async {
@@ -272,6 +343,8 @@ const Set<String> _checksFiles = {
   'field_words_check.dart',
   'field_semantics_check.dart',
   'list_side_check.dart',
+  'node_check.dart',
+  'package_check.dart',
   'overflow_check.dart',
   'overlay_check.dart',
   'radio_group_check.dart',
@@ -298,6 +371,8 @@ void main() {
     expect(_nodeAndSideChecks, isNotNull);
     expect(_fieldNodesCheck, isNotNull);
     expect(_checks050, isNotNull);
+    expect(_nodeChecks, isNotNull);
+    expect(_packageChecks, isNotNull);
   });
 
   testDocExamples(

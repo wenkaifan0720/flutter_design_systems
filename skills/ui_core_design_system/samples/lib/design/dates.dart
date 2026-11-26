@@ -92,7 +92,7 @@ class _TendDateFieldState extends State<TendDateField> {
     final words = RawWidgetsLocalizations.of(context);
     final change = widget.onChanged;
     final value = widget.value;
-    final shown = value == null ? null : words.formatFullDate(value);
+    final shown = value == null ? null : words.formatMediumDate(value);
     return RawInputDecorator(
       labelText: widget.labelText,
       enabled: change != null,

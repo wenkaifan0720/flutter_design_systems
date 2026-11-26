@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'haptics.dart';
+import 'internal/row_actions.dart';
 import 'motion.dart';
 import 'pressable.dart';
 
@@ -610,11 +611,12 @@ class _RawSwipeActionsState extends State<RawSwipeActions>
   Widget build(BuildContext context) {
     final rtl = _rtl;
     final all = [...widget.startActions, ...widget.endActions];
-    // The row's own words and its actions as one node; the actions behind
-    // it, when open, are nodes of their own.
-    final row = MergeSemantics(
-      child: Semantics(
-        customSemanticsActions: {
+    // The actions on the row's own node (see RawSwipeActionsSemantics); a
+    // control in the row keeps its node, and the actions behind it, when
+    // open, are nodes of their own.
+    final row = RowActionsScope(
+      child: RowActions(
+        actions: {
           for (final a in all)
             CustomSemanticsAction(label: a.label): a.onPressed,
         },
@@ -698,6 +700,37 @@ class _RawSwipeActionsState extends State<RawSwipeActions>
 // below by its own height, more than any shadow an action casts. Its
 // approximate rect is the clip itself, so a reader of the paint clip (the
 // clipped-shadow check) sees where it cuts.
+/// Gives a [RawSwipeActions] row's actions to the semantics node a look's
+/// row forms of its own: the row's custom actions, which a screen reader
+/// offers on the row.
+///
+/// A row with no node of its own (words, a trailing button) needs none: the
+/// swipe row is its node, its words and its actions, and the button keeps
+/// its node. A row that is a [RawButton] needs none either: the button's
+/// node takes them. A look's row whose own `Semantics(container: true)`
+/// makes its node puts this inside that `Semantics`, round the row's
+/// content, so the row's words, its tap and its actions are one node and a
+/// trailing control in it keeps its own.
+///
+/// It takes them only when it is the row's whole content: between it and
+/// the [RawSwipeActions] each widget has one child (no `Row`, `Column` or
+/// `Stack`). One beside the row's words, round a trailing control, takes
+/// nothing.
+///
+/// ```dart
+/// RawSwipeActions(endActions: [RawSwipeAction(label: 'Delete', onPressed: () {})], actionBuilder: (context, action, details) => Text(action.label), child: Semantics(container: true, button: true, onTap: () {}, child: const RawSwipeActionsSemantics(child: Text('Message'))))
+/// ```
+class RawSwipeActionsSemantics extends StatelessWidget {
+  /// Gives the node it stands in the row's actions.
+  const RawSwipeActionsSemantics({super.key, required this.child});
+
+  /// The row's content, inside its node.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => RowActionsTarget(child: child);
+}
+
 class _AlongTheSwipe extends CustomClipper<Rect> {
   const _AlongTheSwipe();
 

@@ -168,6 +168,18 @@ const AccessibilityGuideline overflowGuideline = DesignCheckGuideline(
   run: _overflow,
 );
 
+/// Each control keeps a node of its own, a row's trailing control beside
+/// the row's own (`DesignControlNodesCheck`).
+const AccessibilityGuideline controlNodesGuideline = DesignCheckGuideline(
+  description:
+      'Each control keeps a node of its own that a tap through the semantics '
+      'tree reaches.',
+  run: _controlNodes,
+);
+
+DesignAlignmentReport _controlNodes(WidgetTester tester, BuildContext screen) =>
+    const DesignControlNodesCheck(look: 'Screen').check(screen);
+
 DesignAlignmentReport _overlay(WidgetTester tester, BuildContext screen) =>
     const DesignOverlayCheck(look: 'Screen').check(screen);
 

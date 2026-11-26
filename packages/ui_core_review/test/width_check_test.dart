@@ -2622,6 +2622,120 @@ void main() {
       expect(await _list(tester), _one('no list open from .*'));
     });
   });
+  group("a form's fields", () {
+    // A text entry's face, 40 high: its words 12 in from a ring.
+    Widget entry(TextEditingController controller, FocusNode focus) =>
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: _white,
+            border: Border.all(color: _line),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: EditableText(
+              controller: controller,
+              focusNode: focus,
+              style: const TextStyle(fontFamily: 'Roboto', fontSize: 14),
+              cursorColor: _ink,
+              backgroundCursorColor: _line,
+            ),
+          ),
+        );
+
+    // An "Add a book" form as a look lays it out at a desk: a title, a
+    // shelf, the day it was started and a filled strip of how far, each its
+    // column's width, [width] wide.
+    Widget form(WidgetTester tester, double width) {
+      final title = TextEditingController(text: 'Stoner');
+      addTearDown(title.dispose);
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      return Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          width: width,
+          child: _stack([
+            entry(title, focus),
+            _select('Fiction'),
+            _select('26 Nov 2026'),
+            _segments(['Want', 'Reading', 'Read'], fill: true),
+          ], gap: 16),
+        ),
+      );
+    }
+
+    testWidgets("a select, a date field and a filled strip take a form's "
+        'column, up to 720', (tester) async {
+      // Frosted's form at 1440: a 716 column.
+      await _pump(tester, form(tester, 716), width: 1440);
+      expect(await _widths(tester), isEmpty);
+    });
+
+    testWidgets("a form's column wider than its measure is named, field by "
+        'field', (tester) async {
+      await _pump(tester, form(tester, 1392), width: 1440);
+      expect(
+        await _widths(tester),
+        equals([
+          for (final what in [
+            'a select "Fiction"',
+            'a select "26 Nov 2026"',
+            'a segmented control "Want"',
+          ])
+            matches(
+              RegExp(
+                '^${RegExp.escape(what)}: a field of a form, 1392 px wide as '
+                r'laid out, 1392 as drawn \(a form keeps to 720 from 600 '
+                r'wide\)$',
+              ),
+            ),
+        ]),
+      );
+      // A look's own measure.
+      expect(
+        await _widths(
+          tester,
+          const DesignWidthCheck(look: 'Fixture', formWidth: 1400),
+        ),
+        isEmpty,
+      );
+    });
+
+    testWidgets('a select alone, with no field over or under it on its edges, '
+        'keeps to its content', (tester) async {
+      final title = TextEditingController(text: 'Stoner');
+      addTearDown(title.dispose);
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      await _pump(
+        tester,
+        Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: 716,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // A field above it, but on other edges: not its column.
+                Padding(
+                  padding: const EdgeInsets.only(right: 200),
+                  child: entry(title, focus),
+                ),
+                const SizedBox(height: 16),
+                _select('Fiction'),
+              ],
+            ),
+          ),
+        ),
+        width: 1440,
+      );
+      expect(
+        await _widths(tester),
+        _one(r'a select "Fiction": 716 px wide as laid out, 716 as drawn; .*'),
+      );
+    });
+  });
 }
 
 // Seams between twelve cells 40 wide, painted over the whole bank.

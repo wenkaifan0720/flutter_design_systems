@@ -3,12 +3,12 @@
 ui_core gives the design every behaviour a part needs and no paint. The
 design wraps each part's ui_core widget, reads the states it reports, and
 draws its own face for them. This page says how to wire each kind of part
-on ui_core 0.7.0, and ends with the API each kind of part is painted on.
+on ui_core 0.8.0, and ends with the API each kind of part is painted on.
 
 ui_core names its parts in Flutter's `Raw*` form, as Flutter names its
-unstyled widgets. Older `Design*` names stay through 0.6 as deprecated
-aliases, and `dart fix --apply` renames them; write new code with the
-`Raw*` names only.
+unstyled widgets. The older `Design*` names left in 0.8.0, and
+`dart fix --apply` still renames them; write new code with the `Raw*`
+names only.
 
 ## The builder pattern
 

@@ -42,7 +42,7 @@ Future<Garden> pumpTend(
 }
 
 /// What ui_core_test finds wrong on the screen showing now: roles, names,
-/// a field's words, tap targets (a finger's on a phone, a pointer's on a
+/// a field's words, controls sharing a node, tap targets (a finger's on a phone, a pointer's on a
 /// tablet's keyboard), cursors, and words cut, broken or overflowing.
 List<String> problemsOn(WidgetTester tester, {required bool touch}) {
   final screen = tester.element(find.byType(Navigator).first);
@@ -51,6 +51,7 @@ List<String> problemsOn(WidgetTester tester, {required bool touch}) {
       const DesignCheckableCheck(look: 'Tend').check(screen),
       const DesignTextFieldNameCheck(look: 'Tend').check(screen),
       const DesignFieldSemanticsCheck(look: 'Tend').check(screen),
+      const DesignControlNodesCheck(look: 'Tend').check(screen),
       DesignTapTargetCheck(
         look: 'Tend',
         input: touch ? RawInput.touch : RawInput.pointer,

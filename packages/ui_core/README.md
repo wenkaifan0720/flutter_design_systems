@@ -8,7 +8,7 @@ it, so an app that uses a look rarely imports it directly. Add it to build a loo
 
 ```yaml
 dependencies:
-  ui_core: ^0.7.2
+  ui_core: ^0.8.0
 ```
 
 ```dart
@@ -116,7 +116,7 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Side sheet | `RawSideSheetRoute` | |
 | Split button | `RawSplitButton` | |
 | Split view | `RawSplitView` | |
-| Swipe actions | `RawSwipeActions` | `Dismissible` |
+| Swipe actions | `RawSwipeActions`; `RawSwipeActionsSemantics` inside a row's own semantics node | `Dismissible` |
 | Tag input | `RawTagInput` | `InputChip` |
 | Toasts | `RawToaster` | `ScaffoldMessenger` |
 | A bar toasts keep clear of | `RawToasterKeepClear` | `Scaffold.bottomNavigationBar` |
@@ -135,7 +135,7 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Tabs | `RawTabController`, `RawTabBar`, `RawTabBarView`; `RawTabGroup<T>`, `RawTabGroupTab<T>` round tabs the caller lays out | `TabController`, `TabBar`, `TabBarView` |
 | A group's arrows (one tab stop) | `RawRovingFocusGroup`, `RawRovingFocusItem`, `RawRovingFocusIntent` | `RadioGroup`'s, `TabBar`'s |
 | Semantics-only proxies, by one type | `RenderSemanticsProxy`, a `RenderSemanticsAnnotations` | `RenderSemanticsAnnotations`, `RenderMergeSemantics` |
-| Adaptive shell | `RawAdaptiveShell`, `RawWindowSizeClass`, `RawNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
+| Adaptive shell (a bar, a rail, a sidebar or a header) | `RawAdaptiveShell`, `RawWindowSizeClass`, `RawNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
 | List and detail | `RawListDetail` | |
 | Wheel picker | `RawPicker`, `RawPickerColumn` | `CupertinoPicker` |
 | Dialog and sheet actions | `RawActionBar` | `OverflowBar` |
@@ -144,10 +144,91 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Rating | `RawRating` | (none) |
 | Charts | `RawChart`, `RawPieChart`, `RawChartTable`; `RawLinearScale`, `RawTimeScale`, `RawBandScale` | (none) |
 | Chips and tags under the touch floor | `RawChipGroup` | `Wrap` |
+| A look's named palettes, for an app's palette picker | `RawNamedPalette` | (none) |
 | A palette's colours (readable tones, a filled control's colour and ink, tinted grounds) | `RawPalette`, `RawAccentRule`, `RawNeutralTones`, `RawHct` | `ColorScheme.fromSeed` |
 
 They are built from `RawButton` (a press, focus, hover and semantics on any widget) and `RawValueHandle`
 (a value dragged or stepped with the keys). Each class's documentation has an example.
+
+## A look's app shell
+
+A look offers one app shell, on `RawAdaptiveShell.branches`, and paints all of its navigation through it at every
+width: a bar along the bottom of a phone, a rail or a sidebar at the start of a wider window, or a header across the
+top. The shell gives the destinations their keys (one tab stop, the arrows along them, F6 to the page), their
+meaning to a screen reader (tabs in a tab bar, or the navigation menu) and their place; the look paints each
+destination and lays them out. A phone bar built outside the shell loses all three. Each destination keeps its own
+stack of pages; a page pushed on one keeps the rail, sidebar or header beside it while the bar steps away
+(`hideBarOnPush`, or keep the bar under it as Cupertino's tab scaffold does), and back pops it. Toasts keep clear of
+the bar, and centre on the page beside a rail or a sidebar.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
+
+class InkAppShell extends StatefulWidget {
+  const InkAppShell({
+    super.key,
+    required this.destinations,
+    required this.branches,
+  });
+
+  final List<RawNavigationDestination> destinations;
+
+  /// Each destination's first page.
+  final List<WidgetBuilder> branches;
+
+  @override
+  State<InkAppShell> createState() => _InkAppShellState();
+}
+
+class _InkAppShellState extends State<InkAppShell> {
+  int _selected = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return RawAdaptiveShell.branches(
+      destinations: widget.destinations,
+      branches: widget.branches,
+      selectedIndex: _selected,
+      onDestinationSelected: (index) => setState(() => _selected = index),
+      // A bar under 600, a rail to 1024, a sidebar from there.
+      modeForWidth: (width) =>
+          RawNavigationMode.fromWidth(width, sidebar: 1024),
+      destinationBuilder: (context, destination, details) {
+        final selected = details.states.contains(WidgetState.selected);
+        return Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text(
+            destination.label,
+            style: TextStyle(
+              color: selected
+                  ? const Color(0xFF2563EB)
+                  : const Color(0xFF334155),
+            ),
+          ),
+        );
+      },
+      navigationBuilder: (context, details) => switch (details.mode) {
+        RawNavigationMode.bar || RawNavigationMode.top => SafeArea(
+          child: Row(
+            children: [
+              for (final destination in details.destinations)
+                Expanded(child: destination),
+            ],
+          ),
+        ),
+        RawNavigationMode.rail || RawNavigationMode.sidebar => SizedBox(
+          width: details.mode == RawNavigationMode.rail ? 80 : 240,
+          child: SafeArea(child: Column(children: details.destinations)),
+        ),
+      },
+    );
+  }
+}
+```
+
+A page pushes onto its own destination's stack with `Navigator.of(context).push`; a page pushed on the app's root
+navigator (`Navigator.of(context, rootNavigator: true)`) covers the whole shell, as a full-screen editor does.
 
 ## Flutter's conventions
 
@@ -170,6 +251,8 @@ The behaviours take what Flutter's own widgets take, under Flutter's names:
 ## Accessibility
 
 Controls expose their label, value, role and available actions to assistive technology. Keyboard navigation follows the reading direction. Use a builder’s `WidgetState` values to show focus, press, selection and disabled states. Motion follows the platform’s reduced-motion preference.
+
+A part shows its focus as a browser's `:focus-visible` decides: after a key, not after a press or a click, until the next key. A look's own pressable on a bare `FocusableActionDetector` shows it the same way through `RawFocusShown`, given the detector's `onShowFocusHighlight`; Flutter's highlight mode alone, which a mouse leaves traditional, keeps a ring on a row a click focused.
 
 ## Motion
 
@@ -203,6 +286,20 @@ which never reads it: on a Mac it plays the Cupertino slide. So a look exposes i
 `PageTransitionsBuilder`s, which fits both Materials' `PageTransitionsTheme`:
 
 ```dart
+/// The look's push: the page fades in over the one under it.
+class ComicPageTransitionsBuilder extends PageTransitionsBuilder {
+  const ComicPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => FadeTransition(opacity: animation, child: child);
+}
+
 const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
   TargetPlatform.android: ComicPageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round the look's push.
@@ -220,11 +317,13 @@ and pop play. `rawSwipeBack(map)` wraps a map's iOS entry the same way, for a ma
 Its example and its README put it in the app's `ThemeData`, Flutter's or material_ui's, whichever the app is on:
 
 ```dart
-MaterialApp(
+import 'package:material_ui/material_ui.dart';
+
+Widget comicApp({required Widget home}) => MaterialApp(
   theme: ThemeData(
     pageTransitionsTheme: const PageTransitionsTheme(builders: comicPageTransitions),
   ),
-  home: const ComicHome(),
+  home: home,
 );
 ```
 
@@ -272,21 +371,19 @@ pubspec):
 ```dart
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-MaterialApp(
-  localizationsDelegates: const [
-    RawWidgetsLocalizations.delegate,
-    ...GlobalMaterialLocalizations.delegates,
-  ],
-  supportedLocales: RawWidgetsLocalizations.supportedLocales,
-  // ...
-)
+const localizationsDelegates = [
+  RawWidgetsLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+];
+const supportedLocales = RawWidgetsLocalizations.supportedLocales;
 ```
 
-`GlobalMaterialLocalizations.delegates` holds the Material, Cupertino and Widgets delegates for your app's own
-Flutter widgets: without the Material one, a Material `TextField` under a language other than English asserts, and
-the Widgets one gives Arabic, Hebrew, Persian and Urdu their direction. A look supplies its own Material and
-Cupertino words in the app's language: it is drawn with `material_ui` and `cupertino_ui`, whose words are types of
-their own, and loads them itself. A locale ui_core does not speak gets English. For a language of your own, or
+Pass them to your app's `localizationsDelegates` and `supportedLocales` (`WidgetsApp`, `CupertinoApp` or
+`MaterialApp`). `GlobalWidgetsLocalizations` gives Arabic, Hebrew, Persian and Urdu their direction. A Material app
+adds `material_ui`'s `GlobalMaterialLocalizations.delegates` too (the Material, Cupertino and Widgets delegates for
+your app's own Flutter widgets), without which a Material `TextField` under a language other than English asserts.
+A look supplies its own Material and Cupertino words in the app's language: it is drawn with `material_ui` and
+`cupertino_ui`, whose words are types of their own, and loads them itself. A locale ui_core does not speak gets English. For a language of your own, or
 words of your own, extend `DefaultRawWidgetsLocalizations`, override the words you translate, and add a delegate for
 your subclass to `localizationsDelegates`; a word added in a later version then stays English until you
 translate it. A date or time picker's title (`datePickerHelpText`, `timePickerDialHelpText`) is read through
@@ -306,8 +403,63 @@ a charcoal, never brown. ui_core_test's `DesignContrastCheck.sweep` reads a scre
 most, by day and by night.
 
 ```dart
+const brand = Color(0xFF1B3A6B);
+const page = Color(0xFFFFFFFF);
+const panel = Color(0xFFF2F4F8);
 final words = RawPalette.readableTone(brand, on: [page, panel]);
 final button = RawPalette.accentFill(brand, brightness: Brightness.dark);
+```
+
+A look offers its palettes by name as `RawNamedPalette`s: an `id` the app stores, a `label` a picker shows, and a few
+swatches by day and by night. An app builds its own picker from them:
+
+```dart
+Widget paletteRow(RawNamedPalette palette, Brightness brightness) => Row(
+  children: [
+    for (final colour in palette.swatchesFor(brightness))
+      Padding(
+        padding: const EdgeInsetsDirectional.only(end: 4),
+        child: SizedBox.square(dimension: 16, child: ColoredBox(color: colour)),
+      ),
+    const SizedBox(width: 8),
+    Text(palette.label),
+  ],
+);
+```
+
+## A look's forms
+
+A form is one column of fields, and every field in it takes the column's width: a text entry, a select, a date field,
+a segmented choice and a slider's track all reach the column's edges, as Material's form fields do. A select or a date
+field hugs its value only on its own, in a toolbar or a filter row. The column keeps a measure (at most 720 wide on a
+screen 600 or wider) and one gap between its fields, on the look's spacing grid. Inside each field,
+`RawInputDecorator`'s builder places the label, the control and the help or the error under it, so the rhythm is the
+field's, not each screen's. `RawForm` and `RawFormField` validate any control as a `TextFormField` does, and
+`RawWidgetsLocalizations.formatMediumDate` shows a chosen day ("3 Mar 2025", with the year, in the locale's order)
+wherever a field or a list shows one.
+
+```dart
+import 'package:flutter/widgets.dart';
+
+/// The column a form's fields stand in, each at the column's width.
+class InkFormColumn extends StatelessWidget {
+  const InkFormColumn({super.key, required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.topStart,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 720),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 16,
+        children: children,
+      ),
+    ),
+  );
+}
 ```
 
 ## Tap targets, density and spacing

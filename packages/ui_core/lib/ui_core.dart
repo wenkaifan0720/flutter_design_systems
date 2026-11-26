@@ -60,4 +60,3 @@ export 'src/toggle_group.dart';
 export 'src/tree.dart';
 export 'src/value_handle.dart';
 export 'src/wheel_picker.dart';
-export 'src/deprecated.dart';

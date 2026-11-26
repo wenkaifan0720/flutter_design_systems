@@ -1,7 +1,7 @@
 /// An app's frame, headless, adapting to its width: a bar of destinations
 /// along the bottom of a phone, a rail at the start edge of a tablet, a
-/// sidebar on a desktop (Material's window size classes), the body beside
-/// or above it. The destinations are one tab stop, the arrows moving along
+/// sidebar on a desktop (Material's window size classes), or a header
+/// across the top of a wide window, the body beside, above or below it. The destinations are one tab stop, the arrows moving along
 /// them; F6 moves focus between the navigation and the body. Given each
 /// destination's root page ([RawAdaptiveShell.branches]), each keeps its
 /// own stack, and back pops the selected one.
@@ -66,16 +66,41 @@ enum RawNavigationMode {
   rail,
 
   /// A sidebar at the start edge (large and up).
-  sidebar;
+  sidebar,
 
-  /// The mode for a shell [width] wide.
-  static RawNavigationMode fromWidth(double width) =>
-      switch (RawWindowSizeClass.fromWidth(width)) {
-        RawWindowSizeClass.compact => bar,
-        RawWindowSizeClass.medium || RawWindowSizeClass.expanded => rail,
-        _ => sidebar,
-      };
+  /// A header across the top, the destinations in a row (a masthead's
+  /// links, a menu bar's places): no window size class of its own; a look
+  /// chooses it for the widths it wants it at
+  /// ([RawAdaptiveShell.modeForWidth]).
+  top;
+
+  /// The mode for a shell [width] wide: a bar under [rail], a rail from
+  /// [rail] and a sidebar from [sidebar]. The defaults are Material's
+  /// window size classes (600 and 1200).
+  ///
+  /// ```dart
+  /// RawNavigationMode.fromWidth(900, sidebar: 840)
+  /// ```
+  static RawNavigationMode fromWidth(
+    double width, {
+    double rail = 600,
+    double sidebar = 1200,
+  }) {
+    assert(rail <= sidebar, 'a rail comes before a sidebar');
+    return width < rail
+        ? RawNavigationMode.bar
+        : width < sidebar
+        ? RawNavigationMode.rail
+        : RawNavigationMode.sidebar;
+  }
+
+  /// Whether the destinations run in a row: a bar's or a header's, a tab
+  /// bar to a screen reader.
+  bool get isHorizontal => this == bar || this == top;
 }
+
+/// Picks the mode for a shell [width] wide.
+typedef RawNavigationModeForWidth = RawNavigationMode Function(double width);
 
 /// A destination: its name and glyphs, as Material's NavigationDestination.
 @immutable
@@ -140,6 +165,7 @@ class RawNavigationDetails {
     required this.destinations,
     required this.selectedIndex,
     required this.visibility,
+    this.pushed = false,
   });
 
   /// A bar, a rail or a sidebar.
@@ -154,25 +180,31 @@ class RawNavigationDetails {
   final int selectedIndex;
 
   /// How far the bar is shown, on the shell's spring, as
-  /// [RawAdaptiveShell.showNavigation] changes: 1 shown, 0 gone. An
+  /// [RawAdaptiveShell.showNavigation] changes and as a page is pushed and
+  /// popped ([RawAdaptiveShell.hideBarOnPush]): 1 shown, 0 gone. An
   /// underdamped spring runs past either; clamp it before an opacity.
   final Animation<double> visibility;
 
-  /// [destinations], laid out by the look, as one group: in a bar a screen
-  /// reader hears it as the tab bar, the destinations its tabs. A tab bar
-  /// holds tabs and nothing else (Flutter fails one that holds anything
-  /// else), so a look whose bar holds more than the destinations (an action
-  /// beside them, a compose button) places this round the destinations
-  /// alone, the action outside it. Without it the shell takes the whole bar
-  /// for the tab bar. In a rail or a sidebar it adds nothing.
-  Widget group(Widget destinations) => _DestinationGroup(
-    bar: mode == RawNavigationMode.bar,
-    child: destinations,
-  );
+  /// Whether the selected branch has a page over its root
+  /// ([RawAdaptiveShell.branches]); always false over a [RawAdaptiveShell]'s
+  /// own body.
+  final bool pushed;
+
+  /// [destinations], laid out by the look, as one group: in a bar or a
+  /// header a screen reader hears it as the tab bar, the destinations its
+  /// tabs. A tab bar holds tabs and nothing else (Flutter fails one that
+  /// holds anything else), so a look whose bar or header holds more than the
+  /// destinations (an action beside them, a compose button, the app's name)
+  /// places this round the destinations alone, the rest outside it. Without
+  /// it the shell takes the whole bar for the tab bar. In a rail or a sidebar
+  /// it adds nothing.
+  Widget group(Widget destinations) =>
+      _DestinationGroup(bar: mode.isHorizontal, child: destinations);
 }
 
-// The navigation's node: a sidebar's named; a bar's the tab bar, unless
-// the look placed a [_DestinationGroup] round its destinations in it.
+// The navigation's node: a sidebar's named; a bar's or a header's the tab
+// bar, unless the look placed a [_DestinationGroup] round its destinations
+// in it.
 class _NavigationNode extends SingleChildRenderObjectWidget {
   const _NavigationNode({
     required this.bar,
@@ -336,26 +368,59 @@ enum RawBranchBackBehavior {
   none,
 }
 
-/// An app's frame: [destinations] in a bar, a rail or a sidebar by the
-/// shell's width ([RawNavigationMode.fromWidth], or [mode]), and the
-/// app's [body] beside it (above a bar). The look paints each destination
-/// ([destinationBuilder]) and the navigation round them
+/// An app's frame: [destinations] in a bar, a rail, a sidebar or a header
+/// by the shell's width ([modeForWidth], or [mode]), and the app's [body]
+/// beside it (above a bar, below a header). The look paints each
+/// destination ([destinationBuilder]) and the navigation round them
 /// ([navigationBuilder]); the shell gives them their keys, their meaning
 /// to a screen reader and their place.
 ///
 /// The destinations are one tab stop, on the selected one; the arrows along
-/// them move focus (mirrored right to left; Up and Down in a rail or a
-/// sidebar), wrapping, Home and End to the ends, disabled ones skipped;
-/// Enter or Space chooses, as switching a destination is heavy. F6 (Shift+F6
-/// back) moves focus between the navigation and the body, and the panes
-/// inside it ([RawListDetail]'s list and detail, a shown toaster's toasts).
-/// A screen reader hears each destination as a tab, selected or not, and its
-/// place ("Tab 1 of 3"); a bar is a tab bar (its destinations alone, when
-/// the look places [RawNavigationDetails.group] round them), a sidebar is
-/// named "Navigation menu".
+/// them move focus (Left and Right in a bar or a header, mirrored right to
+/// left; Up and Down in a rail or a sidebar), wrapping, Home and End to the
+/// ends, disabled ones skipped; Enter or Space chooses, as switching a
+/// destination is heavy. F6 (Shift+F6 back) moves focus between the
+/// navigation and the body, and the panes inside it ([RawListDetail]'s list
+/// and detail, a shown toaster's toasts). A screen reader hears each
+/// destination as a tab, selected or not, and its place ("Tab 1 of 3"); a
+/// bar or a header is a tab bar (its destinations alone, when the look
+/// places [RawNavigationDetails.group] round them), a sidebar is named
+/// "Navigation menu". The body is a semantics node of its own, so a page
+/// pushed in it covers the pages under it and never the navigation.
 ///
 /// [body] is the app's: an `IndexedStack` of its own, or go_router's
-/// `StatefulNavigationShell`.
+/// `StatefulNavigationShell`. [RawAdaptiveShell.branches] keeps a stack per
+/// destination itself.
+///
+/// A look builds its app shell (its `<Look>AppShell`) on
+/// [RawAdaptiveShell.branches], and paints all of its navigation through it,
+/// at every width:
+///
+/// * [destinationBuilder] paints one destination from its
+///   [RawDestinationDetails]: its states ([WidgetState.selected] while it is
+///   the selected one, hovered, pressed, focused) and the mode it shows in.
+/// * [navigationBuilder] lays the built destinations out for
+///   [RawNavigationDetails.mode]: a row in a bar or a header, a column in a
+///   rail or a sidebar, with the look's own parts round them (the app's
+///   name, an action). Beside anything else in a bar or a header, put
+///   [RawNavigationDetails.group] round the destinations alone.
+/// * A phone bar built outside the shell is not the shell's: it loses the
+///   tab bar, the selected state and the keys. The shell paints the bar too.
+/// * [modeForWidth] sets the look's widths:
+///   `(width) => RawNavigationMode.fromWidth(width, sidebar: 1024)`, or a
+///   header from 600 up:
+///   `(width) => width < 600 ? RawNavigationMode.bar : RawNavigationMode.top`.
+/// * With [hideBarOnPush] (the default) a page pushed on a branch takes the
+///   bar's room as the bar springs away, and the bar comes back as it pops;
+///   a rail, a sidebar or a header stays beside the page. Turned off, the
+///   bar stays under pushed pages, as Cupertino's tab scaffold keeps its tab
+///   bar.
+/// * The bar keeps toasts above it, a header below it, and a rail or a
+///   sidebar beside it, so they centre on the page ([RawToasterKeepClear]);
+///   a popover prefers the side of its anchor clear of the bar.
+/// * [navigatorKeys] push onto a branch from outside (a notification
+///   opening a detail); a page pushed on the app's own navigator covers the
+///   whole shell (a full-screen editor).
 ///
 /// ```dart
 /// RawAdaptiveShell(destinations: const [RawNavigationDestination(label: 'Home', icon: IconData(0xe318)), RawNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), body: const Text('Home'))
@@ -371,12 +436,14 @@ class RawAdaptiveShell extends StatefulWidget {
     required this.navigationBuilder,
     required Widget this.body,
     this.mode,
+    this.modeForWidth,
     this.showNavigation = true,
     this.dampingRatio = 1,
     this.stiffness = 700,
   }) : branches = null,
        navigatorKeys = null,
        backBehavior = RawBranchBackBehavior.firstDestination,
+       hideBarOnPush = false,
        assert(dampingRatio > 0 && stiffness > 0);
 
   /// A shell whose body is one [Navigator] per destination, each starting
@@ -384,6 +451,8 @@ class RawAdaptiveShell extends StatefulWidget {
   /// keeps its own stack. Choosing the selected destination again pops it
   /// to its root. Back (Android's, Escape's route pop) pops the selected
   /// branch, then at its root goes where [backBehavior] says, then leaves.
+  /// While the selected branch has a page over its root the bar steps away
+  /// ([hideBarOnPush]).
   ///
   /// ```dart
   /// RawAdaptiveShell.branches(destinations: const [RawNavigationDestination(label: 'Home', icon: IconData(0xe318)), RawNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), branches: [(context) => const Text('Home'), (context) => const Text('Mail')])
@@ -398,7 +467,9 @@ class RawAdaptiveShell extends StatefulWidget {
     required List<WidgetBuilder> this.branches,
     this.navigatorKeys,
     this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
     this.mode,
+    this.modeForWidth,
     this.showNavigation = true,
     this.dampingRatio = 1,
     this.stiffness = 700,
@@ -434,11 +505,28 @@ class RawAdaptiveShell extends StatefulWidget {
   /// Where back goes from a branch at its root page.
   final RawBranchBackBehavior backBehavior;
 
-  /// How the destinations show; null: by the shell's width.
+  /// Whether the bar steps away while the selected branch has a page over
+  /// its root ([RawAdaptiveShell.branches]; a rail, a sidebar or a header
+  /// stays). False keeps the bar under pushed pages, as Cupertino's tab
+  /// scaffold does. Always false over the app's own [body], which says so
+  /// through [showNavigation].
+  final bool hideBarOnPush;
+
+  /// How the destinations show at every width; null: by the shell's width
+  /// ([modeForWidth]).
   final RawNavigationMode? mode;
 
-  /// Whether the bar shows: false while a page is pushed over a root, and the
-  /// bar springs away (a rail or a sidebar stays).
+  /// The mode for the shell's width, from its own constraints (the window's
+  /// width when they are unbounded); null: [RawNavigationMode.fromWidth],
+  /// Material's window size classes.
+  ///
+  /// ```dart
+  /// RawAdaptiveShell(modeForWidth: (width) => width < 600 ? RawNavigationMode.bar : RawNavigationMode.top, destinations: const [RawNavigationDestination(label: 'Home', icon: IconData(0xe318)), RawNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), body: const Text('Home'))
+  /// ```
+  final RawNavigationModeForWidth? modeForWidth;
+
+  /// Whether the bar shows: false while a page of the app's own is over a
+  /// root, and the bar springs away (a rail, a sidebar or a header stays).
   final bool showNavigation;
 
   /// The bar's spring damping ratio (ζ). Defaults to 1.
@@ -493,7 +581,20 @@ class RawAdaptiveShell extends StatefulWidget {
           defaultValue: RawBranchBackBehavior.firstDestination,
         ),
       )
+      ..add(
+        FlagProperty(
+          'hideBarOnPush',
+          value: hideBarOnPush,
+          ifTrue: 'bar hidden on push',
+        ),
+      )
       ..add(EnumProperty<RawNavigationMode>('mode', mode, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<RawNavigationModeForWidth>.has(
+          'modeForWidth',
+          modeForWidth,
+        ),
+      )
       ..add(
         FlagProperty(
           'showNavigation',
@@ -517,6 +618,8 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
     vsync: this,
     value: widget.showNavigation ? 1 : 0,
   );
+  // Where the bar's spring is going: shown or not.
+  late bool _barShown = widget.showNavigation;
 
   // The branches built so far, their own navigators' keys, and whether each
   // has a page over its root.
@@ -528,22 +631,33 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
   final List<int> _history = [];
   bool _goingBack = false;
 
+  // Whether the selected branch has a page over its root.
+  bool get _pushed =>
+      widget.branches != null && (_deep[widget.selectedIndex] ?? false);
+
+  // Springs the bar in or away as [RawAdaptiveShell.showNavigation] and a
+  // page pushed on the selected branch say.
+  void _syncBar() {
+    final shown = widget.showNavigation && !(widget.hideBarOnPush && _pushed);
+    if (shown == _barShown) return;
+    _barShown = shown;
+    _visibility.animateWith(
+      rawSpringSimulation(
+        RawMotionPolicy.of(context).spatial(
+          dampingRatio: widget.dampingRatio,
+          stiffness: widget.stiffness,
+        ),
+        from: _visibility.value,
+        to: shown ? 1 : 0,
+        velocity: _visibility.velocity,
+      ),
+    );
+  }
+
   @override
   void didUpdateWidget(RawAdaptiveShell oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.showNavigation != widget.showNavigation) {
-      _visibility.animateWith(
-        rawSpringSimulation(
-          RawMotionPolicy.of(context).spatial(
-            dampingRatio: widget.dampingRatio,
-            stiffness: widget.stiffness,
-          ),
-          from: _visibility.value,
-          to: widget.showNavigation ? 1 : 0,
-          velocity: _visibility.velocity,
-        ),
-      );
-    }
+    _syncBar();
     if (oldWidget.selectedIndex != widget.selectedIndex) {
       if (!_goingBack && widget.backBehavior == RawBranchBackBehavior.history) {
         _history
@@ -598,7 +712,7 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
       event,
       from: i,
       count: widget.destinations.length,
-      axis: mode == RawNavigationMode.bar ? Axis.horizontal : Axis.vertical,
+      axis: mode.isHorizontal ? Axis.horizontal : Axis.vertical,
       textDirection: Directionality.of(context),
       enabled: _enabled,
     );
@@ -642,7 +756,9 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
   void _branchDepth(int i, bool deep) {
     if ((_deep[i] ?? false) == deep) return;
     void set() {
-      if (mounted) setState(() => _deep[i] = deep);
+      if (!mounted) return;
+      setState(() => _deep[i] = deep);
+      _syncBar();
     }
 
     // A navigator says so as it builds: the shell hears after the frame.
@@ -714,10 +830,8 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
         final width = constraints.hasBoundedWidth
             ? constraints.maxWidth
             : MediaQuery.sizeOf(context).width;
-        return _build(
-          context,
-          widget.mode ?? RawNavigationMode.fromWidth(width),
-        );
+        final modeFor = widget.modeForWidth ?? RawNavigationMode.fromWidth;
+        return _build(context, widget.mode ?? modeFor(width));
       },
     );
   }
@@ -757,7 +871,9 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
         ),
     ];
     final bar = mode == RawNavigationMode.bar;
-    final hidden = bar && !widget.showNavigation;
+    final top = mode == RawNavigationMode.top;
+    final side = !mode.isHorizontal;
+    final hidden = bar && !_barShown;
     Widget navigation = widget.navigationBuilder(
       context,
       RawNavigationDetails(
@@ -765,12 +881,13 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
         destinations: destinations,
         selectedIndex: widget.selectedIndex,
         visibility: _visibility.view,
+        pushed: _pushed,
       ),
     );
-    // A bar is a tab bar (or its destinations are, the look's group round
-    // them); a sidebar is the navigation menu.
+    // A bar or a header is a tab bar (or its destinations are, the look's
+    // group round them); a sidebar is the navigation menu.
     navigation = _NavigationNode(
-      bar: bar,
+      bar: mode.isHorizontal,
       label: mode == RawNavigationMode.sidebar ? words.drawerLabel : null,
       child: navigation,
     );
@@ -785,39 +902,60 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
       ),
     );
     // A bar keeps the toasts above it, as Material's Scaffold keeps a
-    // snackbar above its bottomNavigationBar. A rail or a sidebar keeps
-    // none, whatever stands above or below it: under an app's top bar it
-    // reaches the bottom edge alone, and is still no bar.
-    if (bar) navigation = RawToasterKeepClear(child: navigation);
+    // snackbar above its bottomNavigationBar; a header keeps them below it;
+    // a rail or a sidebar beside it, whatever stands above or below it, so
+    // they centre on the body.
+    navigation = RawToasterKeepClear(
+      edge: switch (mode) {
+        RawNavigationMode.bar => null,
+        RawNavigationMode.top => RawKeepClearEdge.top,
+        RawNavigationMode.rail ||
+        RawNavigationMode.sidebar => RawKeepClearEdge.start,
+      },
+      child: navigation,
+    );
     final branches = widget.branches;
     Widget body = branches == null ? widget.body! : _branches(branches);
+    // A node of its own: a route pushed in the body blocks the nodes painted
+    // before it in its container (the pages under it), and the navigation,
+    // painted before it beside it or above it, is in another.
+    body = Semantics(container: true, explicitChildNodes: true, child: body);
     body = Pane(
       key: _body,
       debugLabel: 'RawAdaptiveShell body',
       child: MediaQuery.removePadding(
         context: context,
         // The navigation takes the safe inset on its side.
-        removeBottom: bar && widget.showNavigation,
-        removeLeft: !bar && !rtl,
-        removeRight: !bar && rtl,
+        removeBottom: bar && _barShown,
+        removeTop: top,
+        removeLeft: side && !rtl,
+        removeRight: side && rtl,
         child: body,
       ),
     );
-    final Widget frame = bar
-        ? CustomMultiChildLayout(
-            delegate: _BarLayout(_visibility),
-            children: [
-              LayoutId(id: _BarSlot.body, child: body),
-              LayoutId(id: _BarSlot.bar, child: navigation),
-            ],
-          )
-        : Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              navigation,
-              Expanded(child: body),
-            ],
-          );
+    final Widget frame = switch (mode) {
+      RawNavigationMode.bar => CustomMultiChildLayout(
+        delegate: _BarLayout(_visibility),
+        children: [
+          LayoutId(id: _BarSlot.body, child: body),
+          LayoutId(id: _BarSlot.bar, child: navigation),
+        ],
+      ),
+      RawNavigationMode.top => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          navigation,
+          Expanded(child: body),
+        ],
+      ),
+      RawNavigationMode.rail || RawNavigationMode.sidebar => Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          navigation,
+          Expanded(child: body),
+        ],
+      ),
+    };
     return PaneCycle(child: frame);
   }
 }

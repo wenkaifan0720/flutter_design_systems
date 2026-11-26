@@ -24,7 +24,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/focus_visible.dart';
+import 'internal/row_actions.dart';
 import 'semantics_proxy.dart';
+
+// A look's own pressable shows its focus as ui_core's parts do.
+export 'internal/focus_visible.dart' show RawFocusShown;
 
 /// Builds a pressable's face for its current [states] (hovered, focused,
 /// pressed, disabled, selected, error). [child] is the pressable's own
@@ -705,7 +709,11 @@ class RawButtonState extends State<RawButton> {
           ? _press
           : _wait,
       onLongPress: presses && enabled ? widget.onLongPress : null,
-      child: node,
+      // A button that is a swipe row's whole content offers the row's
+      // actions on its own node.
+      child: RowActionsScope.isIn(context)
+          ? RowActionsTarget(child: node)
+          : node,
     );
     return widget.excludeSemantics ? node : MergeSemantics(child: node);
   }

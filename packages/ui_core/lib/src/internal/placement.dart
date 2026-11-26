@@ -84,6 +84,43 @@ RawPopoverSide rawResolveSide(
   return room < needs && other > room ? side.opposite : side;
 }
 
+/// The bounds a surface keeps to: [clear] (the bounds less the parts a
+/// toaster keeps clear along the top and the bottom, a tab bar or a page's
+/// foot) when a side of [anchor] there holds what the surface needs, as
+/// [rawResolveSide] reckons it; else [bounds], where it may cover them. A
+/// surface that does not shrink needs its measured [extent]; unmeasured, it
+/// keeps to [bounds] until it is.
+Rect rawResolveBounds(
+  Rect anchor,
+  Rect bounds,
+  Rect? clear,
+  RawPopoverPlacement placement,
+  TextDirection textDirection, {
+  double? extent,
+}) {
+  if (clear == null || !placement.flip) return bounds;
+  final double needs;
+  if (placement.fit == RawPopoverFit.whole) {
+    if (extent == null) return bounds;
+    needs = extent;
+  } else {
+    needs = extent == null
+        ? placement.preferredExtent
+        : math.min(extent, placement.preferredExtent);
+  }
+  final gap = placement.gap;
+  final side = placement.side;
+  final room = rawOverlayRoom(anchor, clear, side, gap, textDirection);
+  final other = rawOverlayRoom(
+    anchor,
+    clear,
+    side.opposite,
+    gap,
+    textDirection,
+  );
+  return room >= needs || other >= needs ? clear : bounds;
+}
+
 /// The side whose room is the larger: where a surface is measured, as it
 /// is laid out there when it flips.
 RawPopoverSide rawRoomierSide(
@@ -234,6 +271,8 @@ class RawOverlayLayout extends SingleChildLayoutDelegate {
     required this.maxSize,
     this.placed,
     this.placeAt,
+    this.outer,
+    this.clear,
   });
 
   /// The anchor's rectangle (a point for a surface opened at one).
@@ -241,6 +280,13 @@ class RawOverlayLayout extends SingleChildLayoutDelegate {
 
   /// What the surface keeps to.
   final Rect bounds;
+
+  /// The bounds without the parts kept clear ([rawResolveBounds]); null:
+  /// [bounds].
+  final Rect? outer;
+
+  /// The bounds less the parts kept clear; null when there are none.
+  final Rect? clear;
 
   /// The side it takes.
   final RawPopoverSide side;
@@ -308,6 +354,8 @@ class RawOverlayLayout extends SingleChildLayoutDelegate {
   bool shouldRelayout(RawOverlayLayout oldDelegate) =>
       anchor != oldDelegate.anchor ||
       bounds != oldDelegate.bounds ||
+      outer != oldDelegate.outer ||
+      clear != oldDelegate.clear ||
       side != oldDelegate.side ||
       placement != oldDelegate.placement ||
       textDirection != oldDelegate.textDirection ||
@@ -380,24 +428,26 @@ class _RenderOverlayPlace extends RenderShiftedBox {
     final layout = _layout;
     final placement = layout.placement;
     double? extent;
+    final outer = layout.outer ?? layout.bounds;
     if (placement.flip) {
       final roomier = rawRoomierSide(
         layout.anchor,
-        layout.bounds,
+        outer,
         layout.side,
         placement.gap,
         layout.textDirection,
       );
-      if (roomier != layout.side) {
+      // Measured in the larger room, past the parts kept clear.
+      if (roomier != layout.side || outer != layout.bounds) {
         final measure = RawOverlayLayout(
           anchor: layout.anchor,
-          bounds: layout.bounds,
+          bounds: outer,
           side: roomier,
           placement: placement,
           textDirection: layout.textDirection,
           maxSize: rawOverlayMaxSize(
             layout.anchor,
-            layout.bounds,
+            outer,
             roomier,
             placement.gap,
             layout.textDirection,
@@ -417,14 +467,22 @@ class _RenderOverlayPlace extends RenderShiftedBox {
     if (placement.flip) {
       // On the larger side, the layout itself measured it.
       extent ??= _extentOf(child.size, layout.side);
-      final side = rawResolveSide(
+      final bounds = rawResolveBounds(
         layout.anchor,
-        layout.bounds,
+        outer,
+        layout.clear,
         placement,
         layout.textDirection,
         extent: extent,
       );
-      _wrongSide = side != layout.side;
+      final side = rawResolveSide(
+        layout.anchor,
+        bounds,
+        placement,
+        layout.textDirection,
+        extent: extent,
+      );
+      _wrongSide = side != layout.side || bounds != layout.bounds;
       onExtent?.call(extent, _wrongSide);
     } else {
       _wrongSide = false;

@@ -217,4 +217,16 @@ void main() {
     expect(_problems(tester), isEmpty);
     semantics.dispose();
   });
+
+  testWidgets("a select named as its field, beside the field's label: the "
+      'label is read twice', (tester) async {
+    for (final merge in [null, false]) {
+      await tester.pumpWidget(
+        _field('Date started', _part('Date started'), merge: merge),
+      );
+      expect(_problems(tester), [
+        'a field "Date started": its label is read 2 times',
+      ], reason: 'merge: $merge');
+    }
+  });
 }

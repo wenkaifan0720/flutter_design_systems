@@ -394,7 +394,7 @@ class _MailAppState extends State<_MailApp> {
         ),
         child: SafeArea(
           child: switch (details.mode) {
-            RawNavigationMode.bar => Row(
+            RawNavigationMode.bar || RawNavigationMode.top => Row(
               children: [
                 for (final d in details.destinations) Expanded(child: d),
               ],

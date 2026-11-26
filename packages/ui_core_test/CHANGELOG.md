@@ -1,3 +1,15 @@
+## 0.6.0
+
+- **Breaking:** needs ui_core 0.8.0.
+- `DesignControlNodesCheck`: each control keeps a node of its own. Two controls that come to one node, such as a list row's trailing "more" button merged into the row's node, are named: a tap through the semantics tree reaches one of them, and the row's own tap runs in the other's place. A checkbox, radio or switch merged into its row is one control with it, as Flutter's `CheckboxListTile` is; a field's controls are `DesignFieldSemanticsCheck`'s. `controlNodesGuideline` offers it as a guideline.
+- `DesignNavigationCheck`: with a page pushed in the body, each named destination of the navigation is still in the semantics tree and takes a tap. A rail or a sidebar painted before the body's navigator drops out under the pushed page's barrier, though it shows; a shell on `RawAdaptiveShell` keeps it.
+- `DesignFieldSemanticsCheck` reads a field's one control named as the field (a select, a date's button) beside the label's own words as reading the label twice, whether or not the field merges them. It took any button's name as the button's own; a button beside the field's control, as a search field's Search, still is.
+- `DesignToneCheck`: a look's status tones stand apart in each palette, by day and by night, at least 24 apart in HCT (tone and chroma along the hue as one line): Appliance's Mint signal and ready lamp, two greens 23 apart, are named.
+- `DesignDocsCheck`: a package's docs carry none of the words of the design its look was drawn from (a style sheet's class, "DERIVED", "the source's", "decision 14"), and each public type opens with a plain sentence.
+- `DesignReadmeCheck`: a README's install line takes the package's version, its Dart blocks import only what its install lines add (and not Flutter's Material or Cupertino library, which Flutter deprecates for `material_ui` and `cupertino_ui`), and each block compiles: `libraries` gives each block as a library to analyse, `analysis` reads the analyser's errors.
+- `DesignExampleDepsCheck`: an example resolves from pub.dev alone: no path (the package's own aside), git or override, and nothing pub.dev does not serve.
+- The README's install line asks for this version.
+
 ## 0.5.3
 
 - `DesignFaceInsetCheck` reads a face its own painter draws only a little off what is round it (a plate a few levels off its page, by day or by night, its rim shaded back to the page's colour, or outlined in a tone near it) to the edges of the box it draws, not to the stronger ink drawn on it (a chevron, an avatar's ball, a checkbox's key). It read that ink as the face, so words well inside the face were named as at its edge. The ink a label's letters draw past their line's box (a script's marks and tails, an italic's overhang) is the label's, not a face's.

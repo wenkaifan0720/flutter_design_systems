@@ -5,7 +5,7 @@ A design made of a physical material, where every state must stay true to it.
 ## The brief, as given to the agent
 
 > Build `steep`, a Flutter app for brewing tea and keeping a tasting
-> journal, with a design of its own on ui_core ^0.7.0, made of glazed
+> journal, with a design of its own on ui_core ^0.8.0, made of glazed
 > porcelain: white bodies with a soft glaze highlight, cobalt blue painted
 > lines and fills, parts that sit slightly raised from a matt bisque ground,
 > gentle rounded edges. Light falls from the top start; glaze catches it. By

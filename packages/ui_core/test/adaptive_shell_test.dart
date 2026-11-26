@@ -54,6 +54,13 @@ Widget _navigationOf(BuildContext context, RawNavigationDetails details) {
       width: 240,
       child: Column(children: details.destinations),
     ),
+    RawNavigationMode.top => SizedBox(
+      key: const ValueKey('nav'),
+      height: 56,
+      child: Row(
+        children: [for (final d in details.destinations) Expanded(child: d)],
+      ),
+    ),
   };
 }
 
@@ -85,6 +92,7 @@ class _Host extends StatefulWidget {
     this.branches = false,
     this.backBehavior = RawBranchBackBehavior.firstDestination,
     this.navigatorKeys,
+    this.hideBarOnPush = true,
   });
 
   final RawNavigationMode? mode;
@@ -93,6 +101,7 @@ class _Host extends StatefulWidget {
   final bool branches;
   final RawBranchBackBehavior backBehavior;
   final List<GlobalKey<NavigatorState>>? navigatorKeys;
+  final bool hideBarOnPush;
 
   @override
   State<_Host> createState() => _HostState();
@@ -135,6 +144,7 @@ class _HostState extends State<_Host> {
         showNavigation: show,
         backBehavior: widget.backBehavior,
         navigatorKeys: widget.navigatorKeys,
+        hideBarOnPush: widget.hideBarOnPush,
         branches: [
           for (final d in _destinations)
             (context) {
@@ -536,8 +546,15 @@ void main() {
     testWidgets('each keeps its own stack, built when first shown', (
       tester,
     ) async {
+      // The bar stays under a pushed page, to choose another branch there.
       await tester.pumpWidget(
-        harness(const _Host(mode: RawNavigationMode.bar, branches: true)),
+        harness(
+          const _Host(
+            mode: RawNavigationMode.bar,
+            branches: true,
+            hideBarOnPush: false,
+          ),
+        ),
       );
       expect(_branchBuilds.toSet(), {'Home'});
       unawaited((await navigator(tester, 'Home')).push(page('Home')));
@@ -796,11 +813,10 @@ void main() {
     expect(toast().bottom, moreOrLessEquals(bar.top - 16), reason: 'back');
   });
 
-  testWidgets('a rail or a sidebar keeps no toast clear, edge to edge, under '
-      'a top bar or over a status line; a bar under a top bar still does, as '
-      'Scaffold keeps a snackbar above its bottomNavigationBar alone', (
-    tester,
-  ) async {
+  testWidgets('a rail or a sidebar keeps the toasts beside it and never above '
+      'or below it, edge to edge, under a top bar or over a status line; a bar '
+      'under a top bar keeps them above it, as Scaffold keeps a snackbar above '
+      'its bottomNavigationBar alone', (tester) async {
     final toaster = GlobalKey<RawToasterState>();
     Widget app({
       bool topBar = false,
@@ -906,6 +922,7 @@ void main() {
       branches: [for (final _ in _destinations) (context) => const SizedBox()],
       backBehavior: RawBranchBackBehavior.history,
       mode: RawNavigationMode.rail,
+      modeForWidth: RawNavigationMode.fromWidth,
       showNavigation: false,
       dampingRatio: .5,
     ).toDiagnosticsNode().toStringDeep();
@@ -914,7 +931,9 @@ void main() {
       'selectedIndex: 1',
       'branches: 3',
       'backBehavior: history',
+      'bar hidden on push',
       'mode: rail',
+      'has modeForWidth',
       'navigation hidden',
       'dampingRatio: 0.5',
     ]) {

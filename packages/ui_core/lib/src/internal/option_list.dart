@@ -28,7 +28,7 @@ class RawPick {
   final Object option;
 }
 
-/// ui_core's keys over a [RawAutocomplete]'s options list, in place of the
+/// Keys over a [RawAutocomplete]'s options list, in place of the
 /// autocomplete's own, which clamp at the ends, move on the key that opens a
 /// closed list, and start on the first option.
 ///

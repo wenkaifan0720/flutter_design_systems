@@ -13,6 +13,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/kept_clear.dart';
 import 'internal/panes.dart';
 import 'localizations.dart';
 import 'motion.dart';
@@ -396,17 +397,19 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   final GlobalKey<PaneCycleState> _cycle = GlobalKey();
 
   // Where the parts kept clear stand in the toaster ([RawToasterKeepClear]),
-  // each part's rect in a box [_keptHeight] tall, and the bands they keep
-  // clear along its top and bottom ([_keptBands]).
-  final Map<Object, Rect> _kept = {};
-  double _keptHeight = 0;
-  double _clearTop = 0;
-  double _clearBottom = 0;
+  // each part's rect in a box [_keptSize] large, and the bands they keep
+  // clear along its edges ([_keptBands]); [_area] carries the top and bottom
+  // bands to the surfaces opened below.
+  final Map<Object, _KeptPart> _kept = {};
+  Size _keptSize = Size.zero;
+  EdgeInsets _clear = EdgeInsets.zero;
+  final KeptClear _area = KeptClear();
 
-  void _keepClear(Object part, Rect rect, double height) {
-    if (_kept[part] == rect && _keptHeight == height) return;
-    _kept[part] = rect;
-    _keptHeight = height;
+  void _keepClear(Object part, _KeptPart kept, RenderBox area) {
+    _area.box = area;
+    if (_kept[part] == kept && _keptSize == area.size) return;
+    _kept[part] = kept;
+    _keptSize = area.size;
     _clearChanged();
   }
 
@@ -415,10 +418,12 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   }
 
   void _clearChanged() {
-    final (top, bottom) = _keptBands(_kept.values.toList(), _keptHeight);
-    if (top == _clearTop && bottom == _clearBottom) return;
-    _clearTop = top;
-    _clearBottom = bottom;
+    final clear = _keptBands(_kept.values.toList(), _keptSize);
+    _area
+      ..top = clear.top
+      ..bottom = clear.bottom;
+    if (clear == _clear) return;
+    _clear = clear;
     // With nothing shown, the next toast's build reads it.
     if (!mounted || (_shown.isEmpty && _waiting.isEmpty)) return;
     if (SchedulerBinding.instance.schedulerPhase ==
@@ -491,7 +496,20 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
       _restartTimer(record);
       changed = true;
     }
-    if (changed) setState(() {});
+    if (!changed) return;
+    _remeasure();
+    setState(() {});
+  }
+
+  // Reads where each kept part stands now, before a toast shows: a part that
+  // moved with no layout or paint of its own (its page in a repaint boundary
+  // under a transform) still says where it stood.
+  void _remeasure() {
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks) return;
+    for (final part in _kept.keys.toList()) {
+      if (part is _RenderKeepClear) part._report();
+    }
   }
 
   SpringDescription _spring() => RawMotionPolicy.of(context)
@@ -761,7 +779,7 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
       },
       child: stack,
     );
-    Widget app = widget.child;
+    Widget app = KeptClearScope(area: _area, child: widget.child);
     final shortcut = widget.focusShortcut;
     if (shortcut != null) {
       app = Shortcuts(
@@ -788,8 +806,8 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
         app,
         Positioned.fill(
           child: SafeArea(
-            // A bar kept clear takes the safe inset on its edge.
-            minimum: EdgeInsets.only(top: _clearTop, bottom: _clearBottom),
+            // A part kept clear takes the safe inset on its edge.
+            minimum: _clear,
             child: Padding(
               padding: widget.padding,
               child: Align(
@@ -809,30 +827,58 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   }
 }
 
+/// The edge of a [RawToaster] a part kept clear stands along
+/// ([RawToasterKeepClear.edge]).
+enum RawKeepClearEdge {
+  /// The top: the toasts stand below it.
+  top,
+
+  /// The bottom: the toasts stand above it.
+  bottom,
+
+  /// The start in reading order (the left in left-to-right text): the toasts
+  /// stand beside it, centred on what is left.
+  start,
+
+  /// The end in reading order.
+  end,
+}
+
 /// Keeps the nearest [RawToaster]'s toasts clear of [child]: a bar along
 /// the bottom (a tab bar, a bottom app bar, a docked composer) keeps them
 /// above it, and one along the top keeps them below it, as Material's
-/// `Scaffold` keeps a snackbar above its bottom navigation bar. It reads where
-/// [child] stands in the toaster each frame it is laid out or painted, so the toasts follow a bar that springs in or away,
-/// and lets go as it leaves the tree. It lets go too while tickers are off
-/// where it stands ([TickerMode]): on a route an opaque one covers, as the
-/// [Overlay] turns them off there, and in a hidden branch of a shell; it
-/// keeps clear again as they come back on. A route under one that is not
-/// opaque (a dialog) keeps its bar in sight, and its toasts clear of it.
+/// `Scaffold` keeps a snackbar above its bottom navigation bar. With an
+/// [edge] it keeps them off that edge whatever it reaches: a rail or a
+/// sidebar along the start keeps them beside it, so they centre on the page
+/// rather than the window. It reads where [child] stands in the toaster each
+/// frame it is laid out or painted, and while its route moves (a page
+/// pushed over it, or popped back to it), so the toasts follow a bar that
+/// springs in or away, and lets go as it leaves the tree. It lets go too
+/// while tickers are off where it stands ([TickerMode]): on a route an
+/// opaque one covers, as the [Overlay] turns them off there, and in a hidden
+/// branch of a shell; it keeps clear again as they come back on. A route
+/// under one that is not opaque (a dialog) keeps its bar in sight, and its
+/// toasts clear of it.
 ///
-/// A part that stands on one kept clear along the bottom (its bottom on
-/// that one's top, the two overlapping across), as a page's foot stands on
-/// a status line or a tab bar, keeps the toasts above both, as `Scaffold`
-/// keeps a snackbar above its footer buttons and those above its bottom
-/// navigation bar; chains of bars and feet stack, and along the top a part
-/// hanging under a kept top bar keeps top toasts below both. A part that
-/// floats over the band with a gap, or reaches neither edge with nothing
-/// kept under or over it, keeps nothing clear; so does a part reaching
-/// both edges, or both bands (a rail, a sidebar). The covered edge takes
-/// the place of the screen's safe inset there (a bar takes that inset
-/// itself); [RawToaster.padding] stays between the band and the toasts.
-/// `RawAdaptiveShell` keeps its bar clear, and not its rail or sidebar,
-/// whatever stands above or below them.
+/// Without an [edge], a part that stands on one kept clear along the bottom
+/// (its bottom on that one's top, the two overlapping across), as a page's
+/// foot stands on a status line or a tab bar, keeps the toasts above both,
+/// as `Scaffold` keeps a snackbar above its footer buttons and those above
+/// its bottom navigation bar; chains of bars and feet stack, and along the
+/// top a part hanging under a kept top bar keeps top toasts below both. A
+/// part that floats over the band with a gap, or reaches neither edge with
+/// nothing kept under or over it, keeps nothing clear; so does a part
+/// reaching both edges, or both bands. The covered edge takes the place of
+/// the screen's safe inset there (a bar takes that inset itself);
+/// [RawToaster.padding] stays between the band and the toasts.
+///
+/// A surface opened over the page (a popover, a menu, a select's list)
+/// prefers the side of its anchor where it stays clear of the parts kept
+/// clear along the top and bottom: a calendar under a date field near a
+/// phone's tab bar opens above the field when it fits there. Where neither
+/// side holds it, it may cover them. `RawAdaptiveShell` keeps its bar clear
+/// along the bottom, its top header along the top and its rail or sidebar
+/// along the start.
 ///
 /// ```dart
 /// Column(
@@ -849,24 +895,68 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 /// ```
 class RawToasterKeepClear extends SingleChildRenderObjectWidget {
   /// Keeps the nearest toaster's toasts clear of [child].
-  const RawToasterKeepClear({super.key, super.child});
+  const RawToasterKeepClear({super.key, this.edge, super.child});
+
+  /// The edge it stands along; null: the top or the bottom, read from where
+  /// it stands.
+  final RawKeepClearEdge? edge;
 
   @override
   RenderObject createRenderObject(BuildContext context) => _RenderKeepClear(
     RawToaster.maybeOf(context),
     TickerMode.valuesOf(context).enabled,
+    edge,
+    Directionality.maybeOf(context) ?? TextDirection.ltr,
+    ModalRoute.of(context),
   );
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) {
     (renderObject as _RenderKeepClear)
       ..toaster = RawToaster.maybeOf(context)
-      ..onstage = TickerMode.valuesOf(context).enabled;
+      ..onstage = TickerMode.valuesOf(context).enabled
+      ..edge = edge
+      ..textDirection = Directionality.maybeOf(context) ?? TextDirection.ltr
+      ..route = ModalRoute.of(context);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      EnumProperty<RawKeepClearEdge>('edge', edge, defaultValue: null),
+    );
   }
 }
 
+// The side of the toaster a part is kept along, resolved from its edge.
+enum _Side { top, bottom, left, right }
+
+@immutable
+class _KeptPart {
+  const _KeptPart(this.rect, this.side);
+
+  final Rect rect;
+
+  // Null: read from where it stands.
+  final _Side? side;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _KeptPart && other.rect == rect && other.side == side;
+
+  @override
+  int get hashCode => Object.hash(rect, side);
+}
+
 class _RenderKeepClear extends RenderProxyBox {
-  _RenderKeepClear(this._toaster, this._onstage);
+  _RenderKeepClear(
+    this._toaster,
+    this._onstage,
+    this._edge,
+    this._textDirection,
+    this._route,
+  );
 
   RawToasterState? _toaster;
   set toaster(RawToasterState? value) {
@@ -887,6 +977,40 @@ class _RenderKeepClear extends RenderProxyBox {
       _measure();
     } else {
       _toaster?._letGo(this);
+    }
+  }
+
+  RawKeepClearEdge? _edge;
+  set edge(RawKeepClearEdge? value) {
+    if (value == _edge) return;
+    _edge = value;
+    _measure();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    _measure();
+  }
+
+  // Its route, whose transitions move it under a transform that may lay out
+  // and paint nothing in it (a page sits in a repaint boundary).
+  ModalRoute<Object?>? _route;
+  set route(ModalRoute<Object?>? value) {
+    if (identical(value, _route)) return;
+    if (attached) _listen(_route, false);
+    _route = value;
+    if (attached) _listen(value, true);
+  }
+
+  void _listen(ModalRoute<Object?>? route, bool on) {
+    for (final animation in [route?.animation, route?.secondaryAnimation]) {
+      if (on) {
+        animation?.addListener(_measure);
+      } else {
+        animation?.removeListener(_measure);
+      }
     }
   }
 
@@ -912,7 +1036,15 @@ class _RenderKeepClear extends RenderProxyBox {
       getTransformTo(area),
       Offset.zero & size,
     );
-    toaster._keepClear(this, rect, area.size.height);
+    final ltr = _textDirection == TextDirection.ltr;
+    final side = switch (_edge) {
+      null => null,
+      RawKeepClearEdge.top => _Side.top,
+      RawKeepClearEdge.bottom => _Side.bottom,
+      RawKeepClearEdge.start => ltr ? _Side.left : _Side.right,
+      RawKeepClearEdge.end => ltr ? _Side.right : _Side.left,
+    };
+    toaster._keepClear(this, _KeptPart(rect, side), area);
   }
 
   @override
@@ -928,15 +1060,23 @@ class _RenderKeepClear extends RenderProxyBox {
   }
 
   @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _listen(_route, true);
+  }
+
+  @override
   void detach() {
+    _listen(_route, false);
     _toaster?._letGo(this);
     super.detach();
   }
 }
 
-// The bands along the top and the bottom of a toaster [height] tall that
-// the parts kept clear, standing at [parts], keep its toasts out of. A part
-// reaching one edge and not the other makes a band to its far side. A part
+// The bands along the edges of a toaster [size] large that the parts kept
+// clear keep its toasts out of. A part with an edge of its own makes a band
+// along that edge to its far side. A part without one, reaching the top or
+// the bottom and not the other, makes a band to its far side; a part
 // reaching neither that stands on a part of the bottom band (its bottom on
 // that one's top, the two overlapping across) joins the band, as Material's
 // Scaffold keeps a snackbar above its footer buttons and those above its
@@ -944,7 +1084,8 @@ class _RenderKeepClear extends RenderProxyBox {
 // joins that. Chains repeat. A part that would join both (a rail between a
 // kept top bar and a kept status line), like a part reaching both edges,
 // keeps nothing clear.
-(double, double) _keptBands(List<Rect> parts, double height) {
+EdgeInsets _keptBands(List<_KeptPart> parts, Size size) {
+  final height = size.height;
   bool meets(double a, double b) => (a - b).abs() <= 0.5;
   bool across(Rect a, Rect b) =>
       math.min(a.right, b.right) - math.max(a.left, b.left) > 0.5;
@@ -954,19 +1095,26 @@ class _RenderKeepClear extends RenderProxyBox {
   Set<int> band({required bool bottom, Set<int> skip = const {}}) {
     final reached = {
       for (var i = 0; i < parts.length; i++)
-        if (bottom
-            ? atBottom(parts[i]) && !atTop(parts[i])
-            : atTop(parts[i]) && !atBottom(parts[i]))
+        if (switch (parts[i].side) {
+          null =>
+            bottom
+                ? atBottom(parts[i].rect) && !atTop(parts[i].rect)
+                : atTop(parts[i].rect) && !atBottom(parts[i].rect),
+          _Side.bottom => bottom,
+          _Side.top => !bottom,
+          _Side.left || _Side.right => false,
+        })
           i,
     };
     for (var grew = true; grew;) {
       grew = false;
       for (var i = 0; i < parts.length; i++) {
-        final r = parts[i];
+        final r = parts[i].rect;
+        if (parts[i].side != null) continue;
         if (reached.contains(i) || skip.contains(i)) continue;
         if (atTop(r) || atBottom(r)) continue;
         if (reached.any((j) {
-          final kept = parts[j];
+          final kept = parts[j].rect;
           return across(r, kept) &&
               (bottom ? meets(r.bottom, kept.top) : meets(r.top, kept.bottom));
         })) {
@@ -988,12 +1136,24 @@ class _RenderKeepClear extends RenderProxyBox {
   var top = 0.0;
   var bottom = 0.0;
   for (final i in high) {
-    top = math.max(top, parts[i].bottom.clamp(0.0, height));
+    top = math.max(top, parts[i].rect.bottom.clamp(0.0, height));
   }
   for (final i in low) {
-    bottom = math.max(bottom, (height - parts[i].top).clamp(0.0, height));
+    bottom = math.max(bottom, (height - parts[i].rect.top).clamp(0.0, height));
   }
-  return (top, bottom);
+  var left = 0.0;
+  var right = 0.0;
+  for (final part in parts) {
+    if (part.side == _Side.left) {
+      left = math.max(left, part.rect.right.clamp(0.0, size.width));
+    } else if (part.side == _Side.right) {
+      right = math.max(
+        right,
+        (size.width - part.rect.left).clamp(0.0, size.width),
+      );
+    }
+  }
+  return EdgeInsets.fromLTRB(left, top, right, bottom);
 }
 
 class _ToastId {

@@ -113,6 +113,16 @@ class DesignWidthLimit {
 ///   button "Open the command palette": its words wrap onto 2 lines in 152
 ///   px; on one line they take 214 (from 600 wide buttons keep their words
 ///   on one line)`.
+/// - **A form's fields, held as a column**: a select (a date field among
+///   them), a segmented control or a group of choices with another field
+///   over or under it on the same leading and trailing edges (a text entry,
+///   or another of these) is a field of a form, and takes the form's
+///   column, as Material's fields and a look's text fields do. The bound is
+///   the column's: [formWidth] (720), so a form keeps to a measure and no
+///   field runs the width of a desktop window: `a select "Shelf": a field
+///   of a form, 1392 px wide as laid out, 1392 as drawn (a form keeps to 720
+///   from 600 wide)`. One alone, with no field on its edges (a toolbar's
+///   filter), keeps to its content as above.
 /// - **A look's own limit**: [limits] gives a kind another width, with the
 ///   reason (`DesignWidthLimit(400, 'the sign-in card's one act spans its
 ///   400 card')`); a reason that is a to-do fails.
@@ -153,6 +163,7 @@ class DesignWidthCheck {
     required this.look,
     this.from = 600,
     this.maxWidth = 320,
+    this.formWidth = 720,
     this.limits = const {},
     this.listWordsIndent = 0,
     this.tolerance = 1,
@@ -170,6 +181,10 @@ class DesignWidthCheck {
   /// The widest a control may be when the width of its content and padding
   /// does not need more, in logical pixels.
   final double maxWidth;
+
+  /// The widest a form's column of fields may be, in logical pixels: a
+  /// field of a form takes the column, and the column keeps to this.
+  final double formWidth;
 
   /// Another width for a kind of control, with the reason.
   final Map<DesignWidthKind, DesignWidthLimit> limits;
@@ -282,10 +297,80 @@ class DesignWidthCheck {
     }
 
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
+    // A form's fields, by the face each shows (laid out, and as drawn): its
+    // text entries, and its selects, segmented controls and groups of
+    // choices.
+    final fields = <({RenderRepaintBoundary? boundary, Rect laid})>[];
+    final formFields = <int, ({Rect laid, Rect drawn})>{};
+    for (final c in controls) {
+      if (!_semanticsOf(c).entry) continue;
+      final reader = await readerFor(c);
+      if (reader == null) continue;
+      fields.add((
+        boundary: reader.boundary,
+        laid: reader._face(c)?.rect ?? _global(c),
+      ));
+    }
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (!_formKinds.contains(item.kind)) continue;
+      final reader = await readerFor(item.box);
+      if (reader == null) continue;
+      final ({Rect laid, Rect drawn})? field;
+      if (item.kind == DesignWidthKind.choiceGroup) {
+        final m = _itemsWidth(reader, item.held, tabs: false);
+        field = m == null ? null : (laid: m.laid, drawn: m.drawn);
+      } else {
+        final face = item.control == null
+            ? _groupFace(reader, item.box, item.held)
+            : reader._face(item.control!);
+        field = face == null
+            ? null
+            : (
+                laid: face.rect,
+                drawn: marked.contains(face.box)
+                    ? face.rect
+                    : reader._outline(
+                            face.rect,
+                            item.control ?? item.box,
+                            face.read ? null : face.box,
+                            null,
+                          ) ??
+                          face.rect,
+              );
+      }
+      if (field == null) continue;
+      fields.add((boundary: reader.boundary, laid: field.laid));
+      formFields[i] = field;
+    }
+    // Whether [field] has another field over or under it, on its edges.
+    bool inForm(RenderRepaintBoundary? boundary, Rect field) => fields.any(
+      (f) =>
+          f.boundary == boundary &&
+          f.laid != field &&
+          (f.laid.left - field.left).abs() <= tolerance &&
+          (f.laid.right - field.right).abs() <= tolerance &&
+          (f.laid.top >= field.bottom - tolerance ||
+              f.laid.bottom <= field.top + tolerance),
+    );
     for (var i = 0; i < items.length; i++) {
       final item = items[i];
       final reader = await readerFor(item.box);
       if (reader == null) continue;
+      if (formFields[i] case final field?
+          when inForm(reader.boundary, field.laid)) {
+        if (field.laid.width <= formWidth + tolerance ||
+            field.drawn.width <= formWidth + tolerance) {
+          continue;
+        }
+        found.add(
+          '${_kindName(item.kind, item.control ?? item.held.first)}: a field '
+          'of a form, ${_px(field.laid.width)} px wide as laid out, '
+          '${_px(field.drawn.width)} as drawn (a form keeps to '
+          '${_px(formWidth)} from ${_px(from)} wide)',
+        );
+        continue;
+      }
       if (item.control case final control?
           when _isListRow(
             reader,
@@ -682,6 +767,13 @@ class DesignWidthCheck {
       return null;
     }
   }
+
+  // The kinds a form's field may be: each takes the form's column.
+  static const _formKinds = {
+    DesignWidthKind.select,
+    DesignWidthKind.segmentedControl,
+    DesignWidthKind.choiceGroup,
+  };
 
   // The kind of a single [control], or null for one that may span (a text
   // entry, a search bar, a slider, a toggle, a link, a list row of more than

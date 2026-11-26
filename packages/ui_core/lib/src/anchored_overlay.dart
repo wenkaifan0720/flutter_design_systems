@@ -11,6 +11,7 @@
 library;
 
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart' show SemanticsRole;
@@ -19,6 +20,7 @@ import 'package:flutter/widgets.dart';
 
 import 'internal/back.dart';
 import 'internal/focus_visible.dart';
+import 'internal/kept_clear.dart';
 import 'internal/placement.dart';
 import 'internal/quiet_focus.dart';
 import 'internal/surface_focus.dart';
@@ -1225,9 +1227,35 @@ class _RawAnchoredOverlayState extends State<RawPopover>
     return _surfaceKeys.value?.call(node, event) ?? KeyEventResult.ignored;
   }
 
+  // The overlay's bounds less the parts a toaster keeps clear along the top
+  // and the bottom (a tab bar, a page's foot), and the margin from them:
+  // where the surface would rather stay. Null when there are none, or where
+  // the anchor stands in one (a menu from the tab bar).
+  Rect? _clearOf(BuildContext context, Rect bounds, Rect anchor) {
+    final area = KeptClearScope.maybeOf(context);
+    final overlay = Overlay.maybeOf(
+      context,
+      rootOverlay: widget.useRootOverlay,
+    )?.context.findRenderObject();
+    if (area == null || overlay is! RenderBox) return null;
+    final free = area.freeIn(overlay);
+    if (free == null) return null;
+    final margin = widget.placement.margin;
+    var top = bounds.top;
+    var bottom = bounds.bottom;
+    if (anchor.top >= free.top) top = math.max(top, free.top + margin);
+    if (anchor.bottom <= free.bottom) {
+      bottom = math.min(bottom, free.bottom - margin);
+    }
+    if (bottom <= top || (top == bounds.top && bottom == bounds.bottom)) {
+      return null;
+    }
+    return Rect.fromLTRB(bounds.left, top, bounds.right, bottom);
+  }
+
   Widget _surface(BuildContext context, RawMenuOverlayInfo raw) {
     final direction = Directionality.of(context);
-    final bounds = rawOverlayBounds(
+    final outer = rawOverlayBounds(
       overlaySize: raw.overlaySize,
       view: _overlayView(context),
       padding: RawPopoverPadding.of(context),
@@ -1244,6 +1272,18 @@ class _RawAnchoredOverlayState extends State<RawPopover>
             0,
             0,
           );
+    final delegate = widget.positionDelegate;
+    // Clear of the parts kept clear where a side there holds it; a caller
+    // that places it keeps the whole bounds.
+    final clear = delegate == null ? _clearOf(context, outer, anchor) : null;
+    final bounds = rawResolveBounds(
+      anchor,
+      outer,
+      clear,
+      widget.placement,
+      direction,
+      extent: _extent,
+    );
     final gap = widget.placement.gap;
     final side = rawResolveSide(
       anchor,
@@ -1252,7 +1292,6 @@ class _RawAnchoredOverlayState extends State<RawPopover>
       direction,
       extent: _extent,
     );
-    final delegate = widget.positionDelegate;
     // Placed by the caller, anywhere in the bounds (over its anchor too): as
     // large as the bounds, not one side's room.
     final maxSize = delegate != null
@@ -1370,6 +1409,8 @@ class _RawAnchoredOverlayState extends State<RawPopover>
       textDirection: direction,
       maxSize: maxSize,
       placed: _placed,
+      outer: outer,
+      clear: clear,
       // The caller's place.
       placeAt: delegate == null
           ? null

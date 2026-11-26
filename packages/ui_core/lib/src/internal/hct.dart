@@ -33,6 +33,8 @@ import 'dart:math' as math;
 
 // ---- utils/math_utils.dart ----
 
+/// Number helpers for the colour space below: clamping, rounding and
+/// wrapping degrees.
 class MathUtils {
   /// The signum function.
   ///

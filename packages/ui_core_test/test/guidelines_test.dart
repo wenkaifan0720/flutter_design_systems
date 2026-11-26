@@ -104,8 +104,34 @@ void main() {
       labelPlacementGuideline,
       tooltipNodeGuideline,
       listSideGuideline,
+      controlNodesGuideline,
     ]) {
       expect(guideline.description, endsWith('.'));
     }
+  });
+
+  testWidgets("controlNodesGuideline: a row's trailing button merged into the "
+      "row's node fails with the check's line", (tester) async {
+    final semantics = tester.ensureSemantics();
+    Widget button(String label) => Semantics(
+      label: label,
+      button: true,
+      onTap: () {},
+      child: const SizedBox(width: 120, height: 48),
+    );
+    final row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [button('Stoner'), button('More for Stoner')],
+    );
+    await tester.pumpWidget(harness(Center(child: MergeSemantics(child: row))));
+    final merged = await controlNodesGuideline.evaluate(tester);
+    expect(merged.passed, isFalse);
+    expect(
+      merged.reason,
+      contains('a button "Stoner" and a button "More for Stoner" are one node'),
+    );
+    await tester.pumpWidget(harness(Center(child: row)));
+    expect((await controlNodesGuideline.evaluate(tester)).passed, isTrue);
+    semantics.dispose();
   });
 }
