@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../icons.dart';
 import '../internal/key_focus.dart';
+import '../internal/own_words.dart';
 import '../internal/well.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -769,20 +770,11 @@ class Fluent2DateRangePicker extends StatelessWidget {
       builder: (context, box) {
         final room = box.hasBoundedWidth ? box.maxWidth : 640.0;
         final count = months ?? (room >= 640 ? 2 : 1);
-        // A day is 32 square; under a finger a whole target, 48 where the
-        // months fit and down to iOS's 44 before the grid scrolls, so a day
-        // never reaches into its neighbour's; a whole even number of
-        // pixels, so its disc and number sit on whole pixels in it.
-        final seventh =
-            (((room - Fluent2Spacing.xxl * (count - 1)) / (7 * count)) / 2)
-                .floorToDouble() *
-            2;
-        final cell = touch
-            ? math.max(
-                Fluent2Layout.minHitTarget,
-                math.min(Fluent2Layout.touchHitTarget, seventh),
-              )
-            : 32.0;
+        // A day is 32 square; under a finger a whole target (the floor, 40),
+        // so a day never reaches into its neighbour's, the grid scrolling
+        // where the months do not fit; a whole even number of pixels, so its
+        // disc and number sit on whole pixels in it.
+        final cell = touch ? Fluent2Layout.hitTargetOf(context) : 32.0;
         final least = 7 * cell * count + Fluent2Spacing.xxl * (count - 1);
         final grid = RawCalendarDatePicker(
           controller: controller,
@@ -908,9 +900,9 @@ class _RangeDay extends StatelessWidget {
   final RawCalendarDayDetails day;
   final Set<WidgetState> states;
 
-  /// The day's width: 32, or up to 48 under a finger (its disc and band 28,
-  /// or 40). Its height is the same, or the look's tap floor where that is
-  /// taller (a finger's 48 where the month is narrow).
+  /// The day's width: 32, or the floor (40) under a finger (its disc and
+  /// band 28, or 36). Its height is the same, or the look's tap floor where
+  /// that is taller.
   final double cell;
 
   /// The week's first day ([DateTime.monday] … [DateTime.sunday]): a day
@@ -945,9 +937,10 @@ class _RangeDay extends StatelessWidget {
         DateTime(date.year, date.month, date.day + 1).month != date.month;
     final toStart = opens ? 0.0 : reach;
     final toEnd = closes ? 0.0 : reach;
-    // The disc and the band: 28 on a 32 day; 40 on a finger's 48, as the
-    // date picker's phone disc, so the chosen ground fills its cell.
-    final disc = cell > 32 ? 40.0 : 28.0;
+    // The disc and the band: 28 on a 32 day; 4 short of a finger's cell
+    // (36 on the floor's 40), as the date picker's phone disc, so the chosen
+    // ground fills its cell and two weeks' bands never touch.
+    final disc = cell > 32 ? cell - 4 : 28.0;
     final height = math.max(cell, RawTapTargets.of(context).floorOn().height);
     final ink = !live
         ? c.neutralForegroundDisabled
@@ -1058,38 +1051,77 @@ Future<RawDateRange?> showFluent2DateRangePicker(
   required DateTime lastDate,
   RawDateRange? initial,
   String? title,
-}) {
-  final controller = RawCalendarController(
+}) => showFluent2Dialog<RawDateRange>(
+  context,
+  builder: (dialogContext) => _RangeDialog(
     firstDate: firstDate,
     lastDate: lastDate,
+    initial: initial,
+    title: title,
+  ),
+);
+
+/// showFluent2DateRangePicker's dialog: it holds the range's controller for
+/// as long as it stands, and lets it go with it.
+class _RangeDialog extends StatefulWidget {
+  const _RangeDialog({
+    required this.firstDate,
+    required this.lastDate,
+    required this.initial,
+    required this.title,
+  });
+
+  final DateTime firstDate;
+  final DateTime lastDate;
+  final RawDateRange? initial;
+  final String? title;
+
+  @override
+  State<_RangeDialog> createState() => _RangeDialogState();
+}
+
+class _RangeDialogState extends State<_RangeDialog> {
+  late final RawCalendarController _controller = RawCalendarController(
+    firstDate: widget.firstDate,
+    lastDate: widget.lastDate,
     mode: RawCalendarMode.range,
-    selectedRange: initial,
+    selectedRange: widget.initial,
   );
-  final words = Fluent2Localizations.of(context);
-  return showFluent2Dialog<RawDateRange>(
-    context,
-    builder: (dialogContext) => Fluent2Dialog(
-      title: title ?? words.chooseDates,
-      content: Fluent2DateRangePicker(controller: controller),
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final words = RawWidgetsLocalizations.of(context);
+    return Fluent2Dialog(
+      // ui_core has no word for a range yet: in another language, with
+      // Fluent 2's English, no title, and the dialog is named by ui_core's
+      // word for one.
+      title:
+          widget.title ?? fluent2OwnWord(context, (w) => w.chooseDates) ?? '',
+      content: Fluent2DateRangePicker(controller: _controller),
       actions: [
         Fluent2Button(
-          RawWidgetsLocalizations.of(context).cancelButtonLabel,
-          onPressed: () => Navigator.of(dialogContext).pop(),
+          words.cancelButtonLabel,
+          onPressed: () => Navigator.of(context).pop(),
         ),
         ListenableBuilder(
-          listenable: controller,
+          listenable: _controller,
           builder: (context, _) => Fluent2Button(
-            RawWidgetsLocalizations.of(context).okButtonLabel,
+            words.okButtonLabel,
             appearance: Fluent2ButtonAppearance.primary,
-            onPressed: controller.selectedRange?.isComplete ?? false
-                ? () =>
-                      Navigator.of(dialogContext).pop(controller.selectedRange)
+            onPressed: _controller.selectedRange?.isComplete ?? false
+                ? () => Navigator.of(context).pop(_controller.selectedRange)
                 : null,
           ),
         ),
       ],
-    ),
-  );
+    );
+  }
 }
 
 /// Raises a [Fluent2Calendar] in Fluent's dialog; answers the day pressed, or
@@ -1108,9 +1140,11 @@ Future<DateTime?> showFluent2DatePicker(
 }) => showFluent2Dialog<DateTime>(
   context,
   builder: (dialogContext) {
-    final words = Fluent2Localizations.of(dialogContext);
     return Fluent2Dialog(
-      title: title ?? words.chooseDate,
+      title:
+          title ??
+          fluent2OwnWord(dialogContext, (w) => w.chooseDate) ??
+          RawWidgetsLocalizations.of(dialogContext).datePickerHelpText,
       content: Center(
         child: Fluent2Calendar(
           value: value,
@@ -1238,7 +1272,11 @@ class Fluent2TimePicker extends StatelessWidget {
       value: value,
       onChanged: onChanged,
       label: label,
-      prompt: words.chooseTime,
+      // Fluent 2's "Choose a time" in English or the app's own words; else
+      // ui_core's "Select time" in the app's language.
+      prompt:
+          fluent2OwnWord(context, (w) => w.chooseTime) ??
+          RawWidgetsLocalizations.of(context).timePickerDialHelpText,
       appearance: appearance,
       size: size,
       invalid: invalid,
@@ -1300,7 +1338,12 @@ Future<Fluent2Time?> showFluent2TimePicker(
   return showFluent2Dialog<Fluent2Time>(
     context,
     builder: (dialogContext) => Fluent2Dialog(
-      title: title ?? words.chooseTime,
+      // Not Fluent 2's English in another language: ui_core's "Select time"
+      // in the app's language.
+      title:
+          title ??
+          fluent2OwnWord(context, (w) => w.chooseTime) ??
+          RawWidgetsLocalizations.of(context).timePickerDialHelpText,
       // Hour on the left, then minutes, in a right-to-left app too, as a time
       // is written (٢١:٠٥) and as Material's time picker keeps them.
       content: Row(

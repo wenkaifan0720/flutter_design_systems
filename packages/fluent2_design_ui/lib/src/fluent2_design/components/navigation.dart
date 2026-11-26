@@ -55,8 +55,8 @@ class Fluent2NavigationRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final go = onDestinationSelected;
-    // Under a finger a destination spans the rail, a whole target (48)
-    // wide; the end stroke is drawn over the rail, not beside its items.
+    // Under a finger a destination spans the rail (48, past the floor's
+    // 40) wide; the end stroke is drawn over the rail, not beside its items.
     final touch = Fluent2Layout.padded(context);
     return Semantics(
       container: true,
@@ -237,14 +237,15 @@ class Fluent2Pagination extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, box) {
           final shown = _shown(page, pages);
-          // Under a finger each press is a whole target (48) wide and each
-          // gap 32, with the row's spacing between.
+          // Under a finger each press is a whole target (the floor, 40) wide
+          // and each gap 32, with the row's spacing between; under a pointer
+          // each press and gap the floor's width.
           final gaps = shown.where((p) => p == null).length;
           final need = Fluent2Layout.padded(context)
-              ? (shown.length - gaps + 2) * Fluent2Layout.touchHitTarget +
+              ? (shown.length - gaps + 2) * Fluent2Layout.hitTargetOf(context) +
                     gaps * 32.0 +
                     (shown.length + 1) * Fluent2Spacing.xxs
-              : (shown.length + 2) * 44.0;
+              : (shown.length + 2) * Fluent2Layout.hitTargetOf(context);
           final fits = !box.hasBoundedWidth || box.maxWidth >= need;
           return Row(
             mainAxisSize: MainAxisSize.min,
@@ -388,8 +389,8 @@ class Fluent2StepProgress extends StatelessWidget {
 }
 
 /// Fluent's carousel nav: a dot for each page, 8 round in the accessible
-/// stroke, the current a 16 pill in the brand. Each is a 44 target when
-/// [onChanged] is set; otherwise the row only tells.
+/// stroke, the current a 16 pill in the brand. Each is a target the floor
+/// (40) tall when [onChanged] is set; otherwise the row only tells.
 ///
 /// ```dart
 /// Fluent2PageDots(count: 4, selectedIndex: 1, label: 'Photos', onChanged: go)
@@ -501,8 +502,8 @@ class Fluent2PageDots extends StatelessWidget {
               label: words.pageOf(i + 1, count),
               selected: i == selectedIndex,
               radius: Fluent2Radius.medium,
-              // Under a finger each dot is a whole target (48) wide; under a
-              // pointer half that. The current one's cell is wider by what
+              // Under a finger each dot is a whole target (the floor, 40)
+              // wide; under a pointer half that. The current one's cell is wider by what
               // its pill is wider, so every gap between dots is the same.
               builder: (context, states) => SizedBox(
                 width:

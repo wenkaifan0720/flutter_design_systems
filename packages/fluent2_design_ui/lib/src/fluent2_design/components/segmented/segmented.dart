@@ -149,10 +149,10 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
       ),
     };
     // With a pointer Fluent's height at the theme's density (never under
-    // 20, as a button); under a finger the whole 48 target, as every
+    // 20, as a button); under a finger the whole target (the floor), as every
     // control's face, so a row shows one height.
     height = Fluent2Layout.padded(context)
-        ? Fluent2Layout.touchHitTarget
+        ? Fluent2Layout.hitTargetOf(context)
         : t.density.height(height, least: 20);
     final layers = [style, t.segmentedButtonTheme];
     // The style's or the theme's outline rounds the strip and its thumb, at most to a pill; without one

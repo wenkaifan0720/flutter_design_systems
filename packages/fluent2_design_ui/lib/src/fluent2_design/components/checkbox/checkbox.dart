@@ -377,7 +377,8 @@ class Fluent2Checkbox extends StatelessWidget {
 /// the other state; with no [onChanged] it is disabled, inert in the
 /// disabled inks; [readOnly] makes it a mark that only reports (drawn at
 /// full strength, not a control).
-/// [label] names the task to a screen reader. Its target is 44.
+/// [label] names the task to a screen reader. Its target is the tap floor
+/// (40 under a finger, 24 under a pointer).
 ///
 /// ```dart
 /// Fluent2CompletionCheck(value: task.done, label: 'Review the launch deck', onChanged: (v) => setState(() => task.done = v))

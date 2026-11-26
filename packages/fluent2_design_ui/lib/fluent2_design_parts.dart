@@ -38,6 +38,7 @@ export 'src/fluent2_design/internal/list_keys.dart';
 export 'src/fluent2_design/internal/measure.dart';
 export 'src/fluent2_design/internal/menu_lead.dart';
 export 'src/fluent2_design/internal/menu_surface.dart';
+export 'src/fluent2_design/internal/own_words.dart';
 export 'src/fluent2_design/internal/platform_words.dart';
 export 'src/fluent2_design/internal/presets.g.dart';
 export 'src/fluent2_design/internal/report_height.dart';

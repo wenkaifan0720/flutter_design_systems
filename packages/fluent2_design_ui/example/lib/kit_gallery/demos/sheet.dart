@@ -101,8 +101,8 @@ List<Widget> _options(
         selected: name == current,
         radius: Fluent2Radius.medium,
         builder: (context, states) => ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: Fluent2Layout.minHitTarget,
+          constraints: BoxConstraints(
+            minHeight: Fluent2Layout.hitTargetOf(context),
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(

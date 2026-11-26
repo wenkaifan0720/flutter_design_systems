@@ -11,14 +11,18 @@ import '../../theme.dart';
 import '../pressable/pressable.dart';
 import 'check_indicator.dart';
 
+/// What `chevron_right` 16 leaves blank after its ink: its art ends at 10.85
+/// of its 16.
+const double _chevronBlank = 5;
+
 /// Fluent 2's list item: one row of a list (a file, a thread, a meeting, a
 /// setting), its [leading] part (or an [icon] in the second ink) before
 /// the [title] in body1 over a [subtitle] in caption1, a [value] in body1
 /// and the second ink and a [trailing] part (a tag, a switch) at the end,
-/// then the [chevron] of a row that opens a page. 44 tall at least on a
-/// phone and 40 on the desktop, 8 over and under its words. With [onTap]
-/// it is one press on the subtle fill's hover and pressed steps; [selected]
-/// marks the page's own row in the selected fill. With [checked] set it is
+/// then the [chevron] of a row that opens a page, its ink on the row's end.
+/// 40 tall at least (the floor under a finger), 8 over and under its
+/// words. With [onTap] it is one press on the subtle fill's hover and
+/// pressed steps; [selected] marks the page's own row in the selected fill. With [checked] set it is
 /// a row of a multiple selection: Fluent's checkbox at its start, a press
 /// asking [onChanged] for the other state. [enabled] false draws it
 /// in the disabled ink and makes it inert. An [action] (the row's menu
@@ -119,7 +123,7 @@ class Fluent2ListItem extends StatelessWidget {
   final bool autofocus;
 
   /// The least height of a row at [context]: 40 on the desktop, a target
-  /// elsewhere (44, 48 under a finger).
+  /// elsewhere (the floor, 40).
   static double minHeightOf(BuildContext context) =>
       Fluent2Layout.isWide(context) && !Fluent2Layout.padded(context)
       ? 40
@@ -239,7 +243,7 @@ class Fluent2ListItem extends StatelessWidget {
           : const Color(0x00000000);
       return fluent2EasedInks([ground], (context, inks) {
         final [ground] = inks;
-        // The density moves the desktop row; a phone's row keeps its 44.
+        // The density moves the desktop row; a phone's row keeps the floor.
         final least =
             look.minimumSize?.height ??
             (wide
@@ -254,7 +258,7 @@ class Fluent2ListItem extends StatelessWidget {
               ),
             );
         // The room over and under is the words': a part at the end (a
-        // switch's 48 touch target) stands in the row's height, centred,
+        // switch's touch target) stands in the row's height, centred,
         // and never makes it taller than its neighbours.
         return ColoredBox(
           color: ground,
@@ -297,11 +301,22 @@ class Fluent2ListItem extends StatelessWidget {
                       ),
                     ),
                   if (trailing case final end?) Fluent2InRow(child: end),
+                  // The chevron's ink stops 5 px inside its 16 px box: the
+                  // box hangs that far past the row's end, so the ink ends on
+                  // the keyline with a switch's track and a value's words.
                   if (chevron)
-                    Icon(
-                      Fluent2Icons.chevronRight16,
-                      size: Fluent2IconSize.i16,
-                      color: inert ? t.textDisabled : t.textTertiary,
+                    SizedBox(
+                      width: Fluent2IconSize.i16 - _chevronBlank,
+                      height: Fluent2IconSize.i16,
+                      child: OverflowBox(
+                        alignment: AlignmentDirectional.centerStart,
+                        maxWidth: Fluent2IconSize.i16,
+                        child: Icon(
+                          Fluent2Icons.chevronRight16,
+                          size: Fluent2IconSize.i16,
+                          color: inert ? t.textDisabled : t.textTertiary,
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -563,7 +578,8 @@ class Fluent2SectionHeader extends StatelessWidget {
   final Widget? action;
 
   /// The header's act as Fluent's Link: [label] in body1 and the link ink,
-  /// underlined under the pointer, its hit target 44.
+  /// underlined under the pointer, its tap target the floor (40 under a
+  /// finger, 24 under a pointer).
   static Widget link(String label, {required VoidCallback? onPressed}) =>
       _HeaderLink(label, onTap: onPressed);
 

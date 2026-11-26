@@ -2,7 +2,7 @@
 // where the page's words start and the bell's glyph ends where they end; on
 // a pushed page the back arrow's glyph starts there and the last command's
 // glyph ends there. Under a finger and with a pointer, from either side;
-// every target stays whole on the screen (48 under a finger), and a count
+// every target stays whole on the screen (the floor, 40, under a finger), and a count
 // badge rides the bell's face, not the screen's edge.
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -48,6 +48,9 @@ Widget _screen(RoutePresentation presentation, TextDirection direction) {
     ),
   );
 }
+
+/// The finger floor, ui_core's 40.
+final _floor = RawTapTargets.fallback.touch.height;
 
 void main() {
   // On the desktop the head ends on the layer's gutter and the column stops
@@ -177,8 +180,8 @@ void main() {
               expect(r.left, greaterThanOrEqualTo(0));
               expect(r.right, lessThanOrEqualTo(_width));
               if (touch) {
-                expect(r.width, greaterThanOrEqualTo(48));
-                expect(r.height, greaterThanOrEqualTo(48));
+                expect(r.width, greaterThanOrEqualTo(_floor));
+                expect(r.height, greaterThanOrEqualTo(_floor));
               }
             }
 

@@ -1,23 +1,40 @@
 # fluent2_design_ui
 
 Fluent 2 widgets and themes for Flutter, including text fields, menus, navigation, data grids,
-charts, and dialogs. Seven brand presets include light and dark themes. This is an independent
+charts, and dialogs. Six brand presets include light and dark themes. This is an independent
 implementation of Microsoft's Fluent 2 design system.
 
 ![Fluent 2's sample app at 1440 px by day, beside the same app on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/hero.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/fluent2/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/fluent2/) · [API reference](https://pub.dev/documentation/fluent2_design_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/fluent2/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=fluent2) · [API reference](https://pub.dev/documentation/fluent2_design_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
 ```sh
-flutter pub add fluent2_design_ui material_ui
+flutter pub add fluent2_design_ui
+```
+
+A whole app: Fluent 2's theme over a bare `WidgetsApp`, one screen and one button.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFF0F6CBD),
+    builder: (context, _) => Fluent2Theme(
+      data: Fluent2ThemeData.lapis(),
+      child: Fluent2Scaffold(body: Fluent2Button('Compose', onPressed: () {})),
+    ),
+  ),
+);
 ```
 
 ## Quick start
 
 Load the bundled fonts before `runApp` and wrap your app's navigator in `Fluent2Theme`.
-The example uses `MaterialApp` from `material_ui`. Its page transition theme also applies
+This example uses `MaterialApp` from `material_ui` (`flutter pub add material_ui`). Its page transition theme also applies
 Fluent motion to routes your app pushes.
 
 ```dart
@@ -182,8 +199,8 @@ Fluent2TabList(
 
 ## Customize a theme
 
-The default preset is `lapis`. The other presets are `iris`, `juniper`, `clover`, `pumpkin`,
-`berry`, and `flint`. To use your own brand color, call
+The default preset is `lapis`. The other presets are `iris`, `juniper`, `pumpkin`, `berry`, and
+`flint`. To use your own brand color, call
 `Fluent2ThemeData.from(brand: color, brightness: Brightness.light)`.
 
 Use `copyWith` to set density, select a typeface from your app's assets, or replace acrylic
@@ -211,15 +228,17 @@ Controls support keyboard traversal and screen readers. The two-tone focus ring 
 light and dark surfaces. Components follow the ambient reading direction and text scale.
 The package respects the system's reduced-motion setting.
 
-The calendar reads month and day names from `MaterialLocalizations`. Use
-`RawWidgetsLocalizations.delegate` for shared labels such as Cancel and Search, and
-`Fluent2Localizations.delegate` for Fluent-specific labels. A time picker's hour and minute
-and the AM and PM marks come from `RawWidgetsLocalizations` too, in its 30 languages. You can
+Use `RawWidgetsLocalizations.delegate` for shared labels such as Cancel and Search, and
+`Fluent2Localizations.delegate` for Fluent-specific labels. The calendars' month and day
+names, a time picker's hour and minute, the AM and PM marks, and the date and time pickers'
+titles in another language ("Select time") come from `RawWidgetsLocalizations`, in its 30
+languages. You can
 provide translations by extending `Fluent2LocalizationsEn` and adding a localization delegate
 to your app.
 The standalone `Fluent2Format` helpers use US English.
 
-The bundled text font is Selawik. Other scripts use platform fallback fonts.
+The bundled text font is Selawik. Other scripts use platform fallback fonts, or the families
+you name in `Fluent2ThemeData.fontFamilyFallback`, which reaches every text style.
 `Fluent2Icons` includes Fluent UI System Icons.
 
 ## Requirements
@@ -228,8 +247,8 @@ Flutter 3.47.0 or later. The package runs on Android, iOS, the web, macOS, Windo
 
 ## Example
 
-The `example/` directory contains the interactive component gallery and a sample file-sharing
-app. Run it with `flutter run` from that directory.
+`example/` sets every component on its page, in each palette, by day and by night, beside a sample
+file-sharing app. Run it with `flutter run` from that directory.
 
 ## Licences
 

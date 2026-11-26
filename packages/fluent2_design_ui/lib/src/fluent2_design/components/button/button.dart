@@ -528,7 +528,7 @@ final class Fluent2ButtonLook {
   final bool icon;
 
   /// Under a finger ([Fluent2Layout.padded]): the face stands the whole
-  /// 48 target, as a field's and a strip's do, so controls that
+  /// target (the touch floor, 40), as a field's and a strip's do, so controls that
   /// share a row show one top and one bottom.
   final bool touch;
 
@@ -562,13 +562,13 @@ final class Fluent2ButtonLook {
   /// The face's height at rest: the style's least height, else Fluent's at
   /// the theme's density, never under 20 (Fluent's smallest control, the
   /// extra-small tag: a small button two steps in would stand 16, its
-  /// strokes on its words' line); under a finger at least the 48 target,
-  /// whatever the size, the density or the style.
+  /// strokes on its words' line); under a finger at least the touch floor
+  /// (ui_core's 40), whatever the size, the density or the style.
   double get height {
     final own =
         Fluent2Style.first(layers, (s) => s.minimumSize, const {})?.height ??
         t.density.height(metrics.height, least: 20);
-    return touch ? math.max(own, Fluent2Layout.touchHitTarget) : own;
+    return touch ? math.max(own, RawTapTargets.fallback.touch.height) : own;
   }
 
   /// Fluent's corner for [shape] at [height].
@@ -925,7 +925,7 @@ class Fluent2Button extends StatelessWidget {
 /// toolbar's and a bar's commands are), named by [label] for a screen
 /// reader. [filled] is the glyph worn while [selected] (a toggled
 /// command, read as a button selected or not, as Flutter's
-/// `IconButton(isSelected:)` is); its hit target reaches 44 where there is room. [style]
+/// `IconButton(isSelected:)` is); its tap target is the floor (40 under a finger, 24 under a pointer). [style]
 /// restyles it over `Fluent2ThemeData.iconButtonTheme`, then its
 /// appearance's button theme and the theme's knobs.
 ///
@@ -1036,7 +1036,7 @@ class Fluent2IconButton extends StatelessWidget {
                 if (b == null) return box;
                 // The badge rides the face a pointer sees (32 at medium), its
                 // corner by the glyph's, under a finger as with a pointer: the
-                // 48 target round it is room, not face.
+                // floor's target round it is room, not face.
                 final shown = Fluent2ButtonLook(
                   context.fluent2Theme,
                   appearance: appearance,
@@ -1693,10 +1693,10 @@ class Fluent2SplitButton extends StatelessWidget {
       fluent2CornerOf(look.outline(states), h, Fluent2Radius.medium),
     );
     // The halves keep the button's own height. Under a finger each half is
-    // its own 48 target: it stands 48 tall round its face, and each face is
-    // at least 48 wide, so the halves still meet at the divider.
+    // its own target: it stands the floor (40) tall round its face, and each
+    // face is at least 40 wide, so the halves still meet at the divider.
     final touch = Fluent2Layout.padded(context);
-    final least = touch ? Fluent2Layout.touchHitTarget : 0.0;
+    final least = touch ? Fluent2Layout.hitTargetOf(context) : 0.0;
     Widget ring(Widget face, Set<WidgetState> states) => !states.focused
         ? face
         : Stack(

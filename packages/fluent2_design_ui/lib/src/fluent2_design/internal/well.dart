@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../components/pressable/pressable.dart';
 import '../theme.dart';
@@ -99,8 +100,8 @@ Color fluent2BrandWell(
 ]) {
   final c = t.colors;
   final deep =
-      Fluent2ThemeData.contrast(c.brandBackground2, t.background) < 1.15 &&
-      Fluent2ThemeData.contrast(c.brandForeground2, c.brandBackground2Hover) >=
+      RawPalette.contrastRatio(c.brandBackground2, t.background) < 1.15 &&
+      RawPalette.contrastRatio(c.brandForeground2, c.brandBackground2Hover) >=
           4.5;
   return deep
       ? press.pick(

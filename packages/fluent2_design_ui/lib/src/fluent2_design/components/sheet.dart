@@ -30,7 +30,7 @@ class Fluent2SheetHead extends StatelessWidget {
     super.key,
   });
 
-  /// The sheet's title, in subtitle1.
+  /// The sheet's title, in subtitle1; an empty one shows none.
   final String title;
 
   /// The way back at the head's start; null shows none.
@@ -54,10 +54,12 @@ class Fluent2SheetHead extends StatelessWidget {
         children: [
           ?leading,
           Expanded(
-            child: Semantics(
-              header: true,
-              child: Text(title, style: t.subtitle1),
-            ),
+            child: title.isEmpty
+                ? const SizedBox.shrink()
+                : Semantics(
+                    header: true,
+                    child: Text(title, style: t.subtitle1),
+                  ),
           ),
           ...actions,
           ?close,
@@ -435,7 +437,7 @@ class Fluent2Sheet extends StatelessWidget {
 
   /// Raises a transient sheet over the whole app (the app's root
   /// navigator, [Fluent2Host.navigatorOf]): a [Fluent2SheetShell] headed by
-  /// [title], holding [builder]'s parts and [foot]'s acts. Completes with
+  /// [title] (none where it is empty), holding [builder]'s parts and [foot]'s acts. Completes with
   /// the value the sheet pops with: null when it is dismissed.
   ///
   /// On a phone it is ui_core's bottom sheet (`RawBottomSheetRoute`): it
@@ -471,7 +473,8 @@ class Fluent2Sheet extends StatelessWidget {
           barrierLabel: RawWidgetsLocalizations.of(context)
               .modalBarrierDismissLabel,
           barrierColor: t.overlay,
-          semanticLabel: title,
+          // No title: ui_core's word for a dialog, in the app's language.
+          semanticLabel: title.isEmpty ? null : title,
           dampingRatio: Fluent2Motion.springDamping,
           stiffness: Fluent2Motion.springGentle,
           builder: (sheetContext, details) => themes.wrap(
@@ -496,7 +499,8 @@ class Fluent2Sheet extends StatelessWidget {
         barrierLabel: RawWidgetsLocalizations.of(context)
             .modalBarrierDismissLabel,
         barrierColor: t.overlay,
-        semanticLabel: title,
+        // No title: ui_core's word for a sheet, in the app's language.
+        semanticLabel: title.isEmpty ? null : title,
         dampingRatio: Fluent2Motion.springDamping,
         stiffness: Fluent2Motion.springGentle,
         // A tablet's sheet stands no wider than the desktop's dialog, as

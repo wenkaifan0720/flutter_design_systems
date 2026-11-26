@@ -32,29 +32,13 @@ void releaseImages() {
     ..clearLiveImages();
 }
 
-/// Android's 48 px targets as Flutter's guideline reads them, but for a calendar's day where seven 48s do not fit
-/// the calendar's room (a calendar in a card on a phone): there each day takes its seventh, never less than iOS's 44,
-/// so adjacent days have distinct targets. The accessibility label gives the full date.
-const androidTargetGuideline = _AndroidTargets();
-
-class _AndroidTargets extends MinimumTapTargetGuideline {
-  const _AndroidTargets()
-    : super(
-        size: const Size(48, 48),
-        link: 'https://support.google.com/accessibility/android/answer/7101858?hl=en',
-      );
-
-  static final _day = RegExp(r'^(\w+, )?\w+ \d{1,2}, \d{4}');
-
-  @override
-  bool shouldSkipNode(SemanticsNode node) {
-    if (super.shouldSkipNode(node)) return true;
-    final size = node.rect.size;
-    return _day.hasMatch(node.getSemanticsData().label) &&
-        size.width >= 44 &&
-        size.height >= 44;
-  }
-}
+/// The family's finger floor as Flutter's guideline reads it: every target at least ui_core's 40 by 40
+/// (`RawTapTargets.fallback`'s touch, WCAG 2.2's target size minimum). Flutter's Android 48 and iOS 44 guidelines ask
+/// more than the floor.
+final touchFloorGuideline = MinimumTapTargetGuideline(
+  size: RawTapTargets.fallback.touch,
+  link: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum',
+);
 
 /// Loads the faces the pubspec bundles (Selawik and the two glyph sets) and every family in the FontManifest, so
 /// words are measured and inked as they would be on a device.

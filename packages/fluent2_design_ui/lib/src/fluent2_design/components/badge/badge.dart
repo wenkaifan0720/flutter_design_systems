@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
@@ -263,7 +264,7 @@ final class Fluent2BadgeFace with Diagnosticable {
     final c = t.colors;
     Color holding(Color fluent, Color fallback) {
       for (final ground in [t.surface, t.background, c.neutralCardBackground]) {
-        if (Fluent2ThemeData.contrast(fluent, ground) < 4.5) return fallback;
+        if (RawPalette.contrastRatio(fluent, ground) < 4.5) return fallback;
       }
       return fluent;
     }

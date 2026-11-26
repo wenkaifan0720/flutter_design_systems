@@ -513,7 +513,9 @@ class Fluent2Tag extends StatelessWidget {
     }
     return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
+      // The tag's target is this one; the pressable adds none of its own.
       child: Fluent2Pressable(
+        padded: false,
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: enabled ? dismiss : null,
@@ -614,8 +616,8 @@ IconData _dismissGlyph(Fluent2TagSize size) => switch (size) {
 /// opens what it names, or, with [selected] set, toggles the tag in and
 /// out of a choice (the brand fill while chosen: a filter, a topic, a
 /// day); an [onDeleted] adds its secondary part past a hairline, the
-/// dismiss mark as its own button. Both parts take the 44 touch target
-/// where there is room. Null [onPressed] and [onDeleted] draw it disabled.
+/// dismiss mark as its own button. Both parts take the tap floor (40
+/// under a finger, 24 under a pointer). Null [onPressed] and [onDeleted] draw it disabled.
 /// Read as a button named [label], selected or not, and "Remove [label]".
 ///
 /// ```dart
@@ -707,7 +709,7 @@ class Fluent2InteractionTag extends StatelessWidget {
     // With a dismiss the two parts share one face height (the words' line
     // at the text scale inside the strokes, at least the size's), each in
     // its own touch target, the faces pushed together inside them: stretched
-    // to a 48 target they would draw 48 tall with a gap between.
+    // to the floor's target they would draw it tall with a gap between.
     final scaler = MediaQuery.textScalerOf(context);
     double line(TextStyle s) =>
         scaler.scale(s.fontSize ?? 14) * (s.height ?? 1);
@@ -718,7 +720,10 @@ class Fluent2InteractionTag extends StatelessWidget {
               ? line(t.caption1) + Fluent2Stroke.thin + line(t.caption2)
               : line(size == Fluent2TagSize.medium ? t.body1 : t.caption1)),
     );
+    // The tag's own targets (below) stand round each part, so its pressables
+    // add none: a chip group reaches the face through one target alone.
     final primary = Fluent2Pressable(
+      padded: false,
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
@@ -796,6 +801,7 @@ class Fluent2InteractionTag extends StatelessWidget {
       );
     }
     final secondaryPart = Fluent2Pressable(
+      padded: false,
       onPressed: dismiss,
       label: deleteLabel ?? Fluent2Localizations.of(context).remove(label),
       radius: radius,
@@ -1086,7 +1092,10 @@ class Fluent2TagGroup<T> extends StatelessWidget {
       container: true,
       explicitChildNodes: true,
       label: label,
-      child: Wrap(
+      // Faces stand the group's gap apart, along a run and run under run,
+      // their targets reaching into the room between (ui_core's
+      // RawChipGroup): in a Wrap each target's slack stood between too.
+      child: RawChipGroup(
         spacing: size.groupGap,
         runSpacing: size.groupGap,
         crossAxisAlignment: WrapCrossAlignment.center,

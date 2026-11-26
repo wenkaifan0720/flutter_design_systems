@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../internal/well.dart';
 import '../../localizations.dart';
@@ -75,7 +76,7 @@ Color fluent2ProgressFill(Fluent2ThemeData t, Fluent2ProgressColor color) {
   final track = fluent2ProgressTrack(t);
   return [t.surface, t.background].every(
         (g) =>
-            Fluent2ThemeData.contrast(fluent, Color.alphaBlend(track, g)) >= 3,
+            RawPalette.contrastRatio(fluent, Color.alphaBlend(track, g)) >= 3,
       )
       ? fluent
       : ink;

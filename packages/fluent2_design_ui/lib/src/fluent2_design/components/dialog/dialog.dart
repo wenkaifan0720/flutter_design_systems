@@ -39,7 +39,8 @@ class Fluent2Dialog extends StatelessWidget {
   /// ([Fluent2ThemeData.dialogTheme]): the slots its doc names.
   final Fluent2Style? style;
 
-  /// The dialog's title.
+  /// The dialog's title; an empty one draws no head, and a screen reader
+  /// hears ui_core's word for a dialog in the app's language.
   final String title;
 
   /// Its words, in body1 under the title; [content] follows them.
@@ -136,7 +137,9 @@ class Fluent2Dialog extends StatelessWidget {
           child: Semantics(
             namesRoute: true,
             explicitChildNodes: true,
-            label: title,
+            label: title.isEmpty
+                ? RawWidgetsLocalizations.of(context).dialogLabel
+                : title,
             child: Material(
               type: MaterialType.transparency,
               child: Fluent2Plate(
@@ -161,12 +164,16 @@ class Fluent2Dialog extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Semantics(
-                        header: true,
-                        child: Text(title, style: t.subtitle1),
-                      ),
+                      if (title.isNotEmpty)
+                        Semantics(
+                          header: true,
+                          child: Text(title, style: t.subtitle1),
+                        ),
                       if (message != null || content != null) ...[
-                        const SizedBox(height: Fluent2ChromeMetrics.dialogGap),
+                        if (title.isNotEmpty)
+                          const SizedBox(
+                            height: Fluent2ChromeMetrics.dialogGap,
+                          ),
                         Flexible(
                           child: SingleChildScrollView(
                             child: message == null

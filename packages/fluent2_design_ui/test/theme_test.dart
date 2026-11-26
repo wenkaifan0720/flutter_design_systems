@@ -156,12 +156,11 @@ void main() {
     }
   });
 
-  test('the presets are seven, the first the default, each designed twice', () {
+  test('the presets are six, the first the default, each designed twice', () {
     expect(Fluent2ThemeData.presets, [
       'lapis',
       'iris',
       'juniper',
-      'clover',
       'pumpkin',
       'berry',
       'flint',

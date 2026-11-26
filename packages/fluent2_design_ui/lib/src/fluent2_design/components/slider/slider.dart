@@ -263,11 +263,12 @@ class _Fluent2SliderState extends State<Fluent2Slider> {
                       : null,
                   onHorizontalDragEnd: live ? (_) => _end() : null,
                   dragStartBehavior: DragStartBehavior.down,
-                  // Under a finger the rail stands in a whole target (48).
+                  // Under a finger the rail stands in a whole target (the
+                  // floor, 40).
                   child: SizedBox(
                     width: width,
                     height: Fluent2Layout.padded(context)
-                        ? Fluent2Layout.touchHitTarget
+                        ? Fluent2Layout.hitTargetOf(context)
                         : small
                         ? 24
                         : 32,

@@ -171,19 +171,21 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
     // the stroke inside it.
     final strokes = Fluent2FieldFrame.strokesOf(widget.appearance);
     // Under a finger the two steppers stand side by side, each a whole
-    // target (48) square, and the field grows by the room they add, so the
+    // target (the floor, 40) square, and the field grows by the room they add, so the
     // figures keep theirs.
     final touch = Fluent2Layout.padded(context);
-    const target = Fluent2Layout.touchHitTarget;
+    final target = Fluent2Layout.hitTargetOf(context);
     // The line grows with its words at every text size, as a text field's
     // does (its editor a line of [style] tall), and the steppers take its
     // height: never under the control's own.
     final wordsTall =
         MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
         (style.height ?? 1);
+    // Under a finger the words keep a hairline over and under where they
+    // fill the target, as a text field's do (fluent2TouchWordsLine).
     final line = math.max(
       touch ? target : math.max(h - strokes.vertical, 0.0),
-      wordsTall,
+      touch ? fluent2TouchWordsLine(context, style) : wordsTall,
     );
     // Asked to take its parent's width, from 600 it stops at 320, its
     // buttons beside it under a finger included.

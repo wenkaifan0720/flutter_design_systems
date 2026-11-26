@@ -217,7 +217,8 @@ class Fluent2Pressable extends StatelessWidget {
   final WidgetStatesController? statesController;
 
   /// Whether, where a touch reaches it ([Fluent2Layout.padded]), the press
-  /// stands at least 48 square as Material's padded tap target does: the
+  /// stands at least the floor (40) square, as Material's padded tap target
+  /// stands its 48: the
   /// face keeps its size, centred, the room round it takes the touch, and
   /// the press's semantics node is the whole target. False where the
   /// control around it holds the target.

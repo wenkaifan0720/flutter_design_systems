@@ -105,7 +105,9 @@ void main() {
   });
 
   group('Fluent2ListItem and Fluent2ListGroup', () {
-    testWidgets('a row fires onTap and stands 44 tall on a phone', (t) async {
+    testWidgets('a row fires onTap and stands the floor (40) tall on a phone', (
+      t,
+    ) async {
       _window(t, const Size(390, 844));
       var taps = 0;
       await t.pumpWidget(
@@ -121,7 +123,7 @@ void main() {
       expect(taps, 1);
       expect(
         t.getSize(find.byType(Fluent2ListItem)).height,
-        greaterThanOrEqualTo(44),
+        greaterThanOrEqualTo(RawTapTargets.fallback.touch.height),
       );
     });
 

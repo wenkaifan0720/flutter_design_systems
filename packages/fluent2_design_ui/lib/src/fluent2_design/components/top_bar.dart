@@ -490,7 +490,7 @@ class _MoreCommands extends StatelessWidget {
 
 /// The room [part] keeps round what it shows at a bar's end: a glyph-only
 /// button's round its glyph (half its face less its glyph), a pressable
-/// avatar's round its face where a finger reaches it (its 48 target);
+/// avatar's round its face where a finger reaches it (its target, the floor);
 /// none round words or any other part.
 double _roomOf(BuildContext context, Widget? part) {
   final shown = part is KeyedSubtree ? part.child : part;
@@ -512,7 +512,7 @@ double _roomOf(BuildContext context, Widget? part) {
     final Fluent2IconButton b => glyph(b),
     Fluent2Bell() || Fluent2Back() || _MoreCommands() => glyph(),
     final Fluent2Avatar a when touch && a.onPressed != null =>
-      (Fluent2Layout.touchHitTarget - a.size) / 2,
+      (Fluent2Layout.hitTargetOf(context) - a.size) / 2,
     _ => 0,
   };
 }

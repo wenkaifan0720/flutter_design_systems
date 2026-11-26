@@ -24,7 +24,7 @@ export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 /// | [side] | the whole rim, colour and width; it wins over [edge] |
 /// | [shape] | the outline: a Flutter border on the corner scale, or any [OutlinedBorder] |
 /// | [padding] | the room between the rim and what stands inside |
-/// | [minimumSize] | the least the face stands; the touch target stays 48 on touch, 44 elsewhere |
+/// | [minimumSize] | the least the face stands; the tap target stays the floor: 40 under a finger, 24 under a pointer |
 /// | [textStyle] | the words' style, merged over Fluent's (its colour comes from [foreground]) |
 /// | [iconSize] | an icon's size |
 ///

@@ -206,10 +206,9 @@ void main() {
             galleryPages.firstWhere((p) => p.id == id).build(b),
           );
           await settle(tester);
-          // expectMeetsGuidelines' three target and label guidelines, as they are.
+          // expectMeetsGuidelines' target and label guidelines, as they are.
           final semantics = tester.ensureSemantics();
-          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-          await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(touchFloorGuideline));
           await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
           semantics.dispose();
         },

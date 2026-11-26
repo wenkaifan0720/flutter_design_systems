@@ -336,14 +336,14 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
                     final room = box.maxWidth;
                     // Fluent's TagPickerGroup: 6 (8 large) over and under its
                     // tags inside the stroke, so the field stands 34 (42)
-                    // tall with a row of tags. The input stays the Wrap's
+                    // tall with a row of tags. The input stays the group's
                     // last child, so it keeps its place (and its focus) as
                     // tags come and go.
                     return Padding(
                       padding: EdgeInsets.symmetric(
                         vertical: tags.isEmpty ? 0 : vertical,
                       ),
-                      child: Wrap(
+                      child: RawChipGroup(
                         spacing: gap,
                         runSpacing: gap,
                         crossAxisAlignment: WrapCrossAlignment.center,
@@ -354,12 +354,12 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
                                 ? room
                                 : (room < 120 ? room : 120),
                             // Beside tags the words are their own node:
-                            // under a finger as tall as the tags' 48
-                            // targets, so the line grows no taller.
+                            // under a finger as tall as the tags' targets
+                            // (the floor), so the line grows no taller.
                             height: tags.isEmpty
                                 ? null
                                 : Fluent2Layout.padded(context)
-                                ? Fluent2Layout.touchHitTarget
+                                ? Fluent2Layout.hitTargetOf(context)
                                 : (large ? 24 : 20),
                             // The whole box is the words' target, not
                             // only their line.

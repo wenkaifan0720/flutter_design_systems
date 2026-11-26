@@ -44,8 +44,7 @@ void main() {
             await pumpGalleryPage(tester, page, preset, b);
             final failed = <String>[];
             for (final (name, guideline) in [
-              ('Android 48 px targets', androidTargetGuideline),
-              ('iOS 44 px targets', iOSTapTargetGuideline),
+              ('40 px targets (the floor)', touchFloorGuideline),
               ('labelled targets', labeledTapTargetGuideline),
             ]) {
               final result = await guideline.evaluate(tester);

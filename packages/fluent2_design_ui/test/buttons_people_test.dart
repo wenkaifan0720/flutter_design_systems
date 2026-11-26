@@ -42,6 +42,9 @@ BoxDecoration _face(WidgetTester t, Finder finder) =>
             .decoration
         as BoxDecoration;
 
+/// The finger floor, ui_core's 40.
+final _floor = RawTapTargets.fallback.touch.height;
+
 void main() {
   setUp(
     () =>
@@ -150,8 +153,8 @@ void main() {
                 ),
               )
               .height,
-          // Under a finger every face stands the 48 target.
-          defaultTargetPlatform == TargetPlatform.android ? 48 : 24,
+          // Under a finger every face stands the floor's target.
+          defaultTargetPlatform == TargetPlatform.android ? _floor : 24,
         );
       },
       variant: const TargetPlatformVariant({
@@ -191,8 +194,8 @@ void main() {
     });
 
     testWidgets(
-      'a field takes the medium step and the density on a desk, its 48 line '
-      'under a finger',
+      'a field takes the medium step and the density on a desk, its line the '
+      'floor under a finger',
       (t) async {
         await t.pumpWidget(
           themed(
@@ -207,11 +210,11 @@ void main() {
           of: find.byKey(const ValueKey('f')),
           matching: find.byType(Fluent2FieldFrame),
         );
-        // Under a finger the frame is the 48 target overall, its hairlines
-        // drawn over its line's edges.
+        // Under a finger the frame is the floor's target overall, its
+        // hairlines drawn over its line's edges.
         expect(
           t.getSize(frame).height,
-          defaultTargetPlatform == TargetPlatform.android ? 48 : 24,
+          defaultTargetPlatform == TargetPlatform.android ? _floor : 24,
         );
       },
       variant: const TargetPlatformVariant({
@@ -220,9 +223,8 @@ void main() {
       }),
     );
 
-    testWidgets('density never moves the target: 48 on touch, 24 on a desk', (
-      t,
-    ) async {
+    testWidgets('density never moves the target: the floor (40) on touch, 24 '
+        'on a desk', (t) async {
       Future<int> pressesAt(TargetPlatform platform) async {
         var presses = 0;
         debugDefaultTargetPlatformOverride = platform;
@@ -238,9 +240,9 @@ void main() {
             ),
           ),
         );
-        // 23 off the centre: inside a 48 target, outside a 24 one.
+        // 19 off the centre: inside a 40 target, outside a 24 one.
         await t.tapAt(
-          t.getCenter(find.byKey(const ValueKey('i'))) + const Offset(23, 0),
+          t.getCenter(find.byKey(const ValueKey('i'))) + const Offset(19, 0),
         );
         await t.pump(const Duration(milliseconds: 300));
         debugDefaultTargetPlatformOverride = null;
@@ -265,7 +267,7 @@ void main() {
 
   group('Fluent2Button', () {
     testWidgets(
-      "stands at Fluent's three heights with a pointer, the 48 "
+      "stands at Fluent's three heights with a pointer, the floor's "
       'target under a finger, even with room to grow',
       (t) async {
         final touch = defaultTargetPlatform == TargetPlatform.android;
@@ -279,7 +281,7 @@ void main() {
           );
           expect(
             t.getSize(find.byType(Fluent2ButtonBox)).height,
-            touch ? 48.0 : height,
+            touch ? _floor : height,
           );
         }
       },
@@ -401,9 +403,9 @@ void main() {
             ),
           ),
         );
-        // Under a finger the 48 target, square.
+        // Under a finger the floor's target, square.
         final side = defaultTargetPlatform == TargetPlatform.android
-            ? 48.0
+            ? _floor
             : 32.0;
         expect(t.getSize(find.byType(Fluent2ButtonBox)), Size(side, side));
         expect(find.bySemanticsLabel('More options'), findsOneWidget);

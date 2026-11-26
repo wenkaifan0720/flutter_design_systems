@@ -76,7 +76,8 @@ class Fluent2DataGrid<R> extends StatelessWidget {
         child: child,
       ),
     );
-    // Rows, headings and the tick column are targets: 48 under a finger.
+    // Rows, headings and the tick column are targets: the floor (40) under
+    // a finger.
     final target = Fluent2Layout.hitTargetOf(context);
     final heading = Fluent2Layout.padded(context) ? target : 32.0;
     // Keep headers and their sort indicators together. On a narrow screen

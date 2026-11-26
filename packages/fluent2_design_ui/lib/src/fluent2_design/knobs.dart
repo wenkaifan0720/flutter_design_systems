@@ -13,8 +13,8 @@ import 'fonts.dart';
 /// (this is the look's own type, free of Material's): each step
 /// of [vertical] takes 4 from a control's height and each step of
 /// [horizontal] 2 from its padding at either side, from -4 (tightest) to 4
-/// (roomiest). The touch target does not move: 48 where a touch reaches
-/// the control, 44 elsewhere, whatever the density, so a compact face
+/// (roomiest). The tap target does not move: the floor (ui_core's 40)
+/// where a touch reaches the control, 24 under a pointer, whatever the density, so a compact face
 /// stands in the same target with room around it. A control's own `size:`
 /// (small, medium, large) picks Fluent's measures first; the density moves
 /// from there. A theme is [standard] unless set, on every platform:

@@ -79,7 +79,7 @@ class Fluent2Link extends StatelessWidget {
     // Inside a sentence (a WidgetSpan of a paragraph) the link is a run of
     // its words: the sentence scales it with the reader's text size, so it
     // takes no scale of its own, and it stands no taller than the line (a
-    // 48 touch target there would open a gap in the paragraph, as Flutter's
+    // touch target there would open a gap in the paragraph, as Flutter's
     // own inline links stand no taller either).
     final inSentence =
         context.findAncestorRenderObjectOfType<RenderParagraph>() != null;

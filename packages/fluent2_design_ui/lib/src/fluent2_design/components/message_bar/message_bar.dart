@@ -191,7 +191,8 @@ class Fluent2MessageBar extends StatelessWidget {
             // The glyph, the first line of words and the dismiss share one
             // band, each centred in it: the line with its 10 above and
             // below, or the dismiss's face when that is taller (32, the
-            // whole 48 under a finger), however many lines follow and
+            // whole target, the floor, under a finger), however many lines
+            // follow and
             // however large the words.
             final ambient = DefaultTextStyle.of(context);
             final probe = TextPainter(
@@ -205,7 +206,7 @@ class Fluent2MessageBar extends StatelessWidget {
             final face = dismiss == null
                 ? 0.0
                 : Fluent2Layout.padded(context)
-                ? Fluent2Layout.touchHitTarget
+                ? Fluent2Layout.hitTargetOf(context)
                 : 32.0;
             final band = math.max(line + 2 * Fluent2Spacing.mNudge, face);
             final wordsTop = (band - line) / 2;
@@ -267,7 +268,7 @@ class Fluent2MessageBar extends StatelessWidget {
           } else {
             // Under a pointer the acts stand in Fluent's 36 band (a small
             // button 6 from its top and foot). Under a finger an act's face
-            // is its whole 48 target, taller than the band: the bar holds
+            // is its whole target (the floor, 40), taller than the band: the bar holds
             // it as far from its top and foot as from its end.
             final hold = Fluent2Layout.padded(context) && actions.isNotEmpty
                 ? Fluent2Spacing.m

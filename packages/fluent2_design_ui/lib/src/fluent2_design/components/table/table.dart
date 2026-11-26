@@ -202,14 +202,14 @@ class Fluent2Table extends StatelessWidget {
   static const double selectionWidth = 44;
 
   /// The selection column's width at [context]: [selectionWidth], a whole
-  /// target (48) under a finger.
+  /// target (the floor, 40) under a finger.
   static double selectionWidthOf(BuildContext context) =>
       Fluent2Layout.padded(context)
-      ? Fluent2Layout.touchHitTarget
+      ? Fluent2Layout.hitTargetOf(context)
       : selectionWidth;
 
   /// The heading row's height at [context]: 32 on the desktop, a target
-  /// (44, 48 under a finger) elsewhere.
+  /// (the floor, 40) elsewhere.
   static double headerHeightOf(BuildContext context) =>
       Fluent2Layout.isWide(context) && !Fluent2Layout.padded(context)
       ? 32

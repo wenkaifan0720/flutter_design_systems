@@ -29,6 +29,14 @@ import '../../theme.dart';
 import '../pressable/pressable.dart';
 import 'context_menu.dart';
 
+/// The least height of a one-line field's words under a finger at
+/// [context]: a line of [style] at the app's text size and a hairline over
+/// and under it (the strokes' room a frame gives its words on a desk).
+double fluent2TouchWordsLine(BuildContext context, TextStyle? style) =>
+    MediaQuery.textScalerOf(context).scale(style?.fontSize ?? 14) *
+        (style?.height ?? 1) +
+    2 * Fluent2ChromeMetrics.hairline;
+
 /// A field's face, Fluent's Input `appearance`: [outline] the default (the
 /// surface inside a 1 stroke whose bottom is the accessible stroke),
 /// [underline] the bottom stroke alone, [filledDarker] the darker neutral
@@ -401,9 +409,24 @@ class Fluent2FieldEditor extends StatelessWidget {
     // One line: its capitals on the line's middle, the hint's too, the
     // caret, selection and taps moving with them (ui_core's RawCapCenter
     // around the bare TextField). A text area keeps the browser's line box.
-    return maxLines == 1
-        ? fluent2CapCentred(field)
-        : Fluent2WebBaseline(style: style, child: field);
+    if (maxLines != 1) return Fluent2WebBaseline(style: style, child: field);
+    // Under a finger the frame's line is the target, its strokes drawn over
+    // its edges; where the words fill it (large text), they keep a hairline
+    // over and under, as the strokes' own room gives them on a desk, so the
+    // capitals' centring never lifts their line past the frame.
+    if (!Fluent2Layout.padded(context)) return fluent2CapCentred(field);
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: fluent2TouchWordsLine(context, style),
+      ),
+      // On the middle of that room, so the hairline stands over the words
+      // as under them.
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        heightFactor: 1,
+        child: fluent2CapCentred(field),
+      ),
+    );
   }
 
   @override
@@ -729,8 +752,8 @@ class Fluent2FieldFrame extends StatefulWidget {
   /// Whether the field is pressed.
   final bool pressed;
 
-  /// The least height; under a finger the frame stands at least 48
-  /// ([Fluent2Layout.touchHitTarget]) overall, its strokes drawn over its
+  /// The least height; under a finger the frame stands at least the floor
+  /// ([Fluent2Layout.hitTargetOf(context)]) overall, its strokes drawn over its
   /// line's edges, unless [touchTarget] is false. 0 sets none.
   final double minHeight;
 
@@ -878,7 +901,7 @@ class _Fluent2FieldFrameState extends State<Fluent2FieldFrame> {
           widget.touchTarget &&
           Fluent2Layout.padded(context);
       final least = touchLine
-          ? math.max(set, Fluent2Layout.touchHitTarget)
+          ? math.max(set, Fluent2Layout.hitTargetOf(context))
           : set;
       final rims = touchLine
           ? EdgeInsets.only(left: strokes.left, right: strokes.right)
@@ -1671,7 +1694,7 @@ class Fluent2OptionFace extends StatelessWidget {
     final row = Container(
       constraints: BoxConstraints(
         minHeight: touch
-            ? Fluent2ChromeMetrics.menuItemTouch
+            ? Fluent2Layout.hitTargetOf(context)
             : Fluent2ChromeMetrics.menuItem,
       ),
       // The check stands 2 into the start room and 2 + 4 before the

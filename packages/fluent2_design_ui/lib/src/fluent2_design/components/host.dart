@@ -108,12 +108,12 @@ class Fluent2Host extends StatelessWidget {
         curve: Fluent2Motion.easyEase,
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: systemBarsOf(t),
-          // Fluent's tap targets: 48 where a finger reaches the controls
-          // (Fluent2Layout.touchHitTarget), WCAG's 24 for a pointer; each
-          // control lays out at least that big (TapTargetPadding).
+          // Fluent's tap targets: ui_core's floors, 40 where a finger
+          // reaches the controls (Fluent2Layout.hitTargetOf), WCAG's 24 for a
+          // pointer; each control lays out at least that big
+          // (TapTargetPadding).
           child: RawTapTargetScope(
             targets: RawTapTargets(
-              touch: const Size.square(Fluent2Layout.touchHitTarget),
               input: Fluent2Layout.padded(context)
                   ? RawInput.touch
                   : RawInput.pointer,

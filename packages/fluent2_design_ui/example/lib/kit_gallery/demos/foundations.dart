@@ -1,4 +1,4 @@
-/// Foundations: the theme's roles (ui_core's, as views of Fluent's
+/// Foundations: the six palettes, the theme's roles (ui_core's, as views of Fluent's
 /// aliases, and Fluent's own neutral layers, strokes and inks), the brand
 /// ramp, the tones, the materials' grounds, the type ramp in Selawik, the
 /// radii, the spacing, the elevations, a few of Fluent UI System Icons and
@@ -16,6 +16,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Foundations',
   sections: [
+    kitSection('Palettes', children: [const _Palettes()]),
     kitSection('Color roles', children: [const _Roles()]),
     kitSection('Neutral layers and strokes', children: [const _Layers()]),
     kitSection('Brand ramp', children: [const _Ramp()]),
@@ -35,6 +36,99 @@ String _hex(Color c) {
       (v * 255).round().toRadixString(16).padLeft(2, '0').toUpperCase();
   final rgb = '#${two(c.r)}${two(c.g)}${two(c.b)}';
   return c.a < 1 ? '$rgb ${(c.a * 100).round()}%' : rgb;
+}
+
+/// The six palettes ([Fluent2ThemeData.presets]) in the page's appearance,
+/// each on its own ground: its name, its brand fill with the words on it,
+/// its brand words, and five steps of its brand ramp.
+class _Palettes extends StatelessWidget {
+  const _Palettes();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.fluent2Theme;
+    return Wrap(
+      spacing: Fluent2Spacing.m,
+      runSpacing: Fluent2Spacing.m,
+      children: [
+        for (final id in Fluent2ThemeData.presets)
+          _Palette(id, Fluent2ThemeData.preset(id, t.brightness)),
+      ],
+    );
+  }
+}
+
+class _Palette extends StatelessWidget {
+  const _Palette(this.id, this.palette);
+
+  final String id;
+  final Fluent2ThemeData palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.fluent2Theme;
+    final p = palette;
+    final c = p.colors;
+    final name = '${id[0].toUpperCase()}${id.substring(1)}';
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 104),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: p.background,
+          border: Border.all(color: t.border),
+          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(Fluent2Spacing.s),
+          child: IntrinsicWidth(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: Fluent2Spacing.s,
+              children: [
+                Text(name, style: p.caption1Strong.c(c.neutralForeground1)),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: Fluent2Spacing.s,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: c.brandBackground,
+                        borderRadius: BorderRadius.circular(
+                          Fluent2Radius.medium,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Fluent2Spacing.s,
+                          vertical: Fluent2Spacing.xxs,
+                        ),
+                        child: Text(
+                          'Aa',
+                          style: p.caption1Strong.c(c.neutralForegroundOnBrand),
+                        ),
+                      ),
+                    ),
+                    Text('Link', style: p.caption1.c(c.brandForegroundLink)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    for (final shade in const [40, 60, 80, 110, 140])
+                      Expanded(
+                        child: SizedBox(
+                          height: 6,
+                          child: ColoredBox(color: p.brand(shade)),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _Swatches extends StatelessWidget {
@@ -475,7 +569,7 @@ class _Metrics extends StatelessWidget {
           ('nav pane', '${Fluent2ChromeMetrics.paneWidth.round()}'),
           ('nav pane item', '${Fluent2ChromeMetrics.paneItem.round()}'),
           ('sheet corner', '${Fluent2ChromeMetrics.sheetRadius.round()}'),
-          ('hit target floor', '${Fluent2Layout.minHitTarget.round()}'),
+          ('hit target floor', '${Fluent2Layout.hitTargetOf(context).round()}'),
           ('desktop from', '${Fluent2Layout.wide.round()}'),
         ])
           Padding(

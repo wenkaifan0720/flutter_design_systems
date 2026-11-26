@@ -299,7 +299,8 @@ void main() {
     expect(row.left, greaterThan(field.left), reason: 'on the field');
     expect(row.left, lessThan(field.left + 48), reason: 'on the field');
     expect(row.top, greaterThan(field.bottom - 1), reason: 'under the field');
-    // One row to the next: a finger's row (44) and the list's 2 between.
+    // One row to the next: a finger's row (the floor, 40) and the list's 2
+    // between.
     final first = t.getRect(
       find.descendant(
         of: find.byType(Scrollable),
@@ -308,7 +309,7 @@ void main() {
     );
     expect(
       row.center.dy - first.center.dy,
-      greaterThanOrEqualTo(Fluent2ChromeMetrics.menuItemTouch),
+      greaterThanOrEqualTo(RawTapTargets.fallback.touch.height),
       reason: "a finger's row",
     );
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));

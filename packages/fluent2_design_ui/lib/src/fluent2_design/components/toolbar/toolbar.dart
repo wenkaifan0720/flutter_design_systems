@@ -141,7 +141,7 @@ class Fluent2Toolbar extends StatelessWidget {
 
   Fluent2ButtonSize get _buttonSize => _toolbarButtonSize;
 
-  EdgeInsets _padding(bool wide, bool touch) {
+  EdgeInsets _padding(bool wide, bool touch, double floor) {
     final side = switch (size) {
       Fluent2ToolbarSize.small => Fluent2Spacing.xs,
       Fluent2ToolbarSize.medium => Fluent2Spacing.s,
@@ -149,25 +149,22 @@ class Fluent2Toolbar extends StatelessWidget {
     };
     final m = Fluent2ButtonMetrics.of(_buttonSize);
     final base = size == Fluent2ToolbarSize.small ? 0.0 : Fluent2Spacing.xs;
-    // A narrow toolbar is a touch row: its commands' 44 targets fit in it.
-    // Under a finger the commands stand in their own 48 already.
-    final over = wide || touch
-        ? base
-        : math.max(base, (Fluent2Layout.minHitTarget - m.height) / 2);
+    // A narrow toolbar is a touch row: its commands' targets (the floor)
+    // fit in it. Under a finger the commands stand in their own already.
+    final over = wide || touch ? base : math.max(base, (floor - m.height) / 2);
     return EdgeInsets.symmetric(horizontal: side, vertical: over);
   }
 
-  /// The width [item] takes in the row at [scaler]; under a finger
-  /// ([touch]) a command is at least its 48 target wide.
+  /// The width [item] takes in the row at [scaler]; a command is at least
+  /// [least] wide (under a finger its target, the floor).
   double _widthOf(
     Fluent2ToolbarItem item,
     Fluent2ThemeData t,
     TextScaler scaler,
     TextDirection direction,
-    bool touch,
+    double least,
   ) {
     final m = Fluent2ButtonMetrics.of(_buttonSize);
-    final least = touch ? Fluent2Layout.touchHitTarget : 0.0;
     if (item._isDivider) return 25;
     if (!item.showLabel) return math.max(m.height, least);
     final painter = TextPainter(
@@ -195,7 +192,9 @@ class Fluent2Toolbar extends StatelessWidget {
     final t = context.fluent2Theme;
     final wide = Fluent2Layout.isWide(context);
     final touch = Fluent2Layout.padded(context);
-    final padding = _padding(wide, touch);
+    final floor = Fluent2Layout.hitTargetOf(context);
+    final least = touch ? floor : 0.0;
+    final padding = _padding(wide, touch, floor);
     final label = this.label ?? Fluent2Localizations.of(context).toolbar;
     if (vertical) {
       return Semantics(
@@ -217,14 +216,14 @@ class Fluent2Toolbar extends StatelessWidget {
       builder: (context, box) {
         final room = box.maxWidth - padding.horizontal;
         final widths = [
-          for (final item in items) _widthOf(item, t, scaler, direction, touch),
+          for (final item in items) _widthOf(item, t, scaler, direction, least),
         ];
         var shown = items.length;
         if (room.isFinite &&
             widths.fold<double>(0, (s, w) => s + w) > room + 0.5) {
           final more = math.max(
             Fluent2ButtonMetrics.of(_buttonSize).height,
-            touch ? Fluent2Layout.touchHitTarget : 0.0,
+            least,
           );
           var used = more;
           shown = 0;

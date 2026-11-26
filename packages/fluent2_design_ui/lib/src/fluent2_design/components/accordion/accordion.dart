@@ -225,7 +225,7 @@ class _Section extends StatelessWidget {
     final t = context.fluent2Theme;
     final wide = Fluent2Layout.isWide(context);
     final atEnd = position == Fluent2ExpandIconPosition.end;
-    // A row is a target (48 under a finger, 44 elsewhere); a small one is
+    // A row is a target (the floor, 40); a small one is
     // 32 under a desk pointer.
     final height =
         size == Fluent2AccordionSize.small &&

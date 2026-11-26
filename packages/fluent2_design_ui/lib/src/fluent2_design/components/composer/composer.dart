@@ -300,12 +300,12 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
         ),
       );
     }
-    // Centre the first line and its actions in the 40 px face or 48 px touch
-    // target. As the entry grows, the actions stay against its bottom edge.
+    // Centre the first line and its actions in the 40 px face, under a
+    // finger the floor's target (40 too). As the entry grows, the actions stay against its bottom edge.
     final strokes = Fluent2FieldFrame.strokesOf(Fluent2InputAppearance.outline);
     final line = math.max(
       t.density.height(40) - strokes.vertical,
-      Fluent2Layout.padded(context) ? Fluent2Layout.touchHitTarget : 0.0,
+      Fluent2Layout.padded(context) ? Fluent2Layout.hitTargetOf(context) : 0.0,
     );
     final lineHeight = type.fontSize! * (type.height ?? 1);
     final lead = math.max(

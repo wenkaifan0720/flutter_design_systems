@@ -215,8 +215,8 @@ abstract final class Fluent2ChromeMetrics {
   /// A menu (`MenuPopover`): 4 round its items, at least 138 and at most
   /// 300 wide, its corners 4; an item (`MenuItem`) at least 32 tall, 6
   /// round its parts, 4 between them (its glyph 20), its words and its
-  /// secondary words each 2 in from their sides (`content`'s padding). On
-  /// a phone an item stands at least 44 tall (the touch floor).
+  /// secondary words each 2 in from their sides (`content`'s padding). Under
+  /// a finger an item stands at least the floor (40) tall.
   static const double menuPadding = 4;
 
   /// The narrowest a menu stands.
@@ -225,14 +225,12 @@ abstract final class Fluent2ChromeMetrics {
   /// The widest a menu stands.
   static const double menuMaxWidth = 300;
 
-  /// A menu item's least height under a pointer.
+  /// A menu item's least height under a pointer. Under a finger an item
+  /// stands the finger's whole target (`Fluent2Layout.hitTargetOf`), so a
+  /// row's face fills it (ui_core keeps a face its own size inside a larger
+  /// target) and the row's fill stands as far from the menu's top and foot
+  /// as from its sides.
   static const double menuItem = 32;
-
-  /// A menu item's least height under a finger: the finger's whole target,
-  /// so a row's face fills it (ui_core keeps a face its own size inside a
-  /// larger target) and the row's fill stands as far from the menu's top
-  /// and foot as from its sides.
-  static const double menuItemTouch = 48;
 
   /// The room round a menu item's parts: Fluent's spacingHorizontalSNudge
   /// (6), one of its nudges between the 4-pt steps.

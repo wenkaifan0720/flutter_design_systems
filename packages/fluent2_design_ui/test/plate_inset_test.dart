@@ -53,10 +53,6 @@ Rect _rowFill(WidgetTester t, String label) {
 }
 
 void main() {
-  test("a menu row under a finger is the finger's whole target", () {
-    expect(Fluent2ChromeMetrics.menuItemTouch, Fluent2Layout.touchHitTarget);
-  });
-
   for (final (value, label, edge) in [
     ('equipment', 'Equipment', 'top'),
     ('room', 'Room booking', 'foot'),
@@ -85,7 +81,7 @@ void main() {
           ? row.top - surface.top
           : surface.bottom - row.bottom;
       expect(end, closeTo(side, .5), reason: 'the row at the list\'s $edge');
-      expect(row.height, Fluent2Layout.touchHitTarget);
+      expect(row.height, RawTapTargets.fallback.touch.height);
     });
   }
 

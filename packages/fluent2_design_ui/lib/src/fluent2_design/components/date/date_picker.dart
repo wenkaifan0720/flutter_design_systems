@@ -9,6 +9,7 @@ import 'package:ui_core/ui_core.dart';
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
 import '../../internal/measure.dart';
+import '../../internal/own_words.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -182,11 +183,12 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
       return marks.contains(_day(d)) ? '$full, marked' : full;
     }
 
-    // Under a finger a day is a whole target (48) square where seven fit,
+    // Under a finger a day is a whole target (the floor, 40) square where
+    // seven fit,
     // else its seventh of the room: a day never reaches into its
     // neighbour's, where a tap would go to the wrong day.
     final touch = Fluent2Layout.padded(context);
-    const target = Fluent2Layout.touchHitTarget;
+    final target = Fluent2Layout.hitTargetOf(context);
     // The month buttons come before the grid, as they stand over it (the
     // grid's one focus spans the header too, so reading order alone would
     // put it first).
@@ -345,7 +347,7 @@ class _Day extends StatelessWidget {
     }
     final type = (isToday || chosen) ? t.body1Strong : t.body1;
     // As tall as the look's tap floor where the month is narrower than
-    // seven of it: a finger's 48.
+    // seven of it: a finger's 40.
     return SizedBox(
       width: cell,
       height: math.max(cell, RawTapTargets.of(context).floorOn().height),
@@ -577,7 +579,10 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
     }
     final picked = await Fluent2Sheet.show<DateTime>(
       context,
-      title: _name ?? Fluent2Localizations.of(context).chooseDate,
+      title:
+          _name ??
+          fluent2OwnWord(context, (w) => w.chooseDate) ??
+          RawWidgetsLocalizations.of(context).datePickerHelpText,
       builder: (sheetContext) => [
         Center(
           child: Fluent2Calendar(

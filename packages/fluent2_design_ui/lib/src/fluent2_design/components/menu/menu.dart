@@ -73,7 +73,7 @@ class Fluent2MenuItem<T> {
 /// `shadow16`, its corners 4, 4 round its items, at least 138 and at most
 /// 300 wide; an optional [title] (Fluent's `MenuGroupHeader`, caption1
 /// strong in the third ink); one row per item, 32 tall under a pointer and
-/// 44 under a finger, 6 round its parts, the glyph 20 in the second ink, the
+/// the floor (40) under a finger, 6 round its parts, the glyph 20 in the second ink, the
 /// words in body1, a subtle fill under the pointer. A choice calls
 /// [onSelected] with its value. Open one from a control with [show]: the
 /// focus goes to its checked item, else its first; Down and Up move round
@@ -462,7 +462,7 @@ class Fluent2MenuRowFace extends StatelessWidget {
         final face = Container(
           constraints: BoxConstraints(
             minHeight: touch
-                ? Fluent2ChromeMetrics.menuItemTouch
+                ? Fluent2Layout.hitTargetOf(context)
                 : Fluent2ChromeMetrics.menuItem,
           ),
           padding: const EdgeInsets.symmetric(

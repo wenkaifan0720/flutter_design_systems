@@ -1,3 +1,20 @@
+## 0.7.0
+
+- Requires ui_core 0.7.2. Every target's floor is ui_core's 40 by 40 (WCAG 2.2's minimum) under a finger, on every platform; it was 48, and a pointer's rows 44. Under a pointer a control's own target stays 24.
+- Removed `Fluent2Layout.touchHitTarget`, `Fluent2Layout.minHitTarget` and `Fluent2ChromeMetrics.menuItemTouch`; read `Fluent2Layout.hitTargetOf(context)` (the floor in force, from `RawTapTargets`).
+- `Fluent2TagGroup`'s and `Fluent2MultiSelect`'s tags stand their gap apart, their targets reaching into the room between (ui_core's `RawChipGroup`): two runs of tags no longer stand the gap and the targets' slack apart.
+- New `Fluent2ThemeData.fontFamilyFallback` (`from`, `copyWith`): families every step of the type ramp falls back on (a typeface of your own too), and so the host's words and every part's.
+- The time and date pickers' titles and a `Fluent2TimePicker`'s prompt are Fluent 2's English only in English or in the app's own words; in another language they are ui_core's ("Uhrzeit auswählen"). The range picker, which ui_core has no word for, shows no title there and is named a dialog. A `Fluent2Dialog` with an empty `title`, and a `Fluent2Sheet` likewise, draws no head.
+- `showFluent2DateRangePicker` lets go of its calendar controller when its dialog closes.
+- Six palettes: lapis (the default), iris, juniper, pumpkin, berry and flint. `Fluent2ThemeData.clover` is deprecated and leaves `presets`: its brand is Fluent's success green, so a primary read as a success. `preset('clover', ...)` still builds it. The example's Foundations page opens on the six.
+- Removed `Fluent2ThemeData.copyWith`'s `acrylic`, `shadows` and `brandShadows`, deprecated since 0.2.0 (`solidAcrylic` gives the acrylic's opaque fallback); `dart fix` drops `shadows` and `brandShadows`.
+- flint marks a choice by weight: its brand inks (a chosen page or tab, a link, the brand's words) are its strongest, near black by day and near white by night. A chosen page read quieter than the others by night.
+- `Fluent2ThemeData.contrast` is deprecated; use ui_core's `RawPalette.contrastRatio` (the same ratio).
+- A range's chosen days under a finger are 36 on their 40 cell, as the date picker's, so two weeks' bands stand apart.
+- A `Fluent2ListItem`'s chevron ends its ink on the row's end, with a switch's track and a value's words; its box hangs 5 past.
+- At 200% text under a finger a one-line field and a spin button keep a hairline over and under their words.
+- The README opens with a whole app in 12 lines and links the docs and Stint.
+
 ## 0.6.2
 
 - Requires ui_core 0.6.1.

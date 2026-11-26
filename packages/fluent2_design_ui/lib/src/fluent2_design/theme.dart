@@ -4,8 +4,8 @@ import 'dart:ui' show lerpDouble;
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 
 import 'colors.dart';
 import 'component_themes.dart';
@@ -274,22 +274,18 @@ abstract final class Fluent2Layout {
   /// one margin.
   static const double medium = 640;
 
-  /// The touch-target floor (Fluent 2 mobile's 44).
-  static const double minHitTarget = 44;
-
-  /// The target floor where a touch reaches the controls (Android, iOS and
-  /// Fuchsia, as Material's padded tap target): 48.
-  static const double touchHitTarget = 48;
-
-  /// The least target at [context]: [touchHitTarget] on a touch platform,
-  /// [minHitTarget] elsewhere: the height of a row a finger or a pointer
-  /// picks. A control's own target is ui_core's `TapTargetPadding`, at the
-  /// floors `Fluent2Host` declares.
+  /// The least target at [context]: the touch floor the nearest
+  /// `RawTapTargetScope` declares (`Fluent2Host`'s, ui_core's 40 by 40), on
+  /// every platform: the height of a row a finger or a pointer picks, and
+  /// the least side of a control a finger reaches. Under a pointer a row
+  /// keeps the finger's 40, as Material's desktop density keeps its rows. A
+  /// control's own target is ui_core's `TapTargetPadding`, at the floors
+  /// `Fluent2Host` declares.
   static double hitTargetOf(BuildContext context) =>
-      padded(context) ? touchHitTarget : minHitTarget;
+      RawTapTargets.of(context).floorFor(RawInput.touch).height;
 
   /// The least size of a control's tap target at [context]: the floor
-  /// the nearest `RawTapTargetScope` declares (Fluent2Host's: 48 for a
+  /// the nearest `RawTapTargetScope` declares (Fluent2Host's: 40 for a
   /// finger, 24 for a pointer) for what [padded] says reaches it here, so
   /// the target and the face read the same platform.
   static Size tapFloorOf(BuildContext context) =>
@@ -298,7 +294,7 @@ abstract final class Fluent2Layout {
 
   /// Whether a touch reaches the controls at [context] (Android, iOS and
   /// Fuchsia, where Material pads its tap targets): there a press stands at
-  /// least [touchHitTarget] square, its face at its own size and centred.
+  /// least [hitTargetOf] square, its face at its own size and centred.
   static bool padded(BuildContext context) =>
       switch (Theme.of(context).platform) {
         TargetPlatform.android ||
@@ -675,6 +671,7 @@ final class Fluent2ThemeData with Diagnosticable {
     this.density = Fluent2Density.standard,
     this.typeface = Fluent2Typeface.look,
     this.solidAcrylic = false,
+    this.fontFamilyFallback = const [],
   });
 
   /// The `lapis` preset: Fluent's own web light and dark, the familiar web blue (#0F6CBD).
@@ -691,6 +688,12 @@ final class Fluent2ThemeData with Diagnosticable {
   ]) => preset('juniper', brightness);
 
   /// The `clover` preset: a green brand ramp (#107C10) from Fluent's theme designer.
+  @Deprecated(
+    "clover's brand is Fluent's success green (#107C10), so a primary reads "
+    'as a success: use juniper, or Fluent2ThemeData.from(brand:) for a green '
+    'of your own. This preset was deprecated in 0.7.0 and is removed in '
+    '0.8.0.',
+  )
   factory Fluent2ThemeData.clover([Brightness brightness = Brightness.light]) =>
       preset('clover', brightness);
 
@@ -704,6 +707,9 @@ final class Fluent2ThemeData with Diagnosticable {
       preset('berry', brightness);
 
   /// The `flint` preset: graphite (#394146), a neutral ramp with no accent.
+  /// With no hue to mark a choice, its brand inks are its strongest: near
+  /// black by day and near white by night, a chosen tab or page and a link
+  /// reading over the quieter neutral inks.
   factory Fluent2ThemeData.flint([Brightness brightness = Brightness.light]) =>
       preset('flint', brightness);
 
@@ -752,6 +758,19 @@ final class Fluent2ThemeData with Diagnosticable {
   /// The face and size scale of the type ramp; Selawik at Fluent's sizes
   /// unless set.
   final Fluent2Typeface typeface;
+
+  /// Families every text style falls back on, after [typeface]'s face, for
+  /// the glyphs it lacks, as Material's `ThemeData.fontFamilyFallback`
+  /// reaches every style: each step of the ramp ([caption2] to [display]),
+  /// and so the host's default words and every part's. On the web a face
+  /// loaded at run time (a Noto Sans JP subset, so Japanese shows Japanese
+  /// forms rather than the engine's Chinese ones) is only drawn where a
+  /// style names it. Empty by default.
+  ///
+  /// ```dart
+  /// Fluent2ThemeData.lapis().copyWith(fontFamilyFallback: const ['NotoSansJP'])
+  /// ```
+  final List<String> fontFamilyFallback;
 
   /// Whether what floats (the tab bar, a pinned top bar, the nav pane, a
   /// menu) stands on its acrylic's opaque fallback instead of blurring the
@@ -812,8 +831,46 @@ final class Fluent2ThemeData with Diagnosticable {
   /// `display`, 68/92 semibold: the one display figure of a page.
   late final TextStyle display = _ramp(68, 92, 600);
 
-  TextStyle _ramp(double size, double line, int weight) =>
-      typeface.style(size, line, weight, colors.neutralForeground1);
+  TextStyle _ramp(double size, double line, int weight) {
+    final step = typeface.style(size, line, weight, colors.neutralForeground1);
+    return fontFamilyFallback.isEmpty
+        ? step
+        : _fallingBackOn(step, fontFamilyFallback);
+  }
+
+  /// [step] falling back on [families] after its own fallbacks. TextStyle
+  /// would look for a fallback in the package of a face a package bundles,
+  /// so the step is built again with its face named whole and no package:
+  /// a typeface of the app's own (its own [Fluent2Typeface.style]) keeps
+  /// all it sets.
+  static TextStyle _fallingBackOn(TextStyle step, List<String> families) =>
+      TextStyle(
+        inherit: step.inherit,
+        color: step.color,
+        backgroundColor: step.backgroundColor,
+        fontSize: step.fontSize,
+        fontWeight: step.fontWeight,
+        fontStyle: step.fontStyle,
+        letterSpacing: step.letterSpacing,
+        wordSpacing: step.wordSpacing,
+        textBaseline: step.textBaseline,
+        height: step.height,
+        leadingDistribution: step.leadingDistribution,
+        locale: step.locale,
+        foreground: step.foreground,
+        background: step.background,
+        shadows: step.shadows,
+        fontFeatures: step.fontFeatures,
+        fontVariations: step.fontVariations,
+        decoration: step.decoration,
+        decorationColor: step.decorationColor,
+        decorationStyle: step.decorationStyle,
+        decorationThickness: step.decorationThickness,
+        debugLabel: step.debugLabel,
+        fontFamily: step.fontFamily,
+        fontFamilyFallback: [...?step.fontFamilyFallback, ...families],
+        overflow: step.overflow,
+      );
 
   /// A primary button's theme.
   Fluent2Style get primaryButtonTheme => components.primaryButton;
@@ -1037,12 +1094,12 @@ final class Fluent2ThemeData with Diagnosticable {
 
   // --- presets ----------------------------------------------------------------
 
-  /// The preset ids, the first the default.
+  /// The six preset ids, the first the default. `preset('clover', ...)`
+  /// still builds the deprecated `clover` ([Fluent2ThemeData.clover]).
   static const List<String> presets = <String>[
     'lapis',
     'iris',
     'juniper',
-    'clover',
     'pumpkin',
     'berry',
     'flint',
@@ -1192,8 +1249,8 @@ final class Fluent2ThemeData with Diagnosticable {
   ///   `compoundBrandForeground1`, `brandForegroundLink`) reach 4.5:1;
   /// - the brand strokes (`compoundBrandStroke`, `brandStroke1`) reach 3:1.
   ///
-  /// The density, the typeface and the component themes ride along as
-  /// `copyWith` takes them.
+  /// The density, the typeface, the font fallback and the component themes
+  /// ride along as `copyWith` takes them.
   ///
   /// ```dart
   /// final theme = Fluent2ThemeData.from(
@@ -1208,6 +1265,7 @@ final class Fluent2ThemeData with Diagnosticable {
     Fluent2Density? density,
     Fluent2Typeface? typeface,
     Fluent2ComponentThemes? components,
+    List<String>? fontFamilyFallback,
   }) {
     final dark = brightness == Brightness.dark;
     const white = Color(0xFFFFFFFF);
@@ -1259,7 +1317,7 @@ final class Fluent2ThemeData with Diagnosticable {
     // words first.
     hold(
       ['brandBackground2'],
-      (tint) => contrast(ink, tint) >= 4.5,
+      (tint) => RawPalette.contrastRatio(ink, tint) >= 4.5,
       darker: dark,
     );
     // The brand-tinted page ground: Fluent's 30% of the ramp's end shade,
@@ -1276,7 +1334,12 @@ final class Fluent2ThemeData with Diagnosticable {
     var tint = 0.3;
     while (tint > 0 &&
         words.any(
-          (w) => contrast(w, _ground(brightness, base, ramp, tint)) < 4.5,
+          (w) =>
+              RawPalette.contrastRatio(
+                w,
+                _ground(brightness, base, ramp, tint),
+              ) <
+              4.5,
         )) {
       tint = math.max(0, tint - 0.05);
     }
@@ -1292,7 +1355,7 @@ final class Fluent2ThemeData with Diagnosticable {
       m['brandBackground2']!,
     ];
     bool on(Color colour, double bar) =>
-        grounds.every((g) => contrast(colour, g) >= bar);
+        grounds.every((g) => RawPalette.contrastRatio(colour, g) >= bar);
     hold(
       [
         'brandBackground',
@@ -1300,7 +1363,7 @@ final class Fluent2ThemeData with Diagnosticable {
         'brandBackgroundPressed',
         'brandBackgroundSelected',
       ],
-      (fill) => contrast(onBrand, fill) >= 4.5,
+      (fill) => RawPalette.contrastRatio(onBrand, fill) >= 4.5,
       darker: onBrand.computeLuminance() > .5,
     );
     // The brand avatar's fill carries its initials in the static inverted
@@ -1308,7 +1371,7 @@ final class Fluent2ThemeData with Diagnosticable {
     final staticInk = base.neutralForegroundStaticInverted;
     hold(
       ['brandBackgroundStatic'],
-      (fill) => contrast(staticInk, fill) >= 4.5,
+      (fill) => RawPalette.contrastRatio(staticInk, fill) >= 4.5,
       darker: staticInk.computeLuminance() > .5,
     );
     hold(
@@ -1317,7 +1380,7 @@ final class Fluent2ThemeData with Diagnosticable {
         'compoundBrandBackgroundHover',
         'compoundBrandBackgroundPressed',
       ],
-      (fill) => contrast(inverted, fill) >= 3,
+      (fill) => RawPalette.contrastRatio(inverted, fill) >= 3,
       darker: inverted.computeLuminance() > .5,
     );
     for (final family in [
@@ -1357,45 +1420,34 @@ final class Fluent2ThemeData with Diagnosticable {
       Fluent2Colors.fromMap(m),
       ramp,
       tint: tint,
-    ).copyWith(density: density, typeface: typeface, components: components);
+    ).copyWith(
+      density: density,
+      typeface: typeface,
+      components: components,
+      fontFamilyFallback: fontFamilyFallback,
+    );
   }
 
   // --- ThemeData's shape -------------------------------------------------------
 
   /// This with the named parts changed: the colours ([colors],
   /// [sharedColors], [brandVariants], [background]), the settings
-  /// ([density], [typeface], [solidAcrylic]), and the component themes whole
-  /// ([components]) or one by one. The type ramp follows the first ink of
-  /// [colors] and [typeface].
+  /// ([density], [typeface], [fontFamilyFallback], [solidAcrylic]), and the
+  /// component themes whole ([components]) or one by one. The type ramp
+  /// follows the first ink of [colors], [typeface] and [fontFamilyFallback].
   ///
-  /// The acrylic's recipe and the elevations stay Fluent's: `acrylic`,
-  /// `shadows` and `brandShadows` are deprecated (a brand-tinted acrylic
-  /// spends the brand on what floats, and a flat or hard shadow loses the
-  /// layers' depth). [solidAcrylic] gives the acrylic's opaque fallback.
+  /// The acrylic's recipe and the elevations stay Fluent's, so it takes
+  /// none of them: a brand-tinted acrylic spends the brand on what floats,
+  /// and a flat or hard shadow loses the layers' depth. [solidAcrylic] gives
+  /// the acrylic's opaque fallback.
   Fluent2ThemeData copyWith({
     Fluent2Colors? colors,
     Fluent2SharedColors? sharedColors,
     List<Color>? brandVariants,
     Color? background,
-    @Deprecated(
-      "Use solidAcrylic instead: Fluent's acrylic keeps its recipe, and "
-      'solidAcrylic stands its opaque fallback in for the blur. '
-      'This feature was deprecated after v0.2.0.',
-    )
-    Fluent2AcrylicRecipe? acrylic,
-    @Deprecated(
-      "Fluent's elevations stay Fluent's (shadow2 to shadow64): leave them "
-      'to the preset. This feature was deprecated after v0.2.0.',
-    )
-    Fluent2Shadows? shadows,
-    @Deprecated(
-      "Fluent's brand elevations stay Fluent's (shadow2Brand to "
-      'shadow64Brand): leave them to the preset. '
-      'This feature was deprecated after v0.2.0.',
-    )
-    Fluent2Shadows? brandShadows,
     Fluent2Density? density,
     Fluent2Typeface? typeface,
+    List<String>? fontFamilyFallback,
     bool? solidAcrylic,
     Fluent2ComponentThemes? components,
     Fluent2Style? primaryButtonTheme,
@@ -1433,9 +1485,9 @@ final class Fluent2ThemeData with Diagnosticable {
       sharedColors: sharedColors ?? this.sharedColors,
       brandVariants: brandVariants ?? this.brandVariants,
       background: background ?? this.background,
-      acrylic: acrylic ?? this.acrylic,
-      shadows: shadows ?? this.shadows,
-      brandShadows: brandShadows ?? this.brandShadows,
+      acrylic: acrylic,
+      shadows: shadows,
+      brandShadows: brandShadows,
       solidAcrylic: solidAcrylic ?? this.solidAcrylic,
       components: (components ?? this.components).copyWith(
         primaryButton: primaryButtonTheme,
@@ -1464,13 +1516,14 @@ final class Fluent2ThemeData with Diagnosticable {
       ),
       density: density ?? this.density,
       typeface: typeface ?? this.typeface,
+      fontFamilyFallback: fontFamilyFallback ?? this.fontFamilyFallback,
     );
   }
 
   /// Between this and [other], as `ThemeData.lerp`: the colours, the shared
   /// palette, the ramp, the material, the elevations, the component themes
-  /// and the density blend; the preset id, the appearance and
-  /// [solidAcrylic] change at the middle. [AnimatedFluent2Theme] animates with it.
+  /// and the density blend; the preset id, the appearance, the typeface,
+  /// [fontFamilyFallback] and [solidAcrylic] change at the middle. [AnimatedFluent2Theme] animates with it.
   Fluent2ThemeData lerp(Fluent2ThemeData? other, double t) {
     if (other == null || identical(this, other)) return this;
     final near = t < .5 ? this : other;
@@ -1495,6 +1548,7 @@ final class Fluent2ThemeData with Diagnosticable {
       density: Fluent2Density.lerp(density, other.density, t),
       typeface: Fluent2Typeface.lerp(typeface, other.typeface, t),
       solidAcrylic: near.solidAcrylic,
+      fontFamilyFallback: near.fontFamilyFallback,
     );
   }
 
@@ -1514,7 +1568,8 @@ final class Fluent2ThemeData with Diagnosticable {
           other.components == components &&
           other.density == density &&
           other.typeface == typeface &&
-          other.solidAcrylic == solidAcrylic;
+          other.solidAcrylic == solidAcrylic &&
+          listEquals(other.fontFamilyFallback, fontFamilyFallback);
 
   @override
   int get hashCode => Object.hash(
@@ -1531,6 +1586,7 @@ final class Fluent2ThemeData with Diagnosticable {
     density,
     typeface,
     solidAcrylic,
+    Object.hashAll(fontFamilyFallback),
   );
 
   @override
@@ -1571,6 +1627,13 @@ final class Fluent2ThemeData with Diagnosticable {
         defaultValue: Fluent2Typeface.look,
       ),
     );
+    properties.add(
+      IterableProperty<String>(
+        'fontFamilyFallback',
+        fontFamilyFallback,
+        defaultValue: const <String>[],
+      ),
+    );
     properties.add(DiagnosticsProperty<Fluent2Colors>('colors', colors));
     properties.add(
       DiagnosticsProperty<Fluent2SharedColors>('sharedColors', sharedColors),
@@ -1584,12 +1647,12 @@ final class Fluent2ThemeData with Diagnosticable {
 
   /// The WCAG contrast ratio of [ink] on [ground], 1..21, as it is seen:
   /// a translucent ink is laid over the ground first. [ground] is opaque.
-  static double contrast(Color ink, Color ground) {
-    final seen = Color.alphaBlend(ink, ground);
-    final la = seen.computeLuminance();
-    final lb = ground.computeLuminance();
-    return la > lb ? (la + 0.05) / (lb + 0.05) : (lb + 0.05) / (la + 0.05);
-  }
+  @Deprecated(
+    "Use RawPalette.contrastRatio: ui_core's WCAG ratio, the same maths. "
+    'This method was deprecated in 0.7.0 and is removed in 0.8.0.',
+  )
+  static double contrast(Color ink, Color ground) =>
+      RawPalette.contrastRatio(ink, ground);
 }
 
 class _Fluent2Scope extends InheritedTheme {
@@ -1874,6 +1937,9 @@ ThemeData _fluent2MaterialTheme(Fluent2ThemeData t, TargetPlatform platform) =>
       visualDensity: VisualDensity.standard,
       fontFamily: t.typeface.family,
       package: t.typeface.package,
+      fontFamilyFallback: t.fontFamilyFallback.isEmpty
+          ? null
+          : t.fontFamilyFallback,
       scaffoldBackgroundColor: t.background,
       splashFactory: NoSplash.splashFactory,
       highlightColor: const Color(0x00000000),

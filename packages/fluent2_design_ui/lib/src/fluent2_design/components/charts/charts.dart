@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../internal/figure.dart';
 import '../../internal/presets.g.dart' show sharedDark, sharedLight;
@@ -63,8 +64,8 @@ enum Fluent2ChartHue {
       if (!t.isDark) return light;
       for (var at = 0.5; at < 1; at += 0.05) {
         final mixed = Color.lerp(light, dark, at)!;
-        if (Fluent2ThemeData.contrast(mixed, t.surface) >= 3 &&
-            Fluent2ThemeData.contrast(mixed, t.colors.neutralCardBackground) >=
+        if (RawPalette.contrastRatio(mixed, t.surface) >= 3 &&
+            RawPalette.contrastRatio(mixed, t.colors.neutralCardBackground) >=
                 3) {
           return mixed;
         }

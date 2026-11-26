@@ -88,7 +88,7 @@ class _Inks {
         );
       case Fluent2RatingColor.marigold:
         final gold = t.sharedColors.paletteMarigoldBorderActive;
-        final edge = Fluent2ThemeData.contrast(gold, t.surface) < 3
+        final edge = RawPalette.contrastRatio(gold, t.surface) < 3
             ? t.sharedColors.paletteMarigoldForeground2
             : null;
         return _Inks(gold, filled ? fluent2Rail(t) : (edge ?? gold), edge);
