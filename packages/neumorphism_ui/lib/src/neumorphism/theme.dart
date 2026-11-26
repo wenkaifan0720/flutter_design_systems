@@ -4,7 +4,6 @@
 //
 // The pigment is not on `NeumorphicColors`. It means one thing, live, and a page reaches it only through a part that says
 // so (`NeumorphicLiveText`, `NeumorphicLed`, `NeumorphicButton.filled`, a latched control): `NeumorphicPigment` is hidden from the barrel.
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
@@ -687,50 +686,49 @@ class _Palette {
   final _Seed day, night;
 }
 
-double _contrast(Color a, Color b) {
-  final x = a.computeLuminance(), y = b.computeLuminance();
-  return (math.max(x, y) + .05) / (math.min(x, y) + .05);
-}
-
-// Move toward the appropriate luminance extreme, preserving as much of the
-// requested hue as the contrast constraint allows. Bisection avoids rounding
-// a color back under the requested bar.
-Color _settle(Color color, List<Color> grounds, Color end, double ratio) {
-  bool reads(Color c) => grounds.every((g) => _contrast(c, g) >= ratio);
-  final opaque = color.withValues(alpha: 1);
-  if (reads(opaque)) return opaque;
-  var low = 0.0, high = 1.0;
-  for (var i = 0; i < 32; i++) {
-    final middle = (low + high) / 2;
-    if (reads(Color.lerp(opaque, end, middle)!)) {
-      high = middle;
-    } else {
-      low = middle;
-    }
-  }
-  return Color.lerp(opaque, end, high)!;
-}
-
 _Seed _brandSeed(Color ground, Color pigment, Brightness brightness) {
   const white = Color(0xFFFFFFFF), black = Color(0xFF000000);
   final dark = brightness == Brightness.dark;
   final paper = dark ? black : white, ink = dark ? white : black;
-  // A soft material needs closely related surfaces. Reserve enough luminance
-  // room before deriving them, including hostile mid-grey and transparent input.
-  final base = _settle(Color.alphaBlend(ground, paper), [ink], paper, 12);
+  // The wall stays in a soft material's band whatever neutral it is given, in that neutral's own hue: a pale plaster
+  // by day (tone 85 to 93), a deep one at night (tone 10 to 20). Its light and shadow need that room either side; a
+  // black named by day made a muddy mid-grey slab, a white at night a grey one.
+  final neutral = RawNeutralTones.of(Color.alphaBlend(ground, paper));
+  final base = neutral.tone(
+    dark
+        ? neutral.ownTone.clamp(10.0, 20.0)
+        : neutral.ownTone.clamp(85.0, 93.0),
+  );
   Color mix(Color a, Color b, double amount) => Color.lerp(a, b, amount)!;
   final faceStart = mix(base, white, dark ? .035 : .07);
   final faceEnd = mix(base, black, dark ? .16 : .035);
   final wellStart = mix(base, black, dark ? .23 : .05);
   final wellEnd = mix(base, white, dark ? .012 : .025);
   final grounds = [base, faceStart, faceEnd, wellStart, wellEnd];
-  final act = _settle(Color.alphaBlend(pigment, base), grounds, ink, 4.6);
+  // Each colour is the nearest tone of its own hue that reads on every face and well it is drawn on (ui_core's
+  // RawPalette), so a named pigment keeps its hue and a word keeps the wall's.
+  Color word(double amount, double ratio, Iterable<Color> on) =>
+      RawPalette.readableTone(mix(base, ink, amount), on: on, ratio: ratio);
+  // The pigment's fill carries white words by day and, lit by night, a near-black of the wall's hue, as Material pairs
+  // a primary and its on-primary (RawPalette.accentFill).
+  final fill = RawPalette.accentFill(
+    pigment,
+    brightness: brightness,
+    darkInk: neutral.tone(6),
+    ratio: 4.6,
+  );
+  // The fill reads on the wall too, as the look's one live colour must (an LED, a slot, a chart's series): the tone
+  // that reads at 4.6 on every face and well, which only carries its words further.
+  final act = RawPalette.readableTone(fill.fill, on: grounds, ratio: 4.6);
+  final onAct = fill.ink;
   final wash = act.withValues(alpha: dark ? .16 : .13);
   final all = [...grounds, for (final g in grounds) Color.alphaBlend(wash, g)];
-  Color word(double amount, double ratio) =>
-      _settle(mix(base, ink, amount), all, ink, ratio);
-  final onAct = _contrast(white, act) >= _contrast(black, act) ? white : black;
-  final actDeep = _settle(mix(act, ink, .12), [onAct], ink, 4.6);
+  final actDeep = RawPalette.readableTone(
+    mix(act, ink, .12),
+    on: [onAct],
+    ratio: 4.6,
+  );
+  final pigmentInk = RawPalette.readableTone(act, on: all, ratio: 4.6);
   return _Seed(
     dark: dark,
     ground: base,
@@ -744,12 +742,12 @@ _Seed _brandSeed(Color ground, Color pigment, Brightness brightness) {
     shadowInset: black.withValues(alpha: dark ? .6 : .27),
     rim: white.withValues(alpha: dark ? .1 : .85),
     crease: black.withValues(alpha: dark ? .35 : .12),
-    ink: word(.95, 7),
-    inkSecondary: word(.8, 5),
-    inkTertiary: word(.65, 4.6),
-    quiet: word(.55, 4.1),
-    barStart: word(.65, 4.1),
-    barEnd: word(.8, 4.1),
+    ink: word(.95, 7, all),
+    inkSecondary: word(.8, 5, all),
+    inkTertiary: word(.65, 4.6, all),
+    quiet: word(.55, 4.1, all),
+    barStart: word(.65, 4.1, all),
+    barEnd: word(.8, 4.1, all),
     domeLight: mix(base, white, dark ? .1 : .55),
     domeMid: base,
     domeDark: mix(base, black, dark ? .15 : .08),
@@ -759,8 +757,8 @@ _Seed _brandSeed(Color ground, Color pigment, Brightness brightness) {
     pigment: act,
     pigmentHi: mix(act, white, .2),
     pigmentDk: actDeep,
-    pigmentInk: _settle(act, all, ink, 4.6),
-    pigmentInkLit: _settle(act, all, ink, 4.6),
+    pigmentInk: pigmentInk,
+    pigmentInkLit: pigmentInk,
     onPigment: onAct,
   );
 }
@@ -1106,6 +1104,75 @@ const _tyrian = _Palette(
   ),
 );
 
+/// A sea-grey wall and Capri's blue-green: the grotto's water on lime. At night deep sea slate, the blue-green lit to
+/// aqua.
+const _capri = _Palette(
+  _Seed(
+    dark: false,
+    ground: Color(0xFFE1E9EB),
+    faceStart: Color(0xFFEBF2F4),
+    faceEnd: Color(0xFFD4DEE1),
+    wellStart: Color(0xFFD0DADD),
+    wellEnd: Color(0xFFE4ECEE),
+    highlight: Color(0xF2FFFFFF),
+    shadow: Color(0x6156717A),
+    shadowDeep: Color(0x7546616A),
+    shadowInset: Color(0x6B56717A),
+    rim: Color(0xD9FFFFFF),
+    crease: Color(0x1F2E4852),
+    ink: Color(0xFF0F191C),
+    inkSecondary: Color(0xFF324247),
+    inkTertiary: Color(0xFF415157),
+    quiet: Color(0xFF66767C),
+    barStart: Color(0xFF48595F),
+    barEnd: Color(0xFF2A393F),
+    domeLight: Color(0xFFFBFDFE),
+    domeMid: Color(0xFFE1E9EB),
+    domeDark: Color(0xFFC9D4D8),
+    lamp: Color(0xFFFFC27A),
+    moon1: Color(0xFFFBFDFE),
+    moon2: Color(0xFFE1E9EB),
+    pigment: Color(0xFF0B6278),
+    pigmentHi: Color(0xFF3A9FB4),
+    pigmentDk: Color(0xFF084F62),
+    pigmentInk: Color(0xFF0A5E73),
+    pigmentInkLit: Color(0xFF084F62),
+    onPigment: Color(0xFFFFFFFF),
+  ),
+  _Seed(
+    dark: true,
+    ground: Color(0xFF1A2529),
+    faceStart: Color(0xFF243136),
+    faceEnd: Color(0xFF151E21),
+    wellStart: Color(0xFF11191C),
+    wellEnd: Color(0xFF202B2F),
+    highlight: Color(0x12BEF0FF),
+    shadow: Color(0x8C03080A),
+    shadowDeep: Color(0x9E03080A),
+    shadowInset: Color(0x9903080A),
+    rim: Color(0x1AC8F0FF),
+    crease: Color(0x59000000),
+    ink: Color(0xFFEBF2F4),
+    inkSecondary: Color(0xFFC1CED2),
+    inkTertiary: Color(0xFF95A5AA),
+    quiet: Color(0xFF7A8A8F),
+    barStart: Color(0xFFD1DCDF),
+    barEnd: Color(0xFFABB9BD),
+    domeLight: Color(0xFF323F44),
+    domeMid: Color(0xFF253135),
+    domeDark: Color(0xFF161F22),
+    lamp: Color(0xFFFFB46A),
+    moon1: Color(0xFFE4F1F4),
+    moon2: Color(0xFF95ACB3),
+    pigment: Color(0xFF5AC6DC),
+    pigmentHi: Color(0xFF8DDCEB),
+    pigmentDk: Color(0xFF41B0C8),
+    pigmentInk: Color(0xFF78D2E4),
+    pigmentInkLit: Color(0xFF78D2E4),
+    onPigment: Color(0xFF0F191C),
+  ),
+);
+
 /// Line height in whole pixels. Flutter rounds a paragraph's height up, Blink keeps the fraction; asking for a hair
 /// under the nearest whole pixel keeps a stack of text from drifting and keeps rules on whole pixels.
 double _lh(double size, double px) => (px - .01) / size;
@@ -1203,8 +1270,13 @@ class NeumorphicTextTheme {
     bool display = false,
   ]) => TextStyle(
     inherit: false,
-    fontFamily: display ? typeface.display : typeface.text,
-    package: display ? typeface.displayPackage : typeface.textPackage,
+    // The family named with its package here, not through `package:`, which would also prefix the fallback faces (the
+    // app's own) with the package's path.
+    fontFamily: _family(
+      display ? typeface.display : typeface.text,
+      display ? typeface.displayPackage : typeface.textPackage,
+    ),
+    fontFamilyFallback: typeface.fallback.isEmpty ? null : typeface.fallback,
     fontSize: size,
     height: _lh(size, px),
     letterSpacing: size * tracking,
@@ -1215,6 +1287,10 @@ class NeumorphicTextTheme {
     decoration: TextDecoration.none,
   );
 }
+
+/// [family] as a text style names it: under `packages/[package]/` when a package bundles it.
+String _family(String family, String? package) =>
+    package == null ? family : 'packages/$package/$family';
 
 /// Number-setting helpers shared by the design system's text styles.
 extension NeumorphicTextStyle on TextStyle {
@@ -1492,6 +1568,7 @@ class NeumorphicThemeData with Diagnosticable {
     'verona',
     'siena',
     'tyrian',
+    'capri',
   ];
 
   static const Map<String, _Palette> _palettes = {
@@ -1500,6 +1577,7 @@ class NeumorphicThemeData with Diagnosticable {
     'verona': _verona,
     'siena': _siena,
     'tyrian': _tyrian,
+    'capri': _capri,
   };
   static final Map<(String, Brightness), NeumorphicThemeData> _cache = {};
 
@@ -1545,10 +1623,19 @@ class NeumorphicThemeData with Diagnosticable {
     Brightness brightness = Brightness.light,
   ]) => preset('tyrian', brightness);
 
-  /// Derives the material from an app's ground and pigment. Colors are adjusted
-  /// when needed: words hold 4.5:1, and printed resting edges hold 4:1 on every
-  /// face and well, including the selected wash. Transparent input is composited
-  /// before contrast is measured. The five named presets remain unchanged.
+  /// Sea-grey and Capri's blue-green.
+  factory NeumorphicThemeData.capri([
+    Brightness brightness = Brightness.light,
+  ]) => preset('capri', brightness);
+
+  /// Derives the material from an app's ground and pigment. The wall keeps the
+  /// ground's hue in a soft material's band, pale by day and deep at night,
+  /// whatever its lightness. Each colour takes the nearest tone of its own hue
+  /// that reads on every face and well, the selected wash included (ui_core's
+  /// [RawPalette]): words hold 4.5:1 and printed resting edges 4:1, and the
+  /// pigment's fill carries white words by day and the wall's ink at night.
+  /// Transparent input is composited before contrast is measured. The named
+  /// presets are designed, not derived.
   ///
   /// ```dart
   /// final theme = NeumorphicThemeData.from(
@@ -2047,10 +2134,16 @@ class NeumorphicTheme extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => _InheritedNeumorphicTheme(
-    theme: this,
-    child: _Dressing(data: data, child: child),
-  );
+  Widget build(BuildContext context) {
+    Widget under = _Dressing(data: data, child: child);
+    // The look stands on ui_core's floors (40 square under a finger, every control laid out at it on every platform)
+    // and declares them, as it declares its light, so what reads the scope reads the look's. An app's own scope above
+    // stands.
+    if (RawTapTargets.maybeOf(context) == null) {
+      under = RawTapTargetScope(targets: RawTapTargets.fallback, child: under);
+    }
+    return _InheritedNeumorphicTheme(theme: this, child: under);
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -2159,9 +2252,10 @@ class _Dressing extends StatelessWidget {
       // opened there, which would move the Material pieces the look builds on (the editable, a scrollbar).
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
-      fontFamily: data.typeface.textPackage == null
-          ? data.typeface.text
-          : 'packages/${data.typeface.textPackage}/${data.typeface.text}',
+      fontFamily: _family(data.typeface.text, data.typeface.textPackage),
+      fontFamilyFallback: data.typeface.fallback.isEmpty
+          ? null
+          : data.typeface.fallback,
       scaffoldBackgroundColor: c.ground,
       canvasColor: c.ground,
       colorScheme: ColorScheme(

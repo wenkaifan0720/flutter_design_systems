@@ -65,15 +65,15 @@ final _fixed = <String, _Fixed>{
     () => const NeumorphicRoundButton(NeumorphicGlyphs.plus),
   ),
   'NeumorphicSwitch': _Fixed(
-    const Size(56, 48),
+    const Size(56, 40),
     () => const NeumorphicSwitch(value: true),
   ),
   'NeumorphicRoundCheckbox': _Fixed(
-    const Size(48, 48),
+    const Size(40, 40),
     () => const NeumorphicRoundCheckbox(value: true),
   ),
   'NeumorphicSendButton': _Fixed(
-    const Size(48, 48),
+    const Size(40, 40),
     () => const NeumorphicSendButton(),
   ),
   'NeumorphicKnob': _Fixed(
@@ -176,7 +176,7 @@ const _flows = <String, String>{
       'its rail paints to the available height and its content scrolls',
   'NeumorphicDatePicker': 'calendar cells share the width and preserve 48px targets by scrolling in narrow slots',
   'NeumorphicInputOtp': 'code cells wrap as scaled digits need room',
-  'NeumorphicChip': 'as wide as its words, its cross a 48 band at its end',
+  'NeumorphicChip': 'as wide as its words, its cross a 40 band at its end',
   'NeumorphicBottomSheet':
       'the grip is fixed, while the panel follows its viewport',
   'NeumorphicSurface': 'the one surface painter, painted to its size',

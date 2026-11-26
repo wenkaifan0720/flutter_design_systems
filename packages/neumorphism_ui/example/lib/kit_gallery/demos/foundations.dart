@@ -12,6 +12,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   sections: [
     kitSection('Type', children: [const _Type()]),
     kitSection('The colours a page may read', children: [const _Swatches()]),
+    kitSection('Palettes', children: [const _Palettes()]),
     kitSection(
       'The page frame',
       children: [
@@ -33,6 +34,9 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
     kitSection('An object beside its words', children: [kitSpecimenBeside()]),
   ],
 );
+
+/// The six palettes in the page's brightness, for the example's Type and colour page.
+Widget kitPaletteSamples() => const _Palettes();
 
 Widget kitSpecimenBeside() => NeumorphicBeside(
   object: const NeumorphicMonogram('AB', size: 56),
@@ -105,4 +109,80 @@ class _Swatches extends StatelessWidget {
       ],
     );
   }
+}
+
+// Each of the six palettes (NeumorphicThemeData.presets, the default first) in the page's brightness: its name over its
+// wall, face, well, pigment, the pigment's words and the ink, a hairline between like ones so they stay apart.
+class _Palettes extends StatelessWidget {
+  const _Palettes();
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    final c = t.colors;
+    final brightness = c.dark ? Brightness.dark : Brightness.light;
+    final corner = BorderRadius.circular(NeumorphicRadii.cap);
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: NeumorphicColumn(
+          gap: 12,
+          children: [
+            for (final id in NeumorphicThemeData.presets)
+              NeumorphicColumn(
+                gap: 4,
+                children: [
+                  Text(
+                    id[0].toUpperCase() + id.substring(1),
+                    style: t.textTheme.caption.copyWith(color: c.ink),
+                  ),
+                  ExcludeSemantics(
+                    child: SizedBox(
+                      height: 24,
+                      child: DecoratedBox(
+                        position: DecorationPosition.foreground,
+                        decoration: BoxDecoration(
+                          borderRadius: corner,
+                          border: Border.all(color: c.edge),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: corner,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (final (i, colour) in _strip(
+                                NeumorphicThemeData.preset(
+                                  id,
+                                  brightness,
+                                ).colors,
+                              ).indexed) ...[
+                                if (i > 0)
+                                  SizedBox(
+                                    width: 1,
+                                    child: ColoredBox(color: c.edge),
+                                  ),
+                                Expanded(child: ColoredBox(color: colour)),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static List<Color> _strip(NeumorphicColors p) => [
+    p.ground,
+    p.faceStart,
+    p.wellStart,
+    p.accent,
+    p.accentInk,
+    p.ink,
+  ];
 }

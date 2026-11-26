@@ -758,12 +758,30 @@ void main() {
           () => FocusManager.instance.highlightStrategy =
               FocusHighlightStrategy.automatic,
         );
-        final rect = tester.getRect(target);
-        expect(rect.width, greaterThanOrEqualTo(48));
-        expect(rect.height, greaterThanOrEqualTo(48));
+        // A face that stands in a reach of its own (a trail's link in its chip group) is pressed through that reach:
+        // the target is the reach round it.
+        final face = tester.getRect(target);
+        var rect = face;
+        final reaches = find.ancestor(
+          of: target,
+          matching: find.byType(TapTargetPadding),
+        );
+        if (reaches.evaluate().isNotEmpty &&
+            find
+                    .descendant(
+                      of: reaches.first,
+                      matching: find.byWidgetPredicate((w) => w is RawButton),
+                    )
+                    .evaluate()
+                    .length ==
+                1) {
+          rect = tester.getRect(reaches.first);
+        }
+        expect(rect.width, greaterThanOrEqualTo(40));
+        expect(rect.height, greaterThanOrEqualTo(40));
         final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
         await mouse.addPointer(location: Offset.zero);
-        await mouse.moveTo(rect.center);
+        await mouse.moveTo(face.center);
         await tester.pumpAndSettle();
         expect(states(), contains(WidgetState.hovered));
         await mouse.removePointer();

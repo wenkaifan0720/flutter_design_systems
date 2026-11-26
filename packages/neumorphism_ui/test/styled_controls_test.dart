@@ -242,8 +242,8 @@ void main() {
                   );
                 }
                 final tap = tester.getSize(find.byType(NeumorphicTap).first);
-                expect(tap.width, greaterThanOrEqualTo(48));
-                expect(tap.height, greaterThanOrEqualTo(48));
+                expect(tap.width, greaterThanOrEqualTo(40));
+                expect(tap.height, greaterThanOrEqualTo(40));
               },
               tags: sweepInTurn(matrixCase++, 18),
             );

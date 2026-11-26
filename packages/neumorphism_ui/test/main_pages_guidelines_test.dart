@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../example/lib/kit_gallery/hearth.dart' show hearthScreens;
 import '../example/lib/main.dart';
 import 'gallery_support.dart'
-    show inkedContrastFailures, loadBundledFonts, settle;
+    show inkedContrastFailures, loadBundledFonts, settle, touchFloorTargets;
 import 'support.dart' show loadNeumorphicFonts;
 
 /// Flutter's four accessibility guidelines on the gallery's main pages and the app's screens, by day and by night.
@@ -52,8 +52,7 @@ void main() {
         // are.
         final semantics = tester.ensureSemantics();
         try {
-          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-          await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(touchFloorTargets));
           await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
           final pixels = await textContrastGuideline.evaluate(tester);
           final inked = await inkedContrastFailures(tester);

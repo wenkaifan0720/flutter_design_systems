@@ -145,9 +145,9 @@ void main() {
                 } else {
                   expect(key.right, moreOrLessEquals(tile.right, epsilon: .5));
                 }
-                // A whole target.
-                expect(key.width, greaterThanOrEqualTo(44));
-                expect(key.height, greaterThanOrEqualTo(44));
+                // A whole target: ui_core's touch floor.
+                expect(key.width, greaterThanOrEqualTo(40));
+                expect(key.height, greaterThanOrEqualTo(40));
                 // Beside the words: across the title's lines, not under the subtitle.
                 expect(key.top, lessThan(title.bottom), reason: '$key, $title');
                 expect(key.bottom, greaterThan(title.top), reason: '$key');

@@ -134,7 +134,7 @@ const Map<String, double> neumorphicInventoryHeights = {
   'ScrollArea': 140,
 };
 
-// The specimens that need a column's whole width: seven days of a month at a phone's 48 px targets.
+// The specimens that need a column's whole width: seven days of a month at the touch floor.
 const Set<String> _wide = {'DatePicker', 'DateRangePicker', 'Calendar'};
 
 class _Room {

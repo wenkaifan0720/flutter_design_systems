@@ -86,7 +86,7 @@ class NeumorphicElevation with Diagnosticable {
 
 /// How compact the controls stand, in Material's `VisualDensity` steps: each step of [vertical] takes 4 from a control's
 /// height and each step of [horizontal] 2 from its padding at either side, from -4 (tightest) to 4 (roomiest). The touch
-/// target does not move: 48 on every platform, whatever the density, so a compact face
+/// target does not move: the touch floor on every platform, whatever the density, so a compact face
 /// stands in the same target with room around it. A theme that sets none takes [adaptivePlatformDensity].
 ///
 /// ```dart
@@ -207,12 +207,16 @@ class NeumorphicTypeface with Diagnosticable {
     this.text = 'Manrope',
     this.displayPackage = neumorphicFontPackage,
     this.textPackage = neumorphicFontPackage,
+    this.fallback = const [],
   });
 
   /// The app's own faces, from its own assets: no package.
-  const NeumorphicTypeface.app({required this.display, required this.text})
-    : displayPackage = null,
-      textPackage = null;
+  const NeumorphicTypeface.app({
+    required this.display,
+    required this.text,
+    this.fallback = const [],
+  }) : displayPackage = null,
+       textPackage = null;
 
   /// The look's: Manrope, at the look's sizes.
   static const NeumorphicTypeface look = NeumorphicTypeface();
@@ -229,14 +233,24 @@ class NeumorphicTypeface with Diagnosticable {
   /// The package that bundles [text]; null for the app's own.
   final String? textPackage;
 
+  /// Faces to fall back on, in order, for a glyph the faces lack: the app's own families. Every text style the theme
+  /// builds names them (`TextStyle.fontFamilyFallback`), and so does the Material theme under the look's parts, as
+  /// Material's `ThemeData.fontFamilyFallback` does: on the web a face the app loads at run time (a Noto Sans JP
+  /// subset, say) draws only where a style names it.
+  final List<String> fallback;
+
   /// This with the named parts changed.
-  NeumorphicTypeface copyWith({String? display, String? text}) =>
-      NeumorphicTypeface(
-        display: display ?? this.display,
-        text: text ?? this.text,
-        displayPackage: displayPackage,
-        textPackage: textPackage,
-      );
+  NeumorphicTypeface copyWith({
+    String? display,
+    String? text,
+    List<String>? fallback,
+  }) => NeumorphicTypeface(
+    display: display ?? this.display,
+    text: text ?? this.text,
+    displayPackage: displayPackage,
+    textPackage: textPackage,
+    fallback: fallback ?? this.fallback,
+  );
 
   /// Between [a] and [b]: the faces change at the middle.
   static NeumorphicTypeface lerp(
@@ -251,6 +265,7 @@ class NeumorphicTypeface with Diagnosticable {
       text: faces.text,
       displayPackage: faces.displayPackage,
       textPackage: faces.textPackage,
+      fallback: faces.fallback,
     );
   }
 
@@ -260,15 +275,25 @@ class NeumorphicTypeface with Diagnosticable {
       other.display == display &&
       other.text == text &&
       other.displayPackage == displayPackage &&
-      other.textPackage == textPackage;
+      other.textPackage == textPackage &&
+      listEquals(other.fallback, fallback);
 
   @override
-  int get hashCode => Object.hash(display, text, displayPackage, textPackage);
+  int get hashCode => Object.hash(
+    display,
+    text,
+    displayPackage,
+    textPackage,
+    Object.hashAll(fallback),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(StringProperty('display', display));
     properties.add(StringProperty('text', text));
+    properties.add(
+      IterableProperty<String>('fallback', fallback, defaultValue: const []),
+    );
   }
 }

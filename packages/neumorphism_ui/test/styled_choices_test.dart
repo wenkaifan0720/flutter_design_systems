@@ -311,12 +311,12 @@ void main() {
                     of: find.byElementPredicate((e) => e == tap),
                     matching: find.byType(NeumorphicReach),
                   );
-                  expect(size.width, greaterThanOrEqualTo(48));
+                  expect(size.width, greaterThanOrEqualTo(40));
                   expect(
                     reach.evaluate().isEmpty
                         ? size.height
                         : tester.getSize(reach.first).height,
-                    greaterThanOrEqualTo(48),
+                    greaterThanOrEqualTo(40),
                   );
                 }
               },

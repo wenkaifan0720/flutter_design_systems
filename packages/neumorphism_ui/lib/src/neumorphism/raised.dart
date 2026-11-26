@@ -722,7 +722,7 @@ class NeumorphicBottomSheet extends StatelessWidget {
                   ? null
                   : (d) => drag.route.release(d.velocity.pixelsPerSecond.dy),
               child: SizedBox(
-                height: 48,
+                height: NeumorphicChromeMetrics.targetOf(context).height,
                 width: double.infinity,
                 child: Center(
                   child: Container(
@@ -2059,13 +2059,19 @@ class NeumorphicSnackBar extends StatelessWidget {
         .merge(look.textStyle)
         .copyWith(color: look.foreground);
     // The first line stands on the line of the keys beside it, the middle of their targets: from the top of the row
-    // it sat a line above 'Undo' and the dismiss key. With no key it stays at the top.
+    // it sat a line above 'Undo' and the dismiss key. With no key it stays at the top. The dismiss key stands at the
+    // medium line, as an icon key does; the act's link, at the touch floor, stands in a slot as tall, so the words, the
+    // act and the key share one middle.
     final firstLine = neumorphicLineHeight(
       context,
       title != null ? titleStyle : messageStyle,
     );
+    final floor = NeumorphicChromeMetrics.targetOf(context).height;
+    final beside = onDismiss != null
+        ? math.max(floor, NeumorphicChromeMetrics.lineOf(context))
+        : floor;
     final lead = actionLabel != null || onDismiss != null
-        ? math.max(0.0, (NeumorphicChromeMetrics.targetSize - firstLine) / 2)
+        ? math.max(0.0, (beside - firstLine) / 2)
         : 0.0;
     final glyph = look.iconSize ?? 22;
     final words = Padding(
@@ -2107,7 +2113,7 @@ class NeumorphicSnackBar extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     // The act stands at the words' end, its target level with them (on a line of its own under them
-                    // its 48 target would leave a tall empty band in the toast), while that costs the words no line: at
+                    // its target would leave a tall empty band in the toast), while that costs the words no line: at
                     // twice the text it would hold the end and break the message one word to a line.
                     child: actionLabel == null
                         ? words
@@ -2117,7 +2123,18 @@ class NeumorphicSnackBar extends StatelessWidget {
                             mark: 0,
                             children: [
                               words,
-                              NeumorphicLink(actionLabel!, onPressed: onAction),
+                              ConstrainedBox(
+                                constraints: BoxConstraints(minHeight: beside),
+                                child: Align(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  widthFactor: 1,
+                                  heightFactor: 1,
+                                  child: NeumorphicLink(
+                                    actionLabel!,
+                                    onPressed: onAction,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                   ),

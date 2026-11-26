@@ -310,7 +310,7 @@ void main() {
           heights.reduce(math.max) - heights.reduce(math.min),
           lessThanOrEqualTo(.5),
         );
-        expect(heights.every((value) => value >= 48), isTrue);
+        expect(heights.every((value) => value >= 40), isTrue);
       });
     }
   }

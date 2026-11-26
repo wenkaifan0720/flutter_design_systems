@@ -13,6 +13,7 @@ import '../frames.dart';
 import '../internal/geometry.dart';
 import '../layout.dart';
 import '../ornaments.dart';
+import '../chrome_metrics.dart';
 import '../theme.dart';
 import '../internal/cap_label.dart';
 import '../internal/cell_bank.dart' show NeumorphicChosenBand;
@@ -880,14 +881,17 @@ class NeumorphicMonth extends StatelessWidget {
         ],
       ],
     );
-    // Seven touch targets need 7 × 48 inside the well. Where the well's own sides would leave a pixel or two short (a
-    // 390 phone gives 350), the sides narrow to 4 before the month gives up its grid for a dated list.
+    // Seven touch targets need seven touch floors inside the well. Where the well's own sides would leave a pixel or two short
+    // (under an app's 48 floor a 390 phone's 350 leaves 334 of 336), the sides narrow to 4 before the month gives up its grid
+    // for a dated list.
     return LayoutBuilder(
       builder: (context, outer) => NeumorphicWell(
         style: style,
         padding: dense
             ? const EdgeInsets.fromLTRB(4, 10, 4, 6)
-            : outer.hasBoundedWidth && outer.maxWidth - 16 < 7 * 48
+            : outer.hasBoundedWidth &&
+                  outer.maxWidth - 16 <
+                      7 * NeumorphicChromeMetrics.targetOf(context).width
             ? const EdgeInsets.fromLTRB(4, 12, 4, 8)
             : const EdgeInsets.fromLTRB(8, 12, 8, 8),
         child: _monthBody(context, calendar, length, words, t),
@@ -906,7 +910,9 @@ class NeumorphicMonth extends StatelessWidget {
         ? calendar
         : LayoutBuilder(
             builder: (context, box) {
-              if (!box.hasBoundedWidth || box.maxWidth >= 7 * 48) {
+              if (!box.hasBoundedWidth ||
+                  box.maxWidth >=
+                      7 * NeumorphicChromeMetrics.targetOf(context).width) {
                 return calendar;
               }
               // Seven touch targets cannot fit here. A dated list keeps the

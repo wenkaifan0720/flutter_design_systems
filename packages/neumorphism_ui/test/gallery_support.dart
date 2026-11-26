@@ -254,3 +254,11 @@ String slug(String label) => label
     .toLowerCase()
     .replaceAll(RegExp('[^a-z0-9]+'), '_')
     .replaceAll(RegExp(r'^_|_$'), '');
+
+/// ui_core's touch floor (`RawTapTargets.fallback`, 40 by 40) as Flutter's tap-target guidelines measure it, on the
+/// semantics box of every tap target. The floor holds on every platform, in place of Flutter's 48 (Android) and 44
+/// (iOS).
+final AccessibilityGuideline touchFloorTargets = MinimumTapTargetGuideline(
+  size: RawTapTargets.fallback.touch,
+  link: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html',
+);

@@ -1,9 +1,12 @@
 // Every word Neumorphism's parts say on their own: a close, a dismiss, a loading line, a picker's month names. A part takes
 // the caller's words when given, and these otherwise, so an app in another language installs a delegate and every
 // part speaks it.
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart' show RawSortDirection;
-import 'package:ui_core/ui_core.dart' show RawWidgetsLocalizations;
+import 'package:ui_core/ui_core.dart'
+    show RawWidgetsLocalizations, RawPickerWords;
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart';
 
@@ -44,7 +47,8 @@ abstract class NeumorphicLocalizations {
   /// initializes its date symbols with `initializeDateFormatting` before loading.
   String get localeName => 'en_US';
 
-  /// A number using this locale's digits, grouping and decimal separator.
+  /// A number using this locale's digits, grouping and decimal separator; with the shipped delegate, ui_core's
+  /// `formatDecimal` in the reader's language (Arabic's in Arabic-Indic digits).
   String formatNumber(num value, {int maximumFractionDigits = 1}) =>
       (NumberFormat.decimalPattern(
         localeName,
@@ -283,19 +287,10 @@ abstract class NeumorphicLocalizations {
   /// A message's send button.
   String get send;
 
-  /// A stepper's less button. Unused: the number field's keys are the steps of its one node, which a screen reader
-  /// hears as increase and decrease, with no words of their own.
-  @Deprecated(
-    'The number field\'s keys are its node\'s steps, with no words; '
-    'unused since 0.3.0',
-  )
+  /// A dial's less key, the step down beside its value.
   String get less => 'Less';
 
-  /// A stepper's more button. Unused, as [less] is.
-  @Deprecated(
-    'The number field\'s keys are its node\'s steps, with no words; '
-    'unused since 0.3.0',
-  )
+  /// A dial's more key, the step up beside its value.
   String get more => 'More';
 
   /// A search field's clear button.
@@ -313,7 +308,8 @@ abstract class NeumorphicLocalizations {
   /// A password field's eye, when the letters show.
   String get hidePassword;
 
-  /// A date picker's title and its month steps.
+  /// A date picker's title and its month steps; with the shipped delegate in another language, ui_core's
+  /// `datePickerHelpText` (`RawPickerWords`).
   String get chooseDate;
 
   /// A date picker's step back a month.
@@ -322,7 +318,8 @@ abstract class NeumorphicLocalizations {
   /// A date picker's step on a month.
   String get nextMonth;
 
-  /// A time picker's title and its three wheels.
+  /// A time picker's title and its three wheels; with the shipped delegate in another language, ui_core's
+  /// `timePickerDialHelpText` (`RawPickerWords`).
   String get chooseTime;
 
   /// A time picker's hours.
@@ -535,6 +532,26 @@ class _FallbackLocalizations extends NeumorphicLocalizationsEn {
   String get pm => english ? super.pm : design.postMeridiemAbbreviation;
   @override
   String get done => english ? super.done : design.doneButtonLabel;
+  @override
+  String get chooseDate =>
+      english ? super.chooseDate : design.datePickerHelpText;
+  @override
+  String get chooseTime =>
+      english ? super.chooseTime : design.timePickerDialHelpText;
+  // Numbers in the reader's digits and separators, ui_core's: Arabic's in Arabic-Indic digits, where intl's patterns
+  // wrote Western ones.
+  @override
+  String formatNumber(num value, {int maximumFractionDigits = 1}) {
+    final scale = math.pow(10, maximumFractionDigits);
+    final rounded = value is int ? value : (value * scale).round() / scale;
+    return design.formatDecimal(
+      rounded,
+      fractionDigits: maximumFractionDigits == 0 ? 0 : null,
+    );
+  }
+
+  @override
+  String formatPercent(num value) => design.formatPercent(value.toDouble());
   @override
   String get tryAgain => english ? super.tryAgain : design.retryButtonLabel;
   @override

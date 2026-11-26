@@ -10,7 +10,7 @@ import '../example/lib/kit_gallery/hearth.dart'
     show hearthScreens, isHearthScreen;
 import '../example/lib/kit_gallery/live.dart';
 import 'gallery_support.dart'
-    show inkedContrastFailures, loadBundledFonts, settle;
+    show inkedContrastFailures, loadBundledFonts, settle, touchFloorTargets;
 import 'support.dart' show loadNeumorphicFonts;
 
 void main() {
@@ -22,8 +22,7 @@ void main() {
   Future<List<String>> guidelines(WidgetTester tester) async {
     final failed = <String>[];
     for (final (name, guideline) in [
-      ('Android 48 px targets', androidTapTargetGuideline),
-      ('iOS 44 px targets', iOSTapTargetGuideline),
+      ('40 px targets', touchFloorTargets),
       ('labelled targets', labeledTapTargetGuideline),
     ]) {
       final result = await guideline.evaluate(tester);

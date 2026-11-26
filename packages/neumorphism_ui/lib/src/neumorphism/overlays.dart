@@ -17,6 +17,7 @@ import 'internal/veil.dart';
 import 'localizations.dart';
 import 'ornaments.dart';
 import 'raised.dart';
+import 'chrome_metrics.dart';
 import 'theme.dart';
 import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/cap_label.dart';
@@ -546,8 +547,12 @@ class NeumorphicMenuBar extends StatelessWidget {
         final open = states.contains(WidgetState.selected);
         final sunk =
             entry.enabled && (open || states.contains(WidgetState.pressed));
+        final floor = NeumorphicChromeMetrics.targetOf(context);
         return ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          constraints: BoxConstraints(
+            minWidth: floor.width,
+            minHeight: floor.height,
+          ),
           child: Center(
             widthFactor: 1,
             child: CustomPaint(

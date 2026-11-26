@@ -1,3 +1,20 @@
+## 0.7.0
+
+- Requires ui_core 0.7.2.
+- Tap targets follow ui_core's floor (`RawTapTargets`): every control lays out at least 40 square, ui_core's touch floor, on every platform. An app's `RawTapTargetScope` raises it. Before, 48 square.
+- A medium control in a line (a button, a field, a select, a switch, check or list row, a round key, a picker's day, a segment) stands at `NeumorphicChromeMetrics.lineOf(context)`: the density's height, 48 standard, 44 comfortable and 40 compact (the desktop default), never under the floor. Before, every one stood at 48.
+- `NeumorphicTheme` declares the floors it stands on, ui_core's (`RawTapTargets.fallback`), in a `RawTapTargetScope` for its subtree, unless the app declared its own above it. Before, only `NeumorphicHost` declared one, of 48.
+- Deprecated: `NeumorphicChromeMetrics.target`, `touchTarget`, `targetSize` and `padded`, which name only the default floor or a platform's habit. Read the floor in effect, `NeumorphicChromeMetrics.targetOf(context)` or `RawTapTargets.of(context).touch`. The first three are now getters, no longer constants. Deprecated too: `NeumorphicCalendar.maxMonthWidth`; a month is laid out up to seven days of the medium line.
+- `NeumorphicLocalizations.less` and `.more` are no longer deprecated: a dial's step keys say them.
+- `NeumorphicBreadcrumb` lays out as ui_core's chip group (`RawChipGroup`): each crumb's reach takes the room between the faces, so the crumbs stand 4 apart as drawn and a trail that wraps starts each line at its start edge. Before, each crumb's reach was added to the spacing.
+- `NeumorphicThemeData.from` derives its palette with ui_core's palette maths (`RawPalette`). The wall keeps the ground's hue at a plaster's lightness (tone 85 to 93 by day, 10 to 20 by night); the words, the pigment's ink and the bars each take the nearest tone of their own hue that reads on every face and well; and a filled control carries white words by day and the wall's own ink by night. Before, they were mixed toward black or white until they read.
+- A sixth palette, capri: `NeumorphicThemeData.capri()`, a sea-grey wall with Capri's blue-green, and the same blue-green lit over slate at night. `NeumorphicThemeData.presets` lists the six, porcelain first.
+- `NeumorphicTypeface.fallback`: the families to draw a script the faces lack, given to every text style and to the Material theme the look builds, as `ThemeData.fontFamilyFallback` does.
+- `NeumorphicLocalizations` in a language it does not ship writes numbers and percentages in the app's digits and separators (ui_core's `formatDecimal` and `formatPercent`): Arabic-Indic in Arabic, `1.240,5` in German. Before, intl's Western digits. A date picker's and a time picker's titles there are in the app's language (ui_core's `RawPickerWords`); before, "Choose a date" and "Choose a time" in every language. English reads as before.
+- `NeumorphicSelectField` keeps 8 pixels of its well above and below its words at large text sizes, as a text field does. Before, at twice the size its words filled the well edge to edge.
+- A `NeumorphicBanner` with a close key stands its mark and its title on the key's middle at every density. Before, they stood above it: 8 pixels on a phone, 4 on a desk.
+- The README opens with a first app of ten lines; the example's Colour roles page shows the six palettes.
+
 ## 0.6.3
 
 - Requires ui_core 0.6.1.

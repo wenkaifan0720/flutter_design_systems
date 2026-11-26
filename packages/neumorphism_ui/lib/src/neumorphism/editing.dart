@@ -10,6 +10,7 @@ import 'internal/geometry.dart';
 import 'localizations.dart';
 import 'controls.dart';
 import 'component_themes.dart';
+import 'chrome_metrics.dart';
 import 'theme.dart';
 import 'internal/moulded.dart';
 
@@ -205,13 +206,17 @@ class NeumorphicTextContextMenu extends StatelessWidget {
         ),
       ),
     );
+    final floor = NeumorphicChromeMetrics.targetOf(context);
     final items = [
       for (final item in buttonItems)
         NeumorphicTap(
           onPressed: item.onPressed,
           label: labelOf(context, item),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+            constraints: BoxConstraints(
+              minHeight: floor.height,
+              minWidth: floor.width,
+            ),
             child: Padding(
               padding: t.density.padding(
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

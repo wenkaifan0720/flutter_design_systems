@@ -20,6 +20,7 @@ import 'internal/geometry.dart';
 import 'heads.dart';
 import 'layout.dart';
 import 'ornaments.dart';
+import 'chrome_metrics.dart';
 import 'theme.dart';
 import 'host.dart';
 import 'internal/cap_label.dart';
@@ -910,7 +911,7 @@ class NeumorphicNavigationBar extends StatelessWidget {
           final padding = t.density.padding(
             const EdgeInsets.fromLTRB(6, 8, 6, 6),
           );
-          var cellWidth = 48.0;
+          var cellWidth = NeumorphicChromeMetrics.targetOf(context).width;
           for (var i = 0; i < items.length; i++) {
             final item = items[i];
             final selected = i == selectedIndex;
@@ -938,7 +939,11 @@ class NeumorphicNavigationBar extends StatelessWidget {
             pen.dispose();
           }
           final withAction = action != null && items.isNotEmpty;
-          final actionWidth = withAction ? 48.0 + gap : 0.0;
+          // The act's key is its 44 face, never under the touch floor ([_ActKey]).
+          final actionWidth = withAction
+              ? math.max(NeumorphicChromeMetrics.targetOf(context).width, 44) +
+                    gap
+              : 0.0;
           final fits =
               items.length * cellWidth +
                   math.max(0, items.length - 1) * gap +

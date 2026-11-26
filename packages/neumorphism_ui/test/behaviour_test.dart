@@ -8,6 +8,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -196,23 +197,26 @@ void main() {
     expect(glyph, findsNothing);
   });
 
-  _test(
-    'primary cap keeps one 48 target around its fixed face on every platform',
-    (tester) async {
-      await tester.pumpWidget(
-        neumorphicApp(
-          Center(
-            child: NeumorphicRoundButton.filled(
-              NeumorphicGlyphs.plus,
-              label: 'Add',
-              onPressed: () {},
-            ),
+  _test('primary cap keeps one target, its own face, on every platform', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      neumorphicApp(
+        Center(
+          child: NeumorphicRoundButton.filled(
+            NeumorphicGlyphs.plus,
+            label: 'Add',
+            onPressed: () {},
           ),
         ),
-      );
-      expect(tester.getSize(find.byType(RawButton)), const Size.square(48));
-    },
-  );
+      ),
+    );
+    // Its face is the medium line at the platform's density: 48 on a phone, the compact 40 on a desktop.
+    final line = NeumorphicChromeMetrics.lineOf(
+      tester.element(find.byType(RawButton)),
+    );
+    expect(tester.getSize(find.byType(RawButton)), Size.square(line));
+  });
 
   _test('a tap in the padded margin reaches the face', (tester) async {
     var presses = 0;
@@ -227,14 +231,20 @@ void main() {
         ),
       ),
     );
+    // A medium key stands at the medium line at the platform's density: 48 on a phone, the compact 40 on a desktop.
     final box = tester.getRect(find.byType(RawButton));
-    expect(box.size, const Size.square(48));
+    expect(
+      box.size,
+      Size.square(
+        NeumorphicChromeMetrics.lineOf(tester.element(find.byType(RawButton))),
+      ),
+    );
     await tester.tapAt(box.centerLeft + const Offset(1, 0));
     await tester.pumpAndSettle();
     expect(presses, 1);
   });
 
-  _test('small faces keep a 48 target on every platform', (tester) async {
+  _test('small faces keep a 40 target on every platform', (tester) async {
     var presses = 0;
     for (final part in <Widget>[
       NeumorphicRoundButton(
@@ -267,8 +277,8 @@ void main() {
                 )
                 .first;
       final box = tester.getRect(target);
-      expect(box.width, greaterThanOrEqualTo(48));
-      expect(box.height, greaterThanOrEqualTo(48));
+      expect(box.width, greaterThanOrEqualTo(40));
+      expect(box.height, greaterThanOrEqualTo(40));
       final before = presses;
       await tester.tapAt(box.centerLeft + const Offset(1, 0));
       await tester.pumpAndSettle();

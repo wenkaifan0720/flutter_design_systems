@@ -18,6 +18,7 @@ import 'internal/cell_bank.dart'
     show neumorphicControlWidth, neumorphicWideRoom;
 import 'localizations.dart';
 import 'raised.dart';
+import 'chrome_metrics.dart';
 import 'theme.dart';
 import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/day_face.dart';
@@ -119,8 +120,9 @@ class NeumorphicDatePicker extends StatefulWidget {
   }
 }
 
-/// The most a month stands wide in a wide column: seven 48 px days.
-const double _monthMost = 7 * 48;
+/// The most a month stands wide in a wide column: seven days of the medium line ([NeumorphicChromeMetrics.lineOf]).
+double _monthMost(BuildContext context) =>
+    7 * NeumorphicChromeMetrics.lineOf(context);
 
 class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
   final _nodes = List.generate(31, (_) => FocusNode());
@@ -256,7 +258,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
     return KeyEventResult.handled;
   }
 
-  // From a medium window up the month keeps its seven days' width (7 × 48), at the start of its column, never cut;
+  // From a medium window up the month keeps its seven days' width (7 medium lines), at the start of its column, never cut;
   // on a phone it spans the column.
   @override
   // Its figures grow with the text only so far (1.3), as the calendar's do: at twice the text its days would run
@@ -272,7 +274,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
         child: Builder(builder: _picker),
       ),
     ),
-    most: _monthMost,
+    most: _monthMost(context),
   );
 
   Widget _picker(BuildContext context) {
@@ -346,7 +348,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
             final width = math.max(
               7.0 *
                   math.max(
-                    48.0,
+                    NeumorphicChromeMetrics.lineOf(context),
                     math.max(
                       look.minimumSize?.width ?? 0.0,
                       28.0 + inset.horizontal + pad.horizontal,
@@ -356,7 +358,11 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
             );
             final cellWidth = width / 7;
             final cellHeight = math.max(
-              math.max(48.0, look.minimumSize?.height ?? 0.0),
+              // A day is a key in a row: it stands at the medium line, as a button beside it would.
+              math.max(
+                NeumorphicChromeMetrics.lineOf(context),
+                look.minimumSize?.height ?? 0.0,
+              ),
               MediaQuery.textScalerOf(context)
                       .scale(look.textStyle?.fontSize ?? 22) +
                   14 +
@@ -811,8 +817,9 @@ Future<DateTime?> showNeumorphicDatePicker(
         // The sheet's body keeps 20 each side.
         const inset = 40.0;
         final room = box.maxWidth - inset;
-        final month = box.hasBoundedWidth && room > _monthMost * 1.5
-            ? neumorphicControlWidth(context, room, _monthMost)
+        final most = _monthMost(context);
+        final month = box.hasBoundedWidth && room > most * 1.5
+            ? neumorphicControlWidth(context, room, most)
             : room;
         final sheet = StatefulBuilder(
           builder: (context, setState) => NeumorphicBottomSheet(

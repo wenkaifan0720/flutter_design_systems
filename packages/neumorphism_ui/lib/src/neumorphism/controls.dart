@@ -550,7 +550,7 @@ class NeumorphicTapFace extends StatelessWidget {
   /// See [NeumorphicTap.pressRelief].
   final bool pressRelief;
 
-  /// Whether the face's box grows to a 48 target (the platform's least), its child centred in it. A face whose
+  /// Whether the face's box grows to the touch floor in effect, its child centred in it. A face whose
   /// neighbours are the row's targets turns it off: the number field's figure between its two keys, where the target
   /// pushed the unit under the figure away from it.
   final bool padToTarget;
@@ -668,8 +668,8 @@ class NeumorphicTapFace extends StatelessWidget {
         return NeumorphicStatesScope(
           states: states,
           child: _TapTarget(
-            minSize: padToTarget
-                ? Size.square(NeumorphicChromeMetrics.targetSize)
+            minSize: padToTarget && !NeumorphicTargetOutside.holds(context)
+                ? NeumorphicChromeMetrics.targetOf(context)
                 : Size.zero,
             child: face,
           ),
@@ -1149,7 +1149,7 @@ class _ActPainter extends CustomPainter {
       o.elevation != elevation;
 }
 
-/// The three button faces; their padded touch targets remain at least 48 pixels.
+/// The three button faces; their padded touch targets remain at least the touch floor.
 /// The visual size of a button, independent of its minimum hit target.
 enum NeumorphicButtonSize {
   /// The smallest face and spacing.
@@ -1412,7 +1412,7 @@ class _ActButtonState extends State<_ActButton> {
           ? NeumorphicLocalizations.of(context).loading
           : null,
       round: round,
-      focusInset: round ? (_targetSize(diameter) - diameter) / 2 : 0,
+      focusInset: round ? (_targetSize(context, diameter) - diameter) / 2 : 0,
       faceAlignment: round ? place : AlignmentDirectional.center,
       onStatesChanged: (states) => setState(() => _states = Set.of(states)),
       child: NeumorphicOutOfUse(off: disabled, child: face),
@@ -1467,11 +1467,12 @@ class _ActButtonState extends State<_ActButton> {
         );
     if (widget.round) {
       return _padded(
+        context,
         diameter,
         alignment: place,
         neumorphicOwnSize(
-          width: _targetSize(diameter),
-          height: _targetSize(diameter),
+          width: _targetSize(context, diameter),
+          height: _targetSize(context, diameter),
           child: tap(
             Align(
               alignment: place,
@@ -2618,10 +2619,11 @@ class NeumorphicRoundButton extends StatelessWidget {
         );
         // The bead keeps its place on the face wherever the face stands in its target.
         final beadEnd =
-            -6 - place.start * (_targetSize(faceSize) - faceSize) / 2;
+            -6 -
+            place.start * (_keyBox(context, faceSize, size) - faceSize) / 2;
         return neumorphicOwnSize(
-          width: _targetSize(faceSize),
-          height: _targetSize(faceSize),
+          width: _keyBox(context, faceSize, size),
+          height: _keyBox(context, faceSize, size),
           child: badge == null
               ? Align(alignment: place, child: body)
               : Stack(
@@ -2730,8 +2732,10 @@ class NeumorphicRoundButton extends StatelessWidget {
       },
     );
     return _padded(
+      context,
       faceMinimum(rest),
       alignment: place,
+      box: _keyBox(context, faceMinimum(rest), size),
       MergeSemantics(
         child: Align(
           alignment: AlignmentDirectional.topStart,
@@ -3056,7 +3060,9 @@ class NeumorphicChip extends StatelessWidget {
               ? (rest.iconSize ?? 18) + 8
               : 0) +
           (trailingIcon != null ? (rest.iconSize ?? 18) + 8 : 0) +
-          (onDeleted != null ? 48 : 0),
+          (onDeleted != null
+              ? NeumorphicChromeMetrics.targetOf(context).width
+              : 0),
     );
     final states = <WidgetState>{
       if (selected) WidgetState.selected,
@@ -3150,7 +3156,7 @@ class NeumorphicChip extends StatelessWidget {
         maxWidth: math.max(
           0.0,
           (box.hasBoundedWidth ? box.maxWidth : double.infinity) -
-              48 -
+              NeumorphicChromeMetrics.targetOf(context).width -
               padding.horizontal -
               dims.horizontal -
               (leading != null || icon != null || selected
@@ -3167,10 +3173,10 @@ class NeumorphicChip extends StatelessWidget {
       );
       words.dispose();
       // The chip is laid out at its target's height, and a press anywhere in it (above or below the face, or on its
-      // rim) lands on the face's middle line at its own x: on the words' part or the cross, each a 48 target in the
+      // rim) lands on the face's middle line at its own x: on the words' part or the cross, each a touch-floor target in the
       // band. Each speaks for its own part: the words' node outlined the cross too, which a press there never reached.
       face = NeumorphicReach(
-        height: NeumorphicChromeMetrics.targetSize,
+        height: NeumorphicChromeMetrics.targetOf(context).height,
         inset: math.max(dims.left, dims.right) + .5,
         child: NeumorphicSurface(
           cast: selected
@@ -3189,7 +3195,7 @@ class NeumorphicChip extends StatelessWidget {
               children: [
                 Flexible(
                   child: NeumorphicTallTarget(
-                    height: NeumorphicChromeMetrics.targetSize,
+                    height: NeumorphicChromeMetrics.targetOf(context).height,
                     child: Semantics(
                       container: true,
                       button: onPressed != null,
@@ -3221,7 +3227,7 @@ class NeumorphicChip extends StatelessWidget {
                 // raised key on the raised chip would stand one bump on another (law 4). Its target is the platform's,
                 // reaching past the band up and down.
                 NeumorphicTallTarget(
-                  height: NeumorphicChromeMetrics.targetSize,
+                  height: NeumorphicChromeMetrics.targetOf(context).height,
                   child: NeumorphicTap(
                     onPressed: isEnabled ? onDeleted : null,
                     label:
@@ -3232,7 +3238,7 @@ class NeumorphicChip extends StatelessWidget {
                     shape: shape,
                     radius: NeumorphicRadii.chip,
                     child: SizedBox(
-                      width: 48,
+                      width: NeumorphicChromeMetrics.targetOf(context).width,
                       height: band,
                       child: Icon(
                         NeumorphicGlyphs.close,
@@ -3369,7 +3375,7 @@ class NeumorphicLatchGroup extends StatelessWidget {
     final words = t.textTheme.caption
         .copyWith(fontWeight: FontWeight.w700)
         .merge(bank.textStyle);
-    var need = 48.0;
+    var need = NeumorphicChromeMetrics.targetOf(context).width;
     for (final o in options) {
       need = math.max(
         need,
@@ -3990,7 +3996,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
           ? (decorate?.call(editable) ?? editable)
           : neumorphicLabel(decorate?.call(editable) ?? editable),
     );
-    // Beside several lines, a glyph or a key stands on the first line's band. Beside one, a key's own 48 target
+    // Beside several lines, a glyph or a key stands on the first line's band. Beside one, a key's own target
     // overhangs a groove the density draws smaller instead of growing it; the field's reach takes a press there to it.
     Widget band(Widget part) => multi
         ? SizedBox(
@@ -4014,9 +4020,10 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
     // The key stands at its target (TapTargetPadding), its face centred: the target's own air round the face stands in
     // for as much of the box's end padding and the gap before the key, so the face keeps its place.
     final keyAir = reveal != null
-        ? (_targetSize(keySize) - keySize) / 2
+        ? (_targetSize(context, keySize) - keySize) / 2
         : widget.trailing is NeumorphicSendButton
-        ? (_targetSize(t.density.height(34)) - t.density.height(34)) / 2
+        ? (_targetSize(context, t.density.height(34)) - t.density.height(34)) /
+              2
         : 0.0;
     final trailing = reveal != null
         ? NeumorphicRoundButton(
@@ -4107,7 +4114,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
         skipTraversal: true,
         includeSemantics: false,
         onFocusChange: (v) => setState(() => _focused = v),
-        // One line keeps a control's 48 target round its face, as a button does: the groove takes the density's
+        // One line keeps a control's touch-floor target round its face, as a button does: the groove takes the density's
         // height in it, so a field and a button share a box in any row, and a press in it off the groove reaches the
         // line. Its flags go on the field's node, which is the text entry's: beside an eye or a send key too, the
         // entry reads the field's name, help and error.
@@ -4117,7 +4124,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
                 expanded: expanded,
                 maxValueLength: widget.maxLength,
                 child: NeumorphicReach(
-                  height: NeumorphicChromeMetrics.targetSize,
+                  height: NeumorphicChromeMetrics.targetOf(context).height,
                   child: drawn,
                 ),
               ),
@@ -4221,11 +4228,12 @@ class NeumorphicSendButton extends StatelessWidget {
     final place =
         NeumorphicFacePlace.maybeOf(context) ?? AlignmentDirectional.centerEnd;
     return _padded(
+      context,
       diameter,
       alignment: place,
       neumorphicOwnSize(
-        width: _targetSize(diameter),
-        height: _targetSize(diameter),
+        width: _targetSize(context, diameter),
+        height: _targetSize(context, diameter),
         child: NeumorphicTap(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -4414,34 +4422,39 @@ class NeumorphicSelectField extends StatelessWidget {
             off: onPressed == null,
             child: NeumorphicFieldBox(
               style: style,
-              child: NeumorphicFitRow(
-                fill: 0,
-                gap: 10,
-                fillShare: .3,
-                children: [
-                  neumorphicLabel(
-                    Text(
-                      value,
-                      style: t.textTheme.body
-                          .merge(look.textStyle)
-                          .copyWith(color: look.foreground),
-                    ),
-                  ),
-                  if (note != null)
+              // Large text keeps 8 px of well above and below its lines, as a text field's does: at twice the size a
+              // 48 well held its words edge to edge, a descender 2 px off the foot.
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: NeumorphicFitRow(
+                  fill: 0,
+                  gap: 10,
+                  fillShare: .3,
+                  children: [
                     neumorphicLabel(
                       Text(
-                        note!,
-                        style: t.textTheme.caption
+                        value,
+                        style: t.textTheme.body
                             .merge(look.textStyle)
                             .copyWith(color: look.foreground),
                       ),
                     ),
-                  Icon(
-                    NeumorphicGlyphs.chevronDown,
-                    size: look.iconSize ?? 18,
-                    color: look.foreground ?? t.colors.inkSecondary,
-                  ),
-                ],
+                    if (note != null)
+                      neumorphicLabel(
+                        Text(
+                          note!,
+                          style: t.textTheme.caption
+                              .merge(look.textStyle)
+                              .copyWith(color: look.foreground),
+                        ),
+                      ),
+                    Icon(
+                      NeumorphicGlyphs.chevronDown,
+                      size: look.iconSize ?? 18,
+                      color: look.foreground ?? t.colors.inkSecondary,
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -5086,12 +5099,14 @@ class _NumberFigureState extends State<_NumberFigure>
         cursor: _disabled ? MouseCursor.defer : SystemMouseCursors.text,
         child: _gestures.buildGestureDetector(
           behavior: HitTestBehavior.translucent,
-          // At least the keys' height; taller only when large text needs it.
+          // At least the keys' faces' height at the density; taller only when large text needs it.
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: _numberFace),
+            constraints: BoxConstraints(
+              minHeight: t.density.height(_numberFace),
+            ),
             child: NeumorphicSurface(
               cast: NeumorphicSurfaceLevel.groove,
-              radius: _numberFace / 2,
+              radius: t.density.height(_numberFace) / 2,
               states: {
                 if (field.states.contains(WidgetState.focused))
                   WidgetState.focused,
@@ -5392,7 +5407,7 @@ class NeumorphicSwitch extends StatelessWidget {
     final motion = NeumorphicMotion.of(context);
     return neumorphicOwnSize(
       width: size.width,
-      height: _targetSize(math.max(44, size.height)),
+      height: _targetSize(context, size.height),
       child: NeumorphicTap(
         autofocus: autofocus,
         label: label,
@@ -5583,49 +5598,59 @@ class NeumorphicSwitchRow extends StatelessWidget {
           final rowFocus =
               cell == null &&
               NeumorphicStatesScope.of(context).contains(WidgetState.focused);
-          return NeumorphicFitRow(
-            fill: leading == null ? 0 : 1,
-            gap: 14,
-            children: [
-              if (leading != null) ExcludeSemantics(child: leading!),
-              // A disabled setting's words fade with its switch.
-              NeumorphicOutOfUse(
-                off: onChanged == null,
-                child: NeumorphicColumn(
-                  children: [
-                    Text(
-                      label,
-                      style: t.textTheme.title
-                          .merge(look.textStyle)
-                          .copyWith(color: look.foreground),
+          // As tall as the medium line it shares with the buttons and fields beside it, its switch on the line's middle.
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: NeumorphicChromeMetrics.lineOf(context),
+            ),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: NeumorphicFitRow(
+                fill: leading == null ? 0 : 1,
+                gap: 14,
+                children: [
+                  if (leading != null) ExcludeSemantics(child: leading!),
+                  // A disabled setting's words fade with its switch.
+                  NeumorphicOutOfUse(
+                    off: onChanged == null,
+                    child: NeumorphicColumn(
+                      children: [
+                        Text(
+                          label,
+                          style: t.textTheme.title
+                              .merge(look.textStyle)
+                              .copyWith(color: look.foreground),
+                        ),
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            style: t.textTheme.caption
+                                .merge(look.textStyle)
+                                .copyWith(
+                                  color:
+                                      look.foreground ?? t.colors.inkTertiary,
+                                ),
+                          ),
+                      ],
                     ),
-                    if (subtitle != null)
-                      Text(
-                        subtitle!,
-                        style: t.textTheme.caption
-                            .merge(look.textStyle)
-                            .copyWith(
-                              color: look.foreground ?? t.colors.inkTertiary,
-                            ),
-                      ),
-                  ],
-                ),
-              ),
-              ExcludeFocus(
-                child: ExcludeSemantics(
-                  child: IgnorePointer(
-                    child: _SwitchRowFocus(
-                      focused: rowFocus,
-                      child: NeumorphicSwitch(
-                        value: value,
-                        style: style,
-                        onChanged: onChanged == null ? null : (_) {},
+                  ),
+                  ExcludeFocus(
+                    child: ExcludeSemantics(
+                      child: IgnorePointer(
+                        child: _SwitchRowFocus(
+                          focused: rowFocus,
+                          child: NeumorphicSwitch(
+                            value: value,
+                            style: style,
+                            onChanged: onChanged == null ? null : (_) {},
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),
@@ -6133,7 +6158,8 @@ class _NeumorphicSliderState extends State<NeumorphicSlider> {
                                   : null,
                               child: SizedBox(
                                 height: math.max(
-                                  48,
+                                  NeumorphicChromeMetrics.targetOf(context)
+                                      .height,
                                   look.minimumSize?.height ?? 0,
                                 ),
                                 width: double.infinity,
@@ -6254,11 +6280,12 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
     final flat = NeumorphicFlatScope.of(context);
     final place = NeumorphicFacePlace.of(context);
     return _padded(
+      context,
       28,
       alignment: place,
       neumorphicOwnSize(
-        width: _targetSize(28),
-        height: _targetSize(28),
+        width: _targetSize(context, 28),
+        height: _targetSize(context, 28),
         child: NeumorphicTap(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -6269,7 +6296,7 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
           button: false,
           onPressed: onChanged == null ? null : () => onChanged!(!value),
           round: true,
-          focusInset: (_targetSize(28) - 28) / 2,
+          focusInset: (_targetSize(context, 28) - 28) / 2,
           faceAlignment: place,
           child: Builder(
             builder: (context) {
@@ -6531,11 +6558,13 @@ class _RenderTapTarget extends RenderShiftedBox {
 /// [alignment] says, the control's [NeumorphicFacePlace]: on the start keyline unless its slot sets another. No
 /// neighbour, nor the parent's edge, takes a press a screen reader says is the control's.
 Widget _padded(
+  BuildContext context,
   double face,
   Widget child, {
   AlignmentDirectional alignment = AlignmentDirectional.center,
+  double? box,
 }) => TapTargetPadding(
-  minSize: Size.square(_targetSize(face)),
+  minSize: Size.square(box ?? _targetSize(context, face)),
   alignment: alignment,
   child: child,
 );
@@ -6543,8 +6572,23 @@ Widget _padded(
 /// The room between a field's words and a glyph or key beside them.
 const double _keyGap = 10;
 
-double _targetSize(double face) =>
-    math.max(NeumorphicChromeMetrics.targetSize, face);
+double _targetSize(BuildContext context, double face) =>
+    math.max(NeumorphicChromeMetrics.targetOf(context).width, face);
+
+/// The least size of the look's icon keys (40 and 44); a smaller key is a small one, as a small button is.
+const double _iconKeyLeast = 40;
+
+/// A round key's box: its [face], never under the touch floor; an icon key (a [size] of 40 up, the look's 40 and 44
+/// keys) as tall as the medium line ([NeumorphicChromeMetrics.lineOf]), so it shares a row's height with the buttons
+/// and fields beside it and its face keeps its air inside the box at every density. A small key (36 and under) stands
+/// at the floor, as the small buttons do.
+double _keyBox(BuildContext context, double face, double size) =>
+    size >= _iconKeyLeast
+    ? math.max(
+        _targetSize(context, face),
+        NeumorphicChromeMetrics.lineOf(context),
+      )
+    : _targetSize(context, face);
 
 /// A collapsed decoration with every field that could size or draw it set here, so no theme default reaches it: no
 /// padding, no borders, no fill, standard density and no constraints (an unset one takes the theme's). It carries

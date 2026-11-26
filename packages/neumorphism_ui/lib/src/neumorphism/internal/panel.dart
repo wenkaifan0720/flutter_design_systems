@@ -13,6 +13,7 @@ import '../frames.dart';
 import '../glyphs.dart';
 import '../knobs.dart';
 import '../shapes.dart';
+import '../chrome_metrics.dart';
 import '../theme.dart';
 import 'cap_label.dart';
 import 'cell_bank.dart' show NeumorphicChosenBand;
@@ -322,7 +323,9 @@ class NeumorphicPanelRow extends StatelessWidget {
             )
           : null,
       child: Container(
-        constraints: const BoxConstraints(minHeight: 48),
+        constraints: BoxConstraints(
+          minHeight: NeumorphicChromeMetrics.targetOf(context).height,
+        ),
         // A shortcut at the end keeps clear of the band's end as the words do of its start: at the row's 8 it sat
         // jammed against the band while the words, past an icon's room, started 38 in.
         padding: EdgeInsetsDirectional.fromSTEB(

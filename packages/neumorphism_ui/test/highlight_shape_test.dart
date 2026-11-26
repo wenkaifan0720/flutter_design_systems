@@ -369,10 +369,18 @@ void main() {
             (w) => w is NeumorphicTap && w.onPressed != null,
           );
           final fields = find.byType(EditableText);
+          // A rating's stars are ui_core's items (each keyed for its pointer), no taps of the look's: the pointer goes
+          // to its first star.
+          final rating = find.descendant(
+            of: find.byType(NeumorphicRating),
+            matching: find.byType(KeyedSubtree),
+          );
           final target = taps.evaluate().isNotEmpty
               ? taps.first
               : fields.evaluate().isNotEmpty
               ? fields.first
+              : rating.evaluate().isNotEmpty
+              ? rating.first
               : find.byKey(_shot);
           final at = tester.getCenter(target);
           final idle = await _pixels(tester);

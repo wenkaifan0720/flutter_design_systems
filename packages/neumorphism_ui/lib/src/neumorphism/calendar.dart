@@ -18,6 +18,7 @@ import 'internal/panel.dart';
 import 'localizations.dart';
 import 'raised.dart';
 import 'styled.dart';
+import 'chrome_metrics.dart';
 import 'theme.dart';
 import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/day_face.dart';
@@ -108,8 +109,8 @@ Widget _day(
   final cell = t.shapes.corner(NeumorphicRadii.cap);
   final enabled = day.enabled;
   final run = _runOf(day, controller, firstWeekday);
-  // A day keeps the 48 px target and grows with the reader's text: its figure's measured line, its mark, its insets
-  // and the face's rim.
+  // A day is a key in a row: it stands at the medium line (NeumorphicChromeMetrics.lineOf), as a button beside it would,
+  // and grows with the reader's text: its figure's measured line, its mark, its insets and the face's rim.
   final painter = TextPainter(
     text: TextSpan(
       text: day.label,
@@ -122,7 +123,7 @@ Widget _day(
   final line = painter.height;
   painter.dispose();
   return SizedBox(
-    height: math.max(48, line + 6 + 6 + 6),
+    height: math.max(NeumorphicChromeMetrics.lineOf(context), line + 6 + 6 + 6),
     // A day is a figure on the calendar's own surface. The chosen days are pressed in: one well for a day, and for a
     // range one smooth pressed channel along each week, its own ends marked by their figures.
     child: CustomPaint(
@@ -406,7 +407,11 @@ class NeumorphicCalendar extends StatefulWidget {
   /// scale. A column narrower than the months scrolls them sideways instead of crushing them.
   static const double minMonthWidth = 7 * 44;
 
-  /// The widest a month is laid out from a medium window up: seven days of 48, the platform's target.
+  /// The widest a month was laid out from a medium window up: seven days of 48, the old touch floor.
+  @Deprecated(
+    'A month is laid out up to seven days of the medium line (NeumorphicChromeMetrics.lineOf), and never under '
+    'minMonthWidth.',
+  )
   static const double maxMonthWidth = 7 * 48;
 
   @override
@@ -572,7 +577,14 @@ class _NeumorphicCalendarState extends State<NeumorphicCalendar>
       ),
     );
     final least = NeumorphicCalendar.minMonthWidth * months + 28 * (months - 1);
-    final most = NeumorphicCalendar.maxMonthWidth * months + 28 * (months - 1);
+    // The widest a month is laid out from a medium window up: seven days of the medium line, never under the least.
+    final most =
+        math.max(
+              NeumorphicCalendar.minMonthWidth,
+              7 * NeumorphicChromeMetrics.lineOf(context),
+            ) *
+            months +
+        28 * (months - 1);
     // A month's figures grow with the text only so far (1.3), as Material's date picker's do: at twice the text on a
     // phone its figures would run together and into the well's walls.
     return MediaQuery.withClampedTextScaling(

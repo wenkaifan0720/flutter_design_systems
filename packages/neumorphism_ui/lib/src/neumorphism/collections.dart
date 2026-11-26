@@ -19,6 +19,7 @@ import 'knobs.dart' show NeumorphicElevation;
 import 'localizations.dart';
 import 'moves.dart';
 import 'ornaments.dart';
+import 'chrome_metrics.dart';
 import 'theme.dart';
 
 OutlinedBorder _rowShape(NeumorphicThemeData t) =>
@@ -156,9 +157,11 @@ class NeumorphicDataTable<R> extends StatelessWidget {
                         ? neumorphicFocusLift(t, shape)
                         : null,
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minWidth: 48,
-                        minHeight: 48,
+                      constraints: BoxConstraints(
+                        minWidth: NeumorphicChromeMetrics.targetOf(context)
+                            .width,
+                        minHeight: NeumorphicChromeMetrics.targetOf(context)
+                            .height,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -287,7 +290,9 @@ class NeumorphicDataTable<R> extends StatelessWidget {
       least = math.max(least, (need + 16) * total / flexes[i]);
     }
     // The row's own inset and the checkbox's target.
-    return least + 8 + (selectable ? 48 : 0);
+    return least +
+        8 +
+        (selectable ? NeumorphicChromeMetrics.targetOf(context).width : 0);
   }
 
   @override
@@ -688,8 +693,8 @@ class NeumorphicReorderableListView<T extends Object> extends StatelessWidget {
               r.handle(
                 MouseRegion(
                   cursor: SystemMouseCursors.grab,
-                  child: SizedBox.square(
-                    dimension: 48,
+                  child: SizedBox.fromSize(
+                    size: NeumorphicChromeMetrics.targetOf(context),
                     child: Icon(
                       NeumorphicGlyphs.gripVertical,
                       size: 18,
@@ -1077,7 +1082,10 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
                 end: 8,
               ),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 44),
+                constraints: BoxConstraints(
+                  // A tree's row is a row of a list: it stands at the medium line, as a list tile does.
+                  minHeight: NeumorphicChromeMetrics.lineOf(context),
+                ),
                 child: Row(
                   children: [
                     // The chevron is the pointer's: the row is the tree's one keyboard stop (Right and Left open and

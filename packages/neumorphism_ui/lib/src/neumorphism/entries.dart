@@ -232,7 +232,7 @@ class _NeumorphicSearchFieldState extends State<NeumorphicSearchField> {
         keyboardType: widget.keyboardType,
         textInputAction: TextInputAction.search,
         leading: const Icon(NeumorphicGlyphs.search, size: 20),
-        // The key stands at its 48 target in the field's key slot, which lets a target overhang the groove without
+        // The key stands at its target in the field's key slot, which lets a target overhang the groove without
         // growing the field: a 32-tall box round it here stopped taps 8 short of the target above and below.
         trailing: _text.text.isEmpty
             ? null
@@ -636,7 +636,10 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
           ),
         );
         final height = math.max(
-          math.max(48.0, baseStyle.minimumSize?.height ?? 0),
+          math.max(
+            NeumorphicChromeMetrics.targetOf(context).height,
+            baseStyle.minimumSize?.height ?? 0,
+          ),
           scaler.scale(28) + 16 + safe.vertical,
         );
         // The rows planned, each as long as the first: a wrap packed as many as fit and left a short last row (4 and 2).
@@ -1172,7 +1175,7 @@ class NeumorphicCheckbox extends StatelessWidget {
     final place = NeumorphicFacePlace.of(context);
     return NeumorphicOwnRoot(
       child: TapTargetPadding(
-        minSize: const Size.square(NeumorphicChromeMetrics.touchTarget),
+        minSize: NeumorphicChromeMetrics.targetOf(context),
         alignment: place,
         child: NeumorphicTap(
           focusNode: focusNode,
@@ -1186,13 +1189,14 @@ class NeumorphicCheckbox extends StatelessWidget {
           label: label,
           button: false,
           round: false,
-          focusInset: 10,
+          focusInset:
+              (NeumorphicChromeMetrics.targetOf(context).width - 28) / 2,
           // The box is a socket: keyboard focus deepens it, as it does a field's well, and nothing rises round it.
           showFocus: false,
           faceAlignment: place,
           onPressed: onChanged == null ? null : () => onChanged!(_next),
-          child: SizedBox.square(
-            dimension: 48,
+          child: SizedBox.fromSize(
+            size: NeumorphicChromeMetrics.targetOf(context),
             child: Align(
               alignment: place,
               child: _CheckMark(
@@ -1405,8 +1409,12 @@ class NeumorphicCheckRow extends StatelessWidget {
               if (isError) WidgetState.error,
             },
           );
+          // 10 of air above and below at the standard density, 2 less a step denser, so the row stands at the medium
+          // line (NeumorphicChromeMetrics.lineOf) beside the buttons and fields of its density.
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.symmetric(
+              vertical: math.max(0, 10 + t.density.heightDelta / 2),
+            ),
             child: Row(
               children: [
                 _CheckMark(
@@ -1913,7 +1921,8 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
         .copyWith(fontWeight: FontWeight.w600)
         .merge(bankLook.textStyle);
     final scaler = MediaQuery.textScalerOf(context);
-    var least = 48.0;
+    // A cell is no narrower than the medium line ([NeumorphicChromeMetrics.lineOf]): square at its least.
+    var least = NeumorphicChromeMetrics.lineOf(context);
     for (final o in segments) {
       least = math.max(
         least,
@@ -2300,7 +2309,10 @@ class NeumorphicRating extends StatelessWidget {
       );
     }
     final chosen = value.round();
-    final target = math.max(size + 16, NeumorphicChromeMetrics.targetSize);
+    final target = math.max(
+      size + 16,
+      NeumorphicChromeMetrics.targetOf(context).width,
+    );
     final place = NeumorphicFacePlace.of(context);
     // The star at the score (the first while there is none) wears a drag's press, as a slider's thumb would. The
     // rating's focus raises the whole row of stars ([_RatingRise]): the rating is one stop, and the stars filled say

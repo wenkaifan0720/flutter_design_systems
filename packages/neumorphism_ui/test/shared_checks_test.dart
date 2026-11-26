@@ -391,7 +391,7 @@ String? _named(String problem) {
   // true. A tab's name carries its place on a second line ("Overview\nTab 1 of 3"), so the row's names may break.
   if (RegExp(
     r'^(standard|compact) dark · a row of [\s\S]+: its sides are 0 px in as laid out, 0 px on the left and '
-    r'(86\.5|102\.3|103|115\.7|175) px on the right as drawn$',
+    r'(86\.5|86\.7|102\.3|103|115\.7|175) px on the right as drawn$',
   ).hasMatch(problem)) {
     return 'a bank by night read to its last seam';
   }
@@ -454,11 +454,12 @@ String? _named(String problem) {
   // today underlined). Every day of a row reads the same offset, to a tenth, against the day the check holds the row
   // to (the chosen day, a span's end): what is off is that day's centre line as ui_core_test reads it, below the
   // figures by day and above them by night, not a day. Drawn, the figures and the chosen well stand level (golden
-  // pickers/a_month_laid_open).
+  // pickers/a_month_laid_open). A compact month's days stand at its 40 line, so its rows read their own offsets.
   const day = '"$_weekday, [^"]*"';
   if (RegExp(
     '^(standard|compact) (dark|light) · a button $day beside a button $day: the capitals of "\\d{1,2}" are '
-    '((2\\.3|4\\.1|4\\.2|8\\.4|8\\.5|9\\.2) px above|(1\\.1|1\\.3|3|3\\.1|3\\.3) px below) the row.s centre line as '
+    '((2\\.3|4|4\\.1|4\\.2|7|7\\.1|7\\.3|8\\.4|8\\.5|9\\.2) px above|(1\\.1|1\\.2|1\\.3|2\\.4|2\\.5|2\\.7|2\\.9|3|3\\.1|3\\.3) px below) '
+    'the row.s centre line as '
     'laid out',
   ).hasMatch(problem)) {
     return "a month's days read against one day's mark";

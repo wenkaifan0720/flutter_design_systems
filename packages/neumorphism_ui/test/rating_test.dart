@@ -107,21 +107,20 @@ void main() {
     await tester.tap(_stars.at(3));
     await tester.pump();
     expect(log, [4]);
-    await tester.dragFrom(
-      tester.getCenter(_stars.at(0)),
-      tester.getCenter(_stars.at(4)) - tester.getCenter(_stars.at(0)),
-    );
+    // From near the first star's start, so the drag's first step (its slop) stays on the first star.
+    final from = tester.getRect(_stars.at(0)).centerLeft + const Offset(4, 0);
+    await tester.dragFrom(from, tester.getCenter(_stars.at(4)) - from);
     await tester.pump();
     expect(log.last, 5);
     expect(log.skip(1), containsAllInOrder([1, 5]));
   });
 
-  testWidgets('each star keeps a 48 target, edge to edge', (tester) async {
+  testWidgets('each star keeps a 40 target, edge to edge', (tester) async {
     await tester.pumpWidget(neumorphicApp(const _Rated(log: [])));
     for (var i = 0; i < 5; i++) {
       final box = tester.getRect(_stars.at(i));
-      expect(box.width, greaterThanOrEqualTo(48));
-      expect(box.height, greaterThanOrEqualTo(48));
+      expect(box.width, greaterThanOrEqualTo(40));
+      expect(box.height, greaterThanOrEqualTo(40));
       if (i > 0) expect(box.left, tester.getRect(_stars.at(i - 1)).right);
     }
   });

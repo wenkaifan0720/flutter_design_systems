@@ -12,6 +12,7 @@ import 'demos/chrome.dart' show kitSpecimenNavigationRail;
 import 'demos/moves.dart' show kitSlide;
 import 'demos/collections.dart';
 import 'demos/fields.dart';
+import 'demos/foundations.dart' show kitPaletteSamples;
 import 'demos/overlays.dart';
 import 'demos/pickers.dart'
     show kitPickerToday, kitSpecimenCalendar, kitSpecimenDateRangePicker;
@@ -469,7 +470,7 @@ class _LiveExampleState extends State<LiveExample> {
             (
               NeumorphicGlyphs.palette,
               'Your own colours',
-              'Five presets, or a ground and a pigment of your own',
+              'Six palettes, or a ground and a pigment of your own',
             ),
             (
               NeumorphicGlyphs.eye,
@@ -1964,6 +1965,8 @@ class _LiveExampleState extends State<LiveExample> {
           swatch('Pigment', c.accent),
         ]),
       ]),
+      // The six palettes in this brightness, each a strip of its wall, faces, pigment and inks.
+      _part('Palettes', [kitPaletteSamples()]),
       // Each mark with the kind it stands for, as a legend would show it: bare, three dots read as decoration.
       _part('Shape marks', [
         _wrap([

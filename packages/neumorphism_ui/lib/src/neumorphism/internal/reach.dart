@@ -138,7 +138,7 @@ class _RenderReach extends RenderShiftedBox {
 
 /// A part of a face, [child], whose target reaches past it up and down: the box keeps the part's own size (it stands
 /// in its face's band), and its one spoken node and its presses take [height], centred on it. A chip's cross is a
-/// 48 target in a 32 band, never a key raised over the chip.
+/// touch-floor target in a 32 band, never a key raised over the chip.
 class NeumorphicTallTarget extends SingleChildRenderObjectWidget {
   /// Speaks and hit-tests [child] at least [height] tall.
   const NeumorphicTallTarget({super.key, required this.height, super.child});
@@ -309,6 +309,21 @@ class NeumorphicFacePlace extends InheritedWidget {
   @override
   bool updateShouldNotify(NeumorphicFacePlace oldWidget) =>
       alignment != oldWidget.alignment;
+}
+
+/// Lays the controls under [child] at their faces: their targets stand outside them, a chip group's `TapTargetPadding`
+/// round each, so the group reads each face and lets its target take the room between faces.
+class NeumorphicTargetOutside extends InheritedWidget {
+  /// Lays the controls under [child] at their faces.
+  const NeumorphicTargetOutside({super.key, required super.child});
+
+  /// Whether the controls at [context] are laid out at their faces, their targets outside them.
+  static bool holds(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<NeumorphicTargetOutside>() !=
+      null;
+
+  @override
+  bool updateShouldNotify(NeumorphicTargetOutside oldWidget) => false;
 }
 
 /// [key], a round key that ends its row (a sheet's close key, the next month, the next page), with its face on the

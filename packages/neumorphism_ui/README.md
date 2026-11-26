@@ -5,7 +5,7 @@ and shadow, with one pigment marking what acts. An optional high-contrast settin
 
 ![Hearth, the gallery's home app, on Neumorphism: its living room at 1440 px by day beside the same room on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hero_home.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/neumorphism/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/neumorphism/) · [API reference](https://pub.dev/documentation/neumorphism_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/neumorphism/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=neumorphism) · [API reference](https://pub.dev/documentation/neumorphism_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
@@ -13,7 +13,29 @@ and shadow, with one pigment marking what acts. An optional high-contrast settin
 flutter pub add neumorphism_ui material_ui
 ```
 
-`material_ui` is Flutter's Material library as a package; the quick start's `MaterialApp` comes from it.
+or, under `dependencies:` in `pubspec.yaml`, `neumorphism_ui: ^0.7.0` and `material_ui: ^1.9.0`.
+
+`material_ui` is Flutter's Material library as a package; the examples' `MaterialApp` comes from it.
+
+## A first app
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+void main() => runApp(
+  MaterialApp(
+    builder: (context, child) =>
+        NeumorphicTheme(data: NeumorphicThemeData.porcelain(), child: child!),
+    home: NeumorphicScaffold(
+      body: Center(child: NeumorphicButton('Save', onPressed: () {})),
+    ),
+  ),
+);
+```
+
+`NeumorphicTheme` gives every route the look's theme. The fuller setup below also loads the bundled face before the
+first frame and gives the app's own routes the look's page change.
 
 ## Use
 
@@ -184,31 +206,25 @@ These are the look's laws. A part the original style never had is made by them, 
 7. Motion is the material moving. A press sinks, keyboard focus lifts, a field's well deepens. Nothing bounces. With reduced motion a part jumps to its end, and a dialog or a sheet dissolves where it stands.
 8. No corner is sharp. The smallest corner is 6. A face inside another follows the outer corner: its radius is the outer radius minus the inset, and never less than 6.
 
-## Presets
+## Palettes
 
-Every preset has a separately designed light and dark appearance. Use its named factory with a positional `Brightness`, or `NeumorphicThemeData.preset(id, brightness)`.
+Six palettes, porcelain the default, each designed by day and by night: every factory takes `Brightness.light` (the
+default) or `Brightness.dark`, and `NeumorphicThemeData.preset(name, brightness)` takes one of
+`NeumorphicThemeData.presets` by name.
 
-| Preset | Character |
+| Factory | Appearance |
 | --- | --- |
-| `porcelain` | Neutral porcelain and a cool action pigment |
-| `pompeii` | Warm plaster and an earthy red pigment |
-| `verona` | A pale wall and a green pigment |
-| `siena` | Warm mineral tones |
-| `tyrian` | A purple pigment |
+| `NeumorphicThemeData.porcelain()` | Grey-blue plaster with ultramarine; blue-slate and a clear cobalt at night. |
+| `NeumorphicThemeData.pompeii()` | Warm limestone with cinnabar; dark umber and a coral glow at night. |
+| `NeumorphicThemeData.verona()` | Green-grey plaster with malachite; deep green and mint at night. |
+| `NeumorphicThemeData.siena()` | Ochre plaster with burnt umber; olive-brown and amber at night. |
+| `NeumorphicThemeData.tyrian()` | Mauve-grey plaster with Tyrian purple; aubergine and orchid at night. |
+| `NeumorphicThemeData.capri()` | Sea-grey plaster with Capri's blue-green; sea-slate and aqua at night. |
 
-Cards, actions and fields in each preset, light on the left and dark on the right:
-
-![Porcelain preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/porcelain.png)
-
-![Pompeii preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/pompeii.png)
-
-![Verona preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/verona.png)
-
-![Siena preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/siena.png)
-
-![Tyrian preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/tyrian.png)
-
-The example gallery shows every preset and appearance. Run it with `flutter run` from `example/`.
+`NeumorphicThemeData.from(ground:, pigment:, brightness:)` derives a whole palette from a wall colour and a pigment:
+the wall keeps the ground's hue at a plaster's lightness, and the words, the pigment's ink and the bars each take the
+nearest tone of their own hue that reads on every face and well (ui_core's `RawPalette`). The example gallery shows
+every palette and appearance; run it with `flutter run` from `example/`.
 
 ## Theme and styles
 
@@ -227,7 +243,7 @@ final custom = NeumorphicThemeData.from(
 );
 ```
 
-The settings are the ones a product team turns: a preset or your own colours, light and dark, `density` (the platform's by default: compact with a pointer, standard on touch), `elevation` (the depth) and `highContrast`. A theme's depth stays between `NeumorphicElevation.leastDepth` and `mostDepth` and its strength at `leastStrength` or more: shallower reads as flat print and deeper as a skeuomorphic object, so the theme clamps a value outside that band to its nearer end. The corners are the look's: radios, avatars, stepper keys and moving thumbs are circles, chips, badges, switches and segmented tracks capsules, fields, cards and raised panels their own frame steps, and nested faces subtract their inset from the enclosing radius, never going under the smallest corner (6). A component theme's or a style's `shape` changes one part within the look's family: a `NeumorphicRoundedBorder` at least 6 round, a `NeumorphicStadiumBorder` or a `NeumorphicCircleBorder`. A sharper corner or another `OutlinedBorder` fails an assert in debug builds, naming the rule: the surface is moulded, with no sharp corner, and its relief is drawn round its own borders only.
+The settings are the ones a product team turns: a palette or your own colours, light and dark, the `typeface` (its `fallback` faces reach every text style, as `ThemeData.fontFamilyFallback` does, for a script Manrope lacks), `density` (the platform's by default: compact with a pointer, standard on touch), `elevation` (the depth) and `highContrast`. A theme's depth stays between `NeumorphicElevation.leastDepth` and `mostDepth` and its strength at `leastStrength` or more: shallower reads as flat print and deeper as a skeuomorphic object, so the theme clamps a value outside that band to its nearer end. The corners are the look's: radios, avatars, stepper keys and moving thumbs are circles, chips, badges, switches and segmented tracks capsules, fields, cards and raised panels their own frame steps, and nested faces subtract their inset from the enclosing radius, never going under the smallest corner (6). A component theme's or a style's `shape` changes one part within the look's family: a `NeumorphicRoundedBorder` at least 6 round, a `NeumorphicStadiumBorder` or a `NeumorphicCircleBorder`. A sharper corner or another `OutlinedBorder` fails an assert in debug builds, naming the rule: the surface is moulded, with no sharp corner, and its relief is drawn round its own borders only.
 
 Nothing draws a dark outline: the relief alone finds every edge, an empty checkbox, an unselected radio, a switch that is off and an empty field included. High contrast follows the device (`MediaQuery.highContrastOf`) and prints a fine outline on every part; `theme.copyWith(highContrast: true)` forces it on. Selection uses depth and the accent colour. `style.side` and `style.edge` print a rim, which is off the look's rule: relief is the only edge, and the fine outline is what high contrast draws. They take precedence in either mode, so keep them for a high-contrast rim of your own; on an ordinary part a printed rim reads as flat outlined UI, not a moulded surface.
 
@@ -249,7 +265,7 @@ Style slots are `fill`, `foreground`, `edge`, `overlay`, `side`, `shape`, `paddi
 
 ## Interaction and localization
 
-Controls support keyboard activation, focus, disabled states and padded targets of 48 logical pixels on every platform. Editing follows each platform's gestures and Cmd/Ctrl shortcuts. The selection menu and selection handles are drawn by this system. States are shown through relief rather than lines or fades. On keyboard focus a raised part (a button, a key, a chip, a row) rises off the wall: its shadows go deeper and sharper in its own light and shade, with no line and no glow. A field, a select, a checkbox's box, a radio's socket and every other well stays inset and goes a little deeper instead, its inner shadow longer and softer, and a field's label turns to the pigment's ink. A switch's thumb rises inside its slot, which deepens softly. The hollows inside a focused part keep their depth, so focus shows once. A part that is out of use keeps its moulding: its colours move halfway toward the wall, so its relief is shallow and its words are quiet.
+Controls support keyboard activation, focus, disabled states and targets of at least 40 logical pixels, ui_core's touch floor (`RawTapTargets`), on every platform; an app's `RawTapTargetScope` raises it. A medium control in a row stands at the density's line, `NeumorphicChromeMetrics.lineOf(context)`: 48 standard, 44 comfortable, 40 compact. Editing follows each platform's gestures and Cmd/Ctrl shortcuts. The selection menu and selection handles are drawn by this system. States are shown through relief rather than lines or fades. On keyboard focus a raised part (a button, a key, a chip, a row) rises off the wall: its shadows go deeper and sharper in its own light and shade, with no line and no glow. A field, a select, a checkbox's box, a radio's socket and every other well stays inset and goes a little deeper instead, its inner shadow longer and softer, and a field's label turns to the pigment's ink. A switch's thumb rises inside its slot, which deepens softly. The hollows inside a focused part keep their depth, so focus shows once. A part that is out of use keeps its moulding: its colours move halfway toward the wall, so its relief is shallow and its words are quiet.
 
 Hover changes nothing on a part's face: no wash, tint or shadow. The pointer says what a part does instead: a hand over what presses, the text beam over fields, grab over a slider, the arrow over what is disabled. A press sinks the part in its own outline, and keyboard focus lifts a raised part or deepens a well. Hover stays only where it tells you something: the active row of an open menu, a tooltip, a chart's readout, a rating's preview, a day of a month (which has no face of its own until it is chosen) and a file drop target with a drag over it. Every part still receives `WidgetState.hovered`, but a wash or a tint on hover breaks the look's state rules (a press sinks, focus lifts, hover says nothing), so the look draws none. To make a part or a region say more or less, use the look's own two means: the pigment, for what is live (`NeumorphicButton.filled` for the one act that matters), and depth. A quieter side panel, for instance, is the same surface cast shallower:
 
@@ -262,21 +278,21 @@ NeumorphicTheme(
 );
 ```
 
-The parts' built-in words come from `RawWidgetsLocalizations`, the words every look of the kit shares. Dates and numbers use `intl`. Your app owns its content and localization delegates.
+The parts' built-in words come from `RawWidgetsLocalizations`, the words every look of the kit shares. Dates use `intl`; numbers are written in the reader's digits through ui_core's `formatDecimal`. Your app owns its content and localization delegates.
 
 ## Accessibility and languages
 
 - **Right to left.** Every part mirrors under a right-to-left `Directionality`: chevrons and arrows turn, sliders, progress and steppers fill from the start, fields swap their leading and trailing parts, and the light moves to the top right, so every relief is lit and shaded as the mirror of its left-to-right self. Figures, times and codes stay left to right. Public geometry takes the directional types (`EdgeInsetsGeometry`, `AlignmentGeometry`). The example gallery has a Right to left switch.
 - **Large text.** Controls get taller as the reader increases the text size. Navigation destinations can span multiple rows, and dialogs and sheets scroll. On a thermostat, the setting stays in the centre if it fits and longer descriptions move below it. Calendar day numbers and the numbers printed between dial ticks scale up to 1.3×. Their complete labels are also available to screen readers.
-- **Screen readers and keyboard.** Each part reports its role, label, value and state (checked, selected, expanded, disabled), and decorative paint is excluded from semantics. Everything works from the keyboard, and focus follows reading order. Targets are at least 48 px. Text meets 4.5:1 contrast in every preset, by day and by night. With reduced motion, parts change state at once, and dialogs and sheets dissolve in place.
+- **Screen readers and keyboard.** Each part reports its role, label, value and state (checked, selected, expanded, disabled), and decorative paint is excluded from semantics. Everything works from the keyboard, and focus follows reading order. Targets are at least 40 px. Text meets 4.5:1 contrast in every preset, by day and by night. With reduced motion, parts change state at once, and dialogs and sheets dissolve in place.
 - **Edges and states.** A part's edge is soft light and shadow, faint by night, and nothing depends on it alone.
   Every state (on, chosen, checked, a slider's value) and every part without words reaches 3:1 through its colour, words or mark, by day and by night; high contrast adds a fine outline. Keyboard focus is said in the material, a raised part rising and a well deepening softly, so it is quieter than a printed ring.
-- **Other scripts.** The bundled Manrope covers Latin. Other scripts fall back to the platform's fonts; on the web, Flutter fetches them.
+- **Other scripts.** The bundled Manrope covers Latin. Other scripts fall back to the platform's fonts; on the web, Flutter fetches them. To name your own, give `NeumorphicTypeface(fallback: [...])`: every text style takes the list.
 
-Known limits in 0.3.0:
+Known limits:
 
 - The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `RawWidgetsLocalizations`, which speaks 30 languages once your app adds `RawWidgetsLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). Install `NeumorphicLocalizations.delegate` beside it: it serves every locale, and the time picker's words (its hour, minute and AM and PM), Done, Try again, the required mark and a table's sort hints come from `RawWidgetsLocalizations` in the reader's language. The rest of the look's own words (a file drop's prompts and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
-- Dates and numbers are formatted with `intl`: in the app's locale with `NeumorphicLocalizations.delegate` installed (in English where `intl` lacks the locale), else in English unless your subclass names another `localeName`. Short weekday names are English, and times show in 24-hour form.
+- Dates are formatted with `intl`: in the app's locale with `NeumorphicLocalizations.delegate` installed (in English where `intl` lacks the locale), else in English unless your subclass names another `localeName`. Numbers take the reader's digits and separators from ui_core (Arabic-Indic in Arabic). Short weekday names are English, and the day tray's times show in 24-hour form.
 
 ## Fonts and copying components
 

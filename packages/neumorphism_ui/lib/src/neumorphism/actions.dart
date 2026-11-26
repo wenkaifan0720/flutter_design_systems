@@ -442,7 +442,10 @@ class NeumorphicSplitButton extends StatelessWidget {
       label: label,
       onPressed: onPressed,
       menuLabel: menuLabel ?? words.moreOptions,
-      minimumSize: Size(NeumorphicChromeMetrics.targetSize, height),
+      minimumSize: Size(
+        NeumorphicChromeMetrics.targetOf(context).width,
+        height,
+      ),
       actions: [
         for (final a in actions)
           RawSplitAction(label: a.label, onPressed: a.onPressed, data: a.icon),
@@ -730,7 +733,7 @@ class _BankMetrics {
         );
     final words = _words(t, look);
     final icon = (look.iconSize ?? 18) + 8;
-    var least = 48.0;
+    var least = NeumorphicChromeMetrics.targetOf(context).width;
     for (final (label, hasIcon) in cells) {
       least = math.max(
         least,

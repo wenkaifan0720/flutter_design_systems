@@ -10,7 +10,7 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/hearth.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
-import 'gallery_support.dart' show loadBundledFonts, settle;
+import 'gallery_support.dart' show loadBundledFonts, settle, touchFloorTargets;
 import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
 
 double _height(double width) => width < 600 ? 844 : (width < 1024 ? 1024 : 900);
@@ -188,7 +188,7 @@ void main() {
     testWidgets('${screen.id} meets the tap-target guidelines', (tester) async {
       final handle = tester.ensureSemantics();
       await _pump(tester, screen.id, 390);
-      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(touchFloorTargets));
       await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
       handle.dispose();
     });

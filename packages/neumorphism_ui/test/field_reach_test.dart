@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
@@ -44,13 +43,8 @@ void main() {
               );
               final input = find.byType(EditableText);
               final semantics = tester.getSemantics(input);
-              final target = switch (defaultTargetPlatform) {
-                TargetPlatform.android ||
-                TargetPlatform.iOS ||
-                TargetPlatform.fuchsia => 48.0,
-                _ => 44.0,
-              };
-              expect(semantics.rect.height, greaterThanOrEqualTo(target - .01));
+              // ui_core's touch floor, 40 on every platform.
+              expect(semantics.rect.height, greaterThanOrEqualTo(40 - .01));
               expect(
                 semantics.getSemanticsData().label,
                 kind == 'search' ? 'Find\nSearch' : 'Name',
@@ -62,7 +56,7 @@ void main() {
                     .ancestor(of: input, matching: find.byType(NeumorphicReach))
                     .first,
               );
-              expect(band.height, greaterThanOrEqualTo(target - .01));
+              expect(band.height, greaterThanOrEqualTo(40 - .01));
               await tester.tapAt(Offset(band.center.dx, band.top + 2));
               await tester.pump();
               expect(focus.hasFocus, isTrue);

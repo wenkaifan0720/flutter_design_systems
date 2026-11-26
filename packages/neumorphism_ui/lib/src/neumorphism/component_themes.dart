@@ -20,7 +20,7 @@ export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 /// | [side] | the whole rim, colour and width; it wins over [edge], and is off the look's rule as [edge] is |
 /// | [shape] | the outline, one of Neumorphism's own: a rounded border at least `NeumorphicRadii.least` round, a stadium or a circle (a debug build asserts it: a moulded surface has no sharp corner) |
 /// | [padding] | the room between the rim and what stands inside |
-/// | [minimumSize] | the least the face stands; the touch target stays 48 on every platform |
+/// | [minimumSize] | the least the face stands; the touch target stays at the touch floor on every platform |
 /// | [textStyle] | the words' style, merged over the look's (its colour comes from [foreground]) |
 /// | [iconSize] | an icon's size |
 ///

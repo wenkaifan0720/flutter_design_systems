@@ -86,7 +86,7 @@ void main() {
     for (final part in find.byType(NeumorphicTallTarget).evaluate()) {
       expect(
         tester.getSemantics(find.byWidget(part.widget)).rect.height,
-        greaterThanOrEqualTo(48),
+        greaterThanOrEqualTo(40),
       );
     }
   });
@@ -227,7 +227,7 @@ void main() {
         find.descendant(of: box, matching: find.byType(NeumorphicTap)),
       );
       expect(target.left, 48, reason: "the target's box starts on the edge");
-      expect(target.size, const Size(48, 48));
+      expect(target.size, const Size(40, 40));
       final mark = tester.getRect(
         find.descendant(of: box, matching: find.byType(CustomPaint)).last,
       );

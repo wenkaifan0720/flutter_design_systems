@@ -35,13 +35,14 @@ void _reads(
 }
 
 void main() {
-  test('five presets, the default first', () {
+  test('six presets, the default first', () {
     expect(NeumorphicThemeData.presets, [
       'porcelain',
       'pompeii',
       'verona',
       'siena',
       'tyrian',
+      'capri',
     ]);
   });
 

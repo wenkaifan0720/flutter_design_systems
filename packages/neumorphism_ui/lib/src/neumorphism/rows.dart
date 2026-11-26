@@ -664,7 +664,10 @@ class NeumorphicListTile extends StatelessWidget {
     // A row with an action lays out its own padding: a compact key's target may stand in it.
     Widget row = action == null
         ? Padding(
-            padding: const EdgeInsets.symmetric(vertical: _tilePadding),
+            // Its air takes the density's step, 2 a side, as a control's height does.
+            padding: EdgeInsets.symmetric(
+              vertical: math.max(0, _tilePadding + t.density.heightDelta / 2),
+            ),
             child: LayoutBuilder(builder: layout),
           )
         : LayoutBuilder(builder: layout);
@@ -675,11 +678,12 @@ class NeumorphicListTile extends StatelessWidget {
     // remounts it (and never drops its focus).
     final cell = NeumorphicGroupRowScope.cellOf(context);
     if (onPressed != null) {
-      // A row that presses is at least a target tall, so its face fills its tap: a shorter face would be centred in the
-      // target and stand a pixel off the card's padding.
+      // A row that presses stands at least at the medium line (the density's control height, never under the touch
+      // floor), so its face fills its tap and it shares a line's height with the controls beside it: a shorter face
+      // would be centred in the target and stand a pixel off the card's padding.
       row = ConstrainedBox(
         constraints: BoxConstraints(
-          minHeight: NeumorphicChromeMetrics.targetSize,
+          minHeight: NeumorphicChromeMetrics.lineOf(context),
         ),
         child: row,
       );
@@ -753,12 +757,13 @@ class NeumorphicListTile extends StatelessWidget {
 /// A list tile's padding above and below its words.
 const double _tilePadding = 12;
 
-/// The widest action that stays beside a list tile's words at every width: an icon key, as wide as its touch target.
-const double _compactAction = NeumorphicChromeMetrics.touchTarget;
+/// The widest face an icon key draws, a round key's: an action no wider than one at its target (this face, or the touch
+/// floor where that is wider) stays beside a list tile's words at every width.
+const double _iconKeyFace = 44;
 
 /// How far a compact action's target stands into a list tile's padding, above and below the words: the look's icon key
-/// is a 40 to 44 face in a 48 target, so beside a title and its line it leaves the row the height it has without the
-/// key, its face still clear of the rules.
+/// is a 40 to 44 face at its target (the face, or the touch floor where wider), so beside a title and its line it
+/// leaves the row the height it has without the key, its face still clear of the rules.
 const double _actionReach = 6;
 
 /// A list tile with an action, inside the row's padding: its mark, when it has one, then its words and action
@@ -1215,7 +1220,13 @@ class _WordsAndAction extends MultiChildRenderObjectWidget {
         threeTall,
         firstLine,
         Directionality.of(context),
+        _compactWidth(context),
       );
+
+  /// The widest action that stays beside the words at every width: an icon key in its box, the medium line
+  /// ([NeumorphicChromeMetrics.lineOf]) or its face where that is wider.
+  static double _compactWidth(BuildContext context) =>
+      math.max(_iconKeyFace, NeumorphicChromeMetrics.lineOf(context));
 
   @override
   void updateRenderObject(
@@ -1227,7 +1238,8 @@ class _WordsAndAction extends MultiChildRenderObjectWidget {
     ..centre = centre
     ..threeTall = threeTall
     ..firstLine = firstLine
-    ..direction = Directionality.of(context);
+    ..direction = Directionality.of(context)
+    ..compactWidth = _compactWidth(context);
 }
 
 /// Where a list tile's action stands: [beside] the words or under them; beside them, at the words' top ([atTop]) or
@@ -1253,9 +1265,17 @@ class _RenderWordsAndAction extends RenderBox
     this._threeTall,
     this._firstLine,
     this._direction,
+    this._compactWidth,
   );
 
   static const _gap = 14.0, _under = 10.0;
+
+  double _compactWidth;
+  set compactWidth(double value) {
+    if (value == _compactWidth) return;
+    _compactWidth = value;
+    markNeedsLayout();
+  }
 
   bool _wide;
   set wide(bool value) {
@@ -1311,7 +1331,7 @@ class _RenderWordsAndAction extends RenderBox
     final words = firstChild!, action = lastChild!;
     final w = c.maxWidth;
     final a = measure(action, BoxConstraints(maxWidth: w));
-    final compact = a.width <= _compactAction;
+    final compact = a.width <= _compactWidth;
     final room = w - a.width - _gap;
     if (_wide || (compact && room >= _need)) {
       final said = measure(
@@ -1471,7 +1491,7 @@ class NeumorphicTodoRow extends StatelessWidget {
               // The list's one leading slot, so the title stands where every row's does (44 and 14 on): here as wide
               // as the check's whole target, which it is laid out at.
               SizedBox(
-                width: NeumorphicChromeMetrics.touchTarget,
+                width: NeumorphicChromeMetrics.targetOf(context).width,
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: NeumorphicRoundCheckbox(
@@ -1480,11 +1500,13 @@ class NeumorphicTodoRow extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(
-                width:
-                    _leadingSlot +
-                    _leadingGap -
-                    NeumorphicChromeMetrics.touchTarget,
+              SizedBox(
+                width: math.max(
+                  0.0,
+                  _leadingSlot +
+                      _leadingGap -
+                      NeumorphicChromeMetrics.targetOf(context).width,
+                ),
               ),
               Expanded(
                 child: Column(

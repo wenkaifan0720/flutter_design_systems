@@ -122,7 +122,7 @@ void main() {
           well.center.dy,
           moreOrLessEquals(tester.getCenter(key).dy, epsilon: .5),
         );
-        // The key's 48 target, its face centred in it.
+        // The key's 40 target, its face centred in it.
         final target = tester.getRect(
           find.ancestor(of: key, matching: find.byType(NeumorphicRoundButton)),
         );
@@ -195,14 +195,14 @@ void main() {
     },
   );
 
-  testWidgets('each key keeps a 48 target at the row\'s ends', (tester) async {
+  testWidgets('each key keeps a 40 target at the row\'s ends', (tester) async {
     await tester.pumpWidget(_app(const _Counted(log: [])));
     for (final key in [_less, _more]) {
       final target = tester.getRect(
         find.ancestor(of: key, matching: find.byType(SizedBox)).last,
       );
-      expect(target.width, greaterThanOrEqualTo(48));
-      expect(target.height, greaterThanOrEqualTo(48));
+      expect(target.width, greaterThanOrEqualTo(40));
+      expect(target.height, greaterThanOrEqualTo(40));
     }
     final figure = tester.getCenter(_editable).dx;
     expect(tester.getCenter(_less).dx, lessThan(figure));

@@ -62,7 +62,7 @@ double neumorphicControlWidth(
 }
 
 /// A wide button's room: its whole column on a phone, and from a medium window up a column no wider than half again a
-/// control's most ([most], a control's unless a part needs more: a month's seven 48 px days); in a wider one it takes
+/// control's most ([most], a control's unless a part needs more: a month's seven days of the medium line); in a wider one it takes
 /// that most, at [alignment]. Capped in a column a little wider than its most, it would stand at three quarters of it,
 /// under a card of that column and aligned to neither (a checkout's Pay key under its order).
 Widget neumorphicWideRoom(
@@ -191,7 +191,7 @@ class NeumorphicCellBank extends StatelessWidget {
         // As tall as a field beside it (NeumorphicFieldBox): a field's least height, plus the content-safe insets its
         // shape keeps from its corners. One row draws the density's height and its cells reach the platform's target
         // past the face (as a field and a button do); a grid's inner rows have nowhere to reach, so its rows keep it.
-        final target = NeumorphicChromeMetrics.targetSize;
+        final target = NeumorphicChromeMetrics.targetOf(context).width;
         final floor = rows > 1
             ? math.max(target, t.density.height(48))
             : t.density.height(48);
@@ -328,7 +328,7 @@ class NeumorphicCellBank extends StatelessWidget {
         // The bank is one control: one item for ui_core's keyline and label checks, whatever its cells hold.
         bankBody = RawKeylineFace(child: bankBody);
         bankBody = group?.call(bankBody) ?? bankBody;
-        // A control's 48 target round the bank's face, as a button and a field keep: the face takes the density's
+        // A control's touch-floor target round the bank's face, as a button and a field keep: the face takes the density's
         // height in it, and a press in the margin reaches the cell it stands over.
         bankBody = NeumorphicReach(
           height: rowHeight * rows + 2 * over,

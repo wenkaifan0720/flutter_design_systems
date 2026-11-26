@@ -6,6 +6,7 @@ import 'dart:ui' show SemanticsRole;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'chrome_metrics.dart';
 import 'controls.dart';
 import 'frames.dart';
 import 'knobs.dart';
@@ -86,6 +87,18 @@ class NeumorphicBanner extends StatelessWidget {
       neumorphicLineHeight(context, headStyle),
       glyphSize + 12,
     );
+    // The close key stands at the medium line, as an icon key does: the mark and the title's line stand on its middle,
+    // so all three share one line however the density sets the key.
+    final band = onDismiss == null
+        ? line
+        : math.max(
+            line,
+            math.max(
+              NeumorphicChromeMetrics.targetOf(context).height,
+              NeumorphicChromeMetrics.lineOf(context),
+            ),
+          );
+    final drop = (band - line) / 2;
     // What needs you stands up off the notice's floor: a warning's mark on a raised bead, an error's on one warmed by
     // the pigment. Information and success stay carved in the floor, so the four tones differ in the material, not
     // only in their glyph.
@@ -128,9 +141,12 @@ class NeumorphicBanner extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ExcludeSemantics(
-              child: SizedBox(
-                height: line,
-                child: Center(child: mark ?? ownMark),
+              child: Padding(
+                padding: EdgeInsets.only(top: drop),
+                child: SizedBox(
+                  height: line,
+                  child: Center(child: mark ?? ownMark),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -139,13 +155,16 @@ class NeumorphicBanner extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: line),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      widthFactor: 1,
-                      heightFactor: 1,
-                      child: Text(title ?? heading, style: headStyle),
+                  Padding(
+                    padding: EdgeInsets.only(top: drop),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: line),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        widthFactor: 1,
+                        heightFactor: 1,
+                        child: Text(title ?? heading, style: headStyle),
+                      ),
                     ),
                   ),
                   Text(message, style: t.textTheme.body),
@@ -156,11 +175,16 @@ class NeumorphicBanner extends StatelessWidget {
             // The words keep a gap to the close key; at 390 they ran to within 8 px of it.
             if (onDismiss != null) const SizedBox(width: 12),
             if (onDismiss != null)
-              neumorphicAtEnd(
-                NeumorphicIconButton(
-                  NeumorphicGlyphs.close,
-                  label: dismissLabel ?? words.dismiss,
-                  onPressed: onDismiss,
+              SizedBox(
+                height: band,
+                child: Center(
+                  child: neumorphicAtEnd(
+                    NeumorphicIconButton(
+                      NeumorphicGlyphs.close,
+                      label: dismissLabel ?? words.dismiss,
+                      onPressed: onDismiss,
+                    ),
+                  ),
                 ),
               ),
           ],

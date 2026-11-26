@@ -138,7 +138,7 @@ class _BareEditor extends StatelessWidget {
     );
     // The frame around it is the group's or the tag field's; the seat is a target tall, its line centred.
     return NeumorphicEntrySeat(
-      height: NeumorphicChromeMetrics.targetSize,
+      height: NeumorphicChromeMetrics.targetOf(context).height,
       focusNode: focusNode,
       enabled: enabled,
       label: semanticLabel,
@@ -529,7 +529,7 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
               widget.suffix,
             ].whereType<String>().join(', '),
             child: NeumorphicReach(
-              height: NeumorphicChromeMetrics.targetSize,
+              height: NeumorphicChromeMetrics.targetOf(context).height,
               child: RawInputGroup(
                 focusNode: _focus,
                 enabled: widget.enabled,
@@ -576,8 +576,10 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
                           ? math.min(want, other)
                           : room / 2;
                       // This one is the shorter (or the two are equal): its whole words, or half.
-                      if (want <= other) return math.max(48.0, whole);
-                      return math.max(48.0, room - whole);
+                      final floor = NeumorphicChromeMetrics.targetOf(context)
+                          .width;
+                      if (want <= other) return math.max(floor, whole);
+                      return math.max(floor, room - whole);
                     }
 
                     // A text field's height: the density's control, or a line and its floor when the words are larger. Its
@@ -1090,15 +1092,18 @@ class _NeumorphicMultiSelectState<T extends Object>
                       if (off) WidgetState.disabled,
                     },
                     // The chips start where the words of any field start, and the words line goes on after the last chip,
-                    // on its line while there is room, as one flow. With chips the flow stands 3 further in above and
-                    // below, so the first chip stands as far in from the well's top as from its side, square in its
-                    // corner.
+                    // on its line while there is room, as one flow. With chips the flow stands further in above and
+                    // below, 9 less the air its line leaves above a chip's face, so the first chip's face stands as far
+                    // in from the well's top as from its side, square in its corner.
                     padding: EdgeInsets.symmetric(
                       horizontal: 10,
-                      vertical: tags.isEmpty ? 0 : 3,
+                      vertical: tags.isEmpty
+                          ? 0
+                          : math.max(0, 9 - _chipAir(context)),
                     ),
                     // Out of use, each chip is shown alone: no ✕, and no remove action for a screen reader.
                     child: _TagFlow(
+                      line: NeumorphicChromeMetrics.lineOf(context),
                       children: [
                         if (off) ...[
                           for (final value in widget.values)
@@ -1995,17 +2000,23 @@ InputDecoration _bareDecoration({
 /// middle, and its words line (the last child) after the last chip, taking the rest of that line, or a line of its own
 /// when less than [fieldMin] is left. Laid out from the reader's start.
 class _TagFlow extends MultiChildRenderObjectWidget {
-  const _TagFlow({required super.children});
+  const _TagFlow({required this.line, required super.children});
+
+  /// The least height of a line of the flow: the field's own line, so a line of chips stands as tall as the words line
+  /// and a chip's reach is centred in it.
+  final double line;
 
   static const spacing = 6.0, runSpacing = 0.0, fieldMin = 96.0;
 
   @override
   _RenderTagFlow createRenderObject(BuildContext context) =>
-      _RenderTagFlow(Directionality.of(context));
+      _RenderTagFlow(Directionality.of(context), line);
 
   @override
   void updateRenderObject(BuildContext context, _RenderTagFlow renderObject) {
-    renderObject.direction = Directionality.of(context);
+    renderObject
+      ..direction = Directionality.of(context)
+      ..line = line;
   }
 }
 
@@ -2015,12 +2026,19 @@ class _RenderTagFlow extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, _TagFlowData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _TagFlowData> {
-  _RenderTagFlow(this._direction);
+  _RenderTagFlow(this._direction, this._line);
 
   TextDirection _direction;
   set direction(TextDirection value) {
     if (value == _direction) return;
     _direction = value;
+    markNeedsLayout();
+  }
+
+  double _line;
+  set line(double value) {
+    if (value == _line) return;
+    _line = value;
     markNeedsLayout();
   }
 
@@ -2069,7 +2087,11 @@ class _RenderTagFlow extends RenderBox
     var y = 0.0;
     for (final (i, parts) in lines.indexed) {
       if (i > 0) y += _TagFlow.runSpacing;
-      final height = parts.fold(0.0, (h, p) => math.max(h, p.$2.height));
+      // A line that holds a chip stands at least at the field's line; the words line alone keeps its own height.
+      final height = parts.fold(
+        parts.any((p) => p.$1 != field) ? _line : 0.0,
+        (h, p) => math.max(h, p.$2.height),
+      );
       var at = 0.0;
       for (final (child, size) in parts) {
         final dx = _direction == TextDirection.ltr
@@ -2135,4 +2157,12 @@ class _RenderTagFlow extends RenderBox
   @override
   void paint(PaintingContext context, Offset offset) =>
       defaultPaint(context, offset);
+}
+
+/// The air a line of a field's flow leaves above and below a chip's face: the medium line
+/// ([NeumorphicChromeMetrics.lineOf]) less the chip's face (its 36 at the density), halved; none where the face is the
+/// taller.
+double _chipAir(BuildContext context) {
+  final face = NeumorphicTheme.of(context).density.height(36);
+  return math.max(0.0, NeumorphicChromeMetrics.lineOf(context) - face) / 2;
 }

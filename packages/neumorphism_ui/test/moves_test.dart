@@ -290,8 +290,8 @@ void main() {
           );
           final target = find.bySemanticsLabel('Tour');
           final rect = tester.getRect(target);
-          expect(rect.width, inInclusiveRange(48, 64));
-          expect(rect.height, greaterThanOrEqualTo(48));
+          expect(rect.width, inInclusiveRange(40, 64));
+          expect(rect.height, greaterThanOrEqualTo(40));
           final before = Offset(
             direction == TextDirection.ltr ? rect.left + 2 : rect.right - 2,
             rect.center.dy,

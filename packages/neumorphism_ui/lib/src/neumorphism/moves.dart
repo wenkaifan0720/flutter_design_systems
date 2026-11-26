@@ -22,7 +22,7 @@ import 'localizations.dart';
 import 'shapes.dart';
 import 'tell.dart' show NeumorphicLinearProgressIndicator;
 import 'theme.dart';
-import 'internal/reach.dart' show neumorphicAtEnd;
+import 'internal/reach.dart' show neumorphicAtEnd, NeumorphicTargetOutside;
 import 'internal/panel.dart';
 import 'internal/out_of_use.dart';
 import 'internal/moulded.dart';
@@ -490,8 +490,8 @@ class NeumorphicPageDots extends StatelessWidget {
               round: true,
               focusInset: 9,
               onPressed: onChanged == null ? null : () => onChanged!(i),
-              child: SizedBox.square(
-                dimension: 48,
+              child: SizedBox.fromSize(
+                size: NeumorphicChromeMetrics.targetOf(context),
                 child: Center(
                   child: _Dot(
                     page: i,
@@ -619,7 +619,10 @@ class _AdjustablePageDotsState extends State<_AdjustablePageDots> {
               behavior: HitTestBehavior.opaque,
               onTapUp: enabled ? _tapped : null,
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                constraints: BoxConstraints(
+                  minWidth: NeumorphicChromeMetrics.targetOf(context).width,
+                  minHeight: NeumorphicChromeMetrics.targetOf(context).height,
+                ),
                 child: Center(
                   widthFactor: 1,
                   heightFactor: 1,
@@ -803,7 +806,8 @@ class NeumorphicPagination extends StatelessWidget {
         2 *
             math.max(
               4,
-              ((NeumorphicChromeMetrics.targetSize - face) / 2).ceil(),
+              ((NeumorphicChromeMetrics.targetOf(context).width - face) / 2)
+                  .ceil(),
             );
     void go(int to) {
       if (to != page) onChanged?.call(to);
@@ -1043,42 +1047,48 @@ class NeumorphicBreadcrumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    final floor = NeumorphicChromeMetrics.targetOf(context);
     return Semantics(
       container: true,
       explicitChildNodes: true,
       label: NeumorphicLocalizations.of(context).breadcrumbs,
-      child: Wrap(
+      // A chip group: each link's target takes the room between the words, so the crumbs and their chevrons stand 4
+      // apart as drawn, and a trail that wraps starts each line at its start edge.
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 4,
         children: [
           for (final (i, crumb) in crumbs.indexed) ...[
             if (i < crumbs.length - 1) ...[
-              NeumorphicLink(crumb.label, onPressed: crumb.onPressed),
-              ExcludeSemantics(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    // The trail runs the way the words read.
-                    Directionality.of(context) == TextDirection.rtl
-                        ? NeumorphicGlyphs.chevronLeft
-                        : NeumorphicGlyphs.chevronRight,
-                    size: 16,
-                    color: t.colors.inkTertiary,
+              TapTargetPadding(
+                minSize: floor,
+                child: NeumorphicTargetOutside(
+                  child: NeumorphicLink(
+                    crumb.label,
+                    onPressed: crumb.onPressed,
                   ),
                 ),
               ),
-            ] else
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: NeumorphicChromeMetrics.targetSize,
+              ExcludeSemantics(
+                child: Icon(
+                  // The trail runs the way the words read.
+                  Directionality.of(context) == TextDirection.rtl
+                      ? NeumorphicGlyphs.chevronLeft
+                      : NeumorphicGlyphs.chevronRight,
+                  size: 16,
+                  color: t.colors.inkTertiary,
                 ),
-                child: Center(
-                  widthFactor: 1,
-                  child: Text(
-                    crumb.label,
-                    style: t.textTheme.caption.copyWith(
-                      color: t.colors.ink,
-                      fontWeight: FontWeight.w700,
-                    ),
+              ),
+            ] else
+              // The place you are on. Its words are its face, in a slot as tall as its links' targets, so a trail that
+              // wraps keeps one rhythm and one start when the place takes a line of its own.
+              TapTargetPadding(
+                minSize: Size(0, floor.height),
+                child: Text(
+                  crumb.label,
+                  style: t.textTheme.caption.copyWith(
+                    color: t.colors.ink,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),

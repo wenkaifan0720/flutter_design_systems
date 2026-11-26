@@ -36,8 +36,8 @@ void main() {
             );
             for (final target in find.byType(RawButton).evaluate()) {
               final size = tester.getSize(find.byWidget(target.widget));
-              expect(size.width, greaterThanOrEqualTo(48));
-              expect(size.height, greaterThanOrEqualTo(48));
+              expect(size.width, greaterThanOrEqualTo(40));
+              expect(size.height, greaterThanOrEqualTo(40));
             }
             await tester.ensureVisible(find.text('59'));
             await tester.tap(find.text('59'));
@@ -254,7 +254,7 @@ void main() {
     expect(await canceled, isNull);
     expect(tester.takeException(), isNull);
   });
-  testWidgets('day targets remain 48 wide in a narrow scrolling calendar', (
+  testWidgets('day targets remain 40 wide in a narrow scrolling calendar', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -276,7 +276,7 @@ void main() {
     for (final e in days.evaluate()) {
       expect(
         tester.getSize(find.byWidget(e.widget)).width,
-        greaterThanOrEqualTo(48),
+        greaterThanOrEqualTo(40),
       );
     }
     expect(tester.takeException(), isNull);

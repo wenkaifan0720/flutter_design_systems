@@ -1585,11 +1585,16 @@ class NeumorphicHeroBand extends StatelessWidget {
   }
 }
 
-/// The room between a pair of round keys laid out at their targets, the first's face at its start and the second's
-/// at its end, so the faces stand ten apart: both targets' air between the faces makes up the rest.
+/// The room between a pair of round keys laid out in their boxes, the first's face at its start and the second's
+/// at its end, so the faces stand ten apart: both boxes' air between the faces makes up the rest. A round key's box is
+/// its face, never under the touch floor and as tall as the medium line ([NeumorphicChromeMetrics.lineOf]).
 double _pairGap(BuildContext context) {
   final face = NeumorphicTheme.of(context).density.height(44);
-  return math.max(0, 10 - 2 * (NeumorphicChromeMetrics.targetSize - face));
+  final box = math.max(
+    math.max(NeumorphicChromeMetrics.targetOf(context).width, face),
+    NeumorphicChromeMetrics.lineOf(context),
+  );
+  return math.max(0, 10 - 2 * (box - face));
 }
 
 /// A face on the left, or on the right, whichever way the words read: a dial is not mirrored.

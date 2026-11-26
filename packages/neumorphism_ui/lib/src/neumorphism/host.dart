@@ -6,8 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
-import 'chrome_metrics.dart';
-
 import 'localizations.dart';
 import 'overlays.dart';
 import 'theme.dart';
@@ -116,29 +114,24 @@ class NeumorphicHost extends StatelessWidget {
     final theme =
         (wanted == Brightness.dark ? darkData : light) ??
         NeumorphicThemeData.preset(NeumorphicThemeData.presets.first, wanted);
-    // Neumorphism's tap floors: a finger's 48 (Android's), a pointer's 24 (WCAG 2.2). Each control lays out at the
-    // finger's 48 on every platform (NeumorphicChromeMetrics.targetSize), so a row stands the same wherever it runs.
-    return RawTapTargetScope(
-      targets: const RawTapTargets(
-        touch: Size.square(NeumorphicChromeMetrics.touchTarget),
-      ),
-      child: NeumorphicTheme(
-        data: theme,
-        child: Builder(
-          builder: (context) {
-            final t = NeumorphicTheme.of(context);
-            return ColoredBox(
-              color: t.colors.ground,
-              child: DefaultTextStyle(
-                style: t.textTheme.body,
-                child: IconTheme(
-                  data: IconThemeData(color: t.colors.ink, size: 22),
-                  child: NeumorphicToaster(child: child),
-                ),
+    // The theme declares the look's tap floors, ui_core's, unless the app declared its own above: each control lays out
+    // at the touch floor on every platform (NeumorphicChromeMetrics.targetOf), so a row stands the same wherever it runs.
+    return NeumorphicTheme(
+      data: theme,
+      child: Builder(
+        builder: (context) {
+          final t = NeumorphicTheme.of(context);
+          return ColoredBox(
+            color: t.colors.ground,
+            child: DefaultTextStyle(
+              style: t.textTheme.body,
+              child: IconTheme(
+                data: IconThemeData(color: t.colors.ink, size: 22),
+                child: NeumorphicToaster(child: child),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

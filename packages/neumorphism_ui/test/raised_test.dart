@@ -733,7 +733,7 @@ void main() {
     },
   );
 
-  for (final preset in ['porcelain', 'pompeii', 'verona', 'siena', 'tyrian']) {
+  for (final preset in NeumorphicThemeData.presets) {
     for (final brightness in Brightness.values) {
       for (final width in [390.0, 768.0, 1024.0, 1440.0]) {
         testWidgets(
