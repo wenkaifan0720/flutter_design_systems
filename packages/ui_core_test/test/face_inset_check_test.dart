@@ -1172,6 +1172,248 @@ void main() {
     });
   }
 
+  // A face its painter draws only a little off what is round it (a pale
+  // select on its pale card by day, its rim shaded back to the card's colour
+  // at its edge, and on its card by night; a dark face on its card by
+  // night, outlined in a tone near it), with a mark of
+  // stronger ink at its start (an avatar's ball, a key) and its words,
+  // slanting past their line's box, at its end: the face is the box it
+  // draws, not the stronger ink drawn on it. Words 16 px in from its end
+  // pass; 1 px in, they are named at that end alone.
+  for (final (name, page, plate, outline, ink) in const [
+    (
+      'pale by day, its rim shaded back to the page',
+      Color(0xFFE7E4F4),
+      Color(0xFFFBFAFF),
+      Color(0xFFE8E5F5),
+      Color(0xFF2A2440),
+    ),
+    (
+      'pale by night',
+      Color(0xFF1E1A31),
+      Color(0xFF29243F),
+      null,
+      Color(0xFFF3F0FF),
+    ),
+    (
+      'outlined by night',
+      Color(0xFF1C1F24),
+      Color(0xFF181A1F),
+      Color(0xFF3B3D41),
+      Color(0xFFECEEF2),
+    ),
+  ]) {
+    testWidgets('a face drawn only a little off what is round it, $name: its '
+        "edges are its box's, not the stronger ink drawn on it", (
+      tester,
+    ) async {
+      Widget select(double end) => ColoredBox(
+        color: page,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: _button(
+            (label) => CustomPaint(
+              painter: _Plate(plate, outline: outline),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(12, 14, end, 14),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox.square(
+                      dimension: 20,
+                      child: CustomPaint(painter: _Fill(ink)),
+                    ),
+                    const SizedBox(width: 12),
+                    label,
+                  ],
+                ),
+              ),
+            ),
+            label: 'Apply later',
+            style: _style.copyWith(color: ink, fontStyle: FontStyle.italic),
+          ),
+        ),
+      );
+      expect(await _check(tester, select(16)), isEmpty);
+      final close = await _check(tester, select(1));
+      expect(close, hasLength(1));
+      expect(close.single, contains('from the right side of its face'));
+      expect(close.single, isNot(contains('foot')));
+    });
+  }
+
+  testWidgets("a row that draws nothing of its own: its words' marks past "
+      'their lines are theirs, not a face round its key', (tester) async {
+    // A task row on its card by night whose painter draws only
+    // the card's colour, a key at its end, and two lines of words before it
+    // whose letters reach past their lines' boxes (a script's marks: here
+    // Vietnamese's stacked accents): the key is the only face it draws, and
+    // the words are not on it.
+    const card = Color(0xFF181A1F);
+    final tight = _style.copyWith(color: const Color(0xFFECEEF2));
+    final problems = await _check(
+      tester,
+      ColoredBox(
+        color: card,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: _button(
+            (label) => CustomPaint(
+              painter: const _Fill(card),
+              child: SizedBox(
+                width: 320,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            label,
+                            Text(
+                              'Chuỗi xưởng, Ấp Bảy',
+                              style: tight.copyWith(
+                                color: const Color(0xFFA3A9B3),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const SizedBox.square(
+                        dimension: 22,
+                        child: CustomPaint(painter: _Fill(Color(0xFF6A6E75))),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            label: 'Ấn phẩm: xác nhận xưởng',
+            style: tight,
+          ),
+        ),
+      ),
+    );
+    expect(problems, isEmpty);
+  });
+
+  testWidgets("a decoration of the look's own that draws nothing is not a "
+      "face: a link's clear press surface", (tester) async {
+    // A breadcrumb's link: its press wash and focus ring in one
+    // decoration of the look's own, which draws nothing at rest, hugging its
+    // words between the separators. Drawing a wash, the same decoration is a
+    // face, and the words are named on it.
+    Widget crumbs(Color? wash) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Home /', style: _style.copyWith(color: _line)),
+        const SizedBox(width: 6),
+        _button(
+          (label) => DecoratedBox(decoration: _Wash(wash), child: label),
+          label: 'Files',
+        ),
+        const SizedBox(width: 6),
+        Text('/ Q3', style: _style.copyWith(color: _line)),
+      ],
+    );
+    expect(await _check(tester, crumbs(null)), isEmpty);
+    final washed = await _check(tester, crumbs(_fill));
+    expect(washed, hasLength(1));
+    expect(washed.single, contains('"Files"'));
+  });
+
+  testWidgets('a face part of the screen paints over right across is not '
+      'read: an avatar half under a bar', (tester) async {
+    // A list's 24 px avatar, its ring its own painter's, scrolled down under
+    // a bar painted after the list (a tab bar): its foot is the
+    // bar's edge, not its own, and the screen does not show it whole. Clear
+    // of the bar, initials near its foot are named, and so they are under a
+    // box painted after it that covers it nowhere right across (a dot on its
+    // corner) or covers it whole (a sheen over the list).
+    Widget list(
+      double under, {
+      double shift = 0,
+      Widget? over,
+      Color bar = const Color(0xFFE9E4DA),
+    }) => ColoredBox(
+      color: const Color(0xFFF2EEE6),
+      child: SizedBox(
+        width: 320,
+        height: 120,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 16,
+              top: 72 + under,
+              child: _button(
+                (label) => CustomPaint(
+                  painter: const _Ring(),
+                  child: SizedBox.square(
+                    dimension: 24,
+                    child: Center(
+                      child: Transform.translate(
+                        offset: Offset(0, shift),
+                        child: label,
+                      ),
+                    ),
+                  ),
+                ),
+                label: 'SO',
+                style: _style.copyWith(fontSize: 9, height: 1),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 24,
+              child: ColoredBox(color: bar),
+            ),
+            ?over,
+          ],
+        ),
+      ),
+    );
+    // A bar a shade off the page, or in the page's own colour (what shows
+    // of the avatar then ends at the bar's edge).
+    for (final bar in const [Color(0xFFE9E4DA), Color(0xFFF2EEE6)]) {
+      for (var under = 6.0; under <= 9; under += 0.5) {
+        expect(
+          await _check(tester, list(under, bar: bar)),
+          isEmpty,
+          reason: 'under a bar of $bar by $under px',
+        );
+      }
+    }
+    final close = await _check(tester, list(-8, shift: 6));
+    expect(close, hasLength(1));
+    expect(close.single, contains('from the foot of its face'));
+    const dot = Positioned(
+      left: 34,
+      top: 58,
+      width: 10,
+      height: 10,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Color(0xFFD64545),
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+    const sheen = Positioned.fill(child: CustomPaint(painter: _Sheen()));
+    for (final (name, over) in [('a dot', dot), ('a sheen', sheen)]) {
+      final shown = await _check(tester, list(-8, shift: 6, over: over));
+      expect(shown, hasLength(1), reason: 'under $name');
+      expect(shown.single, contains('from the foot of its face'));
+    }
+  });
+
   testWidgets("a soft shadow inside a painted face's box is not the face", (
     tester,
   ) async {
@@ -1655,4 +1897,99 @@ class _KeyFace extends CustomPainter {
 
   @override
   bool shouldRepaint(_KeyFace oldDelegate) => false;
+}
+
+// A rounded face in [fill], outlined 2 px wide inside its edge in [outline]
+// when given.
+class _Plate extends CustomPainter {
+  const _Plate(this.fill, {this.outline});
+
+  final Color fill;
+  final Color? outline;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final face = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(12),
+    );
+    canvas.drawRRect(face, Paint()..color = fill);
+    if (outline case final o?) {
+      canvas.drawRRect(
+        face.deflate(1),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..color = o,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_Plate oldDelegate) =>
+      oldDelegate.fill != fill || oldDelegate.outline != outline;
+}
+
+// An avatar's ring: a pale disc outlined in [_line].
+class _Ring extends CustomPainter {
+  const _Ring();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centre = size.center(Offset.zero);
+    canvas
+      ..drawCircle(
+        centre,
+        size.width / 2,
+        Paint()..color = const Color(0xFFE8E6F0),
+      )
+      ..drawCircle(
+        centre,
+        size.width / 2 - 0.5,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..color = _line,
+      );
+  }
+
+  @override
+  bool shouldRepaint(_Ring oldDelegate) => false;
+}
+
+// A sheen painted over a whole list: a faint light along its top edge.
+class _Sheen extends CustomPainter {
+  const _Sheen();
+
+  @override
+  void paint(Canvas canvas, Size size) => canvas.drawRect(
+    Rect.fromLTWH(0, 0, size.width, 1),
+    Paint()..color = const Color(0x33FFFFFF),
+  );
+
+  @override
+  bool shouldRepaint(_Sheen oldDelegate) => false;
+}
+
+// A decoration of a look's own: a [wash] over its box, nothing without one.
+class _Wash extends Decoration {
+  const _Wash(this.wash);
+
+  final Color? wash;
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) => _WashPainter(wash);
+}
+
+class _WashPainter extends BoxPainter {
+  _WashPainter(this.wash);
+
+  final Color? wash;
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    final size = configuration.size;
+    if (wash case final w? when size != null) {
+      canvas.drawRect(offset & size, Paint()..color = w);
+    }
+  }
 }

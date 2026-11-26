@@ -1,3 +1,10 @@
+## 0.5.3
+
+- `DesignFaceInsetCheck` reads a face its own painter draws only a little off what is round it (a plate a few levels off its page, by day or by night, its rim shaded back to the page's colour, or outlined in a tone near it) to the edges of the box it draws, not to the stronger ink drawn on it (a chevron, an avatar's ball, a checkbox's key). It read that ink as the face, so words well inside the face were named as at its edge. The ink a label's letters draw past their line's box (a script's marks and tails, an italic's overhang) is the label's, not a face's.
+- A decoration of a look's own (neither a `BoxDecoration` nor a `ShapeDecoration`) that draws nothing, such as a clear press or focus surface, is not a control's face, as a custom paint that draws nothing already was not. A text link held in one was read as framed by a face no one sees. Every check that reads faces reads it so; a decoration of a look's own that draws something is a face, as before.
+- `DesignFaceInsetCheck` reads only a face the screen shows whole. A face that another box painted after it covers right across, such as an avatar a list scrolls half under a tab bar, is read once it comes clear; it was read as ending at that box's edge.
+- The README's install line asks for this version.
+
 ## 0.5.2
 
 - `DesignFaceInsetCheck` reads a painted face to its rim. A face its own painter draws (a clay or glass ball, an avatar, a lit chip) whose rim is shaded toward the page, darker by night or lighter by day, was read short of that rim, so a label well inside the face was named as close to its edge. Where the face's painting runs on unbroken to the edge of the box that paints it (the smallest box in the control that paints a face and holds the face read), the face reaches that edge; a soft shadow inside that box is not the face. Words drawn over that rim are read there as over the rest of the face, so initials close to a ball's shaded foot or lit top, or off its middle by its shaded end, are named.

@@ -312,21 +312,24 @@ class DrawnPixels {
   /// The smallest rectangle (logical, from the boundary's top left) holding
   /// what is drawn inside [rect] other than [over] (the image's [ground] by
   /// default), leaving out what is inside any of [except]; null when
-  /// nothing is. Given a contrast [floor] (as [outline] reads one), a pixel
-  /// that reaches it is drawn too, however near [over] its channels are: a
-  /// black edge on a dark ground. A pixel [within] says no to (past a round
-  /// face's shape) is not read.
+  /// nothing is. A pixel is drawn when a channel stands more than [by] off
+  /// [over]'s (a quarter of a channel's range by default, so an edge pixel
+  /// a glyph barely touches is not). Given a contrast [floor] (as [outline]
+  /// reads one), a pixel that reaches it is drawn too, however near [over]
+  /// its channels are: a black edge on a dark ground. A pixel [within] says
+  /// no to (past a round face's shape) is not read.
   Rect? inkIn(
     Rect rect, {
     int? over,
     List<Rect> except = const [],
     double? floor,
     bool Function(int x, int y)? within,
+    int by = 64,
   }) {
     final face = over ?? ground;
     final faceLuminance = _luminance(face);
     bool drawnOn(int c) {
-      if (_differs(c, face)) return true;
+      if (!alike(c, face, by: by)) return true;
       if (floor == null) return false;
       final l = _luminance(c);
       return (math.max(l, faceLuminance) + 0.05) /

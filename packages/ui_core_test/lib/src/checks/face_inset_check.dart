@@ -41,9 +41,15 @@ part of '../alignment.dart';
 /// to that edge (a ball's rim shaded toward the page, darker by night or
 /// lighter by day), and words drawn over that rim are read there as over
 /// the rest of the face; a soft shadow inside that box, fading into the
-/// page, is not the face. Only a face the screen shows whole is read; one a
-/// scroll or a clip cuts is read when it comes into view. It reads the
-/// drawn pixels. A test passes its tester's `runAsync`:
+/// page, is not the face. One it draws only a little off what is round it,
+/// out to every edge of its box (a plate a few levels off its page, or
+/// outlined in a tone near it), is that box, not the stronger ink drawn on
+/// it (a chevron, an avatar's ball, a key), and the ink a label's letters
+/// draw past their line's box (a script's marks and tails) is the label's.
+/// Only a face the screen shows whole is read; one a scroll or a clip cuts,
+/// or that a box painted after it covers right across (a bar over an
+/// avatar a list scrolls under it), is read when it comes into view. It
+/// reads the drawn pixels. A test passes its tester's `runAsync`:
 ///
 /// ```dart
 /// final report = await const DesignFaceInsetCheck(look: 'Comic').check(
@@ -96,7 +102,7 @@ class DesignFaceInsetCheck {
         pixelRatio,
         runAsync,
       );
-      final reader = _LabelReader(labels, boundary, drawn, marked);
+      final reader = _FaceReader(labels, boundary, drawn, marked);
       found.addAll(reader._insets(control, texts, minimum));
       fallback.addAll(reader.fallback);
     }
@@ -351,7 +357,50 @@ extension on _LabelReader {
         '${_px(minimum)} px: pad the label inside the face',
       );
     }
+    // Only a face the screen shows whole: one a box painted after it covers
+    // right across is read when it comes clear (read last, as it walks the
+    // whole frame).
+    if (found.isNotEmpty && _coveredAcross(control, face.box, faceRect)) {
+      return const [];
+    }
     return found;
+  }
+
+  // Whether a box painted after [control], outside it, covers [face] (the
+  // box that paints it, with [read], the face read from it) right across but
+  // not whole (a bar a list scrolls an avatar half under): what shows of the
+  // face ends at that box's edge, not its own.
+  bool _coveredAcross(RenderBox control, RenderBox face, Rect read) {
+    final whole = _global(face).expandToInclude(read);
+    var covered = false;
+    void visit(RenderObject n) {
+      if (covered || identical(n, control)) return;
+      if (n is RenderBox && n.hasSize && _hides(n)) {
+        final r = _global(n);
+        final over = r.intersect(whole);
+        final across =
+            (over.left <= whole.left + 0.5 &&
+                over.right >= whole.right - 0.5) ||
+            (over.top <= whole.top + 0.5 && over.bottom >= whole.bottom - 0.5);
+        final all =
+            r.left <= whole.left + 0.5 &&
+            r.top <= whole.top + 0.5 &&
+            r.right >= whole.right - 0.5 &&
+            r.bottom >= whole.bottom - 0.5;
+        if (over.width > 0.5 &&
+            over.height > 0.5 &&
+            across &&
+            !all &&
+            _paintedOver(control, n, over.center)) {
+          covered = true;
+          return;
+        }
+      }
+      _visitShown(n, visit);
+    }
+
+    if (boundary case final b?) visit(b);
+    return covered;
   }
 
   // Whether [t]'s words are drawn in the test's fallback font, read letter
@@ -870,6 +919,136 @@ extension on _LabelReader {
     };
   }
 }
+
+// Reads a control's face for [DesignFaceInsetCheck]: as the label check
+// reads it, what a custom paint draws itself read more closely ([_ownInk]).
+class _FaceReader extends _LabelReader {
+  _FaceReader(super.check, super.boundary, super.pixels, super.marked);
+
+  // What a custom paint draws itself inside [r], the words, icons and text
+  // entries under [holder] left out, and their words' ink past their line
+  // boxes with them (a script's marks and tails over and under its line, an
+  // italic's overhang). A paint whose commonest colour stands less than an
+  // ink's step off what is round it, and that draws, however faintly, to
+  // within [_faintReach] of every edge of its box (a plate a few levels off
+  // its page, its rim shaded back to it, or outlined in a tone near it), is
+  // that face, not the stronger ink drawn on it (a chevron, an avatar's
+  // ball, a checkbox's key). Null when it draws nothing else.
+  @override
+  ({Rect rect, bool read})? _ownInk(Rect r, RenderObject holder) {
+    final p = pixels;
+    final b = boundary;
+    if (p == null || b == null) return super._ownInk(r, holder);
+    final local = _toBoundary(r);
+    final lines = _shownOver(r, holder);
+    final except = [for (final w in lines) _toBoundary(w)];
+    final ground = p.groundAround(local, 2);
+    final within = _pastLines(lines, ground);
+    Rect? drawn(int by) =>
+        p.inkIn(local, over: ground, except: except, within: within, by: by);
+    final fill = p.solidOutside(local, except)?.colour;
+    var own = fill != null && DrawnPixels.alike(fill, ground, by: 64)
+        ? drawn(2)
+        : null;
+    if (own != null &&
+        (own.left - local.left > _faintReach ||
+            own.top - local.top > _faintReach ||
+            local.right - own.right > _faintReach ||
+            local.bottom - own.bottom > _faintReach)) {
+      own = null;
+    }
+    own ??= drawn(64);
+    return own == null
+        ? null
+        : (
+            rect: MatrixUtils.transformRect(b.getTransformTo(null), own),
+            read: true,
+          );
+  }
+
+  // How far in from its box's edges a faint face may start: a rim shaded
+  // back to the colour round it.
+  static const double _faintReach = 3;
+
+  // Which of the image's pixels a paint's own ink is read in, round [lines]
+  // (the words, icons and text entries over it, global): not, in reach of a
+  // line of words (half an em over and under it, a quarter past its ends),
+  // one drawn in its words' colour or between that and [ground] (their
+  // marks, tails and overhang past the line's box). Null with no words.
+  bool Function(int x, int y)? _pastLines(List<Rect> lines, int ground) {
+    final p = pixels!;
+    final reach = <(int, int, int, int, List<int>)>[];
+    for (final (box, bounds) in _shownRects) {
+      if (box is! RenderParagraph ||
+          box.size.height <= 0 ||
+          !lines.contains(bounds)) {
+        continue;
+      }
+      final em = labelFontSize(box) * _global(box).height / box.size.height;
+      final zone = _toBoundary(
+        Rect.fromLTRB(
+          bounds.left - em / 4,
+          bounds.top - em / 2,
+          bounds.right + em / 4,
+          bounds.bottom + em / 2,
+        ),
+      );
+      final inks = <int>[];
+      box.text.visitChildren((span) {
+        if (span.style?.color case final c?) inks.add(_over(c, ground));
+        return true;
+      });
+      if (inks.isEmpty) continue;
+      reach.add((
+        (zone.left * p.ratio).floor(),
+        (zone.top * p.ratio).floor(),
+        (zone.right * p.ratio).ceil(),
+        (zone.bottom * p.ratio).ceil(),
+        inks,
+      ));
+    }
+    if (reach.isEmpty) return null;
+    return (x, y) {
+      for (final (l, t, r, b, inks) in reach) {
+        if (x < l || x >= r || y < t || y >= b) continue;
+        final c = p.colourAt(x, y);
+        if (inks.any((ink) => DrawnPixels.between(c, ground, ink))) {
+          return false;
+        }
+      }
+      return true;
+    };
+  }
+
+  // [colour] laid over [ground] (an RGBA pixel), as an RGBA pixel.
+  static int _over(Color colour, int ground) {
+    final under = Color.fromARGB(
+      0xFF,
+      (ground >> 24) & 0xFF,
+      (ground >> 16) & 0xFF,
+      (ground >> 8) & 0xFF,
+    );
+    final c = Color.alphaBlend(colour, under);
+    int channel(double v) => (v * 255).round() & 0xFF;
+    return channel(c.r) << 24 | channel(c.g) << 16 | channel(c.b) << 8 | 0xFF;
+  }
+}
+
+// Whether [n] hides what it is painted over where it paints: an opaque
+// fill, a gradient, an image, a paint whose fill the check cannot read; not
+// a clear or translucent colour, nor a pane of glass.
+bool _hides(RenderObject n) => switch (n) {
+  RenderDecoratedBox(
+    decoration: BoxDecoration(:final color, :final gradient, :final image),
+  ) ||
+  RenderDecoratedBox(
+    decoration: ShapeDecoration(:final color, :final gradient, :final image),
+  ) => (color?.a ?? 0) == 1 || gradient != null || image != null,
+  RenderPhysicalModel(:final color) ||
+  RenderPhysicalShape(:final color) => color.a == 1,
+  RenderBackdropFilter() => false,
+  _ => _fills(n),
+};
 
 // Latin letters and figures, whose ink a face's room up and down is read by.
 const _latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

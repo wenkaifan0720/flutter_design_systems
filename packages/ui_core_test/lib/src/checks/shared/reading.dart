@@ -674,17 +674,21 @@ class _DrawnReader {
 
     _visitShown(control, visit);
     // Largest first; of two the same size, the one painted last. A paint
-    // that draws nothing of its own (a clear hover or focus surface) passes
-    // to the next.
+    // that draws nothing of its own (a clear hover or focus surface: a
+    // custom paint's, or a decoration of the look's own, whose fill the
+    // check cannot read) passes to the next.
     found.sort((x, y) {
       final d = y.$1.width * y.$1.height - x.$1.width * x.$1.height;
       if (d.abs() > 1) return d > 0 ? 1 : -1;
       return y.$3.compareTo(x.$3);
     });
     for (final (r, b, _) in found) {
-      if (b is! RenderCustomPaint) return (rect: r, box: b, read: false);
-      final own = _ownInk(r, control);
-      if (own != null) return (rect: own.rect, box: b, read: own.read);
+      if (b is RenderCustomPaint) {
+        final own = _ownInk(r, control);
+        if (own != null) return (rect: own.rect, box: b, read: own.read);
+      } else if (!_ownDecoration(b) || _ownInk(r, control) != null) {
+        return (rect: r, box: b, read: false);
+      }
     }
     return null;
   }
@@ -940,6 +944,14 @@ bool _isControl(RenderObject n) {
   }
   return false;
 }
+
+// Whether [n] paints a decoration of the look's own (neither a
+// BoxDecoration nor a ShapeDecoration), whose fill and shape the check
+// cannot read: its pixels say what it draws.
+bool _ownDecoration(RenderObject n) =>
+    n is RenderDecoratedBox &&
+    n.decoration is! BoxDecoration &&
+    n.decoration is! ShapeDecoration;
 
 bool _paintsFace(RenderObject n) => switch (n) {
   RenderDecoratedBox(:final decoration) => _shows(decoration),
