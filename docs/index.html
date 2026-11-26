@@ -37,7 +37,164 @@
       <ol class="start" data-start="minimal">
         <li><h2>Pick a look</h2><div class="look-chips" role="group" aria-label="Design system"><button type="button" data-look="appliance" data-name="Appliance" data-package="appliance_ui" aria-pressed="false"><i aria-hidden="true" style="background:#df6428"></i>Appliance</button><button type="button" data-look="brutal" data-name="Brutal" data-package="brutal_ui" aria-pressed="false"><i aria-hidden="true" style="background:#dc5145"></i>Brutal</button><button type="button" data-look="civic" data-name="Civic" data-package="civic_ui" aria-pressed="false"><i aria-hidden="true" style="background:#24784b"></i>Civic</button><button type="button" data-look="clay" data-name="Clay" data-package="clay_ui" aria-pressed="false"><i aria-hidden="true" style="background:#ff7a5c"></i>Clay</button><button type="button" data-look="comic" data-name="Comic" data-package="comic_ui" aria-pressed="false"><i aria-hidden="true" style="background:#ce3d56"></i>Comic</button><button type="button" data-look="fluent2" data-name="Fluent 2" data-package="fluent2_design_ui" aria-pressed="false"><i aria-hidden="true" style="background:#2468ad"></i>Fluent 2</button><button type="button" data-look="frosted" data-name="Frosted" data-package="frosted_ui" aria-pressed="false"><i aria-hidden="true" style="background:#2a2935"></i>Frosted</button><button type="button" data-look="gloss" data-name="Gloss" data-package="gloss_ui" aria-pressed="false"><i aria-hidden="true" style="background:#0e7652"></i>Gloss</button><button type="button" data-look="keycap" data-name="Keycap" data-package="keycap_ui" aria-pressed="false"><i aria-hidden="true" style="background:#2f59cf"></i>Keycap</button><button type="button" data-look="ledger" data-name="Ledger" data-package="ledger_ui" aria-pressed="false"><i aria-hidden="true" style="background:#945942"></i>Ledger</button><button type="button" data-look="material_expressive" data-name="Material Expressive" data-package="material_expressive_ui" aria-pressed="false"><i aria-hidden="true" style="background:#728044"></i>Material Expressive</button><button type="button" data-look="minimal" data-name="Minimal" data-package="minimal_ui" aria-pressed="true"><i aria-hidden="true" style="background:#4f5c57"></i>Minimal</button><button type="button" data-look="neumorphism" data-name="Neumorphism" data-package="neumorphism_ui" aria-pressed="false"><i aria-hidden="true" style="background:#2e46d0"></i>Neumorphism</button><button type="button" data-look="retro_desktop" data-name="Retro Desktop" data-package="retro_desktop_ui" aria-pressed="false"><i aria-hidden="true" style="background:#4b3fd6"></i>Retro Desktop</button><button type="button" data-look="studio" data-name="Studio" data-package="studio_ui" aria-pressed="false"><i aria-hidden="true" style="background:#aa650e"></i>Studio</button><button type="button" data-look="terminal" data-name="Terminal" data-package="terminal_ui" aria-pressed="false"><i aria-hidden="true" style="background:#0b6870"></i>Terminal</button></div></li>
         <li><h2>Add its package</h2><div class="pub-add"><code>flutter pub add <span data-start-package>minimal_ui</span></code><button type="button" class="copy">Copy</button></div></li>
-        <li><h2>Build with its widgets</h2><div><p data-start-note>Wrap your app in the look’s theme as its README shows, then use its components:</p><p><a data-start-readme href="https://pub.dev/packages/minimal_ui">Minimal on pub.dev</a> · <a data-start-page href="looks/minimal/">Minimal components</a></p></div></li>
+        <li><h2>Build with its widgets</h2><div><p data-start-note hidden>Wrap your app in the look’s theme as its README shows, then use its components:</p><pre class="setup" data-setup="appliance" hidden tabindex="0" aria-label="Appliance setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:appliance_ui/appliance_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFFEE6A26</span>),
+    builder: (context, _) =&gt; ApplianceHost(
+      child: Center(child: ApplianceButton.filled(<span class="hljs-string">'Start'</span>, onPressed: () {})),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="brutal" hidden tabindex="0" aria-label="Brutal setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:brutal_ui/brutal_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  MaterialApp(
+    builder: (context, child) =&gt;
+        BrutalHost(theme: BrutalThemeData.light(), child: child!),
+    home: Center(child: BrutalButton.filled(<span class="hljs-string">'Buy tickets'</span>, onPressed: () {})),
+  ),
+);</code></pre><pre class="setup" data-setup="civic" hidden tabindex="0" aria-label="Civic setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:civic_ui/civic_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFF0F4C81</span>),
+    builder: (context, _) =&gt; CivicTheme(
+      data: CivicThemeData.light(),
+      child: CivicScaffold(body: CivicButton(onPressed: () {}, child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Continue'</span>))),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="clay" hidden tabindex="0" aria-label="Clay setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:clay_ui/clay_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFFFF7A5C</span>),
+    builder: (context, _) =&gt; ClayTheme(
+      data: ClayThemeData.clay(Brightness.light),
+      child: Center(child: ClayButton.filled(<span class="hljs-string">'Add habit'</span>, onPressed: () {})),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="comic" hidden tabindex="0" aria-label="Comic setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:comic_ui/comic_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+
+Future&lt;<span class="hljs-keyword">void</span>&gt; main() <span class="hljs-keyword">async</span> {
+  WidgetsFlutterBinding.ensureInitialized();
+  <span class="hljs-keyword">await</span> comicLoadFonts();
+  runApp(WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFFFF3E92</span>),
+    builder: (context, _) =&gt; ComicTheme(data: ComicThemeData.offset(), child: ComicScaffold(
+      body: Center(child: ComicButton.filled(<span class="hljs-string">'Read on'</span>, onPressed: () {})))),
+  ));
+}</code></pre><pre class="setup" data-setup="fluent2" hidden tabindex="0" aria-label="Fluent 2 setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:fluent2_design_ui/fluent2_design_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFF0F6CBD</span>),
+    builder: (context, _) =&gt; Fluent2Theme(
+      data: Fluent2ThemeData.lapis(),
+      child: Fluent2Scaffold(body: Fluent2Button(<span class="hljs-string">'Compose'</span>, onPressed: () {})),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="frosted" hidden tabindex="0" aria-label="Frosted setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:frosted_ui/frosted_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFF6E56CF</span>),
+    builder: (context, _) =&gt; FrostedTheme(
+      data: FrostedThemeData.opal(),
+      child: FrostedScaffold(body: FrostedButton(<span class="hljs-string">'Add money'</span>, onPressed: () {})),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="gloss" hidden tabindex="0" aria-label="Gloss setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:gloss_ui/gloss_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFF0E7652</span>),
+    builder: (context, _) =&gt; GlossHost(
+      child: Center(child: GlossButton.filled(<span class="hljs-string">'Start'</span>, onPressed: () {})),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="keycap" hidden tabindex="0" aria-label="Keycap setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:keycap_ui/keycap_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFF2F59CF</span>),
+    builder: (context, _) =&gt; KeycapHost(
+      child: Center(child: KeycapButton.accent(onPressed: () {}, child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'New note'</span>))),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="ledger" hidden tabindex="0" aria-label="Ledger setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:ledger_ui/ledger_ui.dart'</span>;
+
+Future&lt;<span class="hljs-keyword">void</span>&gt; main() <span class="hljs-keyword">async</span> {
+  WidgetsFlutterBinding.ensureInitialized();
+  <span class="hljs-keyword">await</span> ledgerLoadFonts();
+  runApp(WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFF1E5A44</span>),
+    builder: (context, _) =&gt; LedgerTheme(data: LedgerThemeData.light(), child: LedgerScreen(
+      body: Center(child: LedgerButton.filled(<span class="hljs-string">'Move money'</span>, onPressed: () {})))),
+  ));
+}</code></pre><pre class="setup" data-setup="material_expressive" hidden tabindex="0" aria-label="Material Expressive setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_expressive_ui/material_expressive_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  WidgetsApp(
+    color: <span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xFF6750A4</span>),
+    builder: (context, _) =&gt; ExpressiveHost(
+      child: Center(child: ExpressiveFilledButton(<span class="hljs-string">'Start'</span>, onPressed: () {})),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="minimal" tabindex="0" aria-label="Minimal setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/material.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  MaterialApp(
+    builder: (context, child) =&gt; MinimalTheme(data: MinimalThemeData.standard(), child: child!),
+    home: <span class="hljs-keyword">const</span> MinimalScaffold(
+      topBar: MinimalAppBar(title: <span class="hljs-string">'Requests'</span>),
+      body: MinimalListTile(title: <span class="hljs-string">'Replace the lobby lights'</span>, meta: <span class="hljs-string">'REQ-142'</span>),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="neumorphism" hidden tabindex="0" aria-label="Neumorphism setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:neumorphism_ui/neumorphism_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  MaterialApp(
+    builder: (context, child) =&gt;
+        NeumorphicTheme(data: NeumorphicThemeData.porcelain(), child: child!),
+    home: NeumorphicScaffold(
+      body: Center(child: NeumorphicButton(<span class="hljs-string">'Save'</span>, onPressed: () {})),
+    ),
+  ),
+);</code></pre><pre class="setup" data-setup="retro_desktop" hidden tabindex="0" aria-label="Retro Desktop setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:retro_desktop_ui/retro_desktop_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  MaterialApp(
+    builder: (context, child) =&gt;
+        RetroDesktopTheme(data: RetroDesktopThemeData.classic(), child: child!),
+    home: Center(child: RetroDesktopButton(<span class="hljs-string">'Save'</span>, onPressed: () {})),
+  ),
+);</code></pre><pre class="setup" data-setup="studio" hidden tabindex="0" aria-label="Studio setup"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:studio_ui/studio_ui.dart'</span>;
+
+<span class="hljs-keyword">void</span> main() =&gt; runApp(
+  MaterialApp(
+    builder: (context, child) =&gt; StudioHost(child: child!),
+    home: <span class="hljs-keyword">const</span> StudioScreen(
+      topBar: StudioAppBar(title: <span class="hljs-string">'Library'</span>),
+      body: StudioDisplay(child: Text(<span class="hljs-string">'Rooms that sound right, 38 min.'</span>)),
+    ),
+  ),
+);</code></pre><p><a data-start-readme href="https://pub.dev/packages/minimal_ui">Minimal on pub.dev</a> · <a data-start-page href="looks/minimal/">Minimal components</a></p></div></li>
       </ol>
       <div class="home-actions"><a class="primary-link" href="#components">Browse components <span aria-hidden="true">↓</span></a><a data-follow-look href="stint/">Try Stint <span aria-hidden="true">→</span></a><a href="https://github.com/wenkaifan0720/flutter_design_systems">GitHub <span aria-hidden="true">↗</span></a><a href="https://pub.dev/packages/ui_core">ui_core on pub.dev <span aria-hidden="true">↗</span></a></div>
       </div>
