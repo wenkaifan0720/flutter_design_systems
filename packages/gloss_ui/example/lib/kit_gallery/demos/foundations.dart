@@ -1,5 +1,5 @@
-/// Gloss's foundations: its glazes and inks, its type, its three depths
-/// under one light, and its spacing.
+/// Gloss's foundations: its glazes and inks, its six gels, its type, its
+/// three depths under one light, and its spacing.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -20,6 +20,13 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
       children: [_Depths()],
     ),
     KitSection(title: 'Glazes', children: [_Glazes()]),
+    KitSection(
+      title: 'Gels',
+      note:
+          'Six gels on the same porcelain: jade, sapphire, amethyst, amber, '
+          'rose and teal (GlossThemeData.preset).',
+      children: [_Gels()],
+    ),
     KitSection(title: 'Type', children: [_Type()]),
     KitSection(title: 'Chrome', children: [_Chrome()]),
   ],
@@ -80,6 +87,93 @@ class _Glazes extends StatelessWidget {
         chip('Second ink', c.well, c.inkSecondary),
         chip('Ruby', c.dangerFill, c.onDanger),
       ],
+    );
+  }
+}
+
+// Each of Gloss's gels at the page's brightness: a piece of its porcelain
+// holding a pearl key and the gel's key, named under it.
+class _Gels extends StatelessWidget {
+  const _Gels();
+
+  @override
+  Widget build(BuildContext context) {
+    final page = GlossTheme.of(context);
+    final brightness = page.colors.brightness;
+    Widget key(GlossFace face, String words, TextStyle style) => Expanded(
+      child: SizedBox(
+        height: 32,
+        child: GlossSurface(
+          face: face,
+          child: Center(
+            child: Text(
+              words,
+              maxLines: 1,
+              style: style.copyWith(color: face.foreground),
+            ),
+          ),
+        ),
+      ),
+    );
+    return LayoutBuilder(
+      builder: (context, box) {
+        // Six, three or two across, so the rows come out even.
+        const gap = GlossSpacing.small;
+        final across = box.maxWidth >= 6 * 132 + 5 * gap
+            ? 6
+            : box.maxWidth >= 3 * 132 + 2 * gap
+            ? 3
+            : 2;
+        final width = ((box.maxWidth - (across - 1) * gap) / across)
+            .floorToDouble();
+        return KitRow(
+          children: [
+            for (final name in GlossThemeData.presets)
+              SizedBox(
+                width: width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GlossTheme(
+                      data: GlossThemeData.preset(name, brightness),
+                      child: Builder(
+                        builder: (context) {
+                          final theme = GlossTheme.of(context);
+                          final c = theme.colors;
+                          final s = theme.textTheme.label.copyWith(
+                            fontSize: 13,
+                          );
+                          return GlossSurface(
+                            face: GlossFace.porcelain(c, radius: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(GlossSpacing.small),
+                              child: Row(
+                                children: [
+                                  key(
+                                    GlossFace.pearl(c, radius: 16),
+                                    'Back',
+                                    s,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  key(GlossFace.gel(c, radius: 16), 'Save', s),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      name[0].toUpperCase() + name.substring(1),
+                      style: page.textTheme.secondary,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

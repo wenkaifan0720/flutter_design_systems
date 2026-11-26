@@ -1,9 +1,8 @@
 name: gloss_ui
 description: >-
   Skeuomorphic widgets for Flutter with glazed controls, recessed panels, accessible forms, navigation, and charts in coordinated light and dark themes.
-version: 0.4.1
-homepage: https://wenkaifan0720.github.io/flutter_design_systems/gloss/
-documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/gloss/
+version: 0.5.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/gloss/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/gloss_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
@@ -21,7 +20,7 @@ screenshots:
     path: screenshots/recipe.webp
   - description: "Settings on a phone by day and night: rows in wells pressed into the page, pearl switches in sunken slots."
     path: screenshots/settings.webp
-  - description: "The gallery's front page at 1440: gel and pearl keys, segments, and a stepper and a switch in a well on porcelain."
+  - description: "Gloss's parts at 1440: gel and pearl keys, segments, and a stepper and a switch in a well on porcelain."
     path: screenshots/parts.webp
 
 environment:
@@ -33,7 +32,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.6.0
+  ui_core: ^0.7.2
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -43,7 +42,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.4.0
+  ui_core_test: ^0.5.2
 
 flutter:
   fonts:

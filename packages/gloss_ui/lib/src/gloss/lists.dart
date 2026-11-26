@@ -241,7 +241,18 @@ class GlossListTile extends StatelessWidget {
               : isDestructiveAction
               ? c.danger
               : c.ink);
-      final muted = disabled ? c.inkDisabled : c.inkSecondary;
+      final plate = GlossFace.pearl(c);
+      // On a selected row's pearl plate the supporting words take the
+      // secondary ink's nearest tone that reads at 4.5:1 where they stand:
+      // by night the moonlit pearl is lighter than the well round it.
+      final muted = disabled
+          ? c.inkDisabled
+          : selected
+          ? RawPalette.readableTone(
+              c.inkSecondary,
+              on: [Color.lerp(plate.top, plate.middle, 0.4)!, plate.middle],
+            )
+          : c.inkSecondary;
       final glyph = disabled
           ? c.inkDisabled
           : selected

@@ -54,7 +54,7 @@ class GlossBreadcrumb extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      child: Wrap(
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         runSpacing: GlossSpacing.tight,
         children: [
@@ -283,8 +283,8 @@ class GlossPagination extends StatelessWidget {
                 radius: corner - inset,
               );
         if (current && layered.fill != null) face = face.glazed(layered.fill!);
-        // A page's tap is the trough's whole height (a finger's 48); its
-        // plate stands inset 4 in it.
+        // A page's tap is the trough's whole height (a control's); its plate
+        // stands inset 4 in it.
         return TapTargetPadding(
           child: SizedBox(
             height: theme.controlHeight,

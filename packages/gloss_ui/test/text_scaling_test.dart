@@ -18,11 +18,12 @@ Future<void> _show(
   WidgetTester tester,
   Widget child, {
   double width = 390,
+  double height = 620,
   double scale = 2,
   TextDirection direction = TextDirection.ltr,
 }) async {
   tester.view.devicePixelRatio = 1;
-  tester.view.physicalSize = Size(width, 620);
+  tester.view.physicalSize = Size(width, height);
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     WidgetsApp(
@@ -53,59 +54,68 @@ Future<void> _show(
 }
 
 void main() {
-  for (final range in [false, true]) {
-    testWidgets(
-      'the ${range ? 'range' : 'single-date'} picker scrolls to the last week on a short screen',
-      (tester) async {
-        final first = DateTime(2026);
-        final last = DateTime(2026, 12, 31);
-        final today = DateTime(2026, 11, 4);
-        DateTime? chosen;
-        await _show(
-          tester,
-          range
-              ? GlossDateRangePicker(
-                  labelText: 'Plan',
-                  value: null,
-                  firstDate: first,
-                  lastDate: last,
-                  currentDate: today,
-                  onChanged: (days) => chosen = days.end,
-                )
-              : GlossDatePicker(
-                  labelText: 'Plan',
-                  value: null,
-                  firstDate: first,
-                  lastDate: last,
-                  currentDate: today,
-                  onChanged: (day) => chosen = day,
-                ),
-        );
-        await tester.tap(
-          find.byType(range ? GlossDateRangePicker : GlossDatePicker),
-        );
-        await tester.pumpAndSettle();
-        final grid = find.byType(GlossCalendar);
-        final day = find.descendant(of: grid, matching: find.text('30')).last;
-        final viewport = find
-            .ancestor(of: grid, matching: find.byType(Scrollable))
-            .first;
-        expect(day.hitTestable(), findsNothing);
-        await tester.drag(viewport, const Offset(0, -420));
-        await tester.pumpAndSettle();
-        expect(day.hitTestable(), findsOneWidget);
-        if (range) {
+  // From 600 wide the calendar opens in its panel; below, in a sheet. Each
+  // scrolls to the last week on a short screen.
+  for (final (width, height, holder) in const [
+    (640.0, 620.0, 'panel'),
+    (390.0, 480.0, 'sheet'),
+  ]) {
+    for (final range in [false, true]) {
+      testWidgets(
+        'the ${range ? 'range' : 'single-date'} picker\'s $holder scrolls to the last week on a short screen',
+        (tester) async {
+          final first = DateTime(2026);
+          final last = DateTime(2026, 12, 31);
+          final today = DateTime(2026, 11, 4);
+          DateTime? chosen;
+          await _show(
+            tester,
+            range
+                ? GlossDateRangePicker(
+                    labelText: 'Plan',
+                    value: null,
+                    firstDate: first,
+                    lastDate: last,
+                    currentDate: today,
+                    onChanged: (days) => chosen = days.end,
+                  )
+                : GlossDatePicker(
+                    labelText: 'Plan',
+                    value: null,
+                    firstDate: first,
+                    lastDate: last,
+                    currentDate: today,
+                    onChanged: (day) => chosen = day,
+                  ),
+            width: width,
+            height: height,
+          );
           await tester.tap(
-            find.descendant(of: grid, matching: find.text('29')).last,
+            find.byType(range ? GlossDateRangePicker : GlossDatePicker),
           );
           await tester.pumpAndSettle();
-        }
-        await tester.tap(day);
-        await tester.pumpAndSettle();
-        expect(chosen, DateTime(2026, 11, 30));
-        expect(grid, findsNothing);
-      },
-    );
+          final grid = find.byType(GlossCalendar);
+          final day = find.descendant(of: grid, matching: find.text('30')).last;
+          final viewport = find
+              .ancestor(of: grid, matching: find.byType(Scrollable))
+              .first;
+          expect(day.hitTestable(), findsNothing);
+          await tester.drag(viewport, const Offset(0, -420));
+          await tester.pumpAndSettle();
+          expect(day.hitTestable(), findsOneWidget);
+          if (range) {
+            await tester.tap(
+              find.descendant(of: grid, matching: find.text('29')).last,
+            );
+            await tester.pumpAndSettle();
+          }
+          await tester.tap(day);
+          await tester.pumpAndSettle();
+          expect(chosen, DateTime(2026, 11, 30));
+          expect(grid, findsNothing);
+        },
+      );
+    }
   }
 
   const series = [

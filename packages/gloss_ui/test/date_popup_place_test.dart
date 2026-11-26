@@ -1,8 +1,9 @@
-// A date field's calendar opens clear of its field and its label, as
+// A date field's calendar panel opens clear of its field and its label, as
 // Material's menus open clear of their field: above a field low on a wide
-// window it stood over the label. On a phone it stands at the field's width,
-// edge to edge with it, where it stood about 7 past each side; on a wide
-// window, narrower than the field, it starts at the field's start.
+// window it stood over the label. From a field narrower than a month it
+// stands at the field's width, edge to edge with it, where it stood about 7
+// past each side; from a wider field it starts at the field's start. Below
+// 600 wide the calendar rises in a sheet instead (date_picker_sheet_test).
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,18 +59,18 @@ void main() {
     ),
   };
   for (final MapEntry(key: kind, value: picker) in pickers.entries) {
-    for (final width in [390.0, 1440.0]) {
+    for (final width in [640.0, 1440.0]) {
       for (final low in [false, true]) {
         for (final direction in TextDirection.values) {
           testWidgets(
             'a $kind field ${low ? 'low' : 'high'} at ${width.round()}, '
             '${direction.name}: its calendar clears the field and the label',
             (tester) async {
-              final height = width < 600 ? 844.0 : 900.0;
+              final height = width < 1000 ? 844.0 : 900.0;
               tester.view.physicalSize = Size(width, height);
               tester.view.devicePixelRatio = 1;
               addTearDown(tester.view.reset);
-              final column = width < 600 ? 358.0 : 640.0;
+              final column = width < 1000 ? 358.0 : 640.0;
               await tester.pumpWidget(
                 _app(
                   brightness: Brightness.light,
@@ -117,8 +118,8 @@ void main() {
                 moreOrLessEquals(rtl ? field.right : field.left, epsilon: .5),
                 reason: 'panel $panel, field $field',
               );
-              if (width < 600) {
-                // On a phone, edge to edge with the field.
+              if (width < 1000) {
+                // From a field narrower than a month, edge to edge with it.
                 expect(
                   rtl ? panel.left : panel.right,
                   moreOrLessEquals(rtl ? field.left : field.right, epsilon: .5),

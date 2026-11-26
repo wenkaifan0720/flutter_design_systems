@@ -16,6 +16,7 @@ import 'button.dart';
 import 'fonts.dart';
 import 'internal/field_frame.dart';
 import 'internal/menu_parts.dart';
+import 'overlays.dart' show showGlossSheet;
 import 'popovers.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -247,9 +248,11 @@ class _GlossCalendarState extends State<GlossCalendar> {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
-    // A day is a finger's height at least (its bead a little less).
+    // A day is a finger's height at least (the touch floor, on every input,
+    // as Material's day grid keeps its cells on a desk); its bead a little
+    // less.
     final dayHeight = math.max(
-      44.0,
+      RawTapTargets.of(context).touch.height,
       MediaQuery.textScalerOf(context).scale(15) * 1.4 + 12,
     );
     const turnStyle = GlossStyle(
@@ -275,8 +278,12 @@ class _GlossCalendarState extends State<GlossCalendar> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: GlossSpacing.small,
+                  padding: EdgeInsetsDirectional.only(
+                    start:
+                        context.getInheritedWidgetOfExactType<_SheetMonth>() ==
+                            null
+                        ? GlossSpacing.small
+                        : 0,
                   ),
                   child: Text(
                     header.label,
@@ -469,7 +476,8 @@ class _GlossCalendarState extends State<GlossCalendar> {
 /// opens the picker.
 class _PickerField extends StatelessWidget {
   const _PickerField({
-    required this.anchor,
+    required this.onPressed,
+    required this.open,
     required this.text,
     required this.hint,
     required this.icon,
@@ -478,7 +486,8 @@ class _PickerField extends StatelessWidget {
     required this.semanticLabel,
   });
 
-  final RawOverlayAnchor anchor;
+  final VoidCallback? onPressed;
+  final bool open;
   final String? text;
   final String? hint;
   final IconData icon;
@@ -492,13 +501,12 @@ class _PickerField extends StatelessWidget {
     final c = theme.colors;
     final height = theme.controlHeight;
     return RawButton(
-      onPressed: enabled ? anchor.toggle : null,
+      onPressed: enabled ? onPressed : null,
       semanticLabel: semanticLabel,
       semanticValue: text,
-      expanded: anchor.isOpen,
+      expanded: open,
       mouseCursor: SystemMouseCursors.click,
       builder: (context, states, _) {
-        final open = anchor.isOpen;
         // Focused by the keys, the well lights jade from inside, as a
         // text field's does.
         final keyed = states.contains(WidgetState.focused);
@@ -618,8 +626,66 @@ Widget _calendarPanel(
   ),
 );
 
-/// A date field that opens a scrollable month calendar. Selecting a day
-/// closes the panel and calls [onChanged].
+/// Below this width a date field's calendar rises in a sheet, as Material's
+/// pickers open full width on a phone: a panel the field's width would stand
+/// over the labels round it.
+const double _sheetBelow = 600;
+
+/// How wide a month stands in a phone's sheet at most: about Material's
+/// phone date picker, so a wide sheet's days don't grow past a bead.
+const double _sheetMonthWidth = 400;
+
+/// A date field whose calendar rises in a sheet titled as Material titles
+/// its date picker (Select date, in the app's language).
+class _SheetDateField extends StatefulWidget {
+  const _SheetDateField({required this.field, required this.calendar});
+
+  /// The field, given what a press does and whether its sheet is up.
+  final Widget Function(VoidCallback onPressed, bool open) field;
+
+  /// The sheet's calendar, given what closes the sheet.
+  final Widget Function(BuildContext context, VoidCallback close) calendar;
+
+  @override
+  State<_SheetDateField> createState() => _SheetDateFieldState();
+}
+
+class _SheetDateFieldState extends State<_SheetDateField> {
+  bool _open = false;
+
+  Future<void> _show() async {
+    setState(() => _open = true);
+    await showGlossSheet<void>(
+      context: context,
+      title: RawWidgetsLocalizations.of(context).datePickerHelpText,
+      builder: (context) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _sheetMonthWidth),
+          child: _SheetMonth(
+            child: widget.calendar(context, () => Navigator.of(context).pop()),
+          ),
+        ),
+      ),
+    );
+    if (mounted) setState(() => _open = false);
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.field(_show, _open);
+}
+
+/// Marks a calendar in a date field's sheet: its month's name starts at the
+/// sheet title's edge.
+class _SheetMonth extends InheritedWidget {
+  const _SheetMonth({required super.child});
+
+  @override
+  bool updateShouldNotify(_SheetMonth oldWidget) => false;
+}
+
+/// A date field that opens a scrollable month calendar: a panel under the
+/// field, or below 600 wide a sheet. Selecting a day closes it and calls
+/// [onChanged].
 ///
 /// ```dart
 /// GlossDatePicker(labelText: 'Cook on', value: DateTime(2026, 11, 18), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
@@ -670,6 +736,41 @@ class GlossDatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
+    Widget field(VoidCallback? onPressed, bool open) => _fieldColumn(
+      label: labelText,
+      enabled: enabled,
+      helper: helperText,
+      error: errorText,
+      box: _PickerField(
+        onPressed: onPressed,
+        open: open,
+        text: value == null ? null : words.formatFullDate(value!),
+        hint: hintText,
+        icon: LucideIcons.calendar,
+        enabled: enabled,
+        error: errorText != null,
+        // Named by its field (ui_core's RawInputDecorator), or else by its
+        // hint.
+        semanticLabel: labelText == null ? hintText : null,
+      ),
+    );
+    GlossCalendar calendar(VoidCallback close) => GlossCalendar(
+      firstDate: firstDate,
+      lastDate: lastDate,
+      selectedDate: value,
+      currentDate: currentDate,
+      autofocus: true,
+      onDateChanged: (day) {
+        close();
+        onChanged?.call(day);
+      },
+    );
+    if (enabled && MediaQuery.sizeOf(context).width < _sheetBelow) {
+      return _SheetDateField(
+        field: field,
+        calendar: (context, close) => calendar(close),
+      );
+    }
     return RawPopover(
       semanticLabel: labelText,
       // The calendar opens where its whole month fits: below while below
@@ -685,40 +786,10 @@ class GlossDatePicker extends StatelessWidget {
       ),
       dampingRatio: GlossMotion.panelDamping,
       stiffness: GlossMotion.panelStiffness,
-      anchorBuilder: (context, anchor) => _fieldColumn(
-        label: labelText,
-        enabled: enabled,
-        helper: helperText,
-        error: errorText,
-        box: _PickerField(
-          anchor: anchor,
-          text: value == null ? null : words.formatFullDate(value!),
-          hint: hintText,
-          icon: LucideIcons.calendar,
-          enabled: enabled,
-          error: errorText != null,
-          // Named by its field (ui_core's RawInputDecorator), or else by
-          // its hint.
-          semanticLabel: labelText == null ? hintText : null,
-        ),
-      ),
+      anchorBuilder: (context, anchor) => field(anchor.toggle, anchor.isOpen),
       overlayBuilder: (context, info) => glossPanelArrival(
         info,
-        _calendarPanel(
-          context,
-          info,
-          GlossCalendar(
-            firstDate: firstDate,
-            lastDate: lastDate,
-            selectedDate: value,
-            currentDate: currentDate,
-            autofocus: true,
-            onDateChanged: (day) {
-              info.close();
-              onChanged?.call(day);
-            },
-          ),
-        ),
+        _calendarPanel(context, info, calendar(info.close)),
       ),
     );
   }
@@ -785,6 +856,45 @@ class GlossDateRangePicker extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final wide = MediaQuery.sizeOf(context).width >= 760;
+    Widget field(VoidCallback? onPressed, bool open) => _fieldColumn(
+      label: labelText,
+      enabled: enabled,
+      helper: helperText,
+      error: errorText,
+      box: _PickerField(
+        onPressed: onPressed,
+        open: open,
+        text: value == null
+            ? null
+            : '${words.formatFullDate(value!.start)} – '
+                  '${words.formatFullDate(value!.end)}',
+        hint: hintText,
+        icon: LucideIcons.calendarRange,
+        enabled: enabled,
+        error: errorText != null,
+        // Named by its field (ui_core's RawInputDecorator), or else by its
+        // hint.
+        semanticLabel: labelText == null ? hintText : null,
+      ),
+    );
+    GlossCalendar calendar(VoidCallback close) => GlossCalendar.range(
+      firstDate: firstDate,
+      lastDate: lastDate,
+      selectedRange: value,
+      currentDate: currentDate,
+      months: wide ? 2 : 1,
+      autofocus: true,
+      onRangeChanged: (range) {
+        close();
+        onChanged?.call(range);
+      },
+    );
+    if (enabled && MediaQuery.sizeOf(context).width < _sheetBelow) {
+      return _SheetDateField(
+        field: field,
+        calendar: (context, close) => calendar(close),
+      );
+    }
     return RawPopover(
       semanticLabel: labelText,
       // The calendar opens where its whole month fits: below while below
@@ -800,44 +910,14 @@ class GlossDateRangePicker extends StatelessWidget {
       ),
       dampingRatio: GlossMotion.panelDamping,
       stiffness: GlossMotion.panelStiffness,
-      anchorBuilder: (context, anchor) => _fieldColumn(
-        label: labelText,
-        enabled: enabled,
-        helper: helperText,
-        error: errorText,
-        box: _PickerField(
-          anchor: anchor,
-          text: value == null
-              ? null
-              : '${words.formatFullDate(value!.start)} – '
-                    '${words.formatFullDate(value!.end)}',
-          hint: hintText,
-          icon: LucideIcons.calendarRange,
-          enabled: enabled,
-          error: errorText != null,
-          // Named by its field (ui_core's RawInputDecorator), or else by
-          // its hint.
-          semanticLabel: labelText == null ? hintText : null,
-        ),
-      ),
+      anchorBuilder: (context, anchor) => field(anchor.toggle, anchor.isOpen),
       overlayBuilder: (context, info) => glossPanelArrival(
         info,
         _calendarPanel(
           context,
           info,
           months: wide ? 2 : 1,
-          GlossCalendar.range(
-            firstDate: firstDate,
-            lastDate: lastDate,
-            selectedRange: value,
-            currentDate: currentDate,
-            months: wide ? 2 : 1,
-            autofocus: true,
-            onRangeChanged: (range) {
-              info.close();
-              onChanged?.call(range);
-            },
-          ),
+          calendar(info.close),
         ),
       ),
     );

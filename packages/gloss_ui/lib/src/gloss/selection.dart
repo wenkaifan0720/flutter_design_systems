@@ -49,9 +49,8 @@ class GlossRangeValues {
 /// GlossRangeSlider(values: const GlossRangeValues(15, 45), max: 90, onChanged: (values) {})
 /// ```
 class GlossRangeSlider extends StatelessWidget {
-  // A bead's target, and the groove's depth: the groove runs from one bead's
-  // centre to the other's, its round ends under them.
-  static const double _target = 44;
+  // The groove's depth: the groove runs from one bead's centre to the
+  // other's, its round ends under them.
   static const double _groove = 10;
 
   /// A range slider at [values].
@@ -114,7 +113,8 @@ class GlossRangeSlider extends StatelessWidget {
       startLabel: startLabel,
       endLabel: endLabel,
       semanticFormatterCallback: semanticFormatterCallback,
-      thumbSize: const Size.square(_target),
+      // A bead's target: a finger's square (the touch floor) on every input.
+      thumbSize: Size.square(RawTapTargets.of(context).touch.height),
       trackBuilder: (context, track) => SizedBox(
         height: _groove,
         child: CustomPaint(

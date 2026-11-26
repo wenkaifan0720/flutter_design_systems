@@ -94,7 +94,11 @@ GlossFace glossKeyFace(
 GlossFace _pearlKey(GlossColors c, {required bool destructive}) {
   final pearl = GlossFace.pearl(c);
   if (!destructive) return pearl.copyWith(foreground: c.ink);
-  if (_contrast(Color.lerp(pearl.top, pearl.middle, 0.4)!, c.danger) >= 4.5) {
+  if (RawPalette.contrastRatio(
+        c.danger,
+        Color.lerp(pearl.top, pearl.middle, 0.4)!,
+      ) >=
+      4.5) {
     return pearl.copyWith(foreground: c.danger);
   }
   return pearl.copyWith(
@@ -105,12 +109,6 @@ GlossFace _pearlKey(GlossColors c, {required bool destructive}) {
     // The soft light in its foot is the ruby's own, so it never greys it.
     glow: c.dangerTop.withValues(alpha: pearl.glow.a),
   );
-}
-
-// The contrast of [a] and [b], as WCAG reckons it.
-double _contrast(Color a, Color b) {
-  final x = a.computeLuminance(), y = b.computeLuminance();
-  return x > y ? (x + .05) / (y + .05) : (y + .05) / (x + .05);
 }
 
 /// A pearl or gel key of [kind] reading [label] (after [icon]), painted in

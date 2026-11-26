@@ -136,9 +136,12 @@ class GlossDataTable<R> extends StatelessWidget {
           inside: true,
           radius: 8,
           inset: 1,
-          // A header sorts on a tap: a finger's height.
+          // A header sorts on a tap: a finger's height (the touch floor) on
+          // every input, so the header row keeps one height.
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44),
+            constraints: BoxConstraints(
+              minHeight: RawTapTargets.of(context).touch.height,
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: GlossSpacing.medium,
@@ -572,7 +575,7 @@ class GlossSplitView extends StatelessWidget {
         // A finger needs the bead to find the line; under a pointer the
         // line and the cursor say it, and the bead comes up only while the
         // pointer is over it, the keys hold it or it is held.
-        final touch = RawTapTargets.of(context).floorOn().height >= 44;
+        final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
         final shown =
             touch ||
             held ||

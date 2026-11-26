@@ -4,6 +4,8 @@
 /// meter.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -782,17 +784,20 @@ class GlossAvatar extends StatelessWidget {
         child: image == null
             ? GlossSurface(
                 face: face.copyWith(foreground: layered.foreground ?? c.ink),
-                child: Center(
-                  // The initials are the disc's picture, sized to it: they
-                  // do not grow with the reader's text size (the name is
-                  // what a screen reader says).
-                  child: Text(
-                    _initials(name),
-                    textScaler: TextScaler.noScaling,
-                    style: theme.textTheme.label.copyWith(
-                      fontSize: size * 0.38,
-                      height: 1,
-                      color: layered.foreground ?? c.inkSecondary,
+                // The initials are the disc's picture, sized to the disc as
+                // it is laid out (a row's leading slot may hold it smaller
+                // than [size]): they do not grow with the reader's text size
+                // (the name is what a screen reader says).
+                child: LayoutBuilder(
+                  builder: (context, box) => Center(
+                    child: Text(
+                      _initials(name),
+                      textScaler: TextScaler.noScaling,
+                      style: theme.textTheme.label.copyWith(
+                        fontSize: math.min(box.maxWidth, box.maxHeight) * 0.38,
+                        height: 1,
+                        color: layered.foreground ?? c.inkSecondary,
+                      ),
                     ),
                   ),
                 ),

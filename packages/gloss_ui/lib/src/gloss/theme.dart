@@ -3,8 +3,6 @@
 /// every app installs once in its `builder:`.
 library;
 
-import 'dart:math' as math;
-
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -66,14 +64,6 @@ abstract final class GlossMetrics {
   /// top: it ends above the capitals of a centred label at every size, so a
   /// label never sits on the shine.
   static const double lensFraction = 0.34;
-
-  /// The reflected light fits within the part.
-  @Deprecated('Glaze reflections are painted within the part.')
-  static const double focusGap = 0;
-
-  /// The legacy focus-band width. Glaze reflections follow the surface.
-  @Deprecated('Glaze reflections follow the surface.')
-  static const double focusWidth = 0;
 
   /// The space needed outside a focused part.
   static const double focusReach = 0;
@@ -281,9 +271,9 @@ class GlossColors with Diagnosticable {
       jadeEdge = const Color(0xFF02301F),
       jadeGlow = const Color(0x7360E0B0),
       onJade = const Color(0xFFFFFFFF),
-      jadeInk = const Color(0xFF52CDA0),
-      ink = const Color(0xFFE6EAEE),
-      inkSecondary = const Color(0xFFA6AFB8),
+      jadeInk = const Color(0xFF5DD7A9),
+      ink = const Color(0xFFE7EBEF),
+      inkSecondary = const Color(0xFFBAC2CC),
       inkDisabled = const Color(0xFF6C747D),
       danger = const Color(0xFFFF7D84),
       dangerTop = const Color(0xFFCF4A52),
@@ -291,7 +281,7 @@ class GlossColors with Diagnosticable {
       dangerBottom = const Color(0xFF8A1E27),
       dangerEdge = const Color(0xFF3E0A10),
       onDanger = const Color(0xFFFFFFFF),
-      focus = const Color(0xFF4FD3A2),
+      focus = const Color(0xFF54D8A6),
       shadow = const Color(0xFF000000),
       scrim = const Color(0x8C000000),
       letterpress = const Color(0xB3000000);
@@ -761,7 +751,8 @@ class GlossTextTheme with Diagnosticable {
 
 /// Everything Gloss's parts read: [colors], [textTheme], [density], and one
 /// part theme ([GlossStyle]) per part, each applied under a part's own
-/// `style:`.
+/// `style:`. Gloss's six gels are [GlossThemeData.preset]s; a brand's own is
+/// [GlossThemeData.from].
 @immutable
 class GlossThemeData with Diagnosticable {
   /// A theme of [colors] (and [textTheme], set from them when null) at
@@ -838,10 +829,14 @@ class GlossThemeData with Diagnosticable {
       ? GlossThemeData.dark(density: density)
       : GlossThemeData.light(density: density);
 
-  /// A brand's Gloss: the gel moulded in [gel] (its middle, where words sit,
-  /// darkened until white words on it reach 4.5:1), and the porcelain and
-  /// pearl tinted toward [finish] when given. Corners, the light and the
-  /// depths stay the look's.
+  /// A brand's Gloss: the gel moulded in [gel] (its middle, where white
+  /// words sit, the gel's nearest tone they read on at 4.5:1, by day and by
+  /// night), and the porcelain and pearl in [finish]'s hue at the look's own
+  /// tones when given. The words, links, focus and errors read on every ground
+  /// they stand on: the page, a bar, a well (its floor and the rim's shadow at
+  /// its top) and a porcelain tile at 4.5:1 (focus 3:1), and a pearl part's
+  /// crown and foot at 3:1 at least (the ink's at 4.5:1). Corners, the light
+  /// and the depths stay the look's.
   ///
   /// ```dart
   /// final plum = GlossThemeData.from(gel: const Color(0xFF7A3E8E));
@@ -851,75 +846,112 @@ class GlossThemeData with Diagnosticable {
     Color? finish,
     Brightness brightness = Brightness.light,
     GlossDensity? density,
+  }) => GlossThemeData(
+    colors: _moulded(gel: gel, finish: finish, brightness: brightness),
+    density: density,
+  );
+
+  /// How well a gel's words read on its middle: as on jade's own by night
+  /// (5.6:1 by day), so they hold where the glaze lightens toward the gel's
+  /// crown and foot.
+  static const double _gelWords = 5.3;
+
+  static GlossColors _moulded({
+    required Color gel,
+    required Color? finish,
+    required Brightness brightness,
   }) {
     final base = brightness == Brightness.dark
         ? const GlossColors.dark()
         : const GlossColors.light();
-    final hsl = HSLColor.fromColor(gel);
-    var middle = hsl;
-    while (_contrast(middle.toColor(), const Color(0xFFFFFFFF)) < 4.6 &&
-        middle.lightness > 0.05) {
-      middle = middle.withLightness(middle.lightness - 0.02);
-    }
-    Color shade(double by) =>
-        middle.withLightness((middle.lightness + by).clamp(0.0, 1.0)).toColor();
-    final ground = base.well;
-    var ink = brightness == Brightness.dark
-        ? hsl.withLightness(math.max(hsl.lightness, 0.62))
-        : middle;
-    while (_contrast(ink.toColor(), ground) < 4.6 &&
-        ink.lightness > 0.04 &&
-        ink.lightness < 0.96) {
-      ink = ink.withLightness(
-        ink.lightness + (brightness == Brightness.dark ? 0.02 : -0.02),
-      );
-    }
-    Color tint(Color c) => finish == null
+    // The finish's hue at each glaze's own tone: a dark finish by day still
+    // gives a light porcelain, a light one by night a dark one.
+    final neutral = finish == null ? null : RawNeutralTones.of(finish);
+    Color tint(Color c) => neutral == null
         ? c
-        : Color.lerp(c, finish, 0.08)!.withValues(alpha: c.a);
-    // Keep the brand tint distinct from its page in either brightness.
-    var focus = brightness == Brightness.dark
-        ? hsl.withLightness(0.62)
-        : middle.withLightness(math.min(0.4, middle.lightness + 0.06));
-    while (_contrast(focus.toColor(), tint(base.page)) < 4 &&
-        focus.lightness > 0.04 &&
-        focus.lightness < 0.96) {
-      focus = focus.withLightness(
-        focus.lightness + (brightness == Brightness.dark ? 0.02 : -0.02),
-      );
-    }
-    return GlossThemeData(
-      colors: base.copyWith(
-        jadeTop: shade(0.09),
-        jade: middle.toColor(),
-        jadeBottom: shade(-0.07),
-        jadeEdge: shade(-0.13),
-        jadeGlow: hsl
-            .withLightness(0.72)
-            .withSaturation(math.min(1, hsl.saturation + 0.1))
+        : neutral.tone(RawHct.fromColor(c).tone).withValues(alpha: c.a);
+    final colors = base.copyWith(
+      page: tint(base.page),
+      barTop: tint(base.barTop),
+      barMiddle: tint(base.barMiddle),
+      barBottom: tint(base.barBottom),
+      pearlTop: tint(base.pearlTop),
+      pearlBottom: tint(base.pearlBottom),
+    );
+    // The gel carries white words by day and by night: it glows.
+    final accent = RawPalette.accentFill(gel, brightness: Brightness.light);
+    final fill = RawPalette.readableTone(
+      accent.fill,
+      on: [accent.ink],
+      ratio: _gelWords,
+    );
+    final middle = RawHct.fromColor(fill);
+    Color shade(double by) =>
+        middle.withTone((middle.tone + by).clamp(0, 100)).toColor();
+    return _guarded(
+      colors.copyWith(
+        jadeTop: shade(12),
+        jade: fill,
+        jadeBottom: shade(-9),
+        jadeEdge: shade(-15),
+        jadeGlow: RawHct.fromColor(gel)
+            .withTone(80)
             .toColor()
             .withValues(alpha: 0.5),
-        jadeInk: ink.toColor(),
-        focus: focus.toColor(),
-        page: tint(base.page),
-        barTop: tint(base.barTop),
-        barMiddle: tint(base.barMiddle),
-        barBottom: tint(base.barBottom),
-        pearlTop: tint(base.pearlTop),
-        pearlBottom: tint(base.pearlBottom),
+        onJade: accent.ink,
+        jadeInk: gel,
+        focus: gel,
       ),
-      density: density,
     );
   }
 
-  static double _contrast(Color a, Color b) {
-    final la = a.computeLuminance();
-    final lb = b.computeLuminance();
-    return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
+  /// [c] with its words, links, focus and errors each at its nearest tone
+  /// that reads on every ground it stands on.
+  static GlossColors _guarded(GlossColors c) {
+    // The level grounds as GlossFace paints them: the page, a bar, a well's
+    // floor and the rim's shadow at its top, a porcelain tile's crown and face.
+    final level = [
+      c.page,
+      c.barTop,
+      c.barMiddle,
+      c.barBottom,
+      c.well,
+      Color.lerp(c.well, c.shadow, 0.035)!,
+      if (c.brightness == Brightness.light) ...const [
+        Color(0xFFFFFFFF),
+        Color(0xFFF8F9FA),
+      ] else ...const [Color(0xFF30363C), Color(0xFF2A2F35)],
+    ];
+    final pearl = [c.pearlTop, c.pearlBottom];
+    // Words where they stand, then glyph-strength on a pearl part's crown.
+    Color words(Color color) => RawPalette.readableTone(
+      RawPalette.readableTone(color, on: level),
+      on: pearl,
+      ratio: 3,
+    );
+    return c.copyWith(
+      ink: RawPalette.readableTone(c.ink, on: [...level, ...pearl]),
+      inkSecondary: words(c.inkSecondary),
+      jadeInk: words(c.jadeInk),
+      danger: RawPalette.readableTone(c.danger, on: level),
+      focus: RawPalette.readableTone(
+        c.focus,
+        on: [...level, ...pearl],
+        ratio: 3,
+      ),
+    );
   }
 
-  /// The presets a gallery offers, by id; each is designed by day and night.
-  static const List<String> presets = ['jade'];
+  /// Gloss's six gels, by id, each by day and by night: jade (the look's own)
+  /// and five more on the same porcelain. [GlossThemeData.preset] builds one.
+  static const List<String> presets = [
+    'jade',
+    'sapphire',
+    'amethyst',
+    'amber',
+    'rose',
+    'teal',
+  ];
 
   /// The preset [id] by [brightness].
   factory GlossThemeData.preset(
@@ -928,7 +960,21 @@ class GlossThemeData with Diagnosticable {
     GlossDensity? density,
   }) {
     assert(presets.contains(id), 'Gloss has no preset "$id": $presets');
-    return GlossThemeData.jade(brightness, density: density);
+    final gel = switch (id) {
+      'sapphire' => const Color(0xFF1E5BC6),
+      'amethyst' => const Color(0xFF7B3FB5),
+      'amber' => const Color(0xFFC25E00),
+      'rose' => const Color(0xFFC0306E),
+      'teal' => const Color(0xFF007C8A),
+      _ => null,
+    };
+    return gel == null
+        ? GlossThemeData.jade(brightness, density: density)
+        : GlossThemeData.from(
+            gel: gel,
+            brightness: brightness,
+            density: density,
+          );
   }
 
   /// The glazes and inks.
@@ -1438,8 +1484,8 @@ class GlossTheme extends StatelessWidget {
   /// What the theme is for.
   final Widget child;
 
-  /// Gloss's tap floors: 44 by 44 for a finger, 24 by 24 for a pointer, as
-  /// ui_core's defaults.
+  /// Gloss's tap floors, ui_core's defaults: 40 by 40 for a finger, 24 by 24
+  /// for a pointer. An app's RawTapTargetScope round its pages raises them.
   static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   static final GlossThemeData _fallback = GlossThemeData.light();

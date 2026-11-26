@@ -1189,11 +1189,11 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
             // well keeps a tag's inset, the line makes up the rest.
             padding: EdgeInsetsDirectional.only(
               start: values.isEmpty
-                  ? 2 * GlossSpacing.small - _tagInset(theme)
+                  ? 2 * GlossSpacing.small - _tagInset(context, theme)
                   : GlossSpacing.small,
             ),
             child: SizedBox(
-              height: _tagSlot,
+              height: _tagSlot(context),
               // Enter makes a tag and keeps the focus for the next one.
               child: GlossEntryText(
                 controller: field.controller,
@@ -1202,7 +1202,7 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
                 enabled: enabled,
                 semanticLabel: semanticLabel ?? labelText,
                 expanded: field.isOpen,
-                minHeight: _tagSlot,
+                minHeight: _tagSlot(context),
                 onEditingComplete: field.submit,
               ),
             ),
@@ -1291,10 +1291,13 @@ class _TagWellState extends State<_TagWell> {
             // well round them is a control's height for one row.
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: _tagInset(theme),
-                vertical: math.max(0, (theme.controlHeight - _tagSlot) / 2),
+                horizontal: _tagInset(context, theme),
+                vertical: math.max(
+                  0,
+                  (theme.controlHeight - _tagSlot(context)) / 2,
+                ),
               ),
-              child: Wrap(
+              child: RawChipGroup(
                 spacing: GlossSpacing.tight,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [...widget.tags, widget.field],
@@ -1307,17 +1310,18 @@ class _TagWellState extends State<_TagWell> {
   }
 }
 
-/// The slot a tag or the tag input's line stands in: a finger's height, so
-/// the bead that removes a tag and the line itself each take a whole tap.
-const double _tagSlot = 44;
+/// The slot a tag or the tag input's line stands in: a finger's height (the
+/// touch floor, on every input, so the rows keep one rhythm), so the bead that
+/// removes a tag and the line itself each take a whole tap.
+double _tagSlot(BuildContext context) => RawTapTargets.of(context).touch.height;
 
 /// A tag's capsule: a control's height less the room round it in the well.
 double _tagHeight(GlossThemeData theme) => theme.controlHeight - 12;
 
 /// How far a tag stands in from the well's rim: the same at its start as
 /// above and below it, so the capsule sits evenly in the field's corner.
-double _tagInset(GlossThemeData theme) =>
-    (math.max(theme.controlHeight, _tagSlot) - _tagHeight(theme)) / 2;
+double _tagInset(BuildContext context, GlossThemeData theme) =>
+    (math.max(theme.controlHeight, _tagSlot(context)) - _tagHeight(theme)) / 2;
 
 /// A tag: a small pearl capsule with its words and a bead that removes it.
 class _Tag extends StatelessWidget {
@@ -1332,11 +1336,11 @@ class _Tag extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
-    // The capsule stands in a slot a finger's height; the bead that removes
-    // it is the slot's whole square at the capsule's end, over the end of
+    // The capsule stands in a slot a finger's height (the touch floor); the
+    // bead that removes it is the slot's whole square at the capsule's end, over the end of
     // its words' cell.
     return SizedBox(
-      height: _tagSlot,
+      height: _tagSlot(context),
       child: Stack(
         alignment: AlignmentDirectional.centerStart,
         children: [
@@ -1350,9 +1354,9 @@ class _Tag extends StatelessWidget {
                 focus: glossFocusOf(c, focused: tag.focused),
               ),
               child: Padding(
-                padding: const EdgeInsetsDirectional.only(
+                padding: EdgeInsetsDirectional.only(
                   start: GlossSpacing.medium,
-                  end: _tagSlot - GlossSpacing.small,
+                  end: _tagSlot(context) - GlossSpacing.small,
                 ),
                 // The words centred in the capsule's height, level with
                 // the bead that removes it.
@@ -1376,7 +1380,7 @@ class _Tag extends StatelessWidget {
             end: 0,
             top: 0,
             bottom: 0,
-            width: _tagSlot,
+            width: _tagSlot(context),
             child: RawButton(
               onPressed: enabled ? tag.onDeleted : null,
               semanticLabel: '${words.tagInputDeleteLabel} $label',

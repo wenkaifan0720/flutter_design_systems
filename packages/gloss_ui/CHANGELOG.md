@@ -1,3 +1,16 @@
+## 0.5.0
+
+- Requires ui_core 0.7.2 (and ui_core_test 0.5.2 in tests).
+- **Breaking:** `GlossMetrics.focusGap` and `GlossMetrics.focusWidth`, deprecated since 0.1.4 and both 0, are removed.
+- Six gels on the same porcelain, each by day and by night: `GlossThemeData.presets` lists `jade` (the default), `sapphire`, `amethyst`, `amber`, `rose` and `teal`, where it listed jade alone, and `GlossThemeData.preset(id, brightness)` builds each. A gel's white words read 5.3:1 or more on its middle, as on jade's by night, so they still read where the glaze lightens toward the gel's crown.
+- `GlossThemeData.from`'s `finish` tints the porcelain and pearl toward its hue at the look's own tones. It mixed in 8% of the finish itself, so a dark finish by day darkened the page and a light one by night paled it. Its gel holds its words as a preset's does, and the theme's words, links, focus and errors read on every ground they stand on: 4.5:1 on the page, a bar, a well and a porcelain tile (the focus 3:1), and at least 3:1 on a pearl part (the ink 4.5:1). Before, the gel's words were held on the well alone and the focus on the page alone, so under a dark finish by day, a pale gel or any gel by night they read under 4.5:1 on another ground.
+- By night the ink, the secondary words, the jade's words and the focus are a little lighter, so they read on the moonlit pearl: secondary words #A6AFB8 to #BAC2CC (2.4:1 to 3:1 on a pearl's crown), jade words #52CDA0 to #5DD7A9, focus #4FD3A2 to #54D8A6, ink #E6EAEE to #E7EBEF. By day jade is unchanged.
+- Parts drawn at a finger's size take ui_core's touch floor, 40 by 40, on every input (they were 44): a slider's row, a range slider's beads, a tag and its remove bead, a table's header row and a calendar's days. An app's `RawTapTargetScope` raises the floor.
+- `GlossTagInput`'s tags and `GlossBreadcrumb`'s places lay out in ui_core's `RawChipGroup`.
+- Below 600 wide, `GlossDatePicker` and `GlossDateRangePicker` open their month in a sheet titled "Select date", centred and at most 400 wide, the month's name at the title's edge. On a phone the panel used to cover the labels round the field. From 600 wide the panel opens under the field, as before.
+- On a selected `GlossListTile` the supporting words read 4.5:1 on the row's pearl plate. By night they read 3.7:1.
+- An avatar's initials are sized to the disc as it is laid out. In a list row's 24 px leading slot, a 32 px avatar's initials stood 3 px from the rim.
+
 ## 0.4.1
 
 - A toast stands above `GlossScreen`'s `footer` (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its persistent footer buttons. It stood over the page's one gel key.

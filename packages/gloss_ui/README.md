@@ -5,20 +5,35 @@ It includes forms, navigation, calendars, charts, dialogs, and matching light an
 
 ![Gloss's Today screen on a desk at 1440 and on a phone at 390, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/gloss_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/gloss/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/gloss/) · [API reference](https://pub.dev/documentation/gloss_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/gloss/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=gloss) · [API reference](https://pub.dev/documentation/gloss_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
-## Install
+## Getting started
 
-```sh
-flutter pub add gloss_ui material_ui
+```yaml
+dependencies:
+  gloss_ui: ^0.5.0
 ```
 
-The example uses `MaterialApp` from `material_ui`.
+The smallest app: `GlossHost` in the app's `builder` gives everything under it Gloss's theme, by day and by night as
+the platform is.
 
-## Quick start
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:gloss_ui/gloss_ui.dart';
 
-Load the bundled font before `runApp`. Wrap the navigator in `GlossTheme` using your app's
-`builder` so routes and overlays share the same colors and typography. Add `GlossToaster` to show toasts.
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFF0E7652),
+    builder: (context, _) => GlossHost(
+      child: Center(child: GlossButton.filled('Start', onPressed: () {})),
+    ),
+  ),
+);
+```
+
+A fuller app on Material (`flutter pub add gloss_ui material_ui`) loads the bundled font before `runApp`, so the first
+frame is set in it, and wraps the navigator in `GlossTheme` in the app's `builder`, so routes and overlays share the
+same colors and typography. `GlossToaster` shows toasts.
 
 ```dart
 import 'package:gloss_ui/gloss_ui.dart';
@@ -93,10 +108,20 @@ The example app, Simmer, uses these widgets to plan meals, adjust recipe serving
 
 ## Customize the theme
 
-Use `GlossThemeData.jade(Brightness.dark)` for the dark palette. Use `GlossThemeData.from(gel: color)`
-for a custom primary color. The factory adjusts the gel color to keep its white label readable.
-Theme defaults cover typography, density, and component styles. Widgets with a `style` parameter
-can override them locally.
+Gloss comes in six gels on the same porcelain, each by day and by night: `jade` (the default), `sapphire`,
+`amethyst`, `amber`, `rose` and `teal` (`GlossThemeData.presets`). Hand one to the theme:
+
+```dart
+GlossTheme(
+  data: GlossThemeData.preset('sapphire', MediaQuery.platformBrightnessOf(context)),
+  child: GlossToaster(child: child!),
+);
+```
+
+For a brand's own colour, `GlossThemeData.from(gel: color)` moulds the gel in it, at the nearest tone its white
+label reads on; `finish` tints the porcelain and pearl toward a hue at the look's own tones. Words, links, the focus
+and errors read on every ground they stand on, by day and by night. Theme defaults cover typography, density, and
+component styles. Widgets with a `style` parameter can override them locally.
 
 ```dart
 // A coral gel for the one action; its label stays readable.
@@ -113,8 +138,10 @@ Gloss supports Android, iOS, web, macOS, Windows, and Linux.
 ## Accessibility
 
 Use Tab to reach a control and the arrow keys to move within tabs, ratings, and wheels.
-Keyboard focus sharpens the reflection on a glazed control; a recessed field lights its rim jade. Charts expose values to screen readers and scale axis labels with
-system text size. Dialogs, sheets, tabs, and toasts respect reduced motion.
+Keyboard focus sharpens the reflection on a glazed control; a recessed field lights its rim in the gel's colour.
+Charts expose values to screen readers and scale axis labels with system text size. Dialogs, sheets, tabs, and toasts
+respect reduced motion. Controls stand at ui_core's touch floor, 40 by 40, or an app's `RawTapTargetScope`. Below 600
+wide the date pickers open their month in a sheet, as Material's open full width on a phone.
 
 ## Right to left and languages
 

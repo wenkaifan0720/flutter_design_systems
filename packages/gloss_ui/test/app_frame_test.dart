@@ -61,7 +61,10 @@ void main() {
     final bar = tester.getRect(find.byType(GlossNavigationBar));
     final act = tester.getRect(find.byKey(_act));
     expect(act.right, lessThanOrEqualTo(bar.right));
-    expect(act.height, greaterThanOrEqualTo(44));
+    final floor = RawTapTargets.of(tester.element(find.byKey(_act)))
+        .floorOn()
+        .height;
+    expect(act.height, greaterThanOrEqualTo(floor));
   });
 
   testWidgets('a tablet: the act stands under the name on the rail', (

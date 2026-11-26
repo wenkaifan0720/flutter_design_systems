@@ -1215,26 +1215,11 @@ class GlossSegmentedButton<T> extends StatelessWidget {
 
 // The jade ink of words on a pearl part (a chosen segment): the jade ink
 // is set to read on a well, and by night the slate pearl is lighter than a
-// well, so the jade is lifted, its hue kept, until it reads at 4.5:1 on the
-// pearl's crown, the lightest of its glaze, behind the tops of the words.
-Color _jadeOnPearl(GlossColors c) {
-  final ground = GlossFace.pearl(c).top;
-  final night = c.brightness == Brightness.dark;
-  var ink = HSLColor.fromColor(c.jadeInk);
-  double contrast(Color a, Color b) {
-    final la = a.computeLuminance(), lb = b.computeLuminance();
-    return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-  }
-
-  while (contrast(ink.toColor(), ground) < 4.6 &&
-      ink.lightness > 0.02 &&
-      ink.lightness < 0.98) {
-    ink = ink.withLightness(
-      (ink.lightness + (night ? 0.02 : -0.02)).clamp(0.0, 1.0),
-    );
-  }
-  return ink.toColor();
-}
+// well, so the jade takes its nearest tone, its hue kept, that reads at 4.5:1
+// on the pearl's crown, the lightest of its glaze, behind the tops of the
+// words.
+Color _jadeOnPearl(GlossColors c) =>
+    RawPalette.readableTone(c.jadeInk, on: [GlossFace.pearl(c).top]);
 
 // A slot of a GlossSegmentedButton: a radio of the control's group, checked
 // when chosen, not a button. The chosen slot keeps its focus; a press on it
@@ -1716,6 +1701,10 @@ class _GlossSliderState extends State<GlossSlider> {
     final enabled = widget.onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final fraction = (widget.value - widget.min) / (widget.max - widget.min);
+    // A slider stands a finger's height (the touch floor, on every input, so
+    // it keeps one height beside the fields round it); its groove and bead
+    // are centred in it.
+    final slot = RawTapTargets.of(context).touch.height;
     return LayoutBuilder(
       builder: (context, box) {
         final width = box.hasBoundedWidth ? box.maxWidth : 240.0;
@@ -1734,7 +1723,7 @@ class _GlossSliderState extends State<GlossSlider> {
 
         return SizedBox(
           width: width,
-          height: 44,
+          height: slot,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             excludeFromSemantics: true,
@@ -1763,7 +1752,7 @@ class _GlossSliderState extends State<GlossSlider> {
                   Positioned(
                     left: _bead / 2 - 5,
                     right: _bead / 2 - 5,
-                    top: 17,
+                    top: (slot - 10) / 2,
                     height: 10,
                     child: CustomPaint(
                       painter: _GroovePainter(
@@ -1782,7 +1771,7 @@ class _GlossSliderState extends State<GlossSlider> {
                   ),
                   PositionedDirectional(
                     start: fraction * usable,
-                    top: 8,
+                    top: (slot - _bead) / 2,
                     child: RawValueHandle(
                       value: widget.value,
                       min: widget.min,
