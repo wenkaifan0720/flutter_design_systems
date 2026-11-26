@@ -122,7 +122,11 @@ class DesignWidthLimit {
 ///   field runs the width of a desktop window: `a select "Shelf": a field
 ///   of a form, 1392 px wide as laid out, 1392 as drawn (a form keeps to 720
 ///   from 600 wide)`. One alone, with no field on its edges (a toolbar's
-///   filter), keeps to its content as above.
+///   filter), keeps to its content as above. A text entry's face is the one
+///   inside it or the well drawn round it, read in the layer its field is
+///   drawn on: an entry drawn in a repaint boundary no larger than its
+///   field (Flutter's TextField paints its EditableText in one) is read in
+///   the layer round it, with its form's other fields.
 /// - **A look's own limit**: [limits] gives a kind another width, with the
 ///   reason (`DesignWidthLimit(400, 'the sign-in card's one act spans its
 ///   400 card')`); a reason that is a to-do fails.
@@ -304,12 +308,33 @@ class DesignWidthCheck {
     final formFields = <int, ({Rect laid, Rect drawn})>{};
     for (final c in controls) {
       if (!_semanticsOf(c).entry) continue;
-      final reader = await readerFor(c);
+      // Its face: one inside it, or the well drawn round it.
+      Rect faceOf(_RowReader r) =>
+          (r._face(c) ?? r._well(c, root))?.rect ?? _global(c);
+      var reader = await readerFor(c);
+      // An entry's face is read in the layer round it when the boundary it
+      // is drawn in is no larger than the field: Flutter's TextField paints
+      // its EditableText in a repaint boundary of its own, the face round it
+      // on the page; a field may be drawn whole in a boundary its own size.
+      // Its form's other fields are on the page.
+      while (reader != null) {
+        final boundary = reader.boundary;
+        if (boundary == null) break;
+        final field = faceOf(reader).inflate(tolerance);
+        final drawn = _global(boundary);
+        if (drawn.left < field.left ||
+            drawn.top < field.top ||
+            drawn.right > field.right ||
+            drawn.bottom > field.bottom) {
+          break;
+        }
+        final parent = boundary.parent;
+        final up = parent == null ? null : _drawnIn(parent);
+        if (up == null) break;
+        reader = await readerFor(up);
+      }
       if (reader == null) continue;
-      fields.add((
-        boundary: reader.boundary,
-        laid: reader._face(c)?.rect ?? _global(c),
-      ));
+      fields.add((boundary: reader.boundary, laid: faceOf(reader)));
     }
     for (var i = 0; i < items.length; i++) {
       final item = items[i];

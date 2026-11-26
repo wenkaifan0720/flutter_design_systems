@@ -113,6 +113,7 @@ class RawButton extends StatefulWidget {
     this.expanded,
     this.inMutuallyExclusiveGroup = false,
     this.excludeSemantics = false,
+    this.mergeSemantics = true,
     this.enableFeedback = true,
   });
 
@@ -238,6 +239,14 @@ class RawButton extends StatefulWidget {
   /// Whether to drop the face's own semantics, so only [semanticLabel] is
   /// read. Otherwise the face's words merge into the one node.
   final bool excludeSemantics;
+
+  /// Whether every node inside comes to the press's one node: the face's
+  /// words, and a control in it (a row's trailing button), as a button's
+  /// should. False keeps the press's node a container that merges nothing
+  /// into it, as an InkWell's is: the face's words still name it, and a
+  /// control inside keeps a node of its own, which a screen reader reaches
+  /// apart (a row's share or "more" button).
+  final bool mergeSemantics;
 
   /// Whether a tap plays the platform's tap feedback.
   final bool enableFeedback;
@@ -382,6 +391,14 @@ class RawButton extends StatefulWidget {
           value: excludeSemantics,
           ifTrue: 'excludeSemantics',
           defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'mergeSemantics',
+          value: mergeSemantics,
+          ifFalse: 'not merging semantics',
+          defaultValue: true,
         ),
       )
       ..add(
@@ -715,7 +732,9 @@ class RawButtonState extends State<RawButton> {
           ? RowActionsTarget(child: node)
           : node,
     );
-    return widget.excludeSemantics ? node : MergeSemantics(child: node);
+    return widget.excludeSemantics || !widget.mergeSemantics
+        ? node
+        : MergeSemantics(child: node);
   }
 }
 

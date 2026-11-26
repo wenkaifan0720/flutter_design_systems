@@ -2623,16 +2623,28 @@ void main() {
     });
   });
   group("a form's fields", () {
+    // A text entry or a field in a repaint boundary of its own, when [own].
+    Widget layer(bool own, Widget child) =>
+        own ? RepaintBoundary(child: child) : child;
+
     // A text entry's face, 40 high: its words 12 in from a ring.
-    Widget entry(TextEditingController controller, FocusNode focus) =>
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: _white,
-            border: Border.all(color: _line),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
+    Widget entry(
+      TextEditingController controller,
+      FocusNode focus, {
+      bool ownLayer = false,
+    }) => DecoratedBox(
+      decoration: BoxDecoration(
+        color: _white,
+        border: Border.all(color: _line),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: layer(
+          ownLayer,
+          // As a field's entry announces itself.
+          Semantics(
+            textField: true,
             child: EditableText(
               controller: controller,
               focusNode: focus,
@@ -2641,7 +2653,82 @@ void main() {
               backgroundCursorColor: _line,
             ),
           ),
-        );
+        ),
+      ),
+    );
+
+    // A delivery form's column, [width] wide: a name and a town over a
+    // select, each entry's words in a repaint boundary of their own (as
+    // Flutter's TextField paints its EditableText), or ([wholeField]) each
+    // whole field in a boundary its own size.
+    Widget delivery(
+      WidgetTester tester,
+      double width, {
+      bool wholeField = false,
+      bool card = false,
+    }) {
+      final fields = [
+        for (final words in ['Ada', 'Town'])
+          (TextEditingController(text: words), FocusNode()),
+      ];
+      for (final (controller, focus) in fields) {
+        addTearDown(controller.dispose);
+        addTearDown(focus.dispose);
+      }
+      return Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          width: width,
+          child: _stack([
+            for (final (controller, focus) in fields)
+              card
+                  // A card's layer, taller than its field.
+                  ? RepaintBoundary(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: entry(controller, focus),
+                      ),
+                    )
+                  : layer(
+                      wholeField,
+                      entry(controller, focus, ownLayer: !wholeField),
+                    ),
+            _select('Delivery'),
+          ], gap: 16),
+        ),
+      );
+    }
+
+    testWidgets('a select under text entries each drawn in a layer of its own '
+        "takes their column, up to 720", (tester) async {
+      // Comic's form at 1440: Town's face 91..435.5 and the Delivery select
+      // on the page, each entry's EditableText in a boundary of its own.
+      await _pump(tester, delivery(tester, 344.5), width: 1440);
+      expect(await _widths(tester), isEmpty);
+      await _pump(
+        tester,
+        delivery(tester, 344.5, wholeField: true),
+        width: 1440,
+      );
+      expect(await _widths(tester), isEmpty);
+      // A layer larger than its field is a surface of its own: the select
+      // under it on the page keeps to its content.
+      await _pump(tester, delivery(tester, 344.5, card: true), width: 1440);
+      expect(await _widths(tester), [
+        matches(
+          RegExp(
+            r'^a select "Delivery": 344.5 px wide as laid out.*at most 320',
+          ),
+        ),
+      ]);
+      // Past the measure, the select is named as a form's field.
+      await _pump(tester, delivery(tester, 760), width: 1440);
+      expect(await _widths(tester), [
+        matches(
+          RegExp(r'^a select "Delivery": a field of a form, 760 px wide'),
+        ),
+      ]);
+    });
 
     // An "Add a book" form as a look lays it out at a desk: a title, a
     // shelf, the day it was started and a filled strip of how far, each its

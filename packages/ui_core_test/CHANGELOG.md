@@ -1,3 +1,7 @@
+## 0.6.1
+
+- `DesignControlNodesCheck` reads a control inside another's own press: a row's share button inside the row's `RawButton`, which merges what it holds, is named with the row (`a button "Dune" and a button "Share Dune" are one node`). It counted only a control that holds no other, so the row was never a second control and the merge passed whenever the trailing control sat inside the row's press. The outer control is read where none inside it stands; a row with `RawButton(mergeSemantics: false)` (ui_core 0.8.1) passes, and so does a table's chosen row round its own checkbox, a check row.
+
 ## 0.6.0
 
 - **Breaking:** needs ui_core 0.8.0.

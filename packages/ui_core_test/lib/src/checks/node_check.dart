@@ -7,9 +7,14 @@ part of '../alignment.dart';
 ///
 /// - **A node for each control**: two controls that come to one node are
 ///   named: `a button "More for Stoner" and a button "Stoner" are one node,
-///   so a tap through the semantics tree reaches one of them`. A checkbox,
-///   a radio or a switch merged into its row (a check row) is one control
-///   with the row, as Flutter's `CheckboxListTile` is, and passes; so does
+///   so a tap through the semantics tree reaches one of them`; a control
+///   inside another's own press (a row's share button in the row's
+///   `RawButton`, which merges what it holds unless `mergeSemantics` is
+///   false) as well, the outer one read where none inside it stands. A checkbox,
+///   a radio or a switch merged into its row (a check row: beside it, or
+///   the row a press of its own round it, as a table's chosen row is) is
+///   one control with the row, as Flutter's `CheckboxListTile` is, and
+///   passes; so does
 ///   a field's own group, which [DesignFieldSemanticsCheck] reads, and a
 ///   control another covers where it stands (a list's row scrolled under a
 ///   floating button), whose tap there is the cover's.
@@ -57,8 +62,11 @@ class DesignControlNodesCheck {
 
     find(context as Element);
     final controls = <RenderBox>[];
-    // Walks [n], noting the controls that hold no other; whether [n] holds
-    // one.
+    // The controls that hold others: a row's own press round its trailing
+    // button.
+    final holders = <RenderBox>[];
+    // Walks [n], noting the controls, those that hold no other apart;
+    // whether [n] holds one.
     bool walk(RenderObject n, {required bool excluded}) {
       final out = excluded || (n is RenderExcludeSemantics && n.excluding);
       final below =
@@ -67,8 +75,8 @@ class DesignControlNodesCheck {
       var holds = false;
       _visitShown(n, (c) => holds = walk(c, excluded: below) || holds);
       final takes = !out && _FieldSemanticsReader._takesTap(n);
-      if (takes && !holds && n is RenderBox && n.hasSize && _isShown(n)) {
-        controls.add(n);
+      if (takes && n is RenderBox && n.hasSize && _isShown(n)) {
+        (holds ? holders : controls).add(n);
       }
       return takes || holds;
     }
@@ -76,11 +84,25 @@ class DesignControlNodesCheck {
     walk(root, excluded: false);
     final view = View.of(context).viewId;
     final byNode = <SemanticsNode, List<RenderBox>>{};
+    final all = [...holders, ...controls];
+    // A control that holds others is read where none of them stands: the
+    // node a tap there reaches is its own, and one that takes theirs in
+    // (merged) is theirs too. One they cover whole is read through them.
+    for (final holder in holders) {
+      final inside = [
+        for (final c in all)
+          if (c != holder && _holds(holder, c)) _global(c).inflate(1),
+      ];
+      final point = _clearOf(_global(holder), inside);
+      if (point == null || _covered(holder, point, all, view)) continue;
+      final node = _FieldSemanticsReader._takerAt(semantics, point * ratio);
+      if (node != null) (byNode[node] ??= []).add(holder);
+    }
     for (final control in controls) {
       final center = _global(control).center;
       // Covered where it stands (a list's row scrolled under a floating
       // button): a tap there is the cover's, whatever the nodes.
-      if (_covered(control, center, controls, view)) continue;
+      if (_covered(control, center, all, view)) continue;
       final node = _FieldSemanticsReader._takerAt(semantics, center * ratio);
       if (node != null) (byNode[node] ??= []).add(control);
     }
@@ -88,9 +110,22 @@ class DesignControlNodesCheck {
     for (final group in byNode.values) {
       if (group.length < 2) continue;
       // A check row: a checkbox, a radio or a switch and its row, one
-      // control.
-      final checks = group.where(_checkable).length;
-      if (group.length - checks < 2 && checks <= 1) continue;
+      // control, whether the row is beside it in the node or a press of
+      // its own round it (a table's chosen row round its checkbox).
+      final held = {
+        for (final c in group)
+          if (_checkable(c) &&
+              group.any((o) => o != c && holders.contains(o) && _holds(o, c)))
+            c,
+      };
+      final rest = [
+        for (final c in group)
+          if (!held.contains(c)) c,
+      ];
+      final checks = rest.where(_checkable).length;
+      if (rest.length < 2 || (rest.length - checks < 2 && checks <= 1)) {
+        continue;
+      }
       final names = [for (final c in group) _named(c)];
       final listed = names.length == 2
           ? '${names[0]} and ${names[1]}'
@@ -116,20 +151,39 @@ class DesignControlNodesCheck {
     RendererBinding.instance.hitTestInView(result, center, view);
     final hit = {for (final entry in result.path) entry.target};
     if (hit.contains(control)) return false;
-    bool holds(RenderObject outer, RenderObject inner) {
-      for (RenderObject? up = inner; up != null; up = up.parent) {
-        if (up == outer) return true;
-      }
-      return false;
-    }
-
     return controls.any(
       (other) =>
           other != control &&
           hit.contains(other) &&
-          !holds(other, control) &&
-          !holds(control, other),
+          !_holds(other, control) &&
+          !_holds(control, other),
     );
+  }
+
+  // Whether [outer] is [inner] or round it.
+  static bool _holds(RenderObject outer, RenderObject inner) {
+    for (RenderObject? up = inner; up != null; up = up.parent) {
+      if (up == outer) return true;
+    }
+    return false;
+  }
+
+  // A point of [rect] in none of [inside]: its centre, else a point on a
+  // grid of quarters, else a point 4 px in from its leading or trailing
+  // edge at half its height; null when they cover each one.
+  static Offset? _clearOf(Rect rect, List<Rect> inside) {
+    final candidates = [
+      rect.center,
+      for (final y in const [0.5, 0.25, 0.75])
+        for (final x in const [0.25, 0.75, 0.5])
+          Offset(rect.left + rect.width * x, rect.top + rect.height * y),
+      Offset(rect.left + math.min(4, rect.width / 2), rect.center.dy),
+      Offset(rect.right - math.min(4, rect.width / 2), rect.center.dy),
+    ];
+    for (final p in candidates) {
+      if (!inside.any((r) => r.contains(p))) return p;
+    }
+    return null;
   }
 
   // Whether [control] says a checked or toggled state, on the node round it.

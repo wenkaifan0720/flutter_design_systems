@@ -290,27 +290,42 @@ final class RawFocusHearing {
 /// Flutter's focus highlight mode, which a mouse leaves traditional, so a
 /// row a click focused, or one a click-opened menu gives the focus back to,
 /// keeps its ring after use. Give that callback to [focused], paint the
-/// focus by what [onChanged] hears, and [dispose] it with the part:
+/// focus by what [onChanged] hears, and [dispose] it with the part's state:
 ///
 /// ```dart
-/// late final RawFocusShown _focus = RawFocusShown(
-///   (shown) => setState(() => _ring = shown),
-/// );
+/// class LookPressable extends StatefulWidget {
+///   const LookPressable({super.key, required this.child});
 ///
-/// @override
-/// void dispose() {
-///   _focus.dispose();
-///   super.dispose();
+///   final Widget child;
+///
+///   @override
+///   State<LookPressable> createState() => _LookPressableState();
 /// }
 ///
-/// @override
-/// Widget build(BuildContext context) => FocusableActionDetector(
-///   onShowFocusHighlight: _focus.focused,
-///   child: DecoratedBox(
-///     decoration: BoxDecoration(border: _ring ? Border.all(width: 2) : null),
-///     child: widget.child,
-///   ),
-/// );
+/// class _LookPressableState extends State<LookPressable> {
+///   bool _ring = false;
+///
+///   late final RawFocusShown _focus = RawFocusShown(
+///     (shown) => setState(() => _ring = shown),
+///   );
+///
+///   @override
+///   void dispose() {
+///     _focus.dispose();
+///     super.dispose();
+///   }
+///
+///   @override
+///   Widget build(BuildContext context) => FocusableActionDetector(
+///     onShowFocusHighlight: _focus.focused,
+///     child: DecoratedBox(
+///       decoration: BoxDecoration(
+///         border: _ring ? Border.all(width: 2) : null,
+///       ),
+///       child: widget.child,
+///     ),
+///   );
+/// }
 /// ```
 class RawFocusShown {
   /// Tells [onChanged] whether the part shows its focus, hearing the input

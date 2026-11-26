@@ -1,3 +1,8 @@
+## 0.8.1
+
+- `RawButton.mergeSemantics` (true by default, as before): false keeps the press's node a container that merges nothing into it, as an `InkWell`'s is. The face's words still name it, and a control inside keeps a node of its own that a screen reader reaches apart: a row's share or "more" button in the row's own press, which 0.8.0 merged into the row's node (`Dune / Share Dune`) with no way out.
+- `RawFocusShown`'s doc example compiles as written: a look's own pressable and its state, with the `_ring` it paints declared. A look's package check compiles each of ui_core's doc examples on its own, and 0.8.0's leaned on a field it left out, so every look's check failed on it. A test now compiles every doc example as that check does.
+
 ## 0.8.0
 
 - **`RawAdaptiveShell` keeps its navigation in the semantics tree under a pushed page.** The body is a semantics node of its own, so a page pushed in it (a branch's, or a navigator of the app's) covers the pages under it and no longer drops a rail or a sidebar from what a screen reader reaches.

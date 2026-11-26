@@ -52,6 +52,107 @@ void main() {
     expect(_nodes(tester), isEmpty);
   });
 
+  testWidgets("a trailing button inside the row's own press is named", (
+    tester,
+  ) async {
+    // Lane C's book row (fluent2 F7): the row a press of its own, its share
+    // button inside it, so the row's node takes the button's in.
+    Widget row({required bool merge}) => harness(
+      Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+          width: 360,
+          child: RawButton(
+            onPressed: () {},
+            mergeSemantics: merge,
+            builder: (_, _, _) => SizedBox(
+              height: 48,
+              child: Row(
+                children: [
+                  const Expanded(child: Text('Dune')),
+                  _button('Share Dune'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(row(merge: true));
+    expect(_nodes(tester), [
+      'a button "Dune" and a button "Share Dune" are one node, so a tap '
+          'through the semantics tree reaches one of them',
+    ]);
+    await tester.pumpWidget(row(merge: false));
+    expect(_nodes(tester), isEmpty);
+  });
+
+  testWidgets("a card's own press, a button at its centre, apart", (
+    tester,
+  ) async {
+    // The card's node is read where the button does not stand.
+    Widget card({required bool merge}) => harness(
+      Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+          width: 200,
+          height: 120,
+          child: RawButton(
+            onPressed: () {},
+            mergeSemantics: merge,
+            builder: (_, _, _) => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [const Text('Dune'), _button('Open Dune')],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(card(merge: false));
+    expect(_nodes(tester), isEmpty);
+    await tester.pumpWidget(card(merge: true));
+    expect(_nodes(tester), [
+      'a button "Dune" and a button "Open Dune" are one node, so a tap '
+          'through the semantics tree reaches one of them',
+    ]);
+  });
+
+  testWidgets("a chosen row's own press round its checkbox is one control", (
+    tester,
+  ) async {
+    // A table's row that says it is chosen, its checkbox inside its press
+    // (fluent2's, frosted's and neumorphism's collections): a check row.
+    await tester.pumpWidget(
+      harness(
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 360,
+            child: RawButton(
+              onPressed: () {},
+              checked: true,
+              builder: (_, _, _) => SizedBox(
+                height: 48,
+                child: Row(
+                  children: [
+                    Semantics(
+                      checked: true,
+                      label: 'Select Attic',
+                      onTap: () {},
+                      child: const SizedBox(width: 44, height: 44),
+                    ),
+                    const Expanded(child: Text('Attic')),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(_nodes(tester), isEmpty);
+  });
+
   testWidgets('a row scrolled under a floating button is not a merge', (
     tester,
   ) async {

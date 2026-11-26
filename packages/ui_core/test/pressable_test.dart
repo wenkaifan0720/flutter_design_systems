@@ -685,4 +685,56 @@ void main() {
     await tester.pumpAndSettle();
     expect(heard, 0, reason: 'nothing changed');
   });
+  testWidgets(
+    "mergeSemantics false: a row's words name it, a control in it keeps its "
+    'own node',
+    (tester) async {
+      // Lane C's book row (fluent2): its words, a share button at its end.
+      final share = find.byKey(const ValueKey('share'));
+      Widget row({required bool merge}) => _app(
+        SizedBox(
+          width: 320,
+          child: RawButton(
+            onPressed: () {},
+            mergeSemantics: merge,
+            builder: (_, _, _) => Row(
+              children: [
+                const Expanded(child: Text('Dune')),
+                RawButton(
+                  key: const ValueKey('share'),
+                  onPressed: () {},
+                  semanticLabel: 'Share Dune',
+                  builder: (_, _, _) => const SizedBox(width: 44, height: 44),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(row(merge: true));
+      // Merged by default, as 0.8.0 does: one node, the share button in it.
+      expect(
+        tester.getSemantics(find.text('Dune')).getSemanticsData().label,
+        'Dune\nShare Dune',
+      );
+      expect(
+        tester.getSemantics(share),
+        same(tester.getSemantics(find.text('Dune'))),
+      );
+      await tester.pumpWidget(row(merge: false));
+      final rowNode = tester.getSemantics(find.text('Dune')).getSemanticsData();
+      final shareNode = tester.getSemantics(share);
+      expect(rowNode.label, 'Dune');
+      // The row's own node, the row's size: a container still.
+      expect(rowNode.rect.size, const Size(320, 48));
+      expect(rowNode.hasAction(SemanticsAction.tap), isTrue);
+      expect(shareNode.isMergedIntoParent, isFalse);
+      expect(shareNode.getSemanticsData().label, 'Share Dune');
+      expect(
+        shareNode.getSemanticsData().hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+      expect(shareNode.parent, same(tester.getSemantics(find.text('Dune'))));
+    },
+  );
 }
