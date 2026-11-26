@@ -170,7 +170,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           const CivicSkeleton(
-            label: 'Loading your applications',
+            semanticLabel: 'Loading your applications',
             child: Column(
               children: [
                 CivicSkeletonBlock(height: 40),

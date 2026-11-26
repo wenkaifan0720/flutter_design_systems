@@ -10,33 +10,37 @@ words, answers checked before they are sent.
 ## Install
 
 ```sh
-flutter pub add civic_ui material_ui
+flutter pub add civic_ui material_ui lucide_icons_flutter
 ```
 
-A whole app: Civic's theme over a bare `WidgetsApp`, one page and one button.
+`material_ui` is Flutter's Material as a package (from Flutter 3.50 it leaves the SDK): your app's `MaterialApp`.
+`lucide_icons_flutter` holds the glyphs the snippets here use; Civic's own are Lucide's too. Import
+`package:civic_ui/civic_ui.dart` and `package:material_ui/material_ui.dart` (it brings Flutter's widgets); Civic's
+library doesn't export `flutter/widgets.dart`.
+
+A whole app: Civic over a `MaterialApp`, one page and one button.
 
 ```dart
 import 'package:civic_ui/civic_ui.dart';
-import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() => runApp(
-  WidgetsApp(
-    color: const Color(0xFF0F4C81),
-    builder: (context, _) => CivicTheme(
-      data: CivicThemeData.light(),
-      child: CivicScaffold(body: CivicButton(onPressed: () {}, child: const Text('Continue'))),
+  MaterialApp(
+    builder: (context, child) => CivicHost(child: child!),
+    home: CivicScreen(
+      topBar: const CivicTopBar(title: 'Shelf'),
+      body: CivicButton(onPressed: () {}, child: const Text('Add a book')),
     ),
   ),
 );
 ```
 
-`material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; the quick start's app is a
-`MaterialApp`. Civic has no app widget of its own: an app on `WidgetsApp` needs only `civic_ui`, one on `CupertinoApp` adds `cupertino_ui` (see
-[Set up the theme](#set-up-the-theme)).
+## Mount Civic
 
-## Quick start
-
-Load Civic's faces before the first frame, put `CivicTheme` in your app's `builder:`, and ask the page's one question:
+`CivicHost` is the one mount. Put it in your app's `builder:`, above the Navigator, so every page, dialog and menu
+stands inside it. It gives the theme for the brightness in force (by day, by night, or as the device is), the page's
+ground and words, Civic's page change for every route a `MaterialApp` pushes, and the toaster `CivicToast.show`
+needs. A change of appearance or palette blends over 200 ms. Load Civic's faces before the first frame:
 
 ```dart
 import 'package:civic_ui/civic_ui.dart';
@@ -45,125 +49,277 @@ import 'package:material_ui/material_ui.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await civicLoadFonts(); // the first frame is set in Civic's faces
-  runApp(const App());
+  runApp(const App(appearance: null));
 }
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({super.key, required this.appearance});
+
+  /// Light or dark, pinned by the reader; null follows the device.
+  final Brightness? appearance;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    theme: ThemeData(
-      pageTransitionsTheme: const PageTransitionsTheme(builders: civicPageTransitions),
+    localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+    builder: (context, child) => CivicHost(brightness: appearance, child: child!),
+    home: const CivicScreen(
+      topBar: CivicTopBar(title: 'Shelf'),
+      body: Text('Your reading list'),
     ),
-    builder: (context, child) => CivicTheme(
-      data: MediaQuery.platformBrightnessOf(context) == Brightness.dark
-          ? CivicThemeData.dark()
-          : CivicThemeData.light(),
-      child: CivicToaster(child: child!),
-    ),
-    home: const VehiclePage(),
   );
 }
+```
 
-class VehiclePage extends StatefulWidget {
-  const VehiclePage({super.key});
+Under a `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same place.
+
+## Build an app
+
+The example app, [example/lib/main.dart](example/lib/main.dart), is a whole reading list to copy: these are its parts.
+
+### The shell and its places
+
+`CivicAppShell.branches` holds the app's places: along a phone's foot, as a rail from 600 wide and as the side
+navigation from 1024. Each place keeps its own pages; a page pushed on one stands beside the rail or the side
+navigation (a phone's bar steps away for it), back pops it, and choosing the place again goes back to its first page.
+
+```dart
+import 'package:civic_ui/civic_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:material_ui/material_ui.dart';
+
+class ShelfShell extends StatefulWidget {
+  const ShelfShell({super.key});
 
   @override
-  State<VehiclePage> createState() => _VehiclePageState();
+  State<ShelfShell> createState() => _ShelfShellState();
 }
 
-class _VehiclePageState extends State<VehiclePage> {
-  String? _vehicle;
+class _ShelfShellState extends State<ShelfShell> {
+  int _place = 0;
 
   @override
-  Widget build(BuildContext context) => CivicScaffold(
-    topBar: const CivicTopBar(title: 'Parking permits'),
-    body: CivicPageBody(
-      backLink: CivicBackLink(onPressed: () => Navigator.of(context).maybePop()),
-      caption: 'Step 1 of 3',
+  Widget build(BuildContext context) => CivicAppShell.branches(
+    brand: 'Shelf',
+    destinations: const [
+      CivicNavItem(LucideIcons.libraryBig, 'Books'),
+      CivicNavItem(LucideIcons.plus, 'Add'),
+      CivicNavItem(LucideIcons.settings, 'Settings'),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (place) => setState(() => _place = place),
+    branches: [
+      (context) => const CivicScreen(topBar: CivicTopBar(title: 'Books'), body: Text('Your reading list')),
+      (context) => const CivicScreen(topBar: CivicTopBar(title: 'Add'), body: Text('Add a book')),
+      (context) => const CivicScreen(topBar: CivicTopBar(title: 'Settings'), body: Text('Appearance')),
+    ],
+  );
+}
+```
+
+### A list and its pages
+
+A list of rows, each pushing its own page. The pushed page's `CivicTopBar.autoLeading` is its way back (from 1024 wide it
+hangs in the gutter, so the title keeps the column's line).
+
+```dart
+import 'package:civic_ui/civic_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key, required this.titles});
+
+  final List<String> titles;
+
+  @override
+  Widget build(BuildContext context) => CivicScreen(
+    topBar: const CivicTopBar(title: 'Books'),
+    body: CivicListGroup(
+      title: CivicFormat.plural(titles.length, 'book'),
       children: [
-        CivicRadioGroup<String>(
-          labelText: 'What kind of vehicle is the permit for?',
-          isPageHeading: true,
-          groupValue: _vehicle,
-          onChanged: (value) => setState(() => _vehicle = value),
-          children: const [
-            CivicRadio(value: 'car', labelText: 'Car or van'),
-            CivicRadio(
-              value: 'motorcycle',
-              labelText: 'Motorcycle',
-              helperText: 'Includes mopeds and scooters.',
+        for (final title in titles)
+          CivicListRow(
+            title: Text(title),
+            trailing: const CivicTag(label: 'Reading', tone: CivicTone.info),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => CivicScreen(
+                  topBar: CivicTopBar(title: title, leading: CivicTopBar.autoLeading(context)),
+                  body: Text(title),
+                ),
+              ),
             ),
-          ],
-        ),
-        const SizedBox(height: 40),
-        CivicButton(onPressed: () {}, child: const Text('Continue')),
+          ),
       ],
     ),
   );
 }
 ```
 
-## Components
+### Forms
 
-Civic includes question pages, forms, navigation, sortable tables and an answers summary for public services,
-and its own version of every common part: inputs and pickers, dates, menus and sheets, cards and layouts, avatars
-and badges, progress and skeletons, and charts that can show their figures as a table.
-Atkinson Hyperlegible Next is the default typeface. One colour identifies actions (blue, or one of six palettes), red
-marks errors, and a yellow focus indicator with a dark ink bar shows which control will respond to the keyboard in both
-themes.
-
-On a phone, the primary destinations appear at the bottom. Their labels follow the system text size and can
-wrap into another row. From 600 logical pixels wide, the destinations move to a rail. From 1024, the service
-can use a sidebar next to the page title.
-
-- Use a question as the page heading and put hints beside the inputs they describe.
-- Give the primary button a label that describes its action, such as “Check your answers.”
-- Use the answers summary before submission. Each Change link can announce which answer it edits.
-
-## Set up the theme
-
-`CivicTheme` is the whole install. Put it in your app's `builder:`, under a `MaterialApp`, a `CupertinoApp` or a
-`WidgetsApp`; Civic has no app widget of its own. Put `CivicToaster` under it to show toasts. On a `MaterialApp`, put
-`civicPageTransitions` in its theme too, so every page it pushes changes as Civic's do (nothing travels) on every
-platform. On iOS the map keeps the swipe back from the screen's leading edge round Civic's page change, as
-`CivicPageRoute` does; an app that builds a map of its own wraps its iOS entry the same way:
+Check the answers when the reader saves. Say each problem twice: in a `CivicErrorSummary` at the top of the form
+(it takes the focus and scrolls into view, and each line moves the focus to its field) and at the field
+(`errorText`). Fields take their column's width; put them in a `Column` with Civic's spacing between them.
 
 ```dart
-const Map<TargetPlatform, PageTransitionsBuilder> transitions = {
-  TargetPlatform.android: CivicPageTransitions(),
-  // iOS's swipe back from the screen's edge, round Civic's page change.
-  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(CivicPageTransitions()),
-  TargetPlatform.macOS: CivicPageTransitions(),
-  // ...
-};
+import 'package:civic_ui/civic_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class BookForm extends StatefulWidget {
+  const BookForm({super.key, required this.onSaved});
+
+  final void Function(String title, DateTime? started) onSaved;
+
+  @override
+  State<BookForm> createState() => _BookFormState();
+}
+
+class _BookFormState extends State<BookForm> {
+  final _title = TextEditingController();
+  final _titleFocus = FocusNode();
+  DateTime? _started;
+  String? _titleError;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    setState(() => _titleError = _title.text.trim().isEmpty ? 'Enter the book’s title' : null);
+    if (_titleError == null) widget.onSaved(_title.text.trim(), _started);
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: CivicSpacing.s32,
+    children: [
+      if (_titleError case final error?)
+        CivicErrorSummary(
+          title: 'There is a problem',
+          errors: [CivicErrorSummaryItem(text: error, onPressed: _titleFocus.requestFocus)],
+        ),
+      CivicTextField(
+        labelText: 'Title',
+        controller: _title,
+        focusNode: _titleFocus,
+        errorText: _titleError,
+      ),
+      CivicDatePicker(
+        labelText: 'Date started',
+        helperText: 'Optional. For example, ${CivicDatePicker.exampleOf(context, DateTime(2026, 3, 27))}',
+        value: _started,
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2100),
+        onChanged: (day) => setState(() => _started = day),
+      ),
+      CivicButton(onPressed: _save, child: const Text('Save book')),
+    ],
+  );
+}
 ```
 
-`rawSwipeBack(map)` does the same to a map built at run time.
+### Dialogs
 
-Under a `CupertinoApp` (from `cupertino_ui`, which an app adds itself) or a bare `WidgetsApp`, the theme goes in the
-same place:
+`showCivicDialog` returns what the dialog is popped with: pop it with the answer.
 
 ```dart
-import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:civic_ui/civic_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
-CupertinoApp(
-  builder: (context, child) => CivicTheme(
-    data: CivicThemeData.light(),
-    child: CivicToaster(child: child!),
-  ),
-  home: const VehiclePage(),
-);
-
-WidgetsApp(
-  color: const Color(0xFF0B0C0C),
-  builder: (context, _) => CivicTheme(
-    data: CivicThemeData.dark(),
-    child: const CivicToaster(child: VehiclePage()),
-  ),
-);
+Future<bool> confirmDelete(BuildContext context, String title) async {
+  final delete = await showCivicDialog<bool>(
+    context: context,
+    builder: (context) => CivicDialog(
+      title: 'Delete “$title”?',
+      content: const Text('It comes off your list. You cannot undo this.'),
+      actions: [
+        CivicButton(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Delete book'),
+        ),
+        CivicButton.secondary(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Keep it'),
+        ),
+      ],
+    ),
+  );
+  if (delete != true || !context.mounted) return false;
+  CivicToast.show(context, 'Deleted “$title”');
+  return true;
+}
 ```
+
+### Let the reader choose a palette
+
+`CivicThemeData.palettes` are Civic's six, each with an id to store, a label to show and the swatch it gives by day
+and by night. Show each by its colour as it shows now (`swatchesFor` the theme's brightness) beside its name, as a radio's
+`leading`, and hand the chosen one to the host.
+
+```dart
+import 'package:civic_ui/civic_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class PalettePicker extends StatelessWidget {
+  const PalettePicker({super.key, required this.palette, required this.onChanged});
+
+  final RawNamedPalette palette;
+  final ValueChanged<RawNamedPalette> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.civicTheme;
+    return CivicRadioGroup<String>(
+      labelText: 'Colour',
+      helperText: 'The colour of buttons, links and marks.',
+      groupValue: palette.id,
+      onChanged: (id) => onChanged(CivicThemeData.palettes.firstWhere((p) => p.id == id)),
+      children: [
+        for (final p in CivicThemeData.palettes)
+          CivicRadio(
+            value: p.id,
+            labelText: p.label,
+            // The colour as it shows now, beside its name.
+            leading: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: p.swatchesFor(theme.brightness).first,
+                shape: BoxShape.circle,
+                border: Border.all(color: theme.border),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// Over the app: CivicHost(palette: palette, brightness: appearance, child: child!)
+```
+
+## Building blocks
+
+| For | Use |
+| --- | --- |
+| The app and its pages | `CivicHost`, `CivicAppShell`, `CivicScreen`, `CivicTopBar`, `CivicNavigationBar`, `CivicSideNavigation`, `CivicScaffold` and `CivicPageBody` (a service's question pages), `CivicPageRoute` |
+| Actions | `CivicButton`, `CivicIconButton`, `CivicButtonGroup`, `CivicSplitButton`, `CivicLink`, `CivicBackLink`, `CivicActionBar` |
+| Questions | `CivicTextField`, `CivicTextArea`, `CivicNumberField`, `CivicPasswordField`, `CivicSearchField`, `CivicCodeField`, `CivicAmount`, `CivicSelect`, `CivicCombobox`, `CivicMultiSelect`, `CivicRadioGroup`, `CivicCheckbox`, `CivicSwitch`, `CivicSegmentedControl`, `CivicToggleGroup`, `CivicSlider`, `CivicRangeSlider`, `CivicRating`, `CivicColorPicker`, `CivicFileUpload`, `CivicFieldset` |
+| Dates and times | `CivicDatePicker`, `CivicDateRangePicker`, `CivicDateInput`, `CivicTimeInput`, `CivicCalendar`, `CivicWheelPicker` |
+| Errors and messages | `CivicErrorSummary`, `CivicNotificationBanner`, `CivicConfirmationPanel`, `CivicInset`, `CivicWarning`, `CivicToast`, `CivicEmptyState` |
+| Lists and data | `CivicListGroup` and `CivicListRow`, `CivicSwipeActions`, `CivicReorderableList`, `CivicSummaryList`, `CivicSummaryCard`, `CivicTable`, `CivicTree`, `CivicTimeline`, `CivicPagination`, `CivicKeyFigure` |
+| Charts | `CivicBarChart`, `CivicLineChart`, `CivicAreaChart`, `CivicPieChart`, `CivicSparkline` |
+| Status | `CivicTag`, `CivicBadge`, `CivicAvatar`, `CivicMeter`, `CivicProgressBar`, `CivicSpinner`, `CivicSkeleton`, `CivicStepIndicator`, `CivicPageDots` |
+| Over the page | `showCivicDialog` and `CivicDialog`, `showCivicBottomSheet`, `showCivicSideSheet`, `showCivicActionSheet`, `showCivicCommandPalette`, `CivicMenu`, `CivicPopover`, `CivicTooltip` |
+| Layout | `CivicCard`, `CivicGrid`, `CivicSplitView`, `CivicAccordion`, `CivicDetails`, `CivicTabBar`, `CivicBreadcrumbs`, `CivicSectionHeader`, `CivicSectionBreak`, `CivicScrollArea`, `CivicCarousel`, `CivicImage`, `CivicChip`, `CivicKbd`, `CivicPullToRefresh` |
+
+Atkinson Hyperlegible Next is the default typeface. One colour marks actions (blue, or one of six palettes), red marks
+errors, and a yellow focus with a dark ink bar shows which control the keyboard will move, by day and by night.
 
 ## Make it yours
 
@@ -172,7 +328,9 @@ targets of at least 40 for a finger and 24 for a pointer (ui_core's floors). Ins
 spacing are yours.
 
 Six palettes, each an action colour Civic's words, errors and focus stand beside: civic (blue, the default), harbour,
-indigo, heather, plum and slate.
+indigo, heather, plum and slate, in `CivicThemeData.palettes`. Give one to the host (see
+[Let the reader choose a palette](#let-the-reader-choose-a-palette)), or make its themes yourself; an app that stores the
+id finds the palette by it again:
 
 ```dart
 CivicThemeData.preset('harbour', Brightness.light)
@@ -182,14 +340,22 @@ Your brand. Each colour is held to 7:1 against the page, darkened by day and lig
 (#0A7D4F becomes about #086640 by day and #0FB673 by night):
 
 ```dart
-CivicTheme(
-  data: CivicThemeData.from(
-    brightness: Brightness.light,
-    action: const Color(0xFF0A7D4F),
-    fontFamily: 'Inter', // reaches every part and Flutter's own widgets
-    fontFamilyFallback: const ['NotoSansJP'], // for a script the face lacks
+MaterialApp(
+  builder: (context, child) => CivicHost(
+    theme: CivicThemeData.from(
+      brightness: Brightness.light,
+      action: const Color(0xFF0A7D4F),
+      fontFamily: 'Inter', // reaches every part and Flutter's own widgets
+      fontFamilyFallback: const ['NotoSansJP'], // for a script the face lacks
+    ),
+    darkTheme: CivicThemeData.from(
+      brightness: Brightness.dark,
+      action: const Color(0xFF0A7D4F),
+      fontFamily: 'Inter',
+      fontFamilyFallback: const ['NotoSansJP'],
+    ),
+    child: child!,
   ),
-  child: child,
 )
 ```
 

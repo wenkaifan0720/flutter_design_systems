@@ -132,7 +132,12 @@ class CivicListOption extends StatelessWidget {
                 ),
               ),
               if (chosen)
-                Icon(LucideIcons.check, size: tick, color: ink)
+                Icon(
+                  LucideIcons.check,
+                  size: tick,
+                  color: ink,
+                  applyTextScaling: true,
+                )
               else
                 const SizedBox(width: tick),
             ],

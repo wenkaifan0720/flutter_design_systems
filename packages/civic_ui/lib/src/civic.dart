@@ -12,7 +12,6 @@ export 'civic/components/amount/amount.dart';
 export 'civic/components/app/frame.dart';
 export 'civic/components/app/host.dart';
 export 'civic/components/app/input.dart';
-export 'civic/components/app/preview.dart';
 export 'civic/components/app/routes.dart';
 export 'civic/components/app/screen.dart';
 export 'civic/components/app/states.dart';

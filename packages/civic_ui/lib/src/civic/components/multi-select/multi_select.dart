@@ -272,7 +272,7 @@ class _ChosenState extends State<_Chosen> {
                 spacing: CivicSpacing.s8,
                 children: [
                   Flexible(child: Text(widget.label)),
-                  const Icon(LucideIcons.x, size: 18),
+                  const Icon(LucideIcons.x, size: 18, applyTextScaling: true),
                 ],
               ),
             ),

@@ -129,7 +129,12 @@ class CivicFileUpload extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   spacing: CivicSpacing.s8,
                   children: [
-                    Icon(LucideIcons.fileCheck, size: 22, color: t.success),
+                    Icon(
+                      LucideIcons.fileCheck,
+                      size: 22,
+                      color: t.success,
+                      applyTextScaling: true,
+                    ),
                     Flexible(child: Text(name, style: text.label)),
                   ],
                 ),

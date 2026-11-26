@@ -10,9 +10,10 @@ import 'spring.dart';
 /// One segment of a typed date or time (the day, the hour): its figures,
 /// or its placeholder in the hint's grey, and, while it takes the typing,
 /// the yellow plate behind it, as a selection. Every segment stands the
-/// same gap from the text either side of it, the gap that brings two
-/// figures to a finger's target, so "24 / 2026" spaces as "11 / 24" does.
-/// Plumbing of the date and time inputs.
+/// same gap from the text either side of it, the gap that brings one
+/// figure to a finger's target, so a one-figure day spaces as a two-figure
+/// month does ("11 / 9 / 2026" evenly). Plumbing of the date and time
+/// inputs.
 class CivicDateSegment extends StatelessWidget {
   /// A segment.
   const CivicDateSegment({super.key, required this.details});
@@ -20,20 +21,20 @@ class CivicDateSegment extends StatelessWidget {
   /// What the field gives the segment.
   final RawDateSegmentDetails details;
 
-  /// The room either side of a segment's figures in [style]: what brings two
-  /// figures up to the tap floor's width, and never less than 4.
+  /// The room either side of a segment's figures in [style]: what brings one
+  /// figure up to the tap floor's width, and never less than 4.
   static double gapFor(BuildContext context, TextStyle style) {
     final floor = RawTapTargets.of(context).floorOn().width;
     final zero = RawWidgetsLocalizations.of(context).formatDecimal(0);
     final painter = TextPainter(
-      text: TextSpan(text: '$zero$zero', style: style),
+      text: TextSpan(text: zero, style: style),
       textScaler: MediaQuery.textScalerOf(context),
       textDirection: TextDirection.ltr,
       maxLines: 1,
     )..layout();
-    final two = painter.width;
+    final one = painter.width;
     painter.dispose();
-    return math.max(4, (floor - two) / 2).floorToDouble();
+    return math.max(4, (floor - one) / 2).ceilToDouble();
   }
 
   @override

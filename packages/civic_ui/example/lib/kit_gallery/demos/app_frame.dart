@@ -30,7 +30,7 @@ class _FrameState extends State<_Frame> {
   @override
   Widget build(BuildContext context) {
     final text = context.civicText;
-    return CivicShellFrame(
+    return CivicAppShell(
       destinations: _places,
       selectedIndex: _index,
       onDestinationSelected: (i) => setState(() => _index = i),

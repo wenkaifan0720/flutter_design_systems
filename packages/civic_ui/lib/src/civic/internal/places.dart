@@ -13,7 +13,7 @@ import 'spring.dart';
 // rail down a tablet's start and the site's side navigation, each round its
 // places, and a place's face in each. What CivicNavigationBar and
 // CivicSideNavigation stand their own pressable places in, and what
-// CivicShellFrame gives ui_core's RawAdaptiveShell to paint with.
+// CivicAppShell gives ui_core's RawAdaptiveShell to paint with.
 
 /// A bar place's name, as [CivicBarPlace] sets it.
 TextStyle civicPlaceNameStyle(

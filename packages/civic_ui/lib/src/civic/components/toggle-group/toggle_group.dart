@@ -77,6 +77,7 @@ class CivicToggleGroup<T> extends StatelessWidget {
     this.labelText,
     this.helperText,
     this.errorText,
+    this.isQuestion = false,
     this.emptySelectionAllowed = true,
     this.style,
   });
@@ -99,6 +100,11 @@ class CivicToggleGroup<T> extends StatelessWidget {
   /// What to fix; null while the choice is fine.
   final String? errorText;
 
+  /// Whether the label is a question of its own on a page that asks a few
+  /// (Which days suit you?): it stands at a fieldset's legend size, as a
+  /// question's does; else in the body's weight, as every field's label.
+  final bool isQuestion;
+
   /// Whether every face may be turned off.
   final bool emptySelectionAllowed;
 
@@ -117,6 +123,7 @@ class CivicToggleGroup<T> extends StatelessWidget {
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,
+    isQuestion: isQuestion,
     style: style,
   );
 
@@ -154,6 +161,7 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
     this.labelText,
     this.helperText,
     this.errorText,
+    this.isQuestion = false,
     this.style,
   });
 
@@ -167,6 +175,8 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
   final String? labelText;
   final String? helperText;
   final String? errorText;
+
+  final bool isQuestion;
   final CivicStyle? style;
 
   @override
@@ -202,7 +212,7 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
         states: states,
         styles: [style, t.toggleStyle],
         radius: joined ? 0 : CivicMetrics.corner,
-        leading: icon == null ? null : Icon(icon),
+        leading: icon == null ? null : Icon(icon, applyTextScaling: true),
         child: Text(segment?.label ?? '$value'),
       );
       // A band's faces fill their equal shares, seam to seam.
@@ -309,7 +319,7 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
       errorText: errorText,
       enabled: change != null,
       builder: (context, parts) =>
-          CivicFieldFrame(parts: parts, isLegend: false),
+          CivicFieldFrame(parts: parts, isLegend: isQuestion),
       child: group,
     );
   }
@@ -455,6 +465,7 @@ class CivicSegmentedControl<T> extends StatelessWidget {
     this.labelText,
     this.helperText,
     this.errorText,
+    this.isQuestion = false,
     this.style,
   });
 
@@ -475,6 +486,11 @@ class CivicSegmentedControl<T> extends StatelessWidget {
 
   /// What to fix; null while the answer is fine.
   final String? errorText;
+
+  /// Whether the label is a question of its own on a page that asks a few
+  /// (Which days suit you?): it stands at a fieldset's legend size, as a
+  /// question's does; else in the body's weight, as every field's label.
+  final bool isQuestion;
 
   /// Overrides for the faces' look.
   final CivicStyle? style;
@@ -498,6 +514,7 @@ class CivicSegmentedControl<T> extends StatelessWidget {
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
+      isQuestion: isQuestion,
       style: style,
     );
   }

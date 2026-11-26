@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/paint.dart';
+import '../../internal/row_hover.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
 import '../icon-button/icon_button.dart';
@@ -48,7 +49,8 @@ class CivicSwipeAction {
 /// Swiping is a shortcut, never the only way: with [inSight] (the
 /// default) the row carries a "More actions" button at its end whose menu
 /// holds the same actions, for a pointer, the keys and anyone who never
-/// thinks to swipe. With the keyboard in the row, the arrow keys open a
+/// thinks to swipe. The button stands beside the row, its own control to a
+/// screen reader, and a pointer over either greys them as one row. With the keyboard in the row, the arrow keys open a
 /// side and Escape shuts it; a screen reader has them as the row's own
 /// actions. ui_core's [RawSwipeActions], Civic's painting.
 ///
@@ -130,34 +132,7 @@ class CivicSwipeActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final all = [...endActions, ...startActions];
-    final row = !inSight || all.isEmpty
-        ? child
-        : Row(
-            children: [
-              Expanded(child: child),
-              CivicMenu<CivicSwipeAction>(
-                semanticLabel: menuLabel,
-                align: RawPopoverAlign.end,
-                items: [
-                  for (final a in all)
-                    CivicMenuItem(
-                      value: a,
-                      label: a.label,
-                      icon: a.icon,
-                      isDestructiveAction: a.isDestructiveAction,
-                    ),
-                ],
-                onSelected: (a) => a.onPressed(),
-                builder: (context, anchor) => CivicIconButton(
-                  icon: LucideIcons.ellipsisVertical,
-                  semanticLabel: menuLabel,
-                  tooltip: menuLabel,
-                  onPressed: anchor.toggle,
-                ),
-              ),
-            ],
-          );
-    return RawSwipeActions(
+    final swiped = RawSwipeActions(
       startActions: [for (final a in startActions) _design(a)],
       endActions: [for (final a in endActions) _design(a)],
       actionExtent: 88,
@@ -172,7 +147,33 @@ class CivicSwipeActions extends StatelessWidget {
         details: details,
         style: style,
       ),
-      child: row,
+      child: child,
+    );
+    if (!inSight || all.isEmpty) return swiped;
+    // The menu's button beside the row, not in it: the row's words and its
+    // swipe actions are one node to a screen reader, the button another.
+    return _OneRow(
+      row: swiped,
+      end: CivicMenu<CivicSwipeAction>(
+        semanticLabel: menuLabel,
+        align: RawPopoverAlign.end,
+        items: [
+          for (final a in all)
+            CivicMenuItem(
+              value: a,
+              label: a.label,
+              icon: a.icon,
+              isDestructiveAction: a.isDestructiveAction,
+            ),
+        ],
+        onSelected: (a) => a.onPressed(),
+        builder: (context, anchor) => CivicIconButton(
+          icon: LucideIcons.ellipsisVertical,
+          semanticLabel: menuLabel,
+          tooltip: menuLabel,
+          onPressed: anchor.toggle,
+        ),
+      ),
     );
   }
 
@@ -193,6 +194,58 @@ class CivicSwipeActions extends StatelessWidget {
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );
+  }
+}
+
+/// [row] and the button at its [end] as one row: a pointer over either
+/// greys both, the ground reaching under the button.
+class _OneRow extends StatefulWidget {
+  const _OneRow({required this.row, required this.end});
+
+  final Widget row;
+  final Widget end;
+
+  @override
+  State<_OneRow> createState() => _OneRowState();
+}
+
+class _OneRowState extends State<_OneRow> {
+  bool _hovered = false;
+
+  void _hover(bool hovered) {
+    if (hovered != _hovered) setState(() => _hovered = hovered);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.civicTheme;
+    return MouseRegion(
+      onEnter: (_) => _hover(true),
+      onExit: (_) => _hover(false),
+      // The row's grey across the whole row, the button's column too, on
+      // the row's spring; the row inside leaves its own pointer's grey to it.
+      child: CivicSpringValue(
+        value: _hovered ? 0.5 : 0,
+        spring: CivicMotion.press,
+        effects: true,
+        builder: (context, touch, child) => ColoredBox(
+          color: Color.lerp(
+            t.surface.withValues(alpha: 0),
+            Color.lerp(t.surface, t.rule, 0.6)!,
+            touch.clamp(0.0, 1.0),
+          )!,
+          child: child,
+        ),
+        child: CivicRowHover(
+          child: Row(
+            children: [
+              Expanded(child: widget.row),
+              widget.end,
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -265,7 +318,13 @@ class _Ground extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       spacing: CivicSpacing.s4,
                       children: [
-                        if (icon != null) Icon(icon, size: 24, color: ink),
+                        if (icon != null)
+                          Icon(
+                            icon,
+                            size: 24,
+                            color: ink,
+                            applyTextScaling: true,
+                          ),
                         Text(
                           action.label,
                           maxLines: 1,

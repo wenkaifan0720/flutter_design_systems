@@ -7,6 +7,7 @@
 import 'dart:convert';
 
 import 'package:civic_ui/civic_ui.dart';
+import 'package:civic_ui/civic_host.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -43,7 +44,7 @@ Widget _frame(int place) => CivicPreview(
   tabs: _places,
   selectedIndex: place,
   brand: _service,
-  action: CivicShellAction(
+  action: ShellAction(
     icon: LucideIcons.plus,
     label: _act,
     accent: true,

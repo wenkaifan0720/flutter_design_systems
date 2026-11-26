@@ -38,8 +38,8 @@ class CivicSelectItem<T> {
 /// shadow; by night on the raised band). The chosen row stands on the inset
 /// rule in the
 /// action colour, bold and ticked; a pointer greys a row; the focused row
-/// stands on the yellow plate. From 600 wide it keeps to 320 points: a
-/// select is as wide as its answers.
+/// stands on the yellow plate. It takes its column's width, as a text
+/// field does; give it a narrower box for a short answer.
 ///
 /// The keys, as a platform's own select: Enter, Space or Down open the list
 /// with the focus on the answer chosen (the first answer while none is),
@@ -114,9 +114,6 @@ class CivicSelect<T> extends StatefulWidget {
   /// Overrides for this select's look.
   final CivicStyle? style;
 
-  /// The widest a select stands from 600.
-  static const double maxWidth = 320;
-
   @override
   State<CivicSelect<T>> createState() => _CivicSelectState<T>();
 
@@ -168,9 +165,7 @@ class _CivicSelectState<T> extends State<CivicSelect<T>> {
     final text = context.civicText;
     final enabled = widget.onChanged != null;
     final chosen = _chosen;
-    final wide =
-        (MediaQuery.maybeSizeOf(context)?.width ?? 0) >= CivicLayout.medium;
-    final field = RawInputDecorator(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -292,14 +287,6 @@ class _CivicSelectState<T> extends State<CivicSelect<T>> {
             },
           ),
         ),
-      ),
-    );
-    if (!wide) return field;
-    return Align(
-      alignment: AlignmentDirectional.centerStart,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: CivicSelect.maxWidth),
-        child: field,
       ),
     );
   }

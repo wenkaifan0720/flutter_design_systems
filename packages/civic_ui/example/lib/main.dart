@@ -1,68 +1,671 @@
-// Brindlemere parking permits, a public service of an invented city built
-// on Civic: the look's Overview, then the service (its start page, one
-// question per page, the details with the error summary, the answers
-// checked, the confirmation, the reader's applications and settings),
-// moved between by the look's own navigation (along the bottom on a phone,
-// down the start from 600 wide; the application's own pages show none).
-// The Overview ends in the index of every part's page. A link opens it as
-// the looks' galleries share: `/#/<page>?theme=dark&dir=rtl&text=200`,
-// where the page is a part's page by its id (`actions`, `entry`,
-// `choices`...) or a screen by its name (`overview`, `start`, `vehicle`,
-// `details`, `check`, `sent`, `applications`, `settings`); `theme=dark` by
-// night, `dir=rtl` in Arabic right to left, `text=200` the words at twice
-// the size, `state=errors` the details page sent with its problems.
-// `?slow=8` runs every animation eight times slower; `?a11y=1` turns the
-// semantics on from the start, as a screen reader would.
+// Shelf, a reading list built on Civic: one app you can copy. CivicHost
+// over MaterialApp (by day, by night or as the device is, in any of Civic's
+// six palettes), CivicAppShell with three places (a bar along a phone's
+// foot, a rail from 600 wide, the side navigation from 1024), each keeping
+// its own pages; the list of books with a pushed page for each, a form that
+// checks its answers, a dialog popped with its answer, and the settings.
+// Civic's gallery, every part on a page of its own, is lib/gallery.dart:
+// `flutter run -t lib/gallery.dart`.
 import 'package:civic_ui/civic_ui.dart';
-import 'package:flutter/scheduler.dart' show timeDilation;
-import 'package:flutter/widgets.dart';
-
-import 'gallery_pages.dart';
-import 'kit_gallery/permits/permits.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // The faces before the first frame: on the web the words never flash in
-  // a fallback face.
   await civicLoadFonts();
-  final hash = Uri.base.fragment.startsWith('/')
-      ? Uri.parse(Uri.base.fragment)
-      : null;
-  final query = {...Uri.base.queryParameters, ...?hash?.queryParameters};
-  final segments =
-      hash?.pathSegments.where((s) => s.isNotEmpty).toList() ??
-      const <String>[];
-  final (screen, part) = switch (segments) {
-    ['screen', final name, ...] => (name, null),
-    [final id, ...] when galleryPages.any((p) => p.id == id) => (null, id),
-    [final name, ...] => (name, null),
-    _ => (query['page'], query['part']),
-  };
-  final text = double.tryParse(query['text'] ?? '');
-  timeDilation = double.tryParse(query['slow'] ?? '') ?? 1;
-  if (query['a11y'] == '1') WidgetsBinding.instance.ensureSemantics();
-  runApp(
-    PermitsApp(
-      initialPage: PermitsPage.values.firstWhere(
-        (p) => p.name == screen,
-        orElse: () => PermitsPage.overview,
+  runApp(ShelfApp(shelf: Shelf.sample()));
+}
+
+/// The app: Civic over the whole of it, in the reader's appearance and
+/// palette.
+class ShelfApp extends StatelessWidget {
+  const ShelfApp({super.key, required this.shelf});
+
+  final Shelf shelf;
+
+  @override
+  Widget build(BuildContext context) => ShelfScope(
+    shelf: shelf,
+    child: ListenableBuilder(
+      listenable: shelf,
+      builder: (context, _) => MaterialApp(
+        title: 'Shelf',
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+        builder: (context, child) => CivicHost(
+          brightness: shelf.appearance.brightness,
+          palette: shelf.palette,
+          child: child!,
+        ),
+        home: const ShelfShell(),
       ),
-      initialAppearance: query['theme'] == 'dark'
-          ? PermitsAppearance.dark
-          : PermitsAppearance.light,
-      initialDirection: query['dir'] == 'rtl'
-          ? TextDirection.rtl
-          : TextDirection.ltr,
-      // `text=200` is a percentage, `text=2` a factor.
-      textScale: text == null ? null : (text > 5 ? text / 100 : text),
-      showErrors: query['state'] == 'errors',
-      parts: [
-        for (final page in galleryPages) (title: page.title, build: page.build),
+    ),
+  );
+}
+
+/// The app's three places. Each keeps its own pages: a book opened from
+/// Books stands beside the rail or the side navigation, and back closes it.
+class ShelfShell extends StatefulWidget {
+  const ShelfShell({super.key});
+
+  @override
+  State<ShelfShell> createState() => _ShelfShellState();
+}
+
+class _ShelfShellState extends State<ShelfShell> {
+  int _place = 0;
+
+  @override
+  Widget build(BuildContext context) => CivicAppShell.branches(
+    brand: 'Shelf',
+    destinations: const [
+      CivicNavItem(LucideIcons.libraryBig, 'Books'),
+      CivicNavItem(LucideIcons.plus, 'Add'),
+      CivicNavItem(LucideIcons.settings, 'Settings'),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (place) => setState(() => _place = place),
+    branches: [
+      (context) => const BooksPage(),
+      (context) => AddBookPage(onAdded: () => setState(() => _place = 0)),
+      (context) => const SettingsPage(),
+    ],
+  );
+}
+
+/// The reading list: the year's goal, then every book, each opening its
+/// own page.
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final shelf = ShelfScope.of(context);
+    final books = shelf.books;
+    return CivicScreen(
+      topBar: const CivicTopBar(title: 'Books'),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _Heading('Your reading list'),
+          const SizedBox(height: CivicSpacing.s24),
+          CivicMeter(
+            label: 'Reading goal for 2026',
+            value: shelf.finished.toDouble(),
+            max: shelf.goal.toDouble(),
+            valueLabel:
+                '${CivicFormat.plural(shelf.finished, 'book')} of '
+                '${shelf.goal} finished',
+          ),
+          const SizedBox(height: CivicSpacing.s48),
+          if (books.isEmpty)
+            const CivicEmptyState(
+              title: 'No books yet',
+              children: [Text('Books you add show here.')],
+            )
+          else
+            CivicListGroup(
+              title: CivicFormat.plural(books.length, 'book'),
+              children: [
+                for (final book in books)
+                  CivicSwipeActions(
+                    key: ValueKey(book.id),
+                    menuLabel: 'Actions for ${book.title}',
+                    endActions: [
+                      CivicSwipeAction(
+                        label: 'Delete',
+                        icon: LucideIcons.trash2,
+                        isDestructiveAction: true,
+                        onPressed: () => deleteBook(context, book),
+                      ),
+                    ],
+                    child: CivicListRow(
+                      title: Text(book.title),
+                      subtitle: Text(book.byline),
+                      trailing: CivicTag(
+                        label: book.status.label,
+                        tone: book.status.tone,
+                      ),
+                      // A page pushed on the Books place: the rail or the
+                      // side navigation stays beside it.
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => BookPage(id: book.id),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One book: what the reader said about it, and the ways to change it or
+/// delete it.
+class BookPage extends StatelessWidget {
+  const BookPage({super.key, required this.id});
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context) {
+    final book = ShelfScope.of(context).byId(id);
+    if (book == null) return const SizedBox.shrink();
+    void edit() => Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => CivicScreen(
+          topBar: CivicTopBar(
+            title: 'Change book',
+            leading: CivicTopBar.autoLeading(context),
+          ),
+          body: BookForm(
+            heading: 'Change “${book.title}”',
+            saveLabel: 'Save changes',
+            initial: book,
+            onSaved: (changed) {
+              ShelfScope.read(context).put(changed);
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ),
+    );
+
+    CivicSummaryRow row(String label, String value) => CivicSummaryRow(
+      label: label,
+      value: Text(value),
+      actionLabel: 'Change',
+      actionSemanticLabel: 'Change ${label.toLowerCase()}',
+      onActionPressed: edit,
+    );
+    return CivicScreen(
+      topBar: CivicTopBar(
+        title: 'Book',
+        leading: CivicTopBar.autoLeading(context),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Heading(book.title),
+          const SizedBox(height: CivicSpacing.s16),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: CivicTag(label: book.status.label, tone: book.status.tone),
+          ),
+          const SizedBox(height: CivicSpacing.s32),
+          CivicSummaryList(
+            rows: [
+              row('Author', book.author.isEmpty ? 'Not given' : book.author),
+              row('Format', book.format.label),
+              row('Status', book.status.label),
+              row('Favourite', book.favourite ? 'Yes' : 'No'),
+              row(
+                'Date started',
+                book.started == null
+                    ? 'Not given'
+                    : CivicFormat.date(book.started!),
+              ),
+            ],
+          ),
+          const SizedBox(height: CivicSpacing.s48),
+          CivicButtonGroup(
+            children: [
+              CivicButton(onPressed: edit, child: const Text('Change book')),
+              CivicButton.secondary(
+                isDestructiveAction: true,
+                onPressed: () async {
+                  if (await deleteBook(context, book) && context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: const Text('Delete book'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Asks before deleting [book]: the dialog is popped with the answer. Says
+/// so in a toast once it is gone; returns whether it went.
+Future<bool> deleteBook(BuildContext context, Book book) async {
+  final shelf = ShelfScope.read(context);
+  final delete = await showCivicDialog<bool>(
+    context: context,
+    builder: (context) => CivicDialog(
+      title: 'Delete “${book.title}”?',
+      content: const Text('It comes off your list. You cannot undo this.'),
+      actions: [
+        CivicButton(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Delete book'),
+        ),
+        CivicButton.secondary(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Keep it'),
+        ),
       ],
-      initialPart: switch (galleryPages.indexWhere((p) => p.id == part)) {
-        -1 => null,
-        final i => i,
+    ),
+  );
+  if (delete != true) return false;
+  shelf.remove(book.id);
+  if (context.mounted) CivicToast.show(context, 'Deleted “${book.title}”');
+  return true;
+}
+
+/// The Add place: a new book's answers.
+class AddBookPage extends StatelessWidget {
+  const AddBookPage({super.key, required this.onAdded});
+
+  /// Called once the book is on the list.
+  final VoidCallback onAdded;
+
+  @override
+  Widget build(BuildContext context) => CivicScreen(
+    topBar: const CivicTopBar(title: 'Add'),
+    body: BookForm(
+      heading: 'Add a book',
+      saveLabel: 'Save book',
+      onSaved: (book) {
+        ShelfScope.read(context).put(book);
+        CivicToast.show(context, 'Added “${book.title}”');
+        onAdded();
       },
     ),
   );
+}
+
+/// The answers about a book. Saving checks them: a missing title is said
+/// at the top of the form, where the focus goes, and at the field.
+class BookForm extends StatefulWidget {
+  const BookForm({
+    super.key,
+    required this.heading,
+    required this.saveLabel,
+    required this.onSaved,
+    this.initial,
+  });
+
+  final String heading;
+  final String saveLabel;
+
+  /// Called with the book once its answers are fine.
+  final ValueChanged<Book> onSaved;
+
+  /// The book being changed; null for a new one.
+  final Book? initial;
+
+  @override
+  State<BookForm> createState() => _BookFormState();
+}
+
+class _BookFormState extends State<BookForm> {
+  late final _title = TextEditingController(text: widget.initial?.title);
+  late final _author = TextEditingController(text: widget.initial?.author);
+  final _titleFocus = FocusNode();
+  late BookFormat _format = widget.initial?.format ?? BookFormat.paperback;
+  late BookStatus _status = widget.initial?.status ?? BookStatus.toRead;
+  late bool _favourite = widget.initial?.favourite ?? false;
+  late DateTime? _started = widget.initial?.started;
+  String? _titleError;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _author.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  // The form's check: each field's error in words, or null.
+  String? _checkTitle(String title) =>
+      title.trim().isEmpty ? 'Enter the book’s title' : null;
+
+  void _save() {
+    setState(() => _titleError = _checkTitle(_title.text));
+    if (_titleError != null) return;
+    widget.onSaved(
+      Book(
+        id: widget.initial?.id ?? '${DateTime.now().microsecondsSinceEpoch}',
+        title: _title.text.trim(),
+        author: _author.text.trim(),
+        format: _format,
+        status: _status,
+        favourite: _favourite,
+        started: _started,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: CivicSpacing.s32,
+    children: [
+      if (_titleError case final error?)
+        CivicErrorSummary(
+          title: 'There is a problem',
+          errors: [
+            CivicErrorSummaryItem(
+              text: error,
+              onPressed: _titleFocus.requestFocus,
+            ),
+          ],
+        ),
+      _Heading(widget.heading),
+      CivicTextField(
+        labelText: 'Title',
+        controller: _title,
+        focusNode: _titleFocus,
+        errorText: _titleError,
+        textInputAction: TextInputAction.next,
+      ),
+      CivicTextField(
+        labelText: 'Author',
+        helperText: 'Optional',
+        controller: _author,
+      ),
+      CivicSelect<BookFormat>(
+        labelText: 'Format',
+        value: _format,
+        items: [
+          for (final format in BookFormat.values)
+            CivicSelectItem(value: format, label: format.label),
+        ],
+        onChanged: (format) => setState(() => _format = format),
+      ),
+      CivicRadioGroup<BookStatus>(
+        labelText: 'Status',
+        groupValue: _status,
+        onChanged: (status) => setState(() => _status = status ?? _status),
+        children: [
+          for (final status in BookStatus.values)
+            CivicRadio(value: status, labelText: status.label),
+        ],
+      ),
+      CivicCheckbox(
+        value: _favourite,
+        onChanged: (on) => setState(() => _favourite = on ?? false),
+        labelText: 'Favourite',
+        helperText: 'Favourites are marked in your list.',
+      ),
+      CivicDatePicker(
+        labelText: 'Date started',
+        helperText:
+            'Optional. For example, '
+            '${CivicDatePicker.exampleOf(context, DateTime(2026, 3, 27))}',
+        value: _started,
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2100),
+        onChanged: (day) => setState(() => _started = day),
+      ),
+      CivicButton(onPressed: _save, child: Text(widget.saveLabel)),
+    ],
+  );
+}
+
+/// The appearance, the palette and the year's goal.
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final shelf = ShelfScope.of(context);
+    return CivicScreen(
+      topBar: const CivicTopBar(title: 'Settings'),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: CivicSpacing.s48,
+        children: [
+          const _Heading('Settings'),
+          CivicSegmentedControl<Appearance>(
+            labelText: 'Appearance',
+            helperText: 'System follows your device.',
+            segments: [
+              for (final appearance in Appearance.values)
+                CivicSegment(value: appearance, label: appearance.label),
+            ],
+            value: shelf.appearance,
+            onChanged: (appearance) => shelf.appearance = appearance,
+          ),
+          // Civic's six palettes, each by its colour as it shows now and
+          // its name; an app stores the id.
+          CivicRadioGroup<String>(
+            labelText: 'Colour',
+            helperText: 'The colour of buttons, links and marks.',
+            groupValue: shelf.palette.id,
+            onChanged: (id) => shelf.palette = CivicThemeData.palettes
+                .firstWhere((palette) => palette.id == id),
+            children: [
+              for (final palette in CivicThemeData.palettes)
+                CivicRadio(
+                  value: palette.id,
+                  labelText: palette.label,
+                  leading: PaletteSwatches(palette: palette),
+                ),
+            ],
+          ),
+          CivicSlider(
+            labelText: 'Books to finish this year',
+            value: shelf.goal.toDouble(),
+            min: 4,
+            max: 52,
+            divisions: 48,
+            valueLabel: (goal) => '${goal.round()} books',
+            onChanged: (goal) => shelf.goal = goal.round(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A palette's colours as they show now (by day or by night), beside its
+/// name: what the name stands for, seen.
+class PaletteSwatches extends StatelessWidget {
+  const PaletteSwatches({super.key, required this.palette});
+
+  final RawNamedPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.civicTheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: CivicSpacing.s4,
+      children: [
+        for (final colour in palette.swatchesFor(theme.brightness))
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: colour,
+              shape: BoxShape.circle,
+              // A ring in the field's edge, so a swatch near the ground
+              // still shows its round.
+              border: Border.all(color: theme.border),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// A page's one heading, which a screen reader hears as one.
+class _Heading extends StatelessWidget {
+  const _Heading(this.words);
+
+  final String words;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    header: true,
+    child: Text(words, style: context.civicText.headingXL),
+  );
+}
+
+// The app's state: the books, and how the reader likes the app.
+
+enum BookStatus {
+  toRead('To read', CivicTone.neutral),
+  reading('Reading', CivicTone.info),
+  done('Done', CivicTone.success);
+
+  const BookStatus(this.label, this.tone);
+
+  final String label;
+  final CivicTone tone;
+}
+
+enum BookFormat {
+  paperback('Paperback'),
+  hardback('Hardback'),
+  ebook('Ebook'),
+  audiobook('Audiobook');
+
+  const BookFormat(this.label);
+
+  final String label;
+}
+
+enum Appearance {
+  light('Light', Brightness.light),
+  dark('Dark', Brightness.dark),
+  system('System', null);
+
+  const Appearance(this.label, this.brightness);
+
+  final String label;
+
+  /// What the host pins; null follows the device.
+  final Brightness? brightness;
+}
+
+@immutable
+class Book {
+  const Book({
+    required this.id,
+    required this.title,
+    this.author = '',
+    this.format = BookFormat.paperback,
+    this.status = BookStatus.toRead,
+    this.favourite = false,
+    this.started,
+  });
+
+  final String id;
+  final String title;
+  final String author;
+  final BookFormat format;
+  final BookStatus status;
+  final bool favourite;
+  final DateTime? started;
+
+  /// The line under the title in the list.
+  String get byline => [
+    if (author.isEmpty) 'Author not given' else author,
+    if (favourite) 'Favourite',
+  ].join(' · ');
+}
+
+/// The reading list and the reader's settings, kept while the app runs.
+class Shelf extends ChangeNotifier {
+  Shelf(this._books);
+
+  Shelf.sample()
+    : this([
+        Book(
+          id: '1',
+          title: 'Middlemarch',
+          author: 'George Eliot',
+          status: BookStatus.reading,
+          started: DateTime(2026, 10, 2),
+        ),
+        const Book(
+          id: '2',
+          title: 'The Left Hand of Darkness',
+          author: 'Ursula K. Le Guin',
+          status: BookStatus.done,
+          favourite: true,
+        ),
+        const Book(
+          id: '3',
+          title: 'Pride and Prejudice',
+          author: 'Jane Austen',
+          format: BookFormat.hardback,
+          status: BookStatus.done,
+        ),
+        const Book(id: '4', title: 'Beloved', author: 'Toni Morrison'),
+        const Book(
+          id: '5',
+          title: 'Things Fall Apart',
+          author: 'Chinua Achebe',
+          format: BookFormat.audiobook,
+        ),
+      ]);
+
+  final List<Book> _books;
+
+  List<Book> get books => List.unmodifiable(_books);
+
+  int get finished => _books.where((b) => b.status == BookStatus.done).length;
+
+  Book? byId(String id) => _books.where((b) => b.id == id).firstOrNull;
+
+  /// Adds [book], or puts it in place of the book with its id.
+  void put(Book book) {
+    final at = _books.indexWhere((b) => b.id == book.id);
+    if (at < 0) {
+      _books.insert(0, book);
+    } else {
+      _books[at] = book;
+    }
+    notifyListeners();
+  }
+
+  void remove(String id) {
+    _books.removeWhere((b) => b.id == id);
+    notifyListeners();
+  }
+
+  int get goal => _goal;
+  int _goal = 12;
+  set goal(int value) {
+    _goal = value;
+    notifyListeners();
+  }
+
+  Appearance get appearance => _appearance;
+  Appearance _appearance = Appearance.system;
+  set appearance(Appearance value) {
+    _appearance = value;
+    notifyListeners();
+  }
+
+  RawNamedPalette get palette => _palette;
+  RawNamedPalette _palette = CivicThemeData.palettes.first;
+  set palette(RawNamedPalette value) {
+    _palette = value;
+    notifyListeners();
+  }
+}
+
+/// Puts the [Shelf] within reach of every page.
+class ShelfScope extends InheritedNotifier<Shelf> {
+  const ShelfScope({super.key, required Shelf shelf, required super.child})
+    : super(notifier: shelf);
+
+  /// The shelf, rebuilding [context] as it changes.
+  static Shelf of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ShelfScope>()!.notifier!;
+
+  /// The shelf, to change it from a callback.
+  static Shelf read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<ShelfScope>()!.notifier!;
 }

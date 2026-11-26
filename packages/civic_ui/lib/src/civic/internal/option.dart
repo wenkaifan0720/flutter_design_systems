@@ -117,6 +117,7 @@ class CivicOptionFace extends StatelessWidget {
     this.styles = const [],
     this.labelText,
     this.helperText,
+    this.leading,
   });
 
   /// The states it is drawn for.
@@ -136,6 +137,10 @@ class CivicOptionFace extends StatelessWidget {
 
   /// A hint under the words.
   final String? helperText;
+
+  /// Drawn before the words, on the middle of their first line (a swatch, a
+  /// flag); the hint stands under the words, not under it.
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -237,22 +242,28 @@ class CivicOptionFace extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(top: drop),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          label,
-                          style: words.merge(so.textStyle).copyWith(color: ink),
-                        ),
-                        if (helper != null)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: CivicSpacing.s4,
-                            ),
-                            child: Text(helper, style: text.caption),
+                    child: _withLeading(
+                      leading,
+                      scaled,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            label,
+                            style: words
+                                .merge(so.textStyle)
+                                .copyWith(color: ink),
                           ),
-                      ],
+                          if (helper != null)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: CivicSpacing.s4,
+                              ),
+                              child: Text(helper, style: text.caption),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -264,6 +275,23 @@ class CivicOptionFace extends StatelessWidget {
     );
   }
 }
+
+/// [words] after [leading], which stands on the middle of their first line
+/// ([line] high), a gap of 12 between; [words] alone without one.
+Widget _withLeading(Widget? leading, double line, Widget words) =>
+    leading == null
+    ? words
+    : Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: line,
+            child: Center(child: leading),
+          ),
+          const SizedBox(width: CivicSpacing.s12),
+          Expanded(child: words),
+        ],
+      );
 
 /// Options (radios, checkboxes) as an app sets them: each a row on one card,
 /// white on the page's ground, hairlines between, the whole row pressed.

@@ -1,7 +1,52 @@
-# civic_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.5.0 renames. test_fixes/ holds
+# civic_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.5.0 and 0.8.0 rename. test_fixes/ holds
 # their before and after (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['civic_ui.dart']
+      constructor: ''
+      inClass: 'CivicSkeleton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['civic_ui.dart']
+      field: 'label'
+      inClass: 'CivicSkeleton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'CivicAppShell'"
+    date: 2026-11-26
+    element:
+      uris: ['civic_ui.dart']
+      typedef: 'CivicShellFrame'
+    changes:
+      - kind: 'rename'
+        newName: 'CivicAppShell'
+
+  - title: "Replace with 'RawPalette.contrastRatio'"
+    date: 2026-11-26
+    element:
+      uris: ['civic_ui.dart']
+      method: 'contrastRatio'
+      inClass: 'CivicThemeData'
+      static: true
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['civic_ui.dart']
+          method: 'contrastRatio'
+          inClass: 'RawPalette'
+          static: true
 
   - title: "Rename to 'labelText'"
     date: 2026-11-22
@@ -92,7 +137,7 @@ transforms:
     element:
       uris: ['civic_ui.dart']
       constructor: ''
-      inClass: 'CivicShellFrame'
+      inClass: 'CivicAppShell'
     changes:
       - kind: 'renameParameter'
         oldName: 'places'
@@ -103,7 +148,7 @@ transforms:
     element:
       uris: ['civic_ui.dart']
       field: 'places'
-      inClass: 'CivicShellFrame'
+      inClass: 'CivicAppShell'
     changes:
       - kind: 'rename'
         newName: 'destinations'
@@ -113,7 +158,7 @@ transforms:
     element:
       uris: ['civic_ui.dart']
       constructor: ''
-      inClass: 'CivicShellFrame'
+      inClass: 'CivicAppShell'
     changes:
       - kind: 'renameParameter'
         oldName: 'onSelected'
@@ -124,7 +169,7 @@ transforms:
     element:
       uris: ['civic_ui.dart']
       field: 'onSelected'
-      inClass: 'CivicShellFrame'
+      inClass: 'CivicAppShell'
     changes:
       - kind: 'rename'
         newName: 'onDestinationSelected'
@@ -174,7 +219,7 @@ transforms:
   - title: "Rename to 'theme'"
     date: 2026-11-22
     element:
-      uris: ['civic_ui.dart']
+      uris: ['civic_host.dart']
       constructor: ''
       inClass: 'CivicPreview'
     changes:
@@ -185,7 +230,7 @@ transforms:
   - title: "Rename to 'theme'"
     date: 2026-11-22
     element:
-      uris: ['civic_ui.dart']
+      uris: ['civic_host.dart']
       field: 'light'
       inClass: 'CivicPreview'
     changes:
@@ -195,7 +240,7 @@ transforms:
   - title: "Rename to 'darkTheme'"
     date: 2026-11-22
     element:
-      uris: ['civic_ui.dart']
+      uris: ['civic_host.dart']
       constructor: ''
       inClass: 'CivicPreview'
     changes:
@@ -206,7 +251,7 @@ transforms:
   - title: "Rename to 'darkTheme'"
     date: 2026-11-22
     element:
-      uris: ['civic_ui.dart']
+      uris: ['civic_host.dart']
       field: 'dark'
       inClass: 'CivicPreview'
     changes:
@@ -216,7 +261,7 @@ transforms:
   - title: "Rename to 'selectedIndex'"
     date: 2026-11-22
     element:
-      uris: ['civic_ui.dart']
+      uris: ['civic_host.dart']
       constructor: ''
       inClass: 'CivicPreview'
     changes:
@@ -227,7 +272,7 @@ transforms:
   - title: "Rename to 'selectedIndex'"
     date: 2026-11-22
     element:
-      uris: ['civic_ui.dart']
+      uris: ['civic_host.dart']
       field: 'activeIndex'
       inClass: 'CivicPreview'
     changes:

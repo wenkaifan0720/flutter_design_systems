@@ -6,7 +6,7 @@
 // preview. And on each of the gallery's pages, every section's heading is
 // heard.
 // ignore_for_file: avoid_relative_lib_imports
-import 'package:civic_ui/civic_ui.dart';
+import 'package:civic_ui/civic_host.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

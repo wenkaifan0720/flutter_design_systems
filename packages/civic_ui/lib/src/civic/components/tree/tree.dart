@@ -164,7 +164,12 @@ class CivicTree<T extends Object> extends StatelessWidget {
                       ),
                       const SizedBox(width: CivicSpacing.s4),
                       if (glyph != null) ...[
-                        Icon(glyph, size: 20, color: ink),
+                        Icon(
+                          glyph,
+                          size: 20,
+                          color: ink,
+                          applyTextScaling: true,
+                        ),
                         const SizedBox(width: CivicSpacing.s8),
                       ],
                       Expanded(

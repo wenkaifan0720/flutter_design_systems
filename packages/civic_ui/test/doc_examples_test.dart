@@ -62,6 +62,25 @@ class _Pages extends RouterDelegate<Object> {
   void removeListener(VoidCallback listener) {}
 }
 
+/// The first page of the caller's app.
+class HomePage extends StatelessWidget {
+  /// The page.
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const CivicScreen(body: Text('Home'));
+}
+
+/// Another of the caller's places.
+class ApplicationsPage extends StatelessWidget {
+  /// The page.
+  const ApplicationsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      const CivicScreen(body: Text('Applications'));
+}
+
 /// A page of the caller's app.
 class PermitPage extends StatelessWidget {
   /// The page.
@@ -125,6 +144,8 @@ class _Picked {
 /// state, its callbacks, its controllers.
 class _Caller {
   int index = 0;
+  String saved = 'harbour';
+  final app = const Text('Your permit');
   final pages = const [Text('Home'), Text('Applications')];
   String? emailError = 'Enter an email address';
   String email = '';
@@ -236,14 +257,14 @@ class _Caller {
         'Applications',
         ValueKey('applications'),
       );
-      return CivicShellFrame(
+      return CivicAppShell(
         destinations: const [CivicNavItem(LucideIcons.house, 'Home'), item],
         selectedIndex: 1,
         onDestinationSelected: (_) {},
         child: const CivicScreen(body: Text('Applications')),
       );
     },
-    'CivicShellAction': (context) => CivicShellFrame(
+    'CivicShellAction': (context) => CivicAppShell(
       destinations: const [CivicNavItem(LucideIcons.house, 'Home')],
       selectedIndex: 0,
       onDestinationSelected: (_) {},
@@ -254,14 +275,17 @@ class _Caller {
       ),
       child: const CivicScreen(body: Text('Home')),
     ),
-    'CivicShellFrame': (context) => CivicShellFrame(
+    'CivicAppShell': (context) => CivicAppShell.branches(
       destinations: const [
         CivicNavItem(LucideIcons.house, 'Home'),
         CivicNavItem(LucideIcons.fileText, 'Applications'),
       ],
       selectedIndex: index,
       onDestinationSelected: (i) => setState(() => index = i),
-      child: pages[index],
+      branches: [
+        (context) => const HomePage(),
+        (context) => const ApplicationsPage(),
+      ],
     ),
     // app/host.dart
     'CivicHost': (context) => MaterialApp.router(
@@ -602,6 +626,13 @@ class _Caller {
     ),
     'CivicTag': (context) =>
         const CivicTag(label: 'In progress', tone: CivicTone.info),
+    'CivicTextField (checking)': (context) {
+      void save() => setState(() {
+        postcodeError = postcode.trim().isEmpty ? 'Enter your postcode' : null;
+      });
+      save();
+      return Text(postcodeError ?? '');
+    },
     'CivicTextField': (context) => CivicTextField(
       labelText: 'Postcode',
       widthInCharacters: 10,
@@ -698,6 +729,10 @@ class _Caller {
       ),
       onPressed: () {},
       child: const Text('Continue'),
+    ),
+    'CivicThemeData.palettes': (context) => CivicHost(
+      palette: CivicThemeData.palettes.firstWhere((p) => p.id == saved),
+      child: app,
     ),
     'CivicThemeData': (context) {
       final theme = CivicThemeData.light();

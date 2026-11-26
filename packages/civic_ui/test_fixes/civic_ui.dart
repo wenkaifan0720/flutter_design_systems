@@ -1,6 +1,7 @@
-// The names civic_ui 0.5.0 renames: civic_ui.dart calls them as before `dart fix --apply`,
+// The names civic_ui 0.5.0 and 0.8.0 rename: civic_ui.dart calls them as before `dart fix --apply`,
 // civic_ui.dart.expect as after.
 import 'package:flutter/widgets.dart';
+import 'package:civic_ui/civic_host.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 void calls(BuildContext context) {
@@ -49,5 +50,11 @@ void calls(BuildContext context) {
   print(v7.selected);
   final v8 = CivicBadge(count: 1, noun: 'Text', max: 1);
   print(v8.max);
-  print([v1, v2, v3, v4, v5, v6, v7, v8]);
+  final v9 = CivicThemeData.contrastRatio(
+    const Color(0xFF000000),
+    const Color(0xFFFFFFFF),
+  );
+  final v10 = CivicSkeleton(label: 'Text', child: const SizedBox());
+  print(v10.label);
+  print([v1, v2, v3, v4, v5, v6, v7, v8, v9, v10]);
 }

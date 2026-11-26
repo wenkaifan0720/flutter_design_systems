@@ -213,9 +213,12 @@ class _CivicDatePickerState extends State<CivicDatePicker> {
       // The calendar opens from the whole field, its label and help too, so
       // above the field it stands clear of the label.
       around: (button) {
+        // The typed date takes its line's width beside the button, as a
+        // text field takes its column's.
         final row = _LevelWrap(
           spacing: CivicSpacing.s8,
           runSpacing: CivicSpacing.s8,
+          fillFirst: true,
           slots: [(null, field), (null, button)],
         );
         if (!framed) return row;
@@ -559,12 +562,14 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
 /// the next line), each slot a control under an optional label (a range's
 /// From and To). The controls on one line stand one height, the tallest's,
 /// as controls in a row do, under their labels, which stand
-/// [CivicSpacing.s4] over them.
+/// [CivicSpacing.s4] over them. With [fillFirst], the first control takes
+/// the room its line leaves.
 class _LevelWrap extends MultiChildRenderObjectWidget {
   _LevelWrap({
     required List<(Widget?, Widget)> slots,
     required this.spacing,
     required this.runSpacing,
+    this.fillFirst = false,
   }) : labels = [
          for (final (label, _) in slots) ...[if (label != null) true, false],
        ],
@@ -579,10 +584,16 @@ class _LevelWrap extends MultiChildRenderObjectWidget {
 
   final double spacing;
   final double runSpacing;
+  final bool fillFirst;
 
   @override
-  _RenderLevelWrap createRenderObject(BuildContext context) =>
-      _RenderLevelWrap(labels, spacing, runSpacing, Directionality.of(context));
+  _RenderLevelWrap createRenderObject(BuildContext context) => _RenderLevelWrap(
+    labels,
+    spacing,
+    runSpacing,
+    Directionality.of(context),
+    fillFirst,
+  );
 
   @override
   void updateRenderObject(
@@ -592,7 +603,8 @@ class _LevelWrap extends MultiChildRenderObjectWidget {
     ..labels = labels
     ..spacing = spacing
     ..runSpacing = runSpacing
-    ..direction = Directionality.of(context);
+    ..direction = Directionality.of(context)
+    ..fillFirst = fillFirst;
 }
 
 class _LevelParentData extends ContainerBoxParentData<RenderBox> {}
@@ -608,7 +620,15 @@ class _RenderLevelWrap extends RenderBox
     this._spacing,
     this._runSpacing,
     this._direction,
+    this._fillFirst,
   );
+
+  bool _fillFirst;
+  set fillFirst(bool v) {
+    if (v == _fillFirst) return;
+    _fillFirst = v;
+    markNeedsLayout();
+  }
 
   List<bool> _labels;
   set labels(List<bool> v) {
@@ -730,6 +750,19 @@ class _RenderLevelWrap extends RenderBox
       } else {
         runs.last.add(i);
         x += widths[i] + _spacing;
+      }
+    }
+    // The first control takes the room its line leaves.
+    if (_fillFirst && constraints.hasBoundedWidth && runs.first.first == 0) {
+      final line = runs.first;
+      final used =
+          line.fold<double>(0, (sum, i) => sum + widths[i]) +
+          _spacing * (line.length - 1);
+      final room = constraints.maxWidth - used;
+      if (room > 0) {
+        final c = BoxConstraints.tightFor(width: controls[0].width + room);
+        controls[0] = measure(slots[0].control, c);
+        widths[0] = math.max(labels[0].width, controls[0].width);
       }
     }
     // Each line: the band its labels take, and its controls' one height.

@@ -5,6 +5,12 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor preview}
+/// {@canonicalFor preview.CivicPresentation}
+/// {@canonicalFor preview.CivicPreview}
 library;
 
 export 'package:ui_core/host.dart';
+
+export 'src/civic/components/app/preview.dart';

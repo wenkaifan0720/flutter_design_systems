@@ -142,7 +142,12 @@ class CivicTable<R> extends StatelessWidget {
               border: Border.all(color: ink, width: CivicMetrics.edge),
             ),
             child: on
-                ? Icon(LucideIcons.check, size: _glyph, color: ink)
+                ? Icon(
+                    LucideIcons.check,
+                    size: _glyph,
+                    color: ink,
+                    applyTextScaling: true,
+                  )
                 : null,
           ),
         ),

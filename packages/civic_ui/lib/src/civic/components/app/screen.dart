@@ -12,7 +12,7 @@ import '../scaffold/scaffold.dart';
 /// A page of an app: the [topBar] across the top, then the [body] in the
 /// page's reading column (at most 640 wide, short lines read faster),
 /// scrolled when it is long, its foot clear of the device's edge and of
-/// whatever a frame stands under it ([ShellInsets]).
+/// whatever stands over it (a phone's bar of places).
 ///
 /// [scroll] false hands the body the room to scroll itself; [fullBleed]
 /// drops the column and its margins, for a body that draws to the page's

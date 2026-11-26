@@ -85,7 +85,7 @@ class CivicCurrency {
   int get hashCode => Object.hash(symbol, one, many, minorOne, minorMany);
 }
 
-/// An amount of money in words' place: [minorUnits] in [currency], in
+/// An amount of money, written: [minorUnits] in [currency], in
 /// tabular figures so amounts in a column line up ("€62.50", "−€5"), read
 /// whole by a screen reader ("62 euros 50 cents"). Its figures are the
 /// reader's digits and separators (Arabic's "€٦٢٫٥٠"), kept in their order

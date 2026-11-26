@@ -27,7 +27,7 @@ void main() {
               brightness: brightness,
               child: child ?? const SizedBox.shrink(),
             ),
-            home: CivicShellFrame(
+            home: CivicAppShell(
               destinations: _places,
               selectedIndex: 1,
               onDestinationSelected: (_) {},

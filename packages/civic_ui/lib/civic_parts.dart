@@ -37,6 +37,7 @@ export 'src/civic/internal/overhang.dart';
 export 'src/civic/internal/paint.dart';
 export 'src/civic/internal/places.dart';
 export 'src/civic/internal/platform_words.dart';
+export 'src/civic/internal/row_hover.dart';
 export 'src/civic/internal/segment_well.dart';
 export 'src/civic/internal/slider_parts.dart';
 export 'src/civic/internal/spinner_arc.dart';

@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/option.dart';
 import '../../internal/paint.dart';
+import '../../internal/row_hover.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
 
@@ -70,10 +71,12 @@ class CivicListRow extends StatelessWidget {
   /// What else to know, under the title.
   final Widget? subtitle;
 
-  /// A glyph before the words.
+  /// A glyph or a picture before the words ([CivicAvatar]). A screen reader
+  /// leaves it out of the row's name, which it would only repeat: what it
+  /// means goes in the [title], or in the [trailing] status.
   final Widget? leading;
 
-  /// A status at the end.
+  /// A status at the end, read in the row's name after its words.
   final Widget? trailing;
 
   /// Called on a press; null leaves it a row of words.
@@ -146,7 +149,9 @@ class CivicListRow extends StatelessWidget {
                     color: Color.lerp(t.action, t.onFocus, focus),
                     size: 24,
                   ),
-                  child: lead,
+                  // Out of the row's name: a glyph or a monogram only
+                  // repeats the title; a status goes in [trailing].
+                  child: ExcludeSemantics(child: lead),
                 ),
               Expanded(
                 child: _Beside(
@@ -201,7 +206,9 @@ class CivicListRow extends StatelessWidget {
             builder: (context, states, _) => CivicSpringValue(
               value: states.contains(WidgetState.pressed)
                   ? 1
-                  : states.contains(WidgetState.hovered)
+                  // In a row of more parts, the row greys under a pointer.
+                  : states.contains(WidgetState.hovered) &&
+                        !CivicRowHover.inRow(context)
                   ? 0.5
                   : 0,
               spring: CivicMotion.press,

@@ -77,14 +77,6 @@ class CivicCalendar extends StatefulWidget {
   /// Overrides for the days' look.
   final CivicStyle? style;
 
-  /// A day's least width before 0.7.0: a finger's target then.
-  @Deprecated(
-    "A day's least side is the finger's floor in force "
-    '(RawTapTargets.of(context).touch, 40 by default). '
-    'This constant was deprecated in 0.7.0 and is removed in 0.8.0.',
-  )
-  static const double dayWidth = 44;
-
   /// A month's widest at the reader's usual text: seven days of 56, near
   /// Material's 360-wide calendar. On a wide page a month stretched to
   /// the page's width spread its days apart; larger text widens it as far

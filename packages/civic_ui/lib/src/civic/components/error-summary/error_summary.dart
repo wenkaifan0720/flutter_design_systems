@@ -133,15 +133,7 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
         if (!mounted) return;
         _node.requestFocus();
         _announce();
-        final target = context;
-        // Scrolled to only when it is above the view (the page was sent
-        // from its foot): a page that opens with it keeps its back link.
-        if (Scrollable.maybeOf(target) != null) {
-          Scrollable.ensureVisible(
-            target,
-            alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
-          ).ignore();
-        }
+        _reveal();
       });
     }
   }
@@ -161,6 +153,31 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
         _announce();
       });
     }
+  }
+
+  /// Scrolls the summary into view when it is above it (the page was sent
+  /// from its foot): where the whole of it shows from the page's start, the
+  /// page goes back to its start, the summary where the page sets it (a
+  /// page that opens with it keeps its back link); else it stands
+  /// [CivicSpacing.s16] under the view's top edge, never flush under the
+  /// app's bar.
+  void _reveal() {
+    final box = context.findRenderObject();
+    final scrollable = Scrollable.maybeOf(context);
+    if (box == null || scrollable == null) return;
+    final viewport = RenderAbstractViewport.maybeOf(box);
+    if (viewport == null) return;
+    final position = scrollable.position;
+    final top = viewport.getOffsetToReveal(box, 0).offset;
+    if (position.pixels <= top) return;
+    final height = box is RenderBox ? box.size.height : 0.0;
+    final fromStart =
+        top + height <= position.minScrollExtent + position.viewportDimension;
+    position.jumpTo(
+      fromStart
+          ? position.minScrollExtent
+          : math.max(position.minScrollExtent, top - CivicSpacing.s16),
+    );
   }
 
   void _announce() {

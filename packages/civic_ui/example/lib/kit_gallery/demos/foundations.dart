@@ -26,7 +26,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-/// The six palettes ([CivicThemeData.presets]) in the page's brightness,
+/// The six palettes ([CivicThemeData.palettes]) in the page's brightness,
 /// each a page of its own under its own theme: its name, a button and a
 /// link, the parts themselves.
 class _Palettes extends StatelessWidget {
@@ -53,10 +53,12 @@ class _Palettes extends StatelessWidget {
               spacing: CivicSpacing.s8,
               runSpacing: CivicSpacing.s8,
               children: [
-                for (final id in CivicThemeData.presets)
+                for (final palette in CivicThemeData.palettes)
                   _Swatch(
-                    id,
-                    CivicThemeData.preset(id, t.brightness),
+                    palette.id,
+                    t.brightness == Brightness.dark
+                        ? CivicThemeData.dark(palette: palette)
+                        : CivicThemeData.light(palette: palette),
                     width: width,
                   ),
               ],

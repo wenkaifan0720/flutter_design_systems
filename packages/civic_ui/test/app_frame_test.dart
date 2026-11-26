@@ -9,6 +9,7 @@
 import 'dart:async';
 
 import 'package:civic_ui/civic_ui.dart';
+import 'package:civic_ui/civic_host.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,7 +57,7 @@ CivicPreview _place({
   tabs: _places,
   selectedIndex: 1,
   brand: 'Brindlemere permits',
-  action: CivicShellAction(
+  action: ShellAction(
     key: _act,
     icon: LucideIcons.plus,
     label: 'Apply for a permit',
@@ -177,7 +178,7 @@ void main() {
     await _show(
       tester,
       _hosted(
-        CivicShellFrame(
+        CivicAppShell(
           destinations: _places,
           selectedIndex: 0,
           onDestinationSelected: (index) => picked = index,
@@ -201,7 +202,7 @@ void main() {
       await _show(
         tester,
         _hosted(
-          CivicShellFrame(
+          CivicAppShell(
             destinations: _places,
             selectedIndex: 0,
             onDestinationSelected: (index) => picked = index,
@@ -232,7 +233,7 @@ void main() {
     await _show(
       tester,
       _hosted(
-        CivicShellFrame(
+        CivicAppShell(
           destinations: _places,
           selectedIndex: 1,
           onDestinationSelected: (_) {},

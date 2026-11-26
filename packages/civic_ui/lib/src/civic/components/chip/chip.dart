@@ -125,14 +125,15 @@ class CivicChip extends StatelessWidget {
             fontWeight: FontWeight.w700,
             height: 1.3,
           ),
-          leading: icon == null ? null : Icon(icon),
+          // Its glyphs grow with the reader's text, as its words do.
+          leading: icon == null ? null : Icon(icon, applyTextScaling: true),
           child: removable
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   spacing: CivicSpacing.s8,
                   children: [
                     Flexible(child: Text(label)),
-                    const Icon(LucideIcons.x, size: 18),
+                    const Icon(LucideIcons.x, size: 18, applyTextScaling: true),
                   ],
                 )
               : Text(label),

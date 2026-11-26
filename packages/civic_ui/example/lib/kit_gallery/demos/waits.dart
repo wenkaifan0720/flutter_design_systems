@@ -52,7 +52,7 @@ Widget kitWaitsDemo(Brightness brightness) => kitScreen(
       caption: 'Your applications, on their way.',
       children: [
         CivicSkeleton(
-          label: 'Loading your applications',
+          semanticLabel: 'Loading your applications',
           child: Column(
             spacing: CivicSpacing.s24,
             children: [_Row(), _Row(), _Row()],

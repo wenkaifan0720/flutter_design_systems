@@ -11,7 +11,7 @@ import '../../theme.dart';
 /// [CivicSkeletonBlock]s and [CivicSkeletonText], plain grey (a wash of
 /// the ink, so they show on the ground and on a card alike), fading
 /// slowly together (still under Reduce Motion). A screen reader hears one
-/// "Loading" (or [label]), not the blocks.
+/// "Loading" (or [semanticLabel]), not the blocks.
 ///
 /// Use it where the shape is known (a list of applications, a record's
 /// rows) and the wait is short; for a whole page on its way,
@@ -33,13 +33,18 @@ import '../../theme.dart';
 /// ```
 class CivicSkeleton extends StatefulWidget {
   /// A skeleton of [child].
-  const CivicSkeleton({super.key, required this.child, this.label, this.style});
+  const CivicSkeleton({
+    super.key,
+    required this.child,
+    this.semanticLabel,
+    this.style,
+  });
 
   /// The blocks, laid out as the content will be.
   final Widget child;
 
   /// What a screen reader hears; null: "Loading" in the reader's language.
-  final String? label;
+  final String? semanticLabel;
 
   /// Overrides for this skeleton's look.
   final CivicStyle? style;
@@ -51,7 +56,7 @@ class CivicSkeleton extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );
@@ -96,7 +101,9 @@ class _CivicSkeletonState extends State<CivicSkeleton>
     return Semantics(
       container: true,
       role: SemanticsRole.loadingSpinner,
-      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
+      label:
+          widget.semanticLabel ??
+          RawWidgetsLocalizations.of(context).loadingLabel,
       excludeSemantics: true,
       child: _SkeletonFill(
         color: so.fill ?? _wash(t),

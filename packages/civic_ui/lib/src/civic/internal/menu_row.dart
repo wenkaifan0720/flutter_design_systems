@@ -111,7 +111,7 @@ class CivicMenuRow extends StatelessWidget {
                   spacing: CivicSpacing.s12,
                   children: [
                     if (icon case final glyph?)
-                      Icon(glyph, size: 24, color: ink)
+                      Icon(glyph, size: 24, color: ink, applyTextScaling: true)
                     else if (glyphColumn)
                       const SizedBox(width: 24),
                     Expanded(

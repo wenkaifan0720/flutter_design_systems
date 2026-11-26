@@ -35,6 +35,20 @@ import '../../theme.dart';
 /// [CivicThemeData.textFieldStyle]. The edge's width, its doubling on focus
 /// and the yellow ring are the look's.
 ///
+/// In a form the fields stand in one column, each the column's width, with
+/// `CivicSpacing.s32` between them (a question's room).
+///
+/// Checking the answers: check them when the reader saves, not as they type.
+/// Give each field its problem in words as [errorText] (null once the answer
+/// is fine), and say the same problems in a `CivicErrorSummary` at the top
+/// of the form, each line moving the focus to its field (its [focusNode]).
+///
+/// ```dart
+/// void save() => setState(() {
+///   postcodeError = postcode.trim().isEmpty ? 'Enter your postcode' : null;
+/// });
+/// ```
+///
 /// ```dart
 /// CivicTextField(
 ///   labelText: 'Postcode',

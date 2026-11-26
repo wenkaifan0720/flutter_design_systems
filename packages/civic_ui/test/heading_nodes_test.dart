@@ -1,4 +1,4 @@
-// On a page of CivicShellFrame, on ui_core's RawAdaptiveShell, under the look's host, a heading and the
+// On a page of CivicAppShell, on ui_core's RawAdaptiveShell, under the look's host, a heading and the
 // words after it read as two nodes, the heading flagged as a header: the keys
 // set round the app and its panes (F6 between panes) add no node of their own
 // for the two to merge into.
@@ -51,7 +51,7 @@ void main() {
           MaterialApp(
             builder: (context, child) =>
                 CivicHost(theme: CivicThemeData.light(), child: child!),
-            home: CivicShellFrame(
+            home: CivicAppShell(
               destinations: const [
                 CivicNavigationDestination(
                   icon: LucideIcons.house,

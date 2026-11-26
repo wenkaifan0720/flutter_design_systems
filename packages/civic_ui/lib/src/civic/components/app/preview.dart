@@ -89,11 +89,20 @@ class CivicPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // A preview's page is looked at, not navigated: its places stay put.
-    Widget framed(Widget page, {required bool places}) => CivicShellFrame(
+    Widget framed(Widget page, {required bool places}) => CivicAppShell(
       destinations: tabs,
       selectedIndex: selectedIndex,
       onDestinationSelected: (_) {},
-      action: action,
+      action: switch (action) {
+        final ShellAction act => CivicShellAction(
+          icon: act.icon,
+          onPressed: act.onPressed,
+          label: act.label,
+          accent: act.accent,
+          key: act.key,
+        ),
+        null => null,
+      },
       brand: brand,
       showPlaces: places,
       child: page,

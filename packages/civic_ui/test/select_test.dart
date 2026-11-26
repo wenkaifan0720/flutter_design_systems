@@ -1,8 +1,9 @@
 // A select's open list is the field's width, wider only to fit its longest
 // item and then no wider than 320 (a field wider than that keeps its own),
 // never the screen's, and starts on the field's leading edge: at 390 and
-// 1440 wide, left to right and right to left. Civic's select is 320 from
-// 600 wide, so there a long item wraps in a list the field's width.
+// 1440 wide, left to right and right to left. Civic's select takes its
+// column's width, as a text field does, so on a phone a long item wraps in
+// a list the field's width, and on a desk it keeps to one line.
 //
 // And the keys, as a platform's own select: Enter, Space or Down open the
 // list on the answer chosen (the first while none is), as a press does;
@@ -150,24 +151,34 @@ void main() {
         );
       });
 
-      testWidgets('a list with a long item keeps to the field and wraps it '
-          '($where)', (tester) async {
+      testWidgets('a list with a long item keeps to the field, which takes '
+          'its column ($where)', (tester) async {
         final (field, list) = await _open(
           tester,
           width: width,
           direction: direction,
           items: _long,
         );
-        // The phone's field (350) is past the cap and keeps its own width;
-        // the desktop's is the cap. Either way the list is the field's, and
-        // never the screen's.
+        // The field is past the cap and keeps its own width: the list is
+        // the field's, and never the screen's.
         expect(list.width, moreOrLessEquals(field.width, epsilon: 0.5));
         expect(list.width, lessThan(width - 2 * CivicSpacing.s8));
+        // The select takes its column, as a text field does.
+        expect(
+          field.width,
+          moreOrLessEquals(width - 2 * CivicSpacing.s20, epsilon: 0.5),
+        );
         final item = tester.getRect(
           find.text("A vehicle that carries a disabled person's parking badge"),
         );
         final line = tester.getRect(find.text('Car or van').last);
-        expect(item.height, greaterThan(line.height * 1.5));
+        // On a phone the long item wraps; on a desk it fits one line.
+        expect(
+          item.height,
+          width < 600
+              ? greaterThan(line.height * 1.5)
+              : lessThan(line.height * 1.5),
+        );
         expect(
           direction == TextDirection.ltr ? list.left : list.right,
           moreOrLessEquals(

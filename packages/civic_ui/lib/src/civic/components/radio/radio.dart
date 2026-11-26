@@ -7,7 +7,9 @@ import '../../internal/option.dart';
 import '../../theme.dart';
 
 /// A question with one answer: its [labelText] asks it (on a question page,
-/// as the page's heading with [isPageHeading]), its [CivicRadio]s are the
+/// as the page's heading with [isPageHeading]; on a page of a few questions,
+/// at a legend's size with [isQuestion]; else as a field's label), its
+/// [CivicRadio]s are the
 /// answers, each with a hint where the words alone don't decide it. The
 /// group is Flutter's `RadioGroup`, one stop for Tab, as a browser's
 /// radios are: Tab and Shift+Tab come to the chosen answer (the first,
@@ -42,6 +44,7 @@ class CivicRadioGroup<T> extends StatefulWidget {
     this.helperText,
     this.errorText,
     this.isPageHeading = false,
+    this.isQuestion = false,
   });
 
   /// The answer chosen; null while none is.
@@ -65,6 +68,11 @@ class CivicRadioGroup<T> extends StatefulWidget {
   /// Whether the question is the page's heading.
   final bool isPageHeading;
 
+  /// Whether the label is a question of its own on a page that asks a few
+  /// (How did you hear about us?): it stands at a fieldset's legend size, as a
+  /// question's does; else in the body's weight, as every field's label.
+  final bool isQuestion;
+
   @override
   State<CivicRadioGroup<T>> createState() => _CivicRadioGroupState<T>();
 
@@ -85,7 +93,8 @@ class CivicRadioGroup<T> extends StatefulWidget {
           value: isPageHeading,
           ifTrue: 'page heading',
         ),
-      );
+      )
+      ..add(FlagProperty('isQuestion', value: isQuestion, ifTrue: 'question'));
   }
 }
 
@@ -109,7 +118,7 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
       builder: (context, parts) => CivicFieldFrame(
         parts: parts,
         isPageHeading: widget.isPageHeading,
-        isLegend: true,
+        isLegend: widget.isQuestion,
       ),
       // Flutter's radio group: one Tab stop (the chosen answer, else the
       // first), the arrows moving and choosing. ui_core's keyboard fix inside
@@ -142,7 +151,9 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
 }
 
 /// One answer of a [CivicRadioGroup]: a 40-point circle, the words beside
-/// it, a hint under them. The chosen one shows a solid dot.
+/// it, a hint under them. The chosen one shows a solid dot. A [leading]
+/// part (a palette's swatch, a country's flag) stands between the circle and
+/// the words.
 ///
 /// Reads [CivicStyle]'s fill (the circle), foreground (the dot and the
 /// words), edge (the circle's edge) and textStyle (the words): its
@@ -162,6 +173,7 @@ class CivicRadio<T> extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.style,
+    this.leading,
   });
 
   /// What choosing it gives the group.
@@ -190,6 +202,13 @@ class CivicRadio<T> extends StatefulWidget {
   /// Overrides for this answer's look.
   final CivicStyle? style;
 
+  /// Drawn between the circle and the words, on the middle of their first
+  /// line: what the words name, seen (a palette's swatch, a country's flag).
+  /// A screen reader hears the words alone, so it adds nothing to the
+  /// answer's name. The README's palette picker shows a palette's swatch
+  /// with it.
+  final Widget? leading;
+
   @override
   State<CivicRadio<T>> createState() => _CivicRadioState<T>();
 
@@ -210,8 +229,9 @@ class CivicRadio<T> extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null))
       ..add(
-        DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
+        DiagnosticsProperty<Widget>('leading', leading, defaultValue: null),
       );
   }
 }
@@ -263,6 +283,7 @@ class _CivicRadioState<T> extends State<CivicRadio<T>> {
                 styles: [widget.style, context.civicTheme.radioStyle],
                 labelText: label,
                 helperText: helper,
+                leading: widget.leading,
               ),
             ),
           ),

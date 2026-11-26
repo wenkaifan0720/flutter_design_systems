@@ -56,9 +56,10 @@ class CivicAvatar extends StatelessWidget {
         fit: BoxFit.scaleDown,
         child: Padding(
           padding: EdgeInsets.all(size / 8),
+          // The initials grow with the reader's text until they fill the
+          // circle, which keeps its size in the layout.
           child: Text(
             initialsOf(name),
-            textScaler: TextScaler.noScaling,
             style: context.civicText.label
                 .copyWith(fontSize: size * 0.4, height: 1)
                 .merge(so.textStyle)

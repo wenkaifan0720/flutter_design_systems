@@ -518,44 +518,95 @@ final class CivicThemeData with Diagnosticable {
       'for a pointer: a target can grow, never shrink below them.';
 
   /// Civic by day: white cards on a cool blue-grey ground, ink words, one
-  /// blue for action.
-  factory CivicThemeData.light() =>
-      CivicThemeData.from(brightness: Brightness.light);
+  /// blue for action; [palette], one of [palettes], gives its action colour
+  /// instead.
+  factory CivicThemeData.light({RawNamedPalette? palette}) =>
+      _fromPalette(palette, Brightness.light);
 
   /// Civic by night, designed: slate cards on a deeper ground, light words,
   /// a light-blue action for links and marks; a solid button takes the
-  /// action's hue deep enough to carry white words.
-  factory CivicThemeData.dark() =>
-      CivicThemeData.from(brightness: Brightness.dark);
+  /// action's hue deep enough to carry white words. [palette], one of
+  /// [palettes], gives its action colour instead.
+  factory CivicThemeData.dark({RawNamedPalette? palette}) =>
+      _fromPalette(palette, Brightness.dark);
 
-  /// The preset named [id] ([presets]) by [brightness]: Civic with that
-  /// palette's action colour, its words, errors, successes and focus plate
-  /// Civic's own.
+  /// The palette an app stored by its [id] ([RawNamedPalette.id], one of
+  /// [palettes]) by [brightness]: Civic with that palette's action colour,
+  /// its words, errors, successes and focus plate Civic's own.
   factory CivicThemeData.preset(String id, Brightness brightness) {
-    assert(presets.contains(id), 'Civic has no preset $id');
-    final seeds = _presetActions[id];
-    return CivicThemeData.from(
-      brightness: brightness,
-      action: seeds == null
-          ? null
-          : brightness == Brightness.dark
-          ? seeds.$2
-          : seeds.$1,
-    );
+    final palette = palettes.where((p) => p.id == id).firstOrNull;
+    assert(palette != null, 'Civic has no palette $id');
+    return _fromPalette(palette, brightness);
   }
 
-  /// Civic's six palettes, by id; the first, civic's blue, is the default.
-  /// Each names an action colour: harbour a deep petrol, indigo a
-  /// violet-blue, heather a purple, plum a red-violet and slate the ink
-  /// itself, none of them the green of a success, the red of an error or
-  /// the focus's yellow.
-  static const List<String> presets = [
-    'civic',
-    'harbour',
-    'indigo',
-    'heather',
-    'plum',
-    'slate',
+  // Civic with [palette]'s action colour: one of Civic's own by its seed,
+  // an app's own by its first swatch.
+  static CivicThemeData _fromPalette(
+    RawNamedPalette? palette,
+    Brightness brightness,
+  ) {
+    final dark = brightness == Brightness.dark;
+    final seeds = palettes.contains(palette)
+        ? _presetActions[palette!.id]
+        : null;
+    final action = palette == null || palette == palettes.first
+        ? null
+        : seeds != null
+        ? (dark ? seeds.$2 : seeds.$1)
+        : palette.swatchesFor(brightness).first;
+    return CivicThemeData.from(brightness: brightness, action: action);
+  }
+
+  /// Civic's six palettes, for an app's palette picker; the first, Civic's
+  /// blue, is the default. Each is an action colour, its one swatch by day
+  /// and by night: Harbour a deep petrol, Indigo a violet-blue, Heather a
+  /// purple, Plum a red-violet and Slate the ink itself, none of them the
+  /// green of a success, the red of an error or the focus's yellow. Civic's
+  /// words, errors, successes and focus stay the same in each.
+  ///
+  /// ```dart
+  /// CivicHost(
+  ///   palette: CivicThemeData.palettes.firstWhere((p) => p.id == saved),
+  ///   child: app,
+  /// )
+  /// ```
+  static const List<RawNamedPalette> palettes = [
+    RawNamedPalette(
+      id: 'civic',
+      label: 'Civic',
+      swatches: [Color(0xFF0F4C81)],
+      darkSwatches: [Color(0xFF7DB8F2)],
+    ),
+    RawNamedPalette(
+      id: 'harbour',
+      label: 'Harbour',
+      swatches: [Color(0xFF00586A)],
+      darkSwatches: [Color(0xFF66C8DA)],
+    ),
+    RawNamedPalette(
+      id: 'indigo',
+      label: 'Indigo',
+      swatches: [Color(0xFF343F9C)],
+      darkSwatches: [Color(0xFFB4BCF5)],
+    ),
+    RawNamedPalette(
+      id: 'heather',
+      label: 'Heather',
+      swatches: [Color(0xFF5A2D91)],
+      darkSwatches: [Color(0xFFC5AEF2)],
+    ),
+    RawNamedPalette(
+      id: 'plum',
+      label: 'Plum',
+      swatches: [Color(0xFF7E1F5E)],
+      darkSwatches: [Color(0xFFF0A6D2)],
+    ),
+    RawNamedPalette(
+      id: 'slate',
+      label: 'Slate',
+      swatches: [Color(0xFF25313B)],
+      darkSwatches: [Color(0xFFD3DCE3)],
+    ),
   ];
 
   // Each palette's action seed by day and by night; [CivicThemeData.from]
@@ -699,7 +750,7 @@ final class CivicThemeData with Diagnosticable {
 
   static const Map<CivicTone, (Color, Color)> _darkTones = {
     CivicTone.neutral: (Color(0xFF2A3238), Color(0xFFE1E5E8)),
-    CivicTone.info: (Color(0xFF15324E), Color(0xFFBFDDFF)),
+    CivicTone.info: (Color(0xFF15324E), Color(0xFFADD4FF)),
     CivicTone.success: (Color(0xFF123A26), Color(0xFFB4EBC9)),
     CivicTone.warning: (Color(0xFF3D3104), Color(0xFFFFE58A)),
     CivicTone.error: (Color(0xFF4A1612), Color(0xFFFFC7C0)),
@@ -721,14 +772,6 @@ final class CivicThemeData with Diagnosticable {
     );
     return on;
   }
-
-  /// WCAG's contrast ratio between [a] and [b], 1 to 21.
-  @Deprecated(
-    "Use ui_core's RawPalette.contrastRatio, the same ratio. "
-    'This method was deprecated in 0.7.0 and is removed in 0.8.0.',
-  )
-  static double contrastRatio(Color a, Color b) =>
-      RawPalette.contrastRatio(a, b);
 
   /// The solid edge under a button of [c]: darker by day, deeper by night.
   static Color _edgeOf(Color c, bool dark) {
@@ -1703,8 +1746,10 @@ class _CivicScope extends InheritedTheme {
 }
 
 /// Puts Civic in scope for everything under it, as Material's `Theme` does.
-/// It is the whole install: put one in any app's `builder:`, under a
-/// `MaterialApp`, a `CupertinoApp` or a `WidgetsApp` alike. Under it, every
+/// An app mounts `CivicHost`, which puts one over it with the theme for the
+/// brightness in force; put one yourself over a part of a tree (a section
+/// by night, a test) or in the `builder:` of an app that mounts no host,
+/// under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp` alike. Under it, every
 /// text has Civic's body style to fall back on, Flutter's own text field
 /// wears Civic's caret and selection with no ink, taps reach 40 by 40 for a
 /// finger and 24 by 24 for a pointer, and spacing stands on a 4 pt grid.

@@ -17,7 +17,8 @@ import 'theme.dart';
 
 export 'internal/paint.dart' show CivicMetrics;
 
-/// A face round [child]: [fill] on a solid edge [edgeHeight] tall in
+/// A button's face round [child], for a part of your own: [fill] on a
+/// solid edge [edgeHeight] tall in
 /// [edgeColor], which a press sinks onto. [focused] floods it to the theme's
 /// yellow plate over a [CivicMetrics.bar]-thick ink bar; [pressed] sinks
 /// it. Both move on Civic's press spring.
@@ -111,7 +112,8 @@ class CivicFace extends StatelessWidget {
   }
 }
 
-/// A well round [child]: [fill] inside a [CivicMetrics.edge] edge in
+/// A field's box round [child], for a part of your own: [fill] inside a
+/// [CivicMetrics.edge] edge in
 /// [edgeColor], square, or round with [circle]. [focused] doubles the edge
 /// in the ink and rings it in the theme's yellow, on Civic's press spring.
 ///

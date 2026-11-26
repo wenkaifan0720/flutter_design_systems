@@ -9,9 +9,9 @@ import '../icon-button/icon_button.dart';
 import '../link/link.dart';
 import '../top-bar/top_bar.dart';
 
-/// Hosts Civic's toasts over [child]: put it above the app's navigator
-/// (`WidgetsApp.builder`), under a [CivicTheme], then call
-/// [CivicToast.show]. F6 moves the focus to the newest toast; Escape
+/// Hosts Civic's toasts over [child], for [CivicToast.show]. `CivicHost`
+/// puts one over the app; an app that scopes Civic with [CivicTheme] alone
+/// puts one above its navigator, under the theme. F6 moves the focus to the newest toast; Escape
 /// dismisses it. Where the toasts are taller than the screen (a long
 /// toast at twice the text, or one leaving as the next comes), they scroll,
 /// the newest in sight at the foot, rather than run off it.
@@ -21,7 +21,7 @@ import '../top-bar/top_bar.dart';
 /// `style:`, then [CivicThemeData.toastStyle]. Keep the words at 7:1 on the
 /// band.
 ///
-/// In an app's `builder:`, under its theme:
+/// In an app's `builder:` with no host, under its theme:
 /// `builder: (context, child) => CivicTheme(data: CivicThemeData.light(), child: CivicToaster(child: child!))`.
 class CivicToaster extends StatelessWidget {
   /// A toaster over [child].

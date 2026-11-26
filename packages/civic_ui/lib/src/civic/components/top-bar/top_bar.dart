@@ -56,7 +56,10 @@ class CivicTopBar extends StatelessWidget {
   /// A mark before the title: the body's own, never a borrowed one.
   final Widget? emblem;
 
-  /// What stands before everything: a menu button.
+  /// What stands before everything: the way back ([autoLeading]) or a menu
+  /// button. As a [CivicScaffold]'s band from [CivicLayout.expanded] wide it
+  /// hangs in the gutter before the words, at most the gutter wide, so the
+  /// words keep the page's column line as a page is pushed.
   final Widget? leading;
 
   /// Buttons at the end.
@@ -251,13 +254,28 @@ class CivicTopBar extends StatelessWidget {
     final margin = CivicFrameScope.startOf(context, window);
     final endMargin = CivicFrameScope.endOf(context, window);
     final framed = CivicBarSlot.of(context);
+    // From a desktop's width the way back (the leading control) hangs in the
+    // gutter before the words, at most the gutter wide (the least of them
+    // holds the 40 touch floor): the words keep the page's column line as a
+    // page is pushed and popped. In an app's window, and in a bar standing
+    // alone, it stands before them.
+    final hang =
+        lead != null &&
+        framed &&
+        !CivicLayout.isApp(window) &&
+        margin >= CivicSpacing.s40;
     EdgeInsetsDirectional insets(double width) {
       final own = CivicLayout.frameInset(math.min(width, window));
       final start = framed ? margin : own;
       final end = framed ? endMargin : own;
       return EdgeInsetsDirectional.only(
         top: top,
-        start: lead == null ? start : start - CivicSpacing.s12,
+        // A hung control's gutter is the row's start.
+        start: lead == null
+            ? start
+            : hang
+            ? 0
+            : start - CivicSpacing.s12,
         end: actions.isEmpty ? end : end - CivicSpacing.s12,
       );
     }
@@ -279,9 +297,22 @@ class CivicTopBar extends StatelessWidget {
                 child: IconTheme.merge(
                   data: IconThemeData(color: onBand),
                   child: Row(
-                    spacing: CivicSpacing.s8,
                     children: [
-                      ?lead,
+                      if (lead != null)
+                        if (hang)
+                          // The gutter, the control at its end: at most
+                          // the gutter wide.
+                          SizedBox(
+                            width: margin,
+                            child: Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: lead,
+                            ),
+                          )
+                        else ...[
+                          lead,
+                          const SizedBox(width: CivicSpacing.s8),
+                        ],
                       Expanded(
                         child: Align(
                           alignment: AlignmentDirectional.centerStart,
@@ -295,7 +326,10 @@ class CivicTopBar extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ...actions,
+                      for (final action in actions) ...[
+                        const SizedBox(width: CivicSpacing.s8),
+                        action,
+                      ],
                     ],
                   ),
                 ),

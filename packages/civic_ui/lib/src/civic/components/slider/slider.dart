@@ -54,6 +54,7 @@ class CivicSlider extends StatefulWidget {
     this.labelText,
     this.helperText,
     this.errorText,
+    this.isQuestion = false,
     this.valueLabel,
     this.showLimits = true,
     this.onChangeStart,
@@ -87,6 +88,11 @@ class CivicSlider extends StatefulWidget {
 
   /// What to fix; null while the value is fine.
   final String? errorText;
+
+  /// Whether the label is a question of its own on a page that asks a few
+  /// (How much do you read a week?): it stands at a fieldset's legend size, as a
+  /// question's does; else in the body's weight, as every field's label.
+  final bool isQuestion;
 
   /// The value in words, shown and said; null: the figure, in the reader's
   /// figures.
@@ -328,7 +334,8 @@ class _CivicSliderState extends State<CivicSlider> {
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: live,
-      builder: (context, parts) => CivicFieldFrame(parts: parts),
+      builder: (context, parts) =>
+          CivicFieldFrame(parts: parts, isLegend: widget.isQuestion),
       child: body,
     );
   }
@@ -366,6 +373,7 @@ class CivicRangeSlider extends StatelessWidget {
     this.labelText,
     this.helperText,
     this.errorText,
+    this.isQuestion = false,
     this.valueLabel,
     this.rangeLabel,
     this.startLabel,
@@ -402,6 +410,11 @@ class CivicRangeSlider extends StatelessWidget {
 
   /// What to fix; null while the range is fine.
   final String? errorText;
+
+  /// Whether the label is a question of its own on a page that asks a few
+  /// (How much do you read a week?): it stands at a fieldset's legend size, as a
+  /// question's does; else in the body's weight, as every field's label.
+  final bool isQuestion;
 
   /// A value in words, shown and said; null: the figure.
   final String Function(double value)? valueLabel;
@@ -528,7 +541,8 @@ class CivicRangeSlider extends StatelessWidget {
       helperText: helperText,
       errorText: errorText,
       enabled: live,
-      builder: (context, parts) => CivicFieldFrame(parts: parts),
+      builder: (context, parts) =>
+          CivicFieldFrame(parts: parts, isLegend: isQuestion),
       child: body,
     );
   }
