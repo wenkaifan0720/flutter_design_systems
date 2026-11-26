@@ -298,10 +298,11 @@ class DesignDocsCheck {
 /// - **Each block compiles**: [libraries] gives each Dart block as a
 ///   library for the test to write and analyse; [analysis] reads the
 ///   analyser's errors and deprecations: `a Dart block (the 2nd) does not
-///   compile: Undefined name 'LucideIcons'`. Each block takes Flutter's
-///   widgets, the main library of each package its install lines add, its
-///   own imports and the declarations of the blocks before it; its code
-///   after them, when it declares nothing, is the body of a function given a
+///   compile: Undefined name 'LucideIcons'`. Each block takes what a
+///   reader following the README has: Flutter's widgets, every library the
+///   README's blocks import (a package's library is never guessed from its
+///   name) and the declarations of the blocks before it; its code after its
+///   imports, when it declares nothing, is the body of a function given a
 ///   `BuildContext context` (an expression, its value).
 ///
 /// ```dart
@@ -495,61 +496,64 @@ class DesignReadmeCheck {
   /// [readme]'s Dart blocks, each a library to analyse, by a file name
   /// (`readme_block_1.dart` and on).
   Map<String, String> libraries(String readme) {
-    final adds = installs(readme);
-    final given = [
+    final blocks = [for (final block in _dartBlocks(readme)) _split(block)];
+    // What a reader following the README has imported: Flutter's widgets and
+    // each library a block imports. A package's library is never guessed
+    // from its name: lucide_icons_flutter's is lucide_icons.dart.
+    final stated = [
       "import 'package:flutter/widgets.dart';",
-      for (final MapEntry(key: p, value: range) in adds.entries)
-        if (range.isNotEmpty) "import 'package:$p/$p.dart';",
+      for (final (own, _) in blocks)
+        for (final directive in own)
+          if (RegExp(r'''^import\s+['"](?:package|dart):''')
+              .hasMatch(directive))
+            directive,
     ];
-    String library(String block, List<String> before) {
-      // The block's own imports, then its code.
-      final lines = block.split('\n');
-      final own = <String>[];
-      var i = 0;
-      while (i < lines.length) {
-        final line = lines[i].trim();
-        if (line.isEmpty) {
-          i++;
-        } else if (RegExp(r'^(?:import|export)\s').hasMatch(line)) {
-          var directive = line;
-          while (!directive.endsWith(';') && ++i < lines.length) {
-            directive = '$directive ${lines[i].trim()}';
-          }
-          own.add(directive);
-          i++;
-        } else {
-          break;
-        }
-      }
+    // A block sees the declarations of the blocks before it, as the reader
+    // has them.
+    final libraries = <String, String>{};
+    final declared = <String>[];
+    for (final (i, (own, code)) in blocks.indexed) {
+      final name = 'readme_block_${i + 1}.dart';
       final head = [
         '// ignore_for_file: unused_import, unused_element, '
             'unused_local_variable',
-        ...{...given, ...own, ...before},
+        ...{...stated, ...own, ...declared},
         '',
         '',
       ].join('\n');
-      final code = lines.skip(i).join('\n').trimRight();
-      if (code.isEmpty || _declaration.hasMatch(code)) return '$head$code\n';
-      return code.endsWith(';') || code.endsWith('}')
+      final declares = _declaration.hasMatch(code);
+      libraries[name] = code.isEmpty || declares
+          ? '$head$code\n'
+          : code.endsWith(';') || code.endsWith('}')
           ? '${head}Future<void> readmeBlock(BuildContext context) async {\n'
                 '$code\n}\n'
           : '${head}Object? readmeBlock(BuildContext context) =>\n$code;\n';
-    }
-
-    // A block sees the declarations of the blocks before it, as a reader
-    // following the README has them.
-    final libraries = <String, String>{};
-    final declared = <String>[];
-    for (final (i, block) in _dartBlocks(readme).indexed) {
-      final name = 'readme_block_${i + 1}.dart';
-      libraries[name] = library(block, declared.toList());
-      final code = block.replaceAll(
-        RegExp(r'^(?:import|export)\s[^;]*;', multiLine: true),
-        '',
-      );
-      if (_declaration.hasMatch(code)) declared.add("import '$name';");
+      if (declares) declared.add("import '$name';");
     }
     return libraries;
+  }
+
+  // A block's leading directives, each on one line, and its code after them.
+  static (List<String>, String) _split(String block) {
+    final lines = block.split('\n');
+    final own = <String>[];
+    var i = 0;
+    while (i < lines.length) {
+      final line = lines[i].trim();
+      if (line.isEmpty) {
+        i++;
+      } else if (RegExp(r'^(?:import|export)\s').hasMatch(line)) {
+        var directive = line;
+        while (!directive.endsWith(';') && ++i < lines.length) {
+          directive = '$directive ${lines[i].trim()}';
+        }
+        own.add(directive);
+        i++;
+      } else {
+        break;
+      }
+    }
+    return (own, lines.skip(i).join('\n').trimRight());
   }
 
   /// The errors and deprecations in the analyser's [output] (`dart analyze`

@@ -146,8 +146,9 @@ Four checks read what a test gives them, not a screen:
   plain sentence.
 - `DesignReadmeCheck`: the README's install line takes the package's version; its Dart blocks import only what the
   install lines add (not Flutter's own `material.dart`, which Flutter deprecates for `material_ui`); and each block
-  compiles: `libraries` gives each block as a library for the test to analyse on the latest stable Flutter, and
-  `analysis` reads the analyser's errors and deprecations.
+  compiles: `libraries` gives each block as a library for the test to analyse on the latest stable Flutter, with what
+  a reader following the README has (the libraries its blocks import, never one guessed from a package's name, and
+  the blocks before it), and `analysis` reads the analyser's errors and deprecations.
 - `DesignExampleDepsCheck`: `example/pubspec.yaml` resolves from pub.dev alone: no dependency by path (the package's
   own aside) or git, no override, and none that pub.dev does not serve.
 

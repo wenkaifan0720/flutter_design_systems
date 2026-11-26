@@ -1,10 +1,40 @@
 // The checks a package's tests run on its texts: status tones apart, docs
 // in the user's words, a README that works, an example from pub.dev alone.
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
+
+// A README's imports in the fixtures below, spelled through this: the
+// package's export rewrites every line shaped as a directive, a string's too.
+const String _import = 'import';
+
+/// ui_core's package root where pub lays it out (beside this package in the
+/// repository's workspace, or in the pub cache), from the nearest package
+/// config; null in drip's design kit, where ui_core's libraries are
+/// lib/design_kit and its README is ../package/README.md.
+Directory? _uiCoreRoot() {
+  for (var dir = Directory.current.absolute; ; dir = dir.parent) {
+    final config = File('${dir.path}/.dart_tool/package_config.json');
+    if (config.existsSync()) {
+      final packages =
+          (jsonDecode(config.readAsStringSync())
+                  as Map<String, Object?>)['packages']!
+              as List<Object?>;
+      for (final package in packages.cast<Map<String, Object?>>()) {
+        if (package['name'] == 'ui_core') {
+          return Directory.fromUri(
+            config.uri.resolve(package['rootUri']! as String),
+          );
+        }
+      }
+      return null;
+    }
+    if (dir.parent.path == dir.path) return null;
+  }
+}
 
 void main() {
   group('DesignToneCheck', () {
@@ -169,8 +199,12 @@ class Row1 {}
     });
 
     test("ui_core's own docs pass", () {
+      final root = _uiCoreRoot();
+      final lib = Directory(
+        root == null ? 'lib/design_kit' : '${root.path}/lib',
+      );
       final libraries = {
-        for (final f in Directory('lib/design_kit').listSync(recursive: true))
+        for (final f in lib.listSync(recursive: true))
           // This file's docs name the words it finds.
           if (f is File &&
               f.path.endsWith('.dart') &&
@@ -203,14 +237,15 @@ class Row1 {}
     });
 
     test('a block that imports a package no install line adds', () {
-      const readme = '''
+      const readme =
+          '''
 ```sh
 flutter pub add minimal_ui
 ```
 
 ```dart
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:minimal_ui/minimal_ui.dart';
+$_import 'package:lucide_icons_flutter/lucide_icons.dart';
+$_import 'package:minimal_ui/minimal_ui.dart';
 ```
 ''';
       expect(check.check(readme, pubspec: pubspec).problems, [
@@ -272,6 +307,7 @@ class InkApp extends StatelessWidget {}
 ```
 
 ```dart
+$_import 'package:minimal_ui/minimal_ui.dart';
 
 void main() {}
 ```
@@ -285,8 +321,7 @@ void main() {}
       const preamble =
           '// ignore_for_file: unused_import, unused_element, unused_local_variable\n'
           "import 'package:flutter/widgets.dart';\n"
-          "import 'package:minimal_ui/minimal_ui.dart';\n"
-          "import 'package:lucide_icons_flutter/lucide_icons_flutter.dart';\n\n";
+          "import 'package:minimal_ui/minimal_ui.dart';\n\n";
       expect(
         libraries['readme_block_1.dart'],
         "${preamble}Object? readmeBlock(BuildContext context) =>\nMinimalButton(label: 'Save', onPressed: save);\n",
@@ -306,6 +341,40 @@ void main() {}
       );
     });
 
+    test('a Lucide install line: the library the blocks import, no other', () {
+      // As civic_ui's README adds Lucide: its library is lucide_icons.dart,
+      // not one named after the package.
+      final libraries = check.libraries('''
+```sh
+flutter pub add civic_ui lucide_icons_flutter
+```
+
+```dart
+$_import 'package:civic_ui/civic_ui.dart';
+$_import 'package:lucide_icons_flutter/lucide_icons.dart';
+```
+
+```dart
+Icon(LucideIcons.search)
+```
+''');
+      expect(
+        libraries['readme_block_2.dart'],
+        '// ignore_for_file: unused_import, unused_element, unused_local_variable\n'
+        "import 'package:flutter/widgets.dart';\n"
+        "import 'package:civic_ui/civic_ui.dart';\n"
+        "import 'package:lucide_icons_flutter/lucide_icons.dart';\n\n"
+        'Object? readmeBlock(BuildContext context) =>\n'
+        'Icon(LucideIcons.search);\n',
+      );
+      expect(
+        libraries.values.where(
+          (l) => l.contains('lucide_icons_flutter/lucide_icons_flutter.dart'),
+        ),
+        isEmpty,
+      );
+    });
+
     test('a block with imports of its own, a fragment after them', () {
       final libraries = check.libraries('''
 ```sh
@@ -313,7 +382,7 @@ flutter pub add minimal_ui
 ```
 
 ```dart
-import 'package:flutter_localizations/flutter_localizations.dart';
+$_import 'package:flutter_localizations/flutter_localizations.dart';
 
 MinimalApp(localizationsDelegates: [GlobalWidgetsLocalizations.delegate])
 ```
@@ -322,7 +391,6 @@ MinimalApp(localizationsDelegates: [GlobalWidgetsLocalizations.delegate])
         libraries['readme_block_1.dart'],
         '// ignore_for_file: unused_import, unused_element, unused_local_variable\n'
         "import 'package:flutter/widgets.dart';\n"
-        "import 'package:minimal_ui/minimal_ui.dart';\n"
         "import 'package:flutter_localizations/flutter_localizations.dart';\n\n"
         'Object? readmeBlock(BuildContext context) =>\n'
         'MinimalApp(localizationsDelegates: [GlobalWidgetsLocalizations.delegate]);\n',
@@ -357,13 +425,20 @@ warning - readme_block_1.dart:1:8 - Unused import: 'package:ui_core/ui_core.dart
     });
 
     test("ui_core's own README passes", () {
-      final readme = File('../package/README.md')
-          .readAsStringSync()
-          .replaceAll('{{name}}', 'ui_core')
-          .replaceAll('{{version}}', '0.8.0');
+      final root = _uiCoreRoot();
+      // The kit's README is a template the export fills in.
+      final readme = root == null
+          ? File('../package/README.md')
+                .readAsStringSync()
+                .replaceAll('{{name}}', 'ui_core')
+                .replaceAll('{{version}}', '0.8.0')
+          : File('${root.path}/README.md').readAsStringSync();
+      final pubspec = root == null
+          ? 'name: ui_core\nversion: 0.8.0\n'
+          : File('${root.path}/pubspec.yaml').readAsStringSync();
       expect(
         const DesignReadmeCheck(look: 'ui_core')
-            .check(readme, pubspec: 'name: ui_core\nversion: 0.8.0\n')
+            .check(readme, pubspec: pubspec)
             .problems,
         isEmpty,
       );
@@ -420,9 +495,11 @@ dependency_overrides:
   });
 }
 
-const String _minimalBlock = r"""
+const String _minimalBlock =
+    """
 ```dart
-import 'package:material_ui/material_ui.dart';
+$_import 'package:flutter/material.dart';
+$_import 'package:minimal_ui/minimal_ui.dart';
 
 void main() => runApp(
   MaterialApp(
