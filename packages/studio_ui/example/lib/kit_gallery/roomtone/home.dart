@@ -1,6 +1,7 @@
 /// Home: the episode the listener is in the middle of, lit on its own pane
 /// with its readout and play key, then the latest episodes of the shows they
-/// follow, then their own drafts.
+/// follow, then their own drafts. A desk with a rack's width sets the whole
+/// player beside the latest, and the shows they follow beside the drafts.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -20,7 +21,8 @@ class RoomtoneHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final frame = RoomtoneFrame.of(context);
-    final wide = MediaQuery.sizeOf(context).width >= 1024;
+    final width = MediaQuery.sizeOf(context).width;
+    final wide = width >= 1024;
     final lead = _ContinueListening(
       episode: roomtoneNowPlaying,
       onOpen: () =>
@@ -57,34 +59,125 @@ class RoomtoneHome extends StatelessWidget {
         ),
       ],
     );
+    final actions = [
+      StudioIconButton(
+        icon: const Icon(LucideIcons.search),
+        tooltip: 'Search',
+        onPressed: () => frame.go(RoomtonePlace.library),
+      ),
+    ];
+    if (!wide) {
+      return RoomtonePage(
+        title: 'Home',
+        actions: actions,
+        children: [lead, roomtoneGroupGap, latest, roomtoneGroupGap, drafts],
+      );
+    }
+    Widget pair(Widget start, Widget end) => Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 5, child: start),
+        const SizedBox(width: StudioSpacing.extraLarge),
+        Expanded(flex: 6, child: end),
+      ],
+    );
+    // A narrow desk: the card beside the latest, the drafts under the card.
+    if (width < _rack) {
+      return RoomtonePage(
+        title: 'Home',
+        maxWidth: 1080,
+        actions: actions,
+        children: [
+          pair(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [lead, roomtoneGroupGap, drafts],
+            ),
+            latest,
+          ),
+        ],
+      );
+    }
+    // A desk fills its screen as a rack does: the episode they are in the
+    // middle of on the whole player, beside the latest; then their drafts,
+    // beside the shows they follow.
     return RoomtonePage(
       title: 'Home',
-      maxWidth: wide ? 1080 : StudioMetrics.readingWidth,
-      actions: [
-        StudioIconButton(
-          icon: const Icon(LucideIcons.search),
-          tooltip: 'Search',
-          onPressed: () => frame.go(RoomtonePlace.library),
+      maxWidth: 1080,
+      actions: actions,
+      children: [
+        pair(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const StudioSectionHeader('Continue listening'),
+              RoomtonePlayer(episode: roomtoneNowPlaying),
+            ],
+          ),
+          latest,
         ),
+        roomtoneGroupGap,
+        pair(drafts, const _Shows()),
       ],
-      children: wide
-          ? [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 5,
+    );
+  }
+}
+
+// The narrowest window whose Home stands as a rack: the whole player beside
+// the latest, and the four shows they follow beside the drafts, each show's
+// name on one line.
+const double _rack = 1280;
+
+/// The shows they follow, labelled as a desk labels its channels: each
+/// show's tile over its name and how many of its episodes are in.
+class _Shows extends StatelessWidget {
+  const _Shows();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.studioTheme;
+    final t = theme.textTheme;
+    final c = theme.colors;
+    final words = RoomtoneWords.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const StudioSectionHeader('Shows you follow'),
+        StudioPanel(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final (i, show) in roomtoneShows.indexed) ...[
+                if (i > 0) const SizedBox(width: StudioSpacing.regular),
+                Expanded(
+                  child: MergeSemantics(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [lead, roomtoneGroupGap, drafts],
+                      children: [
+                        RoomtoneCover(show: show, size: 56),
+                        const SizedBox(height: StudioSpacing.small),
+                        Text(
+                          show.name,
+                          textAlign: TextAlign.center,
+                          style: t.label.copyWith(color: c.legend),
+                        ),
+                        Text(
+                          words.episodes(
+                            roomtoneEpisodes
+                                .where((e) => e.show.id == show.id)
+                                .length,
+                          ),
+                          textAlign: TextAlign.center,
+                          style: t.caption.copyWith(color: c.legendMuted),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: StudioSpacing.extraLarge),
-                  Expanded(flex: 6, child: latest),
-                ],
-              ),
-            ]
-          : [lead, roomtoneGroupGap, latest, roomtoneGroupGap, drafts],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

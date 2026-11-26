@@ -30,15 +30,15 @@ class RoomtoneOverview extends StatelessWidget {
     final english = Directionality.of(context) == TextDirection.rtl
         ? TextAlign.right
         : TextAlign.left;
-    final pitch = StudioSurface(
+    // The pitch's name stands over its card as the player's does over the
+    // player, so on a desk the two cards' tops meet one line.
+    final card = StudioSurface(
       face: c.panelFace.copyWith(brushed: false),
       child: Padding(
         padding: const EdgeInsets.all(StudioSpacing.regular),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const StudioLegend('A Flutter design system'),
-            const SizedBox(height: StudioSpacing.small),
             Semantics(
               header: true,
               child: Text(
@@ -71,6 +71,10 @@ class RoomtoneOverview extends StatelessWidget {
           ],
         ),
       ),
+    );
+    final pitch = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [const StudioSectionHeader('A Flutter design system'), card],
     );
     final live = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

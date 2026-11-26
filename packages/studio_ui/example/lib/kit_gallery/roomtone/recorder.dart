@@ -321,10 +321,15 @@ class _RoomtoneRecorderState extends State<RoomtoneRecorder>
       spacing: StudioSpacing.regular,
       runSpacing: StudioSpacing.small,
       children: [
-        StudioButton(
-          'Mark',
-          icon: const Icon(LucideIcons.flag),
-          onPressed: _mark,
+        // The keys either side stand one width, so the record key keeps the
+        // display's centre.
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: _sideKey),
+          child: StudioButton(
+            'Mark',
+            icon: const Icon(LucideIcons.flag),
+            onPressed: _mark,
+          ),
         ),
         StudioTransportKey(
           icon: Icon(_recording ? LucideIcons.pause : LucideIcons.circle),
@@ -334,7 +339,14 @@ class _RoomtoneRecorderState extends State<RoomtoneRecorder>
           size: 76,
           onPressed: _toggle,
         ),
-        StudioButton('Discard', isDestructiveAction: true, onPressed: _discard),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: _sideKey),
+          child: StudioButton(
+            'Discard',
+            isDestructiveAction: true,
+            onPressed: _discard,
+          ),
+        ),
       ],
     );
     final markers = StudioListGroup(
@@ -518,3 +530,7 @@ class _ExportSheetState extends State<_ExportSheet> {
     );
   }
 }
+
+// The width of the keys either side of the record key: the wider of Mark and
+// Discard at the reader's usual size.
+const double _sideKey = 100;

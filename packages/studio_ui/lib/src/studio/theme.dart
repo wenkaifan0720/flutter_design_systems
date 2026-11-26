@@ -1085,11 +1085,28 @@ class StudioThemeData with Diagnosticable {
     Brightness brightness = Brightness.light,
     StudioDensity? density,
     StudioTypeface typeface = StudioTypeface.barlow,
+  }) => StudioThemeData._lit(
+    indicator: indicator,
+    finish: finish,
+    brightness: brightness,
+    density: density,
+    typeface: typeface,
+  );
+
+  // [StudioThemeData.from], the finish's metal [lift] tones over the look's
+  // own; the words are then walked on the lifted metal.
+  factory StudioThemeData._lit({
+    required Color indicator,
+    Color? finish,
+    required Brightness brightness,
+    StudioDensity? density,
+    StudioTypeface typeface = StudioTypeface.barlow,
+    double lift = 0,
   }) {
     final base = brightness == Brightness.dark
         ? const StudioColors.dark()
         : const StudioColors.light();
-    final metal = finish == null ? base : _anodise(base, finish);
+    final metal = finish == null ? base : _anodise(base, finish, lift);
     // A light with no hue of its own (a white, a grey) keeps the set
     // hue-free: a neutral black for the words on it, and the glass lit as
     // the light is, not in the look's cream.
@@ -1166,14 +1183,16 @@ class StudioThemeData with Diagnosticable {
   }
 
   // The panels, bars and keys anodised in [finish]: its hue, at most half
-  // its chroma and no more than a tint, at each metal's own tone, so every
-  // word keeps its contrast. By night the tint eases to a charcoal's.
-  static StudioColors _anodise(StudioColors c, Color finish) {
+  // its chroma and no more than a tint, at each metal's own tone (raised by
+  // [lift]), so every word keeps its contrast. By night the tint eases to a
+  // charcoal's.
+  static StudioColors _anodise(StudioColors c, Color finish, double lift) {
     final f = RawHct.fromColor(finish);
     final tones = RawNeutralTones.of(
       f.withChroma(math.min(_finishChroma, f.chroma / 2)).toColor(),
     );
-    Color tint(Color metal) => tones.tone(RawHct.fromColor(metal).tone);
+    Color tint(Color metal) =>
+        tones.tone(math.min(100, RawHct.fromColor(metal).tone + lift));
     // The glass leans to the finish too, far fainter: a mint pane on plum
     // or brass would read as dirt.
     final glass = RawNeutralTones.of(
@@ -1201,10 +1220,16 @@ class StudioThemeData with Diagnosticable {
   // The most chroma a finish lends the display glass.
   static const double _glassChroma = 4;
 
+  // By day moss's olive at the silver's own tones reads as khaki, so its
+  // metal stands this many tones lighter, a pale anodised olive. Two is as
+  // far as it goes while a key's top stays under white, proud of the panel.
+  static const double _mossDayLift = 2;
+
   /// The names of the look's six presets, the first its default: [preset]
   /// takes one. anodised: amber lamps on silver and graphite; cobalt: blue
   /// light on blue-anodised metal; teal: cyan lamps on blue-green steel; moss:
-  /// green lamps on olive; violet: violet light on plum; graphite: cool
+  /// green lamps on olive, a pale olive by day; violet: violet light on plum;
+  /// graphite: cool
   /// white lamps on neutral steel, the one set with no hue.
   static const List<String> presets = [
     'anodised',
@@ -1239,11 +1264,12 @@ class StudioThemeData with Diagnosticable {
     if (light == null) {
       return StudioThemeData.anodised(brightness, density: density);
     }
-    return StudioThemeData.from(
+    return StudioThemeData._lit(
       indicator: light.$1,
       finish: light.$2,
       brightness: brightness,
       density: density,
+      lift: id == 'moss' && brightness == Brightness.light ? _mossDayLift : 0,
     );
   }
 

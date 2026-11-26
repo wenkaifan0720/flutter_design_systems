@@ -1,3 +1,9 @@
+## 0.5.1
+
+- By day the `moss` preset's metal stands two tones lighter, a pale anodised olive: at the silver's own tones the olive read as khaki. Every word reads at least as well as before (the lit legend and the focus ring stay at their 4.5:1 and 3:1), a key's top stays under white, and moss by night, the other presets and `StudioThemeData.from` are unchanged.
+- The example's Home on a desk fills the screen as a rack does: the episode in progress on the whole player (readouts, scrubber, transport and speed) beside the latest episodes, then the drafts beside the shows the listener follows. It ended at 60% of a 1440 × 900 window.
+- The example's Overview sets its pitch's name over the card, as the player's name stands over the player, so on a desk the two start on one line. The recorder's Mark and Discard keys stand one width, so the record key keeps the display's centre.
+
 ## 0.5.0
 
 - Requires ui_core 0.7.2. Tap targets follow ui_core's tap floor, `RawTapTargets.of(context).floorOn()`: 40 × 40 at a finger, 24 × 24 at a pointer (Studio held 44 of its own). A sheet's drag handle, a reorderable row's grip and a range fader's caps read the floor; a tag's plate stands as tall as its field's line at a finger.
