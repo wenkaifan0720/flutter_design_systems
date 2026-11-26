@@ -92,7 +92,8 @@ String _inputText(DateTime d) =>
 /// sample) where the app's language writes a short date as English does
 /// (month, day, year, in Western digits), else that language's short date
 /// ([RawWidgetsLocalizations.dateFieldPattern]) in its digits, as Material's
-/// date field prints `formatCompactDate`.
+/// date field prints `formatCompactDate`. The year is the bare figure,
+/// ungrouped: Japanese's 2026/9/18, not the year said on its own (2026年).
 String _fieldDate(BuildContext context, DateTime d) {
   final words = RawWidgetsLocalizations.of(context);
   if (words.dateFieldPattern ==
@@ -111,7 +112,11 @@ String _fieldDate(BuildContext context, DateTime d) {
     RegExp(r"'([^']*)'|y+|M+|d+"),
     (part) => switch (part[0]![0]) {
       "'" => part[1]!.isEmpty ? "'" : part[1]!,
-      'y' => words.formatYear(d),
+      'y' => String.fromCharCodes(
+        d.year.toString().codeUnits.map(
+          (c) => words.formatDecimal(0).codeUnitAt(0) + c - 0x30,
+        ),
+      ),
       'M' => digits(d.month, part[0]!.length),
       _ => digits(d.day, part[0]!.length),
     },

@@ -45,10 +45,15 @@ enum ExpressiveLanguageHeight {
 ///
 /// A brand's typeface replaces the families; the faces Expressive bundles
 /// (Roboto Flex and Jost) come from where it bundles them, an app's own
-/// from the app's assets, or from [fontPackage]:
+/// from the app's assets, or from [fontPackage]. Roboto Flex draws Latin,
+/// Greek and Cyrillic; the faces an app ships for the scripts it lacks
+/// (Japanese, Arabic) are named in [fontFamilyFallback]:
 ///
 /// ```dart
 /// final type = const ExpressiveTextTheme().copyWith(textFamily: 'Inter');
+/// const world = ExpressiveTextTheme(
+///   fontFamilyFallback: ['NotoSansJP', 'NotoSansArabic'],
+/// );
 /// ```
 @immutable
 class ExpressiveTextTheme with Diagnosticable {
@@ -58,6 +63,7 @@ class ExpressiveTextTheme with Diagnosticable {
     this.displayFamily = family,
     this.textFamily = family,
     this.fontPackage,
+    this.fontFamilyFallback = const <String>[],
   });
 
   /// The family used for display and headline styles.
@@ -73,17 +79,29 @@ class ExpressiveTextTheme with Diagnosticable {
   /// this names.
   final String? fontPackage;
 
+  /// The families that draw a letter [displayFamily] and [textFamily] have
+  /// no glyph for, in order: the app's own faces for the scripts the look's
+  /// lack, under the names the app registers them by (`'NotoSansJP'`,
+  /// `'NotoSansArabic'`). Every style of the scale names them, and so does
+  /// the Material theme [ExpressiveHost] lays under the look's parts, as
+  /// Material's `ThemeData.fontFamilyFallback` does: on the web a face the
+  /// app loads at run time draws only where a style names it. Empty, the
+  /// platform's own fallback draws those letters.
+  final List<String> fontFamilyFallback;
+
   /// This scale with the supplied settings replaced.
   ExpressiveTextTheme copyWith({
     ExpressiveLanguageHeight? languageHeight,
     String? displayFamily,
     String? textFamily,
     String? fontPackage,
+    List<String>? fontFamilyFallback,
   }) => ExpressiveTextTheme(
     languageHeight: languageHeight ?? this.languageHeight,
     displayFamily: displayFamily ?? this.displayFamily,
     textFamily: textFamily ?? this.textFamily,
     fontPackage: fontPackage ?? this.fontPackage,
+    fontFamilyFallback: fontFamilyFallback ?? this.fontFamilyFallback,
   );
 
   /// The faces Expressive bundles, which come from [expressiveFontPackage].
@@ -129,9 +147,15 @@ class ExpressiveTextTheme with Diagnosticable {
         key.name.startsWith('display') || key.name.startsWith('headline');
     final weight = token.fontWeight;
     final face = display ? displayFamily : textFamily;
+    final package = _packageOf(face);
     return TextStyle(
-      fontFamily: face,
-      package: _packageOf(face),
+      // The face under the name its package registers it by, rather than
+      // through `package`, which would prefix the fallback families too:
+      // those are the app's own.
+      fontFamily: package == null ? face : 'packages/$package/$face',
+      fontFamilyFallback: fontFamilyFallback.isEmpty
+          ? null
+          : fontFamilyFallback,
       fontSize: size,
       fontWeight: weight,
       letterSpacing: token.letterSpacing,
@@ -255,11 +279,17 @@ class ExpressiveTextTheme with Diagnosticable {
       other.languageHeight == languageHeight &&
       other.displayFamily == displayFamily &&
       other.textFamily == textFamily &&
-      other.fontPackage == fontPackage;
+      other.fontPackage == fontPackage &&
+      listEquals(other.fontFamilyFallback, fontFamilyFallback);
 
   @override
-  int get hashCode =>
-      Object.hash(languageHeight, displayFamily, textFamily, fontPackage);
+  int get hashCode => Object.hash(
+    languageHeight,
+    displayFamily,
+    textFamily,
+    fontPackage,
+    Object.hashAll(fontFamilyFallback),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -268,6 +298,13 @@ class ExpressiveTextTheme with Diagnosticable {
       ..add(StringProperty('displayFamily', displayFamily))
       ..add(StringProperty('textFamily', textFamily))
       ..add(StringProperty('fontPackage', fontPackage))
+      ..add(
+        IterableProperty<String>(
+          'fontFamilyFallback',
+          fontFamilyFallback,
+          defaultValue: const <String>[],
+        ),
+      )
       ..add(
         EnumProperty<ExpressiveLanguageHeight>(
           'languageHeight',

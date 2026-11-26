@@ -1028,9 +1028,15 @@ final Map<String, DocExample> _examples = {
   },
   'ExpressiveTextTheme': (context) {
     final type = const ExpressiveTextTheme().copyWith(textFamily: 'Inter');
+    const world = ExpressiveTextTheme(
+      fontFamilyFallback: ['NotoSansJP', 'NotoSansArabic'],
+    );
     return ExpressiveTheme(
       data: ExpressiveThemeData.baseline().copyWith(type: type),
-      child: const ExpressiveFilledButton('Save'),
+      child: ExpressiveTheme(
+        data: ExpressiveThemeData.baseline().copyWith(type: world),
+        child: const ExpressiveFilledButton('Save'),
+      ),
     );
   },
   'ExpressiveComponentThemeData.layered': (context) {

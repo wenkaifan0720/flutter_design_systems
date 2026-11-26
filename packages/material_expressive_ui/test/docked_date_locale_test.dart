@@ -1,6 +1,8 @@
 /// A docked date picker prints its day as the app's language writes a short
 /// date, in its digits, as Material's date field (`formatCompactDate`): an
-/// Arabic app read "11/20/2026". English keeps Compose's MM/DD/YYYY.
+/// Arabic app read "11/20/2026". English keeps Compose's MM/DD/YYYY. The
+/// year is the bare figure a short date writes, not the year said on its own
+/// (Japanese's 2026年).
 library;
 
 import 'package:flutter/widgets.dart';
@@ -74,6 +76,14 @@ void main() {
           .replaceFirst('y', arabic.formatYear(DateTime(2026))),
     );
     expect(shown, contains(arabic.formatYear(DateTime(2026))));
+  });
+
+  testWidgets('Japanese, Korean and Chinese write the year bare', (
+    tester,
+  ) async {
+    expect(await _shown(tester, const Locale('ja')), '2026/9/18');
+    expect(await _shown(tester, const Locale('ko')), '2026. 9. 18.');
+    expect(await _shown(tester, const Locale('zh')), '2026/9/18');
   });
 
   testWidgets('an app\'s format still wins', (tester) async {

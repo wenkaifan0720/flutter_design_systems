@@ -1,3 +1,8 @@
+## 0.7.1
+
+- `ExpressiveTextTheme.fontFamilyFallback`: the families that draw a script the look's faces lack, an app's own Noto Sans JP or Noto Sans Arabic say. Every style of the type scale names them, and so do the text an `ExpressiveTheme` sets and the Material theme `ExpressiveHost` lays under the parts, as Material's `ThemeData.fontFamilyFallback` does: on the web a face the app loads draws only where a style names it. Empty by default, so every style is as before. The look's faces keep their package's name; the fallback families are the app's and are not prefixed.
+- A docked date picker's field writes the year bare, as Material's date field (`formatCompactDate`) does: Japanese and Chinese read 2026/9/18 and Korean 2026. 9. 18. It wrote the year said on its own, 2026年/9/18.
+
 ## 0.7.0
 
 - Requires ui_core 0.7.2 (and ui_core_test 0.5.2 in tests).

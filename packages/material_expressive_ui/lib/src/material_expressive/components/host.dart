@@ -101,6 +101,8 @@ class ExpressiveHost extends StatefulWidget {
       // widgets (a Material list tile, a tooltip) wear an app's typeface as
       // Expressive's parts do.
       fontFamily: theme.type.bodyLarge.fontFamily,
+      // And the faces it falls back to for a script that face lacks.
+      fontFamilyFallback: theme.type.bodyLarge.fontFamilyFallback,
       scaffoldBackgroundColor: c.surface,
       canvasColor: c.surface,
       visualDensity: VisualDensity.standard,
