@@ -358,6 +358,43 @@ void main() {
     semantics.dispose();
   });
 
+  // A picker's title in the app's language: ui_core's picker words (RawPickerWords) where the app speaks another, the
+  // look's own English where it speaks English. They stayed "Choose a date" in a German app.
+  for (final (locale, date, time) in [
+    (
+      const Locale('de'),
+      RawWidgetsLocalizations.forLocale(const Locale('de')).datePickerHelpText,
+      RawWidgetsLocalizations.forLocale(const Locale('de'))
+          .timePickerDialHelpText,
+    ),
+    (const Locale('en'), 'Choose a date', 'Choose a time'),
+  ]) {
+    testWidgets('pickers are titled in ${locale.languageCode}', (tester) async {
+      late BuildContext inside;
+      await tester.pumpWidget(
+        WidgetsApp(
+          color: const Color(0xFF000000),
+          locale: locale,
+          supportedLocales: [locale],
+          localizationsDelegates: const [RetroDesktopLocalizations.delegate],
+          builder: (context, _) => Builder(
+            builder: (context) {
+              inside = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final words = RetroDesktopLocalizations.of(inside);
+      expect(words.chooseDate, date);
+      expect(words.chooseTime, time);
+      if (locale.languageCode != 'en') {
+        expect(date, isNot(contains('date')));
+      }
+    });
+  }
+
   // A text field's selection handles and menu build in the app's root overlay, above a theme that sits under the
   // app's home rather than in its builder: there the theme's `of` gives the look's default rather than throwing.
   testWidgets(

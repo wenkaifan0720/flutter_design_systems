@@ -80,7 +80,11 @@ void main() {
                 scale: sizeScale,
               ),
             );
-            final result = await androidTapTargetGuideline.evaluate(tester);
+            // ui_core's touch floor, not Material's 48.
+            final result = await MinimumTapTargetGuideline(
+              size: RawTapTargets.fallback.touch,
+              link: 'https://www.w3.org/TR/WCAG22/#target-size-minimum',
+            ).evaluate(tester);
             expect(result.passed, isTrue, reason: result.reason);
             expect(tester.takeException(), isNull);
           } finally {
@@ -328,8 +332,8 @@ void main() {
       );
       final compact = tester.getSize(find.byType(RetroDesktopButton));
       expect(compact.width, lessThanOrEqualTo(regular.width));
-      expect(compact.height, greaterThanOrEqualTo(44));
-      expect(compact.width, greaterThanOrEqualTo(44));
+      expect(compact.height, greaterThanOrEqualTo(40));
+      expect(compact.width, greaterThanOrEqualTo(40));
     },
   );
 

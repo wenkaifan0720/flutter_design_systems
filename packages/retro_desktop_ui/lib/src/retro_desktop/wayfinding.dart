@@ -66,7 +66,9 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
       container: true,
       label: label ?? RetroDesktopLocalizations.of(context).breadcrumbs,
       explicitChildNodes: true,
-      child: Wrap(
+      // A chip group: each link's reach takes the room between the words, so
+      // the crumbs and their marks stand the look's spacing apart.
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: RetroDesktopSpacing.s6,
         runSpacing: RetroDesktopSpacing.s2,
@@ -80,13 +82,19 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
                 ),
               ),
             if (i == items.length - 1 || items[i].onPressed == null)
-              Semantics(
-                selected: i == items.length - 1,
-                child: Text(
-                  items[i].label,
-                  style: i == items.length - 1 ? here : quiet,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              // A place that isn't a link: its words are its face, in a slot
+              // as tall as its links' reach, so a trail that wraps keeps one
+              // rhythm and one start when it takes a line of its own.
+              TapTargetPadding(
+                minSize: Size(0, RetroDesktopReach.floor(context).height),
+                child: Semantics(
+                  selected: i == items.length - 1,
+                  child: Text(
+                    items[i].label,
+                    style: i == items.length - 1 ? here : quiet,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               )
             else
@@ -213,7 +221,7 @@ class RetroDesktopPagination extends StatelessWidget {
                       2 * retroDesktopFaceRim(t))
                   .ceilToDouble();
           // A place is a whole reach, or the arrows' square where that is wider (51 at twice the text size).
-          final place = math.max(48.0, cell);
+          final place = math.max(RetroDesktopReach.least(context), cell);
           // Places that fit with the gaps between them, less the two arrows.
           final room = constraints.hasBoundedWidth
               ? ((constraints.maxWidth + gap) / (place + gap)).floor() - 2

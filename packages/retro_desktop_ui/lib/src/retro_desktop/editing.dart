@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'behavior.dart';
+import 'chrome_metrics.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'theme.dart';
@@ -281,13 +282,15 @@ class RetroDesktopTextContextMenu extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final touch = retroDesktopTouchEditing(Theme.of(context).platform);
+    // Each item reaches as a control does: the finger's floor, or the desk's reach.
+    final reach = RetroDesktopChromeMetrics.targetOf(context);
     final items = [
       for (final item in buttonItems)
         RetroDesktopPressable(
           onPressed: item.onPressed,
           label: labelOf(context, item),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+            constraints: BoxConstraints(minHeight: reach, minWidth: reach),
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: RetroDesktopSpacing.s14,

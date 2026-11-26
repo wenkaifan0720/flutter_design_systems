@@ -87,21 +87,3 @@ Future<void> expectNoOverflowAtTextScale(
     reason: 'nothing overflows or throws at text scale $textScale',
   );
 }
-
-/// Expects what is on screen to meet Flutter's four accessibility
-/// guidelines: Android's 48 px and iOS's 44 px tap targets, a label on
-/// every tap target, and text contrast. Pump the screen first. A look whose
-/// targets are iOS's 44 px on every platform passes [android] false.
-Future<void> expectMeetsGuidelines(
-  WidgetTester tester, {
-  bool android = true,
-}) async {
-  final semantics = tester.ensureSemantics();
-  if (android) {
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-  }
-  await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
-  await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-  await expectLater(tester, meetsGuideline(textContrastGuideline));
-  semantics.dispose();
-}

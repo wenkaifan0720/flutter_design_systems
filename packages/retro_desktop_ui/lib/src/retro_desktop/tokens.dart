@@ -138,6 +138,7 @@ class RetroDesktopTypeface {
     this.chromeFamily = 'Jersey15',
     this.bodyFamily = 'AtkinsonNext',
     this.monoFamily = 'AtkinsonMono',
+    this.fallback = const [],
   });
 
   /// The font family used for chrome and display labels.
@@ -149,15 +150,24 @@ class RetroDesktopTypeface {
   /// The font family used for aligned numeric text.
   final String monoFamily;
 
+  /// Faces to fall back on, in order, for a glyph the faces lack. Every text
+  /// style the theme builds names them (`TextStyle.fontFamilyFallback`), and
+  /// so does the Material theme under the look's parts, as Material's
+  /// `ThemeData.fontFamilyFallback` does: on the web a face the app loads at
+  /// run time (a Noto Sans JP subset, say) draws only where a style names it.
+  final List<String> fallback;
+
   /// Returns a copy with the supplied values replaced.
   RetroDesktopTypeface copyWith({
     String? chromeFamily,
     String? bodyFamily,
     String? monoFamily,
+    List<String>? fallback,
   }) => RetroDesktopTypeface(
     chromeFamily: chromeFamily ?? this.chromeFamily,
     bodyFamily: bodyFamily ?? this.bodyFamily,
     monoFamily: monoFamily ?? this.monoFamily,
+    fallback: fallback ?? this.fallback,
   );
 
   @override
@@ -165,7 +175,13 @@ class RetroDesktopTypeface {
       other is RetroDesktopTypeface &&
       chromeFamily == other.chromeFamily &&
       bodyFamily == other.bodyFamily &&
-      monoFamily == other.monoFamily;
+      monoFamily == other.monoFamily &&
+      listEquals(fallback, other.fallback);
   @override
-  int get hashCode => Object.hash(chromeFamily, bodyFamily, monoFamily);
+  int get hashCode => Object.hash(
+    chromeFamily,
+    bodyFamily,
+    monoFamily,
+    Object.hashAll(fallback),
+  );
 }

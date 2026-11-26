@@ -1,14 +1,11 @@
 # retro_desktop_ui
 
 Retro Desktop brings classic Mac and PC controls to Flutter. It includes beveled buttons, striped window titles,
-menus, forms and tables, with five color presets and light and dark themes.
+menus, forms and tables, with six color palettes and light and dark themes.
 
 ![Papers by day at 1440 wide: a document list and an open note in windows on the desktop, under the menu bar](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/desktop_day.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/retro_desktop/)** ·
-[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/retro_desktop/) ·
-[API reference](https://pub.dev/documentation/retro_desktop_ui/latest/) ·
-[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/retro_desktop/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=retro_desktop) · [API reference](https://pub.dev/documentation/retro_desktop_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
@@ -16,8 +13,28 @@ menus, forms and tables, with five color presets and light and dark themes.
 flutter pub add retro_desktop_ui material_ui
 ```
 
-The example below uses `MaterialApp` from `material_ui`. For a `CupertinoApp`, add `cupertino_ui` instead.
+or, under `dependencies:` in `pubspec.yaml`, `retro_desktop_ui: ^0.7.0` and `material_ui: ^1.9.0`.
+
+The examples use `MaterialApp` from `material_ui`. For a `CupertinoApp`, add `cupertino_ui` instead.
 A `WidgetsApp` can use Retro Desktop directly.
+
+## A first app
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+
+void main() => runApp(
+  MaterialApp(
+    builder: (context, child) =>
+        RetroDesktopTheme(data: RetroDesktopThemeData.classic(), child: child!),
+    home: Center(child: RetroDesktopButton('Save', onPressed: () {})),
+  ),
+);
+```
+
+`RetroDesktopTheme` gives every route the look's theme. The fuller setup below also loads the faces before the first
+frame and makes pushed pages change in place.
 
 The package bundles its faces (Jersey 15, Atkinson Hyperlegible Next and Mono) and its icon font; an app needs no
 font setup of its own. Load them before the first frame so nothing draws in a fallback face:
@@ -129,8 +146,8 @@ Navigator.of(context).push(RetroDesktopPageRoute<void>(builder: (context) => con
 
 A desktop UI from the pixel era for Flutter: square windows on a woven desktop, fine one-pixel bevels, a pixel face for
 the chrome and a clear reading face for the content, and one accent colour that means "the act and now". It comes in
-two appearances, Platinum (the classic Mac, the default) and Chisel (the 95-era PC), and five presets (classic,
-lagoon, berry, marmalade and slate), each designed for day and night. It is a desktop look that also stands on a
+two appearances, Platinum (the classic Mac, the default) and Chisel (the 95-era PC), and six palettes (classic,
+lagoon, berry, marmalade, slate and lime), each designed for day and night. It is a desktop look that also stands on a
 phone: its title bars, rows and day cells are sized for a finger there. Each state speaks in the era's own material:
 an alert opens with its picture (the note, the caution triangle, the stop sign), work in progress shows the busy
 pointer (Platinum's wristwatch, Chisel's hourglass), a placeholder is the 50% checkerboard, focus is Platinum's
@@ -295,9 +312,11 @@ routes, the side sheet and the page transitions. Retro keeps its own where the p
 the menu bar across the top of every page, a chart that reads a whole column at once, and a lit menu row that only a
 moving pointer or the keys can light. Its motion stays the period's, at once, unless an app sets a time.
 
-## Presets
+## Palettes
 
-Every preset takes `Brightness.light` (the default) or `Brightness.dark`.
+Six palettes, classic the default, each designed by day and by night: every factory takes `Brightness.light` (the
+default) or `Brightness.dark`, and `RetroDesktopThemeData.preset(name, brightness)` takes one of
+`RetroDesktopThemeData.presets` by name.
 
 | Factory | Appearance |
 | --- | --- |
@@ -306,8 +325,11 @@ Every preset takes `Brightness.light` (the default) or `Brightness.dark`.
 | `RetroDesktopThemeData.berry()` | Warm grey and berry selection; a berry lamp over dark plum at night. |
 | `RetroDesktopThemeData.marmalade()` | Warm grey and orange selection; amber over dark brown at night. |
 | `RetroDesktopThemeData.slate()` | Neutral grey and blue selection; a cool blue lamp at night. |
+| `RetroDesktopThemeData.lime()` | Sage grey on a lime-green desk, deep lime selection; a lime lamp over moss at night. |
 
-`RetroDesktopThemeData.from(primary:, brightness:)` derives a whole palette from one brand colour.
+`RetroDesktopThemeData.from(primary:, brightness:)` derives a whole palette from one brand colour: the words, the
+highlight and the edges each take the nearest tone of their own hue that reads on every ground (ui_core's
+`RawPalette`), white words on the highlight by day and black by night.
 
 ## Theme and styles
 
@@ -325,7 +347,8 @@ final theme = RetroDesktopThemeData.from(
 ```
 
 The theme's settings are the ones a product changes: the palette (a preset or `from`), light or dark, the
-appearance, the density and, for a brand or a script the bundled faces lack, the `typeface`. Corners, line widths and
+appearance, the density and, for a brand or a script the bundled faces lack, the `typeface` (its `fallback` faces reach
+every text style, as `ThemeData.fontFamilyFallback` does). Corners, line widths and
 shadows belong to the appearance and are not settings, and neither is motion: things appear and go at once, as the
 period's did (`copyWith`'s `motion` is deprecated in 0.2.0; `dart fix --apply` removes it). Text size follows the
 platform's text scaling, and Reduce Motion is honoured wherever anything moves.
@@ -455,9 +478,9 @@ host, its pages and sheets, the page preview, the component inventory). An app b
 
 ## Example
 
-The example is the live gallery: every part by kind, ordinary applications built from them (a form, settings, a
-list, a checkout, a workspace, projects), and the look's own pieces (the desktop and its windows, objects and figures,
-gauges and calendars). Its Customize panel changes the preset, light or dark, the appearance, the density and the
+The example app shows every part by kind, ordinary applications built from them (a form, settings, a list, a
+checkout, a workspace, projects), and the look's own pieces (the desktop and its windows, objects and figures, gauges
+and calendars). Its Customize panel changes the palette, light or dark, the appearance, the density and the
 colours. The All components page answers every row of the shared component list; three rows are absent by design: the
 floating action button (the toolbar's default button is the desktop's), the command palette (the period ran commands
 from its menu bar and their keys) and the wheel picker (the period chose from a pop-up button).

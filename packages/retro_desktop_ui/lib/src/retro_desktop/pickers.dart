@@ -226,14 +226,14 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
     // RetroDesktopCalendar writes them (ui_core's words): in an Arabic app,
     // Arabic names and Arabic-Indic digits, never half of each.
     final title = RawWidgetsLocalizations.of(context).formatMonthYear(month);
-    // Seven 44-wide days need 308. The month stands in the calendar's sunken
+    // Seven days a whole reach wide each. The month stands in the calendar's sunken
     // box, as "A calendar" does: one face for both, its edge on the column's.
     // A slot a little short of the box takes the shortfall from the box's side
     // padding, so its face stays on the column's edges and every day keeps its
     // whole target; narrower slots share out the week. Nothing overhangs the
     // column: a day past its edge would be drawn where no tap reaches it. From 600
     // up a month keeps its own width at its column's start, not the column's.
-    final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
+    const pad = 4.0;
     final h = t.density.horizontal;
     Widget boxed(Widget picker, {double give = 0}) => retroDesktopSunkenBox(
       context,
@@ -636,7 +636,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
   }
 }
 
-/// A month's measures: a day's slot (a whole target: the touch floor, 44, under a finger, the desk's 44 under a
+/// A month's measures: a day's slot (a whole target: the touch floor under a finger, the desk's reach under a
 /// pointer), the sunken box's side padding and the box's whole frame across.
 ({double slot, double side, double frame}) _monthMeasures(
   BuildContext context,
@@ -656,7 +656,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
         : RetroDesktopReach.least(context),
     minimum.width,
   );
-  final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
+  const pad = 4.0;
   // The density rounds a padding to whole pixels: the side is reckoned in them, so what the box takes is what it is
   // asked for.
   final side = (pad * t.density.horizontal).roundToDouble();

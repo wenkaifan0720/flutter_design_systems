@@ -646,7 +646,7 @@ class RetroDesktopTaskRow extends StatelessWidget {
               ],
             );
           }
-          // Where the box's reach is laid out across (a touch screen), its 44 lp stand where the margin was: the box 4
+          // Where the box's reach is laid out across (a touch screen), its reach stands where the margin was: the box 4
           // lp further in, the words 6. Where it isn't (a narrow window on a desk), the row keeps its own margins.
           final reach =
               RetroDesktopReach.padsAcross(context) && onChanged != null;
@@ -956,20 +956,17 @@ class RetroDesktopDescriptionList extends StatelessWidget {
           children: [
             for (final f in facts)
               RetroDesktopGrow(
+                // The label and its value share a baseline: the label is smaller, so tops aligned left it below the value.
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
                   children: [
                     SizedBox(
                       width: col,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: RetroDesktopSpacing.px,
-                        ),
-                        child: Text(
-                          f.label,
-                          style: label,
-                          textAlign: TextAlign.end,
-                        ),
+                      child: Text(
+                        f.label,
+                        style: label,
+                        textAlign: TextAlign.end,
                       ),
                     ),
                     const SizedBox(width: RetroDesktopSpacing.s10),

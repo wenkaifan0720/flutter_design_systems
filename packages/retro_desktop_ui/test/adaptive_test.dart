@@ -301,8 +301,9 @@ void main() {
       expect(horizontal.length, touch ? 1 : 0);
       for (final target in find.byType(RetroDesktopPressable).evaluate()) {
         final size = tester.getSize(find.byWidget(target.widget));
-        expect(size.width, greaterThanOrEqualTo(touch ? 48 : 44));
-        expect(size.height, greaterThanOrEqualTo(touch ? 48 : 44));
+        // ui_core's touch floor, or the desk's reach.
+        expect(size.width, greaterThanOrEqualTo(40));
+        expect(size.height, greaterThanOrEqualTo(40));
       }
     },
     variant: TargetPlatformVariant.all(),

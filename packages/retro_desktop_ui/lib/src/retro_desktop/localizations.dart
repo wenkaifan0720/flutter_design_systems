@@ -147,10 +147,11 @@ abstract class RetroDesktopLocalizations {
   /// A select's prompt and a picker's confirming button.
   String get choose;
 
-  /// A date picker's title and its month steps.
+  /// A date picker's title and its month steps; in another language, `RawWidgetsLocalizations`' `datePickerHelpText`.
   String get chooseDate;
 
-  /// A time picker's title and its three wheels.
+  /// A time picker's title and its three wheels; in another language, `RawWidgetsLocalizations`'
+  /// `timePickerDialHelpText`.
   String get chooseTime;
 
   /// A time picker's hours. With no Retro Desktop words for the app's language, `RawWidgetsLocalizations`'
@@ -332,8 +333,8 @@ class _StockWords extends RetroDesktopLocalizationsEn {
 // The words when no look delegate was supplied, or its stock English: the text menu says the app's own editing words
 // (flutter_localizations gives them in its language); where it gives none, WidgetsApp's English defaults stand in, and
 // the Material words say them instead, which the look loads in the app's language (RetroDesktopTheme); else English.
-// A time picker's words are the app's RawWidgetsLocalizations' (ui_core speaks 30 languages); where they are its English
-// ones, the look's English.
+// A time picker's words and a picker's title are the app's RawWidgetsLocalizations' (ui_core speaks 30 languages; the titles
+// through its RawPickerWords); where they are its English ones, the look's English.
 class _WidgetWords extends RetroDesktopLocalizationsEn {
   _WidgetWords(
     WidgetsLocalizations? widgets,
@@ -365,6 +366,12 @@ class _WidgetWords extends RetroDesktopLocalizationsEn {
   String get am => _shared((l) => l.anteMeridiemAbbreviation, super.am);
   @override
   String get pm => _shared((l) => l.postMeridiemAbbreviation, super.pm);
+  @override
+  String get chooseDate =>
+      _shared((l) => l.datePickerHelpText, super.chooseDate);
+  @override
+  String get chooseTime =>
+      _shared((l) => l.timePickerDialHelpText, super.chooseTime);
   @override
   String get cut =>
       widgets?.cutButtonLabel ?? material?.cutButtonLabel ?? super.cut;

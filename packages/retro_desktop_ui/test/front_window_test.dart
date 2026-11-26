@@ -21,6 +21,7 @@ Future<void> _pump(
   double height = 900,
   double text = 1,
   KitPapersMoment moment = KitPapersMoment.none,
+  bool alone = false,
 }) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
@@ -38,7 +39,7 @@ Future<void> _pump(
           child: child!,
         ),
       ),
-      home: KitPapers(front: front, moment: moment),
+      home: KitPapers(front: front, moment: moment, alone: alone),
     ),
   );
   await tester.pumpAndSettle();
@@ -471,7 +472,7 @@ void main() {
   });
 
   testWidgets('Your details hugs its form on a desk', (tester) async {
-    await _pump(tester, KitPapersWindow.details, width: 1440);
+    await _pump(tester, KitPapersWindow.details, width: 1440, alone: true);
     final window = tester.getRect(
       find.byWidgetPredicate(
         (w) => w is RetroDesktopWindow && w.title == 'Your details',
@@ -481,6 +482,28 @@ void main() {
       find.widgetWithText(RetroDesktopButton, 'Save'),
     );
     expect(window.bottom - save.bottom, lessThan(32), reason: '$window $save');
+  });
+
+  testWidgets("Your details' foot never cuts a button of the window behind "
+      'it', (tester) async {
+    await _pump(tester, KitPapersWindow.details, width: 1440);
+    final details = find.byWidgetPredicate(
+      (w) => w is RetroDesktopWindow && w.title == 'Your details',
+    );
+    final window = tester.getRect(details);
+    for (final e in find.byType(RetroDesktopButton).evaluate()) {
+      final button = find.byWidget(e.widget);
+      if (find
+          .descendant(of: details, matching: button)
+          .evaluate()
+          .isNotEmpty) {
+        continue;
+      }
+      final r = tester.getRect(button);
+      final across = r.left < window.right && window.left < r.right;
+      final cut = r.top < window.bottom && window.bottom < r.bottom;
+      expect(across && cut, isFalse, reason: '$window over $r');
+    }
   });
 
   testWidgets('a held close box turns in', (tester) async {

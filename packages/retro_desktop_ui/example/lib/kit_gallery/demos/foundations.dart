@@ -15,6 +15,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   sections: [
     kitSection('Type', children: [const _Type()]),
     kitSection('Colour', children: [const _Swatches()]),
+    kitSection('Palettes', children: [const _Palettes()]),
     kitSection(
       'Keyboard and pointer states',
       children: [const _InteractionStates()],
@@ -28,6 +29,9 @@ Widget kitTypeSamples() => const _Type();
 
 /// The palette's swatches, for the example's Type and colour page.
 Widget kitColourSamples() => const _Swatches();
+
+/// The six palettes in the current brightness, for the example's Type and colour page.
+Widget kitPaletteSamples() => const _Palettes();
 
 /// Every pointer and keyboard state on one row, for the example's overview.
 Widget kitStateSamples() => const _InteractionStates();
@@ -145,4 +149,64 @@ class _Swatches extends StatelessWidget {
       ),
     );
   }
+}
+
+// Each of the six palettes (RetroDesktopThemeData.presets, the default first) in the page's brightness: its name over
+// its desk, window, paper, highlight, tint and ink.
+class _Palettes extends StatelessWidget {
+  const _Palettes();
+  @override
+  Widget build(BuildContext context) {
+    final theme = RetroDesktopTheme.of(context);
+    final c = theme.colors;
+    final caption = theme.textTheme.caption.copyWith(color: c.text);
+    return RetroDesktopColumn(
+      gap: 8,
+      children: [
+        for (final id in RetroDesktopThemeData.presets)
+          RetroDesktopColumn(
+            gap: 4,
+            children: [
+              Text(id[0].toUpperCase() + id.substring(1), style: caption),
+              ExcludeSemantics(
+                child: SizedBox(
+                  height: 24,
+                  child: DecoratedBox(
+                    position: DecorationPosition.foreground,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: c.outline),
+                    ),
+                    // A hairline between the swatches, so like ones (the night's desk, window and paper) stay apart.
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final (i, colour) in _strip(
+                          RetroDesktopThemeData.preset(id, c.brightness).colors,
+                        ).indexed) ...[
+                          if (i > 0)
+                            SizedBox(
+                              width: 1,
+                              child: ColoredBox(color: c.outline),
+                            ),
+                          Expanded(child: ColoredBox(color: colour)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  static List<Color> _strip(RetroDesktopColors p) => [
+    p.desktop,
+    p.platinum,
+    p.paper,
+    p.highlight,
+    p.highlightContainer,
+    p.text,
+  ];
 }

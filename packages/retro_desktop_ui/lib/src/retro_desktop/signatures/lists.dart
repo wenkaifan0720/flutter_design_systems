@@ -796,7 +796,15 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
           // under it included.
           painter: _CellTint(
             i == 0 ? null : c.divider,
-            lit ? (front ? c.highlight : c.platinumDark) : c.paperDim,
+            // Behind another window the selection is the machine's grey a step off the paper: darker by day, lighter by
+            // night (where the pressed grey is the paper's own, and the row read as unselected).
+            lit
+                ? (front
+                      ? c.highlight
+                      : c.brightness == Brightness.dark
+                      ? c.platinumLight
+                      : c.platinumDark)
+                : c.paperDim,
             lit
                 ? (0, box.maxWidth)
                 : _columnSpan(
@@ -2085,7 +2093,7 @@ class RetroDesktopChecklist extends StatelessWidget {
   /// The items displayed in their supplied order.
   final List<RetroDesktopCheckItem> items;
 
-  /// An item presses whole, as a setting's row does: on a phone at least 44 lp tall, its line in the middle.
+  /// An item presses whole, as a setting's row does: on a phone at least a finger's reach tall, its line in the middle.
   Widget _item(BuildContext context, int i) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;

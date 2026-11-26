@@ -21,7 +21,6 @@ import 'shapes.dart';
 
 import 'glyphs.dart';
 
-import 'chrome_metrics.dart';
 import 'layout.dart';
 import 'pixels.dart';
 import 'theme.dart';
@@ -588,7 +587,7 @@ class _TextFieldState extends State<RetroDesktopTextField> {
         (style.height ?? 1.3);
     final drawn = lineHeight * lines + (lines > 1 ? 16 : 12);
     final least = RetroDesktopReach.least(context);
-    final reaches = lines == 1 && least < RetroDesktopChromeMetrics.touchTarget;
+    final reaches = lines == 1 && !RetroDesktopReach.padsAcross(context);
     final tall = reaches ? drawn : math.max(drawn, least);
     final pad = lines > 1 ? 9.0 : (tall - lineHeight) / 2;
     Widget input = Material(

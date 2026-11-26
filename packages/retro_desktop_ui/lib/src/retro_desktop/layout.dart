@@ -12,13 +12,18 @@ import 'package:ui_core/ui_core.dart';
 import 'theme.dart';
 import 'chrome_metrics.dart';
 
-/// The least a control reaches to a finger on a phone, each way.
-const retroDesktopReach = RetroDesktopChromeMetrics.touchTarget;
+/// ui_core's default touch floor (`RawTapTargets.fallback`), 40. An app's `RawTapTargetScope` may raise the
+/// floor, so a reach reads the one in effect: `RawTapTargets.of(context).touch`.
+@Deprecated(
+  'Read the floor in effect: RawTapTargets.of(context).touch. '
+  'This is only the default, which an app may raise.',
+)
+double get retroDesktopReach => RawTapTargets.fallback.touch.height;
 
 /// A control's reach, ui_core's `TapTargetPadding` at the look's floors: the area a press reaches, the box a screen reader
-/// outlines and the layout are one. On a phone at least [retroDesktopReach] by [retroDesktopReach] to a finger, its drawing
-/// unchanged at [alignment] in it (the middle, unless the drawing must keep an edge where it was); on a desk at least 44
-/// logical pixels high and at least the pointer's floor wide (`RawTapTargets`, 24), so a face starts where its column
+/// outlines and the layout are one. On a phone at least the touch floor each way (`RawTapTargets.of(context).touch`, 40 by default) to a finger, its drawing
+/// unchanged at [alignment] in it (the middle, unless the drawing must keep an edge where it was); on a desk at least
+/// [RetroDesktopChromeMetrics.target] logical pixels high and at least the pointer's floor wide (`RawTapTargets`, 24), so a face starts where its column
 /// does. A control [inside] another's face (a field's eye or clear button) is laid out at the pointer's floor both ways on
 /// a desk, which the field's line holds, so it never makes the field taller. A press anywhere in the reach lands on the
 /// drawing. The width a stretching parent gives passes through, so a control that fills its row still does. Not
@@ -66,7 +71,7 @@ class RetroDesktopReach extends StatelessWidget {
   /// Whether the reach is laid out across as well as down: on a touch screen, where Flutter's tap-target guidelines read
   /// a target by its box (as a padded Material target is); on a desk the face keeps its own width.
   static bool padsAcross(BuildContext context) =>
-      least(context) >= RetroDesktopChromeMetrics.touchTarget;
+      RetroDesktopChromeMetrics.touchOf(context);
 
   @override
   Widget build(BuildContext context) {

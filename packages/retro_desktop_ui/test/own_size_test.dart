@@ -19,6 +19,9 @@ import 'support.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/demo_art.dart';
 
+/// What a pressing part reserves under a finger: ui_core's touch floor.
+final _touch = RawTapTargets.fallback.touch;
+
 /// A part with its own size. In a wider column it stands at the start (left in LTR, mirrored in RTL).
 class _Fixed {
   const _Fixed(
@@ -32,7 +35,7 @@ class _Fixed {
   final Size size;
   final Widget Function() build;
 
-  /// It presses, so the Android test host reserves 48 lp, with its art centered in that target.
+  /// It presses, so the Android test host reserves ui_core's touch floor, with its art centered in that target.
   final bool reach;
 
   /// Its art stands on the start edge of its target, not the target's middle, so it keeps its column's keyline and
@@ -501,8 +504,8 @@ void main() {
                     ? Offset(
                         part.keyline
                             ? 0
-                            : math.max(0, (48 - part.size.width) / 2),
-                        math.max(0, (48 - part.size.height) / 2),
+                            : math.max(0, (_touch.width - part.size.width) / 2),
+                        math.max(0, (_touch.height - part.size.height) / 2),
                       )
                     : Offset.zero;
                 final room = width - part.size.width;

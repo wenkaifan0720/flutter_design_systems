@@ -45,6 +45,7 @@ void main() {
       TargetPlatform.iOS,
       TargetPlatform.fuchsia,
     ].contains(defaultTargetPlatform);
-    expect(minimum, touch ? 48 : 44);
+    // ui_core's touch floor under a finger; the desk's reach, as tall, under a pointer.
+    expect(minimum, touch ? RawTapTargets.fallback.touch.height : 40);
   }, variant: TargetPlatformVariant.all());
 }

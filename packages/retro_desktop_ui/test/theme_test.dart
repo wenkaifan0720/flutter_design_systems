@@ -35,13 +35,14 @@ void _reads(
 }
 
 void main() {
-  test('five presets, the default first', () {
+  test('six presets, the default first', () {
     expect(RetroDesktopThemeData.presets, [
       'classic',
       'lagoon',
       'berry',
       'marmalade',
       'slate',
+      'lime',
     ]);
   });
 
@@ -52,6 +53,7 @@ void main() {
       'berry': RetroDesktopThemeData.berry,
       'marmalade': RetroDesktopThemeData.marmalade,
       'slate': RetroDesktopThemeData.slate,
+      'lime': RetroDesktopThemeData.lime,
     };
     for (final entry in factories.entries) {
       for (final brightness in Brightness.values) {
@@ -154,6 +156,17 @@ void main() {
           greaterThanOrEqualTo(_edge),
           reason: 'hatch on paper',
         );
+      });
+
+      test('$name keyboard focus reads on every ground of the page', () {
+        for (final appearance in RetroDesktopAppearance.values) {
+          _reads(
+            'focus (${appearance.name})',
+            {'ring': t.copyWith(appearance: appearance).focus.color},
+            page,
+            _edge,
+          );
+        }
       });
     }
   }

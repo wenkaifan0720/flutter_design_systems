@@ -331,7 +331,7 @@ class RetroDesktopScrollArea extends StatelessWidget {
       controller: controller,
       axis: axis,
       thickness: 16,
-      // The period's scroll box keeps its size, as long as the floor for what drags it (24 under a pointer, 44 under a
+      // The period's scroll box keeps its size, as long as the floor for what drags it (24 under a pointer, 40 under a
       // finger): a thumb sized by the content grew and shrank as a lazy list built its rows.
       thumbLength: RawTapTargets.of(context).floorOn().height,
       visibility: RawScrollbarVisibility.always,
@@ -783,7 +783,7 @@ class _ReorderableListState<T extends Object>
                                 widget.gripLabel ??
                                 RetroDesktopLocalizations.of(context).reorder,
                             child: SizedBox.square(
-                              dimension: 44,
+                              dimension: RetroDesktopReach.least(context),
                               child: Icon(
                                 RetroDesktopGlyphs.menu,
                                 size: 16,

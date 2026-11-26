@@ -175,7 +175,7 @@ class RetroDesktopRangeSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final reach = math.max(44.0, RetroDesktopReach.least(context));
+    final reach = RetroDesktopReach.least(context);
     final slider = Opacity(
       opacity: onChanged == null ? .5 : 1,
       child: RawRangeSlider(
@@ -203,7 +203,7 @@ class RetroDesktopRangeSlider extends StatelessWidget {
         thumbBuilder: (context, index, states) => _gripWithRing(t, states),
       ),
     );
-    // Each grip reaches 44 across, so the range's track starts half a reach
+    // Each grip reaches a control's reach across, so the range's track starts half a reach
     // in from its sides; the slider's starts half its 20 px grip in. The range
     // stands the difference wider than its room each way, so the two tracks
     // start and end on one x down a column.
@@ -320,9 +320,10 @@ class RetroDesktopColorPicker extends StatelessWidget {
       ),
       child: child,
     );
-    // On a phone a strip reaches a finger, 48 high with its 14 drawn in the
-    // middle, as the range slider's grips do; on a desk 44.
-    final reach = math.max(44.0, RetroDesktopReach.least(context));
+    // A strip reaches as a control does (a finger's floor on a phone, the
+    // desk's reach under a pointer), its 14 drawn in the middle, as the range
+    // slider's grips do.
+    final reach = RetroDesktopReach.least(context);
     final picker = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -838,7 +839,7 @@ class RetroDesktopCalendar extends StatelessWidget {
   Widget _draw(BuildContext context, RawCalendarController controller) {
     final t = RetroDesktopTheme.of(context);
     // Seven days reach a finger's width on a phone only with a narrow margin.
-    final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
+    const pad = 4.0;
     // Under a finger a day is at least the touch floor wide, and no wider than its seventh where seven of them fit
     // (a day overhanging its seventh would be outlined past where a tap reaches it, over the next day's edge).
     final day = math.max(
@@ -850,7 +851,7 @@ class RetroDesktopCalendar extends StatelessWidget {
     final box = retroDesktopSunkenBox(
       context,
       states: const {},
-      padding: EdgeInsets.all(pad),
+      padding: const EdgeInsets.all(pad),
       child: RawCalendarDatePicker(
         controller: controller,
         months: months,

@@ -214,8 +214,12 @@ class _BarLayout extends MultiChildLayoutDelegate {
     this.pixel = 1,
     this.striped = true,
     this.boxes = true,
+    this.reach = 0,
   });
   final bool rtl;
+
+  /// How far the close box's press reaches across the stripes: the finger's floor in effect.
+  final double reach;
 
   /// Whether the zoom and shade boxes stand at the bar's end; without them the end keeps the close box's room, so the
   /// title stays on the window's middle and the stripes run alike on both sides.
@@ -235,8 +239,8 @@ class _BarLayout extends MultiChildLayoutDelegate {
     layoutChild('close', tiny);
     positionChild('close', Offset(place(side, box), y));
     if (hasChild('reach')) {
-      // The close box's press: the bar's height, from its start edge across 44 lp of stripes.
-      const wide = retroDesktopReach;
+      // The close box's press: the bar's height, from its start edge across a finger's reach of stripes.
+      final wide = reach;
       layoutChild('reach', BoxConstraints.tight(Size(wide, size.height)));
       positionChild('reach', Offset(place(0, wide), 0));
     }
@@ -302,7 +306,8 @@ class _BarLayout extends MultiChildLayoutDelegate {
       o.caps != caps ||
       o.line != line ||
       o.pixel != pixel ||
-      o.striped != striped;
+      o.striped != striped ||
+      o.reach != reach;
 }
 
 /// A title bar. Active: pinstripes, boxes and full ink. Inactive: flat, no boxes, quieter words, in the same place.
@@ -456,6 +461,7 @@ class _TitleBar extends StatelessWidget {
                 pixel: pixel,
                 striped: striped,
                 boxes: (t.desk && !modal) || folded,
+                reach: RawTapTargets.of(context).touch.width,
               ),
               children: [
                 LayoutId(
@@ -660,7 +666,7 @@ extension _ChiselTitleBar on _TitleBar {
                     end: 0,
                     top: 0,
                     bottom: 0,
-                    width: retroDesktopReach,
+                    width: RawTapTargets.of(context).touch.width,
                     child: RetroDesktopPressable(
                       label:
                           closeLabel ??
@@ -847,7 +853,7 @@ class RetroDesktopWindow extends StatelessWidget {
   /// In place of the 12 a window gives a child that isn't flush.
   final EdgeInsetsGeometry? padding;
 
-  /// Draws the close box live. On a phone such a window's title bar stands 44 lp tall, so the box reaches a finger.
+  /// Draws the close box live. On a phone such a window's title bar stands a finger's reach tall, so the box reaches a finger.
   final VoidCallback? onClose;
 
   @override
@@ -1331,15 +1337,24 @@ class RetroDesktopToolbar extends StatelessWidget {
       final end = at < 0 ? const <Widget>[] : children.sublist(at + 1);
       body = Row(
         children: [
+          // Chip groups: a tool's reach takes the room between the faces, so
+          // the tools stand [gap] apart as drawn, on a phone too.
           Expanded(
-            child: Wrap(
+            child: RawChipGroup(
               spacing: spacing,
               runSpacing: spacing,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: start,
             ),
           ),
-          if (end.isNotEmpty) ...[SizedBox(width: spacing), row(end)],
+          if (end.isNotEmpty) ...[
+            SizedBox(width: spacing),
+            RawChipGroup(
+              spacing: spacing,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: end,
+            ),
+          ],
         ],
       );
     }

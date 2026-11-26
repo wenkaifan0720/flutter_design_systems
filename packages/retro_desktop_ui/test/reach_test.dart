@@ -1,4 +1,4 @@
-// Every control reaches at least 48 by 48 to a finger on a phone, and no two controls reach over each other unless one
+// Every control reaches at least ui_core's touch floor, 40 by 40, to a finger on a phone, and no two controls reach over each other unless one
 // holds the other. The drawings stay the look's 28 lp; the reach around them grows (`RetroDesktopReach`). Every part that takes
 // a callback is enumerated from the source, so a new one fails here until it is named in the table; then every example
 // page is held to the same at 390.
@@ -121,7 +121,8 @@ bool _inside(Rect a, Rect b) =>
 List<String> _problems(List<(String, Rect)> reaches) {
   final problems = <String>[];
   for (final (what, r) in reaches) {
-    if (r.width < 48 - .01 || r.height < 48 - .01) {
+    final floor = RawTapTargets.fallback.touch;
+    if (r.width < floor.width - .01 || r.height < floor.height - .01) {
       problems.add(
         '$what at ${r.topLeft} reaches ${r.width.toStringAsFixed(1)} by ${r.height.toStringAsFixed(1)}',
       );
@@ -202,7 +203,7 @@ void main() {
     for (final dark in const [false, true]) {
       // Every day each part once, by day and by night in turn; the other in the sweep.
       testWidgets(
-        '$name reaches 48 by 48 at 390 ${dark ? 'dark' : 'light'}',
+        '$name reaches the touch floor at 390 ${dark ? 'dark' : 'light'}',
         tags: sweepUnless(dark == i.isOdd),
         (tester) async {
           tester.view.physicalSize = const Size(390, 844);
@@ -236,12 +237,12 @@ void main() {
     }
   }
 
-  // On this touch host, a close action keeps a 48px target at either layout
-  // width. A display-only title bar fits the larger chrome type in 30px.
+  // On this touch host, a close action keeps the touch floor's target at either
+  // layout width. A display-only title bar fits the larger chrome type in 30px.
   for (final (width, closes, bar) in const [
-    (390.0, true, 48.0),
+    (390.0, true, 40.0),
     (390.0, false, 30.0),
-    (1440.0, true, 48.0),
+    (1440.0, true, 40.0),
     (1440.0, false, 30.0),
   ]) {
     testWidgets(
@@ -290,7 +291,7 @@ void main() {
   }
 
   for (final MapEntry(key: name, value: page) in _pages.entries) {
-    testWidgets('the $name page: every press reaches 48 by 48 at 390', (
+    testWidgets('the $name page: every press reaches the touch floor at 390', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 900);

@@ -157,10 +157,11 @@ class RetroDesktopColors {
 
   /// Five data inks derived from the highlight, readable on plot and panel grounds.
   ///
-  /// Presets and derived palettes keep series at least 20 CIELAB units apart.
-  /// Matching dash and hatch patterns also distinguish series without colour.
-  /// Arbitrary replacement grounds retain the best available
-  /// contrast when no candidate can meet both backgrounds.
+  /// Five hues a fifth of the wheel apart from the highlight's, each walked in
+  /// its own hue (ui_core's `RawPalette.readableTone`) until it reads at 3:1 on
+  /// every plot and panel ground; on grounds no tone meets, the tone that
+  /// reads best on the one it reads worst on. Matching dash and hatch patterns
+  /// also distinguish series without colour.
   List<Color> get chartTones {
     final grounds = [
       paper,
@@ -170,46 +171,18 @@ class RetroDesktopColors {
       platinumDark,
       highlightContainer,
     ];
-    double contrast(Color value, Color ground) {
-      final a = value.computeLuminance(), b = ground.computeLuminance();
-      return (a > b ? a + .05 : b + .05) / (a > b ? b + .05 : a + .05);
-    }
-
-    double score(Color value) => grounds
-        .map((ground) => contrast(value, ground))
-        .reduce((a, b) => a < b ? a : b);
-    Color readable(Color seed) {
-      var best = seed;
-      var bestScore = score(seed);
-      if (bestScore >= 3) return seed;
-      for (final target in [
-        text,
-        const Color(0xff000000),
-        const Color(0xffffffff),
-      ]) {
-        for (var step = 1; step <= 100; step++) {
-          final value = Color.lerp(seed, target, step / 100)!;
-          final candidate = score(value);
-          if (candidate >= 3) return value;
-          if (candidate > bestScore) {
-            best = value;
-            bestScore = candidate;
-          }
-        }
-      }
-      return best;
-    }
-
     final hue = HSLColor.fromColor(highlight).hue;
     return List.unmodifiable([
       for (var index = 0; index < 5; index++)
-        readable(
+        RawPalette.readableTone(
           HSLColor.fromAHSL(
             1,
             (hue + index * 72) % 360,
             brightness == Brightness.dark ? .65 : .75,
             brightness == Brightness.dark ? .7 : .32,
           ).toColor(),
+          on: grounds,
+          ratio: 3,
         ),
     ]);
   }
@@ -803,6 +776,10 @@ const List<Color> _nightArt = [
 
 Color _mix(Color a, Color b, double k) => Color.lerp(a, b, k)!;
 
+// The machine grey's tone bounds a derived palette keeps (RetroDesktopThemeData.from): the period's light platinum by
+// day, its graphite by night.
+const double _dayMachineTone = 85, _nightMachineTone = 34;
+
 Color _turn(Color c, double? hue, double saturation) {
   if (hue == null) return c;
   final h = HSLColor.fromColor(c);
@@ -1273,6 +1250,83 @@ final _Palette _slate = _Palette(
   ),
 );
 
+// Lime: a sage grey on a lime-green desktop with a deep lime highlight; at night a lime lamp over a moss-black desk.
+final _Palette _lime = _Palette(
+  const _Seed(
+    desk: Color(0xFF5F8A1E),
+    deskA: Color(0x16FFFFFF),
+    deskB: Color(0x240E2400),
+    deskGlow: Color(0x1FFFFFFF),
+    plat: Color(0xFFDCDED8),
+    plat2: Color(0xFFE8EAE4),
+    plat3: Color(0xFFC9CCC4),
+    hi: Color(0xFFFFFFFF),
+    lo: Color(0xFF979B92),
+    lo2: Color(0xFF6A6F65),
+    edge: Color(0xFF23261F),
+    ctl: Color(0xFF23261F),
+    ctlFace: Color(0xFFFFFFFF),
+    paper: Color(0xFFFFFFFF),
+    paper2: Color(0xFFF1F4EC),
+    rule: Color(0xFFE1E6DA),
+    ink: Color(0xFF12150E),
+    ink2: Color(0xFF454B3F),
+    ink3: Color(0xFF4E5447),
+    hl: Color(0xFF3A6608),
+    hlDeep: Color(0xFF2B4C05),
+    hlMid: Color(0xFFBFE29B),
+    hlTint: Color(0xFFE0F1CC),
+    hlInk: Color(0xFFFFFFFF),
+    hlFaceTop: Color(0xFF4A7A0E),
+    hlFaceBot: Color(0xFF335A07),
+    thumbTop: Color(0xFFD4ECB8),
+    thumbBot: Color(0xFFABD585),
+    shade: Color(0xFF0E2400),
+    markLabel: Color(0xFFFFFFFF),
+    outline: Color(0xFF12150E),
+    hue: 86,
+    saturation: .8,
+  ),
+  const _Seed(
+    desk: Color(0xFF203A14),
+    deskA: Color(0x12B2DE76),
+    deskB: Color(0x4D000000),
+    deskGlow: Color(0x3388BE45),
+    plat: Color(0xFF2D302A),
+    plat2: Color(0xFF383C35),
+    plat3: Color(0xFF232620),
+    hi: Color(0xFF4E524A),
+    lo: Color(0xFF131510),
+    lo2: Color(0xFF0C0E0A),
+    edge: Color(0xFF040503),
+    ctl: Color(0xFF858B7E),
+    ctlFace: Color(0xFF1B1E18),
+    paper: Color(0xFF1B1E18),
+    paper2: Color(0xFF23271F),
+    rule: Color(0xFF2D3129),
+    ink: Color(0xFFEDF0E9),
+    ink2: Color(0xFFBAC0B3),
+    ink3: Color(0xFFA5AC9E),
+    hl: Color(0xFFB2DE76),
+    hlDeep: Color(0xFF88BE45),
+    hlMid: Color(0xFF4A6A2A),
+    hlTint: Color(0xFF33481E),
+    hlInk: Color(0xFF152700),
+    hlFaceTop: Color(0xFFC6EA94),
+    hlFaceBot: Color(0xFF9CCF5A),
+    thumbTop: Color(0xFFBFE38B),
+    thumbBot: Color(0xFF8CC24B),
+    shade: _black,
+    markLabel: _black,
+    outline: Color(0xFFC4DBAE),
+    tones: _nightTones,
+    sky: _nightSky,
+    art: _nightArt,
+    hue: 96,
+    saturation: .8,
+  ),
+);
+
 /// A line height on the whole-pixel grid: Flutter ceils a paragraph's height where Blink keeps fractions.
 double _exact(double size, double px) => px / size;
 
@@ -1283,45 +1337,70 @@ class RetroDesktopTextTheme {
     this.colors,
     this.desk, [
     this.typeface = const RetroDesktopTypeface(),
-  ]) : chrome = _font(_px(20, 22, colors.text), typeface.chromeFamily),
-       small = _font(_px(20, 24, colors.text), typeface.chromeFamily),
-       sub = _font(_px(24, 28, colors.text), typeface.chromeFamily),
+  ]) : chrome = _font(
+         _px(20, 22, colors.text),
+         typeface.chromeFamily,
+         typeface.fallback,
+       ),
+       small = _font(
+         _px(20, 24, colors.text),
+         typeface.chromeFamily,
+         typeface.fallback,
+       ),
+       sub = _font(
+         _px(24, 28, colors.text),
+         typeface.chromeFamily,
+         typeface.fallback,
+       ),
        head = _font(
          desk ? _px(34, 30, colors.text) : _px(30, 28, colors.text),
          typeface.chromeFamily,
+         typeface.fallback,
        ),
-       big = _font(_px(30, 28, colors.text), typeface.chromeFamily),
+       big = _font(
+         _px(30, 28, colors.text),
+         typeface.chromeFamily,
+         typeface.fallback,
+       ),
        title = _font(
          desk ? _px(56, 48, colors.text) : _px(40, 36, colors.text),
          typeface.chromeFamily,
+         typeface.fallback,
        ),
        body = _font(
          _tx(16, 22, FontWeight.w400, colors.text),
          typeface.bodyFamily,
+         typeface.fallback,
        ),
        row = _font(
          _tx(16, 22, FontWeight.w600, colors.text),
          typeface.bodyFamily,
+         typeface.fallback,
        ),
        read = _font(
          _tx(17, 28, FontWeight.w400, colors.text),
          typeface.bodyFamily,
+         typeface.fallback,
        ),
        note = _font(
          _tx(14, 20, FontWeight.w400, colors.textSecondary),
          typeface.bodyFamily,
+         typeface.fallback,
        ),
        caption = _font(
          _tx(14, 20, FontWeight.w600, colors.textSecondary),
          typeface.bodyFamily,
+         typeface.fallback,
        ),
        meta = _font(
          _tx(14, 20, FontWeight.w400, colors.textTertiary),
          typeface.bodyFamily,
+         typeface.fallback,
        ),
        figure = _font(
          _mo(14, 20, FontWeight.w600, colors.text),
          typeface.monoFamily,
+         typeface.fallback,
        );
 
   /// The color palette used by this scope.
@@ -1329,8 +1408,14 @@ class RetroDesktopTextTheme {
 
   /// The faces the styles are set in.
   final RetroDesktopTypeface typeface;
-  static TextStyle _font(TextStyle style, String family) =>
-      style.copyWith(fontFamily: retroDesktopFontFamily(family));
+  static TextStyle _font(
+    TextStyle style,
+    String family,
+    List<String> fallback,
+  ) => style.copyWith(
+    fontFamily: retroDesktopFontFamily(family),
+    fontFamilyFallback: fallback.isEmpty ? null : fallback,
+  );
 
   /// Whether the styles are a desk's (from 1024 wide up), not a phone's.
   final bool desk;
@@ -1347,8 +1432,11 @@ class RetroDesktopTextTheme {
   final TextStyle figure;
 
   /// Jersey 15 at any size, for a part's one numeral.
-  TextStyle pixel(double size, double lineHeight, {Color? color}) =>
-      _font(_px(size, lineHeight, color ?? colors.text), typeface.chromeFamily);
+  TextStyle pixel(double size, double lineHeight, {Color? color}) => _font(
+    _px(size, lineHeight, color ?? colors.text),
+    typeface.chromeFamily,
+    typeface.fallback,
+  );
 
   /// Atkinson at any size.
   TextStyle text(
@@ -1365,6 +1453,7 @@ class RetroDesktopTextTheme {
       color ?? colors.text,
     ).copyWith(fontStyle: style),
     typeface.bodyFamily,
+    typeface.fallback,
   );
 
   /// Atkinson Mono at any size.
@@ -1376,6 +1465,7 @@ class RetroDesktopTextTheme {
   }) => _font(
     _mo(size, lineHeight, weight, color ?? colors.text),
     typeface.monoFamily,
+    typeface.fallback,
   );
 
   // `fontWeight` is pinned: the face has one weight and the engine must never be asked to fake another.
@@ -1487,6 +1577,11 @@ class RetroDesktopThemeData with Diagnosticable {
     Brightness brightness = Brightness.light,
   ]) => preset('slate', brightness);
 
+  /// Lime-green desktop with a deep lime highlight, a lime lamp by night.
+  factory RetroDesktopThemeData.lime([
+    Brightness brightness = Brightness.light,
+  ]) => preset('lime', brightness);
+
   /// Which preset this is (`classic`, `lagoon`, ...).
   final String id;
   final _Palette _palette;
@@ -1510,6 +1605,7 @@ class RetroDesktopThemeData with Diagnosticable {
     'berry',
     'marmalade',
     'slate',
+    'lime',
   ];
 
   static final Map<String, _Palette> _palettes = {
@@ -1518,6 +1614,7 @@ class RetroDesktopThemeData with Diagnosticable {
     'berry': _berry,
     'marmalade': _marmalade,
     'slate': _slate,
+    'lime': _lime,
   };
   static final Map<(String, Brightness), RetroDesktopThemeData> _cache = {};
 
@@ -2062,6 +2159,11 @@ class RetroDesktopTheme extends StatelessWidget {
               child: kept,
             );
     }
+    // The look stands on ui_core's floors (40 square under a finger, 24 under a pointer) and declares them, as it
+    // declares its spacing grid, so what reads the scope reads the look's. An app's own scope above stands.
+    if (RawTapTargets.maybeOf(context) == null) {
+      under = RawTapTargetScope(targets: RawTapTargets.fallback, child: under);
+    }
     final scoped = data.atWidth(MediaQuery.sizeOf(context).width);
     return _RetroDesktopScope(
       data: scoped,
@@ -2108,6 +2210,9 @@ class RetroDesktopTheme extends StatelessWidget {
       brightness: c.brightness,
       visualDensity: VisualDensity.standard,
       fontFamily: retroDesktopFontFamily(theme.typeface.bodyFamily),
+      fontFamilyFallback: theme.typeface.fallback.isEmpty
+          ? null
+          : theme.typeface.fallback,
       scaffoldBackgroundColor: c.desktop,
       canvasColor: c.platinum,
       colorScheme: ColorScheme(
@@ -2377,13 +2482,16 @@ RetroDesktopColors _retroDesktopColorsFrom({
     surface ?? base.platinum,
     dark ? const Color(0xff202020) : const Color(0xffdddddd),
   );
-  final pole = dark ? const Color(0xff000000) : const Color(0xffffffff);
-  var machine = supplied;
-  for (var step = 0; step <= 100; step++) {
-    machine = Color.lerp(supplied, pole, step / 100)!;
-    final luminance = machine.computeLuminance();
-    if (dark ? luminance <= .08 : luminance >= .65) break;
-  }
+  // The machine's grey in the supplied colour's own hue, at the period's
+  // lightness: by day no darker than tone 85, by night no lighter than 34.
+  final own = RawHct.fromColor(supplied);
+  final machine = dark
+      ? (own.tone > _nightMachineTone
+            ? own.withTone(_nightMachineTone).toColor()
+            : supplied)
+      : (own.tone < _dayMachineTone
+            ? own.withTone(_dayMachineTone).toColor()
+            : supplied);
   final paper = Color.lerp(
     machine,
     dark ? const Color(0xff000000) : const Color(0xffffffff),
@@ -2393,39 +2501,23 @@ RetroDesktopColors _retroDesktopColorsFrom({
   final plat2 = Color.lerp(machine, paper, .3)!;
   final plat3 = Color.lerp(machine, ink, .12)!;
   final paper2 = Color.lerp(paper, machine, .35)!;
+  // What is drawn on the machine's grounds reads on every one of them,
+  // walked in its own hue (ui_core's palette maths).
   final grounds = [machine, plat2, plat3, paper, paper2];
-  double contrast(Color a, Color b) {
-    double ratio(Color a, Color b) {
-      final x = a.computeLuminance(), y = b.computeLuminance();
-      return (x > y ? x + .05 : y + .05) / (x > y ? y + .05 : x + .05);
-    }
+  Color readable(Color value, {double ratio = 4.5}) =>
+      RawPalette.readableTone(value, on: grounds, ratio: ratio);
 
-    // Both interpolation precision and rendered eight-bit pixels must pass.
-    final raw = ratio(a, b);
-    final quantized = ratio(Color(a.toARGB32()), Color(b.toARGB32()));
-    return raw < quantized ? raw : quantized;
-  }
-
-  Color readable(Color value, {double minimum = 4.5}) {
-    for (var step = 0; step <= 100; step++) {
-      final color = Color.lerp(value, ink, step / 100)!;
-      if (grounds.every((ground) => contrast(color, ground) >= minimum)) {
-        return color;
-      }
-    }
-    return ink;
-  }
-
-  final accent = readable(Color.alphaBlend(primary, machine));
+  // The highlight reads as words on the grounds and carries black or white
+  // words of its own: white by day, black by night.
+  final lit = RawPalette.accentFill(
+    readable(Color.alphaBlend(primary, machine)),
+    brightness: brightness,
+    darkInk: const Color(0xff000000),
+  );
+  final accent = lit.fill;
   Color mix(Color a, Color b, double t) => Color.lerp(a, b, t)!;
-  Color on(Color color) {
-    final luminance = color.computeLuminance();
-    return (luminance + .05) / .05 >= 1.05 / (luminance + .05)
-        ? const Color(0xff000000)
-        : const Color(0xffffffff);
-  }
 
-  final edge = readable(mix(ink, machine, .2), minimum: 3);
+  final edge = readable(mix(ink, machine, .2), ratio: 3);
   return base.copyWith(
     desktop: mix(machine, accent, .16),
     desktopThreadLight: mix(machine, accent, .18),
@@ -2450,7 +2542,7 @@ RetroDesktopColors _retroDesktopColorsFrom({
     highlightDark: accent,
     highlightMid: mix(accent, paper, .4),
     highlightContainer: mix(accent, paper, .85),
-    onHighlight: on(accent),
+    onHighlight: lit.ink,
     highlightFaceTop: accent,
     highlightFaceMiddle: accent,
     highlightFaceBottom: accent,
@@ -2468,7 +2560,7 @@ RetroDesktopColors _retroDesktopColorsFrom({
     binderRingDark: mix(machine, ink, .45),
     pixelOutline: edge,
     tones: List.unmodifiable([
-      for (final tone in base.tones) readable(tone, minimum: 3),
+      for (final tone in base.tones) readable(tone, ratio: 3),
     ]),
   );
 }

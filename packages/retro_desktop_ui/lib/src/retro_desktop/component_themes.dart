@@ -19,7 +19,7 @@ import 'package:ui_core/ui_core.dart';
 /// | `side` | the whole rim, colour and width; it wins over `edge` (the look's widths are 1 and 2) |
 /// | `shape` | the outline: by default the appearance's at the part's step (`RetroDesktopShapes`) |
 /// | `padding` | the room between the rim and what stands inside |
-/// | `minimumSize` | the least the face stands; the tap target stays 48 on touch, 44 high elsewhere |
+/// | `minimumSize` | the least the face stands; the tap target stays the touch floor (`RawTapTargets`, 40) on touch, the desk's 40 high elsewhere |
 /// | `textStyle` | the words' style, merged over the look's (its colour comes from `foreground`) |
 /// | `iconSize` | an icon's size |
 ///

@@ -350,8 +350,8 @@ void main() {
         await tester.tap(find.byType(RetroDesktopPressable));
         expect(count, 3);
         final size = tester.getSize(find.byType(RetroDesktopPressable));
-        expect(size.width, greaterThanOrEqualTo(48));
-        expect(size.height, greaterThanOrEqualTo(48));
+        expect(size.width, greaterThanOrEqualTo(40));
+        expect(size.height, greaterThanOrEqualTo(40));
         expect(find.bySemanticsLabel('Save'), findsOneWidget);
         final node = tester.getSemantics(find.byType(RetroDesktopPressable));
         tester.binding.renderViews.first.owner!.semanticsOwner!.performAction(
@@ -516,15 +516,15 @@ void main() {
             ),
           ),
         );
-        final target =
-            platform == TargetPlatform.android || platform == TargetPlatform.iOS
-            ? 48.0
-            : 44.0;
-        // On a touch screen the reach pads across as well as down; on a desk
-        // down and to the pointer floor across, 24 (ui_core's TapTargetPadding).
+        final touch =
+            platform == TargetPlatform.android ||
+            platform == TargetPlatform.iOS;
+        // On a touch screen the reach pads across as well as down, to ui_core's
+        // touch floor; on a desk down to the desk's 40 and to the pointer floor
+        // across, 24 (ui_core's TapTargetPadding).
         expect(
           tester.getSize(find.byType(RetroDesktopPressable)),
-          target == 48 ? Size.square(target) : Size(24, target),
+          touch ? RawTapTargets.fallback.touch : const Size(24, 40),
         );
       }
     },
@@ -558,15 +558,15 @@ void main() {
           ),
         ),
       );
-      final target = switch (platform) {
+      final touch = switch (platform) {
         TargetPlatform.android ||
         TargetPlatform.iOS ||
-        TargetPlatform.fuchsia => 48.0,
-        _ => 44.0,
+        TargetPlatform.fuchsia => true,
+        _ => false,
       };
       expect(
         tester.getSize(find.byType(RetroDesktopPressable)),
-        target == 48 ? Size.square(target) : Size(24, target),
+        touch ? RawTapTargets.fallback.touch : const Size(24, 40),
       );
       expect(tester.takeException(), isNull);
     }

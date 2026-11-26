@@ -277,6 +277,7 @@ final List<ExamplePage> examplePages = [
     build: _page('Type and colour', [
       ('Type', () => [kitTypeSamples()]),
       ('Colour', () => [kitColourSamples()]),
+      ('Palettes', () => [kitPaletteSamples()]),
       (
         'Heads',
         () => [

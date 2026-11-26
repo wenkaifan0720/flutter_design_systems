@@ -244,17 +244,23 @@ final _nightRim = Misread(
 /// The row check's misreads in Platinum by night alone, after [rowMisreads].
 final platinumNightRowMisreads = [_nightRim];
 
-// Chisel's sunken box on the current check row's tint: its white fill and light lower bevel stand within the check's
-// ink threshold of the pale tint, so the box is read by its dark upper bevel alone, a third of its height (drawn, its
-// middle is on the capitals as on every other row).
+// A box on the current check row's pale tint: Chisel's white fill and light lower bevel, Platinum's light fill and light
+// upper bevel, stand within the check's ink threshold of the tint, so the box is read by its dark bevel alone, a third
+// of its height or one device row (drawn, its middle is on the capitals as on every other row).
 final _tintedCheckBox = Misread(
-  'sunken box on a tint',
-  'a sunken box on the current row\'s pale tint is read by its dark upper bevel',
+  'box on a tint',
+  'a box on the current row\'s pale tint is read by its dark bevel alone',
   r'lists: a checkbox "The step to take next": its painted mark',
 );
 
-/// The label check's misreads in Chisel alone, after [labelMisreads].
-final chiselLabelMisreads = <Misread>[_tintedCheckBox];
+// The chosen chip's bell beside a check row's words: it is the chip's, on the chip's own middle with the chip's words;
+// the check holds every icon in the row to the row's words' capitals, half a point away.
+final _chipIcon = Misread(
+  'chip\'s icon in a check row',
+  'the bell is the chosen chip\'s, centred on the chip with its words, not on '
+      'the row\'s words',
+  r'lists: a checkbox "The step to take next": its icon is drawn',
+);
 
 /// The width check's misreads ([DesignWidthCheck]).
 final widthMisreads = [_fullWidthRow, _tabs];
@@ -273,4 +279,6 @@ final labelMisreads = [
   _heldSinks,
   _labelledSelect,
   _ruledRow,
+  _tintedCheckBox,
+  _chipIcon,
 ];

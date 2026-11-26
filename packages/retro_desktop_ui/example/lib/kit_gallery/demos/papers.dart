@@ -10,6 +10,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:retro_desktop_ui/retro_desktop_host.dart';
 
 import '../kit.dart';
 import 'papers_words.dart';
@@ -1265,10 +1266,10 @@ class _KitPapersState extends State<KitPapers> {
       final chrome = RetroDesktopTheme.of(context).textTheme.chrome;
       final line = MediaQuery.textScalerOf(context)
           .scale((chrome.fontSize ?? 14) * (chrome.height ?? 1.2));
-      // A title bar keeps a pointer's reach (44 on a desk, 48 to a
-      // finger) or its words and 8, whichever is taller; Chisel's rim stands
-      // above it, 4 more, and a gap of 8 below.
-      const titleReach = 48.0;
+      // A title bar keeps a control's reach (the desk's under a pointer, the
+      // finger's floor on a touch screen) or its words and 8, whichever is
+      // taller; Chisel's rim stands above it, 4 more, and a gap of 8 below.
+      final titleReach = RetroDesktopChromeMetrics.targetOf(context);
       final cascade = ((titleReach > line + 8 ? titleReach : line + 8) + 12)
           .ceilToDouble();
       var step = 0;

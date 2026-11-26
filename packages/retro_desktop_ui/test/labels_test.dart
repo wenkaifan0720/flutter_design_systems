@@ -143,11 +143,7 @@ void main() {
             'LABELS $width ${appearance.name} ${density.name}: '
             '${problems.length}',
           );
-          final real = withoutMisreads('labels', problems, [
-            ...labelMisreads,
-            if (appearance == RetroDesktopAppearance.chisel)
-              ...chiselLabelMisreads,
-          ]);
+          final real = withoutMisreads('labels', problems, labelMisreads);
           expect(real, isEmpty, reason: real.join('\n'));
         }, tags: const ['goldens']);
       }

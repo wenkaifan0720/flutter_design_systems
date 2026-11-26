@@ -1,3 +1,19 @@
+## 0.7.0
+
+- Requires ui_core 0.7.2.
+- Tap targets follow ui_core's floor (`RawTapTargets`). Under a finger a control reaches 40 square, ui_core's touch floor; under a pointer the desk's rows and buttons stand at least 40 tall, or the pointer floor where it is taller. An app's `RawTapTargetScope` sets both, and the floor follows the input rather than the platform: a Mac with a touch screen (`input: RawInput.touch`) takes the touch floor, and an Android app driven by a mouse keeps the desk's. Before, the look's own 48 under a finger and 44 under a pointer, chosen by platform.
+- `RetroDesktopTheme` declares the floors it stands on, ui_core's (`RawTapTargets.fallback`), in a `RawTapTargetScope` for its subtree, unless the app declared its own above it. Before, it declared none.
+- On a phone, a window's close box reaches the touch floor in effect across the title bar's stripes, as its other controls do; before, the default floor whatever the app's `RawTapTargetScope` declared.
+- Deprecated: `RetroDesktopChromeMetrics.touchTarget` and `retroDesktopReach`, which name only the default touch floor. Read the floor in effect, `RawTapTargets.of(context).touch`, or `RetroDesktopChromeMetrics.targetOf`. Both are now getters, no longer constants.
+- `RetroDesktopBreadcrumb` and `RetroDesktopToolbar` lay out as ui_core's chip groups (`RawChipGroup`): each part's reach takes the room between the faces, so the crumbs and tools stand the look's spacing apart as drawn, and a trail that wraps starts each line at its start edge. Before, each reach was added to the spacing, so the faces stood further apart than the look's spacing, and a line of a wrapped trail that began with a link began further in.
+- `RetroDesktopThemeData.from` derives its palette with ui_core's palette maths (`RawPalette`). The machine's grey keeps the brand colour's hue at the period's lightness (no darker than tone 85 by day, no lighter than 34 by night); the words, the highlight, the edges and the chart's tones each take the nearest tone of their own hue that reads on every ground; and the highlight carries white words by day and black by night. Before, they were mixed toward the ink, black or white, until they read.
+- A sixth palette, lime: `RetroDesktopThemeData.lime()`, a sage grey on a lime-green desk with a deep lime highlight, and a lime lamp over moss at night. `RetroDesktopThemeData.presets` lists the six, classic first.
+- `RetroDesktopTypeface.fallback`: the families to draw a script the faces lack, given to every text style and to the Material theme the look builds, as `ThemeData.fontFamilyFallback` does.
+- Behind another window, a list table's selected row stays in sight by night: the machine's grey a step lighter than the paper. Before, it took the pressed grey, which by night is the paper's own, and the row read as unselected.
+- A description list's label and its value share a baseline. Before, the smaller label stood 2 pixels below its value.
+- A date picker's and a time picker's titles are in the app's language (ui_core's `RawPickerWords`) where it is not English. Before, they read "Choose a date" and "Choose a time" in every language.
+- The README opens with a first app of ten lines; the example's Type and colour page shows the six palettes by day and by night.
+
 ## 0.6.1
 
 - A `RetroDesktopSegmentedButton`'s segments and a `RetroDesktopRadioGroup`'s options measure their words again when the system's fonts change, so from 600, where the group keeps to its widest word, every word stands whole in the face it is drawn in. A web app draws a script its faces lack (Arabic) in a face the browser fetches after the first frame, and the group kept the width it had measured before that face came: an Arabic segment lost its last letter, "منخفضة" reading "منخفض".
