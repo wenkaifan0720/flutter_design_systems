@@ -30,7 +30,7 @@ enum MinimalIconButtonVariant {
 
 /// Minimal's square icon control: a 32 px square (28 or 40 by [size])
 /// holding an 18 px Lucide glyph — the top bar's actions, a row's overflow,
-/// a sheet's close. The hit area pads out to 44.
+/// a sheet's close. The hit area pads out to the tap floor.
 ///
 /// The default [variant] is ghost, or outline in a [MinimalAppBar].
 /// Supply a [label] so screen readers announce the button's action.

@@ -94,7 +94,9 @@ Decoration minimalStateLayer(
     side: MinimalKitStates(states).ring
         ? BorderSide(
             color: face != null && faceInk != null
-                ? (_contrast(t.ring, face) < 3 ? faceInk : t.ring)
+                ? (RawPalette.contrastRatio(t.ring, face) < 3
+                      ? faceInk
+                      : t.ring)
                 : t.ring,
             width: t.focusWidth,
             strokeAlign: BorderSide.strokeAlignInside,
@@ -315,7 +317,7 @@ double minimalDisabledOpacity({
   final surface = Color.alphaBlend(face ?? const Color(0x00000000), ground);
   final label = Color.alphaBlend(ink, surface);
   bool readable(double alpha) =>
-      _contrast(
+      RawPalette.contrastRatio(
         Color.lerp(ground, label, alpha)!,
         Color.lerp(ground, surface, alpha)!,
       ) >=
@@ -334,13 +336,6 @@ double minimalDisabledOpacity({
     }
   }
   return high;
-}
-
-/// WCAG's contrast of [a] on [b], from 1 to 21.
-double _contrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
 }
 
 /// A floating panel (a popover, a menu, a list of options): the surface on

@@ -37,7 +37,7 @@ Widget _scaled(Widget child, [double scale = 1.3]) => Builder(
 
 void main() {
   group('MinimalHitTarget', () {
-    testWidgets('hands a 28 px strip its 44 px targets', (tester) async {
+    testWidgets('hands a 28 px strip its tap-floor targets', (tester) async {
       var taps = 0;
       await tester.pumpWidget(
         _app(
@@ -100,9 +100,7 @@ void main() {
   });
 
   group('MinimalListTile', () {
-    testWidgets('a leading control keeps its whole 44 px target', (
-      tester,
-    ) async {
+    testWidgets('a leading control keeps its whole tap target', (tester) async {
       var taps = 0;
       await tester.pumpWidget(
         _app(
@@ -125,7 +123,8 @@ void main() {
         find.bySemanticsLabel('Drink water status'),
       );
       // 19 px from the glyph's centre, inward, up and down: inside its
-      // 44 px target, which stands on the start keyline and reaches inward,
+      // target (the tap floor), which stands on the start keyline and reaches
+      // inward,
       // outside the 20 px content line.
       await tester.tapAt(glyph + const Offset(19, 0));
       await tester.tapAt(glyph - const Offset(0, 19));
@@ -484,7 +483,7 @@ void main() {
       );
       // The pinned band stands the floor tall: its top row sorts.
       final header = tester.getRect(find.bySemanticsLabel('#, sort'));
-      expect(header.height, 44);
+      expect(header.height, MinimalLayout.tapTargets.touch.height);
       await tester.tapAt(header.topCenter + const Offset(0, 2));
       expect(sorted, [0]);
     });

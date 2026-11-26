@@ -149,7 +149,7 @@ class MinimalSectionHeader extends StatelessWidget {
       child: Semantics(
         header: true,
         expanded: expanded,
-        // A header that folds its group stands at least the tap floor (44
+        // A header that folds its group stands at least the tap floor (40
         // at a finger), its words centred in it.
         child: Container(
           constraints: BoxConstraints(minHeight: minimalTapFloor(context)),

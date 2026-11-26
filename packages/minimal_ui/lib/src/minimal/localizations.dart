@@ -40,9 +40,12 @@ abstract class MinimalLocalizations {
       context,
       MinimalLocalizations,
     );
-    return words == null || words is _SharedWords
-        ? MinimalLocalizationsEn(RawWidgetsLocalizations.of(context))
-        : words;
+    if (words != null && words is! _SharedWords) return words;
+    final shared = RawWidgetsLocalizations.of(context);
+    final language = Localizations.maybeLocaleOf(context)?.languageCode;
+    return language == null || language == 'en'
+        ? MinimalLocalizationsEn(shared)
+        : _MinimalLocalizationsShared(shared);
   }
 
   /// Loads Minimal's words for every locale: the words every look shares in
@@ -721,6 +724,19 @@ class _MinimalWordsDelegate
 
   @override
   String toString() => 'MinimalLocalizations.delegateOf(${words.runtimeType})';
+}
+
+/// Minimal's words outside English with no translation of the app's own:
+/// a page's and a step's place in the shared words' own form ("٦ من ١٢"),
+/// the rest as [MinimalLocalizationsEn] says them.
+class _MinimalLocalizationsShared extends MinimalLocalizationsEn {
+  const _MinimalLocalizationsShared(super.shared);
+
+  @override
+  String pageOf(int page, int count) => shared.positionLabel(page, count);
+
+  @override
+  String stepOf(int step, int count) => shared.positionLabel(step, count);
 }
 
 /// What [MinimalLocalizations.delegate] loads: a mark that [MinimalLocalizations.of]

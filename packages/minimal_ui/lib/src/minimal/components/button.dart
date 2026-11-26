@@ -41,7 +41,8 @@ enum MinimalButtonSize {
 /// An action button with an optional icon or leading widget.
 ///
 /// Choose [variant] for the action's role and [size] for its height. Touch
-/// targets are at least 44 px. [style] overrides the variant's component theme.
+/// targets are at least the tap floor in force (40 px at a finger, 24 at a
+/// pointer). [style] overrides the variant's component theme.
 ///
 /// Set [busy] while work is in progress. The button shows a spinner and
 /// ignores further presses. Supply a [label] that describes the operation.

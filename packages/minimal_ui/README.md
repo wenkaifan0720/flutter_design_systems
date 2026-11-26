@@ -4,7 +4,7 @@ Compact Flutter components for dashboards, forms and data tables. Minimal uses f
 
 ![Minimal's issue tracker at 1440 px by day, beside the same tracker on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/hero_tracker.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/minimal/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/minimal/) · [API reference](https://pub.dev/documentation/minimal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/minimal/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=minimal) · [API reference](https://pub.dev/documentation/minimal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
@@ -12,9 +12,28 @@ Compact Flutter components for dashboards, forms and data tables. Minimal uses f
 flutter pub add minimal_ui
 ```
 
+## Start
+
+Wrap your app’s navigator in `MinimalTheme`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:minimal_ui/minimal_ui.dart';
+
+void main() => runApp(
+  MaterialApp(
+    builder: (context, child) => MinimalTheme(data: MinimalThemeData.standard(), child: child!),
+    home: const MinimalScaffold(
+      topBar: MinimalAppBar(title: 'Requests'),
+      body: MinimalListTile(title: 'Replace the lobby lights', meta: 'REQ-142'),
+    ),
+  ),
+);
+```
+
 ## Set up
 
-Wrap your app’s navigator in `MinimalTheme`. Add `MinimalToaster` if the app shows snack bars. Toasts stand clear of the navigation bar, a screen's footer and any bar of your own wrapped in `RawToasterKeepClear`.
+A fuller start loads the bundled Geist faces before the first frame, follows the platform’s light or dark, takes Minimal’s page transitions and adds `MinimalToaster` for snack bars. Toasts stand clear of the navigation bar, a screen's footer and any bar of your own wrapped in `RawToasterKeepClear`.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -55,14 +74,14 @@ dismisses an open menu, dialog or sheet before leaving the page.
 
 ## What is inside
 
-Choose from the standard, graphite and ember presets. Each includes light and dark colors. The examples below show the same application on desktop and phone.
+Choose from six presets: standard, graphite, ember, iris, lagoon and berry. Each includes light and dark colors. The examples below show the same application on desktop and phone.
 
 | Desktop, by day | Phone, by night |
 | --- | --- |
 | ![A habit tracker on Minimal at 1440 px](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/ritual_1440_light.png) | ![The habit tracker on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/ritual_390_dark.png) |
 | ![A bakery's back office at 1440 px](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/bakery_1440_light.png) | ![The bakery's orders on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/bakery_390_dark.png) |
 
-The package includes buttons and fields, navigation, lists and tables, charts, menus, dialogs and sheets. The gallery includes a habit tracker, an issue tracker and a bakery back office.
+The package includes buttons and fields, navigation, lists and tables, charts, menus, dialogs and sheets. The example app includes a habit tracker, an issue tracker and a bakery back office.
 
 ## Everyday parts
 
@@ -118,7 +137,7 @@ MinimalNavigationBar(
 
 ## Customization
 
-Start with `MinimalThemeData.standard()`, `.graphite()` or `.ember()`, or supply your app’s colors. Use `copyWith` to change individual settings.
+Start with a preset such as `MinimalThemeData.standard()`, `.graphite()` or `.ember()` (`MinimalThemeData.presets` lists all six), or supply your app’s colors. Use `copyWith` to change individual settings.
 
 ```dart
 final theme = MinimalThemeData.from(
@@ -154,9 +173,9 @@ Import `package:minimal_ui/minimal_host.dart` for `MinimalHost`, which sets up t
 
 ## Accessibility and languages
 
-- **Direction and text size.** Controls follow the reading direction. The gallery’s Customize panel lets you try RTL and text sizes up to 200%. `MinimalHost` caps larger scales at 200%. Geist supplies Latin glyphs. Other scripts use Flutter’s font fallback.
+- **Direction and text size.** Controls follow the reading direction. The example app’s Customize panel lets you try RTL and text sizes up to 200%. `MinimalHost` caps larger scales at 200%. Geist supplies Latin glyphs. Other scripts use Flutter’s font fallback.
 - **Keyboard and screen readers.** Tab moves between controls. Arrow keys select tabs, inspect chart values and navigate menus. Enter activates the focused action. Escape dismisses menus, dialogs and sheets and returns focus to the opener. A destructive dialog focuses its safe action first.
-- **Touch and motion.** The minimum hit area is 44 × 44 for touch and 24 × 24 for a pointer. Controls honor the platform’s reduced-motion setting.
+- **Touch and motion.** The minimum hit area is ui_core's tap floor, `RawTapTargets.of(context).floorOn()`: 40 × 40 for touch and 24 × 24 for a pointer. Controls honor the platform’s reduced-motion setting.
 - **Localization.** English is the default. To use the built-in translations for shared labels, add `flutter_localizations` from the Flutter SDK and register `RawWidgetsLocalizations.delegate` alongside Flutter’s delegates.
 
   ```dart

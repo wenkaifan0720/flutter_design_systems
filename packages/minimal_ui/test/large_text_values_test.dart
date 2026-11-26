@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
+import 'package:minimal_ui/minimal_host.dart';
 
 Future<void> _pump(WidgetTester t, Widget child, double scale) async {
   t.view.devicePixelRatio = 1;
@@ -99,12 +100,12 @@ void main() {
         greaterThanOrEqualTo(8 - 0.01),
         reason: at,
       );
-      expect(row.height, greaterThanOrEqualTo(MinimalLayout.minHitTarget));
+      expect(row.height, greaterThanOrEqualTo(MinimalChromeMetrics.row));
       if (scale == 1) {
         // At 100% the row is one line in a 28 px pill, in the row's
-        // 44 px.
+        // height.
         expect(pill.height, 28);
-        expect(row.height, MinimalLayout.minHitTarget);
+        expect(row.height, MinimalChromeMetrics.row);
         expect(
           t.renderObject<RenderParagraph>(find.text(date)).size.height,
           lessThan(28),

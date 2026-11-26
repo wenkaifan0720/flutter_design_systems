@@ -1,5 +1,5 @@
 /// The system's foundations in one page: every colour role of the preset in
-/// force as a labeled swatch with its hex, the Geist type scale, the spacing
+/// force as a labeled swatch with its hex, the named presets side by side, the Geist type scale, the spacing
 /// and corner scales, the row and control density, the formatters and the
 /// chrome metrics every bar is drawn from.
 library;
@@ -16,6 +16,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   title: 'Foundations',
   sections: [
     kitSection('Colour roles', children: const [_Swatches()]),
+    kitSection('Presets', children: const [_Presets()]),
     kitSection('Type · Geist, Geist Mono', children: const [_TypeScale()]),
     kitSection('Spacing', children: const [_Spacing()]),
     kitSection('Corners', children: const [_Corners()]),
@@ -203,6 +204,98 @@ class _Swatch extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The look's named presets, each by day and by night: its ground, its ink
+/// (the "Aa") and its accent (the dot). An app picks one with
+/// `MinimalThemeData.preset(id, brightness)` or its named constructor.
+class _Presets extends StatelessWidget {
+  const _Presets();
+
+  /// Each preset in a line.
+  static const Map<String, String> _about = {
+    'standard': 'Neutral greys under a blue accent',
+    'graphite': 'The ink itself is the accent',
+    'ember': 'Warm neutrals under an orange accent',
+    'iris': 'Cool greys under a purple accent',
+    'lagoon': 'Slate greys under a cyan accent',
+    'berry': 'Zinc greys under a magenta accent',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.minimalTheme;
+    return _Panel(
+      rows: [
+        for (final id in MinimalThemeData.presets)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(id, style: t.bodySmall.medium),
+                      Text(_about[id] ?? '', style: t.caption),
+                    ],
+                  ),
+                ),
+                const MinimalGap(MinimalSpacing.s8),
+                _PresetTile(id, MinimalThemeData.preset(id, Brightness.light)),
+                const MinimalGap(MinimalSpacing.s4),
+                _PresetTile(id, MinimalThemeData.preset(id, Brightness.dark)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// One preset in one appearance: its ground, its ink and its accent.
+class _PresetTile extends StatelessWidget {
+  const _PresetTile(this.id, this.preset);
+
+  final String id;
+  final MinimalThemeData preset;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.minimalTheme;
+    final night = preset.brightness == Brightness.dark;
+    return Semantics(
+      label: '$id, ${night ? 'night' : 'day'}',
+      excludeSemantics: true,
+      // At least 64 × 40; wider and taller as the text grows.
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 64, minHeight: 40),
+        alignment: AlignmentDirectional.center,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: ShapeDecoration(
+          color: preset.background,
+          shape: t.shapes.mark.copyWith(
+            side: BorderSide(color: t.borderStrong, width: t.hairline),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Aa', style: t.bodySmall.medium.c(preset.foreground)),
+            const SizedBox(width: 12),
+            Container(
+              width: 14,
+              height: 14,
+              decoration: ShapeDecoration(
+                color: preset.primary,
+                shape: const CircleBorder(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

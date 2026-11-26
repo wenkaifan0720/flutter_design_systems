@@ -236,12 +236,12 @@ void main() {
       );
     });
 
-    test('rows follow the density, a row never below a tap target', () {
+    test('rows follow the density, a row never below a finger\'s floor', () {
       final compact = light.copyWith(density: MinimalDensity.compact);
       final loose = light.copyWith(density: const MinimalDensity(vertical: 2));
       expect(light.rowHeight, 44);
       expect(light.rowHeightCompact, 36);
-      expect(compact.rowHeight, 44);
+      expect(compact.rowHeight, MinimalLayout.tapTargets.touch.height);
       expect(compact.rowHeightCompact, 32);
       expect(loose.rowHeight, 48);
     });

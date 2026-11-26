@@ -557,6 +557,9 @@ class _MinimalMultiSelectState<T extends Object>
       math.max(entryLine, MinimalIconSize.i14 + 2 * t.hairline),
       height - 2 * inset,
     );
+    // The tap floor where the field stands: inside it the field's own parts
+    // read none, so its runs of tags space themselves by this one.
+    final tapFloor = minimalTapFloor(context);
     final start = _rowStart(
       context,
       tagBox.rim(t.border, t.rim).width +
@@ -730,9 +733,12 @@ class _MinimalMultiSelectState<T extends Object>
       // under it.
       layoutBuilder: (context, tags, field) => group(
         MinimalTapReach(
-          child: Wrap(
+          // The tags' targets take the air between them.
+          // On touch the runs stand far enough apart that each remove key
+          // (its tag and half the air either side) keeps the tap floor.
+          child: RawChipGroup(
             spacing: MinimalSpacing.s4,
-            runSpacing: MinimalSpacing.s4,
+            runSpacing: math.max(MinimalSpacing.s4, tapFloor - tagHeight),
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               ...tags,

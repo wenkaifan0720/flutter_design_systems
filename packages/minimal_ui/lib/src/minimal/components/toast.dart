@@ -352,7 +352,7 @@ class MinimalSnackBar extends StatelessWidget {
     );
     return Container(
       constraints: BoxConstraints(
-        minHeight: MinimalLayout.minHitTarget + 2 * rim.width,
+        minHeight: MinimalChromeMetrics.row + 2 * rim.width,
       ),
       padding: padding,
       decoration: minimalFrame(

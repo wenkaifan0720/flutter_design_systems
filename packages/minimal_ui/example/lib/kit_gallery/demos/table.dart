@@ -117,26 +117,40 @@ Widget kitTableDemo(Brightness brightness) => kitScreen(
             'header; half a row shows there is more.',
       ),
       SliverToBoxAdapter(
-        child: SizedBox(
-          height: 210,
-          child: MinimalTable(
-            columns: const [
-              MinimalColumn('Day', width: 84, mono: true),
-              MinimalColumn('Habit'),
-              MinimalColumn('At', width: 50, numeric: true),
-            ],
-            rows: [
-              for (final (i, h) in _habits.indexed)
-                for (final day in const ['28 Aug', '27 Aug'])
-                  MinimalTableRow([
-                    MinimalCell(day),
-                    MinimalCell(h.$1),
-                    MinimalCell(
-                      '0${6 + i % 3}:${(i * 7 % 60).toString().padLeft(2, '0')}',
-                    ),
-                  ]),
-            ],
-          ),
+        // The days and times in the reader's own words and digits.
+        child: Builder(
+          builder: (context) {
+            final words = MinimalLocalizations.of(context);
+            return SizedBox(
+              height: 210,
+              child: MinimalTable(
+                columns: const [
+                  MinimalColumn('Day', width: 84, mono: true),
+                  MinimalColumn('Habit'),
+                  MinimalColumn('At', width: 50, numeric: true),
+                ],
+                rows: [
+                  for (final (i, h) in _habits.indexed)
+                    for (final day in [28, 27])
+                      MinimalTableRow([
+                        MinimalCell(
+                          MinimalFormat.dayMonth(
+                            DateTime(2026, 8, day),
+                            words: words,
+                          ),
+                        ),
+                        MinimalCell(h.$1),
+                        MinimalCell(
+                          MinimalFormat.clock(
+                            DateTime(2026, 8, day, 6 + i % 3, i * 7 % 60),
+                            words: words,
+                          ),
+                        ),
+                      ]),
+                ],
+              ),
+            );
+          },
         ),
       ),
       const _Band('Empty', note: 'No rows: the header and a quiet line.'),

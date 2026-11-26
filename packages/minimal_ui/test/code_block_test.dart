@@ -48,9 +48,8 @@ void main() {
 
     // Floating over line 1, a finger's target reaches the block's top
     // edge: the rim is the target's too, not a pixel no tap reaches.
-    testWidgets('a captionless block\'s copy takes a tap on its top rim', (
-      tester,
-    ) async {
+    testWidgets('a captionless block\'s copy takes a tap at its target\'s top, '
+        'which stands inside the block', (tester) async {
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         SystemChannels.platform,
         (call) async => null,
@@ -66,7 +65,8 @@ void main() {
       );
       final block = tester.getRect(find.byType(MinimalCodeBlock));
       final copy = tester.getRect(find.bySemanticsLabel('Copy'));
-      await tester.tapAt(Offset(copy.center.dx, block.top + 0.5));
+      expect(copy.top, greaterThanOrEqualTo(block.top));
+      await tester.tapAt(Offset(copy.center.dx, copy.top + 0.5));
       await tester.pump();
       expect(copied, 1);
       await tester.pump(MinimalChromeMetrics.toast);

@@ -34,7 +34,9 @@ void main() {
     });
   });
 
-  testWidgets('a tappable crumb has the full 44 px tap band', (tester) async {
+  testWidgets('a tappable crumb has the tap floor\'s full band', (
+    tester,
+  ) async {
     var back = 0;
     await tester.pumpWidget(
       pageApp(
@@ -46,7 +48,10 @@ void main() {
         ),
       ),
     );
-    expect(tester.getSize(find.byType(MinimalBreadcrumb)).height, 44);
+    expect(
+      tester.getSize(find.byType(MinimalBreadcrumb)).height,
+      MinimalLayout.tapTargets.touch.height,
+    );
     final crumb = tester.getRect(find.bySemanticsLabel('Habits'));
     await tester.tapAt(Offset(crumb.center.dx, crumb.top - 6));
     await tester.tapAt(Offset(crumb.center.dx, crumb.bottom + 6));

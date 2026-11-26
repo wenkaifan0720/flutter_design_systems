@@ -99,7 +99,9 @@ void main() {
         find.bySubtype<MinimalSegmentedButton<Object?>>(),
       );
       expect(strip.height, MinimalChromeMetrics.control);
-      await tester.tapAt(strip.topRight + const Offset(-20, -5));
+      // In the tap floor's band above the strip: (40 - 32) / 2.
+      final reach = (MinimalLayout.tapTargets.touch.height - strip.height) / 2;
+      await tester.tapAt(strip.topRight + Offset(-20, 1 - reach));
       await tester.pumpAndSettle();
       expect(seen, [1, 0, 1]);
     });

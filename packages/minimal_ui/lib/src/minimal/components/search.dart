@@ -42,9 +42,9 @@ enum MinimalSearchPresentation {
 /// `showCancel` adds a quiet Cancel beside the focused field; [scopes] (two
 /// or more) print a strip of [MinimalFilter]s under it.
 ///
-/// The field stands centred in a 44 px band (the row's height), and so does
-/// the scope strip, so the clear glyph, Cancel and every scope keep their
-/// whole 44 px touch target.
+/// The field stands centred in a band at the tap floor, and so does the
+/// scope strip, so the clear glyph, Cancel and every scope keep their whole
+/// touch target.
 ///
 /// ```dart
 /// MinimalSearchField(hintText: 'Search habits', onChanged: filter, clearable: true)
@@ -350,7 +350,8 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
                   child: MinimalIcon(
                     LucideIcons.circleX,
                     size: MinimalIconSize.i16,
-                    color: t.textTertiary,
+                    // The clear button's only mark: 3:1 at least.
+                    color: t.mutedForeground,
                   ),
                 ),
               ),
@@ -444,7 +445,7 @@ abstract final class _SearchMetrics {
 /// palette. An optional filter square stands beside it, as tall as the
 /// entry; while filters are on, its hairline and glyph turn to the full ink
 /// and an ink dot marks its corner. Like the field, it stands in a
-/// 44 px band so both controls keep their whole touch target.
+/// band at the tap floor so both controls keep their whole touch target.
 ///
 /// ```dart
 /// MinimalSearchEntry(label: 'Search habits', shortcut: '/', onPressed: openSearch)

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
@@ -266,7 +267,7 @@ class MinimalProperty extends StatelessWidget {
     if (childSpeaks) lead = ExcludeSemantics(child: lead);
 
     Widget row = Container(
-      // A row that opens its picker stands at least the tap floor (44 at a
+      // A row that opens its picker stands at least the tap floor (40 at a
       // finger); a pointer keeps the compact row.
       constraints: BoxConstraints(
         minHeight: math.max(
@@ -529,8 +530,9 @@ class MinimalPropertyPill extends StatelessWidget {
 
 /// A create form's row of [MinimalPropertyPill]s, wrapping onto a second
 /// line rather than overflowing: the set properties first, then the ones
-/// still to choose. Every pill keeps its 44 px target, the first and last
-/// lines' included.
+/// still to choose, their faces 6 px apart or as far as their targets
+/// need. Every pill keeps the tap floor, the first and last lines'
+/// included, its target taking the air between the faces.
 ///
 /// ```dart
 /// MinimalPropertyBar(pills: [MinimalPropertyPill(icon: LucideIcons.repeat, label: 'Every evening', hasValue: true, onPressed: pickRepeat), MinimalPropertyPill(icon: LucideIcons.target, label: 'Goal', onPressed: pickGoal)])
@@ -543,7 +545,7 @@ class MinimalPropertyBar extends StatelessWidget {
   final List<MinimalPropertyPill> pills;
 
   @override
-  Widget build(BuildContext context) => Wrap(
+  Widget build(BuildContext context) => RawChipGroup(
     spacing: MinimalChromeMetrics.iconGap,
     runSpacing: MinimalChromeMetrics.iconGap,
     children: pills,

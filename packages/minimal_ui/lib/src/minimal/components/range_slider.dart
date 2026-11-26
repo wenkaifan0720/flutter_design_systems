@@ -19,7 +19,6 @@ export 'package:ui_core/ui_core.dart' show RawRangeValues;
 
 const double _thumb = 16;
 const double _track = 4;
-const Size _target = Size(44, 44);
 
 /// A range between two ends: a price band, a time window, an age range. A
 /// [MinimalSlider]'s track and thumbs, twice: the 4 px track in the
@@ -128,7 +127,8 @@ class MinimalRangeSlider extends StatelessWidget {
       max: max,
       divisions: divisions,
       minGap: minGap,
-      thumbSize: _target,
+      // Each thumb stands in the tap floor in force.
+      thumbSize: RawTapTargets.of(context).floorOn(),
       startLabel: '$label, ${words.minimum}',
       endLabel: '$label, ${words.maximum}',
       semanticFormatterCallback: (v) =>
@@ -279,16 +279,17 @@ class MinimalRangeSlider extends StatelessWidget {
   }
 }
 
-/// [slider], ui_core's, whose thumbs' 44 px targets stand inside its box,
+/// [slider], ui_core's, whose thumbs' targets stand inside its box,
 /// widened past its column on both sides so a thumb's centre travels from
 /// half a thumb inside one edge to half a thumb inside the other, as a
 /// [MinimalSlider]'s does: the tracks and the thumbs of every slider in a
 /// column then line up. What stands past the column paints but takes no
 /// hits (the column's box ends where it ends).
-Widget _bleed(Widget slider) {
-  final reach = _target.width / 2 - _thumb / 2;
+Widget _bleed(RawRangeSlider slider) {
+  final target = slider.thumbSize;
+  final reach = target.width / 2 - _thumb / 2;
   return SizedBox(
-    height: _target.height,
+    height: target.height,
     child: Stack(
       clipBehavior: Clip.none,
       children: [

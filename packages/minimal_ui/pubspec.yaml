@@ -1,9 +1,8 @@
 name: minimal_ui
 description: >-
-  A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night.
-version: 0.6.0
-homepage: https://wenkaifan0720.github.io/flutter_design_systems/minimal/
-documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/minimal/
+  A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in six presets by day and by night.
+version: 0.7.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/minimal/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
@@ -22,8 +21,6 @@ screenshots:
     path: screenshots/tracker_1440_dark.png
   - description: "A bakery's back office at 1440 px by day, the morning's figures over a sortable orders table."
     path: screenshots/bakery_1440_light.png
-  - description: "Minimal's command palette by night, its actions in groups with mono key caps, one dimmed because it needs a paid plan."
-    path: screenshots/palette_1440_dark.png
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -34,7 +31,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.6.0
+  ui_core: ^0.7.1
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -44,7 +41,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.4.0
+  ui_core_test: ^0.5.1
   # Our looks' layout review, in the repository alone (publish_to: none).
   ui_core_review: ^0.1.0
 

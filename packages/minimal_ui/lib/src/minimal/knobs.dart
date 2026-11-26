@@ -18,10 +18,11 @@ import 'fonts.dart';
 /// dense: [compact], a desktop's default, is a 28 px control and a 32 px
 /// dense row. Minimal's own type, so the look's API names no Material class.
 ///
-/// The touch target does not move: 48 where a touch reaches the control, 44
-/// elsewhere, whatever the density, so a compact face stands in the same
-/// target with room around it. A list row is its own target, so it never
-/// stands under 44; a looser density still grows it.
+/// The tap target does not move: ui_core's tap floor in force (40 at a
+/// finger, 24 at a pointer), whatever the density, so a compact face stands
+/// in the same target with room around it. A list row that presses is its
+/// own target, so it never stands under the floor; a looser density still
+/// grows it.
 ///
 /// ```dart
 /// final theme = MinimalThemeData.standard().copyWith(
@@ -133,9 +134,11 @@ class MinimalDensity with Diagnosticable {
 /// The two faces the type is set in: [sans] for every word (the look's
 /// Geist), [mono] for figures, stamps and code (the look's Geist Mono,
 /// tabular), each from [sansPackage] and [monoPackage] (the package that
-/// bundles it, null for the app's own fonts). The look's faces are the
-/// default; an app's own fonts work when it declares them in its pubspec and
-/// loads them before the first frame.
+/// bundles it, null for the app's own fonts), and the [fallback] faces a
+/// glyph neither has is looked for in (a Noto Sans JP for Japanese, say),
+/// reaching every style as Material's `ThemeData.fontFamilyFallback` does.
+/// The look's faces are the default; an app's own fonts work when it
+/// declares them in its pubspec and loads them before the first frame.
 ///
 /// ```dart
 /// final theme = MinimalThemeData.standard().copyWith(
@@ -150,12 +153,16 @@ class MinimalTypeface with Diagnosticable {
     this.mono = 'GeistMono',
     this.sansPackage = minimalFontPackage,
     this.monoPackage = minimalFontPackage,
+    this.fallback = const [],
   });
 
   /// The app's own faces, from its own assets: no package.
-  const MinimalTypeface.app({required this.sans, required this.mono})
-    : sansPackage = null,
-      monoPackage = null;
+  const MinimalTypeface.app({
+    required this.sans,
+    required this.mono,
+    this.fallback = const [],
+  }) : sansPackage = null,
+       monoPackage = null;
 
   /// The look's: Geist and Geist Mono.
   static const MinimalTypeface look = MinimalTypeface();
@@ -173,12 +180,22 @@ class MinimalTypeface with Diagnosticable {
   /// The package that bundles [mono]; null for the app's own.
   final String? monoPackage;
 
+  /// The faces, in order, a glyph neither [sans] nor [mono] has is looked
+  /// for in before the platform's own: every style's `fontFamilyFallback`.
+  /// Empty: the platform's.
+  final List<String> fallback;
+
   /// This with the named parts changed.
-  MinimalTypeface copyWith({String? sans, String? mono}) => MinimalTypeface(
+  MinimalTypeface copyWith({
+    String? sans,
+    String? mono,
+    List<String>? fallback,
+  }) => MinimalTypeface(
     sans: sans ?? this.sans,
     mono: mono ?? this.mono,
     sansPackage: sansPackage,
     monoPackage: monoPackage,
+    fallback: fallback ?? this.fallback,
   );
 
   /// Between [a] and [b]: the faces change at the middle.
@@ -191,16 +208,30 @@ class MinimalTypeface with Diagnosticable {
       other.sans == sans &&
       other.mono == mono &&
       other.sansPackage == sansPackage &&
-      other.monoPackage == monoPackage;
+      other.monoPackage == monoPackage &&
+      listEquals(other.fallback, fallback);
 
   @override
-  int get hashCode => Object.hash(sans, mono, sansPackage, monoPackage);
+  int get hashCode => Object.hash(
+    sans,
+    mono,
+    sansPackage,
+    monoPackage,
+    Object.hashAll(fallback),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('sans', sans, defaultValue: 'Geist'))
-      ..add(StringProperty('mono', mono, defaultValue: 'GeistMono'));
+      ..add(StringProperty('mono', mono, defaultValue: 'GeistMono'))
+      ..add(
+        IterableProperty<String>(
+          'fallback',
+          fallback,
+          defaultValue: const <String>[],
+        ),
+      );
   }
 }

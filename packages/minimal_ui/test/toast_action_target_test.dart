@@ -6,7 +6,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'support/centred_host.dart';
 
 void main() {
-  testWidgets('a toast\'s action keeps its whole 44 px target', (tester) async {
+  testWidgets('a toast\'s action keeps its whole tap target', (tester) async {
     var undone = 0;
     await tester.pumpWidget(
       centredHost(
@@ -25,7 +25,8 @@ void main() {
     );
     await tester.tap(find.text('Archive'));
     await tester.pumpAndSettle();
-    // 21 px below the action's face's middle: inside its 44 px target, past
+    // 21 px below the action's face's middle: inside its target (the
+    // toast's full height, never under the tap floor), past
     // the face (its label stands on its capitals, so not on the label's).
     final action = tester.getRect(
       find

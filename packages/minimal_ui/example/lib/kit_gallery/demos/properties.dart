@@ -8,6 +8,7 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
+import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
@@ -348,7 +349,7 @@ class _CrumbBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    constraints: const BoxConstraints(minHeight: MinimalLayout.minHitTarget),
+    constraints: const BoxConstraints(minHeight: MinimalChromeMetrics.row),
     alignment: AlignmentDirectional.centerStart,
     child: child,
   );

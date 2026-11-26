@@ -151,7 +151,7 @@ void main() {
       }
     });
 
-    testWidgets('its 18 px track lands taps across a 44 px target', (
+    testWidgets('its 18 px track lands taps across the tap floor\'s target', (
       tester,
     ) async {
       var taps = 0;
@@ -160,7 +160,8 @@ void main() {
       );
       final box = faceOf(tester, find.byType(MinimalSwitch));
       expect(box.height, 18);
-      await tester.tapAt(box.topCenter - const Offset(0, 12));
+      final reach = (MinimalLayout.tapTargets.touch.height - box.height) / 2;
+      await tester.tapAt(box.topCenter - Offset(0, reach - 1));
       expect(taps, 1);
     });
   });

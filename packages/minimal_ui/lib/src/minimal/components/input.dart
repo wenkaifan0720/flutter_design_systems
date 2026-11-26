@@ -32,12 +32,12 @@ import 'pressable.dart';
 /// unit at the end. Read-only and disabled fields sink onto the quiet
 /// [MinimalThemeData.sunken] fill; a disabled one dims to the kit's 0.45.
 ///
-/// The clear glyph keeps a 44 px target where the label and the message
+/// The clear glyph keeps the tap floor's target where the label and the message
 /// leave air around the box; a box with neither keeps its own 32.
 ///
 /// The whole box is the field's tap target — a tap on its padding focuses
 /// the field — and its value is one screen-reader node that stands for the
-/// 44 px band taps land in, however small the box paints. A [trailing]
+/// band taps land in (the tap floor), however small the box paints. A [trailing]
 /// control (a show/hide toggle) stands at the box's end as a node and a
 /// focus stop of its own, after the value.
 ///
@@ -397,6 +397,9 @@ class _MinimalTextFieldState extends State<MinimalTextField>
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final label = widget.labelText;
+    // Words that name the field: its label or its hint.
+    final named =
+        (label?.isNotEmpty ?? false) || (widget.hintText?.isNotEmpty ?? false);
     final error = widget.errorText;
     final helper = widget.helperText;
     final icon = widget.icon;
@@ -524,7 +527,9 @@ class _MinimalTextFieldState extends State<MinimalTextField>
               child: MinimalIcon(
                 icon,
                 size: MinimalIconSize.i16,
-                color: t.textTertiary,
+                // Beside a label or a hint the glyph only decorates; alone,
+                // it is what names the field, so it reads at 3:1.
+                color: named ? t.textTertiary : t.mutedForeground,
               ),
             ),
             const MinimalGap(MinimalSpacing.s8),
@@ -566,7 +571,8 @@ class _MinimalTextFieldState extends State<MinimalTextField>
                   child: MinimalIcon(
                     LucideIcons.circleX,
                     size: MinimalIconSize.i16,
-                    color: t.textTertiary,
+                    // The clear button's only mark: 3:1 at least.
+                    color: t.mutedForeground,
                   ),
                 ),
               ),

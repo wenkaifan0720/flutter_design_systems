@@ -525,7 +525,10 @@ void main() {
         _page(const MinimalInputRow(labelText: 'Name', hintText: 'Stretch')),
       );
       final row = tester.getRect(find.byType(MinimalInputRow));
-      expect(row.height, greaterThanOrEqualTo(MinimalLayout.minHitTarget));
+      expect(
+        row.height,
+        greaterThanOrEqualTo(MinimalLayout.tapTargets.touch.height),
+      );
       // On the label, and in the row's padding under the field.
       for (final point in [
         row.centerLeft + const Offset(8, 0),

@@ -101,9 +101,9 @@ class MinimalMenuEntry {
 /// A row of menus across a desktop app's top: File, Edit, View. A quiet
 /// strip on a hairline (its outline `shapes.small`), its menus' names in
 /// the control weight; an open menu's name stands on the quiet fill, and
-/// its menu is Minimal's card of 32 px items, 44 on touch (a glyph, the
-/// words, the key caps or a chevron to a submenu, a check), the active item
-/// in the muted fill.
+/// its menu is Minimal's card of 32 px items, at the tap floor on touch (a
+/// glyph, the words, the key caps or a chevron to a submenu, a check), the
+/// active item in the muted fill.
 ///
 /// The bar is one tab stop: Left and Right move along it, Down, Enter and
 /// Space open a menu; in a menu Up and Down move, Right opens a submenu or

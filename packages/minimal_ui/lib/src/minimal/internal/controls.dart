@@ -98,7 +98,7 @@ int minimalSeekIndex(
 }
 
 /// The least a tap reaches on a control at [context], by what reaches it:
-/// the floors [MinimalTheme] declares ([MinimalLayout.tapTargets]), 44 for
+/// the floors [MinimalTheme] declares ([MinimalLayout.tapTargets]), 40 for
 /// a finger and 24 for a pointer. A row or a strip that is its own tap
 /// target stands at least this tall; a compact face stands in the same
 /// target with more room round it, so density never moves it.

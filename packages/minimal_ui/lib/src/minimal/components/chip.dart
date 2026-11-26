@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
@@ -22,8 +23,8 @@ import 'pressable.dart';
 /// [onPressed] disables the chip: it dims, its words stay in the muted ink
 /// and a chosen one keeps only its hairline, in the muted ink too, so a
 /// disabled chip never reads stronger than an enabled one. The hit area
-/// pads out to 44 (inside a [MinimalChipRow], whose own box pads out with
-/// it).
+/// pads out to the tap floor; a [MinimalChipRow] spaces its chips so
+/// neighbouring targets meet rather than overlap.
 ///
 /// [style] dresses one chip, `components.chip` every one, resolved with
 /// [WidgetState.selected] when chosen: every slot. Its outline is the
@@ -206,10 +207,11 @@ class MinimalChip extends StatelessWidget {
   }
 }
 
-/// A chip strip that cannot overflow: its chips wrap onto new lines, 6 px
-/// apart each way, the rhythm of the create form's property pills. The row
-/// pads its own hit region by the 8 px a 28 px chip needs to reach 44, so
-/// the first line keeps its targets above it and the last below it.
+/// A chip strip that cannot overflow: its chips wrap onto new lines, their
+/// faces 6 px apart each way (the rhythm of the create form's property
+/// pills), or as far apart as their tap targets need. Each chip's target
+/// takes the air between the faces (ui_core's RawChipGroup), so a row of
+/// chips reads as one group and every chip keeps the tap floor.
 ///
 /// ```dart
 /// MinimalChipRow(children: [for (final f in filters) MinimalChip(f.name, count: f.count, selected: f == on, onPressed: () => pick(f))])
@@ -226,14 +228,14 @@ class MinimalChipRow extends StatelessWidget {
   /// The chips.
   final List<Widget> children;
 
-  /// Air between chips in a row.
+  /// Air between two chips' faces in a row.
   final double spacing;
 
-  /// Air between rows.
+  /// Air between two rows' faces.
   final double runSpacing;
 
   @override
-  Widget build(BuildContext context) => Wrap(
+  Widget build(BuildContext context) => RawChipGroup(
     spacing: spacing,
     runSpacing: runSpacing,
     crossAxisAlignment: WrapCrossAlignment.center,

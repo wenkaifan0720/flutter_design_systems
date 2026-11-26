@@ -106,8 +106,8 @@ class MinimalCommandItem {
 /// prints an empty state, and a screen reader hears how many match. The
 /// field is a [MinimalSearchField], clear cap and all. Result rows are the
 /// dense 36 px register (`t.rowHeightCompact`), grown with larger text —
-/// with the table's 40 and the menu's and time columns' 32, the dense-list
-/// exception to the 44 px target: a palette is walked by keyboard and read
+/// with the menu's and time columns' 32, the dense-list exception to the
+/// tap floor: a palette is walked by keyboard and read
 /// far more than it is tapped.
 ///
 /// [show] presents it in a card over the app and runs the chosen action
@@ -343,16 +343,16 @@ class _MinimalCommandState extends State<MinimalCommand> {
   }
 }
 
-/// The air a search field's 44 px band keeps over its box at the theme's
-/// density and text size (8 at compact, 6 at standard, none once the box
-/// fills the band).
+/// The air a search field's band (the tap floor in force) keeps over its
+/// box at the theme's density and text size (none once the box fills the
+/// band).
 double _fieldAir(BuildContext context) {
   final t = context.minimalTheme;
   final box = minimalGrownHeight(
     context,
     t.density.height(MinimalChromeMetrics.control),
   );
-  return math.max(0, (MinimalLayout.minHitTarget - box) / 2);
+  return math.max(0, (minimalTapFloor(context) - box) / 2);
 }
 
 /// The shown palette's card: the surface on `shapes.large` with its rim and
@@ -387,7 +387,7 @@ class _Card extends StatelessWidget {
             child: minimalClip(
               shape,
               child: Padding(
-                // The field's 44 px band keeps air over its box; the card
+                // The field's band (the tap floor) keeps air over its box; the card
                 // takes it off its own top, so the field stands 8 px from
                 // the card's top as from its sides. A pill over it stands
                 // on the full 8.

@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import '../chrome_metrics.dart';
 import '../theme.dart';
 import 'cap_label.dart';
+import 'controls.dart';
 import 'styled.dart';
 import 'trailing_glyph.dart';
 
@@ -49,8 +50,10 @@ class MinimalSheetHeader extends StatelessWidget {
     final hang =
         (square - MinimalIconSize.i18) / 2 +
         MinimalIconSize.i18 * minimalCrossBearing;
+    // The band is as tall as the close's whole target: the tap floor in
+    // force, never less than its square with 4 px of air each side.
     return SizedBox(
-      height: MinimalChromeMetrics.sheetBar,
+      height: math.max(minimalTapFloor(context), square + MinimalSpacing.s8),
       child: Padding(
         padding: EdgeInsetsDirectional.only(
           start: MinimalChromeMetrics.sheetPad,

@@ -88,19 +88,29 @@ Future<void> expectNoOverflowAtTextScale(
   );
 }
 
-/// Expects what is on screen to meet Flutter's four accessibility
-/// guidelines: Android's 48 px and iOS's 44 px tap targets, a label on
-/// every tap target, and text contrast. Pump the screen first. A look whose
-/// targets are iOS's 44 px on every platform passes [android] false.
+/// Expects what is on screen to meet Flutter's accessibility guidelines:
+/// Android's 48 px tap targets, every target at least [floor] (ui_core's
+/// finger's floor, 40 by 40), a label on every tap target, and text
+/// contrast. Pump the screen first. A look whose targets are the floor on
+/// every platform passes [android] false.
 Future<void> expectMeetsGuidelines(
   WidgetTester tester, {
   bool android = true,
+  Size floor = const Size(40, 40),
 }) async {
   final semantics = tester.ensureSemantics();
   if (android) {
     await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
   }
-  await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+  await expectLater(
+    tester,
+    meetsGuideline(
+      MinimumTapTargetGuideline(
+        size: floor,
+        link: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum',
+      ),
+    ),
+  );
   await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
   await expectLater(tester, meetsGuideline(textContrastGuideline));
   semantics.dispose();

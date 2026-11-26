@@ -4,9 +4,8 @@
 // face and lays the pressable's wash and ring over it. Not exported. It
 // names no type of button.dart's, so a copy of the button (renaming its
 // variant and size) still paints through it.
-import 'dart:math' as math;
-
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
@@ -51,18 +50,12 @@ enum MinimalButtonScale {
 (Color, Color) minimalDangerFill(MinimalThemeData t) {
   if (t.isLightAppearance) return (t.destructive, t.destructiveForeground);
   const white = Color(0xFFFFFFFF);
-  double contrast(Color a, Color b) {
-    final la = a.computeLuminance();
-    final lb = b.computeLuminance();
-    return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-  }
-
   for (var share = 0.6; share > 0.2; share -= 0.05) {
     final fill = Color.alphaBlend(
       t.destructive.withValues(alpha: share),
       t.background,
     );
-    if (contrast(white, fill) >= 4.5) return (fill, white);
+    if (RawPalette.contrastRatio(white, fill) >= 4.5) return (fill, white);
   }
   return (t.destructive, t.destructiveForeground);
 }

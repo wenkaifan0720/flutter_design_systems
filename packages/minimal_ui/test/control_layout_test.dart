@@ -275,6 +275,8 @@ void main() {
                 ..sort((a, b) => a.left.compareTo(b.left));
           expect(marks.length, 3, reason: '$name: three marks');
           final face = tester.getRect(control);
+          // What the control paints, inside the band its targets stand in.
+          final painted = _paintedFace(tester, control);
           final mark = marks[1];
           final gesture = await tester.startGesture(mark.center);
           await tester.pump(const Duration(milliseconds: 200));
@@ -296,8 +298,8 @@ void main() {
           for (final p in [
             Offset(left + 4, mark.center.dy),
             Offset(right - 4, mark.center.dy),
-            Offset(mark.center.dx, face.top + 4),
-            Offset(mark.center.dx, face.bottom - 5),
+            Offset(mark.center.dx, painted.top + 4),
+            Offset(mark.center.dx, painted.bottom - 5),
           ]) {
             expect(
               shot.at(p),
@@ -305,7 +307,7 @@ void main() {
               reason:
                   '$name ($d): the pressed fill stops short of $p '
                   '(cell ${left.toStringAsFixed(1)}..'
-                  '${right.toStringAsFixed(1)}, face $face)',
+                  '${right.toStringAsFixed(1)}, face $painted)',
             );
           }
           await gesture.up();
@@ -542,4 +544,27 @@ void main() {
       }
     }
   });
+}
+
+/// What [control] paints: the face inside its first tap target or tap band
+/// (the band a segmented track stands in), else the first box it decorates.
+Rect _paintedFace(WidgetTester tester, Finder control) {
+  final rooms = find.descendant(
+    of: control,
+    matching: find.byWidgetPredicate(
+      (w) =>
+          w is TapTargetPadding || w.runtimeType.toString() == 'MinimalTapBand',
+    ),
+    matchRoot: true,
+  );
+  if (rooms.evaluate().isEmpty) {
+    return tester.getRect(
+      find.descendant(of: control, matching: find.byType(DecoratedBox)).first,
+    );
+  }
+  RenderBox? face;
+  tester
+      .renderObject<RenderBox>(rooms.first)
+      .visitChildren((c) => face = c as RenderBox);
+  return face!.localToGlobal(Offset.zero) & face!.size;
 }

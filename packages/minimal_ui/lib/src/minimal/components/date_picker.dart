@@ -12,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../chrome_metrics.dart';
 import '../format.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../internal/field.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
@@ -58,13 +59,15 @@ enum MinimalDatePickerPresentation {
 /// date (`28 Aug 2026`), the clock (`21:30`) — each opening its own picker
 /// in an anchored popover: a month calendar with mono day numbers, the
 /// chosen day on the accent, [currentDate] a bar under its figure; or two scrolling columns of
-/// hours and minutes. Choosing a day closes the calendar. With
-/// `confirmSelection` the picker rises in a sheet instead and commits only
-/// on Done. With no [onChanged] the whole row dims to the kit's 0.45, its
+/// hours and minutes. Choosing a day closes the calendar. On a phone's
+/// width (under [MinimalLayout.compact]), where an anchored calendar would
+/// cover the fields under its pill, and with `confirmSelection` at any
+/// width, the picker rises in a sheet instead and commits only on Done, as
+/// Material's pickers open in a dialog on phones. With no [onChanged] the whole row dims to the kit's 0.45, its
 /// pills' values in the quiet ink at the regular weight.
 ///
-/// Every pill and every day stands in a 44 px slot, so each keeps its whole
-/// touch target. At a large text size a pill's value wraps between its
+/// Every pill and every day stands in a slot at the tap floor, so each keeps
+/// its whole target. At a large text size a pill's value wraps between its
 /// words and the pill and its slot grow with it, as a Material text field
 /// does. The calendar is one keyboard stop: the arrow keys walk the
 /// days (stepping the month at its edges), Page Up and Page Down step the
@@ -122,7 +125,8 @@ class MinimalDatePicker extends StatefulWidget {
   /// Whether it prints the 24-hour clock.
   final bool use24HourFormat;
 
-  /// Raise the picker in a sheet that commits only on Done.
+  /// Raise the picker in a sheet that commits only on Done at every width
+  /// (under [MinimalLayout.compact] it always does).
   final bool confirmSelection;
 
   /// The day the calendar outlines as today; none when null.
@@ -198,14 +202,17 @@ class MinimalDatePicker extends StatefulWidget {
   }
 }
 
-/// The date picker's geometry: a day's 44 px slot around its 32 px mark,
-/// the popovers' widths (a calendar of 44 px columns inside the card's
+/// The date picker's geometry: a day's slot around its 32 px mark (the tap
+/// floor in force, never less than the mark with 4 px of air each side),
+/// the popovers' widths (a calendar of seven slots inside the card's
 /// padding; the two time columns), a time column's 32 px items.
 abstract final class _DateMetrics {
-  static const double day = MinimalLayout.minHitTarget;
+  static double dayOf(BuildContext context) =>
+      math.max(minimalTapFloor(context), dayMark + MinimalSpacing.s8);
   static const double dayMark = MinimalChromeMetrics.control;
   static const double popoverPad = MinimalSpacing.s8;
-  static const double calendarWidth = 7 * day + 2 * popoverPad;
+  static double calendarWidthOf(BuildContext context) =>
+      7 * dayOf(context) + 2 * popoverPad;
   static const double timeWidth = 208;
   static const double timeItem = 32;
   static const int timeVisible = 5;
@@ -286,7 +293,10 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
   Future<void> _open(MinimalDatePickerMode mode, BuildContext anchor) async {
     if (widget.onChanged == null) return;
     var draft = _clamp(widget.value);
-    if (!widget.confirmSelection) {
+    // On a phone's width the anchored calendar would stand over the fields
+    // under its pill: the picker rises in the sheet, as with
+    // confirmSelection.
+    if (!widget.confirmSelection && !MinimalLayout.isCompact(context)) {
       final box = anchor.findRenderObject()! as RenderBox;
       await MinimalMenu.popover<void>(
         context,
@@ -294,7 +304,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
         label: widget.labelText,
         width: mode == MinimalDatePickerMode.time
             ? _DateMetrics.timeWidth
-            : _DateMetrics.calendarWidth,
+            : _DateMetrics.calendarWidthOf(context),
         builder: (popoverContext) => StatefulBuilder(
           builder: (context, update) => Padding(
             padding: const EdgeInsets.all(_DateMetrics.popoverPad),
@@ -639,7 +649,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
           : t.textTertiary;
       final cell = MinimalShapes.inset(t.shapes.small, 1);
       return SizedBox(
-        height: _DateMetrics.day,
+        height: _DateMetrics.dayOf(context),
         child: Center(
           // One keyboard stop for the whole grid: the days are reached by
           // the arrow keys, not by Tab.
@@ -696,9 +706,10 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // A 44 px band, so the small month buttons keep their whole target.
+        // A day slot's band, so the small month buttons keep their whole
+        // target and the row lines up with the weeks under it.
         SizedBox(
-          height: MinimalLayout.minHitTarget,
+          height: _DateMetrics.dayOf(context),
           child: Row(
             children: [
               Expanded(
@@ -773,7 +784,9 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                           builder: (context) {
                             final n = row * 7 + col - lead + 1;
                             if (n < 1 || n > days) {
-                              return const SizedBox(height: _DateMetrics.day);
+                              return SizedBox(
+                                height: _DateMetrics.dayOf(context),
+                              );
                             }
                             return cell(n);
                           },

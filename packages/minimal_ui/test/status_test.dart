@@ -58,7 +58,7 @@ void main() {
       );
       await tester.tap(find.byType(MinimalStatusIcon).first);
       expect(taps, 1);
-      // 18 px paints, 44 px lands: the glyph on its start keyline, its
+      // 18 px paints, the tap floor lands: the glyph on its start keyline, its
       // target reaching on past it.
       final box = faceOf(tester, find.byType(MinimalStatusIcon).first);
       expect(box.width, MinimalIconSize.i18);

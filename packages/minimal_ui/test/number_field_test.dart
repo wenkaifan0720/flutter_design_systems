@@ -103,46 +103,57 @@ void main() {
       expect(seen, [for (var i = 1; i <= seen.length; i++) i]);
     });
 
-    testWidgets('its 32 px strip lands taps across a 44 px target, and with '
-        'no onChanged it is disabled', (tester) async {
-      var taps = 0;
-      await tester.pumpWidget(
-        paddedHost(
-          MinimalNumberField(
-            value: 1,
-            min: 0,
-            max: 3,
-            labelText: 'Rest',
-            onChanged: (_) => taps += 1,
+    testWidgets(
+      'its 32 px strip lands taps across the tap floor\'s target, and with '
+      'no onChanged it is disabled',
+      (tester) async {
+        var taps = 0;
+        await tester.pumpWidget(
+          paddedHost(
+            MinimalNumberField(
+              value: 1,
+              min: 0,
+              max: 3,
+              labelText: 'Rest',
+              onChanged: (_) => taps += 1,
+            ),
           ),
-        ),
-      );
-      final plus = tester.getRect(find.bySemanticsLabel('Increase Rest'));
-      await tester.tapAt(plus.topCenter - const Offset(0, 6));
-      expect(taps, 1);
+        );
+        // Above the key, inside the band the tap floor stands round it.
+        final plus = tester.getRect(find.bySemanticsLabel('Increase Rest'));
+        final reach = (MinimalLayout.tapTargets.touch.height - plus.height) / 2;
+        expect(reach, greaterThan(1));
+        await tester.tapAt(plus.topCenter - Offset(0, reach - 1));
+        expect(taps, 1);
 
-      await tester.pumpWidget(
-        paddedHost(
-          const MinimalNumberField(value: 1, min: 0, max: 3, labelText: 'Rest'),
-        ),
-      );
-      await tester.tap(
-        find.bySemanticsLabel('Increase Rest'),
-        warnIfMissed: false,
-      );
-      expect(taps, 1);
-      // Disabled, the whole frame dims once — not just its glyphs.
-      final dim = tester.widget<Opacity>(
-        find
-            .descendant(
-              of: find.byType(MinimalNumberField),
-              matching: find.byType(Opacity),
-            )
-            .first,
-      );
-      expect(dim.opacity, 0.45);
-      expect(find.byType(MinimalPressable), findsNothing);
-    });
+        await tester.pumpWidget(
+          paddedHost(
+            const MinimalNumberField(
+              value: 1,
+              min: 0,
+              max: 3,
+              labelText: 'Rest',
+            ),
+          ),
+        );
+        await tester.tap(
+          find.bySemanticsLabel('Increase Rest'),
+          warnIfMissed: false,
+        );
+        expect(taps, 1);
+        // Disabled, the whole frame dims once — not just its glyphs.
+        final dim = tester.widget<Opacity>(
+          find
+              .descendant(
+                of: find.byType(MinimalNumberField),
+                matching: find.byType(Opacity),
+              )
+              .first,
+        );
+        expect(dim.opacity, 0.45);
+        expect(find.byType(MinimalPressable), findsNothing);
+      },
+    );
 
     testWidgets('a unit prints in the body face after the mono figure, and '
         'is announced with it', (tester) async {

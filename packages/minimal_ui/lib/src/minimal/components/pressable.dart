@@ -8,7 +8,6 @@ import '../internal/kit_paint.dart';
 import '../internal/press_feedback.dart';
 import '../internal/styled.dart';
 import '../internal/tap_band.dart';
-import '../theme.dart';
 
 /// Adds keyboard, pointer and screen reader support to a custom control.
 ///
@@ -24,7 +23,9 @@ import '../theme.dart';
 /// it is, with no wash, focus stop, tap target or button semantics, and
 /// handles its own interactions.
 ///
-/// The hit target is at least 44 px for touch and 24 px for a pointer.
+/// The hit target is at least the tap floor in force
+/// (`RawTapTargets.of(context).floorOn()`): 40 px for touch, 24 px for a
+/// pointer.
 /// [tapAlignment] places the painted control inside it. A larger control
 /// can provide a shared target for its parts with [tapTarget] false.
 ///
@@ -383,29 +384,30 @@ class _MinimalPressableState extends State<MinimalPressable> {
   );
 }
 
-/// Hands the [MinimalLayout.minHitTarget] margin on through a parent that
+/// Hands the tap floor's margin on through a parent that
 /// hugs small controls — a 28 px strip of pills, a bare `Row` holding a
 /// switch, a 20 px content line inside a padded row. A render box rejects
 /// every point outside its own size before any child sees it, so a control's
 /// own inflated target ([MinimalPressable]) is cut off wherever an ancestor is
-/// smaller than 44 px; wrapping that ancestor here restores it.
+/// smaller than the floor; wrapping that ancestor here restores it.
 ///
 /// It pads the HIT-TEST region only, never layout or paint. [line] is the
 /// height of one line of controls (a pill row's 28 px); null takes the
 /// wrapped box's own height. A point within the margin that brings a line up
-/// to 44 is forwarded [inset] inside the box's nearest edge, past its border
-/// and padding, where one of its controls takes it. Only the margin a line
-/// needs is added: a box already 44 px tall gains nothing.
+/// to the floor is forwarded [inset] inside the box's nearest edge, past its
+/// border and padding, where one of its controls takes it. Only the margin a
+/// line needs is added: a box already at the floor gains nothing.
 ///
 /// ```dart
 /// MinimalHitTarget(line: 28, child: Row(children: pills))
 /// ```
 @Deprecated(
   'Not needed: since 0.2.0 each Minimal control lays its own tap target out '
-  '(ui_core\'s TapTargetPadding), whatever its parent. Remove the wrapper.',
+  '(ui_core\'s TapTargetPadding), whatever its parent. Remove the wrapper. '
+  'It goes in 0.8.0.',
 )
 class MinimalHitTarget extends SingleChildRenderObjectWidget {
-  /// Pads [child]'s hit area to 44 px.
+  /// Pads [child]'s hit area to the tap floor in force.
   const MinimalHitTarget({super.key, this.line, this.inset = 4, super.child});
 
   /// The height of one line of controls; null takes the box's own height.
@@ -416,13 +418,14 @@ class MinimalHitTarget extends SingleChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderHitTarget(line, inset);
+      _RenderHitTarget(line, inset, RawTapTargets.of(context).floorOn().height);
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) {
     (renderObject as _RenderHitTarget)
       ..line = line
-      ..inset = inset;
+      ..inset = inset
+      ..floor = RawTapTargets.of(context).floorOn().height;
   }
 
   @override
@@ -435,20 +438,22 @@ class MinimalHitTarget extends SingleChildRenderObjectWidget {
 }
 
 class _RenderHitTarget extends RenderProxyBox {
-  _RenderHitTarget(this.line, this.inset);
+  _RenderHitTarget(this.line, this.inset, this.floor);
 
   double? line;
   double inset;
-
-  static const double _min = MinimalLayout.minHitTarget;
+  double floor;
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
     if (size.contains(position)) {
       return super.hitTest(result, position: position);
     }
-    final dx = ((_min - size.width) / 2).clamp(0.0, double.infinity);
-    final dy = ((_min - (line ?? size.height)) / 2).clamp(0.0, double.infinity);
+    final dx = ((floor - size.width) / 2).clamp(0.0, double.infinity);
+    final dy = ((floor - (line ?? size.height)) / 2).clamp(
+      0.0,
+      double.infinity,
+    );
     if (position.dx < -dx ||
         position.dy < -dy ||
         position.dx > size.width + dx ||

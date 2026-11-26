@@ -36,7 +36,7 @@ import 'pressable.dart';
 /// dims it and swallows taps.
 ///
 /// A control in the [leading] or [trailing] slot (a [MinimalStatusIcon] with
-/// `onPressed:`, a [MinimalSwitch]) keeps its whole 44 px target: the row's
+/// `onPressed:`, a [MinimalSwitch]) keeps its whole tap target: the row's
 /// content line spans the row's full height and its gutters, so the
 /// control's margin is never cut off by the row's padding.
 ///
@@ -151,7 +151,7 @@ class MinimalListTile extends StatelessWidget {
   final bool muted;
 
   /// The 36 px register for a dense list; a row that presses keeps the tap
-  /// floor (44 at a finger) whatever the density.
+  /// floor (40 at a finger) whatever the density.
   final bool dense;
 
   /// False dims the row and swallows taps (a record the user cannot open
@@ -179,6 +179,15 @@ class MinimalListTile extends StatelessWidget {
     final meta = this.meta;
     final metaWidth = this.metaWidth;
     final chosen = selected ?? false;
+    // On the selection wash the caption keeps its 4.5:1.
+    final caption = chosen
+        ? t.caption.c(
+            RawPalette.readableTone(
+              t.caption.color ?? t.mutedForeground,
+              on: [t.selection],
+            ),
+          )
+        : t.caption;
     final side =
         (padding ??
                 _MinimalRowScope.maybeOf(context) ??
@@ -240,7 +249,7 @@ class MinimalListTile extends StatelessWidget {
       builder: (context, _) => Container(
         constraints: BoxConstraints(
           // A row that presses stands at least the tap floor: a finger's
-          // 44 whatever the density; the dense 36 holds for a pointer.
+          // 40 whatever the density; the dense 36 holds for a pointer.
           minHeight: math.max(
             dense ? t.rowHeightCompact : t.rowHeight,
             onTap == null ? 0 : minimalTapFloor(context),
@@ -292,7 +301,7 @@ class MinimalListTile extends StatelessWidget {
                       const MinimalGap(MinimalSpacing.s2),
                       Text(
                         sub,
-                        style: t.caption,
+                        style: caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -300,7 +309,7 @@ class MinimalListTile extends StatelessWidget {
                     if (below != null) ...[
                       const MinimalGap(MinimalSpacing.s4),
                       DefaultTextStyle.merge(
-                        style: t.caption,
+                        style: caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         child: below,

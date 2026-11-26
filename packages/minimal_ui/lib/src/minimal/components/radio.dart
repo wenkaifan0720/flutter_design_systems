@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../chrome_metrics.dart';
 import '../component_themes.dart';
 import '../internal/controls.dart';
 import '../internal/press_feedback.dart';
@@ -373,12 +374,12 @@ class _OptionState<T> extends State<_Option<T>> {
     // The whole option is the control, as a radio list tile is: a tap, the
     // click cursor and the press wash anywhere on its mark or its words,
     // one node for a screen reader that reads its label and description.
-    // It stands at least the tap floor (44 for a finger), its words
+    // It stands at least the tap floor (40 for a finger), its words
     // centred in it, so a column of options is a column of targets.
     final option_ = ConstrainedBox(
       constraints: BoxConstraints(
         minHeight: math.max(
-          t.density.height(MinimalLayout.minHitTarget - MinimalSpacing.s8),
+          t.density.height(MinimalChromeMetrics.row - MinimalSpacing.s8),
           minimalTapFloor(context),
         ),
       ),

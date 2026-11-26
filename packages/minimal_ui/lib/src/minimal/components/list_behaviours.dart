@@ -93,7 +93,7 @@ class MinimalReorderableListView<T extends Object> extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, item, r) => Container(
-        constraints: const BoxConstraints(minHeight: 44),
+        constraints: BoxConstraints(minHeight: context.minimalTheme.rowHeight),
         // No ground of its own: the row stands on what holds it, so a
         // card's rounded rim shows whole at its corners. Clear, it still
         // takes a long press anywhere on it.
@@ -190,9 +190,12 @@ class _ReorderGripState extends State<_ReorderGrip> {
     final focused =
         (Focus.maybeOf(context)?.hasPrimaryFocus ?? false) &&
         FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+    // The grip's target: the tap floor in force, never less than its 28 px
+    // face.
+    final floor = math.max(minimalTapFloor(context), 28.0);
     return SizedBox(
-      width: 40,
-      height: 44,
+      width: floor,
+      height: floor,
       child: Center(
         child: AnimatedContainer(
           width: 28,
@@ -209,7 +212,8 @@ class _ReorderGripState extends State<_ReorderGrip> {
           child: MinimalIcon(
             LucideIcons.gripVertical,
             size: MinimalIconSize.i16,
-            color: t.textTertiary,
+            // The grip is the drag's control: 3:1 at least.
+            color: t.mutedForeground,
           ),
         ),
       ),
@@ -476,7 +480,8 @@ class _MinimalTreeViewState<T extends Object>
                                 ? LucideIcons.chevronLeft
                                 : LucideIcons.chevronRight,
                             size: MinimalIconSize.i14,
-                            color: t.textTertiary,
+                            // A control (it opens the branch): 3:1 at least.
+                            color: t.mutedForeground,
                           ),
                         ),
                       )

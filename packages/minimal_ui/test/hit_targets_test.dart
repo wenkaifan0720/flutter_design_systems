@@ -7,7 +7,7 @@ import 'support/scrolling_host.dart';
 void main() {
   group('hit targets', () {
     // A tap just outside what a small control paints, still inside its
-    // 44 px target.
+    // target (the tap floor, 40).
     Future<void> tapBelow(WidgetTester tester, Finder painted, double dy) =>
         tester.tapAt(tester.getRect(painted).bottomCenter + Offset(0, dy));
 
@@ -47,16 +47,16 @@ void main() {
           ),
         ),
       );
-      await tapBelow(tester, find.bySemanticsLabel('Next month'), 6);
+      await tapBelow(tester, find.bySemanticsLabel('Next month'), 5);
       await tester.pump();
       expect(find.text('September 2026'), findsOneWidget);
       await tester.tapAt(
         tester.getRect(find.bySemanticsLabel('Previous month')).topCenter -
-            const Offset(0, 6),
+            const Offset(0, 5),
       );
       await tester.pump();
       expect(find.text('August 2026'), findsOneWidget);
-      await tapBelow(tester, pill('15'), 5);
+      await tapBelow(tester, pill('15'), 3);
       expect(chosen, [DateTime(2026, 8, 15)]);
     });
 
@@ -91,10 +91,10 @@ void main() {
       await tapBelow(tester, find.bySemanticsLabel('Clear Name'), 5);
       await tester.pump();
       expect(input.text, isEmpty);
-      await tapBelow(tester, find.bySemanticsLabel('Clear'), 6);
+      await tapBelow(tester, find.bySemanticsLabel('Clear'), 5);
       await tester.pump();
       expect(search.text, isEmpty);
-      await tapBelow(tester, find.bySemanticsLabel('Done'), 7);
+      await tapBelow(tester, find.bySemanticsLabel('Done'), 5);
       expect(scopes, [2]);
     });
 
@@ -113,7 +113,7 @@ void main() {
           ),
         ),
       );
-      for (final dy in [3.0, 7.0]) {
+      for (final dy in [3.0, 5.0]) {
         search.text = 'read';
         await tester.pump();
         await tapBelow(tester, find.bySemanticsLabel('Clear'), dy);
@@ -139,9 +139,15 @@ void main() {
       // The square's node spans its reach, the floor tall: its bottom row,
       // 5 px under the face, takes the tap.
       final square = tester.getRect(find.bySemanticsLabel('Filters'));
-      expect(square.height, 44);
+      expect(square.height, MinimalLayout.tapTargets.touch.height);
       await tester.tapAt(square.bottomCenter - const Offset(0, 1));
-      await tapBelow(tester, find.text('Search habits'), 10);
+      // The entry's node spans its reach too: its bottom row, under the
+      // face, opens it.
+      final entry = tester.getRect(
+        find.bySemanticsLabel(RegExp('^Search habits')),
+      );
+      expect(entry.height, MinimalLayout.tapTargets.touch.height);
+      await tester.tapAt(entry.bottomCenter - const Offset(0, 1));
       expect(filtered, 1);
       expect(opened, 1);
     });

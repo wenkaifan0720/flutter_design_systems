@@ -413,7 +413,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
     );
 
     // A row that selects or opens, and a band whose headers sort, stand at
-    // least the tap floor (44 at a finger); a pointer keeps the compact
+    // least the tap floor (40 at a finger); a pointer keeps the compact
     // 40 and 30.
     final rowFloor = widget.selectable || widget.onRowActivated != null
         ? minimalTapFloor(context)

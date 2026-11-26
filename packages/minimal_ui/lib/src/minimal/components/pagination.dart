@@ -50,7 +50,7 @@ List<int?> _pages(int page, int count, int siblings) {
 /// page stands on the surface inside the control edge, the rest are bare.
 /// Under 360 px it folds to "Page 3 of 12" between the two arrows.
 ///
-/// [page] counts from 0. Each control keeps a 44 px target, and its press
+/// [page] counts from 0. Each control keeps the tap floor's target, and its press
 /// wash and focus ring take its own square.
 ///
 /// ```dart
@@ -675,7 +675,8 @@ class _StepMark extends StatelessWidget {
               '$number',
               style: t.mono
                   .copyWith(fontSize: 11)
-                  .c(current ? t.foreground : t.textTertiary),
+                  // An upcoming step's number is read: the secondary ink.
+                  .c(current ? t.foreground : t.mutedForeground),
             ),
     );
     return MinimalPressable(

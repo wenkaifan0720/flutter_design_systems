@@ -92,7 +92,7 @@ final Map<RegExp, String> _held = {
     r'"(Off|On|Disabled|Disabled on)"|^a (button|checkbox) "(Off|On|'
     r'Disabled|Disabled on)" beside a (button|checkbox) "Large"',
   ): "the checkbox states strip sets the large check (20) beside the "
-      '16 px ones, each centred in its 44 px slot, so the sizes compare',
+      '16 px ones, each centred in its tap-floor slot, so the sizes compare',
   RegExp(r'^a segmented control "Today": 390 px wide'):
       "the Overview page draws a 390 px phone's Today screen, and the "
       "segmented control spans that phone's column",

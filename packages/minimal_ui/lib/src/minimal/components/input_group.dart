@@ -300,7 +300,7 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
         stretch: true,
         fixed: fixed,
         grow: grow,
-        growMin: MinimalLayout.minHitTarget,
+        growMin: minimalTapFloor(context),
         children: cells,
       ),
     );

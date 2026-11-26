@@ -2,6 +2,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
+import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'support/text_scale_host.dart';
@@ -25,9 +26,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     final left = tester.getRect(find.byType(MinimalCalendar)).left;
-    // A month's seven 44 px slots and the 32 px gutter between the grids,
-    // wider than a column step, so the months read as two.
-    const second = 7 * MinimalLayout.minHitTarget + MinimalSpacing.s32;
+    // A month's seven 40 px slots (a 32 px mark and its air, at least the
+    // tap floor) and the 32 px gutter between the grids, wider than a
+    // column step, so the months read as two.
+    const second =
+        7 * (MinimalChromeMetrics.control + MinimalSpacing.s8) +
+        MinimalSpacing.s32;
     expect(startOf(tester, 'March 2026'), moreOrLessEquals(left, epsilon: 1));
     expect(
       startOf(tester, 'April 2026'),

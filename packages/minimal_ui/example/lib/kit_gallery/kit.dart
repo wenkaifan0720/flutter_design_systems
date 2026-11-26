@@ -533,9 +533,10 @@ class _KitBleedScope extends InheritedWidget {
   bool updateShouldNotify(_KitBleedScope oldWidget) => inset != oldWidget.inset;
 }
 
-/// A month's measure: seven 44 px days, the width a [MinimalCalendar]
-/// keeps.
-const double kitMonthWidth = 7 * MinimalLayout.minHitTarget;
+/// A month's measure: seven 40 px days (a 32 px mark with 4 px of air each
+/// side, at least the tap floor), the width a [MinimalCalendar] keeps.
+const double kitMonthWidth =
+    7 * (MinimalChromeMetrics.control + MinimalSpacing.s8);
 
 /// [calendar] (an inline date picker, which would span a phone's column or
 /// a control's 320) held to [kitMonthWidth] on its start, so every month on

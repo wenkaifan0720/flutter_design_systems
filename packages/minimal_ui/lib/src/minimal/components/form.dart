@@ -461,7 +461,7 @@ class _MinimalInputRowState extends State<MinimalInputRow> {
             liveRegion: true,
             child: Text(error, style: t.caption.c(t.destructiveInk)),
           );
-    // The whole row is the field's target, well past the 44 px floor: a tap
+    // The whole row is the field's target, well past the tap floor: a tap
     // on the label or in the row's padding focuses the field. The field's
     // own tap (placing the caret) wins the arena where it lands. The pointer
     // shows the text cursor over all of it, as over the field.

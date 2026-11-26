@@ -193,7 +193,7 @@ void main() {
             .first,
       );
       // The band stands the floor tall: its top row of pixels sorts.
-      expect(header.height, 44);
+      expect(header.height, MinimalLayout.tapTargets.touch.height);
       await tester.tapAt(Offset(qty.center.dx, header.top + 2));
       expect(calls, [2]);
       // A label header takes no tap.

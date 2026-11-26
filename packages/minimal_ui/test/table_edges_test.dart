@@ -27,9 +27,9 @@ List<MinimalDataColumn<_Order>> get _columns => [
 ];
 
 void main() {
-  // Selectable, the check column stands a finger wide (44) and its boxes
-  // (16) stand in its middle, 14 in.
-  for (final (selectable, end) in [(true, 14.0), (false, 18.0)]) {
+  // Selectable, the check column stands the tap floor wide (40) and its
+  // boxes (16) stand in its middle, 12 in.
+  for (final (selectable, end) in [(true, 12.0), (false, 18.0)]) {
     testWidgets('a table\'s figures end as far in as its rows start '
         '(selectable: $selectable)', (tester) async {
       setViewSize(tester, const Size(1200, 900));

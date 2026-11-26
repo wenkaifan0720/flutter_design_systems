@@ -6,7 +6,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'support/centred_host.dart';
 
 void main() {
-  testWidgets('a sheet\'s close keeps its whole 44 px target', (tester) async {
+  testWidgets('a sheet\'s close keeps its whole tap target', (tester) async {
     await tester.pumpWidget(
       centredHost(
         Builder(
@@ -28,7 +28,9 @@ void main() {
         (w) => w is MinimalIconButton && w.label == 'Close',
       ),
     );
-    await tester.tapAt(close.center - const Offset(0, 21));
+    await tester.tapAt(
+      close.center - Offset(0, MinimalLayout.tapTargets.touch.height / 2 - 1),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Sheet body'), findsNothing);
   });

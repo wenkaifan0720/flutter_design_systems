@@ -218,7 +218,7 @@ void main() {
       expect(tester.getSize(find.byType(MinimalInputGroup)).width, 132);
       expect(
         tester.getSize(find.byType(TextField)).width,
-        greaterThanOrEqualTo(MinimalLayout.minHitTarget),
+        greaterThanOrEqualTo(MinimalLayout.tapTargets.touch.width),
         reason: 'the field keeps a touch target\'s width',
       );
 

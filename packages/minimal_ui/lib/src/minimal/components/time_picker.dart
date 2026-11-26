@@ -9,7 +9,8 @@ import 'date_picker.dart';
 /// A clock time — a reminder, an opening hour, a quiet-hours end: the
 /// [MinimalDatePicker] in its time mode. `compact` (the default) is a form
 /// row whose mono value opens two scrolling columns, hours and minutes, in
-/// a popover (or a sheet that commits on Done, with [confirmSelection]);
+/// a popover; on a phone-wide window (under 600 px), or with
+/// [confirmSelection], in a sheet that commits on Done;
 /// `wheel` stands the columns on the page. Minimal prints the 24-hour clock
 /// unless [use24HourFormat] is false.
 ///
@@ -49,7 +50,8 @@ class MinimalTimePicker extends StatelessWidget {
   /// Whether it prints the 24-hour clock.
   final bool use24HourFormat;
 
-  /// Raise the columns in a sheet that commits only on Done.
+  /// Raise the columns in a sheet that commits only on Done at every width;
+  /// under 600 px wide they always open in it.
   final bool confirmSelection;
 
   /// A glyph before the row's label.

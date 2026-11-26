@@ -4,8 +4,8 @@
 // MinimalHost clamps at MinimalChromeMetrics.maxTextScale) and right to left
 // with no overflow and no error, and the everyday pages meet Flutter's
 // tap-target, label and contrast guidelines by day and by night. Minimal's
-// targets are 44 px on every platform by design, so Android's 48 is not
-// asked.
+// targets are ui_core's 40 px floor on every platform, so Android's 48 is
+// not asked.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_test/flutter_test.dart';

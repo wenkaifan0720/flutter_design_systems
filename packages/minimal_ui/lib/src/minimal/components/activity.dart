@@ -237,7 +237,7 @@ class MinimalActivity extends StatelessWidget {
     // squeeze it into what the grown time column leaves.
     final stacked = scaler.scale(10) / 10 >= MinimalChromeMetrics.rowStackScale;
     final row = Container(
-      // An entry that opens stands at least the tap floor (44 at a finger),
+      // An entry that opens stands at least the tap floor (40 at a finger),
       // its lines centred in it.
       constraints: onPressed == null
           ? null

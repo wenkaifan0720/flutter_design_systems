@@ -207,14 +207,16 @@ class _Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The search field stands in a 44 px band; the card takes the band's
-    // air over the box off its top, so the field is 8 px from every edge.
+    // The search field stands in a band at the tap floor; the card takes
+    // the band's air over the box off its top, so the field is 8 px from
+    // every edge.
     final t = context.minimalTheme;
     final line = MediaQuery.textScalerOf(context).scale(16);
     final box =
         t.density.height(MinimalChromeMetrics.control) +
         math.max(0.0, line - 16);
-    final air = math.max(0.0, (MinimalLayout.minHitTarget - box) / 2);
+    final floor = MinimalLayout.tapTargets.floorOn().height;
+    final air = math.max(0.0, (floor - box) / 2);
     return MinimalCard(
       padding: EdgeInsets.fromLTRB(
         MinimalSpacing.s8,

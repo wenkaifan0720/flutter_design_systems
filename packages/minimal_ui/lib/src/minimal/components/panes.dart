@@ -327,7 +327,8 @@ class MinimalResizable extends StatelessWidget {
                           ? LucideIcons.gripVertical
                           : LucideIcons.gripHorizontal,
                       size: 10,
-                      color: t.textTertiary,
+                      // The grip names the divider as a control.
+                      color: t.mutedForeground,
                     ),
                   ),
                 ),

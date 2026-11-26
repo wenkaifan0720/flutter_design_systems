@@ -1,3 +1,15 @@
+## 0.7.0
+
+- Requires ui_core 0.7.1. Tap targets follow ui_core's tap floor, `RawTapTargets.of(context).floorOn()`: 40 × 40 at a finger, 24 × 24 at a pointer (Minimal held 44 of its own). List rows stay 44 at the standard density.
+- Deprecated `MinimalLayout.minHitTarget`, `MinimalLayout.pointerHitTarget` and `MinimalChromeMetrics.sheetBar`: read `floorOn()` instead. They go in the next minor.
+- `MinimalChipRow`, a combobox's tags and `MinimalPropertyBar` space their chips with ui_core's `RawChipGroup`, so neighbouring targets meet rather than overlap. On touch a multi-select's rows of tags stand 40 apart, so each tag's remove button keeps the 40 floor; at a pointer they stay 4 px apart.
+- Three new presets, `iris`, `lagoon` and `berry`, join `standard`, `graphite` and `ember`, each in light and dark. The example's Foundations page shows all six.
+- `MinimalThemeData.from` derives its colours with ui_core's `RawPalette`, so text, borders and the accent meet contrast on every ground. A brand colour stays the button's fill wherever white or the ink reads on it.
+- Small reading marks meet contrast: step numbers, a selected row's caption, the tree's chevron, grips, a field's clear button, and a field's leading icon when it is the field's only name.
+- Page info and spoken positions use ui_core's `positionLabel` (Arabic: "٦ من ١٢").
+- `MinimalDatePicker` and `MinimalTimePicker` open in a sheet with Cancel and Done on windows under 600 px wide.
+- `MinimalTypeface.fallback` names fallback font families for every text style.
+
 ## 0.6.0
 
 - Requires ui_core 0.6.0, whose `Design*` names are `Raw*` now (`RawTapTargets`, `RawInventoryEntry`, `RawModalDialogRoute` and the rest). `dart fix --apply` renames them in an app (ui_core's `lib/fix_data.yaml` holds them); Minimal's code, docs and examples use the new names, the README's `RawWidgetsLocalizations` among them.

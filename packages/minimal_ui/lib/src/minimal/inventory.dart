@@ -1060,8 +1060,8 @@ const Set<String> _capped = {'ColorPicker'};
 /// page's start edge.
 const Set<String> _codes = {'InputGroup'};
 
-/// The rows whose part stands in a row's own air above its words (a 44 px
-/// row or hit target, a setting's row, a month's header band): no gap under
+/// The rows whose part stands in a row's own air above its words (a list
+/// row or a hit target, a setting's row, a month's header band): no gap under
 /// their name, so the words stand as near it as a field's label does.
 const Set<String> _airAbove = {
   'Select',
@@ -1106,7 +1106,7 @@ String? _wordsOf(Widget? specimen) =>
 /// their shadow), and the gap's reason in
 /// place of one.
 ///
-/// A page to see every part at once, as the gallery's Inventory page and
+/// A page to see every part at once, as the example's Inventory page and
 /// the example's Foundations page show it; it scrolls on its own.
 ///
 /// ```dart

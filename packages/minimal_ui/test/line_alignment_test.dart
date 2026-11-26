@@ -142,13 +142,15 @@ final DesignAlignmentMatrix minimalAlignment = DesignAlignmentMatrix(
       heightExceptions: {
         DesignInlineControl.searchField:
             'the field is drawn at the row height and stands centred in a '
-            '44 px band, so its clear glyph keeps a whole touch target',
+            'band at the tap floor, so its clear glyph keeps a whole touch '
+            'target',
         DesignInlineControl.labeledSwitch:
             'a track and its label with no frame around them: it stands on '
             "the row's centre, its label on the row's baseline",
         DesignInlineControl.listTile:
-            'a list row is a 44 px tap target at every density, taller than '
-            'the controls; it stands on their centre, never their height',
+            'a list row is a whole tap target at every density (44, never '
+            'under the tap floor), taller than the controls; it stands on '
+            'their centre, never their height',
       },
     ),
     DesignAlignmentRow(

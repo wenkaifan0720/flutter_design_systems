@@ -137,10 +137,10 @@ class _Labeled extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // One slot as tall as a finger's target (the controls' faces are
-          // 16 to 20 px), so every caption in the strip shares a line.
+          // One slot as tall as a row (the controls' faces are 16 to 20
+          // px), so every caption in the strip shares a line.
           SizedBox(
-            height: MinimalLayout.minHitTarget,
+            height: MinimalChromeMetrics.row,
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               widthFactor: 1,

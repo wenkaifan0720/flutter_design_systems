@@ -96,8 +96,8 @@ void main() {
       expect(last.top, greaterThan(first.bottom));
     });
 
-    testWidgets('a chip row keeps every chip a 44 px target above its first '
-        'line and below its last', (tester) async {
+    testWidgets('a chip row keeps every chip the tap floor\'s target above its '
+        'first line and below its last', (tester) async {
       final taps = <String>[];
       await tester.pumpWidget(
         // A 200 px column with room above and below the row, as a page has.
@@ -125,11 +125,13 @@ void main() {
         find.ancestor(of: find.text('Sat'), matching: find.byType(MinimalChip)),
       );
       expect(mon.height, MinimalChromeMetrics.controlSm);
-      await tester.tapAt(mon.topCenter - const Offset(0, 6));
-      await tester.tapAt(sat.bottomCenter + const Offset(0, 6));
+      // The tap floor's band round a chip: (40 - 28) / 2 above and below.
+      final reach = (MinimalLayout.tapTargets.touch.height - mon.height) / 2;
+      await tester.tapAt(mon.topCenter - Offset(0, reach - 1));
+      await tester.tapAt(sat.bottomCenter + Offset(0, reach - 1));
       expect(taps, ['Mon', 'Sat']);
-      // Past the 44 px square, nothing lands.
-      await tester.tapAt(mon.topCenter - const Offset(0, 10));
+      // Past the floor's square, nothing lands.
+      await tester.tapAt(mon.topCenter - Offset(0, reach + 4));
       expect(taps, ['Mon', 'Sat']);
     });
 

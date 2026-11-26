@@ -18,8 +18,8 @@ import 'pressable.dart';
 /// [highlight] names another. Every other bar stays in the quiet ink; a
 /// zero draws no bar at all.
 ///
-/// With [onBarPressed] each bar is a control (the wash, the focus ring, a 44 px
-/// hit column): a page keeps the tapped index and passes it back as
+/// With [onBarPressed] each bar is a control (the wash, the focus ring, a
+/// hit column at the tap floor): a page keeps the tapped index and passes it back as
 /// [highlight] to read one bar out.
 ///
 /// ```dart

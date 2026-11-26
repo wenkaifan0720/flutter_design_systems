@@ -38,7 +38,10 @@ void main() {
       // The box rests at 40, in a band the floor tall at a finger.
       final rest = faceOf(tester, find.byType(MinimalComposer)).height;
       expect(rest, 40);
-      expect(tester.getSize(find.byType(MinimalComposer)).height, 44);
+      expect(
+        tester.getSize(find.byType(MinimalComposer)).height,
+        MinimalLayout.tapTargets.touch.height,
+      );
       await tester.enterText(find.byType(TextField), 'one\ntwo\nthree');
       await tester.pump();
       expect(
@@ -207,7 +210,7 @@ void main() {
         }
         Offset over(String label) =>
             tester.getRect(find.bySemanticsLabel(label)).topCenter -
-            const Offset(0, 6);
+            const Offset(0, 3);
         await tester.tapAt(over('Add attachment'));
         await tester.pump();
         expect(attached, 1, reason: what);

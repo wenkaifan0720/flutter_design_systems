@@ -16,7 +16,6 @@ import 'pressable.dart';
 
 const double _track = 12;
 const double _thumb = 16;
-const Size _target = Size(44, 44);
 
 /// The one gap between the picker's parts: the area, each strip, the hex
 /// row and the swatches.
@@ -253,7 +252,11 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final (i, part) in parts.indexed)
-            if (i == 0) ...[part, const MinimalGap(_gap / 2)] else _bleed(part),
+            if (i == 0) ...[
+              part,
+              const MinimalGap(_gap / 2),
+            ] else
+              _bleed(part as RawColorSlider),
         ],
       ),
     );
@@ -351,7 +354,7 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
   }
 }
 
-/// [slider], ui_core's, laid out at its thumb's 44 px target and stood in
+/// [slider], ui_core's, laid out at its thumb's target and stood in
 /// a [_band] (its track and half a gap above and below), widened past the
 /// column on both sides so the thumb's centre travels from half a thumb
 /// inside one edge to half a thumb inside the other, as a `MinimalSlider`'s
@@ -360,9 +363,10 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
 /// either reading direction, as ui_core's area does: right to left, ui_core
 /// would mirror the thumb and its arrow keys, while the strip under it keeps
 /// the colour's own order.
-Widget _bleed(Widget slider) {
-  final reach = _target.width / 2 - _thumb / 2;
-  final over = (_target.height - _band) / 2;
+Widget _bleed(RawColorSlider slider) {
+  final target = slider.thumbSize;
+  final reach = target.width / 2 - _thumb / 2;
+  final over = (target.height - _band) / 2;
   return SizedBox(
     height: _band,
     child: Stack(

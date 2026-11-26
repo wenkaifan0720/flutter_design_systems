@@ -35,7 +35,7 @@ void main() {
   testWidgets("a menu bar's rows stand a finger tall on touch", (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     try {
-      expect(await _rowHeight(tester), 44);
+      expect(await _rowHeight(tester), MinimalLayout.tapTargets.touch.height);
     } finally {
       debugDefaultTargetPlatformOverride = null;
     }

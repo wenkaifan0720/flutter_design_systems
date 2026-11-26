@@ -33,7 +33,8 @@ import 'pressable.dart';
 /// [format] — it would print in mono. The value slot keeps one steady
 /// width, room for three figures and a short unit, so steppers stacked in a
 /// form line up, with a unit or without; only a wider value in range grows
-/// it. The hit area pads out to 44 whatever the control paints.
+/// it. The hit area pads out to the tap floor whatever the
+/// control paints.
 ///
 /// ```dart
 /// MinimalNumberField(value: pages, min: 5, max: 50, step: 5, unit: 'pages', labelText: 'Pages', onChanged: setPages)

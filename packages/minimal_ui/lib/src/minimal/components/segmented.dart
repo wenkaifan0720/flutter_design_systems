@@ -31,7 +31,8 @@ import 'pressable.dart';
 /// announces itself selected. A null [onChanged] dims the whole control,
 /// track and thumb, and the choice keeps only the thumb's hairline, in the
 /// muted ink, its words regular like the rest: a disabled control never
-/// reads stronger than an enabled one. The hit area pads out to 44.
+/// reads stronger than an enabled one. The hit area pads out
+/// to the tap floor.
 ///
 /// [style] dresses one control, `components.segmentedButton` every one.
 /// Per segment, resolved with [WidgetState.selected] on the chosen one:

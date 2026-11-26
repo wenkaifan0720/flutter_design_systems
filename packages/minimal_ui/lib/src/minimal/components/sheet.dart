@@ -123,7 +123,7 @@ class MinimalSheetFooter extends StatelessWidget {
   /// the trailing one, or, when both do not fit, the two stacked — the
   /// accessory keeping the leading edge, the actions under it at the
   /// trailing one. The line hugs its 32 px buttons, so it hands their (and
-  /// a switch's) 44 px targets on.
+  /// a switch's) tap-floor targets on.
   static Widget _footer({required Widget? accessory, required Widget actions}) {
     if (accessory == null) {
       return Align(alignment: AlignmentDirectional.centerEnd, child: actions);

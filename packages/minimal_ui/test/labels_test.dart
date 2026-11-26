@@ -29,6 +29,15 @@ const String _unpaintedWheels =
 /// reason named.
 const Map<String, String> _misreadings = {'Pickers': _unpaintedWheels};
 
+/// Pages read in a taller window, with the reason: at 1440 by 900 a row of
+/// controls stands across the window's foot, and the check reads only the
+/// ink above it, so a glyph cut there reads off its face's middle.
+const Map<String, String> _cutAtTheFoot = {
+  'Buttons':
+      "the icon toggles' row stands at 880 to 920 under the 40 px floor; "
+      'whole on screen (at 1000) every control on the page reads centred',
+};
+
 /// Problems the check names that Minimal means, each held by its words with
 /// the reason: ui_core's check misreads them.
 final Map<RegExp, String> _held = {
@@ -98,7 +107,7 @@ void main() {
           final slug = GalleryApp.pageSlug(page.name);
           await _open(
             tester,
-            const Size(1440, 900),
+            Size(1440, _cutAtTheFoot.containsKey(page.name) ? 1000 : 900),
             'page=$slug&density=$density',
           );
           await _check(tester, at);

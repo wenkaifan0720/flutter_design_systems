@@ -1316,12 +1316,16 @@ void main() {
             onChanged: enabled ? (_) {} : null,
           ),
         ),
-        // On the start thumb (its 44 px target's centre runs 22 px in from
-        // either end), held in a drag: ui_core presses a thumb while it is
-        // dragged.
+        // On the start thumb (its target, the tap floor, has its centre
+        // half the floor in from either end), held in a drag: ui_core
+        // presses a thumb while it is dragged.
         press: (tester, part) {
           final r = tester.getRect(part);
-          return Offset(r.left + 22 + 0.2 * (r.width - 44), r.center.dy);
+          final floor = RawTapTargets.of(tester.element(part)).floorOn().width;
+          return Offset(
+            r.left + floor / 2 + 0.2 * (r.width - floor),
+            r.center.dy,
+          );
         },
         slides: true,
       ),

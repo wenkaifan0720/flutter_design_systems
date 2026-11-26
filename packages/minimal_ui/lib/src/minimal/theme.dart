@@ -347,18 +347,25 @@ abstract final class MinimalLayout {
   /// From this width the layout is a desktop's: a rail, the widest measure.
   static const double expanded = 960;
 
-  /// The touch-target floor. At a finger every 28–32 px control is laid
-  /// out at least this square ([TapTargetPadding], Material's padded tap
-  /// target), its face as it paints, centred in it.
+  /// The touch-target floor Minimal declared before ui_core 0.7.0 moved a
+  /// finger's floor to 40. Read the floor in force instead.
+  @Deprecated(
+    'Read the floor in force: RawTapTargets.of(context).floorOn(). '
+    'This feature was deprecated after minimal_ui 0.7.0 and goes in 0.8.0.',
+  )
   static const double minHitTarget = 44;
 
-  /// The pointer's target floor (WCAG 2.5.8): what a mouse or a trackpad
-  /// needs, where [minHitTarget] is a finger's.
+  /// The pointer's target floor (WCAG 2.5.8).
+  @Deprecated(
+    'Read the floor in force: RawTapTargets.of(context).floorOn(). '
+    'This feature was deprecated after minimal_ui 0.7.0 and goes in 0.8.0.',
+  )
   static const double pointerHitTarget = 24;
 
   /// Minimal's floors, declared by [MinimalTheme] for the parts under it:
-  /// [minHitTarget] for a finger, [pointerHitTarget] for a pointer.
-  /// Density never moves them. They are ui_core's own floors.
+  /// 40 by 40 for a finger, 24 by 24 for a pointer (WCAG 2.5.8). Density
+  /// never moves them. They are ui_core's own floors; a part reads them with
+  /// `RawTapTargets.of(context).floorOn()`.
   static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   /// Whether the screen is narrower than [compact].
@@ -1112,17 +1119,50 @@ class MinimalThemeData with Diagnosticable {
   factory MinimalThemeData.ember([Brightness brightness = Brightness.light]) =>
       MinimalThemeData.preset('ember', brightness);
 
+  /// The iris preset: cool greys under a purple accent.
+  factory MinimalThemeData.iris([Brightness brightness = Brightness.light]) =>
+      MinimalThemeData.preset('iris', brightness);
+
+  /// The lagoon preset: slate greys under a cyan accent.
+  factory MinimalThemeData.lagoon([Brightness brightness = Brightness.light]) =>
+      MinimalThemeData.preset('lagoon', brightness);
+
+  /// The berry preset: zinc greys under a magenta accent.
+  factory MinimalThemeData.berry([Brightness brightness = Brightness.light]) =>
+      MinimalThemeData.preset('berry', brightness);
+
   /// The preset ids [preset] builds, the default first. Each is designed in
   /// light and dark.
-  static const List<String> presets = <String>['standard', 'graphite', 'ember'];
+  static const List<String> presets = <String>[
+    'standard',
+    'graphite',
+    'ember',
+    'iris',
+    'lagoon',
+    'berry',
+  ];
 
   /// The theme for one preset in one appearance. `standard` spends a blue
   /// accent, `graphite` spends the ink itself, `ember` runs warm neutrals
   /// under an orange accent (with its own cooler crimson for danger, so the
-  /// two never read as one colour). Throws [ArgumentError] for an id that
-  /// is not in [presets]. The same id and brightness always return the same
-  /// instance, so a rebuild that asks again notifies nothing.
+  /// two never read as one colour), `iris` a purple on cool greys, `lagoon`
+  /// a cyan on slate greys and `berry` a magenta on zinc greys. Throws
+  /// [ArgumentError] for an id that is not in [presets]. The same id and
+  /// brightness always return the same instance, so a rebuild that asks
+  /// again notifies nothing.
   factory MinimalThemeData.preset(String id, Brightness brightness) {
+    // Iris, lagoon and berry are drawn from their two colours as [from]
+    // draws a brand: every role in its own hue, at the presets' bars.
+    if (_seeds[id] case final seed?) {
+      return _presets[(id, brightness)] ??= MinimalThemeData(
+        id: id,
+        colors: _derive(
+          brightness == Brightness.dark ? seed.night : seed.day,
+          seed.neutral,
+          brightness,
+        ),
+      );
+    }
     final palette = switch ((id, brightness)) {
       ('standard', Brightness.light) => _standardLight,
       ('standard', Brightness.dark) => _standardDark,
@@ -1143,6 +1183,27 @@ class MinimalThemeData with Diagnosticable {
   }
 
   static final Map<(String, Brightness), MinimalThemeData> _presets = {};
+
+  /// The presets drawn from an accent (by day, and lifted by night where the
+  /// day's tone would sit dim on the dark ground, as ember's orange is) and
+  /// a neutral, by id.
+  static const Map<String, ({Color day, Color night, Color neutral})> _seeds = {
+    'iris': (
+      day: Color(0xFF9417CF),
+      night: Color(0xFFC05EED),
+      neutral: Color(0xFF8E8C99),
+    ),
+    'lagoon': (
+      day: Color(0xFF0E7490),
+      night: Color(0xFF22B8D6),
+      neutral: Color(0xFF64748B),
+    ),
+    'berry': (
+      day: Color(0xFFB0278F),
+      night: Color(0xFFE86AB8),
+      neutral: Color(0xFF71717A),
+    ),
+  };
 
   /// A theme in an app's own colours, in either appearance as the presets
   /// are: [primary] for the one thing to act on (the primary button, a
@@ -1180,7 +1241,7 @@ class MinimalThemeData with Diagnosticable {
   /// What's in scope at [context]; the same as [MinimalTheme.of].
   static MinimalThemeData of(BuildContext context) => MinimalTheme.of(context);
 
-  /// Which preset this is (`standard`, `graphite`, `ember`), or `custom`.
+  /// Which preset this is (one of [presets]), or `custom`.
   final String id;
 
   /// The colour roles.
@@ -1237,12 +1298,12 @@ class MinimalThemeData with Diagnosticable {
   /// The component themes.
   final MinimalComponentThemes components;
 
-  /// A list row's height, at [density]: 44 at standard and at every denser
-  /// step, since the row is its own tap target and a target stays 44 × 44 at
-  /// every density; a looser density grows it.
+  /// A list row's height, at [density]: 44 at standard; a denser step
+  /// tightens it down to a finger's floor (the row is its own tap target),
+  /// a looser one grows it.
   double get rowHeight => density.height(
     MinimalChromeMetrics.row,
-    least: MinimalLayout.minHitTarget,
+    least: MinimalLayout.tapTargets.touch.height,
   );
 
   /// A dense list row's height, at [density]: 36 at standard.
@@ -1753,6 +1814,7 @@ class MinimalTheme extends StatelessWidget {
     platform: platform,
     brightness: t.brightness,
     fontFamily: t.body.fontFamily,
+    fontFamilyFallback: t.body.fontFamilyFallback,
     scaffoldBackgroundColor: t.background,
     canvasColor: t.background,
     splashFactory: NoSplash.splashFactory,
@@ -2253,9 +2315,13 @@ TextStyle _type(
   double tracking = 0,
   bool mono = false,
 }) {
+  final family = mono ? face.mono : face.sans;
+  final package = mono ? face.monoPackage : face.sansPackage;
   return TextStyle(
-    fontFamily: mono ? face.mono : face.sans,
-    package: mono ? face.monoPackage : face.sansPackage,
+    // The look's own face carries its package; the app's fallback faces keep
+    // their own names (TextStyle.package would prefix them too).
+    fontFamily: package == null ? family : 'packages/$package/$family',
+    fontFamilyFallback: face.fallback.isEmpty ? null : face.fallback,
     fontSize: size,
     height: lineHeight / size,
     fontWeight: weight,
@@ -2302,7 +2368,7 @@ MinimalColors _colors(_Palette p) => MinimalColors(
   destructive: p.destructive,
   // White where it reads at AA on the fill, else the ground's ink: white on
   // every red but ember's night pink, which takes the dark ink.
-  destructiveForeground: _contrast(_white, p.destructive) >= 4.5
+  destructiveForeground: RawPalette.contrastRatio(_white, p.destructive) >= 4.5
       ? _white
       : p.textInverse,
   destructiveSubtle: p.destructiveSubtle,
@@ -2365,28 +2431,6 @@ List<List<BoxShadow>> _shadows(Color shadow, double sm, double md, double lg) =>
 // ── From an app's own colours ────────────────────────────────────────────
 
 const Color _white = Color(0xFFFFFFFF);
-const Color _black = Color(0xFF000000);
-
-/// WCAG's contrast of [a] on [b], from 1 to 21.
-double _contrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-}
-
-/// The least contrast [c] has on any of [grounds].
-double _worst(Color c, List<Color> grounds) =>
-    grounds.map((g) => _contrast(c, g)).reduce(math.min);
-
-/// [c] moved toward [toward] in small steps until it holds [ratio] on every
-/// one of [grounds]: [c] itself when it already does.
-Color _settle(Color c, List<Color> grounds, double ratio, Color toward) {
-  for (var i = 0; i <= 40; i++) {
-    final step = Color.lerp(c, toward, i / 40)!;
-    if (_worst(step, grounds) >= ratio) return step;
-  }
-  return toward;
-}
 
 /// CIE76 colour difference: the distance between two colours in CIELAB.
 double _deltaE(Color a, Color b) {
@@ -2410,16 +2454,19 @@ double _deltaE(Color a, Color b) {
   );
 }
 
-/// A grey of the standard palette tinted toward [neutral]'s hue, its
-/// lightness kept: a warm or a cool grey, never a colour.
-Color _tinted(Color grey, Color neutral) {
-  final n = HSLColor.fromColor(neutral);
-  final g = HSLColor.fromColor(grey);
-  return g
-      .withHue(n.hue)
-      .withSaturation(math.min(n.saturation, 0.16))
-      .toColor();
+/// The greys a named [neutral] tints: its hue at each grey's own tone, its
+/// chroma held to a grey's (a warm or a cool grey, never a colour) and to
+/// RawNeutralTones' cap at the dark end, so a cream's night is a warm
+/// charcoal, not brown.
+RawNeutralTones _neutralTones(Color neutral) {
+  final hct = RawHct.fromColor(neutral);
+  return RawNeutralTones.of(
+    hct.withChroma(math.min(hct.chroma, _neutralChroma)).toColor(),
+  );
 }
+
+/// The most chroma a tinted grey keeps.
+const double _neutralChroma = 8;
 
 /// One status tone: its fill, quiet fill and ink.
 typedef _Tone = ({Color fill, Color subtle, Color ink});
@@ -2466,50 +2513,63 @@ _Tone _apart(Color primary, List<_Tone> tones) {
 
 /// The colours `MinimalThemeData.from` builds: the standard palette's
 /// greys (tinted toward [neutral]), [primary] spent as given where it holds
-/// and moved where it does not, and every derived role settled until the
-/// presets' bars hold.
+/// and moved where it does not, and every derived role walked in its own hue
+/// (ui_core's [RawPalette]) until the presets' bars hold.
 MinimalColors _derive(Color primary, Color? neutral, Brightness brightness) {
   final dark = brightness == Brightness.dark;
   final p = dark ? _standardDark : _standardLight;
-  Color tint(Color c) => neutral == null ? c : _tinted(c, neutral);
+  final tones = neutral == null ? null : _neutralTones(neutral);
+  Color tint(Color c) =>
+      tones == null ? c : tones.tone(RawHct.fromColor(c).tone);
   final background = tint(p.background);
   final surface = tint(p.card);
   final surfaceAlt = tint(p.muted);
   final grounds = [background, surface, surfaceAlt];
-  // Words move toward the far end of the ground: black in light, white in
-  // dark.
-  final far = dark ? _white : _black;
-  final text1 = _settle(tint(p.text1), grounds, 7, far);
+  final text1 = RawPalette.readableTone(tint(p.text1), on: grounds, ratio: 7);
   // Secondary words also stand on the sunken fill: a read-only field's
   // prompt.
-  final text2 = _settle(tint(p.text2), [...grounds, tint(p.sunken)], 4.5, far);
-  final controlBorder = _settle(tint(p.input), grounds, 3, far);
+  final text2 = RawPalette.readableTone(
+    tint(p.text2),
+    on: [...grounds, tint(p.sunken)],
+  );
+  final controlBorder = RawPalette.readableTone(
+    tint(p.input),
+    on: grounds,
+    ratio: 3,
+  );
   final textInverse = dark ? background : _white;
 
   // The primary: opaque, a mark at 3:1 on the ground, and a fill its label
-  // reads on at 4.5:1 in white or in the ink, whichever reads better; where
-  // neither does, the fill moves away from the label until it reads.
-  var fill = _settle(primary.withValues(alpha: 1), [background], 3, far);
-  final inks = [_white, dark ? background : text1];
-  Color label(Color on) =>
-      _contrast(inks[0], on) >= _contrast(inks[1], on) ? inks[0] : inks[1];
-  var onAccent = label(fill);
-  if (_contrast(onAccent, fill) < 4.5) {
-    final away = onAccent.computeLuminance() > 0.5 ? _black : _white;
-    fill = _settle(fill, [onAccent], 4.5, away);
-    onAccent = label(fill);
-  }
+  // reads on at 4.5:1 in white or in the ink. The named colour stays the
+  // fill whenever either ink reads on it (a gold keeps its gold, with the
+  // dark ink), and moves only as far as it must when neither does.
+  final mark = RawPalette.readableTone(
+    primary.withValues(alpha: 1),
+    on: [background],
+    ratio: 3,
+  );
+  final accent = RawPalette.accentFill(
+    mark,
+    brightness: brightness,
+    rule: RawAccentRule.named,
+    lightInk: _white,
+    darkInk: dark ? background : text1,
+  );
+  final fill = accent.fill;
   final accentSubtle = Color.lerp(background, fill, dark ? 0.16 : 0.1)!;
-  final accentInk = _settle(fill, [...grounds, accentSubtle], 4.5, far);
+  final accentInk = RawPalette.readableTone(
+    fill,
+    on: [...grounds, accentSubtle],
+  );
 
-  _Tone settled(_Tone tone) {
-    final mark = _settle(tone.fill, [background], 3, far);
-    return (
-      fill: mark,
-      subtle: tone.subtle,
-      ink: _settle(tone.ink, [background, surface, tone.subtle], 4.5, far),
-    );
-  }
+  _Tone settled(_Tone tone) => (
+    fill: RawPalette.readableTone(tone.fill, on: [background], ratio: 3),
+    subtle: tone.subtle,
+    ink: RawPalette.readableTone(
+      tone.ink,
+      on: [background, surface, tone.subtle],
+    ),
+  );
 
   final danger = settled(_apart(fill, dark ? _dangersDark : _dangersLight));
   final warning = settled(_apart(fill, dark ? _warningsDark : _warningsLight));
@@ -2519,12 +2579,7 @@ MinimalColors _derive(Color primary, Color? neutral, Brightness brightness) {
     ink: p.successInk,
   ));
   // The danger fill carries the destructive button's label.
-  final dangerFill = _settle(
-    danger.fill,
-    [textInverse],
-    4.5,
-    dark ? _white : _black,
-  );
+  final dangerFill = RawPalette.readableTone(danger.fill, on: [textInverse]);
 
   return MinimalColors(
     brightness: brightness,
@@ -2541,7 +2596,7 @@ MinimalColors _derive(Color primary, Color? neutral, Brightness brightness) {
     textTertiary: tint(p.text3),
     textInverse: textInverse,
     primary: fill,
-    primaryForeground: onAccent,
+    primaryForeground: accent.ink,
     primarySubtle: accentSubtle,
     primaryInk: accentInk,
     success: success.fill,

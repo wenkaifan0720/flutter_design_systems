@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
+import '../internal/controls.dart';
 import '../internal/field.dart';
 import '../internal/styled.dart';
 import '../theme.dart';
@@ -24,8 +25,8 @@ import '../theme.dart';
 /// value rounded. A fixed
 /// [valueLabel] can only name the current value, so prefer [format]; with
 /// none of the three, the value prints nothing and announces as a
-/// percentage. A null [onChanged] disables it. The touch strip is 44 tall
-/// whatever the track paints.
+/// percentage. A null [onChanged] disables it. The touch strip stands at the
+/// tap floor whatever the track paints.
 ///
 /// [style] dresses one slider, `components.slider` every one, resolved with
 /// [WidgetState.pressed], [WidgetState.focused] and [WidgetState.disabled]:
@@ -178,7 +179,6 @@ class MinimalSlider extends StatefulWidget {
 
 const double _thumb = 16;
 const double _track = 4;
-const double _strip = MinimalLayout.minHitTarget;
 
 /// A division tick: a dot that reads on the 4 px track in every preset.
 const double _tickRadius = 1.5;
@@ -238,6 +238,9 @@ class _MinimalSliderState extends State<MinimalSlider> {
     final t = context.minimalTheme;
     final enabled = widget.onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    // The strip the track stands in: the tap floor in force, so a finger
+    // or a pointer lands on it above and below the 4 px track.
+    final strip = minimalTapFloor(context);
     final v = _drag ?? widget.value;
     final f = ((v - widget.min) / _span).clamp(0.0, 1.0);
     final unit = widget.unit;
@@ -292,7 +295,7 @@ class _MinimalSliderState extends State<MinimalSlider> {
           onHorizontalDragEnd: enabled ? (_) => _end() : null,
           onHorizontalDragCancel: enabled ? _cancel : null,
           child: CustomPaint(
-            size: Size(c.maxWidth, _strip),
+            size: Size(c.maxWidth, strip),
             painter: _TrackPainter(
               fraction: f,
               rtl: rtl,
@@ -352,7 +355,7 @@ class _MinimalSliderState extends State<MinimalSlider> {
             ],
           ),
         SizedBox(
-          height: _strip,
+          height: strip,
           child: Row(
             children: [
               if (leading != null) ...[

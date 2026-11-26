@@ -114,7 +114,7 @@ enum MinimalMenuTrigger {
 /// level with small buttons, chips and filters.
 ///
 /// Menu items are 32 px and abut, so each takes its whole row of the card,
-/// not a padded 44 px square: the dense list's exception.
+/// not a square padded to the tap floor: the dense list's exception.
 ///
 /// [style] dresses this menu's card, `components.menu` every one: fill,
 /// edge or side and shape (else `shapes.medium`). The items keep their
@@ -697,7 +697,7 @@ class _PopoverLayout extends SingleChildLayoutDelegate {
     // At least a row's height, unless the screen itself has less room.
     final whole = math.max(0.0, _bottom(size) - _top());
     return BoxConstraints.tightFor(width: math.max(0, w)).copyWith(
-      maxHeight: room.clamp(math.min(MinimalLayout.minHitTarget, whole), whole),
+      maxHeight: room.clamp(math.min(MinimalChromeMetrics.row, whole), whole),
     );
   }
 

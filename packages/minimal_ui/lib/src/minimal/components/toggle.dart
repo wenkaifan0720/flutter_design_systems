@@ -19,7 +19,7 @@ import 'pressable.dart';
 /// thumb. The thumb travels in [MinimalMotion.fast] with no overshoot, and in
 /// no time at all under Reduce Motion (Android's, iOS's or the web's). A
 /// null [onChanged] is a disabled switch: dimmed, and it swallows taps. The
-/// hit area pads out to 44.
+/// hit area pads out to the tap floor.
 ///
 /// `showLabel: true` is the labelled register for a switch that stands on
 /// its own (a sheet footer's `Create another`): the [label] prints after

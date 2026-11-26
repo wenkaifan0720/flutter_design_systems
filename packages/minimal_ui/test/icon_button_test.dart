@@ -7,7 +7,7 @@ import 'faces.dart';
 import 'support/centred_host.dart';
 
 void main() {
-  testWidgets('a 32 px control lands taps across a 44 px target', (
+  testWidgets('a 32 px control lands taps across the tap floor\'s target', (
     tester,
   ) async {
     var taps = 0;
@@ -18,9 +18,10 @@ void main() {
     );
     final box = faceOf(tester, find.byType(MinimalIconButton));
     expect(box.height, MinimalChromeMetrics.barControl);
-    await tester.tapAt(box.topCenter - const Offset(0, 5));
+    final reach = (MinimalLayout.tapTargets.touch.height - box.height) / 2;
+    await tester.tapAt(box.topCenter - Offset(0, reach - 1));
     expect(taps, 1);
-    await tester.tapAt(box.topCenter - const Offset(0, 10));
+    await tester.tapAt(box.topCenter - Offset(0, reach + 4));
     expect(taps, 1);
   });
 

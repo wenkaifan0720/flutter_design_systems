@@ -35,8 +35,8 @@ class MinimalBreadcrumbItem {
 /// ancestors in the quiet ink and tappable when they lead somewhere, a
 /// faint slash between, the current step last in the ink. Identifiers
 /// print in mono. It shortens with an ellipsis rather than wrapping. A
-/// path with a tappable ancestor stands in a 44 px band, the least tap
-/// target; a path of context alone is as tall as its text.
+/// path with a tappable ancestor stands in a band at the tap floor, the
+/// least tap target; a path of context alone is as tall as its text.
 ///
 /// A pushed page's [MinimalAppBar] prints its own crumb from `parent:`;
 /// this is the same line for anywhere else (a sheet's body, a list
@@ -171,13 +171,11 @@ class MinimalBreadcrumb extends StatelessWidget {
           );
         }
         Widget line = Row(mainAxisSize: MainAxisSize.min, children: children);
-        // A path with a way back stands in a 44 px band, so a crumb's tap
-        // area reaches the full minimum above and below its text.
+        // A path with a way back stands in a band at the tap floor, so a
+        // crumb's tap area reaches the full minimum above and below its text.
         if (crumbs.any((crumb) => crumb.onPressed != null)) {
           line = ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: MinimalLayout.minHitTarget,
-            ),
+            constraints: BoxConstraints(minHeight: minimalTapFloor(context)),
             child: line,
           );
         }

@@ -2,6 +2,8 @@
 /// days, painted on ui_core's calendar.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -26,17 +28,23 @@ import 'pressable.dart';
 // it without a Material import.
 export 'package:ui_core/ui_core.dart' show RawDateRange;
 
-/// A day's 44 px slot around its 32 px mark, and one month's width.
-const double _slot = MinimalLayout.minHitTarget;
 const double _mark = MinimalChromeMetrics.control;
-const double _monthWidth = 7 * _slot;
+
+/// A day's slot round its 32 px mark: the tap floor in force (a day is a
+/// finger's target), and never less than the mark with 4 px of air each
+/// side, so two marks stand apart.
+double _slotOf(BuildContext context) =>
+    math.max(minimalTapFloor(context), _mark + MinimalSpacing.s8);
+
+/// One month's width: seven slots.
+double _monthWidthOf(BuildContext context) => 7 * _slotOf(context);
 
 /// The gutter between months side by side: wider than a column step, so
 /// two months read as two grids, not one of fourteen columns.
 const double _monthGap = MinimalSpacing.s32;
 
 /// The look of every Minimal calendar grid: a month's name over its
-/// weekdays in mono, days as 32 px marks in 44 px slots. The chosen day is
+/// weekdays in mono, days as 32 px marks in slots at the tap floor. The chosen day is
 /// the accent; today a short bar under its figure; a range is a quiet band from its start
 /// to its end, the ends on the accent; the band a resting pointer
 /// previews while the end is still to choose is fainter.
@@ -90,14 +98,14 @@ class _Grid extends StatelessWidget {
       // pressable around it hands its child loose constraints).
       return SizedBox(
         width: double.infinity,
-        height: _slot,
+        height: _slotOf(context),
         child: Stack(
           alignment: Alignment.center,
           children: [
             if (banded)
               Positioned.fill(
-                top: (_slot - _mark) / 2,
-                bottom: (_slot - _mark) / 2,
+                top: (_slotOf(context) - _mark) / 2,
+                bottom: (_slotOf(context) - _mark) / 2,
                 // Stretched: a childless box is only as tall as it must be.
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -163,7 +171,8 @@ class _Grid extends StatelessWidget {
         t,
         stacked:
             months > 1 &&
-            box.maxWidth < months * _monthWidth + (months - 1) * _monthGap,
+            box.maxWidth <
+                months * _monthWidthOf(context) + (months - 1) * _monthGap,
       ),
     );
   }
@@ -209,7 +218,7 @@ class _Grid extends StatelessWidget {
             ? index == 0
             : index == months - 1;
         return SizedBox(
-          height: _slot,
+          height: _slotOf(context),
           child: Row(
             children: [
               Expanded(
@@ -264,7 +273,8 @@ class _Grid extends StatelessWidget {
         spacing: _monthGap,
         runSpacing: MinimalSpacing.s16,
         children: [
-          for (final g in grids) SizedBox(width: _monthWidth, child: g),
+          for (final g in grids)
+            SizedBox(width: _monthWidthOf(context), child: g),
         ],
       ),
     );
@@ -624,7 +634,7 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
         final controller = _open ??= _make();
         final months =
             info.maxSize.width >=
-                2 * _monthWidth + _monthGap + 2 * MinimalSpacing.s16
+                2 * _monthWidthOf(context) + _monthGap + 2 * MinimalSpacing.s16
             ? 2
             : 1;
         return minimalKitPresence(

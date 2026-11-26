@@ -15,8 +15,8 @@ import 'pressable.dart';
 import 'status.dart';
 import 'tag.dart';
 
-/// The table's measure: its header band, its rows (a dense 40 — the one
-/// row register under the 44 px target, because a table row is read far
+/// The table's measure: its header band, its rows (a dense 40, the tap
+/// floor itself and under the list's 44, because a table row is read far
 /// more than it is tapped), the side inset of its first and last cells
 /// (the screen gutter, so the first column lines up with the page's type
 /// above it), the header's type and sort glyph, a text cell's vertical
@@ -180,8 +180,8 @@ class MinimalTableRow {
 /// Minimal's dense data table — the back-office list where every row is
 /// a record and every column a field: a 30 px header on the quiet fill
 /// with uppercase labels, 40 px rows divided by hairlines (the dense-list
-/// exception to the 44 px target, with the table palette's 36 and the
-/// menu's 32), figures in
+/// register under the list's 44, at the tap floor, with the table
+/// palette's 36 and the menu's 32), figures in
 /// right-aligned mono, dot badges for status, and no card around it. It
 /// runs edge to edge, so stand it in a `padding: EdgeInsets.zero` screen.
 ///
@@ -808,7 +808,7 @@ class _BodyRow extends StatelessWidget {
     // across the frame.
     final grounded = MinimalTableGround.of(context);
     Widget content = Container(
-      // A row that opens stands at least the tap floor (44 at a finger).
+      // A row that opens stands at least the tap floor (40 at a finger).
       constraints: BoxConstraints(
         minHeight: math.max(
           _TableMetrics.row,

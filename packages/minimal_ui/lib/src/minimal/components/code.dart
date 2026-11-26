@@ -220,7 +220,7 @@ class MinimalCodeBlock extends StatelessWidget {
                     top: MinimalSpacing.s4,
                   ),
                   // As tall as the copy button's target: 28 at a
-                  // pointer, a finger's 44 at a finger.
+                  // pointer, a finger's 40 at a finger.
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(
                       minHeight: MinimalChromeMetrics.controlSm,

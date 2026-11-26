@@ -21,7 +21,7 @@ import 'pressable.dart';
 /// swallows taps. A tick that is a picture rather than a control (a row
 /// that is itself the control, a finished line's tick) is a
 /// [MinimalCheckMark]. Give a check that stands without words a [label].
-/// The hit area pads out to 44.
+/// The hit area pads out to the tap floor.
 ///
 /// [style] dresses one check, `components.checkbox` every one, resolved
 /// with [WidgetState.selected] when ticked: fill, foreground (the tick),

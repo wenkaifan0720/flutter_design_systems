@@ -70,7 +70,7 @@ enum MinimalTaskStatus {
 ///
 /// With [onPressed] the glyph is the row's quick status control (tap to mark
 /// done): a checkbox that announces its label and whether it is
-/// [checked], and pads its hit area to 44 px.
+/// [checked], and pads its hit area to the tap floor.
 ///
 /// ```dart
 /// MinimalStatusIcon(MinimalTaskStatus.done, onPressed: () => toggle(habit))
@@ -319,7 +319,7 @@ enum MinimalPriority {
 /// reads by shape while status keeps the colour.
 ///
 /// With [onPressed] the glyph is the row's quick priority control (it usually
-/// opens a menu of priorities) and pads its hit area to 44 px. A screen
+/// opens a menu of priorities) and pads its hit area to the tap floor. A screen
 /// reader hears `High priority`.
 ///
 /// ```dart

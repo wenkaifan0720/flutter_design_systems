@@ -200,33 +200,36 @@ void main() {
       );
     });
 
-    testWidgets('the value is one screen-reader node on the 44 px band, and a '
-        'tap anywhere on the box focuses it', (tester) async {
-      final handle = tester.ensureSemantics();
-      final focus = FocusNode();
-      addTearDown(focus.dispose);
-      await tester.pumpWidget(
-        scrollingHost(MinimalTextField(labelText: 'Name', focusNode: focus)),
-      );
-      final node = tester.getSemantics(find.bySemanticsLabel('Name'));
-      expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
-      expect(node.rect.height, MinimalLayout.minHitTarget);
-      // The box's top edge, above the one line of text it paints.
-      final box = tester.getRect(
-        find
-            .ancestor(
-              of: find.byType(TextField),
-              matching: find.byWidgetPredicate(
-                (w) => w is Container && w.decoration is BoxDecoration,
-              ),
-            )
-            .first,
-      );
-      await tester.tapAt(box.topLeft + const Offset(40, 2));
-      await tester.pump();
-      expect(focus.hasFocus, isTrue);
-      handle.dispose();
-    });
+    testWidgets(
+      'the value is one screen-reader node on the tap floor\'s band, and a '
+      'tap anywhere on the box focuses it',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        final focus = FocusNode();
+        addTearDown(focus.dispose);
+        await tester.pumpWidget(
+          scrollingHost(MinimalTextField(labelText: 'Name', focusNode: focus)),
+        );
+        final node = tester.getSemantics(find.bySemanticsLabel('Name'));
+        expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
+        expect(node.rect.height, MinimalLayout.tapTargets.touch.height);
+        // The box's top edge, above the one line of text it paints.
+        final box = tester.getRect(
+          find
+              .ancestor(
+                of: find.byType(TextField),
+                matching: find.byWidgetPredicate(
+                  (w) => w is Container && w.decoration is BoxDecoration,
+                ),
+              )
+              .first,
+        );
+        await tester.tapAt(box.topLeft + const Offset(40, 2));
+        await tester.pump();
+        expect(focus.hasFocus, isTrue);
+        handle.dispose();
+      },
+    );
 
     testWidgets('formats what is typed and hands the editing action over', (
       tester,
