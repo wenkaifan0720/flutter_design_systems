@@ -1,7 +1,7 @@
 // Terminal's six palettes and its colour API on ui_core's palette maths: the
 // words, the accent and the words on it read on every ground they are drawn
 // on, by day and by night, and a brand colour that reads short is stepped in
-// its own hue rather than refused.
+// its own hue rather than refused; a page drawn in each palette builds.
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -146,5 +146,24 @@ void main() {
       ),
       'a dark palette of its own',
     );
+  });
+
+  testWidgets('a page builds in each palette, by day and by night', (
+    tester,
+  ) async {
+    for (final id in TermThemeData.presets) {
+      for (final b in Brightness.values) {
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: TermTheme(
+              data: TermThemeData.preset(id, b),
+              child: TermButton(label: 'deploy', onPressed: () {}),
+            ),
+          ),
+        );
+        expect(find.text('deploy'), findsOneWidget, reason: '$id ${b.name}');
+      }
+    }
   });
 }

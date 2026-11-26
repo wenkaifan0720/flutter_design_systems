@@ -2,12 +2,16 @@
 /// in: a MaterialApp under [TermTheme], night or paper, its toasts hosted,
 /// a finger's floors under 600 wide and a pointer's above.
 ///
-/// Demos import only the Terminal barrel, this file, Flutter and slipway's
-/// data.
+/// Demos import only the Terminal barrel, this file (with slipway's data and
+/// ui_core's radio group keyboard fix), kit_slipway.dart and Flutter.
 library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:terminal_ui/terminal_ui.dart';
+
+import 'theme.dart';
+
+export 'package:terminal_ui/terminal_ui.dart' show RadioGroupKeyboardFix;
 
 export 'slipway_data.dart';
 
@@ -23,15 +27,16 @@ double kitTextScale = 1;
 /// page shows); null: no back key.
 VoidCallback? kitOnBack;
 
-/// [home] in Terminal's [brightness] preset (night or paper), laid out
-/// [direction] (null: [kitShownDirection]).
+/// [home] in [theme], or else the preset the lab applied (theme.dart's
+/// [kitPreset]) by [brightness], laid out [direction] (null:
+/// [kitShownDirection]).
 Widget kitApp({
   required Brightness brightness,
   required Widget home,
   TextDirection? direction,
   TermThemeData? theme,
 }) {
-  final data = theme ?? TermThemeData.of(brightness);
+  final data = theme ?? TermThemeData.preset(kitPreset, brightness);
   final dir = direction ?? kitShownDirection;
   return MaterialApp(
     debugShowCheckedModeBanner: false,

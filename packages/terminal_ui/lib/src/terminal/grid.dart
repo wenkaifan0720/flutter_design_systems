@@ -126,6 +126,8 @@ class TermGrid with Diagnosticable {
   // the face and its fallbacks, then the platform's face for the script.
   // Measured each time, never kept: on the web the script's face arrives
   // after the first frame, and a width kept from before it would stand.
+  // To the nearest 1/64 px: on Linux a glyph measures a hair over its advance
+  // (9.00006 px where macOS gives 9), and a hair must not cost a whole cell.
   double _measure(String run) {
     final face = _face ?? TermFace.jetBrainsMono;
     final painter = TextPainter(
@@ -143,7 +145,7 @@ class TermGrid with Diagnosticable {
     )..layout();
     final width = painter.width;
     painter.dispose();
-    return width;
+    return (width * 64).roundToDouble() / 64;
   }
 
   // A letter of a script no Terminal face draws: Armenian, Arabic, Syriac,

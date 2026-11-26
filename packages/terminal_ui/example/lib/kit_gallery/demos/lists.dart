@@ -7,7 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
 import '../kit.dart';
-import '../slipway.dart';
+import '../kit_slipway.dart';
 
 Widget kitListsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,

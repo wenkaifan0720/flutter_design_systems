@@ -4,7 +4,7 @@ library;
 
 import 'package:flutter/widgets.dart';
 
-import '../slipway.dart';
+import '../kit_slipway.dart';
 
 Widget kitRunDetailDemo(Brightness brightness) =>
     slipwayApp(brightness, place: SlipwayPlace.run);

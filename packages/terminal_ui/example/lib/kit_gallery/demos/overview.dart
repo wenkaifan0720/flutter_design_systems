@@ -4,6 +4,6 @@ library;
 
 import 'package:flutter/widgets.dart';
 
-import '../overview.dart';
+import '../kit_slipway.dart';
 
 Widget kitOverviewDemo(Brightness brightness) => overviewApp(brightness);
