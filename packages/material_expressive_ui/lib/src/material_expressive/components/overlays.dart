@@ -620,10 +620,11 @@ class _DialogActions extends StatelessWidget {
   Widget build(BuildContext context) {
     // What the minimum touch target already adds around each 40dp action
     // comes off the stacked spacing (`buttonPaddingFromMICS`).
-    final touch = ExpressiveMinimumInteractiveSize.enforcedAt(context)
-        ? HostBehavior.minimumInteractiveComponentSize -
-              ButtonSmallTokens.containerHeight
-        : 0.0;
+    final touch = math.max(
+      0.0,
+      ExpressiveMinimumInteractiveSize.floorAt(context).height -
+          ButtonSmallTokens.containerHeight,
+    );
     final runSpacing = clampDouble(
       AlertDialogBehavior.actionRunSpacing - touch,
       0,
@@ -670,7 +671,7 @@ class _DialogActions extends StatelessWidget {
 // Compose's `TextButton` as dialogs and rich tooltips hold it: a 40dp
 // label in `primary` on no container, 12dp either side (Compose's
 // `TextButtonContentPadding`, not the shapes button's 16), at least 58dp
-// wide, on the full corner, inside the 48dp touch target. An app's own
+// wide, on the full corner, inside the touch target. An app's own
 // text button is [ExpressiveTextButton].
 class _TextAction extends StatelessWidget {
   const _TextAction({
@@ -722,7 +723,9 @@ class _TextAction extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: AlertDialogBehavior.actionHorizontalPadding,
-              vertical: ButtonBehavior.verticalPadding,
+              // The small button's top and bottom: at large text a text
+              // action stands as tall as a filled confirm beside it.
+              vertical: ButtonBehavior.smallVerticalPadding,
             ),
             textStyle: t.type.of(DialogTokens.actionLabelTextFont),
             // Compose's TextButton text wraps: a label wider than the

@@ -181,10 +181,10 @@ void main() {
       );
       final dismiss = tester.getRect(find.text('Keep it to myself for now'));
       expect(confirm.bottom, lessThan(dismiss.top));
-      // The 48dp touch targets already hold the stack apart, so the 8dp
-      // spacing drops to 0 (`buttonPaddingFromMICS`): label to label is the
-      // labels' 10dp padding in their 40dp buttons plus the targets' 4dp.
-      expect(dismiss.top - confirm.bottom, closeTo(10 + 4 + 4 + 10, 0.5));
+      // The 40dp buttons fill the 40dp touch floor, so nothing comes off the
+      // 8dp spacing (`buttonPaddingFromMICS`): label to label is the labels'
+      // 10dp padding in their 40dp buttons plus the 8dp between them.
+      expect(dismiss.top - confirm.bottom, closeTo(10 + 8 + 10, 0.5));
     });
 
     testWidgets('showExpressiveDialog raises it on a spring and returns', (

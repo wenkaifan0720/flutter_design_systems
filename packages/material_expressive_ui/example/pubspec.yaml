@@ -18,7 +18,7 @@ dependencies:
   material_expressive_ui:
     path: ../
   # An example imports the foundation itself too (its inventory, say).
-  ui_core: ^0.6.1
+  ui_core: ^0.7.2
 
 
 dev_dependencies:

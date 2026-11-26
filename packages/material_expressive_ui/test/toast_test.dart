@@ -57,7 +57,7 @@ Finder get surface => find.byType(ExpressiveSurface).first;
 
 Rect rectOf(WidgetTester tester, Finder finder) => tester.getRect(finder);
 
-/// The button whose label is [label]: its 48dp touch-target box.
+/// The button whose label is [label]: its touch-target box.
 Finder button(String label) => find.ancestor(
   of: find.text(label),
   matching: find.byType(ExpressivePressable),
@@ -141,8 +141,8 @@ void main() {
       );
       final text = tester.getRect(find.text('Open reading list'));
       final action = tester.getRect(button('Open reading list'));
-      // 48dp touch target around the 40dp container; 12dp padding each side.
-      expect(action.height, 48);
+      // The 40dp container is the touch floor; 12dp padding each side.
+      expect(action.height, 40);
       expect(text.left - action.left, closeTo(12, 0.01));
       expect(action.right - text.right, closeTo(12, 0.01));
       await tester.pumpWidget(
@@ -171,7 +171,7 @@ void main() {
       final box = rectOf(tester, surface);
       final close = tester.getRect(find.byType(ExpressiveIconButton));
       expect(close.right, box.right);
-      expect(close.size, const Size(48, 48));
+      expect(close.size, const Size(40, 40)); // the touch floor
       expect(close.center.dy, closeTo(box.center.dy, 0.01));
       final action = tester.getRect(button('Refresh'));
       expect(action.right, close.left);

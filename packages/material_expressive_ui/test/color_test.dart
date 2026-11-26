@@ -9,8 +9,8 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/themes/baked_theme.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/themes/registry.g.dart';
 
-/// WCAG's contrast ratio of two opaque colours (contrast.dart).
-const _contrast = expressiveContrastRatio;
+/// WCAG's contrast ratio of two opaque colours (ui_core's).
+const _contrast = RawPalette.contrastRatio;
 
 const _brightnesses = <Brightness>[Brightness.light, Brightness.dark];
 
@@ -59,7 +59,7 @@ void main() {
             theme.states.layerOf(ink, {WidgetState.dragged})!,
             theme.colors.tertiaryContainer,
           );
-          final ratio = expressiveContrastRatio(ink, dragged);
+          final ratio = RawPalette.contrastRatio(ink, dragged);
           if (ratio < 4.5) {
             shortfalls.add(
               '$label: dragged list text ${ratio.toStringAsFixed(2)}',
@@ -86,7 +86,7 @@ void main() {
             theme.states.layerOf(ink, {WidgetState.dragged})!,
             theme.colors.tertiaryContainer,
           );
-          final ratio = expressiveContrastRatio(ink, dragged);
+          final ratio = RawPalette.contrastRatio(ink, dragged);
           if (ratio < 4.5) {
             shortfalls.add(
               '$id ${brightness.name} at $contrastLevel: '
@@ -214,11 +214,12 @@ void main() {
         'bloom',
         'grove',
         'ember',
+        'tide',
       ]);
     });
 
     test('dark is baked, not light inverted', () {
-      for (final id in <String>['slate', 'bloom', 'grove', 'ember']) {
+      for (final id in <String>['slate', 'bloom', 'grove', 'ember', 'tide']) {
         final light = ExpressiveThemeData.preset(id, Brightness.light).colors;
         final dark = ExpressiveThemeData.preset(id, Brightness.dark).colors;
         expect(dark.surface.computeLuminance(), lessThan(0.05));
@@ -276,7 +277,7 @@ void main() {
   // Seeded themes include both regular and high-contrast palettes.
   group('contrast levels', () {
     test('seeded themes resolve at 0, 0.5 and 1; baseline only at 0', () {
-      for (final id in <String>['slate', 'bloom', 'grove', 'ember']) {
+      for (final id in <String>['slate', 'bloom', 'grove', 'ember', 'tide']) {
         final baked = expressiveBakedThemes[id]!;
         expect(baked.colors.atContrast.keys.toSet(), <String>{'0.5', '1'});
         for (final brightness in _brightnesses) {
@@ -367,7 +368,7 @@ void main() {
   // 0.05. Every content pair's and onSurfaceVariant's curve and the
   // outline's reach 7 at contrast 1, so the floor is 7:1 for each.
   group('every content pair at contrast 1', () {
-    for (final id in <String>['slate', 'bloom', 'grove', 'ember']) {
+    for (final id in <String>['slate', 'bloom', 'grove', 'ember', 'tide']) {
       for (final brightness in _brightnesses) {
         final label = '$id ${brightness.name} at contrast 1';
         test('$label reads at 7:1 or more', () {
@@ -391,9 +392,9 @@ void main() {
     test('is WCAG 2\'s ratio, whichever colour is lighter', () {
       const black = Color(0xFF000000);
       const white = Color(0xFFFFFFFF);
-      expect(expressiveContrastRatio(black, white), closeTo(21, 1e-9));
-      expect(expressiveContrastRatio(white, black), closeTo(21, 1e-9));
-      expect(expressiveContrastRatio(white, white), 1);
+      expect(RawPalette.contrastRatio(black, white), closeTo(21, 1e-9));
+      expect(RawPalette.contrastRatio(white, black), closeTo(21, 1e-9));
+      expect(RawPalette.contrastRatio(white, white), 1);
     });
 
     test('names every pair below its floor, with its ratio', () {

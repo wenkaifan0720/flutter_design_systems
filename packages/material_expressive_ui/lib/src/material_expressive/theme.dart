@@ -651,6 +651,12 @@ class ExpressiveThemeData with Diagnosticable {
     Brightness brightness = Brightness.light,
   ]) => preset('ember', brightness);
 
+  /// `tide`: a sea blue seed (#3D7EA0), tonal spot, Expressive motion,
+  /// balanced.
+  factory ExpressiveThemeData.tide([
+    Brightness brightness = Brightness.light,
+  ]) => preset('tide', brightness);
+
   /// The theme in force at [context]: the nearest [ExpressiveTheme]'s, else
   /// the default preset in the platform's brightness. The same as
   /// `context.expressiveTheme` and [ExpressiveTheme.of].

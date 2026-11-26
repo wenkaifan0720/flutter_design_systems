@@ -1,5 +1,6 @@
-// Flutter's four accessibility guidelines on every gallery page, in every preset, by day and by night: Android's 48 px
-// and iOS's 44 px tap targets, a label on every tappable node, and text contrast (4.5:1, 3:1 for large text). Each is
+// Flutter's accessibility guidelines on every gallery page, in every preset, by day and by night: tap targets at
+// ui_core's touch floor, 40 px (Expressive's floor for a finger and a pointer; Compose's 48 is the one Material
+// measure the look leaves), a label on every tappable node, and text contrast (4.5:1, 3:1 for large text). Each is
 // evaluated on its own, so one failing never hides another.
 //
 // Text contrast is read twice. Flutter's guideline reads the ink from a capture at one pixel per logical pixel, where
@@ -21,6 +22,8 @@ import 'package:flutter/services.dart' show Brightness;
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
+import 'package:material_expressive_ui/material_expressive_ui.dart'
+    show RawTapTargets;
 
 import 'flutter_test_config.dart' show pageWalkLeakTesting;
 import 'gallery_support.dart';
@@ -66,7 +69,7 @@ void main() {
   }
 }
 
-/// Words Compose itself writes short of 4.5:1 in one of the five presets, held as Compose draws them: a tonal outlined
+/// Words Compose itself writes short of 4.5:1 in one of the six presets, held as Compose draws them: a tonal outlined
 /// field's placeholder is `onSurfaceVariant` on `onPrimary` (`OutlinedTextFieldDefaults.tonalColors()`), a pair the
 /// scheme does not tune, and ember's dark scheme leaves it at 4.24:1, kept as Compose draws it; every other
 /// word on every page meets its ratio.
@@ -79,8 +82,12 @@ const _composePairs = {
   ),
 };
 
-final _android = _LaidOutTapTargetGuideline(androidTapTargetGuideline);
-final _iOS = _LaidOutTapTargetGuideline(iOSTapTargetGuideline);
+final _floor = _LaidOutTapTargetGuideline(
+  MinimumTapTargetGuideline(
+    size: RawTapTargets.fallback.touch,
+    link: (androidTapTargetGuideline as MinimumTapTargetGuideline).link,
+  ),
+);
 
 /// [of]'s guideline, except that a node drawn smaller than it is laid out (under a transform that scales it down)
 /// is held to the size in its own coordinates.
@@ -124,8 +131,7 @@ Future<List<String>> galleryGuidelineFailures(
 }) async {
   final failed = <String>[];
   for (final (name, guideline) in [
-    if (targets) ('Android 48 px targets', _android),
-    if (targets) ('iOS 44 px targets', _iOS),
+    if (targets) ('40 px targets (the touch floor)', _floor),
     if (targets) ('labelled targets', labeledTapTargetGuideline),
   ]) {
     final result = await guideline.evaluate(tester);

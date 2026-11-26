@@ -1798,7 +1798,7 @@ class _CollapsedSearchBar extends StatelessWidget {
   }
 }
 
-/// The avatar at the end of a search bar: a 30dp circle in a 48dp target.
+/// The avatar at the end of a search bar: a 30dp circle in Compose's 48dp slot.
 class _SearchAvatar extends StatelessWidget {
   const _SearchAvatar({required this.avatar, this.onTap, this.label});
 
@@ -2737,7 +2737,7 @@ expressiveSearchViewGeometry({
   );
 }
 
-// A styled input grows for its text, preserving the 48dp icon targets.
+// A styled input grows for its text, preserving the 48dp icon slots.
 double _searchRowHeight(
   BuildContext context,
   ExpressiveComponentThemeData style,

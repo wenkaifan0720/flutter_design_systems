@@ -47,6 +47,7 @@ export 'src/material_expressive/internal/themes/ember.g.dart';
 export 'src/material_expressive/internal/themes/grove.g.dart';
 export 'src/material_expressive/internal/themes/registry.g.dart';
 export 'src/material_expressive/internal/themes/slate.g.dart';
+export 'src/material_expressive/internal/themes/tide.g.dart';
 export 'src/material_expressive/internal/tokens/app_bar_large_flexible_tokens.g.dart';
 export 'src/material_expressive/internal/tokens/app_bar_large_tokens.g.dart';
 export 'src/material_expressive/internal/tokens/app_bar_medium_flexible_tokens.g.dart';

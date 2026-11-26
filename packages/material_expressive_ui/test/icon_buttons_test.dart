@@ -170,7 +170,7 @@ void main() {
       );
     });
 
-    testWidgets('keeps the 48dp touch target around a smaller container', (
+    testWidgets('keeps the touch floor around a smaller container', (
       tester,
     ) async {
       var taps = 0;
@@ -185,7 +185,7 @@ void main() {
       );
       expect(
         tester.getSize(find.byType(ExpressiveIconButton)),
-        const Size(48, 48),
+        const Size(40, 40), // ui_core's touch floor
       );
       expect(_surfaceSize(tester), const Size(32, 32));
       // A touch in the margin reaches the button.

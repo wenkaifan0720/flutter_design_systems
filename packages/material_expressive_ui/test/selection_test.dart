@@ -88,6 +88,10 @@ const _squareShapes = ExpressiveShapes(
   full: _zero,
 );
 
+/// ui_core's touch floor (`RawTapTargets.fallback`), Expressive's for a
+/// finger and a pointer alike.
+const double _floor = 40;
+
 void main() {
   testWidgets(
     'checkbox style resolves the complete state and falls through to its theme',
@@ -201,7 +205,7 @@ void main() {
       );
       expect(
         tester.getSize(find.byType(ExpressiveCheckbox)),
-        const Size.square(HostBehavior.minimumInteractiveComponentSize),
+        const Size.square(_floor),
       );
       await tester.tap(find.byType(ExpressiveCheckbox));
       expect(reported, isTrue);
@@ -331,7 +335,7 @@ void main() {
       );
       expect(
         tester.getSize(find.byType(ExpressiveRadio).first),
-        const Size.square(HostBehavior.minimumInteractiveComponentSize),
+        const Size.square(_floor),
       );
       await tester.tap(find.byType(ExpressiveRadio).last);
       await tester.pumpAndSettle();
@@ -546,10 +550,7 @@ void main() {
       await pump(false);
       expect(
         tester.getSize(find.byType(ExpressiveSwitch)),
-        const Size(
-          SwitchTokens.trackWidth,
-          HostBehavior.minimumInteractiveComponentSize,
-        ),
+        const Size(SwitchTokens.trackWidth, _floor),
       );
       final track = _track(tester);
       expect(
@@ -780,7 +781,7 @@ void main() {
 
   // Flutter's rule (Material's and Cupertino's Checkbox, Radio, Switch and
   // their list tiles): a null handler disables the control at its full
-  // size, so a developer swapping the import keeps a 48dp control that
+  // size, so a developer swapping the import keeps a full-size control that
   // reads as disabled. The bare mark a row puts inside itself is `.mark`.
   testWidgets('a null handler disables a checkbox, radio, switch or row at '
       'full size; .mark is the bare control', (tester) async {
@@ -810,7 +811,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    const target = HostBehavior.minimumInteractiveComponentSize;
+    const target = _floor;
     expect(
       tester.getSize(find.byType(ExpressiveCheckbox).first),
       const Size.square(target),

@@ -42,7 +42,7 @@ class _FillState extends State<_Fill> {
       children: <Widget>[
         // Standard icon toggle buttons: the glyph in `primary` and filled
         // when on, `onSurfaceVariant` and outlined when off, each in its
-        // 48dp touch target and announced as a toggle.
+        // touch target and announced as a toggle.
         Wrap(
           runSpacing: kitGap,
           children: <Widget>[

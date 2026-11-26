@@ -24,7 +24,6 @@ import 'component_themes.dart';
 import 'elevation.dart';
 import 'internal/focus_ring.dart';
 import 'internal/group_tap_target.dart';
-import 'internal/tokens/behavior.g.dart';
 import 'internal/width_probe.dart';
 import 'motion.dart';
 import 'theme.dart';
@@ -318,7 +317,7 @@ class ExpressivePressable extends StatefulWidget {
   /// its edge is drawn whole.
   final Rect Function(Size size)? inkRect;
 
-  /// Whether a smaller container keeps Compose's 48dp touch target around
+  /// Whether a smaller container keeps the touch target, the floor, around
   /// it ([ExpressiveMinimumInteractiveSize]).
   final bool minimumInteractiveSize;
 
@@ -366,7 +365,7 @@ class ExpressivePressable extends StatefulWidget {
   /// the focus (the keys go on from it) on the hover layer, with no ring.
   final bool focusRing;
 
-  /// Whether its drawn face (the surface, inside any 48dp target around it)
+  /// Whether its drawn face (the surface, inside any touch target around it)
   /// is marked for the alignment checks ([RawKeylineFace]): a face too
   /// faint on its page to read by its pixels (an unchosen tonal segment) is
   /// then read by the face's own box, never by the target around it.
@@ -1405,19 +1404,24 @@ class _MergeSemanticsRegistry {
 
 /// Compose's `Modifier.minimumInteractiveComponentSize()` on ui_core's
 /// padded tap target ([TapTargetPadding]): [child] keeps its size, centred in
-/// at least [size] × [size] (`HostBehavior.minimumInteractiveComponentSize`,
-/// 48dp), and a tap anywhere in that area reaches it. The layout, the area a
+/// at least [size] × [size] (the floor at the context when null:
+/// [RawTapTargets.floorOn], 40dp under Expressive's theme), and a tap
+/// anywhere in that area reaches it. The layout, the area a
 /// tap reaches and the box a screen reader outlines are one: the target is
 /// one node, [child]'s semantics merged into it, so wrap one control, never
 /// a group.
 class ExpressiveMinimumInteractiveSize extends StatelessWidget {
-  /// A scope keeping [child] at least [size] square to touch.
+  /// A scope keeping [child] at least [size] square to touch, or at the
+  /// floor at the context when [size] is null.
   const ExpressiveMinimumInteractiveSize({
     this.child,
-    this.size = HostBehavior.minimumInteractiveComponentSize,
+    this.size,
     this.alignment = AlignmentDirectional.center,
     super.key,
-  }) : assert(size >= 0, 'a tap target is never negative: $size'),
+  }) : assert(
+         size == null || size >= 0,
+         'a tap target is never negative: $size',
+       ),
        _node = true;
 
   /// An [ExpressivePressable]'s target: its [ExpressiveSemanticsGroup] is
@@ -1427,7 +1431,7 @@ class ExpressiveMinimumInteractiveSize extends StatelessWidget {
   const ExpressiveMinimumInteractiveSize._inGroup({
     required Widget this.child,
     required this.alignment,
-  }) : size = HostBehavior.minimumInteractiveComponentSize,
+  }) : size = null,
        _node = false;
 
   final bool _node;
@@ -1440,16 +1444,18 @@ class ExpressiveMinimumInteractiveSize extends StatelessWidget {
   /// left.
   final AlignmentGeometry alignment;
 
-  /// The smallest touch target, in dp.
-  final double size;
+  /// The smallest touch target, in dp; null: the floor at the context
+  /// ([RawTapTargets.floorOn]).
+  final double? size;
 
-  /// Expressive's floors ([RawTapTargetScope] in [ExpressiveTheme]): 48 ×
-  /// 48 for a finger and for a pointer alike, as Compose keeps
-  /// `minimumInteractiveComponentSize` on every platform. Density tightens a
-  /// control's face (compact under a pointer), never its target.
-  static const RawTapTargets targets = RawTapTargets(
-    touch: Size.square(HostBehavior.minimumInteractiveComponentSize),
-    pointer: Size.square(HostBehavior.minimumInteractiveComponentSize),
+  /// Expressive's floors ([RawTapTargetScope] in [ExpressiveTheme]): ui_core's
+  /// touch floor, 40 × 40, for a finger and for a pointer alike, as Compose
+  /// keeps one `minimumInteractiveComponentSize` on every platform (48 in
+  /// Compose). An app's [RawTapTargetScope] under the theme raises them.
+  /// Density tightens a control's face (compact under a pointer), never its
+  /// target.
+  static final RawTapTargets targets = RawTapTargets(
+    pointer: RawTapTargets.fallback.touch,
   );
 
   /// Whether touch targets are kept at [context]: false inside an
@@ -1460,9 +1466,18 @@ class ExpressiveMinimumInteractiveSize extends StatelessWidget {
               ?.shrink ??
           false);
 
+  /// The least target at [context]: the floor ([RawTapTargets.floorOn] of
+  /// the nearest [RawTapTargetScope], 40 × 40 under Expressive's theme), or
+  /// none inside an [ExpressiveShrinkTapTargets].
+  static Size floorAt(BuildContext context) =>
+      enforcedAt(context) ? RawTapTargets.of(context).floorOn() : Size.zero;
+
   @override
   Widget build(BuildContext context) {
-    final minSize = Size.square(enforcedAt(context) ? size : 0);
+    final size = this.size;
+    final minSize = size == null
+        ? floorAt(context)
+        : Size.square(enforcedAt(context) ? size : 0);
     final child = this.child ?? const SizedBox.shrink();
     if (_node) {
       return TapTargetPadding(
@@ -1481,13 +1496,7 @@ class ExpressiveMinimumInteractiveSize extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(
-      DoubleProperty(
-        'size',
-        size,
-        defaultValue: HostBehavior.minimumInteractiveComponentSize,
-      ),
-    );
+    properties.add(DoubleProperty('size', size, defaultValue: null));
     properties.add(
       DiagnosticsProperty<AlignmentGeometry>(
         'alignment',
@@ -1506,7 +1515,7 @@ class ExpressiveShrinkTapTargets extends StatelessWidget {
   const ExpressiveShrinkTapTargets({required this.child, super.key})
     : shrink = true;
 
-  /// Gives the touch targets below a shrinking ancestor their 48dp back: a
+  /// Gives the touch targets below a shrinking ancestor their floor back: a
   /// control a dense layout holds that still stands on its own (a kit's
   /// composite at the end of a list item).
   const ExpressiveShrinkTapTargets.restore({required this.child, super.key})

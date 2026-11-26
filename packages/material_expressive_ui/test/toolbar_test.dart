@@ -55,10 +55,14 @@ Widget _fabWidget({
 Color _iconColour(WidgetTester tester, Finder icon) =>
     IconTheme.of(tester.element(icon)).color!;
 
+/// ui_core's touch floor (`RawTapTargets.fallback`), Expressive's for a
+/// finger and a pointer alike.
+const double _floor = 40;
+
 void main() {
   group('ExpressiveFloatingToolbar', () {
     testWidgets(
-      'a 64dp pill: 8dp between the edge and each 48dp target, full corners',
+      'a 64dp pill: 8dp between the edge and each target (the touch floor), full corners',
       (tester) async {
         await tester.pumpWidget(
           _app(
@@ -67,7 +71,7 @@ void main() {
         );
         expect(
           tester.getSize(find.byKey(_toolbar)),
-          const Size(3 * 48 + 16, 64),
+          const Size(3 * _floor + 16, 64),
         );
         final surface = tester.widget<ExpressiveSurface>(
           find
@@ -127,19 +131,19 @@ void main() {
         ),
       );
       await tester.pumpWidget(build(true));
-      expect(tester.getSize(find.byKey(_toolbar)).width, 5 * 48 + 16);
+      expect(tester.getSize(find.byKey(_toolbar)).width, 5 * _floor + 16);
       await tester.pumpWidget(build(false));
       await tester.pump(const Duration(milliseconds: 50));
       final mid = tester.getSize(find.byKey(_toolbar)).width;
-      expect(mid, lessThan(5 * 48 + 16));
-      expect(mid, greaterThan(2 * 48 + 16));
+      expect(mid, lessThan(5 * _floor + 16));
+      expect(mid, greaterThan(2 * _floor + 16));
       await tester.pumpAndSettle();
-      expect(tester.getSize(find.byKey(_toolbar)).width, 2 * 48 + 16);
+      expect(tester.getSize(find.byKey(_toolbar)).width, 2 * _floor + 16);
       expect(find.byKey(const ValueKey<String>('lead0')), findsNothing);
       expect(find.byKey(const ValueKey<String>('trail0')), findsNothing);
       await tester.pumpWidget(build(true));
       await tester.pumpAndSettle();
-      expect(tester.getSize(find.byKey(_toolbar)).width, 5 * 48 + 16);
+      expect(tester.getSize(find.byKey(_toolbar)).width, 5 * _floor + 16);
     });
 
     testWidgets('vertical: a 64dp column', (tester) async {
@@ -152,7 +156,10 @@ void main() {
           ),
         ),
       );
-      expect(tester.getSize(find.byKey(_toolbar)), const Size(64, 3 * 48 + 16));
+      expect(
+        tester.getSize(find.byKey(_toolbar)),
+        const Size(64, 3 * _floor + 16),
+      );
     });
 
     testWidgets('beside a FAB: toolbar, 8dp gap, 56dp FAB, 80dp tall; '
@@ -172,7 +179,7 @@ void main() {
           children: _acts('a', 4),
         ),
       );
-      const toolbarWidth = 4 * 48 + 16.0;
+      const toolbarWidth = 4 * _floor + 16.0;
       const width = toolbarWidth + 8 + 56;
       await tester.pumpWidget(build(true));
       final origin = tester.getTopLeft(find.byKey(_toolbar));
@@ -224,7 +231,7 @@ void main() {
           ),
         ),
       );
-      const height = 3 * 48 + 16 + 8 + 56.0;
+      const height = 3 * _floor + 16 + 8 + 56.0;
       final origin = tester.getTopLeft(find.byKey(_toolbar));
       expect(tester.getSize(find.byKey(_toolbar)), const Size(80, height));
       expect(

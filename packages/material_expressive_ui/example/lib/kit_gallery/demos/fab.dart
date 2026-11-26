@@ -34,8 +34,9 @@ Widget _captioned(BuildContext context, String caption, Widget child) {
     mainAxisSize: MainAxisSize.min,
     children: <Widget>[
       child,
-      // Clear of the button's shadow, so the caption sits on the page.
-      const SizedBox(height: ExpressiveSpacing.s16),
+      // Clear of the button's shadow (a level 3 shadow fades out about 24dp
+      // below the face), so the caption sits on the page.
+      const SizedBox(height: ExpressiveSpacing.s24),
       Text(
         caption,
         style: t.type.labelMedium.copyWith(color: t.colors.onSurfaceVariant),

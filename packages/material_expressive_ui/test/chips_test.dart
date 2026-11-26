@@ -38,16 +38,13 @@ Rect _container(WidgetTester tester, Finder chip) => tester.getRect(
 );
 
 void main() {
-  testWidgets('32dp container in the 48dp target; label-only padding is '
+  testWidgets('32dp container in its touch target; label-only padding is '
       'content padding plus the arrangement', (tester) async {
     await tester.pumpWidget(
       _app(const ExpressiveChip.assist('Share', onPressed: _noop)),
     );
     final chip = find.byType(ExpressiveChip);
-    expect(
-      tester.getSize(chip).height,
-      HostBehavior.minimumInteractiveComponentSize,
-    );
+    expect(tester.getSize(chip).height, 40); // ui_core's touch floor
     final box = _container(tester, chip);
     expect(box.height, ChipsTokens.height);
     final label = tester.getRect(find.text('Share'));
@@ -431,7 +428,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(tester.getSize(find.byType(Wrap)).height, greaterThan(80));
+    expect(tester.getSize(find.byType(RawChipGroup)).height, greaterThan(80));
     expect(tester.takeException(), isNull);
   });
 }

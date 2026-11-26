@@ -267,6 +267,7 @@ class ExpressiveBareField extends StatelessWidget {
     this.textInputAction,
     this.semanticLabel,
     this.expanded,
+    this.minHeight = HostBehavior.minimumInteractiveComponentSize,
     super.key,
   });
 
@@ -312,6 +313,10 @@ class ExpressiveBareField extends StatelessWidget {
   /// field that opens none.
   final bool? expanded;
 
+  /// The least height of its line: Compose's 48dp by default; a
+  /// multi-select's, beside its tags, is the tags' touch target.
+  final double minHeight;
+
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
@@ -343,7 +348,7 @@ class ExpressiveBareField extends StatelessWidget {
     );
     final hint = hintText;
     Widget field = ExpressiveLineReach(
-      minHeight: HostBehavior.minimumInteractiveComponentSize,
+      minHeight: minHeight,
       fillWidth: false,
       // The line by its capitals on the box's middle: the shift is the
       // entry's, so the hint, the typed text and the caret share it.
@@ -405,7 +410,7 @@ class ExpressiveFocusRingBox extends StatelessWidget {
   });
 
   /// The part's visible height, centred in [child]'s box, when its box is
-  /// taller (a chip's 48dp touch target round its 32dp face): the ring
+  /// taller (a chip's touch target round its 32dp face): the ring
   /// follows the face, not the target.
   final double? faceHeight;
 

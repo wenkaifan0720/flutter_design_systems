@@ -4,23 +4,34 @@ Material 3 Expressive components for Flutter. The package includes spring-animat
 
 ![Material Expressive gallery and Trip planner](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/material_expressive_ui/screenshots/hero.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/material_expressive/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/material_expressive/) · [API reference](https://pub.dev/documentation/material_expressive_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/material_expressive/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=material_expressive) · [API reference](https://pub.dev/documentation/material_expressive_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
-## Install
+## Getting started
 
-```sh
-flutter pub add material_expressive_ui material_ui
+```yaml
+dependencies:
+  material_expressive_ui: ^0.7.0
 ```
 
-`material_ui` is the Material library the set-up below imports for its `MaterialApp` (Flutter 3.50 deprecates `package:flutter/material.dart`). One import brings the components, their themes and ui_core, which the package re-exports:
+The smallest app: `ExpressiveHost` in the app's `builder` gives everything under it Expressive's theme, by day and by night as the platform is. One import brings the components, their themes and ui_core, which the package re-exports.
 
 ```dart
+import 'package:flutter/widgets.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
+
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFF6750A4),
+    builder: (context, _) => ExpressiveHost(
+      child: Center(child: ExpressiveFilledButton('Start', onPressed: () {})),
+    ),
+  ),
+);
 ```
 
 ## Set up
 
-Load the bundled fonts before the first frame and put `ExpressiveHost` in the app's `builder`, above its navigator, so routes, dialogs and menus share the theme. The host follows the platform from `theme` to `darkTheme` and back, gives the Flutter parts Expressive builds on (text editing, ink, page transitions) a Material theme to match, and holds the layer snackbars show in: `showExpressiveSnackBar` throws without it.
+A fuller app on Material (`flutter pub add material_expressive_ui material_ui`; `material_ui` is the Material library, as Flutter 3.50 deprecates `package:flutter/material.dart`) loads the bundled fonts before the first frame and puts `ExpressiveHost` in the app's `builder`, above its navigator, so routes, dialogs and menus share the theme. The host follows the platform from `theme` to `darkTheme` and back, gives the Flutter parts Expressive builds on (text editing, ink, page transitions) a Material theme to match, and holds the layer snackbars show in: `showExpressiveSnackBar` throws without it.
 
 ```dart
 import 'package:material_expressive_ui/material_expressive_ui.dart';
@@ -163,7 +174,7 @@ showExpressiveMenu(
 
 ## Themes
 
-Choose a preset with `ExpressiveThemeData.preset(id, brightness)` or derive a colour scheme with `ExpressiveThemeData.from(seed: brand, brightness: brightness)`. The presets provide light, dark and high-contrast colours. Pass `contrastLevel: 1` for a high-contrast preset.
+Choose one of six presets with `ExpressiveThemeData.preset(id, brightness)` or derive a colour scheme with `ExpressiveThemeData.from(seed: brand, brightness: brightness)`. The presets provide light, dark and high-contrast colours. Pass `contrastLevel: 1` for a high-contrast preset.
 
 | Preset | Seed | Variant | Motion |
 |---|---|---|---|
@@ -172,6 +183,7 @@ Choose a preset with `ExpressiveThemeData.preset(id, brightness)` or derive a co
 | `bloom` | #B5487A | vibrant | expressive |
 | `grove` | #2E7D5B | tonal spot | expressive |
 | `ember` | #C25A1F | expressive | expressive |
+| `tide` | #3D7EA0 | tonal spot | expressive |
 
 Widgets read their theme from `context.expressiveTheme`. Use `copyWith` to set density, typography, shapes, motion or a component theme. An individual widget's `style` overrides the component theme for that widget. A `WidgetStateProperty` can vary a colour or shape for focus, selection and other states. The colour roles, shapes and motion stay Material's: a theme changes their values, not what each role is for.
 
@@ -182,7 +194,7 @@ Widgets read their theme from `context.expressiveTheme`. Use `copyWith` to set d
 ## Accessibility and languages
 
 - Every control is reachable with Tab and works with Enter or Space. Selects, comboboxes and menus take the arrow keys, Home and End, and Escape closes them and gives the focus back to what opened them. A radio group or a one-choice segmented button is one Tab stop.
-- Touch targets are at least 48 dp, as Material's are. Text scales with the platform setting, and the parts Material caps (a date picker's month label at 2×) are capped the same way.
+- Touch targets are at least 40 dp, ui_core's touch floor, for a finger and a pointer alike; a `RawTapTargetScope` under the theme raises the floor for an app's pages. Groups of chips and tags stand 8 dp apart, their targets meeting in the room between them. Text scales with the platform setting, and the parts Material caps (a date picker's month label at 2×) are capped the same way.
 - The layout follows `Directionality`, so a right-to-left app mirrors its rows, menus and navigation.
 - Use `ExpressiveLocalizations` for component text and `RawWidgetsLocalizations` for shared actions. Both include English defaults, and `ExpressiveLocalizations.delegate` takes every locale. Supply delegates for your app's other languages. Until you do, a time picker's words come from `RawWidgetsLocalizations`, which ui_core speaks in 30 languages, and the pickers' titles, modes and field labels come from the app's `MaterialLocalizations`, as Material's own pickers' do: in each of Material's languages, from `GlobalMaterialLocalizations.delegates` or, when the app lists no Material localizations, from the host.
 - Give icon-only controls a `semanticLabel`, and give a rating a name such as “Rate this trip”, so a screen reader announces it in context.
@@ -197,7 +209,7 @@ The example app includes a Trip planner and an interactive component gallery. Sw
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.6.1 and re-exports it, so `RawWidgetsLocalizations` and the `Raw*` parts come with the one import.
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.7.2 and re-exports it, so `RawWidgetsLocalizations` and the `Raw*` parts come with the one import.
 
 ## Licences
 

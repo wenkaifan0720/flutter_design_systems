@@ -18,6 +18,7 @@ import '../elevation.dart';
 import '../icons.dart';
 import '../internal/cap_label.dart';
 import '../internal/choice_width.dart';
+import '../internal/group_tap_target.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/chips_tokens.g.dart';
 import '../internal/tokens/divider_tokens.g.dart';
@@ -583,13 +584,17 @@ Widget _menuInset(
 );
 
 /// Half the 4dp between two rows' faces: what each row keeps clear at
-/// either end of its 48dp target.
+/// either end of its row.
 const double _rowGap = SegmentedMenuTokens.groupPadding / 2;
 
-/// A row face's least height where touch targets are enforced: its 48dp
-/// target less [_rowGap] at either end, at every density.
-const double _rowFace =
-    HostBehavior.minimumInteractiveComponentSize - 2 * _rowGap;
+/// Compose's row where touch targets are enforced: 48dp, its
+/// `minimumInteractiveComponentSize`, above the touch floor (40dp), so a
+/// menu keeps Compose's rhythm.
+const double _row = HostBehavior.minimumInteractiveComponentSize;
+
+/// A row face's least height where touch targets are enforced: the row
+/// less [_rowGap] at either end, at every density.
+const double _rowFace = _row - 2 * _rowGap;
 
 /// An [ExpressiveMenuNote]: an item's padding and height, its supporting
 /// text's type and ink, nothing to press; a live region.
@@ -1348,7 +1353,7 @@ class _MenuItemTile extends StatelessWidget {
           Color lit(Color base) => light == _Light.plate && hover != null
               ? Color.alphaBlend(hover, base)
               : base;
-          return ExpressivePressable(
+          final item = ExpressivePressable(
             style: style,
             componentStyle: t.menuTheme.copyWith(
               backgroundColor: WidgetStateProperty.resolveWith((states) {
@@ -1387,6 +1392,22 @@ class _MenuItemTile extends StatelessWidget {
                     child: _itemContent(context, colors),
                   )
                 : _itemContent(context, colors),
+          );
+          // The row round the face where targets are kept ([_row], or an
+          // app's higher floor): a tap in the 2dp between two faces takes
+          // the nearer row.
+          if (!ExpressiveMinimumInteractiveSize.enforcedAt(context)) {
+            return item;
+          }
+          return ExpressiveGroupTapTarget(
+            minSize: Size(
+              0,
+              math.max(
+                _row,
+                ExpressiveMinimumInteractiveSize.floorAt(context).height,
+              ),
+            ),
+            child: item,
           );
         },
       ),
@@ -3729,10 +3750,14 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
 
 class _ExpressiveMultiSelectState<T extends Object>
     extends State<ExpressiveMultiSelect<T>> {
-  /// The visible chip's height ([face]) and the field's inset round the
-  /// chips ([inset]), matching the chip's vertical margin while its delete
-  /// target and the editable line both retain a full-size touch target.
-  ({double face, double inset}) _chip(BuildContext context) {
+  /// The visible chip's height ([face]); the field's inset round the
+  /// chips' faces ([inset]), as Compose's 48dp entry line leaves it; the
+  /// height of a line of tags ([tagLine]: their touch target round the face,
+  /// the entry's line as tall); and the frame's padding above and below
+  /// ([vertical]) that leaves the faces [inset] from the outline there too.
+  ({double face, double inset, double tagLine, double vertical}) _chip(
+    BuildContext context,
+  ) {
     final t = context.expressiveTheme;
     final states = <WidgetState>{
       if (widget.onChanged == null) WidgetState.disabled,
@@ -3771,7 +3796,19 @@ class _ExpressiveMultiSelectState<T extends Object>
       HostBehavior.minimumInteractiveComponentSize,
       lineHeight(t.type.bodyLarge),
     );
-    return (face: face, inset: padding + math.max(0.0, (row - face) / 2));
+    final inset = padding + math.max(0.0, (row - face) / 2);
+    final tagLine = math.max(
+      face,
+      ExpressiveMinimumInteractiveSize.floorAt(context).height,
+    );
+    // The entry's own words, taller than the tags at large sizes.
+    final line = math.max(tagLine, lineHeight(t.type.bodyLarge));
+    return (
+      face: face,
+      inset: inset,
+      tagLine: tagLine,
+      vertical: math.max(0.0, inset - (line - face) / 2),
+    );
   }
 
   FocusNode? _ownNode;
@@ -3838,7 +3875,7 @@ class _ExpressiveMultiSelectState<T extends Object>
     final t = context.expressiveTheme;
     final onChanged = widget.onChanged;
     final enabled = onChanged != null;
-    final (:face, :inset) = _chip(context);
+    final (:face, :inset, :tagLine, :vertical) = _chip(context);
     final shape = ExpressiveCornerBorder.all(
       ExpressiveCornerSize.dp(
         t.shapes.of(InputChipTokens.containerShape).topStart.dp + inset,
@@ -3913,36 +3950,39 @@ class _ExpressiveMultiSelectState<T extends Object>
           // 120dp: beside the chips while it fits, under them only when it
           // does not. A field that fills the row always sat on a line of its
           // own, an empty line under the chips.
-          fieldBuilder: (context, field) => IntrinsicWidth(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 120),
-              child: ExpressiveBareField(
-                controller: field.controller,
-                focusNode: field.focusNode,
-                enabled: enabled,
-                hintText: widget.values.isEmpty ? widget.hintText : null,
-                semanticLabel: widget.labelText,
-                // The entry says whether its list stands open.
-                expanded: field.isOpen,
-                // Enter adds a value and the field keeps the focus for the
-                // next: onEditingComplete, never onSubmitted, whose restart
-                // of the text input a browser types into no more.
-                onEditingComplete: field.submit,
+          // Its line is the tags' touch target, and the tag group reads the
+          // tags' face on its middle ([_TagFieldFace]): a line it shares
+          // with tags keeps their 8dp rhythm.
+          fieldBuilder: (context, field) => _TagFieldFace(
+            face: face,
+            child: IntrinsicWidth(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 120),
+                child: ExpressiveBareField(
+                  controller: field.controller,
+                  focusNode: field.focusNode,
+                  enabled: enabled,
+                  minHeight: tagLine,
+                  hintText: widget.values.isEmpty ? widget.hintText : null,
+                  semanticLabel: widget.labelText,
+                  // The entry says whether its list stands open.
+                  expanded: field.isOpen,
+                  // Enter adds a value and the field keeps the focus for the
+                  // next: onEditingComplete, never onSubmitted, whose restart
+                  // of the text input a browser types into no more.
+                  onEditingComplete: field.submit,
+                ),
               ),
             ),
           ),
-          // The frame's padding as a surface keeps it: density moves the
-          // 8dp above and below the chips, not the inset beside them.
+          // The tags' faces stand [inset] from the outline on every side:
+          // above and below, the frame's padding is what their lines leave.
           layoutBuilder: (context, tags, field) => Padding(
             padding: EdgeInsetsDirectional.symmetric(
               horizontal: inset,
-              vertical: t.density
-                  .padding(
-                    const EdgeInsets.symmetric(vertical: ExpressiveSpacing.s8),
-                  )
-                  .top,
+              vertical: vertical,
             ),
-            child: Wrap(
+            child: RawChipGroup(
               spacing: ExpressiveSpacing.s8,
               runSpacing: ExpressiveSpacing.s8,
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -4056,7 +4096,7 @@ class ExpressiveMenuBarEntry {
 
 /// A row of menus, a desktop app's File, Edit and View (shadcn's
 /// `Menubar`; ui_core's `RawMenuBar`): each menu's title a text button
-/// in `labelLarge` on the full corner (40dp, in a 48dp target), its open
+/// in `labelLarge` on the full corner (40dp, at the touch floor), its open
 /// menu's title on `secondaryContainer`; each menu a menu's panel of items with their
 /// shortcuts, check items checked by a leading check, submenus marked by
 /// an arrow. The arrows move along the bar and through a menu, Escape
@@ -4126,7 +4166,7 @@ class ExpressiveMenuBar extends StatelessWidget {
               : open
               ? t.colors.onSecondaryContainer
               : t.colors.onSurfaceVariant;
-          // A text button's 40dp in its 48dp target.
+          // A text button's 40dp in its touch target.
           return ExpressiveMinimumInteractiveSize(
             child: ExpressiveStateFace(
               states: states,
@@ -4199,5 +4239,69 @@ class ExpressiveMenuBar extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(IterableProperty<ExpressiveMenuBarEntry>('menus', menus));
+  }
+}
+
+/// A multi-select's entry as [RawChipGroup] reads it: a face as tall as the
+/// tags' ([face]) on the entry's middle, so the line it shares with tags
+/// stands 8dp from the line above, face to face, as theirs do. It draws
+/// nothing, adds no node and takes no room of its own.
+class _TagFieldFace extends SingleChildRenderObjectWidget {
+  const _TagFieldFace({required this.face, required super.child});
+
+  /// The tags' face height.
+  final double face;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderTagFieldFace(face);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderTagFieldFace renderObject,
+  ) => renderObject.face = face;
+}
+
+class _RenderTagFieldFace extends RenderTapTargetPadding {
+  _RenderTagFieldFace(this._face) : super(Size.zero);
+
+  double _face;
+  set face(double value) {
+    if (value == _face) return;
+    _face = value;
+    markNeedsLayout();
+  }
+
+  // Set in its own layout: the tag group reads it in its layout, where the
+  // entry's size is not its to read.
+  Rect? _faceBand;
+
+  @override
+  Rect? get faceRect => _faceBand;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    _faceBand = Rect.fromCenter(
+      center: size.center(Offset.zero),
+      width: size.width,
+      height: math.min(_face, size.height),
+    );
+  }
+
+  // The entry's own node stands.
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {}
+
+  // A tap lands where it falls on the entry (no reach past it to move).
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (!size.contains(position) ||
+        !hitTestChildren(result, position: position)) {
+      return false;
+    }
+    result.add(BoxHitTestEntry(this, position));
+    return true;
   }
 }

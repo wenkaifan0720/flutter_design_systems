@@ -115,11 +115,11 @@ void main() {
           ),
         ),
       );
-      // The navigation box: 4dp + the 48dp touch target; the title 4dp
-      // after it.
-      expect(tester.getTopLeft(find.text('Inbox')).dx, 4 + 48 + 4);
+      // The navigation box: 4dp + the touch target (the floor, 40dp); the
+      // title 4dp after it.
+      expect(tester.getTopLeft(find.text('Inbox')).dx, 4 + 40 + 4);
       final search = tester.getRect(find.bySemanticsLabel('Search'));
-      expect(412 - search.right, closeTo(4, 0.01)); // the 48dp target
+      expect(412 - search.right, closeTo(4, 0.01)); // the touch target
       final menu = tester.getRect(find.bySemanticsLabel('Menu'));
       expect(menu.left, closeTo(4, 0.01));
       expect(menu.center.dy, 32);
@@ -155,7 +155,7 @@ void main() {
       );
       final rect = tester.getRect(find.text(title));
       expect(rect.height, lessThan(40));
-      expect(rect.right, lessThanOrEqualTo(390 - 4 - 48 - 4));
+      expect(rect.right, lessThanOrEqualTo(390 - 4 - 40 - 4));
       expect(tester.takeException(), isNull);
     });
 
@@ -338,8 +338,8 @@ void main() {
       final bar = tester.getRect(find.byType(ExpressiveSearchBar));
       expect(bar.height, 56);
       expect(bar.top, 4);
-      // 412 - (4 + 48) nav - 2 × 8 around the bar - 4 at the end.
-      expect(bar.width, 412 - 52 - 16 - 4);
+      // 412 - (4 + 40) nav - 2 × 8 around the bar - 4 at the end.
+      expect(bar.width, 412 - 44 - 16 - 4);
     });
 
     testWidgets('opens the view, searches live, and collapses on back', (

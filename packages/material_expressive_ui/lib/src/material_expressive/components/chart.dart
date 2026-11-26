@@ -7,9 +7,9 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawPalette;
 
 import '../color.dart' show ExpressiveColorScheme;
-import '../contrast.dart' show expressiveContrastRatio;
 import '../internal/tokens/linear_progress_indicator_tokens.g.dart';
 import '../motion.dart';
 import '../shape.dart';
@@ -998,8 +998,8 @@ class ExpressiveChart extends StatelessWidget {
         : band!.color ?? _bandTint(colors);
     Color seriesInk(Color base) {
       if (band == null) return base;
-      final dark = expressiveContrastRatio(colors.onSurface, rangeColor);
-      final light = expressiveContrastRatio(colors.surface, rangeColor);
+      final dark = RawPalette.contrastRatio(colors.onSurface, rangeColor);
+      final light = RawPalette.contrastRatio(colors.surface, rangeColor);
       return _contrastingTone(
         base,
         dark > light ? colors.onSurface : colors.surface,
@@ -1658,7 +1658,7 @@ const double _bandCorner = ShapeTokens.cornerValueSmall;
 /// The lightest mix of the two brand tones with a 3:1 contrast against
 /// the plot surface. The legend uses the same colour.
 Color _bandTint(ExpressiveColorScheme colors) {
-  final end = expressiveContrastRatio(colors.primary, colors.surface) >= 3.05
+  final end = RawPalette.contrastRatio(colors.primary, colors.surface) >= 3.05
       ? colors.primary
       : colors.onSurface;
   return _contrastingTone(colors.primaryContainer, end, colors.surface);
@@ -1666,7 +1666,7 @@ Color _bandTint(ExpressiveColorScheme colors) {
 
 Color _contrastingTone(Color start, Color end, Color background) {
   bool visible(Color candidate) =>
-      expressiveContrastRatio(candidate, background) >= 3.05;
+      RawPalette.contrastRatio(candidate, background) >= 3.05;
   if (visible(start)) return start;
   var low = 0.0;
   var high = 1.0;

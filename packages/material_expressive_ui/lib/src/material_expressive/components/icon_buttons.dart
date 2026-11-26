@@ -564,7 +564,7 @@ class ExpressiveIconButton extends StatelessWidget {
   final bool autofocus;
 
   /// The container an icon button of [size] and [width] draws (Compose's
-  /// `IconButtonDefaults.*ContainerSize`), without its 48dp touch target.
+  /// `IconButtonDefaults.*ContainerSize`), without its touch target.
   static Size containerSize(
     ExpressiveIconButtonSize size, [
     ExpressiveIconButtonWidth width = ExpressiveIconButtonWidth.uniform,

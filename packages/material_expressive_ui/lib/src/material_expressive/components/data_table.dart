@@ -39,7 +39,7 @@ const double _arrow = AssistChipTokens.iconSize;
 /// the focus ring inside it. With [selectable] a checkbox stands before
 /// each row and a tristate one before the header, which takes the page.
 /// A sortable header is a pill: its label and an arrow pointing the sort's
-/// way, its state layer on the pill, its target 48dp tall. Past one page,
+/// way, its state layer on the pill, its target the touch floor tall. Past one page,
 /// [ExpressivePagination] stands under the rows.
 ///
 /// The keys are ui_core's: one tab stop for the rows, Up and Down between
@@ -222,7 +222,7 @@ class ExpressiveDataTable<R> extends StatelessWidget {
     // lines up with the cells under it.
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final shift = (column.numeric ? 1 : -1) * (rtl ? -1 : 1) * 8.0;
-    // The pill keeps its 32dp; the header's target is 48dp tall.
+    // The pill keeps its 32dp; the header's target is the floor tall.
     return ExpressiveMinimumInteractiveSize(
       child: Align(
         alignment: align,

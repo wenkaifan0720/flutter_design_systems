@@ -11,7 +11,7 @@ import 'package:flutter/widgets.dart';
 /// Lays its child out [start] and [end] wider than itself, reaching past
 /// its own edges by them (mirrored right to left), and takes hits there:
 /// a flush row's highlight and touch area run into the column's margin
-/// while its words and control stay on the column's edges; a stepper's 48dp
+/// while its words and control stay on the column's edges; a stepper's touch
 /// targets past its end circles, the circles on the row's keyline.
 class ExpressiveReach extends SingleChildRenderObjectWidget {
   /// A box reaching [start] and [end] past its edges.

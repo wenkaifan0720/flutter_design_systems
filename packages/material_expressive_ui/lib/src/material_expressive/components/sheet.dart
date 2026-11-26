@@ -1059,7 +1059,7 @@ class _DragHandle extends StatelessWidget {
             ? ExpressiveSheetDragHandle.barIn
             : null,
         focusShape: t.shapes.extraLarge,
-        // Tappable, so it keeps the 48dp touch target round its 32dp bar
+        // Tappable, so it keeps the touch target round its 32dp bar
         // (the bar itself drawn as before): a control a finger must find.
         onPressed: onTap,
         child: child,

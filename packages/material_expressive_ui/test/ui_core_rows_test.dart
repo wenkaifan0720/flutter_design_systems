@@ -14,6 +14,8 @@ import 'package:material_expressive_ui/src/material_expressive/internal/focus_ri
 import 'package:material_expressive_ui/src/material_expressive/internal/state_face.dart'
     show ExpressiveStateFace;
 
+import 'world_checks.dart' show floorTapTargetGuideline;
+
 final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
   'baseline',
   Brightness.light,
@@ -779,8 +781,8 @@ void main() {
 
   group('targets', () {
     testWidgets('a sort header, a menu-bar title, a calendar day where '
-        'seven do not fit and a multi-select\'s input are named 48dp '
-        'targets; their faces keep their size', (tester) async {
+        'seven do not fit and a multi-select\'s input are named targets at '
+        'the touch floor; their faces keep their size', (tester) async {
       final semantics = tester.ensureSemantics();
       // Tall enough for every part at once.
       tester.view.devicePixelRatio = 1;
@@ -831,7 +833,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(floorTapTargetGuideline));
       await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
       double faceHeight(String label) => tester
           .getSize(
@@ -845,11 +847,12 @@ void main() {
           .height;
       expect(faceHeight('File'), 40);
       expect(faceHeight('Amount'), 32);
+      // The day's node is Compose's 48dp cell, past the floor.
       expect(tester.getSemantics(find.text('12')).rect.width, 48);
       // The multi-select's input is named on its own node.
       final input = tester.getSemantics(find.byType(EditableText));
       expect(input.label, 'Topics');
-      expect(input.rect.height, greaterThanOrEqualTo(48));
+      expect(input.rect.height, greaterThanOrEqualTo(40));
       semantics.dispose();
     });
   });

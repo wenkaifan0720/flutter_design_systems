@@ -359,7 +359,7 @@ void main() {
             ('surfaceContainerHighest', c.surfaceContainerHighest),
           ]) {
             expect(
-              expressiveContrastRatio(c.secondary, surface),
+              RawPalette.contrastRatio(c.secondary, surface),
               greaterThanOrEqualTo(3),
               reason: '$id ${brightness.name}: secondary on $name',
             );

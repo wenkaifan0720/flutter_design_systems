@@ -146,17 +146,15 @@ void main() {
   });
 
   group('slider geometry', () {
-    testWidgets('XS is Compose\'s default slider inside a 48dp target', (
+    testWidgets('XS is Compose\'s default slider, as tall as its handle', (
       tester,
     ) async {
       await tester.pumpWidget(
         _app(ExpressiveSlider(value: 0.5, onChanged: (_) {})),
       );
       final slider = find.byType(ExpressiveSlider);
-      expect(
-        tester.getSize(slider).height,
-        HostBehavior.minimumInteractiveComponentSize,
-      );
+      // The 44dp handle is taller than the touch floor (40dp).
+      expect(tester.getSize(slider).height, SliderTokens.handleHeight);
       final pill = _pill(tester, slider);
       expect(pill.width, SliderTokens.handleWidth);
       expect(pill.height, SliderTokens.handleHeight);
@@ -186,9 +184,8 @@ void main() {
         expect(_pill(tester, slider).height, handle, reason: '$size');
         expect(
           tester.getSize(slider).height,
-          handle < HostBehavior.minimumInteractiveComponentSize
-              ? HostBehavior.minimumInteractiveComponentSize
-              : handle,
+          // At least the touch floor (40dp).
+          handle < 40 ? 40 : handle,
           reason: '$size',
         );
       }

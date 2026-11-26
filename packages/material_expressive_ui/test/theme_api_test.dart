@@ -23,6 +23,7 @@ const _presets = <String, ExpressiveThemeData Function(Brightness)>{
   'bloom': ExpressiveThemeData.bloom,
   'grove': ExpressiveThemeData.grove,
   'ember': ExpressiveThemeData.ember,
+  'tide': ExpressiveThemeData.tide,
 };
 
 /// [child] under a bare app with [delegates], reading the theme at [read].

@@ -419,7 +419,7 @@ _SplitPaint _splitPaint(
 
 /// `SplitButtonLayout`: [trailing] at its own width, [leading] in what is
 /// left, both as tall as the taller, [spacing] apart (the size's
-/// `between-space` when null). The pair keeps Compose's 48dp touch target;
+/// `between-space` when null). The pair keeps the touch target (the floor);
 /// its halves draw at their own size.
 class ExpressiveSplitButtonLayout extends StatelessWidget {
   /// A split button layout of [leading] and [trailing].
@@ -447,9 +447,8 @@ class ExpressiveSplitButtonLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     // Read here, outside the halves' shrunk targets: the layout keeps the
     // touch target, so each half's node reaches it.
-    final touchHeight = ExpressiveMinimumInteractiveSize.enforcedAt(context)
-        ? HostBehavior.minimumInteractiveComponentSize
-        : 0.0;
+    final touchHeight = ExpressiveMinimumInteractiveSize.floorAt(context)
+        .height;
     // Each half is a target of its own (one node each): the pair lays out
     // the touch band, one target round both would merge them into one.
     return ExpressiveShrinkTapTargets(
@@ -940,7 +939,7 @@ class _ExpressiveSplitTrailingButtonState
             // The height density gives the content (StyledContent's rule), so
             // the halves stand at one height at every density: a fixed 40
             // here stretched a compact leading half past its 32dp content.
-            // The width stays the half's own: its target keeps 48dp.
+            // The width stays the half's own: its target keeps the floor.
             constraints: BoxConstraints(
               minWidth: SplitButtonBehavior.leadingButtonMinWidth,
               minHeight: theme.density.height(metrics.minHeight, floor: 0),
@@ -1671,7 +1670,7 @@ class _MenuPlacement extends SingleChildLayoutDelegate {
 }
 
 /// One half's node, as tall as the layout's touch target: Compose extends
-/// each half's touch bounds to `minimumTouchTargetSize` (48dp) though it
+/// each half's touch bounds to `minimumTouchTargetSize` (here the floor) though it
 /// draws at the size's height, and assistive technology reads those
 /// bounds. The half's own node merges into this one.
 class _HalfTarget extends SingleChildRenderObjectWidget {

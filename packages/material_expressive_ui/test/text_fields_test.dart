@@ -301,7 +301,7 @@ void main() {
       );
     });
 
-    testWidgets('icons sit in 48dp targets, the text 4dp after them', (
+    testWidgets('icons sit in 48dp icon slots, the text 4dp after them', (
       tester,
     ) async {
       await tester.pumpWidget(

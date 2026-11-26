@@ -17,6 +17,7 @@ import 'package:material_expressive_ui/src/material_expressive/internal/tokens/d
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/time_picker_tokens.g.dart';
 
 import 'support/pressable.dart';
+import 'world_checks.dart' show floorTapTargetGuideline;
 
 final ExpressiveThemeData bloom = ExpressiveThemeData.preset(
   'bloom',
@@ -84,7 +85,7 @@ class _HeldState extends State<Held> {
   );
 }
 
-/// The drawn day (inside its 48dp touch target).
+/// The drawn day (inside its touch target).
 Size sizeOfDay(WidgetTester tester, String day) => tester.getSize(
   find
       .ancestor(of: find.text(day), matching: find.byType(ExpressiveSurface))
@@ -99,7 +100,9 @@ Size targetOfDay(WidgetTester tester, String day) => tester.getSize(
 );
 
 void main() {
-  testWidgets('custom period shapes retain real 48dp buttons', (tester) async {
+  testWidgets('custom period shapes keep real buttons at the touch floor', (
+    tester,
+  ) async {
     final controller = ExpressiveTimePickerController(hour: 10, minute: 15);
     addTearDown(controller.dispose);
     for (final shapes in const [
@@ -122,8 +125,8 @@ void main() {
             widget is ExpressivePressable && widget.semanticLabel == 'PM',
       );
       final bounds = tester.getRect(pm);
-      expect(bounds.width, greaterThanOrEqualTo(48));
-      expect(bounds.height, greaterThanOrEqualTo(48));
+      expect(bounds.width, greaterThanOrEqualTo(40));
+      expect(bounds.height, greaterThanOrEqualTo(40));
       await tester.tapAt(bounds.center);
       expect(controller.isPm, isTrue);
     }
@@ -523,7 +526,8 @@ void main() {
           DatePickerModalTokens.dateContainerHeight,
         ),
       );
-      expect(targetOfDay(tester, '17'), const Size.square(48));
+      // The 40dp day is its own touch target (the floor).
+      expect(targetOfDay(tester, '17'), const Size.square(40));
       expect(find.text('Select date'), findsOneWidget);
       expect(find.text('5 Sep 2026'), findsOneWidget);
       expect(find.text('September 2026'), findsOneWidget);
@@ -1299,9 +1303,10 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('in a 358dp column (seven 48dp days do not fit) every day '
-      'keeps a whole 48dp target: the outer days stand flush with the '
-      'month, inside the pager\'s clip', (tester) async {
+  testWidgets('in a 358dp column every day keeps a whole target at the '
+      'touch floor: the outer days stand inside the pager\'s clip', (
+    tester,
+  ) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
       host(
@@ -1310,12 +1315,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(floorTapTargetGuideline));
     // September 2026 starts on a Tuesday: the 6th is a Sunday, the 12th a
     // Saturday, the grid's outer columns. The guideline reads each day's
     // node as the pager clips it.
-    expect(targetOfDay(tester, '6').width, 48);
-    expect(targetOfDay(tester, '12').width, 48);
+    expect(targetOfDay(tester, '6').width, 40);
+    expect(targetOfDay(tester, '12').width, 40);
     semantics.dispose();
   });
 

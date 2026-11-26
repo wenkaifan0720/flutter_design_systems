@@ -785,7 +785,7 @@ enum ExpressiveRatingSize {
 /// `onSurfaceVariant`) after. The fill springs when [value] changes.
 ///
 /// With [onChanged] each star is a pressable (state layer, ripple, focus,
-/// keyboard, the 48dp touch target around the glyph) that rates the whole
+/// keyboard, the touch target around the glyph) that rates the whole
 /// number it stands for, announced as "Rate N of max"; without it the
 /// rating is one image, announced by [semanticLabel] ("Rated 4.5 of 5"
 /// when null).

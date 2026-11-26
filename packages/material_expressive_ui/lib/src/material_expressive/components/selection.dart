@@ -31,7 +31,7 @@ import '../internal/style_layers.dart';
 const Color _clear = expressiveTransparent;
 
 /// The pressable a control sits in: Compose's `toggleable`/`selectable` with
-/// an unbounded ripple of the state layer's radius, the 48dp touch target,
+/// an unbounded ripple of the state layer's radius, the touch target,
 /// and no container of its own. The ripple is the ambient content colour
 /// (`LocalContentColor`, `onSurface` on a surface), as Compose's
 /// `ripple()` draws it when no colour is given.
@@ -551,7 +551,7 @@ class ExpressiveRadio extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// Whether the radio takes input; disabled colours when false, at the
-  /// same size (its 48dp target stays), as with a null [onPressed].
+  /// same size (its touch target stays), as with a null [onPressed].
   final bool enabled;
 
   /// What a screen reader says for the radio on its own.

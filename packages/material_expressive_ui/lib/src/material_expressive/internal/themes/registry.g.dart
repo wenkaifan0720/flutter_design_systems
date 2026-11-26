@@ -8,6 +8,7 @@ import 'slate.g.dart';
 import 'bloom.g.dart';
 import 'grove.g.dart';
 import 'ember.g.dart';
+import 'tide.g.dart';
 
 /// The theme a host wears when it is handed none: module.yaml's first
 /// preset, the gallery default. A generated app names its own.
@@ -21,4 +22,5 @@ const Map<String, ExpressiveBakedTheme> expressiveBakedThemes =
       'bloom': expressiveBloomTheme,
       'grove': expressiveGroveTheme,
       'ember': expressiveEmberTheme,
+      'tide': expressiveTideTheme,
     };

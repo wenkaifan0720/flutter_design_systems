@@ -332,7 +332,7 @@ class ExpressivePagination extends StatelessWidget {
     final t = context.expressiveTheme;
     final strings = ExpressiveLocalizations.of(context);
     // The pages' 32dp height, so the row shows one height on hover and
-    // press (its target stays 48dp). The chevrons mirror themselves right to
+    // press (its target stays the floor). The chevrons mirror themselves right to
     // left.
     Widget arrow(IconData icon, String label, int to) => ExpressiveIconButton(
       icon,
@@ -415,7 +415,7 @@ class ExpressivePagination extends StatelessWidget {
     );
     // The row of pages when it fits (each page button its label plus the
     // extra-small button's sides, never under a button's 58dp least width;
-    // each arrow 48dp, each ellipsis 24dp, the gaps, a margin for the
+    // each arrow its touch target, each ellipsis 24dp, the gaps, a margin for the
     // type's rounding); the page count otherwise.
     final labelStyle = t.type.labelLarge;
     final scaler = MediaQuery.textScalerOf(context);

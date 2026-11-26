@@ -1,3 +1,16 @@
+## 0.7.0
+
+- Requires ui_core 0.7.2 (and ui_core_test 0.5.2 in tests).
+- **Breaking:** touch targets take ui_core's touch floor, 40 by 40, for a finger and a pointer alike; they were Compose's 48. Buttons, icon buttons, chips, checkboxes, radios, switches, segments, sliders, a date picker's days, a time picker's period keys and a dialog's or a snackbar's actions stand at it, so a floating toolbar's actions stand 40 apart and an app bar's title 4dp after a 40dp navigation button. An app's `RawTapTargetScope` under the theme raises the floor. Compose's visual measures stay: a text field's 48dp icon slots, a menu's 48dp rows, a search bar's slots.
+- **Breaking:** `ExpressiveMinimumInteractiveSize.size` is nullable, and null (the default) takes the floor at its context, `ExpressiveMinimumInteractiveSize.floorAt(context)`. `ExpressiveMinimumInteractiveSize.targets` is `static final`, no longer `const`.
+- `ExpressiveChipRow`'s chips, input chips with them, and `ExpressiveMultiSelect`'s tags lay out in ui_core's `RawChipGroup`: their faces stand 8dp apart along a line and from line to line, the touch targets meeting in the room between them. Lines stood 24dp apart. The multi-select's entry keeps the rhythm on the line it shares with tags.
+- The date picker's year grid ends above Cancel and OK when it opens. At 200% text on a phone its last row stood under them. Where the dialog scrolls, the grid now ends at the scroll's foot and the headline keeps its place; only where that would leave the grid under three rows does the dialog scroll, on Expressive's spatial spring.
+- A time picker's period keys keep their words 4dp from the key's sides. At 200% text on a 390 phone the checked "AM" in `ExpressiveTimeInput` stood 2.9px from its left side.
+- At large text a dialog's text actions stand as tall as a filled confirm beside them.
+- A sixth preset, `tide` (`ExpressiveThemeData.tide`): a sea blue seed (#3D7EA0), tonal spot, Expressive motion, balanced. Every preset holds every contrast pair by day and by night, at standard and high contrast. The gallery's Foundations page shows the six.
+- `expressiveContrastRatio` is deprecated: use ui_core's `RawPalette.contrastRatio`, the same WCAG ratio. It goes in 0.8.0.
+- The README opens with the smallest app and links the docs and demo site.
+
 ## 0.6.2
 
 - Requires ui_core 0.6.1.

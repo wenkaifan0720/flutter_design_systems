@@ -2061,19 +2061,15 @@ class _RangeSliderState extends State<ExpressiveRangeSlider> {
   }
 }
 
-/// The range slider's 48dp target: each handle is a slider node of its own,
-/// so the target adds none (a merging one would make the two one).
+/// The range slider's target, at the floor: each handle is a slider node of
+/// its own, so the target adds none (a merging one would make the two one).
 class _RangeTarget extends StatelessWidget {
   const _RangeTarget({required this.child});
   final Widget child;
 
   @override
   Widget build(BuildContext context) => ExpressiveGroupTapTarget(
-    minSize: Size.square(
-      ExpressiveMinimumInteractiveSize.enforcedAt(context)
-          ? HostBehavior.minimumInteractiveComponentSize
-          : 0,
-    ),
+    minSize: ExpressiveMinimumInteractiveSize.floorAt(context),
     child: child,
   );
 }
@@ -2396,7 +2392,7 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
             );
           }
           // The end circles stand on the stepper's own edges (a row's
-          // keyline), their 48dp targets growing inward.
+          // keyline), their touch targets growing inward.
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [

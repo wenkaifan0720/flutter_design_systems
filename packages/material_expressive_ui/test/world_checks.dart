@@ -88,19 +88,21 @@ Future<void> expectNoOverflowAtTextScale(
   );
 }
 
-/// Expects what is on screen to meet Flutter's four accessibility
-/// guidelines: Android's 48 px and iOS's 44 px tap targets, a label on
-/// every tap target, and text contrast. Pump the screen first. A look whose
-/// targets are iOS's 44 px on every platform passes [android] false.
-Future<void> expectMeetsGuidelines(
-  WidgetTester tester, {
-  bool android = true,
-}) async {
+/// Flutter's tap-target guideline at ui_core's touch floor, 40 x 40 px
+/// (`RawTapTargets.fallback`): the floor Expressive holds for a finger and
+/// a pointer alike.
+final AccessibilityGuideline floorTapTargetGuideline =
+    MinimumTapTargetGuideline(
+      size: const Size.square(40),
+      link: (androidTapTargetGuideline as MinimumTapTargetGuideline).link,
+    );
+
+/// Expects what is on screen to meet Flutter's accessibility guidelines:
+/// tap targets at the touch floor ([floorTapTargetGuideline]), a label on
+/// every tap target, and text contrast. Pump the screen first.
+Future<void> expectMeetsGuidelines(WidgetTester tester) async {
   final semantics = tester.ensureSemantics();
-  if (android) {
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-  }
-  await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+  await expectLater(tester, meetsGuideline(floorTapTargetGuideline));
   await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
   await expectLater(tester, meetsGuideline(textContrastGuideline));
   semantics.dispose();

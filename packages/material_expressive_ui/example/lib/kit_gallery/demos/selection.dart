@@ -233,7 +233,7 @@ class _RadioStatesState extends State<_RadioStates> {
             ),
           ),
         // Disabled, not non-interactive: a radio with no callback drops its
-        // 48dp target (Compose's onClick = null) and would sit off the
+        // touch target (Compose's onClick = null) and would sit off the
         // row's centre line beside the live ones.
         (
           'Disabled',

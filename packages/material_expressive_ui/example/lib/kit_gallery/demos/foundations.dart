@@ -14,7 +14,12 @@ import '../kit.dart';
 Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Foundations',
-  sections: <Widget>[const _Theme(), const _Format(), const _Metrics()],
+  sections: <Widget>[
+    const _Theme(),
+    const _Palettes(),
+    const _Format(),
+    const _Metrics(),
+  ],
 );
 
 class _Theme extends StatelessWidget {
@@ -40,6 +45,103 @@ class _Theme extends StatelessWidget {
           'Elevation: ${ExpressiveElevationLevel.values.map(ExpressiveElevation.dpOf).join(' · ')} dp',
         ),
       ],
+    );
+  }
+}
+
+// Each of Expressive's six presets at the page's brightness: a tile of its
+// container holding its primary, secondary and tertiary and its filled
+// button, named under it.
+class _Palettes extends StatelessWidget {
+  const _Palettes();
+
+  @override
+  Widget build(BuildContext context) {
+    final page = context.expressiveTheme;
+    return kitSection(
+      'Palettes',
+      children: <Widget>[
+        LayoutBuilder(
+          builder: (context, box) {
+            // Six, three or two across, so the rows come out even.
+            const gap = ExpressiveSpacing.s8;
+            final across = box.maxWidth >= 6 * 150 + 5 * gap
+                ? 6
+                : box.maxWidth >= 3 * 150 + 2 * gap
+                ? 3
+                : 2;
+            final width = ((box.maxWidth - (across - 1) * gap) / across)
+                .floorToDouble();
+            return Wrap(
+              spacing: gap,
+              runSpacing: ExpressiveSpacing.s16,
+              children: <Widget>[
+                for (final id in ExpressiveThemeData.presets)
+                  SizedBox(
+                    width: width,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        ExpressiveTheme(
+                          data: ExpressiveThemeData.preset(id, page.brightness),
+                          child: const _PaletteTile(),
+                        ),
+                        const SizedBox(height: ExpressiveSpacing.s4),
+                        Text(
+                          id[0].toUpperCase() + id.substring(1),
+                          style: page.type.bodySmall.copyWith(
+                            color: page.colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _PaletteTile extends StatelessWidget {
+  const _PaletteTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.expressiveTheme.colors;
+    Widget dot(Color color) => Padding(
+      padding: const EdgeInsetsDirectional.only(end: ExpressiveSpacing.s4),
+      child: SizedBox.square(
+        dimension: 16,
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+      ),
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(ExpressiveSpacing.s12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                dot(c.primary),
+                dot(c.secondary),
+                dot(c.tertiary),
+              ],
+            ),
+            const SizedBox(height: ExpressiveSpacing.s12),
+            ExpressiveFilledButton('Save', onPressed: () {}),
+          ],
+        ),
+      ),
     );
   }
 }

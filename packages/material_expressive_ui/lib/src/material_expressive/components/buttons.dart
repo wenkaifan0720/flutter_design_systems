@@ -770,7 +770,7 @@ class ExpressiveToggleButton extends StatelessWidget {
           // ring outside it: the ring stands inside, as the toggle group's.
           focusInward: _inSegments,
           // A segment's face is marked on the face itself (an unchosen
-          // tonal one is faint on the page), not on its 48dp target.
+          // tonal one is faint on the page), not on its touch target.
           markFace: _inSegments,
           child: content,
         ),
@@ -1407,7 +1407,7 @@ class _ConnectedSegments<T> extends StatelessWidget {
 }
 
 /// A link: its words in `primary`, underlined, with
-/// the pressable's state layers and ripple. Standing alone it keeps the 48dp
+/// the pressable's state layers and ripple. Standing alone it keeps the
 /// tap target every control does; in a paragraph ([span]) it takes none, as
 /// WCAG 2.5.8 exempts a target inside a sentence (a line box cannot grow).
 ///
@@ -2955,7 +2955,7 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
       );
     }
 
-    const target = Size.square(HostBehavior.minimumInteractiveComponentSize);
+    final target = ExpressiveMinimumInteractiveSize.floorAt(context);
     if (_multiple) {
       return RawSegmentedButton<T>(
         options: values,

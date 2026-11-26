@@ -846,7 +846,9 @@ void main() {
       final painted = tester.getRect(_surfaceIn(segment));
       final target = tester.getRect(segment);
       expect(painted.height, 40);
-      expect(target.height, greaterThanOrEqualTo(48));
+      // The touch floor (40dp); the painted slab is 40 too, the target
+      // reaches past it sideways.
+      expect(target.height, greaterThanOrEqualTo(40));
       await tester.tapAt(Offset(painted.center.dx, target.top + 2));
       expect(value, <int>{2});
     });

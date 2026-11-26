@@ -194,7 +194,7 @@ class ExpressiveTextField extends StatefulWidget {
   final Widget? hint;
 
   /// The leading icon (an `Icon` or `ExpressiveIcon`), in the field's icon
-  /// colour at 24dp, centred in a 48dp touch target.
+  /// colour at 24dp, centred in Compose's 48dp icon slot.
   final Widget? leading;
 
   /// The trailing icon or icon button, like [leading]. A [obscureText] field
@@ -1632,7 +1632,12 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
             styled.iconSize?.resolve(states) ??
             FilledTextFieldTokens.leadingIconSize,
       ),
-      child: ExpressiveMinimumInteractiveSize(child: icon),
+      // Compose's 48dp icon slot, where the icon stands 12dp in: a visual
+      // measure (the icon is not a target; a button in it keeps its own).
+      child: ExpressiveMinimumInteractiveSize(
+        size: HostBehavior.minimumInteractiveComponentSize,
+        child: icon,
+      ),
     );
 
     // Compose's text-line boxes: at least 24dp tall, content centred, the
@@ -2117,7 +2122,7 @@ class _RevealToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shapes = context.expressiveTheme.shapes;
-    // The 40dp button keeps its 48dp target (an `IconButton` in Compose's
+    // The 40dp button keeps its touch target (an `IconButton` in Compose's
     // trailing slot): the size is the face's, inside the press.
     return ExpressivePressable(
       shapes: ExpressivePressShapes(

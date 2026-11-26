@@ -1052,6 +1052,54 @@ class _CalendarContentState extends State<_CalendarContent> {
   late final PageController _pages = PageController(initialPage: _index);
   bool _years = false;
 
+  /// The months and, over them, the year grid.
+  final GlobalKey _yearsArea = GlobalKey();
+
+  /// How much the year grid's foot is cut, so that it ends above what
+  /// stands under the scroll it is in (a dialog's actions).
+  double _yearsCut = 0;
+
+  void _toggleYears() {
+    setState(() {
+      _years = !_years;
+      if (!_years) _yearsCut = 0;
+    });
+    if (_years) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _fitYears());
+    }
+  }
+
+  // Where the picker scrolls in something shorter than itself (a dialog on a
+  // short window or at large text), the year grid ends at the scroll's foot,
+  // above what stands under it (the dialog's actions), as Material's grid
+  // ends above them: the grid's own foot is cut, and the headline stays
+  // where it stood. Only where that would leave the grid less than three
+  // rows does the scroll spring on until the grid's foot is in view.
+  void _fitYears() {
+    final area = _yearsArea.currentContext;
+    if (!mounted || area == null) return;
+    final scrollable = Scrollable.maybeOf(area, axis: Axis.vertical);
+    final grid = area.findRenderObject();
+    final view = scrollable?.context.findRenderObject();
+    if (scrollable == null || grid is! RenderBox || view is! RenderBox) return;
+    final over =
+        grid.localToGlobal(grid.size.bottomLeft(Offset.zero)).dy -
+        view.localToGlobal(view.size.bottomLeft(Offset.zero)).dy;
+    if (over <= 0) return;
+    final least =
+        3 * DatePickerModalTokens.selectionYearContainerHeight +
+        2 * DatePickerBehavior.yearsVerticalSpacing;
+    final cut = math.min(over, math.max(0.0, grid.size.height - least));
+    if (cut > 0) setState(() => _yearsCut = cut);
+    if (over - cut <= 0) return;
+    final position = scrollable.position;
+    _springScroll(
+      position,
+      math.min(position.pixels + over - cut, position.maxScrollExtent),
+      ExpressiveMotion.of(context).spring(ExpressiveMotionKey.defaultSpatial),
+    );
+  }
+
   @override
   void dispose() {
     _pages.dispose();
@@ -1135,13 +1183,15 @@ class _CalendarContentState extends State<_CalendarContent> {
           yearsOpen: _years,
           previous: _index > 0 ? () => _step(-1) : null,
           next: _index < selectable.monthCount - 1 ? () => _step(1) : null,
-          onYears: () => setState(() => _years = !_years),
+          onYears: _toggleYears,
           colors: colors,
         ),
         Stack(
+          key: _yearsArea,
           children: <Widget>[
             ExcludeSemantics(excluding: _years, child: calendar),
             Positioned.fill(
+              bottom: _yearsCut,
               child: _Reveal(
                 open: _years,
                 child: Column(
@@ -1291,7 +1341,7 @@ class _MonthsNavigation extends StatelessWidget {
   );
 }
 
-/// The month arrows, each 48dp button centred on one of the week's last two
+/// The month arrows, each button centred on one of the week's last two
 /// columns ([column] wide, a seventh of the grid), so they stand over its
 /// last two days at every width; where a seventh is narrower than a button,
 /// the two keep their size side by side.
@@ -1718,8 +1768,8 @@ class _Month extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    // A day keeps its 48dp touch target where seven do not
-                    // fit (Compose's overlap): it overhangs its cell.
+                    // A day keeps its 48dp cell where seven do not fit
+                    // (Compose's overlap): it overhangs its seventh.
                     for (var d = 0; d < DateTime.daysPerWeek; d++)
                       Expanded(
                         child: Center(
@@ -3716,9 +3766,7 @@ class _PeriodToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.expressiveTheme;
-    final touch = ExpressiveMinimumInteractiveSize.enforcedAt(context)
-        ? HostBehavior.minimumInteractiveComponentSize
-        : 0.0;
+    final touch = ExpressiveMinimumInteractiveSize.floorAt(context).height;
     final customized = theme.timePickerTheme.shape != null;
     // Custom outlines reserve content insets inside both buttons. Give their
     // actual targets room instead of extending semantics beyond a short pair.
@@ -3761,7 +3809,7 @@ class _PeriodToggle extends StatelessWidget {
 
 /// One period button's node, at least [touch] square, centred on the
 /// button: Compose's `ToggleButton` is a toggleable `Surface`, which takes
-/// `minimumInteractiveComponentSize()`, so its node reaches 48dp though the
+/// `minimumInteractiveComponentSize()`, so its node reaches the floor though the
 /// toggle draws each half shorter. The layout and the drawing keep the
 /// halves' size; the node merges the button's own.
 class _PeriodTarget extends SingleChildRenderObjectWidget {
@@ -3872,6 +3920,9 @@ class _PeriodItem extends StatelessWidget {
                           ? rounded
                           : t.shapes.of(ExpressiveShapeKey.cornerFull))
                     : null,
+                // A key's words keep 4dp from its sides where large text
+                // shrinks them to fit, as Material's buttons keep theirs.
+                margin: ExpressiveSpacing.s4,
               ),
             ),
           ),
@@ -5934,7 +5985,7 @@ Clip _pickerPlateClip(
     : Clip.none;
 
 // Calendar and clock layouts have a known minimum width. They pan inside a
-// narrow surface instead of overlapping 48dp actions or clipping their labels.
+// narrow surface instead of overlapping their actions or clipping their labels.
 class _PickerViewport extends StatelessWidget {
   const _PickerViewport({
     required this.naturalWidth,
@@ -6034,11 +6085,16 @@ class _PickerLabel extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.singleLine = true,
     this.fitAs,
+    this.margin = 0,
   });
   final String text;
   final ShapeBorder? shape;
   final TextAlign textAlign;
   final bool singleLine;
+
+  /// The room the words keep inside [shape] at either side, where they
+  /// shrink to fit it.
+  final double margin;
 
   /// A sibling's widest text this one fits as, so a grid's labels shrink
   /// together (a month's 1 and 30 print at one size at large text).
@@ -6099,7 +6155,7 @@ class _PickerLabel extends StatelessWidget {
       bool fits(double scale) {
         final rect = Rect.fromCenter(
           center: size.center(Offset.zero),
-          width: measured.width * scale,
+          width: measured.width * scale + 2 * margin,
           height: measured.height * scale,
         ).deflate(.001);
         return [
@@ -6116,7 +6172,10 @@ class _PickerLabel extends StatelessWidget {
 
       var high = math.min(
         1.0,
-        math.min(size.width / measured.width, size.height / measured.height),
+        math.min(
+          math.max(0.0, size.width - 2 * margin) / measured.width,
+          size.height / measured.height,
+        ),
       );
       if (!fits(high)) {
         var low = 0.0;
@@ -6486,7 +6545,7 @@ class _ExpressiveCalendarState extends State<ExpressiveCalendar> {
       months: widget.months,
       firstWeekday: widget.firstDayOfWeek ?? strings.firstDayOfWeek,
       showOutsideDays: false,
-      // Where seven 48dp cells do not fit, a day keeps its 48dp target and
+      // Where seven 48dp cells do not fit, a day keeps its 48dp cell and
       // overhangs its seventh, as the date picker's days do.
       minDayWidth: DatePickerBehavior.cellSize,
       focusNode: widget.focusNode,

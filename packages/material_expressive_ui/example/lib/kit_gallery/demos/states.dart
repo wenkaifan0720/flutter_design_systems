@@ -1,7 +1,7 @@
 /// The states group's demo: the state layers over each container role, and
 /// the shared pressable every pressable component is built on — the press
 /// and selected shape morph on a spring, elevation by state, the disabled
-/// state and the 48dp touch target around a small control.
+/// state and the touch target (ui_core's 40dp floor) around a small control.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -296,7 +296,7 @@ class _Small extends StatelessWidget {
       'Touch target',
       children: <Widget>[
         Text(
-          'A 32dp control keeps a 48dp touch target around it: a tap '
+          'A 32dp control keeps a 40dp touch target around it: a tap '
           'anywhere in it presses the control.',
           style: TextStyle(color: c.onSurfaceVariant),
         ),

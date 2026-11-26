@@ -2,7 +2,7 @@
 /// `StateTokens`, and the shared pressable every pressable component builds
 /// on — taps and keyboard activation, the press and selected shape morph on
 /// the component's spring, the ripple and state-layer colours, semantics
-/// by role, elevation by state and the 48dp touch target.
+/// by role, elevation by state and the touch target (ui_core's floor).
 library;
 
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
@@ -361,17 +361,17 @@ void main() {
       expect(taps, 1);
     });
 
-    testWidgets('keeps a 48dp touch target around a smaller container', (
+    testWidgets('keeps the touch floor around a smaller container', (
       tester,
     ) async {
-      const small = HostBehavior.minimumInteractiveComponentSize - 16;
+      const small = 24.0;
       var taps = 0;
       await tester.pumpWidget(
         _app(_pressable(onPressed: () => taps++, size: small)),
       );
       expect(
         tester.getSize(find.byType(ExpressiveMinimumInteractiveSize)),
-        const Size.square(HostBehavior.minimumInteractiveComponentSize),
+        const Size.square(40), // ui_core's touch floor
       );
       expect(
         tester.getSize(find.byType(ExpressiveSurface)),

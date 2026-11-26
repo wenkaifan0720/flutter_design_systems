@@ -4,8 +4,9 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/rendering.dart' show RenderProxyBox;
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../color.dart';
 import '../component_themes.dart';
@@ -49,7 +50,8 @@ enum _ChipKind { assist, filter, input, suggestion }
 /// assist chip. A press is [onPressed] on every kind; a filter chip's
 /// handler flips the selection it is given.
 ///
-/// 32dp tall on its token shape, inside Compose's 48dp touch target.
+/// 32dp tall on its token shape, inside its touch target (the floor,
+/// [RawTapTargets.floorOn]).
 ///
 /// ```dart
 /// ExpressiveChip('Vegetarian', selected: veg, onPressed: () => setState(() => veg = !veg))
@@ -402,24 +404,20 @@ class ExpressiveChip extends StatelessWidget {
     if (_kind != _ChipKind.input || onDeleted == null) return chip;
     // The remove glyph is its own target over the chip's ink: the end
     // padding, the glyph and half the gap before it, the chip's full height
-    // — and, where touch targets are enforced, at least 48dp wide (as
+    // — and, where touch targets are enforced, at least the floor wide (as
     // Flutter widens a chip's delete button), over the label's end.
     final glyphTarget =
         InputChipBehavior.iconPadding +
         InputChipTokens.trailingIconSize +
         ChipBehavior.compactHorizontalSpacing;
     final enforced = ExpressiveMinimumInteractiveSize.enforcedAt(context);
-    final removeWidth = enforced
-        ? math.max(glyphTarget, HostBehavior.minimumInteractiveComponentSize)
-        : glyphTarget;
+    final floor = ExpressiveMinimumInteractiveSize.floorAt(context).width;
+    final removeWidth = math.max(glyphTarget, floor);
     // A chip that acts and removes holds two targets side by side: at least
-    // 48dp for its body beside the remove target's.
+    // the floor for its body beside the remove target's.
     final body = _action != null && enforced
         ? ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth:
-                  removeWidth + HostBehavior.minimumInteractiveComponentSize,
-            ),
+            constraints: BoxConstraints(minWidth: removeWidth + floor),
             child: chip,
           )
         : _action == null && enabled
@@ -428,23 +426,25 @@ class ExpressiveChip extends StatelessWidget {
         // Remove action), not a disabled button of their own.
         ? Semantics(label: label, excludeSemantics: true, child: chip)
         : chip;
-    return Stack(
-      children: <Widget>[
-        // The chip's node ends where the remove target starts: a tap there
-        // removes, so a screen reader outlines the chip short of it.
-        _SemanticsEndCut(cut: removeWidth, child: body),
-        PositionedDirectional(
-          top: 0,
-          bottom: 0,
-          end: 0,
-          width: removeWidth,
-          child: _RemoveTarget(
-            label: deleteLabel,
-            chipLabel: label,
-            onDeleted: enabled ? onDeleted : null,
+    return _InputChipFace(
+      child: Stack(
+        children: <Widget>[
+          // The chip's node ends where the remove target starts: a tap there
+          // removes, so a screen reader outlines the chip short of it.
+          _SemanticsEndCut(cut: removeWidth, child: body),
+          PositionedDirectional(
+            top: 0,
+            bottom: 0,
+            end: 0,
+            width: removeWidth,
+            child: _RemoveTarget(
+              label: deleteLabel,
+              chipLabel: label,
+              onDeleted: enabled ? onDeleted : null,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -967,8 +967,9 @@ class _RenderSemanticsEndCut extends RenderProxyBox {
 
 /// Chips in a row: flowing onto more lines when they do not fit (Compose's
 /// `FlowRow` the chip samples use), or, [scrollable], one line that
-/// scrolls sideways. 8dp apart (`ChipBehavior.horizontalSpacing`); lines
-/// sit on the chips' 48dp touch targets.
+/// scrolls sideways. 8dp apart (`ChipBehavior.horizontalSpacing`), line
+/// to line too: the touch targets take the room between the faces
+/// ([RawChipGroup]).
 ///
 /// A scrolling row belongs edge to edge, so the chips cut off at the
 /// screen's edge rather than at the page's margin (which reads as
@@ -1001,8 +1002,9 @@ class ExpressiveChipRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!scrollable) {
-      return Wrap(
+      return RawChipGroup(
         spacing: ChipBehavior.horizontalSpacing,
+        runSpacing: ChipBehavior.horizontalSpacing,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: children,
       );
@@ -1026,5 +1028,64 @@ class ExpressiveChipRow extends StatelessWidget {
           defaultValue: null,
         ),
       );
+  }
+}
+
+/// An input chip and its remove target, side by side in a [Stack]: to a
+/// parent that lays out controls by their faces ([RawChipGroup]) its face is
+/// the chip body's, not the box round both targets. It takes no node and
+/// sends no hit elsewhere: the body and the remove target take their own.
+class _InputChipFace extends SingleChildRenderObjectWidget {
+  const _InputChipFace({required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderInputChipFace();
+}
+
+class _RenderInputChipFace extends RenderTapTargetPadding {
+  _RenderInputChipFace() : super(Size.zero);
+
+  // The body's target as it last placed its face, through the body's
+  // single-child wrappers, by layout offsets alone: a parent reads this in
+  // its own layout, where its grandchildren's sizes are not its to read.
+  @override
+  Rect? get faceRect {
+    final stack = child;
+    if (stack == null) return super.faceRect;
+    RenderObject? node;
+    stack.visitChildren((child) {
+      node ??= child;
+    });
+    var offset = (stack.parentData! as BoxParentData).offset;
+    while (node != null) {
+      final current = node!;
+      final data = current.parentData;
+      if (data is BoxParentData) offset += data.offset;
+      if (current is RenderTapTargetPadding) {
+        return current.faceRect?.shift(offset) ?? super.faceRect;
+      }
+      RenderObject? next;
+      var count = 0;
+      current.visitChildren((child) {
+        next = child;
+        count++;
+      });
+      node = count == 1 ? next : null;
+    }
+    return super.faceRect;
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {}
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (!size.contains(position) ||
+        !hitTestChildren(result, position: position)) {
+      return false;
+    }
+    result.add(BoxHitTestEntry(this, position));
+    return true;
   }
 }

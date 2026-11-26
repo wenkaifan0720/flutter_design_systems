@@ -2527,8 +2527,8 @@ class _RenderCarouselViewport extends RenderProxyBox {
 ///
 /// A tap on a dot, or an increase or decrease from a screen reader, calls
 /// [onChanged] with that page; the indicator is display-only when it is
-/// null. Pressable, it stands as tall as Compose's minimum interactive size
-/// (48dp, its dots centred as before), so a finger finds a dot; display-only,
+/// null. Pressable, it stands as tall as the touch floor (its dots centred
+/// as before), so a finger finds a dot; display-only,
 /// it is [touchHeight]. Announced as "Page n of count" (or [semanticLabel]).
 ///
 /// ```dart
@@ -2635,10 +2635,10 @@ class ExpressivePageDots extends StatelessWidget {
     );
     final pressable =
         select != null && ExpressiveMinimumInteractiveSize.enforcedAt(context);
-    const target = HostBehavior.minimumInteractiveComponentSize;
+    final target = ExpressiveMinimumInteractiveSize.floorAt(context).height;
     final Widget row = ConstrainedBox(
       constraints: pressable
-          ? const BoxConstraints(
+          ? BoxConstraints(
               minWidth: target,
               minHeight: target,
               maxHeight: target,
