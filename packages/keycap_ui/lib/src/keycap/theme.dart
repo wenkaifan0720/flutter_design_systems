@@ -32,18 +32,12 @@ typedef KeycapStyle = RawStyle;
 typedef KeycapDensity = RawDensity;
 
 /// The relative luminance contrast of [a] on [b], 1 to 21, as WCAG measures
-/// it.
+/// it ([RawPalette.contrastRatio]; a translucent [a] is read laid over [b]).
 ///
 /// ```dart
 /// keycapContrast(colors.ink, colors.ground) >= 4.5
 /// ```
-double keycapContrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  final hi = math.max(la, lb);
-  final lo = math.min(la, lb);
-  return (hi + 0.05) / (lo + 0.05);
-}
+double keycapContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
 
 /// One kind of keycap in a colourway: the plastic of its dished [top] face,
 /// its side walls ([wall]), its deepest wall, the front one ([front]), and
@@ -301,11 +295,13 @@ class KeycapColors with Diagnosticable {
   );
 
   /// Keycap by [brightness], its accent key moulded in [accent] (its walls
-  /// shaded from it, its legend white or ink, whichever reads; its ink and
-  /// focus walked darker or lighter until they read on the case) and its
-  /// alphas tinted toward [alpha] when given (their tone kept, so the
-  /// legends keep their contrast). The modifiers and the case stay the
-  /// colourway's.
+  /// shaded from it, its legend white or ink, whichever reads at 4.5:1; the
+  /// key moves only as far as it must when neither does; its ink and focus
+  /// the nearest tones of its hue that read on the case, the wells, the
+  /// pages, a chosen row and the panels) and its alphas tinted toward [alpha]
+  /// when given (their tones kept, so the legends keep their contrast; by
+  /// night the tint holds little chroma, so a cream's alphas are a warm
+  /// graphite, never brown). The modifiers and the case stay the colourway's.
   ///
   /// ```dart
   /// final teal = KeycapColors.from(brightness: Brightness.light, accent: const Color(0xFF16807A));
@@ -315,74 +311,38 @@ class KeycapColors with Diagnosticable {
     Color? accent,
     Color? alpha,
   }) {
-    final base = brightness == Brightness.light ? light : dark;
+    final night = brightness == Brightness.dark;
+    final base = night ? dark : light;
     var colors = base;
     if (alpha != null) {
-      final tint = HSLColor.fromColor(alpha);
-      Color tinted(Color c) {
-        final hsl = HSLColor.fromColor(c);
-        return hsl
-            .withHue(tint.hue)
-            .withSaturation(
-              math.min(0.4, hsl.saturation * 0.3 + tint.saturation * 0.4),
-            )
-            .toColor()
-            .withValues(alpha: c.a);
-      }
-
-      colors = colors.copyWith(
-        alpha: base.alpha.copyWith(
-          top: tinted(base.alpha.top),
-          wall: tinted(base.alpha.wall),
-          front: tinted(base.alpha.front),
-        ),
+      final tint = RawHct.fromColor(alpha);
+      final tones = RawNeutralTones.of(
+        tint.withChroma(math.min(tint.chroma, _alphaTint)).toColor(),
       );
+      colors = colors.copyWith(alpha: _tinted(base.alpha, tones));
     }
-    if (accent != null) {
-      const white = Color(0xFFFFFFFF);
-      const ink = Color(0xFF1B1916);
-      final legend =
-          keycapContrast(white, accent) >= keycapContrast(ink, accent)
-          ? white
-          : ink;
-      Color reading(Color on, double ratio) {
-        final step = brightness == Brightness.light ? -0.02 : 0.02;
-        var c = accent;
-        for (var i = 0; i < 50 && keycapContrast(c, on) < ratio; i++) {
-          final hsl = HSLColor.fromColor(c);
-          c = hsl
-              .withLightness((hsl.lightness + step).clamp(0.0, 1.0))
-              .toColor();
-        }
-        return c;
-      }
-
-      colors = colors.copyWith(
-        accent: KeycapCapColors.moulded(
-          accent,
-          legend: legend,
-          shade: const Color(0xFF000000),
-          wallShade: 0.12,
-          frontShade: 0.32,
-        ),
-        // Its words read on a well and on a page, chosen row and all: by
-        // day the well is the darkest of them, by night the chosen row the
-        // lightest.
-        accentInk: reading(
-          brightness == Brightness.light ? base.well : base.pageSelected,
-          4.5,
-        ),
-        latchedLegend: brightness == Brightness.dark
-            ? reading(base.modifier.top, 4.5)
-            : null,
-        focus: reading(base.ground, 3),
-        backlight: brightness == Brightness.dark
-            ? accent.withValues(alpha: 0.35)
-            : accent.withValues(alpha: 0),
-      );
-    }
-    return colors;
+    return accent == null ? colors : _keyed(colors, accent);
   }
+
+  /// Keycap's colourway [name] (one of [KeycapThemeData.presets]) for
+  /// [brightness]: `classic` ([light] and [dark]), `retro` (beige alphas,
+  /// warm grey modifiers, an amber key), `sage` (a sage keyboard, a green
+  /// key), `rose` (blush alphas, mauve modifiers, a rose key), `lilac`
+  /// (lilac alphas, a violet key) or `ocean` (sea-grey alphas, a teal key).
+  /// Each is the classic keyboard's plastics at their own tones in another
+  /// hue, so every legend and word reads as it does in classic. An unknown
+  /// name gives classic.
+  ///
+  /// ```dart
+  /// final sage = KeycapColors.preset('sage', Brightness.dark);
+  /// ```
+  factory KeycapColors.preset(String name, Brightness brightness) {
+    final way = _colourways[name];
+    if (way == null) return brightness == Brightness.dark ? dark : light;
+    return _presets[(name, brightness)] ??= way.colors(brightness);
+  }
+
+  static final Map<(String, Brightness), KeycapColors> _presets = {};
 
   /// Day or night.
   final Brightness brightness;
@@ -631,6 +591,157 @@ class KeycapColors with Diagnosticable {
       ..add(ColorProperty('focus', focus));
   }
 }
+
+// The most chroma an alpha tint ([KeycapColors.from]'s `alpha`) gives the
+// alphas: a pale tint, so a strong colour tints them and never paints them.
+const double _alphaTint = 12;
+
+// [caps]' plastics in [tones]' hue at their own tones, so the legend on them
+// keeps its contrast.
+KeycapCapColors _tinted(KeycapCapColors caps, RawNeutralTones tones) {
+  Color at(Color c) =>
+      tones.tone(RawHct.fromColor(c).tone).withValues(alpha: c.a);
+  return caps.copyWith(
+    top: at(caps.top),
+    wall: at(caps.wall),
+    front: at(caps.front),
+  );
+}
+
+// [base] with its accent key moulded in [accent]: the named colour with
+// white or the classic ink on it, whichever reads at 4.5:1 (moved as little
+// as it must when neither does); its words, its latched legend by night and
+// its focus the nearest tones of its hue that read on [base]'s grounds.
+KeycapColors _keyed(KeycapColors base, Color accent) {
+  final night = base.brightness == Brightness.dark;
+  final key = RawPalette.accentFill(
+    accent,
+    brightness: base.brightness,
+    rule: RawAccentRule.named,
+    darkInk: KeycapColors.light.ink,
+  );
+  return base.copyWith(
+    accent: KeycapCapColors.moulded(
+      key.fill,
+      legend: key.ink,
+      shade: const Color(0xFF000000),
+      wallShade: 0.12,
+      frontShade: 0.32,
+    ),
+    // Its words read on every ground they are painted on: the case, a well,
+    // a page, a chosen row and a panel.
+    accentInk: RawPalette.readableTone(
+      accent,
+      on: [base.ground, base.well, base.page, base.pageSelected, base.panel],
+    ),
+    latchedLegend: night
+        ? RawPalette.readableTone(accent, on: [base.modifier.top])
+        : null,
+    focus: RawPalette.readableTone(
+      accent,
+      on: [base.ground, base.well, base.panel],
+      ratio: 3,
+    ),
+    backlight: accent.withValues(alpha: night ? 0.35 : 0),
+  );
+}
+
+// A colourway of the classic keyboard: its plastics at their own tones in
+// the hues of three neutrals (the case's, which its words and lines take
+// too; the alphas'; the modifiers', which a chosen row's plate takes), and
+// its accent key. A tone of 40 or less holds little chroma, so its night is
+// a tinted graphite.
+class _Colourway {
+  const _Colourway({
+    required this.ground,
+    required this.alpha,
+    required this.modifier,
+    required this.key,
+  });
+
+  final Color ground;
+  final Color alpha;
+  final Color modifier;
+  final Color key;
+
+  KeycapColors colors(Brightness brightness) {
+    final base = brightness == Brightness.dark
+        ? KeycapColors.dark
+        : KeycapColors.light;
+    final ground = RawNeutralTones.of(this.ground);
+    final modifier = RawNeutralTones.of(this.modifier);
+    Color g(Color c) =>
+        ground.tone(RawHct.fromColor(c).tone).withValues(alpha: c.a);
+    return _keyed(
+      base.copyWith(
+        ground: g(base.ground),
+        well: g(base.well),
+        wellPressed: g(base.wellPressed),
+        wellShade: g(base.wellShade),
+        wellLip: g(base.wellLip),
+        page: g(base.page),
+        pagePressed: g(base.pagePressed),
+        pageSelected: modifier
+            .tone(RawHct.fromColor(base.pageSelected).tone)
+            .withValues(alpha: base.pageSelected.a),
+        panel: g(base.panel),
+        alpha: _tinted(
+          base.alpha,
+          RawNeutralTones.of(alpha),
+        ).copyWith(legend: g(base.alpha.legend)),
+        modifier: _tinted(
+          base.modifier,
+          modifier,
+        ).copyWith(legend: g(base.modifier.legend)),
+        latchedLegend: g(base.latchedLegend),
+        ink: g(base.ink),
+        inkMuted: g(base.inkMuted),
+        inkDisabled: g(base.inkDisabled),
+        hairline: g(base.hairline),
+        edge: g(base.edge),
+        shadow: g(base.shadow),
+        scrim: g(base.scrim),
+        toast: g(base.toast),
+        onToast: g(base.onToast),
+      ),
+      key,
+    );
+  }
+}
+
+// Keycap's colourways beside classic (KeycapColors.light and dark).
+const Map<String, _Colourway> _colourways = {
+  'retro': _Colourway(
+    ground: Color(0xFFD8D2C4),
+    alpha: Color(0xFFF2EBDA),
+    modifier: Color(0xFFA8A296),
+    key: Color(0xFFE8892B),
+  ),
+  'sage': _Colourway(
+    ground: Color(0xFFC9D3CB),
+    alpha: Color(0xFFE8F0E8),
+    modifier: Color(0xFF9AAE9F),
+    key: Color(0xFF2F7D57),
+  ),
+  'rose': _Colourway(
+    ground: Color(0xFFD6CBCF),
+    alpha: Color(0xFFF5E6EA),
+    modifier: Color(0xFFB39AA4),
+    key: Color(0xFFC2477A),
+  ),
+  'lilac': _Colourway(
+    ground: Color(0xFFCFCDD9),
+    alpha: Color(0xFFECE8F6),
+    modifier: Color(0xFFA49DBB),
+    key: Color(0xFF6A4FC8),
+  ),
+  'ocean': _Colourway(
+    ground: Color(0xFFC7D3D6),
+    alpha: Color(0xFFE6F1F3),
+    modifier: Color(0xFF93AAB0),
+    key: Color(0xFF0E7C86),
+  ),
+};
 
 /// Keycap's text styles: four a screen reads in (a [title], the [body], a
 /// [secondary] line and a key's [label]), the [legend] printed in capitals
@@ -1016,20 +1127,37 @@ class KeycapThemeData with Diagnosticable {
       ? KeycapThemeData.light(density: density)
       : KeycapThemeData.dark(density: density);
 
-  /// The look's presets by name: one, `classic` (by day and by night).
-  static const List<String> presets = ['classic'];
+  /// The look's colourways by name, each by day and by night: `classic`
+  /// (the default), `retro`, `sage`, `rose`, `lilac` and `ocean`
+  /// ([KeycapColors.preset]).
+  static const List<String> presets = [
+    'classic',
+    'retro',
+    'sage',
+    'rose',
+    'lilac',
+    'ocean',
+  ];
 
-  /// The preset [name] for [brightness]: `classic`, the only one.
+  /// The colourway [name], one of [presets], for [brightness]
+  /// ([KeycapColors.preset]).
   ///
   /// ```dart
-  /// KeycapThemeData.preset('classic', Brightness.dark)
+  /// KeycapThemeData.preset('sage', Brightness.dark)
   /// ```
-  factory KeycapThemeData.preset(String name, Brightness brightness) {
+  factory KeycapThemeData.preset(
+    String name,
+    Brightness brightness, {
+    RawDensity? density,
+  }) {
     assert(
       presets.contains(name),
       'Keycap has no preset $name; it offers ${presets.join(', ')}.',
     );
-    return KeycapThemeData.of(brightness);
+    return KeycapThemeData(
+      colors: KeycapColors.preset(name, brightness),
+      density: density,
+    );
   }
 
   /// A brand's Keycap: its accent key in [accent] and its alphas tinted
@@ -1366,12 +1494,9 @@ class KeycapTheme extends StatelessWidget {
   /// What wears it.
   final Widget child;
 
-  /// The tap floors every Keycap control stands at: 48 by 48 for a finger,
-  /// 24 by 24 for a pointer.
-  static const RawTapTargets tapTargets = RawTapTargets(
-    touch: Size(48, 48),
-    pointer: Size(24, 24),
-  );
+  /// Keycap's tap floors: 40 by 40 for a finger, 24 by 24 for a pointer, as
+  /// ui_core's defaults.
+  static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   static final KeycapThemeData _fallback = KeycapThemeData.light();
 

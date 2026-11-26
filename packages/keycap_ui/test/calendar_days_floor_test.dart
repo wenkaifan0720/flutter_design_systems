@@ -1,5 +1,5 @@
-// A calendar's days stand at the look's floor under a finger, 48, so a bordered grid closes up, and read in the app's
-// digits.
+// A calendar's days stand at the touch floor on every input (ui_core's 40, or an app's RawTapTargetScope), so a
+// bordered grid closes up, and read in the app's digits.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keycap_ui/keycap_ui.dart';
@@ -9,6 +9,7 @@ Future<void> _show(
   WidgetTester tester, {
   Locale locale = const Locale('en'),
   double width = 390,
+  RawTapTargets? targets,
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = Size(width, 900);
@@ -37,7 +38,12 @@ Future<void> _show(
               alignment: Alignment.topCenter,
               child: SizedBox(
                 width: 358,
-                child: KeycapCalendar(controller: controller),
+                child: targets == null
+                    ? KeycapCalendar(controller: controller)
+                    : RawTapTargetScope(
+                        targets: targets,
+                        child: KeycapCalendar(controller: controller),
+                      ),
               ),
             ),
           ),
@@ -57,17 +63,22 @@ double _dayHeight(WidgetTester tester, String label) => tester
     .reduce((a, b) => a > b ? a : b);
 
 void main() {
-  testWidgets('under a finger a day is as tall as the look\'s floor', (
+  testWidgets('under a finger a day is as tall as the touch floor', (
     tester,
   ) async {
     await _show(tester);
-    expect(_dayHeight(tester, '12'), 48);
+    expect(_dayHeight(tester, '12'), RawTapTargets.fallback.touch.height);
   }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
-  testWidgets('under a pointer a day keeps its 44', (tester) async {
+  testWidgets('under a pointer a day keeps the touch floor', (tester) async {
     await _show(tester, width: 1440);
-    expect(_dayHeight(tester, '12'), 44);
+    expect(_dayHeight(tester, '12'), RawTapTargets.fallback.touch.height);
   }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
+
+  testWidgets('an app\'s floor of 48 stands every day 48', (tester) async {
+    await _show(tester, targets: const RawTapTargets(touch: Size.square(48)));
+    expect(_dayHeight(tester, '12'), 48);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
   testWidgets('in Arabic the days read in Arabic-Indic digits', (tester) async {
     await _show(tester, locale: const Locale('ar'));

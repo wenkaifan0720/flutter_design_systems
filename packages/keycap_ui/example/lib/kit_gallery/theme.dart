@@ -1,5 +1,6 @@
-/// The preset the gallery shows.
+/// The Keycap colourway the gallery renders in. The lab rewrites this file
+/// when a preset is picked on the module's Preview page; the committed value
+/// is the module's default preset.
 library;
 
-/// Keycap's one preset.
 const kitPreset = 'classic';

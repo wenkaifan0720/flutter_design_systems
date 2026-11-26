@@ -520,7 +520,7 @@ final RawInventory keycapInventory = RawInventory(
           currentDate: DateTime(2026, 11, 16),
         ),
         (context, c) => SizedBox(
-          width: 7 * KeycapCalendar.dayExtent,
+          width: 7 * RawTapTargets.of(context).touch.width,
           child: KeycapCalendar(controller: c),
         ),
       ),

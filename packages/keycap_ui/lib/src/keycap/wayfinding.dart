@@ -79,7 +79,7 @@ class KeycapBreadcrumb extends StatelessWidget {
       container: true,
       label: semanticLabel,
       explicitChildNodes: true,
-      child: Wrap(
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           for (final (i, crumb) in crumbs.indexed) ...[
@@ -703,8 +703,10 @@ class _DotsStepperState extends State<_DotsStepper> {
                   width: KeycapMetrics.focusWidth,
                 ),
               ),
+              // The strip is the stepper's target, at the touch floor on
+              // every input.
               child: SizedBox(
-                height: 44,
+                height: RawTapTargets.of(context).touch.height,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: KeycapSpacing.medium,

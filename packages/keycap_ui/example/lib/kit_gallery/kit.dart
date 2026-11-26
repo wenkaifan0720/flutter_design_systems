@@ -16,7 +16,8 @@ KeycapThemeData Function(Brightness brightness)? kitShownTheme;
 
 /// The theme a gallery page wears.
 KeycapThemeData kitTheme(Brightness brightness) =>
-    kitShownTheme?.call(brightness) ?? KeycapThemeData.of(brightness);
+    kitShownTheme?.call(brightness) ??
+    KeycapThemeData.preset(kitShownPreset, brightness);
 
 /// Marks a page as shown inside the gallery's own app, so it builds no app
 /// of its own.

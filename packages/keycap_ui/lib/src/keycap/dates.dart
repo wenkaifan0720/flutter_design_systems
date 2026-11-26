@@ -18,6 +18,7 @@ import 'cap.dart';
 import 'choices.dart';
 import 'internal/field_width.dart';
 import 'internal/small_key.dart';
+import 'overlays.dart' show KeycapSheet, showKeycapSheet;
 import 'select.dart';
 import 'sliders.dart';
 import 'fields.dart' show KeycapField;
@@ -46,11 +47,18 @@ String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
   return full;
 }
 
-/// A day's least width: a finger's 44.
-const double _dayHeight = KeycapCalendar.dayExtent;
+/// A day's least width and height: the touch floor, on every input (as
+/// Material's day grid keeps its cells on a desk), so a month keeps one shape.
+double _dayExtent(BuildContext context) =>
+    RawTapTargets.of(context).touch.height;
 
-/// A day's cell height: the look's tap floor where it is pressed (48 under a
-/// finger, so a bordered grid closes up), or taller as the text grows.
+/// How far a neighbouring month's day stands from the ground a calendar sits
+/// on: about Apple's other-month grey (3.3:1), clear of a faint figure, and
+/// well under the month's own days.
+const double _outsideDayContrast = 3;
+
+/// A day's cell height: the touch floor (so a bordered grid closes up), or
+/// taller as the text grows.
 double _dayHeightOf(BuildContext context) {
   final theme = KeycapTheme.of(context);
   final painter = TextPainter(
@@ -60,7 +68,7 @@ double _dayHeightOf(BuildContext context) {
     maxLines: 1,
   )..layout();
   final floor = math.max(
-    _dayHeight,
+    _dayExtent(context),
     RawTapTargets.of(context).floorOn().height,
   );
   final height = math.max(floor, painter.height + 2 * KeycapSpacing.tight);
@@ -140,8 +148,15 @@ Widget _day(
   const radius = KeycapMetrics.smallKeyRadius;
   final ink = !day.enabled
       ? c.inkDisabled
+      // A neighbouring month's day takes a tap: its figure stands in a quiet
+      // tone of its own, lifted from the disabled ink until it reads at
+      // [_outsideDayContrast] on the case, a page and a panel.
       : !day.inMonth
-      ? c.inkDisabled
+      ? RawPalette.readableTone(
+          c.inkDisabled,
+          on: [c.ground, c.page, c.panel],
+          ratio: _outsideDayContrast,
+        )
       : pressed
       ? c.inkMuted
       : layered.foreground ?? c.ink;
@@ -285,9 +300,14 @@ class KeycapCalendar extends StatelessWidget {
   /// Overrides, over [KeycapThemeData.calendarStyle].
   final KeycapStyle? style;
 
-  /// A day's least width and height: a finger's reach. A month is seven
-  /// of them wide.
-  static const double dayExtent = 44;
+  /// A day's least width and height under ui_core's default touch floor. A
+  /// calendar reads the floor in effect (an app's `RawTapTargetScope` moves
+  /// it).
+  @Deprecated(
+    'A day is the touch floor at least: read RawTapTargets.of(context).touch. '
+    'This will be removed in 0.6.0.',
+  )
+  static const double dayExtent = 40;
 
   @override
   Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
@@ -299,7 +319,7 @@ class KeycapCalendar extends StatelessWidget {
         months: months,
         focusNode: focusNode,
         autofocus: autofocus,
-        minDayWidth: _dayHeight,
+        minDayWidth: _dayExtent(context),
         headerBuilder: _header,
         weekdayBuilder: _weekday,
         dayBuilder: (context, day, states) => _day(context, day, states, style),
@@ -326,7 +346,7 @@ class KeycapCalendar extends StatelessWidget {
 /// The key every date and time picker shows its value on: an alpha key, as
 /// a select's is, that lays its [panel] over the keyboard and stays part
 /// way down while it is open.
-class _PickerKey extends StatelessWidget {
+class _PickerKey extends StatefulWidget {
   const _PickerKey({
     required this.text,
     required this.empty,
@@ -350,17 +370,59 @@ class _PickerKey extends StatelessWidget {
   final KeycapStyle? style;
 
   @override
+  State<_PickerKey> createState() => _PickerKeyState();
+}
+
+/// How wide a month stands in a phone's sheet at most: about Material's
+/// phone date picker, so a wide sheet's days don't grow past a key.
+const double _sheetMonthWidth = 400;
+
+class _PickerKeyState extends State<_PickerKey> {
+  bool _sheetOpen = false;
+
+  // Below 600 wide the panel rises in a sheet, as Keycap's choices do on a
+  // phone and as Material's pickers open full width there: an anchored
+  // panel narrower than the field would stand over the labels round it.
+  Future<void> _openSheet() async {
+    setState(() => _sheetOpen = true);
+    await showKeycapSheet<void>(
+      context: context,
+      semanticLabel: widget.semanticLabel,
+      builder: (context) {
+        void close() => Navigator.of(context).pop();
+        return KeycapSheet(
+          title: widget.semanticLabel,
+          onClose: close,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _sheetMonthWidth),
+              child: widget.panel(context, close),
+            ),
+          ),
+        );
+      },
+    );
+    if (mounted) setState(() => _sheetOpen = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final text = widget.text;
+    final empty = widget.empty;
+    final enabled = widget.enabled;
+    final error = widget.error;
+    final icon = widget.icon;
+    final semanticLabel = widget.semanticLabel;
+    final style = widget.style;
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final h = theme.controlHeight;
-    Widget key(RawOverlayAnchor? anchor) {
-      final open = anchor?.isOpen ?? false;
+    Widget key({VoidCallback? onPressed, bool open = false}) {
       return RawButton(
-        onPressed: anchor?.toggle,
-        expanded: anchor?.isOpen,
+        onPressed: onPressed,
+        expanded: onPressed == null ? null : open,
         semanticLabel: semanticLabel,
-        semanticValue: semanticValue,
+        semanticValue: widget.semanticValue,
         excludeSemantics: true,
         builder: (context, states, _) {
           final layered = RawStyleOf(
@@ -433,7 +495,9 @@ class _PickerKey extends StatelessWidget {
     }
 
     final Widget box = !enabled
-        ? key(null)
+        ? key()
+        : MediaQuery.sizeOf(context).width < 600
+        ? key(onPressed: _openSheet, open: _sheetOpen)
         : RawPopover(
             semanticLabel: semanticLabel,
             // The calendar wants its whole month (two, side by side, for a
@@ -448,7 +512,8 @@ class _PickerKey extends StatelessWidget {
             ),
             dampingRatio: KeycapMotion.panel.dampingRatio,
             stiffness: KeycapMotion.panel.stiffness,
-            anchorBuilder: (context, anchor) => key(anchor),
+            anchorBuilder: (context, anchor) =>
+                key(onPressed: anchor.toggle, open: anchor.isOpen),
             overlayBuilder: (context, info) => KeycapMenuReveal(
               animation: info.animation,
               below: info.side != RawPopoverSide.above,
@@ -456,7 +521,7 @@ class _PickerKey extends StatelessWidget {
                 maxHeight: info.maxSize.height,
                 child: Padding(
                   padding: const EdgeInsets.all(KeycapSpacing.small),
-                  child: panel(context, info.close),
+                  child: widget.panel(context, info.close),
                 ),
               ),
             ),
@@ -485,14 +550,18 @@ class _CalendarPanelState extends State<_CalendarPanel> {
   }
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 7 * KeycapCalendar.dayExtent,
-    child: KeycapCalendar(
+  Widget build(BuildContext context) {
+    final calendar = KeycapCalendar(
       controller: _controller,
       autofocus: true,
       onChanged: (_) => widget.onChanged(_controller),
-    ),
-  );
+    );
+    // A popover's month is seven days at the floor; a phone's sheet gives it
+    // the sheet's width.
+    return MediaQuery.sizeOf(context).width < 600
+        ? calendar
+        : SizedBox(width: 7 * _dayExtent(context), child: calendar);
+  }
 }
 
 /// A day picked from a month: a key that shows the day and, pressed, lays
@@ -890,8 +959,10 @@ class _TimePanelState extends State<_TimePanel> {
     );
     // Hours and minutes turn on wheels; the half of the day is a pair of
     // keys, one held down, as a keyboard's lock keys are.
+    // A popover's wheels stand at their own width; a phone's sheet gives
+    // them the sheet's width, as it gives the month.
     return SizedBox(
-      width: h24 ? 200 : 240,
+      width: MediaQuery.sizeOf(context).width < 600 ? null : (h24 ? 200 : 240),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -912,32 +983,29 @@ class _TimePanelState extends State<_TimePanel> {
             ),
           ),
           const SizedBox(height: KeycapSpacing.small),
-          if (h24)
-            done
-          else
-            Row(
-              children: [
-                KeycapSegmentedButton<bool>(
-                  semanticLabel: words.timeFieldDayPeriodLabel,
-                  expand: false,
-                  segments: [
-                    KeycapSegment(
-                      value: false,
-                      label: words.anteMeridiemAbbreviation,
-                    ),
-                    KeycapSegment(
-                      value: true,
-                      label: words.postMeridiemAbbreviation,
-                    ),
-                  ],
-                  selected: {_hour >= 12},
-                  onSelectionChanged: (s) =>
-                      setState(() => _hour = _hour % 12 + (s.first ? 12 : 0)),
+          // The half day's two keys share the row equally, as the done key
+          // takes the row under them.
+          if (!h24) ...[
+            KeycapSegmentedButton<bool>(
+              semanticLabel: words.timeFieldDayPeriodLabel,
+              expand: true,
+              segments: [
+                KeycapSegment(
+                  value: false,
+                  label: words.anteMeridiemAbbreviation,
                 ),
-                const SizedBox(width: KeycapSpacing.small),
-                Expanded(child: done),
+                KeycapSegment(
+                  value: true,
+                  label: words.postMeridiemAbbreviation,
+                ),
               ],
+              selected: {_hour >= 12},
+              onSelectionChanged: (s) =>
+                  setState(() => _hour = _hour % 12 + (s.first ? 12 : 0)),
             ),
+            const SizedBox(height: KeycapSpacing.small),
+          ],
+          done,
         ],
       ),
     );

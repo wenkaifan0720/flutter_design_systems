@@ -19,8 +19,9 @@ import 'theme.dart';
 export 'package:ui_core/ui_core.dart' show RawRangeValues;
 export 'package:ui_core/ui_core.dart' show RawPickerColumn;
 
-/// The width a slider's cap takes to a finger.
-const double _reach = 44;
+/// The width a slider's cap takes to a finger: the touch floor, on every
+/// input, so a slider's ends line up with the fields round it.
+double _reach(BuildContext context) => RawTapTargets.of(context).touch.width;
 
 /// A slider cap's size: a small key, taller than wide.
 const Size _capSize = Size(24, 28);
@@ -247,8 +248,9 @@ class _KeycapSliderState extends State<KeycapSlider> {
   }
 
   double _at(double dx, double width, bool rtl) {
-    final usable = width - _reach;
-    var f = usable <= 0 ? 0.0 : (dx - _reach / 2) / usable;
+    final reach = _reach(context);
+    final usable = width - reach;
+    var f = usable <= 0 ? 0.0 : (dx - reach / 2) / usable;
     f = f.clamp(0.0, 1.0);
     if (rtl) f = 1 - f;
     return _snap(widget.min + f * (widget.max - widget.min));
@@ -298,13 +300,15 @@ class _KeycapSliderState extends State<KeycapSlider> {
                 value: fraction,
                 spring: _dragging ? KeycapMotion.press : KeycapMotion.release,
                 builder: (context, f, _) {
-                  final x = _reach / 2 + (rtl ? 1 - f : f) * (width - _reach);
+                  final x =
+                      _reach(context) / 2 +
+                      (rtl ? 1 - f : f) * (width - _reach(context));
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Positioned(
-                        left: _reach / 2 - _capSize.width / 2,
-                        right: _reach / 2 - _capSize.width / 2,
+                        left: _reach(context) / 2 - _capSize.width / 2,
+                        right: _reach(context) / 2 - _capSize.width / 2,
                         top: 0,
                         bottom: 0,
                         child: CustomPaint(
@@ -324,9 +328,9 @@ class _KeycapSliderState extends State<KeycapSlider> {
                         ),
                       ),
                       Positioned(
-                        left: x - _reach / 2,
+                        left: x - _reach(context) / 2,
                         top: 0,
-                        width: _reach,
+                        width: _reach(context),
                         height: theme.controlHeight,
                         child: RawValueHandle(
                           value: widget.value
@@ -344,7 +348,10 @@ class _KeycapSliderState extends State<KeycapSlider> {
                           semanticFormatterCallback: widget.valueText ?? _plain,
                           focusNode: widget.focusNode,
                           autofocus: widget.autofocus,
-                          minimumSize: Size(_reach, theme.controlHeight),
+                          minimumSize: Size(
+                            _reach(context),
+                            theme.controlHeight,
+                          ),
                           builder: (context, states) => Center(
                             child: _Cap(
                               states: states,
@@ -448,7 +455,7 @@ class KeycapRangeSlider extends StatelessWidget {
         semanticFormatterCallback: semanticFormatterCallback ?? _plain,
         onChangeStart: onChangeStart,
         onChangeEnd: onChangeEnd,
-        thumbSize: Size(_reach, theme.controlHeight),
+        thumbSize: Size(_reach(context), theme.controlHeight),
         trackBuilder: (context, track) => SizedBox(
           height: theme.controlHeight,
           child: CustomPaint(

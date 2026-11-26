@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:keycap_ui/keycap_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
 
@@ -7,7 +8,7 @@ import '../kit.dart';
 Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Type and colour',
-  sections: const [_Colourway(), _Type()],
+  sections: const [_Colourway(), _Colourways(), _Type()],
 );
 
 class _Colourway extends StatelessWidget {
@@ -63,6 +64,127 @@ class _Colourway extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [alpha, gap, mod, gap, enter, gap, del],
           ),
+      ],
+    );
+  }
+}
+
+// Each of Keycap's colourways at the page's brightness: a piece of its case
+// holding an alpha, a modifier and its accent key, named under it.
+class _Colourways extends StatelessWidget {
+  const _Colourways();
+
+  @override
+  Widget build(BuildContext context) {
+    final page = context.keycapTheme;
+    final brightness = page.colors.brightness;
+    Widget cap(KeycapColors c, KeycapCapColors k, Widget legend) => Expanded(
+      child: KeycapCap(
+        face: KeycapFace.of(k, c),
+        walls: KeycapMetrics.walls(32),
+        child: Center(
+          child: IconTheme.merge(
+            data: IconThemeData(color: k.legend, size: 16),
+            child: legend,
+          ),
+        ),
+      ),
+    );
+    return KitSection(
+      title: 'Colourways',
+      note:
+          'Six colourways, each the classic keyboard\'s plastics at the same '
+          'tones in other hues: classic, retro, sage, rose, lilac and ocean '
+          '(KeycapThemeData.preset).',
+      children: [
+        LayoutBuilder(
+          builder: (context, box) {
+            // Six, three or two across, so the rows come out even.
+            const gap = KeycapSpacing.small;
+            final across = box.maxWidth >= 6 * 120 + 5 * gap
+                ? 6
+                : box.maxWidth >= 3 * 120 + 2 * gap
+                ? 3
+                : 2;
+            final width = ((box.maxWidth - (across - 1) * gap) / across)
+                .floorToDouble();
+            return KitRow(
+              children: [
+                for (final name in KeycapThemeData.presets)
+                  SizedBox(
+                    width: width,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        KeycapTheme(
+                          data: KeycapThemeData.preset(name, brightness),
+                          child: Builder(
+                            builder: (context) {
+                              final theme = context.keycapTheme;
+                              final c = theme.colors;
+                              final s = theme.textTheme.secondary;
+                              return DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: c.ground,
+                                  border: Border.all(color: c.edge),
+                                  borderRadius: BorderRadius.circular(
+                                    KeycapMetrics.keyRadius,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(
+                                    KeycapSpacing.small,
+                                  ),
+                                  child: SizedBox(
+                                    height: 32,
+                                    child: Row(
+                                      children: [
+                                        cap(
+                                          c,
+                                          c.alpha,
+                                          Text(
+                                            'A',
+                                            style: s.copyWith(
+                                              color: c.alpha.legend,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        cap(
+                                          c,
+                                          c.modifier,
+                                          Text(
+                                            'Fn',
+                                            style: s.copyWith(
+                                              color: c.modifier.legend,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        cap(
+                                          c,
+                                          c.accent,
+                                          const Icon(
+                                            LucideIcons.cornerDownLeft,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: KeycapSpacing.small),
+                        Text(name, style: page.textTheme.secondary),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
       ],
     );
   }

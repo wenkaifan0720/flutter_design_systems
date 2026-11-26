@@ -92,7 +92,9 @@ class KeycapSideSheet extends StatelessWidget {
                 // At least the close key's finger floor high; taller when
                 // large text takes the title to two lines.
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 44),
+                  constraints: BoxConstraints(
+                    minHeight: RawTapTargets.of(context).touch.height,
+                  ),
                   child: Row(
                     children: [
                       Expanded(

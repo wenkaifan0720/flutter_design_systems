@@ -1,6 +1,7 @@
-// A date field on a phone opens its month below while below holds the whole
-// month, and above only when below can't: the month never shrinks to scroll
-// where one side holds it whole.
+// A date field from 600 wide opens its month below while below holds the
+// whole month, and above only when below can't: the month never shrinks to
+// scroll where one side holds it whole. (Below 600 it opens in a sheet:
+// date_picker_sheet_test.)
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -57,9 +58,9 @@ void main() {
     return (panel.height, panel.top - field.bottom);
   }
 
-  // A phone, and a tablet standing up, where a field under the middle can
-  // still have the month's room below it.
-  const screens = [Size(390, 844), Size(744, 1133)];
+  // A tablet standing up, where a field under the middle can still have the
+  // month's room below it.
+  const screens = [Size(744, 1133)];
   for (final MapEntry(key: kind, value: build) in pickers.entries) {
     for (final screen in screens) {
       for (final share in [0.25, 0.35, 0.45, 0.5, 0.55, 0.6, 0.7]) {

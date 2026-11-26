@@ -581,6 +581,14 @@ class _KeycapTagInputState<T extends Object> extends State<KeycapTagInput<T>> {
       if (_within) WidgetState.focused,
       if (widget.errorText != null) WidgetState.error,
     };
+    // The well's inset above and below. A run of tags stands at the touch
+    // floor, so with the rest of the field's height above and below it a
+    // run of tags alone sits as far in from the well's top as from its
+    // start; the entry takes the field's height less the inset.
+    final inset = math.max(
+      KeycapSpacing.hairline,
+      (theme.controlHeight - RawTapTargets.of(context).touch.height) / 2,
+    );
     return KeycapField(
       labelText: widget.labelText,
       helperText: widget.helperText,
@@ -625,17 +633,15 @@ class _KeycapTagInputState<T extends Object> extends State<KeycapTagInput<T>> {
                 theme,
                 states,
                 widget.style,
-                // A hair above and below: the entry's own box stays a
-                // finger's 44 high inside a 48 field.
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: KeycapSpacing.small,
-                  vertical: KeycapSpacing.hairline,
+                  vertical: inset,
                 ),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: theme.controlHeight - 2 * KeycapSpacing.hairline,
+                    minHeight: theme.controlHeight - 2 * inset,
                   ),
-                  child: Wrap(
+                  child: RawChipGroup(
                     spacing: KeycapMetrics.keyGap,
                     runSpacing: KeycapMetrics.keyGap,
                     crossAxisAlignment: WrapCrossAlignment.center,
@@ -671,7 +677,7 @@ class _KeycapTagInputState<T extends Object> extends State<KeycapTagInput<T>> {
               child: _BareField(
                 controller: field.controller,
                 focusNode: field.focusNode,
-                minHeight: theme.controlHeight - 2 * KeycapSpacing.hairline,
+                minHeight: theme.controlHeight - 2 * inset,
                 hint: widget.values.isEmpty ? widget.hintText : null,
                 // Its node is the one ui_core gives the field's label, help
                 // and error, beside the tags' own.

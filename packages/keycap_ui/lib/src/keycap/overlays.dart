@@ -319,7 +319,9 @@ class KeycapSheet extends StatelessWidget {
                       // As high as the close key's finger floor, so the
                       // row never squeezes its target.
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(minHeight: 44),
+                        constraints: BoxConstraints(
+                          minHeight: RawTapTargets.of(context).touch.height,
+                        ),
                         child: Row(
                           children: [
                             Expanded(
@@ -346,9 +348,9 @@ class KeycapSheet extends StatelessWidget {
                                 semanticLabel: words.closeButtonLabel,
                                 onPressed: onClose,
                                 // A finger's floor even in the sheet's head.
-                                style: const RawStyle(
+                                style: RawStyle(
                                   minimumSize: WidgetStatePropertyAll(
-                                    Size.square(44),
+                                    RawTapTargets.of(context).touch,
                                   ),
                                 ),
                               ),
@@ -553,12 +555,9 @@ class _Toast extends StatelessWidget {
     final panel = layered.fill ?? c.toast;
     final ink = layered.foreground ?? c.onToast;
     final words = RawWidgetsLocalizations.of(context);
-    // The action in the accent, lightened until it reads on the panel.
-    var action = c.accent.top;
-    for (var s = 0.05; s <= 1 && keycapContrast(action, panel) < 4.5;) {
-      action = Color.lerp(c.accent.top, ink, s)!;
-      s += 0.05;
-    }
+    // The action in the accent, at the nearest tone of its hue that reads
+    // on the panel.
+    final action = RawPalette.readableTone(c.accent.top, on: [panel]);
     Widget key({
       required String label,
       required VoidCallback onPressed,

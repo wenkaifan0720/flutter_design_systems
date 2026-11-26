@@ -18,7 +18,7 @@ dependencies:
   keycap_ui:
     path: ../
   # An example imports the foundation itself too (its inventory, say).
-  ui_core: ^0.6.1
+  ui_core: ^0.7.1
   # A review page shows a review check's sheet.
   ui_core_review: ^0.1.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"

@@ -1,3 +1,13 @@
+## 0.5.0
+
+- Six colourways, each by day and by night: `classic` (the default), `retro`, `sage`, `rose`, `lilac` and `ocean` (`KeycapThemeData.presets`, `KeycapThemeData.preset`, `KeycapColors.preset`). The example's Foundations shows them.
+- Requires ui_core 0.7.1. Parts take ui_core's touch floor, 40 by 40 (was Keycap's own 48 under a finger and 44 elsewhere), or an app's `RawTapTargetScope`: calendar days, a slider's cap, page dots' strip (was 44), a reorderable row's grip and the close key in a sheet's head. `KeycapCalendar.dayExtent` is deprecated: read `RawTapTargets.of(context).touch`.
+- `KeycapTagInput`'s tags and `KeycapBreadcrumb`'s places lay out in `RawChipGroup`: a tag input's runs stand 40 apart (were 48 under a finger), and a run of tags sits as far in from the well's top as from its start.
+- Below 600 wide, `KeycapDatePicker`, `KeycapDateRangePicker` and `KeycapTimePicker` open in a sheet, the month and the wheels the sheet's width; from 600 they open over the keyboard as before. On a phone the month had opened narrower than the field, over the labels round it.
+- `KeycapTimePicker`'s AM and PM keys share a row of their own above the done key, each half its width (they had stood at their words' widths beside the done key).
+- A calendar's days outside the month stand 3:1 in a quiet tone of their own (were 2.4:1 by day).
+- `KeycapThemeData.from` and `KeycapColors.from` work out their colours with ui_core's `RawPalette` (`RawAccentRule.named`): the accent's words read 4.5:1 on the case, the wells, the pages, a chosen row and the panels; a cream `alpha` tint keeps its night alphas a warm graphite. A toast's action takes the nearest tone of the accent that reads on the toast. `keycapContrast` is `RawPalette.contrastRatio`.
+
 ## 0.4.3
 
 - `KeycapTimePicker`'s wheels keep hours before minutes, left to right, under a right-to-left `Directionality` too, as Material's time picker keeps them and as the key above them reads the time ("٩:٠٥"). In Arabic the hour's wheel stood on the right, so the chosen row read "٠٥ : ٩" under a key reading ٩:٠٥. The half day's keys keep the reading side. Left-to-right drawing is unchanged.

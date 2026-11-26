@@ -4,18 +4,32 @@ Keycap is a Flutter widget library that draws an app's controls as keycaps on a 
 
 ![Jotter's home on a desk at 1440 and on a phone at 390, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/keycap_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/keycap/)** ·
-[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/keycap/) ·
-[API reference](https://pub.dev/documentation/keycap_ui/latest/) ·
-[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/keycap/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=keycap) · [API reference](https://pub.dev/documentation/keycap_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Getting started
 
-```sh
-flutter pub add keycap_ui material_ui
+```yaml
+dependencies:
+  keycap_ui: ^0.5.0
 ```
 
-Load the bundled Rubik font before calling `runApp`. Place `KeycapHost` in the app's `builder` so pages and overlays share the same theme; it follows the platform's day and night. This example uses `material_ui` for the app shell.
+The smallest app: `KeycapHost` in the app's `builder` gives everything under it Keycap's theme, by day and by night as the platform is.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:keycap_ui/keycap_ui.dart';
+
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFF2F59CF),
+    builder: (context, _) => KeycapHost(
+      child: Center(child: KeycapButton.accent(onPressed: () {}, child: const Text('New note'))),
+    ),
+  ),
+);
+```
+
+A fuller app: load the bundled Rubik font before calling `runApp`, and place `KeycapHost` in the app's `builder` so pages and overlays share the same theme. This example uses `material_ui` for the app shell (`flutter pub add material_ui`).
 
 ```dart
 import 'package:keycap_ui/keycap_ui.dart';
@@ -167,7 +181,7 @@ A key that does nothing (`onPressed: null`) stands as a level, matte plate faded
 
 - **Fields**: `KeycapTextField`, `KeycapSearchField`, `KeycapPasswordField`, `KeycapOtpField`, `KeycapStepper`, `KeycapSelect`, `KeycapCombobox`, `KeycapTagInput`, `KeycapInputGroup`, `KeycapChip`, `KeycapColorPicker`, `KeycapDropZone`. A select and a combobox both end in the same chevron, the sign of a field that opens a list.
 - **Choices**: `KeycapCheckbox`, `KeycapRadioGroup`, `KeycapSwitch`, `KeycapSwitchListTile`, `KeycapSegmentedButton`, `KeycapToggleGroup`, `KeycapTabBar`.
-- **Dates and values**: `KeycapCalendar`, `KeycapDatePicker`, `KeycapDateRangePicker`, `KeycapTimePicker`, `KeycapSlider`, `KeycapRangeSlider`, `KeycapRating`, `KeycapWheelPicker`.
+- **Dates and values**: `KeycapCalendar`, `KeycapDatePicker`, `KeycapDateRangePicker`, `KeycapTimePicker`, `KeycapSlider`, `KeycapRangeSlider`, `KeycapRating`, `KeycapWheelPicker`. A date or time field opens its month or its wheels over the keyboard from 600 wide, and in a sheet on a phone.
 - **Lists and layout**: `KeycapListGroup`, `KeycapListTile`, `KeycapCard`, `KeycapTable`, `KeycapDataTable`, `KeycapTree`, `KeycapTimeline`, `KeycapDisclosure`, `KeycapCarousel`, `KeycapReorderableList`, `KeycapSwipeActions`, `KeycapRefresh`, `KeycapSplitView`, `KeycapScrollArea`.
 - **Navigation**: `KeycapScaffold` (a row of places at a phone's foot, a rail from 600, a side column from 1024), `KeycapAppBar`, `KeycapBreadcrumb`, `KeycapPagination`, `KeycapStepProgress`, `KeycapPageDots`, `KeycapLegendKey`.
 - **Over the keyboard**: `showKeycapDialog`, `showKeycapBottomSheet`, `showKeycapSideSheet`, `showKeycapActionSheet`, `KeycapMenu`, `KeycapContextMenu`, `KeycapMenuBar`, `showKeycapCommandPalette`, `KeycapPopover`, `KeycapHoverCard`, `KeycapTooltip` and toasts through `KeycapToaster`.
@@ -177,7 +191,9 @@ The example app, Jotter, is a notebook built only from these widgets.
 
 ## Theming
 
-`KeycapHost` follows the platform brightness. For a brand, wrap the app in `KeycapTheme` and pass `KeycapThemeData.from`, which moulds the accent key in the brand colour and keeps every legend readable:
+`KeycapHost` follows the platform brightness. Keycap comes in six colourways, each by day and by night: `classic` (cool grey alphas, slate modifiers and a cobalt key, the default), `retro` (beige alphas, warm grey modifiers, an amber key), `sage`, `rose`, `lilac` and `ocean`. Each is the classic keyboard's plastics at the same tones in other hues, so every legend reads as it does in classic. Pick one with `KeycapHost(theme: KeycapThemeData.preset('sage', Brightness.light), darkTheme: KeycapThemeData.preset('sage', Brightness.dark), child: child!)`; `KeycapThemeData.presets` lists them and `KeycapColors.preset` gives a colourway's colours.
+
+For a brand, wrap the app in `KeycapTheme` and pass `KeycapThemeData.from`, which moulds the accent key in the brand colour and keeps every legend readable:
 
 ```dart
 final theme = KeycapThemeData.from(
@@ -193,7 +209,7 @@ Set a part's defaults on the theme (`buttonStyle`, `selectStyle`, `wellStyle` an
 
 ## Accessibility
 
-Words read at WCAG AA on every key, well and panel, by day and by night. Keyboard focus is the keyboard's own backlight: a band of light round a focused key's foot, and a lit band inside a field's well. Tab reaches each control; a radio group, a one-choice segmented button and a one-at-a-time toggle group are one Tab stop each, and the arrows choose within them, as Flutter's `RadioGroup` does. A screen reader hears a checkbox, a radio and a switch as Flutter's own, with their state, and a latching key as a button that is selected, as `IconButton(isSelected:)` is. Dialogs and sheets keep the focus inside and give it back to the key that opened them. Every key travels on a short, calm spring that settles without a bounce, and under Reduce Motion every spring is critically damped. Text at 200% grows keys and rows rather than cutting their words.
+Words read at WCAG AA on every key, well and panel, by day and by night, in every colourway; a calendar's days from the months either side stand quieter, at 3:1, as Cupertino's do. Keyboard focus is the keyboard's own backlight: a band of light round a focused key's foot, and a lit band inside a field's well. Tab reaches each control; a radio group, a one-choice segmented button and a one-at-a-time toggle group are one Tab stop each, and the arrows choose within them, as Flutter's `RadioGroup` does. A screen reader hears a checkbox, a radio and a switch as Flutter's own, with their state, and a latching key as a button that is selected, as `IconButton(isSelected:)` is. Dialogs and sheets keep the focus inside and give it back to the key that opened them. Every key travels on a short, calm spring that settles without a bounce, and under Reduce Motion every spring is critically damped. Text at 200% grows keys and rows rather than cutting their words.
 
 ## Languages and right to left
 

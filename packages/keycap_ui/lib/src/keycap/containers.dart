@@ -877,11 +877,13 @@ class _Grip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = KeycapTheme.of(context).colors;
+    // A finger's floor square on every input, so a row keeps one height.
+    final side = RawTapTargets.of(context).touch;
     return MouseRegion(
       cursor: SystemMouseCursors.grab,
       child: SizedBox(
-        width: 44,
-        height: 44,
+        width: side.width,
+        height: side.height,
         child: Center(
           child: Icon(LucideIcons.gripVertical, size: 18, color: c.inkMuted),
         ),
