@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../theme.dart';
 
@@ -36,7 +37,9 @@ class CivicButtonGroup extends StatelessWidget {
         children: children,
       );
     }
-    return Wrap(
+    // The faces stand 24 apart, 16 run under run, a link's target reaching
+    // into the room between (ui_core's RawChipGroup).
+    return RawChipGroup(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: CivicSpacing.s24,
       runSpacing: CivicSpacing.s16,

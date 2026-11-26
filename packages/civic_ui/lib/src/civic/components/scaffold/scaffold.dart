@@ -150,7 +150,7 @@ class _CivicScaffoldState extends State<CivicScaffold> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ?top,
+          if (top != null) CivicBarSlot(child: top),
           Expanded(
             child: side == null
                 ? main

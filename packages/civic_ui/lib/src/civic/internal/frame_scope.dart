@@ -72,6 +72,22 @@ class CivicFrameScope extends InheritedWidget {
       oldWidget.barOverNavigation != barOverNavigation;
 }
 
+/// Marks the band a [CivicScaffold] stands across its top: a top bar there
+/// takes the frame's insets ([CivicFrameScope]), its words in line with the
+/// page's column; one anywhere else (in the page, a pane, a sheet) stands
+/// alone and centres the frame on its own width.
+class CivicBarSlot extends InheritedWidget {
+  /// The scaffold's top band, [child].
+  const CivicBarSlot({super.key, required super.child});
+
+  /// Whether [context] is a scaffold's top band.
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<CivicBarSlot>() != null;
+
+  @override
+  bool updateShouldNotify(CivicBarSlot oldWidget) => false;
+}
+
 /// Marks a [CivicNavigationBar] a [CivicScaffold] stands down the start as a
 /// rail (from [CivicLayout.medium] to [CivicLayout.expanded] wide) rather
 /// than along the bottom.

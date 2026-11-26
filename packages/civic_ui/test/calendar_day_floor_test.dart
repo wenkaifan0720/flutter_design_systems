@@ -1,13 +1,17 @@
-// A calendar's day stands as tall as the look's tap floor where it is used
-// (48 under a finger, 44 under a pointer), so each day's face fills the
-// target its calendar gives it: at 44 under a 48 floor a chosen day's plate
-// stood 4 short of its target, and the weeks' plates 4 apart.
+// A calendar's day stands as tall as a finger's floor (ui_core's 40) under a
+// finger and a pointer alike, so each day's face fills the target its
+// calendar gives it, the weeks' plates meeting; it stood on Civic's own 48
+// under a finger and 44 under a pointer.
 import 'package:civic_ui/civic_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 
-Future<void> _pump(WidgetTester tester, Brightness brightness) async {
+Future<void> _pump(
+  WidgetTester tester,
+  Brightness brightness, {
+  double? width,
+}) async {
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -29,7 +33,10 @@ Future<void> _pump(WidgetTester tester, Brightness brightness) async {
         alignment: Alignment.topCenter,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: CivicCalendar(controller: days),
+          child: SizedBox(
+            width: width,
+            child: CivicCalendar(controller: days),
+          ),
         ),
       ),
     ),
@@ -44,24 +51,37 @@ Rect _face(WidgetTester tester, String day) => tester.getRect(
 
 void main() {
   for (final brightness in Brightness.values) {
-    testWidgets('under a finger (${brightness.name}) each day stands 48', (
+    testWidgets('under a finger (${brightness.name}) each day stands 40', (
       tester,
     ) async {
       await _pump(tester, brightness);
       for (final (above, below) in const [('10', '17'), ('20', '27')]) {
         final a = _face(tester, above);
         final b = _face(tester, below);
-        expect(a.height, 48, reason: above);
+        expect(a.height, 40, reason: above);
         expect(b.top - a.bottom, lessThanOrEqualTo(.01), reason: below);
       }
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
-    testWidgets('under a pointer (${brightness.name}) each day stays 44', (
+    testWidgets('under a pointer (${brightness.name}) each day stands 40', (
       tester,
     ) async {
       await _pump(tester, brightness);
-      expect(_face(tester, '10').height, 44);
+      expect(_face(tester, '10').height, 40);
     }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
+  }
+
+  for (final platform in const [TargetPlatform.android, TargetPlatform.macOS]) {
+    testWidgets('a calendar seven floors wide (280) fits its week, '
+        'each day 40 wide (${platform.name})', (tester) async {
+      await _pump(tester, Brightness.light, width: 280);
+      final day = _face(tester, '10');
+      expect(day.width, moreOrLessEquals(40));
+      expect(
+        _face(tester, '14').right - _face(tester, '8').left,
+        moreOrLessEquals(280),
+      );
+    }, variant: TargetPlatformVariant.only(platform));
   }
 
   testWidgets('in Arabic the days are written in Arabic-Indic digits', (

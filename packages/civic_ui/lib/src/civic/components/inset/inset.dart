@@ -115,8 +115,8 @@ class CivicWarning extends StatelessWidget {
               '!',
               style: text.headingM.copyWith(
                 color:
-                    CivicThemeData.contrastRatio(mark, t.background) >=
-                        CivicThemeData.contrastRatio(mark, t.textPrimary)
+                    RawPalette.contrastRatio(mark, t.background) >=
+                        RawPalette.contrastRatio(mark, t.textPrimary)
                     ? t.background
                     : t.textPrimary,
                 height: 1,

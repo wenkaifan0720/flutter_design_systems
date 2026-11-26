@@ -1,3 +1,16 @@
+## 0.7.0
+
+- Requires ui_core 0.7.2. Civic's tap floors are ui_core's: 40 by 40 for a finger (it was 48) and 24 by 24 for a pointer. `CivicThemeData.floorsHold` and its assert hold a theme to them; a floor can still rise. Civic's own faces keep their size (a button, a field and a row stand 48), so only what stood on the floor moves: under a finger a calendar's day, a summary list's and an error summary's links, a date's figures and a toggle group's least segment stand on 40.
+- A calendar's day is a finger's floor (40) tall and wide at least, under a pointer too (it was 48 under a finger and 44 under a pointer), so a date picker's calendar is a little narrower. `CivicCalendar.dayWidth` is deprecated.
+- `CivicMultiSelect`'s chosen answers, `CivicPagination`, `CivicBreadcrumbs` and `CivicButtonGroup` stand their parts their gap apart face to face, their targets reaching into the room between (ui_core's `RawChipGroup`): two runs of chosen answers no longer stand the gap and the targets' slack apart.
+- Six palettes: `CivicThemeData.presets` is civic (the default), harbour, indigo, heather, plum and slate, by `CivicThemeData.preset(id, brightness)`. Each is an action colour; Civic's words, errors, successes and focus stay the same in each. The example's Foundations page opens on the six.
+- A colour `CivicThemeData.from` takes to 7:1 keeps its hue as ui_core's `RawPalette.readableTone` keeps it (Material's colour space), and a solid button's face by night (its colour at full strength at the lightest tone white words read on) and a floating surface's edge by night are found by the same walk: the default error and success inks by day move a little; Civic's night buttons keep their colour. `CivicThemeData.contrastRatio` is deprecated; use `RawPalette.contrastRatio`.
+- New `fontFamilyFallback` on `CivicThemeData.from` and `CivicTextTheme.standard`: every step of both ramps, codes too, and Flutter's own text under Civic fall back on those families after Civic's Noto Sans Arabic.
+- An app's own face (`fontFamily` with no `fontPackage`) keeps Civic's bundled Noto Sans Arabic behind it; it was named without its package and missed.
+- `CivicTheme` sets the text under it in its own theme's ramp; it took the ramp of the theme above it (the default, with none), so plain text under a theme of an app's own face or a night theme on a light platform read in the wrong face or ink.
+- A `CivicTopBar` standing alone (anywhere but a `CivicScaffold`'s or a `CivicScreen`'s `topBar`: in the page, a pane, a sheet) centres the page's frame on its own width, as the band it is. In a section narrower than the window it took the window's frame inset, so on a 1440 window a bar 880 wide set its title in a column about 120 wide. A scaffold's or a screen's top bar spans the window and stands as before, in line with the page's column.
+- The README opens with a whole app in 12 lines and links the docs and Stint.
+
 ## 0.6.1
 
 - Requires ui_core 0.6.1.

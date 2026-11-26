@@ -77,7 +77,12 @@ class CivicCalendar extends StatefulWidget {
   /// Overrides for the days' look.
   final CivicStyle? style;
 
-  /// A day's least width: a finger's target.
+  /// A day's least width before 0.7.0: a finger's target then.
+  @Deprecated(
+    "A day's least side is the finger's floor in force "
+    '(RawTapTargets.of(context).touch, 40 by default). '
+    'This constant was deprecated in 0.7.0 and is removed in 0.8.0.',
+  )
   static const double dayWidth = 44;
 
   /// A month's widest at the reader's usual text: seven days of 56, near
@@ -173,7 +178,8 @@ class _CivicCalendarState extends State<CivicCalendar> {
       focusNode: _grid,
       autofocus: widget.autofocus,
       showOutsideDays: false,
-      minDayWidth: CivicCalendar.dayWidth,
+      // A day is a finger's target at least, under a pointer too.
+      minDayWidth: RawTapTargets.of(context).touch.width,
       monthsBuilder: (context, list) => Wrap(
         spacing: CivicCalendar.monthGap,
         runSpacing: CivicSpacing.s24,
@@ -309,14 +315,14 @@ class _Day extends StatelessWidget {
             focusColor: t.focus,
             barColor: t.focusBar,
           ),
-          // At least 44 and the look's tap floor where it stands (48 under
-          // a finger), so each day's face fills the target its calendar
-          // gives it; taller as the text grows; every day keeps room for
-          // today's rule, so a week's days stand level.
+          // At least a finger's floor (40), under a pointer too, so each
+          // day's face fills the target its calendar gives it; taller as
+          // the text grows; every day keeps room for today's rule, so a
+          // week's days stand level.
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: math.max(
-                CivicCalendar.dayWidth,
+                RawTapTargets.of(context).touch.height,
                 RawTapTargets.of(context).floorOn().height,
               ),
             ),

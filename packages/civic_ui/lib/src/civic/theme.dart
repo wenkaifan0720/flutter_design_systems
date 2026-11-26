@@ -194,6 +194,10 @@ final class CivicTextTheme with Diagnosticable {
   /// letters apart keeps the look (a hyperlegible-class face, or one for a
   /// script Atkinson lacks); give its [capHeight] so words sit in the
   /// middle of a box. Codes keep Atkinson Hyperlegible Mono.
+  ///
+  /// Every step falls back on Civic's Noto Sans Arabic, then on the
+  /// families in [fontFamilyFallback] (a face the app loads for a script
+  /// the others lack, as Material's `ThemeData.fontFamilyFallback`).
   factory CivicTextTheme.standard({
     required Color ink,
     required Color secondary,
@@ -201,13 +205,21 @@ final class CivicTextTheme with Diagnosticable {
     String? fontFamily,
     String? fontPackage,
     double capHeight = atkinsonCapHeight,
+    List<String> fontFamilyFallback = const [],
   }) {
+    // Each face by the name Flutter registers it by (a package's own under
+    // its prefix), so the app's fallback families keep their own names.
+    final family = fontFamily == null
+        ? civicFontFamily('AtkinsonNext')
+        : fontPackage == null
+        ? fontFamily
+        : 'packages/$fontPackage/$fontFamily';
+    final fallback = [civicFontFamily('NotoSansArabic'), ...fontFamilyFallback];
     TextStyle face(double size, double height, FontWeight weight, Color c) =>
         TextStyle(
           inherit: false,
-          fontFamily: fontFamily ?? 'AtkinsonNext',
-          package: fontFamily == null ? civicFontPackage : fontPackage,
-          fontFamilyFallback: const ['NotoSansArabic'],
+          fontFamily: family,
+          fontFamilyFallback: fallback,
           fontSize: size,
           height: height,
           fontWeight: weight,
@@ -231,8 +243,10 @@ final class CivicTextTheme with Diagnosticable {
       capHeight: capHeight,
       code: TextStyle(
         inherit: false,
-        fontFamily: 'AtkinsonMono',
-        package: civicFontPackage,
+        fontFamily: civicFontFamily('AtkinsonMono'),
+        fontFamilyFallback: fontFamilyFallback.isEmpty
+            ? null
+            : fontFamilyFallback,
         fontSize: wide ? 22 : 20,
         height: 1.3,
         fontWeight: bold,
@@ -422,10 +436,7 @@ final class CivicThemeData with Diagnosticable {
     required this.tones,
     required this.text,
     required this.compactText,
-    this.tapTargets = const RawTapTargets(
-      touch: Size.square(48),
-      pointer: Size.square(24),
-    ),
+    this.tapTargets = RawTapTargets.fallback,
     this.primaryButtonStyle,
     this.secondaryButtonStyle,
     this.startButtonStyle,
@@ -491,17 +502,20 @@ final class CivicThemeData with Diagnosticable {
     this.actionBarStyle,
   });
 
-  /// Whether [targets] keep Civic's floors: 48 by 48 for a finger, 24 by 24
-  /// for a pointer. [copyWith] and [CivicTheme] assert it.
-  static bool floorsHold(RawTapTargets targets) =>
-      targets.touch.width >= 48 &&
-      targets.touch.height >= 48 &&
-      targets.pointer.width >= 24 &&
-      targets.pointer.height >= 24;
+  /// Whether [targets] keep Civic's floors, ui_core's
+  /// ([RawTapTargets.fallback]): 40 by 40 for a finger, 24 by 24 for a
+  /// pointer. [copyWith] and [CivicTheme] assert it.
+  static bool floorsHold(RawTapTargets targets) {
+    const least = RawTapTargets.fallback;
+    return targets.touch.width >= least.touch.width &&
+        targets.touch.height >= least.touch.height &&
+        targets.pointer.width >= least.pointer.width &&
+        targets.pointer.height >= least.pointer.height;
+  }
 
   static const String _floorsMessage =
-      "Civic's tap floors are 48 by 48 for a finger and 24 by 24 for a "
-      'pointer: a target can grow, never shrink below them.';
+      "Civic's tap floors are ui_core's, 40 by 40 for a finger and 24 by 24 "
+      'for a pointer: a target can grow, never shrink below them.';
 
   /// Civic by day: white cards on a cool blue-grey ground, ink words, one
   /// blue for action.
@@ -514,14 +528,45 @@ final class CivicThemeData with Diagnosticable {
   factory CivicThemeData.dark() =>
       CivicThemeData.from(brightness: Brightness.dark);
 
-  /// The preset named [id] ([presets]) by [brightness].
+  /// The preset named [id] ([presets]) by [brightness]: Civic with that
+  /// palette's action colour, its words, errors, successes and focus plate
+  /// Civic's own.
   factory CivicThemeData.preset(String id, Brightness brightness) {
     assert(presets.contains(id), 'Civic has no preset $id');
-    return CivicThemeData.from(brightness: brightness);
+    final seeds = _presetActions[id];
+    return CivicThemeData.from(
+      brightness: brightness,
+      action: seeds == null
+          ? null
+          : brightness == Brightness.dark
+          ? seeds.$2
+          : seeds.$1,
+    );
   }
 
-  /// Civic's presets, by id; the first is the default.
-  static const List<String> presets = ['civic'];
+  /// Civic's six palettes, by id; the first, civic's blue, is the default.
+  /// Each names an action colour: harbour a deep petrol, indigo a
+  /// violet-blue, heather a purple, plum a red-violet and slate the ink
+  /// itself, none of them the green of a success, the red of an error or
+  /// the focus's yellow.
+  static const List<String> presets = [
+    'civic',
+    'harbour',
+    'indigo',
+    'heather',
+    'plum',
+    'slate',
+  ];
+
+  // Each palette's action seed by day and by night; [CivicThemeData.from]
+  // takes it to 7:1 against the page.
+  static const Map<String, (Color, Color)> _presetActions = {
+    'harbour': (Color(0xFF00596B), Color(0xFF66C8DA)),
+    'indigo': (Color(0xFF343F9C), Color(0xFFB4BCF5)),
+    'heather': (Color(0xFF5A2D91), Color(0xFFC5AEF2)),
+    'plum': (Color(0xFF7E1F5E), Color(0xFFF0A6D2)),
+    'slate': (Color(0xFF25313B), Color(0xFFD3DCE3)),
+  };
 
   /// Civic from an app's own colours: [action] for buttons and links,
   /// [danger] for errors, [success] for what went well, [focus] for the
@@ -535,6 +580,9 @@ final class CivicThemeData with Diagnosticable {
   /// night). The words on a button's face are picked to reach 4.5:1 (they
   /// are large and bold). [focus] must carry ink words at 7:1: a debug
   /// assert names a plate that cannot.
+  ///
+  /// [fontFamilyFallback] names the families every step of both ramps falls
+  /// back on after Civic's own (see [CivicTextTheme.standard]).
   factory CivicThemeData.from({
     required Brightness brightness,
     Color? action,
@@ -544,6 +592,7 @@ final class CivicThemeData with Diagnosticable {
     String? fontFamily,
     String? fontPackage,
     double capHeight = CivicTextTheme.atkinsonCapHeight,
+    List<String> fontFamilyFallback = const [],
   }) {
     final dark = brightness == Brightness.dark;
     final ink = dark ? const Color(0xFFF1F3F5) : const Color(0xFF0C1116);
@@ -552,36 +601,35 @@ final class CivicThemeData with Diagnosticable {
     // The ground pages stand on: a cool blue-grey by day, the deepest slate
     // by night; cards, fields and lists stand on it in the page's colour.
     final ground = dark ? const Color(0xFF0B0F12) : const Color(0xFFECF0F4);
-    // Words stand on both: they are measured on the one they read worse on.
-    final read = dark ? page : ground;
-    final act = _wordsOn(
-      read,
+    // Words stand on both, at 7:1: a seed that falls short takes the
+    // nearest tone of its hue that reads so on each (ui_core's RawPalette).
+    Color words(Color seed) =>
+        RawPalette.readableTone(seed, on: [page, ground], ratio: 7);
+    final act = words(
       action ?? (dark ? const Color(0xFF7DB8F2) : const Color(0xFF0F4C81)),
-      dark,
     );
     final onAct = _onColor(act);
-    final err = _wordsOn(
-      read,
+    final err = words(
       danger ?? (dark ? const Color(0xFFFF9A8F) : const Color(0xFFA8180C)),
-      dark,
     );
-    final ok = _wordsOn(
-      read,
+    final ok = words(
       success ?? (dark ? const Color(0xFF7FD6A2) : const Color(0xFF0B6136)),
-      dark,
     );
     const onPlate = Color(0xFF0C1116);
     final plate = focus ?? const Color(0xFFFFD21F);
     assert(
       [act, err, ok].every(
-        (c) => contrastRatio(c, page) >= 7 && contrastRatio(c, ground) >= 7,
+        (c) =>
+            RawPalette.contrastRatio(c, page) >= 7 &&
+            RawPalette.contrastRatio(c, ground) >= 7,
       ),
       "Civic's words reach 7:1 against the page and its ground.",
     );
     assert(
-      contrastRatio(plate, onPlate) >= 7,
+      RawPalette.contrastRatio(onPlate, plate) >= 7,
       "Civic's focus plate carries ink words at 7:1: "
-      '$plate reaches ${contrastRatio(plate, onPlate).toStringAsFixed(2)}:1 '
+      '$plate reaches '
+      '${RawPalette.contrastRatio(onPlate, plate).toStringAsFixed(2)}:1 '
       'with ink. Take a lighter, warmer plate.',
     );
     // A secondary button's face: the action's own tint, no stroke round it.
@@ -628,6 +676,7 @@ final class CivicThemeData with Diagnosticable {
         fontFamily: fontFamily,
         fontPackage: fontPackage,
         capHeight: capHeight,
+        fontFamilyFallback: fontFamilyFallback,
       ),
       compactText: CivicTextTheme.standard(
         ink: ink,
@@ -635,6 +684,7 @@ final class CivicThemeData with Diagnosticable {
         fontFamily: fontFamily,
         fontPackage: fontPackage,
         capHeight: capHeight,
+        fontFamilyFallback: fontFamilyFallback,
       ),
     );
   }
@@ -660,46 +710,25 @@ final class CivicThemeData with Diagnosticable {
   static Color _onColor(Color c) {
     const white = Color(0xFFFFFFFF);
     const deep = Color(0xFF0A1A2B);
-    final on = contrastRatio(c, white) >= contrastRatio(c, deep) ? white : deep;
+    final on =
+        RawPalette.contrastRatio(white, c) >= RawPalette.contrastRatio(deep, c)
+        ? white
+        : deep;
     assert(
-      contrastRatio(c, on) >= 4.5,
-      'Words on $c reach only ${contrastRatio(c, on).toStringAsFixed(2)}:1.',
+      RawPalette.contrastRatio(on, c) >= 4.5,
+      'Words on $c reach only '
+      '${RawPalette.contrastRatio(on, c).toStringAsFixed(2)}:1.',
     );
     return on;
   }
 
-  /// [seed], or the nearest tone of its hue that reads at 7:1 on [page]:
-  /// darker by day, lighter by night.
-  static Color _wordsOn(Color page, Color seed, bool dark) {
-    if (contrastRatio(seed, page) >= 7) return seed;
-    final hsl = HSLColor.fromColor(seed);
-    // The tone runs from the seed's lightness toward black by day, white
-    // by night; the first that reaches 7:1 is the one nearest the seed.
-    var near = hsl.lightness;
-    var far = dark ? 1.0 : 0.0;
-    for (var i = 0; i < 24; i++) {
-      final mid = (near + far) / 2;
-      if (contrastRatio(hsl.withLightness(mid).toColor(), page) >= 7) {
-        far = mid;
-      } else {
-        near = mid;
-      }
-    }
-    // The channels round to 8 bits: a step on where that fell just short.
-    var tone = hsl.withLightness(far).toColor();
-    while (contrastRatio(tone, page) < 7 && far > 0 && far < 1) {
-      far = (far + (dark ? 0.004 : -0.004)).clamp(0.0, 1.0);
-      tone = hsl.withLightness(far).toColor();
-    }
-    return tone.withValues(alpha: seed.a);
-  }
-
   /// WCAG's contrast ratio between [a] and [b], 1 to 21.
-  static double contrastRatio(Color a, Color b) {
-    final x = a.computeLuminance();
-    final y = b.computeLuminance();
-    return x > y ? (x + 0.05) / (y + 0.05) : (y + 0.05) / (x + 0.05);
-  }
+  @Deprecated(
+    "Use ui_core's RawPalette.contrastRatio, the same ratio. "
+    'This method was deprecated in 0.7.0 and is removed in 0.8.0.',
+  )
+  static double contrastRatio(Color a, Color b) =>
+      RawPalette.contrastRatio(a, b);
 
   /// The solid edge under a button of [c]: darker by day, deeper by night.
   static Color _edgeOf(Color c, bool dark) {
@@ -810,8 +839,8 @@ final class CivicThemeData with Diagnosticable {
   /// `context.civicText.body` follows the window.
   TextStyle get body => compactText.body;
 
-  /// The floors a tap reaches: 48 for a finger, 24 for a pointer. They can
-  /// rise, never fall (an assert holds them): a large target is the look.
+  /// The floors a tap reaches: ui_core's 40 for a finger, 24 for a pointer.
+  /// They can rise, never fall (an assert holds them).
   final RawTapTargets tapTargets;
 
   /// [CivicButton]'s component theme: the page's one action.
@@ -1677,7 +1706,7 @@ class _CivicScope extends InheritedTheme {
 /// It is the whole install: put one in any app's `builder:`, under a
 /// `MaterialApp`, a `CupertinoApp` or a `WidgetsApp` alike. Under it, every
 /// text has Civic's body style to fall back on, Flutter's own text field
-/// wears Civic's caret and selection with no ink, taps reach 48 by 48 for a
+/// wears Civic's caret and selection with no ink, taps reach 40 by 40 for a
 /// finger and 24 by 24 for a pointer, and spacing stands on a 4 pt grid.
 ///
 /// ```dart
@@ -1763,7 +1792,10 @@ class CivicTheme extends StatelessWidget {
       CivicThemeData.floorsHold(data.tapTargets),
       CivicThemeData._floorsMessage,
     );
-    final text = textOf(context);
+    // The ramp from [data] for the window's width: [textOf] would read the
+    // theme above this one, not [data].
+    final width = MediaQuery.maybeSizeOf(context)?.width ?? 1024;
+    final text = width < CivicLayout.medium ? data.compactText : data.text;
     // The app's page change, from the Material theme round Civic (an app
     // puts civicPageTransitions there): the theme Civic puts under its parts
     // is the one a MaterialPageRoute under them reads.
@@ -1802,6 +1834,7 @@ class CivicTheme extends StatelessWidget {
     useMaterial3: true,
     brightness: t.brightness,
     fontFamily: t.text.body.fontFamily,
+    fontFamilyFallback: t.text.body.fontFamilyFallback,
     scaffoldBackgroundColor: t.ground,
     canvasColor: t.background,
     splashFactory: NoSplash.splashFactory,

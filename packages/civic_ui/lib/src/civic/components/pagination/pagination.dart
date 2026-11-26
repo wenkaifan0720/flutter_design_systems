@@ -150,7 +150,9 @@ class CivicPagination extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      child: Wrap(
+      // The links and numbers stand 8 apart face to face, their targets
+      // reaching into the room between (ui_core's RawChipGroup).
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: CivicSpacing.s8,
         runSpacing: CivicSpacing.s8,

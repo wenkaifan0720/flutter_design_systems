@@ -5,15 +5,29 @@ words, answers checked before they are sent.
 
 ![Civic's start page at desktop and phone width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/civic_ui/screenshots/hero.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/civic/)** ·
-[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/civic/) ·
-[API reference](https://pub.dev/documentation/civic_ui/latest/) ·
-[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/civic/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=civic) · [API reference](https://pub.dev/documentation/civic_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
 ```sh
 flutter pub add civic_ui material_ui
+```
+
+A whole app: Civic's theme over a bare `WidgetsApp`, one page and one button.
+
+```dart
+import 'package:civic_ui/civic_ui.dart';
+import 'package:flutter/widgets.dart';
+
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFF0F4C81),
+    builder: (context, _) => CivicTheme(
+      data: CivicThemeData.light(),
+      child: CivicScaffold(body: CivicButton(onPressed: () {}, child: const Text('Continue'))),
+    ),
+  ),
+);
 ```
 
 `material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; the quick start's app is a
@@ -96,8 +110,9 @@ class _VehiclePageState extends State<VehiclePage> {
 Civic includes question pages, forms, navigation, sortable tables and an answers summary for public services,
 and its own version of every common part: inputs and pickers, dates, menus and sheets, cards and layouts, avatars
 and badges, progress and skeletons, and charts that can show their figures as a table.
-Atkinson Hyperlegible Next is the default typeface. Blue identifies actions, red marks errors, and a yellow
-focus indicator with a dark ink bar shows which control will respond to the keyboard in both themes.
+Atkinson Hyperlegible Next is the default typeface. One colour identifies actions (blue, or one of six palettes), red
+marks errors, and a yellow focus indicator with a dark ink bar shows which control will respond to the keyboard in both
+themes.
 
 On a phone, the primary destinations appear at the bottom. Their labels follow the system text size and can
 wrap into another row. From 600 logical pixels wide, the destinations move to a rail. From 1024, the service
@@ -153,7 +168,15 @@ WidgetsApp(
 ## Make it yours
 
 Civic keeps what makes it trustworthy: the yellow focus over a thick ink bar, the fields' 2 pt ink edges, large type, and tap
-targets of 48 for a finger and 24 for a pointer. Inside that, your service's colours, face and spacing are yours.
+targets of at least 40 for a finger and 24 for a pointer (ui_core's floors). Inside that, your service's colours, face and
+spacing are yours.
+
+Six palettes, each an action colour Civic's words, errors and focus stand beside: civic (blue, the default), harbour,
+indigo, heather, plum and slate.
+
+```dart
+CivicThemeData.preset('harbour', Brightness.light)
+```
 
 Your brand. Each colour is held to 7:1 against the page, darkened by day and lightened by night, its hue kept
 (#0A7D4F becomes about #086640 by day and #0FB673 by night):
@@ -164,6 +187,7 @@ CivicTheme(
     brightness: Brightness.light,
     action: const Color(0xFF0A7D4F),
     fontFamily: 'Inter', // reaches every part and Flutter's own widgets
+    fontFamilyFallback: const ['NotoSansJP'], // for a script the face lacks
   ),
   child: child,
 )
@@ -196,7 +220,7 @@ on its solid edge) and `CivicWell` (a field's box), which bring the focus with t
 
 Every part works at 200% text, right to left, with a screen reader and with the keyboard alone. Errors are said in
 words twice: in a summary at the top of the page, which takes the focus and links to each field, and at the field,
-which stands on the error rule. Targets are 48 points for a finger and 24 for a
+which stands on the error rule. Targets are 40 points for a finger and 24 for a
 pointer at the least. Under Reduce Motion, on any platform that asks for it (iOS's setting included), a colour or
 opacity change is a short fade and a dialog is up within 150 ms; Civic's moves are critically damped, so nothing
 bounces.
@@ -208,7 +232,8 @@ Civic's parts take their own words (Back, Close) from ui_core's localizations, i
 service (Continue, There is a problem, Step 1 of 3, Change) are yours to give, in your reader's language.
 
 A page in Arabic reads right to left in Noto Sans Arabic, and the example service says its counts in the form each
-number takes.
+number takes. For another script, load a face for it and name it in `CivicThemeData.from(fontFamilyFallback:)`:
+every step of the type falls back on it.
 
 ## Keyboard navigation
 

@@ -1,5 +1,5 @@
-// The foundations: the palette by role (each with its contrast on the
-// page), the type ramp, the focus every part shares, the material an app's
+// The foundations: the six palettes, the palette by role (each with its
+// contrast on the page), the type ramp, the focus every part shares, the material an app's
 // own part can wear, what an app can change, the measures, and how
 // dates, times and sums are written.
 import 'package:material_ui/material_ui.dart';
@@ -11,10 +11,11 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Foundations',
   intro:
-      'One accent for each job: blue to act, red for an error, green for '
-      'done, yellow for where the keyboard is. Everything else is ink on '
-      'white.',
+      "One accent for each job: the palette's colour to act (blue in "
+      "Civic's own), red for an error, green for done, yellow for where the "
+      'keyboard is. Everything else is ink on white.',
   sections: const [
+    _Palettes(),
     _Palette(),
     _Type(),
     _Focus(),
@@ -24,6 +25,89 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
     _Words(),
   ],
 );
+
+/// The six palettes ([CivicThemeData.presets]) in the page's brightness,
+/// each a page of its own under its own theme: its name, a button and a
+/// link, the parts themselves.
+class _Palettes extends StatelessWidget {
+  const _Palettes();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.civicTheme;
+    return KitSection(
+      title: 'Palettes',
+      caption:
+          'Six action colours; the words, errors, successes and the focus '
+          'stay the same in each.',
+      spacing: CivicSpacing.s8,
+      children: [
+        // A tile is 168 wide at the reading size, two to a phone's row and three to the reading column's, and
+        // grows with the text (one to a row at twice the size) so a button's word never breaks.
+        LayoutBuilder(
+          builder: (context, box) {
+            final width = MediaQuery.textScalerOf(context)
+                .scale(168)
+                .clamp(0.0, box.maxWidth);
+            return Wrap(
+              spacing: CivicSpacing.s8,
+              runSpacing: CivicSpacing.s8,
+              children: [
+                for (final id in CivicThemeData.presets)
+                  _Swatch(
+                    id,
+                    CivicThemeData.preset(id, t.brightness),
+                    width: width,
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _Swatch extends StatelessWidget {
+  const _Swatch(this.id, this.palette, {required this.width});
+
+  final String id;
+  final CivicThemeData palette;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) => CivicTheme(
+    data: palette,
+    child: Builder(
+      builder: (context) {
+        final t = context.civicTheme;
+        return Container(
+          width: width,
+          decoration: BoxDecoration(
+            color: t.background,
+            border: Border.all(color: t.rule),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(CivicSpacing.s12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: CivicSpacing.s8,
+              children: [
+                Text(
+                  '${id[0].toUpperCase()}${id.substring(1)}',
+                  style: context.civicText.label,
+                ),
+                CivicButton(onPressed: () {}, child: const Text('Continue')),
+                CivicLink(onPressed: () {}, child: const Text('Link')),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
 
 class _Palette extends StatelessWidget {
   const _Palette();
@@ -306,7 +390,7 @@ class _Measures extends StatelessWidget {
           ),
           const CivicSummaryRow(
             label: 'Targets',
-            value: Text('48 for a finger, 24 for a pointer at the least'),
+            value: Text('40 for a finger, 24 for a pointer at the least'),
           ),
           const CivicSummaryRow(
             label: 'Corners',

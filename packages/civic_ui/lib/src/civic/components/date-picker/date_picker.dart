@@ -262,10 +262,11 @@ class _CalendarButton extends StatelessWidget {
   final int months;
   final bool enabled;
 
-  // The calendar's own width: its months of seven days side by side, the
-  // gap between them, and the surface's padding.
-  double get _width =>
-      months * 7 * CivicCalendar.dayWidth +
+  // The calendar's own width at [context]: its months of seven days side by
+  // side, each day a finger's floor wide, the gap between them, and the
+  // surface's padding.
+  double _widthOf(BuildContext context) =>
+      months * 7 * RawTapTargets.of(context).touch.width +
       (months - 1) * CivicCalendar.monthGap +
       2 * CivicSpacing.s16;
 
@@ -295,7 +296,7 @@ class _CalendarButton extends StatelessWidget {
       overlayBuilder: (context, info) => FadeTransition(
         opacity: info.animation,
         child: SizedBox(
-          width: math.min(_width, info.maxSize.width),
+          width: math.min(_widthOf(context), info.maxSize.width),
           child: DecoratedBox(
             decoration: civicFloating(
               face: face,

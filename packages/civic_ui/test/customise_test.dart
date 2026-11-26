@@ -1,6 +1,6 @@
 // What an app can change and what it cannot: a brand colour is held to 7:1
 // on the ground and on a card by day and by night, keeping its hue; a focus plate that
-// cannot carry ink words and a tap floor under 48 are refused; a part's
+// cannot carry ink words and a tap floor under 40 are refused; a part's
 // own style wins over its theme slot, which wins over the look; the face
 // reaches Flutter's own widgets under Civic.
 import 'package:civic_ui/civic_ui.dart';
@@ -8,7 +8,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-double _hue(Color c) => HSLColor.fromColor(c).hue;
+// Hue and tone as ui_core's RawPalette keeps and walks them (HCT, Material's
+// own colour space).
+double _hue(Color c) => RawHct.fromColor(c).hue;
+double _tone(Color c) => RawHct.fromColor(c).tone;
 
 void main() {
   group('the brand factory', () {
@@ -20,31 +23,25 @@ void main() {
         action: green,
       );
       // By day the ground is the darker of the two the words stand on.
-      final ratio = CivicThemeData.contrastRatio(t.action, t.ground);
+      final ratio = RawPalette.contrastRatio(t.action, t.ground);
       expect(ratio, greaterThanOrEqualTo(7));
       expect(ratio, lessThan(7.4), reason: 'darkened no further than needed');
       expect(
-        CivicThemeData.contrastRatio(t.action, t.background),
+        RawPalette.contrastRatio(t.action, t.background),
         greaterThanOrEqualTo(7),
       );
       expect(_hue(t.action), closeTo(_hue(green), 2));
-      expect(
-        HSLColor.fromColor(t.action).lightness,
-        lessThan(HSLColor.fromColor(green).lightness),
-      );
+      expect(_tone(t.action), lessThan(_tone(green)));
     });
 
     test('lightens it by night', () {
       final t = CivicThemeData.from(brightness: Brightness.dark, action: green);
       expect(
-        CivicThemeData.contrastRatio(t.action, t.background),
+        RawPalette.contrastRatio(t.action, t.background),
         greaterThanOrEqualTo(7),
       );
       expect(_hue(t.action), closeTo(_hue(green), 2));
-      expect(
-        HSLColor.fromColor(t.action).lightness,
-        greaterThan(HSLColor.fromColor(green).lightness),
-      );
+      expect(_tone(t.action), greaterThan(_tone(green)));
     });
 
     test('holds danger and success the same way', () {
@@ -56,7 +53,7 @@ void main() {
         );
         for (final c in [t.danger, t.success]) {
           expect(
-            CivicThemeData.contrastRatio(c, t.background),
+            RawPalette.contrastRatio(c, t.background),
             greaterThanOrEqualTo(7),
           );
         }
@@ -73,7 +70,7 @@ void main() {
         for (final b in Brightness.values) {
           final t = CivicThemeData.from(brightness: b, action: seed);
           expect(
-            CivicThemeData.contrastRatio(t.onAction, t.action),
+            RawPalette.contrastRatio(t.onAction, t.action),
             greaterThanOrEqualTo(4.5),
           );
         }
@@ -90,7 +87,7 @@ void main() {
           expect(theme.focusBar, const Color(0xFF0C1116));
           expect(theme.focusBar, theme.onFocus);
           expect(
-            CivicThemeData.contrastRatio(theme.focusBar, theme.focus),
+            RawPalette.contrastRatio(theme.focusBar, theme.focus),
             greaterThanOrEqualTo(7),
           );
           const ink = Color(0xFF101820);
@@ -114,22 +111,21 @@ void main() {
       );
     });
 
-    test('refuses a tap floor under 48 for a finger or 24 for a pointer', () {
+    test('refuses a tap floor under 40 for a finger or 24 for a pointer', () {
       final t = CivicThemeData.light();
       expect(
         () =>
-            t.copyWith(tapTargets: const RawTapTargets(touch: Size.square(40))),
+            t.copyWith(tapTargets: const RawTapTargets(touch: Size.square(39))),
         throwsAssertionError,
       );
       expect(
         () => t.copyWith(
-          tapTargets: const RawTapTargets(
-            touch: Size.square(48),
-            pointer: Size.square(20),
-          ),
+          tapTargets: const RawTapTargets(pointer: Size.square(20)),
         ),
         throwsAssertionError,
       );
+      // ui_core's own floors hold.
+      t.copyWith(tapTargets: RawTapTargets.fallback);
       // A floor can rise.
       t.copyWith(
         tapTargets: const RawTapTargets(

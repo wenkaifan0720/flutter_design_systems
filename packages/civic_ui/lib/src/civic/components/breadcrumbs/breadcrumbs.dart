@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../theme.dart';
@@ -56,7 +57,9 @@ class CivicBreadcrumbs extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      child: Wrap(
+      // The places and chevrons stand 4 apart face to face, a link's target
+      // reaching into the room between (ui_core's RawChipGroup).
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: CivicSpacing.s4,
         children: [

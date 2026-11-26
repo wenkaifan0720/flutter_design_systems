@@ -9,33 +9,36 @@ import 'spinner_arc.dart';
 import 'spring.dart';
 
 /// A solid button's face by night, from [colour] (the action's or the
-/// error's): its hue at the lightest tone that carries white words at
-/// 4.5:1 (they are large and bold), on an edge of the same hue darker. The
-/// light tone those colours take by night for words on the page (7:1) is
-/// too pale for a face: a button in it read washed out. This one keeps the
-/// button's weight on the slate (about 3.8:1 against the night page).
+/// error's): its hue at full strength at the lightest tone that carries
+/// white words at 4.5:1 (they are large and bold), on an edge of the same
+/// hue darker. The light tone those colours take by night for words on the
+/// page (7:1) is too pale for a face, and too grey: a button in it read
+/// washed out. This one keeps the button's weight on the slate (about 3.8:1
+/// against the night page).
 (Color, Color, Color) civicNightFace(Color colour) {
   const white = Color(0xFFFFFFFF);
   final hsl = HSLColor.fromColor(colour);
-  final hue = hsl.withSaturation(math.min(hsl.saturation, 0.85));
-  var near = hue.lightness;
-  var far = 0.0;
-  for (var i = 0; i < 24; i++) {
-    final mid = (near + far) / 2;
-    if (CivicThemeData.contrastRatio(hue.withLightness(mid).toColor(), white) >=
-        4.5) {
-      far = mid;
-    } else {
-      near = mid;
-    }
-  }
-  var face = hue.withLightness(far).toColor();
-  // The channels round to 8 bits: a step on where that fell just short.
-  while (CivicThemeData.contrastRatio(face, white) < 4.5 && far > 0) {
-    far = math.max(0, far - 0.004);
-    face = hue.withLightness(far).toColor();
-  }
-  return (face, white, hue.withLightness(far * 0.68).toColor());
+  // The hue at full strength: the colour's saturation (to 0.85) at half
+  // lightness. A pale night colour's own chroma is a tint's.
+  final strong = RawHct.fromColor(
+    hsl
+        .withSaturation(math.min(hsl.saturation, 0.85))
+        .withLightness(0.5)
+        .toColor(),
+  );
+  // The lightest tone white reads on (ui_core's RawPalette walks it). A
+  // ratio to white is a matter of tone alone, so the strong hue takes that
+  // tone; the second walk only settles the channels' rounding.
+  final tone = RawHct.fromColor(
+    RawPalette.readableTone(colour, on: const [white], ratio: 4.5),
+  ).tone;
+  final face = RawPalette.readableTone(
+    strong.withTone(tone).toColor(),
+    on: const [white],
+    ratio: 4.5,
+  );
+  final lit = HSLColor.fromColor(face);
+  return (face, white, lit.withLightness(lit.lightness * 0.68).toColor());
 }
 
 /// Which of Civic's buttons a [CivicButtonFace] paints.

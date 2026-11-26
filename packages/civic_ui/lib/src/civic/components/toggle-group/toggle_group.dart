@@ -172,6 +172,8 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
+    // Each segment's least target: the tap floor where it stands.
+    final floor = RawTapTargets.of(context).floorOn();
     final byValue = {for (final s in segments) s.value: s};
     final change = onSelectionChanged;
     String labelOf(T v) =>
@@ -221,7 +223,7 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
         isEnabled: (v) => byValue[v]?.enabled ?? false,
         labelOf: labelOf,
         semanticLabel: labelText,
-        minimumSize: const Size(48, 48),
+        minimumSize: floor,
         layoutBuilder: layout,
         itemBuilder: face,
       );
@@ -274,9 +276,9 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
                       child: Listener(
                         behavior: HitTestBehavior.opaque,
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minWidth: 48,
-                            minHeight: 48,
+                          constraints: BoxConstraints(
+                            minWidth: floor.width,
+                            minHeight: floor.height,
                           ),
                           child: Center(
                             widthFactor: 1,

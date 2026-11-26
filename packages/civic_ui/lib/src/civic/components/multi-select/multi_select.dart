@@ -126,8 +126,11 @@ class CivicMultiSelect<T extends Object> extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: CivicSpacing.s8,
         children: [
+          // The chosen stand 8 apart face to face, run under run too, their
+          // targets reaching into the room between (ui_core's
+          // RawChipGroup): in a Wrap each target's slack stood between.
           if (tags.isNotEmpty)
-            Wrap(
+            RawChipGroup(
               spacing: CivicSpacing.s8,
               runSpacing: CivicSpacing.s8,
               children: tags,

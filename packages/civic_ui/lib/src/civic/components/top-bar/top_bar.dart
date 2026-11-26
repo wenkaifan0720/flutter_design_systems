@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -240,10 +243,25 @@ class CivicTopBar extends StatelessWidget {
             ),
           );
     // The bar's words start in line with the side navigation's places, or
-    // with the centred page frame's start when there is none.
-    final width = MediaQuery.sizeOf(context).width;
-    final margin = CivicFrameScope.startOf(context, width);
-    final endMargin = CivicFrameScope.endOf(context, width);
+    // with the centred page frame's start when there is none. As a
+    // scaffold's top band the bar spans the window; anywhere else (in the
+    // page, a pane, a sheet or a gallery's section narrower than the window)
+    // it stands alone and centres that frame on its own width.
+    final window = MediaQuery.sizeOf(context).width;
+    final margin = CivicFrameScope.startOf(context, window);
+    final endMargin = CivicFrameScope.endOf(context, window);
+    final framed = CivicBarSlot.of(context);
+    EdgeInsetsDirectional insets(double width) {
+      final own = CivicLayout.frameInset(math.min(width, window));
+      final start = framed ? margin : own;
+      final end = framed ? endMargin : own;
+      return EdgeInsetsDirectional.only(
+        top: top,
+        start: lead == null ? start : start - CivicSpacing.s12,
+        end: actions.isEmpty ? end : end - CivicSpacing.s12,
+      );
+    }
+
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -253,12 +271,9 @@ class CivicTopBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: EdgeInsetsDirectional.only(
-                top: top,
-                start: lead == null ? margin : margin - CivicSpacing.s12,
-                end: actions.isEmpty ? endMargin : endMargin - CivicSpacing.s12,
-              ),
+            _WidthPadding(
+              window: window,
+              insets: insets,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(minHeight: height),
                 child: IconTheme.merge(
@@ -313,5 +328,111 @@ class CivicTopBar extends StatelessWidget {
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );
+  }
+}
+
+/// Pads [child] by the [insets] its own width gives: the window's, [window],
+/// while its width is unbounded, and to measure its least and most width.
+class _WidthPadding extends SingleChildRenderObjectWidget {
+  const _WidthPadding({
+    required this.window,
+    required this.insets,
+    required super.child,
+  });
+
+  final double window;
+  final EdgeInsetsDirectional Function(double width) insets;
+
+  @override
+  _RenderWidthPadding createRenderObject(BuildContext context) =>
+      _RenderWidthPadding(window, insets, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderWidthPadding renderObject,
+  ) => renderObject
+    ..window = window
+    ..insets = insets
+    ..textDirection = Directionality.of(context);
+}
+
+class _RenderWidthPadding extends RenderShiftedBox {
+  _RenderWidthPadding(this._window, this._insets, this._textDirection)
+    : super(null);
+
+  double _window;
+  set window(double value) {
+    if (value == _window) return;
+    _window = value;
+    markNeedsLayout();
+  }
+
+  EdgeInsetsDirectional Function(double width) _insets;
+  set insets(EdgeInsetsDirectional Function(double width) value) {
+    _insets = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  EdgeInsets _at(double width) =>
+      _insets(width.isFinite ? width : _window).resolve(_textDirection);
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    final p = _at(_window);
+    return p.horizontal +
+        (child?.getMinIntrinsicWidth(math.max(0, height - p.vertical)) ?? 0);
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    final p = _at(_window);
+    return p.horizontal +
+        (child?.getMaxIntrinsicWidth(math.max(0, height - p.vertical)) ?? 0);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    final p = _at(width);
+    return p.vertical +
+        (child?.getMinIntrinsicHeight(math.max(0, width - p.horizontal)) ?? 0);
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    final p = _at(width);
+    return p.vertical +
+        (child?.getMaxIntrinsicHeight(math.max(0, width - p.horizontal)) ?? 0);
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    final p = _at(constraints.maxWidth);
+    final inner = child?.getDryLayout(constraints.deflate(p)) ?? Size.zero;
+    return constraints.constrain(
+      Size(inner.width + p.horizontal, inner.height + p.vertical),
+    );
+  }
+
+  @override
+  void performLayout() {
+    final p = _at(constraints.maxWidth);
+    final c = child;
+    if (c == null) {
+      size = constraints.constrain(Size(p.horizontal, p.vertical));
+      return;
+    }
+    c.layout(constraints.deflate(p), parentUsesSize: true);
+    (c.parentData! as BoxParentData).offset = Offset(p.left, p.top);
+    size = constraints.constrain(
+      Size(c.size.width + p.horizontal, c.size.height + p.vertical),
+    );
   }
 }

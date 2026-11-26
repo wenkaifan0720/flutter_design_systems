@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 /// Civic's fixed measures: the edges, the focus bar and the boxes every part
 /// is drawn with.
@@ -74,20 +75,10 @@ BoxDecoration civicFloating({
   ],
 );
 
-/// [edge] lifted toward white, a twentieth at a time, until it reads at 3:1
-/// against [face].
-Color _readable(Color edge, Color face) {
-  var lifted = edge;
-  for (var step = 1; step <= 20 && _contrast(lifted, face) < 3; step++) {
-    lifted = Color.lerp(edge, const Color(0xFFFFFFFF), step / 20)!;
-  }
-  return lifted;
-}
-
-double _contrast(Color a, Color b) {
-  final x = a.computeLuminance(), y = b.computeLuminance();
-  return (math.max(x, y) + 0.05) / (math.min(x, y) + 0.05);
-}
+/// [edge], or the nearest tone of its hue that reads at 3:1 against [face]
+/// (ui_core's RawPalette).
+Color _readable(Color edge, Color face) =>
+    RawPalette.readableTone(edge, on: [face], ratio: 3);
 
 /// Paints a face: its fill and, under it, a solid edge [edgeHeight] tall
 /// that a press sinks onto ([press] 0 to 1); with [focus] (0 to 1) the fill
