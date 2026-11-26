@@ -1057,21 +1057,54 @@ void main() {
     ),
   );
   // Each ball with its initials where they keep the room (a little nearer
-  // its lit top, where its rim is widest), then moved close to that edge.
-  for (final (painter, rest, close, edge) in const [
-    (_Ball.nightEnd, Offset.zero, Offset(5, 0), 'right side'),
-    (_Ball.nightFoot, Offset.zero, Offset(0, 8), 'foot'),
-    (_Ball.dayStart, Offset.zero, Offset(-5, 0), 'left side'),
-    (_Ball.dayTop, Offset(0, -3), Offset(0, -6), 'top'),
+  // its lit top, where its rim is widest), then moved toward that edge half
+  // a pixel at a time, from where they come closer than 4 px until their ink
+  // reaches it: named at every step, over the rim as over the face.
+  for (final (painter, rest, toward, from, to, edge) in const [
+    (_Ball.nightEnd, Offset.zero, Offset(1, 0), 4.5, 7.5, 'right side'),
+    (_Ball.nightFoot, Offset.zero, Offset(0, 1), 8.0, 11.0, 'foot'),
+    (_Ball.dayStart, Offset.zero, Offset(-1, 0), 4.5, 7.5, 'left side'),
+    (_Ball.dayTop, Offset(0, -3), Offset(0, -1), 6.0, 9.0, 'top'),
   ]) {
     testWidgets("a painted face's rim shaded toward the page is the face's: "
         '$painter', (tester) async {
       expect(await _check(tester, ball(painter, shift: rest)), isEmpty);
-      final named = await _check(tester, ball(painter, shift: close));
-      expect(named, hasLength(1));
-      expect(named.single, contains('from the $edge of its face'));
+      for (var by = from; by <= to; by += 0.5) {
+        final named = await _check(tester, ball(painter, shift: toward * by));
+        expect(named, hasLength(1), reason: 'moved $by px');
+        expect(
+          named.single,
+          contains('from the $edge of its face'),
+          reason: 'moved $by px',
+        );
+      }
     });
   }
+
+  // Initials moved off a ball's middle, toward where its shaded rim curves
+  // round: by its end, above or below its middle, they are named from that
+  // side, read over the rim there too; over its foot, beside the curve, the
+  // page past the curve is not their ink.
+  testWidgets("a painted face's rim is read off its middle too", (
+    tester,
+  ) async {
+    for (final shift in const [Offset(4, 7.5), Offset(4, -4.5)]) {
+      final named = await _check(tester, ball(_Ball.nightEnd, shift: shift));
+      expect(named, hasLength(1), reason: 'moved $shift');
+      expect(
+        named.single,
+        contains('from the right side of its face'),
+        reason: 'moved $shift',
+      );
+    }
+    final foot = await _check(
+      tester,
+      ball(_Ball.nightFoot, shift: const Offset(4, 6)),
+    );
+    expect(foot, hasLength(1));
+    expect(foot.single, contains('from the right side of its face'));
+    expect(foot.single, isNot(contains('foot')));
+  });
 
   // A row (a list tile) whose plate paints the page's colour, with an avatar
   // ball at its start, its rim shaded toward the page: the ball's edge is its

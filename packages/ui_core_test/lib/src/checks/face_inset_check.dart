@@ -39,10 +39,11 @@ part of '../alignment.dart';
 /// the tab over it) holds nothing in. A face its own painter draws reaches
 /// the edge of the box that paints it where its painting runs on unbroken
 /// to that edge (a ball's rim shaded toward the page, darker by night or
-/// lighter by day); a soft shadow inside that box, fading into the page, is
-/// not the face. Only a face the screen shows whole is read; one a scroll
-/// or a clip cuts is read when it comes into view. It reads the drawn
-/// pixels. A test passes its tester's `runAsync`:
+/// lighter by day), and words drawn over that rim are read there as over
+/// the rest of the face; a soft shadow inside that box, fading into the
+/// page, is not the face. Only a face the screen shows whole is read; one a
+/// scroll or a clip cuts is read when it comes into view. It reads the
+/// drawn pixels. A test passes its tester's `runAsync`:
 ///
 /// ```dart
 /// final report = await const DesignFaceInsetCheck(look: 'Comic').check(
@@ -116,9 +117,8 @@ extension on _LabelReader {
   ) {
     final face = _face(control);
     if (face == null || !_holdsIn(face.box)) return const [];
-    final faceRect = face.read
-        ? _withRim(control, face.box, face.rect)
-        : face.rect;
+    final rim = face.read ? _withRim(control, face.box, face.rect) : null;
+    final faceRect = rim?.rect ?? face.rect;
     // Only a face the screen shows whole: one a scroll or a clip cuts, or
     // past the screen's edge, is read when a walk brings it into view.
     final clip = _clipOf(control, throughScrolls: true);
@@ -260,15 +260,22 @@ extension on _LabelReader {
     // its colour nor ink. One its own painter draws round (no shape to read
     // it from) is read inside the run it paints along each row, past an
     // outline round it there too (an outlined face on a page of its colour).
-    final read =
-        _shapeOf(face.box, stroke, f, ink: faceColour) ??
-        p.faceRuns(
-          f,
-          face: faceColour,
-          left: sideLeft,
-          right: sideRight,
-          inset: inset,
-        );
+    // Over a rim it runs on to its box's edge with, its face is what
+    // stands off what is round it there.
+    final read = _overRim(
+      _shapeOf(face.box, stroke, f, ink: faceColour) ??
+          p.faceRuns(
+            f,
+            face: faceColour,
+            left: sideLeft,
+            right: sideRight,
+            inset: inset,
+          ),
+      rim == null ? f : _toBoundary(face.rect),
+      f,
+      round: rim?.round,
+      inset: inset,
+    );
     final name = _nameOf(control);
     for (final t in shown) {
       if (_testFontBox(t, faceColour) || _testFontLetter(t, faceColour)) {
@@ -386,8 +393,13 @@ extension on _LabelReader {
   // pixel from [read]'s edge out to the edge of the box it is painted in
   // ([_paintedIn]) stands off what is round it, so the face runs on to that
   // box's edge there. A soft shadow a painter casts inside its box, faded
-  // into what is round it before the box's edge, is not the face.
-  Rect _withRim(RenderBox control, RenderBox box, Rect read) {
+  // into what is round it before the box's edge, is not the face. With the
+  // colour round that box.
+  ({Rect rect, int round}) _withRim(
+    RenderBox control,
+    RenderBox box,
+    Rect read,
+  ) {
     final p = pixels!;
     final whole = _toBoundary(_paintedIn(control, box, read));
     final f = _toBoundary(read);
@@ -433,9 +445,74 @@ extension on _LabelReader {
           ? whole.bottom
           : f.bottom,
     );
-    return local == f
-        ? read
-        : MatrixUtils.transformRect(boundary!.getTransformTo(null), local);
+    return (
+      rect: local == f
+          ? read
+          : MatrixUtils.transformRect(boundary!.getTransformTo(null), local),
+      round: round,
+    );
+  }
+
+  // [read], widened over the rim [_withRim] read a face to (from [inner],
+  // where its own colour shows, out to [f], its box's edge; both in the
+  // boundary's logical pixels): along each row of a rim at its top or foot,
+  // and each column of one at its side, the face is drawn where it stands
+  // off [round], the colour round it, read [inset] in from where it starts
+  // and ends. Words drawn on a ball's shaded foot are on its face, and their
+  // ink is read there. [read] alone where the face has no rim.
+  bool Function(int x, int y)? _overRim(
+    bool Function(int x, int y)? read,
+    Rect inner,
+    Rect f, {
+    required int? round,
+    required double inset,
+  }) {
+    if (read == null || round == null || inner == f) return read;
+    final p = pixels!;
+    final step = (inset * p.ratio).ceil();
+    final (l, t, r, b) = (
+      (f.left * p.ratio).floor(),
+      (f.top * p.ratio).floor(),
+      (f.right * p.ratio).ceil(),
+      (f.bottom * p.ratio).ceil(),
+    );
+    final (il, it, ir, ib) = (
+      (inner.left * p.ratio).ceil(),
+      (inner.top * p.ratio).ceil(),
+      (inner.right * p.ratio).floor(),
+      (inner.bottom * p.ratio).floor(),
+    );
+    bool off(int x, int y) =>
+        !DrawnPixels.alike(p.colourAt(x, y), round, by: 16);
+    // The first and last of [from]..[to] (stepping by one) where [at] is
+    // off, each [step] further in; an empty run where none is.
+    (int, int) runOf(int from, int to, bool Function(int i) at) {
+      var lo = from;
+      while (lo < to && !at(lo)) {
+        lo++;
+      }
+      var hi = to - 1;
+      while (hi >= lo && !at(hi)) {
+        hi--;
+      }
+      return hi < lo ? (1, 0) : (lo + step, hi - step);
+    }
+
+    final rows = <int, (int, int)>{};
+    final columns = <int, (int, int)>{};
+    return (x, y) {
+      if (read(x, y)) return true;
+      if (x < l || x >= r || y < t || y >= b) return false;
+      if (y < it || y >= ib) {
+        final (lo, hi) = rows[y] ??= runOf(l, r, (x) => off(x, y));
+        return x >= lo && x <= hi;
+      }
+      if (x < il || x >= ir) {
+        final (lo, hi) = columns[x] ??= runOf(t, b, (y) => off(x, y));
+        return y >= lo && y <= hi;
+      }
+      return false;
+    };
   }
 
   // The box [read] is painted in, in global coordinates: the smallest box

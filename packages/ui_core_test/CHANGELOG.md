@@ -1,6 +1,6 @@
 ## 0.5.2
 
-- `DesignFaceInsetCheck` reads a painted face to its rim. A face its own painter draws (a clay or glass ball, an avatar, a lit chip) whose rim is shaded toward the page, darker by night or lighter by day, was read short of that rim, so a label well inside the face was named as close to its edge. Where the face's painting runs on unbroken to the edge of the box that paints it (the smallest box in the control that paints a face and holds the face read), the face reaches that edge; a soft shadow inside that box is not the face.
+- `DesignFaceInsetCheck` reads a painted face to its rim. A face its own painter draws (a clay or glass ball, an avatar, a lit chip) whose rim is shaded toward the page, darker by night or lighter by day, was read short of that rim, so a label well inside the face was named as close to its edge. Where the face's painting runs on unbroken to the edge of the box that paints it (the smallest box in the control that paints a face and holds the face read), the face reaches that edge; a soft shadow inside that box is not the face. Words drawn over that rim are read there as over the rest of the face, so initials close to a ball's shaded foot or lit top, or off its middle by its shaded end, are named.
 - The README's install line asks for this version.
 
 ## 0.5.1
