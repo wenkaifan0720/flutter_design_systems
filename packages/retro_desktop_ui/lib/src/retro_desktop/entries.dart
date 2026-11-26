@@ -2605,8 +2605,8 @@ class _SliderPainter extends CustomPainter {
   }
 
   // The PC's trackbar: a sunken groove, and a grip that points down at it,
-  // lit along its top and left, dark along its right and its point. Focus is
-  // a dotted rectangle round the whole control.
+  // lit along its top and its start, dark along its end and its point (right
+  // to left, the mirror). Focus is a dotted rectangle round the whole control.
   void _paintChisel(
     Canvas canvas,
     Size size,
@@ -2629,6 +2629,7 @@ class _SliderPainter extends CustomPainter {
       retroDesktopChiselEdge(colors, sunken: true),
       outer: stroke,
       inner: hairline,
+      litFromRight: rtl,
     );
     final l = (x - 9).roundToDouble(), r = l + 18;
     final t = (size.height / 2 - 13).roundToDouble();
@@ -2643,6 +2644,13 @@ class _SliderPainter extends CustomPainter {
         Offset(l, body),
       ], true);
     canvas.drawPath(grip, Paint()..color = face);
+    // Right to left the grip's light stands at its top right: its lines are
+    // drawn mirrored across its middle.
+    canvas.save();
+    if (rtl) {
+      canvas.translate(l + r, 0);
+      canvas.scale(-1, 1);
+    }
     void line(List<Offset> pts, Color color) {
       canvas.drawPath(
         Path()..addPolygon(pts, false),
@@ -2654,7 +2662,7 @@ class _SliderPainter extends CustomPainter {
       );
     }
 
-    // Held, the grip sinks: its bevel turns over, light below and right.
+    // Held, the grip sinks: its bevel turns over, light below and toward the end.
     final held = states.contains(WidgetState.pressed);
     final light = held ? colors.outline : colors.bevelLight;
     final light2 = held ? colors.bevelDark : colors.platinumLight;
@@ -2681,6 +2689,7 @@ class _SliderPainter extends CustomPainter {
       Offset(r - 1.5, body - .5),
       Offset(cx, point - 1.5),
     ], dark2);
+    canvas.restore();
     final ring = this.ring;
     if (ring != null && ring.width > 0) {
       final box = (Offset.zero & size).deflate(ring.width / 2);

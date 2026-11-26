@@ -412,8 +412,9 @@ What keeps the look:
 
 - **Screen readers and keyboard.** Every control says its role, name, value and state (checked, selected, expanded,
   unavailable); drawn ornament is left out of the semantics tree. Everything works from the keyboard, and focus follows
-  reading order. Targets are padded to 48 logical pixels for touch and 44 for a pointer, and text keeps 4.5:1 contrast
-  (3:1 when large); both are checked on every page of the example, in every preset, by day and by night.
+  reading order. Every control reaches ui_core's touch floor (40 by 40, or the app's `RawTapTargetScope`) under a
+  finger; the desk's rows and buttons stand at least 40 tall under a pointer; text keeps 4.5:1 contrast (3:1 when
+  large); both are checked on every page of the example, in every preset, by day and by night.
 - **States.** A disabled control keeps its size and dims; a part that only shows a value (a list row with no
   `onPressed`, a rating with no `onChanged`) is a still reading, not a disabled control. An error shows as the warning
   sign and the message in ink.

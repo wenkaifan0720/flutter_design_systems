@@ -349,7 +349,7 @@ class RetroDesktopPopupButton extends StatelessWidget {
   }
 }
 
-/// A text box: white, sunk into the machine, a 1 lp dark line along its top and left. [leading] stands at its start (an
+/// A text box: white, sunk into the machine, a 1 lp dark line along its top and its start. [leading] stands at its start (an
 /// `Icon` takes the field's icon size and ink),
 /// [trailing] a `RetroDesktopKbd` or a small button, [lines] above 1 a box for a note.
 ///
@@ -1546,6 +1546,7 @@ class _ProgressPainter extends CustomPainter {
         retroDesktopChiselEdge(c, sunken: true),
         outer: outer,
         inner: inner,
+        litFromRight: rtl,
       );
       final room = rect.deflate(outer + inner + 1);
       if (room.isEmpty) return;
@@ -2630,12 +2631,27 @@ class _GroupPainter extends RetroDesktopPixelPainter {
       return;
     }
     final w = px.hairX, h = px.hair;
+    // An etched line, its light a step from its shade away from the light (down and toward the end). Right to left
+    // the whole frame is drawn mirrored, its name's gap with it.
+    final mirrored = px.litFromRight;
+    final gapA = mirrored ? r.left + r.right - gapTo : gapFrom;
+    final gapB = mirrored ? r.left + r.right - gapFrom : gapTo;
     void across(double y, Color color, double inL, double inR) {
-      final a = px.x(gapFrom), b = px.x(gapTo);
+      final a = px.x(gapA), b = px.x(gapB);
       if (inL < a) px.fillExact(inL, y, a, y + h, color);
       if (b < inR) px.fillExact(b, y, inR, y + h, color);
     }
 
+    px.lit(r, () => _etch(px, r, w, h, across));
+  }
+
+  void _etch(
+    RetroDesktopPixelGrid px,
+    Rect r,
+    double w,
+    double h,
+    void Function(double y, Color color, double inL, double inR) across,
+  ) {
     across(r.top, c.bevelDark, r.left, r.right);
     across(r.top + h, c.bevelLight, r.left + w, r.right - w);
     px.fillExact(r.left, r.top + h, r.left + w, r.bottom, c.bevelDark);
@@ -2903,13 +2919,15 @@ class _GroupFrame extends SingleChildRenderObjectWidget {
   final Color? fill;
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderGroupFrame(c, shape, fill);
+      _RenderGroupFrame(c, shape, fill)
+        ..direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
   @override
   void updateRenderObject(BuildContext context, _RenderGroupFrame o) {
     o
       ..c = c
       ..shape = shape
       ..fill = fill
+      ..direction = Directionality.maybeOf(context) ?? TextDirection.ltr
       ..markNeedsPaint();
   }
 }

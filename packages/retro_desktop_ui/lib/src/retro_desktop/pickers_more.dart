@@ -29,14 +29,23 @@ Widget _gripWithRing(RetroDesktopThemeData t, Set<WidgetState> states) =>
       child: RetroDesktopHighlight(
         shape: t.shapes.small,
         focused: states.contains(WidgetState.focused),
-        child: CustomPaint(painter: _Grip(t, states)),
+        child: Builder(
+          builder: (context) => CustomPaint(
+            painter: _Grip(
+              t,
+              states,
+              rtl: Directionality.of(context) == TextDirection.rtl,
+            ),
+          ),
+        ),
       ),
     );
 
 class _Grip extends CustomPainter {
-  const _Grip(this.t, this.states);
+  const _Grip(this.t, this.states, {required this.rtl});
   final RetroDesktopThemeData t;
   final Set<WidgetState> states;
+  final bool rtl;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -56,6 +65,7 @@ class _Grip extends CustomPainter {
         canvas,
         box,
         retroDesktopChiselEdge(c, pressed: held),
+        litFromRight: rtl,
       );
       return;
     }
@@ -80,7 +90,8 @@ class _Grip extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_Grip old) => old.t != t || !setEquals(old.states, states);
+  bool shouldRepaint(_Grip old) =>
+      old.t != t || old.rtl != rtl || !setEquals(old.states, states);
 }
 
 /// The groove a slider runs in, the chosen stretch lit in the highlight.
@@ -111,6 +122,7 @@ class _Groove extends CustomPainter {
         canvas,
         groove,
         retroDesktopChiselEdge(c, sunken: true),
+        litFromRight: rtl,
       );
     } else {
       canvas.drawRect(

@@ -171,15 +171,13 @@ Widget retroDesktopHeldGround(
 }) {
   final c = t.colors;
   if (!held) return child;
-  final words = sink
-      ? Transform.translate(offset: const Offset(1, 1), child: child)
-      : child;
+  final words = sink ? _Sink(child: child) : child;
   if (!t.chisel) {
     // On whole device pixels, as the frame round it is drawn: a ground at a
     // fractional edge would leave a pale row against the frame's bevel.
     // Pressed in is in shadow, by night too: the night's lighter grey sat within a face's own top-to-bottom shading,
-    // so a held toggle read as not held. And its bevel turns in (the light from the top left now falls on its bottom
-    // and right inner edges, the shade on its top and left): a darker ground alone read as a tint, the chosen toggle
+    // so a held toggle read as not held. And its bevel turns in (the light from the top start now falls on its bottom
+    // and end inner edges, the shade on its top and start): a darker ground alone read as a tint, the chosen toggle
     // the same as a held one beside a raised one. [bleed] carries it over the frame's own bevel above and below, so
     // the well meets the outline: inside that bevel the frame's light ran over the well's shade (light, then dark, at
     // its top).
@@ -291,9 +289,9 @@ OutlinedBorder? _wellOutline(
     ? null
     : RetroDesktopShapes.inset(outline, px.extent(outline.side.width));
 
-/// Platinum's turned-in bevel inside a held or chosen segment: one pixel of [shade] along the top and left, one of
-/// [light] along the bottom and right, on whole device pixels. The light stays at the top left in either reading
-/// direction.
+/// Platinum's turned-in bevel inside a held or chosen segment: one pixel of [shade] along the top and the start, one of
+/// [light] along the bottom and the end, on whole device pixels. The light stands at the top start: the top right right
+/// to left.
 class _TurnedInPainter extends RetroDesktopPixelPainter {
   const _TurnedInPainter({
     required this.shade,
@@ -312,7 +310,8 @@ class _TurnedInPainter extends RetroDesktopPixelPainter {
     final well = _wellOutline(px, outline);
     if (well != null) {
       // Concentric in a frame's corner: the band one pixel in, the shade along
-      // its top and left (round the corner between them), the light the rest.
+      // its top and its start (round the corner between them), the light the
+      // rest.
       final r = px.snap(reach.inflateRect(Offset.zero & size));
       retroDesktopBevelStep(
         px.canvas,
@@ -320,19 +319,19 @@ class _TurnedInPainter extends RetroDesktopPixelPainter {
         RetroDesktopShapes.inset(well, h).getOuterPath(
           Rect.fromLTRB(r.left + w, r.top + h, r.right - w, r.bottom - h),
         ),
-        Offset(w, h),
+        px.fall(w, h),
         shade,
         light,
       );
       return;
     }
-    final r = px.snap(
+    // Turned in: the shade along the top and the start, the light along the
+    // bottom and the end.
+    px.bevel(
       Rect.fromLTRB(0, -bleed, size.width, size.height + bleed),
+      shade,
+      light,
     );
-    px.fillExact(r.left, r.top, r.right, r.top + h, shade);
-    px.fillExact(r.left, r.top + h, r.left + w, r.bottom, shade);
-    px.fillExact(r.left + w, r.bottom - h, r.right, r.bottom, light);
-    px.fillExact(r.right - w, r.top + h, r.right, r.bottom - h, light);
   }
 
   @override
@@ -355,28 +354,38 @@ class _SunkenBevelPainter extends RetroDesktopPixelPainter {
         retroDesktopChiselEdge(colors, sunken: true),
         outer: px.hair,
         inner: px.hair,
+        litFromRight: px.litFromRight,
       );
   @override
   bool shouldRepaint(_SunkenBevelPainter old) => old.colors != colors;
 }
 
-/// Chisel's two-step sunken bevel, painted over a box.
+/// Chisel's two-step sunken bevel, painted over a box; right to left
+/// ([textDirection]) its mirror.
 class RetroDesktopSunkenPainter extends CustomPainter {
   /// Paints the sunken bevel in [colors].
-  const RetroDesktopSunkenPainter(this.colors);
+  const RetroDesktopSunkenPainter(
+    this.colors, {
+    this.textDirection = TextDirection.ltr,
+  });
 
   /// The theme's colours.
   final RetroDesktopColors colors;
+
+  /// Which side is the start: right to left, the bevel is mirrored.
+  final TextDirection textDirection;
 
   @override
   void paint(Canvas canvas, Size size) => retroDesktopPaintChiselRect(
     canvas,
     Offset.zero & size,
     retroDesktopChiselEdge(colors, sunken: true),
+    litFromRight: textDirection == TextDirection.rtl,
   );
 
   @override
-  bool shouldRepaint(RetroDesktopSunkenPainter old) => old.colors != colors;
+  bool shouldRepaint(RetroDesktopSunkenPainter old) =>
+      old.colors != colors || old.textDirection != textDirection;
 }
 
 /// The white box a field sinks into, its states drawn the way a text field
@@ -596,4 +605,19 @@ class _RenderOutdent extends RenderShiftedBox {
     if (hit) result.add(BoxHitTestEntry(this, position));
     return hit;
   }
+}
+
+// Held words sink a pixel away from the light: down and toward the end.
+class _Sink extends StatelessWidget {
+  const _Sink({required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Transform.translate(
+    offset: retroDesktopFall(
+      Directionality.maybeOf(context) ?? TextDirection.ltr,
+      1,
+      1,
+    ),
+    child: child,
+  );
 }

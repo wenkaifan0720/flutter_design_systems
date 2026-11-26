@@ -49,7 +49,7 @@ class _GaugePainter extends RetroDesktopPixelPainter {
     );
     px.bevel(inner, c.bevelDark, c.bevelLight);
     // The thumb fills from the reading start: from the right in right-to-left (it stood at the left, away from its
-    // "Used" under the right end). Its bevel keeps the light at the top left.
+    // "Used" under the right end). Its bevel takes the light at the top start.
     final run = inner.width * share.clamp(0, 1);
     final from = rtl ? px.x(inner.right - run) : inner.left;
     final to = rtl ? inner.right : px.x(inner.left + run);
@@ -76,13 +76,11 @@ class _GaugePainter extends RetroDesktopPixelPainter {
         final mid = (body.left + body.right) / 2;
         final top = px.y((body.top + body.bottom) / 2 - 4);
         for (final dx in [-5.0, -1.0, 3.0]) {
-          final x = px.x(mid + dx);
-          px.fillExact(x, top, x + w, top + 8 * h, c.textSecondary);
-          px.fillExact(
-            x + w,
+          px.grooveDown(
             top,
-            x + 2 * w,
             top + 8 * h,
+            px.x(mid + dx),
+            c.textSecondary,
             const Color(0xB3FFFFFF),
           );
         }
@@ -2901,7 +2899,7 @@ class _ScalePainter extends RetroDesktopPixelPainter {
   final int bands;
   final double knob;
   // Right to left the first band stands at the right, under its name, and the
-  // knob counts from there; the sunk edge stays top and left.
+  // knob counts from there; the sunk edge stands along the top and the start.
   final bool rtl;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
@@ -2954,13 +2952,8 @@ class _ScalePainter extends RetroDesktopPixelPainter {
       inner.top + h,
       c.bevelDark,
     );
-    px.fillExact(
-      inner.left,
-      inner.top,
-      inner.left + w,
-      inner.bottom,
-      c.bevelDark,
-    );
+    final sunk = px.litFromRight ? inner.right - w : inner.left;
+    px.fillExact(sunk, inner.top, sunk + w, inner.bottom, c.bevelDark);
     canvas.restore();
     outline.paint(canvas, r);
     final along = knob.clamp(0.0, 1.0);
@@ -2979,8 +2972,10 @@ class _ScalePainter extends RetroDesktopPixelPainter {
       Rect.fromLTRB(w, h, thumb.width - w, 2 * h),
       Paint()..color = const Color(0x66FFFFFF),
     );
+    // Its light along its top and its start.
+    final lit = px.litFromRight ? thumb.width - 2 * w : w;
     canvas.drawRect(
-      Rect.fromLTRB(w, h, 2 * w, thumb.height - h),
+      Rect.fromLTRB(lit, h, lit + w, thumb.height - h),
       Paint()..color = const Color(0x66FFFFFF),
     );
     canvas.restore();
@@ -3148,7 +3143,7 @@ class _SpanPainter extends RetroDesktopPixelPainter {
   final double from, to;
   final double? at;
   // Right to left the whole counts from the right, under its labels; the sunk
-  // edge stays top and left.
+  // edge stands along the top and the start.
   final bool rtl;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
@@ -3174,13 +3169,8 @@ class _SpanPainter extends RetroDesktopPixelPainter {
       inner.top + h,
       c.bevelDark,
     );
-    px.fillExact(
-      inner.left,
-      inner.top,
-      inner.left + w,
-      inner.bottom,
-      c.bevelDark,
-    );
+    final sunk = px.litFromRight ? inner.right - w : inner.left;
+    px.fillExact(sunk, inner.top, sunk + w, inner.bottom, c.bevelDark);
     double along(double v) {
       final f = v.clamp(0.0, 1.0);
       return rtl ? 1 - f : f;
@@ -3204,7 +3194,9 @@ class _SpanPainter extends RetroDesktopPixelPainter {
     canvas.restore();
     outline.paint(canvas, r);
     if (at != null) {
-      final x = px.x(inner.left + inner.width * along(at!) - 1);
+      // Three pixels wide, the middle one on the value's pixel: its start a pixel before it, so right to left a pixel
+      // further along (the mirror).
+      final x = px.x(inner.left + inner.width * along(at!) - (rtl ? 2 : 1));
       final top = px.y(-4), bottom = px.y(s.height + 4);
       final right = x + 3 * w;
       px.fillExact(x, top, right, bottom, c.outline);

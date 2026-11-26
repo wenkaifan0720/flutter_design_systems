@@ -1,3 +1,10 @@
+## 0.7.1
+
+- The light stands at the top start: the top left, and the top right under a right-to-left `Directionality`. Every bevel, groove and drop shadow takes its light and shade from it, in both appearances (buttons, fields, segmented buttons and toggles, sliders and their grips, a select's drop button, windows and their title boxes, group boxes, toolbars, list rows and heads, folder tiles, gauges, scale and span bars, menus, dialogs and the rest), and a held face's words and a held star sink away from it, so a part right to left is the mirror of itself left to right, through a press as at rest. Before, the light stood at the top left in either direction and the shadows fell to the right. A day tile's words keep to its face at the start, its sheets stepping out toward the end. Left-to-right drawing is unchanged, but for a part an app draws under a horizontal flip (`Transform.flip(flipX: true)`), which now keeps its light at the top left on the screen, as it is seen, where it turned round with the flip.
+- `RetroDesktopPixelGrid` draws by the reading direction of its box (`direction`, `litFromRight`): `bevel` lights the start, `grooveDown` cuts a groove with its shade toward the light, `fall` steps away from the light, and `lit` draws a part lit from the top left as its mirror right to left. Right to left, an x halfway between two device pixels snaps to the one toward the end, so a part lands on the grid as the mirror of itself. `RetroDesktopPixelPaint` gives its painter the ambient `Directionality` (`RenderRetroDesktopPixelPaint.direction`), and `RetroDesktopPixelGrid.plain` takes a `direction`. In `retro_desktop_parts`, `retroDesktopFall` gives the step away from the light for a direction (the `width` a `retroDesktopBevelStep` takes), and `RetroDesktopSunkenPainter` takes a `textDirection`.
+- Right to left, a `RetroDesktopSpanBar`'s mark stands with its middle on its value, as left to right. Before, it stood a pixel off its mirror.
+- The README's floor line names ui_core's touch floor, 40.
+
 ## 0.7.0
 
 - Requires ui_core 0.7.2.

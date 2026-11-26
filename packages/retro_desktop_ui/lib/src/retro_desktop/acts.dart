@@ -371,7 +371,7 @@ class _DefaultButton extends StatelessWidget {
           ringColor: quiet ? c.textTertiary : null,
           // The blue runs to the outline, which stands on the keyline: a grey
           // shade line inside it would read as the face stopping short.
-          // Lit at the top left, in shade at the bottom right, by day and by night (the light law), so a press turns
+          // Lit at the top start, in shade at the bottom end, by day and by night (the light law), so a press turns
           // the bevel in and does not only darken the face: mixed with the greys, both edges would stand paler than
           // the blue, and by night both darker.
           bevelTint: quiet

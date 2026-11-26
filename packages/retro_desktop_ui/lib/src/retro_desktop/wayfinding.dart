@@ -450,7 +450,7 @@ class _RatingState extends State<RetroDesktopRating> {
           ? (w.value - item.index).clamp(0.0, 1.0)
           : item.fill;
       // Held, a star shows its press as the appearance's buttons do: Platinum's body darkens; Chisel's greys and
-      // sinks a pixel down and right.
+      // sinks a pixel down and toward the end.
       final held = _held == item.index + 1;
       final face = retroDesktopOwnSize(
         width: _starSide,
@@ -603,7 +603,7 @@ class _StarPainter extends RetroDesktopPixelPainter {
   /// The unlit body's colour while held; null leaves it open.
   final Color? body;
 
-  /// How far a held star sinks, down and right.
+  /// How far a held star sinks, down and toward the end (away from the light).
   final double sink;
 
   static const _rows = [
@@ -626,8 +626,9 @@ class _StarPainter extends RetroDesktopPixelPainter {
   @override
   void paint(RetroDesktopPixelGrid px, Size size) {
     final cell = math.min(size.width, size.height) / 11;
-    final ox = (size.width - cell * 11) / 2 + sink;
-    final oy = (size.height - cell * 11) / 2 + sink;
+    final sunk = px.fall(sink, sink);
+    final ox = (size.width - cell * 11) / 2 + sunk.dx;
+    final oy = (size.height - cell * 11) / 2 + sunk.dy;
     final edge = 11 * share;
     for (var y = 0; y < 11; y++) {
       for (var x = 0; x < 11; x++) {

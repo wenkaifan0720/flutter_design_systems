@@ -35,8 +35,14 @@ class _TilePainter extends RetroDesktopPixelPainter {
   /// How far each sheet behind it stands out.
   final double step;
   final double ringPad, top, band;
+  // The face at the start, the sheets behind stepped out from under it away from the light: down and toward the end.
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
+    final box = px.snap(Offset.zero & s);
+    px.lit(box, () => _paint(px, s));
+  }
+
+  void _paint(RetroDesktopPixelGrid px, Size s) {
     final canvas = px.canvas;
     final h = px.hair, w = px.hairX;
     final face = px.snap(
@@ -251,10 +257,10 @@ class RetroDesktopDayTile extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: minimum.height),
                 child: Padding(
-                  padding: EdgeInsets.only(
+                  padding: EdgeInsetsDirectional.only(
                     top: topRoom + 1,
-                    left: 1,
-                    right: 1 + 2 * step,
+                    start: 1,
+                    end: 1 + 2 * step,
                     bottom: 1 + 2 * step,
                   ),
                   child: Column(

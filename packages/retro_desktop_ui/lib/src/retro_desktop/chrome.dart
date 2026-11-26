@@ -567,14 +567,17 @@ class _ModulePainter extends RetroDesktopPixelPainter {
   final RetroDesktopColors c;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
+    // Its rule at its end, beside the next module (its padding's end side).
     final r = px.snap(Offset.zero & s);
     final w = px.hairX;
-    px.fillExact(r.right - w, r.top, r.right, r.bottom, c.control);
-    px.bevel(
-      Rect.fromLTRB(r.left, r.top, r.right - w, r.bottom),
-      c.bevelLight,
-      c.bevelDark,
-    );
+    px.lit(r, () {
+      px.fillExact(r.right - w, r.top, r.right, r.bottom, c.control);
+      px.bevel(
+        Rect.fromLTRB(r.left, r.top, r.right - w, r.bottom),
+        c.bevelLight,
+        c.bevelDark,
+      );
+    });
   }
 
   @override

@@ -126,7 +126,8 @@ class RetroDesktopBorder extends OutlinedBorder {
 /// component theme or a part's `style:` sets one part's shape.
 enum RetroDesktopAppearance {
   /// The 95-era PC: square corners everywhere, a hard two-step bevel (light
-  /// above and left, dark below and right; fields sunk the other way), a
+  /// above and toward the start, dark below and toward the end; fields sunk the
+  /// other way), a
   /// pressed face that inverts its bevel and moves its label one pixel, a
   /// dotted focus rectangle inside the face, and a solid title bar with the
   /// title at its start and square caption buttons at its end.

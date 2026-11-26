@@ -27,7 +27,8 @@ const double retroDesktopDeskWidth = 1024;
 /// highlight (one hue: the act and now) change without leaving the look, and [RetroDesktopColors.from] derives the rest
 /// from one brand colour. The machine's greys ([platinum], [platinumLight], [platinumDark]), the bevel roles
 /// ([bevelLight], [bevelDark], [bevelDarker]) and the outlines ([outline], [control], [pixelOutline]) are parts of the
-/// bevel, not free colours: each is a step of light on one face, lit from the top left, so retune them together (a
+/// bevel, not free colours: each is a step of light on one face, lit from the top start (the top left, or the top right
+/// right to left), so retune them together (a
 /// lighter or darker machine) or not at all. A bevel lit from below, or a light outline on a light face, reads as a hole
 /// or as nothing.
 @immutable
@@ -106,7 +107,7 @@ class RetroDesktopColors {
   /// ones.
   final Color platinum, platinumLight, platinumDark;
 
-  /// Bevels: [bevelLight] on the top and left, [bevelDark] on the bottom and right, [bevelDarker] the deeper shade of
+  /// Bevels: [bevelLight] on the top and the start, [bevelDark] on the bottom and the end, [bevelDarker] the deeper shade of
   /// ridges and grips. Parts of the bevel, not free colours: retuned, they keep their order of light against the face.
   final Color bevelLight, bevelDark, bevelDarker;
 

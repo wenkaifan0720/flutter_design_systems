@@ -1,5 +1,5 @@
 // Every gallery section is one component in its states. For each, in every preset by day and by night, a golden of its
-// pixels; and for each, once, its semantics: it says something, every node that acts states a role and a name, and the
+// pixels, and in the default preset right to left too (its light at the top right); and for each, once, its semantics: it says something, every node that acts states a role and a name, and the
 // tree matches the one recorded beside its goldens. `flutter test --update-goldens` records both.
 import 'dart:convert';
 import 'dart:io';
@@ -101,6 +101,34 @@ void main() {
           }
         },
         // Pixels recorded on macOS: `flutter test --exclude-tags goldens` leaves them out elsewhere.
+        tags: const ['goldens'],
+      );
+    }
+
+    for (final b in Brightness.values) {
+      testWidgets(
+        '${page.id} in classic ${b.name}, right to left: each section matches '
+        'its golden',
+        (tester) async {
+          if (!_recorded) return;
+          await pumpGalleryPage(
+            tester,
+            page,
+            'classic',
+            b,
+            direction: TextDirection.rtl,
+          );
+          final found = sections();
+          expect(found, isNotEmpty);
+          for (final (label, section) in found) {
+            await expectLater(
+              section,
+              matchesGoldenFile(
+                'goldens/${page.id}/${slug(label)}/classic_${b.name}_rtl.png',
+              ),
+            );
+          }
+        },
         tags: const ['goldens'],
       );
     }

@@ -101,7 +101,13 @@ class _RowFrame extends StatelessWidget {
         ),
       );
       if (!held || !t.chisel) return face;
-      return CustomPaint(foregroundPainter: _SunkenRow(c), child: face);
+      return CustomPaint(
+        foregroundPainter: _SunkenRow(
+          c,
+          Directionality.of(context) == TextDirection.rtl,
+        ),
+        child: face,
+      );
     }
 
     if (onPressed == null) return draw({if (selected) WidgetState.selected});
@@ -120,17 +126,19 @@ class _RowFrame extends StatelessWidget {
 /// Chisel's held row: the sunken two-step bevel of a field, drawn over the
 /// row's own box so nothing in it moves.
 class _SunkenRow extends CustomPainter {
-  const _SunkenRow(this.c);
+  const _SunkenRow(this.c, this.rtl);
   final RetroDesktopColors c;
+  final bool rtl;
   @override
   void paint(Canvas canvas, Size size) => retroDesktopPaintChiselRect(
     canvas,
     Offset.zero & size,
     retroDesktopChiselEdge(c, sunken: true),
+    litFromRight: rtl,
   );
 
   @override
-  bool shouldRepaint(_SunkenRow old) => old.c != c;
+  bool shouldRepaint(_SunkenRow old) => old.c != c || old.rtl != rtl;
 }
 
 /// Rows in a well, one under another, a rule between them. With [share] the rows split the height a stretched window gives
@@ -1011,9 +1019,9 @@ class _StatRule extends RetroDesktopPixelPainter {
       px.ruleAcross(0, s.width, 0, c.bevelDark);
       px.ruleAcross(0, s.width, px.hair, c.bevelLight);
     } else {
+      // A groove: its shade toward the light, the top start.
       final x = rtl ? s.width - 2 * px.hairX : 0.0;
-      px.ruleDown(0, s.height, x, c.bevelDark);
-      px.ruleDown(0, s.height, x + px.hairX, c.bevelLight);
+      px.grooveDown(0, s.height, x, c.bevelDark, c.bevelLight);
     }
   }
 

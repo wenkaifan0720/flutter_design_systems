@@ -278,6 +278,11 @@ class _HeadPainter extends RetroDesktopPixelPainter {
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
     final r = px.snap(Offset.zero & s);
+    px.lit(r, () => _paint(px, r));
+  }
+
+  // Lit along its top and its start, shaded along its end and its foot.
+  void _paint(RetroDesktopPixelGrid px, Rect r) {
     px.canvas.drawRect(r, Paint()..color = fill);
     px.fillExact(r.left, r.top, r.right, r.top + px.hair, c.bevelLight);
     px.fillExact(
@@ -1761,7 +1766,7 @@ class _HatchTrack extends RetroDesktopPixelPainter {
   final OutlinedBorder track;
   final double share;
   // Right to left the share fills from the right, as the row reads; the sunk
-  // edge stays top and left (the light doesn't turn round).
+  // edge stands along the top and the start, toward the light.
   final bool rtl;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
@@ -1780,13 +1785,8 @@ class _HatchTrack extends RetroDesktopPixelPainter {
       r.top + 2 * h,
       c.bevelDark,
     );
-    px.fillExact(
-      r.left + w,
-      r.top + h,
-      r.left + 2 * w,
-      r.bottom - h,
-      c.bevelDark,
-    );
+    final sunk = px.litFromRight ? r.right - 2 * w : r.left + w;
+    px.fillExact(sunk, r.top + h, sunk + w, r.bottom - h, c.bevelDark);
     final inner = Rect.fromLTRB(
       r.left + w,
       r.top + h,

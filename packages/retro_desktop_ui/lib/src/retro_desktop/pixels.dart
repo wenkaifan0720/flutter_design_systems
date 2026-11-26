@@ -47,7 +47,11 @@ class RetroDesktopPixelPaint extends SingleChildRenderObjectWidget {
   final bool foreground;
   @override
   RenderRetroDesktopPixelPaint createRenderObject(BuildContext context) =>
-      RenderRetroDesktopPixelPaint(painter, foreground);
+      RenderRetroDesktopPixelPaint(
+        painter,
+        foreground,
+        Directionality.maybeOf(context) ?? TextDirection.ltr,
+      );
   @override
   void updateRenderObject(
     BuildContext context,
@@ -55,7 +59,8 @@ class RetroDesktopPixelPaint extends SingleChildRenderObjectWidget {
   ) {
     renderObject
       ..painter = painter
-      ..foreground = foreground;
+      ..foreground = foreground
+      ..direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
   }
 
   @override
@@ -71,9 +76,23 @@ class RetroDesktopPixelPaint extends SingleChildRenderObjectWidget {
 
 /// Render object used by the corresponding desktop layout widget.
 class RenderRetroDesktopPixelPaint extends RenderProxyBox {
-  /// Creates a [RenderRetroDesktopPixelPaint].
-  RenderRetroDesktopPixelPaint(this._painter, this._foreground);
+  /// Creates a [RenderRetroDesktopPixelPaint]. [direction] places the light at the top start (see
+  /// [RetroDesktopPixelGrid.direction]).
+  RenderRetroDesktopPixelPaint(
+    this._painter,
+    this._foreground, [
+    this._direction = TextDirection.ltr,
+  ]);
   RetroDesktopPixelPainter _painter;
+
+  /// The reading direction the painter draws in: its light stands at the top start.
+  TextDirection get direction => _direction;
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsPaint();
+  }
 
   /// Whether this painter draws over its child.
   bool get foreground => _foreground;
@@ -101,7 +120,7 @@ class RenderRetroDesktopPixelPaint extends RenderProxyBox {
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     _painter.paint(
-      RetroDesktopPixelGrid._(canvas, _deviceTransform(), _ratio()),
+      RetroDesktopPixelGrid._(canvas, _deviceTransform(), _ratio(), _direction),
       size,
     );
     canvas.restore();
@@ -129,10 +148,14 @@ class RenderRetroDesktopPixelPaint extends RenderProxyBox {
   bool hitTestSelf(Offset position) => child == null;
 }
 
-/// Internal, not exported (apps draw on the grid through RetroDesktopPixelPaint): the device's grid under [box].
-/// The focus ring's custom paint hands it to its painter, and stays a custom paint so a checker reading faces still
-/// finds the face under it.
-RetroDesktopPixelGrid retroDesktopGridUnder(RenderBox box, Canvas canvas) {
+/// Internal, not exported (apps draw on the grid through RetroDesktopPixelPaint): the device's grid under [box], drawn
+/// in [direction]. The focus ring's custom paint hands it to its painter, and stays a custom paint so a checker reading
+/// faces still finds the face under it.
+RetroDesktopPixelGrid retroDesktopGridUnder(
+  RenderBox box,
+  Canvas canvas, [
+  TextDirection direction = TextDirection.ltr,
+]) {
   RenderObject top = box;
   while (top.parent != null) {
     top = top.parent!;
@@ -142,12 +165,22 @@ RetroDesktopPixelGrid retroDesktopGridUnder(RenderBox box, Canvas canvas) {
     canvas,
     box.getTransformTo(null),
     ratio <= 0 ? 1 : ratio,
+    direction,
   );
 }
 
 /// The grid under a box. A `RetroDesktopPixelPainter` is handed one, and draws through it, in the box's own coordinates.
+///
+/// The light stands at the top start of the reading [direction]: the top left, or the top right right to left. [bevel],
+/// [grooveDown], [fall] and [lit] take their light and shade from it, so a part drawn through them right to left is the
+/// mirror of itself left to right.
 class RetroDesktopPixelGrid {
-  RetroDesktopPixelGrid._(this.canvas, Matrix4 m, this._dpr) {
+  RetroDesktopPixelGrid._(
+    this.canvas,
+    Matrix4 m,
+    this._dpr, [
+    this.direction = TextDirection.ltr,
+  ]) {
     final s = m.storage;
     _sx = s[0].abs() < 1e-9 ? 1 : s[0];
     _sy = s[5].abs() < 1e-9 ? 1 : s[5];
@@ -157,23 +190,72 @@ class RetroDesktopPixelGrid {
     hair = math.max(1, along.abs().round()) / along.abs();
     final across = _sx * _dpr;
     hairX = math.max(1, across.abs().round()) / across.abs();
+    // A box already drawn flipped across (a grow box turned to its corner) turns its own light round.
+    _fromRight = (direction == TextDirection.rtl) != (_sx < 0);
+    _halfDown = direction == TextDirection.rtl;
   }
 
   /// Draws off the grid's own transform: for a painter given a plain canvas and nothing else, like a picture's slow path.
-  factory RetroDesktopPixelGrid.plain(Canvas canvas) =>
-      RetroDesktopPixelGrid._(canvas, Matrix4.identity(), 1);
+  factory RetroDesktopPixelGrid.plain(
+    Canvas canvas, {
+    TextDirection direction = TextDirection.ltr,
+  }) => RetroDesktopPixelGrid._(canvas, Matrix4.identity(), 1, direction);
 
   /// The canvas receiving the snapped drawing operations.
   final Canvas canvas;
   final double _dpr;
   late final double _sx, _sy, _tx, _ty;
 
+  /// The reading direction the box is drawn in. Its light stands at the top start: the top left left to right, the top
+  /// right right to left.
+  final TextDirection direction;
+
+  /// Whether the light stands at the top right on screen: right to left, unless the box is drawn flipped across, which
+  /// turns a light drawn at the top left round already. A painter drawing its own sides reads it; [bevel], [grooveDown],
+  /// [fall] and [lit] read it themselves.
+  bool get litFromRight => _fromRight;
+  late bool _fromRight;
+
+  // Right to left an x halfway between two device pixels' edges snaps to the left one, toward the end, as left to right
+  // it snaps to the right one: so a part drawn right to left lands on the grid as the mirror of itself left to right.
+  late bool _halfDown;
+
+  /// A step [across] and [down] away from the light: down and to the end. A pressed face's words sink by `fall(1, 1)`;
+  /// a shadow falls by `fall(2, 2)`.
+  Offset fall(double across, double down) =>
+      Offset(_fromRight ? -across : across, down);
+
+  /// Runs [draw], a drawing lit from the top left, mirrored across [box] when the light stands at the top right, so it
+  /// is lit from the top start. For a part whose only sides are its light's (a box, a head, a frame): what it draws
+  /// stands the same either way round. Inside it [bevel], [grooveDown] and [fall] draw as left to right, the mirror
+  /// turning them. On the grid when [box] is.
+  void lit(Rect box, void Function() draw) {
+    if (!_fromRight) return draw();
+    canvas.save();
+    canvas.translate(box.left + box.right, 0);
+    canvas.scale(-1, 1);
+    _fromRight = false;
+    final halfDown = _halfDown;
+    _halfDown = false;
+    try {
+      draw();
+    } finally {
+      _fromRight = true;
+      _halfDown = halfDown;
+      canvas.restore();
+    }
+  }
+
   /// One logical pixel, down and across, as a whole number of device pixels.
   late final double hair, hairX;
 
-  /// The local x nearest [v] that falls on a device pixel's edge.
-  double x(double v) =>
-      (((_tx + v * _sx) * _dpr).roundToDouble() / _dpr - _tx) / _sx;
+  /// The local x nearest [v] that falls on a device pixel's edge; halfway between two, the one toward the end of the
+  /// reading direction.
+  double x(double v) {
+    final d = (_tx + v * _sx) * _dpr;
+    final edge = _halfDown ? (d - .5).ceilToDouble() : d.roundToDouble();
+    return (edge / _dpr - _tx) / _sx;
+  }
 
   /// The local y nearest [v] that falls on a device pixel's edge.
   double y(double v) =>
@@ -223,13 +305,17 @@ class RetroDesktopPixelGrid {
     fillExact(s.right - hairX, s.top + hair, s.right, s.bottom - hair, color);
   }
 
-  /// Light top and left, shade bottom and right: CSS `inset 1px 1px 0 light, inset -1px -1px 0 shade`, light on top.
+  /// Light top and start, shade bottom and end: CSS `inset 1px 1px 0 light, inset -1px -1px 0 shade` left to right (its
+  /// mirror right to left), light on top.
   void bevel(Rect r, Color light, Color shade) {
     final s = snap(r);
+    final (lit, dark) = _fromRight
+        ? (s.right - hairX, s.left)
+        : (s.left, s.right - hairX);
     fillExact(s.left, s.bottom - hair, s.right, s.bottom, shade);
-    fillExact(s.right - hairX, s.top, s.right, s.bottom, shade);
+    fillExact(dark, s.top, dark + hairX, s.bottom, shade);
     fillExact(s.left, s.top, s.right, s.top + hair, light);
-    fillExact(s.left, s.top, s.left + hairX, s.bottom, light);
+    fillExact(lit, s.top, lit + hairX, s.bottom, light);
   }
 
   /// A horizontal rule [at] the given y, one hair tall.
@@ -242,6 +328,13 @@ class RetroDesktopPixelGrid {
   void ruleDown(double t, double b, double at, Color color) {
     final left = x(at);
     fillExact(left, y(t), left + hairX, y(b), color);
+  }
+
+  /// A groove cut down from [t] to [b], two hairs wide from [at]: [shade] on its side toward the light (its start), and
+  /// [light] on its far side, as an etched rule takes a light from the top start.
+  void grooveDown(double t, double b, double at, Color shade, Color light) {
+    ruleDown(t, b, at, _fromRight ? light : shade);
+    ruleDown(t, b, at + hairX, _fromRight ? shade : light);
   }
 
   /// Bands up to the right inside [r], CSS `repeating-linear-gradient(-45deg, color 0 width, between width period)`, read a
@@ -373,7 +466,7 @@ void retroDesktopDiagonal(
   canvas.restore();
 }
 
-/// The desktop: the ground, the weave and the light from the top left.
+/// The desktop: the ground and its weave.
 class RetroDesktopDeskPainter extends CustomPainter {
   /// Creates a [RetroDesktopDeskPainter].
   RetroDesktopDeskPainter(this.colors);

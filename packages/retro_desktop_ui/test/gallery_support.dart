@@ -19,16 +19,23 @@ export '../example/lib/gallery_pages.dart';
 /// The gallery's phone width.
 const galleryWidth = 390.0;
 
-/// Pumps [page] in [preset] and [brightness] at [galleryWidth], then grows the view to the page's whole height.
+/// Pumps [page] in [preset] and [brightness] at [galleryWidth], then grows the view to the page's whole height. Given a
+/// [direction], the page's screens read that way.
 Future<void> pumpGalleryPage(
   WidgetTester tester,
   GalleryPage page,
   String preset,
   Brightness brightness, {
   double devicePixelRatio = 1,
+  TextDirection? direction,
 }) async {
   kitShownPreset = preset;
   addTearDown(() => kitShownPreset = kitPreset);
+  if (direction != null) {
+    final shown = kitShownDirection;
+    kitShownDirection = direction;
+    addTearDown(() => kitShownDirection = shown);
+  }
   tester.view.devicePixelRatio = devicePixelRatio;
   tester.view.physicalSize = const Size(galleryWidth, 844) * devicePixelRatio;
   addTearDown(tester.view.reset);

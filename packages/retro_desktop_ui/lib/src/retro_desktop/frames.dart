@@ -121,13 +121,17 @@ class _BoxPainter extends RetroDesktopPixelPainter {
   final int kind;
   final OutlinedBorder shape;
 
-  /// Held: the box turns in, its face a step darker and its inner line in the frame's ink on the top and the left (the
-  /// light is fixed at the top left in either direction).
+  /// Held: the box turns in, its face a step darker and its inner line in the frame's ink on the top and the start (the
+  /// light stands at the top start: the top right right to left).
   final bool pressed;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
-    final canvas = px.canvas;
     final r = px.snap(Offset.zero & s);
+    px.lit(r, () => _paint(px, r));
+  }
+
+  void _paint(RetroDesktopPixelGrid px, Rect r) {
+    final canvas = px.canvas;
     final line = c.brightness == Brightness.dark ? c.control : c.outline;
     final h = px.hair, w = px.hairX;
     final outline = shape.copyWith(
@@ -712,7 +716,12 @@ class _CaptionPainter extends RetroDesktopPixelPainter {
   void paint(RetroDesktopPixelGrid px, Size s) {
     final r = px.snap(Offset.zero & s);
     px.fill(r, c.platinum);
-    retroDesktopPaintChiselRect(px.canvas, r, retroDesktopChiselEdge(c));
+    retroDesktopPaintChiselRect(
+      px.canvas,
+      r,
+      retroDesktopChiselEdge(c),
+      litFromRight: px.litFromRight,
+    );
     final ink = c.text;
     final cx = px.x(r.center.dx);
     final cy = px.y(r.center.dy);
@@ -739,8 +748,8 @@ class _CaptionPainter extends RetroDesktopPixelPainter {
   bool shouldRepaint(_CaptionPainter o) => o.c != c || o.kind != kind;
 }
 
-/// A window's shadow: its own outline, hard, offset right and down, as the
-/// period's windows cast it. The front window's is darker; no window casts a
+/// A window's shadow: its own outline, hard, offset down and toward the end
+/// (away from the light at the top start), as the period's windows cast it. The front window's is darker; no window casts a
 /// soft one (a blurred slab read as a second, smaller window under it). Chisel
 /// draws none: its windows stand on their bevel.
 List<BoxShadow> _shadows(RetroDesktopColors c, bool active) => [
@@ -1404,10 +1413,8 @@ class _ToolRulePainter extends RetroDesktopPixelPainter {
   const _ToolRulePainter(this.c);
   final RetroDesktopColors c;
   @override
-  void paint(RetroDesktopPixelGrid px, Size s) {
-    px.ruleDown(0, s.height, 0, c.bevelDark);
-    px.ruleDown(0, s.height, px.hairX, c.bevelLight);
-  }
+  void paint(RetroDesktopPixelGrid px, Size s) =>
+      px.grooveDown(0, s.height, 0, c.bevelDark, c.bevelLight);
 
   @override
   bool shouldRepaint(_ToolRulePainter o) => o.c != c;

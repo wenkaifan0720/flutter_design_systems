@@ -450,8 +450,8 @@ class _HighlightPainter extends CustomPainter {
     if (skip?.claimed ?? false) return;
     final box = _box;
     final px = box == null || !box.attached
-        ? RetroDesktopPixelGrid.plain(canvas)
-        : retroDesktopGridUnder(box, canvas);
+        ? RetroDesktopPixelGrid.plain(canvas, direction: direction)
+        : retroDesktopGridUnder(box, canvas, direction);
     final rect = px.snap(Offset.zero & size);
     if (hover != null) {
       canvas.drawPath(

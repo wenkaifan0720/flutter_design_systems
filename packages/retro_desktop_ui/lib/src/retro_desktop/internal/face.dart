@@ -122,7 +122,8 @@ OutlinedBorder retroDesktopEdgeShape(
 /// Draws the shared state-resolved face for a control or surface, in the
 /// theme's appearance: Platinum's outline and soft one-step bevel (a [gradient]
 /// face, darkened when pressed), or Chisel's hard two-step bevel on a [flat]
-/// face whose label moves a pixel down and right when pressed.
+/// face whose label moves a pixel down and toward the end (away from the
+/// light, at the top start) when pressed.
 /// [openBottom] joins a selected folder tab to its panel without covering content;
 /// [openDepth] is how far the tab's foot reaches into the panel below the
 /// panel's outline, where the tab's sides stop (its outline at the panel's
@@ -356,9 +357,10 @@ double retroDesktopDefaultRingExtent(RetroDesktopThemeData t) =>
     t.chisel ? t.strokes.hairline : 1 + 2 * t.strokes.regular;
 
 /// Paints a Chisel bevel on the square [rect]: an [outer] step, then an
-/// [inner] one, each light along the top and left and shade along the bottom
-/// and right, as [edge] gives them. For square parts drawn by hand: a caption
-/// button, a scroll arrow, a progress trough.
+/// [inner] one, each light along the top and the start and shade along the
+/// bottom and the end, as [edge] gives them ([litFromRight]: the start is the
+/// right). For square parts drawn by hand: a caption button, a scroll arrow, a
+/// progress trough.
 void retroDesktopPaintChiselRect(
   Canvas canvas,
   Rect rect,
@@ -366,7 +368,11 @@ void retroDesktopPaintChiselRect(
   edge, {
   double outer = 1,
   double inner = 1,
+  bool litFromRight = false,
 }) {
+  // Light along the top and the start, shade along the bottom and the end; the
+  // light's top-start corner, the shade's bottom-end one. [litFromRight]: right
+  // to left, the mirror.
   void step(Rect r, double w, Color light, Color shade) {
     if (w <= 0 || r.isEmpty) return;
     final paint = Paint()..isAntiAlias = false;
@@ -376,16 +382,22 @@ void retroDesktopPaintChiselRect(
       paint,
     );
     canvas.drawRect(
-      Rect.fromLTRB(r.right - w, r.top, r.right, r.bottom),
+      litFromRight
+          ? Rect.fromLTRB(r.left, r.top, r.left + w, r.bottom)
+          : Rect.fromLTRB(r.right - w, r.top, r.right, r.bottom),
       paint,
     );
     paint.color = light;
     canvas.drawRect(
-      Rect.fromLTRB(r.left, r.top, r.right - w, r.top + w),
+      litFromRight
+          ? Rect.fromLTRB(r.left + w, r.top, r.right, r.top + w)
+          : Rect.fromLTRB(r.left, r.top, r.right - w, r.top + w),
       paint,
     );
     canvas.drawRect(
-      Rect.fromLTRB(r.left, r.top, r.left + w, r.bottom - w),
+      litFromRight
+          ? Rect.fromLTRB(r.right - w, r.top, r.right, r.bottom - w)
+          : Rect.fromLTRB(r.left, r.top, r.left + w, r.bottom - w),
       paint,
     );
   }
@@ -395,7 +407,8 @@ void retroDesktopPaintChiselRect(
 }
 
 /// The two colours of each step of a Chisel bevel, outer step first:
-/// raised (light above and left), sunken (a field) or pressed (inverted).
+/// raised (light above and toward the start), sunken (a field) or pressed
+/// (inverted).
 ({Color outerLight, Color outerShade, Color innerLight, Color innerShade})
 retroDesktopChiselEdge(
   RetroDesktopColors c, {
@@ -531,7 +544,7 @@ class _Face extends StatelessWidget {
                   RetroDesktopFaceScale.mark => theme.shapes.full,
                 })
             .copyWith(side: side);
-    // Chisel's label moves a pixel down and right while its button is held.
+    // Chisel's label moves a pixel down and toward the end while its button is held.
     final moves = chisel && down && !sunken && bevel;
     // A ring inside the box takes its room from the face: the least size and
     // the padding, so the box shows what a button without one shows.
@@ -654,9 +667,10 @@ class _Face extends StatelessWidget {
                 chisel: bevel ? chiselEdge : null,
                 keepSide: keepSide || !bevel,
                 // By night a raised part's line is lifted off the graphite on its lit sides only, the top and the
-                // left, and falls to the frame's black below and right: a light line all round read as a glow, not
-                // a part lit from the top left. Pressed, it turns in with the bevel: black above and left, lit below
-                // and right (a light line all round read as the plate going flat, not in).
+                // start, and falls to the frame's black below and toward the end: a light line all round read as a
+                // glow, not a part lit from the top start. Pressed, it turns in with the bevel: black above and toward
+                // the start, lit below and toward the end (a light line all round read as the plate going flat, not
+                // in).
                 outlineShade:
                     c.brightness == Brightness.dark &&
                         !chisel &&
@@ -689,7 +703,10 @@ class _Face extends StatelessWidget {
                   child: Padding(
                     padding: spacing,
                     child: Transform.translate(
-                      offset: moves ? const Offset(1, 1) : Offset.zero,
+                      // Away from the light: down and toward the end.
+                      offset: moves
+                          ? retroDesktopFall(Directionality.of(context), 1, 1)
+                          : Offset.zero,
                       child: DefaultTextStyle.merge(
                         style: textStyle,
                         child: IconTheme.merge(
@@ -755,9 +772,24 @@ class _Face extends StatelessWidget {
     final claim = RetroDesktopHighlightClaim.maybeOf(context);
     final owns = claim?.claim(context, states) ?? false;
     // The PC drew no soft shadows: Chisel's raised parts stand on their bevel.
+    // A shadow falls away from the light: to the end, down and to the left
+    // right to left.
     if (shadows != null && shadows!.isNotEmpty && !theme.chisel) {
+      final direction = Directionality.of(context);
       face = DecoratedBox(
-        decoration: ShapeDecoration(shape: plain, shadows: shadows),
+        decoration: ShapeDecoration(
+          shape: plain,
+          shadows: [
+            for (final s in shadows!)
+              BoxShadow(
+                color: s.color,
+                offset: retroDesktopFall(direction, s.offset.dx, s.offset.dy),
+                blurRadius: s.blurRadius,
+                spreadRadius: s.spreadRadius,
+                blurStyle: s.blurStyle,
+              ),
+          ],
+        ),
         child: face,
       );
     }
@@ -908,7 +940,7 @@ class _SurfacePainter extends RetroDesktopPixelPainter {
 /// Both the outer rim and the inset bevel follow the supplied outline at the
 /// current size. Platinum: the outline's own rim, then a one-step bevel.
 /// Chisel ([chisel] set): two steps, the rim's width then the bevel's, each
-/// light above and left and dark below and right; a coloured rim
+/// light above and toward the start and dark below and toward the end; a coloured rim
 /// ([keepSide]) stands in for the outer step.
 class _BevelPainter extends RetroDesktopPixelPainter {
   const _BevelPainter(
@@ -928,11 +960,11 @@ class _BevelPainter extends RetroDesktopPixelPainter {
   final double openDepth;
   final OutlinedBorder shape;
 
-  // The outline's colour where it faces down and right; null: its own all round.
+  // The outline's colour where it faces down and toward the end; null: its own all round.
   final Color? outlineShade;
 
-  // Turned in, as the part is pressed: [outlineShade] where the outline faces up and left, its own colour down and
-  // right.
+  // Turned in, as the part is pressed: [outlineShade] where the outline faces up and toward the start, its own colour
+  // down and toward the end.
   final bool outlineIn;
   final double width;
   final Color light, shade;
@@ -947,19 +979,19 @@ class _BevelPainter extends RetroDesktopPixelPainter {
   chisel;
 
   // One step of a bevel: the band between [outer] and [inner], light where it
-  // faces up and left, shade where it faces down and right.
+  // faces up and toward the start, shade where it faces down and toward the end.
   void _step(
-    Canvas canvas,
+    RetroDesktopPixelGrid px,
     Path outer,
     Path inner,
     double width,
     Color light,
     Color shade,
   ) => retroDesktopBevelStep(
-    canvas,
+    px.canvas,
     outer,
     inner,
-    Offset(width, width),
+    px.fall(width, width),
     light,
     shade,
   );
@@ -1029,7 +1061,7 @@ class _BevelPainter extends RetroDesktopPixelPainter {
         }
       } else if (edge != null && !keepSide && shape.side.width > 0) {
         _step(
-          canvas,
+          px,
           shape.getOuterPath(rect, textDirection: direction),
           shape.getInnerPath(rect, textDirection: direction),
           shape.side.strokeInset,
@@ -1039,7 +1071,7 @@ class _BevelPainter extends RetroDesktopPixelPainter {
       } else if (outlineShade case final below?
           when shape.side.width > 0 && shape.side.style != BorderStyle.none) {
         _step(
-          canvas,
+          px,
           shape.getOuterPath(rect, textDirection: direction),
           shape.getInnerPath(rect, textDirection: direction),
           shape.side.strokeInset,
@@ -1053,7 +1085,7 @@ class _BevelPainter extends RetroDesktopPixelPainter {
       if (width <= 0) return;
       if (stopping) stopAt(openDepth > width ? openDepth - width : 0);
       _step(
-        canvas,
+        px,
         shape.getInnerPath(rect, textDirection: direction),
         shape
             .copyWith(side: BorderSide(width: shape.side.strokeInset + width))
@@ -1115,19 +1147,25 @@ class RetroDesktopArrowButtonPainter extends RetroDesktopPixelPainter {
       retroDesktopChiselEdge(colors, pressed: down),
       outer: px.extent(outer),
       inner: px.extent(inner),
+      litFromRight: px.litFromRight,
     );
-    final shift = down ? 1.0 : 0.0;
-    final w = 7.0, h = 4.0;
-    final x = (rect.center.dx - w / 2).roundToDouble() + shift;
-    final y = (rect.center.dy - h / 2).roundToDouble() + shift;
-    px.canvas.drawPath(
-      Path()..addPolygon([
-        Offset(x, y),
-        Offset(x + w, y),
-        Offset(x + w / 2, y + h),
-      ], true),
-      Paint()..color = colors.text,
-    );
+    // Held, the arrow sinks a pixel away from the light, as a held button's
+    // words do. Right to left it is drawn as the mirror, its odd width's
+    // middle pixel too.
+    px.lit(rect, () {
+      final shift = down ? px.fall(1, 1) : Offset.zero;
+      final w = 7.0, h = 4.0;
+      final x = (rect.center.dx - w / 2).roundToDouble() + shift.dx;
+      final y = (rect.center.dy - h / 2).roundToDouble() + shift.dy;
+      px.canvas.drawPath(
+        Path()..addPolygon([
+          Offset(x, y),
+          Offset(x + w, y),
+          Offset(x + w / 2, y + h),
+        ], true),
+        Paint()..color = colors.text,
+      );
+    });
   }
 
   @override
@@ -1138,9 +1176,18 @@ class RetroDesktopArrowButtonPainter extends RetroDesktopPixelPainter {
       inner != old.inner;
 }
 
+/// A step [across] and [down] away from a light at the top start of [direction]:
+/// down and toward the end. A held face's words sink by (1, 1), a raised part's
+/// shadow falls by (2, 2): to the right left to right, to the left right to left.
+Offset retroDesktopFall(TextDirection direction, double across, double down) =>
+    Offset(direction == TextDirection.rtl ? -across : across, down);
+
 /// One step of a bevel: the band between [outer] and [inner], [light] where it
-/// faces up and left (the band less [outer] moved by [width]), [shade] where it
-/// faces down and right. A turned-in well passes the two the other way round.
+/// faces the light (the band less [outer] moved by [width]), [shade] where it
+/// faces away. [width] steps away from the light: down and toward the end, as
+/// [RetroDesktopPixelGrid.fall] or [retroDesktopFall] gives it (to the right
+/// left to right, to the left right to left). A turned-in well passes [light]
+/// and [shade] the other way round.
 void retroDesktopBevelStep(
   Canvas canvas,
   Path outer,
