@@ -412,7 +412,14 @@ class TermBracketPainter extends CustomPainter {
     this.knockout,
     this.hollow = false,
     this.spansHeight = false,
+    this.stemAt = 0.55,
   });
+
+  /// Where each bracket's stem stands in its cell, as a share of the cell
+  /// from the outer edge. A band whose cells fill beside its brackets (a
+  /// toggle group's chosen end) stands it further out, as a `[` glyph
+  /// does, so the fill keeps clear of its arms.
+  final double stemAt;
 
   /// Whether the brackets, the fill and the cursor run the whole height
   /// painted, in whole lines (a label on more than one line), rather than
@@ -508,8 +515,8 @@ class TermBracketPainter extends CustomPainter {
       _pair(
         canvas,
         paint,
-        Offset(cw * 0.55 + d, cy),
-        Offset(size.width - cw * 0.55 - d, cy),
+        Offset(cw * stemAt + d, cy),
+        Offset(size.width - cw * stemAt - d, cy),
         h,
         cw * 0.32,
       );
@@ -581,7 +588,8 @@ class TermBracketPainter extends CustomPainter {
       old.cursorColor != cursorColor ||
       old.knockout != knockout ||
       old.hollow != hollow ||
-      old.spansHeight != spansHeight;
+      old.spansHeight != spansHeight ||
+      old.stemAt != stemAt;
 }
 
 /// The cursor over [band]: a block of [color] over every cell, [amount] of

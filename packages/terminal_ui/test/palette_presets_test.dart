@@ -47,9 +47,9 @@ double _hueGap(Color a, Color b) {
 
 void main() {
   test('six palettes, the first Terminal\'s own', () {
-    expect(TermThemeData.presets, hasLength(6));
-    expect(TermThemeData.presets.toSet(), hasLength(6));
-    expect(TermThemeData.presets.first, 'standard');
+    expect(TermThemeData.palettes, hasLength(6));
+    expect({for (final p in TermThemeData.palettes) p.id}, hasLength(6));
+    expect(TermThemeData.palettes.first.id, 'standard');
     for (final b in Brightness.values) {
       final own = b == Brightness.dark
           ? TermThemeData.dark()
@@ -65,7 +65,7 @@ void main() {
     }
   });
 
-  for (final id in TermThemeData.presets) {
+  for (final id in TermThemeData.palettes.map((p) => p.id)) {
     for (final b in Brightness.values) {
       test('$id by ${b == Brightness.dark ? 'night' : 'day'} reads', () {
         final t = TermThemeData.preset(id, b);
@@ -84,7 +84,7 @@ void main() {
   test('the six look apart, by day and by night', () {
     for (final b in Brightness.values) {
       final seen = {
-        for (final id in TermThemeData.presets)
+        for (final id in TermThemeData.palettes.map((p) => p.id))
           (
             TermThemeData.preset(id, b).background,
             TermThemeData.preset(id, b).accent,
@@ -151,7 +151,7 @@ void main() {
   testWidgets('a page builds in each palette, by day and by night', (
     tester,
   ) async {
-    for (final id in TermThemeData.presets) {
+    for (final id in TermThemeData.palettes.map((p) => p.id)) {
       for (final b in Brightness.values) {
         await tester.pumpWidget(
           Directionality(

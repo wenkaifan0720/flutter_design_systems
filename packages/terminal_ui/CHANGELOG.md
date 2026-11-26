@@ -1,3 +1,39 @@
+## 0.7.0
+
+- Requires ui_core 0.8.1 (ui_core_test 0.6.1 for the checks).
+- `TermHost`, the one mount, in the main library: the theme for the brightness in force (`theme` by day,
+  `darkTheme` by night, or a `palette`'s; `brightness` pins one, null follows the device), the screen behind the
+  app, the status bar's polarity and the toaster `TermToaster.show` needs. A change of appearance or palette blends
+  across in 200 ms; under Reduce Motion it cuts.
+- `TermScaffold.branches`: each place keeps its own stack of screens. A screen pushed on a place keeps the rail or
+  the side pane beside it while a phone's window list (and the status line over it) steps away; back pops it, and
+  choosing the place again goes back to its first screen (`navigatorKeys`, `backBehavior`, `hideBarOnPush`).
+  `TermScaffold.body` is nullable for it. A shell across the top (`RawNavigationMode.top`) draws the window list.
+- Palettes: `TermThemeData.palettes`, the six as ui_core's `RawNamedPalette` (an id to store, a label, swatches by
+  day and by night), and `TermThemeData.fromPalette`, which takes one of them or an app's own. **Breaking:**
+  `TermThemeData.presets` (the ids) goes; read `TermThemeData.palettes.map((p) => p.id)`.
+- List rows: the row's width decides its lines, not the input. From `TermListTile.besideCols` (56) cells a row is
+  one line, its subtitle a column beside the title; narrower (a phone, whatever the pointer) it is two lines. Under a
+  finger it is two lines tall either way. The words at the end take at most half the row, and in a two-line row with
+  a subtitle they stand at the end of the second line in every row, so a list's ends keep one column.
+- A toggle group's brackets stand at their cells' outer third (`TermBracketPainter.stemAt`), so a chosen end cell's
+  fill keeps clear of them.
+- `TermDescriptionList`'s lines are each one grid line tall, whatever face draws a glyph (`★` in a fallback face
+  took a row off the grid).
+- `TermRadio.trailing`: cells after the label, one cell between, outside the cursor (a palette's ink as `██`), out of
+  the radio's name.
+- A date field low on a page brings itself up first, so its calendar opens under it rather than over the form above.
+- `TermTextField`'s doc gives a form's check (`TextFormField`'s validator, the Terminal way).
+- **Breaking:** `termContrast` goes (`dart fix` moves callers to `RawPalette.contrastRatio`); `termReadable` goes
+  (`RawPalette.readableTone(color, on: [ground])`, or `TermThemeData.from`, which steps its accent itself);
+  `TermLocalizations.confirmKeysHint` goes (a confirm dialog names its keys in its `[y/N]`): drop an override of it.
+- The example is one app to copy, Shelf, a reading list (`example/lib/main.dart`): the host by day, by night or as
+  the device is, the shell with three places, a list with a pushed screen, a form that checks its answers and a date,
+  a question popped with its answer, and the settings with the six palettes, each shown by its name and its ink. The gallery moves to
+  `example/lib/gallery.dart`.
+- The README: install, the mount, "Build an app" (the shell, a list and its screens, forms, questions and toasts, the
+  palette picker), and a building-blocks table.
+
 ## 0.6.1
 
 - The README opens with a first app of twelve lines (`example/lib/minimal.dart`, which the example's analysis

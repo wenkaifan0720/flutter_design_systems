@@ -52,3 +52,16 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'searchFailedText'
+  # 0.7.0: termContrast went; ui_core's RawPalette.contrastRatio is the same ratio.
+  - title: "Replace with 'RawPalette.contrastRatio'"
+    date: 2026-11-26
+    element:
+      uris: ['terminal_ui.dart', 'terminal_parts.dart']
+      function: 'termContrast'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['terminal_ui.dart']
+          method: 'contrastRatio'
+          inClass: 'RawPalette'
+          static: true

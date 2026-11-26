@@ -105,31 +105,6 @@ enum TermStroke {
   final double width;
 }
 
-/// The contrast ratio of [a] against [b], 1 to 21, as WCAG reckons it.
-@Deprecated(
-  "Use ui_core's RawPalette.contrastRatio, the same ratio. It goes in 0.7.0.",
-)
-double termContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
-
-/// [color] stepped lighter (on a dark [on]) or darker (on a light one) in
-/// its own hue until it reads at [ratio] on [on]: a brand colour made fit
-/// to be Terminal's accent.
-@Deprecated(
-  "TermThemeData.from steps its accent itself; for another colour use ui_core's "
-  'RawPalette.readableTone, which keeps the hue. It goes in 0.7.0.',
-)
-Color termReadable(Color color, {required Color on, double ratio = 4.5}) {
-  if (RawPalette.contrastRatio(color, on) >= ratio) return color;
-  final toward = on.computeLuminance() < 0.18
-      ? const Color(0xFFFFFFFF)
-      : const Color(0xFF000000);
-  for (var t = 0.02; t <= 1.0; t += 0.02) {
-    final c = Color.lerp(color, toward, t)!;
-    if (RawPalette.contrastRatio(c, on) >= ratio) return c;
-  }
-  return toward;
-}
-
 /// How Terminal looks: a [palette] and the roles drawn from it, the [face]
 /// and the cell [grid], the [stroke] every box line is drawn at, and a
 /// style for each part.
@@ -355,23 +330,81 @@ class TermThemeData with Diagnosticable {
     face: face,
   )._inOneInk();
 
-  /// Terminal's six palettes, each by day and by night, as
-  /// [TermThemeData.preset] names them. `standard` is Terminal's own
-  /// ([TermThemeData.dark] by night, [TermThemeData.light] by day, a cyan
-  /// accent); `harbor` a navy screen with a blue accent; `dusk` a plum
-  /// screen with a magenta accent; and three draw in one ink, as a
+  /// Terminal's six palettes, each by day and by night, for an app's
+  /// palette picker; the first, Standard, is the default. `standard` is
+  /// Terminal's own ([TermThemeData.dark] by night, [TermThemeData.light] by
+  /// day, a cyan accent); `harbor` a navy screen with a blue accent; `dusk`
+  /// a plum screen with a magenta accent; and three draw in one ink, as a
   /// monochrome terminal does: `mono` ([TermThemeData.monochrome]),
-  /// `phosphor` (green) and `amber`.
-  static const List<String> presets = [
-    'standard',
-    'harbor',
-    'dusk',
-    'mono',
-    'phosphor',
-    'amber',
+  /// `phosphor` (green) and `amber`. Each one's swatches are its accent
+  /// and its screen.
+  ///
+  /// ```dart
+  /// TermHost(
+  ///   palette: TermThemeData.palettes.firstWhere((p) => p.id == paletteId),
+  ///   child: app,
+  /// )
+  /// ```
+  static const List<RawNamedPalette> palettes = [
+    RawNamedPalette(
+      id: 'standard',
+      label: 'Standard',
+      swatches: [Color(0xFF0B6870), Color(0xFFF6F3EB)],
+      darkSwatches: [Color(0xFF6CCFD8), Color(0xFF0E1013)],
+    ),
+    RawNamedPalette(
+      id: 'harbor',
+      label: 'Harbor',
+      swatches: [Color(0xFF1F55B8), Color(0xFFF3F2F9)],
+      darkSwatches: [Color(0xFF7FA9F5), Color(0xFF151B29)],
+    ),
+    RawNamedPalette(
+      id: 'dusk',
+      label: 'Dusk',
+      swatches: [Color(0xFF8A3399), Color(0xFFFAF1F6)],
+      darkSwatches: [Color(0xFFD195E6), Color(0xFF221824)],
+    ),
+    RawNamedPalette(
+      id: 'mono',
+      label: 'Mono',
+      swatches: [Color(0xFF1D1E21), Color(0xFFF6F3EB)],
+      darkSwatches: [Color(0xFFD9DCE1), Color(0xFF0E1013)],
+    ),
+    RawNamedPalette(
+      id: 'phosphor',
+      label: 'Phosphor',
+      swatches: [Color(0xFF0D4D20), Color(0xFFEFF5EA)],
+      darkSwatches: [Color(0xFFABEBAF), Color(0xFF0B110B)],
+    ),
+    RawNamedPalette(
+      id: 'amber',
+      label: 'Amber',
+      swatches: [Color(0xFF653E00), Color(0xFFFFF1E6)],
+      darkSwatches: [Color(0xFFFFB149), Color(0xFF160E06)],
+    ),
   ];
 
-  /// The palette [id], one of [presets], for [brightness].
+  /// The theme of [palette] in [brightness]: one of [palettes] is that
+  /// palette's preset; an app's own is [TermThemeData.from] Terminal's own
+  /// palette for the brightness with its first swatch the accent (by day
+  /// from [RawNamedPalette.swatches], by night from
+  /// [RawNamedPalette.darkSwatches]).
+  factory TermThemeData.fromPalette(
+    RawNamedPalette palette,
+    Brightness brightness,
+  ) {
+    if (palettes.any((p) => p.id == palette.id && p == palette)) {
+      return TermThemeData.preset(palette.id, brightness);
+    }
+    final swatches = palette.swatchesFor(brightness);
+    return TermThemeData.from(
+      brightness == Brightness.dark ? TermPalette.night : TermPalette.paper,
+      brightness: brightness,
+      accent: swatches.first,
+    );
+  }
+
+  /// The palette [id], one of [palettes]' ids, for [brightness].
   ///
   /// ```dart
   /// TermTheme(
@@ -447,7 +480,7 @@ class TermThemeData with Diagnosticable {
       _ => throw ArgumentError.value(
         id,
         'id',
-        'not one of ${presets.join(', ')}',
+        'not one of ${palettes.map((p) => p.id).join(', ')}',
       ),
     };
   }

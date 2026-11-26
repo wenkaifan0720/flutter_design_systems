@@ -45,7 +45,7 @@ class _Presets extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final id in TermThemeData.presets) ...[
+        for (final id in TermThemeData.palettes.map((p) => p.id)) ...[
           Text(id, style: theme.boldStyle),
           Text(_about[id] ?? '', style: theme.dimStyle),
           // A palette's night and day together, a line before the next.

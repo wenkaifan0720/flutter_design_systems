@@ -118,14 +118,6 @@ abstract class TermLocalizations {
   /// type ("confirm").
   String get typedConfirmationFieldLabel;
 
-  /// The keys a `TermConfirmDialog` took, shown under it
-  /// ("y yes · n no · esc").
-  @Deprecated(
-    'TermConfirmDialog names its keys in its [y/N] and shows cancelKeyHint '
-    'under it. This is no longer shown.',
-  )
-  String get confirmKeysHint;
-
   /// The key that cancels a dialog or a sheet, shown under it
   /// ("esc cancel").
   String get cancelKeyHint;
@@ -283,9 +275,6 @@ class DefaultTermLocalizations implements TermLocalizations {
 
   @override
   String get typedConfirmationFieldLabel => 'confirm';
-
-  @override
-  String get confirmKeysHint => 'y yes · n no · esc';
 
   @override
   String get cancelKeyHint => 'esc cancel';
@@ -469,9 +458,6 @@ class _ArabicTermLocalizations extends DefaultTermLocalizations {
   String get typedConfirmationFieldLabel => 'تأكيد';
 
   @override
-  String get confirmKeysHint => '${_rtl}y نعم · n لا · esc';
-
-  @override
   String get cancelKeyHint => '${_rtl}esc إلغاء';
 
   @override
@@ -620,9 +606,6 @@ class _GermanTermLocalizations extends DefaultTermLocalizations {
 
   @override
   String get typedConfirmationFieldLabel => 'bestätigen';
-
-  @override
-  String get confirmKeysHint => 'y ja · n nein · esc';
 
   @override
   String get cancelKeyHint => 'esc abbrechen';

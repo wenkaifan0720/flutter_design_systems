@@ -2,6 +2,8 @@
 /// a run of them.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -22,9 +24,12 @@ import 'pane.dart';
 /// words' ink, [subtitle] dim, [leading] (a status glyph) before them and
 /// [trailing] (a time, a count, a key) at the end.
 ///
-/// Under a pointer it is one line and [subtitle] stands beside [title] as a
-/// column (where it starts: [titleCols]); under a finger it is two lines,
-/// [subtitle] under [title]. The
+/// From [besideCols] cells wide (a desk's pane) it is one line, [subtitle]
+/// beside [title] as a column (where it starts: [titleCols]); narrower (a
+/// phone, a narrow window or pane, whatever the pointer) it is two lines,
+/// [subtitle] under [title]. Under a finger it is two lines tall either way,
+/// its floor. [trailing] takes at most half the row; in a two-line row with
+/// a [subtitle] it stands at the end of the second line, in every row. The
 /// row runs from edge to edge (put rows in a [TermPane.list]) and keeps a
 /// one-cell gutter at each end. The keyboard's focus is the cursor over the
 /// whole row, a pair of brackets cut out of its gutters (on a chosen row,
@@ -46,6 +51,10 @@ import 'pane.dart';
 /// Reads [TermStyle]'s `fill` (the row's ground), `foreground` (the
 /// words), `edge` (the focus block) and `textStyle`.
 class TermListTile extends StatelessWidget {
+  /// The cells from which a row stands on one line, its [subtitle] a
+  /// column beside its [title].
+  static const int besideCols = 56;
+
   /// A list row.
   const TermListTile({
     super.key,
@@ -142,7 +151,6 @@ class TermListTile extends StatelessWidget {
     final cw = grid.cellWidth;
     final lh = grid.lineHeight;
     final touch = RawTapTargets.of(context).inputOn() == RawInput.touch;
-    final height = touch ? lh * 2 : lh;
     final interactive = onTap != null && enabled;
     // Chosen in a pane without the keyboard: a faint shade, not the bright
     // bar the active pane's row has.
@@ -261,10 +269,17 @@ class TermListTile extends StatelessWidget {
                   SizedBox(width: cw),
                 ],
               ];
-              final end = [
+              // The end's words take at most half the row: a long one
+              // ellipsizes rather than push the title off.
+              List<Widget> endIn(double width, {double? room}) => [
                 if (trailing != null) ...[
                   SizedBox(width: cw),
-                  slot(trailing!, faint),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: math.max(0, math.min(width / 2, room ?? width)),
+                    ),
+                    child: slot(trailing!, faint),
+                  ),
                 ],
               ];
               // Under the title, not under the glyph.
@@ -277,58 +292,61 @@ class TermListTile extends StatelessWidget {
                   SizedBox(width: cw),
                 ],
               ];
-              final Widget body;
-              if (touch) {
-                // A finger's row has two lines. Where the title and the words
-                // at the end do not fit on the first together (a phone at
-                // large text), the end's words go to the end of the second,
-                // so the title, what the row is, stays whole.
-                body = LayoutBuilder(
-                  builder: (context, c) {
-                    final beside = _fitsBeside(grid, c.maxWidth);
-                    final first = Row(
-                      children: [
-                        ...lead,
-                        Expanded(child: slot(title, words)),
-                        if (beside) ...end,
-                      ],
-                    );
-                    if (subtitle == null && beside) {
-                      // One line of words, centred in the finger's two.
-                      return first;
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(height: lh, child: first),
-                        SizedBox(
-                          height: lh,
-                          child: Row(
-                            children: [
-                              ...indent,
-                              Expanded(
-                                child: subtitle == null
-                                    ? const SizedBox.shrink()
-                                    : slot(subtitle!, faint),
-                              ),
-                              if (!beside) ...end,
-                            ],
+              Widget body(bool stacked, double width) {
+                if (stacked) {
+                  // A narrow row has two lines. With a subtitle the words at
+                  // the end stand at the end of the second, beside it, in
+                  // every row, so a list's ends keep one column and the
+                  // title, what the row is, keeps the first line whole.
+                  // Without one they stand on the title's line, going under
+                  // it where both don't fit (a phone at large text).
+                  return LayoutBuilder(
+                    builder: (context, c) {
+                      final beside =
+                          subtitle == null && _fitsBeside(grid, c.maxWidth);
+                      final first = Row(
+                        children: [
+                          ...lead,
+                          Expanded(child: slot(title, words)),
+                          if (beside) ...endIn(width),
+                        ],
+                      );
+                      if (beside) {
+                        // One line of words, centred in the finger's two.
+                        return first;
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(height: lh, child: first),
+                          SizedBox(
+                            height: lh,
+                            child: Row(
+                              children: [
+                                ...indent,
+                                Expanded(
+                                  child: subtitle == null
+                                      ? const SizedBox.shrink()
+                                      : slot(subtitle!, faint),
+                                ),
+                                if (!beside) ...endIn(width),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              } else {
+                        ],
+                      );
+                    },
+                  );
+                }
                 // The glyph and title take three fifths of the row's cells,
                 // counted from the row's own width, so the subtitles of a
                 // list start in one column whatever stands at the end.
-                body = subtitle == null
+                return subtitle == null
                     ? Row(
                         children: [
                           ...lead,
                           Expanded(child: slot(title, words)),
-                          ...end,
+                          ...endIn(width),
                         ],
                       )
                     : LayoutBuilder(
@@ -350,31 +368,50 @@ class TermListTile extends StatelessWidget {
                               ),
                               SizedBox(width: cw),
                               Expanded(child: slot(subtitle!, faint)),
-                              ...end,
+                              ...endIn(
+                                width,
+                                room: c.maxWidth - grid.cols(start) - 2 * cw,
+                              ),
                             ],
                           );
                         },
                       );
               }
-              return CustomPaint(
-                painter: _RowPainter(
-                  ground: ground,
-                  cursor: TermCursorPainter(
-                    grid: grid,
-                    amount: cursor,
-                    color: own.edge ?? theme.accent,
-                    knockout: theme.onAccent,
-                    stroke: termStrokeWidth(theme, grid),
-                    hollow: hollow,
-                  ),
-                ),
-                child: SizedBox(
-                  height: height,
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.only(start: cw, end: cw),
-                    child: body,
-                  ),
-                ),
+
+              return LayoutBuilder(
+                builder: (context, box) {
+                  // The row's width decides its lines, whatever the
+                  // pointer: a narrow one stacks; a finger's is two lines
+                  // tall either way, its floor.
+                  final stacked =
+                      box.hasBoundedWidth &&
+                      box.maxWidth < grid.cols(besideCols);
+                  final width = box.maxWidth - 2 * cw;
+                  final twoLines =
+                      touch ||
+                      (stacked &&
+                          (subtitle != null || !_fitsBeside(grid, width)));
+                  return CustomPaint(
+                    painter: _RowPainter(
+                      ground: ground,
+                      cursor: TermCursorPainter(
+                        grid: grid,
+                        amount: cursor,
+                        color: own.edge ?? theme.accent,
+                        knockout: theme.onAccent,
+                        stroke: termStrokeWidth(theme, grid),
+                        hollow: hollow,
+                      ),
+                    ),
+                    child: SizedBox(
+                      height: twoLines ? lh * 2 : lh,
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.only(start: cw, end: cw),
+                        child: body(stacked, width),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),

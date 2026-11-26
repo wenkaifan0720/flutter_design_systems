@@ -111,71 +111,91 @@ class FilterForm extends Home {
   const FilterForm({super.key});
 }
 
+// The Shelf examples' state and screens.
+Brightness? appearance;
+var place = 0;
+var paletteId = 'standard';
+final title = TextEditingController();
+final titleFocus = FocusNode();
+String? titleError;
+
+class HomePage extends Home {
+  const HomePage({super.key});
+}
+
+class BooksScreen extends Home {
+  const BooksScreen({super.key});
+}
+
+class AddScreen extends Home {
+  const AddScreen({super.key});
+}
+
 final Map<String, DocExample> _examples = {
-  "actions.dart:31": (context) => TermButtonGroup(
+  "actions.dart:37": (context) => TermButtonGroup(
     semanticLabel: 'run actions',
     children: [
       TermButton(label: 'rerun', onPressed: () {}),
       TermButton(label: 'cancel', onPressed: () {}),
     ],
   ),
-  "actions.dart:74": (context) => TermToggleGroup<String>(
+  "actions.dart:84": (context) => TermToggleGroup<String>(
     options: const ['list', 'tiles'],
     selected: {view},
     labelOf: (v) => v,
     onSelectionChanged: (s) => setState(() => view = s.first),
   ),
-  "actions.dart:201": (context) => TermSplitButton(
+  "actions.dart:453": (context) => TermSplitButton(
     label: 'deploy',
     onPressed: deploy,
     actions: [RawSplitAction(label: 'deploy without cache', onPressed: fresh)],
   ),
-  "actions.dart:302": (context) =>
+  "actions.dart:564": (context) =>
       TermLink(label: 'the docs', onPressed: () {}),
-  "button.dart:32": (context) => TermButton(
+  "button.dart:37": (context) => TermButton(
     label: 'Cancel',
     shortcut: const SingleActivator(LogicalKeyboardKey.escape),
     onPressed: () {},
   ),
-  "button.dart:225": (context) =>
+  "button.dart:276": (context) =>
       TermIconButton(glyph: '?', semanticLabel: 'Help', onPressed: () {}),
-  "charts.dart:52": (context) => TermSparkline(
+  "charts.dart:58": (context) => TermSparkline(
     values: const [3, 5, 4, 8, 6, 9],
     semanticLabel: 'build time, last 6 runs',
   ),
-  "charts.dart:159": (context) => TermBarChart(
+  "charts.dart:177": (context) => TermBarChart(
     bars: const [('api', 42), ('web', 18), ('worker', 7)],
     unit: 'min',
   ),
-  "charts.dart:296": (context) => TermLineChart(
+  "charts.dart:332": (context) => TermLineChart(
     series: const [
       TermSeries(label: 'p95 ms', values: [120, 135, 128, 160, 142]),
     ],
     xLabels: ('mon', 'fri'),
   ),
-  "charts.dart:482": (context) => TermAreaChart(
+  "charts.dart:626": (context) => TermAreaChart(
     series: const [
       TermSeries(label: 'requests', values: [4, 9, 7, 12, 10]),
     ],
   ),
-  "chips.dart:20": (context) =>
+  "chips.dart:22": (context) =>
       TermTag(label: 'production', tone: TermTone.warning),
-  "chips.dart:146": (context) => TermChip(
+  "chips.dart:161": (context) => TermChip(
     label: 'failed',
     selected: onlyFailed,
     onSelected: (v) => setState(() => onlyFailed = v),
   ),
-  "chips.dart:245": (context) => Row(
+  "chips.dart:268": (context) => Row(
     children: [
       Text('failed'),
       TermBadge(count: 3, semanticLabel: 'failed runs'),
     ],
   ),
-  "command_palette.dart:31": (context) {
+  "command_palette.dart:35": (context) {
     termMatchRanges('deploy to staging', 'dts'); // [(0, 1), (7, 8), (10, 11)]
     return null;
   },
-  "command_palette.dart:65": (context) => TermCommandPalette(
+  "command_palette.dart:69": (context) => TermCommandPalette(
     commands: [
       RawCommand(
         label: 'deploy to staging',
@@ -190,13 +210,13 @@ final Map<String, DocExample> _examples = {
       ),
     ],
   ),
-  "command_palette.dart:446": (context) => RawCommandShortcut(
+  "command_palette.dart:484": (context) => RawCommandShortcut(
     onOpen: () => showTermCommandPalette(context: context, commands: commands),
     child: app,
   ),
-  "containers.dart:56": (context) =>
+  "containers.dart:58": (context) =>
       TermDisclosure(title: 'environment', child: Text('NODE_ENV=production')),
-  "containers.dart:218": (context) => TermTable(
+  "containers.dart:229": (context) => TermTable(
     columns: const [
       TermColumn(label: 'run', cols: 6),
       TermColumn(label: 'branch'),
@@ -206,7 +226,7 @@ final Map<String, DocExample> _examples = {
       [Text('#1482'), Text('main'), Text('2m 14s')],
     ],
   ),
-  "containers.dart:342": (context) {
+  "containers.dart:354": (context) {
     final table = _own(
       RawDataTableController<Map<String, String>>(
         rows: const [
@@ -224,29 +244,29 @@ final Map<String, DocExample> _examples = {
       cellBuilder: (context, run, column) => Text(run[column.id] ?? ''),
     );
   },
-  "containers.dart:543": (context) => const TermDivider(label: 'older'),
-  "containers.dart:609": (context) {
+  "containers.dart:629": (context) => const TermDivider(label: 'older'),
+  "containers.dart:695": (context) {
     final scroll = _own(ScrollController());
     return TermScrollArea(
       controller: scroll,
       child: ListView(controller: scroll, children: lines),
     );
   },
-  "containers.dart:680": (context) =>
+  "containers.dart:766": (context) =>
       TermWholeLines(child: ListView(children: lines)),
-  "containers.dart:735": (context) =>
+  "containers.dart:824": (context) =>
       TermSplitView(first: files, second: preview, initialFraction: 0.3),
-  "containers.dart:832": (context) => TermReorderableList<String>(
+  "containers.dart:929": (context) => TermReorderableList<String>(
     items: steps,
     labelOf: (s) => s,
     onReorder: (from, to) =>
         setState(() => steps.insert(to, steps.removeAt(from))),
   ),
-  "containers.dart:932": (context) => TermPullToRefresh(
+  "containers.dart:1029": (context) => TermPullToRefresh(
     onRefresh: reload,
     child: ListView(children: rows),
   ),
-  "containers.dart:1013": (context) {
+  "containers.dart:1111": (context) {
     final tree = _own(
       RawTreeController<String>(
         roots: const ['lib'],
@@ -259,7 +279,7 @@ final Map<String, DocExample> _examples = {
       labelOf: (path) => path.split('/').last,
     );
   },
-  "containers.dart:1152": (context) => TermTimeline(
+  "containers.dart:1267": (context) => TermTimeline(
     entries: const [
       TermTimelineEntry(
         time: '14:02',
@@ -269,16 +289,16 @@ final Map<String, DocExample> _examples = {
       TermTimelineEntry(time: '14:05', title: 'deploy started'),
     ],
   ),
-  "containers.dart:1273": (context) => TermAvatar(name: 'Ada Lovelace'),
-  "containers.dart:1331": (context) => TermAvatarGroup(
+  "containers.dart:1388": (context) => TermAvatar(name: 'Ada Lovelace'),
+  "containers.dart:1446": (context) => TermAvatarGroup(
     names: const ['Ada Lovelace', 'Alan Turing', 'Grace Hopper'],
   ),
-  "containers.dart:1383": (context) =>
+  "containers.dart:1514": (context) =>
       TermMedia(image: NetworkImage(url), alt: 'the deploy graph', lines: 10),
-  "containers.dart:1516": (context) => TermDescriptionList(
+  "containers.dart:1656": (context) => TermDescriptionList(
     items: const [('branch', 'main'), ('commit', '4f2a91c')],
   ),
-  "dialog.dart:31": (context) => TermDialog(
+  "dialog.dart:35": (context) => TermDialog(
     title: 'discard changes',
     content: const Text('the form has edits that are not saved.'),
     actions: [
@@ -286,7 +306,7 @@ final Map<String, DocExample> _examples = {
       TermButton.filled(label: 'discard', onPressed: () {}),
     ],
   ),
-  "dialog.dart:410": (context) {
+  "dialog.dart:418": (context) {
     return TermButton(
       label: 'open',
       onPressed: () async {
@@ -301,7 +321,7 @@ final Map<String, DocExample> _examples = {
       },
     );
   },
-  "dialog.dart:417": (context) {
+  "dialog.dart:472": (context) {
     return TermButton(
       label: 'open',
       onPressed: () {
@@ -316,11 +336,11 @@ final Map<String, DocExample> _examples = {
       },
     );
   },
-  "feedback.dart:61": (context) => const TermSpinner(),
-  "feedback.dart:120": (context) =>
+  "feedback.dart:62": (context) => const TermSpinner(),
+  "feedback.dart:121": (context) =>
       const TermProgressBar(value: 0.42, cols: 20),
-  "feedback.dart:289": (context) => const TermCaret(),
-  "feedback.dart:334": (context) {
+  "feedback.dart:308": (context) => const TermCaret(),
+  "feedback.dart:353": (context) {
     return TermButton(
       label: 'open',
       onPressed: () {
@@ -332,41 +352,46 @@ final Map<String, DocExample> _examples = {
       },
     );
   },
-  "inputs.dart:32": (context) {
+  "host.dart:26": (context) => MaterialApp(
+    builder: (context, child) =>
+        TermHost(brightness: appearance, child: child!),
+    home: const HomePage(),
+  ),
+  "inputs.dart:41": (context) {
     final token = _own(TextEditingController());
     return TermPasswordField(labelText: 'token', controller: token);
   },
-  "inputs.dart:125": (context) =>
+  "inputs.dart:139": (context) =>
       TermOtpField(onCompleted: (code) => verify(code)),
-  "inputs.dart:292": (context) => TermNumberField(
+  "inputs.dart:332": (context) => TermNumberField(
     semanticLabel: 'replicas',
     value: replicas,
     min: 1,
     max: 9,
     onChanged: (v) => setState(() => replicas = v),
   ),
-  "inputs.dart:407": (context) => TermCombobox<String>(
+  "inputs.dart:534": (context) => TermCombobox<String>(
     labelText: 'branch',
     options: branches,
     onSelected: (b) => setState(() => branch = b),
   ),
-  "inputs.dart:528": (context) => TermTagInput<String>(
+  "inputs.dart:851": (context) => TermTagInput<String>(
     labelText: 'regions',
     values: regions,
     options: allRegions,
     onChanged: (v) => setState(() => regions = v),
   ),
-  "key_hint.dart:17": (context) {
+  "key_hint.dart:19": (context) {
     termKeyLabel(
       const SingleActivator(LogicalKeyboardKey.keyK, control: true),
     ); // ^K
     return null;
   },
-  "key_hint.dart:52": (context) {
+  "key_hint.dart:66": (context) {
     const TermKey('^K');
     return null;
   },
-  "list_tile.dart:40": (context) => TermListTile(
+  "list_tile.dart:50": (context) => TermListTile(
     leading: const Text('✓'),
     title: const Text('atlas-api'),
     subtitle: const Text('main · 2m 14s'),
@@ -374,7 +399,7 @@ final Map<String, DocExample> _examples = {
     selected: true,
     onTap: () {},
   ),
-  "list_tile.dart:88": (context) => TermListTile(
+  "list_tile.dart:107": (context) => TermListTile(
     title: const Text('atlas-api'),
     selected: true,
     onTap: open,
@@ -384,21 +409,21 @@ final Map<String, DocExample> _examples = {
       onPressed: menu,
     ),
   ),
-  "list_tile.dart:385": (context) =>
+  "list_tile.dart:621": (context) =>
       const TermSectionHeader(title: 'recent runs', trailing: '12'),
-  "navigation.dart:110": (context) => TermTabBar(
+  "navigation.dart:160": (context) => TermTabBar(
     tabs: const ['steps', 'log', 'env'],
     selectedIndex: tab,
     onTap: (index) => setState(() => tab = index),
   ),
-  "navigation.dart:253": (context) => TermTopBar(
+  "navigation.dart:347": (context) => TermTopBar(
     title: 'slipway',
     subtitle: 'atlas-api › runs',
     actions: [
       TermIconButton(glyph: '/', semanticLabel: 'Search', onPressed: () {}),
     ],
   ),
-  "navigation.dart:467": (context) => TermNavigationBar(
+  "navigation.dart:571": (context) => TermNavigationBar(
     destinations: const [
       TermNavigationDestination(label: 'home'),
       TermNavigationDestination(label: 'runs'),
@@ -406,13 +431,13 @@ final Map<String, DocExample> _examples = {
     selectedIndex: 0,
     onDestinationSelected: (index) {},
   ),
-  "navigation.dart:649": (context) => TermSideBar(
+  "navigation.dart:792": (context) => TermSideBar(
     title: 'slipway',
     destinations: destinations,
     selectedIndex: 0,
     onDestinationSelected: (index) {},
   ),
-  "navigation.dart:761": (context) => const TermStatusLine(
+  "navigation.dart:915": (context) => const TermStatusLine(
     mode: 'RUNS',
     segments: [
       TermStatusSegment('atlas-api'),
@@ -425,12 +450,12 @@ final Map<String, DocExample> _examples = {
     message: 'connection lost · showing the runs from 2 min ago',
     action: TermButton(label: 'retry', onPressed: retry),
   ),
-  "notice.dart:130": (context) => TermEmptyState(
+  "notice.dart:136": (context) => TermEmptyState(
     title: 'no runs match "mobile-gatway"',
     message: 'try fewer letters, or another branch',
     action: TermButton(label: 'clear search', onPressed: clear),
   ),
-  "overlays.dart:101": (context) {
+  "overlays.dart:125": (context) {
     return TermButton(
       label: 'open',
       onPressed: () {
@@ -442,7 +467,7 @@ final Map<String, DocExample> _examples = {
       },
     );
   },
-  "overlays.dart:163": (context) {
+  "overlays.dart:185": (context) {
     return TermButton(
       label: 'open',
       onPressed: () async {
@@ -462,20 +487,20 @@ final Map<String, DocExample> _examples = {
       },
     );
   },
-  "overlays.dart:303": (context) => TermPopover(
+  "overlays.dart:331": (context) => TermPopover(
     anchorBuilder: (context, anchor) =>
         TermButton(label: 'filters', onPressed: anchor.toggle),
     builder: (context) => const FilterForm(),
   ),
-  "overlays.dart:363": (context) => TermHoverCard(
+  "overlays.dart:392": (context) => TermHoverCard(
     builder: (context) => const Text('4f2a91c fix the cache key'),
     child: TermLink(label: '4f2a91c', onPressed: openCommit),
   ),
-  "overlays.dart:416": (context) => TermTooltip(
+  "overlays.dart:454": (context) => TermTooltip(
     message: 'rerun (r)',
     child: TermIconButton(glyph: 'r', semanticLabel: 'rerun', onPressed: rerun),
   ),
-  "overlays.dart:525": (context) => TermMenu(
+  "overlays.dart:693": (context) => TermMenu(
     anchorBuilder: (context, anchor) => TermIconButton(
       glyph: '⋯',
       semanticLabel: 'more',
@@ -492,7 +517,7 @@ final Map<String, DocExample> _examples = {
     trailing: 'main',
     child: Text('last deploy 4m ago'),
   ),
-  "pickers.dart:43": (context) {
+  "pickers.dart:62": (context) {
     final calendar = _own(
       RawCalendarController(
         firstDate: DateTime(2026),
@@ -504,42 +529,42 @@ final Map<String, DocExample> _examples = {
       onChanged: (day) => setState(() {}),
     );
   },
-  "pickers.dart:224": (context) => TermDatePicker(
+  "pickers.dart:257": (context) => TermDatePicker(
     labelText: 'freeze from',
     value: freeze,
     firstDate: DateTime(2026),
     lastDate: DateTime(2027),
     onChanged: (d) => setState(() => freeze = d),
   ),
-  "pickers.dart:333": (context) => TermDateRangePicker(
+  "pickers.dart:374": (context) => TermDateRangePicker(
     labelText: 'window',
     value: window,
     firstDate: DateTime(2026),
     lastDate: DateTime(2027),
     onChanged: (r) => setState(() => window = r),
   ),
-  "pickers.dart:572": (context) => TermTimeField(
+  "pickers.dart:750": (context) => TermTimeField(
     labelText: 'deploy at',
     value: const TermTime(hour: 14, minute: 30),
     onChanged: (t) => setState(() => at = t),
   ),
-  "pickers.dart:705": (context) {
+  "pickers.dart:909": (context) {
     final colour = _own(RawColorController());
     return TermColorPicker(controller: colour);
   },
-  "range.dart:31": (context) => TermSlider(
+  "range.dart:36": (context) => TermSlider(
     semanticLabel: 'canary share',
     value: share,
     onChanged: (v) => setState(() => share = v),
   ),
-  "range.dart:236": (context) => TermRangeSlider(
+  "range.dart:242": (context) => TermRangeSlider(
     values: const RawRangeValues(200, 800),
     max: 1000,
     onChanged: (v) => setState(() => latency = v),
   ),
-  "range.dart:369": (context) =>
+  "range.dart:374": (context) =>
       TermMeter(value: 0.72, label: 'disk', reading: '7.2 of 10 GB'),
-  "range.dart:465": (context) => TermRating(
+  "range.dart:488": (context) => TermRating(
     semanticLabel: 'how did the deploy go',
     value: stars,
     onChanged: (v) => setState(() => stars = v),
@@ -554,7 +579,7 @@ final Map<String, DocExample> _examples = {
         TermTheme(data: TermThemeData.dark(), child: child!),
     home: const Home(),
   ),
-  "route.dart:78": (context) {
+  "route.dart:82": (context) {
     return TermButton(
       label: 'open',
       onPressed: () {
@@ -563,7 +588,7 @@ final Map<String, DocExample> _examples = {
       },
     );
   },
-  "select.dart:58": (context) => TermSelect<String>(
+  "select.dart:66": (context) => TermSelect<String>(
     labelText: 'environment',
     value: environment,
     items: const [
@@ -572,12 +597,12 @@ final Map<String, DocExample> _examples = {
     ],
     onChanged: (value) => setState(() => environment = value),
   ),
-  "selection.dart:112": (context) => TermCheckbox(
+  "selection.dart:163": (context) => TermCheckbox(
     value: autoMerge,
     label: 'merge when checks pass',
     onChanged: (value) => setState(() => autoMerge = value!),
   ),
-  "selection.dart:295": (context) => RadioGroup<String>(
+  "selection.dart:308": (context) => RadioGroup<String>(
     groupValue: environment,
     onChanged: (value) => setState(() => environment = value),
     child: RadioGroupKeyboardFix<String>(
@@ -590,31 +615,38 @@ final Map<String, DocExample> _examples = {
       ),
     ),
   ),
-  "selection.dart:368": (context) => TermSwitch(
+  "selection.dart:540": (context) => TermSwitch(
     value: notify,
     label: 'notify on failure',
     onChanged: (value) => setState(() => notify = value),
   ),
-  "status.dart:21": (context) => const TermSkeleton(lines: 3),
-  "status.dart:110": (context) => TermStatusView(
+  "status.dart:23": (context) => const TermSkeleton(lines: 3),
+  "status.dart:120": (context) => TermStatusView(
     status: TermStatus.error,
     title: "couldn't load runs",
     message: 'the server did not answer in 30s',
     action: TermButton(label: 'retry', onPressed: reload),
   ),
-  "status.dart:209": (context) => TermFileField(
+  "status.dart:219": (context) => TermFileField(
     labelText: 'attach logs',
     files: picked,
     onBrowse: pickFiles,
     onRemoved: (i) => setState(() => picked.removeAt(i)),
   ),
-  "text_field.dart:38": (context) => TermTextField(
+  "text_field.dart:44": (context) => TermTextField(
     labelText: 'branch',
     hintText: 'main',
     prompt: '\u{E0A0}',
     onSubmitted: (value) => deploy(value),
   ),
-  "text_field.dart:87": (context) {
+  "text_field.dart:60": (context) => TermTextField(
+    labelText: 'title',
+    controller: title,
+    focusNode: titleFocus,
+    errorText: titleError,
+    onChanged: (_) => setState(() => titleError = null),
+  ),
+  "text_field.dart:110": (context) {
     final timeout = _own(TextEditingController());
     return TermTextField.inline(
       labelText: 'timeout',
@@ -623,27 +655,34 @@ final Map<String, DocExample> _examples = {
       errorText: valid ? null : 'a number and s, m or h',
     );
   },
-  "wayfinding.dart:36": (context) => TermBreadcrumb(
+  "wayfinding.dart:47": (context) => TermBreadcrumb(
     crumbs: [
       (label: '~', onPressed: goHome),
       (label: 'atlas-api', onPressed: openProject),
       (label: '#1482', onPressed: null),
     ],
   ),
-  "wayfinding.dart:130": (context) => TermPagination(
+  "wayfinding.dart:150": (context) => TermPagination(
     page: 5,
     pageCount: 21,
     onChanged: (p) => setState(() => page = p),
   ),
-  "wayfinding.dart:280": (context) => TermPageDots(count: 5, index: 2),
-  "wayfinding.dart:383": (context) => TermSteps(
+  "wayfinding.dart:301": (context) => TermPageDots(count: 5, index: 2),
+  "wayfinding.dart:425": (context) => TermSteps(
     steps: const [
       (label: 'source', state: TermStepState.done),
       (label: 'test', state: TermStepState.current),
       (label: 'deploy', state: TermStepState.upcoming),
     ],
   ),
-  "wayfinding.dart:502": (context) => TermMenuBar(
+  "wayfinding.dart:611": (context) => TermContextMenu(
+    menuChildren: [
+      RawMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
+      RawMenuEntry(label: 'copy link', onPressed: copy),
+    ],
+    child: const Text('run #1482'),
+  ),
+  "wayfinding.dart:664": (context) => TermMenuBar(
     menus: [
       RawMenuEntry(
         label: 'run',
@@ -653,24 +692,27 @@ final Map<String, DocExample> _examples = {
       ),
     ],
   ),
-  "wayfinding.dart:572": (context) => TermContextMenu(
-    menuChildren: [
-      RawMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
-      RawMenuEntry(label: 'copy link', onPressed: copy),
-    ],
-    child: const Text('run #1482'),
-  ),
-  "wayfinding.dart:613": (context) => TermNavigationRail(
+  "wayfinding.dart:762": (context) => TermNavigationRail(
     destinations: destinations,
     selectedIndex: 0,
     onDestinationSelected: (i) {},
   ),
-  "wayfinding.dart:752": (context) => TermScaffold(
+  "wayfinding.dart:948": (context) => TermScaffold(
     topBar: const TermTopBar(title: 'slipway'),
     destinations: destinations,
     selectedIndex: tab,
     onDestinationSelected: (i) => setState(() => tab = i),
     body: pages[tab],
+  ),
+  "wayfinding.dart:982": (context) => TermScaffold.branches(
+    topBar: const TermTopBar(title: 'shelf'),
+    destinations: destinations,
+    selectedIndex: place,
+    onDestinationSelected: (i) => setState(() => place = i),
+    branches: [
+      (context) => const BooksScreen(),
+      (context) => const AddScreen(),
+    ],
   ),
   "fonts.dart:34": (context) {
     const plex = TermFace(family: 'IBMPlexMono', advance: 0.6);
@@ -701,11 +743,11 @@ final Map<String, DocExample> _examples = {
     termInventory.verify();
     return null;
   },
-  "localizations.dart:19": (context) => Text(
+  "localizations.dart:22": (context) => Text(
     TermLocalizations.of(context)
         .avatarGroupLabel(const ['Ada Lovelace', 'Alan Turing']),
   ),
-  "localizations.dart:37": (context) =>
+  "localizations.dart:200": (context) =>
       const DefaultTermLocalizations().avatarGroupLabel(const ['Ada Lovelace']),
   "palette.dart:17": (context) {
     final palette = TermPalette.night.copyWith(cyan: const Color(0xFF7DD3FC));
@@ -726,14 +768,7 @@ final Map<String, DocExample> _examples = {
     final ink = own.foreground ?? theme.foreground;
     return ink;
   },
-  "TermThemeData.preset": (context) => TermTheme(
-    data: TermThemeData.preset(
-      'amber',
-      MediaQuery.platformBrightnessOf(context),
-    ),
-    child: child,
-  ),
-  "theme.dart:162": (context) {
+  "theme.dart:136": (context) {
     final theme =
         TermThemeData.from(
           TermPalette.night,
@@ -747,16 +782,27 @@ final Map<String, DocExample> _examples = {
         );
     return theme;
   },
-  "theme.dart:1524": (context) => MaterialApp(
+  "theme.dart:350": (context) => TermHost(
+    palette: TermThemeData.palettes.firstWhere((p) => p.id == paletteId),
+    child: app,
+  ),
+  "theme.dart:417": (context) => TermTheme(
+    data: TermThemeData.preset(
+      'amber',
+      MediaQuery.platformBrightnessOf(context),
+    ),
+    child: child,
+  ),
+  "theme.dart:1758": (context) => MaterialApp(
     builder: (context, child) =>
         TermTheme(data: TermThemeData.dark(), child: child!),
     home: const Home(),
   ),
-  "theme.dart:1681": (context) => AnimatedTermTheme(
+  "theme.dart:1915": (context) => AnimatedTermTheme(
     data: dark ? TermThemeData.dark() : TermThemeData.light(),
     child: child,
   ),
-  "theme.dart:1752": (context) {
+  "theme.dart:1988": (context) {
     const TermCells(cols: 20, lines: 1, child: Text('ready'));
     return null;
   },

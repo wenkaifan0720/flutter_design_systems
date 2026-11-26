@@ -3,8 +3,7 @@ import 'package:terminal_ui/terminal_ui.dart';
 
 void main() => runApp(
   MaterialApp(
-    builder: (context, child) =>
-        TermTheme(data: TermThemeData.dark(), child: child!),
+    builder: (context, child) => TermHost(child: child!),
     home: Center(
       child: TermButton.filled(label: 'deploy', onPressed: () {}),
     ),

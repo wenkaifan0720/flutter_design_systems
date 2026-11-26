@@ -32,6 +32,7 @@ class _ChoiceFace extends StatelessWidget {
     required this.label,
     required this.style,
     required this.themed,
+    this.trailing,
   });
 
   final TermBracketShape shape;
@@ -40,6 +41,9 @@ class _ChoiceFace extends StatelessWidget {
   final String? label;
   final TermStyle? style;
   final TermStyle? themed;
+
+  /// Cells after the label, outside the cursor.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +90,9 @@ class _ChoiceFace extends StatelessWidget {
         );
         // Ordinary cells after the rest, outside the cursor: the danger ink
         // on the ground reads under any state.
+        final after = trailing;
         final wrong = <Widget>[
+          if (after != null) ...[SizedBox(width: grid.cellWidth), after],
           if (error) ...[
             SizedBox(width: grid.cellWidth),
             ExcludeSemantics(
@@ -282,7 +288,7 @@ class TermCheckbox extends StatelessWidget {
 }
 
 /// A radio button, `(•)`, with its [label] after it on the same line when
-/// given. Under the pointer its brackets take the accent; the keyboard's
+/// given, and its [trailing] cells after that. Under the pointer its brackets take the accent; the keyboard's
 /// focus is the cursor.
 ///
 /// Radios of one choice stand in Flutter's [RadioGroup], which holds the
@@ -325,6 +331,7 @@ class TermRadio<T> extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.style,
+    this.trailing,
   });
 
   /// The value this radio stands for.
@@ -362,6 +369,12 @@ class TermRadio<T> extends StatelessWidget {
   /// label's colour and weight).
   final TermStyle? style;
 
+  /// Cells after the [label], one cell between, outside the cursor (a
+  /// palette's colour, `██` in its ink): what the label names, seen. A
+  /// screen reader hears the label alone, so they add nothing to the
+  /// radio's name.
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) => _TermRadioControl<T>(radio: this);
 
@@ -376,7 +389,10 @@ class TermRadio<T> extends StatelessWidget {
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
-      ..add(ObjectFlagProperty<ValueChanged<T?>>.has('onChanged', onChanged));
+      ..add(ObjectFlagProperty<ValueChanged<T?>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<Widget>('trailing', trailing, defaultValue: null),
+      );
   }
 }
 
@@ -463,6 +479,7 @@ class _TermRadioControlState<T> extends State<_TermRadioControl<T>> {
                         if (state.downPosition != null) WidgetState.pressed,
                       },
                       label: label,
+                      trailing: radio.trailing,
                       style: radio.style,
                       themed: TermTheme.of(context).radioStyle,
                       mark: (theme, grid, ink) => TermSpring(

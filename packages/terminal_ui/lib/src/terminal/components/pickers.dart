@@ -529,6 +529,41 @@ class _DateFieldState extends State<_DateField> {
     super.dispose();
   }
 
+  // Opens the calendar under the field: where the page scrolls and the
+  // month would not fit under the field (a field low on a phone), the page
+  // first brings the field up to its top, so the calendar never covers the
+  // form above it. Where the page can't move far enough it opens above.
+  VoidCallback? _opener(BuildContext field, RawOverlayAnchor anchor) {
+    final open = termOpener(_focus, anchor);
+    if (open == null) return null;
+    return () async {
+      if (!anchor.controller.isOpen) await _roomUnder(field);
+      if (mounted) open();
+    };
+  }
+
+  Future<void> _roomUnder(BuildContext field) async {
+    final box = field.findRenderObject();
+    final scrollable = Scrollable.maybeOf(field);
+    final view = scrollable?.context.findRenderObject();
+    if (box is! RenderBox || !box.attached || view is! RenderBox) return;
+    final grid = field.termGrid;
+    final floor = grid.ceil(RawTapTargets.of(field).floorOn());
+    // The month: its head and its six weeks at the target floor, the
+    // weekdays' line and the frame's two.
+    final month = floor.height * 7 + grid.lines(3);
+    final under =
+        view.size.height -
+        box.localToGlobal(Offset(0, box.size.height), ancestor: view).dy;
+    if (under >= month) return;
+    final still = MediaQuery.maybeDisableAnimationsOf(field) ?? false;
+    await scrollable!.position.ensureVisible(
+      box,
+      duration: still ? Duration.zero : TermMotion.screen,
+      curve: Curves.easeOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     TermMenuMarks.watchInput();
@@ -578,7 +613,7 @@ class _DateFieldState extends State<_DateField> {
             focusNode: _focus,
             builder: (context, parts) => MergeSemantics(
               child: RawButton(
-                onPressed: enabled ? termOpener(_focus, anchor) : null,
+                onPressed: enabled ? _opener(context, anchor) : null,
                 focusNode: _focus,
                 expanded: anchor.isOpen,
                 isError: parts.invalid,

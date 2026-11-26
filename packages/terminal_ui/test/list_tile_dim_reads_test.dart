@@ -13,7 +13,7 @@ void main() {
 
   const meta = 'Open studio · Nov 20';
 
-  for (final id in TermThemeData.presets) {
+  for (final id in TermThemeData.palettes.map((p) => p.id)) {
     for (final b in Brightness.values) {
       for (final withAction in [false, true]) {
         final where = '${withAction ? 'with' : 'without'} an action';

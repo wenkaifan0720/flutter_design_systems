@@ -249,6 +249,9 @@ class TermBracketBand extends StatelessWidget {
                   cursorColor: theme.accent,
                   knockout: theme.onAccent,
                   hollow: true,
+                  // The chosen end cell fills beside the bracket: its stem
+                  // stands at the outer third, clear of the fill.
+                  stemAt: 0.3,
                 ),
               ),
             ),

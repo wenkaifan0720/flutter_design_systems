@@ -14,6 +14,7 @@ export 'terminal/components/command_palette.dart';
 export 'terminal/components/containers.dart';
 export 'terminal/components/dialog.dart';
 export 'terminal/components/feedback.dart';
+export 'terminal/components/host.dart';
 export 'terminal/components/inputs.dart';
 export 'terminal/components/key_hint.dart';
 export 'terminal/components/list_tile.dart';

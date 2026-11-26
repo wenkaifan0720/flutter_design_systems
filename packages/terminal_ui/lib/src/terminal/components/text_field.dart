@@ -41,6 +41,22 @@ import '../theme.dart';
 /// )
 /// ```
 ///
+/// A form checks its answers where `TextFormField` takes a `validator`:
+/// when the reader saves, give each problem to its field's [errorText], in
+/// words (`titleError = title.text.trim().isEmpty ? 'enter a title' : null`),
+/// and move the focus to the first one (`titleFocus.requestFocus()`); clear
+/// it as they type.
+///
+/// ```dart
+/// TermTextField(
+///   labelText: 'title',
+///   controller: title,
+///   focusNode: titleFocus,
+///   errorText: titleError,
+///   onChanged: (_) => setState(() => titleError = null),
+/// )
+/// ```
+///
 /// Reads [TermStyle]'s `edge` (the frame), `foreground` (the words typed)
 /// and `textStyle`.
 class TermTextField extends StatefulWidget {

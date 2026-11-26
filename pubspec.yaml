@@ -17,6 +17,8 @@ workspace:
   - packages/ui_core_review/example
   - packages/civic_ui
   - packages/civic_ui/example
+  - packages/terminal_ui
+  - packages/terminal_ui/example
   # The skill's samples, on the ui_core beside them: a core change that breaks the skill fails CI. This line stays
   # below the packages.
   - skills/ui_core_design_system/samples

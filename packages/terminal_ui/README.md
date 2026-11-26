@@ -16,12 +16,13 @@ selection and keys beside every action.
 flutter pub add terminal_ui material_ui
 ```
 
-or, under `dependencies:` in `pubspec.yaml`, `terminal_ui: ^0.6.0` and `material_ui: ^1.9.0`.
+`material_ui` is Flutter's Material as a package (from Flutter 3.50 it leaves the SDK): your app's `MaterialApp`.
+Terminal draws its glyphs in its own face (`✓`, `›`, `←`), so no icon package is needed. Import
+`package:terminal_ui/terminal_ui.dart` and `package:material_ui/material_ui.dart` (it brings Flutter's widgets);
+Terminal's library doesn't export `flutter/widgets.dart`. It re-exports ui_core, so `RawNamedPalette`, `RawPalette`
+and the `Raw*` parts come with it.
 
-The examples use `MaterialApp` from `material_ui`. A `CupertinoApp` or a `WidgetsApp` takes Terminal the same way
-(see [CupertinoApp and WidgetsApp](#cupertinoapp-and-widgetsapp)).
-
-## A first app
+A whole app: Terminal over a `MaterialApp` and one button.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -29,8 +30,7 @@ import 'package:terminal_ui/terminal_ui.dart';
 
 void main() => runApp(
   MaterialApp(
-    builder: (context, child) =>
-        TermTheme(data: TermThemeData.dark(), child: child!),
+    builder: (context, child) => TermHost(child: child!),
     home: Center(
       child: TermButton.filled(label: 'deploy', onPressed: () {}),
     ),
@@ -38,15 +38,13 @@ void main() => runApp(
 );
 ```
 
-`TermTheme` gives every route under it Terminal's theme: its palette, its character grid, its text style and its page
-motion. The button stands on the window itself; a `TermScaffold` (or a Material `Scaffold`) paints the palette's
-ground. The setup below also loads the bundled monospace fonts before the first frame, so nothing is measured in a
-fallback face, and puts the button in a pane.
+## Mount Terminal
 
-## Theme setup
-
-Load the bundled monospace fonts before the first frame. Wrap the app in
-`TermTheme` to set its palette and grid.
+`TermHost` is the one mount. Put it in your app's `builder:`, above the Navigator, so every screen, dialog and menu
+stands inside it. It gives the theme for the brightness in force (by day, by night, or as the device is; `theme` and
+`darkTheme`, or a `palette`'s), the screen behind the app, Terminal's page motion for every route a `MaterialApp`
+pushes, and the toaster `TermToaster.show` needs. A change of appearance or palette blends across in 200 ms (a cut
+under Reduce Motion). Load the bundled faces before the first frame, so nothing is measured in a fallback face:
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -54,69 +52,300 @@ import 'package:terminal_ui/terminal_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await termLoadFonts();
-  runApp(
-    MaterialApp(
-      // Your routes change screens as a terminal does (see Page motion).
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: termPageTransitions,
-        ),
-      ),
-      builder: (context, child) =>
-          TermTheme(data: TermThemeData.dark(), child: child!),
-      home: const Deploy(),
-    ),
-  );
+  await termLoadFonts(); // the first frame is set on the grid
+  runApp(const App(appearance: null));
 }
 
-class Deploy extends StatelessWidget {
-  const Deploy({super.key});
+class App extends StatelessWidget {
+  const App({super.key, required this.appearance});
+
+  /// Light or dark, pinned by the reader; null follows the device.
+  final Brightness? appearance;
 
   @override
-  Widget build(BuildContext context) => TermPane(
-    title: 'new deploy',
-    child: TermButton.filled(label: 'deploy', onPressed: () {}),
+  Widget build(BuildContext context) => MaterialApp(
+    builder: (context, child) => TermHost(brightness: appearance, child: child!),
+    home: const TermPane(title: 'shelf', child: Text('your reading list')),
   );
 }
 ```
 
-### CupertinoApp and WidgetsApp
+Under a `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same place; give a
+`WidgetsApp` Terminal's route, `pageRouteBuilder: <T>(settings, builder) => TermPageRoute<T>(settings: settings,
+builder: builder)`. A bare `TermTheme` gives a subtree the theme alone: no toasts, no screen, no blend. Screens open
+with a brief fade and pop with a cut; places and side panes switch in place. On Android, Back first dismisses an open
+menu, list or popover; the iOS transition keeps the swipe from the leading edge.
 
-`TermTheme` goes in the builder of any app widget. With `CupertinoApp`
-from `cupertino_ui`:
+## Build an app
+
+The example app, [example/lib/main.dart](example/lib/main.dart), is a whole reading list to copy: these are its parts.
+Terminal's gallery, every part on a page of its own, is `flutter run -t lib/gallery.dart` in `example/`.
+
+### The shell and its places
+
+`TermScaffold.branches` holds the app's places: a window list along a phone's foot, a rail from 600 wide and the side
+pane from 1100, with an optional status line (`TermStatusLine`) along the foot. Each place keeps its own screens; a
+screen pushed on one stands beside the rail or the side pane (a phone's window list steps away for it), back pops it,
+and choosing the place again goes back to its first screen. Toasts keep clear of the window list. The arrow keys move
+between the places and F6 moves the focus between them and the screen. `TermScaffold` (no `.branches`) frames one
+`body` of your own instead (an `IndexedStack`, or a router's).
 
 ```dart
-CupertinoApp(
-  builder: (context, child) =>
-      TermTheme(data: TermThemeData.dark(), child: child!),
-  home: const Deploy(),
-)
+import 'package:material_ui/material_ui.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+class ShelfShell extends StatefulWidget {
+  const ShelfShell({super.key});
+
+  @override
+  State<ShelfShell> createState() => _ShelfShellState();
+}
+
+class _ShelfShellState extends State<ShelfShell> {
+  int _place = 0;
+
+  @override
+  Widget build(BuildContext context) => TermScaffold.branches(
+    title: 'shelf',
+    destinations: const [
+      TermNavigationDestination(label: 'books', glyph: '≡'),
+      TermNavigationDestination(label: 'add', glyph: '+'),
+      TermNavigationDestination(label: 'settings', glyph: '~'),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (place) => setState(() => _place = place),
+    statusLine: const TermStatusLine(mode: 'SHELF', segments: [TermStatusSegment('5 books')]),
+    branches: [
+      (context) => const TermTopBar(title: 'books'),
+      (context) => const TermTopBar(title: 'add a book'),
+      (context) => const TermTopBar(title: 'settings'),
+    ],
+  );
+}
 ```
 
-With Flutter's `WidgetsApp`, give it Terminal's page route:
+### A list and its screens
+
+A `TermPane.list` of `TermListTile`s, each pushing its own screen. A row is one line from `TermListTile.besideCols`
+(56) cells wide, its subtitle a column beside the title, and two lines narrower, whatever the pointer; the words at
+the end take at most half the row, and a row's `action` (a delete key, a menu) is a control of its own beside it. A
+pushed screen's `TermTopBar` takes a back key as its `leading`.
 
 ```dart
-WidgetsApp(
-  color: const Color(0xFF000000),
-  builder: (context, child) =>
-      TermTheme(data: TermThemeData.dark(), child: child!),
-  pageRouteBuilder: <T>(settings, builder) =>
-      TermPageRoute<T>(settings: settings, builder: builder),
-  home: const Deploy(),
-)
+import 'package:material_ui/material_ui.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+class BooksScreen extends StatelessWidget {
+  const BooksScreen({super.key, required this.titles});
+
+  final List<String> titles;
+
+  @override
+  Widget build(BuildContext context) => TermPane.list(
+    title: 'books',
+    trailing: '${titles.length}',
+    children: [
+      for (final title in titles)
+        TermListTile(
+          leading: const Text('›'),
+          title: Text(title),
+          subtitle: const Text('reading'),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TermTopBar(
+                    leading: TermIconButton(
+                      glyph: '←',
+                      semanticLabel: 'back',
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                    title: title,
+                    subtitle: 'books',
+                  ),
+                  TermDescriptionList(items: [('title', title), ('status', 'reading')]),
+                ],
+              ),
+            ),
+          ),
+        ),
+    ],
+  );
+}
 ```
 
-### Page motion
+### Forms
 
-Terminal routes open with a brief fade and pop with a cut. Tabs and side
-panes switch in place. Set `pageTransitionsTheme` on the app's
-`ThemeData`, as in Theme setup above, to give routes pushed by its
-navigator the same transition. Alternatively, push a `TermPageRoute`
-to use the transition for one route.
+Stand the fields in a `Column` a line apart (`spacing: context.termGrid.lineHeight`); every field (a text field, a
+select, a date) takes the column's width, so give a desk's form a column of its own (the example's is 72 cells). Check
+the answers when the reader saves: give each problem to its field's `errorText`, in words (the frame and the words
+under it turn the danger ink, with a `✗`), and move the focus to the first one. A `TermDatePicker` with a null
+`value` is an optional date; it writes a chosen one `2026-11-14` (`termDate`), and its calendar opens under it,
+the page scrolling the field up first where the month wouldn't fit below.
 
-The iOS transition supports the swipe from the leading edge. On Android,
-Back first dismisses an open menu, list or popover.
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+class AddBookForm extends StatefulWidget {
+  const AddBookForm({super.key, required this.onSaved});
+
+  final void Function(String title, String format, DateTime? started) onSaved;
+
+  @override
+  State<AddBookForm> createState() => _AddBookFormState();
+}
+
+class _AddBookFormState extends State<AddBookForm> {
+  final _title = TextEditingController();
+  final _titleFocus = FocusNode();
+  String _format = 'paperback';
+  DateTime? _started;
+  String? _titleError;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  // The form's check: the field's error in words, or null.
+  String? _checkTitle(String title) => title.trim().isEmpty ? 'enter the book’s title' : null;
+
+  void _save() {
+    setState(() => _titleError = _checkTitle(_title.text));
+    if (_titleError != null) return _titleFocus.requestFocus();
+    widget.onSaved(_title.text.trim(), _format, _started);
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: context.termGrid.lineHeight,
+    children: [
+      TermTextField(
+        labelText: 'title',
+        controller: _title,
+        focusNode: _titleFocus,
+        errorText: _titleError,
+      ),
+      TermSelect<String>(
+        labelText: 'format',
+        value: _format,
+        items: const [
+          TermSelectItem(value: 'paperback', label: 'paperback'),
+          TermSelectItem(value: 'ebook', label: 'ebook'),
+        ],
+        onChanged: (format) => setState(() => _format = format),
+      ),
+      TermDatePicker(
+        labelText: 'started',
+        value: _started,
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2100),
+        onChanged: (day) => setState(() => _started = day),
+      ),
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: TermButton.filled(label: 'save book', onPressed: _save),
+      ),
+    ],
+  );
+}
+```
+
+A choice without words of its own (a toggle group, a slider) stands in a `TermPane` whose `title` names it, and
+takes a `semanticLabel` a screen reader hears.
+
+### Questions and toasts
+
+`showTermConfirmDialog` asks a y/N question and completes with the answer: `true` for yes, `false` for no, `null`
+when it is dismissed (Escape, the scrim, system back). Under 600 wide it stands as a sheet at the screen's foot, where
+a thumb reaches; a destructive one draws its yes in the danger ink. `TermToaster.show` says what happened.
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+Future<bool> confirmDelete(BuildContext context, String title) async {
+  final delete = await showTermConfirmDialog(
+    context: context,
+    title: 'delete book',
+    message: '“$title” comes off your list. this can’t be undone.',
+    confirmLabel: 'delete',
+    cancelLabel: 'keep',
+    isDestructiveAction: true,
+  );
+  if (delete != true || !context.mounted) return false;
+  TermToaster.show(context, message: 'deleted “$title”');
+  return true;
+}
+```
+
+### Let the reader choose a palette
+
+`TermThemeData.palettes` are Terminal's six, each with an id to store, a label to show and the swatches it gives by
+day and by night (its accent and its screen). Show each by its name and its ink as it shows now (`swatchesFor` the
+theme's brightness, as a radio's `trailing`). Hand the chosen one to the host; `TermThemeData.fromPalette` gives one's
+theme, and takes an app's own `RawNamedPalette` too (its first swatch the accent).
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+class PalettePicker extends StatelessWidget {
+  const PalettePicker({super.key, required this.palette, required this.onChanged});
+
+  final RawNamedPalette palette;
+  final ValueChanged<RawNamedPalette> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    return TermPane(
+      title: 'palette',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final p in TermThemeData.palettes)
+            TermRadio<String>(
+              value: p.id,
+              groupValue: palette.id,
+              label: p.label,
+              // Its ink as it shows now, a cell after its name.
+              trailing: Text(
+                '██',
+                style: theme.textStyle.copyWith(color: p.swatchesFor(theme.brightness).first),
+              ),
+              onChanged: (id) => onChanged(TermThemeData.palettes.firstWhere((p) => p.id == id)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// Over the app: TermHost(palette: palette, brightness: appearance, child: child!)
+```
+
+## Building blocks
+
+| For | Use |
+| --- | --- |
+| The app and its screens | `TermHost`, `TermScaffold` (`.branches`), `TermTopBar`, `TermStatusLine`, `TermNavigationBar`, `TermNavigationRail`, `TermSideBar`, `TermTabBar`, `TermMenuBar`, `TermPageRoute` |
+| Panes and rows | `TermPane` (`.list`), `TermListTile`, `TermSectionHeader`, `TermDescriptionList`, `TermDisclosure`, `TermTree`, `TermReorderableList`, `TermPullToRefresh`, `TermDivider`, `TermSplitView`, `TermScrollArea` |
+| Actions | `TermButton` (`.filled`), `TermIconButton`, `TermButtonGroup`, `TermSplitButton`, `TermLink`, `TermKey`, `TermCommandPalette` |
+| Form fields | `TermTextField` (`lines:` for a text area), `TermPasswordField`, `TermOtpField`, `TermNumberField`, `TermSelect`, `TermCombobox`, `TermTagInput`, `TermFileField`, `TermColorPicker` |
+| Choices | `TermCheckbox`, `TermRadio`, `TermSwitch`, `TermToggleGroup`, `TermChip`, `TermSlider`, `TermRangeSlider`, `TermRating` |
+| Dates and times | `TermDatePicker`, `TermDateRangePicker`, `TermCalendar`, `TermTimeField`, `termDate` |
+| Figures and charts | `TermMeter`, `TermProgressBar`, `TermTable`, `TermDataTable`, `TermLineChart`, `TermAreaChart`, `TermBarChart`, `TermSparkline` |
+| Marks | `TermTag`, `TermBadge`, `TermAvatar`, `TermAvatarGroup`, `TermMedia`, `TermSpinner`, `TermSkeleton`, `TermCaret` |
+| Messages | `TermToaster`, `TermBanner`, `TermEmptyState`, `TermStatusView`, `TermTooltip` |
+| Over the screen | `TermDialog`, `showTermConfirmDialog`, `showTermSheet`, `showTermSideSheet`, `showTermActionSheet`, `TermPopover`, `TermHoverCard`, `TermMenu`, `TermContextMenu` |
+| Layout and wayfinding | `TermBreadcrumb`, `TermPagination`, `TermPageDots`, `TermSteps`, `TermTimeline`, `TermCells`, `TermGrid` |
+| Foundations | `TermThemeData` (`.dark()`, `.light()`, `.monochrome()`, `.preset(id, brightness)`, `.from(palette)`, `.fromPalette`), `TermTheme`, `AnimatedTermTheme`, `TermPalette`, `TermAnsi`, `TermFace`, `TermStyle`, `termLoadFonts` |
 
 ## The look
 
@@ -140,8 +369,7 @@ reader.
 
 ## Screens
 
-The example app, slipway, is a made-up deploy console built only from these
-widgets.
+slipway, the gallery's demo app, is a made-up deploy console built only from these widgets.
 
 ![The runs, the failing run and its log tiled at a desk, paper preset](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/runs-1440-paper.png)
 
@@ -153,65 +381,22 @@ widgets.
   <img src="https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/run-390-night.png" width="320" alt="One failing run on a phone, night preset">
 </p>
 
-## What's inside
-
-Every component an ordinary app expects, each drawn in the grid and each
-on `ui_core`'s behaviour where it has one: 84 of the 89 in `ui_core`'s
-inventory (`termInventory` lists them; the five it leaves out would move
-the structure or leave the grid).
-
-- **Panes** (`TermPane`, `TermPane.list`): the look's card, group and
-  window. The line doubles in the accent while focus is inside.
-- **Actions**: `TermButton` (and `.filled`), `TermIconButton`,
-  `TermButtonGroup`, `TermToggleGroup` (a segmented control too),
-  `TermSplitButton`, `TermLink`, `TermKey`.
-- **Fields**: `TermTextField` (a text area with `lines:`, add-ons with
-  `prefixText`/`suffixText`), `TermPasswordField`, `TermOtpField`,
-  `TermNumberField`, `TermSelect`, `TermCombobox`, `TermTagInput`,
-  `TermFileField`, `TermDatePicker`, `TermDateRangePicker`,
-  `TermTimeField`, `TermCalendar`, `TermColorPicker`.
-- **Choices and ranges**: `TermCheckbox`, `TermRadio`, `TermSwitch`,
-  `TermChip`, `TermSlider`, `TermRangeSlider`, `TermRating`, `TermMeter`.
-- **Rows and collections**: `TermListTile`, `TermSectionHeader`,
-  `TermTable`, `TermDataTable`, `TermTree`, `TermDisclosure`,
-  `TermReorderableList`, `TermPullToRefresh`, `TermTimeline`,
-  `TermDescriptionList`, `TermTag`, `TermBadge`, `TermAvatar`,
-  `TermMedia`, `TermDivider`, `TermScrollArea`, `TermSplitView`.
-- **Navigation**: `TermScaffold` (a phone's window list, a tablet's rail,
-  a desk's side pane), `TermTopBar`, `TermTabBar`, `TermNavigationBar`,
-  `TermNavigationRail`, `TermSideBar`, `TermStatusLine`,
-  `TermBreadcrumb`, `TermPagination`, `TermPageDots`, `TermSteps`,
-  `TermMenuBar` and `TermCommandPalette`.
-- **Over the screen**: `TermDialog`, the y/N question
-  `showTermConfirmDialog` (with a typed guard for destroying things),
-  `showTermSheet`, `showTermSideSheet`, `showTermActionSheet`,
-  `TermPopover`, `TermHoverCard`, `TermTooltip`, `TermMenu`,
-  `TermContextMenu` (a right click, a long press or Shift+F10), toasts
-  through `TermToaster`, `TermBanner`, and screens through
-  `TermPageRoute`. A screen change is a cut or a very short fade and a
-  menu opens where it stays: nothing travels into place.
-- **Working and states**: `TermSpinner` (braille), `TermProgressBar`
-  (blocks in eighths of a cell), `TermSkeleton`, `TermStatusView`,
-  `TermEmptyState`, `TermCaret`.
-- **Charts**: `TermLineChart` and `TermAreaChart` in braille dots,
-  `TermBarChart` and `TermSparkline` in blocks.
-- **Foundations**: `TermThemeData` (`.dark()`, `.light()`,
-  `.monochrome()`, `.preset(id, brightness)`, `.from(palette)`), `TermPalette`, `TermAnsi`,
-  `TermGrid`, `TermFace`, and `termKeyLabel` for writing shortcuts.
-
 ## Make it yours
 
 Six palettes come with it, each by day and by night: `standard` (Terminal's
 own night and paper, a cyan accent), `harbor` (a navy screen, a blue
 accent), `dusk` (a plum screen, a magenta accent), and three in one ink, as a
 monochrome terminal draws: `mono`, `phosphor` (green) and `amber`.
-`TermThemeData.presets` lists them:
+`TermThemeData.palettes` lists them (see [Let the reader choose a palette](#let-the-reader-choose-a-palette)); `TermThemeData.preset(id, brightness)` gives one's theme for a part of the tree:
 
 ```dart
-TermTheme(
+import 'package:material_ui/material_ui.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+Widget inAmber(BuildContext context, Widget child) => TermTheme(
   data: TermThemeData.preset('amber', MediaQuery.platformBrightnessOf(context)),
   child: child,
-)
+);
 ```
 
 Every part takes a `style:` (a `TermStyle`) over its slot in
@@ -236,7 +421,7 @@ final theme = base.copyWith(
 // One button.
 TermButton(
   label: 'roll back',
-  onPressed: rollBack,
+  onPressed: () {},
   style: TermStyle(
     foreground: WidgetStatePropertyAll(theme.warning),
     edge: WidgetStatePropertyAll(theme.warning),
@@ -332,7 +517,7 @@ Arabic-Indic digits in Arabic and `2,5` in German.
 
 ## Requirements
 
-Flutter 3.47.0 or later. Terminal runs on Android, iOS, the web, macOS,
+Flutter 3.47.0 or later (ui_core 0.8.1). Terminal runs on Android, iOS, the web, macOS,
 Windows and Linux.
 
 ## Fonts

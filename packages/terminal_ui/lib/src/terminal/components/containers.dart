@@ -1675,6 +1675,12 @@ class TermDescriptionList extends StatelessWidget {
     final valueStyle = theme.textStyle.copyWith(
       color: own.foreground ?? theme.foreground,
     );
+    // Every line one grid line tall, whatever face draws a glyph: one the
+    // bundled face lacks (★) comes from a fallback whose own line is taller.
+    final line = StrutStyle.fromTextStyle(
+      theme.textStyle,
+      forceStrutHeight: true,
+    );
     return LayoutBuilder(
       builder: (context, c) {
         final narrow =
@@ -1694,8 +1700,8 @@ class TermDescriptionList extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(t, style: theme.dimStyle),
-                            Text(v, style: valueStyle),
+                            Text(t, style: theme.dimStyle, strutStyle: line),
+                            Text(v, style: valueStyle, strutStyle: line),
                           ],
                         ),
                       )
@@ -1719,9 +1725,12 @@ class TermDescriptionList extends StatelessWidget {
                               ),
                               maxLines: 1,
                               softWrap: false,
+                              strutStyle: line,
                             ),
                           ),
-                          Expanded(child: Text(v, style: valueStyle)),
+                          Expanded(
+                            child: Text(v, style: valueStyle, strutStyle: line),
+                          ),
                         ],
                       ),
               ),

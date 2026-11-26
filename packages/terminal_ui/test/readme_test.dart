@@ -1,14 +1,14 @@
 // The README's examples, as they are written there: if one stops compiling
 // or stops doing what the README says, this fails. Its first Dart block is the
 // minimal app: example/lib/minimal.dart word for word, which the example's
-// analysis compiles; 12 lines or fewer, on the look's theme.
+// analysis compiles; 12 lines or fewer, on the look's host.
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
-// "Theme setup".
+// "Mount Terminal".
 class Deploy extends StatelessWidget {
   const Deploy({super.key});
 
@@ -69,14 +69,13 @@ void main() {
     expect(block.trimRight().split('\n').length, lessThanOrEqualTo(12));
     expect(block, contains("import 'package:terminal_ui/terminal_ui.dart';"));
     expect(block, contains('runApp('));
-    expect(block, contains('TermThemeData'));
+    expect(block, contains('TermHost('));
   });
 
   testWidgets('the first app builds', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        builder: (context, child) =>
-            TermTheme(data: TermThemeData.dark(), child: child!),
+        builder: (context, child) => TermHost(child: child!),
         home: Center(
           child: TermButton.filled(label: 'deploy', onPressed: () {}),
         ),

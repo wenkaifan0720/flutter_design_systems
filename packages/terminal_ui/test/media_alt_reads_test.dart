@@ -11,7 +11,7 @@ import 'faces.dart';
 void main() {
   setUpAll(loadFaces);
 
-  for (final id in TermThemeData.presets) {
+  for (final id in TermThemeData.palettes.map((p) => p.id)) {
     for (final b in Brightness.values) {
       testWidgets('$id, ${b.name}: the alt words read on the shade', (
         tester,

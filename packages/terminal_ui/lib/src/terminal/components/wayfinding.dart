@@ -921,6 +921,13 @@ class _RailColumn extends StatelessWidget {
 /// pane), Enter or Space going there; F6 moves the keys between the
 /// destinations and the body; a screen reader hears each destination as a
 /// tab and its place ("Tab 2 of 4"), the side pane as the navigation menu.
+/// Toasts keep clear of the window list and the status line.
+///
+/// [TermScaffold.branches] gives each destination its own stack of screens:
+/// a screen pushed on a place keeps the rail or the side pane beside it, a
+/// phone's window list stepping away, and back pops it. [TermScaffold]
+/// frames the app's own [body] instead (an `IndexedStack`, or a router's
+/// branches). Mount the app in a [TermHost] above either.
 ///
 /// ```dart
 /// TermScaffold(
@@ -935,17 +942,68 @@ class TermScaffold extends StatelessWidget {
   /// A shell round [body].
   const TermScaffold({
     super.key,
-    required this.body,
+    required Widget this.body,
     this.topBar,
     this.statusLine,
     this.destinations = const [],
     this.selectedIndex = 0,
     this.onDestinationSelected,
     this.title,
-  });
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination,
+       hideBarOnPush = false;
 
-  /// The screen's content.
-  final Widget body;
+  /// A shell whose [destinations] each keep their own stack of screens,
+  /// starting on its [branches] screen: a screen pushed with
+  /// `Navigator.of(context).push` stands over its place, the rail or the
+  /// side pane still beside it while a phone's window list steps away
+  /// ([hideBarOnPush]), and back (Escape, the system's back) pops it.
+  /// Choosing the place again goes back to its first screen; another place
+  /// keeps its own. A screen pushed on the app's root navigator covers the
+  /// whole shell, as a full-screen form does.
+  ///
+  /// ```dart
+  /// TermScaffold.branches(
+  ///   topBar: const TermTopBar(title: 'shelf'),
+  ///   destinations: destinations,
+  ///   selectedIndex: place,
+  ///   onDestinationSelected: (i) => setState(() => place = i),
+  ///   branches: [(context) => const BooksScreen(), (context) => const AddScreen()],
+  /// )
+  /// ```
+  const TermScaffold.branches({
+    super.key,
+    required List<WidgetBuilder> this.branches,
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
+    this.topBar,
+    this.statusLine,
+    this.title,
+  }) : body = null;
+
+  /// The screen's content; null with [branches].
+  final Widget? body;
+
+  /// Each place's first screen; null with [body].
+  final List<WidgetBuilder>? branches;
+
+  /// The places' navigators' keys, to push onto a place from outside (a
+  /// notification opening a run); null: the shell's own.
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place at its first screen: to the first place,
+  /// then out of the app.
+  final RawBranchBackBehavior backBehavior;
+
+  /// Whether a phone's window list (and the status line over it) steps away
+  /// while a screen is pushed over a place ([TermScaffold.branches]); the
+  /// rail and the side pane stay.
+  final bool hideBarOnPush;
 
   /// Over the body.
   final Widget? topBar;
@@ -986,6 +1044,10 @@ class TermScaffold extends StatelessWidget {
     final footLine = statusLine == null
         ? null
         : RawToasterKeepClear(child: statusLine);
+    assert(
+      branches == null || destinations.isNotEmpty,
+      'a shell of branches has a destination for each',
+    );
     if (destinations.isEmpty) {
       return ColoredBox(
         color: theme.background,
@@ -993,7 +1055,7 @@ class TermScaffold extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ?topBar,
-            Expanded(child: body),
+            Expanded(child: body!),
             ?footLine,
           ],
         ),
@@ -1007,63 +1069,93 @@ class TermScaffold extends StatelessWidget {
         ? RawNavigationMode.rail
         : RawNavigationMode.sidebar;
     final bar = mode == RawNavigationMode.bar;
-    final shell = RawAdaptiveShell(
-      mode: mode,
-      destinations: [
-        for (final d in destinations)
-          RawNavigationDestination(
-            label: d.badge == null ? d.label : '${d.label}, ${d.badge}',
-            // Terminal draws its places in characters (a glyph, a number,
-            // a name); no icon is drawn.
-            icon: const IconData(0x20),
-          ),
-      ],
-      selectedIndex: selectedIndex,
-      onDestinationSelected: onDestinationSelected,
-      destinationBuilder: (context, _, details) =>
-          TermShellFace.build(context, details.states),
-      navigationBuilder: (context, details) => TermShellDestinations(
-        destinations: details.destinations,
-        child: switch (details.mode) {
-          // On a phone the status line stands over the window list, as a
-          // multiplexer's does, in the shell's bar: the shell keeps the
-          // toasts above both (a line clear, the toaster's padding), never
-          // on the status line over the page's last line. The window list
-          // alone is the tab bar.
-          RawNavigationMode.bar => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ?statusLine,
-              details.group(
-                TermNavigationBar(
-                  destinations: destinations,
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: onDestinationSelected,
+    final places = [
+      for (final d in destinations)
+        RawNavigationDestination(
+          label: d.badge == null ? d.label : '${d.label}, ${d.badge}',
+          // Terminal draws its places in characters (a glyph, a number,
+          // a name); no icon is drawn.
+          icon: const IconData(0x20),
+        ),
+    ];
+    Widget face(
+      BuildContext context,
+      RawNavigationDestination _,
+      RawDestinationDetails details,
+    ) => TermShellFace.build(context, details.states);
+    Widget navigation(BuildContext context, RawNavigationDetails details) =>
+        TermShellDestinations(
+          destinations: details.destinations,
+          child: switch (details.mode) {
+            // On a phone the status line stands over the window list, as a
+            // multiplexer's does, in the shell's bar: the shell keeps the
+            // toasts above both (a line clear, the toaster's padding), never
+            // on the status line over the page's last line. The window list
+            // alone is the tab bar.
+            RawNavigationMode.bar => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ?statusLine,
+                details.group(
+                  TermNavigationBar(
+                    destinations: destinations,
+                    selectedIndex: selectedIndex,
+                    onDestinationSelected: onDestinationSelected,
+                  ),
                 ),
+              ],
+            ),
+            // Across the top (an app that asks for it): the window list as a
+            // tab bar under the title line.
+            RawNavigationMode.top => details.group(
+              TermNavigationBar(
+                destinations: destinations,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
-            ],
-          ),
-          RawNavigationMode.rail => TermNavigationRail(
-            destinations: destinations,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onDestinationSelected,
-          ),
-          RawNavigationMode.sidebar => SizedBox(
-            width: grid.cols(26),
-            child: TermSideBar(
-              title: title,
+            ),
+            RawNavigationMode.rail => TermNavigationRail(
               destinations: destinations,
               selectedIndex: selectedIndex,
               onDestinationSelected: onDestinationSelected,
             ),
-          ),
-        },
-      ),
-      // Beside a rail or a pane the status line runs the screen's width
-      // under both.
-      body: body,
-    );
+            RawNavigationMode.sidebar => SizedBox(
+              width: grid.cols(26),
+              child: TermSideBar(
+                title: title,
+                destinations: destinations,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+              ),
+            ),
+          },
+        );
+    final pages = branches;
+    // Beside a rail or a pane the status line runs the screen's width under
+    // both.
+    final shell = pages == null
+        ? RawAdaptiveShell(
+            mode: mode,
+            destinations: places,
+            selectedIndex: selectedIndex,
+            onDestinationSelected: onDestinationSelected,
+            destinationBuilder: face,
+            navigationBuilder: navigation,
+            body: body!,
+          )
+        : RawAdaptiveShell.branches(
+            mode: mode,
+            hideBarOnPush: hideBarOnPush,
+            backBehavior: backBehavior,
+            navigatorKeys: navigatorKeys,
+            destinations: places,
+            selectedIndex: selectedIndex,
+            onDestinationSelected: onDestinationSelected ?? (_) {},
+            destinationBuilder: face,
+            navigationBuilder: navigation,
+            branches: pages,
+          );
     return ColoredBox(
       color: theme.background,
       child: Column(
