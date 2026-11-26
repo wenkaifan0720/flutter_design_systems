@@ -13,7 +13,11 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
   title: 'Choices',
   sections: const [
     KitSection(title: 'Every control', children: [_All()]),
-    KitSection(title: 'Ranges, stars and files', children: [_More()]),
+    KitSection(
+      title: 'Ranges, stars and files',
+      maxWidth: 360,
+      children: [_More()],
+    ),
   ],
 );
 
@@ -146,7 +150,7 @@ class _AllState extends State<_All> {
         ),
         const SizedBox(height: GlossSpacing.large),
         SizedBox(
-          width: 320,
+          width: 360,
           child: GlossSlider(
             value: _spice,
             semanticLabel: 'Heat',
@@ -191,37 +195,34 @@ class _MoreState extends State<_More> {
   ];
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 360),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        GlossFieldLabel(
-          'Takes ${_minutes.start.round()} to ${_minutes.end.round()} min',
-        ),
-        GlossRangeSlider(
-          values: _minutes,
-          max: 90,
-          divisions: 18,
-          startLabel: 'Shortest',
-          endLabel: 'Longest',
-          onChanged: (v) => setState(() => _minutes = v),
-        ),
-        const SizedBox(height: GlossSpacing.regular),
-        GlossRating(
-          value: _stars,
-          semanticLabel: 'Your rating',
-          onChanged: (s) => setState(() => _stars = s),
-        ),
-        const SizedBox(height: GlossSpacing.regular),
-        GlossFileDrop(
-          labelText: 'Photos and notes',
-          hintText: 'A photo of the dish, or the method',
-          onChoose: () {},
-          files: _files,
-          onRemove: (f) => setState(() => _files = [..._files]..remove(f)),
-        ),
-      ],
-    ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      GlossFieldLabel(
+        'Takes ${_minutes.start.round()} to ${_minutes.end.round()} min',
+      ),
+      GlossRangeSlider(
+        values: _minutes,
+        max: 90,
+        divisions: 18,
+        startLabel: 'Shortest',
+        endLabel: 'Longest',
+        onChanged: (v) => setState(() => _minutes = v),
+      ),
+      const SizedBox(height: GlossSpacing.regular),
+      GlossRating(
+        value: _stars,
+        semanticLabel: 'Your rating',
+        onChanged: (s) => setState(() => _stars = s),
+      ),
+      const SizedBox(height: GlossSpacing.regular),
+      GlossFileDrop(
+        labelText: 'Photos and notes',
+        hintText: 'A photo of the dish, or the method',
+        onChoose: () {},
+        files: _files,
+        onRemove: (f) => setState(() => _files = [..._files]..remove(f)),
+      ),
+    ],
   );
 }

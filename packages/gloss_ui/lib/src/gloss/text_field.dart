@@ -8,9 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/entry_parts.dart';
 import 'internal/field_frame.dart';
 import 'internal/glaze_state.dart';
-import 'surface.dart';
 import 'theme.dart';
 
 /// A field's label: [text] in the label face, 8 px above its field.
@@ -33,14 +33,7 @@ class GlossFieldLabel extends StatelessWidget {
     final theme = GlossTheme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: GlossSpacing.small),
-      child: Text(
-        text,
-        style: theme.textTheme.label.copyWith(
-          fontSize: 14,
-          height: 20 / 14,
-          color: enabled ? theme.colors.ink : theme.colors.inkDisabled,
-        ),
-      ),
+      child: Text(text, style: glossFieldLabelStyle(theme, enabled: enabled)),
     );
   }
 
@@ -281,19 +274,15 @@ class _GlossTextFieldState extends State<GlossTextField> {
         .merge(layered.textStyle)
         .copyWith(color: widget.enabled ? c.ink : c.inkDisabled);
     final oneLine = widget.maxLines == 1;
-    var face = GlossFace.well(c, radius: GlossMetrics.fieldRadius);
-    if (layered.fill != null) face = face.glazed(layered.fill!);
-    face = face.copyWith(
-      foreground: words.color,
-      // Focused, the well lights jade from inside, as a switch's slot does:
-      // its rim and a glow up from its foot, so the field with the keys is
-      // found at a glance; the one mark, no streak of reflected light along
-      // its floor too. An error keeps the well as it is and says so under
-      // it.
-      edge: layered.edge ?? (focused ? c.focus : null),
-      glow: focused ? glossFocusGlow(c) : null,
-      lift: widget.enabled ? -1 : -0.45,
-      focus: c.focus.withValues(alpha: 0),
+    // The well every Gloss field is typed in: lit jade from inside when
+    // focused, rimmed in ruby while its error shows (as the search,
+    // password and other fields are).
+    final face = glossEntryFace(
+      theme,
+      states,
+      fill: layered.fill,
+      edge: layered.edge,
+      radius: GlossMetrics.fieldRadius,
     );
     final entry = RawTextEntryBox(
       minHeight: theme.controlHeight,
@@ -370,8 +359,13 @@ class _GlossTextFieldState extends State<GlossTextField> {
                 ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: GlossSpacing.regular,
+                  // After a glyph the words start as close as in the
+                  // search field's well.
+                  padding: EdgeInsetsDirectional.only(
+                    start: widget.prefixIcon == null
+                        ? GlossSpacing.regular
+                        : GlossSpacing.small,
+                    end: GlossSpacing.regular,
                   ),
                   child: oneLine
                       ? RawCapCenter(
@@ -387,8 +381,15 @@ class _GlossTextFieldState extends State<GlossTextField> {
                     end: GlossSpacing.medium,
                   ),
                   child: DefaultTextStyle(
-                    style: theme.textTheme.secondary,
-                    child: widget.suffix!,
+                    style: glossAffixStyle(theme, enabled: widget.enabled),
+                    // Its words stand on the value's line, as the value's
+                    // capitals stand mid-well.
+                    child: oneLine
+                        ? RawCapCenter(
+                            capHeightFactor: glossCapHeightFactor,
+                            child: widget.suffix!,
+                          )
+                        : widget.suffix!,
                   ),
                 ),
             ],

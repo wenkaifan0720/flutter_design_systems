@@ -1,3 +1,18 @@
+## 0.5.1
+
+- By night a destructive pearl key (a dialog's destructive action, `GlossButton(isDestructiveAction: true)`) is a smoked pearl with rose words at 4.5:1, plainly apart from the ruby gel key beside it. It was moulded in ruby, the same as the gel.
+- A `GlossTextField` with `errorText` rims its well in ruby, as the search, password and other fields do; focused, the light along its floor is ruby. It kept the plain well and said so only under it.
+- A `GlossCheckbox` with `isError` rims its socket in ruby. The warning glyph beside the socket is gone, so its words stand at the same gap as the other checkboxes'.
+- A `GlossTextField`'s words start 8 px after its `prefixIcon`, as in `GlossSearchField`. They started 16 px after.
+- By night a disabled `GlossSwitch`'s bead sinks halfway to the page, as a disabled key does. It shone as bright as an enabled switch's.
+- `GlossPageDots`: the pages not shown read at 3:1 on the page, by day and by night. They read at about 1.1:1.
+- A `GlossBreadcrumb` that wraps keeps each separator with the place after it, so no row ends on a separator, and its rows stand one touch target apart. The page's own place stood shorter than a link, so a row of it stood 30 px below the one above where the others stood 40.
+- A `GlossDataTable`'s select-all tick stands over the rows' ticks, and each heading over its column: a number's heading ends where its numbers do. The tick stood 2 px toward the start, a number's heading 4 px past its numbers.
+- A table row's empty tick and a `GlossTimeline`'s step to come keep a fine rim round the socket, as an empty `GlossCheckbox` does, so they read by night. They read at about 1.4:1 on their ground.
+- A `GlossFormField`'s label reads as a text field's: 14 px in ink, grey when off. It stood larger, in secondary ink, as if off.
+- A `GlossTextField`'s `suffix` words read at the value's size in secondary ink, as a `GlossInputGroup`'s add-on does and as Material's suffix text does. They stood 14 px.
+- A `GlossSlider`'s bead travels between the ends a `GlossRangeSlider`'s beads do, a touch target's half in from its sides, so the two line up when stacked. Its travel stood 6 px wider at each end.
+
 ## 0.5.0
 
 - Requires ui_core 0.7.2 (and ui_core_test 0.5.2 in tests).

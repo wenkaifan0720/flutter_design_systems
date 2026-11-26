@@ -179,7 +179,7 @@ void main() {
 
   for (final brightness in Brightness.values) {
     testWidgets(
-      'validation keeps the field lip and marks the checkbox in $brightness',
+      'validation rims the field and the checkbox in ruby in $brightness',
       (tester) async {
         final focus = FocusNode();
         addTearDown(focus.dispose);
@@ -217,20 +217,24 @@ void main() {
                   .first,
             )
             .face;
+        final ruby = brightness == Brightness.light
+            ? GlossThemeData.light().colors.danger
+            : GlossThemeData.dark().colors.danger;
         await show(invalid: false);
-        final rest = face();
         focus.requestFocus();
         await tester.pumpAndSettle();
-        final focused = face();
         await show(invalid: true);
         expect(find.text('Use minutes'), findsOneWidget);
-        expect(face().edge, focused.edge);
-        expect(face().focus, focused.focus);
+        // Focused, its rim and the light along its floor are ruby.
+        expect(face().edge, ruby);
+        expect(face().focus, ruby);
         focus.unfocus();
         await tester.pumpAndSettle();
-        expect(face().edge, rest.edge);
+        // At rest the ruby rim stays while the error shows.
+        expect(face().edge, ruby);
         expect(face().lift, lessThan(0));
-        expect(find.byIcon(LucideIcons.circleAlert), findsOneWidget);
+        // The checkbox says it on its socket, not with a glyph beside it.
+        expect(find.byIcon(LucideIcons.circleAlert), findsNothing);
         expect(tester.takeException(), isNull);
       },
     );

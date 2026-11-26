@@ -20,7 +20,6 @@ Widget kitButtonsDemo(Brightness brightness) => kitScreen(
           children: [
             GlossButton.filled('Plan the week', onPressed: () {}),
             GlossButton('Shopping list', onPressed: () {}),
-            GlossButton.text('Skip', onPressed: () {}),
           ],
         ),
         KitRow(
@@ -35,6 +34,11 @@ Widget kitButtonsDemo(Brightness brightness) => kitScreen(
               icon: const Icon(LucideIcons.share2),
               onPressed: () {},
             ),
+          ],
+        ),
+        KitRow(
+          children: [
+            GlossButton.text('Skip', onPressed: () {}),
             GlossButton.text(
               'Print',
               icon: const Icon(LucideIcons.printer),

@@ -56,59 +56,88 @@ class GlossBreadcrumb extends StatelessWidget {
       explicitChildNodes: true,
       child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
-        runSpacing: GlossSpacing.tight,
+        // Wrapped rows stand one target apart: the links' targets meet.
         children: [
-          for (final (i, crumb) in crumbs.indexed) ...[
-            if (i > 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: GlossMetrics.rimRoom,
-                ),
-                child: ExcludeSemantics(
-                  child: Icon(
-                    rtl ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
-                    size: 14,
-                    color: c.inkSecondary,
-                    shadows: [
-                      Shadow(
-                        color: c.letterpress,
-                        offset: Offset(0, c.letterpressBelow ? 1 : -1),
+          for (final (i, crumb) in crumbs.indexed)
+            // A separator wraps with the place it leads to, so a wrapped
+            // breadcrumb never ends a row on one.
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (i > 0)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: GlossMetrics.rimRoom,
+                    ),
+                    child: ExcludeSemantics(
+                      child: Icon(
+                        rtl
+                            ? LucideIcons.chevronLeft
+                            : LucideIcons.chevronRight,
+                        size: 14,
+                        color: c.inkSecondary,
+                        shadows: [
+                          Shadow(
+                            color: c.letterpress,
+                            offset: Offset(0, c.letterpressBelow ? 1 : -1),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            if (i == crumbs.length - 1 || crumb.onPressed == null)
-              Semantics(
-                // The last crumb is the page: a screen reader hears so.
-                selected: i == crumbs.length - 1,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: GlossMetrics.rimRoom,
-                  ),
-                  child: Text(
-                    crumb.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.secondary
-                        .copyWith(
-                          color: c.ink,
-                          fontWeight: FontWeight.w600,
-                          fontVariations: glossWeightAxis(FontWeight.w600),
-                        )
-                        .merge(
-                          RawStyleOf([
-                            style,
-                            theme.breadcrumbStyle,
-                          ], const {}).textStyle,
-                        ),
-                  ),
-                ),
-              )
-            else
-              _CrumbLink(crumb: crumb, style: style),
-          ],
+                Flexible(child: _place(context, theme, i, crumb)),
+              ],
+            ),
         ],
+      ),
+    );
+  }
+
+  // A place: the page itself (the last) or one with no way back in words,
+  // else a link back to it.
+  Widget _place(
+    BuildContext context,
+    GlossThemeData theme,
+    int i,
+    GlossCrumb crumb,
+  ) {
+    if (i < crumbs.length - 1 && crumb.onPressed != null) {
+      return _CrumbLink(crumb: crumb, style: style);
+    }
+    return Semantics(
+      // The last crumb is the page: a screen reader hears so.
+      selected: i == crumbs.length - 1,
+      // As tall as a link's target, so wrapped rows stand evenly apart.
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: RawTapTargets.of(context).floorOn().height,
+        ),
+        child: Align(
+          widthFactor: 1,
+          heightFactor: 1,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: GlossMetrics.rimRoom,
+            ),
+            child: Text(
+              crumb.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.secondary
+                  .copyWith(
+                    color: theme.colors.ink,
+                    fontWeight: FontWeight.w600,
+                    fontVariations: glossWeightAxis(FontWeight.w600),
+                  )
+                  .merge(
+                    RawStyleOf([
+                      style,
+                      theme.breadcrumbStyle,
+                    ], const {}).textStyle,
+                  ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -627,16 +656,36 @@ class GlossPageDots extends StatelessWidget {
       final on = i == page;
       var gel = GlossFace.gel(c).copyWith(lift: 0.3, lens: 0.6);
       if (layered.fill != null) gel = gel.glazed(layered.fill!);
+      // A page not shown is an empty socket that reads at 3:1 on the page,
+      // day and night, so the dots are found at a glance: its floor a
+      // little past that, for the rim's shade over it.
+      final socket = GlossFace.well(c);
+      final floor = RawPalette.readableTone(
+        socket.middle,
+        on: [c.page],
+        ratio: 3.5,
+      );
       return AnimatedContainer(
         duration: const Duration(milliseconds: 260),
         curve: Curves.easeOutCubic,
         width: on ? 22 : 8,
         height: 8,
         child: AnimatedGlossSurface(
-          face: (on ? gel : GlossFace.well(c)).copyWith(
-            focus: glossGlazeOf(c, states),
-            travel: states.contains(WidgetState.pressed) ? 1 : 0,
-          ),
+          face:
+              (on
+                      ? gel
+                      : socket.copyWith(
+                          top: floor,
+                          middle: floor,
+                          bottom: floor,
+                          // A shallow socket: at 8 px a deep one's shade
+                          // would cover its floor.
+                          lift: -0.4,
+                        ))
+                  .copyWith(
+                    focus: glossGlazeOf(c, states),
+                    travel: states.contains(WidgetState.pressed) ? 1 : 0,
+                  ),
         ),
       );
     }

@@ -45,7 +45,11 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       ],
     ),
     KitSection(title: 'Selects', maxWidth: 480, children: [_Selects()]),
-    KitSection(title: 'More ways to enter', children: [_Entry()]),
+    KitSection(
+      title: 'More ways to enter',
+      maxWidth: 480,
+      children: [_Entry()],
+    ),
   ],
 );
 
@@ -151,51 +155,48 @@ class _EntryState extends State<_Entry> {
   String? _herb;
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 360),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const GlossSearchField(hintText: 'Search recipes'),
-        const SizedBox(height: GlossSpacing.regular),
-        const GlossTextArea(
-          labelText: 'Notes',
-          hintText: 'What to change next time',
-        ),
-        const SizedBox(height: GlossSpacing.regular),
-        const GlossPasswordField(labelText: 'Password'),
-        const SizedBox(height: GlossSpacing.regular),
-        const GlossInputGroup(
-          labelText: 'Weight',
-          prefixText: '≈',
-          suffixText: 'g',
-          keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: GlossSpacing.regular),
-        const GlossFieldLabel('One-time code'),
-        const GlossOtpField(semanticLabel: 'One-time code'),
-        const SizedBox(height: GlossSpacing.regular),
-        GlossCombobox<String>(
-          labelText: 'Herb',
-          hintText: 'Type to find one',
-          options: const ['Basil', 'Bay leaf', 'Chives', 'Coriander', 'Dill'],
-          value: _herb,
-          onSelected: (h) => setState(() => _herb = h),
-        ),
-        const SizedBox(height: GlossSpacing.regular),
-        GlossTagInput<String>(
-          labelText: 'Tags',
-          values: _tags,
-          options: const ['Quick', 'Batch', 'Freezer', 'Vegan', 'Weeknight'],
-          onChanged: (next) => setState(() => _tags = next),
-        ),
-        const SizedBox(height: GlossSpacing.regular),
-        GlossFormField(
-          labelText: 'Reminders',
-          helperText: 'An hour before dinner',
-          child: GlossSwitch(value: true, onChanged: (_) {}),
-        ),
-      ],
-    ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const GlossSearchField(hintText: 'Search recipes'),
+      const SizedBox(height: GlossSpacing.regular),
+      const GlossTextArea(
+        labelText: 'Notes',
+        hintText: 'What to change next time',
+      ),
+      const SizedBox(height: GlossSpacing.regular),
+      const GlossPasswordField(labelText: 'Password'),
+      const SizedBox(height: GlossSpacing.regular),
+      const GlossInputGroup(
+        labelText: 'Weight',
+        prefixText: '≈',
+        suffixText: 'g',
+        keyboardType: TextInputType.number,
+      ),
+      const SizedBox(height: GlossSpacing.regular),
+      const GlossFieldLabel('One-time code'),
+      const GlossOtpField(semanticLabel: 'One-time code'),
+      const SizedBox(height: GlossSpacing.regular),
+      GlossCombobox<String>(
+        labelText: 'Herb',
+        hintText: 'Type to find one',
+        options: const ['Basil', 'Bay leaf', 'Chives', 'Coriander', 'Dill'],
+        value: _herb,
+        onSelected: (h) => setState(() => _herb = h),
+      ),
+      const SizedBox(height: GlossSpacing.regular),
+      GlossTagInput<String>(
+        labelText: 'Tags',
+        values: _tags,
+        options: const ['Quick', 'Batch', 'Freezer', 'Vegan', 'Weeknight'],
+        onChanged: (next) => setState(() => _tags = next),
+      ),
+      const SizedBox(height: GlossSpacing.regular),
+      GlossFormField(
+        labelText: 'Reminders',
+        helperText: 'An hour before dinner',
+        child: GlossSwitch(value: true, onChanged: (_) {}),
+      ),
+    ],
   );
 }

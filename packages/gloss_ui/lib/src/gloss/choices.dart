@@ -14,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'fonts.dart';
 import 'internal/glaze_state.dart';
+import 'internal/socket_rim.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -99,7 +100,8 @@ class GlossCheckbox extends StatelessWidget {
   /// Whether a press steps through mixed as well.
   final bool tristate;
 
-  /// Whether to show a warning beside the socket.
+  /// Whether its value is in error: the socket's rim turns ruby, and a
+  /// screen reader hears it.
   final bool isError;
 
   /// What a screen reader calls it, when no words beside it say.
@@ -159,6 +161,7 @@ class GlossCheckbox extends StatelessWidget {
                 mixed: value == null,
                 pressed: pressed,
                 disabled: disabled,
+                error: isError,
                 fill: layered.fill,
                 focus: light,
                 highContrast: MediaQuery.maybeHighContrastOf(context) ?? false,
@@ -166,21 +169,7 @@ class GlossCheckbox extends StatelessWidget {
             ),
           ),
         );
-        return TapTargetPadding(
-          child: isError
-              ? FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      socket,
-                      const SizedBox(width: GlossSpacing.tight),
-                      Icon(LucideIcons.circleAlert, size: 14, color: c.danger),
-                    ],
-                  ),
-                )
-              : socket,
-        );
+        return TapTargetPadding(child: socket);
       },
     );
   }
@@ -603,6 +592,7 @@ class _SocketPainter extends CustomPainter {
     required this.mixed,
     required this.pressed,
     required this.disabled,
+    this.error = false,
     required this.fill,
     required this.focus,
     required this.highContrast,
@@ -614,6 +604,7 @@ class _SocketPainter extends CustomPainter {
   final bool mixed;
   final bool pressed;
   final bool disabled;
+  final bool error;
   final Color? fill;
   final Color focus;
   final bool highContrast;
@@ -623,16 +614,14 @@ class _SocketPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final radius = round ? null : GlossMetrics.socketRadius;
-    final light = colors.brightness == Brightness.light;
     var socket = GlossFace.well(colors, radius: radius).copyWith(
       lift: disabled ? -0.5 : (pressed ? -1 : -0.85),
       // A fine rim round the socket's mouth, so an empty one (a box not
       // ticked, a dot not chosen) reads on a well's floor, day and night.
-      edge: disabled
-          ? (light ? const Color(0x1A000000) : const Color(0x1AFFFFFF))
-          : light
-          ? const Color(0x33000000)
-          : const Color(0x33FFFFFF),
+      // In error the rim is ruby, as Material's box turns its error colour.
+      edge: error && !disabled
+          ? colors.danger
+          : glossSocketRim(colors, disabled: disabled),
       focus: t < 0.01 || round ? focus : null,
       travel: pressed ? 0.7 : 0,
     );
@@ -724,6 +713,7 @@ class _SocketPainter extends CustomPainter {
       old.mixed != mixed ||
       old.pressed != pressed ||
       old.disabled != disabled ||
+      old.error != error ||
       old.fill != fill ||
       old.focus != focus ||
       old.highContrast != highContrast ||
@@ -981,13 +971,20 @@ class _SwitchPainter extends CustomPainter {
     final x = 2 + travel * _GlossSwitchState._travel;
     final beadRect = Rect.fromLTWH(x, (size.height - bead) / 2, bead, bead);
     // By night the bead is the brightest thing on the gel, as by day.
+    // By night the bead a finger carries is moonlit pearl: light against
+    // the dark slot, so a switch never reads as switched off for good. A
+    // switch that is off for good sinks it halfway to the page, as a key
+    // off does, so it reads apart from one that is only switched off.
+    Color? moonlit(int tone) => day
+        ? null
+        : disabled
+        ? Color.lerp(Color(tone), colors.page, 0.5)
+        : Color(tone);
     final pearl = GlossFace.pearl(colors).copyWith(
       focus: focus,
-      // By night the bead a finger carries is moonlit pearl: light against
-      // the dark slot, so a switch never reads as switched off for good.
-      top: day ? null : const Color(0xFFD5DADF),
-      middle: day ? null : const Color(0xFFBCC3CA),
-      bottom: day ? null : const Color(0xFFA5ADB5),
+      top: moonlit(0xFFD5DADF),
+      middle: moonlit(0xFFBCC3CA),
+      bottom: moonlit(0xFFA5ADB5),
       travel: pressed ? 0.6 : 0,
       lens: disabled ? (day ? 0.3 : 0) : (day ? null : 0.55),
       foreground: colors.ink,
@@ -1687,9 +1684,14 @@ class _GlossSliderState extends State<GlossSlider> {
     return widget.min + ((clamped - widget.min) / unit).round() * unit;
   }
 
+  // The bead travels between two ends a finger's half (the touch floor's)
+  // in from the slider's sides, as a range slider's beads do, so the two
+  // stacked in one column run between the same ends.
+  double get _reach => RawTapTargets.of(context).touch.width;
+
   double _valueAt(Offset local, double width) {
-    final usable = width - _bead;
-    var x = ((local.dx - _bead / 2) / usable).clamp(0.0, 1.0);
+    final usable = width - _reach;
+    var x = ((local.dx - _reach / 2) / usable).clamp(0.0, 1.0);
     if (Directionality.of(context) == TextDirection.rtl) x = 1 - x;
     return _snap(widget.min + x * (widget.max - widget.min));
   }
@@ -1708,7 +1710,7 @@ class _GlossSliderState extends State<GlossSlider> {
     return LayoutBuilder(
       builder: (context, box) {
         final width = box.hasBoundedWidth ? box.maxWidth : 240.0;
-        final usable = width - _bead;
+        final usable = width - _reach;
         void start(Offset at) {
           setState(() => _dragging = true);
           widget.onChangeStart?.call(widget.value);
@@ -1750,8 +1752,8 @@ class _GlossSliderState extends State<GlossSlider> {
                 clipBehavior: Clip.none,
                 children: [
                   Positioned(
-                    left: _bead / 2 - 5,
-                    right: _bead / 2 - 5,
+                    left: _reach / 2 - 5,
+                    right: _reach / 2 - 5,
                     top: (slot - 10) / 2,
                     height: 10,
                     child: CustomPaint(
@@ -1770,7 +1772,7 @@ class _GlossSliderState extends State<GlossSlider> {
                     ),
                   ),
                   PositionedDirectional(
-                    start: fraction * usable,
+                    start: (_reach - _bead) / 2 + fraction * usable,
                     top: (slot - _bead) / 2,
                     child: RawValueHandle(
                       value: widget.value,

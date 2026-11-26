@@ -14,6 +14,7 @@ import 'display.dart';
 import 'feedback.dart';
 import 'internal/chevron.dart';
 import 'internal/glaze_state.dart';
+import 'internal/socket_rim.dart';
 import 'surface.dart';
 import 'theme.dart';
 import 'wayfinding.dart';
@@ -54,7 +55,7 @@ Widget _tick(GlossColors c, {required bool on, bool some = false}) =>
       child: AnimatedGlossSurface(
         face: on || some
             ? GlossFace.gel(c, radius: 6).copyWith(lift: 0.4)
-            : GlossFace.well(c, radius: 6),
+            : GlossFace.well(c, radius: 6).copyWith(edge: glossSocketRim(c)),
         child: on
             ? Icon(LucideIcons.check, size: 14, color: c.onJade)
             : some
@@ -188,41 +189,50 @@ class GlossDataTable<R> extends StatelessWidget {
       },
       headerRowBuilder: (context, cells) {
         final page = controller.pageSelection;
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (selectable)
-                RawButton(
-                  onPressed: controller.pageRows.isEmpty
-                      ? null
-                      : controller.togglePage,
-                  semanticLabel: words.selectedLabel,
-                  // A checkbox, not a button, as Flutter's Checkbox reads.
-                  button: false,
-                  checked: page == RawDataTableSelection.all,
-                  builder: (context, states, _) => GlossGlazeHighlight(
-                    focused: states.contains(WidgetState.focused),
-                    hovered: states.contains(WidgetState.hovered),
-                    pressed: states.contains(WidgetState.pressed),
-                    inside: true,
-                    radius: 8,
-                    inset: 1,
-                    child: SizedBox(
-                      width: _box,
-                      child: Center(
-                        child: _tick(
-                          c,
-                          on: page == RawDataTableSelection.all,
-                          some: page == RawDataTableSelection.some,
+        // The headings stand in from the card's sides as the rows' plates
+        // do, so each heading, and the select-all tick, stands over its
+        // column.
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.tight),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (selectable)
+                  RawButton(
+                    onPressed: controller.pageRows.isEmpty
+                        ? null
+                        : controller.togglePage,
+                    semanticLabel: words.selectedLabel,
+                    // A checkbox, not a button, as Flutter's Checkbox reads.
+                    button: false,
+                    checked: page == RawDataTableSelection.all,
+                    builder: (context, states, _) => GlossGlazeHighlight(
+                      focused: states.contains(WidgetState.focused),
+                      hovered: states.contains(WidgetState.hovered),
+                      pressed: states.contains(WidgetState.pressed),
+                      inside: true,
+                      radius: 8,
+                      inset: 1,
+                      child: SizedBox(
+                        width: _box - GlossSpacing.tight,
+                        child: Center(
+                          child: _tick(
+                            c,
+                            on: page == RawDataTableSelection.all,
+                            some: page == RawDataTableSelection.some,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              for (final (i, cellWidget) in cells.indexed)
-                Expanded(flex: flex(controller.columns[i]), child: cellWidget),
-            ],
+                for (final (i, cellWidget) in cells.indexed)
+                  Expanded(
+                    flex: flex(controller.columns[i]),
+                    child: cellWidget,
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -292,7 +302,7 @@ class GlossDataTable<R> extends StatelessWidget {
                       if (selectable)
                         ExcludeSemantics(
                           child: SizedBox(
-                            width: _box - 4,
+                            width: _box - GlossSpacing.tight,
                             child: Center(child: _tick(c, on: row.selected)),
                           ),
                         ),

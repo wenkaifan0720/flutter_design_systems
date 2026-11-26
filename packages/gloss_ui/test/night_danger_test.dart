@@ -1,9 +1,11 @@
 // By night a destructive pearl key differs in hue from a neutral key at a
-// glance (its face or its words plainly coloured and far from the neutral
-// key's), reads at 4.5:1, and stands off the dialog as a raised key, at
+// glance (its words plainly rose and far from the neutral key's), reads at
+// 4.5:1, and stays a pearl: a grey face, not the ruby gel of a screen's
+// destructive action, a touch lighter than the dialog it stands on, at
 // rest, hovered, focused and pressed; by day it is unchanged. The danger
 // words had been lightened to a pale rose (about #FFD4D7) that read nearly
-// white beside 'Keep'.
+// white beside 'Keep'; then the key was moulded in ruby, the same as the
+// ruby gel beside it.
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -206,20 +208,21 @@ void main() {
           )
           .firstWhere((r) => r.height >= words.height + 12);
       final panel = at(Offset(key.center.dx, key.top - 4));
-      final ruby = face(danger), pearl = face('Keep');
-      // Its face or its words plainly a colour, far from the neutral key's.
-      final byWords = _chroma(rose) >= 40 && _deltaE(rose, keep) >= 40;
-      final byFace = _chroma(ruby) >= 40 && _deltaE(ruby, pearl) >= 40;
+      final smoked = face(danger);
+      // Its words plainly rose, far from the neutral key's.
       expect(
-        byWords || byFace,
+        _chroma(rose) >= 40 && _deltaE(rose, keep) >= 40,
         isTrue,
         reason:
             'words $rose against $keep '
             '(chroma ${_chroma(rose).toStringAsFixed(1)}, '
-            'dE ${_deltaE(rose, keep).toStringAsFixed(1)}); '
-            'face $ruby against $pearl '
-            '(chroma ${_chroma(ruby).toStringAsFixed(1)}, '
-            'dE ${_deltaE(ruby, pearl).toStringAsFixed(1)})',
+            'dE ${_deltaE(rose, keep).toStringAsFixed(1)})',
+      );
+      // A pearl's grey face, not the ruby gel's.
+      expect(
+        _chroma(smoked),
+        lessThan(12),
+        reason: 'face $smoked (chroma ${_chroma(smoked).toStringAsFixed(1)})',
       );
       // Its words read on it.
       expect(
@@ -229,9 +232,9 @@ void main() {
       );
       // A raised key standing off the dialog, not a slot sunk in it.
       expect(
-        _ratio(ruby, panel),
-        greaterThanOrEqualTo(1.5),
-        reason: 'face $ruby on the dialog $panel',
+        _ratio(smoked, panel),
+        greaterThanOrEqualTo(1.1),
+        reason: 'face $smoked on the dialog $panel',
       );
     });
   }

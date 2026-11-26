@@ -82,9 +82,9 @@ class _Glazes extends StatelessWidget {
         chip('Page', c.page, c.ink),
         chip('Well', c.well, c.ink),
         chip('Jade', c.jade, c.onJade),
-        chip('Jade ink', c.well, c.jadeInk),
         chip('Ink', c.ink, c.page),
-        chip('Second ink', c.well, c.inkSecondary),
+        chip('Jade ink', c.jadeInk, c.page),
+        chip('Second ink', c.inkSecondary, c.page),
         chip('Ruby', c.dangerFill, c.onDanger),
       ],
     );
@@ -205,16 +205,15 @@ class _Chrome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(GlossMetrics.fieldRadius),
-      child: GlossBar(
-        child: SizedBox(
-          height: 56,
-          child: Center(
-            child: Text(
-              'Letterpressed into the bar',
-              style: glossLetterpress(theme.textTheme.title, theme.colors),
-            ),
+    // The bar as a screen's top bar stands: edge to edge, its foot line
+    // running the full width.
+    return GlossBar(
+      child: SizedBox(
+        height: 56,
+        child: Center(
+          child: Text(
+            'Letterpressed into the bar',
+            style: glossLetterpress(theme.textTheme.title, theme.colors),
           ),
         ),
       ),

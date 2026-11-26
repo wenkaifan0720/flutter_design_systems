@@ -497,7 +497,6 @@ class _GlossInputGroupState extends State<GlossInputGroup>
   FocusNode? get givenFocusNode => widget.focusNode;
 
   Widget _addOn(GlossThemeData theme, String words, {required bool start}) {
-    final c = theme.colors;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -508,9 +507,7 @@ class _GlossInputGroupState extends State<GlossInputGroup>
             capHeightFactor: glossCapHeightFactor,
             child: Text(
               words,
-              style: theme.textTheme.body.copyWith(
-                color: widget.enabled ? c.inkSecondary : c.inkDisabled,
-              ),
+              style: glossAffixStyle(theme, enabled: widget.enabled),
             ),
           ),
         ),
@@ -1485,9 +1482,7 @@ class GlossFormField extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: GlossSpacing.small),
               child: DefaultTextStyle.merge(
-                style: theme.textTheme.label.copyWith(
-                  color: enabled ? c.inkSecondary : c.inkDisabled,
-                ),
+                style: glossFieldLabelStyle(theme, enabled: enabled),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1495,7 +1490,10 @@ class GlossFormField extends StatelessWidget {
                     if (isRequired)
                       Text(
                         ' *',
-                        style: theme.textTheme.label.copyWith(color: c.jadeInk),
+                        style: glossFieldLabelStyle(
+                          theme,
+                          enabled: enabled,
+                        ).copyWith(color: c.jadeInk),
                       ),
                   ],
                 ),

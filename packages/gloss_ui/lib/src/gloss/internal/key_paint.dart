@@ -87,10 +87,10 @@ GlossFace glossKeyFace(
 
 // A pearl key's face: its words ink, or ruby words on a key that destroys.
 // Where ruby words can't read on the pearl (by night, on the moonlit
-// pearl, where no rose both reads and stays rose) the key is the same
-// pearl moulded in ruby, its words the ruby's: raised and lit from above
-// as every pearl, with a pearl's lustre and not the gel's lens, which is
-// kept for a screen's one action.
+// pearl, where no rose both reads and stays rose) the pearl is smoked:
+// its tones most of the way to the page's, so rose words read on it and it
+// stays plainly a pearl beside the ruby gel, raised and lit from above as
+// every pearl, with a pearl's lustre and not the gel's lens.
 GlossFace _pearlKey(GlossColors c, {required bool destructive}) {
   final pearl = GlossFace.pearl(c);
   if (!destructive) return pearl.copyWith(foreground: c.ink);
@@ -101,13 +101,13 @@ GlossFace _pearlKey(GlossColors c, {required bool destructive}) {
       4.5) {
     return pearl.copyWith(foreground: c.danger);
   }
+  Color smoked(Color tone) => Color.lerp(tone, c.page, 0.45)!;
+  final top = smoked(pearl.top), middle = smoked(pearl.middle);
   return pearl.copyWith(
-    top: c.dangerTop,
-    middle: c.dangerFill,
-    bottom: c.dangerBottom,
-    foreground: c.onDanger,
-    // The soft light in its foot is the ruby's own, so it never greys it.
-    glow: c.dangerTop.withValues(alpha: pearl.glow.a),
+    top: top,
+    middle: middle,
+    bottom: smoked(pearl.bottom),
+    foreground: RawPalette.readableTone(c.danger, on: [top, middle]),
   );
 }
 

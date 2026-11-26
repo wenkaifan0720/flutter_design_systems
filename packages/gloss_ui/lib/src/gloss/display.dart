@@ -13,6 +13,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'fonts.dart';
 import 'internal/chevron.dart';
+import 'internal/socket_rim.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -651,7 +652,10 @@ class GlossTimeline extends StatelessWidget {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            GlossSurface(face: GlossFace.well(c)),
+                            GlossSurface(
+                              face: GlossFace.well(c)
+                                  .copyWith(edge: glossSocketRim(c)),
+                            ),
                             if (e.done)
                               Padding(
                                 padding: const EdgeInsets.all(

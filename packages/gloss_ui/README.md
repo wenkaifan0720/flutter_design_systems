@@ -11,7 +11,7 @@ It includes forms, navigation, calendars, charts, dialogs, and matching light an
 
 ```yaml
 dependencies:
-  gloss_ui: ^0.5.0
+  gloss_ui: ^0.5.1
 ```
 
 The smallest app: `GlossHost` in the app's `builder` gives everything under it Gloss's theme, by day and by night as

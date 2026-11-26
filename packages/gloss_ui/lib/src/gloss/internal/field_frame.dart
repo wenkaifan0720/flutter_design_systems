@@ -2,6 +2,23 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../text_field.dart';
+import '../theme.dart';
+
+/// A field's label: 14 on 20 in ink, grey when off; a text field's and a
+/// control's alike.
+TextStyle glossFieldLabelStyle(GlossThemeData theme, {required bool enabled}) =>
+    theme.textTheme.label.copyWith(
+      fontSize: 14,
+      height: 20 / 14,
+      color: enabled ? theme.colors.ink : theme.colors.inkDisabled,
+    );
+
+/// The words beside a value (a unit, an add-on): the value's size in
+/// secondary ink, as Material's suffix text takes the input's style.
+TextStyle glossAffixStyle(GlossThemeData theme, {required bool enabled}) =>
+    theme.textTheme.body.copyWith(
+      color: enabled ? theme.colors.inkSecondary : theme.colors.inkDisabled,
+    );
 
 /// A label over [child] and its help or error under it, as Gloss's fields
 /// stand, through ui_core's [RawInputDecorator]: the label, the help and the
