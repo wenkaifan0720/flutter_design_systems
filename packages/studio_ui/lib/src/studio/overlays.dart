@@ -575,7 +575,8 @@ class StudioSheet extends StatelessWidget {
                     ),
                     // The finger slot, where a hand pulls the drawer: ui_core's
                     // drag handle (a press or Down closes a sheet of one size),
-                    // its target 44 px square over the sheet's top.
+                    // its target the tap floor over the sheet's top, never
+                    // narrower than the slot.
                     PositionedDirectional(
                       top: 0,
                       start: 0,
@@ -583,13 +584,16 @@ class StudioSheet extends StatelessWidget {
                       child: Center(
                         child: RawBottomSheetDragHandle(
                           builder: (context, states) => SizedBox.square(
-                            dimension: 44,
+                            dimension: math.max(
+                              RawTapTargets.of(context).floorOn().shortestSide,
+                              _slotWidth,
+                            ),
                             child: Align(
                               alignment: Alignment.topCenter,
                               child: Padding(
                                 padding: EdgeInsets.only(top: pad.top),
                                 child: SizedBox(
-                                  width: 40,
+                                  width: _slotWidth,
                                   height: _slotHeight,
                                   child: AnimatedStudioSurface(
                                     stiffness: StudioMotion.lampStiffness,
@@ -631,6 +635,9 @@ class StudioSheet extends StatelessWidget {
 
 // The finger slot's height.
 const double _slotHeight = 6;
+
+// The finger slot's length.
+const double _slotWidth = 40;
 
 class _CloseKey extends StatelessWidget {
   const _CloseKey({required this.label, required this.onPressed});
@@ -830,6 +837,9 @@ class _ToastKey extends StatelessWidget {
   final Widget child;
   final bool square;
 
+  // The key's face: as tall as a key on the bar, over the tap floor.
+  static const double _keySide = StudioMetrics.controlHeight;
+
   @override
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
@@ -839,9 +849,9 @@ class _ToastKey extends StatelessWidget {
       excludeSemantics: true,
       builder: (context, states, _) => ConstrainedBox(
         constraints: BoxConstraints(
-          minWidth: 44,
-          minHeight: 44,
-          maxWidth: square ? 44 : double.infinity,
+          minWidth: _keySide,
+          minHeight: _keySide,
+          maxWidth: square ? _keySide : double.infinity,
         ),
         child: AnimatedStudioSurface(
           face: StudioFace(

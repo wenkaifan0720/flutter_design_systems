@@ -913,11 +913,17 @@ final Map<String, DocExample> _examples = {
   },
   'studioContrast': (context) {
     final colors = StudioTheme.of(context).colors;
+    // The example of a deprecated function, kept while it is.
+    // ignore: deprecated_member_use_from_same_package
     final readable = studioContrast(colors.onDisplay, colors.display) >= 4.5;
     return readable;
   },
   'StudioThemeData.from': (context) {
     final theme = StudioThemeData.from(indicator: const Color(0xFF4FD1C5));
+    return theme;
+  },
+  'StudioThemeData.preset': (context) {
+    final theme = StudioThemeData.preset('cobalt', Brightness.dark);
     return theme;
   },
   'StudioTheme': (context) => MaterialApp(

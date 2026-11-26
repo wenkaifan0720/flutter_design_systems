@@ -14,6 +14,16 @@ import 'package:ui_core/ui_core.dart';
 import 'fonts.dart';
 import 'transitions.dart' show studioPageTransitions;
 
+// Below this chroma an indicator is a white or a grey: a light with no hue of
+// its own, which keeps the set it lights hue-free.
+const double _hueFreeChroma = 10;
+
+// The tone a hue-free light shows at by day: a graphite ink.
+const double _hueFreeInkTone = 22;
+
+// The tone of that light itself, where it shows through the dark by day.
+const double _hueFreeLightTone = 90;
+
 /// How one part of Studio looks, as Material's `ButtonStyle` is: every slot a
 /// `WidgetStateProperty`, read from a part's `style:` first, then from its
 /// component theme on [StudioThemeData], then from the look's own default.
@@ -39,13 +49,6 @@ abstract final class StudioMetrics {
 
   /// A list row's height on a display or a panel, before density.
   static const double rowHeight = 52;
-
-  /// The room a focus ring once kept round a face.
-  @Deprecated(
-    'Focus lights the face\'s own edge with no gap since 0.1.2; nothing '
-    'stands apart from the part.',
-  )
-  static const double focusGap = 2;
 
   /// The width of a focused face's lit edge, hugging its outline.
   static const double focusWidth = 1.5;
@@ -206,7 +209,8 @@ abstract final class StudioMotion {
 /// tone), printed with [legend] and [legendMuted], cut with [groove]. The
 /// glass is content: [display] with [onDisplay], and the [readout] windows:
 /// by night dark glass whose figures glow in [indicator], by day pale glass
-/// lit amber from behind, its figures [readoutLit]. [indicator] is the one accent,
+/// lit from behind in [indicator]'s hue, its figures [readoutLit]. [indicator]
+/// is the one accent (amber in the anodised preset),
 /// the light of a lamp, a backlit key or a lit legend ([litLegend] where a lit
 /// word must still read on the metal by day). [danger] is the meaning of a
 /// live recording or a failure, nothing else.
@@ -263,7 +267,7 @@ class StudioColors with Diagnosticable {
       bar = const Color(0xFFE9EBED),
       barLow = const Color(0xFFD5D8DC),
       legend = const Color(0xFF202328),
-      legendMuted = const Color(0xFF4D525A),
+      legendMuted = const Color(0xFF4B5058),
       groove = const Color(0x2E000000),
       edgeLight = const Color(0xCCFFFFFF),
       // Pale glass with a faint green-grey tint, a shade under the metal
@@ -272,7 +276,7 @@ class StudioColors with Diagnosticable {
       display = const Color(0xFFDFE4E2),
       displayLow = const Color(0xFFD3D9D7),
       onDisplay = const Color(0xFF1A1C1F),
-      onDisplayMuted = const Color(0xFF575A60),
+      onDisplayMuted = const Color(0xFF4D5056),
       displayLine = const Color(0x17000000),
       readout = const Color(0xFFF7E0BC),
       readoutLow = const Color(0xFFF0D2A2),
@@ -285,11 +289,11 @@ class StudioColors with Diagnosticable {
       capLow = const Color(0xFFB4B9BF),
       indicator = const Color(0xFFFFAE3A),
       onIndicator = const Color(0xFF2A1700),
-      litLegend = const Color(0xFF8F4A00),
+      litLegend = const Color(0xFF7D4000),
       lampOff = const Color(0xFF6E6A62),
       danger = const Color(0xFFC4281C),
       onDanger = const Color(0xFFFFFFFF),
-      dangerLegend = const Color(0xFFB02218),
+      dangerLegend = const Color(0xFFA0140E),
       focusRing = const Color(0xFF9A5200),
       shadow = const Color(0xFF000000);
 
@@ -355,7 +359,8 @@ class StudioColors with Diagnosticable {
   /// Words printed on the metal.
   final Color legend;
 
-  /// Secondary print on the metal, at 4.5:1 on [panelLow].
+  /// Secondary print on the metal, at 4.5:1 on every metal it is printed on:
+  /// the chassis, a panel and a bar, at their tops and their lower tones.
   final Color legendMuted;
 
   /// A machined groove's dark line.
@@ -373,7 +378,8 @@ class StudioColors with Diagnosticable {
   /// Words on a display.
   final Color onDisplay;
 
-  /// Supporting words on a display, at 4.5:1 on [displayLow].
+  /// Supporting words on a display, at 4.5:1 on its glass and on the metal
+  /// round it (a row laid on a panel or on the chassis).
   final Color onDisplayMuted;
 
   /// A rule between rows on a display.
@@ -414,8 +420,8 @@ class StudioColors with Diagnosticable {
   /// Words on a lit key's cap.
   final Color onIndicator;
 
-  /// A lit legend on the metal or a display: [indicator] by night, a deeper
-  /// amber by day that still reads at 4.5:1.
+  /// A lit legend on the metal, a display or a key: [indicator] by night, a
+  /// deeper amber by day, reading at 4.5:1 on each.
   final Color litLegend;
 
   /// A lamp that is off: a dark dimple.
@@ -427,10 +433,10 @@ class StudioColors with Diagnosticable {
   /// Words on [danger].
   final Color onDanger;
 
-  /// A destructive legend on the metal, at 4.5:1.
+  /// A destructive legend on the metal or a display, at 4.5:1 on each.
   final Color dangerLegend;
 
-  /// The keyboard focus ring, at 3:1 on the metal.
+  /// The keyboard focus ring, at 3:1 on the metal and the keys.
   final Color focusRing;
 
   /// Every cast and inner shadow.
@@ -444,13 +450,20 @@ class StudioColors with Diagnosticable {
   /// a little over 3:1 on [key], the lightest metal a lamp is set in (more
   /// on a panel, the bar or a display), so an unlit lamp still reads as a
   /// lamp: the 3:1 WCAG asks of a part's outline, with room for the light
-  /// across the metal. A lit lamp covers it.
-  Color get lampEdge {
-    var c = lampOff;
-    for (var i = 1; i <= 40 && studioContrast(c, key) < 3.3; i++) {
-      c = Color.lerp(lampOff, legend, i / 40)!;
-    }
-    return c;
+  /// across the metal. A lit lamp covers it. Its hue is the lamp's own.
+  Color get lampEdge => RawPalette.readableTone(lampOff, on: [key], ratio: 3.3);
+
+  /// The light where it shows through the dark: in a switch's or a fader's
+  /// slot, in the graphite main key's lamp and legend. [indicator], save by
+  /// day in a set under a white light: the silver is too bright for a white
+  /// light to read on, so there [indicator] is ink, and this is the white.
+  Color get lightInDark {
+    final light = RawHct.fromColor(indicator);
+    return brightness == Brightness.light &&
+            light.chroma < _hueFreeChroma &&
+            light.tone < 50
+        ? light.withTone(_hueFreeLightTone).toColor()
+        : indicator;
   }
 
   /// The main key's cap: graphite in both rooms, so its legend can be lit.
@@ -470,18 +483,10 @@ class StudioColors with Diagnosticable {
   /// The main key's lit legend: the indicator, a little whiter, and
   /// lightened further until it reads on [litKey] at 4.5:1 (an app's own
   /// indicator included).
-  Color get onLitKey {
-    final hsl = HSLColor.fromColor(
-      Color.lerp(indicator, const Color(0xFFFFFFFF), 0.12)!,
-    );
-    var c = hsl.toColor();
-    for (var i = 1; i <= 40 && studioContrast(c, litKey) < 4.5; i++) {
-      c = hsl
-          .withLightness(hsl.lightness + (1 - hsl.lightness) * i / 40)
-          .toColor();
-    }
-    return c;
-  }
+  Color get onLitKey => RawPalette.readableTone(
+    Color.lerp(lightInDark, const Color(0xFFFFFFFF), 0.12)!,
+    on: [litKey],
+  );
 
   /// A destructive main key's lit legend: red light, at 4.5:1 on [litKey].
   Color get onLitKeyDanger => const Color(0xFFFF8A7E);
@@ -493,31 +498,64 @@ class StudioColors with Diagnosticable {
   /// rather than dark glass (by night), read off [readout] itself.
   bool get litReadout => readout.computeLuminance() > 0.4;
 
-  /// Words on a readout window's glass: warm white on the dark glass, a warm
-  /// near-black on the lit glass.
-  Color get onReadout =>
-      litReadout ? const Color(0xFF2A2116) : const Color(0xFFF1EBDF);
+  /// Words on a readout window's glass: warm white on the dark glass; on the
+  /// lit glass a near-black in the glass's own hue (warm on the look's amber
+  /// pane).
+  Color get onReadout => litReadout
+      ? _paneInk(const Color(0xFF2A2116))
+      : _nightInk(const Color(0xFFF1EBDF));
 
-  /// Supporting words on a readout window's glass, at 4.5:1.
-  Color get onReadoutMuted =>
-      litReadout ? const Color(0xFF5E4C33) : const Color(0xFFBDB6A8);
+  /// Supporting words on a readout window's glass (a drum's figures round
+  /// the chosen one), at 4.5:1 on both its tones.
+  Color get onReadoutMuted => RawPalette.readableTone(
+    litReadout
+        ? _paneInk(const Color(0xFF5E4C33))
+        : _nightInk(const Color(0xFFBDB6A8)),
+    on: [readout, readoutLow],
+  );
+
+  // [ink] as the look prints it on its own lit pane; on a pane lit in
+  // another hue, the same depth in that pane's hue, at no more chroma than
+  // the pane's own, so a blue pane's words are a blue-black, not the amber
+  // pane's brown, and an ice pane's a plain black.
+  Color _paneInk(Color ink) {
+    if (readout == const StudioColors.light().readout) return ink;
+    final own = RawHct.fromColor(ink);
+    final pane = RawHct.fromColor(readout);
+    return pane
+        .withChroma(math.min(own.chroma, pane.chroma))
+        .withTone(own.tone)
+        .toColor();
+  }
+
+  // [ink] on the dark glass: the look's warm white, or under a light with
+  // no hue of its own, that light's white.
+  Color _nightInk(Color ink) {
+    final light = RawHct.fromColor(indicator);
+    if (light.chroma >= _hueFreeChroma) return ink;
+    final own = RawHct.fromColor(ink);
+    return light
+        .withChroma(math.min(own.chroma, light.chroma))
+        .withTone(own.tone)
+        .toColor();
+  }
+
+  // Whether [indicator] is a white or a grey: a light with no hue of its
+  // own.
+  bool get _hueFreeLight => RawHct.fromColor(indicator).chroma < _hueFreeChroma;
 
   /// A readout's lit figures and segments: [indicator], glowing, on the dark
   /// glass (lifted until it reads there at 4.5:1, for a brand too dim); on
   /// the lit glass the indicator deepened until it reads there at 4.5:1, as
-  /// a backlit LCD's figures do.
-  Color get readoutLit => _onGlass(indicator, 4.5);
+  /// a backlit LCD's figures do; under a white light, the pane's own
+  /// near-black ([onReadout]).
+  Color get readoutLit =>
+      litReadout && _hueFreeLight ? onReadout : _onGlass(indicator, 4.5);
 
   // [light] deepened by day, or lifted by night, until it reads at [ratio]
   // on both ends of the glass.
-  Color _onGlass(Color light, double ratio) {
-    final b = litReadout ? Brightness.light : Brightness.dark;
-    var c = light;
-    for (final glass in [readout, readoutLow]) {
-      c = StudioThemeData._readableOn(c, glass, b, ratio: ratio);
-    }
-    return c;
-  }
+  Color _onGlass(Color light, double ratio) =>
+      RawPalette.readableTone(light, on: [readout, readoutLow], ratio: ratio);
 
   /// A dimmer light on a readout (a third trace): the indicator half-way to
   /// the glass, kept at 3:1 on it.
@@ -547,8 +585,8 @@ class StudioColors with Diagnosticable {
 
   /// Black or white words, whichever reads better on [fill].
   static Color wordsOn(Color fill) =>
-      studioContrast(fill, const Color(0xFF000000)) >=
-          studioContrast(fill, const Color(0xFFFFFFFF))
+      RawPalette.contrastRatio(const Color(0xFF000000), fill) >=
+          RawPalette.contrastRatio(const Color(0xFFFFFFFF), fill)
       ? const Color(0xFF1A1206)
       : const Color(0xFFFFFFFF);
 
@@ -562,20 +600,31 @@ class StudioColors with Diagnosticable {
     Color? barLow,
     Color? legend,
     Color? legendMuted,
+    Color? groove,
+    Color? edgeLight,
     Color? display,
     Color? displayLow,
     Color? onDisplay,
     Color? onDisplayMuted,
+    Color? displayLine,
     Color? readout,
     Color? readoutLow,
     Color? key,
     Color? keyLow,
     Color? onKey,
+    Color? disabled,
+    Color? slot,
+    Color? cap,
+    Color? capLow,
     Color? indicator,
     Color? onIndicator,
     Color? litLegend,
+    Color? lampOff,
     Color? focusRing,
     Color? danger,
+    Color? onDanger,
+    Color? dangerLegend,
+    Color? shadow,
   }) => StudioColors(
     brightness: brightness,
     chassis: chassis ?? this.chassis,
@@ -586,31 +635,31 @@ class StudioColors with Diagnosticable {
     barLow: barLow ?? this.barLow,
     legend: legend ?? this.legend,
     legendMuted: legendMuted ?? this.legendMuted,
-    groove: groove,
-    edgeLight: edgeLight,
+    groove: groove ?? this.groove,
+    edgeLight: edgeLight ?? this.edgeLight,
     display: display ?? this.display,
     displayLow: displayLow ?? this.displayLow,
     onDisplay: onDisplay ?? this.onDisplay,
     onDisplayMuted: onDisplayMuted ?? this.onDisplayMuted,
-    displayLine: displayLine,
+    displayLine: displayLine ?? this.displayLine,
     readout: readout ?? this.readout,
     readoutLow: readoutLow ?? this.readoutLow,
     key: key ?? this.key,
     keyLow: keyLow ?? this.keyLow,
     onKey: onKey ?? this.onKey,
-    disabled: disabled,
-    slot: slot,
-    cap: cap,
-    capLow: capLow,
+    disabled: disabled ?? this.disabled,
+    slot: slot ?? this.slot,
+    cap: cap ?? this.cap,
+    capLow: capLow ?? this.capLow,
     indicator: indicator ?? this.indicator,
     onIndicator: onIndicator ?? this.onIndicator,
     litLegend: litLegend ?? this.litLegend,
-    lampOff: lampOff,
+    lampOff: lampOff ?? this.lampOff,
     danger: danger ?? this.danger,
-    onDanger: onDanger,
-    dangerLegend: dangerLegend,
+    onDanger: onDanger ?? this.onDanger,
+    dangerLegend: dangerLegend ?? this.dangerLegend,
     focusRing: focusRing ?? this.focusRing,
-    shadow: shadow,
+    shadow: shadow ?? this.shadow,
   );
 
   /// Between [a] and [b] at [t].
@@ -716,11 +765,11 @@ class StudioColors with Diagnosticable {
 /// ```dart
 /// final readable = studioContrast(colors.onDisplay, colors.display) >= 4.5;
 /// ```
-double studioContrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-}
+@Deprecated(
+  'Use RawPalette.contrastRatio from ui_core, the same WCAG ratio. '
+  'Deprecated in 0.5.0; removed in 0.6.0.',
+)
+double studioContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
 
 /// The face Studio sets its words in: Barlow unless an app gives its own.
 @immutable
@@ -1016,10 +1065,16 @@ class StudioThemeData with Diagnosticable {
   /// anodised in. The corners, the light from the top and the three depths
   /// stay the look's.
   ///
-  /// The main key's lit legend is the indicator lightened until it reads on
-  /// its graphite at 4.5:1. By day a lit legend on the metal is the
-  /// indicator darkened until it reads there at 4.5:1, and the readout
-  /// windows' pale glass is lit from behind by the indicator.
+  /// The indicator stays the lamps' colour; a lit key's words over it are
+  /// dark or light, whichever reads there at 4.5:1 (the indicator moves, as
+  /// little as it must, only for a colour neither reads on); an unlit lamp is
+  /// the same lamp, dark. Every word and
+  /// lit legend is then walked in its own hue until it reads at 4.5:1 on
+  /// each metal, glass and key it is painted on, the focus ring at 3:1. By
+  /// day the readout windows' pale glass is lit from behind by the
+  /// indicator's hue and keeps the look's brightness, a dark indicator
+  /// included. The finish tints the metal at the metal's own tones, so by
+  /// night a cream or a sand gives a warm charcoal, never brown.
   ///
   /// ```dart
   /// final theme = StudioThemeData.from(indicator: const Color(0xFF4FD1C5));
@@ -1034,68 +1089,100 @@ class StudioThemeData with Diagnosticable {
     final base = brightness == Brightness.dark
         ? const StudioColors.dark()
         : const StudioColors.light();
-    final onIndicator = StudioColors.wordsOn(indicator);
-    assert(
-      studioContrast(indicator, onIndicator) >= 4.5,
-      'Studio sets a lit key\'s words at 4.5:1: $indicator holds neither '
-      'dark nor light words that well.',
+    final metal = finish == null ? base : _anodise(base, finish);
+    // A light with no hue of its own (a white, a grey) keeps the set
+    // hue-free: a neutral black for the words on it, and the glass lit as
+    // the light is, not in the look's cream.
+    final hueFree = RawHct.fromColor(indicator).chroma < _hueFreeChroma;
+    // By day a white light can't be seen on the silver, so a hue-free set
+    // shows it as ink: a graphite lamp, bar and latched key, as a
+    // monochrome display shows what is on in black.
+    final shown = hueFree && brightness == Brightness.light
+        ? RawHct.fromColor(indicator).withTone(_hueFreeInkTone).toColor()
+        : indicator;
+    final lit = RawPalette.accentFill(
+      shown,
+      brightness: brightness,
+      rule: RawAccentRule.named,
+      darkInk: hueFree ? const Color(0xFF141414) : const Color(0xFF1A1206),
     );
-    var colors = base.copyWith(
-      indicator: indicator,
-      onIndicator: onIndicator,
-      litLegend: _readableOn(indicator, base.panelLow, base.brightness),
-      focusRing: _readableOn(
-        indicator,
-        base.panelLow,
-        base.brightness,
-        ratio: 3,
-      ),
+    // An unlit lamp is the indicator's lamp, dark: the look's unlit depth
+    // in the indicator's hue, at no more chroma than the lamp's own.
+    final off = RawHct.fromColor(base.lampOff);
+    final lamp = RawHct.fromColor(lit.fill);
+    var colors = metal.copyWith(
+      indicator: lit.fill,
+      onIndicator: lit.ink,
+      lampOff: lamp
+          .withChroma(math.min(off.chroma, lamp.chroma))
+          .withTone(off.tone)
+          .toColor(),
     );
-    if (base.brightness == Brightness.light) {
+    if (brightness == Brightness.light) {
+      // The glass keeps the look's brightness, tinted by the indicator.
+      Color glass(Color own, double t) => hueFree
+          ? RawNeutralTones.of(indicator).tone(RawHct.fromColor(own).tone)
+          : RawHct.fromColor(Color.lerp(const Color(0xFFF4F1E7), lit.fill, t)!)
+                .withTone(RawHct.fromColor(own).tone)
+                .toColor();
       colors = colors.copyWith(
-        readout: Color.lerp(const Color(0xFFF4F1E7), indicator, 0.25),
-        readoutLow: Color.lerp(const Color(0xFFE7E8E2), indicator, 0.38),
+        readout: glass(base.readout, 0.25),
+        readoutLow: glass(base.readoutLow, 0.38),
       );
     }
-    if (finish != null) colors = _anodise(colors, finish);
+    final metals = [
+      colors.chassis,
+      colors.panel,
+      colors.panelLow,
+      colors.bar,
+      colors.barLow,
+    ];
+    final glass = [colors.display, colors.displayLow];
+    final keys = [colors.key, colors.keyLow];
     return StudioThemeData(
-      colors: colors,
+      colors: colors.copyWith(
+        legendMuted: RawPalette.readableTone(base.legendMuted, on: metals),
+        onDisplayMuted: RawPalette.readableTone(
+          base.onDisplayMuted,
+          on: [...glass, ...metals],
+        ),
+        dangerLegend: RawPalette.readableTone(
+          base.dangerLegend,
+          on: [...metals, ...glass],
+        ),
+        litLegend: RawPalette.readableTone(
+          lit.fill,
+          on: [...metals, ...glass, ...keys],
+        ),
+        focusRing: RawPalette.readableTone(
+          lit.fill,
+          on: [...metals, ...keys],
+          ratio: 3,
+        ),
+      ),
       density: density,
       typeface: typeface,
     );
   }
 
-  // [colour] darkened by day (lightened by night) until it reads on [ground]
-  // at [ratio].
-  static Color _readableOn(
-    Color colour,
-    Color ground,
-    Brightness brightness, {
-    double ratio = 4.5,
-  }) {
-    final hsl = HSLColor.fromColor(colour);
-    var c = colour;
-    for (var i = 0; i < 40 && studioContrast(c, ground) < ratio; i++) {
-      final l = brightness == Brightness.light
-          ? hsl.lightness * (1 - i / 40)
-          : hsl.lightness + (1 - hsl.lightness) * i / 40;
-      c = hsl.withLightness(l.clamp(0.0, 1.0)).toColor();
-    }
-    return c;
-  }
-
-  // The panels, bars and keys tinted toward [finish], their tones kept.
+  // The panels, bars and keys anodised in [finish]: its hue, at most half
+  // its chroma and no more than a tint, at each metal's own tone, so every
+  // word keeps its contrast. By night the tint eases to a charcoal's.
   static StudioColors _anodise(StudioColors c, Color finish) {
-    Color tint(Color metal) {
-      final m = HSLColor.fromColor(metal);
-      final f = HSLColor.fromColor(finish);
-      return m
-          .withHue(f.hue)
-          .withSaturation(math.min(0.22, f.saturation * 0.5))
-          .toColor();
-    }
-
+    final f = RawHct.fromColor(finish);
+    final tones = RawNeutralTones.of(
+      f.withChroma(math.min(_finishChroma, f.chroma / 2)).toColor(),
+    );
+    Color tint(Color metal) => tones.tone(RawHct.fromColor(metal).tone);
+    // The glass leans to the finish too, far fainter: a mint pane on plum
+    // or brass would read as dirt.
+    final glass = RawNeutralTones.of(
+      f.withChroma(math.min(_glassChroma, f.chroma / 4)).toColor(),
+    );
+    Color pane(Color own) => glass.tone(RawHct.fromColor(own).tone);
     return c.copyWith(
+      display: pane(c.display),
+      displayLow: pane(c.displayLow),
       chassis: tint(c.chassis),
       chassisLow: tint(c.chassisLow),
       panel: tint(c.panel),
@@ -1107,18 +1194,57 @@ class StudioThemeData with Diagnosticable {
     );
   }
 
-  /// The names of the look's presets, the first its default: [preset] takes
-  /// one.
-  static const List<String> presets = ['anodised'];
+  // The most chroma a finish lends the metal: a tint, as anodising leaves
+  // the aluminium's grain showing.
+  static const double _finishChroma = 7;
 
-  /// The preset named [id] (one of [presets]) in [brightness].
+  // The most chroma a finish lends the display glass.
+  static const double _glassChroma = 4;
+
+  /// The names of the look's six presets, the first its default: [preset]
+  /// takes one. anodised: amber lamps on silver and graphite; cobalt: blue
+  /// light on blue-anodised metal; teal: cyan lamps on blue-green steel; moss:
+  /// green lamps on olive; violet: violet light on plum; graphite: cool
+  /// white lamps on neutral steel, the one set with no hue.
+  static const List<String> presets = [
+    'anodised',
+    'cobalt',
+    'teal',
+    'moss',
+    'violet',
+    'graphite',
+  ];
+
+  /// The preset named [id] (one of [presets]) in [brightness]:
+  /// [StudioThemeData.anodised], or [StudioThemeData.from] its indicator
+  /// and finish.
+  ///
+  /// ```dart
+  /// final theme = StudioThemeData.preset('cobalt', Brightness.dark);
+  /// ```
   factory StudioThemeData.preset(
     String id,
     Brightness brightness, {
     StudioDensity? density,
   }) {
     assert(presets.contains(id), 'Studio has no preset "$id": $presets');
-    return StudioThemeData.anodised(brightness, density: density);
+    final (Color, Color)? light = switch (id) {
+      'cobalt' => (const Color(0xFF4DA3FF), const Color(0xFF2C5A8C)),
+      'teal' => (const Color(0xFF2CD4C0), const Color(0xFF7FA8AC)),
+      'moss' => (const Color(0xFF7BD34F), const Color(0xFF5C6B45)),
+      'violet' => (const Color(0xFFB38CFF), const Color(0xFF5B4570)),
+      'graphite' => (const Color(0xFFDFE3E8), const Color(0xFF8E8E8E)),
+      _ => null,
+    };
+    if (light == null) {
+      return StudioThemeData.anodised(brightness, density: density);
+    }
+    return StudioThemeData.from(
+      indicator: light.$1,
+      finish: light.$2,
+      brightness: brightness,
+      density: density,
+    );
   }
 
   /// The colours.
@@ -1533,7 +1659,7 @@ class StudioTheme extends StatelessWidget {
   /// What wears it.
   final Widget child;
 
-  /// The tap floors every Studio control stands at: 44 by 44 for a finger,
+  /// The tap floors every Studio control stands at: 40 by 40 for a finger,
   /// 24 by 24 for a pointer (ui_core's own floors).
   static const RawTapTargets tapTargets = RawTapTargets.fallback;
 

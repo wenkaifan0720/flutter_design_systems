@@ -907,7 +907,7 @@ class _StudioSwitchState extends State<StudioSwitch>
                     at: _at.value.clamp(0.0, 1.0),
                     rtl: rtl,
                     light: light,
-                    lit: layered.fill ?? c.indicator,
+                    lit: layered.fill ?? c.lightInDark,
                     enabled: enabled,
                     pressed: pressed,
                     cue: cue,

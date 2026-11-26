@@ -188,7 +188,7 @@ class StudioFloatingKey extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          StudioLamp(on: on, size: 6),
+                          StudioLamp(on: on, color: c.lightInDark, size: 6),
                           const SizedBox(width: StudioSpacing.small),
                           glyph,
                           const SizedBox(width: StudioSpacing.small),
@@ -670,7 +670,11 @@ class StudioSplitKey extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (lit) ...[
-                            StudioLamp(on: glowing, size: 6),
+                            StudioLamp(
+                              on: glowing,
+                              color: c.lightInDark,
+                              size: 6,
+                            ),
                             const SizedBox(width: StudioSpacing.small),
                           ],
                           RawCapCenter(

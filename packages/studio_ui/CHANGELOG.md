@@ -1,3 +1,17 @@
+## 0.5.0
+
+- Requires ui_core 0.7.2. Tap targets follow ui_core's tap floor, `RawTapTargets.of(context).floorOn()`: 40 × 40 at a finger, 24 × 24 at a pointer (Studio held 44 of its own). A sheet's drag handle, a reorderable row's grip and a range fader's caps read the floor; a tag's plate stands as tall as its field's line at a finger.
+- A tag input's tags and `StudioBreadcrumb`'s crumbs space themselves with ui_core's `RawChipGroup`, so neighbouring targets meet rather than overlap.
+- Five new presets, `cobalt`, `teal`, `moss`, `violet` and `graphite` (neutral steel under a cool white light, the one with no hue), join `anodised`, each by day and by night: `StudioThemeData.preset(id, brightness)`, listed in `StudioThemeData.presets`. The example's Foundations page shows all six.
+- `StudioThemeData.from` derives its colours with ui_core's `RawPalette`: the legends, the lit legends, the glass's words and the focus ring meet contrast on the metal, the keys and the glass for any indicator and finish; a finish tints the metal (chroma 7 at most) and, fainter, the display glass, a dark finish keeps its night metal charcoal, and by day the readout glass keeps its brightness under a dark light. An indicator neither light nor dark words read on no longer asserts.
+- By day the muted legends (`legendMuted`, `onDisplayMuted`), the lit legends (`litLegend`) and `dangerLegend` are a shade darker, to 4.5:1 on every metal; a time drum's unchosen figures read on lit glass.
+- In a preset or a `StudioThemeData.from` theme, the words on the lit readout glass and the unlit lamps take the indicator's hue; they stayed the anodised amber-brown. A white or grey indicator keeps the set hue-free: ice glass under near-black figures by day, its own white on the dark glass by night. By day such a light can't be seen on the silver, so what is on shows in graphite ink (a lamp, a tab's bar, a latched key); the white shows where it lights through the dark, in a switch's or a fader's slot and on the graphite main keys, through the new `StudioColors.lightInDark`.
+- A calendar's chosen day prints its figure at 4.5:1 on its lit slot under any light; under a dark light it printed white on the slot's mid tone.
+- A navigation bar's keys grow with the text, so at twice the size a legend keeps clear of its key's foot.
+- `StudioColors.copyWith` takes every colour.
+- Removed `StudioMetrics.focusGap`, deprecated since 0.1.2: focus lights the face's own edge, with no gap.
+- Deprecated `studioContrast`: use ui_core's `RawPalette.contrastRatio`, the same ratio. It goes in 0.6.0.
+
 ## 0.4.1
 
 - A toast stands above `StudioScreen`'s `footer` (ui_core's `RawToasterKeepClear`), as a `Scaffold` keeps a snackbar above its persistent footer buttons. It stood over the page's one action.

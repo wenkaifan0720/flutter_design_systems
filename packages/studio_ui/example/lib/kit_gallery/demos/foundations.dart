@@ -62,6 +62,14 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
       ],
     ),
     KitSection(
+      title: 'Presets',
+      note:
+          'Six finishes, each by day and by night: the metal, its legend, the '
+          'lamp and the readout glass. StudioThemeData.preset(id, brightness) '
+          'picks one.',
+      children: const [_Presets()],
+    ),
+    KitSection(
       title: 'Type',
       note: 'Barlow throughout. Legends engraved in small capitals where the script has them; sentence case everywhere else.',
       children: [
@@ -136,6 +144,128 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
     ),
   ],
 );
+
+/// Studio's presets, each by day and by night.
+class _Presets extends StatelessWidget {
+  const _Presets();
+
+  /// Each preset in a line.
+  static const Map<String, String> _about = {
+    'anodised': 'Silver and graphite under an amber lamp',
+    'cobalt': 'Blue-anodised metal under a blue lamp',
+    'teal': 'Blue-green steel under a teal lamp',
+    'moss': 'Olive metal under a green lamp',
+    'violet': 'Plum metal under a violet lamp',
+    'graphite': 'Neutral steel under a cool white lamp',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = StudioTheme.of(context);
+    final c = theme.colors;
+    final t = theme.textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final id in StudioThemeData.presets)
+          Padding(
+            padding: const EdgeInsets.only(bottom: StudioSpacing.medium),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(id, style: t.label.copyWith(color: c.legend)),
+                Text(
+                  _about[id] ?? '',
+                  style: t.caption.copyWith(color: c.legendMuted),
+                ),
+                const SizedBox(height: StudioSpacing.small),
+                Wrap(
+                  spacing: StudioSpacing.small,
+                  runSpacing: StudioSpacing.small,
+                  children: [
+                    _PresetTile(id, Brightness.light),
+                    _PresetTile(id, Brightness.dark),
+                  ],
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// One preset in one appearance: its metal, its legend, its lamp and its
+/// readout glass.
+class _PresetTile extends StatelessWidget {
+  const _PresetTile(this.id, this.brightness);
+
+  final String id;
+  final Brightness brightness;
+
+  @override
+  Widget build(BuildContext context) {
+    final night = brightness == Brightness.dark;
+    return Semantics(
+      label: '$id, ${night ? 'night' : 'day'}',
+      excludeSemantics: true,
+      child: StudioTheme(
+        data: StudioThemeData.preset(id, brightness),
+        child: Builder(
+          builder: (context) {
+            final theme = StudioTheme.of(context);
+            final c = theme.colors;
+            return Container(
+              constraints: const BoxConstraints(minHeight: 40),
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                StudioSpacing.small,
+                StudioSpacing.tight,
+                StudioSpacing.tight,
+                StudioSpacing.tight,
+              ),
+              decoration: BoxDecoration(
+                color: c.chassis,
+                borderRadius: BorderRadius.circular(StudioRadii.key),
+                border: Border.all(color: c.groove),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const StudioLamp(on: true, size: 8),
+                  const SizedBox(width: StudioSpacing.small),
+                  Text(
+                    'Aa',
+                    style: theme.textTheme.label.copyWith(color: c.legend),
+                  ),
+                  const SizedBox(width: StudioSpacing.small),
+                  // The readout glass and its figures: lit glass under dark
+                  // figures by day, figures glowing on dark glass by night.
+                  StudioSurface(
+                    face: c.readoutFace.copyWith(radius: StudioRadii.key),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: StudioSpacing.small - 2,
+                        vertical: 2,
+                      ),
+                      child: Text(
+                        '42',
+                        style: theme.textTheme.readout.copyWith(
+                          fontSize: 13,
+                          height: 20 / 13,
+                          color: c.readoutLit,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
 
 class _PageChangeDemo extends StatelessWidget {
   const _PageChangeDemo();

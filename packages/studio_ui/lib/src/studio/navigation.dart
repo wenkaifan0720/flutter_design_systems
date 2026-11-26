@@ -5,6 +5,8 @@
 /// [StudioTabBar]; and [StudioScaffold], which picks among them by width.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -364,6 +366,24 @@ class _BankFace extends StatelessWidget {
   }
 }
 
+// A bank key's height: a key and a little more, or as tall as its glyph and
+// its legend at the reader's text size (the legend grows to half again its
+// size) need with room round them and a latched key's travel.
+double _bankKeyHeight(BuildContext context, StudioThemeData theme) {
+  final legend =
+      MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.5).scale(12) *
+      16 /
+      12;
+  return math.max(
+    theme.controlHeight + 8,
+    StudioIconSizes.regular +
+        StudioSpacing.hair +
+        legend +
+        2 * StudioSpacing.tight +
+        StudioSpacing.hair,
+  );
+}
+
 /// The phone's bottom bar: a faceplate holding the app's places as a bank
 /// of latching keys in a recess. The chosen key is latched in, its lamp lit.
 ///
@@ -407,7 +427,7 @@ class StudioNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final layered = RawStyleOf([style, theme.navigationBarStyle], const {});
-    final key = layered.minimumSize?.height ?? theme.controlHeight + 8;
+    final key = layered.minimumSize?.height ?? _bankKeyHeight(context, theme);
     const inset = StudioMetrics.recessInset;
     final places =
         _places ??

@@ -116,8 +116,8 @@ class _Entry extends StatelessWidget {
   }
 }
 
-// A small capless key inside a window (clear, reveal): a 44 target round a
-// 28 face whose recess shows under a press.
+// A small capless key inside a window (clear, reveal): a target at the tap
+// floor round a 28 face whose recess shows under a press.
 class _WindowKey extends StatelessWidget {
   const _WindowKey({
     required this.icon,
@@ -1503,7 +1503,7 @@ class _StudioTagInputState<T extends Object> extends State<StudioTagInput<T>> {
                 constraints: BoxConstraints(minHeight: theme.controlHeight),
                 child: Padding(
                   padding: const EdgeInsets.all(StudioMetrics.recessInset),
-                  child: Wrap(
+                  child: RawChipGroup(
                     spacing: StudioSpacing.tight,
                     runSpacing: StudioSpacing.tight,
                     crossAxisAlignment: WrapCrossAlignment.center,
@@ -1575,6 +1575,7 @@ class _Plate extends StatelessWidget {
   final String removeLabel;
   final VoidCallback onDeleted;
 
+  // A pointer's plate: small, engraved.
   static const double _face = 32;
   static const double _cross = 28;
 
@@ -1588,8 +1589,13 @@ class _Plate extends StatelessWidget {
       color: ink,
       fontWeight: FontWeight.w500,
     );
+    // A finger's plate is a key as tall as the window's line, its target
+    // over the floor; a pointer's is the small engraved plate.
+    final reach = floor.height >= _face
+        ? math.max(floor.height, theme.controlHeight)
+        : _face;
     final faceHeight = math.max(
-      math.max(_face, floor.height),
+      reach,
       MediaQuery.textScalerOf(context).scale(style.fontSize!) *
               (style.height ?? 1.2) +
           2 * StudioSpacing.tight,

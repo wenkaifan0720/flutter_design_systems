@@ -340,15 +340,29 @@ class _StudioCalendarState extends State<StudioCalendar> {
             ...states,
             if (end) WidgetState.selected,
           });
-          // A chosen day is lit in its slot: by day the slot glows amber
-          // under a dark figure, by night its figure glows amber in the
-          // dark glass. Both read at 4.5:1 and more.
+          // A chosen day is lit in its slot: by day the slot glows in the
+          // indicator's light under a dark figure, by night its figure glows
+          // in the dark glass. Each figure is toned to read at 4.5:1 on the
+          // slot it sits on, whatever the light.
           final lit = end && day.enabled;
+          final litFill = Color.lerp(
+            c.display,
+            c.indicator,
+            night ? 0.08 : 0.42,
+          )!;
+          final litFillLow = Color.lerp(
+            c.displayLow,
+            c.indicator,
+            night ? 0.04 : 0.3,
+          )!;
           final Color figures;
           if (!day.enabled) {
             figures = end ? c.onDisplayMuted : c.disabled;
           } else if (end) {
-            figures = night ? c.indicator : c.onIndicator;
+            figures = RawPalette.readableTone(
+              night ? c.indicator : c.onIndicator,
+              on: [litFill, litFillLow],
+            );
           } else if (middle) {
             figures = night
                 ? Color.lerp(c.onDisplay, c.indicator, 0.6)!
@@ -400,18 +414,10 @@ class _StudioCalendarState extends State<StudioCalendar> {
                               stiffness: StudioMotion.lampStiffness,
                               face: StudioFace(
                                 fill: lit
-                                    ? Color.lerp(
-                                        c.display,
-                                        c.indicator,
-                                        night ? 0.08 : 0.42,
-                                      )!
+                                    ? litFill
                                     : Color.lerp(c.displayLow, c.shadow, 0.06)!,
                                 fillLow: lit
-                                    ? Color.lerp(
-                                        c.displayLow,
-                                        c.indicator,
-                                        night ? 0.04 : 0.3,
-                                      )!
+                                    ? litFillLow
                                     : Color.lerp(c.display, c.shadow, 0.03)!,
                                 depth: StudioDepth.sunk,
                                 radius: StudioRadii.small,
@@ -952,6 +958,10 @@ Widget _drums(
           ? c.disabled
           : here
           ? c.readoutLit
+          // By day the rows round the chosen one read on the lit glass at
+          // 4.5:1; by night they fade into the dark glass and still read.
+          : c.litReadout
+          ? c.onReadoutMuted
           : c.onReadout.withValues(alpha: 0.55);
       return Center(
         child: Text(
@@ -1575,7 +1585,10 @@ class StudioRangeFader extends StatelessWidget {
       startLabel: startLabel,
       endLabel: endLabel,
       semanticFormatterCallback: semanticFormatter,
-      thumbSize: Size(cap.width + 8, 44),
+      thumbSize: Size(
+        cap.width + 8,
+        math.max(cap.height, RawTapTargets.of(context).floorOn().height),
+      ),
       trackBuilder: (context, track) => SizedBox(
         height: StudioFader.slot,
         child: CustomPaint(

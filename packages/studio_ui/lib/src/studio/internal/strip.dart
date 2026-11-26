@@ -38,7 +38,7 @@ class _StudioStripState extends State<StudioStrip> {
   @override
   Widget build(BuildContext context) {
     Widget strip(double? least) => ClipRect(
-      clipper: const _Outset(StudioMetrics.focusGap + StudioMetrics.focusWidth),
+      clipper: const _Outset(_focusReach),
       clipBehavior: _scrolls ? Clip.hardEdge : Clip.none,
       child: NotificationListener<ScrollMetricsNotification>(
         onNotification: _measured,
@@ -63,6 +63,10 @@ class _StudioStripState extends State<StudioStrip> {
 }
 
 // The room, grown by [by] on every side.
+/// How far a key's focus light reaches past its face: its lit edge and the
+/// glow round it. A strip that scrolls clips this far out, no nearer.
+const double _focusReach = 2 + StudioMetrics.focusWidth;
+
 class _Outset extends CustomClipper<Rect> {
   const _Outset(this.by);
 

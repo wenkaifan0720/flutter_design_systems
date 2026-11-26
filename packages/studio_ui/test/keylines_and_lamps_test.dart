@@ -306,7 +306,7 @@ void main() {
           final metal = shot.at(lamp.centerLeft.translate(-4, 0));
           final edge = shot.strongest(lamp, metal);
           expect(
-            studioContrast(edge, metal),
+            RawPalette.contrastRatio(edge, metal),
             greaterThanOrEqualTo(3),
             reason: 'an unlit lamp in $name: its edge on the metal',
           );
@@ -379,7 +379,7 @@ void main() {
           final star = starIn(2);
           final edge = shot.strongest(star.inflate(1), metal);
           expect(
-            studioContrast(edge, metal),
+            RawPalette.contrastRatio(edge, metal),
             greaterThanOrEqualTo(3),
             reason: 'an unlit star on $name: its edge on the metal',
           );
@@ -437,7 +437,10 @@ class _Shot {
   Color strongest(Rect box, Color ground) {
     var edge = ground;
     for (final c in _within(box)) {
-      if (studioContrast(c, ground) > studioContrast(edge, ground)) edge = c;
+      if (RawPalette.contrastRatio(c, ground) >
+          RawPalette.contrastRatio(edge, ground)) {
+        edge = c;
+      }
     }
     return edge;
   }

@@ -812,7 +812,7 @@ class StudioReorderableList<T extends Object> extends StatelessWidget {
                     children: [
                       reorder.handle(
                         SizedBox(
-                          width: 44,
+                          width: RawTapTargets.of(context).floorOn().width,
                           height: rowHeight,
                           child: const Center(child: _Grip()),
                         ),

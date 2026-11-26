@@ -180,7 +180,7 @@ class StudioButton extends StatelessWidget {
                           size: 6,
                           color: isDestructiveAction
                               ? theme.colors.danger
-                              : null,
+                              : theme.colors.lightInDark,
                         ),
                         const SizedBox(width: StudioSpacing.small),
                       ],
@@ -529,7 +529,7 @@ class StudioTransportKey extends StatelessWidget {
                       top: size * 0.14,
                       child: StudioLamp(
                         on: lit && !disabled,
-                        color: record ? c.danger : null,
+                        color: record ? c.danger : c.lightInDark,
                         size: 7,
                       ),
                     ),

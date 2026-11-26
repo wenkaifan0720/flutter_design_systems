@@ -60,7 +60,7 @@ class StudioBreadcrumb extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      child: Wrap(
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: StudioSpacing.tight,
         children: [
@@ -384,7 +384,7 @@ class StudioStepProgress extends StatelessWidget {
 }
 
 /// Where you are among pages: a row of small lamps, the current one lit.
-/// Given [onChanged], each lamp is a key (a 44 target round it) that goes
+/// Given [onChanged], each lamp is a key (a target at the tap floor round it) that goes
 /// to its page.
 ///
 /// ```dart

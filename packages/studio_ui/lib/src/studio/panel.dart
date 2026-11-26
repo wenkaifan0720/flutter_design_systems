@@ -56,7 +56,7 @@ class StudioPanel extends StatelessWidget {
 /// A display: a pane of glass set into the metal, shadow falling inside it
 /// from its top edge. Content is read on it: an episode, a list, notes. Pale
 /// by day and dark by night; [readout] makes it a readout window's glass,
-/// lit amber from behind by day and dark by night.
+/// lit in the indicator's hue from behind by day and dark by night.
 ///
 /// With [onTap] it is pressable as a whole (a card): a press lights its rim,
 /// the keyboard focuses it with a ring outside it.

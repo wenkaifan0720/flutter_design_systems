@@ -4,15 +4,38 @@ Studio is a Flutter design system for audio and media apps. It includes transpor
 
 ![Roomtone, Studio's example podcast app, by day: its home at 1440 px beside the same page on a 390 px phone](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/studio_ui/screenshots/hero_home_day.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/studio/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/studio/) · [API reference](https://pub.dev/documentation/studio_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/studio/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=studio) · [API reference](https://pub.dev/documentation/studio_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
-## Getting started
-
-The example below uses `MaterialApp` from `material_ui`. Add both packages, then load the bundled fonts before the first frame.
+## Install
 
 ```sh
 flutter pub add studio_ui material_ui
 ```
+
+The examples use `MaterialApp` from `material_ui`; `StudioHost` works under `CupertinoApp` and `WidgetsApp` as well (below).
+
+## Start
+
+Put `StudioHost` in your app's builder:
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:studio_ui/studio_ui.dart';
+
+void main() => runApp(
+  MaterialApp(
+    builder: (context, child) => StudioHost(child: child!),
+    home: const StudioScreen(
+      topBar: StudioAppBar(title: 'Library'),
+      body: StudioDisplay(child: Text('Rooms that sound right, 38 min.')),
+    ),
+  ),
+);
+```
+
+## Set up
+
+A fuller start loads the bundled fonts before the first frame, takes Studio's page transitions and puts a key in the footer:
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -118,7 +141,17 @@ final discard = await showStudioDialog<bool>(
 
 ## Customizing Studio
 
-Set the indicator and panel finish with `StudioThemeData.from`, and hand `StudioHost` a theme for each brightness:
+Choose from six presets, each with a day and a night: `anodised` (Studio's own silver and graphite under an amber light), `cobalt`, `teal`, `moss`, `violet` and `graphite` (neutral steel under a cool white light, the one with no hue). `StudioThemeData.presets` lists them:
+
+```dart
+StudioHost(
+  theme: StudioThemeData.preset('cobalt', Brightness.light),
+  darkTheme: StudioThemeData.preset('cobalt', Brightness.dark),
+  child: child!,
+)
+```
+
+Or set your own indicator and panel finish with `StudioThemeData.from`, a theme for each brightness. Its legends, lit legends, glass words and focus ring keep their contrast on the metal, the keys and the glass whatever the colours:
 
 ```dart
 StudioHost(
@@ -137,7 +170,7 @@ The corners, the light from the top and the depths of the metal stay Studio's. S
 
 ## Accessibility
 
-Every part reads to a screen reader with its role and name; an icon key takes a `tooltip` for its name. The keyboard's focus lights the part's lamp or edge and shows for the keyboard only. Tab visits a key bank, a tab bar or a set of radios once, and the arrows move within it. A dialog keeps focus inside and returns it to its opener. Text scales to 200%: labels wrap and keys grow. Motion runs on springs through ui_core's `RawMotionPolicy`, which honours Reduce Motion, and high-contrast mode takes the grain off the metal.
+Every part reads to a screen reader with its role and name; an icon key takes a `tooltip` for its name. Every target is at least ui_core's tap floor, `RawTapTargets.of(context).floorOn()`: 40 × 40 for a finger, 24 × 24 for a pointer. The keyboard's focus lights the part's lamp or edge and shows for the keyboard only. Tab visits a key bank, a tab bar or a set of radios once, and the arrows move within it. A dialog keeps focus inside and returns it to its opener. Text scales to 200%: labels wrap and keys grow. Motion runs on springs through ui_core's `RawMotionPolicy`, which honours Reduce Motion, and high-contrast mode takes the grain off the metal.
 
 ## Languages and right to left
 
