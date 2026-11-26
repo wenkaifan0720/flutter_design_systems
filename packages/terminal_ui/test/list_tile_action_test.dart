@@ -143,7 +143,10 @@ void main() {
             ),
           ).style.color!;
       // On the bar (the words' ink), the key's words take the page's.
-      expect(termContrast(ink, row.foreground), greaterThanOrEqualTo(4.5));
+      expect(
+        RawPalette.contrastRatio(ink, row.foreground),
+        greaterThanOrEqualTo(4.5),
+      );
     });
   }
 

@@ -290,7 +290,7 @@ void main() {
         // still read.
         expect(painter.fill, isNull);
         expect(
-          termContrast(tex.style!.color!, theme.surface),
+          RawPalette.contrastRatio(tex.style!.color!, theme.surface),
           greaterThanOrEqualTo(3),
         );
       },

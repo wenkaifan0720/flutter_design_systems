@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/digits.dart';
 import '../internal/pointer.dart';
 import '../internal/shell_face.dart';
 import '../primitives/control.dart';
@@ -137,7 +138,8 @@ class _FillFromFoot extends CustomPainter {
 
 /// A tab bar: each tab its number and its label, `1 steps  2 log  3 env`,
 /// the chosen one in inverse video. The number is the key that picks it
-/// (with Alt), and the app binds it. Under the pointer a tab's words take
+/// (with Alt), and the app binds it; it is written in the reader's digits
+/// (an Arabic app's `١`). Under the pointer a tab's words take
 /// the accent; the cursor is the keyboard's alone.
 ///
 /// The behaviour is ui_core's [RawTabBar]: the bar is one tab stop, on
@@ -286,7 +288,10 @@ class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
                         children: [
                           if (widget.showNumbers) ...[
                             Text(
-                              '${i + 1}',
+                              termDigits(
+                                RawWidgetsLocalizations.of(context),
+                                i + 1,
+                              ),
                               style: theme.textStyle.copyWith(
                                 color: termCursorInk(
                                   theme,
@@ -670,13 +675,16 @@ class TermNavigationBar extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, c) {
             final n = destinations.length;
+            // A window's number in the reader's digits, as its dates are.
+            final l = RawWidgetsLocalizations.of(context);
+            String number(int i) => termDigits(l, i + 1);
             String words(int i) =>
-                '${i + 1}:${destinations[i].label}${i == selectedIndex ? '*' : ' '}';
+                '${number(i)}:${destinations[i].label}${i == selectedIndex ? '*' : ' '}';
             // A slot's name with the current one's mark, so a slot keeps
             // its width whichever is current.
             final wide = [
               for (var i = 0; i < n; i++)
-                grid.widthOf('${i + 1}:${destinations[i].label}*') +
+                grid.widthOf('${number(i)}:${destinations[i].label}*') +
                     grid.cols(2),
             ];
             // Equal cells, as Material's NavigationBar shares its width:

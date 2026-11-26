@@ -1,5 +1,5 @@
-/// Terminal's foundations: the sixteen colours of the night and paper
-/// palettes ([TermPalette]) and the roles [TermThemeData] draws from them,
+/// Terminal's foundations: its six palettes ([TermThemeData.preset]), the
+/// sixteen colours of the night and paper palettes ([TermPalette]) and the roles [TermThemeData] draws from them,
 /// the cell grid ([TermGrid]) every size is counted in, the faces
 /// ([termFontFamily], [termFallbackFontFamily]), and a part's own overrides
 /// ([TermStyle]).
@@ -14,6 +14,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'foundations',
   sections: [
+    kitSection('six palettes', children: [const _Presets()]),
     kitSection('palette', children: [const _Palette()]),
     kitSection('roles', children: [const _Roles()]),
     kitSection('the grid', children: [const _Grid()]),
@@ -21,6 +22,105 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
     kitSection('a part of your own', children: [const _Styled()]),
   ],
 );
+
+/// Terminal's six palettes ([TermThemeData.preset]), each by night and by
+/// day: a prompt in its words, the cursor in its accent and its four tones
+/// (one, in a palette of one ink).
+class _Presets extends StatelessWidget {
+  const _Presets();
+
+  static const Map<String, String> _about = {
+    'standard': 'night and paper, a cyan accent',
+    'harbor': 'a navy screen, a blue accent',
+    'dusk': 'a plum screen, a magenta accent',
+    'mono': 'one ink: states by shape alone',
+    'phosphor': 'one green ink, as a P1 tube',
+    'amber': 'one amber ink, as a P3 tube',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final id in TermThemeData.presets) ...[
+          Text(id, style: theme.boldStyle),
+          Text(_about[id] ?? '', style: theme.dimStyle),
+          // A palette's night and day together, a line before the next.
+          Wrap(
+            spacing: grid.cellWidth,
+            children: [for (final b in Brightness.values) _PresetTile(id, b)],
+          ),
+          SizedBox(height: grid.lineHeight),
+        ],
+      ],
+    );
+  }
+}
+
+/// One palette in one appearance.
+class _PresetTile extends StatelessWidget {
+  const _PresetTile(this.id, this.brightness);
+
+  final String id;
+  final Brightness brightness;
+
+  @override
+  Widget build(BuildContext context) {
+    final grid = context.termGrid;
+    final t = TermThemeData.preset(id, brightness);
+    final night = brightness == Brightness.dark;
+    Widget swatch(Color c) => Container(
+      width: grid.cols(2),
+      height: grid.fontSize,
+      margin: EdgeInsetsDirectional.only(end: grid.cellWidth),
+      color: c,
+    );
+    return Semantics(
+      label: '$id, ${night ? 'night' : 'day'}',
+      container: true,
+      excludeSemantics: true,
+      child: Container(
+        width: grid.cols(22),
+        padding: EdgeInsets.symmetric(
+          horizontal: grid.cellWidth,
+          vertical: grid.lineHeight / 4,
+        ),
+        decoration: BoxDecoration(
+          color: t.background,
+          border: Border.all(color: t.rule),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: '${night ? 'night' : 'day'} \$ '),
+                  // The cursor, in the accent.
+                  TextSpan(
+                    text: '\u{2588}',
+                    style: TextStyle(color: t.accent),
+                  ),
+                ],
+              ),
+              style: t.textStyle.copyWith(color: t.foreground),
+            ),
+            Row(
+              children: [
+                // A palette of one ink has one tone.
+                for (final c in {t.accent, t.success, t.warning, t.danger})
+                  swatch(c),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _Palette extends StatelessWidget {
   const _Palette();
@@ -49,19 +149,25 @@ class _Palette extends StatelessWidget {
     ];
     final TermPalette palette = theme.palette;
     return Wrap(
-      spacing: grid.cellWidth,
+      spacing: grid.cols(3),
       runSpacing: 0,
       children: [
         for (var i = 0; i < 16; i++)
           SizedBox(
-            width: grid.cols(18),
+            // The swatch, a gap and the longest name, "15 bright magenta".
+            width: grid.cols(21),
             child: Row(
               children: [
                 ExcludeSemantics(
+                  // Framed in the rule, so black on the night's ground and
+                  // white on the day's still show.
                   child: Container(
                     width: grid.cols(3),
                     height: grid.fontSize,
-                    color: palette.ansi[i],
+                    decoration: BoxDecoration(
+                      color: palette.ansi[i],
+                      border: Border.all(color: theme.rule),
+                    ),
                   ),
                 ),
                 SizedBox(width: grid.cellWidth),

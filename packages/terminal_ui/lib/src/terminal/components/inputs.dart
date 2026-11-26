@@ -1034,7 +1034,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (tags.isNotEmpty)
-            Wrap(
+            RawChipGroup(
               spacing: grid.cellWidth,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: tags,

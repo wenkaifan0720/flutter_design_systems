@@ -5,10 +5,10 @@ selection and keys beside every action.
 
 ![slipway, the example deploy console: home at a desk by night beside a new deploy on a phone on paper](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/hero.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/terminal/)** ·
-[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/terminal/) ·
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/terminal/)** ·
+[Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=terminal) ·
 [API reference](https://pub.dev/documentation/terminal_ui/latest/) ·
-[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Getting started
 
@@ -168,10 +168,23 @@ the structure or leave the grid).
 - **Charts**: `TermLineChart` and `TermAreaChart` in braille dots,
   `TermBarChart` and `TermSparkline` in blocks.
 - **Foundations**: `TermThemeData` (`.dark()`, `.light()`,
-  `.monochrome()`, `.from(palette)`), `TermPalette`, `TermAnsi`,
+  `.monochrome()`, `.preset(id, brightness)`, `.from(palette)`), `TermPalette`, `TermAnsi`,
   `TermGrid`, `TermFace`, and `termKeyLabel` for writing shortcuts.
 
 ## Make it yours
+
+Six palettes come with it, each by day and by night: `standard` (Terminal's
+own night and paper, a cyan accent), `harbor` (a navy screen, a blue
+accent), `dusk` (a plum screen, a magenta accent), and three in one ink, as a
+monochrome terminal draws: `mono`, `phosphor` (green) and `amber`.
+`TermThemeData.presets` lists them:
+
+```dart
+TermTheme(
+  data: TermThemeData.preset('amber', MediaQuery.platformBrightnessOf(context)),
+  child: child,
+)
+```
 
 Every part takes a `style:` (a `TermStyle`) over its slot in
 `TermThemeData`: one slot a part, and one a kind of button. A style sets
@@ -180,8 +193,8 @@ whole cells and lines, so a style can't take the look off its grid.
 
 ```dart
 final base = TermThemeData.dark(
-  // Your brand's colour, pulled until it reads at 4.5:1 on the background.
-  accent: termReadable(const Color(0xFF0A7D4F), on: TermPalette.night.background),
+  // Your brand's colour; the theme steps it until it reads at 4.5:1.
+  accent: const Color(0xFF0A7D4F),
 );
 
 final theme = base.copyWith(
@@ -203,8 +216,9 @@ TermButton(
 );
 ```
 
-A brand colour that can't read at 4.5:1 asserts in debug and names
-`termReadable`. `TermThemeData` also takes a `face` (a monospace face and
+A brand colour that reads under 4.5:1 on the background or a surface is
+stepped lighter (or darker, on paper) in its own hue until it does.
+`TermThemeData` also takes a `face` (a monospace face and
 its advance together) and a `stroke` (box drawing's light or heavy line);
 `AnimatedTermTheme` animates a change. The painters and faces the parts
 are drawn with (`TermFramePainter`, `TermBracketFace`, `TermCellFace`,

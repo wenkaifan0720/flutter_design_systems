@@ -1,3 +1,33 @@
+## 0.6.0
+
+- Needs ui_core 0.7.2 (ui_core_test 0.5.2 for the checks).
+- Six palettes, each by day and by night: `TermThemeData.preset(id, brightness)` takes `standard` (Terminal's own,
+  `TermThemeData.dark()` and `.light()`), `harbor` (a navy screen, a blue accent), `dusk` (a plum screen, a magenta
+  accent) or one of three drawn in one ink, `mono` (`TermThemeData.monochrome`), `phosphor` (green) and `amber`;
+  `TermThemeData.presets` lists them. Every role reads at 4.5:1 on the background and the surface, the frames at 3:1.
+  The gallery's foundations page shows the six.
+- `TermThemeData.from` steps an accent that reads under 4.5:1 on the background or the surface, lighter by night and
+  darker by day in its own hue, where it asserted. A brand colour reads on the surface too: one that read on the
+  background alone drew a pane's chosen words under 4.5:1.
+- `termContrast` and `termReadable` are deprecated for ui_core's `RawPalette.contrastRatio` and
+  `RawPalette.readableTone` (or nothing: `from` steps its accent itself). They go in 0.7.0. A disabled filled button's
+  words are stepped by `readableTone` now, in their own hue: a shade off what they were, at 4.5:1 still.
+- `TermGrid.widthOf` measures a run of letters no Terminal face draws (Arabic, the Indic scripts, Thai, ...) as the
+  theme's face and its fallbacks draw it, rounded up to whole cells; it counted each letter a cell. A phone's window
+  list in Arabic stood on two rows (45 cells, 405 px, at 390) where its names, drawn, fit on one. On the web the
+  script's face arrives after the first frame: `TermTheme` builds what reads its grid again when the platform's fonts
+  change, and `widthOf` measures the face that came.
+- A tag input's tags, a `TermButtonGroup` and a `TermBreadcrumb` wrap as ui_core's `RawChipGroup`: the targets reach
+  into the space between the faces. At a finger, faces narrower than a target stand closer, their targets meeting: two
+  icon buttons stand 21 px apart (were 30). Words wider than a target, and every group at a pointer, stand as before.
+- A `TermMedia`'s alt words, shown while its picture loads or where it fails, are the dim words stepped until they read
+  at 4.5:1 on its shade (4.18:1 by night, 3.68:1 by day).
+- A chosen `TermListTile`'s dim words (its subtitle) read at 4.5:1 on the row's shade where its pane is not the active
+  one; they read 3.7:1 to 4.2:1. `termRowShade` is on whole 8-bit channels, the shade the screen draws.
+- A `TermNavigationBar`'s window numbers, a `TermNavigationRail`'s and a `TermTabBar`'s are written in the reader's
+  digits, as Terminal's dates and times are: an Arabic app's window list read "1:" beside its "٢٠ نوفمبر".
+- The README links the docs site, Stint and the API reference.
+
 ## 0.5.2
 
 - On a phone a toast stands a line clear of `TermScaffold`'s status line, which stands on the window list: the line is a bar there too, in the shell's bar with the window list, and the toasts stand above both. It stood on the line, over the page's last line (an editor's Save). The window list alone is still the tab bar, and at the widths with a rail or a side pane nothing moves.

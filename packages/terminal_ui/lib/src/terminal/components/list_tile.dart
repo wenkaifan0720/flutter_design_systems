@@ -227,11 +227,18 @@ class TermListTile extends StatelessWidget {
                           cursor,
                           hollow: hollow,
                         ));
+              // On the chosen bar (this row's, or under its action) the
+              // dim words step until they read on the shade.
+              final dimOnBar = Color.lerp(
+                theme.dim,
+                RawPalette.readableTone(theme.dim, on: [shade]),
+                active ? 0.0 : chosen,
+              )!;
               final dim = disabled
                   ? theme.rule
                   : termCursorInk(
                       theme,
-                      Color.lerp(theme.dim, theme.background, inverse)!,
+                      Color.lerp(dimOnBar, theme.background, inverse)!,
                       cursor,
                       hollow: hollow,
                     );

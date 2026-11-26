@@ -31,14 +31,19 @@ class TermGrid with Diagnosticable {
   const TermGrid({this.fontSize = 15, this.lineHeight = 24})
     : assert(fontSize > 0),
       assert(lineHeight >= fontSize),
-      advance = 0.6;
+      advance = 0.6,
+      _face = null;
 
-  const TermGrid._(this.fontSize, this.lineHeight, this.advance);
+  const TermGrid._(this.fontSize, this.lineHeight, this.advance, this._face);
 
-  /// This grid set in [face]: its cell as wide as the face's advance.
-  TermGrid forFace(TermFace face) => face.advance == advance
+  /// This grid set in [face]: its cell as wide as the face's advance, and
+  /// the words [widthOf] measures set in the face and its fallbacks.
+  TermGrid forFace(TermFace face) => face == _face
       ? this
-      : TermGrid._(fontSize, lineHeight, face.advance);
+      : TermGrid._(fontSize, lineHeight, face.advance, face);
+
+  // The face [forFace] set, or null for Terminal's own.
+  final TermFace? _face;
 
   /// The size of every word, in logical pixels.
   final double fontSize;
@@ -83,17 +88,74 @@ class TermGrid with Diagnosticable {
   Size ceil(Size size) =>
       Size(ceilToCols(size.width), ceilToLines(size.height));
 
-  /// The width of [text] set in this grid's face: its characters times a
-  /// cell (a character outside the face's cell, such as a wide CJK glyph,
-  /// counts two; a direction mark or isolate, none).
+  /// The width of [text] set in this grid's face, rounded up to whole
+  /// cells: each character the face draws is a cell (a wide CJK glyph two; a
+  /// direction mark or isolate none), and a run of letters no Terminal face
+  /// draws (Arabic, the Indic scripts, Thai, ...: the platform draws them in
+  /// a proportional face) is measured as it is drawn now. Where that face
+  /// arrives late (the web fetches it once a word needs it), [TermTheme]
+  /// builds what reads its grid again, and this measures the face that came.
   double widthOf(String text) {
     var count = 0;
+    var drawn = 0.0;
+    final run = StringBuffer();
+    void close() {
+      if (run.isEmpty) return;
+      drawn += _measure(run.toString());
+      run.clear();
+    }
+
     for (final rune in text.runes) {
-      if (_isFormat(rune)) continue;
+      if (_isFormat(rune)) {
+        // A joiner or a mark inside a run shapes it; elsewhere it is nothing.
+        if (run.isNotEmpty) run.writeCharCode(rune);
+        continue;
+      }
+      if (_isProportional(rune)) {
+        run.writeCharCode(rune);
+        continue;
+      }
+      close();
       count += _isWide(rune) ? 2 : 1;
     }
-    return cols(count);
+    close();
+    return drawn == 0 ? cols(count) : ceilToCols(cols(count) + drawn);
   }
+
+  // [run]'s width at this grid's size, set as the theme sets its words: in
+  // the face and its fallbacks, then the platform's face for the script.
+  // Measured each time, never kept: on the web the script's face arrives
+  // after the first frame, and a width kept from before it would stand.
+  double _measure(String run) {
+    final face = _face ?? TermFace.jetBrainsMono;
+    final painter = TextPainter(
+      text: TextSpan(
+        text: run,
+        style: TextStyle(
+          fontFamily: face.family,
+          fontFamilyFallback: face.fallback,
+          package: face.package,
+          fontSize: fontSize,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
+  }
+
+  // A letter of a script no Terminal face draws: Armenian, Arabic, Syriac,
+  // Thaana, N'Ko, the Indic scripts, Thai, Lao, Tibetan, Myanmar, Georgian,
+  // Ethiopic and on to Mongolian, and Arabic's presentation forms. Hebrew is
+  // not one: Liberation Mono, the face's fallback, draws it on the cell.
+  static bool _isProportional(int rune) =>
+      (rune >= 0x0530 && rune <= 0x058F) ||
+      (rune >= 0x0600 && rune <= 0x10FF) ||
+      (rune >= 0x1160 && rune <= 0x18AF) ||
+      (rune >= 0xFB50 && rune <= 0xFDFF) ||
+      (rune >= 0xFE70 && rune <= 0xFEFC);
 
   /// [text] whole where it fits in [width] (or [width] is unbounded), else
   /// cut to the whole characters that fit and an ellipsis (`…`), as a
@@ -128,7 +190,7 @@ class TermGrid with Diagnosticable {
   /// This grid grown by [factor]: the words, the cell and the line together.
   TermGrid scaled(double factor) => factor == 1
       ? this
-      : TermGrid._(fontSize * factor, lineHeight * factor, advance);
+      : TermGrid._(fontSize * factor, lineHeight * factor, advance, _face);
 
   /// The theme's grid at [context], grown by the text scale the reader
   /// chose: every cell and line grows with the words, so layouts reflow by
@@ -144,6 +206,7 @@ class TermGrid with Diagnosticable {
     fontSize ?? this.fontSize,
     lineHeight ?? this.lineHeight,
     advance,
+    _face,
   );
 
   /// The grid [t] of the way from [a] to [b].
@@ -153,6 +216,7 @@ class TermGrid with Diagnosticable {
       lerpDouble(a.fontSize, b.fontSize, t)!,
       lerpDouble(a.lineHeight, b.lineHeight, t)!,
       lerpDouble(a.advance, b.advance, t)!,
+      t < 0.5 ? a._face : b._face,
     );
   }
 
@@ -161,10 +225,11 @@ class TermGrid with Diagnosticable {
       other is TermGrid &&
       other.fontSize == fontSize &&
       other.lineHeight == lineHeight &&
-      other.advance == advance;
+      other.advance == advance &&
+      other._face == _face;
 
   @override
-  int get hashCode => Object.hash(fontSize, lineHeight, advance);
+  int get hashCode => Object.hash(fontSize, lineHeight, advance, _face);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

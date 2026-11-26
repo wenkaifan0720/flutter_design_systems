@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/digits.dart';
 import '../internal/menu_marks.dart';
 import '../internal/shell_face.dart';
 import '../primitives/control.dart';
@@ -57,7 +58,7 @@ class TermBreadcrumb extends StatelessWidget {
       explicitChildNodes: true,
       child: Directionality(
         textDirection: TextDirection.ltr,
-        child: Wrap(
+        child: RawChipGroup(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             for (final (i, crumb) in crumbs.indexed) ...[
@@ -816,7 +817,7 @@ class TermNavigationRail extends StatelessWidget {
                       style: theme.boldStyle.copyWith(color: words),
                     ),
                     Text(
-                      '${i + 1}',
+                      termDigits(RawWidgetsLocalizations.of(context), i + 1),
                       style: theme.textStyle.copyWith(
                         color: lit
                             ? words

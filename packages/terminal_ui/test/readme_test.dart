@@ -20,11 +20,8 @@ void rollBack() {}
 // "Make it yours".
 (TermThemeData, Widget) makeItYours() {
   final base = TermThemeData.dark(
-    // Your brand's colour, pulled until it reads at 4.5:1 on the background.
-    accent: termReadable(
-      const Color(0xFF0A7D4F),
-      on: TermPalette.night.background,
-    ),
+    // Your brand's colour; the theme steps it until it reads at 4.5:1.
+    accent: const Color(0xFF0A7D4F),
   );
 
   final theme = base.copyWith(
@@ -74,7 +71,7 @@ void main() {
   test('the brand reads at 4.5:1 and every primary button is magenta', () {
     final (theme, _) = makeItYours();
     expect(
-      termContrast(theme.accent, theme.background),
+      RawPalette.contrastRatio(theme.accent, theme.background),
       greaterThanOrEqualTo(4.5),
     );
     expect(

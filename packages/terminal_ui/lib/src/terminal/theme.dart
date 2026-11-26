@@ -3,8 +3,6 @@
 /// immutable [TermThemeData] under a [TermTheme].
 library;
 
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 // One line, so a tool that copies this file into an app and reads its
 // imports a line at a time keeps it whole.
@@ -108,27 +106,26 @@ enum TermStroke {
 }
 
 /// The contrast ratio of [a] against [b], 1 to 21, as WCAG reckons it.
-double termContrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-}
+@Deprecated(
+  "Use ui_core's RawPalette.contrastRatio, the same ratio. It goes in 0.7.0.",
+)
+double termContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
 
 /// [color] stepped lighter (on a dark [on]) or darker (on a light one) in
 /// its own hue until it reads at [ratio] on [on]: a brand colour made fit
 /// to be Terminal's accent.
-///
-/// ```dart
-/// final accent = termReadable(const Color(0xFF0A7D4F), on: TermPalette.night.background);
-/// ```
+@Deprecated(
+  "TermThemeData.from steps its accent itself; for another colour use ui_core's "
+  'RawPalette.readableTone, which keeps the hue. It goes in 0.7.0.',
+)
 Color termReadable(Color color, {required Color on, double ratio = 4.5}) {
-  if (termContrast(color, on) >= ratio) return color;
+  if (RawPalette.contrastRatio(color, on) >= ratio) return color;
   final toward = on.computeLuminance() < 0.18
       ? const Color(0xFFFFFFFF)
       : const Color(0xFF000000);
   for (var t = 0.02; t <= 1.0; t += 0.02) {
     final c = Color.lerp(color, toward, t)!;
-    if (termContrast(c, on) >= ratio) return c;
+    if (RawPalette.contrastRatio(c, on) >= ratio) return c;
   }
   return toward;
 }
@@ -138,7 +135,8 @@ Color termReadable(Color color, {required Color on, double ratio = 4.5}) {
 /// style for each part.
 ///
 /// [TermThemeData.dark] (the night palette, Terminal's default) and
-/// [TermThemeData.light] (paper) are its presets; [TermThemeData.from] takes
+/// [TermThemeData.light] (paper) are its own; [TermThemeData.preset] names
+/// six palettes, each by day and by night; [TermThemeData.from] takes
 /// any [TermPalette], which ANSI slot is the accent or a brand colour for
 /// it, a face and a stroke, and holds the palette's contrast. Read the
 /// theme in force with [TermTheme.of].
@@ -243,9 +241,11 @@ class TermThemeData with Diagnosticable {
   /// info blue; dim words are bright black; a frame's line is a step
   /// between dim and the background, still 3:1 on it, as an edge must be.
   ///
-  /// The accent must read at 4.5:1 on the background, the palette's own
-  /// rule: a debug build asserts it (take [termReadable] of a brand colour
-  /// that falls short).
+  /// The accent is drawn as words on the background and on [surface], so
+  /// it reads at 4.5:1 on both: an accent that falls short is stepped
+  /// lighter (on a dark palette) or darker in its own hue until it does, as
+  /// [RawPalette.readableTone] steps a colour. The words on it are the
+  /// background's colour or the words', whichever reads better.
   factory TermThemeData.from(
     TermPalette palette, {
     Brightness brightness = Brightness.dark,
@@ -257,26 +257,6 @@ class TermThemeData with Diagnosticable {
   }) {
     final dark = brightness == Brightness.dark;
     final bg = palette.background;
-    final ink = accent ?? accentSlot.of(palette);
-    assert(
-      termContrast(ink, bg) >= 4.5,
-      "Terminal's accent reads at 4.5:1 or more on the background (the "
-      "palette's rule): ${_hex(ink)} is "
-      '${termContrast(ink, bg).toStringAsFixed(2)}:1 on ${_hex(bg)}. Take '
-      'termReadable(${_hex(ink)}, on: ${_hex(bg)}).',
-    );
-    // The words on the accent: the palette's ground or its ink, whichever
-    // reads better.
-    final onAccent =
-        termContrast(bg, ink) >= termContrast(palette.foreground, ink)
-        ? bg
-        : palette.foreground;
-    assert(
-      termContrast(onAccent, ink) >= 4.5,
-      'Words on the accent read at 4.5:1 or more: on ${_hex(ink)} neither '
-      "the palette's ground nor its ink does. Take a darker or lighter "
-      'accent.',
-    );
     final Color surface;
     final Color rule;
     if (palette == TermPalette.night) {
@@ -288,13 +268,25 @@ class TermThemeData with Diagnosticable {
     } else {
       // Another palette: the surface a step off the ground toward the
       // words, the rule a step toward the dim words, raised to 3:1.
-      surface = Color.lerp(bg, palette.foreground, dark ? 0.05 : 0.06)!;
-      rule = termReadable(
+      surface = _surfaceOf(palette, dark: dark);
+      rule = RawPalette.readableTone(
         Color.lerp(bg, palette.brightBlack, 0.7)!,
-        on: bg,
+        on: [bg, surface],
         ratio: 3,
       );
     }
+    final ink = RawPalette.readableTone(
+      accent ?? accentSlot.of(palette),
+      on: [bg, surface],
+    );
+    // The words on the accent: the palette's ground or its words, whichever
+    // reads better. The accent reads at 4.5:1 on the ground, so the ground
+    // reads at 4.5:1 on it.
+    final onAccent =
+        RawPalette.contrastRatio(bg, ink) >=
+            RawPalette.contrastRatio(palette.foreground, ink)
+        ? bg
+        : palette.foreground;
     return TermThemeData.raw(
       brightness: brightness,
       palette: palette,
@@ -356,21 +348,176 @@ class TermThemeData with Diagnosticable {
     Brightness brightness = Brightness.dark,
     TermGrid grid = const TermGrid(),
     TermFace face = TermFace.jetBrainsMono,
+  }) => TermThemeData.from(
+    brightness == Brightness.dark ? TermPalette.night : TermPalette.paper,
+    brightness: brightness,
+    grid: grid,
+    face: face,
+  )._inOneInk();
+
+  /// Terminal's six palettes, each by day and by night, as
+  /// [TermThemeData.preset] names them. `standard` is Terminal's own
+  /// ([TermThemeData.dark] by night, [TermThemeData.light] by day, a cyan
+  /// accent); `harbor` a navy screen with a blue accent; `dusk` a plum
+  /// screen with a magenta accent; and three draw in one ink, as a
+  /// monochrome terminal does: `mono` ([TermThemeData.monochrome]),
+  /// `phosphor` (green) and `amber`.
+  static const List<String> presets = [
+    'standard',
+    'harbor',
+    'dusk',
+    'mono',
+    'phosphor',
+    'amber',
+  ];
+
+  /// The palette [id], one of [presets], for [brightness].
+  ///
+  /// ```dart
+  /// TermTheme(
+  ///   data: TermThemeData.preset('amber', MediaQuery.platformBrightnessOf(context)),
+  ///   child: child,
+  /// )
+  /// ```
+  factory TermThemeData.preset(
+    String id,
+    Brightness brightness, {
+    TermGrid grid = const TermGrid(),
+    TermFace face = TermFace.jetBrainsMono,
+    TermStroke stroke = TermStroke.light,
   }) {
-    final base = TermThemeData.from(
-      brightness == Brightness.dark ? TermPalette.night : TermPalette.paper,
-      brightness: brightness,
-      grid: grid,
-      face: face,
+    final dark = brightness == Brightness.dark;
+    final own = dark ? TermPalette.night : TermPalette.paper;
+    TermThemeData of(TermPalette palette, TermAnsi accent) =>
+        TermThemeData.from(
+          palette,
+          brightness: brightness,
+          accentSlot: accent,
+          grid: grid,
+          face: face,
+          stroke: stroke,
+        );
+    return switch (id) {
+      'standard' => of(own, TermAnsi.cyan),
+      'harbor' => of(
+        _screen(
+          own,
+          dark: dark,
+          hue: const Color(0xFF2F6FD6),
+          ground: dark ? 14 : 6,
+          groundTone: dark ? 10 : null,
+          words: 6,
+        ),
+        TermAnsi.blue,
+      ),
+      'dusk' => of(
+        _screen(
+          own,
+          dark: dark,
+          hue: const Color(0xFF9B4DB8),
+          ground: dark ? 12 : 5,
+          groundTone: dark ? 10 : null,
+          words: 6,
+        ),
+        TermAnsi.magenta,
+      ),
+      'mono' => of(own, TermAnsi.cyan)._inOneInk(),
+      'phosphor' => of(
+        _screen(
+          own,
+          dark: dark,
+          hue: const Color(0xFF3FBF5F),
+          ground: 8,
+          words: 40,
+          wordsTone: dark ? null : 28,
+        ),
+        TermAnsi.green,
+      )._inOneInk(),
+      'amber' => of(
+        _screen(
+          own,
+          dark: dark,
+          hue: const Color(0xFFF0A030),
+          ground: 8,
+          words: 50,
+          wordsTone: dark ? 78 : 30,
+        ),
+        TermAnsi.yellow,
+      )._inOneInk(),
+      _ => throw ArgumentError.value(
+        id,
+        'id',
+        'not one of ${presets.join(', ')}',
+      ),
+    };
+  }
+
+  // This theme drawn in its words' one ink: the accent and every tone.
+  TermThemeData _inOneInk() => copyWith(
+    accent: foreground,
+    onAccent: background,
+    success: foreground,
+    danger: foreground,
+    warning: foreground,
+    info: foreground,
+  );
+
+  // The surface of a palette Terminal didn't design: a step off the ground
+  // toward the words.
+  static Color _surfaceOf(TermPalette palette, {required bool dark}) =>
+      Color.lerp(palette.background, palette.foreground, dark ? 0.05 : 0.06)!;
+
+  // [own]'s screen in [hue]: its ground and its words at their own tones (or
+  // [groundTone] and [wordsTone]) with [ground] and [words] chroma, the dim words between,
+  // and every colour stepped until it reads at 4.5:1 on the new ground and
+  // its surface.
+  static TermPalette _screen(
+    TermPalette own, {
+    required bool dark,
+    required Color hue,
+    required double ground,
+    required double words,
+    double? groundTone,
+    double? wordsTone,
+  }) {
+    final h = RawHct.fromColor(hue);
+    Color at(Color c, double chroma, [double? tone]) => h
+        .withChroma(chroma)
+        .withTone(tone ?? RawHct.fromColor(c).tone)
+        .toColor();
+    final bg = at(own.background, ground, groundTone);
+    final fg = RawPalette.readableTone(
+      at(own.foreground, words, wordsTone),
+      on: [bg],
+      ratio: 7,
     );
-    final ink = base.foreground;
-    return base.copyWith(
-      accent: ink,
-      onAccent: base.background,
-      success: ink,
-      danger: ink,
-      warning: ink,
-      info: ink,
+    final grounds = [
+      bg,
+      _surfaceOf(
+        TermPalette.night.copyWith(background: bg, foreground: fg),
+        dark: dark,
+      ),
+    ];
+    Color fit(Color c) => RawPalette.readableTone(c, on: grounds);
+    return own.copyWith(
+      background: bg,
+      foreground: fg,
+      black: at(own.black, ground),
+      red: fit(own.red),
+      green: fit(own.green),
+      yellow: fit(own.yellow),
+      blue: fit(own.blue),
+      magenta: fit(own.magenta),
+      cyan: fit(own.cyan),
+      white: fit(at(own.white, words / 2)),
+      brightBlack: fit(at(own.brightBlack, words / 3)),
+      brightRed: fit(own.brightRed),
+      brightGreen: fit(own.brightGreen),
+      brightYellow: fit(own.brightYellow),
+      brightBlue: fit(own.brightBlue),
+      brightMagenta: fit(own.brightMagenta),
+      brightCyan: fit(own.brightCyan),
+      brightWhite: fit(at(own.brightWhite, words / 2)),
     );
   }
 
@@ -380,9 +527,6 @@ class TermThemeData with Diagnosticable {
       brightness == Brightness.dark
       ? TermThemeData.dark()
       : TermThemeData.light();
-
-  static String _hex(Color c) =>
-      '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
 
   /// Whether this is a dark or a light theme.
   final Brightness brightness;
@@ -1504,22 +1648,68 @@ abstract final class TermMotion {
 }
 
 class _TermScope extends InheritedTheme {
-  const _TermScope({required this.data, required super.child});
+  const _TermScope({
+    required this.data,
+    required this.fonts,
+    required super.child,
+  });
 
   final TermThemeData data;
 
-  @override
-  Widget wrap(BuildContext context, Widget child) =>
-      _TermScope(data: data, child: child);
+  // How many times the platform's fonts have changed under this theme.
+  final int fonts;
 
   @override
-  bool updateShouldNotify(_TermScope oldWidget) => oldWidget.data != data;
+  Widget wrap(BuildContext context, Widget child) =>
+      _TermScope(data: data, fonts: fonts, child: child);
+
+  @override
+  bool updateShouldNotify(_TermScope oldWidget) =>
+      oldWidget.data != data || oldWidget.fonts != fonts;
+}
+
+// The theme's scope, given again when the platform's fonts change (the web
+// fetches a script's face once a word needs it), so what measured words in
+// the face before it came (TermGrid.widthOf) measures them again.
+class _TermFonts extends StatefulWidget {
+  const _TermFonts({required this.data, required this.child});
+
+  final TermThemeData data;
+  final Widget child;
+
+  @override
+  State<_TermFonts> createState() => _TermFontsState();
+}
+
+class _TermFontsState extends State<_TermFonts> {
+  var _fonts = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    PaintingBinding.instance.systemFonts.addListener(_changed);
+  }
+
+  @override
+  void dispose() {
+    PaintingBinding.instance.systemFonts.removeListener(_changed);
+    super.dispose();
+  }
+
+  void _changed() => setState(() => _fonts++);
+
+  @override
+  Widget build(BuildContext context) =>
+      _TermScope(data: widget.data, fonts: _fonts, child: widget.child);
 }
 
 /// Puts Terminal's look over [child]: its theme, the grid grown by the
 /// reader's text scale, its tap floors (two lines for a finger, one for a
 /// pointer), its words' default style, and the Material theme under its
-/// text fields pinned so no platform density moves them.
+/// text fields pinned so no platform density moves them. When the
+/// platform's fonts change (the web fetches a script's face once a word
+/// needs it), what reads the theme builds again, so a part sized on
+/// [TermGrid.widthOf] is sized on the face that came.
 ///
 /// Put it in an app's `builder:`, so routes and overlays stand inside it.
 ///
@@ -1638,7 +1828,7 @@ class TermTheme extends StatelessWidget {
             : Directionality(textDirection: direction, child: under),
       );
     }
-    Widget result = _TermScope(
+    Widget result = _TermFonts(
       data: data,
       child: Theme(
         data: material,

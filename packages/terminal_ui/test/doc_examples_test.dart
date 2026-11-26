@@ -726,13 +726,13 @@ final Map<String, DocExample> _examples = {
     final ink = own.foreground ?? theme.foreground;
     return ink;
   },
-  "theme.dart:124": (context) {
-    final accent = termReadable(
-      const Color(0xFF0A7D4F),
-      on: TermPalette.night.background,
-    );
-    return accent;
-  },
+  "TermThemeData.preset": (context) => TermTheme(
+    data: TermThemeData.preset(
+      'amber',
+      MediaQuery.platformBrightnessOf(context),
+    ),
+    child: child,
+  ),
   "theme.dart:162": (context) {
     final theme =
         TermThemeData.from(

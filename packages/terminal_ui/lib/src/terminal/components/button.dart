@@ -134,9 +134,11 @@ class TermButton extends StatelessWidget {
               if (disabled) {
                 fill = filled ? theme.rule.withValues(alpha: 0.35) : null;
                 words = filled
-                    ? termReadable(
+                    ? RawPalette.readableTone(
                         theme.dim,
-                        on: Color.alphaBlend(own.fill ?? fill!, theme.surface),
+                        on: [
+                          Color.alphaBlend(own.fill ?? fill!, theme.surface),
+                        ],
                       )
                     : theme.rule;
                 brackets = theme.rule.withValues(alpha: 0.6);

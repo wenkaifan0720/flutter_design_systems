@@ -601,8 +601,14 @@ class TermDataTable<R> extends StatelessWidget {
 
 /// The shade a selected row sits on: the rule's ink, faint, over the
 /// background.
-Color termRowShade(TermThemeData theme) =>
-    Color.alphaBlend(theme.rule.withValues(alpha: 0.35), theme.background);
+Color termRowShade(TermThemeData theme) => Color(
+  // On whole 8-bit channels, as the screen draws it, so the words measured
+  // on it read on the shade the screen shows.
+  Color.alphaBlend(
+    theme.rule.withValues(alpha: 0.35),
+    theme.background,
+  ).toARGB32(),
+);
 
 /// A rule across the line (or down it, [TermDivider.vertical]), at the
 /// theme's stroke; with [label], `label ──────`.
@@ -1406,8 +1412,8 @@ class TermAvatar extends StatelessWidget {
         own.fill ?? _avatarSlots[hash % _avatarSlots.length].of(theme.palette);
     final words =
         own.foreground ??
-        (termContrast(theme.background, ground) >=
-                termContrast(theme.foreground, ground)
+        (RawPalette.contrastRatio(theme.background, ground) >=
+                RawPalette.contrastRatio(theme.foreground, ground)
             ? theme.background
             : theme.foreground);
     return Semantics(
@@ -1550,8 +1556,9 @@ class TermMedia extends StatelessWidget {
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.mediaStyle], const {});
     final cw = grid.cellWidth;
+    final ground = own.fill ?? termRowShade(theme);
     final shade = ColoredBox(
-      color: own.fill ?? termRowShade(theme),
+      color: ground,
       child: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: cw),
@@ -1560,7 +1567,15 @@ class TermMedia extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: theme.textStyle.copyWith(color: own.foreground ?? theme.dim),
+            // The dim words, stepped until they read on the shade.
+            style: theme.textStyle.copyWith(
+              color:
+                  own.foreground ??
+                  RawPalette.readableTone(
+                    theme.dim,
+                    on: [Color.alphaBlend(ground, theme.background)],
+                  ),
+            ),
           ),
         ),
       ),

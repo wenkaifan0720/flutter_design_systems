@@ -20,11 +20,9 @@ Widget kitPrimitivesDemo(Brightness brightness) => kitScreen(
         Builder(
           builder: (context) {
             final base = TermTheme.of(context);
-            // A brand's green, pulled until it reads on the background.
-            final brand = termReadable(
-              const Color(0xFF0A7D4F),
-              on: base.palette.background,
-            );
+            // A brand's green: the theme steps it until it reads on the
+            // background and the surface.
+            const brand = Color(0xFF0A7D4F);
             final data = base.brightness == Brightness.dark
                 ? TermThemeData.dark(accent: brand)
                 : TermThemeData.light(accent: brand);

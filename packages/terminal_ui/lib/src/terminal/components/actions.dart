@@ -52,7 +52,7 @@ class TermButtonGroup extends StatelessWidget {
       container: true,
       explicitChildNodes: true,
       label: semanticLabel,
-      child: Wrap(
+      child: RawChipGroup(
         spacing: grid.cellWidth,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: children,
