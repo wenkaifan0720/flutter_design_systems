@@ -1,3 +1,9 @@
+## 0.6.1
+
+- The README opens with a first app of twelve lines (`example/lib/minimal.dart`, which the example's analysis
+  compiles); the fuller setup, which loads the fonts before the first frame, follows under Theme setup.
+- Needs ui_core_test 0.5.3 for the checks.
+
 ## 0.6.0
 
 - Needs ui_core 0.7.2 (ui_core_test 0.5.2 for the checks).

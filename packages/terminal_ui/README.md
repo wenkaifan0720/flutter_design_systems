@@ -10,15 +10,43 @@ selection and keys beside every action.
 [API reference](https://pub.dev/documentation/terminal_ui/latest/) ·
 [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
-## Getting started
+## Install
 
 ```sh
 flutter pub add terminal_ui material_ui
 ```
 
+or, under `dependencies:` in `pubspec.yaml`, `terminal_ui: ^0.6.0` and `material_ui: ^1.9.0`.
+
+The examples use `MaterialApp` from `material_ui`. A `CupertinoApp` or a `WidgetsApp` takes Terminal the same way
+(see [CupertinoApp and WidgetsApp](#cupertinoapp-and-widgetsapp)).
+
+## A first app
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:terminal_ui/terminal_ui.dart';
+
+void main() => runApp(
+  MaterialApp(
+    builder: (context, child) =>
+        TermTheme(data: TermThemeData.dark(), child: child!),
+    home: Center(
+      child: TermButton.filled(label: 'deploy', onPressed: () {}),
+    ),
+  ),
+);
+```
+
+`TermTheme` gives every route under it Terminal's theme: its palette, its character grid, its text style and its page
+motion. The button stands on the window itself; a `TermScaffold` (or a Material `Scaffold`) paints the palette's
+ground. The setup below also loads the bundled monospace fonts before the first frame, so nothing is measured in a
+fallback face, and puts the button in a pane.
+
+## Theme setup
+
 Load the bundled monospace fonts before the first frame. Wrap the app in
-`TermTheme` to set its palette and grid. This example uses `material_ui`
-for the app shell.
+`TermTheme` to set its palette and grid.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -83,7 +111,7 @@ WidgetsApp(
 
 Terminal routes open with a brief fade and pop with a cut. Tabs and side
 panes switch in place. Set `pageTransitionsTheme` on the app's
-`ThemeData`, as in the example above, to give routes pushed by its
+`ThemeData`, as in Theme setup above, to give routes pushed by its
 navigator the same transition. Alternatively, push a `TermPageRoute`
 to use the transition for one route.
 

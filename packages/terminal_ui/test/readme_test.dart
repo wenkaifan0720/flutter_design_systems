@@ -1,10 +1,14 @@
 // The README's examples, as they are written there: if one stops compiling
-// or stops doing what the README says, this fails.
+// or stops doing what the README says, this fails. Its first Dart block is the
+// minimal app: example/lib/minimal.dart word for word, which the example's
+// analysis compiles; 12 lines or fewer, on the look's theme.
+import 'dart:io';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
-// "Getting started".
+// "Theme setup".
 class Deploy extends StatelessWidget {
   const Deploy({super.key});
 
@@ -56,7 +60,33 @@ TermThemeData withHover() => TermThemeData.dark().copyWith(
 );
 
 void main() {
-  testWidgets('getting started builds', (tester) async {
+  test("the README's first Dart block is example/lib/minimal.dart", () {
+    final readme = File('README.md').readAsStringSync();
+    final block = RegExp(r'```dart\n([\s\S]*?)```')
+        .firstMatch(readme)!
+        .group(1)!;
+    expect(block, File('example/lib/minimal.dart').readAsStringSync());
+    expect(block.trimRight().split('\n').length, lessThanOrEqualTo(12));
+    expect(block, contains("import 'package:terminal_ui/terminal_ui.dart';"));
+    expect(block, contains('runApp('));
+    expect(block, contains('TermThemeData'));
+  });
+
+  testWidgets('the first app builds', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) =>
+            TermTheme(data: TermThemeData.dark(), child: child!),
+        home: Center(
+          child: TermButton.filled(label: 'deploy', onPressed: () {}),
+        ),
+      ),
+    );
+    expect(find.textContaining('deploy'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the theme setup builds', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         builder: (context, child) =>
