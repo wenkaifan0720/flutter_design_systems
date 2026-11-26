@@ -601,7 +601,6 @@ ComicThemeData _appearance(Brightness mode) {
     shapes: ComicShapes.rounded(8),
     strokes: ComicStrokes.bold,
     density: ComicDensity.compact,
-    typeface: const ComicTypeface(scale: 1.15),
     filledButtonTheme: ComicStyle(
       shape: WidgetStateProperty.resolveWith(
         (states) =>

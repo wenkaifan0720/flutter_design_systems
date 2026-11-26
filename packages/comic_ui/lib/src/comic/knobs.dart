@@ -19,16 +19,6 @@ import 'fonts.dart';
 /// ```
 @immutable
 class ComicStrokes with Diagnosticable {
-  /// The named widths; null keeps the look's.
-  @Deprecated(
-    'Use ComicStrokes.standard or ComicStrokes.bold instead: Comic inks in two weights. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  const ComicStrokes({this.hairline, this.regular, this.heavy})
-    : assert(hairline == null || hairline > 0),
-      assert(regular == null || regular > 0),
-      assert(heavy == null || heavy > 0);
-
   const ComicStrokes._({this.hairline, this.regular, this.heavy});
 
   /// The look's own ink: each part's contour as it was drawn, with heavier focus marks. A theme's default.
@@ -39,17 +29,6 @@ class ComicStrokes with Diagnosticable {
     hairline: 3,
     regular: 4,
     heavy: 5,
-  );
-
-  /// The look's widths as one even line: 2, 2.5 and 3.
-  @Deprecated(
-    'Use ComicStrokes.standard instead: the look\'s own contours, part by part. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  static const ComicStrokes look = ComicStrokes._(
-    hairline: 2,
-    regular: 2.5,
-    heavy: 3,
   );
 
   /// The rules inside a part.
@@ -63,18 +42,6 @@ class ComicStrokes with Diagnosticable {
 
   /// True when every width is null.
   bool get isEmpty => hairline == null && regular == null && heavy == null;
-
-  /// This with the named widths changed.
-  @Deprecated(
-    'Use ComicStrokes.standard or ComicStrokes.bold instead: Comic inks in two weights. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  ComicStrokes copyWith({double? hairline, double? regular, double? heavy}) =>
-      ComicStrokes._(
-        hairline: hairline ?? this.hairline,
-        regular: regular ?? this.regular,
-        heavy: heavy ?? this.heavy,
-      );
 
   /// Between [a] and [b]; a null width counts as the look's.
   static ComicStrokes lerp(ComicStrokes a, ComicStrokes b, double t) {
@@ -109,9 +76,9 @@ class ComicStrokes with Diagnosticable {
 }
 
 /// How compact the controls stand, as Material's `VisualDensity`: each step of [vertical] takes 4 from a control's
-/// height and each step of [horizontal] 2 from its padding at either side, from -4 (tightest) to 4 (roomiest). The touch
-/// target does not move: 48 where a touch reaches the control, 44 elsewhere, whatever the density, so a compact face
-/// stands in the same target with room around it.
+/// height and each step of [horizontal] 2 from its padding at either side, from -4 (tightest) to 4 (roomiest). The tap
+/// target does not move: the floor in force ([ComicTapTarget.targetOf]) whatever the density, so a compact face stands
+/// in the same target with room around it.
 ///
 /// ```dart
 /// final theme = ComicThemeData.offset().copyWith(density: ComicDensity.compact);
@@ -199,10 +166,6 @@ class ComicDensity with Diagnosticable {
   }
 }
 
-const String _scaleGone =
-    'Use the platform text scaling (MediaQuery.textScaler) instead: it serves readers without breaking the '
-    'lettering. This feature was deprecated after v0.2.0.';
-
 /// The two faces the type is set in: [display] for heads, numerals and the balance (the look's Bangers), [text] for
 /// everything read (the look's ShantellSans), each from [displayPackage] and [textPackage] (the package that bundles it,
 /// null for the app's own fonts). The look's faces are the default; an app's own fonts work when it declares them in
@@ -222,16 +185,14 @@ class ComicTypeface with Diagnosticable {
     this.text = 'ShantellSans',
     this.displayPackage = comicFontPackage,
     this.textPackage = comicFontPackage,
-    @Deprecated(_scaleGone) this.scale = 1,
     this.displayCapHeight = 0.721,
     this.textCapHeight = 0.700,
-  }) : assert(scale > 0);
+  });
 
   /// The app's own faces, from its own assets: no package.
   const ComicTypeface.app({
     required this.display,
     required this.text,
-    @Deprecated(_scaleGone) this.scale = 1,
     this.displayCapHeight = 0.7,
     this.textCapHeight = 0.7,
   }) : displayPackage = null,
@@ -252,13 +213,6 @@ class ComicTypeface with Diagnosticable {
   /// The package that bundles [text]; null for the app's own.
   final String? textPackage;
 
-  /// Every size times this.
-  @Deprecated(
-    'Use the platform text scaling (MediaQuery.textScaler) instead: it serves readers without breaking the '
-    'lettering. This feature was deprecated after v0.2.0.',
-  )
-  final double scale;
-
   /// The height of [display]'s capitals as a fraction of its size: the font's OS/2 `sCapHeight` over its
   /// `unitsPerEm` (Bangers 0.721). A control's one-line label is drawn with its capitals on its face's middle by it.
   final double displayCapHeight;
@@ -270,7 +224,6 @@ class ComicTypeface with Diagnosticable {
   ComicTypeface copyWith({
     String? display,
     String? text,
-    @Deprecated(_scaleGone) double? scale,
     double? displayCapHeight,
     double? textCapHeight,
   }) => ComicTypeface(
@@ -278,12 +231,11 @@ class ComicTypeface with Diagnosticable {
     text: text ?? this.text,
     displayPackage: displayPackage,
     textPackage: textPackage,
-    scale: scale ?? this.scale,
     displayCapHeight: displayCapHeight ?? this.displayCapHeight,
     textCapHeight: textCapHeight ?? this.textCapHeight,
   );
 
-  /// Between [a] and [b]: the scale eases, the faces change at the middle.
+  /// Between [a] and [b]: the faces change at the middle.
   static ComicTypeface lerp(ComicTypeface a, ComicTypeface b, double t) {
     if (identical(a, b) || t == 0) return a;
     if (t == 1) return b;
@@ -293,7 +245,6 @@ class ComicTypeface with Diagnosticable {
       text: faces.text,
       displayPackage: faces.displayPackage,
       textPackage: faces.textPackage,
-      scale: lerpDouble(a.scale, b.scale, t)!,
       displayCapHeight: faces.displayCapHeight,
       textCapHeight: faces.textCapHeight,
     );
@@ -306,7 +257,6 @@ class ComicTypeface with Diagnosticable {
       other.text == text &&
       other.displayPackage == displayPackage &&
       other.textPackage == textPackage &&
-      other.scale == scale &&
       other.displayCapHeight == displayCapHeight &&
       other.textCapHeight == textCapHeight;
 
@@ -316,7 +266,6 @@ class ComicTypeface with Diagnosticable {
     text,
     displayPackage,
     textPackage,
-    scale,
     displayCapHeight,
     textCapHeight,
   );
@@ -326,7 +275,6 @@ class ComicTypeface with Diagnosticable {
     super.debugFillProperties(properties);
     properties.add(StringProperty('display', display));
     properties.add(StringProperty('text', text));
-    properties.add(DoubleProperty('scale', scale, defaultValue: 1));
     properties.add(DoubleProperty('displayCapHeight', displayCapHeight));
     properties.add(DoubleProperty('textCapHeight', textCapHeight));
   }

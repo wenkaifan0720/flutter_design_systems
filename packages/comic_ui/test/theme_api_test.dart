@@ -31,12 +31,17 @@ void main() {
       expect(ComicThemeData.newsstand().id, 'newsstand');
       expect(ComicThemeData.pulp().id, 'pulp');
       expect(ComicThemeData.sunday().id, 'sunday');
+      expect(
+        ComicThemeData.cosmic(Brightness.dark),
+        ComicThemeData.preset('cosmic', Brightness.dark),
+      );
       expect(ComicThemeData.presets, [
         'offset',
         'reprint',
         'newsstand',
         'pulp',
         'sunday',
+        'cosmic',
       ]);
     });
 

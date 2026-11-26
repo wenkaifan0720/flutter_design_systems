@@ -1,9 +1,8 @@
 // Comic on each platform's own terms, by behaviour. Android: the system back closes what is raised (a dialog, a
 // bottom sheet, a side sheet, a drawer, a menu) before it pops the page under it. A desk (macOS, Windows, Linux, and
 // the web on them): the Tab key reaches every control that takes input and passes over one that is off, the pointer
-// turns to a hand over what presses and to a text cursor over a field, and the controls stand on the pointer's floor,
-// smaller than a finger's. (iOS's edge swipe: page_motion_test.dart.)
-import 'package:flutter/foundation.dart' show defaultTargetPlatform;
+// turns to a hand over what presses and to a text cursor over a field, and the controls stand on Comic's one floor, a
+// finger's and a pointer's alike. (iOS's edge swipe: page_motion_test.dart.)
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show RendererBinding;
@@ -317,12 +316,13 @@ void main() {
   );
 
   testWidgets(
-    "the controls stand on the pointer's floor at a desk and the finger's on a phone",
+    "the controls stand on Comic's one floor, 40, at a desk and on a phone",
     (tester) async {
       await tester.pumpWidget(comicApp(_controls()));
-      final desk = _desks.values.contains(defaultTargetPlatform);
-      final floor = desk ? ComicTapTarget.target : ComicTapTarget.touchTarget;
-      expect(ComicTapTarget.target, lessThan(ComicTapTarget.touchTarget));
+      // One floor for a finger and a pointer alike: ui_core's finger floor, 40.
+      final floor = ComicTapTarget.targets.touch.shortestSide;
+      expect(floor, 40);
+      expect(ComicTapTarget.targets.pointer, ComicTapTarget.targets.touch);
       final icon = tester.getSize(find.byKey(const ValueKey('icon button')));
       expect(icon.shortestSide, floor, reason: 'the icon button');
       for (final name in ['button', 'checkbox', 'switch', 'link', 'select']) {

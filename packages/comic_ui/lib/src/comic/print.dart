@@ -743,7 +743,7 @@ class RenderComicLettering extends RenderBox
   }
 
   (double, Size) _measure(BoxConstraints c) {
-    var size = _w.size * _typeface.scale;
+    var size = _w.size;
     final max = c.maxWidth.isFinite ? c.maxWidth : 100000.0;
     final tp = _painter(size, _w.fit ? 100000.0 : max, _c.paper, null);
     final natural = tp.width;
@@ -811,7 +811,7 @@ class RenderComicLettering extends RenderBox
       computeMaxIntrinsicWidth(height);
   @override
   double computeMaxIntrinsicWidth(double height) {
-    final tp = _painter(_w.size * _typeface.scale, 100000, _c.paper, null);
+    final tp = _painter(_w.size, 100000, _c.paper, null);
     final w = tp.width;
     tp.dispose();
     return w;
@@ -823,7 +823,7 @@ class RenderComicLettering extends RenderBox
   @override
   double computeMaxIntrinsicHeight(double width) {
     final tp = _painter(
-      _w.size * _typeface.scale,
+      _w.size,
       width.isFinite ? width : 100000,
       _c.paper,
       null,

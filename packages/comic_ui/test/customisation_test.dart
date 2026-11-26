@@ -60,11 +60,6 @@ void main() {
       motion: const ComicMotion(press: Duration(milliseconds: 300)),
     );
     expect(slow.motion.press, const Duration(milliseconds: 300));
-    expect(const ComicTypeface(scale: 1.1).scale, 1.1);
-    expect(ComicTypeface.look.copyWith(scale: .9).scale, .9);
-    expect(const ComicStrokes(regular: 2).regular, 2);
-    expect(ComicStrokes.standard.copyWith(heavy: 4).heavy, 4);
-    expect(ComicStrokes.look.regular, 2.5);
     // The two steps: the look's own contours (a theme's default) and bold.
     expect(ComicThemeData.offset().strokes, ComicStrokes.standard);
     expect(ComicStrokes.standard.isEmpty, isTrue);

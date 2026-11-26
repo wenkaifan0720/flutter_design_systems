@@ -5,7 +5,6 @@
 // moves on Comic's motion tokens.
 import 'package:flutter/foundation.dart';
 
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
@@ -41,27 +40,20 @@ extension ComicPressStates on Set<WidgetState> {
 }
 
 /// Minimum hit areas for Comic controls, in logical pixels.
-/// [ComicTheme] uses 44 for a pointer and 48 for touch. An enclosing
-/// [RawTapTargetScope] can supply different sizes.
+/// [ComicTheme] stands every control on ui_core's floor for a finger (40), under a pointer too: Comic's faces are
+/// drawn for a thumb on every platform. An enclosing [RawTapTargetScope] can supply different sizes.
 abstract final class ComicTapTarget {
-  /// Every control's least target for a pointer.
-  static const double target = 44;
-
-  /// Every control's least target for a finger: Android's 48, as Material's padded tap target.
-  static const double touchTarget = 48;
-
-  /// Comic's floors: [touchTarget] for a finger, [target] for a pointer, the input by platform.
-  static const RawTapTargets targets = RawTapTargets(
-    touch: Size.square(touchTarget),
-    pointer: Size.square(target),
+  /// Comic's floors: ui_core's finger floor, for a finger and for a pointer alike.
+  static final RawTapTargets targets = RawTapTargets(
+    pointer: RawTapTargets.fallback.touch,
   );
 
   /// Whether a finger reaches the controls at [context] (by the nearest [RawTapTargetScope], else by platform).
   static bool padded(BuildContext context) =>
       RawTapTargets.of(context).inputOn() == RawInput.touch;
 
-  /// The least target at [context]: the floor for what reaches the controls there, [touchTarget] or [target] under
-  /// Comic's own floors. None inside a row that takes the press itself (a check row's box).
+  /// The least target at [context]: the floor in force for what reaches the controls there (40 under Comic's own
+  /// floors). None inside a row that takes the press itself (a check row's box).
   static double targetOf(BuildContext context) => RowMark.inRow(context)
       ? 0
       : RawTapTargets.of(context).floorOn().shortestSide;
@@ -376,7 +368,7 @@ class ComicPressable extends StatelessWidget {
   /// Whether the face rises on an ink shadow and sinks when pressed.
   final bool plate;
 
-  /// A face under 44: its target is 44 round it on every platform (48 where a finger reaches it, as every press).
+  /// A face under the floor: its target is the floor round it, inside a row too ([ComicTapTarget.targetOf]).
   final bool target;
 
   /// Where the face stands in its target when the target is larger: centred, or on the edges named
@@ -727,10 +719,11 @@ class ComicPressFace extends StatelessWidget {
       face = ComicPlated(down: shown.pressed, shape: drawn, child: face);
     }
     if (target) {
+      final floor = RawTapTargets.of(context).floorOn();
       face = ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: ComicTapTarget.target,
-          minHeight: ComicTapTarget.target,
+        constraints: BoxConstraints(
+          minWidth: floor.width,
+          minHeight: floor.height,
         ),
         child: Center(widthFactor: 1, heightFactor: 1, child: face),
       );
@@ -1085,17 +1078,6 @@ class _InsetPrint extends CustomPainter {
       o.direction != direction;
 }
 
-/// Emanata at the corners of the focus ring Comic drew before its focus became the pop: each tick this many ring widths
-/// long and this fraction of its weight, [comicEmanataGap] clear of the ring, fanned [comicEmanataSpread] radians either
-/// side of the corner's diagonal.
-@Deprecated(
-  'Comic no longer draws a focus ring or its emanata: a focused part pops off its print.',
-)
-const double comicEmanataLength = 1.5,
-    comicEmanataWeight = .8,
-    comicEmanataGap = 1.5,
-    comicEmanataSpread = .5;
-
 /// The distance between a raised control and its hard shadow, in logical pixels.
 const double comicPressPlate = 3;
 
@@ -1348,8 +1330,7 @@ class _ScreenScope extends InheritedWidget {
 /// A focus print's ink on [ground]: the plate's, as every print in the comic, unless it would not show there (a
 /// caption's yellow at night); then the first of the comic's inks that reaches 3:1 on it, or the one that shows most.
 Color _printInk(ComicThemeData t, Color ground) {
-  final g = ground.computeLuminance();
-  double on(Color ink) => _contrastOf(ink.computeLuminance(), g);
+  double on(Color ink) => RawPalette.contrastRatio(ink, ground);
   final inks = [
     t.colors.nightLine,
     t.colors.onCaption,
@@ -1361,10 +1342,6 @@ Color _printInk(ComicThemeData t, Color ground) {
   }
   return inks.reduce((a, b) => on(a) >= on(b) ? a : b);
 }
-
-/// The contrast between two colours, as WCAG reckons it.
-double _contrastOf(double a, double b) =>
-    (math.max(a, b) + .05) / (math.min(a, b) + .05);
 
 // A decoration's ink fill: an opaque colour of its own, away from the paper, and the decoration without it.
 class _InkFill {
@@ -1408,8 +1385,7 @@ class _InkFill {
       _ => (null, null),
     };
     if (color == null || hollow == null || color.a < 1) return null;
-    if (_contrastOf(color.computeLuminance(), ground.computeLuminance()) <
-        _fromPaper) {
+    if (RawPalette.contrastRatio(color, ground) < _fromPaper) {
       return null;
     }
     return _InkFill(color, d, hollow);
@@ -1562,22 +1538,13 @@ class _RenderScreen extends RenderProxyBox {
   // contrast ratio against the ground the reader actually sees.
   Color _muted(Color fill) => Color.lerp(fill, _ground, .85)!;
 
-  Color _wordsOn() {
-    final grounds = [
-      _ground.computeLuminance(),
-      for (final (fill, _) in _fills) _muted(fill).computeLuminance(),
-    ];
-    for (var a = _target; a > 0; a -= .01) {
-      final words = Color.lerp(_ink, _ground, a)!;
-      final l = words.computeLuminance();
-      if (grounds.every(
-        (g) => _contrastOf(l, g) >= comicDisabledWordsContrast,
-      )) {
-        return words;
-      }
-    }
-    return _ink;
-  }
+  // The words screened back as far as [_target], or the nearest tone of them that still reads on every ground
+  // (ui_core's walk).
+  Color _wordsOn() => RawPalette.readableTone(
+    Color.lerp(_ink, _ground, _target)!,
+    on: [_ground, for (final (fill, _) in _fills) _muted(fill)],
+    ratio: comicDisabledWordsContrast,
+  );
 
   @override
   void paint(PaintingContext context, Offset offset) {

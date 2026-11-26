@@ -1103,7 +1103,7 @@ class ComicSwipeActions extends StatefulWidget {
   /// The commands behind its end edge.
   final List<RawSwipeAction> endActions;
 
-  /// Each command's width.
+  /// Each command's least width; a command whose words need more (at a large text size) takes what they need.
   final double actionExtent;
 
   /// Whether a slide all the way runs the first command.
@@ -1166,6 +1166,29 @@ class _ComicSwipeActionsState extends State<ComicSwipeActions> {
   // Whether the keyboard is in the row itself (not in its commands).
   bool _rowFocused = false;
 
+  // Each command is [ComicSwipeActions.actionExtent] wide, or as wide as its words (at their armed weight) and the
+  // plate's room either side of them, whichever is more: at a large text size a command grows rather than cutting its
+  // words at the plate's edges.
+  double _extent(BuildContext context, ComicThemeData t) {
+    var extent = widget.actionExtent;
+    for (final action in [...widget.startActions, ...widget.endActions]) {
+      final words = TextPainter(
+        text: TextSpan(
+          text: action.label,
+          style: t.type.small.copyWith(fontWeight: FontWeight.w700),
+        ),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        maxLines: 1,
+      )..layout();
+      if (words.width + 2 * ComicSpace.close > extent) {
+        extent = words.width + 2 * ComicSpace.close;
+      }
+      words.dispose();
+    }
+    return extent.ceilToDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
@@ -1177,7 +1200,7 @@ class _ComicSwipeActionsState extends State<ComicSwipeActions> {
         child: RawSwipeActions(
           startActions: widget.startActions,
           endActions: widget.endActions,
-          actionExtent: widget.actionExtent,
+          actionExtent: _extent(context, t),
           fullSwipe: widget.fullSwipe,
           onOpenChanged: widget.onOpenChanged,
           initiallyOpen: widget.initiallyOpen,

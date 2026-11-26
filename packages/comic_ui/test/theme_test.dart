@@ -91,13 +91,14 @@ final _custom = <String, ComicThemeData Function(Brightness)>{
 };
 
 void main() {
-  test('five presets, the default first', () {
+  test('six presets, the default first', () {
     expect(ComicThemeData.presets, [
       'offset',
       'reprint',
       'newsstand',
       'pulp',
       'sunday',
+      'cosmic',
     ]);
   });
 

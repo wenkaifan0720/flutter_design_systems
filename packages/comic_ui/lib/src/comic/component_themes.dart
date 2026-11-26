@@ -19,7 +19,7 @@ import 'package:ui_core/ui_core.dart';
 /// | [side] | the whole rim, colour and width; it wins over [edge] |
 /// | [shape] | the outline: Comic's panel, balloon or burst borders, or any [OutlinedBorder] |
 /// | [padding] | the room between the rim and what stands inside |
-/// | [minimumSize] | the least the face stands; the touch target stays 48 on touch, 44 elsewhere |
+/// | [minimumSize] | the least the face stands; the tap target stays the floor in force ([ComicTapTarget.targetOf]) |
 /// | [textStyle] | the words' style, merged over the look's (its colour comes from [foreground]) |
 /// | [iconSize] | an icon's size |
 ///

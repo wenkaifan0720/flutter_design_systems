@@ -508,8 +508,9 @@ void main() {
       final (lower, _) = await heights(compact, pointer);
       expect(lower, lessThan(own));
       final (face, whole) = await heights(compact, touch);
-      expect(face, greaterThanOrEqualTo(48));
-      expect(whole, greaterThanOrEqualTo(48));
+      final floor = ComicTapTarget.targets.touch.height;
+      expect(face, greaterThanOrEqualTo(floor));
+      expect(whole, greaterThanOrEqualTo(floor));
     },
   );
   for (final name in ['icon', 'checkbox']) {

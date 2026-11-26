@@ -4,6 +4,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../fonts.dart' show comicFontFamily;
 import 'lettering_reach.dart';
@@ -96,19 +97,17 @@ Map<int, (int, int)> _byRune(List<(int, int, String)> table) => {
 
 final RegExp _rightToLeft = RegExp('[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]');
 
-double _contrast(Color a, Color b) {
-  final x = a.computeLuminance(), y = b.computeLuminance();
-  return (x > y ? x + .05 : y + .05) / (x > y ? y + .05 : x + .05);
-}
-
 /// Letters drawn on a face of their own (an avatar's), which keeps its own fill
 /// where a filled ground around it rescopes the theme's inks: [wanted] when it
 /// reads 4.5:1 on [ground], else whichever of [inks] reads best there.
 Color comicInkOn(Color ground, Color wanted, Iterable<Color> inks) {
-  if (_contrast(wanted, ground) >= 4.5) return wanted;
+  if (RawPalette.contrastRatio(wanted, ground) >= 4.5) return wanted;
   var best = wanted;
   for (final ink in inks) {
-    if (_contrast(ink, ground) > _contrast(best, ground)) best = ink;
+    if (RawPalette.contrastRatio(ink, ground) >
+        RawPalette.contrastRatio(best, ground)) {
+      best = ink;
+    }
   }
   return best;
 }

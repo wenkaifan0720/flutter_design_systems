@@ -12,6 +12,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   sections: [
     kitSection('Type', children: [const KitTypeScale()]),
     kitSection('The colours', children: [const KitSwatches()]),
+    kitSection('The print runs', children: [const KitPrintRuns()]),
     kitSection(
       'The page frame',
       children: [
@@ -74,6 +75,58 @@ class KitTypeScale extends StatelessWidget {
           style: t.small,
         ),
         Text(kitSay(context, 'A LABEL'), style: t.label),
+      ],
+    );
+  }
+}
+
+/// The six print runs ([ComicThemeData.presets]) in the page's appearance, each a page of its own under its own
+/// theme: its name in a caption, its act's button and its group's link, the parts themselves.
+class KitPrintRuns extends StatelessWidget {
+  /// The look's print runs.
+  const KitPrintRuns({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final t = ComicTheme.of(context);
+    return ComicGridOf(
+      columns: t.desk ? 3 : 2,
+      children: [
+        for (final id in ComicThemeData.presets)
+          ComicTheme(
+            data: ComicThemeData.preset(id, t.colors.brightness),
+            child: Builder(
+              builder: (context) {
+                final run = ComicTheme.of(context);
+                return DecoratedBox(
+                  decoration: ShapeDecoration(
+                    color: run.colors.background,
+                    shape: run.shapes.small.copyWith(
+                      side: BorderSide(color: run.colors.nightLine, width: 2.5),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: ComicColumn(
+                      gap: 8,
+                      children: [
+                        // The run's name as the code names it, in its caption box; its act and its group's link.
+                        ComicCaption(id, free: true, tight: true),
+                        ComicButton.filled(
+                          kitSay(context, 'Read on'),
+                          onPressed: () {},
+                        ),
+                        ComicLink(
+                          kitSay(context, 'See all'),
+                          inSentence: false,
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
       ],
     );
   }

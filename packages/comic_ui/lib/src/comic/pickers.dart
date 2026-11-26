@@ -103,7 +103,7 @@ class ComicDatePicker extends StatefulWidget {
   /// Appearance above the picker component theme.
   final ComicStyle? style;
 
-  /// A day's cell, wide and tall: a touch's least target. Every month Comic draws ([ComicCalendar], the range picker)
+  /// A day's cell, wide and tall, above the tap floor. Every month Comic draws ([ComicCalendar], the range picker)
   /// takes it, so two calendars on one screen share their grid. Where a month has less than seven of them across
   /// (a phone's dialog), its columns narrow, as Material's calendar's, down to 40 or the width that keeps each number
   /// 4 clear of its outline, and keep this height; narrower still, the month scrolls sideways.
@@ -1002,7 +1002,7 @@ TextStyle _dayFigure(
   // Reserve the measured day label and its actual outline insets. An
   // arbitrary text allowance made even an ordinary phone scroll sideways.
   // The numbers grow at most twice (see [_grid]), so they are measured so.
-  // A day keeps a touch's width (48) where seven fit; where they don't (a
+  // A day keeps its cell's width (48) where seven fit; where they don't (a
   // phone's dialog) they narrow, but never so far that a number comes within
   // 4 of its day's outline, the corner's curve included.
   final t = ComicTheme.of(context);

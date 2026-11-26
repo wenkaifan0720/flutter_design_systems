@@ -458,11 +458,12 @@ class ComicPageDots extends StatelessWidget {
         ),
       ),
     );
-    // Each mark keeps its slot between its neighbours; the row's ends are the marks' own, so the first mark starts on
-    // the column's edge and a target's reach past an end stands outward.
+    // Each mark keeps its slot between its neighbours, the floor wide; the row's ends are the marks' own, so the first
+    // mark starts on the column's edge and a target's reach past an end stands outward.
+    final floor = RawTapTargets.of(context).floorOn().width;
     EdgeInsetsGeometry slot(int i) => EdgeInsetsDirectional.only(
-      start: i == 0 ? 0 : (44 - across(i)) / 2,
-      end: i == pageCount - 1 ? 0 : (44 - across(i)) / 2,
+      start: i == 0 ? 0 : (floor - across(i)) / 2,
+      end: i == pageCount - 1 ? 0 : (floor - across(i)) / 2,
       top: 13,
       bottom: 13,
     );
@@ -951,74 +952,84 @@ class ComicBreadcrumb extends StatelessWidget {
     // A step's room either side of its words; the first step's words start on the trail's keyline, its room after them.
     const side = EdgeInsets.symmetric(horizontal: ComicSpace.close);
     const lead = EdgeInsetsDirectional.only(end: ComicSpace.close);
+    // A step: the current page and an inert ancestor are plain words, every
+    // other step a link.
+    Widget step(int i) => i == items.length - 1 || items[i].onPressed == null
+        ? Semantics(
+            // The current page is said as such; an inert ancestor is plain words.
+            selected: i == items.length - 1 ? true : null,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: ComicTapTarget.targetOf(context),
+              ),
+              child: Padding(
+                padding: i == 0 ? lead : side,
+                child: Center(
+                  widthFactor: 1,
+                  child: Text(
+                    items[i].label,
+                    style: words.copyWith(color: c.text),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : ComicPressable(
+            link: true,
+            label: items[i].label,
+            outline: WidgetStatePropertyAll(t.shapes.small),
+            onPressed: items[i].onPressed,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: ComicTapTarget.targetOf(context),
+                // The first step's words stand on the keyline; its room after them keeps it at the floor.
+                minWidth: i == 0 ? ComicTapTarget.targetOf(context) : 0,
+              ),
+              child: Padding(
+                padding: i == 0 ? lead : side,
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  widthFactor: 1,
+                  child: Text(
+                    items[i].label,
+                    style: words.copyWith(
+                      color: c.shadeText,
+                      decoration: TextDecoration.underline,
+                      decorationColor: c.shadeText,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
     return Semantics(
       label: label ?? ComicLocalizations.of(context).breadcrumbs,
       container: true,
       explicitChildNodes: true,
-      // Each step stands at its floor with its side room inside: a tap and a screen reader reach the same box.
-      child: Wrap(
+      // Each step stands at its floor with its side room inside: a tap and a screen reader reach the same box. The steps
+      // stand face to face, a target reaching into the room between (ui_core's RawChipGroup). A step after the first
+      // leads with its separator, so a run that wraps starts with the chevron on the trail's keyline and none ends on one.
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         runSpacing: 0,
         children: [
-          for (var i = 0; i < items.length; i++) ...[
-            if (i == items.length - 1 || items[i].onPressed == null)
-              Semantics(
-                // The current page is said as such; an inert ancestor is plain words.
-                selected: i == items.length - 1 ? true : null,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: ComicTapTarget.targetOf(context),
-                  ),
-                  child: Padding(
-                    padding: i == 0 ? lead : side,
-                    child: Center(
-                      widthFactor: 1,
-                      child: Text(
-                        items[i].label,
-                        style: words.copyWith(color: c.text),
-                      ),
-                    ),
-                  ),
-                ),
-              )
+          for (var i = 0; i < items.length; i++)
+            if (i == 0)
+              step(i)
             else
-              ComicPressable(
-                link: true,
-                label: items[i].label,
-                outline: WidgetStatePropertyAll(t.shapes.small),
-                onPressed: items[i].onPressed,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: ComicTapTarget.target,
-                    // The first step's words stand on the keyline; its room after them keeps it at the floor.
-                    minWidth: i == 0 ? ComicTapTarget.targetOf(context) : 0,
-                  ),
-                  child: Padding(
-                    padding: i == 0 ? lead : side,
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      widthFactor: 1,
-                      child: Text(
-                        items[i].label,
-                        style: words.copyWith(
-                          color: c.shadeText,
-                          decoration: TextDecoration.underline,
-                          decorationColor: c.shadeText,
-                        ),
-                      ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ExcludeSemantics(
+                    child: Icon(
+                      rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
+                      size: 16,
+                      color: c.textSecondary,
                     ),
                   ),
-                ),
+                  step(i),
+                ],
               ),
-            if (i < items.length - 1)
-              ExcludeSemantics(
-                child: Icon(
-                  rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
-                  size: 16,
-                  color: c.textSecondary,
-                ),
-              ),
-          ],
         ],
       ),
     );
@@ -1096,7 +1107,7 @@ class ComicPagination extends StatelessWidget {
         states: states,
         shape: inner,
         padding: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
-        // Every cell is at least the platform's target wide: 44, or 48 where a touch reaches it.
+        // Every cell is at least the floor wide (ComicTapTarget.targetOf).
         child: ConstrainedBox(
           constraints: BoxConstraints(
             minWidth: target - 2 * ComicTrack.inset - 8,

@@ -45,7 +45,7 @@ double _markExtent(
   final body = shape is CircleBorder || shape is StadiumBorder
       ? (glyph + 2 * clearance) * math.sqrt2
       : glyph + 2 * clearance + 2 * comicCornerInset(shape, direction);
-  // The face a shape needs is taken up to a whole, even size: inside an even target (48 or 44) it then has as much
+  // The face a shape needs is taken up to a whole, even size: inside an even target (the floor, 40) it then has as much
   // room on either side, so it stands on whole pixels with its centre on the target's, beside a bar's title.
   final needed =
       body +
@@ -55,7 +55,7 @@ double _markExtent(
   return math.max(base, 2 * (needed / 2 - 1e-6).ceilToDouble());
 }
 
-/// A button's visual scale. Its input target remains at least 48 on touch.
+/// A button's visual scale. Its tap target stays at least the floor ([ComicTapTarget.targetOf]).
 enum ComicButtonSize {
   /// Small type and compact padding.
   small,
@@ -986,9 +986,24 @@ class ComicTextField extends StatelessWidget {
     final words =
         MediaQuery.textScalerOf(context).scale(textStyle.fontSize ?? 16) *
         (textStyle.height ?? 1.3);
-    final reach = maxLines > 1
-        ? 0.0
-        : math.max(0.0, (ComicTapTarget.targetOf(context) - words) / 2);
+    // A one-line field stands the floor or its own height, whichever is more, and under large text as tall as its
+    // words need (comicWordsRoom); the editor takes all of it, so a tap anywhere in the drawn field reaches the editor
+    // (with the floor at 40 the field stays 48).
+    final tall = math.max(
+      math.max(
+        ComicTapTarget.targetOf(context),
+        look.minimumSize?.height ?? t.density.height(48),
+      ),
+      maxLines > 1
+          ? 0.0
+          : comicWordsRoom(
+              context,
+              textStyle,
+              rim.width,
+              capHeight: t.typeface.textCapHeight,
+            ),
+    );
+    final reach = maxLines > 1 ? 0.0 : math.max(0.0, (tall - words) / 2);
     final editor = Material(
       type: MaterialType.transparency,
       child: Theme(
@@ -1102,11 +1117,12 @@ class ComicTextField extends StatelessWidget {
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minWidth: look.minimumSize?.width ?? 0,
-              minHeight: math.max(
-                ComicTapTarget.targetOf(context),
-                look.minimumSize?.height ??
-                    t.density.height(maxLines > 1 ? 92 : 48),
-              ),
+              minHeight: maxLines > 1
+                  ? math.max(
+                      ComicTapTarget.targetOf(context),
+                      look.minimumSize?.height ?? t.density.height(92),
+                    )
+                  : tall,
             ),
             child: Padding(
               padding:
@@ -2505,7 +2521,8 @@ class ComicChoices extends StatelessWidget {
         // stretches to its column), a tile with a note too, its name over its note (the design kit's checks holds a group
         // of choices to what its tiles take); on a phone they share the column in a grid.
         if (t.width >= 600) {
-          return Wrap(
+          // Tiles stand gap apart face to face, their targets reaching into the room between (ui_core's RawChipGroup).
+          return RawChipGroup(
             spacing: gap,
             runSpacing: gap,
             children: [

@@ -20,7 +20,7 @@ import 'pop.dart';
 /// The trough: [shape] filled with [fill] and ringed by [rim], holding [cells] in reading order.
 ///
 /// The trough stands exactly a field's height. A cell gets the trough's whole height, the rim's bands above and below
-/// it included (the rim is drawn over the cells), so its press is the trough's full target and a 48 px touch target
+/// it included (the rim is drawn over the cells), so its press is the trough's full target and the tap floor
 /// never makes the trough taller than the field beside it; what a cell draws stands the rim and [gap] in from the
 /// trough's outline, in [cellShape] ([shape] inset by the rim and [gap]). With [lit] set, the thumb, [thumb]-filled
 /// in [cellShape], sits under that cell and slides when [lit] changes (a cut under Reduce Motion).
@@ -91,11 +91,20 @@ class ComicTrack extends StatelessWidget {
     double gap = inset,
   ]) => comicInsetShape(shape, rim.width + gap);
 
-  /// A field's height at [context]: the trough stands as tall as the fields beside it.
-  static double fieldHeight(BuildContext context) => math.max(
-    ComicTapTarget.targetOf(context),
-    ComicTheme.of(context).density.height(48),
-  );
+  /// A field's height at [context]: the trough stands as tall as the fields beside it, and under large text as tall
+  /// as a field's words need ([comicWordsRoom]).
+  static double fieldHeight(BuildContext context) {
+    final t = ComicTheme.of(context);
+    return math.max(
+      math.max(ComicTapTarget.targetOf(context), t.density.height(48)),
+      comicWordsRoom(
+        context,
+        comicFieldText(t),
+        t.rim(2.5),
+        capHeight: t.typeface.textCapHeight,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -773,4 +782,66 @@ class _RenderButtonRoom extends RenderShiftedBox {
       (size.height - child.size.height) / 2,
     );
   }
+}
+
+/// A one-line field's words: what [ComicTrack.fieldHeight] makes room for.
+TextStyle comicFieldText(ComicThemeData t) =>
+    t.type.text(16, 1.3, weight: FontWeight.w600);
+
+/// The height a one-line part takes for its words in [style], at the text size in force at [context], to keep their
+/// glyphs [ComicSpace.tight] clear of an outline [rim] wide, with their capitals ([capHeight] of the size) on its
+/// middle as a label's are, and their ends on the field keyline ([comicFieldWords]) clear of a capsule's round end.
+/// Shantell Sans's glyphs stand taller than its line: at 130% text a 40 field (compact density, the floor) cut into
+/// its words' room.
+double comicWordsRoom(
+  BuildContext context,
+  TextStyle style,
+  double rim, {
+  double capHeight = 0.7,
+}) {
+  final scaler = MediaQuery.textScalerOf(context);
+  final reach = _glyphs[(style, scaler, capHeight)] ??= _measureGlyphs(
+    style,
+    scaler,
+    capHeight,
+  );
+  // Half the words' box with its clearance, and how far its end stands in from the outline's inner edge.
+  final half = reach + ComicSpace.tight;
+  final end = comicFieldWords - rim - ComicSpace.tight;
+  // A round end of radius r holds the box's corner where (r - end)² + half² <= r².
+  final radius = end > 0
+      ? math.max(half, (half * half + end * end) / (2 * end))
+      : half;
+  return (2 * (radius + rim)).ceilToDouble();
+}
+
+final _glyphs = <(TextStyle, TextScaler, double), double>{};
+var _glyphsListen = false;
+
+// The glyphs' farther reach from their capitals' middle.
+double _measureGlyphs(TextStyle style, TextScaler scaler, double capHeight) {
+  if (!_glyphsListen) {
+    // A face loaded after a measure changes its glyphs.
+    _glyphsListen = true;
+    PaintingBinding.instance.systemFonts.addListener(_glyphs.clear);
+  }
+  if (_glyphs.length > 64) _glyphs.clear();
+  final painter = TextPainter(
+    text: TextSpan(text: 'Hg', style: style),
+    textDirection: TextDirection.ltr,
+    textScaler: scaler,
+    maxLines: 1,
+  )..layout();
+  final boxes = painter.getBoxesForSelection(
+    const TextSelection(baseOffset: 0, extentOffset: 2),
+  );
+  final baseline = painter.computeDistanceToActualBaseline(
+    TextBaseline.alphabetic,
+  );
+  painter.dispose();
+  if (boxes.isEmpty) return 0;
+  final middle = baseline - scaler.scale(style.fontSize ?? 14) * capHeight / 2;
+  final top = boxes.map((b) => b.top).reduce(math.min);
+  final bottom = boxes.map((b) => b.bottom).reduce(math.max);
+  return math.max(middle - top, bottom - middle);
 }

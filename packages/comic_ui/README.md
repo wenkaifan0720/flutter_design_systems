@@ -1,19 +1,33 @@
 # comic_ui
 
 Comic is a Flutter component library for apps styled as printed comics. It includes form controls, navigation,
-charts, speech balloons and illustrated panels. Five colour presets support light and dark mode.
+charts, speech balloons and illustrated panels. Six colour presets, each designed for light and dark.
 
 ![Comic's cover page at desktop and phone width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/hero.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/comic/)** ·
-[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/comic/) ·
-[API reference](https://pub.dev/documentation/comic_ui/latest/) ·
-[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/comic/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=comic) · [API reference](https://pub.dev/documentation/comic_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
 ```sh
 flutter pub add comic_ui material_ui
+```
+
+A whole app: Comic's faces loaded and its theme over a bare `WidgetsApp`, one page and one button.
+
+```dart
+import 'package:comic_ui/comic_ui.dart';
+import 'package:flutter/widgets.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await comicLoadFonts();
+  runApp(WidgetsApp(
+    color: const Color(0xFFFF3E92),
+    builder: (context, _) => ComicTheme(data: ComicThemeData.offset(), child: ComicScaffold(
+      body: Center(child: ComicButton.filled('Read on', onPressed: () {})))),
+  ));
+}
 ```
 
 `material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; the quick start's app is a
@@ -256,7 +270,7 @@ take a `Widget`.
 
 ## Editions and colours
 
-Each edition takes `Brightness.dark` for its night issue; `ComicThemeData.preset(id, brightness)` picks one by name.
+Six editions, each designed for the day and for its night issue (`Brightness.dark`); `ComicThemeData.preset(id, brightness)` picks one by name.
 
 | Factory | Edition |
 | --- | --- |
@@ -265,8 +279,12 @@ Each edition takes `Brightness.dark` for its night issue; `ComicThemeData.preset
 | `ComicThemeData.newsstand()` | Green |
 | `ComicThemeData.pulp()` | An aged and earthy page |
 | `ComicThemeData.sunday()` | A softer page |
+| `ComicThemeData.cosmic()` | An electric-violet act, a cyan group and acid-lime captions; deep space by night |
 
-Your own colours make a whole edition: Comic derives the readable words, contours, status inks and chart series.
+Your own colours make a whole edition: Comic derives the readable words, contours, status inks and chart series,
+each read on every ground it is painted on. Name the act alone (`ComicThemeData.from(primary: brand)`) and Comic
+takes its process yellow for the captions and a group ink that stands apart from your act; by night the grounds take
+the group's hue, as its own editions' do, and a dark `background` keeps its hue on light stock by day.
 
 ```dart
 final branded = ComicThemeData.from(
@@ -294,10 +312,13 @@ lettering keep a clear background behind the words.
 
 - **Screen readers and keyboards.** Every control reports its role, label, value and state (checked, selected,
   expanded, disabled) and leaves its decorative print out. Tab moves in reading order; Enter and Space press, arrows
-  move within groups, Escape closes what is raised, and the part the keyboard is on pops off its print. The gallery's tests hold every
+  move within groups, Escape closes what is raised, and the part the keyboard is on pops off its print. The example's tests hold every
   page to Flutter's tap-target, labelled-target and text-contrast guidelines, by day and by night.
+- **Tap targets.** Every control takes at least 40 by 40, for a finger and a pointer alike (ui_core's floor); a
+  `RawTapTargetScope` above the theme sets an app's own. In a run of chips or links the targets reach into the room
+  between the faces, so a run keeps its spacing.
 - **Large text.** Parts follow the system's text scaling: words wrap or end with an ellipsis on purpose, controls grow
-  taller, and dialogs and sheets scroll. Every gallery page is tested at text scale 2.0.
+  taller, and dialogs and sheets scroll. Every example page is tested at text scale 2.0.
 - **Right to left.** Layouts mirror under a right-to-left `Directionality`: arrows and chevrons turn, fills and
   sliders run from the start side, swipes and carousels follow the reading direction. Parameters say start and end.
 - **Other scripts.** Bangers and Shantell Sans cover Latin scripts. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and
@@ -326,7 +347,7 @@ Use `comic_ui.dart` elsewhere in your app. The parts library supports copied com
 
 ## Example
 
-The gallery includes individual controls and complete form, settings, list and checkout screens. Use the app bar
+The example app includes individual controls and complete form, settings, list and checkout screens. Use the app bar
 to switch light and dark mode. Open Customize to change the edition, colours, reading direction and text size.
 
 ## Requirements

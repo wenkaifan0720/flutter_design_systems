@@ -1,9 +1,11 @@
 // Checks a design system's tests run on its screens and parts, so every look
 // tests the same way: right to left, at twice the text size, and against
 // Flutter's accessibility guidelines. Copy this file into your package's
-// test/ folder; it needs only flutter_test.
+// test/ folder with gallery_support.dart's touchFloorGuideline.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'gallery_support.dart';
 
 /// Pumps [build] left to right, then right to left, and expects each of
 /// [parts] mirrored: its right edge's distance from the screen's right in
@@ -88,19 +90,12 @@ Future<void> expectNoOverflowAtTextScale(
   );
 }
 
-/// Expects what is on screen to meet Flutter's four accessibility
-/// guidelines: Android's 48 px and iOS's 44 px tap targets, a label on
-/// every tap target, and text contrast. Pump the screen first. A look whose
-/// targets are iOS's 44 px on every platform passes [android] false.
-Future<void> expectMeetsGuidelines(
-  WidgetTester tester, {
-  bool android = true,
-}) async {
+/// Expects what is on screen to meet the accessibility guidelines: the
+/// 40 px finger floor ([touchFloorGuideline]), a label on every tap target,
+/// and text contrast. Pump the screen first.
+Future<void> expectMeetsGuidelines(WidgetTester tester) async {
   final semantics = tester.ensureSemantics();
-  if (android) {
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-  }
-  await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+  await expectLater(tester, meetsGuideline(touchFloorGuideline));
   await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
   await expectLater(tester, meetsGuideline(textContrastGuideline));
   semantics.dispose();

@@ -20,6 +20,14 @@ import '../example/lib/main.dart' show GalleryCustom;
 
 export '../example/lib/gallery_pages.dart';
 
+/// The family's finger floor as Flutter's guideline reads it: every target at least ui_core's 40 by 40
+/// (`RawTapTargets.fallback`'s touch, WCAG 2.2's target size minimum), which Comic stands under a finger and a pointer
+/// alike. Flutter's Android 48 and iOS 44 guidelines ask more than the floor.
+final touchFloorGuideline = MinimumTapTargetGuideline(
+  size: RawTapTargets.fallback.touch,
+  link: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum',
+);
+
 /// The corner scales the 0.1.x gallery offered. 0.2.0 deprecates `ComicShapes.rounded` and `copyWith(shapes:)`, since
 /// Comic is square, and its gallery offers them no more; until they go, these tests still draw every part on them.
 enum GalleryCorners {

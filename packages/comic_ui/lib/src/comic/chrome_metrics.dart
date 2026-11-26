@@ -4,13 +4,7 @@ import 'press.dart';
 
 /// Shared measures of Comic's page and controls.
 abstract final class ComicChromeMetrics {
-  /// Minimum pointer target.
-  static const double target = 44;
-
-  /// Minimum touch target.
-  static const double touchTarget = 48;
-
-  /// Resolved target for this application.
+  /// The least target at [context]: [ComicTapTarget.targetOf].
   static double targetOf(BuildContext context) =>
       ComicTapTarget.targetOf(context);
 

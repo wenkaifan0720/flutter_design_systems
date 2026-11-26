@@ -1,3 +1,17 @@
+## 0.7.0
+
+- Requires ui_core 0.7.2. Comic's tap floor is ui_core's finger floor, 40 by 40, under a finger and a pointer alike (it was 48 under a finger and 44 under a pointer): Comic's faces are drawn for a thumb on every platform. Faces drawn larger keep their size (a button and a field stand 48); what stood on the floor (a slider's thumb, a pager's dots, a breadcrumb's links, a context menu's items, a rating's stars) stands on 40. A `RawTapTargetScope` above the theme still sets an app's own. `ComicTapTarget.target`, `ComicTapTarget.touchTarget`, `ComicChromeMetrics.target` and `ComicChromeMetrics.touchTarget` are removed: read `ComicTapTarget.targetOf(context)`.
+- `ComicChoices` on a wide screen, a multi-select's chosen tags and `ComicBreadcrumb` stand their faces their gap apart, their targets reaching into the room between (ui_core's `RawChipGroup`): two rows no longer stand the gap and the targets' slack apart.
+- A `ComicBreadcrumb` that wraps starts every run on the trail's keyline: a step after the first leads with its separator, so a wrapped run starts with the chevron where the first step's words start and none ends on one. A wrapped run started 8 in, after a chevron left at the end of the run above.
+- A sixth edition, `ComicThemeData.cosmic()`: an electric-violet act, a cyan group and acid-lime captions, by night on deep space. `ComicThemeData.presets` names the six; the example's Foundations page shows them side by side.
+- `ComicThemeData.from` takes `caption` and `shade` as optional: with the act alone it takes the offset's process yellow and a group ink whose hue stands apart from the act. By night its grounds take the group's hue, as the editions' own do (they were a neutral near-black); by day a dark `background` becomes light stock in its hue. Its act- and group-coloured words read on the paper of a balloon or a caption too, not only on the page.
+- Colours that must read are walked to a readable tone by ui_core's `RawPalette.readableTone` (Material's colour space, hue kept): a disabled control's words, the focus colour of an edition whose words read too faint for it, and the kit's tokens.
+- In a language other than English a date or time picker's title is ui_core's (`RawPickerWords`: Select date, Select time, in the app's language) where it was Comic's English; in English it stays "Choose a date" and "Choose a time", and a `title` of the app's own still wins.
+- A `ComicSwipeActions` command's panel is at least its words' width and inset, so at large text its words keep their inset from the panel's edges.
+- Under large text a one-line field, and what stands as tall as a field (a select, segments, tabs, the pager and the stepper), is as tall as its words need (`comicWordsRoom`): at compact density, where the 40 floor would let a field stand 40 and cut into Shantell Sans's glyphs at 130% text, it stands 44.
+- Removed, deprecated since 0.2.0 to 0.3.4: `comicEmanataLength`, `comicEmanataWeight`, `comicEmanataGap` and `comicEmanataSpread`; the `ComicStrokes(...)` constructor, `ComicStrokes.copyWith` and `ComicStrokes.look` (use `ComicStrokes.standard` or `ComicStrokes.bold`; `dart fix --apply` renames `look`); `ComicTypeface`'s `scale` (follow the platform's text scaling; `dart fix --apply` removes it); `ComicLocalizations`' `hour`, `minute`, `period`, `am` and `pm` (ui_core's `DesignLocalizations` says them in its 30 languages).
+- The README opens with a whole app in 12 lines and links the docs and Stint.
+
 ## 0.6.2
 
 - Requires ui_core 0.6.1.

@@ -651,12 +651,6 @@ List<double> _roundGuides(double low, double high, {required bool whole}) {
   return guides.reversed.toList();
 }
 
-/// The WCAG contrast ratio of two colours, 1 to 21.
-double _contrast(Color a, Color b) {
-  final la = a.computeLuminance(), lb = b.computeLuminance();
-  return (math.max(la, lb) + .05) / (math.min(la, lb) + .05);
-}
-
 /// Where point or group [i] of [count] stands across the plot: 0 at its start, 1 at its end. Lines run end to end; bars
 /// stand in the middle of equal slots.
 double _across(int i, int count, bool bars) => bars
@@ -897,8 +891,8 @@ class _ChartInk extends CustomPainter {
       // points rimmed, so it keeps its hue and the legend's swatch.
       final faint =
           math.min(
-            _contrast(color, colors.background),
-            _contrast(color, colors.card),
+            RawPalette.contrastRatio(color, colors.background),
+            RawPalette.contrastRatio(color, colors.card),
           ) <
           3;
       final paint = Paint()

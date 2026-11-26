@@ -968,7 +968,9 @@ class _ComicMultiSelectState<T extends Object>
                       tagInset,
                       0,
                     ),
-                    child: Wrap(
+                    // The chosen stand close apart face to face, run under run too, their targets reaching into
+                    // the room between (ui_core's RawChipGroup): in a Wrap each target's slack stood between.
+                    child: RawChipGroup(
                       spacing: ComicSpace.close,
                       runSpacing: ComicSpace.close,
                       children: tags,
@@ -1174,7 +1176,7 @@ class ComicRangeSlider extends StatelessWidget {
       // The track stands the slider's inset in from each end, as ComicSlider's: the held knob's width, its height the
       // row's target. A press or a drag anywhere on the track moves the nearer knob, so the narrower box takes nothing
       // from the target.
-      thumbSize: const Size(2 * ComicSlider.inset, 44),
+      thumbSize: Size(2 * ComicSlider.inset, ComicTapTarget.targetOf(context)),
     );
     return LimitedBox(
       maxWidth: rowWidth,

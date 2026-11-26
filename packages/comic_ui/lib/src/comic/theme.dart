@@ -1332,6 +1332,57 @@ final _Palette _sunday = _Palette(
   ),
 );
 
+/// Cosmic: the space opera. Lilac stock, an electric-violet act with paper letters, acid-lime captions, a cyan group,
+/// a hot-pink drama. At night deep space under the same lit paper.
+final _Palette _cosmic = _Palette(
+  const _Seed(
+    background: Color(0xFFF0EBF7),
+    card: Color(0xFFFFFEFB),
+    inset: Color(0xFFF6F2FA),
+    outline: Color(0xFF180F2A),
+    text: Color(0xFF180F2A),
+    textSecondary: Color(0xFF54496A),
+    caption: Color(0xFFD9F25A),
+    onCaption: Color(0xFF180F2A),
+    primary: Color(0xFF7B3FF2),
+    onPrimary: Color(0xFFFFFFFF),
+    primaryText: Color(0xFF6A2EE0),
+    currentUserTint: Color(0xFFE2D4FF),
+    shade: Color(0xFF00A3C4),
+    onShade: Color(0xFF180F2A),
+    shadeText: Color(0xFF006A80),
+    shadeTint: Color(0xFFC8EEF5),
+    drama: Color(0xFFCF2A63),
+    paper: Color(0xFFFFFEFB),
+    onPaper: Color(0xFF180F2A),
+    onPaperSecondary: Color(0xFF54496A),
+    hint: Color(0xFF625878),
+  ),
+  const _Seed(
+    background: Color(0xFF0B0717),
+    card: Color(0xFF1D1438),
+    inset: Color(0xFF291C4C),
+    outline: Color(0xFF000000),
+    text: Color(0xFFF3EEFF),
+    textSecondary: Color(0xFFB8AEDA),
+    caption: Color(0xFFD9F25A),
+    onCaption: Color(0xFF180F2A),
+    primary: Color(0xFF9C6BFF),
+    onPrimary: Color(0xFF0B0717),
+    primaryText: Color(0xFFB898FF),
+    currentUserTint: Color(0xFF4A2A80),
+    shade: Color(0xFF33C7E6),
+    onShade: Color(0xFF0B0717),
+    shadeText: Color(0xFF7ADDF0),
+    shadeTint: Color(0xFF1B4A5C),
+    drama: Color(0xFFFF5C8F),
+    paper: Color(0xFFFFFEFB),
+    onPaper: Color(0xFF180F2A),
+    onPaperSecondary: Color(0xFF54496A),
+    hint: Color(0xFF625878),
+  ),
+);
+
 /// Line height in whole pixels. Flutter rounds a paragraph's height up, Blink keeps the fraction; asking for a hair
 /// under the nearest whole pixel keeps a stack of text from drifting and keeps rules on whole pixels.
 double _lh(double size, double ratio) =>
@@ -1463,9 +1514,9 @@ class ComicTextTheme {
     fontFamilyFallback: typeface.displayPackage == typeface.textPackage
         ? [typeface.text]
         : null,
-    fontSize: size * typeface.scale,
-    height: _lh(size * typeface.scale, ratio),
-    letterSpacing: size * tracking * typeface.scale,
+    fontSize: size,
+    height: _lh(size, ratio),
+    letterSpacing: size * tracking,
     fontWeight: FontWeight.w400,
     color: color,
     textBaseline: TextBaseline.alphabetic,
@@ -1483,9 +1534,9 @@ class ComicTextTheme {
     inherit: false,
     fontFamily: typeface.text,
     package: typeface.textPackage,
-    fontSize: size * typeface.scale,
-    height: _lh(size * typeface.scale, ratio),
-    letterSpacing: size * tracking * typeface.scale,
+    fontSize: size,
+    height: _lh(size, ratio),
+    letterSpacing: size * tracking,
     fontWeight: weight,
     color: color,
     textBaseline: TextBaseline.alphabetic,
@@ -1553,21 +1604,32 @@ class ComicThemeData with Diagnosticable {
   factory ComicThemeData.sunday([Brightness brightness = Brightness.light]) =>
       preset('sunday', brightness);
 
-  /// Builds a complete print palette from app colours, adjusting derived ink until it reads.
+  /// The cosmic preset: an electric-violet act, a cyan group and acid-lime captions on lilac stock, deep space by night.
+  factory ComicThemeData.cosmic([Brightness brightness = Brightness.light]) =>
+      preset('cosmic', brightness);
+
+  /// Builds a complete print palette from app colours, adjusting derived ink until it reads on every ground it is
+  /// painted on. [primary] is the act (buttons, what is chosen). [caption] (the caption boxes) defaults to the look's
+  /// process yellow and [shade] (the group: tabs, covers, links) to its process blue, or, for an act near that blue,
+  /// to whichever of the other runs' group inks stands farthest from it. By night the grounds are the night issue's
+  /// in [shade]'s hue (a blue group prints an ink-blue night, a teal one a deep-sea one); by day a dark [background]
+  /// keeps its hue on light stock.
   ///
   /// ```dart
   /// ComicThemeData.from(primary: Color(0xffa32d67), caption: Color(0xffffdf57), shade: Color(0xff325e98))
   /// ```
   factory ComicThemeData.from({
     required Color primary,
-    required Color caption,
-    required Color shade,
+    Color? caption,
+    Color? shade,
     Color background = const Color(0xfff3e8cf),
     Brightness brightness = Brightness.light,
   }) {
+    final yellow = caption ?? _offset.day.caption;
+    final group = shade ?? _groupInkFor(primary);
     final palette = _Palette.colors(
-      _comicFrom(primary, caption, shade, background, false),
-      _comicFrom(primary, caption, shade, background, true),
+      _comicFrom(primary, yellow, group, background, false),
+      _comicFrom(primary, yellow, group, background, true),
     );
     return ComicThemeData._(
       'custom',
@@ -1690,13 +1752,14 @@ class ComicThemeData with Diagnosticable {
   /// What's in scope at [context]; the same as [ComicTheme.of].
   static ComicThemeData of(BuildContext context) => ComicTheme.of(context);
 
-  /// The print runs, the default first. Each is designed in light and dark.
+  /// The six print runs, the default first. Each is designed in light and dark.
   static const List<String> presets = <String>[
     'offset',
     'reprint',
     'newsstand',
     'pulp',
     'sunday',
+    'cosmic',
   ];
 
   static final Map<String, _Palette> _palettes = {
@@ -1705,6 +1768,7 @@ class ComicThemeData with Diagnosticable {
     'newsstand': _newsstand,
     'pulp': _pulp,
     'sunday': _sunday,
+    'cosmic': _cosmic,
   };
   static final Map<(String, Brightness), ComicThemeData> _cache = {};
 
@@ -2122,7 +2186,7 @@ class _ComicInstall extends StatelessWidget {
             : Directionality(textDirection: direction, child: under),
       );
     }
-    // Comic's tap floors (44 for a pointer, 48 for a finger), unless the app declares its own above.
+    // Comic's tap floors (40 for a finger and a pointer alike), unless the app declares its own above.
     if (RawTapTargets.maybeOf(context) == null) {
       under = RawTapTargetScope(targets: ComicTapTarget.targets, child: under);
     }
@@ -2434,53 +2498,39 @@ const comicDarkTones = ComicTones(
   danger: Color(0xffffa7ab),
 );
 
-double _comicContrast(Color a, Color b) {
-  final x = a.computeLuminance(), y = b.computeLuminance();
-  return (math.max(x, y) + .05) / (math.min(x, y) + .05);
-}
-
 Color _comicFocusColor(ComicColors colors) {
   final grounds = [colors.background, colors.card, colors.control];
-  double contrast(Color color) =>
-      grounds.map((ground) => _comicContrast(color, ground)).reduce(math.min);
-  if (contrast(colors.text) >= 3) return colors.text;
-  // Dark pages keep light paper controls. Their text ink cannot also be the
-  // ring on both surfaces, so choose the neutral ink with the strongest
-  // minimum contrast across them. Resolve once for each immutable theme.
-  var best = colors.text;
-  var strongest = contrast(best);
-  for (var value = 0; value <= 255; value++) {
-    final candidate = Color.fromARGB(255, value, value, value);
-    final score = contrast(candidate);
-    if (score > strongest) {
-      best = candidate;
-      strongest = score;
-    }
+  if (grounds.every((g) => RawPalette.contrastRatio(colors.text, g) >= 3)) {
+    return colors.text;
   }
-  return best;
+  // Dark pages keep light paper controls. Their text ink cannot also be the ring on both surfaces, so the ring is the
+  // grey that reads best on the ground it reads worst on.
+  return RawPalette.readableTone(
+    RawHct.fromColor(colors.text).withChroma(0).toColor(),
+    on: grounds,
+    ratio: 3,
+  );
 }
 
-Color _comicRead(Color wanted, List<Color> grounds, [double ratio = 4.5]) {
-  bool reads(Color c) => grounds.every((g) => _comicContrast(c, g) >= ratio);
-  if (reads(wanted)) return wanted;
-  const ends = [Color(0xff000000), Color(0xffffffff)];
-  final end = ends.reduce(
-    (a, b) =>
-        grounds.map((g) => _comicContrast(a, g)).reduce(math.min) >=
-            grounds.map((g) => _comicContrast(b, g)).reduce(math.min)
-        ? a
-        : b,
-  );
-  var lo = 0.0, hi = 1.0;
-  for (var i = 0; i < 24; i++) {
-    final mid = (lo + hi) / 2;
-    if (reads(Color.lerp(wanted, end, mid)!)) {
-      hi = mid;
-    } else {
-      lo = mid;
-    }
+/// [wanted], or the nearest tone of its hue that reads at [ratio] on every one of [grounds] (ui_core's walk).
+Color _comicRead(Color wanted, List<Color> grounds, [double ratio = 4.5]) =>
+    RawPalette.readableTone(wanted, on: grounds, ratio: ratio);
+
+/// The group's ink for an act of [act]'s colour when an app names none: the process blue, as the look's own run
+/// prints it, unless the act is a colour within 40 degrees of that blue's hue (a navy); then whichever of the other
+/// runs' group inks stands farthest from the act in hue.
+Color _groupInkFor(Color act) {
+  final blue = _offset.day.shade, own = RawHct.fromColor(act);
+  double apart(Color ink) {
+    final d = (RawHct.fromColor(ink).hue - own.hue).abs() % 360;
+    return math.min(d, 360 - d);
   }
-  return Color.lerp(wanted, end, hi)!;
+
+  if (own.chroma < 16 || apart(blue) >= 40) return blue;
+  return [
+    for (final run in [_reprint, _newsstand, _pulp, _sunday, _cosmic])
+      run.day.shade,
+  ].reduce((a, b) => apart(a) >= apart(b) ? a : b);
 }
 
 double _comicDistance(Color a, Color b) {
@@ -2530,23 +2580,43 @@ ComicColors _comicFrom(
   Color blend(Color a, Color b, double amount) => Color.lerp(a, b, amount)!;
   final anchor = dark ? black : white, ink = dark ? white : black;
   // Keep the grounds in one luminance family, even when given hostile input.
-  final paperGround = blend(ground, anchor, dark ? .93 : .8);
-  final card = blend(paperGround, anchor, .55),
-      well = blend(paperGround, anchor, .2);
+  final Color paperGround, card, well;
+  if (dark) {
+    // The night issue's gutters, panels and wells (the look's own run prints them ink-blue) in the group ink's hue, at
+    // their tones and colour: a teal group gives a deep-sea night, a violet one an aubergine one, a grey one charcoal.
+    Color night(double tone, double chroma) =>
+        RawNeutralTones.of(shade, darkChroma: chroma).tone(tone);
+    paperGround = night(4, 15);
+    card = night(13, 26);
+    well = night(19, 30);
+  } else {
+    // A dark neutral by day keeps its hue on light stock: the page stays in the light band, never a grey one.
+    final neutral = RawNeutralTones.of(ground);
+    final stock = neutral.ownTone < 60 ? neutral.tone(92) : ground;
+    paperGround = blend(stock, anchor, .8);
+    card = blend(paperGround, anchor, .55);
+    well = blend(paperGround, anchor, .2);
+  }
   final grounds = [paperGround, card, well];
   final paper = blend(ground, white, .94), onPaper = _comicRead(black, [paper]);
+  // Words in a colour read on every ground they are painted on: by day a paper face too (a navy run's links stood
+  // 4.47:1 on it when read on the grounds alone).
+  final wordGrounds = dark ? grounds : [...grounds, paper];
   final quiet = _comicRead(blend(ink, card, .3), grounds);
   final choices = <Color>[];
   Color choose(Color wanted, {bool light = false, double contrast = 0}) {
     bool valid(Color color) =>
         choices.every((other) => _comicDistance(color, other) >= 20) &&
-        (!light || _comicContrast(onPaper, color) >= 4.5) &&
-        _comicContrast(color, card) >= contrast &&
+        (!light || RawPalette.contrastRatio(onPaper, color) >= 4.5) &&
+        RawPalette.contrastRatio(color, card) >= contrast &&
         grounds.every(
           (g) =>
               math.max(
-                _comicContrast(color, g),
-                math.min(_comicContrast(ink, g), _comicContrast(ink, color)),
+                RawPalette.contrastRatio(color, g),
+                math.min(
+                  RawPalette.contrastRatio(ink, g),
+                  RawPalette.contrastRatio(ink, color),
+                ),
               ) >=
               3,
         );
@@ -2586,7 +2656,11 @@ ComicColors _comicFrom(
   final you = blend(actFill, card, .88), tint = blend(shadeFill, card, .9);
   Color dots(Color color, Color ground) {
     var result = blend(color, ground, .75);
-    for (var i = 0; i < 32 && _comicContrast(ink, result) < 4.5; i++) {
+    for (
+      var i = 0;
+      i < 32 && RawPalette.contrastRatio(ink, result) < 4.5;
+      i++
+    ) {
       result = blend(result, ground, .15);
     }
     return result;
@@ -2613,13 +2687,13 @@ ComicColors _comicFrom(
     divider: blend(ink, card, .65),
     primary: actFill,
     onPrimary: onPrimary,
-    primaryText: _comicRead(actFill, grounds),
+    primaryText: _comicRead(actFill, wordGrounds),
     primaryLargeText: _comicRead(actFill, [you, currentUserDot], 3),
     caption: captionFill,
     onCaption: onCaption,
     shade: shadeFill,
     onShade: onShade,
-    shadeText: _comicRead(shadeFill, grounds),
+    shadeText: _comicRead(shadeFill, wordGrounds),
     shadeTint: tint,
     currentUserTint: you,
     drama: drama,

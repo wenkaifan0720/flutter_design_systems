@@ -1,6 +1,7 @@
 // The words only Comic's parts say on their own: a dismiss, a stepper's more and less, the text-editing menu, a
 // file drop's prompts. The words every look shares (close, cancel, back, loading, the month steps, a time's hour,
-// minute and half of the day) are ui_core's RawWidgetsLocalizations. A part takes the caller's words when given, and these
+// minute and half of the day) are ui_core's RawWidgetsLocalizations; in another language a picker's title is ui_core's too
+// (RawPickerWords). A part takes the caller's words when given, and these
 // otherwise. Comic's delegate supports every locale: English, with the words ui_core shares in the locale's language.
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -8,7 +9,7 @@ import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 
 /// The words only Comic's parts say when the caller gives none; the shared ones are `RawWidgetsLocalizations`. English
 /// ships ([ComicLocalizationsEn]); in any other language the parts say English but for the words ui_core says too (a
-/// retry, a dismiss, a rating, the months and weekdays), which come in that language. A language of your own is a
+/// retry, a dismiss, a rating, the months and weekdays, a date or time picker's title), which come in that language. A language of your own is a
 /// subclass and a delegate that loads it.
 ///
 /// ```dart
@@ -62,41 +63,13 @@ abstract class ComicLocalizations {
   /// A select's prompt and a picker's confirming button.
   String get choose;
 
-  /// A date picker's title and its month steps.
+  /// A date picker's title, and a range picker's heading until a day is chosen. In a language other than English,
+  /// ui_core's (`RawPickerWords`: Select date, in that language).
   String get chooseDate;
 
-  /// A time picker's title and its three wheels.
+  /// A time picker's title. In a language other than English, ui_core's (`RawPickerWords`: Select time, in that
+  /// language).
   String get chooseTime;
-
-  /// A time picker's hours.
-  @Deprecated(
-    'Use RawWidgetsLocalizations.timePickerHourLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
-  )
-  String get hour => 'Hour';
-
-  /// A time picker's minutes.
-  @Deprecated(
-    'Use RawWidgetsLocalizations.timePickerMinuteLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
-  )
-  String get minute => 'Minute';
-
-  /// A time picker's AM and PM.
-  @Deprecated(
-    'Use RawWidgetsLocalizations.timeFieldDayPeriodLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
-  )
-  String get period => 'AM/PM';
-
-  /// The time picker's two halves of the day.
-  @Deprecated(
-    'Use RawWidgetsLocalizations.anteMeridiemAbbreviation: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
-  )
-  String get am => 'AM';
-
-  /// The afternoon half: 'PM'.
-  @Deprecated(
-    'Use RawWidgetsLocalizations.postMeridiemAbbreviation: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
-  )
-  String get pm => 'PM';
 
   /// The side navigation's and the tabs' names.
   String get mainNavigation;
@@ -329,6 +302,10 @@ class _ComicLocalizationsShared extends ComicLocalizationsEn {
   @override
   String get resize => _shared.splitViewHandleLabel;
   @override
+  String get chooseDate => _shared.datePickerHelpText;
+  @override
+  String get chooseTime => _shared.timePickerDialHelpText;
+  @override
   String rating(int count, int total) =>
       _shared.ratingValueLabel(count.toDouble(), total);
   @override
@@ -343,16 +320,6 @@ class _ComicLocalizationsShared extends ComicLocalizationsEn {
     for (var day = DateTime.monday; day <= DateTime.sunday; day++)
       _shared.formatShortWeekday(day),
   ];
-  @override
-  String get hour => _shared.timePickerHourLabel;
-  @override
-  String get minute => _shared.timePickerMinuteLabel;
-  @override
-  String get period => _shared.timeFieldDayPeriodLabel;
-  @override
-  String get am => _shared.anteMeridiemAbbreviation;
-  @override
-  String get pm => _shared.postMeridiemAbbreviation;
 }
 
 class _ComicLocalizationsDelegate

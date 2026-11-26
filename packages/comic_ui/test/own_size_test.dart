@@ -56,12 +56,14 @@ final _fixed = <String, _Fixed>{
     const Size(32, 32),
     () => const ComicCircularProgressIndicator(value: .5),
   ),
+  // Its track is 48 wide; it stands as tall as the floor in force.
   'ComicSwitch': _Fixed(
-    const Size(48, 48),
+    Size(48, RawTapTargets.fallback.touch.height),
     () => const ComicSwitch(value: true),
   ),
+  // Its 46 face stands over the 40 floor, so its box is its face.
   'ComicSendButton': _Fixed(
-    const Size(48, 48),
+    const Size(46, 46),
     () => const ComicSendButton(),
     faceWide: true,
   ),
@@ -70,17 +72,17 @@ final _fixed = <String, _Fixed>{
     () => const ComicSparkline(label: 'Sales', values: [3, 5, 4, 8, 6, 9]),
   ),
   'ComicCheckbox': _Fixed(
-    const Size(48, 48),
+    RawTapTargets.fallback.touch,
     () => const ComicCheckbox(label: 'Keep issue', value: true),
     faceWide: true,
   ),
   'ComicBackButton': _Fixed(
-    const Size(48, 48),
+    RawTapTargets.fallback.touch,
     () => const ComicBackButton(),
     faceWide: true,
   ),
   'ComicIconButton': _Fixed(
-    const Size(48, 48),
+    RawTapTargets.fallback.touch,
     () => const ComicIconButton(Icons.add, label: 'Add'),
     faceWide: true,
   ),

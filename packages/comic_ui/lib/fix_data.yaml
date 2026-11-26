@@ -1,6 +1,6 @@
-# Comic's data-driven fixes: `dart fix --apply` moves a caller off what 0.2.0 deprecates, where the move is mechanical.
-# Rounded corners, a free motion and free stroke widths have no mechanical fix: their deprecation messages say what
-# to use. test_fixes/ holds each fix's before and after (`dart fix --compare-to-golden test_fixes`).
+# Comic's data-driven fixes: `dart fix --apply` moves a caller off what 0.2.0 deprecated and later versions removed,
+# where the move is mechanical. Rounded corners, a free motion and free stroke widths have no mechanical fix: their
+# deprecation messages and the CHANGELOG say what to use. test_fixes/ holds each fix's before and after (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
   - title: "Rename to 'standard'"

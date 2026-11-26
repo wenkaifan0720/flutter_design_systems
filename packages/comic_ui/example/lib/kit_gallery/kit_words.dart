@@ -122,6 +122,8 @@ const _arabic = <String, String>{
   'Cells': 'خلايا',
   'Type': 'الخط',
   'The colours': 'الألوان',
+  'The print runs': 'الطبعات',
+  'Read on': 'تابع القراءة',
   'Lettering': 'حروف مرسومة',
   'A label': 'تسمية',
   'A section head': 'عنوان قسم',

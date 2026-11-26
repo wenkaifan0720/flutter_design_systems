@@ -45,7 +45,7 @@ void main() {
       final bar = tester.getRect(find.byType(ComicMenuBar));
       expect(
         bar.height,
-        lessThan(ComicTapTarget.target * 2),
+        lessThan(ComicTapTarget.targets.pointer.height * 2),
         reason: 'the bar is $bar',
       );
       await tester.tap(find.text('File'));

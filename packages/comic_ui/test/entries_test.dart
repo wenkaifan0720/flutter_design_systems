@@ -592,7 +592,6 @@ void main() {
           shapes: ComicShapes.rounded(8),
           strokes: ComicStrokes.bold,
           density: ComicDensity.compact,
-          typeface: const ComicTypeface(scale: 1.15),
         );
         await tester.pumpWidget(
           MaterialApp(

@@ -142,11 +142,7 @@ void main() {
       shapes: ComicShapes.rounded(9),
       strokes: ComicStrokes.bold,
       density: ComicDensity.compact,
-      typeface: const ComicTypeface.app(
-        display: 'Display',
-        text: 'Text',
-        scale: 1.2,
-      ),
+      typeface: const ComicTypeface.app(display: 'Display', text: 'Text'),
       motion: const ComicMotion(state: Duration(milliseconds: 270)),
       chipTheme: const ComicStyle(fill: WidgetStatePropertyAll(Colors.red)),
     );
@@ -164,7 +160,7 @@ void main() {
       expect(derived.components, theme.components);
       expect(derived.motion, theme.motion);
       expect(derived.type.body.fontFamily, 'Text');
-      expect(derived.type.body.fontSize, closeTo(19.2, .001));
+      expect(derived.type.body.fontSize, 16);
       expect(derived.focus.width, 5);
     }
     final plain = ComicThemeData.offset();

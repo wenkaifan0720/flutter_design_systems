@@ -353,12 +353,12 @@ void main() {
   });
 
   group('lettering', () {
-    testWidgets('uses the display family, package and scale from the theme', (
+    testWidgets('uses the display family and package from the theme', (
       tester,
     ) async {
       for (final typeface in [
         ComicTypeface.look,
-        const ComicTypeface(display: 'ShantellSans', scale: 1.25),
+        const ComicTypeface(display: 'ShantellSans'),
       ]) {
         await tester.pumpWidget(
           comicApp(
@@ -368,7 +368,7 @@ void main() {
             ),
           ),
         );
-        final size = 40 * typeface.scale;
+        const size = 40.0;
         final words = TextPainter(
           text: TextSpan(
             text: 'ISSUE',

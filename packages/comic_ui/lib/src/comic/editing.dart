@@ -181,7 +181,10 @@ class ComicTextContextMenu extends StatelessWidget {
           label: labelOf(context, item),
           washColor: touch ? c.onPaper : c.text,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+            constraints: BoxConstraints(
+              minHeight: ComicTapTarget.targetOf(context),
+              minWidth: ComicTapTarget.targetOf(context),
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: ComicSpace.gap),
               child: Align(

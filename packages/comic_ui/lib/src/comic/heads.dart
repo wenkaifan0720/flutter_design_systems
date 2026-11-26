@@ -332,7 +332,7 @@ class _StarPainter extends CustomPainter {
   bool shouldRepaint(_StarPainter o) => o.fill != fill || o.line != line;
 }
 
-/// A way to more: a word and a arrow in the group's colour. A small tap target of its own: 44 tall.
+/// A way to more: a word and an arrow in the group's colour. A small tap target of its own: the floor tall.
 ///
 /// ```dart
 /// ComicMoreLink('See all', onPressed: () {})
@@ -621,7 +621,7 @@ class ComicIndicia extends StatelessWidget {
 }
 
 /// A score the reader gives: a row of stars to press, lit up to the one chosen. Pressing the chosen star again clears
-/// it when [clearable]. Each star is its own 44 target with a round mark of its own size; [ComicStars] shows a score
+/// it when [clearable]. Each star is its own target, the floor square, with a round mark of its own size; [ComicStars] shows a score
 /// that isn't asked for.
 ///
 /// ```dart

@@ -73,11 +73,7 @@ Future<void> _pumpReview(
     raised = find.byType(ComicDialog);
   }
   expect(tester.takeException(), isNull);
-  for (final guideline in [
-    androidTapTargetGuideline,
-    iOSTapTargetGuideline,
-    labeledTapTargetGuideline,
-  ]) {
+  for (final guideline in [touchFloorGuideline, labeledTapTargetGuideline]) {
     expect(
       await guideline.evaluate(tester),
       isA<Evaluation>().having((result) => result.passed, 'passed', true),

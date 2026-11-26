@@ -1,6 +1,6 @@
 // Every gallery page, by day and by night, against Flutter's four accessibility guidelines as every look reads them
-// (ui_core's shared check, world_checks.dart): Android's 48 px and iOS's 44 px tap targets, a label on every tap
-// target, and text contrast. gallery_guidelines_test.dart reads every preset too, with a second contrast reading.
+// (ui_core's shared check, world_checks.dart): the 40 px finger floor, a label on every tap target, and text
+// contrast. gallery_guidelines_test.dart reads every preset too, with a second contrast reading.
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -45,10 +45,9 @@ void main() {
           await expectMeetsGuidelines(tester);
           return;
         }
-        // world_checks.dart's four, its contrast reading the page but for the named labels.
+        // world_checks.dart's three, its contrast reading the page but for the named labels.
         final semantics = tester.ensureSemantics();
-        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-        await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(touchFloorGuideline));
         await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
         await expectLater(
           tester,
