@@ -1,15 +1,16 @@
-// A date field low on a phone opens its calendar where the whole month fits:
-// the calendar stands above the field rather than running off the screen's
-// foot, and shows every week, as tall as it opens at the top of the screen,
-// with nothing scrolled out of its plate.
+// A date field low on a short screen from 600 wide (below 600 the month opens
+// in a sheet) opens its calendar where the whole month fits: the calendar
+// stands above the field rather than running off the screen's foot, and
+// shows every week, as tall as it opens at the top of the screen, with
+// nothing scrolled out of its plate.
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const Size _phone = Size(390, 844);
+const Size _screen = Size(640, 844);
 
-/// Opens [picker] [above] points down a 390 by 844 phone and gives the open
+/// Opens [picker] [above] points down a 640 by 844 screen and gives the open
 /// calendar's rect and its plate's.
 Future<(Rect calendar, Rect plate)> _open(
   WidgetTester tester,
@@ -65,8 +66,8 @@ void main() {
   for (final MapEntry(key: kind, value: picker) in pickers.entries) {
     for (final above in [300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0]) {
       testWidgets("a $kind field ${above.round()} down: its calendar stays "
-          "whole on a phone's screen", (tester) async {
-        tester.view.physicalSize = _phone;
+          'whole on a short screen', (tester) async {
+        tester.view.physicalSize = _screen;
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
 
@@ -75,7 +76,7 @@ void main() {
         expect(calendar.top, greaterThanOrEqualTo(0));
         expect(
           calendar.bottom,
-          lessThanOrEqualTo(_phone.height),
+          lessThanOrEqualTo(_screen.height),
           reason: 'the calendar ran off the foot: $calendar',
         );
         expect(

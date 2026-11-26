@@ -40,12 +40,13 @@ class ApplianceChartSeries {
 // Whether the display is a pale LCD (by day) rather than smoked glass.
 bool _lcd(ApplianceColors c) => c.display.computeLuminance() > 0.4;
 
-/// The display's traces, in order: the signal, then colours that stay apart
-/// from it and from each other on the glass: inks at 3:1 and more on the
-/// day's LCD, lights on the night's glass.
+/// The display's traces, in order: the signal (on the day's LCD, its nearest
+/// tone that stands 3:1 there), then colours that stay apart from it and
+/// from each other on the glass: inks at 3:1 and more on the day's LCD,
+/// lights on the night's glass.
 List<Color> _traces(ApplianceColors c) => _lcd(c)
     ? [
-        c.signalInk,
+        RawPalette.readableTone(c.signal, on: [c.display], ratio: 3),
         const Color(0xFF1D6A7A),
         c.onDisplay,
         c.ready,

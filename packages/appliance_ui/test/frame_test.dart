@@ -232,7 +232,14 @@ void main() {
   });
 
   test('the preset by name', () {
-    expect(ApplianceThemeData.presets, ['warm']);
+    expect(ApplianceThemeData.presets, [
+      'warm',
+      'mint',
+      'butter',
+      'powder',
+      'blush',
+      'slate',
+    ]);
     expect(
       ApplianceThemeData.preset('warm', Brightness.dark).colors,
       ApplianceThemeData.dark().colors,

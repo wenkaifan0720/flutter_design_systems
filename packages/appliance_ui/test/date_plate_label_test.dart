@@ -1,5 +1,5 @@
-// A date picker's plate opened above its key stands over the field's label, not on it; opened below, it hangs from
-// the key.
+// From 600 wide a date picker's plate opened above its key stands over the
+// field's label, not on it; opened below, it hangs from the key.
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 Future<void> _open(WidgetTester tester, {required double top}) async {
   tester.view.devicePixelRatio = 1;
-  tester.view.physicalSize = const Size(390, 844);
+  tester.view.physicalSize = const Size(640, 844);
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     MaterialApp(

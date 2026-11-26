@@ -4,17 +4,32 @@ Appliance is a Flutter widget library with moulded keys, indicator lamps and rec
 
 ![Larder, Appliance's example shop, by day: its home page at 1440 px beside the same page on a 390 px phone](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/appliance_ui/screenshots/hero_home_day.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/appliance/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/appliance/) · [API reference](https://pub.dev/documentation/appliance_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/appliance/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=appliance) · [API reference](https://pub.dev/documentation/appliance_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Getting started
 
-Add the packages for the Material example below.
-
-```sh
-flutter pub add appliance_ui material_ui
+```yaml
+dependencies:
+  appliance_ui: ^0.5.0
 ```
 
-Load the bundled Barlow font before calling `runApp`. Place `ApplianceHost` in the application builder so pages and overlays share the same theme. The host also works with `CupertinoApp` and `WidgetsApp`.
+The smallest app: `ApplianceHost` in the app's `builder` gives everything under it Appliance's theme, by day and by night as the platform is.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:appliance_ui/appliance_ui.dart';
+
+void main() => runApp(
+  WidgetsApp(
+    color: const Color(0xFFEE6A26),
+    builder: (context, _) => ApplianceHost(
+      child: Center(child: ApplianceButton.filled('Start', onPressed: () {})),
+    ),
+  ),
+);
+```
+
+A fuller app on Material (`flutter pub add appliance_ui material_ui`) loads the bundled Barlow font before calling `runApp`, so the first frame is set in it, and places `ApplianceHost` in the application builder so pages and overlays share the same theme. The host also works with `CupertinoApp` and `WidgetsApp`.
 
 ```dart
 import 'package:appliance_ui/appliance_ui.dart';
@@ -108,7 +123,17 @@ ApplianceBarChart(
 
 ## Theming
 
-`ApplianceHost` follows the platform brightness. For a custom palette, wrap the app in an `ApplianceTheme` and pass the result of `ApplianceThemeData.from` to its `data` property.
+`ApplianceHost` follows the platform brightness. Appliance comes in six finishes, each by day and by night: `warm` (the default), `mint`, `butter`, `powder`, `blush` and `slate` (`ApplianceThemeData.presets`). Hand one to the host:
+
+```dart
+ApplianceHost(
+  light: ApplianceThemeData.preset('mint', Brightness.light),
+  dark: ApplianceThemeData.preset('mint', Brightness.dark),
+  child: child!,
+);
+```
+
+For a brand's own colours, pass the result of `ApplianceThemeData.from`: the plastic is moulded toward `finish` at the look's own tones, and `signal` is the main key, the lamps and the focus, its words a tone that reads on the housing and on every faceplate and key.
 
 ```dart
 final theme = ApplianceThemeData.from(
@@ -122,7 +147,7 @@ Use `theme.copyWith(texture: false)` for smooth housing. High-contrast mode also
 
 ## Accessibility and right to left
 
-Every part follows the app’s text direction: under a right-to-left `Directionality` the navigation, list rows, sliders, steppers and arrows mirror, and the example shop’s settings can switch the direction. Tab moves between controls, arrow keys move between tabs and rail destinations, and Escape dismisses open menus and dialogs. Slider thumbs support keyboard input and screen readers. For values with units, pass `valueText` to `ApplianceSlider` or `semanticFormatterCallback` to `ApplianceRangeSlider`.
+Every part follows the app’s text direction: under a right-to-left `Directionality` the navigation, list rows, sliders, steppers and arrows mirror, and the example shop’s settings can switch the direction. Tab moves between controls, arrow keys move between tabs and rail destinations, and Escape dismisses open menus and dialogs. Slider thumbs support keyboard input and screen readers. For values with units, pass `semanticFormatterCallback` to `ApplianceSlider` or `ApplianceRangeSlider`. Controls stand at ui_core's touch floor, 40 by 40, or an app's `RawTapTargetScope`. Below 600 wide the date pickers open their month in a sheet, as Material's open full width on a phone.
 
 ## Platforms and localization
 

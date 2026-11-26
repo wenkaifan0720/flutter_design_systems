@@ -1,3 +1,13 @@
+## 0.5.0
+
+- Six finishes, each by day and by night: `warm` (the default), `mint`, `butter`, `powder`, `blush` and `slate` (`ApplianceThemeData.presets`, `ApplianceThemeData.preset`, `ApplianceColors.preset`). The example's Foundations shows them, and its colour swatches show again (they had shrunk to a hairline).
+- Requires ui_core 0.7.2. Parts take ui_core's touch floor, 40 by 40 (was Appliance's own 48 under a finger), or an app's `RawTapTargetScope`: a slider's cap (was 44 on every input), a reorderable row's grip, a sheet's grip and every key and row that stood at the floor. A calendar's days stay 44.
+- `ApplianceTagInput`'s tags and `ApplianceBreadcrumb`'s places lay out in `RawChipGroup`. A tag's remove key stands in the floor's target (was 48 under a finger), so a tag is 8 narrower and more of them fit a run; the runs keep the field's row, 44. A breadcrumb's runs stand 40 tall (were 48 under a finger).
+- Below 600 wide, `ApplianceDatePicker` and `ApplianceDateRangePicker` open in a sheet titled Select date (`RawPickerWords`, in the app's language), the month the sheet's width; from 600 they open on a plate as before. On a phone the plate had opened narrower than the field, over the labels round it.
+- A calendar's days outside the month read 2.9:1 in a quiet tone of their own (were 1.9:1 by day).
+- `ApplianceThemeData.from` and `ApplianceColors.from` work out their colours with ui_core's `RawPalette` (`RawAccentRule.named`): the signal's words read 4.5:1 on the housing, a faceplate, a well and a key, its focus 3:1 on the housing and a faceplate, and muted words keep 4.5:1 on every plastic; a `finish` keeps its night plastic a tinted graphite, never brown. A toast's action takes the nearest tone of the signal that reads on the toast. By day a chart's first trace is the signal itself, or its nearest tone that stands 3:1 on the display (was the signal's words, deeper and duller). `applianceContrast` is `RawPalette.contrastRatio`.
+- Warm reads better. By day the signal's words are a tone deeper, so a link on the housing reads 4.5:1 (was 2.9:1), and the focus a tone deeper, 3:1 on the housing (was 2.65:1). By night the signal's words and muted words (a field's hint, a caption) are a hair lighter and read 4.5:1 on a key (were 4.2:1).
+
 ## 0.4.0
 
 - Requires ui_core 0.6.0. The kit's names the look shows take ui_core 0.6.0's `Raw` names (`RawWidgetsLocalizations` for `DesignLocalizations`, `RawStyleOf` for `DesignStyleOf`, `RawChartValueFormat` for `DesignChartValueFormat`, and the rest); the old names still compile, deprecated, and `dart fix` moves them.

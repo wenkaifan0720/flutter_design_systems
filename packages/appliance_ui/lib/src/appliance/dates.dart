@@ -15,6 +15,7 @@ import 'package:ui_core/ui_core.dart';
 import 'actions.dart';
 import 'lists.dart';
 import 'material.dart';
+import 'overlays.dart' show ApplianceSheet, showApplianceSheet;
 import 'select.dart';
 import 'text_field.dart' show ApplianceFieldLabel;
 import 'theme.dart';
@@ -47,7 +48,7 @@ String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
 /// A day cell's height at 1x text.
 const double _dayHeight = 44;
 
-/// A day cell's height: 44, or the look's floor under a finger (48), or
+/// A day cell's height: 44, or the floor when an app sets one above it, or
 /// taller as the text grows so its key holds a two-figure day whole.
 double _dayHeightOf(BuildContext context) {
   final theme = ApplianceTheme.of(context);
@@ -190,6 +191,21 @@ Widget _weekday(BuildContext context, int weekday, String label) {
   );
 }
 
+/// How far a day outside the month reads: quieter than the month's days,
+/// which read 7.4:1 and more on the housing, by at least 2.5 times, yet
+/// read (2.9:1, above the 2.6:1 Material and Cupertino give words outside a
+/// text entry).
+const double _outsideDayContrast = 2.9;
+
+/// A day outside the month: the disabled print's nearest tone that reads at
+/// [_outsideDayContrast] on the housing and on a faceplate (the calendar
+/// stands on either), so it stays apart from a day that is off.
+Color _outsideDay(ApplianceColors c) => RawPalette.readableTone(
+  c.printDisabled,
+  on: [c.housingTop, c.housingBottom, c.face],
+  ratio: _outsideDayContrast,
+);
+
 /// A day, painted for its [states]: chosen days (a range's ends) are lit
 /// signal keys, the days between them a trough the keys stand in, today
 /// marked by a small lit lamp. Hovering changes nothing; a press sinks a
@@ -235,7 +251,7 @@ Widget _day(
       bottom: c.keyBottom.withValues(alpha: 0),
       lift: 0,
       radius: BorderRadius.circular(radius),
-      foreground: day.inMonth ? c.print : c.printDisabled,
+      foreground: day.inMonth ? c.print : _outsideDay(c),
       focus: focused ? c.focus : c.focus.withValues(alpha: 0),
     );
   }
@@ -463,7 +479,7 @@ class _ApplianceCalendarState extends State<ApplianceCalendar> {
 
 /// A key that opens a plate under it, as a select's does: the date
 /// pickers' anchor.
-class _PickerKey extends StatelessWidget {
+class _PickerKey extends StatefulWidget {
   const _PickerKey({
     required this.text,
     required this.empty,
@@ -490,14 +506,61 @@ class _PickerKey extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
+  State<_PickerKey> createState() => _PickerKeyState();
+}
+
+/// How wide a month stands in a phone's sheet at most: about Material's
+/// phone date picker, so a wide sheet's days don't grow past a key.
+const double _sheetMonthWidth = 400;
+
+class _PickerKeyState extends State<_PickerKey> {
+  bool _sheetOpen = false;
+
+  // Below 600 wide the calendar rises in a sheet, as Material's pickers
+  // open full width on a phone: a plate narrower than the field would
+  // stand over the labels round it.
+  Future<void> _openSheet() async {
+    setState(() => _sheetOpen = true);
+    await showApplianceSheet<void>(
+      context: context,
+      semanticLabel: widget.semanticLabel ?? widget.labelText,
+      builder: (context) {
+        void close() => Navigator.of(context).pop();
+        return ApplianceSheet(
+          // As Material titles its date picker: Select date, in the app's
+          // language.
+          title: RawWidgetsLocalizations.of(context).datePickerHelpText,
+          onClose: close,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _sheetMonthWidth),
+              child: widget.plate(context, close),
+            ),
+          ),
+        );
+      },
+    );
+    if (mounted) setState(() => _sheetOpen = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final text = widget.text;
+    final empty = widget.empty;
+    final enabled = widget.enabled;
+    final error = widget.error;
+    final semanticLabel = widget.semanticLabel;
+    final semanticValue = widget.semanticValue;
+    final plate = widget.plate;
+    final style = widget.style;
+    final labelText = widget.labelText;
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    Widget face(RawOverlayAnchor? anchor) {
-      final open = anchor?.isOpen ?? false;
+    Widget face({VoidCallback? onPressed, bool? expanded}) {
+      final open = expanded ?? false;
       return RawButton(
-        onPressed: anchor?.toggle,
-        expanded: anchor?.isOpen,
+        onPressed: onPressed,
+        expanded: expanded,
         // The field names the key; the label names the plate it opens.
         semanticValue: semanticValue,
         excludeSemantics: true,
@@ -588,7 +651,10 @@ class _PickerKey extends StatelessWidget {
       );
     }
 
-    if (!enabled) return labelled(face(null));
+    if (!enabled) return labelled(face());
+    if (MediaQuery.sizeOf(context).width < 600) {
+      return labelled(face(onPressed: _openSheet, expanded: _sheetOpen));
+    }
     return RawPopover(
       semanticLabel: semanticLabel,
       placement: const RawPopoverPlacement(
@@ -601,7 +667,8 @@ class _PickerKey extends StatelessWidget {
       ),
       dampingRatio: ApplianceMotion.lid.dampingRatio,
       stiffness: ApplianceMotion.lid.stiffness,
-      anchorBuilder: (context, anchor) => labelled(face(anchor)),
+      anchorBuilder: (context, anchor) =>
+          labelled(face(onPressed: anchor.toggle, expanded: anchor.isOpen)),
       overlayBuilder: (context, info) => ApplianceMenuReveal(
         animation: info.animation,
         below: info.side != RawPopoverSide.above,
@@ -671,9 +738,11 @@ class _CalendarPlateState extends State<_CalendarPlate> {
     super.dispose();
   }
 
+  // A plate's month stands seven 40 px days wide; a phone's sheet gives it
+  // the sheet's width.
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 7 * 40,
+    width: MediaQuery.sizeOf(context).width < 600 ? null : 7 * 40,
     child: ApplianceCalendar(
       controller: _controller,
       autofocus: true,

@@ -7,7 +7,7 @@ import '../kit.dart';
 Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Type and colour',
-  sections: const [_Depths(), _Type(), _Colours()],
+  sections: const [_Depths(), _Type(), _Colours(), _Finishes()],
 );
 
 class _Depths extends StatelessWidget {
@@ -84,6 +84,7 @@ class _Colours extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
+            width: double.infinity,
             height: 40,
             child: ApplianceSurface(
               face: ApplianceFace.well(c, fill: colour, radius: 6),
@@ -108,6 +109,126 @@ class _Colours extends StatelessWidget {
             chip('Display', c.display),
             chip('Danger', c.danger),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+// Each of Appliance's finishes at the page's brightness: a piece of its
+// housing holding a key, a latched key and the signal key, named under it.
+class _Finishes extends StatelessWidget {
+  const _Finishes();
+
+  @override
+  Widget build(BuildContext context) {
+    final page = context.applianceTheme;
+    final brightness = page.colors.brightness;
+    Widget key(ApplianceFace face, String legend, TextStyle style) => Expanded(
+      child: SizedBox(
+        height: 32,
+        child: ApplianceSurface(
+          face: face,
+          child: Center(
+            child: Text(
+              legend,
+              maxLines: 1,
+              style: style.copyWith(color: face.foreground),
+            ),
+          ),
+        ),
+      ),
+    );
+    return KitSection(
+      title: 'Finishes',
+      note:
+          'Six finishes, each the warm plastic at the same tones in another '
+          'hue with a signal of its own: warm, mint, butter, powder, blush and '
+          'slate (ApplianceThemeData.preset).',
+      children: [
+        LayoutBuilder(
+          builder: (context, box) {
+            // Six, three or two across, so the rows come out even.
+            const gap = ApplianceSpacing.small;
+            final across = box.maxWidth >= 6 * 132 + 5 * gap
+                ? 6
+                : box.maxWidth >= 3 * 132 + 2 * gap
+                ? 3
+                : 2;
+            final width = ((box.maxWidth - (across - 1) * gap) / across)
+                .floorToDouble();
+            return KitRow(
+              children: [
+                for (final name in ApplianceThemeData.presets)
+                  SizedBox(
+                    width: width,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ApplianceTheme(
+                          data: ApplianceThemeData.preset(name, brightness),
+                          child: Builder(
+                            builder: (context) {
+                              final theme = context.applianceTheme;
+                              final c = theme.colors;
+                              final s = theme.textTheme.label.copyWith(
+                                fontSize: 13,
+                              );
+                              return DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [c.housingTop, c.housingBottom],
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    ApplianceMetrics.keyRadius,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(
+                                    ApplianceSpacing.small,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      key(
+                                        ApplianceFace.key(c, radius: 6),
+                                        'Off',
+                                        s,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      key(
+                                        ApplianceFace.keyDown(c, radius: 6),
+                                        'Eco',
+                                        s,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      key(
+                                        ApplianceFace(
+                                          top: c.signalTop,
+                                          bottom: c.signalBottom,
+                                          lift: 1,
+                                          radius: BorderRadius.circular(6),
+                                          foreground: c.onSignal,
+                                        ),
+                                        'Go',
+                                        s,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: ApplianceSpacing.small),
+                        Text(name, style: page.textTheme.secondary),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ],
     );

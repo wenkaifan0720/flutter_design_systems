@@ -551,14 +551,15 @@ class _ApplianceTagInputState<T extends Object>
                 face: layered.on(_wellFace(c, states, error: error)),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: theme.controlHeight),
-                  // A row of tags is a finger's reach high (the keys
-                  // drawn smaller in it), so the well's inset is the rest.
+                  // A run of tags is the field's row high, never under the
+                  // touch floor (the keys drawn smaller in it), so the
+                  // well's inset is the rest.
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: ApplianceSpacing.small,
                       vertical: ApplianceSpacing.nudge,
                     ),
-                    child: Wrap(
+                    child: RawChipGroup(
                       spacing: ApplianceSpacing.small,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
@@ -591,7 +592,7 @@ class _ApplianceTagInputState<T extends Object>
             child: ApplianceBareField(
               controller: field.controller,
               focusNode: field.focusNode,
-              minHeight: theme.controlHeight - 2 * ApplianceSpacing.nudge,
+              minHeight: _tagRow(context, theme),
               hint: widget.values.isEmpty ? widget.hintText : null,
               semanticLabel: widget.semanticLabel ?? widget.labelText,
               expanded: field.isOpen,
@@ -604,6 +605,14 @@ class _ApplianceTagInputState<T extends Object>
     );
   }
 }
+
+/// A run of tags' height: the field's row (its height less a hairline pair
+/// above and below), never under the touch floor, so a tag's remove key
+/// reaches a finger's whole run.
+double _tagRow(BuildContext context, ApplianceThemeData theme) => math.max(
+  theme.controlHeight - 2 * ApplianceSpacing.nudge,
+  RawTapTargets.of(context).touch.height,
+);
 
 /// A choice latched into a tag input's well: a small key with its words and
 /// a remove key.
@@ -635,10 +644,10 @@ class _TagKey extends StatelessWidget {
           foreground: enabled ? c.print : c.printDisabled,
           focus: focused ? c.focus : c.focus.withValues(alpha: 0),
         );
-    // The row is a finger's reach high, the key drawn in its middle, so the
-    // remove key reaches the row's whole height.
-    final row = theme.controlHeight - 2 * ApplianceSpacing.nudge;
-    final inset = ApplianceSpacing.small - ApplianceSpacing.nudge;
+    // The key is drawn in the run's middle, as far in from the well's top as
+    // from its start, and the remove key reaches the run's whole height.
+    final row = _tagRow(context, theme);
+    const inset = ApplianceSpacing.small - ApplianceSpacing.nudge;
     return SizedBox(
       height: row,
       child: Stack(

@@ -95,7 +95,7 @@ class ApplianceBreadcrumb extends StatelessWidget {
       container: true,
       label: semanticLabel,
       explicitChildNodes: true,
-      child: Wrap(
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         runSpacing: ApplianceSpacing.tight,
         children: [

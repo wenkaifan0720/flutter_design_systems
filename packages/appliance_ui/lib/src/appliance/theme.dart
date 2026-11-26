@@ -262,8 +262,8 @@ class ApplianceColors with Diagnosticable {
     signalTop: Color(0xFFF78A4C),
     signalBottom: Color(0xFFE05E1E),
     onSignal: Color(0xFF1D1A17),
-    signalInk: Color(0xFFAD3F0B),
-    focus: Color(0xFFB8420C),
+    signalInk: Color(0xFF802A00),
+    focus: Color(0xFFAC3A02),
     lampOff: Color(0xFFC9C4BB),
     danger: Color(0xFFB3261E),
     onDanger: Color(0xFFFFFFFF),
@@ -290,7 +290,7 @@ class ApplianceColors with Diagnosticable {
     keyDownTop: Color(0xFF2A2926),
     keyDownBottom: Color(0xFF302F2C),
     print: Color(0xFFF1EBE1),
-    printMuted: Color(0xFFB6AFA4),
+    printMuted: Color(0xFFBEB7AB),
     printDisabled: Color(0xFF8A857C),
     hairline: Color(0x12FFF0DC),
     seamShade: Color(0x73000000),
@@ -301,7 +301,7 @@ class ApplianceColors with Diagnosticable {
     signalTop: Color(0xFFF78A4C),
     signalBottom: Color(0xFFE05E1E),
     onSignal: Color(0xFF1D1A17),
-    signalInk: Color(0xFFF59A62),
+    signalInk: Color(0xFFFEA168),
     focus: Color(0xFFF2803F),
     lampOff: Color(0xFF4E4C47),
     danger: Color(0xFFFF8F80),
@@ -314,10 +314,15 @@ class ApplianceColors with Diagnosticable {
     ready: Color(0xFF63C77A),
   );
 
-  /// Appliance by [brightness] with the plastic tinted toward [finish] (its
-  /// hue and a little of its saturation; the tones stay the look's, so the
-  /// print keeps its contrast) and [signal] for the main key, the lamps and
-  /// the focus backlight (its ink tones darkened or lightened until they read).
+  /// Appliance by [brightness] with the plastic moulded toward [finish] (its
+  /// hue at each part's own tone, a little of its chroma: the tones stay the
+  /// look's, so the print keeps its contrast; by night the plastic holds
+  /// little chroma, so a cream finish is a warm graphite, never brown) and
+  /// [signal] for the main key, the lamps and the focus backlight: the named
+  /// colour with the print or white on it, whichever reads at 4.5:1 (moved as
+  /// little as it must when neither does); its words the nearest tone of its
+  /// hue that reads at 4.5:1 on a faceplate, a well and a key, and its focus
+  /// the nearest that reads at 3:1 on the housing and a faceplate.
   ///
   /// ```dart
   /// final mint = ApplianceColors.from(brightness: Brightness.light, finish: const Color(0xFFD9EDE4), signal: const Color(0xFF1F8A70));
@@ -327,70 +332,35 @@ class ApplianceColors with Diagnosticable {
     Color? finish,
     Color? signal,
   }) {
-    final base = brightness == Brightness.light ? light : dark;
-    var colors = base;
-    if (finish != null) {
-      final tint = HSLColor.fromColor(finish);
-      Color tinted(Color c) {
-        if (c.a == 0) return c;
-        final hsl = HSLColor.fromColor(c);
-        return hsl
-            .withHue(tint.hue)
-            .withSaturation(
-              math.min(0.45, hsl.saturation * 0.4 + tint.saturation * 0.35),
-            )
-            .toColor()
-            .withValues(alpha: c.a);
-      }
-
-      colors = colors.copyWith(
-        housingTop: tinted(base.housingTop),
-        housingBottom: tinted(base.housingBottom),
-        face: tinted(base.face),
-        well: tinted(base.well),
-        trough: tinted(base.trough),
-        keyTop: tinted(base.keyTop),
-        keyBottom: tinted(base.keyBottom),
-        keyDownTop: tinted(base.keyDownTop),
-        keyDownBottom: tinted(base.keyDownBottom),
-        lampOff: tinted(base.lampOff),
-      );
-    }
-    if (signal != null) {
-      final hsl = HSLColor.fromColor(signal);
-      Color shift(double by) =>
-          hsl.withLightness((hsl.lightness + by).clamp(0.0, 1.0)).toColor();
-      // The ink tones walk from the signal until they read on a faceplate
-      // (4.5:1, for words) and on the housing (3:1, for the bezel).
-      Color reading(Color on, double ratio) {
-        final step = brightness == Brightness.light ? -0.02 : 0.02;
-        var c = signal;
-        for (var i = 0; i < 40 && applianceContrast(c, on) < ratio; i++) {
-          c = HSLColor.fromColor(c)
-              .withLightness(
-                (HSLColor.fromColor(c).lightness + step).clamp(0.0, 1.0),
-              )
-              .toColor();
-        }
-        return c;
-      }
-
-      final onSignal =
-          applianceContrast(const Color(0xFF1D1A17), signal) >=
-              applianceContrast(const Color(0xFFFFFFFF), signal)
-          ? const Color(0xFF1D1A17)
-          : const Color(0xFFFFFFFF);
-      colors = colors.copyWith(
-        signal: signal,
-        signalTop: shift(0.08),
-        signalBottom: shift(-0.05),
-        onSignal: onSignal,
-        signalInk: reading(colors.face, 4.5),
-        focus: reading(colors.housingBottom, 3),
-      );
-    }
+    var colors = brightness == Brightness.light ? light : dark;
+    if (finish != null) colors = _moulded(colors, finish);
+    if (signal != null) colors = _signalled(colors, signal);
     return colors;
   }
+
+  /// Appliance's finish [name] (one of [ApplianceThemeData.presets]) for
+  /// [brightness]: `warm` ([light] and [dark]: warm-white plastic, an
+  /// orange signal), `mint` (mint plastic, a green signal), `butter` (cream
+  /// plastic, a tomato signal), `powder` (powder-blue plastic, a blue
+  /// signal), `blush` (pink plastic, a raspberry signal) or `slate` (cool
+  /// grey plastic, an amber signal). Each is the warm plastic at its own
+  /// tones in another hue ([ApplianceColors.from]), so every legend reads as
+  /// it does in warm. An unknown name gives warm.
+  ///
+  /// ```dart
+  /// final mint = ApplianceColors.preset('mint', Brightness.dark);
+  /// ```
+  factory ApplianceColors.preset(String name, Brightness brightness) {
+    final finish = _finishes[name];
+    if (finish == null) return brightness == Brightness.dark ? dark : light;
+    return _presets[(name, brightness)] ??= ApplianceColors.from(
+      brightness: brightness,
+      finish: finish.plastic,
+      signal: finish.signal,
+    );
+  }
+
+  static final Map<(String, Brightness), ApplianceColors> _presets = {};
 
   /// Day or night.
   final Brightness brightness;
@@ -428,7 +398,8 @@ class ApplianceColors with Diagnosticable {
   /// The printed legends: titles, words, glyphs.
   final Color print;
 
-  /// Secondary legends: a row's supporting line, a caption.
+  /// Secondary legends: a row's supporting line, a caption, a field's hint:
+  /// 4.5:1 on the housing, a faceplate, a well and a key.
   final Color printMuted;
 
   /// A disabled part's legend.
@@ -461,12 +432,12 @@ class ApplianceColors with Diagnosticable {
   /// Legends on the signal key.
   final Color onSignal;
 
-  /// The signal as words on a faceplate (a link, a price you can act on):
-  /// 4.5:1.
+  /// The signal as words (a link, a price you can act on): 4.5:1 on the
+  /// housing, a faceplate, a well and a key.
   final Color signalInk;
 
   /// The focus backlight: the signal, deep enough for 3:1 on the housing and
-  /// on a key.
+  /// on a faceplate.
   final Color focus;
 
   /// A lamp that is out.
@@ -678,12 +649,97 @@ class ApplianceColors with Diagnosticable {
   }
 }
 
-/// The contrast ratio of [a] on [b], as WCAG measures it (1 to 21).
-double applianceContrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
+/// The contrast ratio of [a] on [b], as WCAG measures it (1 to 21;
+/// [RawPalette.contrastRatio]: a translucent [a] is read laid over [b]).
+double applianceContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
+
+// The most chroma a finish ([ApplianceColors.from]'s `finish`) gives the
+// plastic: a pale tint, so a strong colour tints it and never paints it.
+const double _finishTint = 14;
+
+// [base]'s plastic moulded in [finish]'s hue, each part at its own tone.
+ApplianceColors _moulded(ApplianceColors base, Color finish) {
+  final hct = RawHct.fromColor(finish);
+  final tones = RawNeutralTones.of(
+    hct.withChroma(math.min(hct.chroma, _finishTint)).toColor(),
+  );
+  Color at(Color c) => c.a == 0
+      ? c
+      : tones.tone(RawHct.fromColor(c).tone).withValues(alpha: c.a);
+  return base.copyWith(
+    housingTop: at(base.housingTop),
+    housingBottom: at(base.housingBottom),
+    face: at(base.face),
+    well: at(base.well),
+    trough: at(base.trough),
+    keyTop: at(base.keyTop),
+    keyBottom: at(base.keyBottom),
+    keyDownTop: at(base.keyDownTop),
+    keyDownBottom: at(base.keyDownBottom),
+    lampOff: at(base.lampOff),
+  );
 }
+
+// [base] with its signal key moulded in [signal] (RawPalette.accentFill,
+// the named colour kept whenever the print or white reads on it), its words
+// and its focus the nearest tones of its hue that read on [base]'s plastic.
+ApplianceColors _signalled(ApplianceColors base, Color signal) {
+  final key = RawPalette.accentFill(
+    signal,
+    brightness: base.brightness,
+    rule: RawAccentRule.named,
+    darkInk: ApplianceColors.light.onSignal,
+  );
+  final hsl = HSLColor.fromColor(key.fill);
+  Color shift(double by) =>
+      hsl.withLightness((hsl.lightness + by).clamp(0.0, 1.0)).toColor();
+  return base.copyWith(
+    signal: key.fill,
+    // The moulding's light and shade, each at the nearest tone where the
+    // legend still reads 4.5:1.
+    signalTop: RawPalette.readableTone(shift(0.08), on: [key.ink]),
+    signalBottom: RawPalette.readableTone(shift(-0.05), on: [key.ink]),
+    onSignal: key.ink,
+    // Words: a link, a text key, a lit row, at 4.5:1 on the housing, a
+    // faceplate, a well and a key, as warm's do.
+    signalInk: RawPalette.readableTone(
+      signal,
+      on: [
+        base.housingTop,
+        base.housingBottom,
+        base.face,
+        base.well,
+        base.keyTop,
+        base.keyBottom,
+      ],
+    ),
+    // The backlight round a focused key's foot, on the housing or a
+    // faceplate.
+    focus: RawPalette.readableTone(
+      signal,
+      on: [base.housingTop, base.housingBottom, base.face],
+      ratio: 3,
+    ),
+  );
+}
+
+// A finish of Appliance beside warm (ApplianceColors.light and dark): the
+// plastic's tint and the signal.
+class _Finish {
+  const _Finish(this.plastic, this.signal);
+
+  final Color plastic;
+  final Color signal;
+}
+
+// Appliance's finishes beside warm.
+const Map<String, _Finish> _finishes = {
+  'mint': _Finish(Color(0xFFD9EDE4), Color(0xFF1F8A70)),
+  'butter': _Finish(Color(0xFFF3E7C2), Color(0xFFD33F2C)),
+  'powder': _Finish(Color(0xFFD5E2EF), Color(0xFF2F6BC2)),
+  'blush': _Finish(Color(0xFFF2DADD), Color(0xFFC8385A)),
+  'slate': _Finish(Color(0xFFCDD2D8), Color(0xFFF0A81C)),
+};
 
 /// Appliance's text styles: four a screen reads in (a title, the body, a
 /// secondary line and a key's label), the caps legend printed over a group,
@@ -865,9 +921,10 @@ class ApplianceTextTheme with Diagnosticable {
 /// its housing carries its moulded grain ([texture]), and a component style
 /// per part, as Flutter's `ThemeData` holds a `ButtonStyle` per button.
 ///
-/// [ApplianceThemeData.light] and [ApplianceThemeData.dark] are the look's
-/// one preset, warm; [ApplianceThemeData.from] recolours its finish and its
-/// signal for a brand.
+/// [ApplianceThemeData.light] and [ApplianceThemeData.dark] are warm, the
+/// look's default finish; [ApplianceThemeData.preset] gives each of its six
+/// finishes ([presets]) and [ApplianceThemeData.from] recolours the finish
+/// and the signal for a brand.
 ///
 /// ```dart
 /// ApplianceTheme(data: ApplianceThemeData.light(), child: child)
@@ -919,20 +976,37 @@ class ApplianceThemeData with Diagnosticable {
   factory ApplianceThemeData.dark({RawDensity? density}) =>
       ApplianceThemeData(colors: ApplianceColors.dark, density: density);
 
-  /// The look's presets by name: one, `warm` (light and dark).
-  static const List<String> presets = ['warm'];
+  /// The look's finishes by name, each by day and by night: `warm` (the
+  /// default), `mint`, `butter`, `powder`, `blush` and `slate`
+  /// ([ApplianceColors.preset]).
+  static const List<String> presets = [
+    'warm',
+    'mint',
+    'butter',
+    'powder',
+    'blush',
+    'slate',
+  ];
 
-  /// The preset [name] for [brightness]: `warm`, the only one.
+  /// The finish [name], one of [presets], for [brightness]
+  /// ([ApplianceColors.preset]).
   ///
   /// ```dart
-  /// ApplianceThemeData.preset('warm', Brightness.dark)
+  /// ApplianceThemeData.preset('mint', Brightness.dark)
   /// ```
-  factory ApplianceThemeData.preset(String name, Brightness brightness) {
+  factory ApplianceThemeData.preset(
+    String name,
+    Brightness brightness, {
+    RawDensity? density,
+  }) {
     assert(
       presets.contains(name),
       'Appliance has no preset $name; it offers ${presets.join(', ')}.',
     );
-    return ApplianceThemeData.from(brightness: brightness);
+    return ApplianceThemeData(
+      colors: ApplianceColors.preset(name, brightness),
+      density: density,
+    );
   }
 
   /// [brightness]'s Appliance, or a brand's: the plastic tinted toward
@@ -1275,12 +1349,9 @@ class ApplianceTheme extends StatelessWidget {
   /// What wears it.
   final Widget child;
 
-  /// The tap floors every Appliance control stands at: 48 by 48 for a
-  /// finger, 24 by 24 for a pointer.
-  static const RawTapTargets tapTargets = RawTapTargets(
-    touch: Size(48, 48),
-    pointer: Size(24, 24),
-  );
+  /// The tap floors every Appliance control stands at: ui_core's, 40 by 40
+  /// for a finger and 24 by 24 for a pointer.
+  static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   static final ApplianceThemeData _fallback = ApplianceThemeData.light();
 

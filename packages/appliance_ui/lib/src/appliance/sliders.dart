@@ -18,8 +18,11 @@ import 'theme.dart';
 // The ui_core types this part's API takes, through the look's barrel.
 export 'package:ui_core/ui_core.dart' show RawRangeValues;
 
-/// The width a fader cap's touch takes.
-const double _capReach = 44;
+/// The width a fader cap's touch takes: the touch floor on every input
+/// (40, or the app's [RawTapTargetScope]), so a finger finds it on a
+/// pointer device too.
+double _capReachOf(BuildContext context) =>
+    RawTapTargets.of(context).touch.width;
 
 /// A fader cap's size.
 const Size _capSize = Size(20, 30);
@@ -250,9 +253,9 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
     return widget.min + ((clamped - widget.min) / step).round() * step;
   }
 
-  double _at(double dx, double width, bool rtl) {
-    final usable = width - _capReach;
-    var f = usable <= 0 ? 0.0 : (dx - _capReach / 2) / usable;
+  double _at(double dx, double width, bool rtl, double reach) {
+    final usable = width - reach;
+    var f = usable <= 0 ? 0.0 : (dx - reach / 2) / usable;
     f = f.clamp(0.0, 1.0);
     if (rtl) f = 1 - f;
     return _snap(widget.min + f * (widget.max - widget.min));
@@ -266,10 +269,12 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
     final enabled = widget.onChanged != null;
     final span = widget.max - widget.min;
     final fraction = ((widget.value - widget.min) / span).clamp(0.0, 1.0);
+    final reach = _capReachOf(context);
     return LayoutBuilder(
       builder: (context, box) {
         final width = box.maxWidth.isFinite ? box.maxWidth : 240.0;
-        void drag(double dx) => widget.onChanged?.call(_at(dx, width, rtl));
+        void drag(double dx) =>
+            widget.onChanged?.call(_at(dx, width, rtl, reach));
         return MouseRegion(
           onEnter: (_) => setState(() => _hovered = true),
           onExit: (_) => setState(() => _hovered = false),
@@ -306,14 +311,13 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
                     ? ApplianceMotion.press
                     : ApplianceMotion.snap,
                 builder: (context, f, _) {
-                  final x =
-                      _capReach / 2 + (rtl ? 1 - f : f) * (width - _capReach);
+                  final x = reach / 2 + (rtl ? 1 - f : f) * (width - reach);
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Positioned(
-                        left: _capReach / 2,
-                        right: _capReach / 2,
+                        left: reach / 2,
+                        right: reach / 2,
                         top: 0,
                         bottom: 0,
                         child: CustomPaint(
@@ -332,9 +336,9 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
                         ),
                       ),
                       Positioned(
-                        left: x - _capReach / 2,
+                        left: x - reach / 2,
                         top: 0,
-                        width: _capReach,
+                        width: reach,
                         height: theme.controlHeight,
                         child: RawValueHandle(
                           value: widget.value
@@ -353,7 +357,7 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
                               widget.semanticFormatterCallback ?? _plain,
                           focusNode: widget.focusNode,
                           autofocus: widget.autofocus,
-                          minimumSize: Size(_capReach, theme.controlHeight),
+                          minimumSize: Size(reach, theme.controlHeight),
                           builder: (context, states) => Center(
                             child: _Cap(
                               enabled: !states.contains(WidgetState.disabled),
@@ -458,7 +462,7 @@ class ApplianceRangeSlider extends StatelessWidget {
         semanticFormatterCallback: semanticFormatterCallback,
         onChangeStart: onChangeStart,
         onChangeEnd: onChangeEnd,
-        thumbSize: Size(_capReach, theme.controlHeight),
+        thumbSize: Size(_capReachOf(context), theme.controlHeight),
         trackBuilder: (context, track) => SizedBox(
           height: theme.controlHeight,
           child: CustomPaint(

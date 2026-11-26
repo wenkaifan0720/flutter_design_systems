@@ -454,7 +454,7 @@ class ApplianceSheet extends StatelessWidget {
                 ),
                 // The grip: a short moulded slot, ui_core's handle (a press
                 // or Down closes the sheet; it has one size). Its target, the
-                // look's floor (48 px for a finger), stands over the title
+                // touch floor (40, or the app's), stands over the title
                 // row's middle.
                 PositionedDirectional(
                   top: 0,
@@ -464,8 +464,8 @@ class ApplianceSheet extends StatelessWidget {
                     child: RawBottomSheetDragHandle(
                       builder: (context, states) => TapTargetPadding(
                         alignment: AlignmentDirectional.topCenter,
-                        child: SizedBox.square(
-                          dimension: 44,
+                        child: SizedBox.fromSize(
+                          size: RawTapTargets.of(context).touch,
                           child: Align(
                             alignment: Alignment.topCenter,
                             child: Padding(
@@ -633,14 +633,13 @@ class _Toast extends StatelessWidget {
     final legend = layered.foreground ?? c.onDisplay;
     final words = RawWidgetsLocalizations.of(context);
     // The lamp and the action light in the signal: bright on the night's
-    // glass, a deep ink on the day's LCD, walked toward the figures' ink
-    // until the action's words read at 4.5:1.
+    // glass, a deep ink on the day's LCD, at the nearest tone of it whose
+    // words read at 4.5:1 there.
     final glow = glass.computeLuminance() > 0.4 ? c.signal : c.signalTop;
-    var action = glass.computeLuminance() > 0.4 ? c.signalInk : c.signalTop;
-    for (var t = 0.05; t <= 1 && applianceContrast(action, glass) < 4.5;) {
-      action = Color.lerp(c.signalInk, legend, t)!;
-      t += 0.05;
-    }
+    final action = RawPalette.readableTone(
+      glass.computeLuminance() > 0.4 ? c.signalInk : c.signalTop,
+      on: [glass],
+    );
     const glassRadius =
         ApplianceMetrics.lidRadius - ApplianceMetrics.windowInset;
     const keyInset = ApplianceSpacing.tight;

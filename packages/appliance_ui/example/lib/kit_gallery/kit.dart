@@ -17,7 +17,7 @@ import 'package:appliance_ui/appliance_ui.dart';
 
 import 'theme.dart';
 
-/// The preset the gallery shows (Appliance has one: warm).
+/// The preset the gallery shows (one of ApplianceThemeData.presets).
 String kitShownPreset = kitPreset;
 
 /// A live theme override, for a test or the example.
@@ -26,7 +26,7 @@ ApplianceThemeData Function(Brightness brightness)? kitShownTheme;
 /// The shown theme in either appearance.
 ApplianceThemeData kitTheme(Brightness brightness) =>
     kitShownTheme?.call(brightness) ??
-    ApplianceThemeData.from(brightness: brightness);
+    ApplianceThemeData.preset(kitShownPreset, brightness);
 
 /// Marks pages that share the example's app and navigator.
 class KitGalleryScope extends InheritedWidget {

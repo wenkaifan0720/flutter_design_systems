@@ -976,7 +976,8 @@ class _Arrow extends StatelessWidget {
   }
 }
 
-/// A grip: three ridges moulded in, where a row is held to move it.
+/// A grip: three ridges moulded in, where a row is held to move it, a
+/// finger's floor square on every input.
 class _Grip extends StatelessWidget {
   const _Grip();
 
@@ -985,9 +986,8 @@ class _Grip extends StatelessWidget {
     final c = ApplianceTheme.of(context).colors;
     return MouseRegion(
       cursor: SystemMouseCursors.grab,
-      child: SizedBox(
-        width: 44,
-        height: 44,
+      child: SizedBox.fromSize(
+        size: RawTapTargets.of(context).touch,
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,

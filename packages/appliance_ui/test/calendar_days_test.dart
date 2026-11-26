@@ -1,4 +1,5 @@
-// A calendar's days are whole targets, at least the look's floor tall under a finger, and read in the app's digits.
+// A calendar's days are whole targets, 44 tall, never under the touch floor
+// (an app's RawTapTargetScope can raise it), and read in the app's digits.
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
@@ -8,6 +9,7 @@ Future<void> _show(
   WidgetTester tester, {
   Locale locale = const Locale('en'),
   double width = 390,
+  RawTapTargets? targets,
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = Size(width, 900);
@@ -24,12 +26,20 @@ Future<void> _show(
           textDirection: locale.languageCode == 'ar'
               ? TextDirection.rtl
               : TextDirection.ltr,
-          child: const ApplianceHost(
+          child: ApplianceHost(
             brightness: Brightness.light,
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: SizedBox(width: 358, child: ApplianceCalendar()),
-            ),
+            child: targets == null
+                ? const Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(width: 358, child: ApplianceCalendar()),
+                  )
+                : RawTapTargetScope(
+                    targets: targets,
+                    child: const Align(
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(width: 358, child: ApplianceCalendar()),
+                    ),
+                  ),
           ),
         ),
       ),
@@ -49,11 +59,20 @@ double _dayHeight(WidgetTester tester, String label) => tester
 void main() {
   setUpAll(applianceLoadFonts);
 
-  testWidgets('under a finger a day is as tall as the look\'s floor', (
+  testWidgets('under a finger a day keeps its 44, over the touch floor', (
     tester,
   ) async {
     await _show(tester);
-    expect(_dayHeight(tester, '20'), greaterThanOrEqualTo(48));
+    expect(_dayHeight(tester, '20'), 44);
+    expect(
+      _dayHeight(tester, '20'),
+      greaterThanOrEqualTo(RawTapTargets.fallback.touch.height),
+    );
+  });
+
+  testWidgets("under an app's floor of 48 a day is 48 tall", (tester) async {
+    await _show(tester, targets: const RawTapTargets(touch: Size.square(48)));
+    expect(_dayHeight(tester, '20'), 48);
   });
 
   testWidgets('under a pointer a day keeps its 44', (tester) async {
