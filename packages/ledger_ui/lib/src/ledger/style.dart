@@ -28,7 +28,7 @@ export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 /// | `side` | the whole rule, ink and width; it wins over `edge` |
 /// | `shape` | the corners: a rounded rectangle's, a stadium or a circle |
 /// | `padding` | the room between the rule and what stands inside |
-/// | `minimumSize` | the least the face stands; its tap target stays 44 round it |
+/// | `minimumSize` | the least the face stands; its tap target stays the tap floor round it |
 /// | `textStyle` | the words' style, merged over Ledger's (its ink comes from `foreground`) |
 /// | `iconSize` | a glyph's size |
 ///

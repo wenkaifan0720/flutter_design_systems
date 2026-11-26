@@ -123,7 +123,7 @@ class LedgerRangeSlider extends StatelessWidget {
     final t = context.ledgerTheme;
     final live = onChanged != null;
     final floor = RawTapTargets.of(context).floorOn();
-    final side = floor.height < _strip ? _strip : floor.height;
+    final side = floor.height;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return Opacity(
       opacity: live ? 1 : _off,
@@ -203,7 +203,6 @@ class LedgerRangeSlider extends StatelessWidget {
     );
   }
 
-  static const double _strip = LedgerLayout.minHitTarget;
   static const double _off = .45;
 }
 

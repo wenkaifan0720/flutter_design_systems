@@ -15,7 +15,7 @@ import '../pressable/pressable.dart';
 /// Flutter control): a finished line's tick, undimmed, that lets taps
 /// through. Give a check that stands without words a
 /// [label], spoken and never printed. It lays out at the tap floor round its
-/// ring (44 for a finger, 24 for a pointer), and a tap anywhere in that
+/// ring (40 for a finger, 24 for a pointer), and a tap anywhere in that
 /// room reaches it.
 ///
 /// ```dart

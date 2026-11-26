@@ -73,7 +73,8 @@ class LedgerSwipeActions extends StatelessWidget {
     super.key,
   });
 
-  /// The row, on the paper: it covers the acts until it is dragged.
+  /// The row. It lays no paper of its own: its acts are built only in the
+  /// strip a drag uncovers, so at rest it shows the ground it stands on.
   final Widget child;
 
   /// Acts revealed by dragging toward the end edge, the first nearest the
@@ -139,21 +140,10 @@ class LedgerSwipeActions extends StatelessWidget {
         initiallyOpen: initiallyOpen,
         actionBuilder: (context, action, details) =>
             _Cell(action: action.data! as LedgerSwipeAction),
-        child: _Paper(child: child),
+        child: child,
       ),
     );
   }
-}
-
-/// The paper the row stands on, so the acts under it never show through.
-class _Paper extends StatelessWidget {
-  const _Paper({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) =>
-      ColoredBox(color: context.ledgerTheme.background, child: child);
 }
 
 /// The action's icon and label on a solid background.

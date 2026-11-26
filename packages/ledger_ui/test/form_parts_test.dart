@@ -559,7 +559,10 @@ void main() {
         ),
         (wide, theme) {
           // The face 40, laid out at the tap floor round it.
-          expect(t.getSize(find.byKey(const ValueKey('compact'))).height, 44);
+          expect(
+            t.getSize(find.byKey(const ValueKey('compact'))).height,
+            RawTapTargets.fallback.touch.height,
+          );
           final face = t.getRect(
             find.descendant(
               of: find.byKey(const ValueKey('compact')),

@@ -1,7 +1,7 @@
 // ui_core's shared world checks (world_checks.dart, beside this file, as every look runs them): each everyday part
 // mirrored in right to left; every gallery page at twice the text size with nothing overflowing, on a phone and on the
 // desktop; the main gallery pages against Flutter's tap-target, label and text-contrast guidelines by day and by night,
-// at Ledger's 44 targets (iOS's, on every platform, by design); every single choice answering the keys as Flutter's
+// at ui_core's 40 floor (a finger's, on every platform); every single choice answering the keys as Flutter's
 // RadioGroup does, and the checklist's marks reading as checkboxes. Reduced motion is on, so every page settles.
 // The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
@@ -104,6 +104,12 @@ Future<void> _fit(WidgetTester t, double width) async {
 
 /// A budget's whole dollars, as an app passes them.
 String _dollars(num v) => LedgerFormat.money(v, showCents: false);
+
+/// Flutter's tap-target guideline at ui_core's floor, the one Ledger stands on everywhere.
+final _floorGuideline = MinimumTapTargetGuideline(
+  size: RawTapTargets.fallback.touch,
+  link: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum',
+);
 
 void main() {
   setUpAll(_loadFonts);
@@ -672,7 +678,7 @@ void main() {
     });
   });
 
-  group('the main gallery pages meet the guidelines at 44', () {
+  group('the main gallery pages meet the guidelines at the 40 floor', () {
     for (final (i, page)
         in galleryPages.where((p) => _main.contains(p.id)).indexed) {
       for (final brightness in Brightness.values) {
@@ -690,7 +696,7 @@ void main() {
           (t) async {
             await open(t);
             final semantics = t.ensureSemantics();
-            await expectLater(t, meetsGuideline(iOSTapTargetGuideline));
+            await expectLater(t, meetsGuideline(_floorGuideline));
             await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
             semantics.dispose();
           },
@@ -721,7 +727,7 @@ void main() {
     test('the third ink stands at 4.5:1 on the paper, by day and by night', () {
       for (final theme in [LedgerThemeData.light(), LedgerThemeData.dark()]) {
         expect(
-          LedgerThemeData.contrast(theme.textTertiary, theme.background),
+          RawPalette.contrastRatio(theme.textTertiary, theme.background),
           greaterThanOrEqualTo(4.5),
         );
       }
@@ -736,7 +742,7 @@ void main() {
           theme.dangerSubtle,
         ]) {
           expect(
-            LedgerThemeData.contrast(theme.over, ground),
+            RawPalette.contrastRatio(theme.over, ground),
             greaterThanOrEqualTo(4.5),
             reason: '$ground',
           );

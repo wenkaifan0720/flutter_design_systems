@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../format.dart';
 import '../../internal/face.dart';
+import '../../internal/position_words.dart';
 import '../../theme.dart';
 
 /// How far through a run of steps a person is (Payee, Amount, Review): each
@@ -51,7 +52,8 @@ class LedgerStepProgress extends StatelessWidget {
     return Semantics(
       container: true,
       label:
-          'Step ${currentStep + 1} of ${steps.length}, ${steps[currentStep]}',
+          '${ledgerPosition(context, 'Step', currentStep + 1, steps.length)}, '
+          '${steps[currentStep]}',
       excludeSemantics: true,
       child: LayoutBuilder(
         builder: (context, box) {

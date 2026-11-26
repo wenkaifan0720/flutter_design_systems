@@ -93,7 +93,7 @@ class QuillOverview extends StatelessWidget {
             ('Light and dark', 'Both', 'Or your own paper, ink and accent'),
             (
               'Access',
-              '44 targets',
+              '40 targets',
               'Spoken names, a double-ruled focus, text to 200%',
             ),
           ])

@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../gallery_words.dart';
 import '../kit.dart';
+import '../theme.dart';
 import 'entry.dart';
 import 'home.dart';
 import 'overview.dart';
@@ -261,9 +262,17 @@ class _QuillAppState extends State<QuillApp> {
               textDirection: _prefs.direction,
               child: _scaled(
                 context,
+                // The gallery's preset (theme.dart's kitPreset), at the
+                // density Settings sets.
                 LedgerHost(
-                  theme: LedgerThemeData.light(density: density),
-                  darkTheme: LedgerThemeData.dark(density: density),
+                  theme: _atDensity(
+                    LedgerThemeData.preset(kitPreset, Brightness.light),
+                    density,
+                  ),
+                  darkTheme: _atDensity(
+                    LedgerThemeData.preset(kitPreset, Brightness.dark),
+                    density,
+                  ),
                   brightness: switch (_prefs.appearance) {
                     QuillAppearance.light => Brightness.light,
                     QuillAppearance.dark => Brightness.dark,
@@ -533,3 +542,7 @@ class _InPlaceRoute extends PageRoute<void> {
     Animation<double> secondaryAnimation,
   ) => (settings as _InPlace).child;
 }
+
+/// [t] at [density].
+LedgerThemeData _atDensity(LedgerThemeData t, LedgerDensity density) =>
+    t.density == density ? t : t.copyWith(density: density);

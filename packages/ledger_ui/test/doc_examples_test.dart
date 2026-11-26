@@ -61,6 +61,7 @@ void main() {
         paper: const Color(0xFFF4F1EA),
         ink: const Color(0xFF1B2433),
         accent: const Color(0xFF2B4C9B),
+        brightness: Brightness.dark,
       ),
       'AnimatedLedgerTheme': (context) => AnimatedLedgerTheme(
         data: night ? LedgerThemeData.dark() : LedgerThemeData.light(),

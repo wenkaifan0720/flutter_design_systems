@@ -48,8 +48,9 @@ enum _Face { ringed, filled, ink, text }
 /// rule round it, its words in the third ink). Held, the face stays where
 /// it is and its ink deepens a shade, as a stamp pressed harder leaves
 /// more ([LedgerImpression]); a ringed one's paper takes a wash of the ink,
-/// and a frameless one's words take the ink underline. The touch target is 44
-/// at every size and density; what shrinks is the drawn face.
+/// and a frameless one's words take the ink underline. The touch target is
+/// the tap floor (40 for a finger) at every size and density; what shrinks is
+/// the drawn face.
 /// [semanticLabel] names it for a screen reader when its words say less
 /// than the act ("Change category" for a Change).
 ///
@@ -330,7 +331,7 @@ class LedgerButton extends StatelessWidget {
         // under it, a step deeper.
         final Color? pressedFill = fill == null
             ? hoveredFill
-            : LedgerThemeData.contrast(fill, t.textPrimary) < _inkKeyContrast
+            : RawPalette.contrastRatio(fill, t.textPrimary) < _inkKeyContrast
             ? Color.lerp(
                 fill,
                 fill.computeLuminance() < t.surface.computeLuminance()

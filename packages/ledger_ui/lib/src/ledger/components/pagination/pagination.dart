@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
+import '../../internal/position_words.dart';
 import '../../theme.dart';
 import '../icon-button/icon_button.dart';
 import '../pressable/pressable.dart';
@@ -95,10 +96,14 @@ class LedgerPagination extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final shown = _shown();
-        final cell = LedgerLayout.minHitTarget;
-        final need =
-            2 * (cell + LedgerSpacing.s8) +
-            shown.length * cell * MediaQuery.textScalerOf(context).scale(1);
+        final cell = RawTapTargets.of(context).floorOn().width;
+        final scale = MediaQuery.textScalerOf(context).scale(1);
+        // The row as it lays out: the two ways at the floor, each figure a
+        // target (wider with larger text), each gap mark half one, 8 apart.
+        var need = 2 * cell + LedgerSpacing.s8 * (shown.length + 1);
+        for (final p in shown) {
+          need += p == null ? cell / 2 : cell * scale;
+        }
         final figures = need <= box.maxWidth;
         return Semantics(
           container: true,
@@ -133,7 +138,12 @@ class LedgerPagination extends StatelessWidget {
               else
                 Flexible(
                   child: Text(
-                    'Page $page of $pageCount'.toUpperCase(),
+                    ledgerPosition(
+                      context,
+                      'Page',
+                      page,
+                      pageCount,
+                    ).toUpperCase(),
                     textAlign: TextAlign.center,
                     style: t.meta.medium.colored(t.textPrimary),
                   ),

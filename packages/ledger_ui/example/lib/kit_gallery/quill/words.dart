@@ -324,7 +324,7 @@ const Map<String, String> quillHebrewWords = {
   'Both': 'שניהם',
   'Or your own paper, ink and accent': 'או נייר, דיו והדגשה משלך',
   'Access': 'נגישות',
-  '44 targets': 'יעדי מגע של 44',
+  '40 targets': 'יעדי מגע של 40',
   'Spoken names, a double-ruled focus, text to 200%':
       'שמות מוקראים, מיקוד בקו כפול, טקסט עד 200%',
   'Add it': 'הוספה',

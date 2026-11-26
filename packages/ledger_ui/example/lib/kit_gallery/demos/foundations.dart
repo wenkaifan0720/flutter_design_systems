@@ -1,4 +1,4 @@
-/// Foundations: the theme's roles (the shared ones and Ledger's own: the
+/// Foundations: the six presets, the theme's roles (the shared ones and Ledger's own: the
 /// rules, the money inks, the seal, the hatches and the chrome's papers),
 /// its type slots, shapes and spacing in the preset on show, the format
 /// helpers, and the chrome's metrics. Everything below reads
@@ -16,6 +16,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Foundations',
   sections: [
+    kitSection('Presets', children: [const _Presets()]),
     kitSection('Colour roles', children: [const _Roles()]),
     kitSection('Ledger roles', children: [const _OwnRoles()]),
     kitSection('Papers', children: [const _Papers()]),
@@ -73,6 +74,118 @@ class _Swatches extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// The six presets ([LedgerThemeData.presets]) in the page's appearance,
+/// each a slip of its own paper under its own theme: its name, its inks and
+/// a line of money in beside one spent past a limit.
+class _Presets extends StatelessWidget {
+  const _Presets();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.ledgerTheme;
+    return LayoutBuilder(
+      builder: (context, box) {
+        // Three across on a desk, two from a tablet's width, one on a phone,
+        // where a slip's leader lines keep to one line each.
+        final columns = box.maxWidth >= 720
+            ? 3
+            : box.maxWidth >= 480
+            ? 2
+            : 1;
+        const gap = LedgerSpacing.s12;
+        const ids = LedgerThemeData.presets;
+        Widget slip(String id) => LedgerTheme(
+          data: LedgerThemeData.preset(
+            id,
+            t.brightness,
+          ).copyWith(density: t.density),
+          child: _PresetSlip(id),
+        );
+        // A row's slips stand as tall as its tallest, their feet in line.
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: gap,
+          children: [
+            for (var i = 0; i < ids.length; i += columns)
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: gap,
+                  children: [
+                    for (var j = i; j < i + columns; j++)
+                      Expanded(
+                        child: j < ids.length
+                            ? slip(ids[j])
+                            : const SizedBox.shrink(),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PresetSlip extends StatelessWidget {
+  const _PresetSlip(this.id);
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.ledgerTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: t.background,
+        border: Border.all(color: t.border),
+        borderRadius: BorderRadius.circular(t.smallRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(LedgerSpacing.s12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: LedgerSpacing.s8,
+          children: [
+            Text(id.toUpperCase(), style: t.meta.medium.colored(t.textPrimary)),
+            // Its inks, each once: the ink, the act and the vermilion (the
+            // slip is its paper; carbon's act is its ink).
+            Row(
+              spacing: LedgerSpacing.s6,
+              children: [
+                for (final c in {t.textPrimary, t.accent, t.over})
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: c,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: t.border),
+                    ),
+                    child: const SizedBox.square(dimension: 18),
+                  ),
+              ],
+            ),
+            LedgerLeaderLine(
+              start: Text('Paycheck', style: t.bodySmall),
+              end: Text(
+                LedgerFormat.money(2400, showCents: false, showSign: true),
+                style: t.amount.colored(t.moneyIn),
+              ),
+            ),
+            LedgerLeaderLine(
+              start: Text('Dining', style: t.bodySmall),
+              end: Text(
+                LedgerFormat.money(-86, showCents: false),
+                style: t.amount.colored(t.over),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

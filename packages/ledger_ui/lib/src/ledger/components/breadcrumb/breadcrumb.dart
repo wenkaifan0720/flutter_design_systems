@@ -54,7 +54,9 @@ class LedgerBreadcrumb extends StatelessWidget {
       container: true,
       explicitChildNodes: true,
       label: 'Breadcrumb',
-      child: Wrap(
+      // The steps and slashes stand face to face, a way back's target
+      // reaching into the room between (ui_core's RawChipGroup).
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           for (final (i, c) in crumbs.indexed) ...[

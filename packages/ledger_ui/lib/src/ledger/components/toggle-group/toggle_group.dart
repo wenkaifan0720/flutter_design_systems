@@ -26,7 +26,7 @@ import '../../theme.dart';
 /// go to its ends; Space and Enter press. A hover takes the ring to the
 /// strong rule, a press sinks the pill, the keyboard's focus rules the
 /// double rule under it. Each pill lays out at the tap floor round its 32 face
-/// (44 for a finger, 24 for a pointer), so a tap anywhere in that room
+/// (40 for a finger, 24 for a pointer), so a tap anywhere in that room
 /// reaches it. [labelOf] names
 /// each option (its words and its spoken name); [onSelectionChanged] null shows the
 /// row without letting it change.
@@ -156,9 +156,15 @@ class LedgerToggleGroup<T> extends StatelessWidget {
           child: DecoratedBox(
             decoration: s.ground,
             child: Padding(
+              // The words' line stands in the pill with its room above and
+              // below it, so larger text grows the pill rather than sitting
+              // on its rule.
               padding:
                   so.padding(Directionality.of(context)) ??
-                  const EdgeInsets.symmetric(horizontal: _pad),
+                  const EdgeInsets.symmetric(
+                    horizontal: _pad,
+                    vertical: (_height - _line) / 2,
+                  ),
               child: Center(
                 widthFactor: 1,
                 heightFactor: 1,

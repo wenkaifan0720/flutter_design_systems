@@ -2,6 +2,8 @@
 /// [RawCalendarDatePicker].
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -21,8 +23,8 @@ typedef LedgerDateRange = RawDateRange;
 /// month grid: over it the span read as a ledger heads a period, FROM and
 /// TO in the small capitals over each date in the serif, the nights between
 /// in the mono; then the month in the bar's title with its two ways on the
-/// reading end, the weekdays in the mono's capitals and the days in their
-/// 44 cells. The first press sets the start, the next the end: each end a
+/// reading end, the weekdays in the mono's capitals and the days in cells
+/// at the tap floor. The first press sets the start, the next the end: each end a
 /// disc of the ink, the days between on a band of the darker paper running
 /// from one to the other, today ringed; a pointer over a day draws where
 /// the span would end in the band's lighter tint. The keyboard walks the
@@ -152,7 +154,7 @@ class _LedgerDateRangePickerState extends State<LedgerDateRangePicker> {
         RawCalendarDatePicker(
           controller: _controller,
           months: widget.months,
-          minDayWidth: LedgerLayout.minHitTarget,
+          minDayWidth: RawTapTargets.of(context).floorOn().width,
           onChanged: widget.onChanged == null ? null : _chosen,
           monthsBuilder: (context, months) => Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +321,10 @@ class _Day extends StatelessWidget {
           MediaQuery.textScalerOf(context).scale(t.amount.fontSize!),
         );
         return SizedBox(
-          height: (mark + 4).clamp(LedgerLayout.minHitTarget, double.infinity),
+          height: math.max(
+            RawTapTargets.of(context).floorOn().height,
+            mark + 4,
+          ),
           child: Stack(
             alignment: Alignment.center,
             children: [

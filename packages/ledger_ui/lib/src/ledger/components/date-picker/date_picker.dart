@@ -655,7 +655,8 @@ class _CalendarState extends State<_Calendar> {
   }
 
   Widget _cell(LedgerThemeData t, _Dates dates, int n, int length) {
-    if (n < 1 || n > length) return const SizedBox(height: _cell44);
+    final floor = RawTapTargets.of(context).floorOn().height;
+    if (n < 1 || n > length) return SizedBox(height: floor);
     final d = DateTime(_month.year, _month.month, n);
     final chosen = _same(d, widget.value);
     final ringed = widget.today != null && _same(d, widget.today!);
@@ -667,7 +668,7 @@ class _CalendarState extends State<_Calendar> {
           MediaQuery.textScalerOf(context).scale(t.amount.fontSize!),
         );
         return SizedBox(
-          height: math.max(_cell44, mark + 4),
+          height: math.max(floor, mark + 4),
           child: Center(
             child: TapTargetPadding(
               child: LedgerPressable(
@@ -710,8 +711,7 @@ class _CalendarState extends State<_Calendar> {
   }
 
   // DERIVED (the source lists dates, it does not pick them): a day's cell is
-  // the 44 point target round a 36 mark, the head 12 over the weekdays.
-  static const double _cell44 = LedgerLayout.minHitTarget;
+  // the tap floor's target round a 36 mark, the head 12 over the weekdays.
   static const double _ring = 1.25;
   static const double _arrowGap = 8;
   static const double _headFoot = 12;

@@ -8,8 +8,9 @@ import 'package:flutter/foundation.dart';
 /// one height at every density.
 ///
 /// The default, [adaptivePlatformDensity], is compact under a pointer
-/// (macOS, Windows, Linux) and standard on touch. A tap target stays 44 at
-/// every density: what shrinks is the drawn face, never the reach.
+/// (macOS, Windows, Linux) and standard on touch. A tap target stays on
+/// ui_core's floor (40 by 40 by default) at every density: what shrinks is
+/// the drawn face, never the reach.
 ///
 /// ```dart
 /// LedgerTheme(

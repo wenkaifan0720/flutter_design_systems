@@ -298,7 +298,10 @@ class LedgerFilters<T> extends StatelessWidget {
     return Semantics(
       container: true,
       label: label,
-      child: Wrap(
+      // The faces stand the gap apart, their targets reaching into the room
+      // between (ui_core's RawChipGroup): in a Wrap each target's slack stood
+      // between too.
+      child: RawChipGroup(
         spacing: _gap,
         runSpacing: _gap,
         children: [
@@ -2202,7 +2205,7 @@ class _StepperFieldState extends State<_StepperField> {
       final hovered = button.states.contains(WidgetState.hovered);
       final line = off ? t.textFaint : t.textPrimary;
       return SizedBox(
-        width: _target,
+        width: RawTapTargets.of(context).floorOn().width,
         height: height,
         child: Center(
           child: Container(
@@ -2318,8 +2321,7 @@ class _StepperFieldState extends State<_StepperField> {
     return LedgerLayout.measured(context, framed);
   }
 
-  // The rings: a 32 circle in a 48 target, the glyph at 16.
-  static const double _target = 48;
+  // The rings: a 32 circle in a target the tap floor wide, the glyph at 16.
   static const double _ring = 32;
   static const double _glyph = 16;
 }

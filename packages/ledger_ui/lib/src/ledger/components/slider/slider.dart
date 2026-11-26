@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../theme.dart';
@@ -15,7 +16,7 @@ import '../../theme.dart';
 /// (`20`, `70%`), for the line and for a screen reader alike; without it a
 /// range of 0 to 1 prints as a percent and any other as the value, rounded
 /// to a whole number (a tenth on a span under 10). A null [onChanged] dims it.
-/// The touch strip is 44 tall.
+/// The touch strip stands on the tap floor.
 ///
 /// ```dart
 /// LedgerSlider(label: 'Monthly budget', value: budget, min: 100, max: 2000, divisions: 19, format: (v) => '\$${v.round()}', onChanged: (v) => setState(() => budget = v))
@@ -241,7 +242,7 @@ class _LedgerSliderState extends State<LedgerSlider> {
               : null,
           onHorizontalDragEnd: _live ? (_) => _settle() : null,
           child: SizedBox(
-            height: _Track.strip,
+            height: RawTapTargets.of(context).floorOn().height,
             width: double.infinity,
             child: CustomPaint(
               painter: _Track(
@@ -371,8 +372,7 @@ class _Track extends CustomPainter {
   /// The double rule under the knob while the keyboard holds focus.
   final Color? focus;
 
-  /// The touch strip's height and the knob's radius.
-  static const double strip = LedgerLayout.minHitTarget;
+  /// The knob's radius.
   static const double knob = 11;
 
   @override

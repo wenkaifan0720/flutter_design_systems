@@ -435,7 +435,7 @@ void main() {
     final theme = LedgerTheme.of(t.element(finder));
     final p = t.renderObject<RenderParagraph>(finder);
     expect(
-      LedgerThemeData.contrast(p.text.style!.color!, theme.background),
+      RawPalette.contrastRatio(p.text.style!.color!, theme.background),
       greaterThanOrEqualTo(4.5),
     );
   });

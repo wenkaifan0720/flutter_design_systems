@@ -195,9 +195,8 @@ const Map<String, String> _offTheEdge = {
       'and its act stand on the column\'s edges',
   'Action bar, alone': 'the same band, alone: its rule past the column by its gutter, its words on the column\'s edges',
   'Page marks':
-      'marks a person can press each stand in a tap target at the finger\'s floor (44), so the first mark stands in '
-      'the middle of its own, 16 in, as a padded tap target lays out; marks that only show the place start on the '
-      'edge',
+      'marks a person can press each stand in a tap target at the finger\'s floor (40), so the first mark stands in '
+      'the middle of its own, as a padded tap target lays out; marks that only show the place start on the edge',
   'A counter':
       'a rolling figure gives each digit the widest digit\'s place, so the figure never shivers as it rolls; a narrow '
       'leading 1 stands in the middle of its place, 4 in, as a tabular figure\'s does',

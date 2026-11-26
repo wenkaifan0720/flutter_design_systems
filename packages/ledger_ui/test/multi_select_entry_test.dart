@@ -10,8 +10,9 @@ import 'package:ledger_ui/ledger_ui.dart';
 
 const _categories = ['Rent', 'Groceries', 'Transit', 'Utilities'];
 
-// Ledger's touch floor, on a phone and on the desktop alike.
-const _floor = 44.0;
+// Ledger's touch floor (ui_core's, a finger's 40), on a phone and on the
+// desktop alike.
+final _floor = RawTapTargets.fallback.touch.height;
 
 Widget _app(Widget field) => MaterialApp(
   debugShowCheckedModeBanner: false,

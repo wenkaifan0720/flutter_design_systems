@@ -214,7 +214,9 @@ class LedgerChipRow extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     container: true,
     label: label,
-    child: Wrap(
+    // The chips' faces stand the gap apart, their targets reaching into the
+    // room between (ui_core's RawChipGroup).
+    child: RawChipGroup(
       spacing: _gap,
       runSpacing: _gap,
       crossAxisAlignment: WrapCrossAlignment.center,

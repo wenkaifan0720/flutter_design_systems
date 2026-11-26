@@ -590,6 +590,12 @@ abstract final class LedgerChromeMetrics {
   /// The loading leader's length: its dots draw in across it, one by one.
   static const double loadingLeader = 96;
 
-  /// The 44 floor a target is grown to when its drawing is smaller.
+  /// Ledger's old 44 floor. Ledger's parts stand on ui_core's floor in
+  /// force instead (`RawTapTargets.of(context).floorOn()`).
+  @Deprecated(
+    'Read RawTapTargets.of(context).floorOn(): the floor in force, 40 by 40 '
+    'by default. This feature was deprecated after v0.6.0 and goes in 0.8.0.',
+  )
+  // ignore: deprecated_member_use_from_same_package
   static const double minHit = LedgerLayout.minHitTarget;
 }

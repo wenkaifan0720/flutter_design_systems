@@ -13,6 +13,11 @@
 /// cannot be tested. Money is in dollars, to the cent: an amount is rounded
 /// to whole cents once, then printed from those.
 ///
+/// A clock time in the reader's own language and hours (24 a day where the
+/// locale counts them so) comes from ui_core's
+/// `RawWidgetsLocalizations.of(context).formatTimeOfDay`, as Ledger's date
+/// picker writes its times.
+///
 /// ```dart
 /// Text(LedgerFormat.money(-1326.44), style: t.amount)
 /// ```

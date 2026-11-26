@@ -19,6 +19,9 @@ const Size _phone = Size(390, 844);
 const Size _desktop = Size(1440, 900);
 const Key _frame = ValueKey<String>('frame');
 
+/// The tap floor Ledger stands on (ui_core's, a finger's 40).
+final double _floor = RawTapTargets.fallback.touch.height;
+
 /// A page's column: the gutter at its sides (24, 56 from 1024), the widget
 /// as wide as the column, free to grow down.
 Widget _host(Widget child, Brightness brightness) => MaterialApp(
@@ -323,13 +326,13 @@ void main() {
         ),
       );
       // `.chip` 26 tall; `.chips` 3 inside its 1 px ring; the strip at
-      // least the tap floor (a finger's 44 here), its chips taking the room:
+      // least the tap floor (a finger's 40 here), its chips taking the room:
       // each chip's target runs the strip's height, its face 3 inside it.
       expect(
         t
             .getSize(find.byWidgetPredicate((w) => w is LedgerSegmentedControl))
             .height,
-        44,
+        _floor,
       );
       final chips = t.elementList(
         find.descendant(
@@ -340,8 +343,8 @@ void main() {
       );
       expect(chips, hasLength(_ranges.length));
       for (final chip in chips) {
-        expect(chip.size!.height, 44);
-        expect(chip.size!.width, greaterThanOrEqualTo(44));
+        expect(chip.size!.height, _floor);
+        expect(chip.size!.width, greaterThanOrEqualTo(_floor));
         // The face: the nearest box round the chip's words.
         final face = find
             .ancestor(
@@ -352,7 +355,7 @@ void main() {
               matching: find.byType(Container),
             )
             .first;
-        expect(t.getSize(face).height, 44 - 2 * 2);
+        expect(t.getSize(face).height, _floor - 2 * 2);
       }
     });
 
@@ -578,7 +581,7 @@ void main() {
           expect(t.widget<Opacity>(dimmed).opacity, .45);
           // Each face 44 by 26, laid out at the tap floor round it.
           for (final e in t.elementList(find.byType(LedgerSwitch))) {
-            expect(e.size, const Size(44, 44));
+            expect(e.size, Size(44, _floor));
             final face = find.descendant(
               of: find.byWidget(e.widget),
               matching: find.byType(LedgerPressable),

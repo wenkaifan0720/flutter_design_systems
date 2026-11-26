@@ -40,6 +40,7 @@ export 'src/ledger/internal/per_line.dart';
 export 'src/ledger/internal/pixel_center.dart';
 export 'src/ledger/internal/platform_words.dart';
 export 'src/ledger/internal/plot.dart';
+export 'src/ledger/internal/position_words.dart';
 export 'src/ledger/internal/presence.dart';
 export 'src/ledger/internal/report_height.dart';
 export 'src/ledger/internal/shell_faces.dart';

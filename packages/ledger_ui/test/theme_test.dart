@@ -40,7 +40,7 @@ void main() {
           for (final ground in [t.background, t.surface, t.surfaceAlt]) {
             words.forEach((name, ink) {
               expect(
-                LedgerThemeData.contrast(ink, ground),
+                RawPalette.contrastRatio(ink, ground),
                 greaterThanOrEqualTo(4.5),
                 reason: '$id ${brightness.name} $name on $ground',
               );
@@ -49,7 +49,7 @@ void main() {
           // The third ink sets the meta lines on the page and its slips.
           for (final ground in [t.background, t.surface]) {
             expect(
-              LedgerThemeData.contrast(t.textTertiary, ground),
+              RawPalette.contrastRatio(t.textTertiary, ground),
               greaterThanOrEqualTo(4.5),
               reason: '$id ${brightness.name} textTertiary on $ground',
             );
@@ -63,7 +63,7 @@ void main() {
           };
           pairs.forEach((name, pair) {
             expect(
-              LedgerThemeData.contrast(pair.$1, pair.$2),
+              RawPalette.contrastRatio(pair.$1, pair.$2),
               greaterThanOrEqualTo(4.5),
               reason: '$id ${brightness.name} $name',
             );
@@ -83,7 +83,7 @@ void main() {
           for (final ground in [t.background, t.surface, t.surfaceAlt]) {
             glyphs.forEach((name, ink) {
               expect(
-                LedgerThemeData.contrast(ink, ground),
+                RawPalette.contrastRatio(ink, ground),
                 greaterThanOrEqualTo(3),
                 reason: '$id ${brightness.name} $name on $ground',
               );
@@ -113,12 +113,17 @@ void main() {
       expect(t.moneyIn, const Color(0xFF1E5A44));
       expect(t.accentSubtle, const Color(0xFFDEE7DD)); // --green-wash
       expect(t.danger, const Color(0xFFC9402A)); // --red
-      // The vermilion as words: --red three twentieths toward the ink, to
-      // 4.5:1 on the day paper (the raw red reads 4.2:1 there).
+      // The vermilion as words: --red at the nearest tone of its hue that
+      // reads 4.5:1 on the day papers and its wash (the raw red reads 4.2:1
+      // on the paper).
       expect(
         t.over,
-        Color.lerp(const Color(0xFFC9402A), const Color(0xFF141A1F), 3 / 20),
+        RawPalette.readableTone(
+          const Color(0xFFC9402A),
+          on: [t.background, t.surface, t.surfaceAlt, t.dangerSubtle],
+        ),
       );
+      expect(t.over, isNot(t.danger));
       expect(t.dangerSubtle, const Color(0xFFF6DFD6)); // --red-wash
       expect(t.border, const Color.fromRGBO(20, 26, 31, .14)); // --rule
       expect(t.hairline, const Color.fromRGBO(20, 26, 31, .08)); // --rule-2

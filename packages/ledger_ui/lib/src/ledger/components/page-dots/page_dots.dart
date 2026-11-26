@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/face.dart';
+import '../../internal/position_words.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -68,7 +69,7 @@ class LedgerPageDots extends StatelessWidget {
     );
     if (change == null) {
       return Semantics(
-        label: 'Page ${page + 1} of $pageCount',
+        label: ledgerPosition(context, 'Page', page + 1, pageCount),
         excludeSemantics: true,
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -87,7 +88,7 @@ class LedgerPageDots extends StatelessWidget {
             TapTargetPadding(
               child: LedgerPressable(
                 onTap: i == page ? _stay : () => change(i),
-                label: 'Page ${i + 1} of $pageCount',
+                label: ledgerPosition(context, 'Page', i + 1, pageCount),
                 selected: i == page,
                 radius: _thick,
                 child: Builder(

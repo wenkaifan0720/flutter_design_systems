@@ -3,7 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:ui_core/ui_core.dart' show rawReduceMotionOf;
+import 'package:ui_core/ui_core.dart';
 
 import 'density.dart';
 import 'fonts.dart';
@@ -228,7 +228,13 @@ abstract final class LedgerLayout {
   /// detail's way back a crumb over its title.
   static const double wide = 1024;
 
-  /// The touch-target floor.
+  /// Ledger's old touch-target floor, 44. Ledger's parts stand on ui_core's
+  /// floor in force instead: [RawTapTargets.of] and `floorOn()` (40 by 40
+  /// unless an app's [RawTapTargetScope] says otherwise).
+  @Deprecated(
+    'Read RawTapTargets.of(context).floorOn(): the floor in force, 40 by 40 '
+    'by default. This feature was deprecated after v0.6.0 and goes in 0.8.0.',
+  )
   static const double minHitTarget = 44;
 
   /// A hairline rule's width: the one point the source draws every rule at,
@@ -814,13 +820,15 @@ final class LedgerThemeData with Diagnosticable {
     'indigo',
     'verdigris',
     'carbon',
+    'prussian',
   ];
 
   /// The preset [id] in [brightness]: `quire` (Ledger's own paper and ink,
-  /// by day and by lamplight), or one of the four token themes:
-  /// `terracotta` (paper), `indigo` (signal), `verdigris` (frost) or
-  /// `carbon` (gallery). Throws an
-  /// [ArgumentError] for any other id. The same preset is the same value.
+  /// by day and by lamplight), one of the four token themes: `terracotta`
+  /// (paper), `indigo` (signal), `verdigris` (frost) or `carbon`
+  /// (gallery), or `prussian` (Prussian blue on an account book's buff
+  /// paper, in a navy ink). Throws an [ArgumentError] for any other id. The same
+  /// preset is the same value.
   static LedgerThemeData preset(String id, Brightness brightness) {
     final dark = brightness == Brightness.dark;
     return switch (id) {
@@ -829,6 +837,7 @@ final class LedgerThemeData with Diagnosticable {
       'indigo' => dark ? _indigoDark : _indigoLight,
       'verdigris' => dark ? _verdigrisDark : _verdigrisLight,
       'carbon' => dark ? _carbonDark : _carbonLight,
+      'prussian' => dark ? _prussianDark : _prussianLight,
       _ => throw ArgumentError.value(id, 'id', 'not a Ledger preset'),
     };
   }
@@ -874,6 +883,20 @@ final class LedgerThemeData with Diagnosticable {
     'carbon',
     galleryTokens,
     Brightness.dark,
+  );
+  static final LedgerThemeData _prussianLight = _prussian(Brightness.light);
+  static final LedgerThemeData _prussianDark = _prussian(Brightness.dark);
+
+  /// Prussian blue on an account book's buff paper, in a navy ink, by day;
+  /// by lamplight a deep Prussian paper under the buff.
+  static LedgerThemeData _prussian(Brightness brightness) => _fromColors(
+    'prussian',
+    paper: const Color(0xFFECE2C8),
+    ink: const Color(0xFF182640),
+    accent: const Color(0xFF1F4E86),
+    nightPaper: const Color(0xFF0F1E33),
+    nightInk: const Color(0xFFECE2C8),
+    brightness: brightness,
   );
 
   // GENERATED-BEGIN from the fields above.
@@ -1607,15 +1630,25 @@ final class LedgerThemeData with Diagnosticable {
   /// seal), with [over] for amounts past a limit (the source's vermilion by
   /// default). The raised and sunken papers, the second, third and faint
   /// inks, the rules and the washes follow from them as the source's do from
-  /// its own, and every ink that sets words is eased toward [ink] until it
-  /// reads 4.5:1 on every paper. [brightness] says which side of the paper
-  /// the colours are: a dark paper with a light ink is a night book.
+  /// its own, and every ink that sets words takes the nearest tone of its
+  /// hue that reads 4.5:1 on every paper ([RawPalette.readableTone]).
+  ///
+  /// A light paper with a dark ink is a day book, a dark paper with a light
+  /// ink a night book; [brightness] (the book's own side by default) says
+  /// which side to build. Asked for the other side, the same book turns: a
+  /// day book's night takes a deep tone of the paper's hue for its paper (a
+  /// cream page goes to a warm charcoal), the paper's own light tone for its
+  /// ink and the accent at the nearest tone that reads on them;
+  /// [nightPaper], [nightInk] and [nightAccent] replace any of the three. A
+  /// night book's day takes a light tone of its paper's hue and a deep tone
+  /// of its ink's.
   ///
   /// ```dart
   /// LedgerThemeData.from(
   ///   paper: const Color(0xFFF4F1EA),
   ///   ink: const Color(0xFF1B2433),
   ///   accent: const Color(0xFF2B4C9B),
+  ///   brightness: Brightness.dark,
   /// )
   /// ```
   factory LedgerThemeData.from({
@@ -1624,28 +1657,78 @@ final class LedgerThemeData with Diagnosticable {
     required Color accent,
     Color? over,
     Brightness? brightness,
+    Color? nightPaper,
+    Color? nightInk,
+    Color? nightAccent,
     LedgerDensity? density,
+  }) => _fromColors(
+    'custom',
+    paper: paper,
+    ink: ink,
+    accent: accent,
+    over: over,
+    brightness: brightness,
+    nightPaper: nightPaper,
+    nightInk: nightInk,
+    nightAccent: nightAccent,
+  ).copyWith(density: density ?? LedgerDensity.adaptivePlatformDensity);
+
+  /// [LedgerThemeData.from]'s theme, named [id].
+  static LedgerThemeData _fromColors(
+    String id, {
+    required Color paper,
+    required Color ink,
+    required Color accent,
+    Color? over,
+    Brightness? brightness,
+    Color? nightPaper,
+    Color? nightInk,
+    Color? nightAccent,
   }) {
-    final b =
-        brightness ??
-        (paper.computeLuminance() < ink.computeLuminance()
-            ? Brightness.dark
-            : Brightness.light);
+    final night = paper.computeLuminance() < ink.computeLuminance();
+    final b = brightness ?? (night ? Brightness.dark : Brightness.light);
     final dark = b == Brightness.dark;
+    if (dark && !night) {
+      // A day book by lamplight: the night of the same paper.
+      final tones = RawNeutralTones.of(paper);
+      paper = nightPaper ?? tones.tone(_nightPaperTone);
+      ink = nightInk ?? tones.tone(_nightInkTone);
+      accent = nightAccent ?? accent;
+    } else if (!dark && night) {
+      // A night book by day.
+      paper = RawNeutralTones.of(paper).tone(_dayPaperTone);
+      ink = RawNeutralTones.of(ink).tone(_dayInkTone);
+    }
+    // An ink that doesn't stand off its paper (a slate ink on a black paper)
+    // takes the book's own ink tone in its hue.
+    if (RawPalette.contrastRatio(ink, paper) < _inkRatio) {
+      ink = RawNeutralTones.of(ink).tone(dark ? _nightInkTone : _dayInkTone);
+    }
     final base = dark ? _nightInks : _dayInks;
-    final hi = Color.lerp(paper, dark ? ink : const Color(0xFFFFFFFF), .06)!;
+    // The raised paper: by day half way to white, as the quire's paper-hi
+    // stands off its paper; by lamplight a step toward the ink.
+    final hi = dark
+        ? Color.lerp(paper, ink, .06)!
+        : Color.lerp(paper, const Color(0xFFFFFFFF), .5)!;
     final lo = Color.lerp(paper, dark ? const Color(0xFF000000) : ink, .05)!;
     final grounds = [paper, hi, lo];
-    Color words(Color c) => _reach(c, ink, grounds, 4.5);
+    Color words(Color c) => RawPalette.readableTone(c, on: grounds);
+    // The paper or the ink, whichever reads better on [fill].
+    Color on(Color fill) =>
+        RawPalette.contrastRatio(paper, fill) >=
+            RawPalette.contrastRatio(ink, fill)
+        ? hi
+        : ink;
     final red = words(over ?? base.red);
     final green = words(accent);
-    final onGreen = contrast(paper, green) >= contrast(ink, green) ? hi : ink;
     final inks = (
       paper: paper,
       paperHi: hi,
       paperLo: lo,
       ink: ink,
-      ink2: words(Color.lerp(ink, paper, .35)!),
+      // The second ink a quarter of the way to the paper, the third half
+      // way, as the source's stand: the second stays the darker by day.
+      ink2: words(Color.lerp(ink, paper, .25)!),
       ink3: words(Color.lerp(ink, paper, .5)!),
       ink4: Color.lerp(ink, paper, .62)!,
       rule: ink.withValues(alpha: base.rule.a),
@@ -1655,24 +1738,30 @@ final class LedgerThemeData with Diagnosticable {
       greenRule: accent.withValues(alpha: base.greenRule.a),
       red: red,
       redWash: Color.lerp(paper, red, .16)!,
-      onGreen: onGreen,
-      onRed: contrast(paper, red) >= contrast(ink, red) ? hi : ink,
+      onGreen: on(green),
+      onRed: on(red),
       scrim: base.scrim,
       toastFill: dark ? Color.lerp(paper, ink, .1)! : ink,
       toastInk: dark ? ink : hi,
       toastAction: dark
-          ? green
-          : _reach(Color.lerp(accent, hi, .7)!, hi, [ink], 4.5),
+          ? RawPalette.readableTone(green, on: [Color.lerp(paper, ink, .1)!])
+          : RawPalette.readableTone(Color.lerp(accent, hi, .7)!, on: [ink]),
       toastRing: dark
           ? ink.withValues(alpha: base.toastRing.a)
           : hi.withValues(alpha: base.toastRing.a),
     );
-    return _build(
-      'custom',
-      b,
-      inks,
-    ).copyWith(density: density ?? LedgerDensity.adaptivePlatformDensity);
+    return _build(id, b, inks);
   }
+
+  // The tones a book turned to its other side takes, as the source's day
+  // and night papers and inks stand (CIE L*, 0 black to 100 white).
+  static const double _nightPaperTone = 9;
+  // The least the ink stands off its paper: WCAG's enhanced 7:1, so the
+  // second and third inks have room to step toward the paper.
+  static const double _inkRatio = 7;
+  static const double _nightInkTone = 92;
+  static const double _dayPaperTone = 94;
+  static const double _dayInkTone = 9;
 
   static LedgerThemeData _withDensity(LedgerThemeData t, LedgerDensity d) =>
       t.density == d ? t : t.copyWith(density: d);
@@ -1774,15 +1863,13 @@ final class LedgerThemeData with Diagnosticable {
         ),
     ];
     final paperShadow = shadows(_Source.paperShadow);
-    // The vermilion as words: eased toward the ink until it reads 4.5:1 on
+    // The vermilion as words: the nearest tone of it that reads 4.5:1 on
     // every paper it is written on, its wash too (the raw --red is 4.2:1 on
     // the day paper). Its fills, rings and seals keep the raw one.
-    final overWords = _reach(red, ink, [
-      background,
-      surface,
-      surfaceAlt,
-      redWash,
-    ], 4.5);
+    final overWords = RawPalette.readableTone(
+      red,
+      on: [background, surface, surfaceAlt, redWash],
+    );
     return LedgerThemeData(
       id: id,
       brightness: brightness,
@@ -1920,25 +2007,25 @@ final class LedgerThemeData with Diagnosticable {
         }) /
         _sourceSize(slot.anchor);
     TextStyle type(_Slot slot, Color color) => _type(slot, color, factor(slot));
-    final ink3 = _reach(c.textTertiary, c.textSecondary, grounds, 4.5);
-    final moneyIn = _reach(c.success, c.textPrimary, grounds, 4.5);
-    final over = _reach(c.danger, c.textPrimary, [
-      ...grounds,
-      c.dangerSubtle,
-    ], 4.5);
+    final ink3 = RawPalette.readableTone(c.textTertiary, on: grounds);
+    final moneyIn = RawPalette.readableTone(c.success, on: grounds);
+    final over = RawPalette.readableTone(
+      c.danger,
+      on: [...grounds, c.dangerSubtle],
+    );
     final hairline = c.textPrimary.withValues(alpha: _Source.rule2.a);
-    final accentText = _reach(c.accentText, c.textPrimary, grounds, 4.5);
+    final accentText = RawPalette.readableTone(c.accentText, on: grounds);
     // The accent is one ink: words on the paper and, under `onAccent`, a
     // ground (a brand panel, the act stamped on it). Where the record's
     // `onAccent` cannot read 4.5:1 on the eased words (a deep blue lifted to
     // read on a navy night), the act takes the words' colour and whichever
     // of the page and its ink reads better on it as its own words.
-    final heldAct = contrast(c.onAccent, accentText) >= 4.5;
+    final heldAct = RawPalette.contrastRatio(c.onAccent, accentText) >= 4.5;
     final accent = heldAct ? c.accent : accentText;
     final onAccent = heldAct
         ? c.onAccent
-        : contrast(c.background, accentText) >=
-              contrast(c.textPrimary, accentText)
+        : RawPalette.contrastRatio(c.background, accentText) >=
+              RawPalette.contrastRatio(c.textPrimary, accentText)
         ? c.background
         : c.textPrimary;
     const white = Color(0xFFFFFFFF);
@@ -1946,7 +2033,7 @@ final class LedgerThemeData with Diagnosticable {
         ? Color.lerp(c.surfaceAlt, white, 0.04)!
         : c.surfaceInverse;
     final toastInk = dark ? c.textPrimary : c.textInverse;
-    final toastAction = _reach(accent, toastInk, [toastFill], 4.5);
+    final toastAction = RawPalette.readableTone(accent, on: [toastFill]);
     List<BoxShadow> shadows(List<LedgerTokenShadow> layers) => [
       for (final s in layers) s.shadow,
     ];
@@ -2053,29 +2140,15 @@ final class LedgerThemeData with Diagnosticable {
   /// animated on a curve that overshoots its ends would pass the bound.
   static double _within(double r, double most) => r.clamp(0, most).toDouble();
 
-  /// [ink] eased toward [toward] in twentieths until it reads at [min] on
-  /// every one of [grounds] (or [toward] itself).
-  static Color _reach(
-    Color ink,
-    Color toward,
-    List<Color> grounds,
-    double min,
-  ) {
-    for (var i = 0; i <= 20; i++) {
-      final c = Color.lerp(ink, toward, i / 20)!;
-      if (grounds.every((g) => contrast(c, g) >= min)) return c;
-    }
-    return toward;
-  }
-
   /// The WCAG contrast ratio of [ink] on [ground], 1..21, as it is seen: a
   /// translucent ink is laid over the ground first. [ground] is opaque.
-  static double contrast(Color ink, Color ground) {
-    final seen = Color.alphaBlend(ink, ground);
-    final la = seen.computeLuminance();
-    final lb = ground.computeLuminance();
-    return la > lb ? (la + 0.05) / (lb + 0.05) : (lb + 0.05) / (la + 0.05);
-  }
+  @Deprecated(
+    'Use RawPalette.contrastRatio, which reads a translucent ink over its '
+    'ground the same way. This feature was deprecated after v0.6.0 and goes '
+    'in 0.8.0.',
+  )
+  static double contrast(Color ink, Color ground) =>
+      RawPalette.contrastRatio(ink, ground);
 }
 
 enum _Face { sans, serif, italic, mono }
@@ -2246,6 +2319,11 @@ class LedgerTheme extends StatelessWidget {
             ? under
             : Directionality(textDirection: direction, child: under),
       );
+    }
+    // ui_core's tap floors (40 by 40 for a finger), unless the app declares
+    // its own above.
+    if (RawTapTargets.maybeOf(context) == null) {
+      under = RawTapTargetScope(targets: RawTapTargets.fallback, child: under);
     }
     return _LedgerScope(
       data: data,

@@ -1,18 +1,32 @@
 # ledger_ui
 
-A Flutter design system kept in ink on warm paper, with ruled tables, tabular amounts, accessible form controls and responsive navigation. Choose from five colour presets in light or dark mode.
+A Flutter design system kept in ink on warm paper, with ruled tables, tabular amounts, accessible form controls and responsive navigation. Six colour presets, each designed for light and dark.
 
 ![Home at 1440 by day beside a phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/ledger_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/ledger/)** ·
-[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/ledger/) ·
-[API reference](https://pub.dev/documentation/ledger_ui/latest/) ·
-[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/ledger/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=ledger) · [API reference](https://pub.dev/documentation/ledger_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
 ## Install
 
 ```sh
 flutter pub add ledger_ui material_ui
+```
+
+A whole app: Ledger's faces loaded and its theme over a bare `WidgetsApp`, one page and one button.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:ledger_ui/ledger_ui.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ledgerLoadFonts();
+  runApp(WidgetsApp(
+    color: const Color(0xFF1E5A44),
+    builder: (context, _) => LedgerTheme(data: LedgerThemeData.light(), child: LedgerScreen(
+      body: Center(child: LedgerButton.filled('Move money', onPressed: () {})))),
+  ));
+}
 ```
 
 `material_ui` is the Material library Ledger is built on, for the quick start's `MaterialApp` (Flutter 3.50
@@ -178,22 +192,24 @@ LedgerNavigationFrame(
 of the tree with a nested `LedgerTheme`; `AnimatedLedgerTheme` animates between two.
 
 ```dart
-// A preset by its id, for the platform's brightness.
+// A preset by its id: quire (the default), terracotta, indigo, verdigris, carbon or prussian.
 LedgerThemeData.preset('verdigris', Brightness.dark);
 
-// Your own paper, ink and accent; the rest is derived from them, words held to 4.5:1 on every ground.
+// Your own paper, ink and accent; the rest is derived from them, words held to 4.5:1 on every ground. Asked for
+// the night, a day book turns: a dark paper in its paper's hue, its cream for the ink, the accent lifted to read.
 LedgerThemeData.from(
   paper: const Color(0xFFF4EFE6),
   ink: const Color(0xFF1F2A2E),
   accent: const Color(0xFF2F6B4F),
+  brightness: Brightness.dark,
 );
 
 // Density: standard is the touch size (a 48 button, a 52 row), comfortable 4 off each, compact 8; the default is
-// compact under a pointer and standard on touch. A tap target stays 44 at every density.
+// compact under a pointer and standard on touch. A tap target stays on the 40 floor at every density.
 LedgerThemeData.light().copyWith(density: LedgerDensity.compact);
 ```
 
-Use `LedgerThemeData.from` to derive a coordinated palette from your accent. Use `copyWith` for individual overrides. The semantic money colours are `moneyIn` for income, `over` for spending over a limit, and `move` for transfers. The preset corner radii and all three densities can be customized.
+Use `LedgerThemeData.from` to derive a coordinated palette from your accent, by day and by night; `nightPaper`, `nightInk` and `nightAccent` set the night's own. Use `copyWith` for individual overrides. The semantic money colours are `moneyIn` for income, `over` for spending over a limit, and `move` for transfers. The preset corner radii and all three densities can be customized.
 
 ## Component styles
 
@@ -226,18 +242,18 @@ pressable, the rules, the leader, the engraving and the other helpers). The rest
 ## Accessibility and localization
 
 - Use Tab to move between controls, Enter or Space to activate them, and Escape to close overlays. A set of radios, a segmented control or a one-choice toggle group is one Tab stop, on the chosen option, and the arrow keys move and choose. Selects support arrow keys, Home, End and type-ahead. Sliders respond to arrow keys. Keyboard focus is shown with a double underline.
-- Control hit targets stay at least 44 logical pixels across densities. Labels and form rows wrap at large text sizes. Calendar days and weekday names scale within the seven-column grid. Chart legends and rulers scale separately from labels inside the plot.
+- Control hit targets stay at least 40 logical pixels (ui_core's tap floor) across densities. Labels and form rows wrap at large text sizes. Calendar days and weekday names scale within the seven-column grid. Chart legends and rulers scale separately from labels inside the plot.
 - The layout follows `Directionality`. Money, masked account numbers and step counts preserve their numeric order in right-to-left layouts. Charts retain their left-to-right time axis.
 - Add `RawWidgetsLocalizations.delegate` to `localizationsDelegates` and `RawWidgetsLocalizations.supportedLocales` to `supportedLocales` to localize shared control labels. Supply translated application labels, chart names and prompts yourself. The bundled fonts cover Latin scripts. Other scripts use platform fallback fonts.
-- `LedgerFormat` prints dates and times in English and currency amounts in US dollars. Use `LedgerStepper.format` to display a different unit in a stepper.
+- `LedgerFormat` prints dates and times in English and currency amounts in US dollars. Use `RawWidgetsLocalizations.of(context).formatTimeOfDay` for a clock time in the reader's language and hours, and `LedgerStepper.format` to display a different unit in a stepper.
 
 ## Example app
 
-Run the app in `example/` to explore Quill, a household ledger with an account overview, transaction register, entry form and settings. Its component gallery includes every preset in light and dark mode.
+Run the app in `example/` to explore Quill, a household ledger with an account overview, transaction register, entry form and settings. Its Foundations page shows the six presets side by side, in light and dark mode.
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.6.0 and re-exports it, so `RawWidgetsLocalizations`
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.7.2 and re-exports it, so `RawWidgetsLocalizations`
 and the `Raw*` parts come with the one import.
 
 ## Licences

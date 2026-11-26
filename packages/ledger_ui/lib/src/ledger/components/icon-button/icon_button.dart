@@ -38,7 +38,7 @@ enum LedgerIconButtonSize {
 /// sheet's close, the desktop's bell). [showBadge] marks it with the green
 /// dot ringed in the paper (unread notes). A null [onPressed] disables it:
 /// its glyph in pencil, the third ink. It lays out at the tap floor round
-/// its face at every size (44 for a finger, 24 for a pointer). A left or right chevron or arrow turns the other way in a
+/// its face at every size (40 for a finger, 24 for a pointer). A left or right chevron or arrow turns the other way in a
 /// right-to-left page, so a way back points to the reading start.
 ///
 /// ```dart
