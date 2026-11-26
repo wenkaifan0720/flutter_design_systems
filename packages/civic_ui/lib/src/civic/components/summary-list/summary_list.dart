@@ -123,9 +123,12 @@ class CivicSummaryList extends StatelessWidget {
                         ),
                 ),
                 child: Padding(
+                  // Stacked, a row without an action has no target to make
+                  // room for: its answer stands as far over its rule as its
+                  // question under the rule above.
                   padding: pad.copyWith(
                     top: wide ? pad.top - take : pad.top,
-                    bottom: pad.bottom - take,
+                    bottom: wide || _acts(row) ? pad.bottom - take : pad.bottom,
                   ),
                   child: _row(row, wide, text, half, take),
                 ),
@@ -162,11 +165,10 @@ class CivicSummaryList extends StatelessWidget {
       container: true,
       child: DefaultTextStyle(style: text.body, child: row.value),
     );
-    final act = row.onActionPressed;
-    final action = act == null || row.actionLabel == null
+    final action = !_acts(row)
         ? null
         : CivicLink(
-            onPressed: act,
+            onPressed: row.onActionPressed,
             url: row.actionUrl,
             semanticLabel:
                 row.actionSemanticLabel ?? '${row.actionLabel} ${row.label}',
@@ -246,6 +248,10 @@ class CivicSummaryList extends StatelessWidget {
       );
   }
 }
+
+// Whether [row] shows its action.
+bool _acts(CivicSummaryRow row) =>
+    row.onActionPressed != null && row.actionLabel != null;
 
 /// A [CivicSummaryList] under a title band, for a page that checks more
 /// than one thing (each person, each vehicle): the title in bold on the

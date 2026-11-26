@@ -1,3 +1,7 @@
+## 0.7.1
+
+- A stacked summary list (under 560 wide) keeps a row's padding whole when the row has no Change link: its answer stands as far over its rule as its question under the rule above, as a row with a link does (under a finger it stood 6 nearer its rule than its neighbours, with nothing there to make room for). Such a row is 6 taller under a finger; rows with a Change link, and every row from 560 wide, are unchanged.
+
 ## 0.7.0
 
 - Requires ui_core 0.7.2. Civic's tap floors are ui_core's: 40 by 40 for a finger (it was 48) and 24 by 24 for a pointer. `CivicThemeData.floorsHold` and its assert hold a theme to them; a floor can still rise. Civic's own faces keep their size (a button, a field and a row stand 48), so only what stood on the floor moves: under a finger a calendar's day, a summary list's and an error summary's links, a date's figures and a toggle group's least segment stand on 40.
