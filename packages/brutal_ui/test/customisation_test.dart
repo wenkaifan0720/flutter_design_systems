@@ -215,5 +215,74 @@ void main() {
       expect(brutal.capHeightFactor, 0.72);
       expect(Theme.of(inside).textTheme.bodyMedium?.fontFamily, 'TestFace');
     });
+
+    test('the same family with a fallback added takes the fallback', () {
+      // An app that adds a script's face to the look's own (Arabic, CJK) by
+      // copyWith keeps the family and gains the fallback in every style, as
+      // a theme built in that typeface has it.
+      final own = BrutalTypeface.spaceGrotesk;
+      final face = BrutalTypeface(
+        family: own.family,
+        package: own.package,
+        capHeightFactor: own.capHeightFactor,
+        fallback: const ['Noto Sans Arabic'],
+      );
+      final copied = BrutalThemeData.light().copyWith(typeface: face);
+      final built = BrutalThemeData.light(typeface: face).textTheme;
+      // The bundled face under its package's name, the app's face behind it
+      // under its own: read as the package's ('packages/brutal_ui/Noto Sans
+      // Arabic'), no app has it registered and the platform's face draws.
+      expect(built.body.fontFamily, _registered(own));
+      expect(built.body.fontFamilyFallback, ['Noto Sans Arabic']);
+      final t = copied.textTheme;
+      for (final (name, style, want) in [
+        ('display', t.display, built.display),
+        ('headline', t.headline, built.headline),
+        ('title', t.title, built.title),
+        ('body', t.body, built.body),
+        ('label', t.label, built.label),
+        ('secondary', t.secondary, built.secondary),
+        ('caption', t.caption, built.caption),
+      ]) {
+        expect(style.fontFamily, want.fontFamily, reason: name);
+        expect(style.fontFamilyFallback, want.fontFamilyFallback, reason: name);
+      }
+      expect(copied.typeface, face);
+    });
+
+    testWidgets("an app's face behind the bundled one reaches the Material "
+        'theme as named', (tester) async {
+      final own = BrutalTypeface.spaceGrotesk;
+      final face = BrutalTypeface(
+        family: own.family,
+        package: own.package,
+        capHeightFactor: own.capHeightFactor,
+        fallback: const ['Noto Sans Arabic'],
+      );
+      late BuildContext inside;
+      await tester.pumpWidget(
+        _app(
+          BrutalThemeData.light().copyWith(typeface: face),
+          Builder(
+            builder: (context) {
+              inside = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      final words = Theme.of(inside).textTheme.bodyMedium!;
+      expect(words.fontFamily, _registered(own));
+      expect(words.fontFamilyFallback, ['Noto Sans Arabic']);
+      expect(BrutalTheme.of(inside).textTheme.body.fontFamilyFallback, [
+        'Noto Sans Arabic',
+      ]);
+    });
   });
 }
+
+/// [typeface]'s family as the engine has it: a package's face under
+/// `packages/<package>/`.
+String _registered(BrutalTypeface typeface) => typeface.package == null
+    ? typeface.family
+    : 'packages/${typeface.package}/${typeface.family}';

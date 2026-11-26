@@ -425,7 +425,10 @@ class BrutalTypeface with Diagnosticable {
   /// The face's capitals as a fraction of its size.
   final double capHeightFactor;
 
-  /// Faces to fall back on for a glyph it lacks.
+  /// Faces to fall back on for a glyph it lacks, by the names they are
+  /// registered under: an app's own as it names them, a package's as
+  /// `packages/<package>/<family>`. They are not read as faces of
+  /// [package].
   final List<String> fallback;
 
   @override
@@ -446,7 +449,8 @@ class BrutalTypeface with Diagnosticable {
     properties
       ..add(StringProperty('family', family))
       ..add(StringProperty('package', package, defaultValue: null))
-      ..add(DoubleProperty('capHeightFactor', capHeightFactor));
+      ..add(DoubleProperty('capHeightFactor', capHeightFactor))
+      ..add(IterableProperty<String>('fallback', fallback, ifEmpty: '[]'));
   }
 }
 
@@ -490,8 +494,7 @@ class BrutalTextTheme with Diagnosticable {
       double tracking = 0,
       Color? color,
     }) => TextStyle(
-      fontFamily: typeface.family,
-      package: typeface.package,
+      fontFamily: _familyOf(typeface),
       fontFamilyFallback: typeface.fallback.isEmpty ? null : typeface.fallback,
       fontSize: size,
       height: height / size,
@@ -573,7 +576,9 @@ class BrutalTextTheme with Diagnosticable {
     );
   }
 
-  /// These styles set in [typeface], their sizes, weights and colours kept.
+  /// These styles in [typeface], their sizes, weights and colours kept; these
+  /// styles as they are when they are in it already (its family and its
+  /// fallbacks).
   BrutalTextTheme inFace(BrutalTypeface typeface) {
     TextStyle f(TextStyle s) => TextStyle(
       inherit: s.inherit,
@@ -588,11 +593,14 @@ class BrutalTextTheme with Diagnosticable {
       decoration: s.decoration,
       fontFeatures: s.fontFeatures,
       fontVariations: s.fontVariations,
-      fontFamily: typeface.family,
-      package: typeface.package,
+      fontFamily: _familyOf(typeface),
       fontFamilyFallback: typeface.fallback.isEmpty ? null : typeface.fallback,
     );
-    if (body.fontFamily == _registered(typeface)) return this;
+    final set = f(body);
+    if (body.fontFamily == set.fontFamily &&
+        listEquals(body.fontFamilyFallback, set.fontFamilyFallback)) {
+      return this;
+    }
     return copyWith(
       display: f(display),
       headline: f(headline),
@@ -603,10 +611,6 @@ class BrutalTextTheme with Diagnosticable {
       caption: f(caption),
     );
   }
-
-  static String _registered(BrutalTypeface typeface) => typeface.package == null
-      ? typeface.family
-      : 'packages/${typeface.package}/${typeface.family}';
 
   /// Between [a] and [b] at [t].
   static BrutalTextTheme lerp(BrutalTextTheme a, BrutalTextTheme b, double t) {
@@ -1973,8 +1977,7 @@ class BrutalTheme extends StatelessWidget {
     BrutalTypeface typeface,
   ) => ThemeData(
     brightness: colors.brightness,
-    fontFamily: typeface.family,
-    package: typeface.package,
+    fontFamily: _familyOf(typeface),
     fontFamilyFallback: typeface.fallback.isEmpty ? null : typeface.fallback,
     useMaterial3: true,
     pageTransitionsTheme: const PageTransitionsTheme(
@@ -2119,3 +2122,11 @@ class _CupertinoWords extends LocalizationsDelegate<CupertinoLocalizations> {
   @override
   bool shouldReload(_CupertinoWords old) => false;
 }
+
+/// [typeface]'s family as it is registered: a package's face under
+/// `packages/<package>/`. Styles take it as the family alone, with no
+/// `package:`, which would read the typeface's fallbacks as faces of the same
+/// package too, and an app's face behind the bundled one would never draw.
+String _familyOf(BrutalTypeface typeface) => typeface.package == null
+    ? typeface.family
+    : 'packages/${typeface.package}/${typeface.family}';

@@ -1,3 +1,9 @@
+## 0.6.1
+
+- Requires ui_core 0.7.2.
+- An app's face behind the bundled Space Grotesk (an Arabic or CJK face in `BrutalTypeface.fallback`) draws the glyphs Space Grotesk lacks. Fallbacks are named as they are registered: an app's faces as it names them, a package's as `packages/<package>/<family>`. Before, they were read as faces of the typeface's own package (`packages/brutal_ui/Noto Sans Arabic`), which no app registers, so the platform's face drew those glyphs.
+- `BrutalThemeData.copyWith(typeface:)` keeps the typeface's fallback when its family is the theme's own. Before, it dropped it, while `BrutalThemeData.light(typeface:)` kept it.
+
 ## 0.6.0
 
 - Requires ui_core 0.7.1.

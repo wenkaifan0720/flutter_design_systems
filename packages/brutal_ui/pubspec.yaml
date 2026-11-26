@@ -1,7 +1,7 @@
 name: brutal_ui
 description: >-
   A neo-brutalist Flutter design system: heavy black rules, square corners, a hard shadow under what you can press and one flat colour block a screen.
-version: 0.6.0
+version: 0.6.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/brutal/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/brutal_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
@@ -34,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.7.1
+  ui_core: ^0.7.2
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -45,8 +45,8 @@ dev_dependencies:
     sdk: flutter
   qr: ^3.0.2
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.5.1
-  # Our looks' layout review, in the repository alone (publish_to: none).
+  ui_core_test: ^0.5.3
+  # The layout review, in the repository alone (publish_to: none).
   ui_core_review: ^0.1.0
 
 flutter:
