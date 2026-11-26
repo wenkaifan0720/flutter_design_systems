@@ -441,7 +441,8 @@ class ComicPageDots extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     // The current page is a longer mark, not only a filled one: it reads by its shape as well as its colour.
-    double across(int i) => i == selectedIndex ? 32 : 18;
+    const round = 18.0;
+    double across(int i) => i == selectedIndex ? 32 : round;
     // A round mark's antialiased rim leaves fewer whole pixels of ink than a square's: the rim is 3 px, so the
     // marks still stand 3:1 from the ground by their ink, not only by their fill.
     Widget mark(int i) => Container(
@@ -458,12 +459,14 @@ class ComicPageDots extends StatelessWidget {
         ),
       ),
     );
-    // Each mark keeps its slot between its neighbours, the floor wide; the row's ends are the marks' own, so the first
-    // mark starts on the column's edge and a target's reach past an end stands outward.
+    // The marks stand one gap apart face to face, the current page's longer mark too: a round mark's slot is the floor
+    // wide, and the longer mark's is as much wider as it is. The row's ends are the marks' own, so the first mark starts
+    // on the column's edge.
     final floor = RawTapTargets.of(context).floorOn().width;
+    final half = ((floor - round) / 2).clamp(0.0, floor);
     EdgeInsetsGeometry slot(int i) => EdgeInsetsDirectional.only(
-      start: i == 0 ? 0 : (floor - across(i)) / 2,
-      end: i == pageCount - 1 ? 0 : (floor - across(i)) / 2,
+      start: i == 0 ? 0 : half,
+      end: i == pageCount - 1 ? 0 : half,
       top: 13,
       bottom: 13,
     );

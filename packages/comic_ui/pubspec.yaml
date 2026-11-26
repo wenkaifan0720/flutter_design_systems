@@ -1,7 +1,7 @@
 name: comic_ui
 description: >-
   A Flutter design system drawn as a printed comic page: inked panels, speech balloons and Ben-Day dots in flat inks, every change of state a quick cut or pop.
-version: 0.7.0
+version: 0.7.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/comic/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/comic_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
@@ -45,7 +45,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.5.2
+  ui_core_test: ^0.5.3
   # The layout review, in the repository alone (publish_to: none).
   ui_core_review: ^0.1.0
 

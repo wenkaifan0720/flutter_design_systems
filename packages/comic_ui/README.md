@@ -275,10 +275,10 @@ Six editions, each designed for the day and for its night issue (`Brightness.dar
 | Factory | Edition |
 | --- | --- |
 | `ComicThemeData.offset()` | Process yellow, pink and blue on warm newsprint, a Sunday comic |
-| `ComicThemeData.reprint()` | Teal and orange |
-| `ComicThemeData.newsstand()` | Green |
+| `ComicThemeData.reprint()` | Teal and orange on seafoam stock, apricot captions |
+| `ComicThemeData.newsstand()` | Hot red, cyan and green, white panels on a cool grey rack |
 | `ComicThemeData.pulp()` | An aged and earthy page |
-| `ComicThemeData.sunday()` | A softer page |
+| `ComicThemeData.sunday()` | Lilac, mint and butter on a soft blue page |
 | `ComicThemeData.cosmic()` | An electric-violet act, a cyan group and acid-lime captions; deep space by night |
 
 Your own colours make a whole edition: Comic derives the readable words, contours, status inks and chart series,

@@ -1129,17 +1129,17 @@ final _Palette _offset = _Palette(
   ),
 );
 
-/// Reprint: a run off older plates. Cool stock, teal for the group, an orange act, magenta drama. At night a deep-sea
-/// green-black under the same lit paper.
+/// Reprint: a run off older plates. Seafoam stock, apricot captions, teal for the group, an orange act, magenta drama. At
+/// night a deep-sea green-black under the same lit paper, its captions lemon.
 final _Palette _reprint = _Palette(
   const _Seed(
-    background: Color(0xFFE2ECEA),
-    card: Color(0xFFFBFDFA),
-    inset: Color(0xFFEDF4F1),
+    background: Color(0xFFC8E9E3),
+    card: Color(0xFFEAFAF6),
+    inset: Color(0xFFDBF3ED),
     outline: Color(0xFF0E1E26),
     text: Color(0xFF0E1E26),
     textSecondary: Color(0xFF475A63),
-    caption: Color(0xFFF5E34C),
+    caption: Color(0xFFFFC48A),
     onCaption: Color(0xFF0E1E26),
     primary: Color(0xFFFF7A1F),
     onPrimary: Color(0xFF0E1E26),
@@ -1147,7 +1147,7 @@ final _Palette _reprint = _Palette(
     currentUserTint: Color(0xFFFFD6B8),
     shade: Color(0xFF007C8A),
     onShade: Color(0xFFFFFFFF),
-    shadeText: Color(0xFF00707D),
+    shadeText: Color(0xFF006974),
     shadeTint: Color(0xFFBDE5E4),
     drama: Color(0xFFD3147C),
     paper: Color(0xFFFBFDFA),
@@ -1180,24 +1180,25 @@ final _Palette _reprint = _Palette(
   ),
 );
 
-/// Newsstand: the glossy cover. White stock, a red act, chrome yellow, a green group. At night charcoal and a hot red.
+/// Newsstand: the glossy cover. White panels on a cool grey rack, a hot red act, cyan captions, a green group. At night
+/// charcoal and a hot red, the captions marigold.
 final _Palette _newsstand = _Palette(
   const _Seed(
-    background: Color(0xFFECECE6),
+    background: Color(0xFFD8E2E4),
     card: Color(0xFFFFFFFF),
     inset: Color(0xFFF4F4EE),
     outline: Color(0xFF111114),
     text: Color(0xFF111114),
     textSecondary: Color(0xFF55555C),
-    caption: Color(0xFFFFC400),
+    caption: Color(0xFF7FD8F2),
     onCaption: Color(0xFF111114),
-    primary: Color(0xFFFF5233),
+    primary: Color(0xFFFF3B3F),
     onPrimary: Color(0xFF111114),
-    primaryText: Color(0xFFC2260B),
-    currentUserTint: Color(0xFFFFD2C8),
+    primaryText: Color(0xFFC2121C),
+    currentUserTint: Color(0xFFFFD0D1),
     shade: Color(0xFF0B7F43),
     onShade: Color(0xFFFFFFFF),
-    shadeText: Color(0xFF0A7A40),
+    shadeText: Color(0xFF08703A),
     shadeTint: Color(0xFFCBEAD7),
     drama: Color(0xFF6B2BC4),
     paper: Color(0xFFFFFFFF),
@@ -1214,10 +1215,10 @@ final _Palette _newsstand = _Palette(
     textSecondary: Color(0xFFB6B6C2),
     caption: Color(0xFFFFC400),
     onCaption: Color(0xFF111114),
-    primary: Color(0xFFFF6242),
+    primary: Color(0xFFFF4D52),
     onPrimary: Color(0xFF111114),
-    primaryText: Color(0xFFFF8E75),
-    currentUserTint: Color(0xFF6E2415),
+    primaryText: Color(0xFFFF8A8C),
+    currentUserTint: Color(0xFF6E1A20),
     shade: Color(0xFF38CC7E),
     onShade: Color(0xFF09090C),
     shadeText: Color(0xFF68E0A2),
@@ -1282,21 +1283,21 @@ final _Palette _pulp = _Palette(
   ),
 );
 
-/// Sunday: the funnies, soft. Pale sky stock, a coral act, sunny captions, a violet group. At night aubergine.
+/// Sunday: the funnies, soft. Pale sky stock, a mint act, butter captions, a lilac group. At night aubergine.
 final _Palette _sunday = _Palette(
   const _Seed(
-    background: Color(0xFFDCE7F2),
-    card: Color(0xFFFFFEFA),
-    inset: Color(0xFFF1F5F8),
+    background: Color(0xFFCCE2F7),
+    card: Color(0xFFEEF8FF),
+    inset: Color(0xFFE0F0FE),
     outline: Color(0xFF1A1C2C),
     text: Color(0xFF1A1C2C),
     textSecondary: Color(0xFF50556F),
     caption: Color(0xFFFFE26A),
     onCaption: Color(0xFF1A1C2C),
-    primary: Color(0xFFFF8069),
+    primary: Color(0xFF5CCB8A),
     onPrimary: Color(0xFF1A1C2C),
-    primaryText: Color(0xFFB8381F),
-    currentUserTint: Color(0xFFFFD6CC),
+    primaryText: Color(0xFF036A31),
+    currentUserTint: Color(0xFFC9EFD3),
     shade: Color(0xFF5F47C4),
     onShade: Color(0xFFFFFFFF),
     shadeText: Color(0xFF5F47C4),
@@ -1316,10 +1317,10 @@ final _Palette _sunday = _Palette(
     textSecondary: Color(0xFFBBB4DC),
     caption: Color(0xFFFFE26A),
     onCaption: Color(0xFF1A1C2C),
-    primary: Color(0xFFFF8F7A),
+    primary: Color(0xFF74DCA0),
     onPrimary: Color(0xFF1A1C2C),
-    primaryText: Color(0xFFFFA694),
-    currentUserTint: Color(0xFF6A3048),
+    primaryText: Color(0xFF8FE6B4),
+    currentUserTint: Color(0xFF1F5A3C),
     shade: Color(0xFFA892F4),
     onShade: Color(0xFF110F1F),
     shadeText: Color(0xFFC0AFFA),
@@ -1587,11 +1588,11 @@ class ComicThemeData with Diagnosticable {
   factory ComicThemeData.offset([Brightness brightness = Brightness.light]) =>
       preset('offset', brightness);
 
-  /// The reprint preset: teal and orange.
+  /// The reprint preset: teal and orange on seafoam stock, apricot captions.
   factory ComicThemeData.reprint([Brightness brightness = Brightness.light]) =>
       preset('reprint', brightness);
 
-  /// The newsstand preset: green.
+  /// The newsstand preset: hot red, cyan and green, white panels on a cool grey rack.
   factory ComicThemeData.newsstand([
     Brightness brightness = Brightness.light,
   ]) => preset('newsstand', brightness);
@@ -1600,7 +1601,7 @@ class ComicThemeData with Diagnosticable {
   factory ComicThemeData.pulp([Brightness brightness = Brightness.light]) =>
       preset('pulp', brightness);
 
-  /// The sunday preset: a softer page.
+  /// The sunday preset: lilac, mint and butter on a soft blue page.
   factory ComicThemeData.sunday([Brightness brightness = Brightness.light]) =>
       preset('sunday', brightness);
 

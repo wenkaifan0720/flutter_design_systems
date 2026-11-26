@@ -1,3 +1,11 @@
+## 0.7.1
+
+- By day the six print runs read apart on any screen, not only on the cover: their gutters, panels and captions differ where offset, reprint, newsstand and sunday read alike. Reprint prints on seafoam stock with pale seafoam panels and apricot captions (lemon by night, as before). Newsstand sets white panels on a cool grey rack, its act a hot red (`0xFFFF3B3F`, was the red-orange `0xFFFF5233`) and its captions cyan (`0xFF7FD8F2`, was marigold; marigold still by night), as the switches that are on, the chosen options and the notices are. Sunday's panels are pale blue on soft blue stock and its act is mint (`0xFF5CCB8A`, was coral), so no two runs' acts are both a warm red. Offset, pulp and cosmic are unchanged; each run's words still read on all its grounds.
+- `ComicPageDots` stand their marks one gap apart face to face, the current page's longer mark too: its neighbours stood 7 nearer it than the others stood to each other.
+- A multi-select's chosen tag stands its words as far in from its start as its cross from its end (they stood 8 in against the cross's 11).
+- A multi-select's `hintText` shows in the typing row while it is empty, under the chosen tags too, until `maxTags` are chosen: the row under the tags read as an empty band.
+- The example's Foundations page shows the six print runs six across on a desk, each its run's panel on its gutter.
+
 ## 0.7.0
 
 - Requires ui_core 0.7.2. Comic's tap floor is ui_core's finger floor, 40 by 40, under a finger and a pointer alike (it was 48 under a finger and 44 under a pointer): Comic's faces are drawn for a thumb on every platform. Faces drawn larger keep their size (a button and a field stand 48); what stood on the floor (a slider's thumb, a pager's dots, a breadcrumb's links, a context menu's items, a rating's stars) stands on 40. A `RawTapTargetScope` above the theme still sets an app's own. `ComicTapTarget.target`, `ComicTapTarget.touchTarget`, `ComicChromeMetrics.target` and `ComicChromeMetrics.touchTarget` are removed: read `ComicTapTarget.targetOf(context)`.

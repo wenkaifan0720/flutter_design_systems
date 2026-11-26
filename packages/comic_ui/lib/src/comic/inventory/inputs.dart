@@ -773,8 +773,9 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
   /// Makes a value of typed words, or null to refuse them; null takes suggestions only.
   final T? Function(String text)? onCreate;
 
-  /// [labelText]: its name, above the frame. [hintText]: the placeholder while nothing is chosen. [helperText]: the help under
-  /// it. [errorText]: what is wrong, in the help's place.
+  /// [labelText]: its name, above the frame. [hintText]: the placeholder in the typing row while it is empty, under the
+  /// chosen tags too, until [maxTags] are chosen. [helperText]: the help under it. [errorText]: what is wrong, in the
+  /// help's place.
   final String? labelText, hintText, helperText, errorText;
 
   /// Whether it takes input.
@@ -943,7 +944,12 @@ class _ComicMultiSelectState<T extends Object>
                 autofocus: widget.autofocus,
                 controller: field.controller,
                 label: widget.labelText,
-                hint: widget.values.isEmpty ? widget.hintText : null,
+                // The typing row says what it takes, under the tags too, so it doesn't read as an empty band.
+                hint:
+                    widget.maxTags == null ||
+                        widget.values.length < widget.maxTags!
+                    ? widget.hintText
+                    : null,
                 semanticHint: widget.errorText ?? widget.helperText,
                 enabled: widget.enabled,
                 // Enter adds a tag and the editor keeps the focus for the next, as a tag input's does. The add runs here, with
@@ -1029,8 +1035,10 @@ class _ComicTag extends StatelessWidget {
           shape: shape.copyWith(side: BorderSide(color: c.nightLine, width: 2)),
         ),
         child: Padding(
+          // The words stand as far in from the start as the cross's ink from the end: the cross is a 14 glyph in a
+          // 32 key, fine in from the rim.
           padding: const EdgeInsetsDirectional.only(
-            start: ComicSpace.close,
+            start: ComicSpace.fine + (32 - 14) / 2,
             end: ComicSpace.fine,
           ),
           child: Row(

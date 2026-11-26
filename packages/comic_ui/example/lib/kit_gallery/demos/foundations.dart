@@ -81,7 +81,8 @@ class KitTypeScale extends StatelessWidget {
 }
 
 /// The six print runs ([ComicThemeData.presets]) in the page's appearance, each a page of its own under its own
-/// theme: its name in a caption, its act's button and its group's link, the parts themselves.
+/// theme: a panel on its gutter, its name in a caption, its act's button and its group's link, the parts themselves.
+/// Six across on a desk, two on a phone.
 class KitPrintRuns extends StatelessWidget {
   /// The look's print runs.
   const KitPrintRuns({super.key});
@@ -89,7 +90,7 @@ class KitPrintRuns extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return ComicGridOf(
-      columns: t.desk ? 3 : 2,
+      columns: t.desk ? 6 : 2,
       children: [
         for (final id in ComicThemeData.presets)
           ComicTheme(
@@ -97,30 +98,41 @@ class KitPrintRuns extends StatelessWidget {
             child: Builder(
               builder: (context) {
                 final run = ComicTheme.of(context);
+                final frame = run.shapes.small.copyWith(
+                  side: BorderSide(color: run.colors.nightLine, width: 2.5),
+                );
+                // The run's gutter around its panel: the two grounds a screen shows most.
                 return DecoratedBox(
                   decoration: ShapeDecoration(
                     color: run.colors.background,
-                    shape: run.shapes.small.copyWith(
-                      side: BorderSide(color: run.colors.nightLine, width: 2.5),
-                    ),
+                    shape: frame,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: ComicColumn(
-                      gap: 8,
-                      children: [
-                        // The run's name as the code names it, in its caption box; its act and its group's link.
-                        ComicCaption(id, free: true, tight: true),
-                        ComicButton.filled(
-                          kitSay(context, 'Read on'),
-                          onPressed: () {},
+                    padding: const EdgeInsets.all(8),
+                    child: DecoratedBox(
+                      decoration: ShapeDecoration(
+                        color: run.colors.card,
+                        shape: frame,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: ComicColumn(
+                          gap: 8,
+                          children: [
+                            // The run's name as the code names it, in its caption box; its act and its group's link.
+                            ComicCaption(id, free: true, tight: true),
+                            ComicButton.filled(
+                              kitSay(context, 'Read on'),
+                              onPressed: () {},
+                            ),
+                            ComicLink(
+                              kitSay(context, 'See all'),
+                              inSentence: false,
+                              onPressed: () {},
+                            ),
+                          ],
                         ),
-                        ComicLink(
-                          kitSay(context, 'See all'),
-                          inSentence: false,
-                          onPressed: () {},
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 );
