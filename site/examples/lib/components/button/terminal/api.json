@@ -1,0 +1,10 @@
+{
+  "widget": "TermButton",
+  "parameters": {
+    "label": "Text shown on the action.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "shortcut": "Prints the keyboard hint beside the label.",
+    "isDestructiveAction": "Uses the destructive ink.",
+    "style": "Overrides the key’s fill, ink or edge."
+  }
+}

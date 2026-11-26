@@ -1,0 +1,14 @@
+{
+  "widget": "Fluent2Resizable",
+  "parameters": {
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears.",
+    "first": "The pane at the start, or the top.",
+    "second": "The pane at the end, or the bottom.",
+    "axis": "Side by side, or one over the other.",
+    "initialFraction": "The first pane's share at the start.",
+    "minFirst": "The minimum extent of the first pane.",
+    "minSecond": "The minimum extent of the second pane.",
+    "onChanged": "Told the first pane's share as it moves."
+  }
+}

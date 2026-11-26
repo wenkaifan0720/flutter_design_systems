@@ -1,0 +1,8 @@
+{
+  "widget": "Fluent2InputGroup",
+  "parameters": {
+    "label": "Identifies the value and its unit.",
+    "suffix": "Fixed kilogram unit beside the editable value.",
+    "onChanged": "Receives only the editable portion."
+  }
+}

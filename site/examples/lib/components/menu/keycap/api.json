@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapMenu",
+  "parameters": {
+    "builder": "Draws the key that opens it.",
+    "semanticLabel": "The menu's name, for a screen reader.",
+    "entries": "The rows."
+  },
+  "keyboardNote": "Arrow to Date and press Enter to choose it."
+}

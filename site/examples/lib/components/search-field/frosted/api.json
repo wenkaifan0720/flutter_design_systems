@@ -1,0 +1,7 @@
+{
+  "widget": "FrostedSearchField",
+  "parameters": {
+    "hintText": "Prompt shown before a query is entered.",
+    "onChanged": "Filters the titles as the query changes."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 58,
+  "group": "Containers",
+  "title": "Reorderable list",
+  "examples": {
+    "order-stops": "Order the stops"
+  }
+}

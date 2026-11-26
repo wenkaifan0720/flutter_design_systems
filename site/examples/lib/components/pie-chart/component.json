@@ -1,0 +1,8 @@
+{
+  "order": 88,
+  "group": "Charts",
+  "title": "Pie or donut chart",
+  "examples": {
+    "compare-budgets": "Compare budget shares"
+  }
+}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fdfcf9">
+  {{base}}
+  <title>{{title}} · Flutter Design Systems</title>
+  <meta name="description" content="{{description}}">
+  <link rel="icon" href="{{root}}assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{root}}site.css">
+  <script defer src="{{root}}navigation.js"></script>
+  {{scripts}}
+</head>
+<body tabindex="-1" data-root="{{root}}" data-page="{{slug}}" data-default-look="{{firstLook}}" data-fixed-look="{{fixedLook}}">
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="mast">
+    <a href="{{root}}" class="brand" data-follow-look aria-label="Flutter Design Systems documentation"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>Flutter Design Systems</a>
+    <span class="mast-divider"></span><nav class="mast-nav" aria-label="Main"><a href="{{root}}" data-follow-look>Documentation</a><a href="{{root}}stint/" data-follow-look>Stint</a></nav>
+    <a href="https://github.com/wenkaifan0720/flutter_design_systems" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+    <button class="browse" type="button" aria-expanded="false" aria-controls="sidebar">Browse</button>
+  </header>
+  <div class="layout">
+    <aside id="sidebar">
+      <nav aria-label="Documentation directory">
+        <h2>Documentation</h2>
+        <label class="search"><span class="search-icon" aria-hidden="true"></span><input type="search" autocomplete="off" placeholder="Search" aria-label="Search documentation" aria-controls="directory-links"><kbd aria-hidden="true">/</kbd></label>
+        <div id="directory-links" class="nav-list">{{nav}}</div>
+        <p id="empty" hidden>No matching pages.</p>
+        <p class="sr-only" role="status" id="search-count"></p>
+      </nav>
+    </aside>
+    <main id="main" tabindex="-1">
+{{content}}
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "widget": "TermTimeline",
+  "parameters": {
+    "entries": "The events in chronological order.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

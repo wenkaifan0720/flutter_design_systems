@@ -1,0 +1,10 @@
+{
+  "widget": "showTimePicker",
+  "parameters": {
+    "context": "Where the dialog opens.",
+    "initialTime": "The time chosen when the dialog opens.",
+    "initialEntryMode": "Opens on the dial or on a typed time.",
+    "helpText": "The dialog's heading.",
+    "orientation": "Lays the dial out in portrait or landscape."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapDonutChart",
+  "parameters": {
+    "slices": "The shares: a label and a value each.",
+    "semanticLabel": "What it shows, for a screen reader.",
+    "size": "The well's side."
+  },
+  "keyboardNote": "Read each category’s amount in the chart summary."
+}

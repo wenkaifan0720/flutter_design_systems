@@ -1,0 +1,9 @@
+{
+  "widget": "ClayLineChart",
+  "parameters": {
+    "categories": "The x axis's category names, in reading order.",
+    "series": "The data.",
+    "semanticLabel": "The chart's name, said first.",
+    "height": "The plot's height."
+  }
+}

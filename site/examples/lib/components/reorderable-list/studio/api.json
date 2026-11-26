@@ -1,0 +1,10 @@
+{
+  "widget": "StudioReorderableList",
+  "parameters": {
+    "items": "The items, in order.",
+    "onReorder": "Moves the item at from to to.",
+    "itemBuilder": "An item's row content.",
+    "labelOf": "An item's words, for a screen reader.",
+    "shrinkWrap": "Whether it takes only its rows' height."
+  }
+}

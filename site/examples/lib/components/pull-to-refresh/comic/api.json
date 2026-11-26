@@ -1,0 +1,7 @@
+{
+  "widget": "ComicRefreshIndicator",
+  "parameters": {
+    "onRefresh": "Runs the refresh.",
+    "child": "The scrolling list."
+  }
+}

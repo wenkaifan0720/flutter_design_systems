@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapField",
+  "parameters": {
+    "labelText": "What the control is.",
+    "helperText": "Help under it.",
+    "errorText": "What is wrong, under it.",
+    "child": "The control."
+  }
+}

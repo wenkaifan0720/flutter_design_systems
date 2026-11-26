@@ -1,0 +1,9 @@
+{
+  "widget": "StudioScrollArea",
+  "parameters": {
+    "controller": "The scroll it shows.",
+    "child": "What scrolls.",
+    "axis": "Which way it scrolls.",
+    "semanticLabel": "What a screen reader calls the pane."
+  }
+}

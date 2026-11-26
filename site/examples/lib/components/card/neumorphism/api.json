@@ -1,0 +1,11 @@
+{
+  "widget": "NeumorphicCard",
+  "parameters": {
+    "title": "The primary heading.",
+    "subtitle": "Secondary information displayed beside the heading.",
+    "trailing": "Optional content at the end of the card heading.",
+    "gap": "Space between adjacent children, in logical pixels.",
+    "children": "The content widgets, in reading order.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "widget": "Fluent2AvatarGroup",
+  "parameters": {
+    "people": "The people, in order.",
+    "max": "Limits the number of visible faces before the overflow count.",
+    "size": "Each avatar's side, in pixels.",
+    "layout": "Stacked or spread.",
+    "onPressed": "Handles activation when the component is interactive.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

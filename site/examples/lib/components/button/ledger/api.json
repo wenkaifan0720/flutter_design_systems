@@ -1,0 +1,16 @@
+{
+  "widget": "LedgerButton",
+  "parameters": {
+    "label": "Action in the button’s own type.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "size": "Selects a button size.",
+    "iconAfter": "Places the icon after its label.",
+    "icon": "Adds a glyph to the component.",
+    "expand": "Allows the control to fill the available width.",
+    "isDestructiveAction": "Applies the destructive action treatment.",
+    "semanticLabel": "Supplies an accessible name.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

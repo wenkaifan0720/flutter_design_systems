@@ -1,0 +1,9 @@
+{
+  "widget": "ApplianceAvatar",
+  "parameters": {
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "slotId": "Identifies the named image slot used to resolve the picture.",
+    "size": "Its diameter.",
+    "style": "Its style, over ApplianceThemeData.avatarStyle."
+  }
+}

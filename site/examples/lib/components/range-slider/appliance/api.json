@@ -1,0 +1,11 @@
+{
+  "widget": "ApplianceRangeSlider",
+  "parameters": {
+    "values": "Lower and upper prices on the track.",
+    "max": "Largest allowed price.",
+    "startLabel": "Names the lower price.",
+    "endLabel": "Names the upper price.",
+    "semanticFormatterCallback": "Announces each price in dollars.",
+    "onChanged": "Receives the updated bounds."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "InputDecoration",
+  "parameters": {
+    "suffixText": "Words after the input, such as a unit; they stay while the user edits.",
+    "prefixText": "Words before the input, such as a currency sign.",
+    "suffixIcon": "A widget at the end of the field, such as a button.",
+    "prefixIcon": "A widget at the start of the field.",
+    "labelText": "The field's name, which floats above the input once it has focus."
+  }
+}

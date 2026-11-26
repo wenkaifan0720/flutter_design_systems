@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedMeter",
+  "parameters": {
+    "fraction": "Occupied fraction between zero and one.",
+    "hue": "Colour sampled for the filled portion.",
+    "label": "Names the meter."
+  }
+}

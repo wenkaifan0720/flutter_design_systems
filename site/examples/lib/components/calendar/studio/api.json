@@ -1,0 +1,9 @@
+{
+  "widget": "StudioCalendar",
+  "parameters": {
+    "selectedDate": "Day marked on the grid.",
+    "onDateChanged": "Receives the chosen day.",
+    "firstDate": "First day available.",
+    "lastDate": "Last day available."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ComicPageDots",
+  "parameters": {
+    "pageCount": "Total number of pages.",
+    "selectedIndex": "Zero-based position of the current page.",
+    "onPageChanged": "Receives the position requested by a dot."
+  }
+}

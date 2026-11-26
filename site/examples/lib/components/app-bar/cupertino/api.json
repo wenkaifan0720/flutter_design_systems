@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoNavigationBar",
+  "parameters": {
+    "middle": "The bar's title.",
+    "trailing": "A widget at the end, such as a button.",
+    "leading": "A widget at the start; by default a back button.",
+    "automaticallyImplyLeading": "Whether to add that back button when leading is null.",
+    "backgroundColor": "The bar's fill; translucent by default."
+  }
+}

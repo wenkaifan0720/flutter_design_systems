@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopBottomSheet",
+  "parameters": {
+    "title": "Heading inside the sheet.",
+    "child": "Details shown below the heading.",
+    "onClose": "Handles the close button."
+  }
+}

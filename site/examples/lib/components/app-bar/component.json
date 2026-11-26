@@ -1,0 +1,8 @@
+{
+  "order": 35,
+  "group": "Navigation",
+  "title": "App bar",
+  "examples": {
+    "save-note": "Save a note from the app bar"
+  }
+}

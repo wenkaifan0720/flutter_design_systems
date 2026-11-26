@@ -1,0 +1,8 @@
+{
+  "order": 61,
+  "group": "Containers",
+  "title": "Tree view",
+  "examples": {
+    "browse-folders": "Browse folders"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 26,
+  "group": "Inputs",
+  "title": "Rating",
+  "examples": {
+    "rate-guide": "Rate a guide"
+  }
+}

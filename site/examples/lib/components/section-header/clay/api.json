@@ -1,0 +1,7 @@
+{
+  "widget": "ClaySectionHeader",
+  "parameters": {
+    "text": "The words.",
+    "trailing": "An action at its end."
+  }
+}

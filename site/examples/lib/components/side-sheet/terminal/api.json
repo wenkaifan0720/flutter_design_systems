@@ -1,0 +1,8 @@
+{
+  "widget": "TermSideSheet",
+  "parameters": {
+    "title": "Heading inside the terminal panel.",
+    "child": "Contents of the panel.",
+    "footer": "Keyboard hint along the lower edge."
+  }
+}

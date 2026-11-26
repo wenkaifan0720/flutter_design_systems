@@ -1,0 +1,12 @@
+{
+  "widget": "ExpressiveAvatar",
+  "parameters": {
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "slotId": "The declared media slot of the photo, if any.",
+    "icon": "A glyph in place of the initials (an entity, an unknown person).",
+    "size": "The avatar's size.",
+    "tone": "Selects the colour treatment for the avatar.",
+    "shape": "A library shape mask in place of the circle (a hero moment).",
+    "style": "Stateful visual overrides before the avatar theme."
+  }
+}

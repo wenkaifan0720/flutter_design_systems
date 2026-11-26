@@ -1,0 +1,9 @@
+{
+  "widget": "ClayTextArea",
+  "parameters": {
+    "labelText": "The words above the well.",
+    "onChanged": "Each change of the words.",
+    "minLines": "The lines it shows when empty.",
+    "maxLines": "The most lines it grows to before it scrolls; null: any."
+  }
+}

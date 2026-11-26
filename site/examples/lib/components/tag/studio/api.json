@@ -1,0 +1,8 @@
+{
+  "widget": "StudioTag",
+  "parameters": {
+    "label": "Its words.",
+    "tone": "How it reads.",
+    "style": "Its style, over StudioThemeData.tagStyle."
+  }
+}

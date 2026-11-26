@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalAvatar",
+  "parameters": {
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "image": "Supplies the photo when one is available. The component uses its fallback otherwise.",
+    "size": "The side.",
+    "style": "Its style, over BrutalThemeData.avatarStyle."
+  }
+}

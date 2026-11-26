@@ -1,0 +1,9 @@
+{
+  "widget": "LedgerGauge",
+  "parameters": {
+    "ratio": "Occupied places as a fraction of capacity.",
+    "startLabel": "Text at the empty end of the gauge.",
+    "endLabel": "Text at the full end.",
+    "semanticLabel": "Names the reading."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoCheckbox",
+  "parameters": {
+    "value": "Whether the box is checked; null is the mixed state when tristate.",
+    "onChanged": "Called with the next value; null disables the box.",
+    "tristate": "Whether the box cycles through a mixed state.",
+    "activeColor": "The fill of a checked box.",
+    "semanticLabel": "The box's name for a screen reader when no row names it."
+  }
+}

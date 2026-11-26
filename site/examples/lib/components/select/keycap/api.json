@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapSelect",
+  "parameters": {
+    "labelText": "The words over the select.",
+    "items": "The choices.",
+    "value": "The chosen value; null shows hint.",
+    "onChanged": "Called with a new choice; null turns the select off."
+  }
+}

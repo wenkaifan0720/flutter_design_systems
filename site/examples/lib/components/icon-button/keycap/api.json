@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapIconButton",
+  "parameters": {
+    "icon": "The glyph.",
+    "onPressed": "Called when the key is pressed; null turns it off.",
+    "semanticLabel": "What the key does, for a screen reader (and its tooltip's words)."
+  }
+}

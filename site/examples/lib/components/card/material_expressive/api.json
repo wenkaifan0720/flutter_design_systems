@@ -1,0 +1,14 @@
+{
+  "widget": "ExpressiveCard",
+  "parameters": {
+    "child": "The card's content.",
+    "style": "Stateful visual overrides before the card theme and global knobs.",
+    "variant": "The card's style.",
+    "onPressed": "Handles activation when the component is interactive.",
+    "onLongPress": "What a long press on the card does.",
+    "padding": "Sets the space between the frame and its content.",
+    "semanticLabel": "What a screen reader says for the card, over its content's own text.",
+    "dragged": "Applies the visual treatment for a dragged item.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller."
+  }
+}

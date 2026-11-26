@@ -1,0 +1,8 @@
+{
+  "widget": "ExpressiveStepProgress",
+  "parameters": {
+    "count": "Total number of steps.",
+    "currentStep": "Zero-based index of the current step.",
+    "labels": "Names shown alongside the step markers."
+  }
+}

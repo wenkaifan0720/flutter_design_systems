@@ -1,0 +1,9 @@
+{
+  "widget": "StudioHoverCard",
+  "parameters": {
+    "child": "The named link that anchors the preview.",
+    "content": "Supplies the profile information shown on hover.",
+    "width": "Maximum width of the preview."
+  },
+  "keyboardNote": "Activate the owner link to open the profile with a keyboard or screen reader."
+}

@@ -1,0 +1,12 @@
+{
+  "widget": "BrutalDisclosure",
+  "parameters": {
+    "title": "The heading.",
+    "child": "What it shows when open.",
+    "subtitle": "A line under the heading, in the muted ink.",
+    "expanded": "Controls whether the detail is expanded. Leave it unset for internal state.",
+    "initiallyExpanded": "Where its own state starts.",
+    "onExpansionChanged": "Called with the state a press asks for.",
+    "style": "Its style, over BrutalThemeData.disclosureStyle."
+  }
+}

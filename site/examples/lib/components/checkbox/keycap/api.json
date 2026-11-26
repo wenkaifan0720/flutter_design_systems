@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapCheckbox",
+  "parameters": {
+    "semanticLabel": "What it checks, for a screen reader.",
+    "value": "Checked, unchecked, or (with tristate) null for mixed.",
+    "onChanged": "Called with the next value; null turns the checkbox off."
+  }
+}

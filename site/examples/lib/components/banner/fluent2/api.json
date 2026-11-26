@@ -1,0 +1,9 @@
+{
+  "widget": "Fluent2MessageBar",
+  "parameters": {
+    "title": "Heading that names the condition.",
+    "body": "Explanation of what the connection change means.",
+    "onDismiss": "Handles the notice’s dismiss action.",
+    "intent": "Chooses the informational, warning, error or success treatment."
+  }
+}

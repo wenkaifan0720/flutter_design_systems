@@ -1,0 +1,9 @@
+{
+  "widget": "NeumorphicToggleGroup",
+  "parameters": {
+    "label": "Names the group.",
+    "items": "List and Grid, in reading order.",
+    "selected": "Current layout.",
+    "onChanged": "Receives the new selection."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 57,
+  "group": "Containers",
+  "title": "Carousel",
+  "examples": {
+    "browse-rooms": "Browse the rooms"
+  }
+}

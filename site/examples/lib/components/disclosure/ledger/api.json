@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerDisclosure",
+  "parameters": {
+    "title": "The line's words.",
+    "child": "What it folds.",
+    "note": "The mono note at the line's end.",
+    "initiallyOpen": "Whether it stands open at first.",
+    "onChanged": "Called as it opens (true) or folds."
+  }
+}

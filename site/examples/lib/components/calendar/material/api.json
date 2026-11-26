@@ -1,0 +1,12 @@
+{
+  "widget": "CalendarDatePicker",
+  "parameters": {
+    "initialDate": "The date chosen when the calendar is first built.",
+    "firstDate": "The earliest date that can be chosen.",
+    "lastDate": "The latest date that can be chosen.",
+    "currentDate": "The day marked as today.",
+    "onDateChanged": "Called with the chosen date.",
+    "onDisplayedMonthChanged": "Called when the user browses to another month.",
+    "selectableDayPredicate": "Turns off the days it returns false for."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "Tooltip",
+  "parameters": {
+    "message": "The words shown on hover, focus or a long press.",
+    "child": "The widget the tip explains.",
+    "waitDuration": "How long the pointer rests before the tip shows.",
+    "showDuration": "How long the tip stays after a long press.",
+    "triggerMode": "Whether a long press or a tap shows the tip on a touch screen."
+  }
+}

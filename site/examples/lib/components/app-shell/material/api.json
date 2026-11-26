@@ -1,0 +1,10 @@
+{
+  "widget": "Scaffold",
+  "parameters": {
+    "body": "The screen's content.",
+    "appBar": "The bar across the top, usually an AppBar.",
+    "bottomNavigationBar": "The bar along the bottom, usually a NavigationBar.",
+    "drawer": "A panel that slides in from the start edge, usually a NavigationDrawer.",
+    "floatingActionButton": "The screen's main action."
+  }
+}

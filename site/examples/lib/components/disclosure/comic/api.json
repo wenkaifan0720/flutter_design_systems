@@ -1,0 +1,12 @@
+{
+  "widget": "ComicDisclosure",
+  "parameters": {
+    "title": "The header and accessible name.",
+    "child": "Content shown while expanded.",
+    "initiallyExpanded": "Initial state when uncontrolled.",
+    "expanded": "A controlled state, or null to maintain state internally.",
+    "onExpansionChanged": "Reports a requested state change once.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

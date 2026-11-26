@@ -1,0 +1,10 @@
+{
+  "widget": "RefreshIndicator",
+  "parameters": {
+    "onRefresh": "Called when the user pulls far enough; the spinner stays until its Future completes.",
+    "child": "The scrolling content; it must scroll even when it fits.",
+    "displacement": "How far below the top the spinner settles.",
+    "edgeOffset": "Where the spinner starts, below any bar over the content.",
+    "triggerMode": "Whether a pull must start at the top of the content."
+  }
+}

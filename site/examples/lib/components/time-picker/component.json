@@ -1,0 +1,9 @@
+{
+  "order": 30,
+  "group": "Inputs",
+  "title": "Time picker",
+  "previewHeight": 540,
+  "examples": {
+    "set-reminder": "Set a reminder time"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "BrutalDescriptionList",
+  "parameters": {
+    "entries": "The terms, top to bottom.",
+    "style": "Its style, over BrutalThemeData.descriptionListStyle."
+  }
+}

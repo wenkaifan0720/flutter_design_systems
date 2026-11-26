@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapDisclosure",
+  "parameters": {
+    "title": "Its title.",
+    "child": "What opens.",
+    "subtitle": "Words under the title.",
+    "onExpansionChanged": "Called with its new state."
+  }
+}

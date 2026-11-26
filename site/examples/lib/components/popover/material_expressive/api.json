@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressivePopover",
+  "parameters": {
+    "builder": "Builds the control that opens the popover.",
+    "content": "Supplies the note inside the open panel.",
+    "label": "Names the panel for assistive technology.",
+    "position": "Places the popover relative to its anchor."
+  }
+}

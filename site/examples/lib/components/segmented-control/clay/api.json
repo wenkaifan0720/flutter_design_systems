@@ -1,0 +1,9 @@
+{
+  "widget": "ClaySegmentedButton",
+  "parameters": {
+    "segments": "The segments, two or more.",
+    "selected": "The chosen segment's value.",
+    "onChanged": "Called with the value chosen; null turns it off.",
+    "semanticLabel": "What a screen reader calls the group."
+  }
+}

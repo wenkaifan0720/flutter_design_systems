@@ -1,0 +1,12 @@
+{
+  "widget": "NeumorphicCarouselView",
+  "parameters": {
+    "label": "The accessible name of the strip and its dots.",
+    "children": "The items, one to a page.",
+    "height": "The items' height.",
+    "initialPage": "Selects the page shown initially.",
+    "onChanged": "Reports the item that settled in view.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the strip takes focus when it first shows."
+  }
+}

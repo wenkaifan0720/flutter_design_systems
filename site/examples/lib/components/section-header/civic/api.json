@@ -1,0 +1,8 @@
+{
+  "widget": "CivicSectionHeader",
+  "parameters": {
+    "title": "The heading's words.",
+    "action": "What stands at the heading's end.",
+    "isLarge": "Whether it is the large heading."
+  }
+}

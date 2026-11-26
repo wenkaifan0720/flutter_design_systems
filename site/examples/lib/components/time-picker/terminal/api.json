@@ -1,0 +1,9 @@
+{
+  "widget": "TermTimeField",
+  "parameters": {
+    "labelText": "Names the time entry.",
+    "value": "Selected reminder time.",
+    "onChanged": "Receives the parsed time, or null for an incomplete value."
+  },
+  "keyboardNote": "Focus the time field and press Up or Down to step by 15 minutes."
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "AlertDialog",
+  "parameters": {
+    "title": "The dialog's heading.",
+    "content": "The dialog's message.",
+    "actions": "The buttons along the bottom, usually TextButton widgets.",
+    "icon": "A glyph above the title.",
+    "scrollable": "Whether the title and content scroll when they do not fit."
+  }
+}

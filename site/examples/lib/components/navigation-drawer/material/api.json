@@ -1,0 +1,10 @@
+{
+  "widget": "NavigationDrawer",
+  "parameters": {
+    "children": "The places, as NavigationDrawerDestination rows, with any headings and dividers.",
+    "selectedIndex": "The index of the current place among the destinations.",
+    "onDestinationSelected": "Called with the index of the chosen place.",
+    "tilePadding": "The space around each place.",
+    "backgroundColor": "The drawer's fill."
+  }
+}

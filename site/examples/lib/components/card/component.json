@@ -1,0 +1,8 @@
+{
+  "order": 47,
+  "group": "Containers",
+  "title": "Card",
+  "examples": {
+    "pin-note": "Pin a note"
+  }
+}

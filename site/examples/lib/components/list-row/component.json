@@ -1,0 +1,8 @@
+{
+  "order": 48,
+  "group": "Containers",
+  "title": "List row",
+  "examples": {
+    "read-message": "Read a message"
+  }
+}

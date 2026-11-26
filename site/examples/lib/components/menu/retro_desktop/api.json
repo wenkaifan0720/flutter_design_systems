@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopMenuAnchor",
+  "parameters": {
+    "items": "Typed values and visible names.",
+    "builder": "Builds the trigger around the supplied open callback.",
+    "onSelected": "Receives the chosen sort order."
+  }
+}

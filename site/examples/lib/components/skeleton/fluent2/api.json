@@ -1,0 +1,8 @@
+{
+  "widget": "Fluent2Skeleton",
+  "parameters": {
+    "child": "Placeholder items arranged like the arriving content.",
+    "animation": "Selects the shimmer or pulse treatment.",
+    "label": "Supplies a description of the loading state."
+  }
+}

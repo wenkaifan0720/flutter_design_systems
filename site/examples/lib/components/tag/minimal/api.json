@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalTag",
+  "parameters": {
+    "label": "What it says.",
+    "tone": "Its tint.",
+    "icon": "A 12 px glyph before the label, in the tone's ink.",
+    "dot": "Sets the tone of the dot beside the label."
+  }
+}

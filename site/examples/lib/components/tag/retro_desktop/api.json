@@ -1,0 +1,7 @@
+{
+  "widget": "RetroDesktopTag",
+  "parameters": {
+    "label": "The words on the tag.",
+    "icon": "A glyph before them."
+  }
+}

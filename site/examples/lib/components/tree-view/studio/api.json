@@ -1,0 +1,10 @@
+{
+  "widget": "StudioTree",
+  "parameters": {
+    "controller": "The nodes, open and chosen.",
+    "labelOf": "A node's words.",
+    "iconOf": "A node's glyph.",
+    "onActivate": "Opens a node.",
+    "semanticLabel": "What a screen reader calls it."
+  }
+}

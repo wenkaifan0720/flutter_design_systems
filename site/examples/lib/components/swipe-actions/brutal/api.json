@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalSwipeRow",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "Behind the start edge, shown by a swipe toward the end.",
+    "endActions": "Behind the end edge, shown by a swipe toward the start.",
+    "style": "Its style, over BrutalThemeData.swipeRowStyle."
+  }
+}

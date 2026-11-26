@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapCommandPalette",
+  "parameters": {
+    "commands": "What can be run.",
+    "hintText": "What the empty well says; the kit's \"Search\" when null."
+  }
+}

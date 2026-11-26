@@ -1,0 +1,8 @@
+{
+  "order": 46,
+  "group": "Navigation",
+  "title": "App shell",
+  "examples": {
+    "navigate-workspace": "Navigate a workspace"
+  }
+}

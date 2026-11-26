@@ -1,0 +1,8 @@
+{
+  "order": 8,
+  "group": "Actions",
+  "title": "Keyboard key",
+  "examples": {
+    "reset-counter": "Reset a counter"
+  }
+}

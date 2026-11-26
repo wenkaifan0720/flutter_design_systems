@@ -1,0 +1,11 @@
+{
+  "widget": "LedgerTabs",
+  "parameters": {
+    "tabs": "Section names in reading order.",
+    "selectedIndex": "Index of the current section.",
+    "onSelected": "Receives the chosen index.",
+    "counts": "Optional figures alongside the tab labels.",
+    "padding": "Insets the tab bar."
+  },
+  "keyboardNote": "LedgerTabs builds the tab strip. Place the content for the selected tab below it."
+}

@@ -1,0 +1,6 @@
+{
+  "widget": "TermSteps",
+  "parameters": {
+    "steps": "Names and completion states in reading order."
+  }
+}

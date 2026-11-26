@@ -1,0 +1,3 @@
+{
+  "gap": "A date the reader knows is typed (CivicDateInput); a date chosen from what is free is a list of radios (CivicRadioGroup), which a screen reader reads as easily as an eye"
+}

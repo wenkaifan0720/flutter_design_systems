@@ -1,0 +1,9 @@
+{
+  "widget": "CupertinoActionSheet",
+  "parameters": {
+    "title": "The sheet's heading.",
+    "message": "A line under the heading.",
+    "actions": "The choices, as CupertinoActionSheetAction buttons.",
+    "cancelButton": "The button set apart at the bottom that closes the sheet."
+  }
+}

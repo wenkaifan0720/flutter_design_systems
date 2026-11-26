@@ -1,0 +1,8 @@
+{
+  "order": 17,
+  "group": "Inputs",
+  "title": "Combobox",
+  "examples": {
+    "find-city": "Find a city"
+  }
+}

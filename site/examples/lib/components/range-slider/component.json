@@ -1,0 +1,8 @@
+{
+  "order": 23,
+  "group": "Inputs",
+  "title": "Range slider",
+  "examples": {
+    "choose-price-range": "Choose a price range"
+  }
+}

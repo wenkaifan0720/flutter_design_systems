@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapSparkline",
+  "parameters": {
+    "values": "The values, oldest first.",
+    "semanticLabel": "What it shows and which way it goes, for a screen reader.",
+    "width": "Its width.",
+    "height": "Its height."
+  }
+}

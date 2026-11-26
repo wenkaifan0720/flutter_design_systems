@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedSheet",
+  "parameters": {
+    "title": "Heading in the side sheet.",
+    "builder": "Builds the list of file details.",
+    "width": "Preferred width for the sheet."
+  }
+}

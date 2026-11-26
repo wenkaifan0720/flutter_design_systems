@@ -1,0 +1,7 @@
+{
+  "widget": "ComicListSection",
+  "parameters": {
+    "children": "Rows in reading order.",
+    "label": "Optional accessible group name."
+  }
+}

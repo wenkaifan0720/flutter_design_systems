@@ -1,0 +1,12 @@
+{
+  "widget": "KeycapDateRangePicker",
+  "parameters": {
+    "value": "The days chosen.",
+    "firstDate": "The first day that can be chosen.",
+    "lastDate": "The last.",
+    "onChanged": "Called with a whole range; null turns it off.",
+    "labelText": "The words over the key.",
+    "currentDate": "Today; the clock's when null."
+  },
+  "keyboardNote": "Use the calendar arrows to reach later dates."
+}

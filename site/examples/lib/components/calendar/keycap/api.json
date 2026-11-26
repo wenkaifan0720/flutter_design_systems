@@ -1,0 +1,6 @@
+{
+  "widget": "KeycapCalendar",
+  "parameters": {
+    "controller": "What is chosen, and which month shows."
+  }
+}

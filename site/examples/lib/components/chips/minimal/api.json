@@ -1,0 +1,8 @@
+{
+  "widget": "MinimalChip",
+  "parameters": {
+    "label": "Condition applied by the chip.",
+    "selected": "Whether the saved-items filter is active.",
+    "onPressed": "Updates the filter when the reader activates the chip."
+  }
+}

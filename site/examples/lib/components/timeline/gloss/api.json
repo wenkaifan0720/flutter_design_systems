@@ -1,0 +1,6 @@
+{
+  "widget": "GlossTimeline",
+  "parameters": {
+    "entries": "The events, in order."
+  }
+}

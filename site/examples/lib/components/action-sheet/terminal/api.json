@@ -1,0 +1,8 @@
+{
+  "widget": "showTermActionSheet",
+  "parameters": {
+    "title": "Heading above the commands.",
+    "actions": "Commands with typed return values.",
+    "cancelLabel": "Words on the dismissal action."
+  }
+}

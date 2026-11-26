@@ -1,0 +1,10 @@
+{
+  "widget": "Fluent2Slider",
+  "parameters": {
+    "value": "Current volume on the track.",
+    "max": "Highest volume the thumb can reach.",
+    "step": "Distance between adjacent values.",
+    "label": "Names the volume control.",
+    "onChanged": "Receives the new volume."
+  }
+}

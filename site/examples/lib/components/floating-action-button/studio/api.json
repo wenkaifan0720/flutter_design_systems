@@ -1,0 +1,8 @@
+{
+  "widget": "StudioFloatingKey",
+  "parameters": {
+    "icon": "Symbol on the floating action.",
+    "label": "Text beside the plus.",
+    "onPressed": "Creates a note and updates the count."
+  }
+}

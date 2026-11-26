@@ -1,0 +1,8 @@
+{
+  "order": 75,
+  "group": "Overlays",
+  "title": "Hover card",
+  "examples": {
+    "preview-owner": "Preview a file owner"
+  }
+}

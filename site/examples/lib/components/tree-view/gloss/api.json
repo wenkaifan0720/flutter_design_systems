@@ -1,0 +1,11 @@
+{
+  "widget": "GlossTree",
+  "parameters": {
+    "controller": "Its nodes and state.",
+    "labelOf": "A node's words.",
+    "iconOf": "A node's glyph.",
+    "onActivate": "A node opened (Enter, a press).",
+    "semanticLabel": "What a screen reader calls it.",
+    "style": "Its own style, over GlossThemeData.treeStyle."
+  }
+}

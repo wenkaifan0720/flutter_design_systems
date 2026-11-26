@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapTag",
+  "parameters": {
+    "label": "Its word.",
+    "tone": "Its ink; the muted ink when null.",
+    "icon": "A glyph before the word.",
+    "style": "Overrides, over KeycapThemeData.tagStyle: RawStyle.foreground its ink, RawStyle.fill its floor."
+  }
+}

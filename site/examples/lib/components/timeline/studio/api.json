@@ -1,0 +1,6 @@
+{
+  "widget": "StudioTimeline",
+  "parameters": {
+    "entries": "The events, first to last."
+  }
+}

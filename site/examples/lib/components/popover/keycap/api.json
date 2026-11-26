@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapPopover",
+  "parameters": {
+    "builder": "Draws the key that opens it.",
+    "content": "What it holds; `close` puts it away.",
+    "semanticLabel": "Its name, for a screen reader.",
+    "width": "Its width."
+  }
+}

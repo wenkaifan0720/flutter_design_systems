@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapSwitch",
+  "parameters": {
+    "semanticLabel": "What it switches, for a screen reader.",
+    "value": "On or off.",
+    "onChanged": "Called with the new value; null turns the switch off."
+  }
+}

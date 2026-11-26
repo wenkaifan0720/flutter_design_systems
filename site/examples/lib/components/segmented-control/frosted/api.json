@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedSegmentedButton",
+  "parameters": {
+    "segments": "Available reporting periods in reading order.",
+    "value": "Period currently selected.",
+    "onChanged": "Receives the chosen period."
+  },
+  "keyboardNote": "Tab to the period you want and press Enter to select it."
+}

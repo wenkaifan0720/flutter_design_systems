@@ -1,0 +1,11 @@
+{
+  "widget": "Stepper",
+  "parameters": {
+    "steps": "The steps, as Step titles with content.",
+    "currentStep": "The index of the open step.",
+    "type": "Lays the steps out down the page or across it.",
+    "onStepContinue": "Called by the Continue button.",
+    "onStepTapped": "Called with the index of a tapped step.",
+    "controlsBuilder": "Builds the buttons under the open step."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "CivicNotificationBanner",
+  "parameters": {
+    "title": "Heading that names the condition.",
+    "child": "Explanation of what the connection change means.",
+    "tone": "Chooses the notice’s visual emphasis."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapSearchField",
+  "parameters": {
+    "hintText": "The words in the empty field.",
+    "onChanged": "Called as the words change (and with '' when cleared).",
+    "semanticLabel": "The field's name for a screen reader; the kit's \"Search\" when null."
+  }
+}

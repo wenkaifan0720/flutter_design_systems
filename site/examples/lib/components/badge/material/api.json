@@ -1,0 +1,10 @@
+{
+  "widget": "Badge",
+  "parameters": {
+    "label": "The badge's content; Badge.count writes a number.",
+    "isLabelVisible": "Whether the badge shows.",
+    "child": "The widget the badge sits on, usually an Icon.",
+    "backgroundColor": "The badge's fill.",
+    "alignment": "Where the badge sits on its child."
+  }
+}

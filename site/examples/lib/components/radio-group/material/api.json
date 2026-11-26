@@ -1,0 +1,10 @@
+{
+  "widget": "RadioListTile",
+  "parameters": {
+    "value": "The value this row stands for; the enclosing RadioGroup holds the chosen one.",
+    "title": "The row's label; a tap on it chooses the row too.",
+    "subtitle": "A second line under the label.",
+    "toggleable": "Whether a second tap clears the choice.",
+    "enabled": "Whether the row can be chosen."
+  }
+}

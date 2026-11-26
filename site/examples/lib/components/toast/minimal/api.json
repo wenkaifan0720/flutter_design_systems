@@ -1,0 +1,8 @@
+{
+  "widget": "showMinimalSnackBar",
+  "parameters": {
+    "message": "The confirmation shown after a save.",
+    "actionLabel": "Words for an optional action.",
+    "onAction": "Handles that action."
+  }
+}

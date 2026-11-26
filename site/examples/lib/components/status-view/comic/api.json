@@ -1,0 +1,8 @@
+{
+  "widget": "ComicStatusView",
+  "parameters": {
+    "title": "Heading that describes the failure.",
+    "message": "Explains the failure.",
+    "onRetry": "Handles the retry action."
+  }
+}

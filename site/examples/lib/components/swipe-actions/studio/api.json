@@ -1,0 +1,8 @@
+{
+  "widget": "StudioSwipeRow",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "What a drag toward the end shows, at the start.",
+    "endActions": "What a drag toward the start shows, at the end."
+  }
+}

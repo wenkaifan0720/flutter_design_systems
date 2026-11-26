@@ -1,0 +1,7 @@
+{
+  "widget": "LedgerTag",
+  "parameters": {
+    "text": "The tag's words, set in capitals.",
+    "tone": "How it is ringed."
+  }
+}

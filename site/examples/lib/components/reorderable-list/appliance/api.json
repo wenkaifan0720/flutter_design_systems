@@ -1,0 +1,12 @@
+{
+  "widget": "ApplianceReorderableList",
+  "parameters": {
+    "items": "The items, in order.",
+    "onReorder": "Moves the item at the first index to the second.",
+    "labelOf": "An item's name for a screen reader.",
+    "title": "A row's words.",
+    "subtitle": "A row's second line.",
+    "shrinkWrap": "Whether it is as tall as its rows (inside another scroll view)."
+  },
+  "keyboardNote": "Drag the grip to reorder a row, or activate Move first down with the keyboard."
+}

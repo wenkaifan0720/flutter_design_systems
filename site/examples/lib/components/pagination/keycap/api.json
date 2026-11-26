@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapPagination",
+  "parameters": {
+    "pageCount": "How many pages.",
+    "page": "The current page, from 1.",
+    "onPageChanged": "Called with the page to go to; null turns it off."
+  }
+}

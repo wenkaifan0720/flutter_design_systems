@@ -1,0 +1,10 @@
+{
+  "widget": "Fluent2DescriptionList",
+  "parameters": {
+    "properties": "The terms and values, in order.",
+    "title": "Sets the heading above the label–value pairs.",
+    "layout": "Each term beside its value, over it, or picked by the room.",
+    "dividers": "Whether a hairline stands between items.",
+    "labelWidth": "The label column's width in the Fluent2DescriptionListLayout.columns layout."
+  }
+}

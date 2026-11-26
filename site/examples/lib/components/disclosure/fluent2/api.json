@@ -1,0 +1,13 @@
+{
+  "widget": "Fluent2Accordion",
+  "parameters": {
+    "items": "The sections, in order.",
+    "multiple": "Whether more than one section may stand open.",
+    "collapsible": "Whether the open section may be shut again (with none open after).",
+    "expanded": "Controls whether the detail is expanded. Leave it unset for internal state.",
+    "initiallyExpanded": "The sections open at first, by value.",
+    "onExpansionChanged": "Told the section pressed and whether it is now open.",
+    "size": "Selects the size of the component.",
+    "expandIconPosition": "Places the expansion indicator at the start or end."
+  }
+}

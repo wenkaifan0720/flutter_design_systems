@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoSlidingSegmentedControl",
+  "parameters": {
+    "children": "The segments, as a map from each value to its label.",
+    "groupValue": "The chosen value.",
+    "onValueChanged": "Called with the value of the chosen segment.",
+    "thumbColor": "The colour of the sliding thumb.",
+    "proportionalWidth": "Whether each segment takes the width of its label."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalBanner",
+  "parameters": {
+    "title": "Heading that names the condition.",
+    "message": "Explanation of what the connection change means.",
+    "tone": "Chooses the notice’s visual emphasis.",
+    "onDismissed": "Handles the notice’s dismiss action."
+  }
+}

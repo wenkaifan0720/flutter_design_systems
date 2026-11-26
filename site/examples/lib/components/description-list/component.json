@@ -1,0 +1,8 @@
+{
+  "order": 69,
+  "group": "Containers",
+  "title": "Description list",
+  "examples": {
+    "inspect-booking": "Inspect a booking"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoSwitch",
+  "parameters": {
+    "value": "Whether the switch is on.",
+    "onChanged": "Called with the next value; null disables the switch.",
+    "activeTrackColor": "The track colour while it is on.",
+    "thumbColor": "The thumb's colour.",
+    "applyTheme": "Whether it takes its colours from the CupertinoTheme."
+  }
+}

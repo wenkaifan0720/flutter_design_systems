@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapMeter",
+  "parameters": {
+    "value": "How full, 0 to 1.",
+    "label": "What it measures.",
+    "high": "Past this the bar turns to the danger plastic; never when null."
+  }
+}

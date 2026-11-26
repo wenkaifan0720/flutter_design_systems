@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedSplitButton",
+  "parameters": {
+    "label": "Name of the primary action.",
+    "onPressed": "Saves the current draft.",
+    "actions": "Supplies the alternate save action."
+  },
+  "keyboardNote": "Tab from Save to More. Enter opens its menu, where Save a copy is the first command."
+}

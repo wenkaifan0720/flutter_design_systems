@@ -1,0 +1,8 @@
+{
+  "widget": "ClayPageDots",
+  "parameters": {
+    "pageCount": "How many pages.",
+    "page": "The current page, from 0.",
+    "onPageChanged": "A page chosen; null: the dots only show."
+  }
+}

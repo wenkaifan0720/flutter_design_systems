@@ -1,0 +1,18 @@
+{
+  "widget": "CivicListRow",
+  "parameters": {
+    "title": "What it is.",
+    "subtitle": "What else to know, under the title.",
+    "leading": "A glyph before the words.",
+    "trailing": "A status at the end.",
+    "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
+    "showRule": "Draws a separator below the row.",
+    "showChevron": "Whether a row that goes somewhere ends in a chevron.",
+    "endIcon": "Replaces the row’s trailing chevron.",
+    "selected": "Whether its record stands open beside the list.",
+    "semanticLabel": "Names the component for a screen reader.",
+    "style": "Overrides for this row's look.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller."
+  },
+  "keyboardNote": "Civic exposes the whole row as a link. Press Enter to change the message’s read status."
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceDescriptionList",
+  "parameters": {
+    "items": "The terms and their values, in order.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapInputGroup",
+  "parameters": {
+    "labelText": "The words over the field.",
+    "onChanged": "Called as the words change.",
+    "keyboardType": "The keyboard to show.",
+    "suffixText": "Words printed after it."
+  }
+}

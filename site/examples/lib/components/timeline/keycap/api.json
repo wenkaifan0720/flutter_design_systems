@@ -1,0 +1,6 @@
+{
+  "widget": "KeycapTimeline",
+  "parameters": {
+    "entries": "The entries, first to last."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "TermRadio",
+  "parameters": {
+    "label": "Spoken name of this option.",
+    "value": "Value represented by this radio.",
+    "groupValue": "Value currently shared by the group.",
+    "onChanged": "Updates the current delivery method."
+  },
+  "keyboardNote": "Tab to Pickup or Courier and press Space to select it."
+}

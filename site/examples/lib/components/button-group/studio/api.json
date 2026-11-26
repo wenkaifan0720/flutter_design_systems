@@ -1,0 +1,7 @@
+{
+  "widget": "StudioKeyRow",
+  "parameters": {
+    "items": "Zoom commands in reading order.",
+    "semanticLabel": "Names the group for assistive technology."
+  }
+}

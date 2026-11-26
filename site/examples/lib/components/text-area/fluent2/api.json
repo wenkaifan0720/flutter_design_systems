@@ -1,0 +1,7 @@
+{
+  "widget": "Fluent2TextArea",
+  "parameters": {
+    "label": "Optional spoken name. The surrounding Fluent2FormField supplies the visible and spoken label here.",
+    "onChanged": "Recounts the lines when the note changes."
+  }
+}

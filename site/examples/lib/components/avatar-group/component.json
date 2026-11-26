@@ -1,0 +1,8 @@
+{
+  "order": 64,
+  "group": "Containers",
+  "title": "Avatar group",
+  "examples": {
+    "invite-reviewer": "Invite a reviewer"
+  }
+}

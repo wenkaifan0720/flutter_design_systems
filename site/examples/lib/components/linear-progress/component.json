@@ -1,0 +1,8 @@
+{
+  "order": 80,
+  "group": "Feedback",
+  "title": "Linear progress",
+  "examples": {
+    "track-uploads": "Track four uploads"
+  }
+}

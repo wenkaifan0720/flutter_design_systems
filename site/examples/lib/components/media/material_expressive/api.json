@@ -1,0 +1,14 @@
+{
+  "widget": "ExpressiveMedia",
+  "parameters": {
+    "slotId": "The declared media slot the picture resolves from.",
+    "aspectRatio": "Sets the ratio of frame width to height.",
+    "fit": "How the picture fills its box.",
+    "alignment": "Positions the image inside its frame.",
+    "corner": "The corner the box is rounded by, on the theme's corner scale.",
+    "placeholder": "What stands in while the picture is pending or missing.",
+    "semanticLabel": "Describes the picture independently of its fallback.",
+    "style": "Stateful visual overrides for the image frame and fallback glyph.",
+    "shape": "The library shape the picture is masked by (ExpressiveMedia.shaped)."
+  }
+}

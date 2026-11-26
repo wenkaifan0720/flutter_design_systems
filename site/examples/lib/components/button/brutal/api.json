@@ -1,0 +1,14 @@
+{
+  "widget": "BrutalButton",
+  "parameters": {
+    "label": "Text on the button face.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "isDestructiveAction": "Uses the destructive treatment for an irreversible action.",
+    "style": "Overrides the themed button face.",
+    "icon": "Adds a glyph to the component.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears.",
+    "onLongPress": "Runs an alternate action on a held press.",
+    "busy": "Suppresses activation while the action is in progress."
+  }
+}

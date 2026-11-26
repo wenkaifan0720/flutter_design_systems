@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapRating",
+  "parameters": {
+    "value": "How many stars are filled.",
+    "semanticLabel": "Its name, for a screen reader.",
+    "onChanged": "Called with the new value; null turns it off."
+  },
+  "keyboardNote": "Read the score out of five below the stars."
+}

@@ -1,0 +1,12 @@
+{
+  "widget": "ComicMedia",
+  "parameters": {
+    "slotId": "The host image slot supplying this picture.",
+    "aspect": "The width divided by the height of the picture.",
+    "label": "Describes the picture to a screen reader.",
+    "fit": "How the image or drawing fits its allocated bounds.",
+    "width": "Sets the width of the media frame.",
+    "bare": "Draws the image without its usual frame.",
+    "image": "Caller-supplied content instead of a media slot, such as an asset image."
+  }
+}

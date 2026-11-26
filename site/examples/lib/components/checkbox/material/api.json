@@ -1,0 +1,10 @@
+{
+  "widget": "CheckboxListTile",
+  "parameters": {
+    "value": "Whether the box is checked; null is the mixed state when tristate.",
+    "onChanged": "Called with the next value; null disables the row.",
+    "title": "The row's label; a tap on it toggles the box too.",
+    "controlAffinity": "Puts the box before or after the label.",
+    "tristate": "Whether the box cycles through a mixed state."
+  }
+}

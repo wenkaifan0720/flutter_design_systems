@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapDialog",
+  "parameters": {
+    "title": "The dialog's question or name.",
+    "content": "What it says.",
+    "actions": "Its keys, the main one last."
+  }
+}

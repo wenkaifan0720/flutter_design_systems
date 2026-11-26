@@ -1,0 +1,11 @@
+{
+  "widget": "showModalBottomSheet",
+  "parameters": {
+    "context": "Where the sheet opens.",
+    "builder": "Builds the sheet's content.",
+    "showDragHandle": "Whether a handle shows at the top of the sheet.",
+    "isScrollControlled": "Whether the sheet may grow past half the screen.",
+    "isDismissible": "Whether a tap outside closes the sheet.",
+    "enableDrag": "Whether a downward drag closes the sheet."
+  }
+}

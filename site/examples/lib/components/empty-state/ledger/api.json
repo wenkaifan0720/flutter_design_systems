@@ -1,0 +1,13 @@
+{
+  "widget": "LedgerEmptyState",
+  "parameters": {
+    "title": "What is not there, in the serif.",
+    "titleItalic": "Words set in the italic after the title, a space between.",
+    "body": "More of it, in the second ink.",
+    "seal": "The stamp at the page's top end.",
+    "actionLabel": "Sets the text of the empty state’s action.",
+    "actionIcon": "The act's glyph.",
+    "onActionPressed": "Called when the act is pressed.",
+    "actionKey": "The walkthrough key set on the act."
+  }
+}

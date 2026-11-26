@@ -1,0 +1,7 @@
+{
+  "widget": "NeumorphicTimePicker",
+  "parameters": {
+    "value": "Hour and minute of the reminder.",
+    "onChanged": "Receives the updated reminder time."
+  }
+}

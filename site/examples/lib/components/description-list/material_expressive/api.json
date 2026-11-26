@@ -1,0 +1,7 @@
+{
+  "widget": "ExpressiveDescriptionList",
+  "parameters": {
+    "items": "The terms and values, in order.",
+    "dividers": "Whether hairlines stand between the rows."
+  }
+}

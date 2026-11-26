@@ -1,0 +1,18 @@
+{
+  "widget": "Fluent2Tag",
+  "parameters": {
+    "label": "The tag's words.",
+    "secondary": "A second line under the label (the medium size only).",
+    "icon": "A glyph before the words.",
+    "avatar": "Places an avatar alongside the tag’s label.",
+    "appearance": "Selects the component’s visual treatment.",
+    "size": "Selects the size of the component.",
+    "shape": "Chooses the outline of the component.",
+    "onDeleted": "Runs when the reader removes the tag.",
+    "enabled": "False draws the disabled face (a dismissible tag goes inert).",
+    "deleteLabel": "Names the remove action for assistive technology.",
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

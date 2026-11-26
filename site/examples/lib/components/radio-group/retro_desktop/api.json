@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopRadioGroup",
+  "parameters": {
+    "options": "Pickup and Courier in reading order.",
+    "value": "The single chosen delivery method.",
+    "onChanged": "Updates the confirmation when another method is chosen.",
+    "labelText": "Names the choice the group represents."
+  }
+}

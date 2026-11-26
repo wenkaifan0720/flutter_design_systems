@@ -1,0 +1,11 @@
+{
+  "widget": "PaginatedDataTable",
+  "parameters": {
+    "source": "A DataTableSource that builds the rows of each page and tracks the chosen ones.",
+    "columns": "The headings, as DataColumn labels; onSort makes a column sortable.",
+    "rowsPerPage": "The rows on each page.",
+    "sortColumnIndex": "The column the rows are sorted by.",
+    "sortAscending": "Whether that sort runs upward.",
+    "onPageChanged": "Called with the index of the first row on the new page."
+  }
+}

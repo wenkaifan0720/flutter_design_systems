@@ -1,0 +1,9 @@
+{
+  "widget": "ApplianceProgressRing",
+  "parameters": {
+    "semanticLabel": "Names the operation while it is running.",
+    "size": "Sets the spinner size.",
+    "stroke": "Sets the ring’s stroke width.",
+    "value": "Sets determinate progress when a fraction is known."
+  }
+}

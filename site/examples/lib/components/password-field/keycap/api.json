@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapPasswordField",
+  "parameters": {
+    "labelText": "The words over the field.",
+    "onChanged": "Called as the words change."
+  }
+}

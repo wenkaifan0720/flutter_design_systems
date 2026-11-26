@@ -1,0 +1,10 @@
+{
+  "widget": "Divider",
+  "parameters": {
+    "height": "The space the divider takes, with the line in its middle.",
+    "thickness": "The line's thickness.",
+    "indent": "The gap before the line.",
+    "endIndent": "The gap after the line.",
+    "color": "The line's colour."
+  }
+}

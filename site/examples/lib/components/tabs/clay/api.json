@@ -1,0 +1,10 @@
+{
+  "widget": "ClayTabBar",
+  "parameters": {
+    "tabs": "The tabs' names, two or more.",
+    "selectedIndex": "The current tab.",
+    "onTap": "Called with the tab chosen.",
+    "expand": "Whether they fill their row; null: below 600 px of window.",
+    "style": "The tabs' own style, over ClayThemeData.tabBarStyle: `fill` the pill, `foreground` the current name."
+  }
+}

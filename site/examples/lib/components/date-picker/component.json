@@ -1,0 +1,9 @@
+{
+  "order": 28,
+  "group": "Inputs",
+  "title": "Date picker",
+  "previewHeight": 640,
+  "examples": {
+    "set-due-date": "Set a due date"
+  }
+}

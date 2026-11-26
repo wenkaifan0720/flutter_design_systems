@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerPullToRefresh",
+  "parameters": {
+    "onRefresh": "Returns a future that completes when the list has finished updating.",
+    "child": "The scroll view."
+  },
+  "keyboardNote": "Pull down until the fetch prompt appears, or activate Refresh to update the issue."
+}

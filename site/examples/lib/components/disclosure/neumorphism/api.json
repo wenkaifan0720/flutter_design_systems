@@ -1,0 +1,15 @@
+{
+  "widget": "NeumorphicDisclosure",
+  "parameters": {
+    "autofocus": "Whether the control takes focus when it first appears.",
+    "title": "The primary heading.",
+    "subtitle": "Supporting text displayed with the primary content.",
+    "child": "The content placed inside this component.",
+    "initiallyExpanded": "The initial open state when expanded is not controlled.",
+    "expanded": "The controlled open state, or null to keep local state.",
+    "onExpansionChanged": "Reports when the user requests a different open state.",
+    "enabled": "Whether the control accepts user interaction.",
+    "isFirst": "Whether this is the first row, without a preceding separator.",
+    "focusNode": "An optional externally owned focus node."
+  }
+}

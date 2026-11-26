@@ -1,0 +1,7 @@
+{
+  "widget": "ComicTable",
+  "parameters": {
+    "columns": "Column labels in reading order.",
+    "rows": "Cell values in row order."
+  }
+}

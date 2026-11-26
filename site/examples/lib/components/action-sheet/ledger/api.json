@@ -1,0 +1,9 @@
+{
+  "widget": "showLedgerActionSheet",
+  "parameters": {
+    "title": "Names the item or set of actions.",
+    "acts": "Lists the choices in reading order.",
+    "message": "Optional explanation above the choices.",
+    "cancelLabel": "Words on the cancel action."
+  }
+}

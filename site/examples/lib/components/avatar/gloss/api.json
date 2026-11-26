@@ -1,0 +1,9 @@
+{
+  "widget": "GlossAvatar",
+  "parameters": {
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "image": "Their picture.",
+    "size": "Its width and height.",
+    "style": "Its own style, over GlossThemeData.avatarStyle."
+  }
+}

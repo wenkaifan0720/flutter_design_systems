@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapTooltip",
+  "parameters": {
+    "message": "Its words.",
+    "child": "What it names."
+  }
+}

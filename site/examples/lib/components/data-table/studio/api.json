@@ -1,0 +1,11 @@
+{
+  "widget": "StudioDataTable",
+  "parameters": {
+    "controller": "The rows, columns, sort, selection and page.",
+    "cell": "Supplies the display value for a row and column.",
+    "selectable": "Whether rows can be chosen.",
+    "onActivate": "Opens a row (Enter, a double press).",
+    "emptyText": "What it says with no rows.",
+    "style": "Its style, over StudioThemeData.dataTableStyle."
+  }
+}

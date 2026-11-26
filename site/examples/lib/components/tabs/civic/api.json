@@ -1,0 +1,9 @@
+{
+  "widget": "CivicTabBar",
+  "parameters": {
+    "tabs": "Tab labels in reading order.",
+    "selectedIndex": "Index of the current section.",
+    "onTap": "Receives the chosen index.",
+    "style": "Overrides the tab bar’s themed appearance."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "ClayLink",
+  "parameters": {
+    "label": "The words.",
+    "onPressed": "What it does; null disables it."
+  }
+}

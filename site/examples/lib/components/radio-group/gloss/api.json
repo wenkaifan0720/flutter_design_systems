@@ -1,0 +1,9 @@
+{
+  "widget": "GlossRadio",
+  "parameters": {
+    "semanticLabel": "Spoken name of this option.",
+    "value": "Value represented by this radio.",
+    "groupValue": "Value currently shared by the group.",
+    "onChanged": "Updates the current delivery method."
+  }
+}

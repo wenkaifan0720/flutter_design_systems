@@ -1,0 +1,6 @@
+{
+  "widget": "TermBreadcrumb",
+  "parameters": {
+    "crumbs": "Each path segment has a label and an optional ancestor action."
+  }
+}

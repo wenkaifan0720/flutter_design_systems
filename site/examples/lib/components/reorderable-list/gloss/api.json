@@ -1,0 +1,10 @@
+{
+  "widget": "GlossReorderableList",
+  "parameters": {
+    "items": "The items.",
+    "onReorder": "Moves the item at from to to (after it is taken out).",
+    "itemBuilder": "A row's body.",
+    "labelOf": "An item's words, for a screen reader's moves.",
+    "shrinkWrap": "Whether it is as tall as its rows (inside another scroll)."
+  }
+}

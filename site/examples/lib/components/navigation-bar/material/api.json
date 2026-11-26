@@ -1,0 +1,10 @@
+{
+  "widget": "NavigationBar",
+  "parameters": {
+    "destinations": "The places, usually NavigationDestination icons with labels.",
+    "selectedIndex": "The index of the current place.",
+    "onDestinationSelected": "Called with the index of the chosen place.",
+    "labelBehavior": "Shows every label, only the current one, or none.",
+    "height": "The bar's height."
+  }
+}

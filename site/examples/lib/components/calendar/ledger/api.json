@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerDatePicker",
+  "parameters": {
+    "value": "Day marked on the grid.",
+    "onChanged": "Receives the chosen day.",
+    "firstDate": "First day available.",
+    "lastDate": "Last day available.",
+    "presentation": "Keeps the date picker open inline."
+  }
+}

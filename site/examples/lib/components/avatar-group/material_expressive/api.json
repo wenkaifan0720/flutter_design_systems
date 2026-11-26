@@ -1,0 +1,11 @@
+{
+  "widget": "ExpressiveAvatarGroup",
+  "parameters": {
+    "faces": "Supplies the people in display order.",
+    "total": "Sets the total number of people, including those without a visible face.",
+    "max": "How many faces show before the count.",
+    "size": "The avatars' size.",
+    "semanticLabel": "What a screen reader says for the pile.",
+    "style": "Stateful visual overrides for every face and the remaining count."
+  }
+}

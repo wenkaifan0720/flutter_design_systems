@@ -1,0 +1,10 @@
+{
+  "widget": "FrostedTreeView",
+  "parameters": {
+    "controller": "Holds the tree, its expanded branches and its selection.",
+    "labelOf": "Returns a readable name for an item.",
+    "leadingOf": "Supplies the leading glyph or widget for a tree node.",
+    "onActivate": "Runs when the reader opens a row or node.",
+    "label": "The label exposed to a screen reader."
+  }
+}

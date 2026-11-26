@@ -1,0 +1,10 @@
+{
+  "widget": "FrostedLineChart",
+  "parameters": {
+    "labels": "A label for each position along the horizontal axis.",
+    "series": "The series name and ordered measurements.",
+    "label": "Names the chart and period.",
+    "height": "Sets the plot height.",
+    "format": "Formats numeric readings."
+  }
+}

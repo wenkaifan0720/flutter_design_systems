@@ -1,0 +1,9 @@
+{
+  "widget": "NeumorphicHoverCard",
+  "parameters": {
+    "child": "The named link that anchors the preview.",
+    "content": "Supplies the profile information shown on hover.",
+    "width": "Maximum width of the preview.",
+    "openDelay": "Sets how long the pointer rests before the card opens."
+  }
+}

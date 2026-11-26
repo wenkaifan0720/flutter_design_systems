@@ -1,0 +1,11 @@
+{
+  "widget": "LedgerFileUpload",
+  "parameters": {
+    "labelText": "Identifies the attachment field.",
+    "onPick": "Opens the browser’s file chooser.",
+    "files": "Files already selected.",
+    "onRemove": "Removes the chosen file from this example.",
+    "hintText": "Text on the picker button.",
+    "note": "Optional size or format guidance below the button."
+  }
+}

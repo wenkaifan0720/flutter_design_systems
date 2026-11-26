@@ -1,0 +1,10 @@
+{
+  "widget": "DataTable",
+  "parameters": {
+    "columns": "The headings, as DataColumn labels; numeric columns align to the end.",
+    "rows": "The rows, as DataRow cells in column order.",
+    "sortColumnIndex": "The column the rows are sorted by.",
+    "sortAscending": "Whether that sort runs upward.",
+    "showCheckboxColumn": "Whether selectable rows show check boxes."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "NeumorphicListSection",
+  "parameters": {
+    "style": "Frame styling before the shared card component theme.",
+    "label": "The text identifying this item or control.",
+    "footer": "Optional text beneath the grouped rows.",
+    "children": "The content widgets, in reading order."
+  }
+}

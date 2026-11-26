@@ -1,0 +1,7 @@
+{
+  "widget": "RetroDesktopColorPicker",
+  "parameters": {
+    "controller": "Owns the selected colour and notifies listeners when it changes.",
+    "showAlpha": "Includes a control for opacity."
+  }
+}

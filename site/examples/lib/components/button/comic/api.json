@@ -1,0 +1,17 @@
+{
+  "widget": "ComicButton",
+  "parameters": {
+    "label": "Words on the button face.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "size": "Selects a small, medium or large button.",
+    "wide": "Stretches the face to the available width.",
+    "icon": "Adds a glyph to the component.",
+    "leading": "Places a widget before the label.",
+    "busy": "Suppresses activation while the action is in progress.",
+    "showBusy": "Overrides whether the busy indicator is visible.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears.",
+    "style": "Overrides the component’s themed appearance.",
+    "isDestructiveAction": "Applies the destructive action treatment."
+  }
+}

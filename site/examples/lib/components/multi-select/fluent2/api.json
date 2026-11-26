@@ -1,0 +1,9 @@
+{
+  "widget": "Fluent2MultiSelect",
+  "parameters": {
+    "label": "Names the collection of selected tags.",
+    "options": "Labels available to attach.",
+    "selected": "Labels already on the draft.",
+    "onChanged": "Receives the updated collection after an addition or removal."
+  }
+}

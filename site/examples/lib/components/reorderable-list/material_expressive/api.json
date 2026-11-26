@@ -1,0 +1,11 @@
+{
+  "widget": "ExpressiveReorderableListView",
+  "parameters": {
+    "itemCount": "How many items.",
+    "itemBuilder": "Builds the content for each item.",
+    "onReorder": "Reports the old index and the new index after removal.",
+    "segmented": "Whether the items are segments.",
+    "containerColor": "The items' container colour at rest."
+  },
+  "keyboardNote": "The Material Expressive handle starts a pointer drag. With the keyboard, focus the row you want first and activate it."
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ClayDialog",
+  "parameters": {
+    "title": "What the dialog asks or says.",
+    "content": "More words under the title.",
+    "actions": "Its keys, the safe one first."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "widget": "RetroDesktopMedia",
+  "parameters": {
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "slotId": "The stable identity used to match this chrome slot.",
+    "aspect": "The width-to-height ratio of the content.",
+    "label": "The visible or accessible name of this part.",
+    "fit": "How the image fits inside its frame.",
+    "width": "Sets the width of the media frame.",
+    "bare": "Draws the image without its usual frame."
+  }
+}

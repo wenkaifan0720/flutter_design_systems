@@ -1,0 +1,8 @@
+{
+  "order": 2,
+  "group": "Actions",
+  "title": "Icon button",
+  "examples": {
+    "add-a-day": "Add a day"
+  }
+}

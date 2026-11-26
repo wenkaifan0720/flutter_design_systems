@@ -1,0 +1,7 @@
+{
+  "widget": "MinimalTimeline",
+  "parameters": {
+    "entries": "The entries, in the order they print.",
+    "emptyLabel": "What an empty log says, in the faint ink."
+  }
+}

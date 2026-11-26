@@ -1,0 +1,7 @@
+{
+  "widget": "ClayPullToRefresh",
+  "parameters": {
+    "onRefresh": "Fetches again.",
+    "child": "The scrolling content."
+  }
+}

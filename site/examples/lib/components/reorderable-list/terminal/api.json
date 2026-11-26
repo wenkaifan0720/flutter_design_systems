@@ -1,0 +1,11 @@
+{
+  "widget": "TermReorderableList",
+  "parameters": {
+    "items": "The items in their current order.",
+    "onReorder": "Receives the old index and the new index after removal.",
+    "labelOf": "Returns a readable name for an item.",
+    "itemBuilder": "Builds the content for each item.",
+    "keyOf": "Provides a stable identity for an item as its position changes.",
+    "shrinkWrap": "Sizes the list to its rows."
+  }
+}

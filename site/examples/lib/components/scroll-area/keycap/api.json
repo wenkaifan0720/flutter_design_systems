@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapScrollArea",
+  "parameters": {
+    "controller": "The scroll view's controller.",
+    "child": "The scroll view.",
+    "axis": "Which way it scrolls.",
+    "semanticLabel": "Its name, for a screen reader."
+  }
+}

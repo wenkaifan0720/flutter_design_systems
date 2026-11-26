@@ -1,0 +1,9 @@
+{
+  "widget": "TermListTile",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "subtitle": "Adds supporting text to the row.",
+    "onTap": "Runs when the reader activates the row.",
+    "semanticLabel": "Names the component for a screen reader."
+  }
+}

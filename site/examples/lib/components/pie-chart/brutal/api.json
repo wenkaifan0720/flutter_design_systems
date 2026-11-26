@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalPieChart",
+  "parameters": {
+    "slices": "Names each category and its share of the total.",
+    "semanticLabel": "Names the budget and plan.",
+    "size": "Sets the diameter of the chart.",
+    "donut": "Draws an opening in the middle."
+  }
+}

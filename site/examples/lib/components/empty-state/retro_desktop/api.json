@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopEmptyState",
+  "parameters": {
+    "title": "The heading displayed above the content.",
+    "message": "The message displayed to the user.",
+    "art": "Optional caller-supplied illustration or decoration.",
+    "action": "An optional action shown beside the content."
+  }
+}

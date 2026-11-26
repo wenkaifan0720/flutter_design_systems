@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapPageDots",
+  "parameters": {
+    "pageCount": "How many pages.",
+    "page": "The page showing, from 0.",
+    "onPageChanged": "Goes to a page; the dots only show when null."
+  }
+}

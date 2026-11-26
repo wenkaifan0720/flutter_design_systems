@@ -1,0 +1,7 @@
+{
+  "widget": "TermSpinner",
+  "parameters": {
+    "semanticLabel": "Names the operation while it is running.",
+    "color": "Overrides the spinner’s ink."
+  }
+}

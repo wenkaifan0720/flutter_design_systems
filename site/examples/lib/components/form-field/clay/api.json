@@ -1,0 +1,9 @@
+{
+  "widget": "ClayFormField",
+  "parameters": {
+    "labelText": "The words above it.",
+    "helperText": "Help under it.",
+    "errorText": "What is wrong, under it.",
+    "child": "The control."
+  }
+}

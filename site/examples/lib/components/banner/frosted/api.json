@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedBanner",
+  "parameters": {
+    "icon": "Mark beside the notice.",
+    "title": "Names the condition.",
+    "body": "Explains what will happen to the edits."
+  }
+}

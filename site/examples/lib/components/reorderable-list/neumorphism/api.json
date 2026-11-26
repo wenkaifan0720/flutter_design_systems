@@ -1,0 +1,10 @@
+{
+  "widget": "NeumorphicReorderableListView",
+  "parameters": {
+    "items": "The rows, in order.",
+    "onReorder": "Moves the row at from to to.",
+    "labelOf": "What a screen reader calls a row.",
+    "itemBuilder": "Builds the content for each item.",
+    "shrinkWrap": "Whether the list takes only its rows' height."
+  }
+}

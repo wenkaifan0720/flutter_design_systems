@@ -1,0 +1,8 @@
+{
+  "widget": "ClayCheckbox",
+  "parameters": {
+    "semanticLabel": "What a screen reader calls it, when no words beside it say.",
+    "value": "Whether it is checked; null is mixed, with tristate.",
+    "onChanged": "Called with the next value; null turns it off."
+  }
+}

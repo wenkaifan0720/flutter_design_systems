@@ -1,0 +1,10 @@
+{
+  "widget": "GlossCarousel",
+  "parameters": {
+    "itemCount": "How many slides.",
+    "itemBuilder": "Builds a slide.",
+    "aspectRatio": "The frame's width over its height.",
+    "semanticLabel": "What a screen reader calls it.",
+    "onPageChanged": "The slide now showing."
+  }
+}

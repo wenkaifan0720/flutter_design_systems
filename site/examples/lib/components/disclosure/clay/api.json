@@ -1,0 +1,12 @@
+{
+  "widget": "ClayDisclosure",
+  "parameters": {
+    "title": "Its title.",
+    "child": "What it holds.",
+    "subtitle": "A line under the title.",
+    "expanded": "Whether it is open, when the caller keeps it; null: it keeps its own.",
+    "initiallyExpanded": "Whether it starts open, when it keeps its own.",
+    "onExpansionChanged": "It opened (true) or closed.",
+    "style": "This disclosure's own style, over ClayThemeData.disclosureStyle: `fill` the card."
+  }
+}

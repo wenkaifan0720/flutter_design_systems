@@ -1,0 +1,11 @@
+{
+  "widget": "ClayToggleGroup",
+  "parameters": {
+    "semanticLabel": "What a screen reader calls the group.",
+    "toggles": "The toggles, in order.",
+    "selected": "The values that are on.",
+    "onSelectionChanged": "The new set of values on; null disables the group.",
+    "multiSelectionEnabled": "Whether any number may be on; false makes it one choice of several.",
+    "emptySelectionAllowed": "Whether every toggle may be off at once."
+  }
+}

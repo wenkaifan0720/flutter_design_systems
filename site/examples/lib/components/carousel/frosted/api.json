@@ -1,0 +1,11 @@
+{
+  "widget": "FrostedCarouselView",
+  "parameters": {
+    "children": "The child widgets in reading order.",
+    "height": "The vertical space reserved for the component.",
+    "viewportFraction": "Sets the share of the viewport used by one slide.",
+    "loop": "Allows the sequence to wrap around.",
+    "onPageChanged": "Receives the index of the new slide.",
+    "label": "The label exposed to a screen reader."
+  }
+}

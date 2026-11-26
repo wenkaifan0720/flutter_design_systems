@@ -1,0 +1,10 @@
+{
+  "widget": "ApplianceAvatarGroup",
+  "parameters": {
+    "names": "Whose, in order.",
+    "slotIds": "Their pictures' media slots, by name.",
+    "max": "The most portholes, the last counting the rest.",
+    "size": "Each one's diameter.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

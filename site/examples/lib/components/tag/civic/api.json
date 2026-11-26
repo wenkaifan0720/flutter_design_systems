@@ -1,0 +1,8 @@
+{
+  "widget": "CivicTag",
+  "parameters": {
+    "label": "The words.",
+    "tone": "The tone.",
+    "style": "Overrides for this tag's look."
+  }
+}

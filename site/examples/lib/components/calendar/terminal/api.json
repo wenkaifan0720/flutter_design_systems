@@ -1,0 +1,7 @@
+{
+  "widget": "TermCalendar",
+  "parameters": {
+    "controller": "Owns the date limits, visible month and selected day."
+  },
+  "keyboardNote": "The day grid takes one tab stop. Move by a day with the arrows, select with Enter, and change months with Page Up or Page Down."
+}

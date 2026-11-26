@@ -1,0 +1,19 @@
+{
+  "widget": "StudioListTile",
+  "parameters": {
+    "title": "What it is.",
+    "subtitle": "A line more.",
+    "leading": "A glyph or a picture at its start.",
+    "trailing": "A control at its end.",
+    "trailingText": "A value at its end, in the muted ink.",
+    "onTap": "What a press does.",
+    "selected": "Whether it is the row shown beside the list.",
+    "showChevron": "Controls the directional indicator at the end of the row.",
+    "isDestructiveAction": "Marks the row as a destructive action.",
+    "enabled": "Whether it can be used.",
+    "semanticLabel": "What a screen reader calls it, when not its title.",
+    "style": "Its style, over StudioThemeData.listTileStyle.",
+    "value": "A toggle row's value.",
+    "onChanged": "Receives the updated value."
+  }
+}

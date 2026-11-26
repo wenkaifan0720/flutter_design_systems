@@ -1,0 +1,8 @@
+{
+  "widget": "ClaySidebar",
+  "parameters": {
+    "destinations": "The places.",
+    "selectedIndex": "The current place.",
+    "onDestinationSelected": "Called with the place chosen."
+  }
+}

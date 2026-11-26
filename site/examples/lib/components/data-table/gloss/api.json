@@ -1,0 +1,11 @@
+{
+  "widget": "GlossDataTable",
+  "parameters": {
+    "controller": "Its rows, columns and state.",
+    "cell": "A cell's words.",
+    "selectable": "Whether rows can be chosen.",
+    "onActivate": "A row opened (Enter, a double press).",
+    "emptyText": "Sets the message shown when there are no matching rows.",
+    "style": "Its own style, over GlossThemeData.dataTableStyle."
+  }
+}

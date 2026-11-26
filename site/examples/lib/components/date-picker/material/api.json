@@ -1,0 +1,12 @@
+{
+  "widget": "showDatePicker",
+  "parameters": {
+    "context": "Where the dialog opens.",
+    "initialDate": "The date chosen when the dialog opens.",
+    "firstDate": "The earliest date that can be chosen.",
+    "lastDate": "The latest date that can be chosen.",
+    "currentDate": "The day marked as today.",
+    "initialEntryMode": "Opens on the calendar or on a typed date.",
+    "helpText": "The dialog's heading."
+  }
+}

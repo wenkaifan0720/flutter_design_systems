@@ -1,0 +1,8 @@
+{
+  "widget": "showFrostedSnackBar",
+  "parameters": {
+    "message": "Text in the confirmation.",
+    "actionLabel": "Words for an optional action.",
+    "onAction": "Handles the action."
+  }
+}

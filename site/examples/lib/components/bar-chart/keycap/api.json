@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapBarChart",
+  "parameters": {
+    "labels": "The labels along the foot, one per bar group.",
+    "series": "The series.",
+    "semanticLabel": "What it shows, for a screen reader.",
+    "height": "Its height, the labels included."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapSectionHeader",
+  "parameters": {
+    "text": "The header's words (printed in capitals).",
+    "trailing": "A text key or a count at its end."
+  }
+}

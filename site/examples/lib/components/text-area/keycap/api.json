@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapTextField",
+  "parameters": {
+    "labelText": "The words over the field.",
+    "onChanged": "Called as the words change.",
+    "minLines": "The fewest lines it shows.",
+    "maxLines": "The most lines the field grows to; null for no limit."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "NeumorphicBadge",
+  "parameters": {
+    "count": "The number represented by the badge.",
+    "label": "An optional accessible description of the count.",
+    "max": "Sets the highest count displayed before the overflow marker.",
+    "child": "Optional content carrying the badge.",
+    "style": "Count plate and type before the badge theme."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "MinimalCommand",
+  "parameters": {
+    "actions": "Searchable action names and callbacks.",
+    "hintText": "Prompt in the search field."
+  },
+  "keyboardNote": "With an empty query, the first Escape leaves the search field. A second Escape closes the palette and returns focus to Commands."
+}

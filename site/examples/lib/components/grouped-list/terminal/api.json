@@ -1,0 +1,8 @@
+{
+  "widget": "TermPane",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "children": "The rows given to TermPane.list in reading order.",
+    "footer": "Places a short note on the bottom line of the pane."
+  }
+}

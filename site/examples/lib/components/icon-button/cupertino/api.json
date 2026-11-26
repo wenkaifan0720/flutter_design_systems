@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoButton",
+  "parameters": {
+    "child": "The glyph, an Icon with a semanticLabel for its name.",
+    "onPressed": "Called on a tap; null disables the button.",
+    "padding": "The space around the glyph.",
+    "minimumSize": "The smallest tap target.",
+    "pressedOpacity": "How faint the glyph turns while pressed."
+  }
+}

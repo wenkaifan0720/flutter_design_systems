@@ -1,0 +1,8 @@
+{
+  "widget": "TermChip",
+  "parameters": {
+    "label": "Condition applied by the chip.",
+    "selected": "Whether the saved-items filter is active.",
+    "onSelected": "Updates the filter when the reader activates the chip."
+  }
+}

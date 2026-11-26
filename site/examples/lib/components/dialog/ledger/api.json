@@ -1,0 +1,14 @@
+{
+  "widget": "LedgerDialog",
+  "parameters": {
+    "title": "Heading on the paper slip.",
+    "body": "Text beneath the heading.",
+    "type": "Acknowledgement, confirmation or destructive decision.",
+    "confirmLabel": "Words on the confirming action.",
+    "children": "Adds widgets after the body text.",
+    "cancelLabel": "Sets the words on the dismissing action.",
+    "onConfirmPressed": "Handles the confirming action on an inline dialog.",
+    "onCancelPressed": "Handles the dismissing action on an inline dialog.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

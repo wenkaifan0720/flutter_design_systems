@@ -1,0 +1,9 @@
+{
+  "widget": "TermFileField",
+  "parameters": {
+    "labelText": "Identifies the attachment field.",
+    "onBrowse": "Opens the browser’s file chooser.",
+    "files": "Files already selected.",
+    "onRemoved": "Removes the chosen file from this example."
+  }
+}

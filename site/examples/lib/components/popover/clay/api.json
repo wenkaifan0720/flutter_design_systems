@@ -1,0 +1,10 @@
+{
+  "widget": "ClayPopover",
+  "parameters": {
+    "builder": "The key that opens it: given the toggle and whether it is open.",
+    "content": "What it holds, given a way to close it.",
+    "semanticLabel": "What a screen reader calls it.",
+    "width": "Its width.",
+    "side": "Which side of the key it floats on."
+  }
+}

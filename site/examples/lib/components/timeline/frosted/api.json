@@ -1,0 +1,6 @@
+{
+  "widget": "FrostedTimeline",
+  "parameters": {
+    "entries": "The events in chronological order."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "Fluent2FileUpload",
+  "parameters": {
+    "label": "Identifies the attachment field.",
+    "onPressed": "Opens the browser’s file chooser."
+  }
+}

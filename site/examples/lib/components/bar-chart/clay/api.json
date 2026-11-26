@@ -1,0 +1,9 @@
+{
+  "widget": "ClayBarChart",
+  "parameters": {
+    "categories": "The x axis's category names, in reading order.",
+    "series": "The data: each point's x its category's index.",
+    "semanticLabel": "The chart's name, said first.",
+    "height": "The plot's height."
+  }
+}

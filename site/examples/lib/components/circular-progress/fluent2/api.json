@@ -1,0 +1,9 @@
+{
+  "widget": "Fluent2Spinner",
+  "parameters": {
+    "label": "Names the operation while it is running.",
+    "size": "Sets the spinner size.",
+    "below": "Places the label beside or below the spinner.",
+    "value": "Sets determinate progress when a fraction is known."
+  }
+}

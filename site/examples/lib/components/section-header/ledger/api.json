@@ -1,0 +1,13 @@
+{
+  "widget": "LedgerHead",
+  "parameters": {
+    "label": "The rubric, set in capitals.",
+    "note": "Adds a short secondary note.",
+    "onTap": "Makes the note a link to where the section goes on.",
+    "linkLabel": "The link's spoken name when the note alone says too little.",
+    "footnote": "A footnote's mark after the label (1), its note under the page.",
+    "trailing": "A control at the head's end in place of the note.",
+    "faintRule": "Ruled in the hairline's ink rather than the ink.",
+    "linkKey": "Identifies the section header’s link."
+  }
+}

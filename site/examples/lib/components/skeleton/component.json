@@ -1,0 +1,8 @@
+{
+  "order": 82,
+  "group": "Feedback",
+  "title": "Skeleton",
+  "examples": {
+    "load-file-details": "Load file details"
+  }
+}

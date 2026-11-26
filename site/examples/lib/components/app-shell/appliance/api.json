@@ -1,0 +1,9 @@
+{
+  "widget": "ApplianceScaffold",
+  "parameters": {
+    "destinations": "Main pages available in this shell.",
+    "selectedIndex": "Index of the current page.",
+    "onSelected": "Selects another destination.",
+    "body": "Content for the selected page."
+  }
+}

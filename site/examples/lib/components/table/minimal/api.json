@@ -1,0 +1,13 @@
+{
+  "widget": "MinimalTable",
+  "parameters": {
+    "columns": "The columns, start to end.",
+    "rows": "The rows, top to bottom.",
+    "onRowPressed": "Receives the row the reader activates.",
+    "sortColumn": "The column the rows are sorted by, for the header's indicator.",
+    "sortAscending": "Whether the sorted column runs up.",
+    "onSort": "Receives the chosen column and sort direction.",
+    "emptyLabel": "The quiet line a table with no rows prints under its header.",
+    "minWidth": "Sets the minimum table width before horizontal scrolling."
+  }
+}

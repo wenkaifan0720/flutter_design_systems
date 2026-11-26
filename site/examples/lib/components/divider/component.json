@@ -1,0 +1,8 @@
+{
+  "order": 54,
+  "group": "Containers",
+  "title": "Divider",
+  "examples": {
+    "split-receipt": "Read a receipt"
+  }
+}

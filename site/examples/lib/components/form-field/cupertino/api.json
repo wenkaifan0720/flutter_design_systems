@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoTextFormFieldRow",
+  "parameters": {
+    "validator": "Returns the error for the current text, or null when it is valid; it shows under the row.",
+    "autovalidateMode": "When the row checks itself: on each edit after the first, or only when its Form asks.",
+    "prefix": "The row's label, before the input.",
+    "placeholder": "The words shown while the row is empty.",
+    "onSaved": "Called with the text when the enclosing Form saves."
+  }
+}

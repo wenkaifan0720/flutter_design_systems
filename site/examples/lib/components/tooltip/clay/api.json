@@ -1,0 +1,7 @@
+{
+  "widget": "ClayTooltip",
+  "parameters": {
+    "message": "What it says.",
+    "child": "What it is the tooltip of."
+  }
+}

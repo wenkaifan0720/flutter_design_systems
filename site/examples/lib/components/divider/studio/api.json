@@ -1,0 +1,7 @@
+{
+  "widget": "StudioGroove",
+  "parameters": {
+    "indent": "How far in from the start it begins.",
+    "endIndent": "How far in from the end it stops."
+  }
+}

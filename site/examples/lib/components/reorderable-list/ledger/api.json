@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerReorderableList",
+  "parameters": {
+    "items": "The items, in order.",
+    "onReorder": "Moves the item at from to to (both counted before the move).",
+    "labelOf": "What a screen reader calls an item.",
+    "itemBuilder": "A line's content, beside its grip.",
+    "keyOf": "Returns a stable identity for each item as its position changes."
+  }
+}

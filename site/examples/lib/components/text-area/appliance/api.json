@@ -1,0 +1,9 @@
+{
+  "widget": "ApplianceTextField",
+  "parameters": {
+    "labelText": "Name that stays with the note.",
+    "onChanged": "Recounts the lines when the note changes.",
+    "minLines": "Height of the empty editing area, in lines.",
+    "maxLines": "Maximum visible lines before the text scrolls."
+  }
+}

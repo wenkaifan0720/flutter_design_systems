@@ -1,0 +1,10 @@
+{
+  "widget": "CivicDateInput",
+  "parameters": {
+    "labelText": "Names the whole date.",
+    "dayLabel": "Label on the day entry.",
+    "monthLabel": "Label on the month entry.",
+    "yearLabel": "Label on the year entry."
+  },
+  "keyboardNote": "Civic takes the day, month and year as three text fields. The date remains visible in those fields."
+}

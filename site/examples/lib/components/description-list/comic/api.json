@@ -1,0 +1,7 @@
+{
+  "widget": "ComicDescriptionList",
+  "parameters": {
+    "entries": "The pairs, in reading order.",
+    "besideFrom": "The width from which the term stands beside its detail."
+  }
+}

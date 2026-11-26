@@ -57,7 +57,7 @@ request is carried back into the catalog and exported again, with credit kept in
 ## Working here
 
 The repository is one pub workspace: `flutter pub get` at the root resolves every package and example. It needs
-Flutter 3.47.0 or later.
+Flutter 3.47.0 or later. The documentation site in `site/` is a workspace of its own (see below).
 
 ```sh
 flutter pub get
@@ -68,6 +68,19 @@ cd packages/ui_core && flutter test --exclude-tags goldens
 Tests tagged `goldens` read rendered pixels, which differ between platforms, so they run on macOS:
 `flutter test --tags goldens`. CI runs them there only when started by hand. A look's golden images stay in the catalog
 it is generated from, so here its golden comparisons skip themselves and its other pixel checks run.
+
+## Run the documentation site
+
+The [demo site](https://wenkaifan0720.github.io/flutter_design_systems/docs/) is built from `site/`, on the looks
+released on pub.dev. To build it and serve it at `http://127.0.0.1:8000/docs/`:
+
+```sh
+bash site/tool/build.sh
+python3 site/tool/serve.py
+```
+
+[site/README.md](site/README.md) says what is where, and [site/CONTRIBUTING.md](site/CONTRIBUTING.md) how to add a
+component.
 
 ## License
 

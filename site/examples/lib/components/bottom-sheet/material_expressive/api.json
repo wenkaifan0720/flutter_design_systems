@@ -1,0 +1,8 @@
+{
+  "widget": "showExpressiveBottomSheet",
+  "parameters": {
+    "builder": "Builds the contents of the modal sheet.",
+    "skipPartiallyExpanded": "Opens the sheet fully expanded.",
+    "useRootNavigator": "Selects the navigator that presents the sheet."
+  }
+}

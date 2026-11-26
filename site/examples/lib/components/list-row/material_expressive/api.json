@@ -1,0 +1,23 @@
+{
+  "widget": "ExpressiveListTile",
+  "parameters": {
+    "title": "Supplies the main title.",
+    "style": "Stateful visual overrides before the list-tile theme.",
+    "overline": "A line above the headline.",
+    "subtitle": "Adds a second line below the title.",
+    "leading": "Places a widget before the main label.",
+    "trailing": "Places a widget at the trailing edge.",
+    "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
+    "onLongPress": "What a long press does.",
+    "enabled": "Controls whether the row accepts input.",
+    "dragged": "Applies the visual treatment for a dragged item.",
+    "expanded": "Reports the current expanded state.",
+    "tileColor": "Overrides the row’s background colour.",
+    "contentPadding": "Overrides the space around the row’s contents.",
+    "semanticLabel": "What a screen reader says, over the content's own text.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether to take focus when first built.",
+    "selected": "Whether the item is selected (checked, for a toggleable one).",
+    "onChanged": "Receives the updated value."
+  }
+}

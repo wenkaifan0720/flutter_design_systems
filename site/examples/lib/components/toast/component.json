@@ -1,0 +1,8 @@
+{
+  "order": 78,
+  "group": "Overlays",
+  "title": "Toast or snackbar",
+  "examples": {
+    "confirm-save": "Confirm a save"
+  }
+}

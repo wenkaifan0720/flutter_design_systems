@@ -1,0 +1,7 @@
+{
+  "widget": "BrutalTimeline",
+  "parameters": {
+    "entries": "The stops.",
+    "style": "Its style, over BrutalThemeData.timelineStyle."
+  }
+}

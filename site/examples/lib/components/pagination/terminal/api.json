@@ -1,0 +1,8 @@
+{
+  "widget": "TermPagination",
+  "parameters": {
+    "pageCount": "Total number of result pages.",
+    "page": "Current page, counted from 1.",
+    "onChanged": "Receives the requested page."
+  }
+}

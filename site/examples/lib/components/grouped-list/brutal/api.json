@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalListGroup",
+  "parameters": {
+    "children": "The rows, usually BrutalListTiles.",
+    "header": "A caption over the frame, as BrutalSectionHeader draws it.",
+    "footer": "Help under the frame.",
+    "style": "Its style, over BrutalThemeData.listGroupStyle."
+  }
+}

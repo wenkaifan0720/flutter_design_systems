@@ -1,0 +1,7 @@
+{
+  "widget": "GlossSpinner",
+  "parameters": {
+    "semanticLabel": "Names the operation while it is running.",
+    "size": "Sets the spinner size."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapProgressBar",
+  "parameters": {
+    "value": "How far it has gone, 0 to 1; null while unknown.",
+    "semanticLabel": "What it is the progress of."
+  }
+}

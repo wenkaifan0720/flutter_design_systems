@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveStatusView",
+  "parameters": {
+    "title": "Heading that describes the failure.",
+    "message": "Explains the failure.",
+    "onRetry": "Handles the retry action.",
+    "actionLabel": "Words on the recovery action.",
+    "retryLabel": "Words on the retry action."
+  }
+}

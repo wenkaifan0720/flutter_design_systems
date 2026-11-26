@@ -1,0 +1,11 @@
+{
+  "widget": "RetroDesktopAvatar",
+  "parameters": {
+    "initials": "The letters displayed when an image is unavailable.",
+    "image": "The image to display, with the component's fallback when unavailable.",
+    "size": "Selects the size of the component.",
+    "selected": "Whether the part represents the current selection.",
+    "name": "The name identifying this item.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

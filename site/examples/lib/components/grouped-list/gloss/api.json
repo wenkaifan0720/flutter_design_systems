@@ -1,0 +1,9 @@
+{
+  "widget": "GlossWell",
+  "parameters": {
+    "children": "The rows.",
+    "header": "A head above the well.",
+    "footer": "A note under the well.",
+    "dividerIndent": "Sets where dividers begin inside the group."
+  }
+}

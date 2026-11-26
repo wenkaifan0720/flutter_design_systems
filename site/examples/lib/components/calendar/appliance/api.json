@@ -1,0 +1,6 @@
+{
+  "widget": "ApplianceCalendar",
+  "parameters": {
+    "controller": "Owns the date limits, visible month and selected day."
+  }
+}

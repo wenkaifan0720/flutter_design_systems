@@ -1,0 +1,9 @@
+{
+  "widget": "TermTagInput",
+  "parameters": {
+    "labelText": "Names the collection of selected tags.",
+    "options": "Labels available to attach.",
+    "values": "Labels already on the draft.",
+    "onChanged": "Receives the updated collection after an addition or removal."
+  }
+}

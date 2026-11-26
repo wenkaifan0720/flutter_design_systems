@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapEmptyState",
+  "parameters": {
+    "title": "What will be here.",
+    "message": "How it gets here.",
+    "icon": "The glyph; an empty tray when null.",
+    "action": "The one thing to do: a key."
+  }
+}

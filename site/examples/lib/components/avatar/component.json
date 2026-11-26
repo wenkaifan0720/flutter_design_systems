@@ -1,0 +1,8 @@
+{
+  "order": 63,
+  "group": "Containers",
+  "title": "Avatar",
+  "examples": {
+    "switch-reviewer": "Switch reviewers"
+  }
+}

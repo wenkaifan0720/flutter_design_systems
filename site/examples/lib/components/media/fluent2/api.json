@@ -1,0 +1,15 @@
+{
+  "widget": "Fluent2Image",
+  "parameters": {
+    "image": "Supplies the photo when one is available. The component uses its fallback otherwise.",
+    "width": "Sets the width of the media frame.",
+    "height": "Sets the height of the media frame.",
+    "aspectRatio": "The box's width over its height, where one side is not given.",
+    "fit": "Controls how the image fits inside its frame.",
+    "shape": "Chooses the outline of the component.",
+    "bordered": "Whether a hairline frames it.",
+    "shadow": "Whether it stands raised in a shadow.",
+    "block": "Takes its parent's whole width.",
+    "semanticLabel": "Describes the picture independently of its fallback."
+  }
+}

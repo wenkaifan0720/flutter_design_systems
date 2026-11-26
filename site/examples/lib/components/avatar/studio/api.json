@@ -1,0 +1,8 @@
+{
+  "widget": "StudioAvatar",
+  "parameters": {
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "image": "Their picture.",
+    "size": "Its diameter."
+  }
+}

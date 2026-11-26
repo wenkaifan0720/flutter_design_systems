@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopCard",
+  "parameters": {
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "title": "The heading displayed above the content.",
+    "child": "The widget displayed inside this part.",
+    "children": "The child widgets in reading order."
+  }
+}

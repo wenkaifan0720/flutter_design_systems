@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedStatusView",
+  "parameters": {
+    "title": "Heading that names the failure.",
+    "message": "Explains the interruption.",
+    "onRetry": "Gives the reader a way to retry."
+  }
+}

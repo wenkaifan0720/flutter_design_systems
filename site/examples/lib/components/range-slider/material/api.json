@@ -1,0 +1,11 @@
+{
+  "widget": "RangeSlider",
+  "parameters": {
+    "values": "The start and end of the range, as RangeValues.",
+    "onChanged": "Called while either thumb moves; null disables the slider.",
+    "min": "The lowest value.",
+    "max": "The highest value.",
+    "divisions": "The number of steps; null moves continuously.",
+    "labels": "The values shown above the thumbs while they move; needs divisions."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "TermTree",
+  "parameters": {
+    "controller": "Holds the tree, its expanded branches and its selection.",
+    "labelOf": "Returns a readable name for an item.",
+    "onActivate": "Runs when the reader opens a row or node.",
+    "semanticLabel": "Names the component for a screen reader."
+  }
+}

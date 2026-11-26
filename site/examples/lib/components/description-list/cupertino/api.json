@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoListTile",
+  "parameters": {
+    "title": "The label.",
+    "additionalInfo": "The value, set at the end of the row.",
+    "leading": "A glyph before the label.",
+    "subtitle": "A second line under the label.",
+    "trailing": "A widget after the value."
+  }
+}

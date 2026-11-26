@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapToolbar",
+  "parameters": {
+    "semanticLabel": "The cluster's name, for a screen reader.",
+    "children": "The keys."
+  }
+}

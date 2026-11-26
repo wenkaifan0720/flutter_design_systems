@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapCombobox",
+  "parameters": {
+    "labelText": "The words over the well.",
+    "options": "What can be chosen.",
+    "onSelected": "Called with the option taken.",
+    "value": "The option chosen, ticked in the list."
+  }
+}

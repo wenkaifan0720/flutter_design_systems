@@ -1,0 +1,12 @@
+{
+  "widget": "KeycapRangeSlider",
+  "parameters": {
+    "values": "The range.",
+    "max": "The most.",
+    "semanticFormatterCallback": "A value in words, for a screen reader.",
+    "startLabel": "The lower key's name, for a screen reader.",
+    "endLabel": "The upper key's.",
+    "onChanged": "Called as it changes; null turns it off.",
+    "divisions": "How many steps the slot has; smooth when null."
+  }
+}

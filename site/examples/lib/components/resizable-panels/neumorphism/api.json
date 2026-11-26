@@ -1,0 +1,14 @@
+{
+  "widget": "NeumorphicResizable",
+  "parameters": {
+    "first": "The panel at the start (or the top).",
+    "second": "The panel at the end (or the bottom).",
+    "axis": "Side by side, or one over the other.",
+    "initialFraction": "The first panel's share at the start.",
+    "minSecond": "The minimum extent of the second pane.",
+    "onChanged": "Called with the first panel's share as it moves.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the knob takes focus when it first shows.",
+    "minFirst": "The minimum extent of the first pane."
+  }
+}

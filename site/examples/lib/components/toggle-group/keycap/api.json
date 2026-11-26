@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapToggleGroup",
+  "parameters": {
+    "semanticLabel": "The group's name, for a screen reader.",
+    "selected": "The keys that are down.",
+    "onSelectionChanged": "Called with the keys now down; null turns the group off.",
+    "options": "The keys."
+  }
+}

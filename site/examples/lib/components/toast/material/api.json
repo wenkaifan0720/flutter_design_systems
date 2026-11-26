@@ -1,0 +1,10 @@
+{
+  "widget": "SnackBar",
+  "parameters": {
+    "content": "The message, usually a Text; ScaffoldMessenger.showSnackBar shows it and queues the next.",
+    "action": "One SnackBarAction, such as Undo.",
+    "duration": "How long it stays.",
+    "behavior": "Whether it spans the bottom edge or floats above it.",
+    "showCloseIcon": "Whether it shows a close button."
+  }
+}

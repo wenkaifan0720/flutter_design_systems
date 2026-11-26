@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerMultiSelect",
+  "parameters": {
+    "labelText": "Names the collection of selected tags.",
+    "options": "Labels available to attach.",
+    "values": "Labels already on the draft.",
+    "onChanged": "Receives the updated collection after an addition or removal."
+  },
+  "keyboardNote": "Type Ho in the empty field, press Down and then Enter to add Home. Press Backspace twice to focus and remove the last tag."
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalSplitButton",
+  "parameters": {
+    "label": "Name of the primary action.",
+    "onPressed": "Saves the current draft.",
+    "actions": "Supplies the alternate save action.",
+    "menuLabel": "Names the control that opens the alternate action."
+  }
+}

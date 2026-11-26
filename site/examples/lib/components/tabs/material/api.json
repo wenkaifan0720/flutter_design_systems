@@ -1,0 +1,10 @@
+{
+  "widget": "TabBar",
+  "parameters": {
+    "tabs": "The tabs, usually Tab widgets with text or icons.",
+    "controller": "The TabController shared with the TabBarView; DefaultTabController provides one.",
+    "isScrollable": "Whether the tabs keep their own widths and scroll.",
+    "onTap": "Called with the index of a tapped tab.",
+    "indicatorSize": "Sizes the indicator to the tab or to its label."
+  }
+}

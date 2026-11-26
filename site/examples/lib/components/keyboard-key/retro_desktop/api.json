@@ -1,0 +1,6 @@
+{
+  "widget": "RetroDesktopKbd",
+  "parameters": {
+    "keys": "Escape key shown beside the reset command."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "ClayPieChart",
+  "parameters": {
+    "slices": "The slices, clockwise from twelve o'clock.",
+    "semanticLabel": "The chart's name, said first.",
+    "size": "The donut's side."
+  },
+  "keyboardNote": "Read each category’s amount in the chart summary."
+}

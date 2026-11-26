@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapListGroup",
+  "parameters": {
+    "children": "The rows: usually KeycapListTiles.",
+    "header": "The capitals over the group.",
+    "footer": "A note under the group."
+  }
+}

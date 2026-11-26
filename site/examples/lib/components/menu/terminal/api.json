@@ -1,0 +1,8 @@
+{
+  "widget": "TermMenu",
+  "parameters": {
+    "items": "Commands shown inside the menu.",
+    "anchorBuilder": "Builds the open button.",
+    "semanticLabel": "Names the menu."
+  }
+}

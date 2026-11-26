@@ -1,0 +1,12 @@
+{
+  "widget": "ApplianceDisclosure",
+  "parameters": {
+    "title": "The row's words.",
+    "child": "What the lid covers.",
+    "subtitle": "A second line under them.",
+    "open": "Whether it is open, when you hold it.",
+    "onChanged": "Called with its new state.",
+    "initiallyOpen": "Whether it starts open, when it holds its own.",
+    "style": "The row's style, over ApplianceThemeData.listTileStyle."
+  }
+}

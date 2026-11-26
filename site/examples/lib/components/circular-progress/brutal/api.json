@@ -1,0 +1,8 @@
+{
+  "widget": "BrutalSpinner",
+  "parameters": {
+    "semanticLabel": "Names the operation while it is running.",
+    "size": "Sets the spinner size.",
+    "color": "Overrides the ink used for the spinner."
+  }
+}

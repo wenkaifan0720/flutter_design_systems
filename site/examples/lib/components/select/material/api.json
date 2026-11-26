@@ -1,0 +1,11 @@
+{
+  "widget": "DropdownMenu",
+  "parameters": {
+    "dropdownMenuEntries": "The options, as DropdownMenuEntry values with labels.",
+    "initialSelection": "The option chosen when the menu is first built.",
+    "onSelected": "Called with the chosen value.",
+    "label": "The field's name.",
+    "enableFilter": "Whether typing narrows the options.",
+    "width": "The field's width; by default it fits the widest option."
+  }
+}

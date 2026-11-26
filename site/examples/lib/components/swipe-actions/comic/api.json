@@ -1,0 +1,12 @@
+{
+  "widget": "ComicSwipeActions",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "The commands behind its start edge.",
+    "endActions": "The commands behind its end edge.",
+    "actionExtent": "Each command's width.",
+    "fullSwipe": "Whether a slide all the way runs the first command.",
+    "onOpenChanged": "Told when the commands show and hide.",
+    "initiallyOpen": "Whether the end commands show from the start."
+  }
+}

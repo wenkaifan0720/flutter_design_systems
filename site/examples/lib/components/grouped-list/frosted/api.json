@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedListSection",
+  "parameters": {
+    "rows": "The tiles grouped beneath the section heading.",
+    "title": "The main heading or row label.",
+    "label": "The label exposed to a screen reader."
+  }
+}

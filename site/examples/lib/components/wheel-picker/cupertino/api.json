@@ -1,0 +1,11 @@
+{
+  "widget": "CupertinoPicker",
+  "parameters": {
+    "children": "The rows of the wheel.",
+    "itemExtent": "The height of each row.",
+    "onSelectedItemChanged": "Called with the index of the row that settles in the middle.",
+    "scrollController": "A FixedExtentScrollController that sets the first row shown.",
+    "looping": "Whether the wheel wraps from the last row to the first.",
+    "useMagnifier": "Whether the middle row is drawn larger."
+  }
+}

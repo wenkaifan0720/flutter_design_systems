@@ -1,0 +1,9 @@
+{
+  "widget": "ComicTag",
+  "parameters": {
+    "word": "The word printed by this label.",
+    "tone": "The semantic or surface tone of this component.",
+    "icon": "The optional glyph beside the words.",
+    "iconEnd": "The icon after the word, for an arrow that says where a press goes."
+  }
+}

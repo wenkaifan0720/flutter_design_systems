@@ -1,0 +1,8 @@
+{
+  "order": 13,
+  "group": "Inputs",
+  "title": "Input group",
+  "examples": {
+    "weigh-parcel": "Weigh a parcel"
+  }
+}

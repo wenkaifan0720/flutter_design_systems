@@ -1,0 +1,11 @@
+{
+  "widget": "Slider",
+  "parameters": {
+    "value": "The current value, between min and max.",
+    "onChanged": "Called while the thumb moves; null disables the slider.",
+    "min": "The lowest value.",
+    "max": "The highest value.",
+    "divisions": "The number of steps; null moves continuously.",
+    "label": "The value shown above the thumb while it moves; needs divisions."
+  }
+}

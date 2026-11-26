@@ -1,0 +1,8 @@
+{
+  "widget": "MenuBar",
+  "parameters": {
+    "children": "The menus, usually SubmenuButton widgets with MenuItemButton entries.",
+    "controller": "Opens and closes the menus from code.",
+    "style": "The bar's MenuStyle, over the theme's MenuBarThemeData."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "TermPasswordField",
+  "parameters": {
+    "labelText": "Names the editable secret.",
+    "controller": "Reads the local entry without repeating it in the confirmation."
+  }
+}

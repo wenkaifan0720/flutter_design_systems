@@ -1,0 +1,8 @@
+{
+  "order": 53,
+  "group": "Containers",
+  "title": "Data table",
+  "examples": {
+    "sort-stock": "Sort the stock list"
+  }
+}

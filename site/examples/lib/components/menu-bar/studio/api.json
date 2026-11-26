@@ -1,0 +1,6 @@
+{
+  "widget": "StudioMenuBar",
+  "parameters": {
+    "menus": "Top-level menus and their ordered commands."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "StudioMedia",
+  "parameters": {
+    "image": "Supplies the photo when one is available. The component uses its fallback otherwise.",
+    "semanticLabel": "What the picture shows, for a screen reader.",
+    "aspectRatio": "The window's shape.",
+    "fit": "How the picture fills it."
+  }
+}

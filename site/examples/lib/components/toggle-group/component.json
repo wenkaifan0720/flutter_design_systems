@@ -1,0 +1,8 @@
+{
+  "order": 5,
+  "group": "Actions",
+  "title": "Toggle group",
+  "examples": {
+    "choose-layout": "Choose a layout"
+  }
+}

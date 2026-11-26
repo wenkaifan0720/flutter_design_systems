@@ -1,0 +1,8 @@
+{
+  "widget": "StudioAvatarGroup",
+  "parameters": {
+    "names": "The people.",
+    "max": "The most portholes shown.",
+    "size": "A porthole's diameter."
+  }
+}

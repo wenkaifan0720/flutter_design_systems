@@ -1,0 +1,9 @@
+{
+  "widget": "TermAreaChart",
+  "parameters": {
+    "series": "Named measurements in chronological order.",
+    "xLabels": "Labels at the beginning and end of the plot.",
+    "lines": "Number of text rows in the plot.",
+    "semanticLabel": "Names the series and period."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ClayHoverCard",
+  "parameters": {
+    "child": "What it is the card of.",
+    "content": "What it holds.",
+    "width": "Its width."
+  }
+}

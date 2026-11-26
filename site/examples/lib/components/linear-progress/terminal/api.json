@@ -1,0 +1,9 @@
+{
+  "widget": "TermProgressBar",
+  "parameters": {
+    "value": "Completed files divided by the total.",
+    "semanticLabel": "Names the task the bar measures.",
+    "cols": "Width of the progress track in character cells.",
+    "showPercent": "Prints the completed percentage beside the track."
+  }
+}

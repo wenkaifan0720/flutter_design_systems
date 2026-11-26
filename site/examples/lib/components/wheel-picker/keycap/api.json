@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapWheelPicker",
+  "parameters": {
+    "onChanged": "Called with the whole selection; null turns it off.",
+    "semanticLabel": "Its name, for a screen reader.",
+    "columns": "The columns for a selection.",
+    "selection": "The row chosen in each column."
+  }
+}

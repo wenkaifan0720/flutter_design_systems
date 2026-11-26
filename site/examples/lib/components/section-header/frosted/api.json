@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedSectionHeader",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "aside": "Places supporting text alongside the heading.",
+    "trailing": "Places content at the reading end."
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "appliance": {
+    "name": "Appliance",
+    "package": "appliance_ui",
+    "swatch": "#df6428",
+    "fontLoader": "applianceLoadFonts"
+  },
+  "brutal": {
+    "name": "Brutal",
+    "package": "brutal_ui",
+    "swatch": "#dc5145",
+    "fontLoader": "brutalLoadFonts"
+  },
+  "civic": {
+    "name": "Civic",
+    "package": "civic_ui",
+    "swatch": "#24784b",
+    "fontLoader": "civicLoadFonts",
+    "stintDensity": false
+  },
+  "clay": {
+    "name": "Clay",
+    "package": "clay_ui",
+    "swatch": "#ff7a5c",
+    "fontLoader": "clayLoadFonts"
+  },
+  "comic": {
+    "name": "Comic",
+    "package": "comic_ui",
+    "swatch": "#ce3d56",
+    "fontLoader": "comicLoadFonts"
+  },
+  "fluent2": {
+    "name": "Fluent 2",
+    "package": "fluent2_design_ui",
+    "swatch": "#2468ad",
+    "fontLoader": "fluent2LoadFonts"
+  },
+  "frosted": {
+    "name": "Frosted",
+    "package": "frosted_ui",
+    "swatch": "#2a2935",
+    "fontLoader": "frostedLoadFonts"
+  },
+  "gloss": {
+    "name": "Gloss",
+    "package": "gloss_ui",
+    "swatch": "#0e7652",
+    "fontLoader": "glossLoadFonts"
+  },
+  "keycap": {
+    "name": "Keycap",
+    "package": "keycap_ui",
+    "swatch": "#2f59cf",
+    "fontLoader": "keycapLoadFonts"
+  },
+  "ledger": {
+    "name": "Ledger",
+    "package": "ledger_ui",
+    "swatch": "#945942",
+    "fontLoader": "ledgerLoadFonts"
+  },
+  "material_expressive": {
+    "name": "Material Expressive",
+    "package": "material_expressive_ui",
+    "swatch": "#728044",
+    "fontLoader": "expressiveLoadFonts"
+  },
+  "minimal": {
+    "name": "Minimal",
+    "package": "minimal_ui",
+    "swatch": "#4f5c57",
+    "fontLoader": "minimalLoadFonts"
+  },
+  "neumorphism": {
+    "name": "Neumorphism",
+    "package": "neumorphism_ui",
+    "swatch": "#2e46d0",
+    "fontLoader": "neumorphicLoadFonts"
+  },
+  "retro_desktop": {
+    "name": "Retro Desktop",
+    "package": "retro_desktop_ui",
+    "swatch": "#4b3fd6",
+    "fontLoader": "retroDesktopLoadFonts"
+  },
+  "studio": {
+    "name": "Studio",
+    "package": "studio_ui",
+    "swatch": "#aa650e",
+    "fontLoader": "studioLoadFonts"
+  },
+  "terminal": {
+    "name": "Terminal",
+    "package": "terminal_ui",
+    "swatch": "#0b6870",
+    "fontLoader": "termLoadFonts"
+  },
+  "material": {
+    "name": "Material (Flutter)",
+    "package": "material_ui",
+    "swatch": "#6750a4",
+    "fontLoader": "materialLoadFonts",
+    "reference": "Material"
+  },
+  "cupertino": {
+    "name": "Cupertino (Flutter)",
+    "package": "cupertino_ui",
+    "swatch": "#007aff",
+    "fontLoader": "cupertinoLoadFonts",
+    "reference": "Cupertino"
+  }
+}

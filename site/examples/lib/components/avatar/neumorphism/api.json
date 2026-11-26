@@ -1,0 +1,11 @@
+{
+  "widget": "NeumorphicAvatar",
+  "parameters": {
+    "initials": "The initials shown when no usable image is available.",
+    "image": "Supplies the photo when one is available. The component uses its fallback otherwise.",
+    "size": "The avatar face diameter in logical pixels.",
+    "selected": "Whether this item is selected.",
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "style": "Portrait frame and fallback words before the avatar theme."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 86,
+  "group": "Charts",
+  "title": "Bar chart",
+  "examples": {
+    "compare-quarters": "Compare monthly orders"
+  }
+}

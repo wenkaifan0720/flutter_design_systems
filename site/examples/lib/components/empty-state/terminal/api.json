@@ -1,0 +1,9 @@
+{
+  "widget": "TermEmptyState",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "message": "Explains why the list is empty.",
+    "glyph": "Adds a glyph to the empty state.",
+    "action": "Supplies the action for the empty state."
+  }
+}

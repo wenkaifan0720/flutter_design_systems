@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapAvatarGroup",
+  "parameters": {
+    "max": "The most tiles shown before the count.",
+    "size": "A tile's side.",
+    "names": "The people."
+  }
+}

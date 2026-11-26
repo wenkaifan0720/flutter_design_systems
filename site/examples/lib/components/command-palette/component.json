@@ -1,0 +1,8 @@
+{
+  "order": 45,
+  "group": "Navigation",
+  "title": "Command palette",
+  "examples": {
+    "find-command": "Find a note command"
+  }
+}

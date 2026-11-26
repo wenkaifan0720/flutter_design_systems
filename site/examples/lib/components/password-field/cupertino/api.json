@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoTextField",
+  "parameters": {
+    "obscureText": "Hides the characters; toggle it to reveal them.",
+    "obscuringCharacter": "The character drawn for each hidden one.",
+    "enableSuggestions": "Whether the keyboard may suggest words; off for secrets.",
+    "autocorrect": "Whether the keyboard may correct words; off for secrets.",
+    "suffix": "A widget at the end of the field; here the reveal button."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "StudioTabBar",
+  "parameters": {
+    "tabs": "Ordered list of tab labels.",
+    "selectedIndex": "Index of the current section.",
+    "onChanged": "Receives the chosen index.",
+    "style": "Overrides the tab bar’s themed finish."
+  }
+}

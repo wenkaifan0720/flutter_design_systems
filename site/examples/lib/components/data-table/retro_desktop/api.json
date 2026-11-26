@@ -1,0 +1,11 @@
+{
+  "widget": "RetroDesktopDataTable",
+  "parameters": {
+    "controller": "Holds the rows, columns, sorting, selection and current page.",
+    "cellText": "A cell's words.",
+    "selectable": "Whether rows can be chosen with boxes.",
+    "onActivate": "Called when a row is opened (Enter, or a double press).",
+    "selectAllLabel": "The boxes' names for a screen reader.",
+    "selectLabel": "Names an individual row’s selection control."
+  }
+}

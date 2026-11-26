@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopDivider",
+  "parameters": {
+    "indent": "Space before the divider in reading order.",
+    "endIndent": "Space after the divider in reading order.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

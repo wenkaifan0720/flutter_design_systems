@@ -1,0 +1,9 @@
+{
+  "widget": "ComicSparkline",
+  "parameters": {
+    "values": "Daily counts in chronological order.",
+    "label": "Names the series and period.",
+    "width": "Sets the width of the small plot.",
+    "height": "Sets the height of the small plot."
+  }
+}

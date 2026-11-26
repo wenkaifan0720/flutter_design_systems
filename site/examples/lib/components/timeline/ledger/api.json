@@ -1,0 +1,6 @@
+{
+  "widget": "LedgerTimeline",
+  "parameters": {
+    "entries": "The entries, oldest first."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopStatusView",
+  "parameters": {
+    "status": "Selects the error presentation.",
+    "title": "Heading that names the failure.",
+    "message": "Explains the interruption.",
+    "onRetry": "Handles the retry action."
+  }
+}

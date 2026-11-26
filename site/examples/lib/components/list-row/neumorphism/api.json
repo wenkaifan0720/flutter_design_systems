@@ -1,0 +1,19 @@
+{
+  "widget": "NeumorphicListTile",
+  "parameters": {
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the control takes focus when it first appears.",
+    "title": "The primary heading.",
+    "subtitle": "Secondary information displayed beside the heading.",
+    "note": "Supporting text displayed with the primary content.",
+    "leading": "Places a widget before the main label.",
+    "trailing": "A figure or a NeumorphicStatus beside the title, held to a share of the row.",
+    "action": "Places a secondary action beside the row’s contents.",
+    "onPressed": "The whole row opens something.",
+    "selected": "Indicates whether the item is selected.",
+    "isFirst": "Applies the treatment for the first row in a group.",
+    "dense": "Uses tighter row spacing.",
+    "top": "The mark stands at the row's top, for a meta that may wrap."
+  },
+  "keyboardNote": "Neumorphism takes the pressed row’s title as its accessible name. This example keeps the read status in the title so it is also spoken."
+}

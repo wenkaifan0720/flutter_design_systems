@@ -1,0 +1,6 @@
+{
+  "widget": "ClayButtonGroup",
+  "parameters": {
+    "items": "The keys, in order."
+  }
+}

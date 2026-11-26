@@ -1,0 +1,8 @@
+{
+  "order": 55,
+  "group": "Containers",
+  "title": "Scroll area",
+  "examples": {
+    "browse-stops": "Browse the stops"
+  }
+}

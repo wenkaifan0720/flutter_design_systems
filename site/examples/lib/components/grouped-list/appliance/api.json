@@ -1,0 +1,10 @@
+{
+  "widget": "ApplianceListGroup",
+  "parameters": {
+    "children": "The rows.",
+    "header": "The caps legend over the plate.",
+    "headerTrailing": "What stands at the legend's end.",
+    "footer": "A note under the plate.",
+    "style": "The plate's style, over ApplianceThemeData.panelStyle."
+  }
+}

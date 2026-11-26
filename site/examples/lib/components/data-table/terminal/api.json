@@ -1,0 +1,11 @@
+{
+  "widget": "TermDataTable",
+  "parameters": {
+    "controller": "Holds the records, columns, sort order, selection and current page.",
+    "cellBuilder": "Builds a cell from its row and column.",
+    "widths": "Sets each column’s width in terminal cells, keyed by column ID.",
+    "selectable": "Allows readers to select rows.",
+    "onActivate": "Runs when the reader opens a row or node."
+  },
+  "keyboardNote": "TermPagination counts pages from one. This example converts its page number to the table controller’s zero-based index."
+}

@@ -1,0 +1,8 @@
+{
+  "order": 49,
+  "group": "Containers",
+  "title": "Grouped list",
+  "examples": {
+    "choose-channel": "Choose a delivery channel"
+  }
+}

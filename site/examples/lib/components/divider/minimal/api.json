@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalDivider",
+  "parameters": {
+    "label": "Words the rule breaks for, in the middle.",
+    "indent": "Space before it.",
+    "endIndent": "Space after it.",
+    "space": "The extent it takes across its line, the rule in the middle."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "LinearProgressIndicator",
+  "parameters": {
+    "value": "The share done, from 0 to 1; null runs without an end.",
+    "semanticsLabel": "What is in progress, for a screen reader.",
+    "semanticsValue": "The progress as a screen reader reads it.",
+    "minHeight": "The bar's height.",
+    "borderRadius": "The bar's corners."
+  }
+}

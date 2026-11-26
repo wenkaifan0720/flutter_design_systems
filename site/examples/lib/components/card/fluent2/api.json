@@ -1,0 +1,16 @@
+{
+  "widget": "Fluent2Card",
+  "parameters": {
+    "children": "Supplies the child widgets in reading order.",
+    "appearance": "Selects the component’s visual treatment.",
+    "size": "Selects the size of the component.",
+    "orientation": "Arranges the card’s content horizontally or vertically.",
+    "onPressed": "Handles activation when the component is interactive.",
+    "selected": "Indicates whether the item is selected.",
+    "onSelected": "Receives the new selection.",
+    "label": "Supplies the component’s accessible label.",
+    "style": "This card's own look, slot by slot, over the card theme.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

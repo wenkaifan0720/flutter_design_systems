@@ -1,0 +1,14 @@
+{
+  "widget": "NeumorphicMedia",
+  "parameters": {
+    "slotId": "A declared media slot.",
+    "image": "A directly supplied picture. The child takes precedence when both are given.",
+    "child": "Custom picture content, using the same frame as a photo.",
+    "glyph": "The piece's sign, drawn in place of a photograph.",
+    "aspect": "The width divided by the height of the media or placeholder.",
+    "label": "The text identifying this item or control.",
+    "fit": "How the image is fitted into its allotted area.",
+    "alignment": "Which part of the image remains visible when cropped.",
+    "width": "Sets the width of the media frame."
+  }
+}

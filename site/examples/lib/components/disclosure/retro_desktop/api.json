@@ -1,0 +1,13 @@
+{
+  "widget": "RetroDesktopDisclosure",
+  "parameters": {
+    "title": "The heading displayed above the content.",
+    "subtitle": "Supporting text shown with the main content.",
+    "child": "The widget displayed inside this part.",
+    "initiallyExpanded": "Whether the disclosure starts expanded when uncontrolled.",
+    "expanded": "The controlled disclosure state, or null to manage it internally.",
+    "onExpansionChanged": "Reports a request to expand or collapse the disclosure.",
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "enabled": "Whether the part accepts user interaction."
+  }
+}

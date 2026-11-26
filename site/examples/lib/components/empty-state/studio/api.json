@@ -1,0 +1,10 @@
+{
+  "widget": "StudioStatusView",
+  "parameters": {
+    "title": "What it says first.",
+    "message": "A line on why, or what to do.",
+    "icon": "The glyph in the dish.",
+    "actionLabel": "The way on's legend.",
+    "onAction": "The way on."
+  }
+}

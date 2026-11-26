@@ -1,0 +1,6 @@
+{
+  "widget": "ClayMenuBar",
+  "parameters": {
+    "menus": "The menus, in order."
+  }
+}

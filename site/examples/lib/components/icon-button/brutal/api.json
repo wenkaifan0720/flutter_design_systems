@@ -1,0 +1,8 @@
+{
+  "widget": "BrutalIconButton",
+  "parameters": {
+    "icon": "Plus symbol for extending the loan.",
+    "tooltip": "Accessible name for the icon-only action.",
+    "onPressed": "Adds one day to the current loan period."
+  }
+}

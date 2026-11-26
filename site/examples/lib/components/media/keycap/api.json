@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapMedia",
+  "parameters": {
+    "semanticLabel": "What the picture shows, for a screen reader.",
+    "aspectRatio": "Its width over its height.",
+    "slotId": "The media slot."
+  }
+}

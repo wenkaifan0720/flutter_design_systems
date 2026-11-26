@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopTextArea",
+  "parameters": {
+    "labelText": "Name that stays with the note.",
+    "onChanged": "Recounts the lines when the note changes.",
+    "lines": "Height of the editing area in lines."
+  }
+}

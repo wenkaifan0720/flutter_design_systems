@@ -1,0 +1,7 @@
+{
+  "widget": "TermAvatarGroup",
+  "parameters": {
+    "names": "The people in display order.",
+    "max": "The maximum number of people shown before the overflow count."
+  }
+}

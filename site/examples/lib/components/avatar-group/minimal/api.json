@@ -1,0 +1,8 @@
+{
+  "widget": "MinimalAvatarGroup",
+  "parameters": {
+    "names": "Whose they are, in order.",
+    "size": "Each circle's outer size, its ring included.",
+    "max": "How many faces show before the rest fold into +N."
+  }
+}

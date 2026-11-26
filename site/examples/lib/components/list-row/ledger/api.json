@@ -1,0 +1,19 @@
+{
+  "widget": "LedgerRow",
+  "parameters": {
+    "title": "The row's words, joined to its value by the dot leader.",
+    "leading": "A mark before the words (a glyph, a monogram).",
+    "value": "The value at the line's end, on the leader (a LedgerAmount).",
+    "subtitle": "The sub line's start words.",
+    "trailingSubtitle": "The sub line's end words.",
+    "subtitleMonospace": "The start words in the mono (an account's kind and mask).",
+    "subtitleTone": "The ink of the sub line's start words.",
+    "trailingSubtitleTone": "The ink of the sub line's end words.",
+    "tag": "A tag after the title (Pending).",
+    "trailing": "A mark at the row's end (a chevron, a switch).",
+    "onTap": "Makes the whole row one link.",
+    "semanticLabel": "What a screen reader says when the row's words say too little.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

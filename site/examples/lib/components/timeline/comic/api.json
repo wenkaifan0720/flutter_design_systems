@@ -1,0 +1,6 @@
+{
+  "widget": "ComicTimeline",
+  "parameters": {
+    "entries": "The events, oldest first."
+  }
+}

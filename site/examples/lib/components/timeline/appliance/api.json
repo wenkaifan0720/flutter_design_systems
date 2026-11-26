@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceTimeline",
+  "parameters": {
+    "entries": "The entries.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

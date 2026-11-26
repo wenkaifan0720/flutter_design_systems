@@ -1,0 +1,12 @@
+name: stint_core
+description: Shared data, fixtures and controllers for the Stint studies.
+publish_to: none
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+resolution: workspace
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

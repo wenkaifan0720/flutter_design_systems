@@ -1,0 +1,8 @@
+{
+  "order": 71,
+  "group": "Overlays",
+  "title": "Bottom sheet",
+  "examples": {
+    "read-delivery-note": "Read a delivery note"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "TermDateRangePicker",
+  "parameters": {
+    "value": "Selected arrival and departure dates.",
+    "firstDate": "First available day.",
+    "lastDate": "Last available day.",
+    "onChanged": "Receives the chosen interval."
+  },
+  "keyboardNote": "Open Stay with Enter. Use the arrows and Enter to choose the arrival date, then the departure date."
+}

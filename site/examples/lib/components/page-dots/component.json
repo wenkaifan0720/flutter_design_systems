@@ -1,0 +1,8 @@
+{
+  "order": 43,
+  "group": "Navigation",
+  "title": "Page indicator dots",
+  "examples": {
+    "browse-pages": "Browse three pages"
+  }
+}

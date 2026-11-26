@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedTable",
+  "parameters": {
+    "columns": "Defines the headings, column widths and alignment.",
+    "rows": "The rows in reading order.",
+    "minColumnWidth": "The minimum column width before records switch to a stacked layout.",
+    "semanticsLabel": "Names the table for a screen reader."
+  }
+}

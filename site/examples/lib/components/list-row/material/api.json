@@ -1,0 +1,11 @@
+{
+  "widget": "ListTile",
+  "parameters": {
+    "title": "The row's main line.",
+    "subtitle": "A second line under the title.",
+    "leading": "A widget before the text, such as an Icon or a CircleAvatar.",
+    "trailing": "A widget after the text.",
+    "onTap": "Called on a tap; null leaves the row inert.",
+    "selected": "Whether the row is marked as chosen."
+  }
+}

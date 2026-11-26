@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveSwipeActions",
+  "parameters": {
+    "child": "The row.",
+    "leading": "Actions at the start edge, outermost first.",
+    "trailing": "Actions at the end edge, outermost first.",
+    "allowsFullSwipe": "Whether a swipe across the whole row runs the outermost action."
+  },
+  "keyboardNote": "Tab to Archive note to archive the row. Activate Restore note to bring it back."
+}

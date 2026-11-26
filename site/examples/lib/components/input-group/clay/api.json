@@ -1,0 +1,9 @@
+{
+  "widget": "ClayInputGroup",
+  "parameters": {
+    "labelText": "The words above the well.",
+    "suffixText": "Words at the well's end, behind a groove (ml, minutes).",
+    "onChanged": "Each change.",
+    "keyboardType": "The keyboard to show."
+  }
+}

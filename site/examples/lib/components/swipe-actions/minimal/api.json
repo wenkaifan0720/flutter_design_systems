@@ -1,0 +1,10 @@
+{
+  "widget": "MinimalSwipeActions",
+  "parameters": {
+    "child": "The row — usually a MinimalThemeData.rowHeight row with its own hairline.",
+    "leading": "Actions revealed by a drag toward the trailing edge, first nearest the leading edge.",
+    "trailing": "Actions revealed by a drag toward the leading edge, first nearest the trailing edge.",
+    "allowsFullSwipe": "A long swipe past 60 % of the row performs the first action on that edge.",
+    "initiallyOpen": "Starts the row with its actions revealed."
+  }
+}

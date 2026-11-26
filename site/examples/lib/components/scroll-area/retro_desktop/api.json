@@ -1,0 +1,11 @@
+{
+  "widget": "RetroDesktopScrollArea",
+  "parameters": {
+    "controller": "Controls the scroll position. Give the child scroll view the same controller.",
+    "child": "The scroll view, on controller.",
+    "axis": "Which way it scrolls.",
+    "label": "Its name for a screen reader.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

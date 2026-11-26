@@ -1,0 +1,7 @@
+{
+  "widget": "NeumorphicTimeline",
+  "parameters": {
+    "stops": "The stops, in order.",
+    "label": "What a screen reader calls the whole."
+  }
+}

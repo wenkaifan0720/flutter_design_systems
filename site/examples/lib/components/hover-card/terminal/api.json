@@ -1,0 +1,8 @@
+{
+  "widget": "TermHoverCard",
+  "parameters": {
+    "child": "The link that anchors the preview.",
+    "builder": "Builds the previewed profile.",
+    "title": "Heading of the card."
+  }
+}

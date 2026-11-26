@@ -1,0 +1,10 @@
+{
+  "widget": "KeycapStepper",
+  "parameters": {
+    "semanticLabel": "Its name, for a screen reader.",
+    "min": "The least it may be.",
+    "max": "The most it may be.",
+    "value": "The number; null when empty.",
+    "onChanged": "Called with the new number; null turns the stepper off."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "ClaySlider",
+  "parameters": {
+    "value": "Where the ball sits.",
+    "max": "The groove's end.",
+    "divisions": "How many steps it snaps to; null: any value.",
+    "semanticLabel": "What a screen reader calls it.",
+    "onChanged": "The new value as the ball moves; null turns the slider off."
+  }
+}

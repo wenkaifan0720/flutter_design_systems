@@ -1,0 +1,9 @@
+{
+  "widget": "CivicNavigationBar",
+  "parameters": {
+    "destinations": "The destinations in reading order.",
+    "selectedIndex": "Zero-based index of the visible page.",
+    "onDestinationSelected": "Receives the index of the chosen destination."
+  },
+  "keyboardNote": "CivicRailScope gives CivicNavigationBar its vertical layout. The same destinations power the bottom bar."
+}

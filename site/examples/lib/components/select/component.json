@@ -1,0 +1,8 @@
+{
+  "order": 16,
+  "group": "Inputs",
+  "title": "Select",
+  "examples": {
+    "choose-paper": "Choose a paper size"
+  }
+}

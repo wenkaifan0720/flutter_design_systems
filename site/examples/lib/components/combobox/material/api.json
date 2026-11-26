@@ -1,0 +1,10 @@
+{
+  "widget": "Autocomplete",
+  "parameters": {
+    "optionsBuilder": "Returns the suggestions for the text typed so far.",
+    "onSelected": "Called with the suggestion the user accepts.",
+    "fieldViewBuilder": "Builds the text field, usually a TextField with a label.",
+    "displayStringForOption": "The text an option shows and fills in.",
+    "optionsMaxHeight": "The tallest the list of suggestions grows."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceSectionHeader",
+  "parameters": {
+    "text": "Supplies the displayed text.",
+    "trailing": "What stands at its end.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

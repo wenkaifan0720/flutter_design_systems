@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedListTile",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "meta": "Shows secondary information beside the title.",
+    "onPressed": "Runs when the reader activates the component.",
+    "selected": "Marks the row as selected."
+  }
+}

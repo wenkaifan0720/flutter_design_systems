@@ -1,0 +1,8 @@
+{
+  "widget": "NeumorphicDivider",
+  "parameters": {
+    "space": "The total vertical space occupied by the divider.",
+    "indent": "The logical start inset of the line.",
+    "endIndent": "The logical end inset of the line."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "CupertinoExpansionTile",
+  "parameters": {
+    "title": "The row's heading; a tap on it opens and closes the section.",
+    "child": "The content shown while it is open.",
+    "controller": "Opens and closes it from code.",
+    "transitionMode": "Whether the content fades or scrolls into view."
+  }
+}

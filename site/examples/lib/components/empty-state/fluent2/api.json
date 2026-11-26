@@ -1,0 +1,12 @@
+{
+  "widget": "Fluent2EmptyState",
+  "parameters": {
+    "title": "What is empty, in a line.",
+    "body": "Supplies the explanation beneath the heading.",
+    "icon": "The glyph over title.",
+    "actionLabel": "Sets the text of the empty state’s action.",
+    "actionIcon": "Places an icon alongside the empty state’s action.",
+    "onAction": "Runs the empty state’s action.",
+    "actionKey": "The act button's key, for tests and tours."
+  }
+}

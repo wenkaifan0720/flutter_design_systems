@@ -1,0 +1,9 @@
+{
+  "widget": "LedgerSwipeActions",
+  "parameters": {
+    "child": "Supplies the content inside the component.",
+    "leading": "Acts revealed by dragging toward the end edge, the first nearest the start edge.",
+    "trailing": "Acts revealed by dragging toward the start edge, the first nearest the end edge.",
+    "initiallyOpen": "Starts with the trailing acts shown (the leading ones with none)."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "widget": "Fluent2Avatar",
+  "parameters": {
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "initials": "Sets the letters shown when a photo is unavailable.",
+    "image": "Supplies the photo when one is available. The component uses its fallback otherwise.",
+    "size": "The side, in pixels (Fluent's 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 96, 120 or 128).",
+    "shape": "Chooses the outline of the component.",
+    "color": "Overrides the component’s colour.",
+    "presence": "Adds a presence indicator to the avatar.",
+    "selected": "The brand ring of a person who is active (speaking, sharing).",
+    "onPressed": "Handles activation when the component is interactive.",
+    "label": "Supplies the accessible name for the avatar or its action.",
+    "icon": "Supplies the component’s icon.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

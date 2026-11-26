@@ -1,0 +1,10 @@
+{
+  "widget": "TextFormField",
+  "parameters": {
+    "validator": "Returns the error for the current text, or null when it is valid.",
+    "autovalidateMode": "When the field checks itself: on each edit after the first, or only when its Form asks.",
+    "decoration": "The label, helper and border; the error replaces the helper.",
+    "initialValue": "The text the field starts with.",
+    "onSaved": "Called with the text when the enclosing Form saves."
+  }
+}

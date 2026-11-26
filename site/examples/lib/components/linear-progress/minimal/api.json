@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalLinearProgressIndicator",
+  "parameters": {
+    "value": "Completed files divided by the total.",
+    "label": "Names the task the bar measures.",
+    "height": "Sets the height of the progress track.",
+    "thickness": "Sets the track thickness."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 1,
+  "group": "Actions",
+  "title": "Button",
+  "examples": {
+    "save-draft": "Save a draft"
+  }
+}

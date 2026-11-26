@@ -1,0 +1,6 @@
+{
+  "widget": "MinimalButtonGroup",
+  "parameters": {
+    "items": "Zoom commands in reading order."
+  }
+}

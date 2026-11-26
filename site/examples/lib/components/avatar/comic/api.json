@@ -1,0 +1,11 @@
+{
+  "widget": "ComicAvatar",
+  "parameters": {
+    "initials": "Letters shown when no portrait is supplied.",
+    "style": "Initials visible until a photo is available. Appearance above the avatar component theme.",
+    "image": "Optional photo provider.",
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "size": "Preferred frame size. Component styles can supply a larger minimum.",
+    "selected": "Emphasizes the frame with the caption ink."
+  }
+}

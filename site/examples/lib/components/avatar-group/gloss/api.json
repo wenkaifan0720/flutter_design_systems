@@ -1,0 +1,8 @@
+{
+  "widget": "GlossAvatarGroup",
+  "parameters": {
+    "avatars": "The avatars.",
+    "max": "How many show before the rest are counted.",
+    "size": "Each one's size."
+  }
+}

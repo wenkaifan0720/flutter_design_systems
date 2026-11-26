@@ -1,0 +1,8 @@
+{
+  "order": 67,
+  "group": "Containers",
+  "title": "Media with fallback",
+  "examples": {
+    "resize-cover": "Resize a missing cover"
+  }
+}

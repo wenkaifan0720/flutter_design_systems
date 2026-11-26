@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapStepProgress",
+  "parameters": {
+    "steps": "Each step's name.",
+    "currentStep": "The step under way (from 0); steps' length once all are done."
+  }
+}

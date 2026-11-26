@@ -1,0 +1,9 @@
+{
+  "widget": "ClaySparkline",
+  "parameters": {
+    "values": "The values, in order.",
+    "semanticLabel": "Its name, said first.",
+    "width": "Its width; null spans its parent.",
+    "height": "Its height."
+  }
+}

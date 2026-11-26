@@ -1,0 +1,12 @@
+{
+  "widget": "ComicScrollArea",
+  "parameters": {
+    "controller": "The scroll view's controller.",
+    "child": "The scroll view.",
+    "axis": "Which way it scrolls.",
+    "visibility": "When the bar shows.",
+    "label": "What a screen reader calls the region.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

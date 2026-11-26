@@ -1,0 +1,7 @@
+{
+  "widget": "GlossDivider",
+  "parameters": {
+    "indent": "Room before the line.",
+    "endIndent": "Room after the line."
+  }
+}

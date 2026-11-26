@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceIconButton",
+  "parameters": {
+    "icon": "Plus symbol for extending the loan.",
+    "semanticLabel": "Accessible name for the icon-only action.",
+    "onPressed": "Adds one day to the current loan period."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 85,
+  "group": "Charts",
+  "title": "Line chart",
+  "examples": {
+    "compare-balances": "Compare daily balances"
+  }
+}

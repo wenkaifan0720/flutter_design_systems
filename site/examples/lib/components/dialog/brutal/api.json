@@ -1,0 +1,10 @@
+{
+  "widget": "BrutalDialog",
+  "parameters": {
+    "title": "Heading that names the dialog.",
+    "content": "Widget below the title.",
+    "actions": "Footer cells, with the primary BrutalDialogAction last.",
+    "icon": "Adds a glyph to the component.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

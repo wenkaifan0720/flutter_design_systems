@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapSwipeActions",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "The actions under its start edge.",
+    "endActions": "The actions under its end edge."
+  }
+}

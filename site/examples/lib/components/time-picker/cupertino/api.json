@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoDatePicker",
+  "parameters": {
+    "mode": "CupertinoDatePickerMode.time shows only the hour and minute wheels.",
+    "initialDateTime": "The time shown when the wheels are first built.",
+    "onDateTimeChanged": "Called with the time as the wheels settle.",
+    "use24hFormat": "Whether the hours run from 0 to 23 with no AM or PM wheel.",
+    "minuteInterval": "The step between the minutes on the wheel."
+  }
+}

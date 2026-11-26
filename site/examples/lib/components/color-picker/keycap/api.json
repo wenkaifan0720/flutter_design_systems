@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapColorPicker",
+  "parameters": {
+    "showAlpha": "Whether it has an alpha slot.",
+    "controller": "The colour."
+  }
+}

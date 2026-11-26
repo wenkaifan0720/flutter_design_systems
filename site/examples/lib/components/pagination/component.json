@@ -1,0 +1,8 @@
+{
+  "order": 41,
+  "group": "Navigation",
+  "title": "Pagination",
+  "examples": {
+    "browse-results": "Browse result pages"
+  }
+}

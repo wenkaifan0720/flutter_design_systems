@@ -1,0 +1,12 @@
+{
+  "widget": "showDateRangePicker",
+  "parameters": {
+    "context": "Where the picker opens.",
+    "initialDateRange": "The range chosen when the picker opens.",
+    "firstDate": "The earliest date that can be chosen.",
+    "lastDate": "The latest date that can be chosen.",
+    "currentDate": "The day marked as today.",
+    "initialEntryMode": "Opens on the calendar or on typed dates.",
+    "helpText": "The picker's heading."
+  }
+}

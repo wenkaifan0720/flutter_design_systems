@@ -1,0 +1,8 @@
+{
+  "widget": "NeumorphicLinearProgressIndicator",
+  "parameters": {
+    "value": "Completed files divided by the total.",
+    "label": "Names the task the bar measures.",
+    "quiet": "Selects a quieter progress treatment."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 22,
+  "group": "Inputs",
+  "title": "Slider",
+  "examples": {
+    "set-volume": "Set the volume"
+  }
+}

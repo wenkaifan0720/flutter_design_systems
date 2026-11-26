@@ -1,0 +1,17 @@
+{
+  "widget": "GlossListTile",
+  "parameters": {
+    "title": "The row's name.",
+    "subtitle": "A second line.",
+    "leading": "A glyph at the row's start.",
+    "trailing": "A control at the row's end (a switch, a stepper).",
+    "trailingText": "A value at the row's end.",
+    "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
+    "selected": "Indicates whether the item is selected.",
+    "showChevron": "Controls the directional indicator at the end of the row.",
+    "isDestructiveAction": "Applies the destructive treatment to the row.",
+    "enabled": "Whether the row takes presses.",
+    "semanticLabel": "What a screen reader says, when not the row's words.",
+    "style": "This row's own style, over GlossThemeData.listTileStyle."
+  }
+}

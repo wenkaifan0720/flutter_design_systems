@@ -1,0 +1,10 @@
+{
+  "widget": "BrutalBadge",
+  "parameters": {
+    "count": "The count.",
+    "child": "Supplies the content inside the component.",
+    "maxCount": "The highest count it shows.",
+    "semanticLabel": "Names what the badge counts for a screen reader.",
+    "style": "Its style, over BrutalThemeData.badgeStyle."
+  }
+}

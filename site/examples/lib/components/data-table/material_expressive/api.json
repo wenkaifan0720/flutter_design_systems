@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveDataTable",
+  "parameters": {
+    "controller": "The rows, columns, sort, filter, selection and page.",
+    "cellBuilder": "Builds the widget for a row and column.",
+    "selectable": "Whether rows are chosen, each with its checkbox.",
+    "onActivate": "A row's Enter, or its press when rows are not chosen.",
+    "columnFlex": "Sets the relative width of each named column."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "MaterialBanner",
+  "parameters": {
+    "content": "The message.",
+    "actions": "One or two buttons, usually TextButton widgets.",
+    "leading": "A glyph before the message.",
+    "backgroundColor": "The banner's fill.",
+    "forceActionsBelow": "Whether the buttons sit under the message even when they fit beside it."
+  }
+}

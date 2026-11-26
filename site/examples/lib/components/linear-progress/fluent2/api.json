@@ -1,0 +1,8 @@
+{
+  "widget": "Fluent2ProgressBar",
+  "parameters": {
+    "value": "Completed files divided by the total.",
+    "semanticLabel": "Names the task the bar measures.",
+    "thickness": "Sets the track thickness."
+  }
+}

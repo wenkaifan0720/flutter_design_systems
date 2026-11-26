@@ -1,0 +1,10 @@
+{
+  "widget": "ApplianceTree",
+  "parameters": {
+    "controller": "Holds the tree’s nodes, expanded branches and selection.",
+    "labelOf": "A node's words.",
+    "onActivate": "Opens a node (Enter, a press).",
+    "semanticLabel": "Its name for a screen reader.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

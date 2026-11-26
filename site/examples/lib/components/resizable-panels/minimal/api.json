@@ -1,0 +1,17 @@
+{
+  "widget": "MinimalResizable",
+  "parameters": {
+    "first": "The first pane (the start side, or the top).",
+    "second": "The second pane.",
+    "axis": "Side by side (Axis.horizontal) or stacked.",
+    "fraction": "The first pane's share, when the app holds it.",
+    "initialFraction": "Where a split that holds its own share starts.",
+    "onChanged": "A drag's, a key's or a screen reader's new share.",
+    "minFirst": "The minimum extent of the first pane.",
+    "minSecond": "The minimum extent of the second pane.",
+    "handle": "Whether a grip stands on the divider's middle.",
+    "label": "Supplies the component’s accessible label.",
+    "focusNode": "The divider's keyboard stop (the arrows move it).",
+    "autofocus": "Whether the divider takes focus when it first shows."
+  }
+}

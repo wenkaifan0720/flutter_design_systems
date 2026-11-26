@@ -1,0 +1,9 @@
+{
+  "widget": "LedgerScrollArea",
+  "parameters": {
+    "controller": "Controls the scroll position. Give the child scroll view the same controller.",
+    "child": "The scroll view.",
+    "axis": "The way it scrolls.",
+    "semanticLabel": "What a screen reader calls the region."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalBarChart",
+  "parameters": {
+    "values": "Bar heights in reading order.",
+    "labels": "A month name for each bar.",
+    "semanticLabel": "Names the chart and period.",
+    "height": "Sets the plot height."
+  }
+}

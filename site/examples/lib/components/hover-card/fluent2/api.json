@@ -1,0 +1,9 @@
+{
+  "widget": "Fluent2Popover",
+  "parameters": {
+    "trigger": "Builds the link under the pointer.",
+    "openOnHover": "Shows the flyout on pointer entry.",
+    "content": "Profile preview inside the flyout.",
+    "side": "Chooses the preferred side of the anchor."
+  }
+}

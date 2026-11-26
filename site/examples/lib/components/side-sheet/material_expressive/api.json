@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveSheet",
+  "parameters": {
+    "title": "Heading at the top of the panel.",
+    "builder": "Builds the content inside the sheet.",
+    "edge": "Chooses the reading start or end.",
+    "width": "Requested panel width."
+  }
+}

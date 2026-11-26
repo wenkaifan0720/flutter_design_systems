@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveShellScaffold",
+  "parameters": {
+    "tabs": "Main destinations, including the location of each branch.",
+    "selectedIndex": "Index of the visible branch.",
+    "onDestinationSelected": "Receives the selected branch.",
+    "body": "Content of the current branch."
+  },
+  "library": "material_expressive_host"
+}

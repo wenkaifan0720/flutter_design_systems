@@ -1,0 +1,8 @@
+{
+  "order": 89,
+  "group": "Charts",
+  "title": "Sparkline",
+  "examples": {
+    "read-daily-trend": "Read a five-day trend"
+  }
+}

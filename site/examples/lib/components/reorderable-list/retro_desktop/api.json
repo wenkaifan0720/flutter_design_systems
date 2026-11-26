@@ -1,0 +1,12 @@
+{
+  "widget": "RetroDesktopReorderableListView",
+  "parameters": {
+    "items": "The rows' values, in order.",
+    "onReorder": "Reports the old index and the new index after removal.",
+    "labelOf": "A row's name for a screen reader.",
+    "itemBuilder": "Builds the content for each item.",
+    "keyOf": "Returns a stable identity for each item as its position changes.",
+    "shrinkWrap": "Whether the list takes only its rows' height.",
+    "gripLabel": "The grip's name for a screen reader."
+  }
+}

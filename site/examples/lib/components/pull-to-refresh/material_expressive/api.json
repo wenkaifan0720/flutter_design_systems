@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveRefreshIndicator",
+  "parameters": {
+    "onRefresh": "Returns a future that completes when the list has finished updating.",
+    "child": "The scrollable content.",
+    "semanticLabel": "What a screen reader announces while refreshing (the strings' refreshing when null).",
+    "style": "Visual overrides for both phases of the loading indicator."
+  }
+}

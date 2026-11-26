@@ -1,0 +1,7 @@
+{
+  "widget": "TermDivider",
+  "parameters": {
+    "label": "The label exposed to a screen reader.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

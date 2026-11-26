@@ -1,0 +1,8 @@
+{
+  "widget": "TermToaster",
+  "parameters": {
+    "child": "The area where the notices appear.",
+    "message": "Confirmation passed to show.",
+    "tone": "Selects the notice ink."
+  }
+}

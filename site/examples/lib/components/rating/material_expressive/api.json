@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveRating",
+  "parameters": {
+    "value": "Score currently shown by the marks.",
+    "semanticLabel": "Names the read-only rating. The interactive stars use their individual labels.",
+    "onChanged": "Receives the new score."
+  },
+  "keyboardNote": "Tab to a star and press Enter or Space to set the score."
+}

@@ -1,0 +1,8 @@
+{
+  "order": 7,
+  "group": "Actions",
+  "title": "Link",
+  "examples": {
+    "read-guide": "Read the guide"
+  }
+}

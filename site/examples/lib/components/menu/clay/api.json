@@ -1,0 +1,10 @@
+{
+  "widget": "ClayMenu",
+  "parameters": {
+    "items": "What it holds.",
+    "builder": "The key that opens it: given the toggle and whether it is open.",
+    "semanticLabel": "What a screen reader calls the menu.",
+    "alignEnd": "Whether it lines up with the key's end rather than its start."
+  },
+  "keyboardNote": "Arrow to Date and press Enter to choose it."
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveTooltip",
+  "parameters": {
+    "message": "Hint for the button in its current state.",
+    "child": "The control that owns the hint.",
+    "position": "Preferred position relative to the control."
+  },
+  "keyboardNote": "Tab focuses Bookmark and exposes its hint to a screen reader. Hover or long-press to see the tooltip bubble."
+}

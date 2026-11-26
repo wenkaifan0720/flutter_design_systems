@@ -1,0 +1,9 @@
+{
+  "widget": "showBrutalSideSheet",
+  "parameters": {
+    "title": "Heading at the top of the panel.",
+    "builder": "Builds the content inside the sheet.",
+    "width": "Requested width of the open panel.",
+    "fromStart": "Opens from the reading start edge."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopListSection",
+  "parameters": {
+    "title": "The heading displayed above the content.",
+    "footer": "Optional content below the main items.",
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "children": "The child widgets in reading order."
+  }
+}

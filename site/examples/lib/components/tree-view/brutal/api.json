@@ -1,0 +1,11 @@
+{
+  "widget": "BrutalTree",
+  "parameters": {
+    "controller": "The nodes, and which are open and selected.",
+    "labelOf": "A node's words.",
+    "iconOf": "Returns the icon for a tree node.",
+    "onActivate": "Called when a node is chosen.",
+    "semanticLabel": "What a screen reader calls it.",
+    "style": "Its style, over BrutalThemeData.treeStyle."
+  }
+}

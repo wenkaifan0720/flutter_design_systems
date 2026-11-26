@@ -1,0 +1,7 @@
+{
+  "widget": "ClayTopBar",
+  "parameters": {
+    "title": "The place's name.",
+    "actions": "Keys at the bar's end (Clay icon buttons)."
+  }
+}

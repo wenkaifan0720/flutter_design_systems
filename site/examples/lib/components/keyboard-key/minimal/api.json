@@ -1,0 +1,6 @@
+{
+  "widget": "MinimalKbd",
+  "parameters": {
+    "keyLabel": "Escape key shown beside the reset command."
+  }
+}

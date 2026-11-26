@@ -1,0 +1,13 @@
+{
+  "widget": "MinimalTreeView",
+  "parameters": {
+    "roots": "The top nodes.",
+    "childrenOf": "Returns a node’s children. An empty list marks a leaf.",
+    "labelOf": "A node's words.",
+    "iconOf": "Returns the icon for a tree node.",
+    "initiallyExpanded": "The nodes open at first.",
+    "onSelected": "Called with the node selected (a press, or Space).",
+    "onActivate": "A node's Enter, or a press on a leaf.",
+    "label": "What a screen reader calls the tree."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "StudioDialog",
+  "parameters": {
+    "title": "Heading on the panel.",
+    "content": "Widget below the heading.",
+    "actions": "Action keys at the foot of the panel.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

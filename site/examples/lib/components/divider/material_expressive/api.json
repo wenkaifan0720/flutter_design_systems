@@ -1,0 +1,7 @@
+{
+  "widget": "ExpressiveDivider",
+  "parameters": {
+    "inset": "Where the line starts and ends.",
+    "vertical": "Draws the divider vertically."
+  }
+}

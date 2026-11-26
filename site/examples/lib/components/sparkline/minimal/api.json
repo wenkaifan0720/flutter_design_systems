@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalSparkline",
+  "parameters": {
+    "data": "Values in chronological order.",
+    "semanticLabel": "Names the series.",
+    "height": "Sets the height of the small plot.",
+    "area": "Fills the area below the line."
+  }
+}

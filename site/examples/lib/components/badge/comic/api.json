@@ -1,0 +1,8 @@
+{
+  "widget": "ComicBadge",
+  "parameters": {
+    "count": "Count displayed without clipping.",
+    "label": "What is being counted.",
+    "style": "Appearance above the badge component theme."
+  }
+}

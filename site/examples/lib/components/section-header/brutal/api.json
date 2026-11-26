@@ -1,0 +1,8 @@
+{
+  "widget": "BrutalSectionHeader",
+  "parameters": {
+    "text": "Supplies the displayed text.",
+    "trailing": "An action at the line's end, such as a text button.",
+    "style": "Its style, over BrutalThemeData.sectionHeaderStyle."
+  }
+}

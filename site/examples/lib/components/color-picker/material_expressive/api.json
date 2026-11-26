@@ -1,0 +1,8 @@
+{
+  "widget": "ExpressiveColorPicker",
+  "parameters": {
+    "value": "Current ink colour.",
+    "onChanged": "Receives the chosen colour.",
+    "showAlpha": "Includes a control for opacity."
+  }
+}

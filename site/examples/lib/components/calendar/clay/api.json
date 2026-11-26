@@ -1,0 +1,10 @@
+{
+  "widget": "ClayCalendar",
+  "parameters": {
+    "selectedDate": "The chosen day.",
+    "onDateChanged": "A day chosen; null disables it.",
+    "firstDate": "The first day it offers.",
+    "lastDate": "The last day it offers.",
+    "currentDate": "Today; null: the clock's."
+  }
+}

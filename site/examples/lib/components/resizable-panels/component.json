@@ -1,0 +1,8 @@
+{
+  "order": 56,
+  "group": "Containers",
+  "title": "Resizable panels",
+  "examples": {
+    "resize-panes": "Resize the panes"
+  }
+}

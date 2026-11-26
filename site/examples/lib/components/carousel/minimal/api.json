@@ -1,0 +1,16 @@
+{
+  "widget": "MinimalCarouselView",
+  "parameters": {
+    "children": "The slides, in order.",
+    "height": "The slides' height.",
+    "viewportFraction": "Each slide's share of the width.",
+    "loop": "Whether the last slide turns on to the first, and back.",
+    "autoplay": "Sets the interval between automatic advances.",
+    "initialPage": "The slide it starts on.",
+    "onPageChanged": "Called when the slide shown changes.",
+    "label": "What a screen reader calls it.",
+    "showControls": "Whether the arrows, dots and pause stand under the slides.",
+    "focusNode": "The carousel's keyboard stop (the arrow keys turn the slides).",
+    "autofocus": "Whether it takes focus when it first shows."
+  }
+}

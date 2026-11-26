@@ -1,0 +1,6 @@
+{
+  "widget": "FrostedSkeleton",
+  "parameters": {
+    "lines": "Number of placeholder text lines."
+  }
+}

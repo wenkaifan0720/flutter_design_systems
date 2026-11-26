@@ -1,0 +1,9 @@
+{
+  "widget": "CivicEmptyState",
+  "parameters": {
+    "title": "Heading that describes the failure.",
+    "children": "Explanation below the heading.",
+    "actions": "Recovery actions offered to the reader.",
+    "announce": "Announces changes to the status region."
+  }
+}

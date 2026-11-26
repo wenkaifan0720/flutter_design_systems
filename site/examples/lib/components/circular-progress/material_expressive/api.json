@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveCircularProgressIndicator",
+  "parameters": {
+    "semanticLabel": "Names the operation while it is running.",
+    "wavy": "Selects a wavy animated track.",
+    "value": "Sets determinate progress when a fraction is known.",
+    "color": "Overrides the ink used for the spinner."
+  }
+}

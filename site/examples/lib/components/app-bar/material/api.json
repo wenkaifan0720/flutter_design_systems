@@ -1,0 +1,11 @@
+{
+  "widget": "AppBar",
+  "parameters": {
+    "title": "The bar's heading, usually a Text.",
+    "actions": "Widgets after the title, such as buttons.",
+    "leading": "A widget before the title; by default a back or menu button.",
+    "automaticallyImplyLeading": "Whether to add that back or menu button when leading is null.",
+    "centerTitle": "Whether the title sits in the middle.",
+    "bottom": "A widget under the bar, usually a TabBar."
+  }
+}

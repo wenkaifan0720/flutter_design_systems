@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceMeter",
+  "parameters": {
+    "value": "Occupied fraction between zero and one.",
+    "label": "Names the measured quantity.",
+    "high": "Sets the threshold for a high reading."
+  }
+}

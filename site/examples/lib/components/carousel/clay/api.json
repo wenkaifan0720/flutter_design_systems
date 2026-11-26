@@ -1,0 +1,10 @@
+{
+  "widget": "ClayCarousel",
+  "parameters": {
+    "itemCount": "How many slides.",
+    "itemBuilder": "Builds a slide.",
+    "aspectRatio": "The well's shape.",
+    "semanticLabel": "What a screen reader calls it.",
+    "onPageChanged": "A slide turned to."
+  }
+}

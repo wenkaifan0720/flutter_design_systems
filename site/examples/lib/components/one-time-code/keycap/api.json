@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapOtpField",
+  "parameters": {
+    "semanticLabel": "The field's name for a screen reader.",
+    "length": "How many characters the code has.",
+    "onChanged": "Called as the code changes."
+  }
+}

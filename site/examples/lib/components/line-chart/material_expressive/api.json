@@ -1,0 +1,8 @@
+{
+  "widget": "ExpressiveLineChart",
+  "parameters": {
+    "points": "Labelled values in display order.",
+    "semanticLabel": "Overrides the spoken description that the chart builds from its labelled values.",
+    "aspectRatio": "Controls the width relative to the plot height."
+  }
+}

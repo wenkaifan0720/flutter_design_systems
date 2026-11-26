@@ -1,0 +1,10 @@
+{
+  "widget": "GlossBadge",
+  "parameters": {
+    "count": "Sets the count displayed by the badge.",
+    "child": "What it sits on.",
+    "maxCount": "The most it shows.",
+    "semanticLabel": "Names what the badge counts for a screen reader.",
+    "style": "Its own style, over GlossThemeData.badgeStyle."
+  }
+}

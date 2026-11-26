@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerStepper",
+  "parameters": {
+    "labelText": "Identifies the quantity being adjusted.",
+    "min": "Smallest quantity allowed.",
+    "step": "Changes the quantity by one copy.",
+    "value": "Current number of copies.",
+    "onChanged": "Keeps the field and the total in sync."
+  }
+}

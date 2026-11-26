@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerCombobox",
+  "parameters": {
+    "labelText": "Names the field.",
+    "options": "The three city suggestions.",
+    "onSelected": "Commits the chosen city to the destination."
+  }
+}

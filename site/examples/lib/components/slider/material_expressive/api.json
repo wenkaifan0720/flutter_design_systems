@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveSlider",
+  "parameters": {
+    "value": "Current volume on the track.",
+    "max": "Highest volume the thumb can reach.",
+    "steps": "Number of intermediate stops between the endpoints.",
+    "semanticLabel": "Names the volume control.",
+    "onChanged": "Receives the new volume."
+  }
+}

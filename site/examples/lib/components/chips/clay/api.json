@@ -1,0 +1,8 @@
+{
+  "widget": "ClayChip",
+  "parameters": {
+    "label": "Its words.",
+    "selected": "Whether a filter chip is on.",
+    "onSelected": "Called with the new state of a filter chip; null with onPressed null turns it off."
+  }
+}

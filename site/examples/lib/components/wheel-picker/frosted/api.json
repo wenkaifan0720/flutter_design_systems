@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedWheelPicker",
+  "parameters": {
+    "label": "Names the wheel.",
+    "options": "Days available in order.",
+    "value": "Currently selected day.",
+    "onChanged": "Receives the day at the selected stop."
+  }
+}

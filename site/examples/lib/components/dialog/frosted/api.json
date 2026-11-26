@@ -1,0 +1,11 @@
+{
+  "widget": "FrostedDialog",
+  "parameters": {
+    "title": "Heading that identifies the dialog.",
+    "message": "Text below the heading.",
+    "content": "Places a widget in the body.",
+    "confirmLabel": "Label for the confirming action.",
+    "cancelLabel": "Adds a separate cancel action.",
+    "isDestructiveAction": "Applies the destructive treatment to confirmation."
+  }
+}

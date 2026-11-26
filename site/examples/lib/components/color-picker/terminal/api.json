@@ -1,0 +1,7 @@
+{
+  "widget": "TermColorPicker",
+  "parameters": {
+    "controller": "Owns the selected colour and notifies listeners when it changes.",
+    "lines": "Height of the colour selection area in text lines."
+  }
+}

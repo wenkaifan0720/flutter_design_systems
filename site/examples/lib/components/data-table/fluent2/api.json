@@ -1,0 +1,10 @@
+{
+  "widget": "Fluent2DataGrid",
+  "parameters": {
+    "controller": "The rows, columns, sort, page and selection.",
+    "cell": "A cell's words.",
+    "label": "What a screen reader calls it.",
+    "selectable": "Whether rows can be ticked.",
+    "onActivate": "Told a row Enter or a press opens."
+  }
+}

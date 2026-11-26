@@ -1,0 +1,9 @@
+{
+  "widget": "ComicDataTable",
+  "parameters": {
+    "controller": "The rows, columns, sort, page and selection.",
+    "cellBuilder": "Builds the widget for a row and column.",
+    "selectable": "Whether a press and Space pick rows, with a box on each.",
+    "onActivate": "A row's Enter, or its press when the table does not pick."
+  }
+}

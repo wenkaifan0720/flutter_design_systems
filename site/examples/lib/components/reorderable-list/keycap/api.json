@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapReorderableList",
+  "parameters": {
+    "items": "The rows.",
+    "onReorder": "Called to move a row from one place to another.",
+    "title": "A row's words."
+  }
+}

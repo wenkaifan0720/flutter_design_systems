@@ -1,0 +1,6 @@
+{
+  "widget": "GlossKbd",
+  "parameters": {
+    "label": "Escape key shown beside the reset command."
+  }
+}

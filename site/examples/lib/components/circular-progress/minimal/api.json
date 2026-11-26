@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalCircularProgressIndicator",
+  "parameters": {
+    "label": "Names the operation while it is running.",
+    "size": "Sets the spinner size.",
+    "strokeWidth": "Sets the ring’s stroke width.",
+    "value": "Sets determinate progress when a fraction is known."
+  }
+}

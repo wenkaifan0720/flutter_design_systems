@@ -1,0 +1,10 @@
+{
+  "widget": "BrutalStepper",
+  "parameters": {
+    "semanticLabel": "Identifies the quantity being adjusted.",
+    "min": "Smallest quantity allowed.",
+    "max": "Largest quantity allowed.",
+    "value": "Current number of copies.",
+    "onChanged": "Keeps the field and the total in sync."
+  }
+}

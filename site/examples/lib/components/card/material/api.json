@@ -1,0 +1,11 @@
+{
+  "widget": "Card",
+  "parameters": {
+    "child": "The card's content.",
+    "elevation": "How far the card is raised; Card.filled and Card.outlined lie flat.",
+    "color": "The card's fill.",
+    "shape": "The card's outline and corners.",
+    "margin": "The space around the card.",
+    "clipBehavior": "Whether the content is clipped to the corners."
+  }
+}

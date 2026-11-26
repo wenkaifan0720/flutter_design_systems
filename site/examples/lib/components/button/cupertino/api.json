@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoButton",
+  "parameters": {
+    "child": "The label, usually a Text.",
+    "onPressed": "Called on a tap; null disables the button.",
+    "onLongPress": "Called on a long press.",
+    "sizeStyle": "Small, medium or large, as iOS sizes its buttons.",
+    "color": "The button's fill; CupertinoButton.filled uses the theme's primary colour."
+  }
+}

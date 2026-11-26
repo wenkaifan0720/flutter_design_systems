@@ -1,0 +1,3 @@
+{
+  "gap": "Fluent 2's web, iOS and Android kits have no menu bar; its Windows kit has one (WinUI's MenuBar), planned here. Until then a window's commands are its Toolbar and menu buttons (Fluent2Toolbar, Fluent2MenuButton)"
+}

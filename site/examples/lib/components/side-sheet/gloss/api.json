@@ -1,0 +1,9 @@
+{
+  "widget": "showGlossSideSheet",
+  "parameters": {
+    "title": "Heading at the top of the panel.",
+    "builder": "Builds the content inside the sheet.",
+    "width": "Requested width of the open panel.",
+    "edge": "Places the panel at the reading start or end."
+  }
+}

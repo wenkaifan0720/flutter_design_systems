@@ -1,0 +1,9 @@
+{
+  "widget": "ClayTable",
+  "parameters": {
+    "columns": "The columns.",
+    "rows": "The rows, a cell's words per column.",
+    "minColumnWidth": "The narrowest a column may be before the table scrolls.",
+    "style": "This table's own style, over ClayThemeData.tableStyle: `fill` the card."
+  }
+}

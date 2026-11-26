@@ -1,0 +1,8 @@
+{
+  "widget": "Fluent2Menu",
+  "parameters": {
+    "items": "Commands and their return values.",
+    "label": "Accessible name for the menu.",
+    "title": "Optional heading above the commands."
+  }
+}

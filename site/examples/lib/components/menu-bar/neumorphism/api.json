@@ -1,0 +1,6 @@
+{
+  "widget": "NeumorphicMenuBar",
+  "parameters": {
+    "menus": "Top-level menus and their ordered commands."
+  }
+}

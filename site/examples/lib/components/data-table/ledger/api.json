@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerDataTable",
+  "parameters": {
+    "controller": "Holds the rows, columns, sorting, selection and current page.",
+    "cellText": "What a row says in a column.",
+    "selectable": "Whether a press selects rows.",
+    "onActivate": "A row's Enter, or its press when the table does not select."
+  },
+  "keyboardNote": "LedgerPagination uses one-based page numbers. The example connects it to the table controller’s zero-based page index."
+}

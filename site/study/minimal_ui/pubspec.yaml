@@ -1,0 +1,23 @@
+name: stint_minimal
+description: The Stint team planner, built with minimal_ui.
+publish_to: none
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+resolution: workspace
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  minimal_ui: ^0.7.0
+  stint_core:
+    path: ../stint_core
+  lucide_icons_flutter: '>=3.1.25 <5.0.0'
+  material_ui: ^1.9.0
+  cupertino_icons: ^1.0.8
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

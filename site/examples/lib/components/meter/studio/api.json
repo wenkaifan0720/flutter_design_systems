@@ -1,0 +1,8 @@
+{
+  "widget": "StudioMeter",
+  "parameters": {
+    "level": "Lights segments up to this fraction.",
+    "semanticLabel": "Names the quantity being shown.",
+    "peak": "Marks the peak level alongside the present level."
+  }
+}

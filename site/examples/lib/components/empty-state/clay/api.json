@@ -1,0 +1,10 @@
+{
+  "widget": "ClayStateView",
+  "parameters": {
+    "state": "Which state.",
+    "title": "What it says first.",
+    "message": "More.",
+    "icon": "Its glyph; null: its state's.",
+    "actions": "Keys to move on."
+  }
+}

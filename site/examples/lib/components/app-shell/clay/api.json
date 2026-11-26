@@ -1,0 +1,9 @@
+{
+  "widget": "ClayScaffold",
+  "parameters": {
+    "destinations": "The app's places; none: a page with no places (a pushed page).",
+    "selectedIndex": "The current place.",
+    "onDestinationSelected": "Called with the place chosen.",
+    "body": "The page."
+  }
+}

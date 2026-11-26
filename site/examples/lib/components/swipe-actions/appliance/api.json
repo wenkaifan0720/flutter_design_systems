@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceSwipeActions",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "The keys a swipe toward the end shows.",
+    "endActions": "The keys a swipe toward the start shows."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "Fluent2ReorderableListView",
+  "parameters": {
+    "items": "The rows, in order.",
+    "onReorder": "Told a row's move, from and to.",
+    "labelOf": "A row's name, for its handle and the announcement.",
+    "itemBuilder": "A row's content.",
+    "shrinkWrap": "Whether the list takes only the height its rows need."
+  }
+}

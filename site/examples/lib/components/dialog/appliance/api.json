@@ -1,0 +1,9 @@
+{
+  "widget": "ApplianceDialog",
+  "parameters": {
+    "title": "Heading on the raised panel.",
+    "content": "Widget below the heading.",
+    "actions": "Keys at the bottom, with the main action last.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 10,
+  "group": "Inputs",
+  "title": "Text area",
+  "examples": {
+    "write-note": "Write a note"
+  }
+}

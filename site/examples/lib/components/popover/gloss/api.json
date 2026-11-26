@@ -1,0 +1,10 @@
+{
+  "widget": "GlossPopover",
+  "parameters": {
+    "builder": "Builds the control that opens the popover.",
+    "content": "Supplies the note inside the open panel.",
+    "semanticLabel": "Names the panel for assistive technology.",
+    "width": "Sets the preferred width of the open panel.",
+    "side": "Chooses the preferred side of the anchor."
+  }
+}

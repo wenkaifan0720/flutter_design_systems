@@ -1,0 +1,7 @@
+{
+  "widget": "NeumorphicDescriptionList",
+  "parameters": {
+    "items": "The terms and their details, in order.",
+    "label": "What a screen reader calls the whole."
+  }
+}

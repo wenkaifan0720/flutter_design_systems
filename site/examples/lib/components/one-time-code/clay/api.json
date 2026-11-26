@@ -1,0 +1,8 @@
+{
+  "widget": "ClayOtpField",
+  "parameters": {
+    "semanticLabel": "What a screen reader calls it; null: \"One-time code\".",
+    "length": "How many characters.",
+    "onChanged": "Each change of the code."
+  }
+}

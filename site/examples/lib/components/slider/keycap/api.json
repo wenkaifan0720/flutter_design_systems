@@ -1,0 +1,11 @@
+{
+  "widget": "KeycapSlider",
+  "parameters": {
+    "value": "Where the key is.",
+    "max": "The most.",
+    "divisions": "How many steps the slot has; smooth when null.",
+    "semanticLabel": "Its name, for a screen reader.",
+    "onChanged": "Called as it moves; null turns the slider off.",
+    "valueText": "The value in words, for a screen reader (\"16 pt\")."
+  }
+}

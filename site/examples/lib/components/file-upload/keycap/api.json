@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapDropZone",
+  "parameters": {
+    "label": "What goes in it.",
+    "onPressed": "Opens a file picker; null turns it off."
+  }
+}

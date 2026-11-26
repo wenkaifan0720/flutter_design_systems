@@ -1,0 +1,18 @@
+name: flutter_design_systems_site
+description: The documentation site and Stint, the team planner built in every look. It is not published.
+publish_to: none
+repository: https://github.com/wenkaifan0720/flutter_design_systems
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+
+# The site is a workspace of its own, apart from the repository's: it builds on the looks released on pub.dev, as an
+# app would, so a look's release never waits for the site to catch up. Run `flutter pub get` in this folder.
+workspace:
+  - examples
+  - study/*
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  highlight: ^0.7.0
+  markdown: ^7.3.0

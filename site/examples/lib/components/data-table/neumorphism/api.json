@@ -1,0 +1,10 @@
+{
+  "widget": "NeumorphicDataTable",
+  "parameters": {
+    "controller": "The rows, columns, sort, selection and page.",
+    "cell": "A cell's words.",
+    "selectable": "Whether the rows have checks.",
+    "onActivate": "Called by Enter or a double press on a row.",
+    "label": "What a screen reader calls the table."
+  }
+}

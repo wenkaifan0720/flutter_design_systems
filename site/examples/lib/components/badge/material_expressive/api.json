@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveBadge",
+  "parameters": {
+    "label": "Names what the badge counts for a screen reader.",
+    "semanticLabel": "Names what the badge counts for a screen reader.",
+    "style": "Stateful visual overrides before the badge theme.",
+    "child": "Supplies the content inside the component."
+  }
+}

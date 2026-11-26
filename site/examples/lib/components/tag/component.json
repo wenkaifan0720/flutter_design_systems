@@ -1,0 +1,8 @@
+{
+  "order": 66,
+  "group": "Containers",
+  "title": "Tag",
+  "examples": {
+    "label-draft": "Label a draft"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "widget": "ExpressiveListSection",
+  "parameters": {
+    "children": "The items, top to bottom.",
+    "header": "The group's title, above it.",
+    "footer": "A note beneath the group.",
+    "segmented": "Whether the items are segments (gapped, cornered) or a plain list.",
+    "divider": "Supplies the divider between adjacent rows.",
+    "containerColor": "Overrides the group’s background colour."
+  }
+}

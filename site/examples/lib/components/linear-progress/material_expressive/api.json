@@ -1,0 +1,8 @@
+{
+  "widget": "ExpressiveLinearProgressIndicator",
+  "parameters": {
+    "value": "Completed files divided by the total.",
+    "semanticLabel": "Names the task the bar measures.",
+    "wavy": "Draws the expressive waveform."
+  }
+}

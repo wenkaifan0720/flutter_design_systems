@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedEmptyState",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "body": "Explains why the list is empty.",
+    "actionLabel": "The visible label of the available action.",
+    "onAction": "Runs when the reader activates the action."
+  }
+}

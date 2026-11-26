@@ -1,0 +1,8 @@
+{
+  "widget": "CupertinoLinearActivityIndicator",
+  "parameters": {
+    "progress": "The share done, from 0 to 1.",
+    "height": "The bar's height.",
+    "color": "The colour of the done part."
+  }
+}

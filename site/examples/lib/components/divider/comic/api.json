@@ -1,0 +1,8 @@
+{
+  "widget": "ComicDivider",
+  "parameters": {
+    "axis": "Across the page, or down a row.",
+    "label": "Words in the middle of a horizontal rule.",
+    "space": "The room on either side of the rule."
+  }
+}

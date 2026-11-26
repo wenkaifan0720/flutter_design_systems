@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceRefresh",
+  "parameters": {
+    "onRefresh": "Returns a future that completes when the list has finished updating.",
+    "child": "The scroll view."
+  }
+}

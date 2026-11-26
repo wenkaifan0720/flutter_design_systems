@@ -1,0 +1,6 @@
+{
+  "widget": "CivicBreadcrumbs",
+  "parameters": {
+    "items": "Path from the outermost folder to the current location."
+  }
+}

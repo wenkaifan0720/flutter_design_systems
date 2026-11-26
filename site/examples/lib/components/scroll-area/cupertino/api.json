@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoScrollbar",
+  "parameters": {
+    "child": "The scrolling content.",
+    "controller": "The ScrollController shared with the content's scroll view.",
+    "thumbVisibility": "Whether the thumb shows while nothing scrolls.",
+    "thickness": "The thumb's thickness.",
+    "radius": "The thumb's corners."
+  }
+}

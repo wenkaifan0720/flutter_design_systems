@@ -1,0 +1,21 @@
+name: stint_terminal
+description: The Stint team planner, built with terminal_ui.
+publish_to: none
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+resolution: workspace
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  terminal_ui: ^0.6.0
+  stint_core:
+    path: ../stint_core
+  material_ui: ^1.9.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

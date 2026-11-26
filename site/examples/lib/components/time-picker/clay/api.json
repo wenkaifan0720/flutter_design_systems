@@ -1,0 +1,8 @@
+{
+  "widget": "ClayTimePicker",
+  "parameters": {
+    "value": "The chosen time.",
+    "onChanged": "A time chosen; null disables it.",
+    "semanticLabel": "What a screen reader calls it."
+  }
+}

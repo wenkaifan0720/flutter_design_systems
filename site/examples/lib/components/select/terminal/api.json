@@ -1,0 +1,9 @@
+{
+  "widget": "TermSelect",
+  "parameters": {
+    "labelText": "Visible name of the selection field.",
+    "items": "Paper sizes in menu order.",
+    "value": "Currently committed paper size.",
+    "onChanged": "Runs when the reader chooses a paper size."
+  }
+}

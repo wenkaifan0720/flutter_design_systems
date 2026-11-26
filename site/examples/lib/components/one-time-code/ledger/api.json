@@ -1,0 +1,9 @@
+{
+  "widget": "LedgerCodeField",
+  "parameters": {
+    "labelText": "Names the single code entry.",
+    "length": "Number of digits expected.",
+    "onChanged": "Receives the whole value after each edit."
+  },
+  "keyboardNote": "Enter the four digits in a single editable field."
+}

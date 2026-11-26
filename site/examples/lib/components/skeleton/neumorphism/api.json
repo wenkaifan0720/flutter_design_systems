@@ -1,0 +1,7 @@
+{
+  "widget": "NeumorphicSkeleton",
+  "parameters": {
+    "lines": "Number of placeholder text lines.",
+    "label": "Supplies a description of the loading state."
+  }
+}

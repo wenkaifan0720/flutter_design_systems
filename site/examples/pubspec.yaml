@@ -1,0 +1,80 @@
+name: design_system_examples
+description: Live examples for the component documentation.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  material_ui: ^1.11.1
+  cupertino_ui: ^1.1.7
+  cupertino_icons: ^1.0.8
+  ui_core: ^0.7.2
+  web: ^1.1.0
+  appliance_ui: ^0.5.0
+  brutal_ui: ^0.6.0
+  civic_ui: ^0.7.0
+  clay_ui: ^0.5.0
+  comic_ui: ^0.7.0
+  fluent2_design_ui: ^0.7.0
+  frosted_ui: ^0.7.0
+  gloss_ui: ^0.5.0
+  keycap_ui: ^0.5.0
+  ledger_ui: ^0.7.0
+  material_expressive_ui: ^0.7.0
+  minimal_ui: ^0.7.0
+  neumorphism_ui: ^0.7.0
+  retro_desktop_ui: ^0.7.0
+  studio_ui: ^0.5.0
+  terminal_ui: ^0.6.0
+  stint_material:
+    path: ../study/material_ui
+  stint_cupertino:
+    path: ../study/cupertino_ui
+  stint_core:
+    path: ../study/stint_core
+  stint_appliance:
+    path: ../study/appliance_ui
+  stint_brutal:
+    path: ../study/brutal_ui
+  stint_civic:
+    path: ../study/civic_ui
+  stint_clay:
+    path: ../study/clay_ui
+  stint_comic:
+    path: ../study/comic_ui
+  stint_fluent2_design:
+    path: ../study/fluent2_design_ui
+  stint_frosted:
+    path: ../study/frosted_ui
+  stint_gloss:
+    path: ../study/gloss_ui
+  stint_keycap:
+    path: ../study/keycap_ui
+  stint_ledger:
+    path: ../study/ledger_ui
+  stint_material_expressive:
+    path: ../study/material_expressive_ui
+  stint_minimal:
+    path: ../study/minimal_ui
+  stint_neumorphism:
+    path: ../study/neumorphism_ui
+  stint_retro_desktop:
+    path: ../study/retro_desktop_ui
+  stint_studio:
+    path: ../study/studio_ui
+  stint_terminal:
+    path: ../study/terminal_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

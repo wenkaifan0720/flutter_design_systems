@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveSplitButton",
+  "parameters": {
+    "label": "Name of the primary action.",
+    "onPressed": "Saves the current draft.",
+    "menu": "Supplies the alternate save action.",
+    "menuLabel": "Names the control that opens the alternate action."
+  },
+  "keyboardNote": "Open Save options to choose a format. Escape closes the menu and returns focus to Save options."
+}

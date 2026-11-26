@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapDivider",
+  "parameters": {
+    "indent": "Room before it.",
+    "endIndent": "Room after it."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalRating",
+  "parameters": {
+    "value": "Score currently shown by the marks.",
+    "semanticLabel": "Names what the reader is rating.",
+    "onChanged": "Receives the new score."
+  },
+  "keyboardNote": "Read the score out of five below the stars."
+}

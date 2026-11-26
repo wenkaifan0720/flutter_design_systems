@@ -1,0 +1,6 @@
+{
+  "widget": "TermMenuBar",
+  "parameters": {
+    "menus": "Top-level menus and their ordered commands."
+  }
+}

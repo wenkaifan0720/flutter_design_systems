@@ -1,0 +1,8 @@
+{
+  "order": 32,
+  "group": "Inputs",
+  "title": "Wheel picker",
+  "examples": {
+    "choose-day": "Choose a day with a wheel"
+  }
+}

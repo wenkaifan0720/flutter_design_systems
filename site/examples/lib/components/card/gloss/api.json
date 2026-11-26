@@ -1,0 +1,10 @@
+{
+  "widget": "GlossCard",
+  "parameters": {
+    "child": "What it holds.",
+    "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
+    "padding": "The room inside its rim.",
+    "semanticLabel": "What a screen reader says for a pressable card.",
+    "style": "This card's own style, over GlossThemeData.cardStyle."
+  }
+}

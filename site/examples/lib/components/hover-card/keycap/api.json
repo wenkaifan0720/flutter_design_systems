@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapHoverCard",
+  "parameters": {
+    "child": "What a pointer rests on.",
+    "width": "Its width.",
+    "card": "What the card says."
+  }
+}

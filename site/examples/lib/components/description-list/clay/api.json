@@ -1,0 +1,6 @@
+{
+  "widget": "ClayDescriptionList",
+  "parameters": {
+    "entries": "The pairs, in order."
+  }
+}

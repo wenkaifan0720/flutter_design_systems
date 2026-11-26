@@ -1,0 +1,10 @@
+{
+  "widget": "CivicEmptyState",
+  "parameters": {
+    "title": "What there is not, in a sentence.",
+    "children": "What it means and what to try, a paragraph apart.",
+    "actions": "Supplies the actions in reading order.",
+    "announce": "Whether a screen reader hears title as it appears.",
+    "isPageHeading": "Treats the empty-state title as the page heading."
+  }
+}

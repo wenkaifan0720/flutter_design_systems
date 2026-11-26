@@ -1,0 +1,8 @@
+{
+  "order": 77,
+  "group": "Overlays",
+  "title": "Menu",
+  "examples": {
+    "sort-files": "Choose a sort order"
+  }
+}

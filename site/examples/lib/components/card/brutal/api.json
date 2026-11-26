@@ -1,0 +1,13 @@
+{
+  "widget": "BrutalBlock",
+  "parameters": {
+    "child": "What it holds.",
+    "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
+    "lead": "Whether it is the screen's lead block, raised on the hard shadow.",
+    "color": "Overrides the component’s colour.",
+    "padding": "Sets the space between the frame and its content.",
+    "semanticLabel": "What a screen reader calls it when it is a button.",
+    "label": "What the keyline check calls it.",
+    "style": "Its style, over BrutalThemeData.blockStyle."
+  }
+}

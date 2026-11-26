@@ -1,0 +1,8 @@
+{
+  "widget": "showRetroDesktopActionSheet",
+  "parameters": {
+    "title": "Heading above the choices.",
+    "actions": "Buttons shown in the sheet.",
+    "cancelLabel": "Words on the separate cancel button."
+  }
+}

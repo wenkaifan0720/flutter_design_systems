@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapLink",
+  "parameters": {
+    "onPressed": "Follows the link; null turns it off.",
+    "child": "The words: usually a `Text`."
+  }
+}

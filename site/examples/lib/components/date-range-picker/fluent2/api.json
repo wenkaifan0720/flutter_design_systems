@@ -1,0 +1,7 @@
+{
+  "widget": "Fluent2DateRangePicker",
+  "parameters": {
+    "controller": "Tracks the visible month, available dates and selected interval.",
+    "months": "Number of months to display."
+  }
+}

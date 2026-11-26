@@ -1,0 +1,9 @@
+{
+  "widget": "StudioDisclosure",
+  "parameters": {
+    "title": "What it is about.",
+    "child": "What it shows open.",
+    "initiallyExpanded": "Whether it starts open.",
+    "onExpansionChanged": "Called as it opens or closes."
+  }
+}

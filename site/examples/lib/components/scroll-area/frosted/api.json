@@ -1,0 +1,11 @@
+{
+  "widget": "FrostedScrollArea",
+  "parameters": {
+    "controller": "The scroll position shared with the child scroll view.",
+    "child": "Supplies the contents of the component.",
+    "axis": "The direction the content scrolls.",
+    "alwaysShown": "Keeps the scrollbar visible while there is content to scroll.",
+    "focusable": "Allows the region to receive keyboard focus.",
+    "label": "The label exposed to a screen reader."
+  }
+}

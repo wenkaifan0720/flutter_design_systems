@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedAvatar",
+  "parameters": {
+    "initials": "The letters displayed when an image is unavailable.",
+    "image": "The image to show when available.",
+    "size": "Sets the avatar’s size.",
+    "name": "The person identified by this avatar."
+  }
+}

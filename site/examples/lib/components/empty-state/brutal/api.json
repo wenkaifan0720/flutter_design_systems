@@ -1,0 +1,11 @@
+{
+  "widget": "BrutalStateView",
+  "parameters": {
+    "state": "Which state it reports.",
+    "title": "What it is, in a few words.",
+    "message": "Why, and what to do next.",
+    "icon": "A glyph in place of the state's own (not shown while loading).",
+    "actions": "Supplies the actions in reading order.",
+    "style": "Its style, over BrutalThemeData.stateViewStyle."
+  }
+}

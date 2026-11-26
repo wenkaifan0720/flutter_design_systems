@@ -1,0 +1,14 @@
+{
+  "widget": "MinimalCard",
+  "parameters": {
+    "child": "Its content.",
+    "padding": "Sets the space between the frame and its content.",
+    "onPressed": "Makes the whole card one control. Null is a static card.",
+    "flat": "Draws the card with a flat surface.",
+    "selected": "Indicates whether the item is selected.",
+    "semanticLabel": "What a screen reader announces for a tappable card whose content says nothing in words.",
+    "style": "This card's style, over components.card.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

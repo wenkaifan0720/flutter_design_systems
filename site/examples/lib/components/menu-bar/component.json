@@ -1,0 +1,8 @@
+{
+  "order": 44,
+  "group": "Navigation",
+  "title": "Menu bar",
+  "examples": {
+    "edit-note": "Run an editing command"
+  }
+}

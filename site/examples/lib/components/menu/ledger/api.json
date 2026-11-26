@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerMenu",
+  "parameters": {
+    "items": "The menu rows, including their labels and callbacks.",
+    "semanticLabel": "Names the list of commands.",
+    "head": "Optional heading set above the rows."
+  }
+}

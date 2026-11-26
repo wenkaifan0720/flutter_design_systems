@@ -1,0 +1,8 @@
+{
+  "widget": "ClayIconButton",
+  "parameters": {
+    "icon": "The glyph.",
+    "tooltip": "What the ball does, for a screen reader.",
+    "onPressed": "Called on a press; null turns the ball off."
+  }
+}

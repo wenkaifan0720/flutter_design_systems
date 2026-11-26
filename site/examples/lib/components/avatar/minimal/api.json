@@ -1,0 +1,10 @@
+{
+  "widget": "MinimalAvatar",
+  "parameters": {
+    "name": "Names the person and supplies the fallback initials where supported.",
+    "size": "Its diameter.",
+    "image": "A placeholder picture in place of the initials.",
+    "media": "The declared media slot id this face resolves from, or null for the deterministic registers.",
+    "style": "This face's style, over components.avatar."
+  }
+}

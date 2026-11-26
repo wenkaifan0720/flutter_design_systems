@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoTextField",
+  "parameters": {
+    "suffix": "A widget after the input, such as a unit; it stays while the user edits.",
+    "suffixMode": "When the suffix shows.",
+    "prefix": "A widget before the input, such as a currency sign.",
+    "prefixMode": "When the prefix shows.",
+    "placeholder": "The words shown while the field is empty."
+  }
+}

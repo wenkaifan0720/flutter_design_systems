@@ -1,0 +1,14 @@
+{
+  "widget": "ClaySplitView",
+  "parameters": {
+    "first": "The start (or top) pane.",
+    "second": "The end (or bottom) pane.",
+    "axis": "Which way the panes lie.",
+    "initialFraction": "The first pane's share at first.",
+    "minFirst": "The first pane's least extent.",
+    "minSecond": "The second pane's least extent.",
+    "onChanged": "The first pane's share as it moves.",
+    "semanticLabel": "What a screen reader calls the groove.",
+    "style": "This view's own style, over ClayThemeData.splitViewStyle: `fill` the grip."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "ClayRating",
+  "parameters": {
+    "value": "How many stars are given.",
+    "semanticLabel": "What a screen reader calls it.",
+    "onChanged": "A new rating; null turns it off."
+  },
+  "keyboardNote": "Read the score out of five below the stars."
+}

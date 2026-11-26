@@ -1,0 +1,10 @@
+{
+  "widget": "TermDatePicker",
+  "parameters": {
+    "value": "Selected due date.",
+    "firstDate": "Earliest available date.",
+    "lastDate": "Latest available date.",
+    "onChanged": "Receives the chosen day."
+  },
+  "keyboardNote": "Open the field with Enter. The arrows move through dates, Enter chooses the focused day, and Escape closes the calendar."
+}

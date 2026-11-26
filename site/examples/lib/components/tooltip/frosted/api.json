@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedTooltip",
+  "parameters": {
+    "message": "Hint for the button in its current state.",
+    "child": "The control that owns the hint.",
+    "waitDuration": "Delay before a resting pointer opens the hint."
+  }
+}

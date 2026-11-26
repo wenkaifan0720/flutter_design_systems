@@ -1,0 +1,8 @@
+{
+  "order": 24,
+  "group": "Inputs",
+  "title": "Segmented control",
+  "examples": {
+    "choose-period": "Choose a reporting period"
+  }
+}

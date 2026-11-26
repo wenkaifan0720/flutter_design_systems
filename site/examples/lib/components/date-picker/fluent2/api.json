@@ -1,0 +1,10 @@
+{
+  "widget": "Fluent2DatePicker",
+  "parameters": {
+    "value": "Selected due date.",
+    "firstDate": "Earliest available date.",
+    "lastDate": "Latest available date.",
+    "onChanged": "Receives the chosen day."
+  },
+  "keyboardNote": "On desktop, open the date field, then Tab into the calendar. Use the arrows to move by day and Enter to apply the choice."
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapSkeleton",
+  "parameters": {
+    "width": "Its width.",
+    "height": "Its height."
+  }
+}

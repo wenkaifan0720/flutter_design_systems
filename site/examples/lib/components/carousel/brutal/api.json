@@ -1,0 +1,11 @@
+{
+  "widget": "BrutalCarousel",
+  "parameters": {
+    "itemCount": "How many slides.",
+    "itemBuilder": "Builds a slide.",
+    "aspectRatio": "The frame's width over its height.",
+    "semanticLabel": "What a screen reader calls it.",
+    "onPageChanged": "Called with the slide it turns to.",
+    "style": "Its style, over BrutalThemeData.carouselStyle."
+  }
+}

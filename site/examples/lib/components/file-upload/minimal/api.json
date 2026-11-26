@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalFileUpload",
+  "parameters": {
+    "title": "Identifies the attachment field.",
+    "onBrowse": "Opens the browser’s file chooser.",
+    "files": "Files already selected.",
+    "onRemove": "Removes the chosen file from this example."
+  }
+}

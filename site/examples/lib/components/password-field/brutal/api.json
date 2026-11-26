@@ -1,0 +1,7 @@
+{
+  "widget": "BrutalPasswordField",
+  "parameters": {
+    "labelText": "Identifies the password even when the entry is concealed.",
+    "onChanged": "Updates the confirmation when the entry becomes empty or nonempty."
+  }
+}

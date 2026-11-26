@@ -1,0 +1,11 @@
+{
+  "widget": "ClayDataTable",
+  "parameters": {
+    "controller": "The rows and their state.",
+    "cell": "A cell's words: the row and the column's id.",
+    "selectable": "Whether rows can be chosen.",
+    "onActivate": "A row opened (Enter, or a double tap).",
+    "emptyText": "What it says when no row matches.",
+    "style": "This table's own style, over ClayThemeData.dataTableStyle: `fill` the card, a chosen row's dent under `selected`."
+  }
+}

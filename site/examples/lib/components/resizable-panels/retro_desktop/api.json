@@ -1,0 +1,15 @@
+{
+  "widget": "RetroDesktopResizable",
+  "parameters": {
+    "second": "The panes, start then end (or top then bottom).",
+    "axis": "Which way they stand.",
+    "initialFraction": "Where the bar starts, 0 to 1.",
+    "minSecond": "The minimum extent of the second pane.",
+    "onChanged": "Reports where the bar moved to.",
+    "label": "The bar's name for a screen reader.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the bar takes the focus when it first appears and nothing else has it.",
+    "first": "The pane on the reading-start side.",
+    "minFirst": "The minimum extent of the first pane."
+  }
+}

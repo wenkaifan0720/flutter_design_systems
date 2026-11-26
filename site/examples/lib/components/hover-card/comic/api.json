@@ -1,0 +1,9 @@
+{
+  "widget": "ComicHoverCard",
+  "parameters": {
+    "child": "The named link that anchors the preview.",
+    "card": "Supplies the profile information shown on hover.",
+    "width": "Maximum width of the preview.",
+    "side": "Chooses the preferred side of the anchor."
+  }
+}

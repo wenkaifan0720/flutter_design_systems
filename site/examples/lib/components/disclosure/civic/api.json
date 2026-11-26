@@ -1,0 +1,11 @@
+{
+  "widget": "CivicDetails",
+  "parameters": {
+    "title": "Supplies the main title.",
+    "child": "The help.",
+    "initiallyExpanded": "Whether it opens unfolded.",
+    "onExpansionChanged": "Called with whether it is open as it opens or closes.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "style": "Overrides for this fold's look."
+  }
+}

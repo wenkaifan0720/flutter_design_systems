@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoTabScaffold",
+  "parameters": {
+    "tabBar": "The bar along the bottom, a CupertinoTabBar.",
+    "tabBuilder": "Builds the page for each tab.",
+    "controller": "Holds the current tab and switches it from code.",
+    "backgroundColor": "The screen's fill behind the pages.",
+    "resizeToAvoidBottomInset": "Whether the pages shrink above the keyboard."
+  }
+}

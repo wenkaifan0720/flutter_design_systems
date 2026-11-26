@@ -1,0 +1,6 @@
+{
+  "widget": "ClayBreadcrumb",
+  "parameters": {
+    "crumbs": "The places, outermost first."
+  }
+}

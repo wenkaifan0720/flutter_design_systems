@@ -1,0 +1,9 @@
+{
+  "widget": "StudioBadge",
+  "parameters": {
+    "child": "What it is on.",
+    "count": "Sets the count displayed by the badge.",
+    "show": "Whether it shows.",
+    "semanticLabel": "What a screen reader adds (\"3 new\")."
+  }
+}

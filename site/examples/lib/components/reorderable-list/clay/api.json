@@ -1,0 +1,10 @@
+{
+  "widget": "ClayReorderableList",
+  "parameters": {
+    "items": "The rows, in order.",
+    "onReorder": "A row moved: its index `from`, and the index it now stands before, `to`.",
+    "itemBuilder": "A row's content, after its grip.",
+    "labelOf": "What a screen reader calls a row.",
+    "shrinkWrap": "Whether it sizes to its rows (inside another scroll)."
+  }
+}

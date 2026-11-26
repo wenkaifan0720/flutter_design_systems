@@ -1,0 +1,10 @@
+{
+  "widget": "KeycapDataTable",
+  "parameters": {
+    "controller": "The columns, rows, sort and selection.",
+    "selectable": "Whether rows can be chosen.",
+    "onActivate": "Opens a row.",
+    "style": "Overrides, over KeycapThemeData.tableStyle.",
+    "cellText": "A cell's words."
+  }
+}

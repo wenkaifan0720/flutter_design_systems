@@ -1,0 +1,8 @@
+{
+  "order": 81,
+  "group": "Feedback",
+  "title": "Circular progress",
+  "examples": {
+    "sync-folder": "Sync a folder"
+  }
+}

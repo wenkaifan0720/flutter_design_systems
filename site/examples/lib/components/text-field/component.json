@@ -1,0 +1,8 @@
+{
+  "order": 9,
+  "group": "Inputs",
+  "title": "Text field",
+  "examples": {
+    "name-draft": "Name a draft"
+  }
+}

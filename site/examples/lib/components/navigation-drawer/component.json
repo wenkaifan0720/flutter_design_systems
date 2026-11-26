@@ -1,0 +1,8 @@
+{
+  "order": 38,
+  "group": "Navigation",
+  "title": "Navigation drawer",
+  "examples": {
+    "switch-destination": "Choose from a sidebar"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "widget": "TermMedia",
+  "parameters": {
+    "image": "The image to show when available.",
+    "slotId": "A stable identifier for the media placeholder.",
+    "alt": "Describes the image to a screen reader.",
+    "lines": "The height in terminal text lines.",
+    "fit": "Controls how the image fills the available space."
+  },
+  "keyboardNote": "Terminal measures a picture in text lines. The example rounds the requested cover height to the nearest line."
+}

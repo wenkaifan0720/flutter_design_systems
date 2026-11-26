@@ -1,0 +1,9 @@
+{
+  "widget": "NeumorphicSwipeActions",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "Actions behind the row's start edge.",
+    "endActions": "Actions behind its end edge.",
+    "initiallyOpen": "Starts the row with its actions revealed."
+  }
+}

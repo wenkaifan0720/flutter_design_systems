@@ -1,0 +1,10 @@
+{
+  "widget": "GlossStateView",
+  "parameters": {
+    "state": "The state.",
+    "title": "What it means.",
+    "message": "More about it.",
+    "icon": "Supplies the component’s icon.",
+    "actions": "Supplies the actions in reading order."
+  }
+}

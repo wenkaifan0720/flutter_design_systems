@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoRadio",
+  "parameters": {
+    "value": "The value this radio stands for; the enclosing RadioGroup holds the chosen one.",
+    "toggleable": "Whether a second tap clears the choice.",
+    "useCheckmarkStyle": "Draws a check mark instead of a filled circle.",
+    "activeColor": "The fill of the chosen radio.",
+    "enabled": "Whether the radio can be chosen."
+  }
+}

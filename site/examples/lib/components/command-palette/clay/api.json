@@ -1,0 +1,7 @@
+{
+  "widget": "ClayCommandPalette",
+  "parameters": {
+    "commands": "The commands it searches.",
+    "hintText": "What the empty well says; null: \"Search\"."
+  }
+}

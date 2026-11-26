@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceTooltip",
+  "parameters": {
+    "message": "Hint for the button in its current state.",
+    "child": "The control that owns the hint."
+  }
+}

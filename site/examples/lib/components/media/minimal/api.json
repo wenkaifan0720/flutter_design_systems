@@ -1,0 +1,13 @@
+{
+  "widget": "MinimalMedia",
+  "parameters": {
+    "src": "Supplies the look’s placeholder image.",
+    "width": "Unstated, the image FILLS THE CROSS AXIS — see the note in build.",
+    "height": "Sets the height of the media frame.",
+    "radius": "Sets the frame’s corner radius.",
+    "shape": "Chooses the outline of the component.",
+    "fit": "How a photograph sits in its frame. The placeholder always covers its box.",
+    "semanticLabel": "What the image shows, for a screen reader. Null leaves the image decorative (silent).",
+    "media": "The declared media slot id, in the media form."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalMenu",
+  "parameters": {
+    "items": "The commands available in the menu.",
+    "builder": "Builds the menu trigger.",
+    "semanticLabel": "Names the open menu.",
+    "alignEnd": "Aligns the menu to the trigger’s reading end."
+  }
+}

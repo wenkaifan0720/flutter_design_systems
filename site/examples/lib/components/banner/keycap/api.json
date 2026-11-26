@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapBanner",
+  "parameters": {
+    "title": "Its headline.",
+    "message": "More words under it.",
+    "tone": "What kind of news it is."
+  }
+}

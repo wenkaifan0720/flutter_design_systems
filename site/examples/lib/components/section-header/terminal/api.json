@@ -1,0 +1,7 @@
+{
+  "widget": "TermSectionHeader",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "trailing": "Places content at the reading end."
+  }
+}

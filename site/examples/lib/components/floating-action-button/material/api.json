@@ -1,0 +1,10 @@
+{
+  "widget": "FloatingActionButton",
+  "parameters": {
+    "onPressed": "Called on a tap; null disables the button.",
+    "child": "The glyph, usually an Icon.",
+    "tooltip": "The hint shown on a long press or hover, and the accessible name.",
+    "heroTag": "The tag of its Hero; give each button on one screen its own.",
+    "backgroundColor": "The button's fill, over the theme's FloatingActionButtonThemeData."
+  }
+}

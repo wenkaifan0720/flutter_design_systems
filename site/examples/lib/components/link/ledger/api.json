@@ -1,0 +1,7 @@
+{
+  "widget": "LedgerMoreLink",
+  "parameters": {
+    "words": "Destination name shown to the reader.",
+    "onTap": "Opens the guide or returns to the library."
+  }
+}

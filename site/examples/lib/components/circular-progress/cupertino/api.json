@@ -1,0 +1,8 @@
+{
+  "widget": "CupertinoActivityIndicator",
+  "parameters": {
+    "animating": "Whether the spokes turn.",
+    "radius": "The spinner's radius.",
+    "color": "The spokes' colour."
+  }
+}

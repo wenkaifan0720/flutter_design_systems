@@ -1,0 +1,7 @@
+{
+  "widget": "NeumorphicCommand",
+  "parameters": {
+    "commands": "Searchable action names and callbacks.",
+    "hintText": "Prompt in the search field."
+  }
+}

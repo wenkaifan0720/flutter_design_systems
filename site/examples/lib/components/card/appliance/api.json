@@ -1,0 +1,11 @@
+{
+  "widget": "AppliancePanel",
+  "parameters": {
+    "child": "What it holds.",
+    "padding": "Sets the space between the frame and its content.",
+    "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
+    "semanticLabel": "What a screen reader calls a pressable plate.",
+    "clip": "Whether child is clipped to the plate's corners.",
+    "style": "Its style, over ApplianceThemeData.panelStyle."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ClaySearchField",
+  "parameters": {
+    "hintText": "What the empty field says; null: \"Search\".",
+    "onChanged": "Each change of the query, and '' when it is cleared.",
+    "semanticLabel": "What a screen reader calls it; null: hint."
+  }
+}

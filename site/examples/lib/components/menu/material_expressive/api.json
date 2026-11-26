@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveMenu",
+  "parameters": {
+    "builder": "Builds a trigger with the menu controller.",
+    "entries": "Commands shown in display order.",
+    "label": "Names the menu.",
+    "matchAnchorWidth": "Matches the panel to the trigger width."
+  }
+}

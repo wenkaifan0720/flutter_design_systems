@@ -1,0 +1,10 @@
+{
+  "widget": "TermScrollArea",
+  "parameters": {
+    "controller": "The scroll position shared with the child scroll view.",
+    "child": "Supplies the contents of the component.",
+    "axis": "The direction the content scrolls.",
+    "visibility": "Controls when the scrollbar is visible.",
+    "semanticLabel": "Names the component for a screen reader."
+  }
+}

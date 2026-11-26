@@ -1,0 +1,8 @@
+{
+  "widget": "TermRating",
+  "parameters": {
+    "value": "Score currently shown by the marks.",
+    "semanticLabel": "Names what the reader is rating.",
+    "onChanged": "Receives the new score."
+  }
+}

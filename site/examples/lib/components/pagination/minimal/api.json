@@ -1,0 +1,8 @@
+{
+  "widget": "MinimalPagination",
+  "parameters": {
+    "pageCount": "Total number of result pages.",
+    "page": "Current page, counted from 0.",
+    "onPageChanged": "Receives the requested page."
+  }
+}

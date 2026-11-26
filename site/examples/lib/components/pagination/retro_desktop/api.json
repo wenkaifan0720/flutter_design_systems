@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopPagination",
+  "parameters": {
+    "count": "Total number of result pages.",
+    "page": "Current page, counted from 0.",
+    "onChanged": "Receives the requested page."
+  }
+}

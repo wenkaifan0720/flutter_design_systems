@@ -1,0 +1,8 @@
+{
+  "widget": "StudioPageDots",
+  "parameters": {
+    "count": "Total number of pages.",
+    "index": "Zero-based position of the current page.",
+    "onChanged": "Receives the position requested by a dot."
+  }
+}

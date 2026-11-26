@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerSlip",
+  "parameters": {
+    "child": "What is printed on the slip.",
+    "padding": "Sets the space between the frame and its content.",
+    "style": "The slip's look, over components.slip. It reads fill, edge, side, shape and padding."
+  }
+}

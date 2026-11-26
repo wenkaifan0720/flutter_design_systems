@@ -1,0 +1,8 @@
+{
+  "order": 36,
+  "group": "Navigation",
+  "title": "Bottom navigation bar",
+  "examples": {
+    "switch-destination": "Switch destinations"
+  }
+}

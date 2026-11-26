@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerMonthBars",
+  "parameters": {
+    "values": "One order count per month.",
+    "months": "Month names in data order.",
+    "semanticLabel": "Spoken summary of the series.",
+    "height": "Sets the plot height."
+  },
+  "keyboardNote": "Read the chart summary for monthly order counts."
+}

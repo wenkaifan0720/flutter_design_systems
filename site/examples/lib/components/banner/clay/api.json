@@ -1,0 +1,8 @@
+{
+  "widget": "ClayBanner",
+  "parameters": {
+    "title": "What it says first.",
+    "message": "More.",
+    "tone": "Its tint and glyph."
+  }
+}

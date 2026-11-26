@@ -1,0 +1,10 @@
+{
+  "widget": "TabPageSelector",
+  "parameters": {
+    "controller": "The TabController it follows; DefaultTabController provides one.",
+    "indicatorSize": "The diameter of each dot.",
+    "color": "The fill of the other dots.",
+    "selectedColor": "The fill of the current dot.",
+    "borderStyle": "Whether the dots have an outline."
+  }
+}

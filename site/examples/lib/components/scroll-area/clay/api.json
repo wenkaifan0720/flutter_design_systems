@@ -1,0 +1,10 @@
+{
+  "widget": "ClayScrollArea",
+  "parameters": {
+    "controller": "The scroll it follows; child's scroll view must take it too.",
+    "child": "The scrolling content.",
+    "axis": "Which way it scrolls.",
+    "semanticLabel": "What a screen reader calls it.",
+    "style": "This area's own style, over ClayThemeData.scrollAreaStyle: `fill` the thumb."
+  }
+}

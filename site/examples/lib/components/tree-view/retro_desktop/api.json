@@ -1,0 +1,10 @@
+{
+  "widget": "RetroDesktopTreeView",
+  "parameters": {
+    "controller": "Holds the tree’s nodes, expanded branches and selection.",
+    "labelOf": "A node's words.",
+    "iconOf": "A node's glyph, if any.",
+    "onActivate": "Called when a node is opened (Enter, or a double press).",
+    "label": "The tree's name for a screen reader."
+  }
+}

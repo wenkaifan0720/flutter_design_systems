@@ -1,0 +1,11 @@
+{
+  "widget": "BrutalDataTable",
+  "parameters": {
+    "controller": "The rows, the columns and the view of them.",
+    "cell": "Supplies the display value for a row and column.",
+    "selectable": "Whether a press and Space select rows.",
+    "onActivate": "A row's Enter, or its press when the table does not select.",
+    "emptyText": "What it says when no row matches.",
+    "style": "Its style, over BrutalThemeData.dataTableStyle."
+  }
+}

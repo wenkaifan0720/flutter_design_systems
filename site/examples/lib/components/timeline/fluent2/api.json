@@ -1,0 +1,6 @@
+{
+  "widget": "Fluent2Timeline",
+  "parameters": {
+    "entries": "The events, in order."
+  }
+}

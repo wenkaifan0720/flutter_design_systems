@@ -1,0 +1,17 @@
+{
+  "widget": "Fluent2Button",
+  "parameters": {
+    "label": "Visible action name.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "appearance": "Applies the primary, secondary or another Fluent appearance.",
+    "shape": "Overrides the theme’s button shape.",
+    "size": "Selects the component’s size.",
+    "icon": "Adds a glyph to the component.",
+    "iconPosition": "Places the icon before or after the label.",
+    "expand": "Allows the control to fill the available width.",
+    "semanticLabel": "Supplies an accessible name.",
+    "style": "Overrides the component’s themed appearance.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears."
+  }
+}

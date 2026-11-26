@@ -1,0 +1,12 @@
+{
+  "widget": "ExpressiveRangeSlider",
+  "parameters": {
+    "start": "Lower price.",
+    "end": "Upper price.",
+    "max": "Largest allowed price.",
+    "valueLabel": "Formats the selected price in dollars.",
+    "startSemanticLabel": "Names the lower price.",
+    "endSemanticLabel": "Names the upper price.",
+    "onChanged": "Receives the updated bounds."
+  }
+}

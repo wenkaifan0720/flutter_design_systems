@@ -1,0 +1,9 @@
+{
+  "widget": "ClayRadio",
+  "parameters": {
+    "semanticLabel": "What a screen reader calls it, when no words beside it say.",
+    "value": "The value this radio stands for.",
+    "groupValue": "The group's choice, outside a RadioGroup; this radio is chosen when it equals value.",
+    "onChanged": "Called with value when chosen, outside a RadioGroup; inside one, the group hears it."
+  }
+}

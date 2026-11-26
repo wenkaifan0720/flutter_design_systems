@@ -1,0 +1,11 @@
+{
+  "widget": "StudioRangeFader",
+  "parameters": {
+    "values": "Lower and upper prices on the track.",
+    "max": "Largest allowed price.",
+    "semanticFormatter": "Formats the selected price in dollars.",
+    "startLabel": "Names the lower price.",
+    "endLabel": "Names the upper price.",
+    "onChanged": "Receives the updated bounds."
+  }
+}

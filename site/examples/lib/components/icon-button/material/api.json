@@ -1,0 +1,10 @@
+{
+  "widget": "IconButton",
+  "parameters": {
+    "icon": "The glyph, usually an Icon.",
+    "onPressed": "Called on a tap; null disables the button.",
+    "tooltip": "The hint shown on a long press or hover, and the accessible name.",
+    "isSelected": "Whether a toggle button is on; shows selectedIcon when it is.",
+    "style": "This button's own ButtonStyle, over the theme's IconButtonThemeData."
+  }
+}

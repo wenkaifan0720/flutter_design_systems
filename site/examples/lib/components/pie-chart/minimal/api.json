@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalPieChart",
+  "parameters": {
+    "slices": "Names each category and its share of the total.",
+    "semanticLabel": "Names the budget and plan.",
+    "size": "Sets the diameter of the chart.",
+    "thickness": "Sets the ring thickness."
+  }
+}

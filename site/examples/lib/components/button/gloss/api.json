@@ -1,0 +1,11 @@
+{
+  "widget": "GlossButton",
+  "parameters": {
+    "label": "Text shown on the action.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "icon": "Adds a glyph beside the words.",
+    "onLongPress": "Receives a sustained press.",
+    "isDestructiveAction": "Uses the destructive treatment.",
+    "style": "Overrides the key’s face and ink."
+  }
+}

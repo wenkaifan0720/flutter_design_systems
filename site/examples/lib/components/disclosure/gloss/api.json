@@ -1,0 +1,12 @@
+{
+  "widget": "GlossDisclosure",
+  "parameters": {
+    "title": "What it is about.",
+    "child": "What it opens to.",
+    "subtitle": "A line under the title.",
+    "expanded": "Controls whether the detail is expanded. Leave it unset for internal state.",
+    "initiallyExpanded": "Whether it starts open, when it holds its own.",
+    "onExpansionChanged": "Called with whether it is now open.",
+    "style": "Its own style, over GlossThemeData.disclosureStyle."
+  }
+}

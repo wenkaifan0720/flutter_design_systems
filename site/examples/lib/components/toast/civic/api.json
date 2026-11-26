@@ -1,0 +1,8 @@
+{
+  "widget": "CivicToast",
+  "parameters": {
+    "message": "The confirmation announced after a save.",
+    "actionLabel": "Words for an optional action.",
+    "onActionPressed": "Handles that action."
+  }
+}

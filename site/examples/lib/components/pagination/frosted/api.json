@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedPagination",
+  "parameters": {
+    "pageCount": "Total number of result pages.",
+    "selectedIndex": "Current page, counted from 0.",
+    "onChanged": "Receives the requested page."
+  }
+}

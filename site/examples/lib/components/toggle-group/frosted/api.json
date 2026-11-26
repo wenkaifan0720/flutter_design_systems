@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedToggleGroup",
+  "parameters": {
+    "label": "Names the group.",
+    "segments": "List and Grid, in reading order.",
+    "selected": "Current layout.",
+    "onSelectionChanged": "Receives the new selection."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "widget": "MinimalDataTable",
+  "parameters": {
+    "rows": "Every row, unsorted.",
+    "columns": "The columns, in order.",
+    "rowKey": "Tells rows apart when rows is replaced (the row itself unstated).",
+    "pageSize": "Limits the number of rows on each page.",
+    "query": "Supplies the text used to filter rows.",
+    "filter": "Decides whether a row matches the current query.",
+    "selectable": "Whether rows can be selected.",
+    "onSelectionChanged": "Called with the selected rows as the selection changes.",
+    "onRowActivated": "A row's Enter, or its press when the table does not select."
+  }
+}

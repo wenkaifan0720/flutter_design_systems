@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerDatePicker",
+  "parameters": {
+    "value": "Selected date.",
+    "presentation": "Shows the wheel.",
+    "onChanged": "Receives the date after an adjustment."
+  }
+}

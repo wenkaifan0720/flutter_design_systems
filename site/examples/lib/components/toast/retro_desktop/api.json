@@ -1,0 +1,10 @@
+{
+  "widget": "showRetroDesktopSnackBar",
+  "parameters": {
+    "message": "Text in the notice window.",
+    "duration": "How long the notice stays open.",
+    "onAction": "Handles an optional notice action.",
+    "title": "Optional heading for the notice."
+  },
+  "keyboardNote": "Retro Desktop shows one notice window at a time. Saving again replaces the previous confirmation."
+}

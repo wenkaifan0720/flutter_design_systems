@@ -1,0 +1,11 @@
+{
+  "widget": "ApplianceSlider",
+  "parameters": {
+    "value": "Current volume on the track.",
+    "max": "Highest volume the thumb can reach.",
+    "divisions": "Number of equal intervals on the track.",
+    "semanticLabel": "Names the volume control.",
+    "semanticFormatterCallback": "Announces the volume as a percentage.",
+    "onChanged": "Receives the new volume."
+  }
+}

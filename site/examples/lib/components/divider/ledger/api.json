@@ -1,0 +1,9 @@
+{
+  "widget": "LedgerDivider",
+  "parameters": {
+    "label": "The words the rule breaks for.",
+    "strong": "Whether it is the ink rule.",
+    "total": "Whether it is the double rule over a sum.",
+    "vertical": "Whether it stands upright between columns."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ClayColorPicker",
+  "parameters": {
+    "value": "The colour.",
+    "onChanged": "A colour chosen.",
+    "showAlpha": "Whether the opacity can change."
+  }
+}

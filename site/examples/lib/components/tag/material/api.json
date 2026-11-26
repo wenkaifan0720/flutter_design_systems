@@ -1,0 +1,10 @@
+{
+  "widget": "Chip",
+  "parameters": {
+    "label": "The chip's words.",
+    "avatar": "A widget before the label, such as an Icon.",
+    "onDeleted": "Adds a delete button and is called when it is pressed.",
+    "backgroundColor": "The chip's fill.",
+    "side": "The chip's outline."
+  }
+}

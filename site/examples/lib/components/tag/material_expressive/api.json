@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveTag",
+  "parameters": {
+    "label": "The words.",
+    "tone": "The roles it is drawn in.",
+    "icon": "Supplies the component’s icon.",
+    "style": "Stateful visual overrides before the badge theme."
+  }
+}

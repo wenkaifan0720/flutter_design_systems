@@ -1,0 +1,12 @@
+{
+  "widget": "ApplianceButton",
+  "parameters": {
+    "label": "Legend printed on the key.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "icon": "Adds a glyph beside the legend.",
+    "style": "Overrides the key face.",
+    "isDestructiveAction": "Applies the destructive action treatment.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "CupertinoSliverRefreshControl",
+  "parameters": {
+    "onRefresh": "Called when the user pulls far enough; the spinner stays until its Future completes.",
+    "refreshTriggerPullDistance": "How far the user pulls before a refresh starts.",
+    "refreshIndicatorExtent": "The space the spinner keeps while it runs.",
+    "builder": "Draws the control at each stage of the pull."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "ClayGroove",
+  "parameters": {
+    "indent": "Where it starts.",
+    "endIndent": "How far before the end it stops."
+  }
+}

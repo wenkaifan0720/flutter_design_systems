@@ -1,0 +1,6 @@
+{
+  "widget": "TermKey",
+  "parameters": {
+    "keys": "Escape key shown beside the reset command."
+  }
+}

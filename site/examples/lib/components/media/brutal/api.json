@@ -1,0 +1,10 @@
+{
+  "widget": "BrutalMedia",
+  "parameters": {
+    "image": "Supplies the photo when one is available. The component uses its fallback otherwise.",
+    "semanticLabel": "What the picture shows, for a screen reader.",
+    "aspectRatio": "Width over height.",
+    "fit": "How the picture fills the frame.",
+    "style": "Its style, over BrutalThemeData.mediaStyle."
+  }
+}

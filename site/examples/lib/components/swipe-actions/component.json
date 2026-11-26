@@ -1,0 +1,8 @@
+{
+  "order": 59,
+  "group": "Containers",
+  "title": "Swipe actions",
+  "examples": {
+    "archive-note": "Archive a note"
+  }
+}

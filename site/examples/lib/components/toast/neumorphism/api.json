@@ -1,0 +1,10 @@
+{
+  "widget": "showNeumorphicToast",
+  "parameters": {
+    "message": "The confirmation shown after a save.",
+    "actionLabel": "Words for an optional action.",
+    "onAction": "Handles that action.",
+    "duration": "How long a confirmation remains visible.",
+    "title": "Optional heading for the notice."
+  }
+}

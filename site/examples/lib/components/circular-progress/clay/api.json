@@ -1,0 +1,7 @@
+{
+  "widget": "ClaySpinner",
+  "parameters": {
+    "semanticLabel": "What a screen reader calls the wait.",
+    "size": "Its side."
+  }
+}

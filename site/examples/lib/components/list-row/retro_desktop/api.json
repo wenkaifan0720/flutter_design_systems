@@ -1,0 +1,21 @@
+{
+  "widget": "RetroDesktopListTile",
+  "parameters": {
+    "title": "The heading displayed above the content.",
+    "subtitle": "Secondary information displayed with the main content.",
+    "label": "The visible or accessible name of this part.",
+    "note": "Supporting text shown with the main content.",
+    "leading": "Places a widget before the main label.",
+    "trailing": "A figure or a RetroDesktopFlag beside the title, held to a share of the row.",
+    "figure": "The main figure displayed by this part.",
+    "action": "Places a short secondary action beside the row.",
+    "onPressed": "The whole row opens something.",
+    "isFirst": "Applies the treatment for the first row in a group.",
+    "selected": "Whether the part represents the current selection.",
+    "enabled": "Controls whether the row accepts input.",
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  },
+  "keyboardNote": "Retro Desktop takes the title as the row’s default accessible name. This example includes the changing status in label."
+}

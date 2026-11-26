@@ -1,0 +1,6 @@
+{
+  "widget": "ExpressiveButtonGroup",
+  "parameters": {
+    "children": "Zoom commands in reading order."
+  }
+}

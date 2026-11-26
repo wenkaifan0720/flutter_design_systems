@@ -1,0 +1,8 @@
+{
+  "widget": "StudioPanel",
+  "parameters": {
+    "child": "What stands on it.",
+    "padding": "Sets the space between the frame and its content.",
+    "style": "Its style, over StudioThemeData.panelStyle."
+  }
+}

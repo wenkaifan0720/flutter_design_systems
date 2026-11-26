@@ -1,0 +1,8 @@
+{
+  "widget": "TermMeter",
+  "parameters": {
+    "value": "Occupied fraction between zero and one.",
+    "label": "Names the measured quantity.",
+    "reading": "Supplies a reading in people."
+  }
+}

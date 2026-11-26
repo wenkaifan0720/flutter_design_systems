@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerAvatarStack",
+  "parameters": {
+    "names": "The people, in the order they stand.",
+    "max": "The most discs shown before the count.",
+    "total": "Sets the total number of people, including those without a visible face.",
+    "size": "Each disc's width.",
+    "label": "Names the group for a screen reader."
+  }
+}

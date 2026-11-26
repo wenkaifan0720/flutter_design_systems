@@ -1,0 +1,8 @@
+{
+  "order": 18,
+  "group": "Inputs",
+  "title": "Multi-select",
+  "examples": {
+    "tag-draft": "Tag a draft"
+  }
+}

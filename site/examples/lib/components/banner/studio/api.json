@@ -1,0 +1,8 @@
+{
+  "widget": "StudioBanner",
+  "parameters": {
+    "title": "Heading that names the condition.",
+    "message": "Explanation of what the connection change means.",
+    "onClose": "Handles the notice’s close action."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "widget": "MinimalListTile",
+  "parameters": {
+    "title": "What the row is.",
+    "subtitle": "One caption line under the title.",
+    "below": "Places secondary content beneath the row’s title and subtitle.",
+    "icon": "The row's 18 px glyph, in the quiet ink unless iconColor says otherwise.",
+    "iconColor": "Overrides the leading icon’s colour.",
+    "leading": "Places a widget before the main label.",
+    "leadingWidth": "Reserves space for the leading content.",
+    "trailing": "Places a widget at the trailing edge.",
+    "meta": "Displays a short secondary value beside the title.",
+    "metaWidth": "Reserves room for the secondary value.",
+    "metaLabel": "Supplies the accessible name for the secondary value.",
+    "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
+    "chevron": "Show a chevron affordance (the row pushes a page).",
+    "destructive": "Applies the destructive treatment to the row.",
+    "selected": "Indicates whether the item is selected.",
+    "muted": "Uses the muted text treatment for this row.",
+    "dense": "Uses tighter row spacing.",
+    "enabled": "Controls whether the row accepts input.",
+    "padding": "Sets the space between the frame and its content.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

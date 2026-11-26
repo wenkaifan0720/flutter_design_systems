@@ -1,0 +1,9 @@
+{
+  "widget": "ClayAreaChart",
+  "parameters": {
+    "categories": "The x axis's category names, in reading order.",
+    "series": "The series name and ordered measurements.",
+    "semanticLabel": "Names the chart and period.",
+    "height": "Sets the plot height."
+  }
+}

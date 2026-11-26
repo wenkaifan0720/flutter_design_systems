@@ -1,0 +1,11 @@
+{
+  "widget": "ApplianceTabBar",
+  "parameters": {
+    "tabs": "ApplianceSegment entries with a value and label.",
+    "value": "Value of the selected segment.",
+    "onChanged": "Receives the chosen value.",
+    "expand": "Controls how the tabs fill their row.",
+    "semanticLabel": "Supplies an accessible name.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "KeycapCarousel",
+  "parameters": {
+    "itemCount": "How many slides.",
+    "itemBuilder": "Builds a slide.",
+    "semanticLabel": "Its name, for a screen reader.",
+    "onPageChanged": "Called with each new slide.",
+    "height": "The well's height."
+  }
+}

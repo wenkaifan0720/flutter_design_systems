@@ -1,0 +1,9 @@
+{
+  "widget": "ClayCombobox",
+  "parameters": {
+    "labelText": "The words above the well.",
+    "options": "The options, filtered by the words typed.",
+    "onSelected": "An option taken.",
+    "value": "The option taken."
+  }
+}

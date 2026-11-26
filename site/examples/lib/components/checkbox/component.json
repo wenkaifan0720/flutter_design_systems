@@ -1,0 +1,8 @@
+{
+  "order": 19,
+  "group": "Inputs",
+  "title": "Checkbox",
+  "examples": {
+    "request-receipt": "Request a receipt"
+  }
+}

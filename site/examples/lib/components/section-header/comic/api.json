@@ -1,0 +1,7 @@
+{
+  "widget": "ComicSectionHeader",
+  "parameters": {
+    "title": "The primary heading.",
+    "note": "Secondary explanatory text."
+  }
+}

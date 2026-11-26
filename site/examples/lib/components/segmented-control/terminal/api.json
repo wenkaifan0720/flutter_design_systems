@@ -1,0 +1,9 @@
+{
+  "widget": "TermToggleGroup",
+  "parameters": {
+    "options": "Available reporting periods.",
+    "selected": "A set containing the chosen period.",
+    "onSelectionChanged": "Receives the new selection.",
+    "selectFollowsFocus": "Selects the option reached with the arrows."
+  }
+}

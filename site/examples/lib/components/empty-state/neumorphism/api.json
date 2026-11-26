@@ -1,0 +1,9 @@
+{
+  "widget": "NeumorphicEmptyState",
+  "parameters": {
+    "style": "Frame styling before the shared card component theme.",
+    "title": "The primary heading.",
+    "body": "Supporting text explaining the empty state.",
+    "icon": "Supplies the component’s icon."
+  }
+}

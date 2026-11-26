@@ -1,0 +1,9 @@
+{
+  "order": 33,
+  "group": "Inputs",
+  "title": "Color picker",
+  "examples": {
+    "choose-ink": "Choose an ink colour"
+  },
+  "previewHeight": 340
+}

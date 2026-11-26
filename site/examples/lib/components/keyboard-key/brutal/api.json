@@ -1,0 +1,6 @@
+{
+  "widget": "BrutalKbd",
+  "parameters": {
+    "activator": "Escape key shown beside the reset command."
+  }
+}

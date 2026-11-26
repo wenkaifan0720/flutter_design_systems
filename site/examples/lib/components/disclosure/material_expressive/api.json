@@ -1,0 +1,18 @@
+{
+  "widget": "ExpressiveDisclosure",
+  "parameters": {
+    "title": "The header's main line.",
+    "child": "What opens beneath the header.",
+    "overline": "The header's overline.",
+    "subtitle": "The header's supporting text.",
+    "leading": "The header's leading content.",
+    "expanded": "Controls whether the detail is expanded. Leave it unset for internal state.",
+    "initiallyExpanded": "Whether it starts open, uncontrolled.",
+    "onExpansionChanged": "Told the next open state on a tap.",
+    "enabled": "Whether the header takes input.",
+    "contentPadding": "Overrides the space around the row’s contents.",
+    "style": "Stateful visual overrides for the header and expanded panel.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the header takes focus when first built."
+  }
+}

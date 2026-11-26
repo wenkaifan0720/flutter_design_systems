@@ -1,0 +1,8 @@
+{
+  "widget": "NeumorphicStepProgress",
+  "parameters": {
+    "count": "Total number of steps.",
+    "currentStep": "Zero-based index of the current step.",
+    "name": "Accessible name for the sequence."
+  }
+}

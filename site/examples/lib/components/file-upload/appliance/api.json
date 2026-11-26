@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceDropZone",
+  "parameters": {
+    "label": "Identifies the attachment field.",
+    "onPressed": "Opens the browser’s file chooser."
+  }
+}

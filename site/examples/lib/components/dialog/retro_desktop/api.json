@@ -1,0 +1,11 @@
+{
+  "widget": "RetroDesktopDialog",
+  "parameters": {
+    "title": "Heading that identifies the dialog.",
+    "message": "Explanatory text below the heading.",
+    "actions": "Controls at the foot of the window.",
+    "content": "Additional widgets below the message.",
+    "tone": "Selects the alert illustration.",
+    "style": "Overrides the appearance of the dialog window."
+  }
+}

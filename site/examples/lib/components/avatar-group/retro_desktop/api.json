@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopAvatarGroup",
+  "parameters": {
+    "children": "The child widgets in reading order.",
+    "spacing": "Space between adjacent items in logical pixels."
+  },
+  "keyboardNote": "Retro Desktop places every supplied avatar side by side. Adding Kim shows a third face."
+}

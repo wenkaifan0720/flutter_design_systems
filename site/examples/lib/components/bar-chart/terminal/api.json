@@ -1,0 +1,8 @@
+{
+  "widget": "TermBarChart",
+  "parameters": {
+    "bars": "Month names paired with their counts.",
+    "unit": "Unit shown next to each value.",
+    "semanticLabel": "Names the series and period."
+  }
+}

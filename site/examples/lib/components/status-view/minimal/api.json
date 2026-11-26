@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalStatusView",
+  "parameters": {
+    "title": "Heading that describes the failure.",
+    "message": "Explains the failure.",
+    "onAction": "Handles the retry action.",
+    "actionLabel": "Words on the recovery action."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoTextField",
+  "parameters": {
+    "minLines": "The lines the field shows when it is empty.",
+    "maxLines": "The lines it grows to before it scrolls; null grows without limit.",
+    "keyboardType": "TextInputType.multiline lets Enter start a new line.",
+    "placeholder": "The words shown while the field is empty.",
+    "onChanged": "Called with the text after each edit."
+  }
+}

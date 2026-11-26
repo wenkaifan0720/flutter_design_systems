@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopSectionHeader",
+  "parameters": {
+    "title": "The heading displayed above the content.",
+    "subtitle": "Supporting text shown with the main content.",
+    "trailing": "Optional content after the main content in reading order.",
+    "leading": "Places a widget before the main label."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "TermDialog",
+  "parameters": {
+    "title": "Heading that identifies the dialog.",
+    "content": "Widget inside the box-drawn pane.",
+    "actions": "Action buttons in reading order.",
+    "footer": "Key hints in the bottom line.",
+    "cols": "Maximum width in character cells."
+  }
+}

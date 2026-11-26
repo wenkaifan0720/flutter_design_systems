@@ -1,0 +1,6 @@
+{
+  "widget": "CivicSectionBreak",
+  "parameters": {
+    "size": "The room on either side."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ClaySwitch",
+  "parameters": {
+    "semanticLabel": "What a screen reader calls it, when no words beside it say.",
+    "value": "Whether it is on.",
+    "onChanged": "Called with the new value; null turns it off."
+  }
+}

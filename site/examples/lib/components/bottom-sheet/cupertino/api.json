@@ -1,0 +1,10 @@
+{
+  "widget": "showCupertinoSheet",
+  "parameters": {
+    "context": "Where the sheet opens.",
+    "scrollableBuilder": "Builds the sheet's page around the given ScrollController, so a drag on its content can also close the sheet.",
+    "enableDrag": "Whether a downward drag closes the sheet.",
+    "showDragHandle": "Whether a handle shows at the top of the sheet.",
+    "useNestedNavigation": "Whether the sheet keeps its own Navigator for pages inside it."
+  }
+}

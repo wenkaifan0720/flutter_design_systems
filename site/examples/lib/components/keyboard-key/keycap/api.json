@@ -1,0 +1,6 @@
+{
+  "widget": "KeycapKbd",
+  "parameters": {
+    "label": "The one key's legend."
+  }
+}

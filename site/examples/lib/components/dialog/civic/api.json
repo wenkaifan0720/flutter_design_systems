@@ -1,0 +1,9 @@
+{
+  "widget": "CivicDialog",
+  "parameters": {
+    "title": "Heading that names the dialog.",
+    "content": "Widget beneath the heading.",
+    "actions": "Buttons below the message.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

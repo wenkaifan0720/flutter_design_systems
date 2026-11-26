@@ -1,0 +1,8 @@
+{
+  "widget": "StudioSectionHeader",
+  "parameters": {
+    "text": "Supplies the displayed text.",
+    "trailing": "An action at its end (\"See all\").",
+    "style": "Its style, over StudioThemeData.sectionHeaderStyle."
+  }
+}

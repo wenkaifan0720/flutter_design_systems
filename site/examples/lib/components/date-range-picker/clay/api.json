@@ -1,0 +1,12 @@
+{
+  "widget": "ClayDateRangePicker",
+  "parameters": {
+    "value": "The chosen span.",
+    "firstDate": "The first day it offers.",
+    "lastDate": "The last day it offers.",
+    "onChanged": "A span chosen; null disables it.",
+    "labelText": "The words above the well.",
+    "currentDate": "Today; null: the clock's."
+  },
+  "keyboardNote": "Use the calendar arrows to reach later dates."
+}

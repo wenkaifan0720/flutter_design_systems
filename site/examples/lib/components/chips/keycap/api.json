@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapChip",
+  "parameters": {
+    "label": "Its words.",
+    "selected": "Whether it is latched.",
+    "onSelected": "Called with its new state when pressed; null: it does not latch."
+  }
+}

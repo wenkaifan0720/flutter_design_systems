@@ -1,0 +1,10 @@
+{
+  "widget": "Fluent2SwipeActions",
+  "parameters": {
+    "child": "Supplies the content inside the component.",
+    "leading": "The acts a drag toward the end shows, the first nearest the edge.",
+    "trailing": "The acts a drag toward the start shows, the first nearest the edge.",
+    "fullSwipe": "Whether a drag past 60% of the row does its edge's first act.",
+    "initiallyOpen": "Starts the row with its actions revealed."
+  }
+}

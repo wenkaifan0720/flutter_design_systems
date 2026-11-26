@@ -1,0 +1,8 @@
+{
+  "widget": "CivicScaffold",
+  "parameters": {
+    "navigationBar": "Destinations presented on smaller screens.",
+    "sideNavigation": "Side navigation used at wide widths.",
+    "body": "Content of the chosen page."
+  }
+}

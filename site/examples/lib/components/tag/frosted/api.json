@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedTag",
+  "parameters": {
+    "label": "The visible tag text.",
+    "tone": "Sets the semantic colour treatment.",
+    "variant": "Selects the tag’s visual treatment.",
+    "icon": "Adds a glyph to the tag."
+  }
+}

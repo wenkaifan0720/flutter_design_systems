@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceRadio",
+  "parameters": {
+    "semanticLabel": "Spoken name of this option.",
+    "value": "The value this radio stands for; the enclosing RadioGroup holds the chosen one.",
+    "enabled": "Whether this radio can be chosen, in a group that takes presses."
+  }
+}

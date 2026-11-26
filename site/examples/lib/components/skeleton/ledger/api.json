@@ -1,0 +1,6 @@
+{
+  "widget": "LedgerSkeleton",
+  "parameters": {
+    "lines": "Number of placeholder text lines."
+  }
+}

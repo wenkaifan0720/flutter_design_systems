@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceTable",
+  "parameters": {
+    "columns": "The columns.",
+    "rows": "The rows, a text for each column.",
+    "style": "Its style, over ApplianceThemeData.tableStyle."
+  }
+}

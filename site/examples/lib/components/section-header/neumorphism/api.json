@@ -1,0 +1,9 @@
+{
+  "widget": "NeumorphicSectionHeader",
+  "parameters": {
+    "title": "The primary heading.",
+    "subtitle": "Secondary information displayed beside the heading.",
+    "trailing": "A widget in the meta's place.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

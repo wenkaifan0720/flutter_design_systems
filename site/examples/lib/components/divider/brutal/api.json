@@ -1,0 +1,8 @@
+{
+  "widget": "BrutalRule",
+  "parameters": {
+    "color": "Overrides the component’s colour.",
+    "vertical": "Whether it stands upright.",
+    "style": "Its style, over BrutalThemeData.ruleStyle."
+  }
+}

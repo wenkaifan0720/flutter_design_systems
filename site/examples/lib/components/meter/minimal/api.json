@@ -1,0 +1,9 @@
+{
+  "widget": "MinimalMeter",
+  "parameters": {
+    "value": "Current number of occupants.",
+    "max": "Capacity of the room.",
+    "label": "Names the measured quantity.",
+    "valueLabel": "Supplies the text used to describe the amount."
+  }
+}

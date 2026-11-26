@@ -1,0 +1,9 @@
+{
+  "widget": "TermBadge",
+  "parameters": {
+    "count": "The number displayed by the badge.",
+    "tone": "Sets the semantic colour treatment.",
+    "max": "The largest count shown before a plus sign is used.",
+    "semanticLabel": "Names the component for a screen reader."
+  }
+}

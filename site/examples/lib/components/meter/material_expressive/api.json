@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveMeter",
+  "parameters": {
+    "value": "Current number of occupants.",
+    "limit": "Capacity of the room.",
+    "label": "Names the measured quantity.",
+    "note": "Adds explanatory text below the meter."
+  },
+  "keyboardNote": "The caption gives the number of places used and the total capacity."
+}

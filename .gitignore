@@ -8,7 +8,15 @@ pubspec.lock
 *.iml
 .vscode/
 .DS_Store
+# The documentation site's generated routes, and a contributor's own overrides for trying unreleased packages.
+site/examples/lib/generated/
+site/examples/lib/main.dart
+site/pubspec_overrides.yaml
 
 # The looks' golden images aren't kept in this repository (hundreds of MB across the looks); a look's golden
 # tests skip themselves when test/goldens is absent.
 packages/*/test/goldens/
+
+# The site tools' browser check (site/tool/package.json).
+node_modules/
+package-lock.json

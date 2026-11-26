@@ -1,0 +1,10 @@
+{
+  "widget": "BrutalScrollArea",
+  "parameters": {
+    "controller": "The scroll view's controller.",
+    "child": "The scroll view.",
+    "axis": "Which way it scrolls.",
+    "semanticLabel": "What a screen reader calls it.",
+    "style": "Its style, over BrutalThemeData.scrollAreaStyle."
+  }
+}

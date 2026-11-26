@@ -1,0 +1,10 @@
+{
+  "widget": "TextField",
+  "parameters": {
+    "minLines": "The lines the field shows when it is empty.",
+    "maxLines": "The lines it grows to before it scrolls; null grows without limit.",
+    "keyboardType": "TextInputType.multiline lets Enter start a new line.",
+    "decoration": "The label, hint, helper, error and border, as an InputDecoration.",
+    "onChanged": "Called with the text after each edit."
+  }
+}

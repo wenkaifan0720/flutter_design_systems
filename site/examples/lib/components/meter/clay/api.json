@@ -1,0 +1,10 @@
+{
+  "widget": "ClayMeter",
+  "parameters": {
+    "value": "How much.",
+    "max": "The whole.",
+    "label": "What it measures.",
+    "high": "Past this it turns to the danger red.",
+    "valueText": "The value in words; null: a percentage."
+  }
+}

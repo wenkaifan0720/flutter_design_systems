@@ -1,0 +1,9 @@
+{
+  "widget": "GlossToggleGroup",
+  "parameters": {
+    "semanticLabel": "Names the group.",
+    "toggles": "List and Grid, in reading order.",
+    "selected": "Current layout.",
+    "onSelectionChanged": "Receives the new selection."
+  }
+}

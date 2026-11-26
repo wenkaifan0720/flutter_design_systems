@@ -1,0 +1,7 @@
+{
+  "widget": "BrutalSkeleton",
+  "parameters": {
+    "width": "Width of one placeholder line.",
+    "height": "Thickness of that line."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "widget": "ComicReorderableListView",
+  "parameters": {
+    "items": "The rows, in their order.",
+    "onReorder": "Told the row moved from one index to another.",
+    "itemBuilder": "Draws a row's words.",
+    "labelOf": "What a screen reader calls a row.",
+    "keyOf": "A row's identity, when the item itself is not.",
+    "shrinkWrap": "Whether the list is only as tall as its rows.",
+    "controller": "The scroll position.",
+    "padding": "Room around the rows."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "Scrollbar",
+  "parameters": {
+    "child": "The scrolling content.",
+    "controller": "The ScrollController shared with the content's scroll view.",
+    "thumbVisibility": "Whether the thumb shows while nothing scrolls.",
+    "trackVisibility": "Whether the track shows behind the thumb.",
+    "interactive": "Whether the thumb can be dragged."
+  }
+}

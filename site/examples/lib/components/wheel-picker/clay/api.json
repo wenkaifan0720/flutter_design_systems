@@ -1,0 +1,10 @@
+{
+  "widget": "ClayWheelPicker",
+  "parameters": {
+    "items": "What it offers.",
+    "value": "The chosen one.",
+    "onChanged": "One chosen; null disables it.",
+    "semanticLabel": "What a screen reader calls it.",
+    "labelOf": "An item's words."
+  }
+}

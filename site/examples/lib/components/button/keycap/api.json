@@ -1,0 +1,11 @@
+{
+  "widget": "KeycapButton",
+  "parameters": {
+    "onPressed": "Called when the key is pressed; null turns it off.",
+    "icon": "A glyph before the legend.",
+    "onLongPress": "Called when the key is held.",
+    "isDestructiveAction": "Whether the action destroys something.",
+    "style": "Overrides for this key, over its component theme.",
+    "child": "The legend: usually a `Text`."
+  }
+}

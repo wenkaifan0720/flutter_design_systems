@@ -1,0 +1,11 @@
+{
+  "widget": "CarouselView",
+  "parameters": {
+    "children": "The slides.",
+    "itemExtent": "The width of a slide in the main position.",
+    "shrinkExtent": "The narrowest a slide gets as it leaves.",
+    "controller": "Moves the carousel from code.",
+    "onTap": "Called with the index of a tapped slide.",
+    "itemSnapping": "Whether the carousel settles on a whole slide."
+  }
+}

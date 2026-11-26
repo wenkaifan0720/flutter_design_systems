@@ -1,0 +1,9 @@
+{
+  "widget": "GlossScaffold",
+  "parameters": {
+    "destinations": "Main pages available in this shell.",
+    "selectedIndex": "Index of the current page.",
+    "onDestinationSelected": "Selects another destination.",
+    "body": "Content for the selected page."
+  }
+}

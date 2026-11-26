@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopCheckbox",
+  "parameters": {
+    "label": "Names the choice.",
+    "value": "Whether a receipt is requested.",
+    "onChanged": "Updates the request when the checkbox changes."
+  }
+}

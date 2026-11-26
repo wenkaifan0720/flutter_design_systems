@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalTable",
+  "parameters": {
+    "columns": "The columns.",
+    "rows": "The rows, a string per column.",
+    "minColumnWidth": "The width under which a column stops shrinking and the table scrolls.",
+    "style": "Its style, over BrutalThemeData.dataTableStyle."
+  }
+}

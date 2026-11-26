@@ -1,0 +1,8 @@
+{
+  "order": 65,
+  "group": "Containers",
+  "title": "Count badge",
+  "examples": {
+    "read-messages": "Read messages"
+  }
+}

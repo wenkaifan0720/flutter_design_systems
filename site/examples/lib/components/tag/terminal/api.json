@@ -1,0 +1,8 @@
+{
+  "widget": "TermTag",
+  "parameters": {
+    "label": "The visible tag text.",
+    "tone": "Sets the semantic colour treatment.",
+    "onDeleted": "Runs when the reader removes the tag."
+  }
+}

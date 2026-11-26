@@ -1,0 +1,8 @@
+{
+  "order": 37,
+  "group": "Navigation",
+  "title": "Navigation rail",
+  "examples": {
+    "switch-destination": "Navigate along a rail"
+  }
+}

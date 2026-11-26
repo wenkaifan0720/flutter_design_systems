@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapTagInput",
+  "parameters": {
+    "labelText": "The words over the well.",
+    "options": "What can be chosen.",
+    "values": "The choices made.",
+    "onChanged": "Called with the choices after a change."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 42,
+  "group": "Navigation",
+  "title": "Step progress",
+  "examples": {
+    "review-order": "Review an order"
+  }
+}

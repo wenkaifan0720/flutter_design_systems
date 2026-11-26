@@ -1,0 +1,10 @@
+{
+  "widget": "ApplianceEmptyState",
+  "parameters": {
+    "title": "The heading.",
+    "message": "What goes here.",
+    "action": "The key that puts something here.",
+    "reading": "What the window reads.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

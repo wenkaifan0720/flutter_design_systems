@@ -1,0 +1,7 @@
+{
+  "widget": "GlossSkeleton",
+  "parameters": {
+    "width": "Width of one placeholder line.",
+    "height": "Thickness of that line."
+  }
+}

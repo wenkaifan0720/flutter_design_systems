@@ -1,0 +1,8 @@
+{
+  "order": 87,
+  "group": "Charts",
+  "title": "Area chart",
+  "examples": {
+    "track-spending": "Track cumulative spending"
+  }
+}

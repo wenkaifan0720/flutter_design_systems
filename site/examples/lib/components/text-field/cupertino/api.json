@@ -1,0 +1,11 @@
+{
+  "widget": "CupertinoTextField",
+  "parameters": {
+    "controller": "Holds and edits the text; one is created if none is given.",
+    "placeholder": "The words shown while the field is empty.",
+    "onChanged": "Called with the text after each edit.",
+    "onSubmitted": "Called with the text when the user submits it.",
+    "clearButtonMode": "When a clear button shows at the end.",
+    "prefix": "A widget before the text, such as a label."
+  }
+}

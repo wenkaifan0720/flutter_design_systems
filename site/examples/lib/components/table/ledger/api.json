@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerRegister",
+  "parameters": {
+    "children": "Its day groups and month rules, or its rows (showDay).",
+    "columns": "Which of the desktop's columns stand.",
+    "heads": "The desktop's column heads, in order.",
+    "searchResults": "Uses the register’s search-result column layout.",
+    "showDay": "Whether each row carries its day, the first column widened (no day groups)."
+  }
+}

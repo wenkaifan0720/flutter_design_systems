@@ -1,0 +1,10 @@
+{
+  "widget": "showNeumorphicActionSheet",
+  "parameters": {
+    "title": "Names the item or set of actions.",
+    "actions": "Lists the choices in reading order.",
+    "message": "Optional explanation above the choices.",
+    "useRootNavigator": "Presents the sheet on the root navigator.",
+    "cancelLabel": "Words on the cancel action."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "CivicFileUpload",
+  "parameters": {
+    "labelText": "Identifies the attachment field.",
+    "onChoose": "Opens the browser’s file chooser.",
+    "fileName": "Selected filename shown beside the chooser.",
+    "onRemoved": "Clears the file selection."
+  }
+}

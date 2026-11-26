@@ -1,0 +1,10 @@
+{
+  "widget": "CircleAvatar",
+  "parameters": {
+    "child": "The content, usually initials in a Text.",
+    "backgroundImage": "A photo that fills the circle.",
+    "backgroundColor": "The circle's fill.",
+    "foregroundColor": "The colour of the initials.",
+    "radius": "The circle's radius."
+  }
+}

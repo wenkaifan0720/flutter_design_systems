@@ -1,0 +1,15 @@
+{
+  "widget": "Fluent2Table",
+  "parameters": {
+    "columns": "The columns, in order.",
+    "rows": "The rows, in order.",
+    "sortColumn": "The sorted column's index.",
+    "sortDirection": "Which way the sorted column runs.",
+    "onSort": "Asked to sort by the column pressed.",
+    "selected": "Indicates whether the item is selected.",
+    "onSelectionChanged": "Receives the updated row selection.",
+    "size": "Selects the size of the component.",
+    "selectionAppearance": "The fill a selected row wears.",
+    "label": "What a screen reader calls the table."
+  }
+}

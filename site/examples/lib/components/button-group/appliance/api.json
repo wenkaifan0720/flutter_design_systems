@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceToolbar",
+  "parameters": {
+    "children": "Zoom commands in reading order.",
+    "semanticLabel": "Names the group for assistive technology."
+  }
+}

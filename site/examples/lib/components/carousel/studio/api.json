@@ -1,0 +1,10 @@
+{
+  "widget": "StudioCarousel",
+  "parameters": {
+    "itemCount": "How many slides.",
+    "itemBuilder": "Builds slide i.",
+    "aspectRatio": "The window's shape.",
+    "semanticLabel": "What a screen reader calls it.",
+    "onPageChanged": "Called as a slide comes round."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "GlossTag",
+  "parameters": {
+    "label": "Its words.",
+    "tone": "Its glaze.",
+    "icon": "A glyph before the words.",
+    "style": "Its own style, over GlossThemeData.tagStyle."
+  }
+}

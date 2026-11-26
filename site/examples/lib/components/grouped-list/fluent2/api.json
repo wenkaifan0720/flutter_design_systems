@@ -1,0 +1,13 @@
+{
+  "widget": "Fluent2ListSection",
+  "parameters": {
+    "title": "The section's heading.",
+    "rows": "The rows (Fluent2ListItems), all of one kind.",
+    "aside": "A count or a note after the title.",
+    "action": "The head's act (a Fluent2SectionHeader.link).",
+    "selector": "What picks the set of rows shown (tabs), under the head.",
+    "footer": "A quiet line under the rows.",
+    "asCard": "Whether the rows stand on a card.",
+    "dividers": "Whether a hairline stands between rows."
+  }
+}

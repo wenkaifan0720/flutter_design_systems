@@ -1,0 +1,10 @@
+{
+  "widget": "NeumorphicDialog",
+  "parameters": {
+    "title": "Heading that identifies the dialog.",
+    "message": "Text below the heading.",
+    "actions": "Actions below the message.",
+    "content": "Additional widgets inside the raised surface.",
+    "mark": "Illustration above the title."
+  }
+}

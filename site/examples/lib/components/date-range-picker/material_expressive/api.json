@@ -1,0 +1,8 @@
+{
+  "widget": "ExpressiveDateRangePicker",
+  "parameters": {
+    "start": "First day of the stay.",
+    "end": "Last day of the stay.",
+    "onChanged": "Receives the endpoints as they are chosen."
+  }
+}

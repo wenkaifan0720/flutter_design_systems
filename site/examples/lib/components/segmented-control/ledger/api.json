@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerSegmentedControl",
+  "parameters": {
+    "options": "Available reporting periods in reading order.",
+    "value": "Period currently selected.",
+    "onChanged": "Receives the chosen period."
+  }
+}

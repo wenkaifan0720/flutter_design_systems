@@ -1,0 +1,11 @@
+{
+  "widget": "ClayDatePicker",
+  "parameters": {
+    "value": "The chosen day.",
+    "firstDate": "The first day it offers.",
+    "lastDate": "The last day it offers.",
+    "onChanged": "A day chosen; null disables it.",
+    "labelText": "The words above the well.",
+    "currentDate": "Today; null: the clock's."
+  }
+}

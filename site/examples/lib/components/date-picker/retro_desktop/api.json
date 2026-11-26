@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopDatePicker",
+  "parameters": {
+    "value": "Selected due date.",
+    "firstDate": "Earliest available date.",
+    "lastDate": "Latest available date.",
+    "onChanged": "Receives the chosen day."
+  }
+}

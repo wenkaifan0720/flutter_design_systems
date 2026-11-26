@@ -1,0 +1,7 @@
+{
+  "widget": "Fluent2TextField",
+  "parameters": {
+    "label": "Optional spoken name. The surrounding Fluent2FormField supplies the visible and spoken label here.",
+    "onChanged": "Updates the draft heading after each edit."
+  }
+}

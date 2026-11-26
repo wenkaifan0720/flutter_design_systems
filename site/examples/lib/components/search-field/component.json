@@ -1,0 +1,8 @@
+{
+  "order": 11,
+  "group": "Inputs",
+  "title": "Search field",
+  "examples": {
+    "find-title": "Find a title"
+  }
+}

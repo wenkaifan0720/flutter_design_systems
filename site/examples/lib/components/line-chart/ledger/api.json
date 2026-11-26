@@ -1,0 +1,14 @@
+{
+  "widget": "LedgerMonthLine",
+  "parameters": {
+    "values": "Closing balance on each recorded day.",
+    "start": "Opening balance on day zero.",
+    "days": "Number of days in the month.",
+    "low": "Lower bound of the vertical scale.",
+    "high": "Upper bound of the vertical scale.",
+    "grid": "Values and labels for the horizontal rules.",
+    "semanticLabel": "Spoken summary of the series.",
+    "height": "Sets the plot height."
+  },
+  "keyboardNote": "Read the chart summary for the daily balances."
+}

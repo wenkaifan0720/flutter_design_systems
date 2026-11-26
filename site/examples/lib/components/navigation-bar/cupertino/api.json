@@ -1,0 +1,10 @@
+{
+  "widget": "CupertinoTabBar",
+  "parameters": {
+    "items": "The places, as BottomNavigationBarItem icons with labels.",
+    "currentIndex": "The index of the current place.",
+    "onTap": "Called with the index of the chosen place.",
+    "activeColor": "The colour of the current place.",
+    "iconSize": "The size of the icons."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "RetroDesktopDescriptionList",
+  "parameters": {
+    "facts": "The labelled facts displayed in order.",
+    "leaders": "Whether dotted leaders connect labels and values."
+  }
+}

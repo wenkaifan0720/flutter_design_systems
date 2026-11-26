@@ -1,0 +1,10 @@
+{
+  "widget": "FilterChip",
+  "parameters": {
+    "label": "The chip's words.",
+    "selected": "Whether the filter is on.",
+    "onSelected": "Called with the next value; null disables the chip.",
+    "avatar": "A widget before the label.",
+    "showCheckmark": "Whether a chosen chip shows a check mark."
+  }
+}

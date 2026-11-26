@@ -1,0 +1,9 @@
+{
+  "widget": "ApplianceDivider",
+  "parameters": {
+    "indent": "The room before it.",
+    "endIndent": "The room after it.",
+    "vertical": "Whether it runs down instead of across.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

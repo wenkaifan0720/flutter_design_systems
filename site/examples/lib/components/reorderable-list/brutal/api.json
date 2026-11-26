@@ -1,0 +1,11 @@
+{
+  "widget": "BrutalReorderableList",
+  "parameters": {
+    "items": "The rows, in order.",
+    "onReorder": "Moves the row at from to to (an index in the list without it).",
+    "itemBuilder": "What a row shows, beside its handle.",
+    "labelOf": "What a screen reader calls a row.",
+    "shrinkWrap": "Whether the list is as tall as its rows (in a page that scrolls).",
+    "style": "Its style, over BrutalThemeData.reorderableListStyle."
+  }
+}

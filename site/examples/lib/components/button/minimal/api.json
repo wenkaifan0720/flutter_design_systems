@@ -1,0 +1,16 @@
+{
+  "widget": "MinimalButton",
+  "parameters": {
+    "label": "Visible action name.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "variant": "Primary, secondary, ghost or destructive.",
+    "size": "Selects the small, medium or large face.",
+    "icon": "Adds a glyph to the component.",
+    "leading": "Places a widget before the label.",
+    "expand": "Allows the control to fill the available width.",
+    "busy": "Suppresses activation while the action is in progress.",
+    "style": "Overrides the component’s themed appearance.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears."
+  }
+}

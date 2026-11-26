@@ -1,0 +1,9 @@
+{
+  "widget": "ClayAvatar",
+  "parameters": {
+    "name": "Who it is: said to a screen reader, and their initials.",
+    "image": "Their picture.",
+    "size": "Its side.",
+    "style": "This avatar's own style, over ClayThemeData.avatarStyle: `fill` the ball."
+  }
+}

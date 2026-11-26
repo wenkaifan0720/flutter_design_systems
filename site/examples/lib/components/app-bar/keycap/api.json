@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapAppBar",
+  "parameters": {
+    "title": "The page's name.",
+    "actions": "Keys at the bar's end."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "widget": "RetroDesktopTabBar",
+  "parameters": {
+    "tabs": "Section names in reading order.",
+    "selectedIndex": "Index of the visible section.",
+    "onChanged": "Receives the chosen index.",
+    "child": "Content in the panel joined to the open folder tab.",
+    "counts": "Optional figures beside the labels.",
+    "label": "Accessible name for the strip.",
+    "style": "Overrides the appearance of the tabs."
+  }
+}

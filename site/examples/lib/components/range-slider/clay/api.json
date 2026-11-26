@@ -1,0 +1,12 @@
+{
+  "widget": "ClayRangeSlider",
+  "parameters": {
+    "values": "The range's two ends.",
+    "max": "The groove's end.",
+    "semanticFormatterCallback": "How a screen reader says each end.",
+    "startLabel": "What a screen reader calls the lower ball; null: the words' own.",
+    "endLabel": "What a screen reader calls the upper ball.",
+    "onChanged": "The new range as a ball moves; null turns the slider off.",
+    "divisions": "How many steps it snaps to; null: any value."
+  }
+}

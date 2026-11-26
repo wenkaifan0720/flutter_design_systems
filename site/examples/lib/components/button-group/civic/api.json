@@ -1,0 +1,6 @@
+{
+  "widget": "CivicButtonGroup",
+  "parameters": {
+    "children": "Zoom commands in reading order."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "widget": "CivicTable",
+  "parameters": {
+    "controller": "The rows, the columns and the table's view of them.",
+    "cellBuilder": "Builds the widget for a row and column.",
+    "caption": "What the table shows, over it.",
+    "selectable": "Whether rows can be ticked.",
+    "onActivate": "Handles activation of a row.",
+    "style": "Overrides for this table's look."
+  }
+}

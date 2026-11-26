@@ -1,0 +1,8 @@
+{
+  "widget": "GlossSwipeRow",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "The actions behind its start.",
+    "endActions": "The actions behind its end."
+  }
+}

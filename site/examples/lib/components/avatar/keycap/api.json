@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapAvatar",
+  "parameters": {
+    "name": "The person's name: its initials are printed, and a screen reader hears it.",
+    "size": "Its side.",
+    "style": "Overrides, over KeycapThemeData.avatarStyle: RawStyle.fill the tile, RawStyle.foreground the initials."
+  }
+}

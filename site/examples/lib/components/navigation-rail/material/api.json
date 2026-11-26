@@ -1,0 +1,11 @@
+{
+  "widget": "NavigationRail",
+  "parameters": {
+    "destinations": "The places, as NavigationRailDestination icons with labels.",
+    "selectedIndex": "The index of the current place.",
+    "onDestinationSelected": "Called with the index of the chosen place.",
+    "labelType": "Shows every label, only the current one, or none.",
+    "extended": "Whether the rail widens to show labels beside the icons.",
+    "leading": "A widget above the places, such as a FloatingActionButton."
+  }
+}

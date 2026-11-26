@@ -1,0 +1,8 @@
+{
+  "order": 21,
+  "group": "Inputs",
+  "title": "Switch",
+  "examples": {
+    "set-reminders": "Set reminders"
+  }
+}

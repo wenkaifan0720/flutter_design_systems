@@ -1,0 +1,8 @@
+{
+  "widget": "Fluent2Spinner",
+  "parameters": {
+    "label": "Names the quantity being measured.",
+    "value": "Fraction of the room currently occupied.",
+    "below": "Places the label beside or below the ring."
+  }
+}

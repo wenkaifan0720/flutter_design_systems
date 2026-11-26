@@ -1,0 +1,10 @@
+{
+  "widget": "FilledButton",
+  "parameters": {
+    "onPressed": "Called on a tap; null disables the button.",
+    "child": "The label, usually a Text.",
+    "onLongPress": "Called on a long press.",
+    "style": "This button's own ButtonStyle, over the theme's FilledButtonThemeData.",
+    "autofocus": "Whether the button takes focus when it is first built."
+  }
+}

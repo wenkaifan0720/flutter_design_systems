@@ -1,0 +1,10 @@
+{
+  "widget": "ExpressiveTable",
+  "parameters": {
+    "columns": "The columns, in order.",
+    "rows": "The rows, in order.",
+    "semanticLabel": "What the table is, read out before it.",
+    "style": "Stateful visual slots for the table rows and header.",
+    "stackBelow": "Sets the width class below which a row becomes a stack of labelled values."
+  }
+}

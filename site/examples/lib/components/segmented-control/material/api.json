@@ -1,0 +1,11 @@
+{
+  "widget": "SegmentedButton",
+  "parameters": {
+    "segments": "The choices, as ButtonSegment values with labels or icons.",
+    "selected": "The chosen values.",
+    "onSelectionChanged": "Called with the next set of chosen values.",
+    "multiSelectionEnabled": "Whether more than one segment can be chosen.",
+    "emptySelectionAllowed": "Whether every segment can be cleared.",
+    "showSelectedIcon": "Whether a chosen segment shows a check mark."
+  }
+}

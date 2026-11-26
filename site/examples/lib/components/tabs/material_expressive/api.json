@@ -1,0 +1,13 @@
+{
+  "widget": "ExpressiveTabBar",
+  "parameters": {
+    "tabs": "ExpressiveTab entries with a label, icon or both.",
+    "selectedIndex": "Index of the current section.",
+    "onChanged": "Receives the chosen index.",
+    "scrollable": "Lets tabs scroll horizontally.",
+    "variant": "Selects the primary or secondary tab bar treatment.",
+    "edgePadding": "Insets both ends of a scrollable tab row.",
+    "style": "Overrides the component’s themed appearance."
+  },
+  "keyboardNote": "In Material Expressive, use Tab or Shift+Tab to move between tabs. Press Enter or Space to select the focused tab."
+}

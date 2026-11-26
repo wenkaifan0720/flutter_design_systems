@@ -1,0 +1,10 @@
+{
+  "widget": "FrostedDisclosure",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "child": "Supplies the contents of the component.",
+    "initiallyExpanded": "Sets the initial open state for an uncontrolled disclosure.",
+    "expanded": "Sets the open state when the caller controls the disclosure.",
+    "onExpansionChanged": "Receives the updated open state."
+  }
+}

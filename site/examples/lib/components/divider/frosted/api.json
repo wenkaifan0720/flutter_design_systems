@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedDivider",
+  "parameters": {
+    "height": "The vertical space reserved for the component.",
+    "thickness": "Sets the thickness of the line.",
+    "indent": "Insets the line at its reading start.",
+    "endIndent": "Insets the line at its reading end."
+  }
+}

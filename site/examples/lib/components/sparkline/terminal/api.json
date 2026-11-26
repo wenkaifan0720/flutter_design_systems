@@ -1,0 +1,8 @@
+{
+  "widget": "TermSparkline",
+  "parameters": {
+    "values": "Daily counts in chronological order.",
+    "semanticLabel": "Names the series and period.",
+    "cols": "Width in character cells. By default each value gets one cell."
+  }
+}

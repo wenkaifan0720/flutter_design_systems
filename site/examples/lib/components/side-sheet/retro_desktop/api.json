@@ -1,0 +1,10 @@
+{
+  "widget": "showRetroDesktopSheet",
+  "parameters": {
+    "title": "Heading in the panel’s title bar.",
+    "builder": "Builds the file details.",
+    "edge": "Reading edge from which the panel opens.",
+    "width": "Preferred panel width."
+  },
+  "keyboardNote": "Escape closes the sheet and returns focus to File details."
+}

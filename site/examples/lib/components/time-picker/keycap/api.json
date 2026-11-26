@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapTimePicker",
+  "parameters": {
+    "value": "The time chosen.",
+    "onChanged": "Called with the time set; null turns it off.",
+    "semanticLabel": "Its name, for a screen reader, when there is no label."
+  }
+}

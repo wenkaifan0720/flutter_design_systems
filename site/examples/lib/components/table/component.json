@@ -1,0 +1,8 @@
+{
+  "order": 52,
+  "group": "Containers",
+  "title": "Table",
+  "examples": {
+    "compare-costs": "Compare costs"
+  }
+}

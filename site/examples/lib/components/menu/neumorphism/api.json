@@ -1,0 +1,9 @@
+{
+  "widget": "showNeumorphicMenu",
+  "parameters": {
+    "anchor": "Global bounds of the button that opened the menu.",
+    "items": "Typed commands with visible names.",
+    "label": "Accessible name for the menu.",
+    "width": "Requested width of the menu."
+  }
+}

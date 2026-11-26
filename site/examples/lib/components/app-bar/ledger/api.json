@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerTopBar",
+  "parameters": {
+    "title": "Identifies the current screen.",
+    "actions": "Widgets at the action end of the bar."
+  },
+  "keyboardNote": "On a phone, the root bar shows the app title from the surrounding preview. The desktop masthead shows Notes."
+}

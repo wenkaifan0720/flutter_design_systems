@@ -1,0 +1,8 @@
+{
+  "widget": "CivicPagination",
+  "parameters": {
+    "pageCount": "Total number of result pages.",
+    "selectedIndex": "Current page, counted from 0.",
+    "onPageChanged": "Receives the requested page."
+  }
+}

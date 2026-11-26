@@ -1,0 +1,14 @@
+{
+  "widget": "CivicButton",
+  "parameters": {
+    "child": "Widget that labels the action.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "isDestructiveAction": "Uses the destructive treatment.",
+    "expand": "Controls whether the button fills its row.",
+    "icon": "Places a glyph after the label.",
+    "style": "Overrides the component’s themed appearance.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears.",
+    "statesController": "Observes or updates the control’s widget states."
+  }
+}

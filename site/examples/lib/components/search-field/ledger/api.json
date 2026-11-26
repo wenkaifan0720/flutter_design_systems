@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerSearchField",
+  "parameters": {
+    "hintText": "Prompt on the search entry.",
+    "onTap": "Opens the editor and puts focus in it."
+  },
+  "keyboardNote": "Activate Search titles to open the editor, then type a title."
+}

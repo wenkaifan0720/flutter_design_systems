@@ -1,0 +1,8 @@
+{
+  "widget": "showBrutalBottomSheet",
+  "parameters": {
+    "title": "Heading at the top of the panel.",
+    "builder": "Builds the content inside the sheet.",
+    "barrierDismissible": "Allows a press outside the sheet to dismiss it."
+  }
+}

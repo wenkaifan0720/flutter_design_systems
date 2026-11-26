@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceBadge",
+  "parameters": {
+    "text": "The figure.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

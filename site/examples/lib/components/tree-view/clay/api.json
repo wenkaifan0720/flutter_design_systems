@@ -1,0 +1,11 @@
+{
+  "widget": "ClayTree",
+  "parameters": {
+    "controller": "The nodes and their state.",
+    "labelOf": "A node's words.",
+    "iconOf": "A node's glyph.",
+    "onActivate": "A node opened (Enter, or a tap on a leaf).",
+    "semanticLabel": "What a screen reader calls it.",
+    "style": "This tree's own style, over ClayThemeData.treeStyle: `fill` the chosen row's dent."
+  }
+}

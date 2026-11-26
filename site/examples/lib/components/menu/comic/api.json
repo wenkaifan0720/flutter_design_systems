@@ -1,0 +1,9 @@
+{
+  "widget": "ComicMenuAnchor",
+  "parameters": {
+    "items": "Typed values and visible names.",
+    "builder": "Builds the trigger around the supplied open callback.",
+    "onSelected": "Receives the chosen sort order.",
+    "matchAnchorWidth": "Matches the panel to the trigger width."
+  }
+}

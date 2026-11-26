@@ -1,0 +1,8 @@
+{
+  "order": 4,
+  "group": "Actions",
+  "title": "Button group",
+  "examples": {
+    "adjust-zoom": "Adjust zoom"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "NeumorphicPieChart",
+  "parameters": {
+    "slices": "Names each category and its share of the total.",
+    "label": "Names the budget and plan.",
+    "size": "Sets the diameter of the chart."
+  }
+}

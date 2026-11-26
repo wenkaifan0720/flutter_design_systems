@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapTable",
+  "parameters": {
+    "columns": "The columns.",
+    "rows": "The rows, a string per column.",
+    "style": "Overrides, over KeycapThemeData.tableStyle: RawStyle.fill the well's floor."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceStepProgress",
+  "parameters": {
+    "steps": "Step labels in the order they are completed.",
+    "current": "Zero-based index of the current step."
+  }
+}

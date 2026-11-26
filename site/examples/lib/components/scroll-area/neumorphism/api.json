@@ -1,0 +1,12 @@
+{
+  "widget": "NeumorphicScrollArea",
+  "parameters": {
+    "controller": "The scroll view's controller.",
+    "child": "The scroll view.",
+    "axis": "The way it scrolls.",
+    "label": "What a screen reader calls the region.",
+    "thumbVisibility": "Whether the bar always shows.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the region takes focus when it first shows."
+  }
+}

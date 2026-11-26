@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedBadge",
+  "parameters": {
+    "count": "The number displayed by the badge.",
+    "max": "The largest count shown before a plus sign is used.",
+    "label": "The label exposed to a screen reader.",
+    "child": "Supplies the contents of the component."
+  }
+}

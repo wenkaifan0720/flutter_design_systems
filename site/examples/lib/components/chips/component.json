@@ -1,0 +1,8 @@
+{
+  "order": 25,
+  "group": "Inputs",
+  "title": "Chips",
+  "examples": {
+    "filter-saved": "Filter saved items"
+  }
+}

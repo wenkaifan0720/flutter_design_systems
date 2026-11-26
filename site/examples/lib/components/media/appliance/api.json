@@ -1,0 +1,10 @@
+{
+  "widget": "ApplianceMedia",
+  "parameters": {
+    "slotId": "The picture's media slot.",
+    "semanticLabel": "What it shows, for a screen reader.",
+    "aspectRatio": "Its width over its height.",
+    "placeholder": "What stands in until it comes.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

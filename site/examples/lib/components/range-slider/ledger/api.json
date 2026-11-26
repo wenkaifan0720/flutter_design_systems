@@ -1,0 +1,10 @@
+{
+  "widget": "LedgerRangeSlider",
+  "parameters": {
+    "values": "Lower and upper prices on the track.",
+    "max": "Largest allowed price.",
+    "format": "Formats the selected price in dollars.",
+    "label": "Names the price range.",
+    "onChanged": "Receives the updated bounds."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 15,
+  "group": "Inputs",
+  "title": "Number field",
+  "examples": {
+    "count-copies": "Choose a quantity"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 6,
+  "group": "Actions",
+  "title": "Split button",
+  "examples": {
+    "save-options": "Choose how to save"
+  }
+}

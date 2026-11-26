@@ -1,0 +1,22 @@
+{
+  "widget": "Fluent2ListItem",
+  "parameters": {
+    "title": "The item's main words.",
+    "subtitle": "The line under the title.",
+    "leading": "Places a widget before the main label.",
+    "icon": "A glyph at the start where there is no leading part.",
+    "value": "A value at the end, before trailing (Monthly, 12 MB).",
+    "trailing": "Places a widget at the trailing edge.",
+    "chevron": "The chevron of a row that opens a page.",
+    "onTap": "What a press on the row does.",
+    "onLongPress": "What a long press does (the row's menu on a phone).",
+    "selected": "Marks the row the page is about (the open thread).",
+    "checked": "Sets the row’s checked state.",
+    "onChanged": "Asked for the other state when a selection row is pressed.",
+    "enabled": "False draws the row disabled and inert.",
+    "semanticLabel": "Names the component for a screen reader.",
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

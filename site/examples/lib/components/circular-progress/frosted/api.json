@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedCircularProgressIndicator",
+  "parameters": {
+    "label": "Names the operation while it is running.",
+    "size": "Sets the spinner size.",
+    "value": "Sets determinate progress when a fraction is known.",
+    "strokeWidth": "Width of the progress ring."
+  }
+}

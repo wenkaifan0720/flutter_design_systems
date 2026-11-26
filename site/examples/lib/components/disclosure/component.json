@@ -1,0 +1,8 @@
+{
+  "order": 51,
+  "group": "Containers",
+  "title": "Disclosure",
+  "examples": {
+    "read-pickup": "Read pickup instructions"
+  }
+}

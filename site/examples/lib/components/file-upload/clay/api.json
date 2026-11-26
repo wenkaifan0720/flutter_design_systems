@@ -1,0 +1,9 @@
+{
+  "widget": "ClayFileDrop",
+  "parameters": {
+    "labelText": "The words above the tray.",
+    "onChoose": "Opens the platform's picker; null turns the tray off.",
+    "files": "The files chosen.",
+    "onRemove": "Takes a file out; null: files stay."
+  }
+}

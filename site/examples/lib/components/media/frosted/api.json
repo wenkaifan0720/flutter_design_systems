@@ -1,0 +1,10 @@
+{
+  "widget": "FrostedMedia",
+  "parameters": {
+    "image": "The image to show when available.",
+    "seed": "A stable value for the fallback image treatment.",
+    "aspect": "The ratio of width to height.",
+    "fit": "Controls how the image fills the available space.",
+    "label": "Describes the media to a screen reader."
+  }
+}

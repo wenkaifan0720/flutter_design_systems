@@ -1,0 +1,9 @@
+{
+  "widget": "GlossPieChart",
+  "parameters": {
+    "slices": "Names each category and its share of the total.",
+    "semanticLabel": "Names the budget and plan.",
+    "size": "Sets the diameter of the chart."
+  },
+  "keyboardNote": "Read each category’s amount in the chart summary."
+}

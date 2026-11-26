@@ -1,0 +1,11 @@
+{
+  "widget": "ExpansionTile",
+  "parameters": {
+    "title": "The row's heading; a tap on it opens and closes the section.",
+    "children": "The content shown while it is open.",
+    "initiallyExpanded": "Whether it starts open.",
+    "onExpansionChanged": "Called with whether it is now open.",
+    "controller": "Opens and closes it from code.",
+    "childrenPadding": "The space around the content."
+  }
+}

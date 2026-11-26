@@ -1,0 +1,8 @@
+{
+  "order": 27,
+  "group": "Inputs",
+  "title": "File upload",
+  "examples": {
+    "attach-file": "Attach a file"
+  }
+}

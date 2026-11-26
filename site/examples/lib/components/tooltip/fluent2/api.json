@@ -1,0 +1,9 @@
+{
+  "widget": "Fluent2Tooltip",
+  "parameters": {
+    "message": "Hint for the button in its current state.",
+    "child": "The control that owns the hint.",
+    "position": "Preferred position relative to the control.",
+    "withArrow": "Draws the pointer toward the control."
+  }
+}

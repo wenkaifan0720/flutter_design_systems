@@ -1,0 +1,10 @@
+{
+  "widget": "Fluent2Divider",
+  "parameters": {
+    "label": "The words in the line (an \"or\", a day).",
+    "vertical": "Whether it runs up and down rather than across.",
+    "align": "Positions the label along the divider.",
+    "appearance": "Selects the component’s visual treatment.",
+    "inset": "Keeps 12 off the line's two ends."
+  }
+}

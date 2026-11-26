@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopSelect",
+  "parameters": {
+    "labelText": "Visible name of the selection field.",
+    "options": "Paper sizes in menu order.",
+    "value": "Currently committed paper size.",
+    "onChanged": "Runs when the reader chooses a paper size."
+  }
+}

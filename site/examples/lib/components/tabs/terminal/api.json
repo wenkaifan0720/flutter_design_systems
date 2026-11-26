@@ -1,0 +1,10 @@
+{
+  "widget": "TermTabBar",
+  "parameters": {
+    "tabs": "Section names in reading order.",
+    "selectedIndex": "Index of the visible section.",
+    "onTap": "Receives the chosen index.",
+    "showNumbers": "Shows the tab numbers on the character grid.",
+    "style": "Overrides the selected fill and tab ink."
+  }
+}

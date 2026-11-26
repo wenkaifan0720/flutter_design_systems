@@ -1,0 +1,11 @@
+{
+  "widget": "ExpressiveEmptyState",
+  "parameters": {
+    "icon": "The glyph (one of ExpressiveSymbols).",
+    "title": "What is missing.",
+    "body": "Supplies the explanation beneath the heading.",
+    "actionLabel": "Sets the text of the empty state’s action.",
+    "onAction": "What the call to action does.",
+    "style": "Stateful visual overrides for the screen-state panel."
+  }
+}

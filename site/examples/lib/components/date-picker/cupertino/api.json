@@ -1,0 +1,11 @@
+{
+  "widget": "CupertinoDatePicker",
+  "parameters": {
+    "mode": "Date, time, or date and time.",
+    "initialDateTime": "The date shown when the wheels are first built.",
+    "onDateTimeChanged": "Called with the date as the wheels settle.",
+    "minimumDate": "The earliest date that can be chosen.",
+    "maximumDate": "The latest date that can be chosen.",
+    "dateOrder": "The order of the day, month and year wheels."
+  }
+}

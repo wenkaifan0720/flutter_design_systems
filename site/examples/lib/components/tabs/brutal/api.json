@@ -1,0 +1,10 @@
+{
+  "widget": "BrutalTabBar",
+  "parameters": {
+    "tabs": "Tab labels in reading order.",
+    "selectedIndex": "Index of the visible section.",
+    "onTap": "Receives the chosen index.",
+    "expand": "Controls whether tabs share the available width.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

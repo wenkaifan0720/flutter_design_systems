@@ -1,0 +1,11 @@
+{
+  "widget": "ExpressiveDialog",
+  "parameters": {
+    "title": "Heading that names the decision.",
+    "text": "Plain body text, as an alternative to the content widget.",
+    "actions": "ExpressiveDialogAction entries with labels and results.",
+    "style": "Overrides the component’s themed appearance.",
+    "content": "Supplies a body widget in place of plain text.",
+    "icon": "Adds a glyph to the component."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "GlossDialog",
+  "parameters": {
+    "title": "Heading that identifies the dialog.",
+    "content": "Widget between the title and the keys.",
+    "actions": "GlossDialogAction entries in reading order. Use primary for the confirming key."
+  }
+}

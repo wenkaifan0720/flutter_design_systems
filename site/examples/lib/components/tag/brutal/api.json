@@ -1,0 +1,8 @@
+{
+  "widget": "BrutalTag",
+  "parameters": {
+    "text": "Supplies the displayed text.",
+    "tone": "How it reads.",
+    "style": "Its style, over BrutalThemeData.tagStyle."
+  }
+}

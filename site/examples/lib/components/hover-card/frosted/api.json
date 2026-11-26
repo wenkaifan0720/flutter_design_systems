@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedHoverCard",
+  "parameters": {
+    "child": "The link that anchors the preview.",
+    "content": "The short profile shown on pointer hover.",
+    "width": "Maximum width of the card."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 14,
+  "group": "Inputs",
+  "title": "One-time code",
+  "examples": {
+    "enter-code": "Enter a code"
+  }
+}

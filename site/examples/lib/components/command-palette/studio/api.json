@@ -1,0 +1,7 @@
+{
+  "widget": "StudioCommandPalette",
+  "parameters": {
+    "commands": "Searchable action names and callbacks.",
+    "hint": "Prompt in the search field."
+  }
+}

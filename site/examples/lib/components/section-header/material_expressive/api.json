@@ -1,0 +1,7 @@
+{
+  "widget": "ExpressiveSectionHeader",
+  "parameters": {
+    "label": "The title.",
+    "trailing": "An action at the end of the line (\"See all\")."
+  }
+}

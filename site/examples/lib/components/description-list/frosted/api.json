@@ -1,0 +1,7 @@
+{
+  "widget": "FrostedDescriptionList",
+  "parameters": {
+    "children": "The child widgets in reading order.",
+    "grid": "Controls how the label–value pairs are laid out."
+  }
+}

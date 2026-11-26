@@ -1,0 +1,15 @@
+{
+  "widget": "ExpressiveResizable",
+  "parameters": {
+    "first": "The start (or top) pane.",
+    "second": "The end (or bottom) pane.",
+    "axis": "Side by side (Axis.horizontal) or stacked.",
+    "fraction": "The first pane's share of the room, when the parent holds it.",
+    "initialFraction": "The first pane's share to start with, when fraction is null.",
+    "onChanged": "Each new share.",
+    "minFirst": "The minimum extent of the first pane.",
+    "minSecond": "The minimum extent of the second pane.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the drag handle takes focus when first built."
+  }
+}

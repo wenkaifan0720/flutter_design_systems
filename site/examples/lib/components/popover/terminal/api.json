@@ -1,0 +1,8 @@
+{
+  "widget": "TermPopover",
+  "parameters": {
+    "anchorBuilder": "Builds the trigger for the panel.",
+    "builder": "Builds the note inside the panel.",
+    "title": "Heading of the anchored pane."
+  }
+}

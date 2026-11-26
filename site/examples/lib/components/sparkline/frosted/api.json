@@ -1,0 +1,7 @@
+{
+  "widget": "FrostedSparkline",
+  "parameters": {
+    "values": "Daily request counts in order.",
+    "label": "Names the series."
+  }
+}

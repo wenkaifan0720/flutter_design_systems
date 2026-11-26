@@ -1,0 +1,7 @@
+{
+  "widget": "ExpressiveSparkline",
+  "parameters": {
+    "points": "Daily names and measurements in chronological order.",
+    "aspectRatio": "Width of the small plot relative to its height."
+  }
+}

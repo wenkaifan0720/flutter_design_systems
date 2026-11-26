@@ -1,0 +1,8 @@
+{
+  "widget": "MinimalPageDots",
+  "parameters": {
+    "pageCount": "Total number of pages.",
+    "page": "Zero-based position of the current page.",
+    "onPageChanged": "Receives the position requested by a dot."
+  }
+}

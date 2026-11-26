@@ -1,0 +1,7 @@
+{
+  "widget": "TermDescriptionList",
+  "parameters": {
+    "items": "Each label together with its corresponding value.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

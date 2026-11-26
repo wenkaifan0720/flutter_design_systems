@@ -1,0 +1,7 @@
+{
+  "widget": "TermAvatar",
+  "parameters": {
+    "name": "The person identified by this avatar.",
+    "lines": "The height in terminal text lines."
+  }
+}

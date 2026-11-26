@@ -1,0 +1,8 @@
+{
+  "order": 70,
+  "group": "Overlays",
+  "title": "Dialog",
+  "examples": {
+    "draft-details": "Read draft details"
+  }
+}

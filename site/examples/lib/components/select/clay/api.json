@@ -1,0 +1,9 @@
+{
+  "widget": "ClaySelect",
+  "parameters": {
+    "labelText": "The label above the key.",
+    "items": "The choices.",
+    "value": "The chosen value; hint shows when null.",
+    "onChanged": "Called with the value chosen; null turns it off."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "widget": "ClayButton",
+  "parameters": {
+    "label": "The words on the key.",
+    "onPressed": "Called on a press; null turns the key off.",
+    "icon": "A glyph before the words.",
+    "onLongPress": "Called on a long press.",
+    "isDestructiveAction": "Whether the action destroys something: danger words, or a danger key under ClayButton.filled.",
+    "style": "This key's own style, over ClayThemeData's part theme for its kind."
+  }
+}

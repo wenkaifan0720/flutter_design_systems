@@ -1,0 +1,7 @@
+{
+  "widget": "showKeycapBottomSheet",
+  "parameters": {
+    "title": "Heading at the top of the panel.",
+    "builder": "Builds the content inside the sheet."
+  }
+}

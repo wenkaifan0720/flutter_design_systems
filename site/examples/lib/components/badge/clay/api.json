@@ -1,0 +1,10 @@
+{
+  "widget": "ClayBadge",
+  "parameters": {
+    "count": "The number.",
+    "child": "What it sits on.",
+    "maxCount": "The most it shows before \"+\".",
+    "semanticLabel": "What a screen reader says; null: \"count new\".",
+    "style": "This badge's own style, over ClayThemeData.badgeStyle: `fill` the pill."
+  }
+}

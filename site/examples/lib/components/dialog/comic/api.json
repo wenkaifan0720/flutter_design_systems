@@ -1,0 +1,12 @@
+{
+  "widget": "ComicDialog",
+  "parameters": {
+    "title": "Heading that names the dialog.",
+    "message": "Short body text.",
+    "actions": "Buttons at the foot of the panel.",
+    "tone": "Selects the panel’s tone.",
+    "style": "Overrides the component’s themed appearance.",
+    "content": "Adds widgets below the message.",
+    "icon": "Adds a glyph to the component."
+  }
+}

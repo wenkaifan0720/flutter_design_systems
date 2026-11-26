@@ -1,0 +1,9 @@
+{
+  "widget": "ClaySplitButton",
+  "parameters": {
+    "label": "The main action's words.",
+    "onPressed": "The main action; null disables the main part (the menu stays).",
+    "actions": "The menu's actions.",
+    "menuLabel": "What a screen reader calls the menu part."
+  }
+}

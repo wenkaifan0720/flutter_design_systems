@@ -1,0 +1,14 @@
+{
+  "widget": "GlossSplitView",
+  "parameters": {
+    "first": "The first pane (the start, or the top).",
+    "second": "The second pane.",
+    "axis": "Side by side (horizontal) or stacked.",
+    "initialFraction": "The first pane's share to begin with.",
+    "minFirst": "The minimum extent of the first pane.",
+    "minSecond": "The minimum extent of the second pane.",
+    "onChanged": "The first pane's new share.",
+    "semanticLabel": "Names the component for a screen reader.",
+    "style": "Its own style, over GlossThemeData.splitViewStyle."
+  }
+}

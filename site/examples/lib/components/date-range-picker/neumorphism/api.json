@@ -1,0 +1,6 @@
+{
+  "widget": "NeumorphicDateRangePicker",
+  "parameters": {
+    "controller": "Tracks the visible month, available dates and selected interval."
+  }
+}

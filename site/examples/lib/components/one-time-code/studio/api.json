@@ -1,0 +1,8 @@
+{
+  "widget": "StudioCodeField",
+  "parameters": {
+    "labelText": "Names the single code entry.",
+    "length": "Number of digits expected.",
+    "onChanged": "Receives the whole value after each edit."
+  }
+}

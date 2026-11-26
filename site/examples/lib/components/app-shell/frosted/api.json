@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedScaffold",
+  "parameters": {
+    "footer": "Places the look’s destination bar alongside the page body.",
+    "body": "Content of the selected destination.",
+    "scroll": "Controls whether the scaffold scrolls the body."
+  }
+}

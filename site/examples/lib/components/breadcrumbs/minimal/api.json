@@ -1,0 +1,6 @@
+{
+  "widget": "MinimalBreadcrumb",
+  "parameters": {
+    "crumbs": "Path from the outermost folder to the current location."
+  }
+}

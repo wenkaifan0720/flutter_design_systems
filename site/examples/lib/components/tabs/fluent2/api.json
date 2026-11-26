@@ -1,0 +1,13 @@
+{
+  "widget": "Fluent2TabList",
+  "parameters": {
+    "tabs": "Labels in reading order.",
+    "selectedIndex": "Index of the selected tab.",
+    "onChanged": "Receives the chosen index.",
+    "vertical": "Lays tabs out in a column.",
+    "appearance": "Selects the visual appearance of the tabs.",
+    "size": "Selects the component’s size.",
+    "label": "Provides an accessible name for the tab list.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

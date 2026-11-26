@@ -1,0 +1,17 @@
+{
+  "widget": "ClayListTile",
+  "parameters": {
+    "title": "The row's words.",
+    "subtitle": "A second line under them.",
+    "leading": "A glyph or a badge before them.",
+    "trailing": "A control at the row's end (a switch, a checkbox).",
+    "trailingText": "A value at the row's end.",
+    "onTap": "Called when the row is pressed; null: the row is not a control.",
+    "selected": "Whether the row is the one shown beside the list (a list beside its detail).",
+    "showChevron": "Whether a chevron shows at the end; by default when onTap is set and no trailing control is.",
+    "isDestructiveAction": "Whether the row destroys something: its words in the danger ink.",
+    "enabled": "Whether the row is on.",
+    "semanticLabel": "What a screen reader says for the row, when not its words.",
+    "style": "This row's own style, over ClayThemeData.listTileStyle."
+  }
+}

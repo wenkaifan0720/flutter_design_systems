@@ -1,0 +1,14 @@
+{
+  "widget": "Fluent2Badge",
+  "parameters": {
+    "count": "What it counts.",
+    "label": "Names what the badge counts for a screen reader.",
+    "child": "Supplies the content inside the component.",
+    "overflowCount": "The largest count shown before it reads N+.",
+    "showZero": "Draw a zero count instead of nothing.",
+    "color": "Fluent's color.",
+    "appearance": "Selects the component’s visual treatment.",
+    "size": "Selects the size of the component.",
+    "shape": "Chooses the outline of the component."
+  }
+}

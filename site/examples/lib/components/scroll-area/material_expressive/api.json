@@ -1,0 +1,13 @@
+{
+  "widget": "ExpressiveScrollArea",
+  "parameters": {
+    "controller": "The controller child scrolls on.",
+    "child": "The scroll view.",
+    "axis": "The way it scrolls.",
+    "alwaysShown": "Whether the thumb stays while there is anything to scroll.",
+    "focusable": "Whether the area is a tab stop of its own.",
+    "semanticLabel": "What a screen reader calls the area.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Whether the area takes focus when first built (with focusable)."
+  }
+}

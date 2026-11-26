@@ -1,0 +1,8 @@
+{
+  "order": 76,
+  "group": "Overlays",
+  "title": "Tooltip",
+  "examples": {
+    "bookmark-hint": "Explain a bookmark"
+  }
+}

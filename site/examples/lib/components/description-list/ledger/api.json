@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerFacts",
+  "parameters": {
+    "facts": "The facts, in order.",
+    "columns": "How the facts stand.",
+    "ruled": "Whether the ink rule stands over them (no head stands above)."
+  }
+}

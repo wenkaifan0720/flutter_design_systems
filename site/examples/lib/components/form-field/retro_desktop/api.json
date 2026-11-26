@@ -1,0 +1,8 @@
+{
+  "widget": "RetroDesktopFormField",
+  "parameters": {
+    "labelText": "Visible name for the entry.",
+    "helperText": "Instruction displayed beside the entry.",
+    "errorText": "Validation message for a one-letter project name."
+  }
+}

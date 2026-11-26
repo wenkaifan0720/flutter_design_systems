@@ -1,0 +1,19 @@
+{
+  "widget": "ExpressiveFilledButton",
+  "parameters": {
+    "label": "Visible action name.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "shape": "Selects the button shape.",
+    "size": "Selects the button’s size class.",
+    "style": "Overrides the component’s themed appearance.",
+    "busy": "Suppresses activation while the action is in progress.",
+    "icon": "Adds a glyph to the component.",
+    "leading": "Places a widget before the label.",
+    "trailingIcon": "Adds a glyph after the label.",
+    "child": "Replaces the default button contents.",
+    "expand": "Allows the control to fill the available width.",
+    "semanticLabel": "Supplies an accessible name.",
+    "focusNode": "Supplies the FocusNode owned by the caller.",
+    "autofocus": "Requests keyboard focus when the control first appears."
+  }
+}

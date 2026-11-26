@@ -1,0 +1,7 @@
+{
+  "widget": "RetroDesktopAppBar",
+  "parameters": {
+    "title": "Identifies the current screen.",
+    "actions": "Widgets at the action end of the bar."
+  }
+}

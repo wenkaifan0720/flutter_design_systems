@@ -1,0 +1,9 @@
+{
+  "order": 29,
+  "group": "Inputs",
+  "title": "Date range picker",
+  "previewHeight": 640,
+  "examples": {
+    "book-dates": "Book a date range"
+  }
+}

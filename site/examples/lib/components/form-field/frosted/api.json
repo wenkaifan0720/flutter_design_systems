@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedTextField",
+  "parameters": {
+    "labelText": "Visible name for the entry.",
+    "helperText": "Instruction displayed beside the entry.",
+    "errorText": "Validation message for a one-letter project name.",
+    "onChanged": "Validates the project name as it is edited."
+  }
+}

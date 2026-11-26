@@ -1,0 +1,7 @@
+{
+  "widget": "ClaySkeleton",
+  "parameters": {
+    "width": "Its width; null spans its parent.",
+    "height": "Its height."
+  }
+}

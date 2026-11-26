@@ -1,0 +1,12 @@
+{
+  "widget": "MinimalReorderableListView",
+  "parameters": {
+    "items": "The items, in order.",
+    "onReorder": "Moves the item at from to to (counted after it left).",
+    "labelOf": "What a screen reader calls an item.",
+    "itemBuilder": "Paints a row's content, after the grip.",
+    "keyOf": "Returns a stable identity for each item as its position changes.",
+    "shrinkWrap": "Whether the list is only as tall as its rows (in a page that scrolls).",
+    "controller": "Its scroll position, when it scrolls itself."
+  }
+}

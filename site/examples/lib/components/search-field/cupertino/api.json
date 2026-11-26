@@ -1,0 +1,11 @@
+{
+  "widget": "CupertinoSearchTextField",
+  "parameters": {
+    "controller": "Holds and edits the query.",
+    "placeholder": "The words shown while the field is empty.",
+    "onChanged": "Called with the query after each edit, and with an empty one when it is cleared.",
+    "onSubmitted": "Called with the query when the user submits it.",
+    "onSuffixTap": "Replaces the clear button's default of emptying the field.",
+    "suffixMode": "When the clear button shows."
+  }
+}

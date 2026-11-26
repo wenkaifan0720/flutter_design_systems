@@ -1,0 +1,10 @@
+{
+  "widget": "SwitchListTile",
+  "parameters": {
+    "value": "Whether the switch is on.",
+    "onChanged": "Called with the next value; null disables the row.",
+    "title": "The row's label; a tap on it flips the switch too.",
+    "subtitle": "A second line under the label.",
+    "secondary": "A widget at the start of the row, such as an Icon."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "GlossMedia",
+  "parameters": {
+    "image": "Supplies the photo when one is available. The component uses its fallback otherwise.",
+    "semanticLabel": "What it shows, for a screen reader.",
+    "aspectRatio": "Its width over its height.",
+    "fit": "How the picture fills the frame.",
+    "radius": "The frame's corner."
+  }
+}

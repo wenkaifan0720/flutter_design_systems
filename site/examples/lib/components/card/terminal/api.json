@@ -1,0 +1,8 @@
+{
+  "widget": "TermPane",
+  "parameters": {
+    "title": "The main heading or row label.",
+    "child": "Supplies the contents of the component.",
+    "padding": "Sets the space inside the component."
+  }
+}

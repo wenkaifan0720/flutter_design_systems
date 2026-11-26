@@ -1,0 +1,12 @@
+{
+  "widget": "ApplianceCarousel",
+  "parameters": {
+    "itemCount": "How many slides.",
+    "itemBuilder": "Builds a slide.",
+    "height": "The window's height.",
+    "loop": "Whether the last slide turns to the first.",
+    "onPageChanged": "Called with the slide turned to.",
+    "semanticLabel": "Its name for a screen reader.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

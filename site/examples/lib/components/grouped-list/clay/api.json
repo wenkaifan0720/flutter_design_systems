@@ -1,0 +1,9 @@
+{
+  "widget": "ClayGroup",
+  "parameters": {
+    "children": "The rows.",
+    "header": "A header over the slab.",
+    "footer": "A note under the slab.",
+    "dividerIndent": "Where the grooves between rows start; by default the first row's words."
+  }
+}

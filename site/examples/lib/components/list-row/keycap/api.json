@@ -1,0 +1,17 @@
+{
+  "widget": "KeycapListTile",
+  "parameters": {
+    "title": "The row's words.",
+    "subtitle": "A supporting line.",
+    "leading": "A glyph at its start.",
+    "trailing": "A control at its end (a switch, a checkbox).",
+    "trailingText": "A value at its end, printed on the row (a time, a count, a status such as \"Just now\"): read, not pressed.",
+    "onTap": "Called when the row is pressed; null for a row that is only read.",
+    "selected": "Whether the row is the chosen one (the note open beside the list).",
+    "showChevron": "Whether a chevron says the row opens something; by onTap when null.",
+    "isDestructiveAction": "Whether pressing it destroys something.",
+    "enabled": "Whether the row is on.",
+    "semanticLabel": "What a screen reader says for the row, when its words are not enough.",
+    "style": "Overrides, over KeycapThemeData.listTileStyle."
+  }
+}

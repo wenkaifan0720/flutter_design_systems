@@ -1,0 +1,11 @@
+{
+  "widget": "MenuAnchor",
+  "parameters": {
+    "menuChildren": "The entries, usually MenuItemButton widgets.",
+    "builder": "Builds the button that opens the menu, given its MenuController.",
+    "controller": "Opens and closes the menu from code.",
+    "alignmentOffset": "Moves the menu from its place under the button.",
+    "onOpen": "Called when the menu opens.",
+    "onClose": "Called when the menu closes."
+  }
+}

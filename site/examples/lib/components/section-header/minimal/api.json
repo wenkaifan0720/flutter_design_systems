@@ -1,0 +1,12 @@
+{
+  "widget": "MinimalSectionHeader",
+  "parameters": {
+    "label": "The group's name, printed upper-cased.",
+    "count": "A mono figure at the end (2/3, 12, 71 / 84).",
+    "trailing": "Places a widget at the trailing edge.",
+    "leading": "A mark before the label (a status glyph for a status group).",
+    "expanded": "Reports the current expanded state.",
+    "onExpansionChanged": "Receives the new expanded state.",
+    "padding": "Space round the header."
+  }
+}

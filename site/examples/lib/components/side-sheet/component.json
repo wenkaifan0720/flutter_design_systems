@@ -1,0 +1,8 @@
+{
+  "order": 72,
+  "group": "Overlays",
+  "title": "Side sheet",
+  "examples": {
+    "inspect-file": "Inspect a file"
+  }
+}

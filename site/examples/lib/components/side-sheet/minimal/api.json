@@ -1,0 +1,9 @@
+{
+  "widget": "showMinimalSheet",
+  "parameters": {
+    "title": "Heading at the top of the panel.",
+    "builder": "Builds the content inside the sheet.",
+    "width": "Requested width of the open panel.",
+    "side": "Chooses the reading start or end edge."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "Fluent2TextField",
+  "parameters": {
+    "label": "Optional spoken name. The surrounding Fluent2FormField supplies the visible and spoken label here.",
+    "onChanged": "Updates the confirmation when the entry becomes empty or nonempty.",
+    "password": "Conceals the value and adds a keyboard-accessible reveal button."
+  },
+  "keyboardNote": "Tab from the input to the eye button and press Space to show or hide the password."
+}

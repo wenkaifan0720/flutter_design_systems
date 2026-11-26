@@ -1,0 +1,18 @@
+{
+  "widget": "ExpressiveCarouselView",
+  "parameters": {
+    "itemCount": "How many items there are.",
+    "itemBuilder": "Builds item index's content, laid out at the focal size and masked.",
+    "height": "Sets the height of the media frame.",
+    "itemSpacing": "The gap between items.",
+    "padding": "Insets before the first and after the last item (main axis), and above and below the items (cross axis).",
+    "itemCorner": "The corner every item's mask is rounded by.",
+    "controller": "Drives the carousel and reports its current item.",
+    "onItemTap": "Receives the index of the tapped slide.",
+    "style": "Overrides the component’s themed appearance for this instance.",
+    "semanticLabel": "What a screen reader calls the carousel.",
+    "minSmallItemWidth": "The smallest a small item may be (Compose's MinSmallItemSize).",
+    "maxSmallItemWidth": "The largest a small item may be (Compose's MaxSmallItemSize)."
+  },
+  "keyboardNote": "Use the Previous and Next buttons to move the ExpressiveCarouselController by one room."
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ComicSkeleton",
+  "parameters": {
+    "width": "Width of one placeholder line.",
+    "height": "Thickness of that line.",
+    "label": "Supplies a description of the loading state."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "NeumorphicTag",
+  "parameters": {
+    "text": "The text to display.",
+    "style": "Chip plate and words before the chip component theme."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 74,
+  "group": "Overlays",
+  "title": "Popover",
+  "examples": {
+    "read-sharing-details": "Read sharing details"
+  }
+}

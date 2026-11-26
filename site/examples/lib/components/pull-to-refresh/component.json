@@ -1,0 +1,8 @@
+{
+  "order": 60,
+  "group": "Containers",
+  "title": "Pull to refresh",
+  "examples": {
+    "update-board": "Update the board"
+  }
+}

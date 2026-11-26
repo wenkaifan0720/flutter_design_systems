@@ -1,0 +1,8 @@
+{
+  "widget": "FrostedActionSheet",
+  "parameters": {
+    "title": "Heading above the choices.",
+    "actions": "Named options with typed return values.",
+    "cancelLabel": "Text on the dismissal button."
+  }
+}

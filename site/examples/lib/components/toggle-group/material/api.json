@@ -1,0 +1,10 @@
+{
+  "widget": "ToggleButtons",
+  "parameters": {
+    "children": "One widget per button, usually a Text or an Icon.",
+    "isSelected": "Whether each button is on, in the order of children.",
+    "onPressed": "Called with the index of the tapped button; null disables them all.",
+    "direction": "Lays the buttons out in a row or a column.",
+    "borderRadius": "The corners of the outer border."
+  }
+}

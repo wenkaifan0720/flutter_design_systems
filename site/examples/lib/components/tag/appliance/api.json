@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceTag",
+  "parameters": {
+    "label": "Its words.",
+    "tone": "What it says about its subject.",
+    "style": "Its style, over ApplianceThemeData.tagStyle."
+  }
+}

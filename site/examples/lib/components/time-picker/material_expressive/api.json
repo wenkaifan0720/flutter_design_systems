@@ -1,0 +1,8 @@
+{
+  "widget": "ExpressiveTimePicker",
+  "parameters": {
+    "controller": "Holds the selected hour and minute.",
+    "layout": "Chooses the dial layout."
+  },
+  "keyboardNote": "Tab to the mode toggle and switch to text entry to type the hour and minute."
+}

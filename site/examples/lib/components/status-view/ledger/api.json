@@ -1,0 +1,8 @@
+{
+  "widget": "LedgerErrorState",
+  "parameters": {
+    "title": "Heading that describes the failure.",
+    "message": "Explains the failure.",
+    "onRetryPressed": "Handles the retry button."
+  }
+}

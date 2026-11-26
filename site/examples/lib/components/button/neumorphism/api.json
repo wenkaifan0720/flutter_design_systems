@@ -1,0 +1,11 @@
+{
+  "widget": "NeumorphicButton",
+  "parameters": {
+    "label": "Text shown on the action.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "size": "Selects the size of the raised face.",
+    "wide": "Lets the key take the available width.",
+    "leading": "Places a widget before the words.",
+    "busy": "Shows the activity state."
+  }
+}

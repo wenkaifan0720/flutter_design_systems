@@ -1,0 +1,7 @@
+{
+  "widget": "StudioTable",
+  "parameters": {
+    "columns": "The columns.",
+    "rows": "Each row's words, one per column."
+  }
+}

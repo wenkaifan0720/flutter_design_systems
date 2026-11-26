@@ -1,0 +1,9 @@
+{
+  "widget": "CivicSummaryCard",
+  "parameters": {
+    "title": "The title.",
+    "child": "Supplies the content inside the component.",
+    "actions": "Links at the title's end.",
+    "style": "Overrides for this card's look."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "widget": "Fluent2Tree",
+  "parameters": {
+    "items": "The top-level items, in order.",
+    "value": "The selected leaf's value.",
+    "onChanged": "Receives the updated value.",
+    "initiallyExpanded": "The branches open on the first frame.",
+    "size": "Selects the size of the component.",
+    "label": "What a screen reader calls the tree."
+  }
+}

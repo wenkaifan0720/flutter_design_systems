@@ -1,0 +1,7 @@
+{
+  "widget": "ClayPasswordField",
+  "parameters": {
+    "labelText": "The words above the well.",
+    "onChanged": "Each change of the password."
+  }
+}

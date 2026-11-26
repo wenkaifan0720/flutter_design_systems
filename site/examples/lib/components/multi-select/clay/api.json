@@ -1,0 +1,9 @@
+{
+  "widget": "ClayTagInput",
+  "parameters": {
+    "labelText": "The words above the well.",
+    "options": "Suggestions, filtered by the words typed.",
+    "values": "The tags.",
+    "onChanged": "The new tags; a disabled input ignores it."
+  }
+}

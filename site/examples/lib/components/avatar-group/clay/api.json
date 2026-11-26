@@ -1,0 +1,8 @@
+{
+  "widget": "ClayAvatarGroup",
+  "parameters": {
+    "avatars": "The people.",
+    "max": "How many show before the count.",
+    "size": "Each ball's side."
+  }
+}

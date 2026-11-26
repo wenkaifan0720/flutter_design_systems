@@ -1,0 +1,11 @@
+{
+  "widget": "FrostedTabBar",
+  "parameters": {
+    "tabs": "Section names in reading order.",
+    "selectedIndex": "Index of the visible section.",
+    "onChanged": "Receives the chosen index.",
+    "expand": "Gives the tabs an equal share of the available width.",
+    "label": "Accessible name for the group.",
+    "style": "Overrides the glass, ink and edges."
+  }
+}

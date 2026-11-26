@@ -1,0 +1,7 @@
+{
+  "widget": "FrostedRefreshIndicator",
+  "parameters": {
+    "onRefresh": "Returns a future that finishes when the new content is ready.",
+    "child": "Supplies the contents of the component."
+  }
+}

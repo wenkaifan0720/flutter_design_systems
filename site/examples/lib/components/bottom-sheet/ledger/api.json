@@ -1,0 +1,9 @@
+{
+  "widget": "LedgerSheet",
+  "parameters": {
+    "title": "Heading at the top of the panel.",
+    "builder": "Builds the content inside the sheet.",
+    "close": "Shows the close button in the heading.",
+    "foot": "Builds actions below the scrolling body."
+  }
+}

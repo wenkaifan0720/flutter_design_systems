@@ -1,0 +1,11 @@
+{
+  "widget": "FrostedButton",
+  "parameters": {
+    "label": "Text shown on the action.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "expand": "Stretches the button across its available row.",
+    "icon": "Adds a glyph beside the label.",
+    "semanticLabel": "Supplies an accessible name for the action.",
+    "size": "Selects the button size."
+  }
+}

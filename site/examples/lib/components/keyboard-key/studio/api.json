@@ -1,0 +1,6 @@
+{
+  "widget": "StudioKbd",
+  "parameters": {
+    "shortcut": "Escape key shown beside the reset command."
+  }
+}

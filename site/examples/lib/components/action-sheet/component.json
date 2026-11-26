@@ -1,0 +1,8 @@
+{
+  "order": 73,
+  "group": "Overlays",
+  "title": "Action sheet",
+  "examples": {
+    "file-actions": "Choose a file action"
+  }
+}

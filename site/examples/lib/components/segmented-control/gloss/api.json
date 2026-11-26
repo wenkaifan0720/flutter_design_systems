@@ -1,0 +1,8 @@
+{
+  "widget": "GlossSegmentedButton",
+  "parameters": {
+    "segments": "Available reporting periods in reading order.",
+    "selected": "Period currently selected.",
+    "onChanged": "Receives the chosen period."
+  }
+}

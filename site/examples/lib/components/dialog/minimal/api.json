@@ -1,0 +1,15 @@
+{
+  "widget": "MinimalDialog",
+  "parameters": {
+    "title": "Heading that names this route.",
+    "message": "Text explaining the decision.",
+    "confirmLabel": "Label on the confirming action.",
+    "cancelLabel": "Adds a second action that returns false.",
+    "destructive": "Applies the destructive treatment to the confirming action.",
+    "onConfirm": "Runs when the reader confirms.",
+    "onCancel": "Runs when the reader cancels.",
+    "autofocus": "Requests focus for an inline dialog. The raised dialog focuses the safe action.",
+    "elevated": "Controls the shadow below the dialog.",
+    "style": "Overrides the component’s themed appearance."
+  }
+}

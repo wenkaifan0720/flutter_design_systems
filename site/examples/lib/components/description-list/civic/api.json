@@ -1,0 +1,7 @@
+{
+  "widget": "CivicSummaryList",
+  "parameters": {
+    "rows": "The answers.",
+    "style": "Overrides for this list's look."
+  }
+}

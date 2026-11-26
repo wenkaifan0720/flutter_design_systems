@@ -1,0 +1,9 @@
+{
+  "widget": "ExpressiveToggleGroup",
+  "parameters": {
+    "label": "Names the group.",
+    "segments": "List and Grid, in reading order.",
+    "value": "Current layout.",
+    "onChanged": "Receives the new selection."
+  }
+}

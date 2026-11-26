@@ -1,0 +1,10 @@
+{
+  "widget": "KeycapCard",
+  "parameters": {
+    "child": "What the card holds.",
+    "onTap": "Called when the card is pressed.",
+    "padding": "The room round it; defaultPadding when null.",
+    "semanticLabel": "What a screen reader says for a pressable card.",
+    "style": "Overrides, over KeycapThemeData.wellStyle."
+  }
+}

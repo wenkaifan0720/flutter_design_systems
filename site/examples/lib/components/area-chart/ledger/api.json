@@ -1,0 +1,13 @@
+{
+  "widget": "LedgerCumulativeChart",
+  "parameters": {
+    "cumulative": "Running total for each recorded day.",
+    "budget": "Limit shown by the budget rule.",
+    "days": "Number of days available in the month.",
+    "high": "Upper bound of the plot.",
+    "grid": "Values and labels for the ruler.",
+    "semanticLabel": "Spoken summary of the totals.",
+    "height": "Sets the plot height."
+  },
+  "keyboardNote": "Read the chart summary for the cumulative daily amounts."
+}

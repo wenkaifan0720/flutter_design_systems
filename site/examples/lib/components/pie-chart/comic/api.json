@@ -1,0 +1,7 @@
+{
+  "widget": "ComicPieChart",
+  "parameters": {
+    "slices": "Names each category and its share of the total.",
+    "centre": "Total printed in the centre."
+  }
+}

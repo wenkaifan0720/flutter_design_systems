@@ -1,0 +1,10 @@
+{
+  "widget": "ReorderableListView",
+  "parameters": {
+    "children": "The rows, each with its own key.",
+    "onReorderItem": "Called with the old and new index of a moved row.",
+    "buildDefaultDragHandles": "Whether each row gets a drag handle, or a long press on a phone.",
+    "header": "A widget above the rows that does not move.",
+    "proxyDecorator": "Decorates the row while it is being dragged."
+  }
+}

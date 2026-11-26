@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedFileUpload",
+  "parameters": {
+    "labelText": "Identifies the attachment field.",
+    "onPressed": "Opens the browser’s file chooser.",
+    "files": "Files already selected.",
+    "onRemoved": "Removes the chosen file from this example."
+  }
+}

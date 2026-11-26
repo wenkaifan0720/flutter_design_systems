@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceMenu",
+  "parameters": {
+    "entries": "The commands available in the menu.",
+    "builder": "Builds the menu trigger.",
+    "semanticLabel": "Names the open menu."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "ClayMedia",
+  "parameters": {
+    "image": "The picture; null: the frame and its glyph alone.",
+    "semanticLabel": "What it shows, for a screen reader; '' for a picture that only decorates.",
+    "aspectRatio": "Its shape.",
+    "fit": "How it fills its frame.",
+    "radius": "Its corners."
+  }
+}

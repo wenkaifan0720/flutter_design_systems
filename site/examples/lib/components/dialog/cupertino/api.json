@@ -1,0 +1,9 @@
+{
+  "widget": "CupertinoAlertDialog",
+  "parameters": {
+    "title": "The dialog's heading.",
+    "content": "The dialog's message.",
+    "actions": "The buttons, as CupertinoDialogAction widgets.",
+    "scrollController": "Scrolls the title and message when they do not fit."
+  }
+}

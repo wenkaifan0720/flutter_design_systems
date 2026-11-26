@@ -1,0 +1,12 @@
+{
+  "name": "stint-click-test",
+  "private": true,
+  "description": "Browser check that every control in the built Stint study responds to a click or a tap.",
+  "type": "module",
+  "scripts": {
+    "stint-click-test": "node stint_click_test.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

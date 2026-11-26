@@ -1,0 +1,8 @@
+{
+  "widget": "Fluent2SectionHeader",
+  "parameters": {
+    "title": "The header's words.",
+    "aside": "A count or a note after the title.",
+    "action": "Supplies an action alongside the content."
+  }
+}

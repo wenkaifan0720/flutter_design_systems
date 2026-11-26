@@ -1,0 +1,15 @@
+{
+  "widget": "MinimalDisclosure",
+  "parameters": {
+    "title": "What it holds.",
+    "child": "What opens under the row.",
+    "subtitle": "A line under the title.",
+    "icon": "A glyph before the title.",
+    "initiallyExpanded": "Open on first build, when the page does not hold the state.",
+    "expanded": "The open state, when the page holds it.",
+    "onExpansionChanged": "Receives the new expanded state.",
+    "padding": "The air around child under the row.",
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears."
+  }
+}

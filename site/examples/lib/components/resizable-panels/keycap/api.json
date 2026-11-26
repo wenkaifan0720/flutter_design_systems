@@ -1,0 +1,13 @@
+{
+  "widget": "KeycapSplitView",
+  "parameters": {
+    "first": "The first pane.",
+    "second": "The second.",
+    "axis": "Side by side (horizontal) or stacked.",
+    "initialFraction": "Its share to start.",
+    "minFirst": "The first pane's least extent.",
+    "minSecond": "The second's.",
+    "onChanged": "Called with the new share.",
+    "semanticLabel": "The seam's name, for a screen reader."
+  }
+}

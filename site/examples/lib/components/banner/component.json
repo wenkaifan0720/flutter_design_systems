@@ -1,0 +1,8 @@
+{
+  "order": 79,
+  "group": "Overlays",
+  "title": "Banner",
+  "examples": {
+    "show-connection-status": "Show a connection change"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "widget": "NeumorphicTreeView",
+  "parameters": {
+    "controller": "The roots, the children, and which are open and chosen.",
+    "labelOf": "A row's words.",
+    "onActivate": "Called by Enter or a press on a row.",
+    "iconOf": "A row's glyph.",
+    "label": "What a screen reader calls the tree."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "widget": "KeycapMenuBar",
+  "parameters": {
+    "menus": "The menus, each with its rows as children."
+  }
+}

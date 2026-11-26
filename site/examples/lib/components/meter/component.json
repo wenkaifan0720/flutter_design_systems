@@ -1,0 +1,8 @@
+{
+  "order": 84,
+  "group": "Feedback",
+  "title": "Meter",
+  "examples": {
+    "check-capacity": "Check room capacity"
+  }
+}

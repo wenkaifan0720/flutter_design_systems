@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalInputGroup",
+  "parameters": {
+    "labelText": "Identifies the value and its unit.",
+    "after": "Fixed kilogram unit beside the editable value.",
+    "onChanged": "Receives only the editable portion.",
+    "keyboardType": "Requests a keyboard with decimal input."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "GlossStateView",
+  "parameters": {
+    "title": "Heading that describes the failure.",
+    "state": "Chooses the error presentation.",
+    "actions": "Controls offered below the explanation."
+  }
+}

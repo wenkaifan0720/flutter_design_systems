@@ -1,0 +1,8 @@
+{
+  "order": 12,
+  "group": "Inputs",
+  "title": "Password field",
+  "examples": {
+    "check-secret": "Check your typing"
+  }
+}

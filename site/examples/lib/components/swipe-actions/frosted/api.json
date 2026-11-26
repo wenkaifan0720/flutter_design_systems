@@ -1,0 +1,9 @@
+{
+  "widget": "FrostedSwipeActions",
+  "parameters": {
+    "child": "Supplies the contents of the component.",
+    "leading": "Actions at the reading-start edge.",
+    "trailing": "Actions revealed from the reading-end edge.",
+    "fullSwipe": "Allows a full swipe to run the outer action."
+  }
+}

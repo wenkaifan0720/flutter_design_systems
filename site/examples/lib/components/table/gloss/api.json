@@ -1,0 +1,9 @@
+{
+  "widget": "GlossTable",
+  "parameters": {
+    "columns": "The columns.",
+    "rows": "The rows, a string per column.",
+    "minColumnWidth": "The narrowest a column gets before the table scrolls.",
+    "style": "Its own style, over GlossThemeData.tableStyle."
+  }
+}

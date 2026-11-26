@@ -1,0 +1,13 @@
+      <div class="breadcrumb"><a data-follow-look href="{{root}}#components">Components</a> <span aria-hidden="true">/</span> {{group}}</div>
+      <h1>{{title}}</h1>
+      <div class="lead">{{lead}}</div>
+      <div class="look-bar">
+        {{lookPicker}}
+        <a class="look-details" id="look-details" href="{{root}}looks/{{firstLook}}/">About this look</a>
+        <a class="stint-link" data-follow-look href="{{root}}stint/?look={{firstLook}}">Stint app</a>
+        <a id="package-link" href="https://pub.dev/packages/{{firstLookPackage}}">{{firstLookName}} on pub.dev <span aria-hidden="true">↗</span></a>
+      </div>
+      <noscript><p>Enable JavaScript to switch design systems and run the Flutter preview.</p></noscript>
+      <div id="look-error" hidden><p role="status"></p><button type="button">Try again</button></div>
+      <div id="specimens">{{body}}</div>
+      <section class="behaviour" id="behaviour"><h2>Shared behaviour</h2>{{behaviour}}<a href="https://pub.dev/packages/ui_core">Read the ui_core contract <span aria-hidden="true">↗</span></a></section>

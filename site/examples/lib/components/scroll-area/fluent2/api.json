@@ -1,0 +1,12 @@
+{
+  "widget": "Fluent2ScrollArea",
+  "parameters": {
+    "focusNode": "Supplies a focus node owned and disposed by the caller.",
+    "autofocus": "Requests focus when the control first appears.",
+    "controller": "The scroll position, also given to child.",
+    "child": "The scroll view.",
+    "axis": "The way it scrolls.",
+    "semanticLabel": "The region's name.",
+    "thumbVisibility": "Keeps the scrollbar thumb visible while the content can scroll."
+  }
+}

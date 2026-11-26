@@ -1,0 +1,10 @@
+{
+  "widget": "MinimalEmptyState",
+  "parameters": {
+    "icon": "Its glyph.",
+    "title": "What is empty.",
+    "body": "What fills it.",
+    "actionLabel": "What its button says.",
+    "onAction": "Runs the empty state’s action."
+  }
+}

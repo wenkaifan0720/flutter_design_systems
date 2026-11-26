@@ -1,0 +1,7 @@
+{
+  "widget": "LedgerSection",
+  "parameters": {
+    "head": "The section's head, usually a LedgerHead.",
+    "child": "What the section holds."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "widget": "CupertinoSlider",
+  "parameters": {
+    "value": "The current value, between min and max.",
+    "onChanged": "Called while the thumb moves; null disables the slider.",
+    "min": "The lowest value.",
+    "max": "The highest value.",
+    "divisions": "The number of steps; null moves continuously.",
+    "onChangeEnd": "Called with the value where the thumb is let go."
+  }
+}

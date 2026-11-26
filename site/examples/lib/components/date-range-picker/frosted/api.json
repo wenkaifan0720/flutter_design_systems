@@ -1,0 +1,10 @@
+{
+  "widget": "FrostedDateRangePicker",
+  "parameters": {
+    "value": "Selected arrival and departure dates.",
+    "firstDate": "First available day.",
+    "lastDate": "Last available day.",
+    "onChanged": "Receives the chosen interval."
+  },
+  "keyboardNote": "Tab into the calendar. Move with the arrows and press Enter for the arrival and departure dates."
+}

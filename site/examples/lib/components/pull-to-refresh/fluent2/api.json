@@ -1,0 +1,7 @@
+{
+  "widget": "Fluent2RefreshIndicator",
+  "parameters": {
+    "onRefresh": "Returns a future that completes when the list has finished updating.",
+    "child": "The scrolling list."
+  }
+}

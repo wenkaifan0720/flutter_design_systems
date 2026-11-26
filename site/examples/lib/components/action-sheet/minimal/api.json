@@ -1,0 +1,9 @@
+{
+  "widget": "showMinimalActionSheet",
+  "parameters": {
+    "title": "Names the item or set of actions.",
+    "actions": "Lists the choices in reading order.",
+    "message": "Optional explanation above the choices."
+  },
+  "keyboardNote": "Press Tab to focus an action, then press Enter or Space to choose it."
+}

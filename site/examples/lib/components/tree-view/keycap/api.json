@@ -1,0 +1,10 @@
+{
+  "widget": "KeycapTree",
+  "parameters": {
+    "controller": "The rows and which are open and chosen.",
+    "labelOf": "A row's words.",
+    "iconOf": "A row's glyph.",
+    "onActivate": "Opens a row.",
+    "semanticLabel": "Its name, for a screen reader."
+  }
+}

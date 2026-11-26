@@ -1,0 +1,9 @@
+{
+  "widget": "ComicEmptyState",
+  "parameters": {
+    "title": "The primary heading.",
+    "body": "The main content of the page or section.",
+    "art": "A ComicMark or a ComicThought, for what is missing.",
+    "action": "The optional action beside this content."
+  }
+}

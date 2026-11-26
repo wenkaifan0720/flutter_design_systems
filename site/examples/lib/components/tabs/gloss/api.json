@@ -1,0 +1,10 @@
+{
+  "widget": "GlossTabBar",
+  "parameters": {
+    "tabs": "Section names in reading order.",
+    "selectedIndex": "Index of the visible section.",
+    "onTap": "Receives the chosen index.",
+    "expand": "Fills the row or hugs the labels. The default fills a phone-width row.",
+    "style": "Overrides the tab bar’s appearance."
+  }
+}

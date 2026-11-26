@@ -1,0 +1,10 @@
+{
+  "widget": "KeycapRadioGroup",
+  "parameters": {
+    "semanticLabel": "The group's name, for a screen reader.",
+    "groupValue": "The chosen one.",
+    "onChanged": "Called with a new choice; null turns the group off.",
+    "options": "The choices.",
+    "labelOf": "A choice's words."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "StudioListGroup",
+  "parameters": {
+    "children": "The rows, usually StudioListTiles.",
+    "header": "Its name, above it.",
+    "footer": "A note under it.",
+    "dividerIndent": "Sets where dividers begin inside the group."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "widget": "CivicTimeline",
+  "parameters": {
+    "entries": "The events, newest first.",
+    "style": "Overrides for this timeline's look."
+  }
+}

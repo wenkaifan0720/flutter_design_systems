@@ -1,0 +1,8 @@
+{
+  "widget": "StudioProgressBar",
+  "parameters": {
+    "value": "Completed files divided by the total.",
+    "semanticLabel": "Names the task the bar measures.",
+    "segments": "Number of cells in the track."
+  }
+}

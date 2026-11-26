@@ -1,0 +1,10 @@
+{
+  "widget": "MinimalListSection",
+  "parameters": {
+    "children": "Its rows.",
+    "divided": "Hairlines between the rows.",
+    "gutter": "Applies the list’s horizontal gutter.",
+    "inset": "Stand the group in its own card rather than full bleed on the page.",
+    "style": "Overrides the component’s themed appearance for this instance."
+  }
+}

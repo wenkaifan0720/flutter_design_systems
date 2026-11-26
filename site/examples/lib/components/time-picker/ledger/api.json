@@ -1,0 +1,9 @@
+{
+  "widget": "LedgerDatePicker",
+  "parameters": {
+    "value": "Hour and minute of the reminder.",
+    "onChanged": "Receives the updated reminder time.",
+    "mode": "Selects the time controls."
+  },
+  "keyboardNote": "Choose Done to apply the time or Escape to dismiss."
+}

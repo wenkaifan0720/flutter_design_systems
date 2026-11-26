@@ -1,0 +1,7 @@
+{
+  "widget": "ApplianceTextField",
+  "parameters": {
+    "labelText": "Visible name of the editable field.",
+    "onChanged": "Updates the draft heading after each edit."
+  }
+}

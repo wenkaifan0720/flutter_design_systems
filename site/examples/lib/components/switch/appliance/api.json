@@ -1,0 +1,8 @@
+{
+  "widget": "ApplianceSwitch",
+  "parameters": {
+    "semanticLabel": "Names the setting in both states.",
+    "value": "Whether reminders are on.",
+    "onChanged": "Applies the new setting immediately."
+  }
+}

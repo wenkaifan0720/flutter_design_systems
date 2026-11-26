@@ -1,0 +1,10 @@
+{
+  "widget": "BrutalMeter",
+  "parameters": {
+    "value": "Current number of occupants.",
+    "max": "Capacity of the room.",
+    "label": "Names the measured quantity.",
+    "high": "Sets the threshold for a high reading.",
+    "valueText": "Supplies the text used to describe the amount."
+  }
+}

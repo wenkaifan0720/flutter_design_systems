@@ -1,0 +1,8 @@
+{
+  "widget": "KeycapBadge",
+  "parameters": {
+    "count": "The figure; none for a dot.",
+    "semanticLabel": "What a screen reader hears; the figure when null.",
+    "style": "Overrides, over KeycapThemeData.tagStyle: RawStyle.fill the tab, RawStyle.foreground the figure."
+  }
+}

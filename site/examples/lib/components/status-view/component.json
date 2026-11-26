@@ -1,0 +1,8 @@
+{
+  "order": 83,
+  "group": "Feedback",
+  "title": "Status view",
+  "examples": {
+    "retry-file-list": "Retry a file list"
+  }
+}

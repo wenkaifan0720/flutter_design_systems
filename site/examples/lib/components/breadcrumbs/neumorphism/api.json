@@ -1,0 +1,6 @@
+{
+  "widget": "NeumorphicBreadcrumb",
+  "parameters": {
+    "crumbs": "Path from the outermost folder to the current location."
+  }
+}

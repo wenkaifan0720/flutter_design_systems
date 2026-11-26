@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapSpinner",
+  "parameters": {
+    "semanticLabel": "What a screen reader hears.",
+    "size": "Its diameter."
+  }
+}

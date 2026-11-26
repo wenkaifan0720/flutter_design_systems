@@ -1,0 +1,9 @@
+{
+  "widget": "ClayTag",
+  "parameters": {
+    "label": "Its word.",
+    "tone": "Its tint.",
+    "icon": "A glyph before the word.",
+    "style": "This tag's own style, over ClayThemeData.tagStyle."
+  }
+}

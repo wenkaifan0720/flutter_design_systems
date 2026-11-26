@@ -1,0 +1,7 @@
+{
+  "widget": "LedgerProgressBar",
+  "parameters": {
+    "value": "Completed files divided by the total.",
+    "label": "Names the task the bar measures."
+  }
+}

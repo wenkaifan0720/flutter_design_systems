@@ -1,0 +1,6 @@
+{
+  "widget": "BrutalMenuBar",
+  "parameters": {
+    "menus": "Top-level menus and their ordered commands."
+  }
+}

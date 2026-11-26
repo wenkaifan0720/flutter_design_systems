@@ -1,0 +1,19 @@
+{
+  "widget": "RetroDesktopButton",
+  "parameters": {
+    "label": "Text shown on the action.",
+    "onPressed": "Runs the action. Pass null to disable it.",
+    "isDefaultAction": "Draws the default action with a ringed frame.",
+    "isDestructiveAction": "Marks an action that deletes or destroys.",
+    "size": "Selects the size of the button face.",
+    "wide": "Fills the available width below 600 logical pixels.",
+    "busy": "Blocks repeated activation while the action is in progress.",
+    "showBusy": "Controls whether the hourglass is drawn.",
+    "icon": "Adds a glyph beside the label.",
+    "mark": "Supplies a custom leading widget.",
+    "iconOnPhone": "Shows only the icon on a phone.",
+    "focusNode": "Uses a focus node owned by the caller.",
+    "autofocus": "Requests keyboard focus when the button appears.",
+    "style": "Overrides the themed button face."
+  }
+}

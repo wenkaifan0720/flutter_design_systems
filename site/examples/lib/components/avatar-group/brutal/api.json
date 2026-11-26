@@ -1,0 +1,9 @@
+{
+  "widget": "BrutalAvatarGroup",
+  "parameters": {
+    "avatars": "The people.",
+    "max": "How many show before the count.",
+    "size": "Each square's side.",
+    "style": "The count square's style, over BrutalThemeData.avatarStyle."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "widget": "KeycapDatePicker",
+  "parameters": {
+    "value": "The day chosen.",
+    "firstDate": "The first day that can be chosen.",
+    "lastDate": "The last.",
+    "onChanged": "Called with the day chosen; null turns it off.",
+    "labelText": "The words over the key.",
+    "currentDate": "Today; the clock's when null."
+  }
+}

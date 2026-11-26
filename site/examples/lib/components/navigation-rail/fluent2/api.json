@@ -1,0 +1,8 @@
+{
+  "widget": "Fluent2NavigationRail",
+  "parameters": {
+    "items": "The destinations in reading order.",
+    "selectedIndex": "Zero-based index of the visible page.",
+    "onDestinationSelected": "Receives the index of the chosen destination."
+  }
+}

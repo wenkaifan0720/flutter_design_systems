@@ -1,0 +1,7 @@
+{
+  "widget": "TermLink",
+  "parameters": {
+    "label": "Destination name shown to the reader.",
+    "onPressed": "Opens the guide or returns to the library."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "widget": "ClayPagination",
+  "parameters": {
+    "pageCount": "How many pages there are.",
+    "page": "The current page, from 1.",
+    "onPageChanged": "A page chosen; null turns the keys off."
+  }
+}

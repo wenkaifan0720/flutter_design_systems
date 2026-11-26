@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapTabBar",
+  "parameters": {
+    "tabs": "The tabs.",
+    "style": "Overrides for the keys, over KeycapThemeData.keyRowStyle.",
+    "value": "The current tab's value.",
+    "onChanged": "Called with the tab chosen."
+  }
+}

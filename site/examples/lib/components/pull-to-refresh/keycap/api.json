@@ -1,0 +1,7 @@
+{
+  "widget": "KeycapRefresh",
+  "parameters": {
+    "onRefresh": "Refreshes; the key turns until it completes.",
+    "child": "The scroll view."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "widget": "ComicTabBar",
+  "parameters": {
+    "tabs": "Labels in reading order.",
+    "selectedIndex": "Index of the selected tab.",
+    "onTap": "Receives the chosen index.",
+    "label": "Accessible name for the tab bar."
+  }
+}

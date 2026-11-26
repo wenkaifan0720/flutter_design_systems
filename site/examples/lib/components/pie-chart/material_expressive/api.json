@@ -1,0 +1,8 @@
+{
+  "widget": "ExpressivePieChart",
+  "parameters": {
+    "points": "Names each category and its share of the total.",
+    "semanticLabel": "Overrides the spoken description that the chart builds from its labelled values.",
+    "aspectRatio": "Controls the width relative to the plot height."
+  }
+}

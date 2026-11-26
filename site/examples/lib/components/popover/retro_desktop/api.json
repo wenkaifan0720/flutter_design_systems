@@ -1,0 +1,9 @@
+{
+  "widget": "RetroDesktopPopover",
+  "parameters": {
+    "label": "Words on the built-in button.",
+    "content": "Builds the note in the open window.",
+    "semanticLabel": "Names the open popover.",
+    "width": "Sets the preferred width of the open panel."
+  }
+}

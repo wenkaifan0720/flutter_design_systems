@@ -1,0 +1,10 @@
+{
+  "widget": "TextField",
+  "parameters": {
+    "controller": "Holds and edits the text; one is created if none is given.",
+    "decoration": "The label, hint, helper, error and border, as an InputDecoration.",
+    "onChanged": "Called with the text after each edit.",
+    "onSubmitted": "Called with the text when the user submits it.",
+    "enabled": "Whether the field takes input."
+  }
+}

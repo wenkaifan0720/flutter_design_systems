@@ -1,0 +1,8 @@
+{
+  "widget": "TermTable",
+  "parameters": {
+    "columns": "Defines the headings, column widths and alignment.",
+    "rows": "The rows in reading order.",
+    "semanticLabel": "Names the component for a screen reader."
+  }
+}

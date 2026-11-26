@@ -1,0 +1,11 @@
+{
+  "widget": "LedgerCarousel",
+  "parameters": {
+    "itemCount": "How many slides.",
+    "itemBuilder": "Builds slide index.",
+    "semanticLabel": "What a screen reader calls it.",
+    "height": "The slides' height.",
+    "viewportFraction": "Each slide's share of the width.",
+    "onPageChanged": "Called as the slide shown changes."
+  }
+}

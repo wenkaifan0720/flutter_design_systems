@@ -1,0 +1,10 @@
+{
+  "widget": "ClayNumberField",
+  "parameters": {
+    "semanticLabel": "What a screen reader calls it.",
+    "min": "The least it may be.",
+    "max": "The most it may be.",
+    "value": "The number; null for none yet.",
+    "onChanged": "The new number; null turns the field off."
+  }
+}

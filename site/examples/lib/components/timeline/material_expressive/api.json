@@ -1,0 +1,7 @@
+{
+  "widget": "ExpressiveTimeline",
+  "parameters": {
+    "entries": "What happened, in the order it is read.",
+    "currentStep": "The index of the entry where things stand now, if any."
+  }
+}

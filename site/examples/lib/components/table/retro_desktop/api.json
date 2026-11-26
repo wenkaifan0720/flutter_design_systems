@@ -1,0 +1,10 @@
+{
+  "widget": "RetroDesktopTable",
+  "parameters": {
+    "style": "The enclosing well's shape, rim, fill and spacing over its component theme.",
+    "columns": "The columns displayed in order.",
+    "rows": "The rows displayed in order.",
+    "total": "The total value displayed after the items.",
+    "due": "Shows the formatted amount due below a double rule."
+  }
+}

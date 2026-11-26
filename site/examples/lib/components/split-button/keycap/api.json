@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapSplitButton",
+  "parameters": {
+    "label": "The main action's words.",
+    "onPressed": "The main action; null turns the main key off (the menu key stays).",
+    "actions": "The menu's actions.",
+    "menuLabel": "What a screen reader calls the menu key."
+  }
+}

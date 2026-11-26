@@ -1,0 +1,7 @@
+{
+  "widget": "ClayTextField",
+  "parameters": {
+    "labelText": "The label above the field.",
+    "onChanged": "Called as the words change."
+  }
+}

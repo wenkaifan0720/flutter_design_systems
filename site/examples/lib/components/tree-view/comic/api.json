@@ -1,0 +1,9 @@
+{
+  "widget": "ComicTreeView",
+  "parameters": {
+    "controller": "The nodes, what is open and what is picked.",
+    "labelOf": "A node's words.",
+    "onActivate": "Told when a leaf is pressed, or a row gets Enter.",
+    "label": "What a screen reader calls the tree."
+  }
+}

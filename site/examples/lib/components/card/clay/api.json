@@ -1,0 +1,10 @@
+{
+  "widget": "ClayCard",
+  "parameters": {
+    "child": "What the card holds.",
+    "onTap": "Called when the card is pressed; null: it is not a control.",
+    "padding": "The room round child.",
+    "semanticLabel": "What a screen reader says for a pressable card.",
+    "style": "This card's own style, over ClayThemeData.cardStyle."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "order": 3,
+  "group": "Actions",
+  "title": "Floating action button",
+  "examples": {
+    "create-note": "Create a note"
+  }
+}

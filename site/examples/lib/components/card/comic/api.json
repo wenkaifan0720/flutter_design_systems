@@ -1,0 +1,8 @@
+{
+  "widget": "ComicCard",
+  "parameters": {
+    "title": "The card's heading.",
+    "children": "Content in reading order.",
+    "style": "Frame style above the card component theme."
+  }
+}

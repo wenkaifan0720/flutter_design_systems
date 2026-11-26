@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapSegmentedButton",
+  "parameters": {
+    "segments": "The keys.",
+    "selected": "What is chosen.",
+    "semanticLabel": "The row's name, for a screen reader.",
+    "onSelectionChanged": "Called with the new choice; null turns the row off."
+  }
+}

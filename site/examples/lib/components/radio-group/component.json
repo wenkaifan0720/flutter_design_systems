@@ -1,0 +1,8 @@
+{
+  "order": 20,
+  "group": "Inputs",
+  "title": "Radio group",
+  "examples": {
+    "choose-delivery": "Choose a delivery method"
+  }
+}

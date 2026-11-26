@@ -1,0 +1,9 @@
+{
+  "widget": "KeycapStatusView",
+  "parameters": {
+    "title": "Its headline.",
+    "status": "What it shows.",
+    "message": "More words.",
+    "action": "The one thing to do about it: a key."
+  }
+}

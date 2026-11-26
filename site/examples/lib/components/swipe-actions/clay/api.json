@@ -1,0 +1,8 @@
+{
+  "widget": "ClaySwipeRow",
+  "parameters": {
+    "child": "The row.",
+    "startActions": "The actions a swipe toward the end shows.",
+    "endActions": "The actions a swipe toward the start shows."
+  }
+}

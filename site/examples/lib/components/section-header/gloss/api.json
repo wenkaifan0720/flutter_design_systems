@@ -1,0 +1,7 @@
+{
+  "widget": "GlossSectionHeader",
+  "parameters": {
+    "text": "The words.",
+    "trailing": "Something at the end of the head."
+  }
+}
