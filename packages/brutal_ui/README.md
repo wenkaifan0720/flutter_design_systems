@@ -4,9 +4,9 @@ A neo-brutalist Flutter design system with square controls, a 4-pixel grid, 2-pi
 
 ![Admit, a ticketing app on Brutal, at 1440 px by day beside the same app on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/brutal_ui/screenshots/hero_admit.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/brutal/) · [API reference](https://pub.dev/documentation/brutal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/brutal/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=brutal) · [API reference](https://pub.dev/documentation/brutal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
-The gallery includes Admit, a ticketing demo. Try checkout with the saved demo card and any three-digit security code. Bookings, cancellations and account edits last for the current gallery session.
+The example app includes Admit, a ticketing demo. Checkout takes the saved demo card and any three-digit security code; bookings, cancellations and account edits last for the session.
 
 ## Install
 
@@ -14,8 +14,27 @@ The gallery includes Admit, a ticketing demo. Try checkout with the saved demo c
 flutter pub add brutal_ui material_ui
 ```
 
+or, under `dependencies:` in `pubspec.yaml`, `brutal_ui: ^0.6.0` and `material_ui: ^1.9.0`.
+
 `material_ui` is the material library Brutal is built on; an app takes its `MaterialApp` from it, as Flutter 3.50
 deprecates `package:flutter/material.dart` for it.
+
+## A first app
+
+```dart
+import 'package:brutal_ui/brutal_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+void main() => runApp(
+  MaterialApp(
+    builder: (context, child) =>
+        BrutalHost(theme: BrutalThemeData.light(), child: child!),
+    home: Center(child: BrutalButton.filled('Buy tickets', onPressed: () {})),
+  ),
+);
+```
+
+`BrutalHost` gives every route the theme, the toaster and the palette's page colour. The fuller setup below also loads the face before the first frame.
 
 ## Use
 
@@ -109,6 +128,8 @@ Buttons take `onPressed`, rows take `onTap`, and controlled inputs take `value` 
 ## Make it yours
 
 Set the theme’s palette, border width, shadow offset and typography. Supply a component style on `BrutalThemeData` for defaults across your app or use the component’s `style` for a local override.
+
+Six palettes ship with the look, each designed by day and by night: `raw` (the default), `poster`, `zine`, `riso`, `blueprint` and `acid`. Pick one with `BrutalThemeData.preset('zine', Brightness.light)`, or give your own signal colour to `BrutalThemeData.from`.
 
 ```dart
 // The brand: your signal colour (its words picked black or white at 4.5:1),

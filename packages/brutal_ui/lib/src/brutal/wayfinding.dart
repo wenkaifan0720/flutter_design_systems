@@ -59,7 +59,9 @@ class BrutalBreadcrumb extends StatelessWidget {
     return Semantics(
       container: true,
       label: 'Breadcrumb',
-      child: Wrap(
+      // A chip group: each link's target takes the room between the words,
+      // so the crumbs and their slashes stand the look's spacing apart.
+      child: RawChipGroup(
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: BrutalSpacing.small,
         runSpacing: BrutalSpacing.tight,
@@ -75,14 +77,19 @@ class BrutalBreadcrumb extends StatelessWidget {
                 ),
               ),
             if (i == crumbs.length - 1 || crumb.onPressed == null)
-              Semantics(
-                // The page you are on.
-                selected: i == crumbs.length - 1,
-                child: Text(
-                  crumb.label,
-                  style: style.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: layered.foreground,
+              // The page you are on. Its words are its face, in a slot as
+              // tall as its links' targets, so a path that wraps keeps one
+              // rhythm and one start when the page takes a line of its own.
+              TapTargetPadding(
+                minSize: Size(0, RawTapTargets.of(context).floorOn().height),
+                child: Semantics(
+                  selected: i == crumbs.length - 1,
+                  child: Text(
+                    crumb.label,
+                    style: style.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: layered.foreground,
+                    ),
                   ),
                 ),
               )

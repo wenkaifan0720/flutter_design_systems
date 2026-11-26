@@ -247,7 +247,7 @@ void main() {
 
   group('on a phone, the calendar that opens above its field', () {
     // A finger's floor (a phone) and a pointer's (the web on a desk, as
-    // the shots were taken): the month stands 48 or 44 a week.
+    // the shots were taken): the month stands 44 a week under either.
     for (final input in RawInput.values) {
       for (final direction in TextDirection.values) {
         for (final brightness in Brightness.values) {

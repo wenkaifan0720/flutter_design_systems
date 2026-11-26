@@ -1,8 +1,8 @@
-// A calendar's day stands as tall as the look's tap floor where it is used
-// (48 under a finger, 44 under a pointer), so each day's face fills the
-// target its calendar gives it and the rules between the weeks meet: at 44
-// under a 48 floor the weeks stood 4 apart, each rule broken by a strip of
-// the page.
+// A calendar's day stands 44, the look's week, under a finger (whose floor,
+// 40, it stands over) and under a pointer alike, so each day's face fills
+// the target its calendar gives it and the rules between the weeks meet: at
+// 44 under a 48 floor the weeks stood 4 apart, each rule broken by a strip
+// of the page.
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,18 +51,18 @@ Rect _face(WidgetTester tester, String day) => tester.getRect(
 
 void main() {
   for (final brightness in Brightness.values) {
-    testWidgets('under a finger (${brightness.name}) each day stands 48 and '
+    testWidgets('under a finger (${brightness.name}) each day stands 44 and '
         'the weeks meet', (tester) async {
       await _pump(tester, brightness);
       for (final (above, below) in const [('15', '22'), ('20', '27')]) {
         final a = _face(tester, above);
         final b = _face(tester, below);
-        expect(a.height, 48, reason: above);
+        expect(a.height, 44, reason: above);
         expect(b.top, moreOrLessEquals(a.bottom, epsilon: .01), reason: below);
       }
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
-    testWidgets('under a pointer (${brightness.name}) each day stays 44 and '
+    testWidgets('under a pointer (${brightness.name}) each day stands 44 and '
         'the weeks meet', (tester) async {
       await _pump(tester, brightness);
       final a = _face(tester, '15');

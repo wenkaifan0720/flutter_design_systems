@@ -349,6 +349,11 @@ class BrutalCalendar extends StatefulWidget {
   }
 }
 
+// The look's week: a calendar's row of days stands 44 tall, a visual row
+// (as its weekday row and its bar are), not a tap target. The finger's floor
+// of 40 stands inside it; a larger floor grows it.
+const double _weekHeight = 44;
+
 class _BrutalCalendarState extends State<BrutalCalendar> {
   late RawCalendarController _controller = _make();
 
@@ -416,14 +421,15 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
     final rule = frame.side?.color ?? frame.edge ?? c.ink;
     final w = theme.borderWidth;
     // A day's row grows with its figure (at large text, to twice its
-    // size), never under 44 nor under the look's tap floor where it stands
-    // (48 for a finger), so each day's face fills its tap target and the
-    // rows' rules meet.
+    // size), never under the look's week (a visual row, which a finger's
+    // floor of 40 stands inside) nor under the look's tap floor where it
+    // stands, so each day's face fills its tap target and the rows' rules
+    // meet.
     final scaler = MediaQuery.textScalerOf(context)
         .clamp(maxScaleFactor: _maxTextScale);
     final floor = RawTapTargets.of(context).floorOn().height;
     final dayHeight = math.max(
-      math.max(44.0, floor),
+      math.max(_weekHeight, floor),
       scaler.scale(15) * 20 / 15 + 3 * w + 4,
     );
     Widget turn(IconData icon, String label, VoidCallback? onPressed) =>

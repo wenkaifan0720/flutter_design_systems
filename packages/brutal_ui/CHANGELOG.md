@@ -1,3 +1,13 @@
+## 0.6.0
+
+- Requires ui_core 0.7.1.
+- Touch targets are 40 by 40 under a finger (they were 48) and 24 by 24 under a pointer; `BrutalChromeMetrics.touchTarget` is 40. Sliders stand 40 tall; a calendar's week stands 44 under a finger (it was 48).
+- `BrutalTagInput` and `BrutalBreadcrumb` wrap in ui_core's `RawChipGroup`: the targets meet between the lines, which stand the look's spacing apart. A tag's remove key is 40 by 40.
+- Six palettes, each designed by day and by night: `BrutalThemeData.presets` is `raw` (the default), `poster`, `zine`, `riso`, `blueprint` and `acid`; `BrutalThemeData.preset(name, brightness)` takes one.
+- `BrutalThemeData.from`: an unnamed `lime` (the lead block) takes the signal's hue, its black words at 4.5:1. The signal keeps its colour under black or white words, as before.
+- The focus ink is the signal's nearest tone that holds 3:1 on its ground.
+- `brutalContrast` is deprecated: use `RawPalette.contrastRatio`. It goes in 0.7.0.
+
 ## 0.5.3
 
 - `BrutalTimePicker`'s wheels keep hours before minutes, left to right, under a right-to-left `Directionality` too, as Material's time picker keeps them and as the time reads in a line of text ("٠٩:٠٥"). In Arabic the hour's wheel stood on the right. Left-to-right drawing is unchanged.

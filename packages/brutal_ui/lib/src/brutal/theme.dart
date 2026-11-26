@@ -256,8 +256,8 @@ class BrutalColors with Diagnosticable {
   /// Black or white, whichever reads better on [fill]: the words an
   /// off-palette fill takes.
   static Color wordsOn(Color fill) =>
-      brutalContrast(fill, const Color(0xFF000000)) >=
-          brutalContrast(fill, const Color(0xFFFFFFFF))
+      RawPalette.contrastRatio(const Color(0xFF000000), fill) >=
+          RawPalette.contrastRatio(const Color(0xFFFFFFFF), fill)
       ? const Color(0xFF000000)
       : const Color(0xFFFFFFFF);
 
@@ -451,11 +451,11 @@ class BrutalTypeface with Diagnosticable {
 }
 
 /// The contrast ratio between [a] and [b], 1 to 21, as WCAG counts it.
-double brutalContrast(Color a, Color b) {
-  final x = a.computeLuminance();
-  final y = b.computeLuminance();
-  return (x > y ? x + 0.05 : y + 0.05) / (x > y ? y + 0.05 : x + 0.05);
-}
+@Deprecated(
+  'Use RawPalette.contrastRatio from ui_core. '
+  'It is removed in brutal_ui 0.7.0.',
+)
+double brutalContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
 
 /// Where the hard shadow stands from its face in [direction], [by] px: down,
 /// and right in left-to-right text, left in right-to-left.
@@ -809,13 +809,25 @@ class BrutalThemeData with Diagnosticable {
       ? BrutalThemeData.dark(density: density, typeface: typeface)
       : BrutalThemeData.light(density: density, typeface: typeface);
 
-  /// Brutal in an app's own colours and face: its main action's [signal]
-  /// (words on it are black or white, whichever reads), any block colours it
-  /// names, and its [typeface]. The rules, shadows, page and words stay the
-  /// look's.
+  /// Brutal in an app's own colours and face: its main action's [signal],
+  /// any block colours it names, and its [typeface]. The rules, shadows,
+  /// page and words stay the look's.
   ///
-  /// Blocks carry black words whatever the mode, so a block colour must hold
-  /// them at 4.5:1; a darker one stops a debug build with the rule's name.
+  /// The signal stays the main action's fill as given, its words black or
+  /// white, whichever holds 4.5:1 on it (ui_core's [RawPalette.accentFill]
+  /// by [RawAccentRule.named]). A flat bright face under black words is the
+  /// style's core, so a gold or a pastel keeps its colour, where Material's
+  /// scheme would darken it under white words.
+  ///
+  /// [lime] is the lead block's colour: a screen's one block, a chosen row,
+  /// a success, a span's days. Unnamed, it takes the signal's hue at the
+  /// look's own lime's tone and chroma, its black words held at 4.5:1, so a
+  /// screen's main action and its lead block are one family. [blue], [pink]
+  /// and [violet] stay the look's own unless named: they are also a chart's
+  /// series and the avatars' colours, which need four hues told apart. A
+  /// named block wins; blocks carry black words whatever the mode, so a
+  /// named one must hold them at 4.5:1, and a darker one stops a debug build
+  /// with the rule's name.
   ///
   /// ```dart
   /// final theme = BrutalThemeData.from(signal: const Color(0xFF00C2A8), blue: const Color(0xFF3D7BFF));
@@ -833,11 +845,11 @@ class BrutalThemeData with Diagnosticable {
     final base = brightness == Brightness.dark
         ? const BrutalColors.dark()
         : const BrutalColors.light();
-    final onSignal = BrutalColors.wordsOn(signal);
-    assert(
-      brutalContrast(signal, onSignal) >= 4.5,
-      'Brutal sets the signal\'s words at 4.5:1: $signal holds neither black '
-      'nor white words that well.',
+    final main = RawPalette.accentFill(
+      signal,
+      brightness: brightness,
+      rule: RawAccentRule.named,
+      darkInk: base.onBlock,
     );
     for (final (name, block) in [
       ('lime', lime),
@@ -846,17 +858,17 @@ class BrutalThemeData with Diagnosticable {
       ('violet', violet),
     ]) {
       assert(
-        block == null || brutalContrast(block, base.onBlock) >= 4.5,
+        block == null || RawPalette.contrastRatio(base.onBlock, block) >= 4.5,
         'Brutal\'s blocks carry black words at 4.5:1: $name $block reads '
-        'them at ${brutalContrast(block, base.onBlock).toStringAsFixed(2)}:1. '
+        'them at ${RawPalette.contrastRatio(base.onBlock, block).toStringAsFixed(2)}:1. '
         'Give a lighter colour.',
       );
     }
     return BrutalThemeData(
       colors: base.copyWith(
-        signal: signal,
-        onSignal: onSignal,
-        lime: lime,
+        signal: main.fill,
+        onSignal: main.ink,
+        lime: lime ?? _leadFrom(signal, base),
         blue: blue,
         pink: pink,
         violet: violet,
@@ -866,19 +878,266 @@ class BrutalThemeData with Diagnosticable {
     );
   }
 
-  /// The names of the look's presets, the first its default: [preset] takes
-  /// one.
-  static const List<String> presets = ['raw'];
+  // The lead block for [signal]: its hue at [base]'s lime's tone and chroma,
+  // under black words at 4.5:1.
+  static Color _leadFrom(Color signal, BrutalColors base) {
+    final own = RawHct.fromColor(base.lime);
+    final lead = RawHct.fromColor(signal)
+        .withTone(own.tone)
+        .withChroma(own.chroma)
+        .toColor();
+    return RawPalette.readableTone(lead, on: [base.onBlock]);
+  }
+
+  /// The names of the look's six palettes, the first its default:
+  /// [preset] takes one.
+  ///
+  /// * `raw`: the look's own, a signal orange and a lime lead on a white
+  ///   page.
+  /// * `poster`: bright primaries on a white page, a yellow signal and a
+  ///   green lead, cobalt, hot pink and violet blocks.
+  /// * `zine`: soft colours on newsprint, a coral signal and a peach lead,
+  ///   sky, bubblegum and lilac blocks on a cream page; by night a warm
+  ///   near-black.
+  /// * `riso`: risograph inks on a white page, a fluorescent pink signal
+  ///   and a yellow lead.
+  /// * `blueprint`: cool and technical, a cobalt signal, a periwinkle lead
+  ///   and a sky block on a pale blue page; by night a navy-black.
+  /// * `acid`: loud, an acid green signal and an electric cyan lead, hot
+  ///   pink and violet blocks; by night on black.
+  ///
+  /// Each holds the look's words: black on every block and on the signal,
+  /// the page's words at 4.5:1, by day and by night. [BrutalThemeData.from]
+  /// takes any brand colour.
+  static const List<String> presets = [
+    'raw',
+    'poster',
+    'zine',
+    'riso',
+    'blueprint',
+    'acid',
+  ];
 
   /// The preset named [id] (one of [presets]) in [brightness].
   factory BrutalThemeData.preset(
     String id,
     Brightness brightness, {
     BrutalDensity? density,
+    BrutalTypeface typeface = BrutalTypeface.spaceGrotesk,
   }) {
     assert(presets.contains(id), 'Brutal has no preset "$id": $presets');
-    return BrutalThemeData.raw(brightness, density: density);
+    final day = brightness == Brightness.light;
+    final colors = switch (id) {
+      'poster' => day ? _posterDay : _posterNight,
+      'zine' => day ? _zineDay : _zineNight,
+      'riso' => day ? _risoDay : _risoNight,
+      'blueprint' => day ? _blueprintDay : _blueprintNight,
+      'acid' => day ? _acidDay : _acidNight,
+      _ => null,
+    };
+    if (colors == null) {
+      return BrutalThemeData.raw(
+        brightness,
+        density: density,
+        typeface: typeface,
+      );
+    }
+    return BrutalThemeData(
+      colors: colors,
+      density: density,
+      typeface: typeface,
+    );
   }
+
+  static const BrutalColors _posterDay = BrutalColors(
+    brightness: Brightness.light,
+    paper: Color(0xFFFFFFFF),
+    surface: Color(0xFFFFFFFF),
+    ink: Color(0xFF000000),
+    inkMuted: Color(0xFF4D4D4D),
+    disabled: Color(0xFF737373),
+    signal: Color(0xFFFFD000),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFD7000F),
+    onDanger: Color(0xFFFFFFFF),
+    lime: Color(0xFF2ED573),
+    blue: Color(0xFF4F7BFF),
+    pink: Color(0xFFFF4F9A),
+    violet: Color(0xFF9B7BFF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0x80000000),
+  );
+
+  static const BrutalColors _posterNight = BrutalColors(
+    brightness: Brightness.dark,
+    paper: Color(0xFF121212),
+    surface: Color(0xFF1E1E1E),
+    ink: Color(0xFFF2F2F2),
+    inkMuted: Color(0xFFB3B3B3),
+    disabled: Color(0xFF888888),
+    signal: Color(0xFFFFD60A),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFFF5A5F),
+    onDanger: Color(0xFF000000),
+    lime: Color(0xFF3DDC7A),
+    blue: Color(0xFF6B8FFF),
+    pink: Color(0xFFFF63A8),
+    violet: Color(0xFFAA8FFF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0xB3000000),
+  );
+
+  static const BrutalColors _zineDay = BrutalColors(
+    brightness: Brightness.light,
+    paper: Color(0xFFF4EFE3),
+    surface: Color(0xFFFFFCF4),
+    ink: Color(0xFF000000),
+    inkMuted: Color(0xFF4F4A42),
+    disabled: Color(0xFF706A62),
+    signal: Color(0xFFFF7A59),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFD7000F),
+    onDanger: Color(0xFFFFFFFF),
+    lime: Color(0xFFFFC2A1),
+    blue: Color(0xFF8DB4FF),
+    pink: Color(0xFFFFA0D2),
+    violet: Color(0xFFC1A6FF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0x80000000),
+  );
+
+  static const BrutalColors _zineNight = BrutalColors(
+    brightness: Brightness.dark,
+    paper: Color(0xFF17140F),
+    surface: Color(0xFF231F18),
+    ink: Color(0xFFF4EFE3),
+    inkMuted: Color(0xFFBDB5A6),
+    disabled: Color(0xFF8E877C),
+    signal: Color(0xFFFF8C6E),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFFF5A5F),
+    onDanger: Color(0xFF000000),
+    lime: Color(0xFFFFC7A8),
+    blue: Color(0xFF97BBFF),
+    pink: Color(0xFFFFA8D6),
+    violet: Color(0xFFC8AEFF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0xB3000000),
+  );
+
+  static const BrutalColors _risoDay = BrutalColors(
+    brightness: Brightness.light,
+    paper: Color(0xFFFFFFFF),
+    surface: Color(0xFFFFFFFF),
+    ink: Color(0xFF000000),
+    inkMuted: Color(0xFF4D4A45),
+    disabled: Color(0xFF74716B),
+    signal: Color(0xFFFF48B0),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFD7000F),
+    onDanger: Color(0xFFFFFFFF),
+    lime: Color(0xFFFFE600),
+    blue: Color(0xFF5C8DFF),
+    pink: Color(0xFFFF9BD2),
+    violet: Color(0xFFA68BFF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0x80000000),
+  );
+
+  static const BrutalColors _risoNight = BrutalColors(
+    brightness: Brightness.dark,
+    paper: Color(0xFF141312),
+    surface: Color(0xFF201E1C),
+    ink: Color(0xFFF5F2EC),
+    inkMuted: Color(0xFFB7B2AA),
+    disabled: Color(0xFF8A867F),
+    signal: Color(0xFFFF5CB9),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFFF5A5F),
+    onDanger: Color(0xFF000000),
+    lime: Color(0xFFFFE81F),
+    blue: Color(0xFF6E9BFF),
+    pink: Color(0xFFFFA3D6),
+    violet: Color(0xFFAE96FF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0xB3000000),
+  );
+
+  static const BrutalColors _blueprintDay = BrutalColors(
+    brightness: Brightness.light,
+    paper: Color(0xFFE9F0FF),
+    surface: Color(0xFFFFFFFF),
+    ink: Color(0xFF000000),
+    inkMuted: Color(0xFF474D5C),
+    disabled: Color(0xFF656B7B),
+    signal: Color(0xFF4F7BFF),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFD7000F),
+    onDanger: Color(0xFFFFFFFF),
+    lime: Color(0xFF8AA4FF),
+    blue: Color(0xFF6CC6FF),
+    pink: Color(0xFFFF85C8),
+    violet: Color(0xFFA68BFF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0x80000000),
+  );
+
+  static const BrutalColors _blueprintNight = BrutalColors(
+    brightness: Brightness.dark,
+    paper: Color(0xFF0E1424),
+    surface: Color(0xFF182036),
+    ink: Color(0xFFEAF0FF),
+    inkMuted: Color(0xFFAEB8D0),
+    disabled: Color(0xFF838DA6),
+    signal: Color(0xFF6B8FFF),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFFF5A5F),
+    onDanger: Color(0xFF000000),
+    lime: Color(0xFF93ABFF),
+    blue: Color(0xFF79CDFF),
+    pink: Color(0xFFFF8FCC),
+    violet: Color(0xFFAE96FF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0xB3000000),
+  );
+
+  static const BrutalColors _acidDay = BrutalColors(
+    brightness: Brightness.light,
+    paper: Color(0xFFFFFFFF),
+    surface: Color(0xFFFFFFFF),
+    ink: Color(0xFF000000),
+    inkMuted: Color(0xFF4D4D4D),
+    disabled: Color(0xFF737373),
+    signal: Color(0xFFB4FF2B),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFD7000F),
+    onDanger: Color(0xFFFFFFFF),
+    lime: Color(0xFF3DE7FF),
+    blue: Color(0xFF6E8BFF),
+    pink: Color(0xFFFF5CC8),
+    violet: Color(0xFFA27BFF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0x80000000),
+  );
+
+  static const BrutalColors _acidNight = BrutalColors(
+    brightness: Brightness.dark,
+    paper: Color(0xFF0D0D0D),
+    surface: Color(0xFF1A1A1A),
+    ink: Color(0xFFF2F2F2),
+    inkMuted: Color(0xFFB3B3B3),
+    disabled: Color(0xFF888888),
+    signal: Color(0xFFB4FF2B),
+    onSignal: Color(0xFF000000),
+    danger: Color(0xFFFF5A5F),
+    onDanger: Color(0xFF000000),
+    lime: Color(0xFF3DE7FF),
+    blue: Color(0xFF7A97FF),
+    pink: Color(0xFFFF6CCE),
+    violet: Color(0xFFAE8CFF),
+    onBlock: Color(0xFF000000),
+    scrim: Color(0xB3000000),
+  );
 
   /// The colours.
   final BrutalColors colors;
@@ -1597,7 +1856,7 @@ class BrutalThemeData with Diagnosticable {
 }
 
 /// Installs Brutal below it: the theme every part reads, the default words
-/// and icons, the 4 px grid, and the tap floors (48 for a finger, 24 for a
+/// and icons, the 4 px grid, and the tap floors (40 for a finger, 24 for a
 /// pointer). Put it once in any app's `builder:`, under `MaterialApp`,
 /// `CupertinoApp` or `WidgetsApp`.
 ///
@@ -1614,12 +1873,10 @@ class BrutalTheme extends StatelessWidget {
   /// What wears it.
   final Widget child;
 
-  /// The tap floors every Brutal control stands at: 48 by 48 for a finger,
-  /// 24 by 24 for a pointer.
-  static const RawTapTargets tapTargets = RawTapTargets(
-    touch: Size(48, 48),
-    pointer: Size(24, 24),
-  );
+  /// The tap floors every Brutal control stands at: 40 by 40 for a finger,
+  /// 24 by 24 for a pointer ([BrutalChromeMetrics.touchTarget] and
+  /// [BrutalChromeMetrics.pointerTarget]).
+  static const RawTapTargets tapTargets = RawTapTargets.fallback;
 
   static final BrutalThemeData _fallback = BrutalThemeData.light();
 

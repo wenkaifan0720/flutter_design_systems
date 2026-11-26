@@ -44,7 +44,12 @@ class _ChoicesState extends State<_Choices> {
           behavior: HitTestBehavior.opaque,
           child: Row(
             children: [
-              control,
+              // The controls' column, a switch's track wide: the words of the
+              // checkboxes, radios and switches start on one line.
+              SizedBox(
+                width: BrutalSwitch.trackWidth,
+                child: Center(child: control),
+              ),
               const SizedBox(width: BrutalSpacing.medium),
               Expanded(
                 child: ExcludeSemantics(child: Text(words, style: t.body)),

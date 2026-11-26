@@ -24,8 +24,8 @@ import 'theme.dart';
 const double _pageWidth = 1200;
 
 /// The app's host, mounted once over its navigator (`WidgetsApp.builder`):
-/// Brutal's theme for the brightness asked for, its toasts and its white
-/// page.
+/// Brutal's theme for the brightness asked for, its toasts and the page
+/// colour of its palette.
 ///
 /// ```dart
 /// MaterialApp(builder: (context, child) => BrutalHost(child: child!))

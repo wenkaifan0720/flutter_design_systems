@@ -14,8 +14,9 @@ abstract final class BrutalChromeMetrics {
   /// The least area a pointer's click reaches.
   static const double pointerTarget = 24;
 
-  /// The least area a finger's tap reaches.
-  static const double touchTarget = 48;
+  /// The least area a finger's tap reaches: ui_core's touch floor, which
+  /// [BrutalTheme.tapTargets] declares.
+  static const double touchTarget = 40;
 
   /// The floor in effect at [context]: the finger's or the pointer's, by
   /// what reaches the controls there.

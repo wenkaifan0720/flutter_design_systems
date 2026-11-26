@@ -1770,16 +1770,21 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
                     : rule.withValues(alpha: 0),
               ),
               child: Padding(
+                // The first line of tags stands as far under the box's rule
+                // as from its sides: the look's tight spacing here and the
+                // same again in each tag's slot.
                 padding: const EdgeInsetsDirectional.only(
                   start: BrutalSpacing.small,
+                  top: BrutalSpacing.tight,
                   end: BrutalSpacing.small,
                 ),
-                child: Wrap(
+                // A chip group: each tag's target takes the room between the
+                // faces, so the tags' runs stand the look's spacing apart.
+                child: RawChipGroup(
                   spacing: BrutalSpacing.small,
                   // Where the entry takes a line of its own under the tags,
-                  // the room between gives its node the look's tap floor:
-                  // the line and the rule under it come to 2 under a
-                  // finger's 48.
+                  // the room between gives its node the look's tap floor
+                  // where the line and the rule under it come to less.
                   runSpacing: math.max(
                     0.0,
                     RawTapTargets.of(context).floorOn().height -
@@ -1851,6 +1856,9 @@ class _Tag extends StatelessWidget {
   final bool enabled;
   final VoidCallback onDeleted;
 
+  // The face's height, and the cross's cell.
+  static const double _face = 28;
+
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
@@ -1861,12 +1869,21 @@ class _Tag extends StatelessWidget {
         ? c.paper
         : c.ink;
     final rule = enabled ? c.ink : c.disabled;
-    // The face is 28 tall in the field's 44; the cross's target is the
-    // whole 44 square at the chip's end, over its cell and the label's end.
-    return SizedBox(
-      height: 44,
+    // The face is 28 tall inside its rules. It stands in a slot that keeps
+    // the look's tight spacing above and below it (so a line of tags never
+    // sits on the box's rule, nor on the line before), or the tap floor where
+    // that is taller; a chip group lets the slot reach into the room between
+    // its runs. The cross's target is the floor's square at the chip's end,
+    // over its cell and the label's end, reaching above and below the face.
+    final floor = RawTapTargets.of(context).floorOn();
+    final outer = _face + 2 * theme.borderWidth;
+    final slot = math.max(floor.height, outer + 2 * BrutalSpacing.tight);
+    final reach = math.max(floor.height, outer);
+    final over = (reach - outer) / 2;
+    return _TagTarget(
+      minSize: Size(0, slot),
       child: Stack(
-        alignment: AlignmentDirectional.centerStart,
+        clipBehavior: Clip.none,
         children: [
           AnimatedBrutalSurface(
             stiffness: BrutalMotion.colorStiffness,
@@ -1876,7 +1893,7 @@ class _Tag extends StatelessWidget {
               foreground: words,
             ),
             child: SizedBox(
-              height: 28,
+              height: _face,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1901,7 +1918,7 @@ class _Tag extends StatelessWidget {
                   ),
                   BrutalRule(vertical: true, color: rule),
                   SizedBox(
-                    width: 28,
+                    width: _face,
                     child: Center(
                       child: Icon(LucideIcons.x, size: 16, color: words),
                     ),
@@ -1911,10 +1928,10 @@ class _Tag extends StatelessWidget {
             ),
           ),
           PositionedDirectional(
-            top: 0,
-            bottom: 0,
+            top: -over,
+            bottom: -over,
             end: 0,
-            width: 44,
+            width: reach,
             child: RawButton(
               onPressed: enabled ? onDeleted : null,
               semanticLabel: 'Remove $label',
@@ -1925,6 +1942,73 @@ class _Tag extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A tag's target: its face laid out [minSize] at least, as a
+/// [TapTargetPadding] stands it, so a [RawChipGroup] sees the face inside it.
+/// A press in the room above or below the face goes to the point of the face
+/// straight across from it (over the cross, the cross), not to the face's
+/// centre (the tag's words, which take no press); the face's own semantics,
+/// its words and its cross's button, stay two nodes.
+class _TagTarget extends SingleChildRenderObjectWidget {
+  const _TagTarget({required this.minSize, required Widget super.child});
+
+  final Size minSize;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderTagTarget(
+    minSize,
+    textDirection: Directionality.maybeOf(context),
+    devicePixelRatio: MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
+  );
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderTagTarget renderObject) {
+    renderObject
+      ..minSize = minSize
+      ..textDirection = Directionality.maybeOf(context)
+      ..devicePixelRatio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+  }
+}
+
+class _RenderTagTarget extends RenderTapTargetPadding {
+  _RenderTagTarget(
+    super.minSize, {
+    super.textDirection,
+    super.devicePixelRatio,
+  });
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    final face = child;
+    if (face == null || !size.contains(position)) return false;
+    final at = (face.parentData! as BoxParentData).offset;
+    final local = position - at;
+    final onFace = Offset(
+      local.dx.clamp(0.0, math.max(0.0, face.size.width - 0.01)),
+      local.dy.clamp(0.0, math.max(0.0, face.size.height - 0.01)),
+    );
+    final hit = onFace == local
+        ? result.addWithPaintOffset(
+            offset: at,
+            position: position,
+            hitTest: (result, position) =>
+                face.hitTest(result, position: position),
+          )
+        : result.addWithRawTransform(
+            transform: MatrixUtils.forceToPoint(onFace),
+            position: onFace,
+            hitTest: (result, _) => face.hitTest(result, position: onFace),
+          );
+    if (hit) result.add(BoxHitTestEntry(this, position));
+    return hit;
+  }
+
+  // Nothing of the target merges the face's two nodes (a padded control's
+  // one node, as TapTargetPadding makes it, would read the tag's words as a
+  // button that removes it).
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {}
 }
 
 /// A label, help and an error round any [child] that is not a field of the

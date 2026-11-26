@@ -17,6 +17,14 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
       children: [_Palette()],
     ),
     KitSection(
+      title: 'Palettes',
+      note:
+          'Six palettes, raw the default: BrutalThemeData.preset(name, '
+          'brightness). The page, the signal, the lead block and the three '
+          'other blocks.',
+      children: [_Presets()],
+    ),
+    KitSection(
       title: 'Type',
       note:
           'Space Grotesk, plain. Five sizes on a 4 px line grid; nothing '
@@ -100,6 +108,60 @@ class _Palette extends StatelessWidget {
       ),
     );
   }
+}
+
+class _Presets extends StatelessWidget {
+  const _Presets();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.brutalTheme.colors;
+    final t = context.brutalTheme.textTheme;
+    return BrutalSurface(
+      face: BrutalFace(fill: c.surface, border: c.ink, foreground: c.ink),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (i, id) in BrutalThemeData.presets.indexed) ...[
+            if (i > 0) const BrutalRule(),
+            SizedBox(
+              height: 40,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: 96,
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 12),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(id, style: t.label),
+                      ),
+                    ),
+                  ),
+                  for (final colour in _strip(
+                    BrutalThemeData.preset(id, c.brightness).colors,
+                  )) ...[
+                    const BrutalRule(vertical: true),
+                    Expanded(child: ColoredBox(color: colour)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static List<Color> _strip(BrutalColors p) => [
+    p.paper,
+    p.signal,
+    p.lime,
+    p.blue,
+    p.pink,
+    p.violet,
+  ];
 }
 
 class _TypeScale extends StatelessWidget {

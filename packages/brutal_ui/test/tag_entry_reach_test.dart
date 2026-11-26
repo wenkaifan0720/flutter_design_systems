@@ -1,6 +1,6 @@
-// A tag input's entry keeps the look's tap floor when the tags push it to a
-// line of its own: its node stood 46 under a finger's 48, held off the tags
-// above it and the box's rule under it.
+// A tag input's entry keeps the look's tap floor (40 for a finger) when the
+// tags push it to a line of its own: under a finger's 48 its node stood 46,
+// held off the tags above it and the box's rule under it.
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,7 +42,7 @@ Future<void> _pump(
 
 void main() {
   testWidgets('under two tags, each a line, the entry on a line of its own '
-      'reaches 48', (tester) async {
+      'reaches the floor', (tester) async {
     final semantics = tester.ensureSemantics();
     await _pump(tester, const ['Choral', 'Organ']);
     final entry = tester.getSemantics(find.byType(EditableText));
@@ -50,7 +50,10 @@ void main() {
     final box = tester.getRect(find.byType(EditableText));
     // The tags stand above it: it is on a line of its own.
     expect(box.top, greaterThan(tag.bottom));
-    expect(entry.rect.height, greaterThanOrEqualTo(48));
+    expect(
+      entry.rect.height,
+      greaterThanOrEqualTo(BrutalTheme.tapTargets.touch.height),
+    );
     semantics.dispose();
   }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 

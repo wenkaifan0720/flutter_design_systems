@@ -178,7 +178,7 @@ class AdmitOverview extends StatelessWidget {
                       title: 'For everyone',
                       subtitle:
                           'Keyboard focus you can see, screen readers, '
-                          '48 px touch targets, text to 200%',
+                          '40 px touch targets, text to 200%',
                     ),
                   ],
                 ),

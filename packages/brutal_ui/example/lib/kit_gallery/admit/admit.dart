@@ -166,7 +166,11 @@ class AdmitApp extends StatefulWidget {
     this.textScale,
     this.parts = const [],
     this.initialPart,
+    this.preset = 'raw',
   });
+
+  /// The palette it wears: one of [BrutalThemeData.presets].
+  final String preset;
 
   /// The place it opens on.
   final AdmitPlace initialPlace;
@@ -249,7 +253,11 @@ class _AdmitAppState extends State<AdmitApp> {
             AdmitAppearance.system => platform,
           };
           Widget app = BrutalTheme(
-            data: BrutalThemeData.raw(brightness, density: _prefs.density),
+            data: BrutalThemeData.preset(
+              widget.preset,
+              brightness,
+              density: _prefs.density,
+            ),
             child: KitGalleryScope(
               child: BrutalToaster(child: child ?? const SizedBox.shrink()),
             ),

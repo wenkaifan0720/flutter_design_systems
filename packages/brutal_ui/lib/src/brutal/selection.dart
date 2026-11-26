@@ -22,8 +22,10 @@ const double _thumb = 28;
 /// The track's height.
 const double _track = 12;
 
-/// The room a thumb's tap takes, and a slider's height: a finger's target.
-const double _reach = 48;
+/// The room a thumb's tap takes, and a slider's height: the finger's tap
+/// floor ([RawTapTargets.touch]) under a pointer too, so a slider stands as
+/// tall in every input.
+double _reachOf(BuildContext context) => RawTapTargets.of(context).touch.height;
 
 /// A slider's width where nothing bounds it (in a row).
 const double _rowWidth = 200;
@@ -213,9 +215,9 @@ class _BrutalSliderState extends State<BrutalSlider> {
           1.0,
         );
 
-  double _valueAt(double dx, double width, bool rtl) {
-    final usable = width - _reach;
-    var f = usable <= 0 ? 0.0 : ((dx - _reach / 2) / usable).clamp(0.0, 1.0);
+  double _valueAt(double dx, double width, double reach, bool rtl) {
+    final usable = width - reach;
+    var f = usable <= 0 ? 0.0 : ((dx - reach / 2) / usable).clamp(0.0, 1.0);
     if (rtl) f = 1 - f;
     final d = widget.divisions;
     if (d != null) f = (f * d).round() / d;
@@ -229,13 +231,14 @@ class _BrutalSliderState extends State<BrutalSlider> {
     final layers = [widget.style, theme.sliderStyle];
     final enabled = widget.onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    final reach = _reachOf(context);
     return LayoutBuilder(
       builder: (context, box) {
         final width = box.hasBoundedWidth ? box.maxWidth : _rowWidth;
-        final usable = width - _reach;
+        final usable = width - reach;
         final left = (rtl ? 1 - _fraction : _fraction) * usable;
         void set(double dx) =>
-            widget.onChanged!(_last = _valueAt(dx, width, rtl));
+            widget.onChanged!(_last = _valueAt(dx, width, reach, rtl));
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           excludeFromSemantics: true,
@@ -270,21 +273,21 @@ class _BrutalSliderState extends State<BrutalSlider> {
             max: widget.max,
             divisions: widget.divisions,
             dragging: _pressed,
-            minimumSize: Size(width, _reach),
+            minimumSize: Size(width, reach),
             mouseCursor: enabled ? SystemMouseCursors.click : null,
             semanticLabel: widget.semanticLabel,
             semanticFormatterCallback: widget.semanticFormatterCallback,
             onChanged: widget.onChanged,
             onChangeEnd: widget.onChangeEnd,
             builder: (context, states) => SizedBox(
-              height: _reach,
+              height: reach,
               width: width,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
                   Positioned(
-                    left: _reach / 2,
-                    right: _reach / 2,
+                    left: reach / 2,
+                    right: reach / 2,
                     top: 0,
                     bottom: 0,
                     child: Center(
@@ -299,8 +302,8 @@ class _BrutalSliderState extends State<BrutalSlider> {
                   Positioned(
                     left: left,
                     top: 0,
-                    width: _reach,
-                    height: _reach,
+                    width: reach,
+                    height: reach,
                     child: _thumbFace(c, states, _pressed, layers),
                   ),
                 ],
@@ -408,7 +411,7 @@ class BrutalRangeSlider extends StatelessWidget {
       startLabel: startLabel,
       endLabel: endLabel,
       semanticFormatterCallback: semanticFormatterCallback,
-      thumbSize: const Size.square(_reach),
+      thumbSize: Size.square(_reachOf(context)),
       trackBuilder: (context, track) => _Track(
         start: track.start,
         end: track.end,
@@ -660,7 +663,7 @@ class BrutalRating extends StatelessWidget {
                   : on
                   ? c.onColor(cell.fill ?? c.ink)
                   : c.ink);
-          // Each cell stands in its own target (48 under a finger), so a
+          // Each cell stands in its own target (40 under a finger), so a
           // lit cell is a block inside its rules.
           return TapTargetPadding(
             child: SizedBox.square(
