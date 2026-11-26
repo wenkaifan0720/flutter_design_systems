@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
@@ -827,8 +828,9 @@ final class LedgerThemeData with Diagnosticable {
   /// by day and by lamplight), one of the four token themes: `terracotta`
   /// (paper), `indigo` (signal), `verdigris` (frost) or `carbon`
   /// (gallery), or `prussian` (Prussian blue on an account book's buff
-  /// paper, in a navy ink). Throws an [ArgumentError] for any other id. The same
-  /// preset is the same value.
+  /// paper, in a navy ink). By day terracotta, indigo and verdigris write in
+  /// their accent's hue, as prussian does. Throws an [ArgumentError] for any
+  /// other id. The same preset is the same value.
   static LedgerThemeData preset(String id, Brightness brightness) {
     final dark = brightness == Brightness.dark;
     return switch (id) {
@@ -846,32 +848,32 @@ final class LedgerThemeData with Diagnosticable {
   static final LedgerThemeData _ledgerDark = _quire(Brightness.dark);
   static final LedgerThemeData _terracottaLight = LedgerThemeData.fromTokens(
     'terracotta',
-    paperTokens,
+    _inkedByDay(paperTokens),
     Brightness.light,
   );
   static final LedgerThemeData _terracottaDark = LedgerThemeData.fromTokens(
     'terracotta',
-    paperTokens,
+    _inkedByDay(paperTokens),
     Brightness.dark,
   );
   static final LedgerThemeData _indigoLight = LedgerThemeData.fromTokens(
     'indigo',
-    signalTokens,
+    _inkedByDay(signalTokens),
     Brightness.light,
   );
   static final LedgerThemeData _indigoDark = LedgerThemeData.fromTokens(
     'indigo',
-    signalTokens,
+    _inkedByDay(signalTokens),
     Brightness.dark,
   );
   static final LedgerThemeData _verdigrisLight = LedgerThemeData.fromTokens(
     'verdigris',
-    frostTokens,
+    _inkedByDay(frostTokens),
     Brightness.light,
   );
   static final LedgerThemeData _verdigrisDark = LedgerThemeData.fromTokens(
     'verdigris',
-    frostTokens,
+    _inkedByDay(frostTokens),
     Brightness.dark,
   );
   static final LedgerThemeData _carbonLight = LedgerThemeData.fromTokens(
@@ -884,6 +886,65 @@ final class LedgerThemeData with Diagnosticable {
     galleryTokens,
     Brightness.dark,
   );
+
+  /// A token theme by day in its own inks, as prussian's navy is its seal's:
+  /// the record's three inks keep their tones and take its accent's hue and a
+  /// share of its colour, at least enough to read as the hue (the third ink
+  /// half that), so a preset reads by its words as well as by its paper. By
+  /// lamplight the record's own inks.
+  static LedgerTokens _inkedByDay(LedgerTokens t) {
+    final c = t.light, hue = RawHct.fromColor(c.accent);
+    final share = math.max(hue.chroma * .45, 24.0);
+    Color ink(Color word, double chroma) =>
+        hue.withChroma(chroma).withTone(RawHct.fromColor(word).tone).toColor();
+    return LedgerTokens(
+      light: LedgerTokenColors(
+        background: c.background,
+        surface: c.surface,
+        surfaceAlt: c.surfaceAlt,
+        surfaceInverse: c.surfaceInverse,
+        border: c.border,
+        borderStrong: c.borderStrong,
+        textPrimary: ink(c.textPrimary, share),
+        textSecondary: ink(c.textSecondary, share),
+        textTertiary: ink(c.textTertiary, share / 2),
+        textInverse: c.textInverse,
+        accent: c.accent,
+        onAccent: c.onAccent,
+        accentSubtle: c.accentSubtle,
+        success: c.success,
+        onSuccess: c.onSuccess,
+        successSubtle: c.successSubtle,
+        warning: c.warning,
+        warningSubtle: c.warningSubtle,
+        danger: c.danger,
+        onDanger: c.onDanger,
+        dangerSubtle: c.dangerSubtle,
+        overlay: c.overlay,
+        accentText: c.accentText,
+        emphasis: c.emphasis,
+        onEmphasis: c.onEmphasis,
+        shadowSm: c.shadowSm,
+        shadowMd: c.shadowMd,
+        shadowLg: c.shadowLg,
+      ),
+      dark: t.dark,
+      giant: t.giant,
+      hero: t.hero,
+      display: t.display,
+      h1: t.h1,
+      h2: t.h2,
+      h3: t.h3,
+      bodyLarge: t.bodyLarge,
+      body: t.body,
+      bodySmall: t.bodySmall,
+      caption: t.caption,
+      label: t.label,
+      mono: t.mono,
+      shape: t.shape,
+    );
+  }
+
   static final LedgerThemeData _prussianLight = _prussian(Brightness.light);
   static final LedgerThemeData _prussianDark = _prussian(Brightness.dark);
 

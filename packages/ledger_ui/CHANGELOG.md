@@ -1,3 +1,7 @@
+## 0.7.1
+
+- By day `terracotta`, `indigo` and `verdigris` write in their accent's hue, as `prussian` writes in its seal's: each preset's three inks keep their tones and take the accent's hue and a share of its colour (at least enough to read as the hue), so the presets read apart by their words as well as by their paper. Terracotta's ink is a terracotta brown (`0xFF3D180D`, was the brown-black `0xFF2B2118`), indigo's a deep indigo (`0xFF1B1C4B`, was the slate `0xFF1A2230`), verdigris's a deep teal (`0xFF00262C`, was the slate `0xFF18232B`) over a teal second ink (`0xFF457079`, was `0xFF5D6B75`); the words read as they did (the ink 13:1 on its papers, the second and third inks at least 4.5:1). Quire keeps its own slate ink and carbon its black; by lamplight every preset keeps its inks.
+
 ## 0.7.0
 
 - Requires ui_core 0.7.2. Ledger's tap floor is ui_core's, 40 by 40 for a finger (it was 44), and every part reads the floor in force: an app's `RawTapTargetScope` above the theme sets its own. What drew a fixed 44 or 48 (a slider's and a range slider's touch strip, a date picker's and a date range picker's day cells, the pagination's cells, a field stepper's rings) stands on the floor; faces drawn larger keep their size. The pagination counts its row as it lays out before it writes its figures. `LedgerLayout.minHitTarget` and `LedgerChromeMetrics.minHit` are deprecated (they go in 0.8.0): read `RawTapTargets.of(context).floorOn()`.
