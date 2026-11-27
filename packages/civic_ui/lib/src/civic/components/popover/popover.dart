@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/menu_row.dart';
 import '../../internal/paint.dart';
 import '../../internal/tip_hold.dart';
@@ -20,8 +21,8 @@ import '../../theme.dart';
 /// hover alone. What the reader must know to finish the page stands on the
 /// page, never only here.
 ///
-/// Reads [CivicStyle]'s fill and edge (the panel), foreground, padding and
-/// textStyle (the title): its `style:`, then [CivicThemeData.popoverStyle].
+/// Reads [CivicStyle]'s fill, edge and corners (or shape) of the panel,
+/// foreground, padding and textStyle (the title): its `style:`, then [CivicThemeData.popoverStyle].
 ///
 /// ```dart
 /// CivicPopover(
@@ -119,6 +120,7 @@ class CivicPopover extends StatelessWidget {
                 face: face,
                 hairline: so.edge ?? t.rule,
                 dark: t.isDark,
+                shape: civicShape(t, so, RawCorner.small),
               ),
               child: CivicTheme(
                 data: t.copyWith(background: face),

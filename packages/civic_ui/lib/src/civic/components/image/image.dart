@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../internal/paint.dart';
+import '../../internal/corners.dart';
 import '../../theme.dart';
 
 /// A picture that tells the reader something (a permit zone's map, a
@@ -17,7 +17,7 @@ import '../../theme.dart';
 /// available") under a glyph, so a reader knows something is missing.
 ///
 /// Reads [CivicStyle]'s fill (the ground) and foreground (the
-/// caption and the missing words): its `style:`, then
+/// caption and the missing words) and corners (or shape): its `style:`, then
 /// [CivicThemeData.imageStyle].
 ///
 /// ```dart
@@ -107,8 +107,8 @@ class CivicImage extends StatelessWidget {
     final picture = image;
     final framed = AspectRatio(
       aspectRatio: aspectRatio,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+      child: ClipPath.shape(
+        shape: civicShape(t, so, RawCorner.medium),
         child: picture == null
             ? missing
             : Image(

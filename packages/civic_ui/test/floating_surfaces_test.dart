@@ -144,13 +144,48 @@ Future<BuildContext> _pump(WidgetTester tester, Brightness brightness) async {
 
 /// The floating surface [words] stand on: the nearest box round them with
 /// an edge.
-BoxDecoration _surface(WidgetTester tester, Finder words) => tester
+_Face _surface(WidgetTester tester, Finder words) => tester
     .widgetList<DecoratedBox>(
       find.ancestor(of: words.first, matching: find.byType(DecoratedBox)),
     )
-    .map((b) => b.decoration)
-    .whereType<BoxDecoration>()
-    .firstWhere((d) => d.border != null && d.color != null);
+    .map((b) => _face(b.decoration))
+    .nonNulls
+    .firstWhere((d) => d.edge != null && d.color != null);
+
+/// A box's face, from a box or a shape decoration: its fill, its edge, its
+/// top-left corner and its shadows.
+typedef _Face = ({
+  Color? color,
+  BorderSide? edge,
+  double corner,
+  List<BoxShadow> shadows,
+});
+
+_Face? _face(Decoration d) => switch (d) {
+  BoxDecoration(
+    :final color,
+    :final border,
+    :final borderRadius,
+    :final boxShadow,
+  ) =>
+    (
+      color: color,
+      edge: border is Border ? border.top : null,
+      corner: borderRadius?.resolve(TextDirection.ltr).topLeft.x ?? 0,
+      shadows: boxShadow ?? const [],
+    ),
+  ShapeDecoration(:final color, :final shape, :final shadows) => (
+    color: color,
+    edge: shape is OutlinedBorder && shape.side != BorderSide.none
+        ? shape.side
+        : null,
+    corner: shape is RawCornerBorder
+        ? shape.borderRadius.resolve(TextDirection.ltr).topLeft.x
+        : 0,
+    shadows: shadows ?? const [],
+  ),
+  _ => null,
+};
 
 void main() {
   for (final brightness in Brightness.values) {
@@ -160,18 +195,13 @@ void main() {
         final page = await _pump(tester, brightness);
         final t = CivicTheme.of(page);
         final d = _surface(tester, await open(tester, page));
-        final edge = (d.border! as Border).top;
+        final edge = d.edge!;
         // Rounded, on a hairline, never the field's ink edge, under the
         // soft shadow.
-        expect(d.borderRadius, isNotNull, reason: 'square');
-        expect(
-          (d.borderRadius! as BorderRadius).topLeft.x,
-          greaterThan(0),
-          reason: 'square',
-        );
+        expect(d.corner, greaterThan(0), reason: 'square');
         expect(edge.width, 1, reason: "the field's edge width");
         expect(edge.color, isNot(t.border), reason: "the field's ink");
-        expect(d.boxShadow, isNotEmpty, reason: 'no shadow');
+        expect(d.shadows, isNotEmpty, reason: 'no shadow');
         if (brightness == Brightness.dark) {
           expect(d.color, t.surface, reason: 'not on the raised band');
           for (final (under, color) in [

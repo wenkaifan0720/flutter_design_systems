@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
@@ -19,7 +20,8 @@ import '../page-dots/page_dots.dart';
 /// What a slide says must be on the page another way too (a list, a
 /// link): a reader may never turn to it.
 ///
-/// Reads [CivicStyle]'s fill (the frame's ground): its `style:`, then
+/// Reads [CivicStyle]'s fill (the frame's ground) and corners (or shape):
+/// its `style:`, then
 /// [CivicThemeData.carouselStyle]; the buttons and marks are the look's.
 ///
 /// ```dart
@@ -79,6 +81,7 @@ class CivicCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final so = RawStyleOf([style, t.carouselStyle], const {});
+    final shape = civicShape(t, so, RawCorner.medium);
     return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
@@ -98,8 +101,8 @@ class CivicCarousel extends StatelessWidget {
             effects: true,
             child: SizedBox(
               height: height,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+              child: ClipPath.shape(
+                shape: shape,
                 child: ColoredBox(color: so.fill ?? t.surface, child: viewport),
               ),
             ),
@@ -108,21 +111,23 @@ class CivicCarousel extends StatelessWidget {
               // ring outside an ink edge, over the slides and never across
               // them.
               position: DecorationPosition.foreground,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
-                border: Border.all(
-                  color: t.focus.withValues(alpha: focus),
-                  width: CivicMetrics.focusRing,
-                  strokeAlign: BorderSide.strokeAlignOutside,
+              decoration: ShapeDecoration(
+                shape: shape.copyWith(
+                  side: BorderSide(
+                    color: t.focus.withValues(alpha: focus),
+                    width: CivicMetrics.focusRing,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  ),
                 ),
               ),
               child: DecoratedBox(
                 position: DecorationPosition.foreground,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
-                  border: Border.all(
-                    color: t.onFocus.withValues(alpha: focus),
-                    width: CivicMetrics.edge,
+                decoration: ShapeDecoration(
+                  shape: shape.copyWith(
+                    side: BorderSide(
+                      color: t.onFocus.withValues(alpha: focus),
+                      width: CivicMetrics.edge,
+                    ),
                   ),
                 ),
                 child: slides,

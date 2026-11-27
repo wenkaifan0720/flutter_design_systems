@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/option.dart';
 import '../../internal/overhang.dart';
 import '../../internal/paint.dart';
@@ -52,8 +53,8 @@ class CivicSummaryRow {
 /// signature of a Civic check-your-answers page, and of any record of
 /// facts (an application's details, an account's).
 ///
-/// Reads [CivicStyle]'s edge (the rules), foreground (the words) and
-/// padding (a row's): its `style:`, then [CivicThemeData.summaryListStyle].
+/// Reads [CivicStyle]'s edge (the rules), foreground (the words), padding
+/// (a row's) and corners (or shape, the card's): its `style:`, then [CivicThemeData.summaryListStyle].
 ///
 /// ```dart
 /// CivicSummaryList(rows: [
@@ -138,8 +139,8 @@ class CivicSummaryList extends StatelessWidget {
       },
     );
     if (!card) return list;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+    return ClipPath.shape(
+      shape: civicShape(t, so, RawCorner.medium),
       child: ColoredBox(
         color: t.background,
         child: Padding(
@@ -259,7 +260,8 @@ bool _acts(CivicSummaryRow row) =>
 /// corners rounded, no stroke round it. Civic's card: it holds a record,
 /// never decoration.
 ///
-/// Reads [CivicStyle]'s fill (the title band): its `style:`, then
+/// Reads [CivicStyle]'s fill (the title band) and corners (or shape): its
+/// `style:`, then
 /// [CivicThemeData.summaryListStyle]'s.
 ///
 /// ```dart
@@ -297,8 +299,8 @@ class CivicSummaryCard extends StatelessWidget {
     final text = context.civicText;
     final so = RawStyleOf([style, t.summaryListStyle], const {});
     // A card: white on the page's ground, its corners rounded, no stroke.
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+    return ClipPath.shape(
+      shape: civicShape(t, so, RawCorner.medium),
       child: ColoredBox(
         color: t.background,
         child: Column(

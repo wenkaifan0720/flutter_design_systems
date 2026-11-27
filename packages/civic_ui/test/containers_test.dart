@@ -386,7 +386,7 @@ void main() {
       await tester.pumpAndSettle();
       final slides = find.descendant(
         of: find.byType(CivicCarousel),
-        matching: find.byType(ClipRRect),
+        matching: find.byType(ClipPath),
       );
       expect(await _middle(tester, stage, slides.first), green);
     });

@@ -62,7 +62,9 @@ class CivicDateSegment extends StatelessWidget {
           builder: (context, f, _) => DecoratedBox(
             decoration: BoxDecoration(
               color: t.focus.withValues(alpha: t.focus.a * f),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(
+                t.shapeScheme.corners.extraSmall,
+              ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),

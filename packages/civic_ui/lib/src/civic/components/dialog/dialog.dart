@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/dialog_actions.dart';
 import '../../internal/paint.dart';
 import '../../theme.dart';
@@ -67,8 +68,8 @@ Future<T?> showCivicDialog<T>({
 /// its [content] under it, its [actions] at the foot (the one that does
 /// what the title asks first; full width below 600).
 ///
-/// Reads [CivicStyle]'s fill, edge, foreground, padding and textStyle (the
-/// question): its `style:`, then [CivicThemeData.dialogStyle]. The edge's
+/// Reads [CivicStyle]'s fill, edge, foreground, padding, textStyle (the
+/// question) and corners (or shape): its `style:`, then [CivicThemeData.dialogStyle]. The edge's
 /// width is the look's.
 ///
 /// [showCivicDialog] opens one; its example builds a dialog with its
@@ -129,7 +130,7 @@ class CivicDialog extends StatelessWidget {
                   face: so.fill ?? (t.isDark ? t.surface : t.background),
                   hairline: so.edge ?? t.rule,
                   dark: t.isDark,
-                  radius: CivicMetrics.cardCorner,
+                  shape: civicShape(t, so, RawCorner.medium),
                 ),
                 child: SingleChildScrollView(
                   // The room under the last button matches the room the

@@ -558,8 +558,11 @@ void main() {
     Finder filled(Color c) => find.byWidgetPredicate(
       (w) =>
           w is DecoratedBox &&
-          w.decoration is BoxDecoration &&
-          (w.decoration as BoxDecoration).color == c,
+          switch (w.decoration) {
+            BoxDecoration(:final color) ||
+            ShapeDecoration(:final color) => color == c,
+            _ => false,
+          },
     );
     const fill = CivicStyle(fill: WidgetStatePropertyAll(theirs));
     const own = CivicStyle(fill: WidgetStatePropertyAll(mine));

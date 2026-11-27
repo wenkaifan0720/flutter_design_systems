@@ -46,6 +46,11 @@ class CivicErrorSummaryItem {
 /// Each field shows its own error too, in the same words, on the error
 /// rule.
 ///
+/// Every send that fails takes the focus back to the summary and brings it
+/// into view, as a public service's does, even when its problems are the
+/// same as last time: give [submission] a new value for each send (a count
+/// of sends, say).
+///
 /// Reads [CivicStyle]'s fill, edge (the error edge), padding and textStyle
 /// (the title): its `style:`, then [CivicThemeData.errorSummaryStyle]. The
 /// focus ring is the look's: yellow, outside the error edge, while the
@@ -57,6 +62,7 @@ class CivicErrorSummaryItem {
 ///     if (errors.isNotEmpty)
 ///       CivicErrorSummary(
 ///         title: 'There is a problem',
+///         submission: sends,
 ///         errors: [
 ///           CivicErrorSummaryItem(
 ///             text: 'Enter your full name',
@@ -75,6 +81,7 @@ class CivicErrorSummary extends StatefulWidget {
     required this.title,
     required this.errors,
     this.autofocus = true,
+    this.submission,
     this.focusNode,
     this.style,
   });
@@ -85,8 +92,16 @@ class CivicErrorSummary extends StatefulWidget {
   /// The problems, in the order the fields stand.
   final List<CivicErrorSummaryItem> errors;
 
-  /// Whether it takes the focus as it appears.
+  /// Whether it takes the focus as it appears, and again on each send
+  /// that fails.
   final bool autofocus;
+
+  /// The send this summary answers, such as a count of sends: a new value
+  /// takes the focus back to the summary and brings it into view, even when
+  /// the problems are the same. A rebuild with the same value (the reader
+  /// typing) leaves the focus where it is. Without one, only a change of the
+  /// problems' words takes the focus back.
+  final Object? submission;
 
   /// {@macro civic.focusNode}
   final FocusNode? focusNode;
@@ -104,6 +119,13 @@ class CivicErrorSummary extends StatefulWidget {
       ..add(StringProperty('title', title))
       ..add(IntProperty('errors', errors.length))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<Object>(
+          'submission',
+          submission,
+          defaultValue: null,
+        ),
+      )
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );
@@ -141,16 +163,20 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
   @override
   void didUpdateWidget(CivicErrorSummary old) {
     super.didUpdateWidget(old);
-    if (widget.autofocus &&
+    final sentAgain =
+        widget.submission != old.submission ||
         !listEquals(
           [for (final e in old.errors) e.text],
           [for (final e in widget.errors) e.text],
-        )) {
-      // A second send with problems: the summary takes the focus again.
+        );
+    if (widget.autofocus && sentAgain) {
+      // Another send with problems: the summary takes the focus again and
+      // comes back into view, wherever the send was made from.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _node.requestFocus();
         _announce();
+        _reveal();
       });
     }
   }

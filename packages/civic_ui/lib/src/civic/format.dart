@@ -1,7 +1,10 @@
 /// English date, time, amount and count formats for public services.
 ///
-/// Dates use a written month, such as `14 November 2026`. Time ranges
-/// use the word “to”. [CivicFormat.time] follows the device’s clock setting.
+/// Dates use a written month, such as `14 November 2026`, the same in
+/// every locale, so a day never reads as another (3/4 is the 3rd of April
+/// in one place and March the 4th in another); a typed date's order is the
+/// locale's (see `CivicDatePicker`). Time ranges use the word “to”.
+/// [CivicFormat.time] follows the device’s clock setting.
 library;
 
 import 'package:flutter/widgets.dart';

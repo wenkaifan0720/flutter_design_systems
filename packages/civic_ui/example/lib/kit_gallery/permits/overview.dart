@@ -154,6 +154,8 @@ class PermitsOverview extends StatelessWidget {
             if (i > 0) const SizedBox(height: CivicSpacing.s48),
             m,
           ],
+        const SizedBox(height: CivicSpacing.s48),
+        const _OwnCorners(),
         if (parts.isNotEmpty) ...[
           const SizedBox(height: CivicSpacing.s64),
           Align(
@@ -179,6 +181,56 @@ class PermitsOverview extends StatelessWidget {
       ],
     );
   }
+}
+
+/// An app's own corners on a part: a card and its button each cut two
+/// diagonal corners square, as a permit's ticket is.
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  static const _ticket = CivicStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: CivicLayout.readingWidth),
+      child: CivicCard(
+        title: 'Corners of its own',
+        style: const CivicStyle(
+          corners: WidgetStatePropertyAll(
+            RawCorners(
+              topStart: RawCorner.large,
+              topEnd: RawCorner.none,
+              bottomStart: RawCorner.none,
+              bottomEnd: RawCorner.large,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: CivicSpacing.s16,
+          children: [
+            const Text(
+              'A part takes its own step at each corner from its style: this '
+              "card and its button cut two diagonal corners square, as a "
+              "permit's ticket is. A corner takes square to extra large.",
+            ),
+            CivicButton(
+              onPressed: () {},
+              expand: false,
+              style: _ticket,
+              child: const Text('Print your permit'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 /// The question page's question, keeping the answer chosen.

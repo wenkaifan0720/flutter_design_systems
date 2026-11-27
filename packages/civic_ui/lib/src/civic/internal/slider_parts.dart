@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
+import 'corners.dart';
 import 'paint.dart';
 import 'spring.dart';
 
@@ -71,7 +72,8 @@ class CivicSliderThumb extends StatelessWidget {
                 focus: focus,
                 focusColor: t.focus,
                 barColor: t.focusBar,
-                radius: CivicMetrics.corner,
+                shape: civicShape(t, so, RawCorner.small),
+                textDirection: Directionality.of(context),
               ),
               // Two grip lines, so the face reads as something to hold.
               foregroundPainter: _Grip(

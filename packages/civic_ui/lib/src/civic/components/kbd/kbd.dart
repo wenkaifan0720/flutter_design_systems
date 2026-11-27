@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/paint.dart';
 import '../../theme.dart';
 
@@ -13,8 +14,8 @@ import '../../theme.dart';
 /// A screen reader hears the key's name: give [semanticLabel] where the
 /// cap shows a symbol ("⌘" is "Command").
 ///
-/// Reads [CivicStyle]'s fill, foreground, edge, padding and textStyle: its
-/// `style:`, then [CivicThemeData.kbdStyle].
+/// Reads [CivicStyle]'s fill, foreground, edge, padding, textStyle and
+/// corners (or shape): its `style:`, then [CivicThemeData.kbdStyle].
 ///
 /// ```dart
 /// Text.rich(TextSpan(children: [
@@ -116,7 +117,8 @@ class _Cap extends StatelessWidget {
         focus: 0,
         focusColor: t.focus,
         barColor: t.focusBar,
-        radius: CivicMetrics.corner,
+        shape: civicShape(t, so, RawCorner.small),
+        textDirection: Directionality.of(context),
       ),
       child: Padding(
         padding:

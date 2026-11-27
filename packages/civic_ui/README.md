@@ -379,6 +379,45 @@ CivicButton.secondary(
 )
 ```
 
+Your corners. Civic's steps are 2, 4, 8, 12 and 16, round; each moves within a band where Civic still reads as plain and
+public (`CivicThemeData.shapeLimits`), and a field, a select, a row, a table's cell and a notice (a panel, a banner, an inset, an error summary) stay square:
+
+| Step | Civic's | Band | On |
+| --- | --- | --- | --- |
+| extraSmall | 2 | 1–3 | a bar, a badge, a sheet's handle |
+| small | 4 | 2–6 | a button, a tag, a chip, a tooltip, a menu |
+| medium | 8 | 4–12 | a card, a dialog, a sheet, an image, a list's card |
+| large | 12 | 8–16 | a part's own corners |
+| extraLarge | 16 | 12–20 | a part's own corners |
+
+```dart
+CivicThemeData.light().copyWith(
+  shapeScheme: const RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 2,
+      small: 6,
+      medium: 12,
+      large: 16,
+      extraLarge: 20,
+    ),
+  ),
+)
+```
+
+One part's own corners, a step at each, start and end as the text reads. A full corner is held to extra large:
+
+```dart
+CivicCard(
+  title: 'Your permit',
+  style: const CivicStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+    ),
+  ),
+  child: const Text('Zone B, until 2 November'),
+)
+```
+
 A part's documentation says which slots it reads. Your own part can wear the look with `CivicFace` (a button's face
 on its solid edge) and `CivicWell` (a field's box), which bring the focus with them.
 

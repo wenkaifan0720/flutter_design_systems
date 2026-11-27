@@ -4,8 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/choice_face.dart';
+import '../../internal/corners.dart';
 import '../../internal/field_frame.dart';
-import '../../internal/paint.dart';
 import '../../internal/fit_row.dart';
 import '../../theme.dart';
 
@@ -52,7 +52,7 @@ class CivicSegment<T> {
 /// ever cut.
 ///
 /// Reads [CivicStyle]'s fill, foreground and edge by state (selected among
-/// them), padding and textStyle: its `style:`, then
+/// them), padding, textStyle and corners (or shape): its `style:`, then
 /// [CivicThemeData.toggleStyle]. The faces' solid edge, the tick and the
 /// focus are the look's.
 ///
@@ -198,8 +198,12 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
       // A segmented control is one band: its outer corners round, its
       // seams square.
       return joined
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(CivicMetrics.corner),
+          ? ClipPath.shape(
+              shape: civicShape(
+                t,
+                RawStyleOf([style, t.toggleStyle], const {}),
+                RawCorner.small,
+              ),
               child: row,
             )
           : row;
@@ -211,7 +215,9 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
       final face = CivicChoiceFace(
         states: states,
         styles: [style, t.toggleStyle],
-        radius: joined ? 0 : CivicMetrics.corner,
+        corner: joined ? null : RawCorner.small,
+        // The faces stand the same whatever is chosen.
+        tickRoom: true,
         leading: icon == null ? null : Icon(icon, applyTextScaling: true),
         child: Text(segment?.label ?? '$value'),
       );
@@ -441,8 +447,8 @@ class _CivicSegmentRadiosState<T> extends State<_CivicSegmentRadios<T>> {
 /// do not fit the width they stack, each the whole width.
 ///
 /// Reads [CivicStyle]'s fill, foreground and edge by state (selected among
-/// them), padding and textStyle: its `style:`, then
-/// [CivicThemeData.toggleStyle].
+/// them), padding, textStyle and corners (or shape, the band's outer
+/// corners): its `style:`, then [CivicThemeData.toggleStyle].
 ///
 /// ```dart
 /// CivicSegmentedControl<String>(

@@ -144,6 +144,7 @@ class _Picked {
 /// state, its callbacks, its controllers.
 class _Caller {
   int index = 0;
+  int sends = 1;
   String saved = 'harbour';
   final app = const Text('Your permit');
   final pages = const [Text('Home'), Text('Applications')];
@@ -422,6 +423,7 @@ class _Caller {
         if (errors.isNotEmpty)
           CivicErrorSummary(
             title: 'There is a problem',
+            submission: sends,
             errors: [
               CivicErrorSummaryItem(
                 text: 'Enter your full name',
@@ -747,6 +749,16 @@ class _Caller {
         ],
       );
     },
+    'CivicThemeData.shapeScheme': (context) => CivicTheme(
+      data: CivicThemeData.light().copyWith(
+        shapeScheme: CivicThemeData.defaultShapeScheme.copyWith(
+          corners: CivicThemeData.defaultShapeScheme.corners.copyWith(
+            medium: 4,
+          ),
+        ),
+      ),
+      child: const Text('Your permit'),
+    ),
     'CivicTheme': (context) => MaterialApp(
       builder: (context, child) => CivicTheme(
         data: MediaQuery.platformBrightnessOf(context) == Brightness.dark

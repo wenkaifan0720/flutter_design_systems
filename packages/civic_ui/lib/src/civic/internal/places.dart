@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../theme.dart';
+import 'corners.dart';
 import 'paint.dart';
 import 'spring.dart';
 
@@ -644,8 +645,8 @@ class CivicSidePlace extends StatelessWidget {
             horizontal: CivicSpacing.s8,
             vertical: 2,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(CivicMetrics.corner),
+          child: ClipPath.shape(
+            shape: civicShape(t, so, RawCorner.small),
             child: CustomPaint(
               painter: CivicFacePainter(
                 fill: face,

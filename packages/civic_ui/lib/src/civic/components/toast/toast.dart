@@ -132,7 +132,7 @@ class _CivicToastView extends StatelessWidget {
                   face: band,
                   hairline: so.edge ?? t.rule,
                   dark: true,
-                  radius: 0,
+                  shape: t.shapeScheme.corners.border(RawCorner.none),
                 )
               : BoxDecoration(color: band),
           child: Padding(

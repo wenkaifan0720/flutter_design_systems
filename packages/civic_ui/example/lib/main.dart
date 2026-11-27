@@ -314,6 +314,8 @@ class _BookFormState extends State<BookForm> {
   late bool _favourite = widget.initial?.favourite ?? false;
   late DateTime? _started = widget.initial?.started;
   String? _titleError;
+  // Each send: a failed one takes the focus back to the summary.
+  int _sends = 0;
 
   @override
   void dispose() {
@@ -328,7 +330,10 @@ class _BookFormState extends State<BookForm> {
       title.trim().isEmpty ? 'Enter the book’s title' : null;
 
   void _save() {
-    setState(() => _titleError = _checkTitle(_title.text));
+    setState(() {
+      _sends++;
+      _titleError = _checkTitle(_title.text);
+    });
     if (_titleError != null) return;
     widget.onSaved(
       Book(
@@ -351,6 +356,7 @@ class _BookFormState extends State<BookForm> {
       if (_titleError case final error?)
         CivicErrorSummary(
           title: 'There is a problem',
+          submission: _sends,
           errors: [
             CivicErrorSummaryItem(
               text: error,

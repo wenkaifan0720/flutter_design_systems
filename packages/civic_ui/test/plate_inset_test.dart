@@ -205,8 +205,12 @@ void main() {
                   matching: find.byWidgetPredicate(
                     (w) =>
                         w is DecoratedBox &&
-                        w.decoration is BoxDecoration &&
-                        (w.decoration as BoxDecoration).border != null,
+                        switch (w.decoration) {
+                          BoxDecoration(:final border) => border != null,
+                          ShapeDecoration(shape: final OutlinedBorder s) =>
+                            s.side != BorderSide.none,
+                          _ => false,
+                        },
                   ),
                 )
                 .first;

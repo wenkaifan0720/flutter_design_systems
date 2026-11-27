@@ -1,8 +1,12 @@
+import 'dart:math' as math;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme.dart';
+import 'corners.dart';
 import 'paint.dart';
 import 'spring.dart';
 
@@ -23,7 +27,8 @@ class CivicChoiceFace extends StatelessWidget {
     this.styles = const [],
     this.edge = true,
     this.tick = true,
-    this.radius = CivicMetrics.corner,
+    this.tickRoom = false,
+    this.corner = RawCorner.small,
     this.padding,
     this.minHeight = CivicMetrics.controlHeight,
     this.textStyle,
@@ -48,8 +53,15 @@ class CivicChoiceFace extends StatelessWidget {
   /// Whether a chosen face shows a tick before its words.
   final bool tick;
 
-  /// Its corners.
-  final double radius;
+  /// Whether a face not chosen measures as wide as it would with its tick,
+  /// so a band of faces stands the same whatever is chosen (a segmented
+  /// control's, a toggle group's): it neither stacks nor moves its faces as
+  /// a choice changes. The words stand centred in the room.
+  final bool tickRoom;
+
+  /// Its own corners' step, an app's `corners` over it; null, square (a
+  /// segment inside its band).
+  final RawCorner? corner;
 
   /// Room round the words; null: 16 across, 8 over and under.
   final EdgeInsetsGeometry? padding;
@@ -115,6 +127,8 @@ class CivicChoiceFace extends StatelessWidget {
             final room =
                 CivicSpacing.s8 *
                 MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.5);
+            // The tick's size, as its icon scales it with the text.
+            final tickSize = MediaQuery.textScalerOf(context).scale(20);
             final content = Row(
               mainAxisSize: MainAxisSize.min,
               spacing: CivicSpacing.s8,
@@ -155,7 +169,11 @@ class CivicChoiceFace extends StatelessWidget {
                 focus: focus,
                 focusColor: t.focus,
                 barColor: t.focusBar,
-                radius: radius,
+                shape: switch (corner) {
+                  final step? => civicShape(t, so, step),
+                  null => null,
+                },
+                textDirection: Directionality.of(context),
               ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: minHeight),
@@ -176,7 +194,12 @@ class CivicChoiceFace extends StatelessWidget {
                       alignment: alignment,
                       widthFactor: 1,
                       heightFactor: 1,
-                      child: content,
+                      child: tickRoom && tick && !selected
+                          ? _WiderBy(
+                              extra: tickSize + CivicSpacing.s8,
+                              child: content,
+                            )
+                          : content,
                     ),
                   ),
                 ),
@@ -187,4 +210,47 @@ class CivicChoiceFace extends StatelessWidget {
       ),
     );
   }
+}
+
+/// [child], measured [extra] wider than it is (its intrinsic widths), laid
+/// out and painted as it is: room kept for what another state adds.
+class _WiderBy extends SingleChildRenderObjectWidget {
+  const _WiderBy({required this.extra, required Widget super.child});
+
+  final double extra;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderWiderBy(extra);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderWiderBy renderObject) =>
+      renderObject.extra = extra;
+}
+
+class _RenderWiderBy extends RenderProxyBox {
+  _RenderWiderBy(this._extra);
+
+  double _extra;
+  set extra(double value) {
+    if (value == _extra) return;
+    _extra = value;
+    markNeedsLayout();
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      super.computeMinIntrinsicWidth(height) + _extra;
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      super.computeMaxIntrinsicWidth(height) + _extra;
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      super.computeMinIntrinsicHeight(math.max(0, width - _extra));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      super.computeMaxIntrinsicHeight(math.max(0, width - _extra));
 }

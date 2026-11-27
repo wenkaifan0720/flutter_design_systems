@@ -67,7 +67,8 @@ class CivicSplitAction {
 ///
 /// Reads the buttons' styles ([CivicThemeData.primaryButtonStyle],
 /// [CivicThemeData.secondaryButtonStyle]) under its `style:` for both
-/// halves, and [CivicThemeData.menuStyle] for the menu.
+/// halves (their `corners` the pair's outer ones: the seam's stay small),
+/// and [CivicThemeData.menuStyle] for the menu.
 ///
 /// ```dart
 /// CivicSplitButton(
@@ -186,12 +187,14 @@ class CivicSplitButton extends StatelessWidget {
             states: states,
             kind: kind,
             style: style,
+            outerEnd: false,
             child: Text(label),
           ),
           RawSplitPart.toggle => CivicButtonFace(
             states: states,
             kind: kind,
             style: style,
+            outerStart: false,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: CivicSpacing.s12,
             ),

@@ -34,7 +34,7 @@ enum _Kind { primary, secondary, start }
 ///
 /// Reads [CivicStyle]'s fill, foreground, edge, side (a stroke round the
 /// face, none by default), padding, minimumSize (a face never stands lower than its 48
-/// points), textStyle and iconSize:
+/// points), textStyle, iconSize and corners (or shape):
 /// its `style:` first, then its kind's theme
 /// ([CivicThemeData.primaryButtonStyle], [CivicThemeData.secondaryButtonStyle],
 /// [CivicThemeData.startButtonStyle], [CivicThemeData.destructiveButtonStyle]).

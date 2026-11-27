@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
@@ -19,8 +20,8 @@ import '../link/link.dart';
 /// hears where it landed ("Proof of address, 2 of 4"). ui_core's
 /// [RawReorderableList], Civic's painting.
 ///
-/// Reads [CivicStyle]'s fill (the card) and foreground (the grip, by
-/// state): its `style:`, then [CivicThemeData.reorderableListStyle].
+/// Reads [CivicStyle]'s fill (the card), foreground (the grip, by state)
+/// and corners (or shape, the card's): its `style:`, then [CivicThemeData.reorderableListStyle].
 ///
 /// ```dart
 /// CivicReorderableList<String>(
@@ -75,8 +76,8 @@ class CivicReorderableList<T extends Object> extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final so = RawStyleOf([style, t.reorderableListStyle], const {});
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+    return ClipPath.shape(
+      shape: civicShape(t, so, RawCorner.medium),
       child: ColoredBox(
         color: so.fill ?? t.background,
         child: RawReorderableList<T>(

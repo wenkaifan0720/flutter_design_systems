@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/link_face.dart';
 import '../../internal/link_target.dart';
 import '../../internal/option.dart';
@@ -10,7 +11,7 @@ import '../../internal/spring.dart';
 import '../../theme.dart';
 
 /// A card: the page's white face on the app's cool ground, a card's
-/// corners (8) and no stroke, holding one thing (a permit, a service, a
+/// corners (medium, 8) and no stroke, holding one thing (a permit, a service, a
 /// figure) under its [title].
 ///
 /// With [onPressed] the whole card is one link to its page: its title is
@@ -24,8 +25,9 @@ import '../../theme.dart';
 /// [title] (or [semanticLabel]), with the card's words after it. Keep
 /// other controls out of a card that is a link: one card, one place to go.
 ///
-/// Reads [CivicStyle]'s fill (the face, by state), padding and textStyle
-/// (the title): its `style:`, then [CivicThemeData.cardStyle].
+/// Reads [CivicStyle]'s fill (the face, by state), padding, textStyle (the
+/// title) and corners (or shape): its `style:`, then
+/// [CivicThemeData.cardStyle].
 ///
 /// ```dart
 /// CivicCard(
@@ -107,6 +109,7 @@ class CivicCard extends StatelessWidget {
     final text = context.civicText;
     final so = RawStyleOf([style, t.cardStyle], states);
     final link = onPressed != null;
+    final shape = civicShape(t, so, RawCorner.medium);
     final wash = !link
         ? 0.0
         : states.contains(WidgetState.pressed)
@@ -137,10 +140,10 @@ class CivicCard extends StatelessWidget {
       spring: CivicMotion.press,
       effects: true,
       builder: (context, w, _) => DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ShapeDecoration(
           // A pointer greys the face toward the ground it stands on.
           color: Color.lerp(so.fill ?? t.background, t.surface, 0.6 * w),
-          borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+          shape: shape,
         ),
         child: CivicCardScope(
           child: Padding(
@@ -163,7 +166,6 @@ class CivicCard extends StatelessWidget {
     if (!link || head != null) return face;
     // No title to lay on the plate: the focus rings the card, an ink edge
     // inside and the yellow ring outside it.
-    final corner = BorderRadius.circular(CivicMetrics.cardCorner);
     return CivicSpringValue(
       value: states.contains(WidgetState.focused) ? 1 : 0,
       spring: CivicMotion.focus,
@@ -171,21 +173,23 @@ class CivicCard extends StatelessWidget {
       child: face,
       builder: (context, focus, face) => DecoratedBox(
         position: DecorationPosition.foreground,
-        decoration: BoxDecoration(
-          borderRadius: corner,
-          border: Border.all(
-            color: t.focus.withValues(alpha: focus.clamp(0.0, 1.0)),
-            width: CivicMetrics.focusRing,
-            strokeAlign: BorderSide.strokeAlignOutside,
+        decoration: ShapeDecoration(
+          shape: shape.copyWith(
+            side: BorderSide(
+              color: t.focus.withValues(alpha: focus.clamp(0.0, 1.0)),
+              width: CivicMetrics.focusRing,
+              strokeAlign: BorderSide.strokeAlignOutside,
+            ),
           ),
         ),
         child: DecoratedBox(
           position: DecorationPosition.foreground,
-          decoration: BoxDecoration(
-            borderRadius: corner,
-            border: Border.all(
-              color: t.onFocus.withValues(alpha: focus.clamp(0.0, 1.0)),
-              width: CivicMetrics.edge,
+          decoration: ShapeDecoration(
+            shape: shape.copyWith(
+              side: BorderSide(
+                color: t.onFocus.withValues(alpha: focus.clamp(0.0, 1.0)),
+                width: CivicMetrics.edge,
+              ),
             ),
           ),
           child: face,

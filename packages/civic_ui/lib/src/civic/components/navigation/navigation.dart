@@ -150,7 +150,8 @@ class CivicNavigationBar extends StatelessWidget {
 ///
 /// Reads [CivicStyle]'s fill (the band's ground), foreground (a place's
 /// name, by its states: selected for the current one), edge (the
-/// current place's rule) and textStyle (the names): its `style:`, then
+/// current place's rule), textStyle (the names) and corners (or shape, a
+/// place's face): its `style:`, then
 /// [CivicThemeData.navigationStyle]. The names always show, and the focus
 /// plate is the look's.
 ///

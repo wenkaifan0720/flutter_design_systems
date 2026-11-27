@@ -140,49 +140,46 @@ class CivicListRow extends StatelessWidget {
                 horizontal: grouped ? CivicSpacing.s16 : 0,
                 vertical: CivicSpacing.s16,
               ),
-          child: Row(
-            spacing: CivicSpacing.s12,
-            children: [
-              if (lead != null)
-                IconTheme.merge(
-                  data: IconThemeData(
-                    color: Color.lerp(t.action, t.onFocus, focus),
-                    size: 24,
+          child: _RowLine(
+            gap: CivicSpacing.s12,
+            textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
+            leading: lead == null
+                ? null
+                : IconTheme.merge(
+                    data: IconThemeData(
+                      color: Color.lerp(t.action, t.onFocus, focus),
+                      size: 24,
+                    ),
+                    // Out of the row's name: a glyph or a monogram only
+                    // repeats the title; a status goes in [trailing].
+                    child: ExcludeSemantics(child: lead),
                   ),
-                  // Out of the row's name: a glyph or a monogram only
-                  // repeats the title; a status goes in [trailing].
-                  child: ExcludeSemantics(child: lead),
-                ),
-              Expanded(
-                child: _Beside(
-                  gap: CivicSpacing.s12,
-                  textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
-                  title: DefaultTextStyle.merge(
-                    style: text.label
-                        .merge(so.textStyle)
-                        .copyWith(color: titleInk),
-                    child: title,
-                  ),
-                  subtitle: sub == null
-                      ? null
-                      : DefaultTextStyle(
-                          style: text.bodySmall.copyWith(color: subInk),
-                          child: sub,
-                        ),
-                  status: end,
-                ),
+            words: _Beside(
+              gap: CivicSpacing.s12,
+              textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
+              title: DefaultTextStyle.merge(
+                style: text.label.merge(so.textStyle).copyWith(color: titleInk),
+                child: title,
               ),
-              if (acts && showChevron)
-                Transform.flip(
-                  flipX: rtl && endIcon == null,
-                  child: Icon(
-                    endIcon ?? LucideIcons.chevronRight,
-                    size: 24,
-                    applyTextScaling: true,
-                    color: Color.lerp(t.action, t.onFocus, focus),
+              subtitle: sub == null
+                  ? null
+                  : DefaultTextStyle(
+                      style: text.bodySmall.copyWith(color: subInk),
+                      child: sub,
+                    ),
+              status: end,
+            ),
+            end: !(acts && showChevron)
+                ? null
+                : Transform.flip(
+                    flipX: rtl && endIcon == null,
+                    child: Icon(
+                      endIcon ?? LucideIcons.chevronRight,
+                      size: 24,
+                      applyTextScaling: true,
+                      color: Color.lerp(t.action, t.onFocus, focus),
+                    ),
                   ),
-                ),
-            ],
           ),
         ),
       );
@@ -342,8 +339,8 @@ class CivicListGroup extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final head = title;
-    final card = ClipRRect(
-      borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+    final card = ClipPath.shape(
+      shape: t.shapeScheme.corners.border(RawCorner.medium),
       child: ColoredBox(
         color: t.background,
         child: _GroupScope(
@@ -532,6 +529,245 @@ class _GroupScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_GroupScope oldWidget) => false;
+}
+
+/// A row's line: its leading glyph, its words and its chevron side by side;
+/// in a row narrower than [_RenderRowLine._glyphsBeside] at the body's own
+/// size (a phone at a large text size), the glyphs on a line of their own
+/// over the words, the leading one at the start and the chevron at the end,
+/// so the words take the row's whole width and keep a long word whole. The
+/// same in every row of a list, whatever its words.
+class _RowLine extends MultiChildRenderObjectWidget {
+  _RowLine({
+    required this.gap,
+    required this.textScale,
+    required Widget words,
+    Widget? leading,
+    Widget? end,
+  }) : hasLeading = leading != null,
+       hasEnd = end != null,
+       super(children: [?leading, words, ?end]);
+
+  final double gap;
+  final double textScale;
+  final bool hasLeading;
+  final bool hasEnd;
+
+  @override
+  _RenderRowLine createRenderObject(BuildContext context) => _RenderRowLine(
+    gap,
+    textScale,
+    Directionality.of(context),
+    hasLeading,
+    hasEnd,
+  );
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderRowLine renderObject) {
+    renderObject
+      ..gap = gap
+      ..textScale = textScale
+      ..textDirection = Directionality.of(context)
+      ..hasLeading = hasLeading
+      ..hasEnd = hasEnd;
+  }
+}
+
+class _RowLineData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderRowLine extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _RowLineData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _RowLineData> {
+  _RenderRowLine(
+    this._gap,
+    this._textScale,
+    this._textDirection,
+    this._hasLeading,
+    this._hasEnd,
+  );
+
+  /// The narrowest row, in points at the body's own size, that keeps its
+  /// glyphs beside its words: a phone's row at about 1.7 times the text and
+  /// more stands them over the words.
+  static const double _glyphsBeside = 200;
+
+  /// Between the glyphs' line and the words under it.
+  static const double _lines = CivicSpacing.s8;
+
+  double _gap;
+  set gap(double value) {
+    if (value == _gap) return;
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  double _textScale;
+  set textScale(double value) {
+    if (value == _textScale) return;
+    _textScale = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  bool _hasLeading;
+  set hasLeading(bool value) {
+    if (value == _hasLeading) return;
+    _hasLeading = value;
+    markNeedsLayout();
+  }
+
+  bool _hasEnd;
+  set hasEnd(bool value) {
+    if (value == _hasEnd) return;
+    _hasEnd = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _RowLineData) child.parentData = _RowLineData();
+  }
+
+  RenderBox? get _leading => _hasLeading ? firstChild : null;
+  RenderBox get _words => _hasLeading ? childAfter(firstChild!)! : firstChild!;
+  RenderBox? get _end => _hasEnd ? lastChild : null;
+
+  /// Whether the glyphs stand over the words in a row [width] wide.
+  bool _over(double width) =>
+      (_hasLeading || _hasEnd) &&
+      width.isFinite &&
+      width / _textScale < _glyphsBeside;
+
+  double _beside(double Function(RenderBox) of) {
+    final lead = _leading, end = _end;
+    return (lead == null ? 0 : of(lead) + _gap) +
+        (end == null ? 0 : of(end) + _gap);
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      _beside((c) => c.getMaxIntrinsicWidth(height)) +
+      _words.getMinIntrinsicWidth(height);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _beside((c) => c.getMaxIntrinsicWidth(height)) +
+      _words.getMaxIntrinsicWidth(height);
+
+  double _height(double width, double Function(RenderBox, double) of) {
+    final lead = _leading, end = _end;
+    final glyphs = math.max(
+      lead == null ? 0.0 : of(lead, double.infinity),
+      end == null ? 0.0 : of(end, double.infinity),
+    );
+    if (_over(width)) return glyphs + _lines + of(_words, width);
+    final room = math.max(
+      0.0,
+      width - _beside((c) => c.getMaxIntrinsicWidth(double.infinity)),
+    );
+    return math.max(glyphs, of(_words, room));
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _height(width, (c, w) => c.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _height(width, (c, w) => c.getMaxIntrinsicHeight(w));
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      _layout(constraints, dry: true);
+
+  @override
+  void performLayout() => size = _layout(constraints, dry: false);
+
+  Size _layout(BoxConstraints constraints, {required bool dry}) {
+    Size lay(RenderBox child, BoxConstraints c) {
+      if (dry) return child.getDryLayout(c);
+      child.layout(c, parentUsesSize: true);
+      return child.size;
+    }
+
+    final rtl = _textDirection == TextDirection.rtl;
+    final lead = _leading, end = _end, words = _words;
+    final loose = BoxConstraints(maxHeight: constraints.maxHeight);
+    final leadSize = lead == null ? Size.zero : lay(lead, loose);
+    final endSize = end == null ? Size.zero : lay(end, loose);
+    final besides =
+        (lead == null ? 0.0 : leadSize.width + _gap) +
+        (end == null ? 0.0 : endSize.width + _gap);
+    final width = constraints.maxWidth.isFinite
+        ? constraints.maxWidth
+        : besides + words.getMaxIntrinsicWidth(double.infinity);
+    // Places [child], [w] wide, [x] from the row's start and [y] down.
+    void place(RenderBox? child, double x, double y, double w) {
+      if (dry || child == null) return;
+      (child.parentData! as _RowLineData).offset = Offset(
+        rtl ? width - x - w : x,
+        y,
+      );
+    }
+
+    if (_over(width)) {
+      final line = math.max(leadSize.height, endSize.height);
+      final wordsSize = lay(words, BoxConstraints.tightFor(width: width));
+      final size = constraints.constrain(
+        Size(width, line + _lines + wordsSize.height),
+      );
+      place(lead, 0, (line - leadSize.height) / 2, leadSize.width);
+      place(
+        end,
+        width - endSize.width,
+        (line - endSize.height) / 2,
+        endSize.width,
+      );
+      place(words, 0, line + _lines, wordsSize.width);
+      return size;
+    }
+    final room = math.max(0.0, width - besides);
+    final wordsSize = lay(words, BoxConstraints.tightFor(width: room));
+    final size = constraints.constrain(
+      Size(
+        width,
+        math.max(wordsSize.height, math.max(leadSize.height, endSize.height)),
+      ),
+    );
+    // Each stands on the line's middle, as a row's children do.
+    double middle(Size s) => (size.height - s.height) / 2;
+    place(lead, 0, middle(leadSize), leadSize.width);
+    place(
+      words,
+      lead == null ? 0 : leadSize.width + _gap,
+      middle(wordsSize),
+      room,
+    );
+    place(end, width - endSize.width, middle(endSize), endSize.width);
+    return size;
+  }
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) {
+    final words = _words;
+    final b = words.getDistanceToActualBaseline(baseline);
+    return b == null ? null : b + (words.parentData! as _RowLineData).offset.dy;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
 
 /// A row's title, its meta line and its status. Side by side (the title over

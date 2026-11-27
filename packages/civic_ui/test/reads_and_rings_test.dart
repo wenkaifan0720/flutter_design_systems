@@ -244,9 +244,13 @@ void main() {
         )
         .any((box) {
           final decoration = box.decoration;
-          return decoration is BoxDecoration &&
-              decoration.border is Border &&
-              (decoration.border! as Border).top.color == focus;
+          return switch (decoration) {
+            BoxDecoration(border: final Border border) =>
+              border.top.color == focus,
+            ShapeDecoration(shape: final OutlinedBorder shape) =>
+              shape.side.color == focus,
+            _ => false,
+          };
         });
     expect(ringed(), isFalse);
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);

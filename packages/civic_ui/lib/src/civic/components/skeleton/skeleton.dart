@@ -3,7 +3,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import '../../internal/paint.dart';
 import '../../theme.dart';
 
 /// Where content is on its way, held in its shape so the page does not
@@ -164,7 +163,9 @@ class CivicSkeletonBlock extends StatelessWidget {
         shape: circle ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: circle
             ? null
-            : BorderRadius.circular(CivicMetrics.corner),
+            : BorderRadius.circular(
+                context.civicTheme.shapeScheme.corners.small,
+              ),
       ),
     ),
   );

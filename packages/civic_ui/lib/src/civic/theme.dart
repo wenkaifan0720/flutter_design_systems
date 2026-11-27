@@ -10,9 +10,9 @@ import 'package:ui_core/ui_core.dart';
 import 'fonts.dart';
 import 'internal/platform_words.dart';
 
-/// How a part of Civic looks: Civic's name for ui_core's [RawStyle], ten
-/// slots that each resolve for the part's states, as Material's
-/// `ButtonStyle` does. A part reads its `style:` first, then its component
+/// How a part of Civic looks: Civic's name for ui_core's [RawStyle], slots
+/// that each resolve for the part's states, as Material's `ButtonStyle`
+/// does (`corners` held to [CivicThemeData.shapeLimits]; `shape` wins). A part reads its `style:` first, then its component
 /// theme on [CivicThemeData], then Civic's own default.
 ///
 /// ```dart
@@ -409,7 +409,7 @@ final class CivicTextTheme with Diagnosticable {
 final class CivicThemeData with Diagnosticable {
   /// A theme from every token. Most apps take [CivicThemeData.light],
   /// [CivicThemeData.dark] or [CivicThemeData.from].
-  const CivicThemeData({
+  CivicThemeData({
     required this.brightness,
     required this.ground,
     required this.background,
@@ -437,6 +437,7 @@ final class CivicThemeData with Diagnosticable {
     required this.text,
     required this.compactText,
     this.tapTargets = RawTapTargets.fallback,
+    RawShapeScheme? shapeScheme,
     this.primaryButtonStyle,
     this.secondaryButtonStyle,
     this.startButtonStyle,
@@ -500,7 +501,10 @@ final class CivicThemeData with Diagnosticable {
     this.pieChartStyle,
     this.pullToRefreshStyle,
     this.actionBarStyle,
-  });
+  }) : shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? defaultShapeScheme,
+         look: 'Civic',
+       );
 
   /// Whether [targets] keep Civic's floors, ui_core's
   /// ([RawTapTargets.fallback]): 40 by 40 for a finger, 24 by 24 for a
@@ -634,6 +638,8 @@ final class CivicThemeData with Diagnosticable {
   ///
   /// [fontFamilyFallback] names the families every step of both ramps falls
   /// back on after Civic's own (see [CivicTextTheme.standard]).
+  ///
+  /// [shapeScheme] gives an app's shapes, held to [shapeLimits].
   factory CivicThemeData.from({
     required Brightness brightness,
     Color? action,
@@ -644,6 +650,7 @@ final class CivicThemeData with Diagnosticable {
     String? fontPackage,
     double capHeight = CivicTextTheme.atkinsonCapHeight,
     List<String> fontFamilyFallback = const [],
+    RawShapeScheme? shapeScheme,
   }) {
     final dark = brightness == Brightness.dark;
     final ink = dark ? const Color(0xFFF1F3F5) : const Color(0xFF0C1116);
@@ -737,6 +744,7 @@ final class CivicThemeData with Diagnosticable {
         capHeight: capHeight,
         fontFamilyFallback: fontFamilyFallback,
       ),
+      shapeScheme: shapeScheme,
     );
   }
 
@@ -885,6 +893,71 @@ final class CivicThemeData with Diagnosticable {
   /// The floors a tap reaches: ui_core's 40 for a finger, 24 for a pointer.
   /// They can rise, never fall (an assert holds them).
   final RawTapTargets tapTargets;
+
+  /// The shapes an app can change, held to [shapeLimits]: Civic's corner
+  /// steps. A bar, a badge and a sheet's handle take extra small; a button,
+  /// a tag, a tooltip, a menu and an open list small; a card, a dialog and a
+  /// sheet medium; large and extra large are an app's, for a part it rounds
+  /// further. A field's well, a select, a row, a table's cell and a notice
+  /// (a panel, a banner, an inset, an error summary) stay square, and a
+  /// radio, a switch and an avatar round, whatever the scheme. Civic draws a
+  /// field's 2 px edge and its hairlines to be read, and its button's edge
+  /// as a seat, so it opens no stroke and no depth.
+  ///
+  /// | Shape | Civic's | Band | Why |
+  /// |---|---|---|---|
+  /// | extra small | 2 | 1–3 | a bar's ends, softened, never a pill |
+  /// | small | 4 | 2–6 | a face to press, never a box drawn round words |
+  /// | medium | 8 | 4–12 | a card, plain; past 12 it reads as an app's tile |
+  /// | large | 12 | 8–16 | an app's step past a card |
+  /// | extra large | 16 | 12–20 | an app's roundest |
+  /// | style | round | round | plain arcs: no bevel, notch or squircle |
+  /// | stroke | not opened | | a field's edge and the hairlines are for reading |
+  /// | depth | not opened | | a button's edge is its seat, 4 px |
+  /// | a part's own corners | each corner its step, or square | none to extra large | never full: a stadium steps past every band |
+  ///
+  /// ```dart
+  /// CivicThemeData.light().copyWith(shapeScheme: CivicThemeData.defaultShapeScheme.copyWith(corners: CivicThemeData.defaultShapeScheme.corners.copyWith(medium: 4)))
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Civic's own shapes: round corners of 2, 4, 8, 12 and 16.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 2,
+      small: 4,
+      medium: 8,
+      large: 12,
+      extraLarge: 16,
+    ),
+  );
+
+  /// The bands Civic holds a [shapeScheme] to, so that every end still reads
+  /// as a public service's plain forms: round corners alone, each step
+  /// within a few pixels of its own (a button from 2 to 6, a card from 4 to
+  /// 12), no stroke and no depth.
+  ///
+  /// A part's own corners (its style's `corners`) take a step per corner:
+  /// an app can cut two diagonal corners of a card, or square all but its
+  /// top start, as a form's tabs and tickets do. Each corner takes none to
+  /// extra large; a full corner is held to extra large, and debug says so
+  /// once.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(1, 3),
+    small: RawBand(2, 6),
+    medium: RawBand(4, 12),
+    large: RawBand(8, 16),
+    extraLarge: RawBand(12, 20),
+    cornerFreedom: RawCornerFreedom.perCorner,
+    cornerSteps: {
+      RawCorner.none,
+      RawCorner.extraSmall,
+      RawCorner.small,
+      RawCorner.medium,
+      RawCorner.large,
+      RawCorner.extraLarge,
+    },
+  );
 
   /// [CivicButton]'s component theme: the page's one action.
   final CivicStyle? primaryButtonStyle;
@@ -1112,6 +1185,7 @@ final class CivicThemeData with Diagnosticable {
     CivicTextTheme? text,
     CivicTextTheme? compactText,
     RawTapTargets? tapTargets,
+    RawShapeScheme? shapeScheme,
     CivicStyle? primaryButtonStyle,
     CivicStyle? secondaryButtonStyle,
     CivicStyle? startButtonStyle,
@@ -1205,6 +1279,7 @@ final class CivicThemeData with Diagnosticable {
       text: text ?? this.text,
       compactText: compactText ?? this.compactText,
       tapTargets: tapTargets ?? this.tapTargets,
+      shapeScheme: shapeScheme ?? this.shapeScheme,
       primaryButtonStyle: primaryButtonStyle ?? this.primaryButtonStyle,
       secondaryButtonStyle: secondaryButtonStyle ?? this.secondaryButtonStyle,
       startButtonStyle: startButtonStyle ?? this.startButtonStyle,
@@ -1272,8 +1347,8 @@ final class CivicThemeData with Diagnosticable {
     );
   }
 
-  /// Between [a] and [b]: colours and type blend, the rest snaps at the
-  /// middle.
+  /// Between [a] and [b]: colours, type and shapes blend, the rest snaps at
+  /// the middle.
   static CivicThemeData lerp(CivicThemeData a, CivicThemeData b, double t) {
     if (identical(a, b)) return a;
     Color c(Color x, Color y) => Color.lerp(x, y, t)!;
@@ -1312,6 +1387,7 @@ final class CivicThemeData with Diagnosticable {
       text: CivicTextTheme.lerp(a.text, b.text, t),
       compactText: CivicTextTheme.lerp(a.compactText, b.compactText, t),
       tapTargets: t < 0.5 ? a.tapTargets : b.tapTargets,
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       primaryButtonStyle: RawStyle.lerp(
         a.primaryButtonStyle,
         b.primaryButtonStyle,
@@ -1468,6 +1544,7 @@ final class CivicThemeData with Diagnosticable {
       other.text == text &&
       other.compactText == compactText &&
       other.tapTargets == tapTargets &&
+      other.shapeScheme == shapeScheme &&
       other.primaryButtonStyle == primaryButtonStyle &&
       other.secondaryButtonStyle == secondaryButtonStyle &&
       other.startButtonStyle == startButtonStyle &&
@@ -1561,6 +1638,7 @@ final class CivicThemeData with Diagnosticable {
     text,
     compactText,
     tapTargets,
+    shapeScheme,
     primaryButtonStyle,
     secondaryButtonStyle,
     startButtonStyle,
@@ -1659,7 +1737,8 @@ final class CivicThemeData with Diagnosticable {
     properties
       ..add(DiagnosticsProperty<CivicTextTheme>('text', text))
       ..add(DiagnosticsProperty<CivicTextTheme>('compactText', compactText))
-      ..add(DiagnosticsProperty<RawTapTargets>('tapTargets', tapTargets));
+      ..add(DiagnosticsProperty<RawTapTargets>('tapTargets', tapTargets))
+      ..add(DiagnosticsProperty<RawShapeScheme>('shapeScheme', shapeScheme));
     for (final (name, style) in [
       ('primaryButtonStyle', primaryButtonStyle),
       ('secondaryButtonStyle', secondaryButtonStyle),

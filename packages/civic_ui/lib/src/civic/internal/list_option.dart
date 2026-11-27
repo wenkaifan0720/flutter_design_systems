@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme.dart';
@@ -21,7 +22,12 @@ class CivicOptionSurface extends StatelessWidget {
     final t = context.civicTheme;
     final face = t.isDark ? t.surface : t.background;
     return DecoratedBox(
-      decoration: civicFloating(face: face, hairline: t.rule, dark: t.isDark),
+      decoration: civicFloating(
+        face: face,
+        hairline: t.rule,
+        dark: t.isDark,
+        shape: t.shapeScheme.corners.border(RawCorner.small),
+      ),
       child: Padding(
         // The options' faces stop inside the hairline, clear of the
         // rounded corners above and below.

@@ -68,8 +68,8 @@ class CivicMenuItem<T> {
 /// sight elsewhere in the service (a menu is never the only way to do a
 /// thing), and the page's one action is a [CivicButton] of its own.
 ///
-/// Reads [CivicStyle]'s fill and edge (the panel), foreground, padding and
-/// textStyle (the rows), by state: its `style:`, then
+/// Reads [CivicStyle]'s fill, edge and corners (or shape) of the panel,
+/// foreground, padding and textStyle (the rows), by state: its `style:`, then
 /// [CivicThemeData.menuStyle].
 ///
 /// ```dart

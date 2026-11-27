@@ -394,9 +394,10 @@ class _Measures extends StatelessWidget {
             label: 'Targets',
             value: Text('40 for a finger, 24 for a pointer at the least'),
           ),
-          const CivicSummaryRow(
+          // The theme's steps, so an app's own scheme shows here too.
+          CivicSummaryRow(
             label: 'Corners',
-            value: Text('Square, but for radios and round marks'),
+            value: Text(_corners(context.civicTheme.shapeScheme.corners)),
           ),
           CivicSummaryRow(
             label: 'Top bar',
@@ -417,6 +418,13 @@ class _Measures extends StatelessWidget {
       ),
     ],
   );
+}
+
+// Civic's corner steps in words: a field square, a button's, a card's.
+String _corners(RawCornerScale c) {
+  String n(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
+  return 'A field square; a button ${n(c.small)}, a card ${n(c.medium)}, a '
+      'bar ${n(c.extraSmall)}; a radio and a mark round';
 }
 
 class _Words extends StatelessWidget {

@@ -697,7 +697,7 @@ void civicPaintReadout(
   }
   final card = RRect.fromRectAndRadius(
     Rect.fromLTWH(left, top, width, height),
-    const Radius.circular(CivicMetrics.corner),
+    Radius.circular(t.shapeScheme.corners.small),
   );
   canvas
     ..drawShadow(

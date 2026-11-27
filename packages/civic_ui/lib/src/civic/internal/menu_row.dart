@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
+import 'corners.dart';
 import 'paint.dart';
 import 'spring.dart';
 
@@ -178,6 +179,7 @@ class CivicMenuPanel extends StatelessWidget {
           face: face,
           hairline: so.edge ?? t.rule,
           dark: t.isDark,
+          shape: civicShape(t, so, RawCorner.small),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(

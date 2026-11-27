@@ -20,6 +20,7 @@ export 'src/civic/internal/button_face.dart';
 export 'src/civic/internal/button_stretch.dart';
 export 'src/civic/internal/chart_look.dart';
 export 'src/civic/internal/choice_face.dart';
+export 'src/civic/internal/corners.dart';
 export 'src/civic/internal/dialog_actions.dart';
 export 'src/civic/internal/field_frame.dart';
 export 'src/civic/internal/fit_row.dart';

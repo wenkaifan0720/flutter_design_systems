@@ -3,6 +3,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
 
@@ -20,8 +21,8 @@ import '../../theme.dart';
 /// in a [CivicStepIndicator]. A screen reader hears a progress bar called
 /// [label] (with [valueLabel]), at its share; without a measure, a wait.
 ///
-/// Reads [CivicStyle]'s fill (the track), foreground (the bar) and
-/// textStyle (the label): its `style:`, then
+/// Reads [CivicStyle]'s fill (the track), foreground (the bar), textStyle
+/// (the label) and corners (or shape, the track's): its `style:`, then
 /// [CivicThemeData.progressBarStyle].
 ///
 /// ```dart
@@ -68,6 +69,7 @@ class CivicProgressBar extends StatelessWidget {
     final under = valueLabel ?? share;
     final track = so.fill ?? t.secondaryFill;
     final bar = so.foreground ?? t.action;
+    final outline = civicShape(t, so, RawCorner.extraSmall);
     // A progress bar's share is a number from 0 to 100, as the platforms
     // read it; the words go with its name.
     final heard = valueLabel == null
@@ -97,7 +99,12 @@ class CivicProgressBar extends StatelessWidget {
           SizedBox(
             height: thickness,
             child: v == null
-                ? _Sliding(track: track, bar: bar, rule: t.rule)
+                ? _Sliding(
+                    track: track,
+                    bar: bar,
+                    rule: t.rule,
+                    outline: outline,
+                  )
                 : CivicSpringValue(
                     value: v,
                     spring: CivicMotion.state,
@@ -108,6 +115,7 @@ class CivicProgressBar extends StatelessWidget {
                         track: track,
                         bar: bar,
                         rule: t.rule,
+                        outline: outline,
                         rtl: Directionality.of(context) == TextDirection.rtl,
                       ),
                     ),
@@ -137,11 +145,17 @@ class CivicProgressBar extends StatelessWidget {
 
 /// The block that slides along a track while there is no measure.
 class _Sliding extends StatefulWidget {
-  const _Sliding({required this.track, required this.bar, required this.rule});
+  const _Sliding({
+    required this.track,
+    required this.bar,
+    required this.rule,
+    required this.outline,
+  });
 
   final Color track;
   final Color bar;
   final Color rule;
+  final OutlinedBorder outline;
 
   @override
   State<_Sliding> createState() => _SlidingState();
@@ -187,6 +201,7 @@ class _SlidingState extends State<_Sliding>
             track: widget.track,
             bar: widget.bar,
             rule: widget.rule,
+            outline: widget.outline,
             rtl: Directionality.of(context) == TextDirection.rtl,
           ),
         );
@@ -202,6 +217,7 @@ class _Bar extends CustomPainter {
     required this.track,
     required this.bar,
     required this.rule,
+    required this.outline,
     required this.rtl,
   });
 
@@ -210,15 +226,16 @@ class _Bar extends CustomPainter {
   final Color track;
   final Color bar;
   final Color rule;
+  final OutlinedBorder outline;
   final bool rtl;
 
   @override
   void paint(Canvas canvas, Size size) {
-    const corner = Radius.circular(2);
     final whole = Offset.zero & size;
+    final direction = rtl ? TextDirection.rtl : TextDirection.ltr;
     canvas
       ..save()
-      ..clipRRect(RRect.fromRectAndRadius(whole, corner))
+      ..clipPath(outline.getOuterPath(whole, textDirection: direction))
       ..drawRect(whole, Paint()..color = track);
     final a = from.clamp(0.0, 1.0) * size.width;
     final b = to.clamp(0.0, 1.0) * size.width;
@@ -230,16 +247,11 @@ class _Bar extends CustomPainter {
         Paint()..color = bar,
       );
     }
-    canvas
-      ..restore()
-      // The track's end, on a hairline, so its whole length shows.
-      ..drawRRect(
-        RRect.fromRectAndRadius(whole.deflate(0.5), corner),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1
-          ..color = rule,
-      );
+    canvas.restore();
+    // The track's end, on a hairline, so its whole length shows.
+    outline
+        .copyWith(side: BorderSide(color: rule))
+        .paint(canvas, whole, textDirection: direction);
   }
 
   @override
@@ -249,5 +261,6 @@ class _Bar extends CustomPainter {
       old.track != track ||
       old.bar != bar ||
       old.rule != rule ||
+      old.outline != outline ||
       old.rtl != rtl;
 }

@@ -4,19 +4,22 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
+import 'corners.dart';
 import 'paint.dart';
 import 'spinner_arc.dart';
 import 'spring.dart';
 
 /// A solid button's face by night, from [colour] (the action's or the
 /// error's): its hue at full strength at the lightest tone that carries
-/// white words at 4.5:1 (they are large and bold), on an edge of the same
-/// hue darker. The light tone those colours take by night for words on the
+/// white words at 5:1, on an edge of the same hue darker. 4.5:1 is the
+/// floor for large bold words; a face tuned to the floor itself left them
+/// no margin. The light tone those colours take by night for words on the
 /// page (7:1) is too pale for a face, and too grey: a button in it read
-/// washed out. This one keeps the button's weight on the slate (about 3.8:1
+/// washed out. This one keeps the button's weight on the slate (about 3.4:1
 /// against the night page).
 (Color, Color, Color) civicNightFace(Color colour) {
   const white = Color(0xFFFFFFFF);
+  const ratio = 5.0;
   final hsl = HSLColor.fromColor(colour);
   // The hue at full strength: the colour's saturation (to 0.85) at half
   // lightness. A pale night colour's own chroma is a tint's.
@@ -30,12 +33,12 @@ import 'spring.dart';
   // ratio to white is a matter of tone alone, so the strong hue takes that
   // tone; the second walk only settles the channels' rounding.
   final tone = RawHct.fromColor(
-    RawPalette.readableTone(colour, on: const [white], ratio: 4.5),
+    RawPalette.readableTone(colour, on: const [white], ratio: ratio),
   ).tone;
   final face = RawPalette.readableTone(
     strong.withTone(tone).toColor(),
     on: const [white],
-    ratio: 4.5,
+    ratio: ratio,
   );
   final lit = HSLColor.fromColor(face);
   return (face, white, lit.withLightness(lit.lightness * 0.68).toColor());
@@ -71,6 +74,8 @@ class CivicButtonFace extends StatelessWidget {
     this.contentPadding,
     this.busy = false,
     this.busyLabel,
+    this.outerStart = true,
+    this.outerEnd = true,
   });
 
   /// The pressable's states.
@@ -102,6 +107,14 @@ class CivicButtonFace extends StatelessWidget {
   /// The words while [busy]; null: "Loading". Given, the face holds the
   /// width of the wider of its two words, busy or not.
   final String? busyLabel;
+
+  /// Whether an app's corners reach the face's start corners: false where
+  /// it joins another face there (a split button's chevron).
+  final bool outerStart;
+
+  /// Whether an app's corners reach the face's end corners: false where it
+  /// joins another face there (a split button's action).
+  final bool outerEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -302,7 +315,14 @@ class CivicButtonFace extends StatelessWidget {
                 focusColor: t.focus,
                 barColor: t.focusBar,
                 side: disabled ? null : so.side,
-                radius: CivicMetrics.corner,
+                shape: civicShape(
+                  t,
+                  so,
+                  RawCorner.small,
+                  start: outerStart,
+                  end: outerEnd,
+                ),
+                textDirection: Directionality.of(context),
               ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(

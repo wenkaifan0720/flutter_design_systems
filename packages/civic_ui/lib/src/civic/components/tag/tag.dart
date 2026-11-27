@@ -2,15 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import '../../internal/paint.dart';
+import '../../internal/corners.dart';
 import '../../theme.dart';
 
 /// A status in words on its tone's tint: Not started, In progress,
 /// Approved, Refused. Square, bold, its words in the tone's ink at better
 /// than 7 to 1, so the words carry the status and the tint only sorts it.
 ///
-/// Reads [CivicStyle]'s fill (the tint), foreground (the words), padding
-/// and textStyle: its `style:`, then [CivicThemeData.tagStyle], over its
+/// Reads [CivicStyle]'s fill (the tint), foreground (the words), padding,
+/// textStyle and corners (or shape): its `style:`, then [CivicThemeData.tagStyle], over its
 /// tone's. Keep the words at 7:1 on the tint: they carry the status.
 ///
 /// ```dart
@@ -40,9 +40,9 @@ class CivicTag extends StatelessWidget {
     final so = RawStyleOf([style, t.tagStyle], const {});
     final (fill, ink) = t.toneOf(tone);
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         color: so.fill ?? fill,
-        borderRadius: BorderRadius.circular(CivicMetrics.corner),
+        shape: civicShape(t, so, RawCorner.small),
       ),
       child: Padding(
         padding:

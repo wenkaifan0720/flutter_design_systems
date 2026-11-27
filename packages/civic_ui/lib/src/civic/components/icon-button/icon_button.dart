@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
@@ -15,7 +16,7 @@ import '../tooltip/tooltip.dart';
 /// nothing to someone who cannot see it.
 ///
 /// Reads [CivicStyle]'s fill, foreground, minimumSize (never under 48
-/// points a side) and iconSize, by state: its `style:`, then
+/// points a side), iconSize and corners (or shape), by state: its `style:`, then
 /// [CivicThemeData.iconButtonStyle]. With no foreground, the glyph takes
 /// the surrounding [IconTheme]'s colour.
 ///
@@ -163,7 +164,8 @@ class CivicIconButton extends StatelessWidget {
                   focus: focus,
                   focusColor: t.focus,
                   barColor: t.focusBar,
-                  radius: CivicMetrics.corner,
+                  shape: civicShape(t, so, RawCorner.small),
+                  textDirection: Directionality.of(context),
                 ),
                 child: SizedBox.fromSize(
                   size: size,

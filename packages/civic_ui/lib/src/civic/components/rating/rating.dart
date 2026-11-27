@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/bidi.dart';
+import '../../internal/corners.dart';
 import '../../internal/field_frame.dart';
 import '../../internal/key_focus.dart';
 import '../../internal/paint.dart';
@@ -24,8 +25,8 @@ import '../../theme.dart';
 /// For a question on a form with a word for each answer (Very satisfied …
 /// Very dissatisfied), radios say more.
 ///
-/// Reads [CivicStyle]'s fill (a filled mark) and foreground (its number)
-/// by state: its `style:`, then [CivicThemeData.ratingStyle].
+/// Reads [CivicStyle]'s fill (a filled mark), foreground (its number) and
+/// corners (or shape, a mark's) by state: its `style:`, then [CivicThemeData.ratingStyle].
 ///
 /// ```dart
 /// CivicRating(
@@ -274,8 +275,8 @@ class _Mark extends StatelessWidget {
               clipBehavior: Clip.none,
               fit: StackFit.expand,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(CivicMetrics.corner),
+                ClipPath.shape(
+                  shape: civicShape(t, so, RawCorner.small),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [

@@ -236,6 +236,8 @@ class PermitsVehiclePage extends StatefulWidget {
 
 class _PermitsVehiclePageState extends State<PermitsVehiclePage> {
   bool _sent = false;
+  // Each send: a failed one takes the focus back to the summary.
+  int _sends = 0;
   final FocusNode _first = FocusNode();
 
   @override
@@ -256,6 +258,7 @@ class _PermitsVehiclePageState extends State<PermitsVehiclePage> {
           ? null
           : CivicErrorSummary(
               title: context.say('There is a problem'),
+              submission: _sends,
               errors: [
                 CivicErrorSummaryItem(
                   text: error,
@@ -268,7 +271,10 @@ class _PermitsVehiclePageState extends State<PermitsVehiclePage> {
       action: CivicButton(
         onPressed: () {
           if (state.vehicle == null) {
-            setState(() => _sent = true);
+            setState(() {
+              _sent = true;
+              _sends++;
+            });
           } else {
             state.next(PermitsPage.details);
           }
@@ -328,6 +334,8 @@ class PermitsDetailsPage extends StatefulWidget {
 }
 
 class _PermitsDetailsPageState extends State<PermitsDetailsPage> {
+  // Each send: a failed one takes the focus back to the summary.
+  int _sends = 0;
   final _name = FocusNode();
   final _line1 = FocusNode();
   final _town = FocusNode();
@@ -431,6 +439,7 @@ class _PermitsDetailsPageState extends State<PermitsDetailsPage> {
           ? null
           : CivicErrorSummary(
               title: context.say('There is a problem'),
+              submission: _sends,
               errors: [
                 for (final (field, words, node) in problems)
                   CivicErrorSummaryItem(
@@ -449,6 +458,7 @@ class _PermitsDetailsPageState extends State<PermitsDetailsPage> {
             state.showErrors = false;
             state.next(PermitsPage.check);
           } else {
+            _sends++;
             state.showErrors = true;
             state.changed();
           }

@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../format.dart';
-import '../../internal/paint.dart';
+import '../../internal/corners.dart';
 import '../../theme.dart';
 
 /// How many of something wait, after the words they belong to: [count] in
@@ -12,8 +12,8 @@ import '../../theme.dart';
 /// its noun as one: "Your applications, 2 need action". A count of 0
 /// shows [child] alone.
 ///
-/// Reads [CivicStyle]'s fill (the plate), foreground (the figure) and
-/// textStyle: its `style:`, then [CivicThemeData.badgeStyle].
+/// Reads [CivicStyle]'s fill (the plate), foreground (the figure),
+/// textStyle and corners (or shape): its `style:`, then [CivicThemeData.badgeStyle].
 ///
 /// ```dart
 /// CivicBadge(
@@ -68,9 +68,9 @@ class CivicBadge extends StatelessWidget {
     final plate = count == 0
         ? null
         : DecoratedBox(
-            decoration: BoxDecoration(
+            decoration: ShapeDecoration(
               color: so.fill ?? (needsAction ? t.danger : t.textPrimary),
-              borderRadius: BorderRadius.circular(CivicMetrics.corner / 2),
+              shape: civicShape(t, so, RawCorner.extraSmall),
             ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(minWidth: 24),

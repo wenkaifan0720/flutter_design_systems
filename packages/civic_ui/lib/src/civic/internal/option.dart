@@ -305,8 +305,8 @@ class CivicOptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
+    return ClipPath.shape(
+      shape: t.shapeScheme.corners.border(RawCorner.medium),
       child: ColoredBox(
         color: t.background,
         child: _OnCard(

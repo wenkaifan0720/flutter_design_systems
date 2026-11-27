@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
 
@@ -19,7 +20,8 @@ import '../../theme.dart';
 /// reader hears [label] and the amount in words.
 ///
 /// Reads [CivicStyle]'s fill (the track), foreground (the bar), edge (the
-/// high mark) and textStyle (the label): its `style:`, then
+/// high mark), textStyle (the label) and corners (or shape, the track's):
+/// its `style:`, then
 /// [CivicThemeData.meterStyle].
 ///
 /// ```dart
@@ -119,6 +121,7 @@ class CivicMeter extends StatelessWidget {
                     bar: Color.lerp(so.foreground ?? t.action, t.danger, warn)!,
                     mark: so.edge ?? t.textPrimary,
                     rule: t.rule,
+                    outline: civicShape(t, so, RawCorner.extraSmall),
                     rtl: Directionality.of(context) == TextDirection.rtl,
                   ),
                 ),
@@ -165,6 +168,7 @@ class _Gauge extends CustomPainter {
     required this.bar,
     required this.mark,
     required this.rule,
+    required this.outline,
     required this.rtl,
   });
 
@@ -174,6 +178,7 @@ class _Gauge extends CustomPainter {
   final Color bar;
   final Color mark;
   final Color rule;
+  final OutlinedBorder outline;
   final bool rtl;
 
   @override
@@ -184,9 +189,10 @@ class _Gauge extends CustomPainter {
     final whole = Rect.fromLTWH(0, top, size.width, thick);
     double x(double share) =>
         rtl ? size.width * (1 - share) : size.width * share;
+    final direction = rtl ? TextDirection.rtl : TextDirection.ltr;
     canvas
       ..save()
-      ..clipRRect(RRect.fromRectAndRadius(whole, const Radius.circular(2)))
+      ..clipPath(outline.getOuterPath(whole, textDirection: direction))
       ..drawRect(whole, Paint()..color = track)
       ..drawRect(
         Rect.fromLTRB(
@@ -197,14 +203,10 @@ class _Gauge extends CustomPainter {
         ),
         Paint()..color = bar,
       )
-      ..restore()
-      ..drawRRect(
-        RRect.fromRectAndRadius(whole.deflate(0.5), const Radius.circular(2)),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1
-          ..color = rule,
-      );
+      ..restore();
+    outline
+        .copyWith(side: BorderSide(color: rule))
+        .paint(canvas, whole, textDirection: direction);
     final h = high;
     if (h != null) {
       final at = x(h).clamp(1.0, size.width - 1);
@@ -223,5 +225,6 @@ class _Gauge extends CustomPainter {
       old.bar != bar ||
       old.mark != mark ||
       old.rule != rule ||
+      old.outline != outline ||
       old.rtl != rtl;
 }

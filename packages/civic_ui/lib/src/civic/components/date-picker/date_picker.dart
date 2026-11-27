@@ -22,6 +22,16 @@ export 'package:ui_core/ui_core.dart' show RawTimeOfDay;
 /// Typing is quickest for a date someone knows; the calendar helps with
 /// one they need to see (an appointment, a start date).
 ///
+/// The order and the marks between the parts are the app's locale's, as
+/// ui_core's localizations give them
+/// (`RawWidgetsLocalizations.dateFieldPattern`; `M/d/y` in American
+/// English). An app that writes every date one way gives its own: extend
+/// `DefaultRawWidgetsLocalizations`, override `dateFieldPattern` (and
+/// `formatMediumDate`), and list its delegate first in
+/// `localizationsDelegates`. [exampleOf] and the calendar follow it.
+/// [CivicFormat.date] writes the month in words ("27 March 2026"), the same
+/// in every locale, so a date it writes never reads as another day.
+///
 /// [value] in, [onChanged] out: the day once every part is typed or a day
 /// is chosen, null when a part is cleared. Days before [firstDate] or after
 /// [lastDate] can't be chosen, and a typed one shows the well's error edge.
@@ -305,6 +315,7 @@ class _CalendarButton extends StatelessWidget {
               face: face,
               hairline: t.rule,
               dark: t.isDark,
+              shape: t.shapeScheme.corners.border(RawCorner.small),
             ),
             child: CivicTheme(
               data: t.copyWith(background: face),

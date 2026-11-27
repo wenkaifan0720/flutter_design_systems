@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/menu_row.dart';
-import '../../internal/paint.dart';
 import '../../internal/tip_hold.dart';
 import '../../theme.dart';
 
@@ -21,8 +21,8 @@ import '../../theme.dart';
 /// fade under Reduce Motion). Escape hides it; the pointer may cross onto it and it
 /// stays.
 ///
-/// Reads [CivicStyle]'s fill (the plate), foreground, padding and
-/// textStyle (the words): its `style:`, then [CivicThemeData.tooltipStyle].
+/// Reads [CivicStyle]'s fill (the plate), foreground, padding, textStyle
+/// (the words) and corners (or shape): its `style:`, then [CivicThemeData.tooltipStyle].
 ///
 /// ```dart
 /// CivicTooltip(
@@ -119,9 +119,9 @@ class CivicTooltip extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: maxWidth),
         child: DecoratedBox(
-          decoration: BoxDecoration(
+          decoration: ShapeDecoration(
             color: plate,
-            borderRadius: BorderRadius.circular(CivicMetrics.corner),
+            shape: civicShape(t, so, RawCorner.small),
           ),
           child: Padding(
             padding:

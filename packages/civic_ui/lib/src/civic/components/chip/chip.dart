@@ -17,7 +17,7 @@ import '../../theme.dart';
 /// face is the one target.
 ///
 /// Reads [CivicStyle]'s fill, foreground and edge by state (selected among
-/// them), padding and textStyle: its `style:`, then
+/// them), padding, textStyle and corners (or shape): its `style:`, then
 /// [CivicThemeData.chipStyle].
 ///
 /// ```dart

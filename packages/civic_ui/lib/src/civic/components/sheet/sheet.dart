@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/dialog_actions.dart';
 import '../../internal/menu_row.dart';
 import '../../internal/paint.dart';
@@ -37,8 +38,8 @@ Color _scrim(CivicThemeData t) => t.isDark
 /// A sheet holds a short task beside the page (filters, a choice of
 /// places): never the page's one question, which is a page of its own.
 ///
-/// Reads [CivicStyle]'s fill and edge (the sheet), foreground, padding and
-/// textStyle (the title): its `style:`, then [CivicThemeData.sheetStyle].
+/// Reads [CivicStyle]'s fill, edge and corners (or shape; its top two) of
+/// the sheet, foreground, padding and textStyle (the title): its `style:`, then [CivicThemeData.sheetStyle].
 ///
 /// ```dart
 /// showCivicBottomSheet<void>(
@@ -455,16 +456,26 @@ class _BottomPanel extends StatelessWidget {
     final so = RawStyleOf([style, t.sheetStyle], const {});
     final margin = _margin(context);
     final bottom = MediaQuery.paddingOf(context).bottom;
-    const corner = Radius.circular(CivicMetrics.cardCorner);
+    // Its top corners a card's; its foot stands on the screen's edge.
+    final shape = civicShapeOf(
+      t,
+      so,
+      const RawCorners.only(
+        topStart: RawCorner.medium,
+        topEnd: RawCorner.medium,
+      ),
+      bottom: false,
+    );
     final face = so.fill ?? t.background;
     final sheet = DecoratedBox(
       decoration: civicFloating(
         face: face,
         hairline: so.edge ?? t.rule,
         dark: t.isDark,
-      ).copyWith(borderRadius: const BorderRadius.vertical(top: corner)),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: corner),
+        shape: shape,
+      ),
+      child: ClipPath.shape(
+        shape: shape,
         child: Column(
           mainAxisSize: fills ? MainAxisSize.max : MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -539,7 +550,9 @@ class _Grabber extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Color.lerp(t.rule, t.focusBar, focus),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(
+                  t.shapeScheme.corners.extraSmall,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: t.focus.withValues(alpha: focus),

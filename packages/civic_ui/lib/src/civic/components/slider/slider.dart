@@ -27,8 +27,8 @@ String _figure(BuildContext context, double v) =>
 /// and Page Down by a tenth, Home and End to the ends; a screen reader
 /// hears its label and the value in [valueLabel]'s words.
 ///
-/// Reads [CivicStyle]'s fill (the thumb) and edge (the thumb's solid edge)
-/// by state: its `style:`, then [CivicThemeData.sliderStyle]. The track and
+/// Reads [CivicStyle]'s fill (the thumb), edge (the thumb's solid edge) and
+/// corners (or shape, the thumb's) by state: its `style:`, then [CivicThemeData.sliderStyle]. The track and
 /// the focus are the look's.
 ///
 /// ```dart
@@ -348,8 +348,8 @@ class _CivicSliderState extends State<CivicSlider> {
 /// Each thumb takes the keys as a slider's does; a screen reader hears
 /// each by its own name ([startLabel], [endLabel]) and its value.
 ///
-/// Reads [CivicStyle]'s fill and edge (the thumbs) by state: its `style:`,
-/// then [CivicThemeData.sliderStyle].
+/// Reads [CivicStyle]'s fill, edge and corners (or shape) of the thumbs, by
+/// state: its `style:`, then [CivicThemeData.sliderStyle].
 ///
 /// ```dart
 /// CivicRangeSlider(

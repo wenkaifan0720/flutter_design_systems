@@ -27,14 +27,6 @@ abstract final class CivicMetrics {
 
   /// The inset rule a hint, a warning or an error group stands on.
   static const double insetRule = 4;
-
-  /// A button's and a tag's corners: a little rounded, so a face reads as
-  /// something to press and never as a box drawn round words. A field's
-  /// well keeps square corners: its strong edge is for reading, not for show.
-  static const double corner = 4;
-
-  /// A card's corners: a group of rows, white on the page's ground.
-  static const double cardCorner = 8;
 }
 
 /// Tints a control with its own ink on hover and while the pointer is held.
@@ -52,21 +44,22 @@ Color civicPointerFill(Color fill, Color ink, Set<WidgetState> states) {
 }
 
 /// A surface that floats over the page (an open list, a menu, a popover, a
-/// dialog): the card's [face], its corners rounded ([radius]), a [hairline]
+/// dialog): the card's [face] in its [shape], a [hairline]
 /// round it and a soft shadow under it; never an ink edge, which Civic keeps
 /// for a field's well. By night the shadow is lost on the dark ground, so
 /// the edge carries the surface: a [hairline] that reads at less than 3:1
 /// against the [face] is lifted toward white until it does.
-BoxDecoration civicFloating({
+ShapeDecoration civicFloating({
   required Color face,
   required Color hairline,
   required bool dark,
-  double radius = CivicMetrics.corner,
-}) => BoxDecoration(
+  required OutlinedBorder shape,
+}) => ShapeDecoration(
   color: face,
-  borderRadius: BorderRadius.circular(radius),
-  border: Border.all(color: dark ? _readable(hairline, face) : hairline),
-  boxShadow: [
+  shape: shape.copyWith(
+    side: BorderSide(color: dark ? _readable(hairline, face) : hairline),
+  ),
+  shadows: [
     BoxShadow(
       color: Color(dark ? 0x99000000 : 0x2E0C1116),
       blurRadius: 24,
@@ -96,7 +89,8 @@ class CivicFacePainter extends CustomPainter {
     required this.barColor,
     this.side,
     this.outset = 0,
-    this.radius = 0,
+    this.shape,
+    this.textDirection,
   });
 
   /// The face's fill at rest.
@@ -127,9 +121,12 @@ class CivicFacePainter extends CustomPainter {
   /// round words that stand flush with the text beside them (a link).
   final double outset;
 
-  /// The corners' radius ([CivicMetrics.corner] for a button): the face
-  /// and the edge under it round together, as one piece.
-  final double radius;
+  /// The outline the face and the edge under it share, as one piece (a
+  /// button's small corners); null, square.
+  final OutlinedBorder? shape;
+
+  /// The direction [shape]'s start and end corners follow.
+  final TextDirection? textDirection;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -141,18 +138,19 @@ class CivicFacePainter extends CustomPainter {
       size.width + 2 * outset,
       faceHeight,
     );
-    if (radius > 0) {
+    final outline = shape;
+    if (outline != null) {
       canvas
         ..save()
-        ..clipRRect(
-          RRect.fromRectAndRadius(
+        ..clipPath(
+          outline.getOuterPath(
             Rect.fromLTRB(face.left, sink, face.right, size.height),
-            Radius.circular(radius),
+            textDirection: textDirection,
           ),
         );
     }
     _paint(canvas, size, face);
-    if (radius > 0) canvas.restore();
+    if (outline != null) canvas.restore();
   }
 
   void _paint(Canvas canvas, Size size, Rect face) {
@@ -162,13 +160,24 @@ class CivicFacePainter extends CustomPainter {
     if (fillColor.a > 0) canvas.drawRect(face, Paint()..color = fillColor);
     final s = side;
     if (s != null && s.width > 0 && f < 1) {
-      canvas.drawRect(
-        face.deflate(s.width / 2),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = s.width
-          ..color = s.color.withValues(alpha: s.color.a * (1 - f)),
+      final faded = s.copyWith(
+        color: s.color.withValues(alpha: s.color.a * (1 - f)),
       );
+      final outline = shape;
+      if (outline != null) {
+        // The edge runs round the face's own corners.
+        outline
+            .copyWith(side: faded)
+            .paint(canvas, face, textDirection: textDirection);
+      } else {
+        canvas.drawRect(
+          face.deflate(s.width / 2),
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = s.width
+            ..color = faded.color,
+        );
+      }
     }
     // The solid edge, what is left of it under a press.
     final edgeLeft = edgeHeight - sink;
@@ -202,7 +211,8 @@ class CivicFacePainter extends CustomPainter {
       old.focusColor != focusColor ||
       old.barColor != barColor ||
       old.outset != outset ||
-      old.radius != radius ||
+      old.shape != shape ||
+      old.textDirection != textDirection ||
       old.side != side;
 }
 

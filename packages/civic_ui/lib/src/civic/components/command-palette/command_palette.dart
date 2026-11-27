@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/menu_row.dart';
 import '../../internal/paint.dart';
 import '../../theme.dart';
@@ -28,8 +29,8 @@ export 'package:ui_core/ui_core.dart' show RawCommand;
 /// action), never only here. Name its keys on the page with [CivicKbd]
 /// where it has some ("Press Ctrl K to find a page").
 ///
-/// Reads [CivicStyle]'s fill and edge (the panel), foreground, padding and
-/// textStyle (the rows), by state: its `style:`, then
+/// Reads [CivicStyle]'s fill, edge and corners (or shape) of the panel,
+/// foreground, padding and textStyle (the rows), by state: its `style:`, then
 /// [CivicThemeData.commandPaletteStyle].
 ///
 /// ```dart
@@ -120,6 +121,7 @@ Future<void> showCivicCommandPalette({
       child: Builder(
         builder: (context) {
           final so = RawStyleOf([style, t.commandPaletteStyle], const {});
+          final shape = civicShape(t, so, RawCorner.medium);
           final top = (MediaQuery.sizeOf(context).height * 0.1).clamp(
             CivicSpacing.s16,
             CivicSpacing.s64 + CivicSpacing.s32,
@@ -138,15 +140,19 @@ Future<void> showCivicCommandPalette({
                   face: so.fill ?? t.background,
                   hairline: so.edge ?? t.rule,
                   dark: t.isDark,
-                  radius: CivicMetrics.cardCorner,
+                  shape: shape,
                 ),
-                // The rows' faces stop inside the hairline.
+                // The rows' faces stop inside the hairline, their corners
+                // concentric with the card's.
                 child: Padding(
                   padding: const EdgeInsets.all(1),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      CivicMetrics.cardCorner - 1,
-                    ),
+                  child: ClipPath.shape(
+                    shape: switch (shape) {
+                      final RawCornerBorder own => own.inset(
+                        const EdgeInsets.all(1),
+                      ),
+                      _ => shape,
+                    },
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: CivicSpacing.s8),
                       child: palette,
