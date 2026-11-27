@@ -66,7 +66,9 @@ class RawToast {
 
   /// How long it stays once shown, while not paused. Null: until dismissed.
   /// A toast with an action stays until dismissed while a screen reader
-  /// runs ([MediaQueryData.accessibleNavigation]), as Material's does.
+  /// runs ([MediaQueryData.accessibleNavigation], which the web turns on
+  /// with its semantics), as Material's does; one without an action still
+  /// leaves after its time.
   final Duration? duration;
 
   /// Showing a toast with the [id] of one already shown or waiting replaces
@@ -175,8 +177,10 @@ typedef RawToastStackBuilder = Widget Function(
 ///
 /// At most [maxVisible] show at once, oldest first; the rest wait their turn
 /// in order. Each shown toast's time runs only while the stack is neither
-/// hovered nor holding focus. [focusShortcut] (F6) moves focus to the newest
-/// toast; Escape there dismisses it and focus goes back where it was.
+/// hovered (a pointer moved onto it; one it rises under, resting on the key
+/// just pressed, does not count) nor holding focus. [focusShortcut] (F6)
+/// moves focus to the newest toast; Escape there dismisses it and focus goes
+/// back where it was.
 ///
 /// At a desk a pane can hold a toaster of its own, as Material scopes a
 /// `ScaffoldMessenger` round a pane: round a list/detail's detail, its
@@ -233,7 +237,7 @@ class RawToaster extends StatefulWidget {
   /// The stack's size limits.
   final BoxConstraints constraints;
 
-  /// Whether a pointer over the stack pauses every shown toast's time.
+  /// Whether a pointer moved over the stack pauses every shown toast's time.
   final bool pauseOnHover;
 
   /// Whether focus in the stack pauses every shown toast's time.
@@ -766,8 +770,12 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
       },
       child: stack,
     );
+    // A pointer moved over the stack pauses it, as Radix's toast viewport
+    // pauses on a pointer's move: a toast that rises under a resting pointer
+    // (on the key just pressed) is not hovered, and runs its time.
     stack = MouseRegion(
-      onEnter: (_) {
+      onHover: (_) {
+        if (_hovered) return;
         _hovered = true;
         setState(() {});
         _syncTimers();

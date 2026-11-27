@@ -24,6 +24,10 @@ typedef RawHandleBuilder = Widget Function(
 
 /// A focusable value between [min] and [max].
 ///
+/// A screen reader hears its value as a whole percentage of the range, as
+/// Material's `Slider` says it, unless [semanticFormatterCallback] words
+/// it ("12 books"), the values its increase and decrease reach too.
+///
 /// Along a horizontal [axis], Right and Up raise the value (Left in right
 /// to left). Along a vertical one, the arrow toward [growsToward] raises it.
 ///

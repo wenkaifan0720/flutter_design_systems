@@ -480,6 +480,9 @@ extension on _LabelReader {
           if (x == to) return true;
           x += by;
         }
+        // The box's outermost pixel, where a round face's curve covers it in
+        // part, may blend into what is round it: the rim reaches it still.
+        if (x == to && x != from) return true;
       }
       return false;
     }

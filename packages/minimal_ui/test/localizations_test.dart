@@ -200,7 +200,8 @@ void main() {
     expect(en.firstDayOfWeek, DateTime.sunday);
     expect(en.ok, 'OK');
     expect(en.monthYear(DateTime(2026, 8)), 'August 2026');
-    expect(en.fullDate(DateTime(2026, 8, 28)), 'Friday, 28 August 2026');
+    // Month first, as American English and Material write it.
+    expect(en.fullDate(DateTime(2026, 8, 28)), 'Friday, August 28, 2026');
     expect(en.clear(null), 'Clear text');
     expect(en.clear('Name'), 'Clear Name');
     expect(en.decrease('Pages'), 'Decrease Pages');

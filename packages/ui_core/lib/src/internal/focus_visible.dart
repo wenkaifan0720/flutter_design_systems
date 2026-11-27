@@ -57,6 +57,11 @@ abstract final class RawFocusVisible {
   /// key. Before any input it is shown, as Flutter's highlight mode is.
   /// Always, when the app keeps the traditional mode for good
   /// ([FocusHighlightStrategy.alwaysTraditional]).
+  ///
+  /// A screen reader's action is no pointer press: a tap it sends (the
+  /// web's semantics turn a click on a control into one) leaves focus shown
+  /// where it lands, as Material's highlight mode leaves it, so the reader
+  /// following focus sees it. A pointer's own press hides it.
   static bool get shown {
     final manager = FocusManager.instance;
     _meet(manager);

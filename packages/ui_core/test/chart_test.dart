@@ -599,7 +599,7 @@ void main() {
           RawChartPoint.time(DateTime(2026, 11, 16), 1),
           RawChartPoint.time(DateTime(2026, 11, 17), 2),
         ]),
-        'Monday, 16 November 2026, Visits: 1',
+        'Monday, November 16, 2026, Visits: 1',
       );
       expect(
         await said(tester, [
@@ -617,7 +617,7 @@ void main() {
       );
       expect(
         await said(tester, [RawChartPoint.time(DateTime(2026, 11, 16), 1)]),
-        'Monday, 16 November 2026, Visits: 1',
+        'Monday, November 16, 2026, Visits: 1',
         reason: 'one point: its whole date',
       );
     });

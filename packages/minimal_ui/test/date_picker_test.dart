@@ -53,19 +53,23 @@ void main() {
           ),
         ),
       );
+      // Each day says its whole date, in the app's words.
+      final words = MinimalLocalizations.of(
+        tester.element(find.byType(MinimalDatePicker)),
+      );
       final chosen = tester.getSemantics(
-        find.bySemanticsLabel('Friday, 21 August 2026'),
+        find.bySemanticsLabel(words.fullDate(DateTime(2026, 8, 21))),
       );
       expect(
         chosen.getSemanticsData().flagsCollection.isSelected,
         Tristate.isTrue,
       );
       expect(
-        find.bySemanticsLabel('Friday, 28 August 2026, Today'),
+        find.bySemanticsLabel('${words.fullDate(today)}, Today'),
         findsOneWidget,
       );
       final early = tester.getSemantics(
-        find.bySemanticsLabel('Sunday, 2 August 2026'),
+        find.bySemanticsLabel(words.fullDate(DateTime(2026, 8, 2))),
       );
       expect(
         early.getSemanticsData().flagsCollection.isEnabled,

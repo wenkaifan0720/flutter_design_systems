@@ -196,12 +196,32 @@ bool _rtl(int c) =>
     (c >= 0x0590 && c <= 0x08FF) || (c >= 0xFB1D && c <= 0xFEFC);
 
 void main() {
-  test('supportedLocales are the 30 the tables hold', () {
+  test('supportedLocales are the 30 the tables hold, beside English '
+      'regions', () {
     expect(RawWidgetsLocalizations.supportedLocales, hasLength(30));
     expect(
       RawWidgetsLocalizations.supportedLocales.map(_key).toSet(),
-      rawLocaleData.keys.toSet(),
+      rawLocaleData.keys.where((k) => !k.startsWith('en_')).toSet(),
     );
+    // The English regions Material speaks: English's words, their own
+    // dates.
+    expect(rawLocaleData.keys.where((k) => k.startsWith('en_')), [
+      'en_AU',
+      'en_CA',
+      'en_GB',
+      'en_IE',
+      'en_IN',
+      'en_NZ',
+      'en_SG',
+      'en_ZA',
+    ]);
+    for (final region in rawLocaleData.keys.where((k) => k.startsWith('en_'))) {
+      expect(rawLocaleData[region]!.words, same(rawLocaleData['en']!.words));
+      expect(
+        rawLocaleData[region]!.plurals,
+        same(rawLocaleData['en']!.plurals),
+      );
+    }
   });
 
   test('every locale says every message from its table, filled, in its '
@@ -364,9 +384,11 @@ void main() {
     );
     expect(l(const Locale('fa')).formatMonthYear(december), 'دسامبر ۲۰۲۵');
 
-    // A medium date with its year, as a field or a list shows a chosen day.
-    // ui_core's English sets the day first, as its full date does.
-    expect(l(const Locale('en')).formatMediumDate(monday), '3 Mar 2025');
+    // A medium date with its year, as a field or a list shows a chosen day:
+    // English's month first, as Material's and its date field's are;
+    // British English's day first (english_dates_test.dart).
+    expect(l(const Locale('en')).formatMediumDate(monday), 'Mar 3, 2025');
+    expect(l(const Locale('en', 'GB')).formatMediumDate(monday), '3 Mar 2025');
     expect(l(const Locale('de')).formatMediumDate(monday), '3. März 2025');
     expect(l(const Locale('fr')).formatMediumDate(monday), '3 mars 2025');
     expect(l(const Locale('ja')).formatMediumDate(monday), '2025年3月3日');

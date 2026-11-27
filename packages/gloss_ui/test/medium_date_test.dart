@@ -8,7 +8,7 @@ import 'package:gloss_ui/gloss_ui.dart';
 void main() {
   testWidgets('a date field shows the medium date with its year', (t) async {
     final day = DateTime(2026, 11, 26);
-    late String medium, full;
+    late String medium, localeMedium, full;
     await t.pumpWidget(
       WidgetsApp(
         color: const Color(0xFF0E7652),
@@ -17,7 +17,9 @@ void main() {
           child: Builder(
             builder: (context) {
               medium = GlossFormat.mediumDate(context, day);
-              full = RawWidgetsLocalizations.of(context).formatFullDate(day);
+              final words = RawWidgetsLocalizations.of(context);
+              localeMedium = words.formatMediumDate(day);
+              full = words.formatFullDate(day);
               return Center(
                 child: SizedBox(
                   width: 320,
@@ -35,7 +37,9 @@ void main() {
         ),
       ),
     );
-    expect(medium, '26 Nov 2026');
+    // The locale's medium date: "Nov 26, 2026" in English, with the year.
+    expect(medium, localeMedium);
+    expect(medium, contains('2026'));
     expect(medium, isNot(full));
     expect(find.text(medium), findsOneWidget);
     expect(find.text(full), findsNothing);

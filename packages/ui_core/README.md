@@ -8,7 +8,7 @@ it, so an app that uses a look rarely imports it directly. Add it to build a loo
 
 ```yaml
 dependencies:
-  ui_core: ^0.8.5
+  ui_core: ^0.8.6
 ```
 
 ```dart
@@ -150,6 +150,11 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 They are built from `RawButton` (a press, focus, hover and semantics on any widget) and `RawValueHandle`
 (a value dragged or stepped with the keys). Each class's documentation has an example.
 
+A slider's value reaches a screen reader as a whole percentage of its range ("23%" for 12 of 52), as Material's
+`Slider` says it. Where the number means something of its own, pass `semanticFormatterCallback` (on
+`RawValueHandle` and `RawRangeSlider`, as on Material's `Slider`): `(value) => '${value.round()} books'` says
+"12 books", and the values Increase and Decrease would reach in the same words. A look's slider passes it through.
+
 ## A look's app shell
 
 A look offers one app shell, on `RawAdaptiveShell.branches`, and paints all of its navigation through it at every
@@ -158,8 +163,9 @@ top. The shell gives the destinations their keys (one tab stop, the arrows along
 meaning to a screen reader (tabs in a tab bar, or the navigation menu) and their place; the look paints each
 destination and lays them out. A phone bar built outside the shell loses all three. Each destination keeps its own
 stack of pages; a page pushed on one keeps the rail, sidebar or header beside it while the bar steps away
-(`hideBarOnPush`, or keep the bar under it as Cupertino's tab scaffold does), and back pops it. Toasts keep clear of
-the bar, and centre on the page beside a rail or a sidebar.
+(`hideBarOnPush`, or keep the bar under it as Cupertino's tab scaffold does), and back pops it. Only a page route
+counts: a popup over the page (a menu, a select's list, a date picker, a dialog, a sheet) leaves the bar and the
+page's footer where they are. Toasts keep clear of the bar, and centre on the page beside a rail or a sidebar.
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -234,6 +240,15 @@ A change of destination switches at once, as Material's `NavigationBar` over an 
 design moves between destinations gives `transitionBuilder` (and `transitionDuration`): it gets each branch's coming
 in (`animation`) and going out (`secondaryAnimation`), as a page route's transition does. Both branches are painted
 only while it runs, the one going out taking no pointer, focus or screen reader, and reduced motion switches at once.
+
+Toasts come from one `RawToaster` above the app's navigator (in `WidgetsApp.builder`, `MaterialApp.builder`, or the
+look's host there), raised with `RawToaster.of(context).show(RawToast(...))` (or the look's `show…Toast`) from
+anywhere under it, a destination's page included. Being above every destination's navigator, a toast raised on one
+destination stays through a switch to another. The shell keeps its bar, header and rail clear of toasts; a look's
+screen keeps its footer clear; an app's own footer wraps it, with its padding, in `RawToasterKeepClear`, and a key
+floating on the page's padding takes `edge: RawKeepClearEdge.bottom`. A toast raised into a navigator's overlay
+instead lives and dies with that navigator: it goes when its destination is switched away, and it does not know the
+bars.
 
 ## Flutter's conventions
 
@@ -397,6 +412,54 @@ otherwise.
 
 For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPercent`. Date and time controls use the locale’s calendar order, digits, separators and first day of the week.
 
+Dates follow the app's locale as `MaterialLocalizations`' do. English writes the month first, as American English
+does ("Nov 9, 2026", a date field's M/d/y), with or without the delegate. The English of a region Material speaks
+(Australia, Canada, Britain, Ireland, India, New Zealand, Singapore, South Africa) writes its own: British English
+"9 Nov 2026" and dd/MM/y, its week from Monday, its time on a 24-hour clock. Flutter resolves a device's locale to one
+the app lists, so an app that serves a region lists it:
+`[...RawWidgetsLocalizations.supportedLocales, Locale('en', 'GB')]`.
+
+To write dates one way of your own, whatever the locale, extend `DefaultRawWidgetsLocalizations`, override
+`formatMediumDate` and `dateFieldPattern` together (a shown day and a typed one in one order), and list your
+delegate first in `localizationsDelegates`:
+
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+
+/// The app's English dates: the day first, in every region.
+class AppWords extends DefaultRawWidgetsLocalizations {
+  const AppWords();
+
+  @override
+  String formatMediumDate(DateTime date) =>
+      '${date.day} ${formatShortMonth(date)} ${date.year}';
+
+  @override
+  String get dateFieldPattern => 'dd/MM/y';
+}
+
+/// Loads [AppWords] for English; other languages fall to the next delegate.
+class AppWordsDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
+  const AppWordsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'en';
+
+  @override
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(const AppWords());
+
+  @override
+  bool shouldReload(AppWordsDelegate old) => false;
+}
+
+const appDelegates = [
+  AppWordsDelegate(),
+  RawWidgetsLocalizations.delegate,
+];
+```
+
 ## A look's palette
 
 People name a palette (navy and white, black and gold, a pastel), and a look's own colour API takes it in its own
@@ -539,8 +602,12 @@ field hugs its value only on its own, in a toolbar or a filter row. The column k
 screen 600 or wider) and one gap between its fields, on the look's spacing grid. Inside each field,
 `RawInputDecorator`'s builder places the label, the control and the help or the error under it, so the rhythm is the
 field's, not each screen's. `RawForm` and `RawFormField` validate any control as a `TextFormField` does, and
-`RawWidgetsLocalizations.formatMediumDate` shows a chosen day ("3 Mar 2025", with the year, in the locale's order)
-wherever a field or a list shows one.
+`RawWidgetsLocalizations.formatMediumDate` shows a chosen day ("Mar 3, 2025" in English, "3 Mar 2025" in British
+English: with the year, in the locale's order)
+wherever a field or a list shows one. An optional date is a picker whose value is `DateTime?` and whose `onChanged`
+takes null: its calendar opens with no day struck (`RawCalendarController(selectedDate: null)`), its Done commits
+`selectedDate` (null when none was struck, never the keyboard's day), and its Clear calls `controller.clear()` and
+`onChanged(null)`; `RawDateField` empties with Backspace and reports null.
 
 ```dart
 import 'package:flutter/widgets.dart';

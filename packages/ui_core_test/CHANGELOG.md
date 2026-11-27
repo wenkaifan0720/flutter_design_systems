@@ -1,3 +1,7 @@
+## 0.6.3
+
+- `DesignFaceInsetCheck` reads a painted face to its rim where the rim's outermost pixel blends into what is round it. A round face's curve covers the outermost row of its box's pixels only in part, so on a ball lit at its top only a little off its page (Clay's avatar by day on its slab) that row came out alike to the page, and the rim was taken to stop short of the box's edge. The face was read from where its darker body starts, 8 px below its top, and initials well inside the ball were named as close to its top. The rim now reaches the box's edge when every pixel up to that outermost one stands off the page.
+
 ## 0.6.2
 
 - `DesignFaceInsetCheck` skips a face a scroll cuts when the face is read from its pixels. A list row whose plate draws nothing of its own is read by the avatar it paints. Scrolled half past the list's foot (Stint's task list above its navigation bar), that avatar was read as ending at the foot, and its initials were named for standing close to an edge that is only the cut. A face read from its pixels that ends at a clip's edge, while the box it is painted in runs on past that edge, now counts as cut. It is read when it comes into view, as the check's documentation says. A face that shows whole above the cut is still read, even when its row runs on past it.

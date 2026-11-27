@@ -78,7 +78,7 @@ void main() {
 
     // The day's one node spans the target, not the face.
     final node = tester.getSemantics(_face(15)).getSemanticsData();
-    expect(node.label, 'Thursday, 15 January 2026');
+    expect(node.label, 'Thursday, January 15, 2026');
     expect(node.rect.height, 40);
     semantics.dispose();
   });
@@ -139,7 +139,7 @@ void main() {
 
     visit(tester.getSemantics(find.byType(RawCalendarDatePicker)));
     expect(blank, isEmpty, reason: 'a neighbour\'s day is no empty node');
-    expect(find.bySemanticsLabel('Sunday, 28 December 2025'), findsNothing);
+    expect(find.bySemanticsLabel('Sunday, December 28, 2025'), findsNothing);
     semantics.dispose();
   });
 }

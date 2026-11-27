@@ -122,11 +122,12 @@ void main() {
         });
 
         testWidgets('the date field shows the whole date at $where', (t) async {
+          final day = DateTime(2026, 11, 20);
           await _pump(
             t,
             BrutalDatePicker(
               labelText: 'Due date',
-              value: DateTime(2026, 11, 20),
+              value: day,
               firstDate: DateTime(2020),
               lastDate: DateTime(2040),
               onChanged: (_) {},
@@ -135,7 +136,11 @@ void main() {
             brightness: brightness,
             direction: direction,
           );
-          final date = find.text('Friday, 20 November 2026');
+          // The whole date, as the app's locale writes it.
+          final words = RawWidgetsLocalizations.of(
+            t.element(find.byType(BrutalDatePicker)),
+          );
+          final date = find.text(words.formatFullDate(day));
           expect(date, findsOneWidget, reason: where);
           final paragraph = t.renderObject<RenderParagraph>(date);
           expect(paragraph.didExceedMaxLines, isFalse, reason: where);

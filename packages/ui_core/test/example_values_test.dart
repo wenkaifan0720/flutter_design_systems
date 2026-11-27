@@ -60,7 +60,7 @@ void main() {
     }
     expect(
       tester.getSemantics(find.bySemanticsLabel('Due date')).value,
-      'Friday, 25 December 2026',
+      'Friday, December 25, 2026',
     );
 
     // The time field: Up an hour.

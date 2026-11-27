@@ -110,7 +110,7 @@ void main() {
     ),
     node: () => find.byKey(const ValueKey('day-1-28')),
     semantics: isSemantics(
-      label: 'Wednesday, 28 January 2026',
+      label: 'Wednesday, January 28, 2026',
       isButton: true,
       hasTapAction: true,
       hasEnabledState: true,
@@ -119,7 +119,7 @@ void main() {
     // A day that may not be chosen still takes the keyboard's day (a
     // reader browses past it), so no focus check reaches past the node.
     disabled: isSemantics(
-      label: 'Wednesday, 28 January 2026',
+      label: 'Wednesday, January 28, 2026',
       isButton: true,
       hasTapAction: false,
       hasEnabledState: true,
@@ -131,11 +131,11 @@ void main() {
       await p.tabInto(find.byType(RawCalendarDatePicker));
       expect(
         said(t),
-        contains('Wednesday, 28 January 2026'),
+        contains('Wednesday, January 28, 2026'),
         reason: 'arriving, the keyboard\'s day is told',
       );
       await p.key(LogicalKeyboardKey.arrowRight);
-      expect(said(t), contains('Thursday, 29 January 2026'));
+      expect(said(t), contains('Thursday, January 29, 2026'));
       await p.key(LogicalKeyboardKey.enter);
       expect(_cal.selectedDate, DateTime(2026, 1, 29));
       expect(
@@ -144,7 +144,7 @@ void main() {
       );
       await p.key(LogicalKeyboardKey.pageDown);
       expect(_cal.month, DateTime(2026, 2));
-      expect(said(t), anyElement(contains('February 2026')));
+      expect(said(t), anyElement(contains('February 28, 2026')));
     },
     rtl: (p) async {
       await p.tabInto(find.byType(RawCalendarDatePicker));
@@ -359,12 +359,12 @@ void main() {
     expect(
       tester.getSemantics(find.byKey(const ValueKey('day-1-5'))),
       isSemantics(
-        label: 'Monday, 5 January 2026',
+        label: 'Monday, January 5, 2026',
         isButton: true,
         isSelected: true,
       ),
     );
-    expect(find.bySemanticsLabel('Sunday, 1 February 2026'), findsNothing);
+    expect(find.bySemanticsLabel('Sunday, February 1, 2026'), findsNothing);
     semantics.dispose();
   });
 

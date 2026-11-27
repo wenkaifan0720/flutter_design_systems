@@ -729,7 +729,14 @@ void main() {
       expect(find.text('Tu'), findsOneWidget);
       expect(find.text('3'), findsOneWidget);
       expect(find.text('Nov'), findsOneWidget);
-      expect(find.bySemanticsLabel('Tuesday, 3 November 2026'), findsOneWidget);
+      // It says the whole date, in the app's words.
+      final names = RawWidgetsLocalizations.of(
+        tester.element(find.byType(Fluent2DateBlock)),
+      );
+      expect(
+        find.bySemanticsLabel(names.formatFullDate(DateTime(2026, 11, 3))),
+        findsOneWidget,
+      );
     });
   });
 
@@ -767,14 +774,22 @@ void main() {
           ),
         ),
       );
+      // Each day says its whole date, in the app's words.
+      final names = RawWidgetsLocalizations.of(
+        tester.element(find.byType(Fluent2WeekStrip).first),
+      );
       expect(
         tester.getSemantics(
-          find.bySemanticsLabel('Tuesday, 3 November 2026, Today'),
+          find.bySemanticsLabel(
+            '${names.formatFullDate(DateTime(2026, 11, 3))}, Today',
+          ),
         ),
         isSemantics(isSelected: true, isButton: true),
       );
       expect(
-        tester.getSemantics(find.bySemanticsLabel('Thursday, 5 November 2026')),
+        tester.getSemantics(
+          find.bySemanticsLabel(names.formatFullDate(DateTime(2026, 11, 5))),
+        ),
         isSemantics(value: 'Has events'),
       );
       await tester.tap(find.text('5'));
@@ -784,7 +799,7 @@ void main() {
       expect(picked, isNull);
       expect(
         tester.getSemantics(
-          find.bySemanticsLabel('Thursday, 10 December 2026'),
+          find.bySemanticsLabel(names.formatFullDate(DateTime(2026, 12, 10))),
         ),
         isSemantics(isEnabled: false, hasEnabledState: true),
       );

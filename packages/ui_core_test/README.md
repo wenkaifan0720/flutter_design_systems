@@ -9,7 +9,7 @@ A design system's tests take it as a dev dependency, as an app takes `flutter_te
 
 ```yaml
 dev_dependencies:
-  ui_core_test: ^0.6.2
+  ui_core_test: ^0.6.3
 ```
 
 ```dart
@@ -157,7 +157,7 @@ texts).
 
 ## Versions
 
-Version 0.6.2 supports ui_core ^0.8.4 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
+Version 0.6.3 supports ui_core ^0.8.6 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
 review (the alignment matrix, the keyline, row, width, spacing and field-parts checks) holds a look's own grid and
 taste, and is no longer published.
 

@@ -63,9 +63,9 @@ void main() {
       'sorted ascending',
       'sorted descending',
     ]);
-    expect(en.formatFullDate(DateTime(2025, 3, 3)), 'Monday, 3 March 2025');
+    expect(en.formatFullDate(DateTime(2025, 3, 3)), 'Monday, March 3, 2025');
     expect(en.formatMonthYear(DateTime(2025, 12)), 'December 2025');
-    expect(en.formatMediumDate(DateTime(2025, 3, 3)), '3 Mar 2025');
+    expect(en.formatMediumDate(DateTime(2025, 3, 3)), 'Mar 3, 2025');
     expect(
       [for (var d = 1; d <= 7; d++) en.formatShortWeekday(d)],
       ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],

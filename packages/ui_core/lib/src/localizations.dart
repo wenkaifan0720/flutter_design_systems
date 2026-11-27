@@ -31,11 +31,25 @@ import 'internal/segments.dart';
 /// (the package's README lists them). A locale it does not speak gets
 /// English.
 ///
+/// Dates follow the app's locale, as `MaterialLocalizations`' do: English
+/// writes the month first ("Nov 9, 2026", a field's M/d/y), as American
+/// English does, and so does [DefaultRawWidgetsLocalizations]; the English
+/// of a region Material speaks (`Locale('en', 'GB')`, Australia's, Canada's,
+/// Ireland's, India's, New Zealand's, Singapore's, South Africa's) writes its
+/// own, British English the day first ("9 Nov 2026", dd/MM/y), its week from
+/// Monday and its time on a 24-hour clock. An app that serves a region lists
+/// it in its `supportedLocales`, since Flutter resolves the device's locale
+/// to a listed one only.
+///
 /// An app that words a message its own way extends
 /// [DefaultRawWidgetsLocalizations], overriding the words it changes, and adds a
 /// delegate for its subclass, as it does for `WidgetsLocalizations`.
 /// Extending it, rather than implementing this class, keeps a word added in
-/// a later minor version in English until the app words it.
+/// a later minor version in English until the app words it. A date format
+/// of the app's own is changed the same way: its subclass overrides
+/// [formatMediumDate] and [dateFieldPattern] together (a shown day and a
+/// typed one in one order), and its delegate comes first in the app's
+/// `localizationsDelegates`.
 ///
 /// ```dart
 /// Localizations(locale: const Locale('en'), delegates: const [DefaultRawWidgetsLocalizations.delegate, DefaultWidgetsLocalizations.delegate], child: Builder(builder: (context) => Text(RawWidgetsLocalizations.of(context).carouselLabel)))
@@ -54,16 +68,22 @@ abstract class RawWidgetsLocalizations {
       const DefaultRawWidgetsLocalizations();
 
   /// The words for [locale]: its language's (Traditional Chinese for `zh`
-  /// written in Hant, or in Taiwan, Hong Kong or Macau), else English.
+  /// written in Hant, or in Taiwan, Hong Kong or Macau), else English. An
+  /// English region Material speaks (`Locale('en', 'GB')`, …) keeps English's
+  /// words with its own dates, times and numbers; any other English is
+  /// [DefaultRawWidgetsLocalizations], month first.
   static RawWidgetsLocalizations forLocale(Locale locale) {
-    final data = rawLocaleData[_key(locale)];
-    if (data == null || locale.languageCode == 'en') {
+    final key = _key(locale);
+    final data = rawLocaleData[key];
+    if (data == null || key == 'en') {
       return const DefaultRawWidgetsLocalizations();
     }
     return _TranslatedDesignLocalizations(data);
   }
 
-  /// The locales ui_core speaks: English, and 29 more.
+  /// The languages ui_core speaks: English, and 29 more. An app that serves
+  /// an English region's dates (`Locale('en', 'GB')`, …) lists that locale
+  /// as well.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('ar'),
@@ -111,6 +131,9 @@ abstract class RawWidgetsLocalizations {
         when locale.scriptCode == 'Hant' ||
             const ['TW', 'HK', 'MO'].contains(locale.countryCode) =>
       'zh_TW',
+    // English in a region Material speaks: its own dates and numbers.
+    'en' when rawLocaleData.containsKey('en_${locale.countryCode}') =>
+      'en_${locale.countryCode}',
     // Older codes for Hebrew, Indonesian and Filipino.
     'iw' => 'he',
     'in' => 'id',
@@ -249,8 +272,9 @@ abstract class RawWidgetsLocalizations {
   String formatMonthYear(DateTime date);
 
   /// [date] as a field or a list shows a chosen day: the day, its month
-  /// short and the year, in the locale's order ("Nov 26, 2026" in American
-  /// English, "26 nov. 2026" in French, "2026年11月26日" in Japanese).
+  /// short and the year, in the locale's order ("Nov 26, 2026" in English,
+  /// "26 Nov 2026" in British English, "26 nov. 2026" in French,
+  /// "2026年11月26日" in Japanese).
   ///
   /// A look shows a day so wherever it shows one (a date field's value, a
   /// list's due date), as one format; [formatFullDate] is a day's name in
@@ -539,7 +563,8 @@ abstract class RawWidgetsLocalizations {
   });
 
   /// A date field's order and the text between its segments (CLDR's yMd:
-  /// "M/d/y"; German's "d.M.y"; Japanese's "y/M/d").
+  /// "M/d/y"; British English's "dd/MM/y"; German's "d.M.y"; Japanese's
+  /// "y/M/d"), in the order [formatMediumDate] writes a day.
   String get dateFieldPattern;
 
   /// A time field's segments and the text between (CLDR's jm: "h:mm a";
@@ -551,7 +576,12 @@ abstract class RawWidgetsLocalizations {
   });
 }
 
-/// The words in English, with no localizations package.
+/// The words in English, with no localizations package: American English's
+/// dates, month first ("Nov 9, 2026"), as `DefaultMaterialLocalizations`
+/// writes them.
+///
+/// An app extends it to word a message or write a date its own way, and
+/// lists a delegate for its subclass first (see [RawWidgetsLocalizations]).
 ///
 /// ```dart
 /// const DefaultRawWidgetsLocalizations().carouselSlideLabel(0, 3)
@@ -570,21 +600,6 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
   /// `localizationsDelegates`.
   static const LocalizationsDelegate<RawWidgetsLocalizations> delegate =
       _DefaultDesignLocalizationsDelegate();
-
-  static const List<String> _months = <String>[
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
 
   static const List<String> _weekdays = <String>[
     'Monday',
@@ -719,17 +734,14 @@ class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
       : 'sorted descending';
 
   @override
-  String formatFullDate(DateTime date) =>
-      '${_weekdays[date.weekday - 1]}, ${date.day} '
-      '${_months[date.month - 1]} ${date.year}';
+  String formatFullDate(DateTime date) => _pattern(_valueData.fullDate, date);
 
   @override
-  String formatMonthYear(DateTime date) =>
-      '${_months[date.month - 1]} ${date.year}';
+  String formatMonthYear(DateTime date) => _pattern(_valueData.monthYear, date);
 
   @override
   String formatMediumDate(DateTime date) =>
-      '${date.day} ${_months[date.month - 1].substring(0, 3)} ${date.year}';
+      _pattern(_valueData.mediumDate, date);
 
   @override
   String formatShortWeekday(int weekday) =>

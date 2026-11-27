@@ -186,8 +186,8 @@ class RawNavigationDetails {
   final Animation<double> visibility;
 
   /// Whether the selected branch has a page over its root
-  /// ([RawAdaptiveShell.branches]); always false over a [RawAdaptiveShell]'s
-  /// own body.
+  /// ([RawAdaptiveShell.branches]): a page route covering the one under it,
+  /// not a popup; always false over a [RawAdaptiveShell]'s own body.
   final bool pushed;
 
   /// [destinations], laid out by the look, as one group: in a bar or a
@@ -430,9 +430,11 @@ enum RawBranchBackBehavior {
 ///   `(width) => width < 600 ? RawNavigationMode.bar : RawNavigationMode.top`.
 /// * With [hideBarOnPush] (the default) a page pushed on a branch takes the
 ///   bar's room as the bar springs away, and the bar comes back as it pops;
-///   a rail, a sidebar or a header stays beside the page. Turned off, the
-///   bar stays under pushed pages, as Cupertino's tab scaffold keeps its tab
-///   bar.
+///   a rail, a sidebar or a header stays beside the page. A popup on the
+///   branch (a dialog, a menu, a select's list, a date picker, a bottom
+///   sheet) is no page: the bar and the page's footer stay where they are.
+///   Turned off, the bar stays under pushed pages, as Cupertino's tab
+///   scaffold keeps its tab bar.
 /// * The bar keeps toasts above it, a header below it, and a rail or a
 ///   sidebar beside it, so they centre on the page ([RawToasterKeepClear]);
 ///   a popover prefers the side of its anchor clear of the bar.
@@ -539,9 +541,11 @@ class RawAdaptiveShell extends StatefulWidget {
 
   /// Whether the bar steps away while the selected branch has a page over
   /// its root ([RawAdaptiveShell.branches]; a rail, a sidebar or a header
-  /// stays). False keeps the bar under pushed pages, as Cupertino's tab
-  /// scaffold does. Always false over the app's own [body], which says so
-  /// through [showNavigation].
+  /// stays): a page route that covers the one under it. A popup route (a
+  /// dialog, a menu, a select's list, a bottom sheet) leaves the bar. False
+  /// keeps the bar under pushed pages, as Cupertino's tab scaffold does.
+  /// Always false over the app's own [body], which says so through
+  /// [showNavigation].
   final bool hideBarOnPush;
 
   /// Paints the branches as the destination changes, for a look whose
@@ -677,11 +681,15 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
   // Where the bar's spring is going: shown or not.
   late bool _barShown = widget.showNavigation;
 
-  // The branches built so far, their own navigators' keys, and whether each
-  // has a page over its root.
+  // The branches built so far, their own navigators' keys, whether each can
+  // go back (a page or a popup over its root: Back closes it), and whether
+  // each has a page over its root (which takes the bar away; a popup does
+  // not).
   final Set<int> _built = {};
   final List<GlobalKey<NavigatorState>> _keys = [];
   final Map<int, bool> _deep = {};
+  final Map<int, bool> _paged = {};
+  final Map<int, _BranchPages> _pages = {};
 
   // Each built branch's coming in and going out, and the branches going
   // out now (painted until they are hidden).
@@ -780,9 +788,11 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
   final List<int> _history = [];
   bool _goingBack = false;
 
-  // Whether the selected branch has a page over its root.
+  // Whether the selected branch has a page over its root: a page route
+  // covering the one under it, not a popup (a dialog, a menu, a select's
+  // list, a bottom sheet), which a branch's own navigator holds too.
   bool get _pushed =>
-      widget.branches != null && (_deep[widget.selectedIndex] ?? false);
+      widget.branches != null && (_paged[widget.selectedIndex] ?? false);
 
   // Springs the bar in or away as [RawAdaptiveShell.showNavigation] and a
   // page pushed on the selected branch say.
@@ -915,18 +925,28 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
 
   void _branchDepth(int i, bool deep) {
     if ((_deep[i] ?? false) == deep) return;
-    void set() {
-      if (!mounted) return;
-      setState(() => _deep[i] = deep);
+    _afterBuild(() => setState(() => _deep[i] = deep));
+  }
+
+  void _branchPaged(int i, bool paged) {
+    if ((_paged[i] ?? false) == paged) return;
+    _afterBuild(() {
+      setState(() => _paged[i] = paged);
       _syncBar();
+    });
+  }
+
+  // A navigator says so as it builds: the shell hears after the frame.
+  void _afterBuild(VoidCallback change) {
+    void run() {
+      if (mounted) change();
     }
 
-    // A navigator says so as it builds: the shell hears after the frame.
     if (SchedulerBinding.instance.schedulerPhase ==
         SchedulerPhase.persistentCallbacks) {
-      SchedulerBinding.instance.addPostFrameCallback((_) => set());
+      SchedulerBinding.instance.addPostFrameCallback((_) => run());
     } else {
-      set();
+      run();
     }
   }
 
@@ -974,6 +994,9 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
       },
       child: Navigator(
         key: _navigatorKey(i),
+        observers: [
+          _pages[i] ??= _BranchPages((paged) => _branchPaged(i, paged)),
+        ],
         onGenerateInitialRoutes: (navigator, name) => [
           PageRouteBuilder<void>(
             settings: RouteSettings(name: name),
@@ -1263,5 +1286,52 @@ class _BranchTraversalPolicy extends FocusTraversalPolicy {
   void changedScope({FocusNode? node, FocusScopeNode? oldScope}) {
     super.changedScope(node: node, oldScope: oldScope);
     around.changedScope(node: node, oldScope: oldScope);
+  }
+}
+
+// The routes a branch's navigator holds, for whether a page stands over its
+// root: a page route covering the one under it ([PageRoute.opaque]). A popup
+// (a dialog, a menu, a select's list, a date picker, a bottom sheet) or a
+// page that shows the one under it is no page: the bar stays under it.
+class _BranchPages extends NavigatorObserver {
+  _BranchPages(this.onChanged);
+
+  final void Function(bool paged) onChanged;
+  final List<Route<dynamic>> _routes = [];
+
+  static bool _isPage(Route<dynamic> route) =>
+      route is PageRoute && route.opaque;
+
+  void _changed() => onChanged(_routes.where(_isPage).length > 1);
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _routes.add(route);
+    _changed();
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _routes.remove(route);
+    _changed();
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _routes.remove(route);
+    _changed();
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    final at = oldRoute == null ? -1 : _routes.indexOf(oldRoute);
+    if (newRoute == null) {
+      if (at >= 0) _routes.removeAt(at);
+    } else if (at >= 0) {
+      _routes[at] = newRoute;
+    } else {
+      _routes.add(newRoute);
+    }
+    _changed();
   }
 }

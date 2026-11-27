@@ -1037,25 +1037,35 @@ void main() {
   // box's, and initials well inside it pass. Initials close to that edge are
   // still named, and a soft shadow a painter casts inside its box, fading
   // into the page before the box's edge, is not its face.
-  Widget ball(_Ball painter, {Offset shift = Offset.zero}) => ColoredBox(
-    color: painter.page,
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: _button(
-        (label) => CustomPaint(
-          painter: painter,
-          child: SizedBox.square(
-            dimension: painter.size,
-            child: Center(
-              child: Transform.translate(offset: shift, child: label),
+  Widget ball(_Ball painter, {Offset shift = Offset.zero, double target = 0}) =>
+      ColoredBox(
+        color: painter.page,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: _button(
+            (label) => SizedBox.square(
+              dimension: painter.size + target,
+              child: Center(
+                child: CustomPaint(
+                  painter: painter,
+                  child: SizedBox.square(
+                    dimension: painter.size,
+                    child: Center(
+                      child: Transform.translate(offset: shift, child: label),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            label: 'SO',
+            style: _style.copyWith(
+              fontSize: 10.64,
+              height: 1,
+              color: painter.ink,
             ),
           ),
         ),
-        label: 'SO',
-        style: _style.copyWith(fontSize: 10.64, height: 1, color: painter.ink),
-      ),
-    ),
-  );
+      );
   // Each ball with its initials where they keep the room (a little nearer
   // its lit top, where its rim is widest), then moved toward that edge half
   // a pixel at a time, from where they come closer than 4 px until their ink
@@ -1080,6 +1090,29 @@ void main() {
       }
     });
   }
+
+  // A ball lit at its top only a little off the page, its outermost pixel
+  // row blending into the page where its curve covers it in part: its rim
+  // still reaches its box's top, so initials in its middle (11 px under its
+  // top, as Clay's avatars hold them) pass, and moved within 4 px of that
+  // top they are named from it.
+  testWidgets("a faint lit rim reaches its box's edge past its last, part-"
+      'covered pixel', (tester) async {
+    // In a tap target 12 px larger than the ball, as an avatar's button.
+    expect(
+      await _check(
+        tester,
+        ball(_Ball.dayTopFaint, target: 12, shift: const Offset(0, -2)),
+      ),
+      isEmpty,
+    );
+    final named = await _check(
+      tester,
+      ball(_Ball.dayTopFaint, target: 12, shift: const Offset(0, -10)),
+    );
+    expect(named, hasLength(1));
+    expect(named.single, contains('from the top of its face'));
+  });
 
   // Initials moved off a ball's middle, toward where its shaded rim curves
   // round: by its end, above or below its middle, they are named from that
@@ -1816,6 +1849,7 @@ class _Ball extends CustomPainter {
     this.reach = 0.3,
     this.shadow = false,
     this.size = 28,
+    this.inset = 0,
   });
 
   // Clay's avatar by night: shaded at its end, or at its foot.
@@ -1852,6 +1886,20 @@ class _Ball extends CustomPainter {
     reach: 0.25,
   );
 
+  // Clay's lilac avatar by day on its slab: a deeper lilac, lit toward its
+  // top to a tone only a little off the page (25 levels at most), so the
+  // ball's outermost row of pixels, part covered by its curve, blends into
+  // the page while the lit band under it stands off.
+  static const dayTopFaint = _Ball(
+    page: Color(0xFFF6F3FF),
+    face: Color(0xFFB9A6EE),
+    shade: Color(0xFFE4DAFF),
+    ink: Color(0xFF2A2440),
+    toward: Alignment.topCenter,
+    size: 36,
+    inset: 0.17,
+  );
+
   // A flat ball whose soft shadow, darker than the page, falls to its end
   // inside its box and fades into the page before the box's edge.
   static const shadowed = _Ball(
@@ -1871,6 +1919,7 @@ class _Ball extends CustomPainter {
   final double reach;
   final bool shadow;
   final double size;
+  final double inset;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1887,15 +1936,16 @@ class _Ball extends CustomPainter {
         ..drawOval(ball, Paint()..color = face);
       return;
     }
+    final ball = box.deflate(inset);
     canvas.drawOval(
-      box,
+      ball,
       Paint()
         ..shader = LinearGradient(
           begin: -toward,
           end: toward,
           colors: [face, face, shade],
           stops: [0, 1 - reach, 1],
-        ).createShader(box),
+        ).createShader(ball),
     );
   }
 
@@ -1904,6 +1954,7 @@ class _Ball extends CustomPainter {
 
   @override
   String toString() => switch (toward) {
+    _ when inset > 0 => 'faint at its top by day, its edge part-covered',
     Alignment.centerLeft => 'lit at its start by day',
     Alignment.topCenter => 'lit at its top by day',
     Alignment.bottomCenter => 'shaded at its foot by night',

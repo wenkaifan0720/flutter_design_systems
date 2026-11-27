@@ -218,11 +218,15 @@ void main() {
       expect(range, findsNothing);
       await _show(tester, range);
       expect(tester.getSize(range).width, 360);
+      // A day by its label: the whole date, in the app's words.
+      final words = RawWidgetsLocalizations.of(tester.element(range));
       await tester.tap(
         find
             .descendant(
               of: range,
-              matching: find.bySemanticsLabel('Monday, 21 September 2026'),
+              matching: find.bySemanticsLabel(
+                words.formatFullDate(DateTime(2026, 9, 21)),
+              ),
             )
             .hitTestable(),
       );
@@ -235,7 +239,9 @@ void main() {
         find
             .descendant(
               of: range,
-              matching: find.bySemanticsLabel('Wednesday, 23 September 2026'),
+              matching: find.bySemanticsLabel(
+                words.formatFullDate(DateTime(2026, 9, 23)),
+              ),
             )
             .hitTestable(),
       );
@@ -428,6 +434,7 @@ void main() {
       await tester.pumpWidget(galleryBuildPage(picker, Brightness.light));
       await settle(tester);
       final calendar = find.byType(ExpressiveDatePicker).first;
+      final words = RawWidgetsLocalizations.of(tester.element(calendar));
       final point = tester.getCenter(
         find.descendant(of: calendar, matching: find.text('21')),
       );
@@ -436,7 +443,10 @@ void main() {
         matching: find.byWidgetPredicate(
           (widget) =>
               widget is ExpressivePressable &&
-              (widget.semanticLabel?.endsWith('21 September 2026') ?? false),
+              (widget.semanticLabel?.endsWith(
+                    words.formatFullDate(DateTime(2026, 9, 21)),
+                  ) ??
+                  false),
         ),
       );
       final focusWidget = find
