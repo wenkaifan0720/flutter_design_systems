@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 
 void main() {
@@ -38,7 +37,7 @@ void main() {
                     onPressed: () => opened++,
                     action: FrostedIconButton(
                       FrostedGlyphs.more,
-                      label: 'Task actions',
+                      semanticLabel: 'Task actions',
                       onPressed: () => menus++,
                     ),
                   ),

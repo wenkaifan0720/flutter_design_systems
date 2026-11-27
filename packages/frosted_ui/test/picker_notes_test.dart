@@ -11,7 +11,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 import 'package:frosted_ui/src/frosted/internal/today_ring.dart';
 
@@ -207,7 +206,7 @@ void main() {
     final julyHead = t.getRect(find.text('July 2026'));
     await t.tap(
       find.byWidgetPredicate(
-        (w) => w is FrostedPressable && w.label == 'Next month',
+        (w) => w is FrostedPressable && w.semanticLabel == 'Next month',
       ),
     );
     await t.pumpAndSettle();

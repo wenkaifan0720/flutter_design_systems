@@ -12,7 +12,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 
 void _none() {}
@@ -21,8 +20,10 @@ void _drop(Object? _) {}
 
 final _parts = <String, Widget Function(bool on)>{
   'chip': (on) => FrostedChip('Research', selected: on, onPressed: _none),
-  'switch': (on) => FrostedSwitch(value: on, label: 'Share', onChanged: _drop),
-  'check': (on) => FrostedCheckbox(value: on, label: 'Walk', onChanged: _drop),
+  'switch': (on) =>
+      FrostedSwitch(value: on, semanticLabel: 'Share', onChanged: _drop),
+  'check': (on) =>
+      FrostedCheckbox(value: on, semanticLabel: 'Walk', onChanged: _drop),
   'radio': (on) => FrostedRadioGroup<String>(
     labelText: 'Plan',
     value: on ? 'free' : null,
@@ -47,7 +48,7 @@ final _parts = <String, Widget Function(bool on)>{
   ),
   'icon button': (on) => FrostedIconButton(
     FrostedGlyphs.bell,
-    label: 'Alerts',
+    semanticLabel: 'Alerts',
     selected: on,
     onPressed: _none,
   ),

@@ -7,7 +7,7 @@
 // opens one by hand.
 import 'package:flutter/widgets.dart';
 
-import 'main.dart';
+import 'gallery.dart';
 
 /// One everyday screen: its id and the app opened at it.
 typedef EverydayScreen = ({

@@ -244,7 +244,11 @@ class _Account extends StatelessWidget {
       title: 'Everyday',
       backLabel: 'Home',
       actions: [
-        FrostedIconButton(LucideIcons.share, label: 'Share', onPressed: () {}),
+        FrostedIconButton(
+          LucideIcons.share,
+          semanticLabel: 'Share',
+          onPressed: () {},
+        ),
       ],
     ),
     body: const Column(

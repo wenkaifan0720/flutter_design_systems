@@ -44,7 +44,7 @@ class FrostedDataTable<R> extends StatelessWidget {
     required this.cellBuilder,
     this.selectable = true,
     this.onActivate,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -62,7 +62,7 @@ class FrostedDataTable<R> extends StatelessWidget {
   final ValueChanged<R>? onActivate;
 
   /// What a screen reader calls the table.
-  final String? label;
+  final String? semanticLabel;
 
   static const double _row = 52;
   static const double _head = 40;
@@ -136,7 +136,7 @@ class FrostedDataTable<R> extends StatelessWidget {
           clipChild: true,
           child: viewport(
             Semantics(
-              label: label,
+              label: semanticLabel,
               container: true,
               child: RawDataTable<R>(
                 controller: controller,
@@ -168,7 +168,7 @@ class FrostedDataTable<R> extends StatelessWidget {
                                 RawDataTableSelection.some => null,
                                 RawDataTableSelection.all => true,
                               },
-                              label: words.selectAll,
+                              semanticLabel: words.selectAll,
                               onChanged: (_) => controller.togglePage(),
                             ),
                           ),
@@ -279,7 +279,7 @@ class FrostedDataTable<R> extends StatelessWidget {
                               ),
                               child: FrostedCheckbox(
                                 value: row.selected,
-                                label: words.selectRow,
+                                semanticLabel: words.selectRow,
                                 onChanged: (_) => row.toggle(),
                               ),
                             ),
@@ -337,7 +337,7 @@ class FrostedDataTable<R> extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -364,7 +364,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
     required this.labelOf,
     this.leadingOf,
     this.onActivate,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -381,7 +381,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
   final ValueChanged<T>? onActivate;
 
   /// What a screen reader calls the tree.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -390,7 +390,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       rowBuilder: (context, item) {
         final states = item.states;
         final lit =
@@ -487,7 +487,7 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

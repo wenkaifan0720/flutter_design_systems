@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 import 'world_checks.dart';
 

@@ -1743,7 +1743,9 @@ void main() {
 
   // The everyday tier: the first preset by day and the second by night.
   group('sweep', () {
-    for (final (p, preset) in FrostedThemeData.presets.indexed) {
+    for (final (p, preset) in [
+      for (final p in FrostedThemeData.palettes) p.id,
+    ].indexed) {
       for (final brightness in Brightness.values) {
         testWidgets(
           'every meter and card at 320 wide and text scale 1.3, $preset '

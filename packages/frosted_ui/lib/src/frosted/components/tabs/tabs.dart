@@ -18,18 +18,16 @@ import '../../internal/bleed.dart';
 // How far past a scrolling strip's line its viewport stands.
 const double _stripReach = FrostedChromeMetrics.stripReach;
 
-/// In-page tabs: peer section labels as a row of pills 40 tall, the current
-/// one on the sidebar's lit pill (white at 80% under the rim and the
-/// hairline edge, its word in the 600 ink), the rest bare in the quieter
-/// ink. A row too long for its width scrolls sideways; with [expand] the
-/// tabs share the width instead (a few short ones). A null [onChanged]
-/// shows the choice inert. ui_core's [RawTabBar] is the behaviour: the
-/// row is one Tab stop, on the chosen tab; the arrows move along it
-/// (mirrored right to left, wrapping), Home and End to its ends, choosing
-/// as they go; a screen reader hears a tab bar named [label], each tab its
-/// name and its place ("Income, tab 2 of 3"). DERIVED: the source has no
-/// tab row; the sidebar's current row (`.nav.on`) lends the chosen tab its
-/// face.
+/// In-page tabs: peer section labels as a row of pills 40 tall, the current one
+/// on the sidebar's lit pill (white at 80% under the rim and the hairline edge,
+/// its word in the 600 ink), the rest bare in the quieter ink. A row too long
+/// for its width scrolls sideways; with [expand] the tabs share the width
+/// instead (a few short ones). A null [onChanged] shows the choice inert.
+/// ui_core's [RawTabBar] is the behaviour: the row is one Tab stop, on the
+/// chosen tab; the arrows move along it (mirrored right to left, wrapping),
+/// Home and End to its ends, choosing as they go; a screen reader hears a tab
+/// bar named [semanticLabel], each tab its name and its place ("Income, tab 2 of 3").
+/// The chosen tab wears the sidebar's current row.
 ///
 /// ```dart
 /// FrostedTabBar(tabs: const ['Spending', 'Income', 'Transfers'], selectedIndex: tab, expand: true, onChanged: setTab)
@@ -40,7 +38,7 @@ class FrostedTabBar extends StatefulWidget {
     required this.tabs,
     this.selectedIndex = 0,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.expand = false,
     this.style,
     super.key,
@@ -59,7 +57,7 @@ class FrostedTabBar extends StatefulWidget {
   final ValueChanged<int>? onChanged;
 
   /// What a screen reader calls the group.
-  final String? label;
+  final String? semanticLabel;
 
   /// Whether the tabs share the row's width rather than keeping their own.
   final bool expand;
@@ -94,7 +92,7 @@ class FrostedTabBar extends StatefulWidget {
       ..add(IterableProperty<String>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
@@ -142,7 +140,8 @@ class _FrostedTabBarState extends State<FrostedTabBar>
 
   @override
   Widget build(BuildContext context) {
-    final label = widget.label ?? FrostedLocalizations.of(context).sections;
+    final label =
+        widget.semanticLabel ?? FrostedLocalizations.of(context).sections;
     final t = context.frostedTheme;
     final layers = FrostedStyleLayers(widget.style, t.components.tabBar);
     final cut = layers.cut(FrostedCorners.full);

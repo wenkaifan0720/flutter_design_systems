@@ -12,7 +12,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:ui_core_test/ui_core_test.dart' show DesignShadowClipCheck;
 
 import 'moving_states.dart';

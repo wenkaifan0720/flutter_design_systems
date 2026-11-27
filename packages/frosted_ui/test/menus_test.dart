@@ -108,7 +108,7 @@ void main() {
     addTearDown(tester.view.reset);
     Widget menu() => FrostedMenu<String>(
       title: 'Spent by month',
-      label: 'Months',
+      semanticLabel: 'Months',
       items: [
         // Short amounts: the test font draws every glyph a whole em wide.
         for (final (month, spent) in const [

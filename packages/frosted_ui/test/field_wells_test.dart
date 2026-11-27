@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 
 Iterable<FrostedMaterial> _faces(WidgetTester tester, Type part) => tester
@@ -20,7 +19,7 @@ Iterable<FrostedMaterial> _faces(WidgetTester tester, Type part) => tester
 void main() {
   for (final brightness in Brightness.values) {
     final t = FrostedThemeData.preset(
-      FrostedThemeData.presets.first,
+      FrostedThemeData.palettes.first.id,
       brightness,
     );
 

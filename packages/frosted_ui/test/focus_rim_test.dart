@@ -2,8 +2,9 @@
 // only clears it, a little, with no rim light. Every focusable part places a
 // FrostedCleared round itself: lit while the keyboard holds it, never under
 // a pointer. A filled button, which has no rim of its own, takes a white
-// hairline just inside its outline. By day a focused part also lifts: its
-// shadow under it deepens; by night it does not.
+// hairline just inside its outline. By day a focused part also lifts a
+// little: a close, faint shadow under it, never a smudge round it; by night
+// it does not.
 import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
@@ -12,7 +13,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 
 void _none() {}
@@ -29,10 +29,16 @@ final _parts = <String, Widget Function()>{
     onPressed: _none,
   ),
   'chip': () => const FrostedChip('Warm', onPressed: _none),
-  'switch': () =>
-      const FrostedSwitch(value: false, label: 'Share', onChanged: _drop),
-  'check': () =>
-      const FrostedCheckbox(value: false, label: 'Walk', onChanged: _drop),
+  'switch': () => const FrostedSwitch(
+    value: false,
+    semanticLabel: 'Share',
+    onChanged: _drop,
+  ),
+  'check': () => const FrostedCheckbox(
+    value: false,
+    semanticLabel: 'Walk',
+    onChanged: _drop,
+  ),
   'radio': () => const FrostedRadioGroup<String>(
     labelText: 'Plan',
     value: 'free',
@@ -48,7 +54,7 @@ final _parts = <String, Widget Function()>{
     value: 40,
     min: 0,
     max: 100,
-    label: 'Alert at',
+    semanticLabel: 'Alert at',
     onChanged: _drop,
   ),
   'card': () => const FrostedCreditCard(
@@ -176,9 +182,12 @@ void main() {
     final day = mode == Brightness.light;
     testWidgets(
       day
-          ? 'by day focus lifts the part: its shadow deepens'
+          ? 'by day focus lifts the part a little: a close, faint shadow'
           : 'by night focus does not lift the part',
       (t) async {
+        // Shadows as an app draws them, blurred (flutter_test draws them
+        // solid); put back before the test ends.
+        debugDisableShadows = false;
         // On a ground of its own: the stage is otherwise transparent.
         await _pump(
           t,
@@ -199,16 +208,51 @@ void main() {
           ).then((c) => c.computeLuminance());
         }
 
+        // Well clear of the foot: a lift that reaches here is a smudge.
+        Future<double> clear() {
+          final face = t.getRect(find.byType(FrostedFace).first);
+          return _pixel(
+            t,
+            Offset(face.center.dx, face.bottom + 24),
+          ).then((c) => c.computeLuminance());
+        }
+
         final rest = await under();
+        final restClear = await clear();
         await t.sendKeyEvent(LogicalKeyboardKey.tab);
         await t.pumpAndSettle();
         final focused = await under();
         if (day) {
-          expect(focused, lessThan(rest - .01), reason: 'rest $rest');
+          expect(focused, lessThan(rest - .003), reason: 'rest $rest');
+          expect(
+            await clear(),
+            closeTo(restClear, .003),
+            reason: 'the lift stays close to the part',
+          );
         } else {
           expect(focused, closeTo(rest, .002), reason: 'rest $rest');
         }
+        debugDisableShadows = true;
       },
     );
   }
+
+  test('the day lift is close and faint in every palette', () {
+    for (final palette in FrostedThemeData.palettes) {
+      for (final mode in Brightness.values) {
+        final t = FrostedThemeData(palette: palette, brightness: mode);
+        final lift = frostedLift(t, 1);
+        if (mode == Brightness.dark) {
+          expect(lift, isEmpty, reason: '${palette.id} by night');
+          continue;
+        }
+        expect(lift, hasLength(1), reason: palette.id);
+        final s = lift.single;
+        expect(s.color.a, inInclusiveRange(.08, .18), reason: palette.id);
+        expect(s.offset.dy, inInclusiveRange(2, 4), reason: palette.id);
+        expect(s.blurRadius, inInclusiveRange(8, 12), reason: palette.id);
+        expect(s.spreadRadius, inInclusiveRange(-3, 0), reason: palette.id);
+      }
+    }
+  });
 }

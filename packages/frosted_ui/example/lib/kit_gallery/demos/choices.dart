@@ -84,7 +84,7 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
         KitHeld<String?>(
           'm',
           (v, set) => FrostedChoices<String>(
-            label: 'Size',
+            semanticLabel: 'Size',
             value: v,
             onChanged: set,
             options: const [
@@ -102,10 +102,17 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
       children: [
         KitHeld<double>(
           4,
-          (v, set) =>
-              FrostedRating(value: v, label: 'Your rating', onChanged: set),
+          (v, set) => FrostedRating(
+            value: v,
+            semanticLabel: 'Your rating',
+            onChanged: set,
+          ),
         ),
-        const FrostedRating(value: 3.5, label: 'Average', allowHalf: true),
+        const FrostedRating(
+          value: 3.5,
+          semanticLabel: 'Average',
+          allowHalf: true,
+        ),
       ],
     ),
     kitSection(
@@ -149,7 +156,7 @@ Widget kitSpecimenChip() => Center(
 
 /// Round up to: one of three.
 Widget kitSpecimenChoices() => FrostedChoices<String>(
-  label: 'Round up to',
+  semanticLabel: 'Round up to',
   options: const [
     FrostedSelectOption('1', r'$1'),
     FrostedSelectOption('2', r'$2'),
@@ -184,7 +191,7 @@ Widget kitSpecimenRating() => Center(
   heightFactor: 1,
   child: FrostedRating(
     value: 4,
-    label: 'How was Blue Fern Café?',
+    semanticLabel: 'How was Blue Fern Café?',
     onChanged: (_) {},
   ),
 );

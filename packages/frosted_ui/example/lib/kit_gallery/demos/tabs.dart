@@ -41,7 +41,7 @@ Widget kitTabsDemo(Brightness brightness) => kitScreen(
               'Rewards',
             ],
             selectedIndex: index,
-            label: 'More sections',
+            semanticLabel: 'More sections',
             onChanged: set,
           ),
         ),
@@ -85,7 +85,7 @@ Widget kitSpecimenTabsScroll() => FrostedTabBar(
     'Rewards',
   ],
   selectedIndex: 1,
-  label: 'More sections',
+  semanticLabel: 'More sections',
   onChanged: (_) {},
 );
 

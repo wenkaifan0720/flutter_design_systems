@@ -20,12 +20,13 @@ import 'internal/rest_ring.dart';
 import 'internal/themes/atrium.g.dart';
 import 'internal/themes/frost.g.dart';
 import 'internal/themes/instrument.g.dart';
-import 'internal/themes/native_neutral.g.dart';
 import 'internal/themes/platinum.g.dart';
 import 'internal/themes/tokens.dart';
 import 'internal/themes/wayfinding.g.dart';
 import 'knobs.dart';
 import 'materials.dart';
+
+export 'package:ui_core/ui_core.dart' show RawNamedPalette;
 
 export 'component_themes.dart';
 export 'fonts.dart' show frostedFontFamily, frostedLoadFonts;
@@ -43,21 +44,17 @@ export 'knobs.dart';
 /// Pages never write raw numbers, hex colours or TextStyles; everything
 /// routes through this file's names.
 ///
-/// The theme instances come from [FrostedThemeData.preset]: `prism`, the look
-/// as
-/// its source stylesheet sets it (its custom properties and
-/// literal colours, written in `_Source` at the end of this file under their
-/// own names, with the role mapping and the judgment calls in its header;
-/// its dark appearance is DESIGNED, in `_Night`), and six baked themes
-/// (ThemeTokens v2 records whose light and dark are both designed, in
+/// The theme instances come from [FrostedThemeData.preset], one for each of
+/// [FrostedThemeData.palettes] by day and by night: `opal`, the look's own
+/// (its values written in `_Source` at the end of this file, its night
+/// in `_Night`), and five baked themes (light and dark both designed, in
 /// `internal/themes/`) dressed in the same roles through
 /// `FrostedThemeData._fromTokens`: `quartz` (platinum), `garnet` (atrium),
-/// `glacier`
-/// (frost), `cobalt` (native-neutral), `jade` (wayfinding) and `copper`
-/// (instrument). Nothing else constructs a [FrostedThemeData].
+/// `glacier` (frost), `jade` (wayfinding) and `copper` (instrument).
+/// [FrostedThemeData.from] dresses the same roles from any colour.
 
-/// The spacing scale: the 4 point grid and the half steps the source pads
-/// its rows, chips and tiles in (6, 10, 14).
+/// The spacing scale: the 4 point grid and the half steps Frosted pads its
+/// rows, chips and tiles in (6, 10, 14).
 abstract final class FrostedSpacing {
   /// A step of 2.
   static const double s2 = 2;
@@ -109,11 +106,11 @@ abstract final class FrostedSpacing {
 }
 
 /// Corner radii, and the look's outlines at four of them ([extraSmall],
-/// [small], [medium], [large]) and round ([full]). The source's language is the tile (18 on a phone, 20 on the desktop), the
-/// inner pane (10, 12 on the desktop), the field well (12), the squircle of a
-/// monogram (11, 17 large), the sheet (22; 20 as a dialog), the menu and the
-/// toast (16), the ticket (10) and round (chips, buttons, the tab bar's
-/// tabs).
+/// [small], [medium], [large]) and round ([full]). Frosted's language is the
+/// tile (18 on a phone, 20 on the desktop), the inner pane (10, 12 on the
+/// desktop), the field well (12), the squircle of a monogram (11, 17 large),
+/// the sheet (22; 20 as a dialog), the menu and the toast (16), the ticket (10)
+/// and round (chips, buttons, the tab bar's tabs).
 abstract final class FrostedCorners {
   /// A corner of 2.
   static const double r2 = 2;
@@ -363,7 +360,7 @@ abstract final class FrostedInsets {
     vertical: FrostedSpacing.s8,
   );
 
-  /// A tile's padding on a phone (`--pad`): 16 all round.
+  /// A tile's padding on a phone: 16 all round.
   static const EdgeInsets tile = EdgeInsets.all(FrostedSpacing.s16);
 
   /// A tile's padding on the desktop: 20 all round.
@@ -412,11 +409,11 @@ class FrostedGap extends StatelessWidget {
 
 /// Responsive layout invariants shared by Frosted apps.
 abstract final class FrostedBreakpoints {
-  /// The width from which the app is the desktop one, as the source switches
-  /// at 1024: the sidebar replaces the tab bar, the gutter grows to 32, the
-  /// tiles to 20 corners and 20 padding on a 16 gap, the main a 12-column
-  /// grid, the hero money to 96, a sheet becomes a centred dialog and a
-  /// detail's bar a crumb over a large title.
+  /// The width from which the app is the desktop one at 1024: the sidebar
+  /// replaces the tab bar, the gutter grows to 32, the tiles to 20 corners and
+  /// 20 padding on a 16 gap, the main a 12-column grid, the hero money to 96, a
+  /// sheet becomes a centred dialog and a detail's bar a crumb over a large
+  /// title.
   static const double wide = 1024;
 
   /// The width from which the window is no longer a phone's: a tablet's,
@@ -466,19 +463,19 @@ abstract final class FrostedBreakpoints {
   static double gutter(BuildContext context) =>
       isWide(context) ? FrostedSpacing.s32 : FrostedSpacing.s16;
 
-  /// The gap between tiles (`--gap`): 10 on a phone, 16 on the desktop.
+  /// The gap between tiles: 10 on a phone, 16 on the desktop.
   static double gap(BuildContext context) =>
       isWide(context) ? FrostedSpacing.s16 : FrostedSpacing.s10;
 
-  /// A tile's padding (`--pad`): 16 on a phone, 20 on the desktop.
+  /// A tile's padding: 16 on a phone, 20 on the desktop.
   static double pad(BuildContext context) =>
       isWide(context) ? FrostedSpacing.s20 : FrostedSpacing.s16;
 
-  /// A tile's corner (`--r-tile`): 18 on a phone, 20 on the desktop.
+  /// A tile's corner: 18 on a phone, 20 on the desktop.
   static double tileRadius(BuildContext context) =>
       isWide(context) ? FrostedCorners.r20 : FrostedCorners.r18;
 
-  /// An inner pane's corner (`--r-in`): 10 on a phone, 12 on the desktop.
+  /// An inner pane's corner: 10 on a phone, 12 on the desktop.
   static double innerRadius(BuildContext context) =>
       isWide(context) ? FrostedCorners.r12 : FrostedCorners.r10;
 }
@@ -520,11 +517,11 @@ enum FrostedTone {
   danger,
 }
 
-/// One hue of the spectrum, as the source's `.c-*` classes name it: two
-/// close stops ([a], [b]) for its marks, a dark ink of the same hue ([ink])
-/// for words and figures on its tint, a deeper ink ([inkDeep]) for labels set
-/// on the marks themselves, and three alphas of its hue: [tint] (fills),
-/// [tintSolid] (small solids) and [edge] (hairlines).
+/// One hue of the spectrum: two close
+/// stops ([a], [b]) for its marks, a dark ink of the same hue ([ink]) for words
+/// and figures on its tint, a deeper ink ([inkDeep]) for labels set on the
+/// marks themselves, and three alphas of its hue: [tint] (fills), [tintSolid]
+/// (small solids) and [edge] (hairlines).
 @immutable
 final class FrostedHue {
   /// A hue of its stops, inks and alphas.
@@ -538,12 +535,12 @@ final class FrostedHue {
     required this.edge,
   });
 
-  /// A hue of the spectrum turned to [degrees] on the wheel, at the source's
+  /// A hue of the spectrum turned to [degrees] on the wheel, at Frosted's
   /// pastel lightness, for a record that names no spectrum: its marks at 74%
-  /// and 72% lightness fifteen degrees apart, its ink at 36% (80% when
-  /// [dark]) taken to the nearest tone of its hue that reads 4.5:1 on its
-  /// tint over [ground] (and over each of [also], the page's other grounds),
-  /// its colour easing toward [toward]'s as it goes, its deep ink at 24%.
+  /// and 72% lightness fifteen degrees apart, its ink at 36% (80% when [dark])
+  /// taken to the nearest tone of its hue that reads 4.5:1 on its tint over
+  /// [ground] (and over each of [also], the page's other grounds), its colour
+  /// easing toward [toward]'s as it goes, its deep ink at 24%.
   factory FrostedHue.turned(
     double degrees,
     double saturation, {
@@ -610,8 +607,8 @@ final class FrostedHue {
   /// hairline a step stronger ([glow], the hairline half that) so a tinted
   /// pane holds its light, a fill of the ink turned to white at its alpha,
   /// and the ink the first mark eased toward [toward], at the nearest tone
-  /// of its hue that reads 4.5:1 on its fill over [ground] and each of
-  /// [also].
+  /// of its hue that reads 4.5:1 on its fill and on its small solid (a
+  /// monogram's) over [ground] and each of [also].
   FrostedHue lit({
     required Color ground,
     required Color toward,
@@ -626,15 +623,19 @@ final class FrostedHue {
     }
 
     final fill = up(tint, glow);
+    final solid = up(tintSolid, glow);
     return FrostedHue(
       a: a,
       b: b,
       ink: FrostedThemeData._inked(Color.lerp(a, toward, 0.35)!, toward, [
-        for (final g in [ground, ...also]) Color.alphaBlend(fill, g),
+        for (final g in [ground, ...also]) ...[
+          Color.alphaBlend(fill, g),
+          Color.alphaBlend(solid, g),
+        ],
       ], 4.5),
       inkDeep: inkDeep,
       tint: fill,
-      tintSolid: up(tintSolid, glow),
+      tintSolid: solid,
       edge: up(edge, 1 + (glow - 1) / 2),
     );
   }
@@ -645,19 +646,19 @@ final class FrostedHue {
   /// The second stop of the hue's marks.
   final Color b;
 
-  /// The hue's ink for words and figures on its tint (`--k`).
+  /// The hue's ink for words and figures on its tint.
   final Color ink;
 
-  /// The deeper ink for labels set on the marks themselves (`--k2`).
+  /// The deeper ink for labels set on the marks themselves.
   final Color inkDeep;
 
-  /// The hue's fill (`--t`).
+  /// The hue's fill.
   final Color tint;
 
-  /// The hue's small solid (`--t2`): a monogram, a token, a legend dot.
+  /// The hue's small solid: a monogram, a token, a legend dot.
   final Color tintSolid;
 
-  /// The hue's hairline (`--e`).
+  /// The hue's hairline.
   final Color edge;
 
   /// A band's light, left to right (`linear-gradient(90deg, a, b)`).
@@ -1021,9 +1022,8 @@ final class FrostedHues {
   ]);
 }
 
-/// The light behind the glass: three faint washes at the top of every
-/// screen (`.aurora .blob`), each a blurred disc of one colour, drawn at
-/// [strength].
+/// The light behind the glass: three faint washes at the top of every screen,
+/// each a blurred disc of one colour, drawn at [strength].
 @immutable
 final class FrostedLights {
   /// Three washes of light at [strength].
@@ -1043,7 +1043,7 @@ final class FrostedLights {
   /// The third, peach, at the right lower down.
   final Color peach;
 
-  /// How strongly the washes are drawn, 0..1 (the source's opacities are
+  /// How strongly the washes are drawn, 0..1 (Frosted's opacities are
   /// multiplied by it).
   final double strength;
 
@@ -1248,16 +1248,15 @@ final class FrostedChartInks {
   ]);
 }
 
-/// The light the source lays on its marks and its objects, written in
-/// place in its CSS rather than as custom properties: the sheens and inset
-/// lights of a band and a tube, the rules and beads of a statement and a
-/// visit strip, the specular bands, hazes and rims of the cards and the
-/// mosaic's panes, the debit card's blue, the frost of a frozen card and
-/// the glass pill on a card. [day] is the source's own values (white at
-/// its alphas, the ink at its alphas); [night] is the dark appearance's,
-/// designed for light through dark glass: the sheens dimmed so a pastel
-/// mark glows instead of chalking, the ink's hairlines turned to white at
-/// the same weight, the cards and the frost smoked.
+/// The light Frosted lays on its marks and its objects: the sheens and inset lights of a band
+/// and a tube, the rules and beads of a statement and a visit strip, the
+/// specular bands, hazes and rims of the cards and the mosaic's panes, the
+/// debit card's blue, the frost of a frozen card and the glass pill on a card.
+/// [day] is opal's by day (white at its alphas, the ink at its alphas);
+/// [night] is the dark appearance's, designed for light through dark glass: the
+/// sheens dimmed so a pastel mark glows instead of chalking, the ink's
+/// hairlines turned to white at the same weight, the cards and the frost
+/// smoked.
 @immutable
 final class FrostedSheens {
   /// The sheens, rims and washes of the glass.
@@ -1356,7 +1355,7 @@ final class FrostedSheens {
     pillEdge: pillEdge,
   );
 
-  /// A band's top sheen (`.seg`, fading out at 55%), its inset top light
+  /// A band's top sheen (fading out at 55%), its inset top light
   /// and its inset bottom shade.
   final Color bandSheen;
 
@@ -1366,8 +1365,8 @@ final class FrostedSheens {
   /// See [bandSheen].
   final Color bandShade;
 
-  /// A leaving band's fill (`.seg--leave`); an arriving band's sheen
-  /// (fading out at 70%) and ring (`.seg--arrive`).
+  /// A leaving band's fill; an arriving band's sheen (fading out at 70%) and
+  /// ring.
   final Color leaveFill;
 
   /// See [leaveFill].
@@ -1377,7 +1376,7 @@ final class FrostedSheens {
   final Color arriveRing;
 
   /// A glass tube's fill sheen (fading out at 60%), its inset light and its
-  /// track's ring (`.tube`).
+  /// track's ring.
   final Color tubeSheen;
 
   /// See [tubeSheen].
@@ -1386,8 +1385,7 @@ final class FrostedSheens {
   /// See [tubeSheen].
   final Color tubeRing;
 
-  /// The statement's rule (`.stl-rule`) and the due bead's ring
-  /// (`.stl-n--due`).
+  /// The statement's rule and the due bead's ring.
   final Color rule;
 
   /// See [rule].
@@ -1399,19 +1397,19 @@ final class FrostedSheens {
   /// See [stripRule].
   final Color stripTick;
 
-  /// A struck balance's line (`.chg-v s`).
+  /// A struck balance's line.
   final Color struck;
 
-  /// The done check's halo (`.done-check`).
+  /// The done check's halo.
   final Color halo;
 
-  /// A merchant card's fill on the desktop (`.a-tm .merch`).
+  /// A merchant card's fill on the desktop.
   final Color merchantCard;
 
   /// A bead's face: a closed or due statement bead, the strip's own day.
   final Color bead;
 
-  /// A card's inset top light (`.kcard`, `.dcard`).
+  /// A card's inset top light.
   final Color cardSheen;
 
   /// The specular band across the pearl credit card, the debit card's and a
@@ -1425,11 +1423,10 @@ final class FrostedSheens {
   /// See [specular].
   final Color paneSpecular;
 
-  /// A mosaic pane's haze at its top start corner (`.cell` radial).
+  /// A mosaic pane's haze at its top start corner.
   final Color paneHaze;
 
-  /// The new-goal ghost card: its fill, its ring and its edge
-  /// (`.new-goal`).
+  /// The new-goal ghost card: its fill, its ring and its edge.
   final Color newGoalFill;
 
   /// See [newGoalFill].
@@ -1438,8 +1435,7 @@ final class FrostedSheens {
   /// See [newGoalFill].
   final Color ghostEdge;
 
-  /// The debit card's base, top start to bottom end, and its shadow
-  /// (`.dcard`).
+  /// The debit card's base, top start to bottom end, and its shadow.
   final Color debitFrom;
 
   /// See [debitFrom].
@@ -1448,9 +1444,9 @@ final class FrostedSheens {
   /// See [debitFrom].
   final Color debitShade;
 
-  /// A frozen card's shadow, and the frost over it (`.frost`): its streaks,
-  /// its haze, its wash (three stops at 160deg), its inner glow, its ring,
-  /// and its mark's fill, ring and shadow (`.frost-i`).
+  /// A frozen card's shadow, and the frost over it: its streaks, its haze, its
+  /// wash (three stops at 160deg), its inner glow, its ring, and its mark's
+  /// fill, ring and shadow.
   final Color frozenShade;
 
   /// See [frozenShade].
@@ -1477,8 +1473,8 @@ final class FrostedSheens {
   /// See [frozenShade].
   final Color frostMarkShade;
 
-  /// The glass pill on a card (`.glass`): its fill, the ring inside it and
-  /// the hairline outside.
+  /// The glass pill on a card: its fill, the ring inside it and the hairline
+  /// outside.
   final Color pillFill;
 
   /// See [pillFill].
@@ -1487,7 +1483,7 @@ final class FrostedSheens {
   /// See [pillFill].
   final Color pillEdge;
 
-  /// The source's own values: white at its alphas, the ink at its alphas.
+  /// Opal's by day: white at its alphas, the ink at its alphas.
   static const FrostedSheens day = FrostedSheens(
     bandSheen: Color(0x66FFFFFF),
     bandLight: Color(0x73FFFFFF),
@@ -1532,8 +1528,8 @@ final class FrostedSheens {
   );
 
   /// The dark appearance's, designed (see [FrostedSheens]): sheens at about
-  /// half, hairlines in white at the source's weights, the debit card and
-  /// the frost a smoked blue glass, the pill a dark glass.
+  /// half, hairlines in white at Frosted's weights, the debit card and the
+  /// frost a smoked blue glass, the pill a dark glass.
   static const FrostedSheens night = FrostedSheens(
     bandSheen: Color(0x38FFFFFF),
     bandLight: Color(0x4DFFFFFF),
@@ -2188,7 +2184,7 @@ class FrostedThemeData with Diagnosticable {
   ///   stays the one light face; their shadows are the set's `shadowLg` (a
   ///   tile's and the bar's `shadowMd`); the cards' own shadows are the
   ///   ink's shade by day and black at night;
-  /// - the sheens ([FrostedSheens]) are the source's by day and the night's at
+  /// - the sheens ([FrostedSheens]) are opal's by day and the night's at
   ///   night, its halo, merchant card, bead and struck figure on the set's
   ///   own canvas, glass, well and ink ([FrostedSheens.on]);
   /// - the corners are the record's, but the small corner rounds no
@@ -2278,8 +2274,13 @@ class FrostedThemeData with Diagnosticable {
     );
 
     final accent = HSLColor.fromColor(c.accent);
+    // The information blue turns from the accent, at least half saturated:
+    // a muted accent (Jade's sage) gave a blue that read as grey.
     Color turned(double degrees) => FrostedThemeData._inked(
-      accent.withHue(degrees % 360).toColor(),
+      accent
+          .withHue(degrees % 360)
+          .withSaturation(math.max(accent.saturation, 0.55))
+          .toColor(),
       c.textPrimary,
       grounds,
       4.5,
@@ -2297,19 +2298,39 @@ class FrostedThemeData with Diagnosticable {
     // The page's washes by day and by night (`lights` below), and the
     // grounds a word on a hue's tint can stand on: the canvas, the tile and
     // the canvas under each wash at its peak.
-    FrostedLights lightsOf(FrostedTokenColors k, {required bool night}) => night
-        ? FrostedLights(
-            lilac: glow(k.accent, 0.6),
-            rose: glow(k.danger, 0.53),
-            peach: glow(k.warning, 0.55),
-            strength: 0.5,
-          )
-        : FrostedLights(
-            lilac: Color.lerp(k.accent, white, 0.6)!,
-            rose: Color.lerp(k.danger, white, 0.6)!,
-            peach: Color.lerp(k.warning, white, 0.6)!,
-            strength: 0.6,
-          );
+    // By night a bright hue's glow (a green, a cyan, an amber) is dimmed,
+    // its hue kept, until the page's words read 7:1 on every peak: under a
+    // brighter wash no status ink could read and keep its colour.
+    FrostedLights lightsOf(FrostedTokenColors k, {required bool night}) {
+      if (night) {
+        Color dim(Color c, double by) => by == 0
+            ? c
+            : RawHct.fromColor(c)
+                  .withTone(RawHct.fromColor(c).tone - by)
+                  .toColor();
+        FrostedLights at(double by) => FrostedLights(
+          lilac: dim(glow(k.accent, 0.6), by),
+          rose: dim(glow(k.danger, 0.53), by),
+          peach: dim(glow(k.warning, 0.55), by),
+          strength: 0.5,
+        );
+        var by = 0.0;
+        while (by < 40 &&
+            at(by)
+                .peaksOver(k.background, night: true)
+                .any((p) => contrast(k.textPrimary, p) < 9)) {
+          by += 2;
+        }
+        return at(by);
+      }
+      return FrostedLights(
+        lilac: Color.lerp(k.accent, white, 0.6)!,
+        rose: Color.lerp(k.danger, white, 0.6)!,
+        peach: Color.lerp(k.warning, white, 0.6)!,
+        strength: 0.6,
+      );
+    }
+
     List<Color> pageOf(FrostedTokenColors k, {required bool night}) => [
       k.background,
       k.surface,
@@ -2373,13 +2394,40 @@ class FrostedThemeData with Diagnosticable {
     ).peaksOver(c.background, night: dark);
     final moneyInTint = a(c.success, dark ? 0.18 : 0.13);
     final overTint = a(c.danger, dark ? 0.18 : 0.12);
-    final warnTint = a(c.warning, dark ? 0.18 : 0.2);
     final coldTint = a(cold, 0.16);
-    Color onTint(Color ink, Color tint) =>
-        FrostedThemeData._inked(ink, c.textPrimary, [
-          for (final ground in [...grounds, ...washPeaks])
-            Color.alphaBlend(tint, ground),
-        ], 4.5);
+    // By night a tone's ink keeps its hue and as much of its colour as its
+    // tone allows (ui_core's readableTone): eased toward the page's light ink
+    // the four tones met in it. By day the ink eases toward the page ink.
+    Color onTint(Color ink, Color tint) {
+      final on = [
+        for (final ground in [...grounds, ...washPeaks])
+          Color.alphaBlend(tint, ground),
+      ];
+      return dark
+          ? RawPalette.readableTone(ink, on: on)
+          : FrostedThemeData._inked(ink, c.textPrimary, on, 4.5);
+    }
+
+    // A warning keeps 40° of hue from the danger, turned toward amber: a
+    // palette's burnt orange beside its brick red read as one tone once both
+    // were deepened to read on their tints.
+    double hueGap(Color x, Color y) {
+      final d = (RawHct.fromColor(x).hue - RawHct.fromColor(y).hue).abs();
+      return d > 180 ? 360 - d : d;
+    }
+
+    final overInk = onTint(c.danger, overTint);
+    var warm = c.warning;
+    Color warnTintOf(Color w) => a(w, dark ? 0.18 : 0.2);
+    for (
+      var i = 0;
+      i < 30 && hueGap(onTint(warm, warnTintOf(warm)), overInk) < 40;
+      i++
+    ) {
+      final h = HSLColor.fromColor(warm);
+      warm = h.withHue((h.hue + 2) % 360).toColor();
+    }
+    final warnTint = warnTintOf(warm);
     final moneyInInk = onTint(c.success, moneyInTint);
     FrostedHue night(FrostedHue h) => dark
         ? h.lit(
@@ -2439,26 +2487,64 @@ class FrostedThemeData with Diagnosticable {
       glassOn,
       ...lights.peaksOver(c.background, night: dark),
     ];
-    final tertiary = FrostedThemeData._inked(
-      c.textTertiary,
-      c.textPrimary,
-      read,
-      4.6,
-    );
     // The quieter ink: the record's, eased toward the page ink only as far
     // as it takes to read 4.5:1 (with room for the pixel) on every pane its
     // words sit on: those, and the glass tinted by the brand's wash (a
     // banner's spectrum, its first stop at 22%, its last at 16%), by the
     // money tint, and by the chosen tint (a picked day's figures), and the
     // wash over any of them (a missed day's bead).
+    // A pane tinted by a hue of the spectrum, over the glass and over each
+    // wash: the quieter inks' words stand on them (a legend's figures).
+    final huePanes = [
+      for (final h in categories)
+        for (final g in [
+          glassOn,
+          for (final p in lights.peaksOver(c.background, night: dark))
+            Color.alphaBlend(glass, p),
+        ])
+          Color.alphaBlend(h.tint, g),
+    ];
     final secondary = FrostedThemeData._inked(c.textSecondary, c.textPrimary, [
       ...read,
+      ...huePanes,
       for (final g in read) Color.alphaBlend(a(c.textPrimary, 0.045), g),
       Color.alphaBlend(a(categories[0].a, 0.22), glassOn),
       Color.alphaBlend(a(categories[1].b, 0.16), glassOn),
       Color.alphaBlend(moneyInTint, glassOn),
       Color.alphaBlend(c.accentSubtle, glassOn),
     ], 4.6);
+    // The quietest ink (a figure's cents, a caption) reads on the same.
+    final tertiary = FrostedThemeData._inked(c.textTertiary, c.textPrimary, [
+      ...read,
+      ...huePanes,
+    ], 4.6);
+    // The status inks stand apart from each other and from the quiet ink, so
+    // a tag, a note or an amount says which it is by its colour.
+    List<Color> onTintOf(Color tint) => [
+      for (final ground in [...grounds, ...washPeaks])
+        Color.alphaBlend(tint, ground),
+    ];
+    final [
+      coldInk,
+      moneyInWords,
+      warnInk,
+      overWords,
+    ] = FrostedThemeData._spreadTones(secondary, [
+      (onTint(cold, coldTint), onTintOf(coldTint)),
+      (moneyInInk, onTintOf(moneyInTint)),
+      (onTint(warm, warnTint), onTintOf(warnTint)),
+      (
+        dark
+            ? RawPalette.readableTone(onTint(c.danger, overTint), on: read)
+            : FrostedThemeData._inked(
+                onTint(c.danger, overTint),
+                c.textPrimary,
+                read,
+                4.5,
+              ),
+        [...onTintOf(overTint), ...read],
+      ),
+    ]);
     final sheetBottom = Color.lerp(c.surface, c.background, 0.3)!;
     // The card's pearl: the accent's palest tint by day; at night a smoked
     // pearl, the well deepened toward the accent, so the page's own pale
@@ -2537,7 +2623,7 @@ class FrostedThemeData with Diagnosticable {
       onSuccess: c.onSuccess,
       successSubtle: c.successSubtle,
       // The warning's ink eased to read on its own tint, as over's is.
-      warning: onTint(c.warning, warnTint),
+      warning: warnInk,
       warningSubtle: warnTint,
       danger: c.danger,
       onDanger: c.onDanger,
@@ -2560,18 +2646,13 @@ class FrostedThemeData with Diagnosticable {
       onAct: onAct,
       ringInner: c.surface,
       ringOuter: a(act, 0.7),
-      moneyIn: moneyInInk,
+      moneyIn: moneyInWords,
       moneyInTint: moneyInTint,
       // On its chip's tint, and bare on the page under its washes (a
       // field's error).
-      over: FrostedThemeData._inked(
-        onTint(c.danger, overTint),
-        c.textPrimary,
-        read,
-        4.5,
-      ),
+      over: overWords,
       overTint: overTint,
-      cold: onTint(cold, coldTint),
+      cold: coldInk,
       coldTint: coldTint,
       coldEdge: a(cold, 0.34),
       hues: FrostedHues(
@@ -2824,21 +2905,23 @@ class FrostedThemeData with Diagnosticable {
     );
   }
 
-  /// The default theme, opal, in [brightness], with any knob set: what
-  /// `FrostedThemeData()` gives, as Material's `ThemeData()` does.
+  /// The theme of [palette] (one of [palettes]; null is the default, opal)
+  /// in [brightness], with any knob set: what `FrostedThemeData()` gives, as
+  /// Material's `ThemeData()` does.
   ///
   /// ```dart
   /// FrostedTheme(data: FrostedThemeData(density: FrostedDensity.compact), child: app)
   /// ```
   factory FrostedThemeData({
     Brightness brightness = Brightness.light,
+    RawNamedPalette? palette,
     FrostedDensity? density,
     FrostedTypeface? typeface,
     FrostedComponentThemes? components,
     FrostedBackdrop? backdrop,
     bool? opaqueMaterials,
     List<String>? fontFamilyFallback,
-  }) => FrostedThemeData.opal(brightness).copyWith(
+  }) => preset((palette ?? palettes.first).id, brightness).copyWith(
     density: density,
     typeface: typeface,
     components: components,
@@ -2864,16 +2947,6 @@ class FrostedThemeData with Diagnosticable {
   factory FrostedThemeData.glacier([
     Brightness brightness = Brightness.light,
   ]) => preset('glacier', brightness);
-
-  /// Cobalt: plain greys and a blue act, closest to a platform's own.
-  /// Retired from [presets]: `FrostedThemeData.from(accent:)` dresses the
-  /// glass with any blue.
-  @Deprecated(
-    'Use FrostedThemeData.from(accent: Color(0xFF0668DE)) for a blue act. '
-    'This preset was deprecated in 0.7.0 and is removed in 0.8.0.',
-  )
-  factory FrostedThemeData.cobalt([Brightness brightness = Brightness.light]) =>
-      preset('cobalt', brightness);
 
   /// Jade: soft whites and a green act.
   factory FrostedThemeData.jade([Brightness brightness = Brightness.light]) =>
@@ -2986,7 +3059,7 @@ class FrostedThemeData with Diagnosticable {
     // set's tracking widened every label), in the dressed inks.
     return dressed.copyWith(
       textTheme: preset(
-        presets.first,
+        palettes.first.id,
         brightness,
       ).textTheme._inkedAs(dressed.textTheme),
       fontFamilyFallback: fontFamilyFallback,
@@ -2994,57 +3067,97 @@ class FrostedThemeData with Diagnosticable {
   }
 
   /// This theme's dark appearance, wearing this theme's knobs: itself when
-  /// it is dark, else its preset's dark one (opal's for a theme that is no
-  /// preset's). What a media ground (a full-bleed photograph or video)
+  /// it is dark, else its palette's dark one (opal's for a theme that is
+  /// none of [palettes]). What a media ground (a full-bleed photograph or video)
   /// draws its chrome in when [FrostedTheme] names no dark theme.
   FrostedThemeData get darkTwin {
     if (isDark) return this;
-    return _twins[this] ??=
-        preset(
-          presets.contains(id) ? id : presets.first,
-          Brightness.dark,
-        ).copyWith(
-          density: _density,
-          typeface: typeface,
-          components: components,
-          backdrop: backdrop,
-          opaqueMaterials: opaqueMaterials,
-          fontFamilyFallback: fontFamilyFallback,
-        );
+    return _twins[this] ??= preset(id, Brightness.dark).copyWith(
+      density: _density,
+      typeface: typeface,
+      components: components,
+      backdrop: backdrop,
+      opaqueMaterials: opaqueMaterials,
+      fontFamilyFallback: fontFamilyFallback,
+    );
   }
 
   static final Expando<FrostedThemeData> _twins = Expando<FrostedThemeData>(
     'frosted dark',
   );
 
-  /// The preset ids, the first the default: Frosted's six palettes. Any
-  /// other colour is [FrostedThemeData.from]'s.
-  static const List<String> presets = <String>[
-    'opal',
-    'quartz',
-    'garnet',
-    'glacier',
-    'jade',
-    'copper',
+  /// Frosted's six palettes, for an app's palette picker, the first the
+  /// default: each one's act and canvas as its swatches, by day and by
+  /// night, and the [RawNamedPalette.id] an app stores and hands back to
+  /// [preset], [FrostedThemeData.new] or `FrostedHost.palette`. Opal acts
+  /// in the ink under its pastel washes, Quartz in a violet on cool greys,
+  /// Garnet in a crimson on white, Glacier in a sea teal on blue-grey, Jade
+  /// in a deep green (on navy at night) and Copper in a burnt orange on warm
+  /// stone. Any other colour is [FrostedThemeData.from]'s.
+  ///
+  /// ```dart
+  /// FrostedHost(
+  ///   palette: FrostedThemeData.palettes.firstWhere((p) => p.id == saved),
+  ///   child: child,
+  /// )
+  /// ```
+  static const List<RawNamedPalette> palettes = <RawNamedPalette>[
+    RawNamedPalette(
+      id: 'opal',
+      label: 'Opal',
+      swatches: [Color(0xFF15151D), Color(0xFFF3F3F7)],
+      darkSwatches: [Color(0xFFF3F2FA), Color(0xFF0E0D15)],
+    ),
+    RawNamedPalette(
+      id: 'quartz',
+      label: 'Quartz',
+      swatches: [Color(0xFF5B50E6), Color(0xFFF4F4F6)],
+      darkSwatches: [Color(0xFF8B82F5), Color(0xFF0C0C0E)],
+    ),
+    RawNamedPalette(
+      id: 'garnet',
+      label: 'Garnet',
+      swatches: [Color(0xFFC42648), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFFF8FA3), Color(0xFF1C1B1A)],
+    ),
+    RawNamedPalette(
+      id: 'glacier',
+      label: 'Glacier',
+      swatches: [Color(0xFF0B7D8C), Color(0xFFF3F7F9)],
+      darkSwatches: [Color(0xFF3FB6C6), Color(0xFF0F1A1F)],
+    ),
+    RawNamedPalette(
+      id: 'jade',
+      label: 'Jade',
+      swatches: [Color(0xFF00834A), Color(0xFFF2F4F6)],
+      darkSwatches: [Color(0xFF4D9A68), Color(0xFF101B2B)],
+    ),
+    RawNamedPalette(
+      id: 'copper',
+      label: 'Copper',
+      swatches: [Color(0xFFC7470A), Color(0xFFECEBE8)],
+      darkSwatches: [Color(0xFFFF7A33), Color(0xFF201F1D)],
+    ),
   ];
 
-  /// The theme for preset [id] in [brightness]; an unknown id throws. The
-  /// retired 'cobalt' resolves until 0.8.0.
+  /// The theme of the palette [id] (one of [palettes]' ids) in
+  /// [brightness], one instance for each id and appearance. An id this
+  /// version doesn't offer (one an app stored before its palette was
+  /// retired) gives the default, opal, so a stored choice never stops an
+  /// app.
+  ///
+  /// ```dart
+  /// FrostedThemeData.preset(FrostedThemeData.palettes[2].id, Brightness.dark)
+  /// ```
   static FrostedThemeData preset(String id, Brightness brightness) {
     final dark = brightness == Brightness.dark;
     return switch (id) {
-      'opal' => dark ? _frostedDark : _frostedLight,
       'quartz' => dark ? _quartzDark : _quartzLight,
       'garnet' => dark ? _garnetDark : _garnetLight,
       'glacier' => dark ? _glacierDark : _glacierLight,
-      'cobalt' => dark ? _cobaltDark : _cobaltLight,
       'jade' => dark ? _jadeDark : _jadeLight,
       'copper' => dark ? _copperDark : _copperLight,
-      _ => throw ArgumentError.value(
-        id,
-        'id',
-        'not a Frosted preset (${presets.join(', ')})',
-      ),
+      _ => dark ? _frostedDark : _frostedLight,
     };
   }
 
@@ -3080,16 +3193,6 @@ class FrostedThemeData with Diagnosticable {
     frostTokens,
     Brightness.dark,
   );
-  static final FrostedThemeData _cobaltLight = FrostedThemeData._fromTokens(
-    'cobalt',
-    nativeNeutralTokens,
-    Brightness.light,
-  );
-  static final FrostedThemeData _cobaltDark = FrostedThemeData._fromTokens(
-    'cobalt',
-    nativeNeutralTokens,
-    Brightness.dark,
-  );
   static final FrostedThemeData _jadeLight = FrostedThemeData._fromTokens(
     'jade',
     wayfindingTokens,
@@ -3113,13 +3216,13 @@ class FrostedThemeData with Diagnosticable {
 
   /// The bundled display face every title and figure is set in: Bricolage
   /// Grotesque, one variable file whose weight and optical-size axes every
-  /// style sets (the source's `--font-d`).
+  /// style sets (Frosted's `--font-d`).
   static const String face = frostedFontPackage == null
       ? 'BricolageGrotesque'
       : 'packages/$frostedFontPackage/BricolageGrotesque';
 
-  /// The bundled text face: DM Sans, the running copy, the labels and the
-  /// chips (the source's `--font-t`).
+  /// The bundled text face: DM Sans, the running copy, the labels and the chips
+  /// (Frosted's `--font-t`).
   static const String textFace = frostedFontPackage == null
       ? 'DMSans'
       : 'packages/$frostedFontPackage/DMSans';
@@ -3161,22 +3264,52 @@ class FrostedThemeData with Diagnosticable {
     );
   }
 
-  // --- prism -------------------------------------------------------------------
+  // --- opal --------------------------------------------------------------------
 
-  /// `prism`: the look as the source stylesheet sets it. Light is the
-  /// source's own palette, role for role (the mapping is in `_Source`'s
-  /// header); dark is DESIGNED (the source is light only): its night,
-  /// `_Night`, light through dark glass, held to the same contrast bar by the
-  /// tests.
+  /// Opal, the first palette: by day the values of `_Source`, role for role;
+  /// by night `_Night`, light through dark glass, held to the same contrast
+  /// bar by the tests.
+  /// [lights] by night with each wash dimmed, its hue kept, until [words]
+  /// read 7:1 on every peak over [ground], as the generated palettes' are.
+  static FrostedLights _dimmedTo7(
+    FrostedLights lights, {
+    required Color ground,
+    required Color words,
+  }) {
+    Color dim(Color c, double by) => by == 0
+        ? c
+        : RawHct.fromColor(c)
+              .withTone(RawHct.fromColor(c).tone - by)
+              .toColor()
+              .withValues(alpha: c.a);
+    FrostedLights at(double by) => lights.copyWith(
+      lilac: dim(lights.lilac, by),
+      rose: dim(lights.rose, by),
+      peach: dim(lights.peach, by),
+    );
+    var by = 0.0;
+    while (by < 40 &&
+        at(by)
+            .peaksOver(ground, night: true)
+            .any((p) => contrast(words, p) < 9)) {
+      by += 1;
+    }
+    return at(by);
+  }
+
   static FrostedThemeData _opal(Brightness brightness) {
     final dark = brightness == Brightness.dark;
     final ink = dark ? _Night.ink : _Source.ink;
     final lights = dark
-        ? const FrostedLights(
-            lilac: _Night.lightLilac,
-            rose: _Night.lightRose,
-            peach: _Night.lightPeach,
-            strength: _Night.lightStrength,
+        ? _dimmedTo7(
+            const FrostedLights(
+              lilac: _Night.lightLilac,
+              rose: _Night.lightRose,
+              peach: _Night.lightPeach,
+              strength: _Night.lightStrength,
+            ),
+            ground: _Night.canvas,
+            words: _Night.ink,
           )
         : const FrostedLights(
             lilac: _Source.lightLilac,
@@ -3207,11 +3340,11 @@ class FrostedThemeData with Diagnosticable {
       ...read,
       for (final g in read) Color.alphaBlend(tint, g),
     ], 4.6);
-    final moneyIn = tone(
+    final moneyInRead = tone(
       dark ? _Night.moneyIn : _Source.moneyIn,
       dark ? _Night.moneyInTint : _Source.moneyInTint,
     );
-    final over = tone(
+    final overRead = tone(
       dark ? _Night.over : _Source.over,
       dark ? _Night.overTint : _Source.overTint,
     );
@@ -3242,14 +3375,25 @@ class FrostedThemeData with Diagnosticable {
         Color.alphaBlend(pearlSheens.pillFill, pearlLit(g)),
       ],
     ], 4.6);
-    final warn = tone(
+    final warnRead = tone(
       dark ? _Night.warn : _Source.warn,
       dark ? _Night.warnTint : _Source.warnTint,
     );
-    final cold = tone(
+    final coldRead = tone(
       dark ? _Night.cold : _Source.cold,
       dark ? _Night.coldTint : _Source.coldTint,
     );
+    // The status inks stand apart from each other and from the quiet ink.
+    List<Color> onTintOf(Color tint) => [
+      ...read,
+      for (final g in read) Color.alphaBlend(tint, g),
+    ];
+    final [cold, moneyIn, warn, over] = FrostedThemeData._spreadTones(ink2, [
+      (coldRead, onTintOf(dark ? _Night.coldTint : _Source.coldTint)),
+      (moneyInRead, onTintOf(dark ? _Night.moneyInTint : _Source.moneyInTint)),
+      (warnRead, onTintOf(dark ? _Night.warnTint : _Source.warnTint)),
+      (overRead, onTintOf(dark ? _Night.overTint : _Source.overTint)),
+    ]);
     final white = dark ? _Night.plane : _Source.white;
     TextStyle type({
       required double size,
@@ -3526,7 +3670,7 @@ class FrostedThemeData with Diagnosticable {
     );
   }
 
-  /// Which preset this theme is (see [presets]).
+  /// Which palette this theme is (one of [palettes]' ids).
   final String id;
 
   /// Which appearance this theme is.
@@ -3556,8 +3700,8 @@ class FrostedThemeData with Diagnosticable {
   /// its action.
   final FrostedToastColors toast;
 
-  /// Every hue the source names: the spectrum's categories, the objects,
-  /// money in, a move, the allocation bands.
+  /// Every hue Frosted names: the spectrum's categories, the objects, money in,
+  /// a move, the allocation bands.
   final FrostedHues hues;
 
   /// The washes of light behind the glass.
@@ -3678,6 +3822,66 @@ class FrostedThemeData with Diagnosticable {
     FrostedTone.warning => colorScheme.warningSubtle,
     FrostedTone.info => colorScheme.coldTint,
   };
+
+  /// [inks] (each with the grounds it reads 4.5:1 on) eased apart from each
+  /// other and from [quiet] until every two stand [apart] in HCT (tone, and
+  /// chroma along the hue, as one line), as little as it takes: each eases
+  /// toward the most colour its hue holds at the readable tone nearest the
+  /// middle, a tenth of the way at a time, all together.
+  static List<Color> _spreadTones(
+    Color quiet,
+    List<(Color, List<Color>)> inks, {
+    double apart = 25,
+  }) {
+    double distance(Color a, Color b) {
+      final x = RawHct.fromColor(a);
+      final y = RawHct.fromColor(b);
+      final xr = x.hue * math.pi / 180;
+      final yr = y.hue * math.pi / 180;
+      final dt = x.tone - y.tone;
+      final da = x.chroma * math.cos(xr) - y.chroma * math.cos(yr);
+      final db = x.chroma * math.sin(xr) - y.chroma * math.sin(yr);
+      return math.sqrt(dt * dt + da * da + db * db);
+    }
+
+    bool spread(List<Color> set) {
+      final all = [quiet, ...set];
+      for (var i = 0; i < all.length; i++) {
+        for (var j = i + 1; j < all.length; j++) {
+          if (distance(all[i], all[j]) < apart) return false;
+        }
+      }
+      return true;
+    }
+
+    final from = [for (final (ink, _) in inks) RawHct.fromColor(ink)];
+    final to = [
+      for (final (ink, on) in inks)
+        RawHct.fromColor(
+          RawPalette.readableTone(
+            RawHct.fromColor(ink).withTone(50).withChroma(200).toColor(),
+            on: on,
+          ),
+        ),
+    ];
+    List<Color> at(double t) => [
+      for (var i = 0; i < inks.length; i++)
+        t == 0
+            ? inks[i].$1
+            : RawPalette.readableTone(
+                from[i]
+                    .withTone(lerpDouble(from[i].tone, to[i].tone, t)!)
+                    .withChroma(lerpDouble(from[i].chroma, to[i].chroma, t)!)
+                    .toColor(),
+                on: inks[i].$2,
+              ),
+    ];
+    for (var step = 0; step <= 10; step++) {
+      final set = at(step / 10);
+      if (spread(set)) return set;
+    }
+    return at(1);
+  }
 
   /// [ink] where it reads [ratio]:1 on every one of [grounds], its colour
   /// easing toward [toward] as its tone walks (`frostedEasedInk`).
@@ -3993,28 +4197,26 @@ class FrostedColorScheme with Diagnosticable {
   /// The ink as a face: the act's pill, the toast's slab.
   final Color surfaceInverse;
 
-  /// The rule between rows, settings and facts, and down the sidebar's edge
-  /// (`--line`).
+  /// The rule between rows, settings and facts, and down the sidebar's edge.
   final Color border;
 
   /// A firmer edge: the sheet's grabber, a statement's due mark.
   final Color borderStrong;
 
-  /// The page's words: a row's title, a figure (`--ink`).
+  /// The page's words: a row's title, a figure.
   final Color textPrimary;
 
-  /// Quieter words: a row's second line, a label, a link (`--ink-2`).
+  /// Quieter words: a row's second line, a label, a link.
   final Color textSecondary;
 
-  /// The caption ink: a cap, a tab at rest, a note, an axis label
-  /// (`--ink-3`).
+  /// The caption ink: a cap, a tab at rest, a note, an axis label.
   final Color textTertiary;
 
   /// Words on [surfaceInverse]: a button's, a toast's.
   final Color textInverse;
 
-  /// The one accent: the ink. The source has none apart from it; every act
-  /// is the ink pill.
+  /// The one accent: the ink. Frosted has none apart from it; every act is the
+  /// ink pill.
   final Color accent;
 
   /// The ink on an [accent] face.
@@ -4026,34 +4228,34 @@ class FrostedColorScheme with Diagnosticable {
   /// An accent-coloured WORD: the ink.
   final Color accentText;
 
-  /// The good tone: money in, a goal on track, a kept budget (`--in`).
+  /// The good tone: money in, a goal on track, a kept budget.
   final Color success;
 
   /// The ink on a [success] face.
   final Color onSuccess;
 
-  /// The good wash (`--in-t`).
+  /// The good wash.
   final Color successSubtle;
 
-  /// The warning tone: a budget nearly spent, a nudge (`--warn`).
+  /// The warning tone: a budget nearly spent, a nudge.
   final Color warning;
 
-  /// The warning wash (`--warn-t`).
+  /// The warning wash.
   final Color warningSubtle;
 
-  /// The bad tone: over budget, a destructive act (`--over`).
+  /// The bad tone: over budget, a destructive act.
   final Color danger;
 
   /// The ink on a [danger] face.
   final Color onDanger;
 
-  /// The bad wash (`--over-t`).
+  /// The bad wash.
   final Color dangerSubtle;
 
   /// The scrim under a sheet, a dialog or a menu.
   final Color overlay;
 
-  /// The act's pill at its top; it falls to [buttonBottom] (`--ink-fill`).
+  /// The act's pill at its top; it falls to [buttonBottom].
   final Color buttonTop;
 
   /// The act's pill at its foot.
@@ -4071,20 +4273,19 @@ class FrostedColorScheme with Diagnosticable {
   /// See [ringInner].
   final Color ringOuter;
 
-  /// Money in: an amount that came in, a positive change (`--in`).
+  /// Money in: an amount that came in, a positive change.
   final Color moneyIn;
 
-  /// Money in's tint (`--in-t`).
+  /// Money in's tint.
   final Color moneyInTint;
 
-  /// Over budget: the spill of a meter, an amount past its budget
-  /// (`--over`).
+  /// Over budget: the spill of a meter, an amount past its budget.
   final Color over;
 
-  /// Over budget's tint (`--over-t`).
+  /// Over budget's tint.
   final Color overTint;
 
-  /// The cold of a frozen card: its ink, tint and edge (`--cold`).
+  /// The cold of a frozen card: its ink, tint and edge.
   final Color cold;
 
   /// See [cold].
@@ -4111,7 +4312,7 @@ class FrostedColorScheme with Diagnosticable {
   /// See [toggleTrack].
   final Color toggleKnob;
 
-  /// The act's fill: [buttonTop] falling to [buttonBottom] (`--ink-fill`).
+  /// The act's fill: [buttonTop] falling to [buttonBottom].
   LinearGradient get buttonFill => LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -4732,7 +4933,7 @@ class FrostedShadows with Diagnosticable {
     required this.toggleKnob,
   });
 
-  /// The shadow a tile casts (`--lift`).
+  /// The shadow a tile casts.
   final List<BoxShadow> tile;
 
   /// The shadow the tab bar's slab casts.
@@ -4750,7 +4951,7 @@ class FrostedShadows with Diagnosticable {
   /// The shadow the toast's slab casts.
   final List<BoxShadow> toast;
 
-  /// The shadow under the act's pill (`--ink-lift`).
+  /// The shadow under the act's pill.
   final List<BoxShadow> button;
 
   /// The shadow under a raised white face: a chosen segment, a swap button.
@@ -4886,18 +5087,16 @@ class FrostedGlassColors with Diagnosticable {
     required this.trackEdge,
   });
 
-  /// A tile's frosted glass (`--glass`): white at 62%, the canvas blurred
-  /// behind it.
+  /// A tile's frosted glass: white at 62%, the canvas blurred behind it.
   final Color fill;
 
-  /// The high glass (`--glass-hi`): a round button, the search well, a glass
-  /// button.
+  /// The high glass: a round button, the search well, a glass button.
   final Color fillHigh;
 
-  /// A tile's hairline edge (`--edge`).
+  /// A tile's hairline edge.
   final Color edge;
 
-  /// The white rim along a tile's top inside edge (`--rim`).
+  /// The white rim along a tile's top inside edge.
   final Color rim;
 
   /// The spectrum's rim along a hero's top edge: five pastel stops, fading
@@ -4905,7 +5104,7 @@ class FrostedGlassColors with Diagnosticable {
   final List<Color> spectrumStops;
 
   /// The quiet wash a chip, a date block, a segmented control's track and a
-  /// checked option stand on (`--wash`).
+  /// checked option stand on.
   final Color wash;
 
   /// A field's well: white at 82%.
@@ -5466,7 +5665,7 @@ class FrostedTheme extends StatelessWidget {
   static FrostedThemeData of(BuildContext context) =>
       maybeOf(context) ??
       FrostedThemeData.preset(
-        FrostedThemeData.presets.first,
+        FrostedThemeData.palettes.first.id,
         MediaQuery.maybePlatformBrightnessOf(context) ?? Brightness.light,
       );
 
@@ -5811,7 +6010,7 @@ class FrostedScrollBehavior extends ScrollBehavior {
 
 /// The accessor every Frosted widget reads its tokens through.
 extension FrostedThemeContext on BuildContext {
-  /// The app's design tokens: `context.frostedTheme.glass`, ...
+  /// The app's design tokens: `context.frostedTheme.glass`,...
   FrostedThemeData get frostedTheme => FrostedTheme.of(this);
 }
 
@@ -5894,67 +6093,47 @@ extension FrostedTextStyle on TextStyle {
   }
 }
 
-/// The values the `prism` preset is written in: the source stylesheet's
-/// custom properties as literals, each under its own name (`--ink-2` is
-/// `_Source.ink2`), and the literal colours its rules set.
+/// The day values the opal preset is written in, each under its own name
+/// (`_Source.ink2` is the secondary ink), and the colours the parts set
+/// directly.
 ///
-/// ## Role mapping
+/// How the roles take them:
 ///
-/// The stylesheet names its properties by what they are (`--canvas`,
-/// `--glass`, `--ink-2`, `--in`, `--over`, `--warn`, `--line`, `--wash`) and
-/// most of its other colours are literals in its rules, so each role takes
-/// the value of the rule that plays it most often (driftwood-authoring §3):
+/// - `background` is the canvas. `surface` is the glass tile as it reads
+///   over the canvas, made opaque (`#FAFAFC`): the tile itself is drawn from
+///   the glass roles, and `surface` stands in where glass cannot be drawn,
+///   so a part that needs a face (and the contrast tests) reads a real
+///   colour. `surfaceAlt` is the wash over that (`#F0F0F3`).
+/// - `border` is the rule between rows (7%); `borderStrong` the grabber's
+///   14%. The glass's `edge` (5.5%) and `wash` (4.5%) stay translucent.
+/// - `textPrimary`, `textSecondary` and `textTertiary` are the page's three
+///   inks, opaque, with a quieter one for a figure's cents. The theme eases
+///   the secondary, third and cents inks toward the page ink until they read
+///   4.5:1 where a wash is strongest, so the theme's are a step deeper than
+///   the values below.
+/// - `accent`, `accentText` and `surfaceInverse` are the ink: every act is
+///   the ink pill (a primary button, a chosen filter chip, a pressed option,
+///   a move button), its fill running `buttonTop` to `buttonBottom`.
+///   `onAccent` and `textInverse` are white.
+/// - `success` and `moneyIn`, `danger` and `over`, `warning` and `warn`
+///   each come with a tint for their wash. `cold` is the frozen card's blue
+///   with its tint and edge.
+/// - `overlay` is the scrim, rgba(30, 28, 50, .3).
+/// - The hues each have seven values.
+/// - The three washes of light, the glass rim's hairline gradient, the pearl
+///   card's layers and glow, the avatar's gradient and the charts' inks are
+///   written here as they are drawn.
+/// - The chrome's faces (the top bar, the tab bar, the sidebar, a chosen
+///   place, a sheet and its grabber, a menu, a toast, the unread dot, the
+///   prism track, the meter, the pace tick, the switch) take their shadows
+///   from here; the parts draw their inset rims.
 ///
-/// - `background` = `--canvas`. `surface` is the glass tile (white 62%) as
-///   it reads over the canvas, made opaque (`#FAFAFC`): the tile itself is
-///   drawn from the glass roles, and `surface` is the stand-in where glass
-///   cannot be drawn. JUDGMENT: the opaque stand-in rather than the
-///   translucent face, so a component that needs a face (and the contrast
-///   tests) reads a real colour. `surfaceAlt` is the wash over that
-///   (`#F0F0F3`).
-/// - `border` = `--line` (7%), the rule between rows (the source's 8% well
-///   edge is the lit hairline now); `borderStrong` the grabber's 14%. The
-///   glass's `edge` = `--edge` (5.5%), `wash` = `--wash` (4.5%). All stay
-///   translucent, as the source sets them.
-/// - `textPrimary` = `--ink`, `textSecondary` = `--ink-2`, `textTertiary` =
-///   `--ink-3` (and the source's `--ink-q` for a figure's cents), every one
-///   opaque as the source sets
-///   it. JUDGMENT: the source's `--ink-2`, `--ink-3` and `--ink-q` read 3.9,
-///   3.0 and 2.2:1 where a wash is strongest; the theme eases them toward
-///   the page ink until they read 4.5:1 there, so the values below are the
-///   source's and the theme's are a step deeper.
-/// - `accent` = `accentText` = `surfaceInverse` = the ink: the source has no
-///   accent colour; every act is the ink pill (`.btn--ink`, `.fchip.on`,
-///   `.tgl:checked`, `.opt[aria-pressed]`, `.move-btn`). Its fill is
-///   `--ink-fill` (`buttonTop` to `buttonBottom`), its lift `--ink-lift`.
-/// `onAccent`
-///   and `textInverse` are white.
-/// - `success` = `moneyIn` = `--in`, `danger` = `over` = `--over`, `warning`
-///   = `warn` = `--warn`, each with its `-t` tint as the wash. `cold` = the
-///   frozen card's `--cold` with its tint and edge.
-/// - `overlay` = the scrim, rgba(30, 28, 50, .3).
-/// - The hues are the `.c-*` classes, each at its seven values.
-/// - The washes of light are the three blobs (`.b1`, `.b2`, `.b3`); the rim
-///   is the `.glass-tile` hairline gradient; the pearl is `.kcard`'s layers
-///   and `.kc-glow`; the avatar is `.avatar`'s gradient; the charts' inks
-///   are `charts.py`'s literals.
-/// - The chrome faces are the rules that draw them: `.top::before`,
-///   `.tabbar-in`, `.tabbar::before`, `.side`, `.nav.on`, `.sheet`,
-///   `.sheet-grab`, `.menu`, `.toast`, `.toast-i`, `.toast-a`, the unread
-///   dot, the prism track, the meter, the pace tick, `.tgl`; their shadows
-///   are the rules' box-shadows as Flutter draws them, inset rims apart
-///   (the components draw those).
+/// Type: the display face is Bricolage Grotesque, the text face DM Sans.
+/// Amounts in rows, stats and card numbers are tabular; the hero money keeps
+/// proportional numerals.
 ///
-/// Type: the slots are the source's own sizes, weights, lines and tracking;
-/// the display face is `--font-d` (Bricolage Grotesque), the text face
-/// `--font-t` (DM Sans). JUDGMENT: amounts in rows, stats and card numbers
-/// are tabular, as the source sets `tnum` on `.amt`, `.num`, `.stat-v` and
-/// `.cell-amt`; the hero money keeps proportional numerals, as `.money`
-/// does.
-///
-/// Dark is DESIGNED: the source has no dark appearance, so its night is
-/// written in `_Night` from the concept's principles (light through dark
-/// glass), held by the tests to the bar light is held to (words 4.5:1 on the
+/// Night is written in `_Night` on the same idea, light through dark glass,
+/// and held by the tests to the bar day is held to (words 4.5:1 on the
 /// canvas, the surface and the washes).
 abstract final class _Source {
   static const Color canvas = Color(0xFFF3F3F7);
@@ -5970,8 +6149,8 @@ abstract final class _Source {
   static const Color line = Color(0x1215152D);
   static const Color wash = Color(0x0B15152D);
 
-  /// The lit hairline round a pane of light glass (white at 85%), where the
-  /// source's `--edge` drew a dark one.
+  /// The lit hairline round a pane of light glass (white at 85%), where
+  /// Frosted's `--edge` drew a dark one.
   static const Color litEdge = Color(0xD9FFFFFF);
   static const Color borderStrong = Color(0x2415152D);
   static const Color rim = Color(0xE6FFFFFF);
@@ -6248,9 +6427,8 @@ abstract final class _Source {
   );
 }
 
-/// The DESIGNED dark appearance of `prism`: light through glass at night.
-/// The source is light only; this is its night, written from the concept's
-/// principles rather than inverted from the day:
+/// Opal by night: light through glass, written as its own appearance rather
+/// than inverted from the day:
 ///
 /// - a deep canvas, a blue-black with violet in it (#0E0D15), under the same
 ///   three washes lit from within: lilac, rose and peach turned to the
@@ -6398,13 +6576,17 @@ int _deepHash(Object? value) =>
     value is List ? Object.hashAll(value) : value.hashCode;
 
 /// [hue] with its ink at the nearest tone of its hue that reads 4.5:1 on its
-/// tint over each of [grounds], easing toward [toward]; the rest of it kept.
+/// tint and on its small solid (a monogram's) over each of [grounds], easing
+/// toward [toward]; the rest of it kept.
 FrostedHue _heldHue(FrostedHue hue, Color toward, List<Color> grounds) =>
     FrostedHue(
       a: hue.a,
       b: hue.b,
       ink: FrostedThemeData._inked(hue.ink, toward, [
-        for (final g in grounds) Color.alphaBlend(hue.tint, g),
+        for (final g in grounds) ...[
+          Color.alphaBlend(hue.tint, g),
+          Color.alphaBlend(hue.tintSolid, g),
+        ],
       ], 4.5),
       inkDeep: hue.inkDeep,
       tint: hue.tint,

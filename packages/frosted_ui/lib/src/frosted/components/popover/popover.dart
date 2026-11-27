@@ -15,7 +15,7 @@ import '../../theme.dart';
 /// the behaviour; this paints it.
 ///
 /// ```dart
-/// FrostedPopover(label: 'Filter', builder: (context, controller, _) => FrostedButton.glass('Filter', onPressed: () => controller.isOpen ? controller.close() : controller.open()), content: Column(mainAxisSize: MainAxisSize.min, children: [FrostedSwitchRow(label: 'Only unread', value: unread, onChanged: setUnread)]))
+/// FrostedPopover(semanticLabel: 'Filter', builder: (context, controller, _) => FrostedButton.glass('Filter', onPressed: () => controller.isOpen ? controller.close() : controller.open()), content: Column(mainAxisSize: MainAxisSize.min, children: [FrostedSwitchRow(label: 'Only unread', value: unread, onChanged: setUnread)]))
 /// ```
 class FrostedPopover extends StatelessWidget {
   /// A popover opened by [builder]'s control, holding [content].
@@ -26,7 +26,7 @@ class FrostedPopover extends StatelessWidget {
     this.width = 288,
     // A panel of its own width, whatever the control it opens from.
     this.placement = const RawPopoverPlacement(gap: 8, matchAnchorWidth: false),
-    this.label,
+    this.semanticLabel,
     this.controller,
     this.onOpenChanged,
     super.key,
@@ -53,7 +53,7 @@ class FrostedPopover extends StatelessWidget {
   final RawPopoverPlacement placement;
 
   /// What a screen reader calls the panel.
-  final String? label;
+  final String? semanticLabel;
 
   /// Opens and closes it from outside; null makes its own.
   final MenuController? controller;
@@ -67,7 +67,7 @@ class FrostedPopover extends StatelessWidget {
     return RawPopover(
       controller: controller,
       placement: placement,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       onOpenChanged: onOpenChanged,
       anchorBuilder: (context, anchor) =>
           builder(context, anchor.controller, child),
@@ -98,7 +98,7 @@ class FrostedPopover extends StatelessWidget {
           ),
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MenuController>(
           'controller',
@@ -134,7 +134,7 @@ class FrostedHoverCard extends StatelessWidget {
     this.width = 300,
     // A panel of its own width, whatever the control it opens from.
     this.placement = const RawPopoverPlacement(gap: 8, matchAnchorWidth: false),
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -151,7 +151,7 @@ class FrostedHoverCard extends StatelessWidget {
   final RawPopoverPlacement placement;
 
   /// What a screen reader calls the card.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +160,7 @@ class FrostedHoverCard extends StatelessWidget {
       trigger: RawPopoverTrigger.hover,
       focusOnOpen: false,
       placement: placement,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       anchorBuilder: (context, anchor) => child,
       overlayBuilder: (context, info) => FrostedPanel(
         width: width,
@@ -189,6 +189,6 @@ class FrostedHoverCard extends StatelessWidget {
           ),
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

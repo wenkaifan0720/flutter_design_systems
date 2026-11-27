@@ -16,7 +16,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 void _noop() {}
 
@@ -91,7 +90,7 @@ final List<NestedPart> nestedParts = [
     'Icon button',
     () => const FrostedIconButton(
       FrostedGlyphs.add,
-      label: 'Add',
+      semanticLabel: 'Add',
       onPressed: _noop,
     ),
   ),
@@ -101,7 +100,11 @@ final List<NestedPart> nestedParts = [
   ),
   _n(
     'Checkbox',
-    () => const FrostedCheckbox(value: true, label: 'Agree', onChanged: _drop),
+    () => const FrostedCheckbox(
+      value: true,
+      semanticLabel: 'Agree',
+      onChanged: _drop,
+    ),
   ),
   _n(
     'Radio',
@@ -114,13 +117,17 @@ final List<NestedPart> nestedParts = [
   ),
   _n(
     'Switch',
-    () => const FrostedSwitch(value: true, label: 'Wi-Fi', onChanged: _drop),
+    () => const FrostedSwitch(
+      value: true,
+      semanticLabel: 'Wi-Fi',
+      onChanged: _drop,
+    ),
   ),
   _n(
     'Slider thumb',
     () => _w(
       240,
-      const FrostedSlider(value: .4, label: 'Volume', onChanged: _drop),
+      const FrostedSlider(value: .4, semanticLabel: 'Volume', onChanged: _drop),
     ),
   ),
   for (final (i, place) in ['first', 'middle', 'last'].indexed) ...[

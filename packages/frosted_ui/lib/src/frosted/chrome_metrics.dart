@@ -10,8 +10,7 @@ abstract final class FrostedChromeMetrics {
   /// The lit hairline round a pane of light glass: white at 85%.
   static const Color litEdge = Color(0xD9FFFFFF);
 
-  /// The page gutter on a phone (`.main { padding: 0 16px 20px }`) and on
-  /// the desktop (`0 32px 40px`).
+  /// The page gutter on a phone and on the desktop (`0 32px 40px`).
   static const double gutter = 16;
 
   /// See [gutter].
@@ -23,8 +22,7 @@ abstract final class FrostedChromeMetrics {
   /// See [pageBottom].
   static const double pageBottomWide = 40;
 
-  /// Tiles in a column stand 10 apart on a phone, 16 on the desktop
-  /// (`--gap`).
+  /// Tiles in a column stand 10 apart on a phone, 16 on the desktop.
   static const double columnGap = 10;
 
   /// See [columnGap].
@@ -32,9 +30,8 @@ abstract final class FrostedChromeMetrics {
 
   // --- top bars ---------------------------------------------------------------
 
-  /// A phone top bar (`.top`): 10 over and under its parts, its two sides
-  /// 12 apart, the controls at its end 8 apart; it is at least as tall as
-  /// its 40 controls.
+  /// A phone top bar: 10 over and under its parts, its two sides 12 apart, the
+  /// controls at its end 8 apart; it is at least as tall as its 40 controls.
   static const double barInset = 10;
 
   /// See [barInset].
@@ -58,9 +55,8 @@ abstract final class FrostedChromeMetrics {
   /// See [captionGap].
   static const double captionGapWide = 6;
 
-  /// The frost behind a phone bar (`.top::before`): a blur of 20 under the
-  /// canvas at half strength, running 16 past the bar's foot and fading out
-  /// over its last 40%.
+  /// The frost behind a phone bar: a blur of 20 under the canvas at half
+  /// strength, running 16 past the bar's foot and fading out over its last 40%.
   static const double topFrostBlur = 20;
 
   /// See [topFrostBlur].
@@ -86,8 +82,7 @@ abstract final class FrostedChromeMetrics {
   /// See [crumbGlyph].
   static const double crumbTitleGap = 6;
 
-  /// A round button (`.icon-btn`, `.back`): 40 across with its glyph 18; a
-  /// small one 32 with 16.
+  /// A round button: 40 across with its glyph 18; a small one 32 with 16.
   static const double roundButton = 40;
 
   /// See [roundButton].
@@ -139,12 +134,10 @@ abstract final class FrostedChromeMetrics {
 
   // --- the phone tab bar ----------------------------------------------------
 
-  /// The tab bar (`.tabbar`): the slab on the page's gutter, 16 in from the
-  /// sides (the source's 12 left it 4 outside the content above it), and 12
-  /// over the foot (or the system's inset where that is more: DERIVED, the
-  /// source draws no inset), the page fading into the canvas over the 104
-  /// above the foot (nothing at its top, 88% at 48%, the canvas at 80%).
-  /// A floating action bar stands on the same gutter.
+  /// The tab bar: the slab on the page's gutter, 16 in from the sides, and 12
+  /// over the foot (or the system's inset where that is more), the page fading into the canvas over the 104 above the foot
+  /// (nothing at its top, 88% at 48%, the canvas at 80%). A floating action bar
+  /// stands on the same gutter.
   static const double tabBarSide = gutter;
 
   /// See [tabBarSide].
@@ -170,8 +163,7 @@ abstract final class FrostedChromeMetrics {
   /// See [tabBarSide].
   static const double tabBarFadeMidAlpha = 0.88;
 
-  /// The slab (`.tabbar-in`): 64 tall, corners 22, frosted (a blur of 24,
-  /// saturated 1.4).
+  /// The slab: 64 tall, corners 22, frosted (a blur of 24, saturated 1.4).
   static const double slabHeight = 64;
 
   /// How long the selection's pill takes to slide to a new choice (a tab, a
@@ -183,9 +175,8 @@ abstract final class FrostedChromeMetrics {
   /// the edge's 1 and these 4: 17).
   static const double selectionInset = 4;
 
-  /// The slab's own room at its ends: none, so a plate at either end
-  /// stands [selectionInset] from the slab's side as from its top (the
-  /// source's 4 here set it 8 in at the sides and 4 at the top).
+  /// The slab's own room at its ends: none, so a plate at either end stands
+  /// [selectionInset] from the slab's side as from its top.
   static const double slabInset = 0;
 
   /// See [slabHeight].
@@ -203,9 +194,9 @@ abstract final class FrostedChromeMetrics {
   /// See [tabGlyph].
   static const double tabGap = 4;
 
-  /// The Move pill in the slab's middle (`.move-btn`): 40 tall, 12 in at
-  /// either end, its glyph 16 and 4 from its word, 6 of
-  /// room either side; shown, a white ring of 2 and an ink ring 1.5 past it.
+  /// The Move pill in the slab's middle: 40 tall, 12 in at either end, its
+  /// glyph 16 and 4 from its word, 6 of room either side; shown, a white ring
+  /// of 2 and an ink ring 1.5 past it.
   static const double movePill = 40;
 
   /// See [movePill].
@@ -229,11 +220,10 @@ abstract final class FrostedChromeMetrics {
   /// See [movePill].
   static const double movePillRingOuter = 3.5;
 
-  /// DERIVED: an accessory stands 8 over the slab.
+  /// An accessory stands 8 over the slab.
   static const double accessoryGap = 8;
 
-  /// DERIVED: a page fades into the canvas over the 32 above its footer's
-  /// band (the source's acts stand in the page; it pins none).
+  /// A page fades into the canvas over the 32 above its footer's band.
   static const double footerFade = 32;
 
   /// The frost behind a tile of glass: a blur of 24, the colour behind it
@@ -245,8 +235,8 @@ abstract final class FrostedChromeMetrics {
 
   // --- the desktop sidebar ----------------------------------------------------
 
-  /// The sidebar (`.side`): 240 wide, 28 above its wordmark, 20 at its
-  /// start, 16 at its end and 24 at its foot, its parts 24 apart.
+  /// The sidebar: 240 wide, 28 above its wordmark, 20 at its start, 16 at its
+  /// end and 24 at its foot, its parts 24 apart.
   static const double sideWidth = 240;
 
   /// See [sideWidth].
@@ -264,11 +254,10 @@ abstract final class FrostedChromeMetrics {
   /// See [sideWidth].
   static const double sideGap = 24;
 
-  /// The wordmark (`.brand`): 40 tall, its mark (28 across, corners 9, its
-  /// glyph 18) 10 before its word, standing on the links' keyline: where a
-  /// link's glyph's ink starts, 17 in ([navLinkInset], the pill's 1 edge
-  /// and the glyph's own 2 side bearing; the source's 4 gave the sidebar a
-  /// second leading edge).
+  /// The wordmark: 40 tall, its mark (28 across, corners 9, its glyph 18) 10
+  /// before its word, standing on the links' keyline: where a link's glyph's
+  /// ink starts, 17 in ([navLinkInset], the pill's 1 edge and the glyph's own 2
+  /// side bearing).
   static const double brandHeight = 40;
 
   /// See [brandHeight].
@@ -286,8 +275,8 @@ abstract final class FrostedChromeMetrics {
   /// See [brandHeight].
   static const double brandMarkGlyph = 18;
 
-  /// The sidebar's main act (`.btn-move`): 40 tall across the sidebar, its
-  /// glyph 18 and 8 from its word.
+  /// The sidebar's main act: 40 tall across the sidebar, its glyph 18 and 8
+  /// from its word.
   static const double sideAct = 40;
 
   /// See [sideAct].
@@ -296,8 +285,8 @@ abstract final class FrostedChromeMetrics {
   /// See [sideAct].
   static const double sideActGlyph = 18;
 
-  /// A nav link (`.nav`): 40 tall, 14 in, its glyph 18 and 12 from its
-  /// word; links 2 apart.
+  /// A nav link: 40 tall, 14 in, its glyph 18 and 12 from its word; links 2
+  /// apart.
   static const double navLink = 40;
 
   /// See [navLink].
@@ -312,10 +301,9 @@ abstract final class FrostedChromeMetrics {
   /// See [navLink].
   static const double navGap = 2;
 
-  /// The sidebar foot (`.side-me`): 8 inside, its avatar on the links'
-  /// keyline at its start (16 in and its edge's 1, where the links' glyph
-  /// ink starts; the source's 6 was a third leading edge), 12 from the
-  /// name, the name's line 3 over the quiet one.
+  /// The sidebar foot: 8 inside, its avatar on the links' keyline at its start
+  /// (16 in and its edge's 1, where the links' glyph ink starts), 12 from the name, the name's line 3 over the
+  /// quiet one.
   static const double footInsetStart = navLinkInset + 2;
 
   /// See [footInsetStart].
@@ -332,9 +320,9 @@ abstract final class FrostedChromeMetrics {
 
   // --- buttons ------------------------------------------------------------------
 
-  /// A button (`.btn`): 44 tall, 20 in, its glyph (18) 8 from its word; a
-  /// small one 32 tall, 14 in, its word 12 and its glyph 14, 6 apart; a
-  /// wide one 48 tall across its line, its word 16.
+  /// A button: 44 tall, 20 in, its glyph (18) 8 from its word; a small one 32
+  /// tall, 14 in, its word 12 and its glyph 14, 6 apart; a wide one 48 tall
+  /// across its line, its word 16.
   static const double buttonHeight = 44;
 
   /// See [buttonHeight].
@@ -375,9 +363,8 @@ abstract final class FrostedChromeMetrics {
   /// [glassStepDay] in a dark theme, the ink being light.
   static const double glassStepNight = .12;
 
-  /// What cannot be used is drawn at this share, once (the source's
-  /// `.set-row--off`): a control alone, or a row that is off as one thing,
-  /// its words and its control together, the control inside it then at full
+  /// What cannot be used is drawn at this share, once: a control alone, or a row that is off as one thing, its
+  /// words and its control together, the control inside it then at full
   /// strength.
   static const double disabledOpacity = 0.45;
 
@@ -440,8 +427,8 @@ abstract final class FrostedChromeMetrics {
 
   // --- the light ------------------------------------------------------------------
 
-  /// The washes of light over the top of every page (`.aurora`): the field
-  /// 560 tall on a phone (640 on the desktop), each disc blurred 56 (72).
+  /// The washes of light over the top of every page: the field 560 tall on a
+  /// phone (640 on the desktop), each disc blurred 56 (72).
   static const double lightField = 560;
 
   /// See [lightField].
@@ -455,8 +442,8 @@ abstract final class FrostedChromeMetrics {
 
   // --- sheets, menus, toasts -----------------------------------------------
 
-  /// A phone sheet (`.sheet`): 8 above its grabber, 16 at its sides, 24
-  /// under its last part, its parts 12 apart, at most 88% of the screen.
+  /// A phone sheet: 8 above its grabber, 16 at its sides, 24 under its last
+  /// part, its parts 12 apart, at most 88% of the screen.
   static const double sheetTop = 8;
 
   /// See [sheetTop].
@@ -516,19 +503,17 @@ abstract final class FrostedChromeMetrics {
   /// See [sheetHead].
   static const double sheetFootGap = 12;
 
-  /// A sheet's acts under its body: 16, the form body's gap they stand in
-  /// (`.sheet-b--form { gap: 16px }`).
+  /// A sheet's acts under its body: 16, the form body's gap they stand in.
   static const double sheetFormFootGap = 16;
 
-  /// DERIVED: the rise and the fall of a sheet.
+  /// The rise and the fall of a sheet.
   static const Duration sheetIn = Duration(milliseconds: 320);
 
   /// See [sheetIn].
   static const Duration sheetOut = Duration(milliseconds: 220);
 
-  /// An option (`.opt`): at least 52 tall, 6 over and under, 4 in at its
-  /// end, its parts 12 apart, a hairline between two; its check a 24 disc
-  /// with a 14 glyph.
+  /// An option: at least 52 tall, 6 over and under, 4 in at its end, its parts
+  /// 12 apart, a hairline between two; its check a 24 disc with a 14 glyph.
   static const double option = 52;
 
   /// See [option].
@@ -546,9 +531,9 @@ abstract final class FrostedChromeMetrics {
   /// See [option].
   static const double optionCheckGlyph = 14;
 
-  /// A menu (`.menu`): 288 wide, 6 inside, corners 16, 8 under its anchor,
-  /// its items 2 apart; its head 8 above, 10 at its sides, 6 under; an
-  /// item 40 tall, 10 in, corners 10, its columns 10 apart, its check 16.
+  /// A menu: 288 wide, 6 inside, corners 16, 8 under its anchor, its items 2
+  /// apart; its head 8 above, 10 at its sides, 6 under; an item 40 tall, 10 in,
+  /// corners 10, its columns 10 apart, its check 16.
   static const double menuWidth = 288;
 
   /// See [menuWidth].
@@ -591,9 +576,8 @@ abstract final class FrostedChromeMetrics {
   /// See [menuWidth].
   static const double menuItemGlyph = 16;
 
-  /// A toast (`.toast`): at least 52 tall, 8 inside (12 at its start),
-  /// corners 16, its parts 12 apart; its mark 28 with a 16 glyph; its act
-  /// 36 tall, 14 in.
+  /// A toast: at least 52 tall, 8 inside (12 at its start), corners 16, its
+  /// parts 12 apart; its mark 28 with a 16 glyph; its act 36 tall, 14 in.
   static const double toastHeight = 52;
 
   /// See [toastHeight].
@@ -634,7 +618,7 @@ abstract final class FrostedChromeMetrics {
   /// See [toastSide].
   static const double toastWideWidth = 380;
 
-  /// DERIVED: a toast rises 16 as it comes in, and stays 3.2 seconds (5.6
+  /// A toast rises 16 as it comes in, and stays 3.2 seconds (5.6
   /// with an act).
   static const double toastRise = 16;
 
@@ -646,10 +630,10 @@ abstract final class FrostedChromeMetrics {
 
   // --- marks ---------------------------------------------------------------------
 
-  /// A monogram or a token (`.mono`, `.tok`): 36 across, corners 11, its
-  /// glyph 18 and its letters 13; a large one 56 across, corners 17, its
-  /// glyph 24 and its letters 20; a ticket's 32 with corners 10 and letters
-  /// 12; a browse card's token 32 with a 16 glyph.
+  /// A monogram or a token: 36 across, corners 11, its glyph 18 and its letters
+  /// 13; a large one 56 across, corners 17, its glyph 24 and its letters 20; a
+  /// ticket's 32 with corners 10 and letters 12; a browse card's token 32 with
+  /// a 16 glyph.
   static const double mark = 36;
 
   /// See [mark].
@@ -685,7 +669,7 @@ abstract final class FrostedChromeMetrics {
   /// See [mark].
   static const double markSmallType = 12;
 
-  /// The ink mark (`.mark`): 28 across, corners 9, its glyph 18.
+  /// The ink mark: 28 across, corners 9, its glyph 18.
   static const double inkMark = 28;
 
   /// See [inkMark].
@@ -694,8 +678,7 @@ abstract final class FrostedChromeMetrics {
   /// See [inkMark].
   static const double inkMarkGlyph = 18;
 
-  /// A date block (`.date`): 40 by 44, corners 11, its day 3 under its
-  /// month.
+  /// A date block: 40 by 44, corners 11, its day 3 under its month.
   static const Size dateBlock = Size(40, 44);
 
   /// See [dateBlock].
@@ -704,7 +687,7 @@ abstract final class FrostedChromeMetrics {
   /// See [dateBlock].
   static const double dateGap = 4;
 
-  /// A chip (`.chip`): 24 tall, 10 in, its glyph 14 and 4 from its word.
+  /// A chip: 24 tall, 10 in, its glyph 14 and 4 from its word.
   static const double chipHeight = 24;
 
   /// See [chipHeight].
@@ -716,8 +699,7 @@ abstract final class FrostedChromeMetrics {
   /// See [chipHeight].
   static const double chipGlyph = 14;
 
-  /// A glass pill on the card (`.glass`): 24 tall, 10 in, its glyph 14,
-  /// blurred 8.
+  /// A glass pill on the card: 24 tall, 10 in, its glyph 14, blurred 8.
   static const double glassPillHeight = 24;
 
   /// See [glassPillHeight].
@@ -729,10 +711,9 @@ abstract final class FrostedChromeMetrics {
   /// See [glassPillHeight].
   static const double glassPillBlur = 8;
 
-  /// The segmented control (`.seg-ctl`): 2 inside, its segments 2 apart,
-  /// each 28 tall, at least 36 wide and 10 in; filling a field's line, 38
-  /// tall with a 14 word. (The source's 3 and 26, on the 2-pt grid; the
-  /// strip keeps its 32, as iOS's does.)
+  /// The segmented control: 2 inside, its segments 2 apart, each 28 tall, at
+  /// least 36 wide and 10 in; filling a field's line, 38 tall with a 14 word.
+  /// The strip stays 32 tall, as iOS's does.
   static const double segmentsInset = 2;
 
   /// See [segmentsInset].
@@ -750,7 +731,7 @@ abstract final class FrostedChromeMetrics {
   /// See [segmentsInset].
   static const double segmentFillHeight = 38;
 
-  /// A swatch (`.sw`): 8 across; a visit's dot 10.
+  /// A swatch: 8 across; a visit's dot 10.
   static const double swatch = 8;
 
   /// See [swatch].
@@ -764,9 +745,9 @@ abstract final class FrostedChromeMetrics {
 
   // --- structure -------------------------------------------------------------------
 
-  /// A tile (`.tile`): 16 inside on a phone, 20 on the desktop; its head
-  /// at least 24 tall and 12 over the body, its two sides 12 apart; a
-  /// section head (`.sec-h`) 10 over its words and 2 in.
+  /// A tile: 16 inside on a phone, 20 on the desktop; its head at least 24 tall
+  /// and 12 over the body, its two sides 12 apart; a section head 10 over its
+  /// words and 2 in.
   static const double tileInset = 16;
 
   /// See [tileInset].
@@ -794,9 +775,8 @@ abstract final class FrostedChromeMetrics {
   /// See [listInset].
   static const double listBottomWide = 12;
 
-  /// A row (`.row`): at least 52 tall, 6 over and under, its parts 12
-  /// apart, its lines 1 apart (the end column's 3); a pending mark's glyph
-  /// 12 and 3 from its word.
+  /// A row: at least 52 tall, 6 over and under, its parts 12 apart, its lines 1
+  /// apart (the end column's 3); a pending mark's glyph 12 and 3 from its word.
   static const double row = 52;
 
   /// See [row].
@@ -845,18 +825,17 @@ abstract final class FrostedChromeMetrics {
   /// See [monthDividerTop].
   static const double monthDividerBottom = 16;
 
-  /// A marked row (`.rows--mark .this`): 10 past the rows either side,
-  /// corners 12.
+  /// A marked row: 10 past the rows either side, corners 12.
   static const double rowMarkBleed = 10;
 
   /// See [rowMarkBleed].
   static const double rowMarkRadius = 12;
 
-  /// A key and its value (`.kv-r`): a line at least 52 tall, 8 over and
-  /// under, its two sides 12 apart, a value's parts 8 apart, its two lines
-  /// 2 apart; its chevron 16. As a grid on the desktop: three to a row 16
-  /// apart, each 12 over and under, its label 4 over its value, the chevron
-  /// on the value's line.
+  /// A key and its value: a line at least 52 tall, 8 over and under, its two
+  /// sides 12 apart, a value's parts 8 apart, its two lines 2 apart; its
+  /// chevron 16. As a grid on the desktop: three to a row 16 apart, each 12
+  /// over and under, its label 4 over its value, the chevron on the value's
+  /// line.
   static const double keyValue = 52;
 
   /// See [keyValue].
@@ -889,9 +868,9 @@ abstract final class FrostedChromeMetrics {
   /// See [keyValue].
   static const int keyValueGridColumns = 3;
 
-  /// The stats under a figure (`.stat`): each 10 over and under on a
-  /// phone, its two sides 12 apart; on the desktop in a line, 24 apart
-  /// either side of a hairline, each its figure 6 under its word.
+  /// The stats under a figure: each 10 over and under on a phone, its two sides
+  /// 12 apart; on the desktop in a line, 24 apart either side of a hairline,
+  /// each its figure 6 under its word.
   static const double statInset = 10;
 
   /// See [statInset].
@@ -906,10 +885,10 @@ abstract final class FrostedChromeMetrics {
   /// See [statInset].
   static const double statsBottomWide = 4;
 
-  /// A record's hero (`.rec-hero`): its parts 16 apart, its mark 12 from
-  /// its words, the figure 10 over its comparison; a transaction's hero 28
-  /// over its mark and 24 under its last line, its parts 6 apart, the
-  /// figure 14 over and 12 under; a review's 24 over and under, 8 apart.
+  /// A record's hero: its parts 16 apart, its mark 12 from its words, the
+  /// figure 10 over its comparison; a transaction's hero 28 over its mark and
+  /// 24 under its last line, its parts 6 apart, the figure 14 over and 12
+  /// under; a review's 24 over and under, 8 apart.
   static const double recordGap = 16;
 
   /// See [recordGap].
@@ -964,11 +943,9 @@ abstract final class FrostedChromeMetrics {
   /// at 18, 38, 56 and 76%, nothing at 96%.
   static const double heroRim = 1;
 
-  /// A notification (`.note-r`): 12 over and under, its parts 12 apart,
-  /// its glyph 16, its when 4 under its words (5 with their own 1 apart);
-  /// the newest (`.note-new`):
-  /// its parts 14 apart, its head's dot 8 from its word, its title's lines
-  /// 6 apart.
+  /// A notification: 12 over and under, its parts 12 apart, its glyph 16, its
+  /// when 4 under its words (5 with their own 1 apart); the newest: its parts
+  /// 14 apart, its head's dot 8 from its word, its title's lines 6 apart.
   static const double noteInset = 12;
 
   /// See [noteInset].
@@ -989,8 +966,8 @@ abstract final class FrostedChromeMetrics {
   /// See [noteInset].
   static const double noteNewLineGap = 6;
 
-  /// The profile's hero (`.me-hero`): 28 over its avatar, the avatar 8
-  /// over the name, its lines 6 apart, its facts 10 under.
+  /// The profile's hero: 28 over its avatar, the avatar 8 over the name, its
+  /// lines 6 apart, its facts 10 under.
   static const double profileTop = 28;
 
   /// See [profileTop].
@@ -1002,8 +979,8 @@ abstract final class FrostedChromeMetrics {
   /// See [profileTop].
   static const double profileFactsGap = 10;
 
-  /// A ticket on the rent band (`.ticket`): corners 10, 8 inside (12 at its
-  /// end), its parts 10 apart, its lines 2 apart.
+  /// A ticket on the rent band: corners 10, 8 inside (12 at its end), its parts
+  /// 10 apart, its lines 2 apart.
   static const double ticketRadius = 10;
 
   /// See [ticketRadius].
@@ -1018,8 +995,7 @@ abstract final class FrostedChromeMetrics {
   /// See [ticketRadius].
   static const double ticketLineGap = 2;
 
-  /// A due line (`.due-line`): 8 tall, its beads 8 across and 4 in, its
-  /// words 8 apart.
+  /// A due line: 8 tall, its beads 8 across and 4 in, its words 8 apart.
   static const double dueLine = 8;
 
   /// See [dueLine].
@@ -1033,12 +1009,11 @@ abstract final class FrostedChromeMetrics {
 
   // --- meters and the prism ---------------------------------------------------------
 
-  /// The prism track (`.prism-track`): 40 tall (56 on the desktop's
-  /// spending), 16 small, 10 at its least; its bands 1 apart, the pace
-  /// tick 1.5 wide reaching 6 over and under (5 on a small track) in a
-  /// ring of 1.5; its scale 10 under, at least 16 tall, the pace's word 8
-  /// before the tick; a band's words 10 in (16 at the track's ends), 3
-  /// apart.
+  /// The prism track: 40 tall (56 on the desktop's spending), 16 small, 10 at
+  /// its least; its bands 1 apart, the pace tick 1.5 wide reaching 6 over and
+  /// under (5 on a small track) in a ring of 1.5; its scale 10 under, at least
+  /// 16 tall, the pace's word 8 before the tick; a band's words 10 in (16 at
+  /// the track's ends), 3 apart.
   static const double frostedTrack = 40;
 
   /// See [frostedTrack].
@@ -1083,11 +1058,10 @@ abstract final class FrostedChromeMetrics {
   /// See [frostedTrack].
   static const double frostedLabelGap = 4;
 
-  /// A bar (`.bar`): 6 tall, 4 thin; a tube (`.tube`): 8 tall, 12 large,
-  /// its tick 1.5 wide and 20 tall (16 in a comparison); an over bar
-  /// (`.overbar`): 6 tall, 10 large, its two parts 2 apart, its scale 14
-  /// tall 8 under; a meter on a pane's floor 4 tall (3 on a small pane),
-  /// its parts 1 apart.
+  /// A bar: 6 tall, 4 thin; a tube: 8 tall, 12 large, its tick 1.5 wide and 20
+  /// tall (16 in a comparison); an over bar: 6 tall, 10 large, its two parts 2
+  /// apart, its scale 14 tall 8 under; a meter on a pane's floor 4 tall (3 on a
+  /// small pane), its parts 1 apart.
   static const double bar = 6;
 
   /// See [bar].
@@ -1138,9 +1112,8 @@ abstract final class FrostedChromeMetrics {
   /// See [utilWidth].
   static const double utilHeight = 4;
 
-  /// The legend (`.legend`): two columns 16 apart, its entries 12 apart,
-  /// each its swatch 8 from its words, its lines 4 apart; three across on
-  /// the goals.
+  /// The legend: two columns 16 apart, its entries 12 apart, each its swatch 8
+  /// from its words, its lines 4 apart; three across on the goals.
   static const double legendColumnGap = 16;
 
   /// See [legendColumnGap].
@@ -1152,8 +1125,8 @@ abstract final class FrostedChromeMetrics {
   /// See [legendColumnGap].
   static const double legendLineGap = 4;
 
-  /// A key under a chart (`.key`): its line 16 by 2, 8 from its word, keys
-  /// 16 apart (12 in a chart's head).
+  /// A key under a chart: its line 16 by 2, 8 from its word, keys 16 apart (12
+  /// in a chart's head).
   static const Size keyLine = Size(16, 2);
 
   /// See [keyLine].
@@ -1165,9 +1138,9 @@ abstract final class FrostedChromeMetrics {
   /// See [keyLine].
   static const double keysGapHead = 12;
 
-  /// A merchant line (`.merch`): 6 over and under, its columns 12 apart,
-  /// its bar 6 under; on the desktop a card 16 inside with corners 12, its
-  /// rows 12 apart, four across.
+  /// A merchant line: 6 over and under, its columns 12 apart, its bar 6 under;
+  /// on the desktop a card 16 inside with corners 12, its rows 12 apart, four
+  /// across.
   static const double merchantInset = 6;
 
   /// See [merchantInset].
@@ -1182,8 +1155,8 @@ abstract final class FrostedChromeMetrics {
   /// See [merchantInset].
   static const double merchantCardGap = 12;
 
-  /// A share's line under a figure (`.part`): 8 apart, its parts 10 apart,
-  /// 14 under the figure; a share's word 8 before the next.
+  /// A share's line under a figure: 8 apart, its parts 10 apart, 14 under the
+  /// figure; a share's word 8 before the next.
   static const double partsGap = 8;
 
   /// See [partsGap].
@@ -1197,11 +1170,11 @@ abstract final class FrostedChromeMetrics {
 
   // --- the mosaic ---------------------------------------------------------------
 
-  /// The spend mosaic (`.mosaic`): 540 tall on a phone, its panes 6 apart,
-  /// each 10 inside (12 on the desktop) with its parts 6 apart, its floor's
-  /// parts 8 apart; a small pane 8 inside (10 by 12 on the desktop) with
-  /// its parts 2 apart; a group's basis 24; the tile round it 8 inside,
-  /// its head 8 in (12 on the desktop), at least 32 tall (36).
+  /// The spend mosaic: 540 tall on a phone, its panes 6 apart, each 10 inside
+  /// (12 on the desktop) with its parts 6 apart, its floor's parts 8 apart; a
+  /// small pane 8 inside (10 by 12 on the desktop) with its parts 2 apart; a
+  /// group's basis 24; the tile round it 8 inside, its head 8 in (12 on the
+  /// desktop), at least 32 tall (36).
   static const double mosaicHeight = 540;
 
   /// See [mosaicHeight].
@@ -1331,8 +1304,8 @@ abstract final class FrostedChromeMetrics {
   /// See [cardAspect].
   static const double cardStageWidth = 300;
 
-  /// A debit card's small face (`.dcard`): 92 by 58, corners 9, 8 inside,
-  /// its mark 18 with corners 6 and a 12 glyph; 14 from its words.
+  /// A debit card's small face: 92 by 58, corners 9, 8 inside, its mark 18 with
+  /// corners 6 and a 12 glyph; 14 from its words.
   static const Size debitCard = Size(92, 58);
 
   /// See [debitCard].
@@ -1353,9 +1326,9 @@ abstract final class FrostedChromeMetrics {
   /// See [debitCard].
   static const double debitCardGap = 14;
 
-  /// The card's figures (`.cfigs`): three across in shares of 0.8, 1.2
-  /// and 1, 12 either side of a hairline, each its lines 4 apart; on the
-  /// desktop lines 10 over and under, 12 apart.
+  /// The card's figures: three across in shares of 0.8, 1.2 and 1, 12 either
+  /// side of a hairline, each its lines 4 apart; on the desktop lines 10 over
+  /// and under, 12 apart.
   static const double cardFigureGap = 12;
 
   /// See [cardFigureGap].
@@ -1364,8 +1337,7 @@ abstract final class FrostedChromeMetrics {
   /// See [cardFigureGap].
   static const double cardFigureInsetWide = 10;
 
-  /// The card's limit (`.lim`): 4 over and 2 under its bar, its scale 8
-  /// under.
+  /// The card's limit: 4 over and 2 under its bar, its scale 8 under.
   static const double limitTop = 4;
 
   /// See [limitTop].
@@ -1410,9 +1382,9 @@ abstract final class FrostedChromeMetrics {
   /// See [frostBlur5].
   static const double freezeMarkGlyph = 24;
 
-  /// The statement line (`.stl`): 12 tall, 2 over (collapsing into a
-  /// head's 12 above it) and 6 in, its rule 1 at 5.5, its beads 12 across;
-  /// its words 42 tall, 10 over and under, their lines 4 apart.
+  /// The statement line: 12 tall, 2 over (collapsing into a head's 12 above it)
+  /// and 6 in, its rule 1 at 5.5, its beads 12 across; its words 42 tall, 10
+  /// over and under, their lines 4 apart.
   static const double statementLine = 12;
 
   /// See [statementLine].
@@ -1436,9 +1408,9 @@ abstract final class FrostedChromeMetrics {
   /// See [statementLine].
   static const double statementLabelLineGap = 4;
 
-  /// The card number's well (`.cnum`): corners 14, 14 by 16 inside, its
-  /// lines 8 apart; its three facts in shares of 1, 1 and 1.6, 12 apart, 4
-  /// in, each its lines 6 apart.
+  /// The card number's well: corners 14, 14 by 16 inside, its lines 8 apart;
+  /// its three facts in shares of 1, 1 and 1.6, 12 apart, 4 in, each its lines
+  /// 6 apart.
   static const double numberRadius = 14;
 
   /// See [numberRadius].
@@ -1461,8 +1433,8 @@ abstract final class FrostedChromeMetrics {
 
   // --- home pieces ----------------------------------------------------------------
 
-  /// The quick actions (`.qa`): four across, 4 apart, 14 over and under
-  /// and 8 in; each its 44 disc (its glyph 18) 8 over its word.
+  /// The quick actions: four across, 4 apart, 14 over and under and 8 in; each
+  /// its 44 disc (its glyph 18) 8 over its word.
   static const double actionGap = 4;
 
   /// See [actionGap].
@@ -1480,9 +1452,9 @@ abstract final class FrostedChromeMetrics {
   /// See [actionGap].
   static const double actionWordGap = 8;
 
-  /// A way to move money (`.mv-act`): corners 14, 10 inside (16 on the
-  /// desktop), its 32 (40) disc with a 16 (18) glyph, 10 (14) from its
-  /// words, its lines 2 (4) apart; two across 8 apart (16).
+  /// A way to move money: corners 14, 10 inside (16 on the desktop), its 32
+  /// (40) disc with a 16 (18) glyph, 10 (14) from its words, its lines 2 (4)
+  /// apart; two across 8 apart (16).
   static const double moveActRadius = 14;
 
   /// See [moveActRadius].
@@ -1518,9 +1490,8 @@ abstract final class FrostedChromeMetrics {
   /// See [moveActRadius].
   static const double moveActsGap = 8;
 
-  /// An account card (`.acct`): 14 inside (18 by 20 on the desktop), its
-  /// parts 10 apart, its note 6 under; two across on a phone, four on the
-  /// desktop.
+  /// An account card: 14 inside (18 by 20 on the desktop), its parts 10 apart,
+  /// its note 6 under; two across on a phone, four on the desktop.
   static const double accountInset = 14;
 
   /// See [accountInset].
@@ -1535,12 +1506,12 @@ abstract final class FrostedChromeMetrics {
   /// See [accountInset].
   static const double accountNoteGap = 6;
 
-  /// A goal (`.goal`): 10 over and under, its parts 10 apart, its head's
-  /// parts 12 apart; a goal card (`.goal-card`): its columns 12 apart and
-  /// its rows 10 (14 on the desktop), its figure's parts 8 apart, its bar
-  /// 12 from its share (at least 40 wide); a ghost card 16 inside with
-  /// corners 14; the new-goal tile's plus 36 with corners 11 and an 18
-  /// glyph, its glyph 16, its parts 12 apart (16 on the desktop).
+  /// A goal: 10 over and under, its parts 10 apart, its head's parts 12 apart;
+  /// a goal card: its columns 12 apart and its rows 10 (14 on the desktop), its
+  /// figure's parts 8 apart, its bar 12 from its share (at least 40 wide); a
+  /// ghost card 16 inside with corners 14; the new-goal tile's plus 36 with
+  /// corners 11 and an 18 glyph, its glyph 16, its parts 12 apart (16 on the
+  /// desktop).
   static const double goalInset = 10;
 
   /// See [goalInset].
@@ -1591,8 +1562,8 @@ abstract final class FrostedChromeMetrics {
   /// See [goalInset].
   static const double newGoalGapWide = 16;
 
-  /// A nudge (`.nudge`): corners 14, 10 inside (12 at its start), its mark
-  /// 28 with a 16 glyph, 12 from its words.
+  /// A nudge: corners 14, 10 inside (12 at its start), its mark 28 with a 16
+  /// glyph, 12 from its words.
   static const double nudgeRadius = 14;
 
   /// See [nudgeRadius].
@@ -1607,8 +1578,8 @@ abstract final class FrostedChromeMetrics {
   /// See [nudgeRadius].
   static const double nudgeGap = 12;
 
-  /// Quick amounts (`.qamt`): three across 8 apart, each corners 12, 10 by
-  /// 6 inside, its lines 4 apart.
+  /// Quick amounts: three across 8 apart, each corners 12, 10 by 6 inside, its
+  /// lines 4 apart.
   static const double quickAmountsGap = 8;
 
   /// See [quickAmountsGap].
@@ -1623,8 +1594,8 @@ abstract final class FrostedChromeMetrics {
   /// See [quickAmountsGap].
   static const double quickAmountGap = 4;
 
-  /// A suggestion (`.suggest`): corners 14, 12 inside, its mark 36 (corners
-  /// 11, an 18 glyph) 12 from its words.
+  /// A suggestion: corners 14, 12 inside, its mark 36 (corners 11, an 18 glyph)
+  /// 12 from its words.
   static const double suggestRadius = 14;
 
   /// See [suggestRadius].
@@ -1642,8 +1613,8 @@ abstract final class FrostedChromeMetrics {
   /// See [suggestRadius].
   static const double suggestGap = 12;
 
-  /// A browse card (`.browse-c`): corners 12, 10 inside, its token 10 from
-  /// its words; two across 8 apart.
+  /// A browse card: corners 12, 10 inside, its token 10 from its words; two
+  /// across 8 apart.
   static const double browseRadius = 12;
 
   /// See [browseRadius].
@@ -1655,10 +1626,10 @@ abstract final class FrostedChromeMetrics {
   /// See [browseRadius].
   static const double browseCardsGap = 8;
 
-  /// The month switch (`.switch`): 2 inside (the source's 3, on the 2-pt
-  /// grid), its parts 4 apart, its arrows
-  /// 32 round with a 16 glyph, its month 32 tall with a 14 chevron 4 from
-  /// its word, 8 in on the desktop; the earlier month's word 4 in.
+  /// The month switch: 2 inside, its parts 4
+  /// apart, its arrows 32 round with a 16 glyph, its month 32 tall with a 14
+  /// chevron 4 from its word, 8 in on the desktop; the earlier month's word 4
+  /// in.
   static const double monthSwitchInset = 2;
 
   /// See [monthSwitchInset].
@@ -1685,9 +1656,9 @@ abstract final class FrostedChromeMetrics {
   /// See [monthSwitchInset].
   static const double monthPrevInset = 4;
 
-  /// The spending head (`.month-h`): its lines 8 apart, 16 over the track;
-  /// its foot 14 over and 16 under, its parts 8 apart; the desktop's
-  /// spending grid: its columns 48 apart and its rows 24.
+  /// The spending head: its lines 8 apart, 16 over the track; its foot 14 over
+  /// and 16 under, its parts 8 apart; the desktop's spending grid: its columns
+  /// 48 apart and its rows 24.
   static const double monthHeadGap = 8;
 
   /// See [monthHeadGap].
@@ -1708,8 +1679,8 @@ abstract final class FrostedChromeMetrics {
   /// See [monthHeadGap].
   static const double spentRowGap = 24;
 
-  /// An insight (`.insight`): its parts 12 apart, its kind's glyph 16 and
-  /// 6 from its word; the visits 6 apart.
+  /// An insight: its parts 12 apart, its kind's glyph 16 and 6 from its word;
+  /// the visits 6 apart.
   static const double insightGap = 12;
 
   /// See [insightGap].
@@ -1721,10 +1692,9 @@ abstract final class FrostedChromeMetrics {
   /// See [insightGap].
   static const double visitsGap = 6;
 
-  /// Money in against out (`.flow`): its parts 14 apart, its two figures 16
-  /// apart, each its lines 8 apart, its scale 8 under, its note's two
-  /// sides 12 apart; an account's split 14 apart, each line's parts 8
-  /// apart, its head's 10.
+  /// Money in against out: its parts 14 apart, its two figures 16 apart, each
+  /// its lines 8 apart, its scale 8 under, its note's two sides 12 apart; an
+  /// account's split 14 apart, each line's parts 8 apart, its head's 10.
   static const double flowGap = 14;
 
   /// See [flowGap].
@@ -1750,11 +1720,11 @@ abstract final class FrostedChromeMetrics {
 
   // --- charts ---------------------------------------------------------------------
 
-  /// A chart (`.chart`): 16 under what is above it; its month labels 8
-  /// under it, their row 40 short at the end (48 on the desktop, 36 and 40
-  /// with a gap); a y label's words 12 and the end labels' row 16 tall;
-  /// a mark's note 6 in and 5 over or under a mark (10 at a line's end,
-  /// 8 beside a step); a bar's value 6 over it.
+  /// A chart: 16 under what is above it; its month labels 8 under it, their row
+  /// 40 short at the end (48 on the desktop, 36 and 40 with a gap); a y label's
+  /// words 12 and the end labels' row 16 tall; a mark's note 6 in and 5 over or
+  /// under a mark (10 at a line's end, 8 beside a step); a bar's value 6 over
+  /// it.
   static const double chartTop = 16;
 
   /// See [chartTop].
@@ -1790,9 +1760,9 @@ abstract final class FrostedChromeMetrics {
   /// See [chartTop].
   static const double chartBarValueGap = 6;
 
-  /// A transaction's strip of days (`.strip`): 40 tall, its rule 1 at 4
-  /// from its foot, its ticks 5 tall, its dots 8 (this one 10, ringed 2.5)
-  /// standing 9 up and 3 apart; its labels 14 tall 6 under.
+  /// A transaction's strip of days: 40 tall, its rule 1 at 4 from its foot, its
+  /// ticks 5 tall, its dots 8 (this one 10, ringed 2.5) standing 9 up and 3
+  /// apart; its labels 14 tall 6 under.
   static const double strip = 40;
 
   /// See [strip].
@@ -1822,16 +1792,16 @@ abstract final class FrostedChromeMetrics {
   /// See [strip].
   static const double stripLabelsGap = 6;
 
-  /// The figures in a line (`.figs`): 24 apart, each its lines 6 apart.
+  /// The figures in a line: 24 apart, each its lines 6 apart.
   static const double figuresGap = 24;
 
   /// See [figuresGap].
   static const double figureLineGap = 6;
 
-  /// The route of a move (`.route`): its parts 12 apart, 8 over the words,
-  /// each line's parts 6 apart, its beams 36 by 2 with corners 2, its glyph
-  /// 16; the done art 200 across, 12 up and 4 down, its check 72 (a 32
-  /// glyph) in a ring of 6.
+  /// The route of a move: its parts 12 apart, 8 over the words, each line's
+  /// parts 6 apart, its beams 36 by 2 with corners 2, its glyph 16; the done
+  /// art 200 across, 12 up and 4 down, its check 72 (a 32 glyph) in a ring of
+  /// 6.
   static const double routeGap = 12;
 
   /// See [routeGap].
@@ -1864,8 +1834,8 @@ abstract final class FrostedChromeMetrics {
   /// See [routeGap].
   static const double doneCheckRing = 6;
 
-  /// A change (`.chg`): its parts 10 apart, 4 over and 14 under (14 over
-  /// the next), its head's parts 12 apart, its values 3 apart.
+  /// A change: its parts 10 apart, 4 over and 14 under (14 over the next), its
+  /// head's parts 12 apart, its values 3 apart.
   static const double changeGap = 10;
 
   /// See [changeGap].
@@ -1882,9 +1852,8 @@ abstract final class FrostedChromeMetrics {
 
   // --- controls ----------------------------------------------------------------------
 
-  /// The search field (`.search`): 44 tall, 16 in, its glyph 18 and 10
-  /// from its words; typed, its clear a 28 round (a 14 glyph) pulled 6 into
-  /// the end.
+  /// The search field: 44 tall, 16 in, its glyph 18 and 10 from its words;
+  /// typed, its clear a 28 round (a 14 glyph) pulled 6 into the end.
   static const double search = 44;
 
   /// See [search].
@@ -1905,7 +1874,7 @@ abstract final class FrostedChromeMetrics {
   /// See [search].
   static const double searchClearPull = 6;
 
-  /// Filter chips (`.fchip`): 32 tall, 10 in, 4 apart.
+  /// Filter chips: 32 tall, 10 in, 4 apart.
   static const double filterChip = 32;
 
   /// See [filterChip].
@@ -1928,7 +1897,7 @@ abstract final class FrostedChromeMetrics {
   static const double badgeInset = 4;
 
   /// The colour picker's knob wears a 3-wide rim of the glass's plane, as
-  /// the source's swatch ring does.
+  /// Frosted's swatch ring does.
   static const double colorKnobRim = 3;
 
   /// A month's row in the date picker: 44 tall, so six rows (a month that
@@ -1942,9 +1911,9 @@ abstract final class FrostedChromeMetrics {
   /// scrolls away, never a shadow, a glow or a ring.
   static const double stripReach = 16;
 
-  /// A field (`.field`): its label 8 over the well; the well (`.inp`) 48
-  /// tall, 14 in, corners 12; two fields in a line 12 apart; a form's
-  /// fields 16 apart (its tile's head 16 over them).
+  /// A field: its label 8 over the well; the well 48 tall, 14 in, corners 12;
+  /// two fields in a line 12 apart; a form's fields 16 apart (its tile's head
+  /// 16 over them).
   static const double fieldLabelGap = 8;
 
   /// See [fieldLabelGap].
@@ -1962,9 +1931,9 @@ abstract final class FrostedChromeMetrics {
   /// See [fieldLabelGap].
   static const double formGap = 16;
 
-  /// An amount well (`.amount-in`): 64 tall, 12 over and 16 in, corners 14,
-  /// its `$` 16 and 6 down, 2 from the figure (40 tall); the small one 48
-  /// tall, 14 in, corners 12.
+  /// An amount well: 64 tall, 12 over and 16 in, corners 14, its `$` 16 and 6
+  /// down, 2 from the figure (40 tall); the small one 48 tall, 14 in, corners
+  /// 12.
   static const double amountWell = 64;
 
   /// See [amountWell].
@@ -1997,8 +1966,8 @@ abstract final class FrostedChromeMetrics {
   /// See [amountWell].
   static const double amountWellSmallRadius = 12;
 
-  /// A picker (`.pick-r`): at least 60 tall, 10 inside (14 at its end),
-  /// corners 14, its parts 12 apart, its chevron 16.
+  /// A picker: at least 60 tall, 10 inside (14 at its end), corners 14, its
+  /// parts 12 apart, its chevron 16.
   static const double picker = 60;
 
   /// See [picker].
@@ -2013,8 +1982,8 @@ abstract final class FrostedChromeMetrics {
   /// See [picker].
   static const double pickerGlyph = 16;
 
-  /// The swap between two pickers (`.swap`): a 32 round (a 16 glyph) on a
-  /// 12 line, pulled 14 into both.
+  /// The swap between two pickers: a 32 round (a 16 glyph) on a 12 line, pulled
+  /// 14 into both.
   static const double swap = 32;
 
   /// See [swap].
@@ -2026,8 +1995,8 @@ abstract final class FrostedChromeMetrics {
   /// See [swap].
   static const double swapPull = 14;
 
-  /// An icon picker's wells (`.ico`): six to a row 8 apart, 44 tall with
-  /// corners 12, the glyph 18.
+  /// An icon picker's wells: six to a row 8 apart, 44 tall with corners 12, the
+  /// glyph 18.
   static const double iconWell = 44;
 
   /// See [iconWell].
@@ -2042,8 +2011,8 @@ abstract final class FrostedChromeMetrics {
   /// See [iconWell].
   static const int iconWellsPerRow = 6;
 
-  /// The stepper (`.stepper`): its round buttons 48 across and 12 from the
-  /// well, its note pulled 8 up under it.
+  /// The stepper: its round buttons 48 across and 12 from the well, its note
+  /// pulled 8 up under it.
   static const double stepper = 48;
 
   /// See [stepper].
@@ -2052,9 +2021,9 @@ abstract final class FrostedChromeMetrics {
   /// See [stepper].
   static const double stepperNotePull = 8;
 
-  /// A settings row (`.set-row`): at least 52 tall, 8 over and under, its
-  /// parts 12 apart, its lines 2 apart, its chevron 16; its tile's head 4
-  /// over the rows; an off row at 0.45.
+  /// A settings row: at least 52 tall, 8 over and under, its parts 12 apart,
+  /// its lines 2 apart, its chevron 16; its tile's head 4 over the rows; an off
+  /// row at 0.45.
   static const double settingRow = 52;
 
   /// See [settingRow].
@@ -2075,8 +2044,8 @@ abstract final class FrostedChromeMetrics {
   /// A settings row that is off: [disabledOpacity], the one share.
   static const double settingOffOpacity = disabledOpacity;
 
-  /// The toggle (`.tgl`): a 44 by 26 track, its knob 22, 2 inside it; off
-  /// to use at [disabledOpacity], as every part is.
+  /// The toggle: a 44 by 26 track, its knob 22, 2 inside it; off to use at
+  /// [disabledOpacity], as every part is.
   static const double toggleWidth = 44;
 
   /// See [toggleWidth].
@@ -2091,9 +2060,9 @@ abstract final class FrostedChromeMetrics {
   /// A toggle that is off to use: [disabledOpacity], the one share.
   static const double toggleDisabledOpacity = disabledOpacity;
 
-  /// People (`.people`): 8 apart, each its pearl 8 over its name; one not
-  /// chosen, its pearl at 0.55 (its name keeps its ink); chosen, a white ring
-  /// of 2 and an ink ring 1.5 past it.
+  /// People: 8 apart, each its pearl 8 over its name; one not chosen, its pearl
+  /// at 0.55 (its name keeps its ink); chosen, a white ring of 2 and an ink
+  /// ring 1.5 past it.
   static const double peopleGap = 8;
 
   /// See [peopleGap].
@@ -2110,11 +2079,10 @@ abstract final class FrostedChromeMetrics {
 
   // --- states --------------------------------------------------------------------
 
-  /// An empty state (`.empty`): 24 over and under, 20 at its sides, its
-  /// parts 10 apart, its art 220 by 120 with 6 more under it, its words at
-  /// most 300 wide with 10 more under them; on the desktop 40 over, 32 at
-  /// its sides and 44 under, 12 apart, its art 330 by 180 with 8 under,
-  /// its words 420 wide.
+  /// An empty state: 24 over and under, 20 at its sides, its parts 10 apart,
+  /// its art 220 by 120 with 6 more under it, its words at most 300 wide with
+  /// 10 more under them; on the desktop 40 over, 32 at its sides and 44 under,
+  /// 12 apart, its art 330 by 180 with 8 under, its words 420 wide.
   static const EdgeInsets emptyInset = EdgeInsets.fromLTRB(20, 24, 20, 24);
 
   /// See [emptyInset].
@@ -2147,8 +2115,8 @@ abstract final class FrostedChromeMetrics {
   /// See [emptyInset].
   static const double emptyWordsGap = 10;
 
-  /// DERIVED: the loading state's ring (40 across, a stroke of 2) and the
-  /// error state's mark (56 across, its glyph 24).
+  /// The loading state's ring (40 across, a stroke of 2) and the error state's
+  /// mark (56 across, its glyph 24).
   static const double loadingRing = 40;
 
   /// See [loadingRing].
@@ -2293,9 +2261,9 @@ abstract final class FrostedChromeMetrics {
 
   // --- focus ---------------------------------------------------------------------
 
-  /// DERIVED: the keyboard focus ring, 2 wide (the theme's heavy stroke), 2
-  /// off the control, in the ink; the gap between is filled with the page's
-  /// ground, so the ring reads on a face filled in the ink too.
+  /// The keyboard focus ring, 2 wide (the theme's heavy stroke), 2 off the
+  /// control, in the ink; the gap between is filled with the page's ground,
+  /// so the ring reads on a face filled in the ink too.
   static const double focusRingGap = 2;
 
   /// See [focusRingGap].

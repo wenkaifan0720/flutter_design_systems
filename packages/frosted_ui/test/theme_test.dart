@@ -8,7 +8,7 @@ import 'package:frosted_ui/src/frosted/internal/themes/platinum.g.dart';
 
 void main() {
   group('FrostedThemeData.preset', () {
-    for (final id in FrostedThemeData.presets) {
+    for (final id in [for (final p in FrostedThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         test('$id ${brightness.name} builds its own appearance', () {
           final t = FrostedThemeData.preset(id, brightness);
@@ -157,10 +157,10 @@ void main() {
       }
     }
 
-    test('an unknown preset throws', () {
+    test('an unknown preset gives the default, opal', () {
       expect(
-        () => FrostedThemeData.preset('neon', Brightness.light),
-        throwsArgumentError,
+        FrostedThemeData.preset('neon', Brightness.light),
+        same(FrostedThemeData.opal()),
       );
     });
 
@@ -328,7 +328,7 @@ void main() {
     });
 
     test('a flow has its ink and a tone its tint', () {
-      for (final id in FrostedThemeData.presets) {
+      for (final id in [for (final p in FrostedThemeData.palettes) p.id]) {
         for (final brightness in Brightness.values) {
           final t = FrostedThemeData.preset(id, brightness);
           expect(

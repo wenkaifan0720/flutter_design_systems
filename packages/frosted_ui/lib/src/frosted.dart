@@ -5,6 +5,7 @@ library;
 
 export 'frosted/components/action_bar/action_bar.dart';
 export 'frosted/components/actions/actions.dart';
+export 'frosted/components/app_shell/app_shell.dart';
 export 'frosted/components/avatar/avatar.dart';
 export 'frosted/components/button/button.dart';
 export 'frosted/components/calendar/calendar.dart';
@@ -27,6 +28,7 @@ export 'frosted/components/forms/forms.dart';
 export 'frosted/components/forms/settings.dart';
 export 'frosted/components/glass.dart' hide FrostedOnGlass, frostedOpaqueAt;
 export 'frosted/components/hold/hold.dart';
+export 'frosted/components/host.dart';
 export 'frosted/components/icon-button/round_button.dart'
     hide frostedIconButtonFace;
 export 'frosted/components/image/image.dart';
@@ -37,17 +39,16 @@ export 'frosted/components/meters/meters.dart';
 export 'frosted/components/money/money.dart';
 export 'frosted/components/move/move.dart';
 export 'frosted/components/page_motion.dart';
-export 'frosted/components/nav_bar.dart';
 export 'frosted/components/pickers/pickers.dart';
 export 'frosted/components/popover/popover.dart';
 export 'frosted/components/pressable/pressable.dart'
     show FrostedFocusRing, FrostedPressRole, FrostedPressable;
 export 'frosted/components/progress/progress.dart';
 export 'frosted/components/raise/raise.dart';
+export 'frosted/components/routes.dart';
 export 'frosted/components/screen.dart';
 export 'frosted/components/scroll/scroll.dart';
 export 'frosted/components/sheet.dart';
-export 'frosted/components/side_bar.dart';
 export 'frosted/components/sign_in/sign_in.dart';
 export 'frosted/components/slider/range_slider.dart';
 export 'frosted/components/slider/slider.dart';

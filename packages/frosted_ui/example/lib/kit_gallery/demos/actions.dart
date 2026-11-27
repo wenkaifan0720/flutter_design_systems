@@ -17,7 +17,7 @@ Widget kitActionsDemo(Brightness brightness) => kitScreen(
       children: [
         kitRow([
           FrostedButtonGroup(
-            label: 'History',
+            semanticLabel: 'History',
             items: [
               FrostedButtonGroupItem(
                 label: 'Undo',
@@ -36,7 +36,7 @@ Widget kitActionsDemo(Brightness brightness) => kitScreen(
           KitHeld<int>(
             0,
             (i, set) => FrostedButtonGroup(
-              label: 'View',
+              semanticLabel: 'View',
               items: [
                 for (final (n, word) in const ['Day', 'Week', 'Month'].indexed)
                   FrostedButtonGroupItem(

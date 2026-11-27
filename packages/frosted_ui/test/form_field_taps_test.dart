@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 class _Form extends StatefulWidget {
   const _Form({required this.log});
@@ -73,7 +72,7 @@ class _FormState extends State<_Form> {
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: FrostedSwitch(
-            label: 'Reminder',
+            semanticLabel: 'Reminder',
             value: _reminder,
             onChanged: (v) {
               _say('reminder $v');
@@ -87,7 +86,7 @@ class _FormState extends State<_Form> {
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: FrostedCheckbox(
-            label: 'Done',
+            semanticLabel: 'Done',
             value: _done,
             onChanged: (v) {
               _say('done $v');
@@ -154,7 +153,11 @@ void main() {
       (find.byType(FrostedCheckbox), 'Done'),
     ]) {
       final own = node(control);
-      expect(own.label, contains(name), reason: '$name has its own node');
+      expect(
+        own.getSemanticsData().label,
+        contains(name),
+        reason: '$name has its own node',
+      );
       own.owner!.performAction(own.id, SemanticsAction.tap);
       await tester.pumpAndSettle();
     }

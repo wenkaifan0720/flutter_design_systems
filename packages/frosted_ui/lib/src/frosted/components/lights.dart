@@ -6,12 +6,11 @@ import 'package:flutter/widgets.dart';
 import '../chrome_metrics.dart';
 import '../theme.dart';
 
-/// The light behind the glass, as the source lays it over the top of every
-/// page (`.aurora`): three washes of colour, each a disc blurred to a soft
-/// glow, lilac at the left, rose over the middle and peach lower at the
-/// right, in a field 560 tall on a phone and 640 on the desktop, running
-/// on under the sidebar's glass. It is decoration: it takes no taps and says
-/// nothing. `FrostedScaffold` places one on every page.
+/// The light behind the glass over the top of every page: three washes of
+/// colour, each a disc blurred to a soft glow, lilac at the left, rose over the
+/// middle and peach lower at the right, in a field 560 tall on a phone and 640
+/// on the desktop, running on under the sidebar's glass. It is decoration: it
+/// takes no taps and says nothing. `FrostedScaffold` places one on every page.
 ///
 /// ```dart
 /// FrostedLightField()
@@ -20,8 +19,8 @@ class FrostedLightField extends StatelessWidget {
   /// Creates a [FrostedLightField].
   const FrostedLightField({this.top = 0, super.key});
 
-  /// Room above the field's own top that its washes run on into: the
-  /// status bar over a page, which the source's browser page has none of.
+  /// Room above the field's own top that its washes run on into: the status bar
+  /// over a page, which Frosted's browser page has none of.
   final double top;
 
   /// The field's height on a phone or the desktop, over [top].
@@ -91,8 +90,8 @@ class FrostedLightWash {
   final bool fromEnd;
 }
 
-/// Paints the three washes: the phone's (`.b1` 260 at -90, 60; `.b2` 240
-/// at 170, -40; `.b3` 200 at 250 down, 20 past the right edge; blurred 56)
+/// Paints the three washes: the phone's (260 at -90, 60; 240
+/// at 170, -40; 200 at 250 down, 20 past the right edge; blurred 56)
 /// or the desktop's (480 at 250, 140; 400 at 700, 40; 360 at 120 down, 40
 /// in from the right; blurred 72), each kept to the field. The field's
 /// last quarter fades out, so a glow that runs past its foot (the

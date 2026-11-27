@@ -1,6 +1,6 @@
 # frosted_ui
 
-Frosted is a Flutter component library for translucent forms, transaction lists, charts and navigation. Choose from six colour presets, each with a light and dark appearance.
+Frosted is a Flutter component library for translucent forms, transaction lists, charts and navigation. Choose from six colour palettes, each with a light and dark appearance.
 
 ![Harbor, the example's sample app, on its Activity page at 1440 wide and on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/hero.webp)
 
@@ -9,36 +9,31 @@ Frosted is a Flutter component library for translucent forms, transaction lists,
 ## Install
 
 ```sh
-flutter pub add frosted_ui
+flutter pub add frosted_ui material_ui
 ```
 
-A whole app: Frosted's theme over a bare `WidgetsApp`, one screen and one button.
+Every snippet on this page compiles after that line. The icons in them are `FrostedGlyphs`, the glyphs Frosted draws
+with; for an icon of your own, add `lucide_icons_flutter`, the set they come from.
 
-```dart
-import 'package:flutter/widgets.dart';
-import 'package:frosted_ui/frosted_ui.dart';
-
-void main() => runApp(
-  WidgetsApp(
-    color: const Color(0xFF6E56CF),
-    builder: (context, _) => FrostedTheme(
-      data: FrostedThemeData.opal(),
-      child: FrostedScaffold(body: FrostedButton('Add money', onPressed: () {})),
-    ),
-  ),
-);
-```
-
-Under a bare `WidgetsApp` or a `CupertinoApp` (from `cupertino_ui`), `frosted_ui` is all an app adds; a `MaterialApp`
-comes from `material_ui` (`flutter pub add material_ui`), as in the set-up below.
-
-## Set up
-
-Mount `FrostedHost` in the app builder so controls, pages, dialogs and toasts share a theme. It follows the platform brightness by default. Load the bundled fonts before `runApp` to use them from the first frame.
+Each file imports the look and the Material it is built on:
 
 ```dart
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
+import 'package:material_ui/material_ui.dart';
+```
+
+`frosted_ui.dart` holds every part, `FrostedHost` included, and ui_core's `Raw*` parts. It doesn't export
+`package:flutter/widgets.dart`: `material_ui` does, with `MaterialApp`. Import `material_ui` rather than
+`package:flutter/material.dart`; Frosted's theme is `material_ui`'s, so its page routes take Frosted's motion.
+
+## Mount the host
+
+`FrostedHost`, in the app's `builder`, is the one mount: it picks the light or dark theme, holds the toasts, eases a
+change of palette or appearance, and caps the text scale at 200%. Load the bundled faces before `runApp` so the first
+frame is set in them.
+
+```dart
+import 'package:frosted_ui/frosted_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
@@ -52,9 +47,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    title: 'Ledger',
+    // brightness: null follows the platform; Brightness.light or
+    // Brightness.dark pins it. palette: one of the six, opal by default.
     builder: (context, child) => FrostedHost(
-      theme: FrostedThemeData.opal(),
-      darkTheme: FrostedThemeData.opal(Brightness.dark),
+      palette: FrostedThemeData.palettes.first,
+      brightness: null,
       child: child!,
     ),
     home: const FrostedScaffold(
@@ -65,34 +63,342 @@ class App extends StatelessWidget {
 }
 ```
 
-Under a `CupertinoApp` it is the same `builder:`:
+A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:`. `FrostedHost(theme:,
+darkTheme:)` takes themes of your own instead of a palette. To theme one subtree, wrap it in `FrostedTheme(data: …)`;
+`AnimatedFrostedTheme` eases between two.
+
+## Build an app
+
+The example app, `example/lib/main.dart`, is all of this in one file: a reading list with three places, a list
+with a pushed page, a form, a dialog and settings. Copy it and grow it.
+
+### The shell
+
+`FrostedAppShell` is the app's frame: its places in the glass tab bar along a phone's foot, in the sidebar from
+1024 wide. Each place keeps its own stack of pages; a page pushed in a place keeps the sidebar beside it while the tab
+bar steps away, and back pops it. Toasts keep clear of the tab bar.
 
 ```dart
-CupertinoApp(
-  builder: (context, child) => FrostedHost(theme: FrostedThemeData.glacier(), darkTheme: FrostedThemeData.glacier(Brightness.dark), child: child!),
-  home: const TodayPage(),
+import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  int _place = 0;
+
+  @override
+  Widget build(BuildContext context) => FrostedAppShell(
+    header: const FrostedWordmark('Ledger'),
+    destinations: const [
+      RawNavigationDestination(label: 'Today', icon: FrostedGlyphs.house),
+      RawNavigationDestination(label: 'Activity', icon: FrostedGlyphs.receipt),
+      RawNavigationDestination(label: 'Profile', icon: FrostedGlyphs.person),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (index) => setState(() => _place = index),
+    branches: [
+      (context) => const FrostedScaffold(topBar: FrostedAppBar(title: 'Today'), body: SizedBox()),
+      (context) => const FrostedScaffold(topBar: FrostedAppBar(title: 'Activity'), body: SizedBox()),
+      (context) => const FrostedScaffold(topBar: FrostedAppBar(title: 'Profile'), body: SizedBox()),
+    ],
+  );
+}
+```
+
+`FrostedWordmark('Ledger', logo: …)` sets the app's name as written, beside your own logo.
+
+### A list, and its page
+
+A page is a `FrostedScaffold`: its bar, its body and a footer for its acts. `maxWidth` holds all three to one
+column on a wide window. A row pushes its record's page in the same place; the pushed page's bar names where back
+goes.
+
+```dart
+import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class Payee {
+  const Payee(this.name, this.note, {this.overdue = false});
+
+  final String name;
+  final String note;
+  final bool overdue;
+}
+
+class PayeesPage extends StatelessWidget {
+  const PayeesPage({super.key, required this.payees});
+
+  final List<Payee> payees;
+
+  @override
+  Widget build(BuildContext context) => FrostedScaffold(
+    maxWidth: 760,
+    topBar: const FrostedAppBar(title: 'Payees'),
+    body: FrostedRowGroup(
+      hairlines: true,
+      children: [
+        for (final payee in payees)
+          FrostedListTile(
+            leading: FrostedMonogram(payee.name),
+            title: payee.name,
+            meta: payee.note,
+            trailing: payee.overdue ? const FrostedTag('Overdue', tone: FrostedTone.danger) : null,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (context) => PayeePage(payee: payee)),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+class PayeePage extends StatelessWidget {
+  const PayeePage({super.key, required this.payee});
+
+  final Payee payee;
+
+  @override
+  Widget build(BuildContext context) => FrostedScaffold(
+    maxWidth: 760,
+    topBar: FrostedAppBar(title: payee.name, backLabel: 'Payees'),
+    body: FrostedDescriptionList(
+      children: [
+        FrostedKeyValue(label: 'Name', value: payee.name),
+        FrostedKeyValue(label: 'Note', value: payee.note),
+      ],
+    ),
+    footer: FrostedButtonRow(
+      children: [FrostedButton('Pay', onPressed: () {})],
+    ),
+  );
+}
+```
+
+### Forms
+
+Frosted's form fields are Flutter `FormField`s: put them in a `Form`, and `validate()` shows each one's error under
+it.
+
+```dart
+import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class NewGoalPage extends StatefulWidget {
+  const NewGoalPage({super.key});
+
+  @override
+  State<NewGoalPage> createState() => _NewGoalPageState();
+}
+
+class _NewGoalPageState extends State<NewGoalPage> {
+  final _form = GlobalKey<FormState>();
+  String _name = '';
+  DateTime? _by;
+  bool _remind = true;
+
+  void _save() {
+    if (!_form.currentState!.validate()) return;
+    _form.currentState!.save();
+    Navigator.of(context).pop(_name);
+  }
+
+  @override
+  Widget build(BuildContext context) => FrostedScaffold(
+    maxWidth: 760,
+    topBar: const FrostedAppBar(title: 'New goal', backLabel: 'Goals'),
+    body: Form(
+      key: _form,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: FrostedSpacing.s16,
+        children: [
+          FrostedTextFormField(
+            labelText: 'Name',
+            hintText: 'What are you saving for?',
+            validator: (value) => (value ?? '').trim().isEmpty ? 'Name the goal' : null,
+            onSaved: (value) => _name = value!.trim(),
+          ),
+          FrostedDateField(
+            labelText: 'By',
+            value: _by,
+            hintText: 'Any time',
+            onChanged: (value) => setState(() => _by = value),
+          ),
+          FrostedSwitchRow(
+            label: 'Remind me',
+            value: _remind,
+            onChanged: (value) => setState(() => _remind = value),
+          ),
+        ],
+      ),
+    ),
+    footer: FrostedButtonRow(children: [FrostedButton('Save', onPressed: _save)]),
+  );
+}
+```
+
+A date field shows its day as "Nov 9, 2026" and opens Frosted's calendar; `FrostedFormat.date(day, year: true)` writes
+the same.
+
+### Dialogs and toasts
+
+`FrostedDialog.show` raises a dialog over the whole app and completes with the answer: true when confirmed, false
+when declined, null when dismissed. A dialog of your own pops its route with the answer.
+
+```dart
+import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+Future<void> freeze(BuildContext context) async {
+  final sure = await FrostedDialog.show(
+    context,
+    title: 'Freeze this card?',
+    message: 'Payments stop until you unfreeze it.',
+    confirmLabel: 'Freeze',
+    cancelLabel: 'Cancel',
+  );
+  if (sure != true || !context.mounted) return;
+  FrostedToast.show(context, 'Card frozen', actionLabel: 'Undo', onAction: () {});
+}
+
+Future<String?> pickRoom(BuildContext context) => showFrostedDialog<String>(
+  context,
+  builder: (context) => FrostedDialog(
+    title: 'Move to',
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final room in ['Kitchen', 'Study'])
+          FrostedListTile(title: room, onPressed: () => Navigator.of(context).pop(room)),
+      ],
+    ),
+    cancelLabel: 'Cancel',
+    onCancel: () => Navigator.of(context).pop(),
+  ),
 );
 ```
 
-And under a bare `WidgetsApp`, which asks for its colour and how to build a route:
+### The palette picker
+
+`FrostedThemeData.palettes` are the six palettes, each a `RawNamedPalette`: an `id` to store, a `label` to
+show, and the swatches to draw beside it (`swatchesFor` the brightness shown). Hand the chosen one to the host.
 
 ```dart
-WidgetsApp(
-  color: const Color(0xFF0B0B0F),
-  builder: (context, child) => FrostedHost(theme: FrostedThemeData.jade(), darkTheme: FrostedThemeData.jade(Brightness.dark), child: child!),
-  pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-      PageRouteBuilder<T>(settings: settings, pageBuilder: (context, _, _) => builder(context)),
-  home: const TodayPage(),
-);
+import 'dart:math' as math;
+
+import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class PalettePicker extends StatelessWidget {
+  const PalettePicker({super.key, required this.palette, required this.onChanged});
+
+  final RawNamedPalette palette;
+  final ValueChanged<RawNamedPalette> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = FrostedTheme.of(context).brightness;
+    return FrostedRadioGroup<String>(
+      labelText: 'Palette',
+      value: palette.id,
+      onChanged: (id) => onChanged(FrostedThemeData.palettes.firstWhere((p) => p.id == id)),
+      options: [
+        // Each palette by its name, its colours right after it.
+        for (final p in FrostedThemeData.palettes)
+          FrostedRadio(p.id, p.label, suffix: Swatches(p.swatchesFor(brightness))),
+      ],
+    );
+  }
+}
+
+/// A palette's colours as Material's palette pickers show them: one disc split
+/// between them, in a hairline so a pale colour reads on a pale page and a dark
+/// one on a dark page.
+class Swatches extends StatelessWidget {
+  const Swatches(this.colors, {super.key});
+
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 24,
+    child: CustomPaint(
+      painter: _SplitDisc(colors, FrostedTheme.of(context).colorScheme.textSecondary),
+    ),
+  );
+}
+
+class _SplitDisc extends CustomPainter {
+  _SplitDisc(this.colors, this.ring);
+
+  final List<Color> colors;
+  final Color ring;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final disc = Offset.zero & size;
+    final share = 2 * math.pi / colors.length;
+    for (final (i, color) in colors.indexed) {
+      canvas.drawArc(disc, -3 * math.pi / 4 + share * i, share, true, Paint()..color = color);
+    }
+    canvas.drawCircle(
+      disc.center,
+      size.shortestSide / 2 - .5,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = ring,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SplitDisc old) => old.colors != colors || old.ring != ring;
+}
 ```
 
-To theme just one subtree, wrap it in `FrostedTheme(data: …)`. Its `data` is the active appearance. The optional `darkData` supplies the dark counterpart for controls drawn over media and defaults to `data.darkTwin`.
+`FrostedThemeData.preset(id, brightness)` builds a stored id's theme again; an id it doesn't know gives the first
+palette.
+
+## Building blocks
+
+| For | Use |
+|---|---|
+| The app's frame | `FrostedHost`, `FrostedAppShell`, `FrostedWordmark` |
+| A page | `FrostedScaffold`, `FrostedAppBar`, `FrostedTabBar`, `FrostedBreadcrumb`, `FrostedPagination` |
+| Acts | `FrostedButton` (`.glass`, `.destructive`), `FrostedIconButton`, `FrostedButtonRow`, `FrostedSplitButton`, `FrostedLink` |
+| Words in | `FrostedTextField`, `FrostedTextFormField`, `FrostedTextArea`, `FrostedPasswordField`, `FrostedSearchField`, `FrostedNumberField`, `FrostedAmountField` |
+| Choices | `FrostedSelect`, `FrostedCombobox`, `FrostedMultiSelect`, `FrostedRadioGroup`, `FrostedCheckbox`, `FrostedSwitch`, `FrostedSegmentedButton`, `FrostedToggleGroup`, `FrostedChip`, `FrostedFilterChipGroup`, `FrostedSlider`, `FrostedRangeSlider`, `FrostedRating` |
+| Dates and times | `FrostedDateField`, `FrostedCalendar`, `FrostedDatePicker`, `FrostedDateRangePicker`, `FrostedTimePicker`, `showFrostedDatePicker` |
+| Lists and tables | `FrostedListTile`, `FrostedRowGroup`, `FrostedListSection`, `FrostedDescriptionList`, `FrostedReorderableListView`, `FrostedTreeView`, `FrostedTable`, `FrostedDataTable` |
+| Settings and form rows | `FrostedSettingsGroup`, `FrostedFormSection`, `FrostedSwitchRow`, `FrostedCheckRow`, `FrostedValueRow`, `FrostedFormRow`, `FrostedPickerRow`, `FrostedKeyValue` |
+| Over the page | `FrostedDialog`, `showFrostedDialog`, `showFrostedBottomSheet`, `FrostedActionSheet`, `showFrostedMenu`, `FrostedPopover`, `FrostedHoverCard`, `FrostedTooltip`, `FrostedContextMenu`, `FrostedToast` |
+| Status | `FrostedTag`, `FrostedBadge`, `FrostedBanner`, `FrostedEmptyState`, `FrostedErrorState`, `FrostedLoadingState`, `FrostedSkeleton`, `FrostedLinearProgressIndicator`, `FrostedCircularProgressIndicator`, `FrostedMeter`, `FrostedStepProgress` |
+| Cards and marks | `FrostedCard`, `FrostedAvatar`, `FrostedMonogram`, `FrostedIconMark` |
+| Money | `FrostedAmount`, `FrostedMoney`, `FrostedTransactionRow`, `FrostedCreditCard` |
+| Charts | `FrostedLineChart`, `FrostedAreaChart`, `FrostedBarChart`, `FrostedPieChart`, `FrostedSparkline` |
+
+### Which row
+
+| Row | Holds | A screen reader hears |
+|---|---|---|
+| `FrostedListTile` | a record in a list: its title, meta, a trailing tag or amount, and its own `action` | one button, its action a stop of its own |
+| `FrostedSwitchRow` | a setting and its switch; a press anywhere flips it | one switch named by the row |
+| `FrostedCheckRow` | a choice and its check | one checkbox named by the row |
+| `FrostedValueRow` | a setting that opens a page, its current value at the end | one link with its value |
+| `FrostedFormRow` | a labelled row of a form: a value, a control at the end, or a chevron | its words and its control, or one link |
+| `FrostedPickerRow` | a choice that opens a picker, in a well under its label | one button |
+| `FrostedKeyValue` | a fact in a `FrostedDescriptionList`: a label and its value | the label and the value; a link when it opens something |
 
 ## The look
 
 Panes of glass rimmed with light stand on a pale canvas lit by soft washes of colour; one ink act carries the page's
 action, money is set in a display face with its dollars carrying the weight, and a spectrum of pastel hues names the
-categories and objects an app keeps. Six presets (opal, quartz, garnet, glacier, jade and copper), each
+categories and objects an app keeps. Six palettes (opal, quartz, garnet, glacier, jade and copper), each
 designed by day and by night, from a phone to a desktop.
 
 | | |
@@ -101,110 +407,26 @@ designed by day and by night, from a phone to a desktop.
 | ![The pearl credit card, live and frozen, on a desktop by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/gallery-cards-desktop-day.webp) | ![Segmented buttons, chips and switches on a phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/gallery-selection-phone-night.webp) |
 
 The components carry the names Material gives them (`FrostedButton`, `FrostedTextField`, `FrostedAppBar`,
-`FrostedNavigationBar`, `FrostedListTile`, `FrostedCheckbox`, `FrostedSwitch`, `FrostedSlider`,
+`FrostedListTile`, `FrostedCheckbox`, `FrostedSwitch`, `FrostedSlider`,
 `FrostedSegmentedButton`, `FrostedTabBar`, `FrostedDialog`, `FrostedSnackBar`, ...) and the parameters a Flutter
 developer expects: a press is `onPressed`, a control is `value` with `onChanged`, a destination is `selectedIndex`. The
 theme is shaped like Material's: `FrostedThemeData` holds a `colorScheme`, a `textTheme` and `shadows`, beside the look's
 own `glass`, `pearl` and `toast`.
-
-## Everyday parts
-
-A page: the canvas and its light, a top bar, and tiles of glass.
-
-```dart
-class TodayPage extends StatelessWidget {
-  const TodayPage({super.key});
-
-  @override
-  Widget build(BuildContext context) => FrostedScaffold(
-    topBar: const FrostedAppBar(title: 'Today', caption: 'Tuesday 12 November'),
-    body: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: FrostedSpacing.s10,
-      children: [
-        FrostedCard(child: Text('Good morning', style: context.frostedTheme.textTheme.titleLarge)),
-      ],
-    ),
-  );
-}
-```
-
-Buttons: the ink pill is the page's act, the glass pill everything beside it.
-
-```dart
-FrostedButton('Review transfer', expand: true, onPressed: review);
-FrostedButton.glass('Clear filters', icon: FrostedGlyphs.close, onPressed: clear);
-```
-
-A text field and a select, each with its label over a well:
-
-```dart
-FrostedTextField(
-  labelText: 'Name',
-  hintText: 'What are you saving for?',
-  value: name,
-  onChanged: (value) => setState(() => name = value),
-);
-FrostedSelect<String>(
-  labelText: 'Room',
-  options: const [FrostedSelectOption('k', 'Kitchen'), FrostedSelectOption('s', 'Study')],
-  value: room,
-  onChanged: (value) => setState(() => room = value),
-);
-```
-
-A list: rows on a tile, under the section's title.
-
-```dart
-FrostedListSection(
-  title: 'Transactions',
-  aside: '3 today',
-  rows: [
-    FrostedListTile(title: 'Blue Fern Café', meta: 'Dining out · 8:12 AM', trailing: const FrostedAmount(-6.75), onPressed: open),
-    FrostedListTile(title: 'Northline Transit', meta: 'Travel · 7:40 AM', trailing: const FrostedAmount(-2.90), onPressed: open),
-  ],
-);
-```
-
-A dialog, raised and answered in one call:
-
-```dart
-final freeze = await FrostedDialog.show(
-  context,
-  title: 'Freeze this card?',
-  message: 'Payments stop until you unfreeze it.',
-  confirmLabel: 'Freeze',
-  cancelLabel: 'Cancel',
-);
-```
-
-Navigation: the tab bar on a phone (from 1024 wide, `FrostedNavigationDrawer` down the left edge).
-
-```dart
-FrostedNavigationBar(
-  items: const [
-    FrostedNavItem(FrostedGlyphs.house, 'Home'),
-    FrostedNavItem(FrostedGlyphs.receipt, 'Activity'),
-    FrostedNavItem(FrostedGlyphs.person, 'Profile'),
-  ],
-  selectedIndex: tab,
-  onDestinationSelected: (index) => setState(() => tab = index),
-);
-```
 
 ## Theme
 
 `FrostedTheme.of(context)` (or `context.frostedTheme`) returns the `FrostedThemeData` in scope. Restyle a part of the
 tree with a nested `FrostedTheme`, and animate between themes with `AnimatedFrostedTheme`.
 
-- **Presets**: `FrostedThemeData.opal()`, `.quartz()`, `.garnet()`, `.glacier()`, `.jade()` and `.copper()`, each
-  taking a brightness; `FrostedThemeData.preset(id, brightness)` by name. Any other colour is `FrostedThemeData.from`'s.
+- **Palettes**: `FrostedThemeData.palettes`, the six as `RawNamedPalette`s; `FrostedThemeData(palette: p,
+  brightness: b)` builds one's theme, as do `FrostedThemeData.opal()`, `.quartz()`, `.garnet()`, `.glacier()`,
+  `.jade()` and `.copper()`; `FrostedThemeData.preset(id, brightness)` by its stored id.
 - **Your own colours**: `FrostedThemeData.from(accent: plum, brightness: Brightness.dark)` builds the whole palette from
   one colour, moving what it derives until words read 4.5:1 on every ground they stand on.
 - **Groups**: `colorScheme` (the page, its words, the accent, the tones), `textTheme` (`displayLarge` to `labelSmall`,
   and the look's figures), `shadows`, `glass`, `pearl`, `toast`, `hues` (the spectrum), each with `copyWith`. The
-  theme's `copyWith` takes the shadows and the glass, pearl and sheen tints from its preset: setting them is
-  deprecated, since a free shadow can make the soft lift a hard one and an opaque tint turns glass into paint.
+  shadows and the glass, pearl and sheen tints come with the palette and the theme's `copyWith` doesn't take them: a
+  free shadow could make the soft lift a hard one, and an opaque tint would turn glass into paint.
   `opaqueMaterials: true` is the solid form, for high contrast.
 - **Density**: `FrostedDensity.standard`, `.comfortable` or `.compact`. Unset, it follows the platform
   (`FrostedDensity.adaptivePlatformDensity`: compact on macOS, Windows and Linux, standard on touch); compact tightens
@@ -215,6 +437,9 @@ tree with a nested `FrostedTheme`, and animate between themes with `AnimatedFros
   for your own parts.
 
 ```dart
+import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
 final theme = FrostedThemeData.from(accent: const Color(0xFF7C3AED)).copyWith(
   density: FrostedDensity.compact,
   components: const FrostedComponentThemes(
@@ -234,24 +459,29 @@ clearing alike. The ink act (`FrostedButton`) keeps its pill: a shape of its own
 the theme's button shape, which shapes the glass buttons, passes it by.
 
 ```dart
-FrostedButton(
-  'Save',
-  onPressed: save,
-  style: FrostedStyle(
-    fill: WidgetStateProperty.resolveWith(
-      (states) => states.contains(WidgetState.pressed) ? const Color(0xFF1D4ED8) : const Color(0xFF2563EB),
+import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+List<Widget> acts({required VoidCallback save, required VoidCallback share}) => [
+  FrostedButton(
+    'Save',
+    onPressed: save,
+    style: FrostedStyle(
+      fill: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.pressed) ? const Color(0xFF1D4ED8) : const Color(0xFF2563EB),
+      ),
     ),
   ),
-);
-FrostedButton.glass(
-  'Share',
-  onPressed: share,
-  style: const FrostedStyle(
-    shape: WidgetStatePropertyAll(
-      RoundedSuperellipseBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
+  FrostedButton.glass(
+    'Share',
+    onPressed: share,
+    style: const FrostedStyle(
+      shape: WidgetStatePropertyAll(
+        RoundedSuperellipseBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
+      ),
     ),
   ),
-);
+];
 ```
 
 What stays Frosted's whatever you set: the canvas's washes of light, the glass's rim of light along its top, the
@@ -313,25 +543,34 @@ costs no blur at all. The canvas's washes are painted once and cached.
   a field's leading and trailing parts swap. Figures, times and codes stay left to right: an amount keeps its sign and
   `$` in front, a card number, keycaps, badge counts and the clock wheels keep their order, the wordmark does not
   mirror, and charts with their time axes run left to right. Times and dates an app passes in as words are the app's
-  to write in its language. The example app's Customize panel switches the direction and the text size.
-- **Strings.** Install `RawWidgetsLocalizations.delegate` and `FrostedLocalizations.delegate`, and use `RawWidgetsLocalizations.supportedLocales`, for shared control labels in 30 languages. `FrostedLocalizations` supplies labels specific to the look, including Send, Swap, Pending and Frozen. Its delegate serves every locale with the English labels. Where a part says a word every design system shares (Done, Try again, a day's or a month's name, a time, the time wheel's columns), a reader of another language hears `RawWidgetsLocalizations`' word for it. To translate Frosted's own labels, extend `FrostedLocalizationsEn` and register a delegate for your locale; your words then win. The example app includes an Arabic delegate.
+  to write in its language. The gallery's Customize panel (`example/lib/gallery.dart`) switches the direction and
+  the text size.
+- **Strings.** Install `RawWidgetsLocalizations.delegate` and `FrostedLocalizations.delegate`, and use `RawWidgetsLocalizations.supportedLocales`, for shared control labels in 30 languages. `FrostedLocalizations` supplies labels specific to the look, including Send, Swap, Pending and Frozen. Its delegate serves every locale with the English labels. Where a part says a word every design system shares (Done, Try again, a day's or a month's name, a time, the time wheel's columns), a reader of another language hears `RawWidgetsLocalizations`' word for it. To translate Frosted's own labels, extend `FrostedLocalizationsEn` and register a delegate for your locale; your words then win. The gallery includes an Arabic delegate.
 - **Dates and amounts.** Calendars use `RawWidgetsLocalizations` for the start of the week. For an English reader, `FrostedLocalizations` supplies picker month names, date captions and the 12- or 24-hour clock. For a reader of another language, they come from `RawWidgetsLocalizations` unless your app gives Frosted words of its own. The separate `FrostedFormat` utility formats US English dates and dollar amounts. Supply localized strings to components that accept preformatted text when your app uses another currency or locale.
 - **Other scripts.** Frosted's fonts carry Latin. Arabic, Hebrew, Chinese, Japanese, Hindi and Thai fall back to the
   platform's fonts (on the web, Flutter's Noto fallback).
 
 ## Labels and icons
 
-Pass a string for a button label and an `IconData` for its optional icon, for example `FrostedButton('Pay', icon: FrostedGlyphs.creditCard, onPressed: pay)`. A `FrostedListTile` accepts a title and optional meta text. Its `leading`, `mid` and `trailing` slots accept widgets for an avatar, account information or a custom action.
+A control's `label` is drawn: a button's words, a switch row's title, a field's `labelText`. A name that is only
+spoken, for a control that draws no words of its own (an icon button, a switch alone, a slider), is its
+`semanticLabel`: `FrostedIconButton(FrostedGlyphs.more, semanticLabel: 'More', onPressed: open)`. A control inside
+`FrostedFormField` is heard once, by the field's label. A row's name is its words and its status tag; a monogram that
+repeats its title is decoration and stays out of it. A button takes an `IconData` for its optional icon, for example
+`FrostedButton('Pay', icon: FrostedGlyphs.creditCard, onPressed: pay)`.
 
 ## Example
 
-`example/` sets every component on its page, in each palette, by day and by night, with a Customize panel (palette,
-your own accent, density, backdrop, direction, text size).
+`example/lib/main.dart` is one app to copy: the host by day, by night or as the platform is, the shell with three
+places, a list with a pushed page, a form that checks itself and takes a date, a dialog answered and settings with the
+six palettes. `example/lib/gallery.dart` (`flutter run -t lib/gallery.dart`) sets every component on its page, in
+each palette, by day and by night, with a Customize panel (palette, your own accent, density, backdrop, direction, text
+size).
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.6.1 and re-exports it, so `RawWidgetsLocalizations`
-and the `Raw*` parts come with the one import.
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux. The package depends on ui_core ^0.8.0
+and re-exports it, so `RawWidgetsLocalizations`, `RawNamedPalette` and the `Raw*` parts come with the one import.
 
 ## Licences
 

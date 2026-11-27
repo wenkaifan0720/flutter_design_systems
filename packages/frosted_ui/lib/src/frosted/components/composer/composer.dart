@@ -35,16 +35,15 @@ enum FrostedComposerVariant {
   assistant,
 }
 
-/// A composer: the box a message or a prompt is written in, a pill 48 tall
-/// of the high glass in its rim and edge (the search well's), 4 round its
-/// parts. The text grows with what is written (to five lines, six for an
-/// assistant), an attach button (a glass round) stands before it when
-/// [onAttach] is given, and at its end one seat: send, a round of the ink
-/// act once there is text; stop while a reply is [busy] and [onStop] is
-/// given; a microphone (a glass round) while the box is empty and
-/// [onVoice] is given. Send hands [onSend] the trimmed text and empties the
-/// box. A false [enabled] fades it and takes no text. DERIVED: the source
-/// has no composer; the search well and the round buttons lend the faces.
+/// A composer: the box a message or a prompt is written in, a pill 48 tall of
+/// the high glass in its rim and edge (the search well's), 4 round its parts.
+/// The text grows with what is written (to five lines, six for an assistant),
+/// an attach button (a glass round) stands before it when [onAttach] is given,
+/// and at its end one seat: send, a round of the ink act once there is text;
+/// stop while a reply is [busy] and [onStop] is given; a microphone (a glass
+/// round) while the box is empty and [onVoice] is given. Send hands [onSend]
+/// the trimmed text and empties the box. A false [enabled] fades it and takes
+/// no text.
 ///
 /// ```dart
 /// FrostedComposer(hintText: 'Message Maren', onSend: send, onAttach: attach)
@@ -253,7 +252,7 @@ class _FrostedComposerState extends State<FrostedComposer>
     } else {
       seat = FrostedIconButton(
         FrostedGlyphs.microphone,
-        label: FrostedLocalizations.of(context).dictate,
+        semanticLabel: FrostedLocalizations.of(context).dictate,
         onPressed: live ? widget.onVoice : null,
       );
     }
@@ -261,7 +260,7 @@ class _FrostedComposerState extends State<FrostedComposer>
         ? null
         : FrostedIconButton(
             FrostedGlyphs.add,
-            label: FrostedLocalizations.of(context).attach,
+            semanticLabel: FrostedLocalizations.of(context).attach,
             onPressed: live ? widget.onAttach : null,
           );
     final Widget inside = assistant
@@ -373,7 +372,7 @@ class _Seat extends StatelessWidget {
     orb = FrostedDim(off: onTap == null, child: orb);
     return FrostedPressable(
       onPressed: onTap,
-      label: label,
+      semanticLabel: label,
       radius: d / 2,
       child: orb,
     );

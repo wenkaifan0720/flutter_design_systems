@@ -11,15 +11,15 @@ import 'avatar/avatar.dart';
 import 'icon-button/round_button.dart';
 
 /// Who the app belongs to, as its chrome shows them: the [initials] in the
-/// avatar, the [name] and the quiet [meta] line ("Profile and settings")
-/// at the sidebar's foot, the [unread] count the bell wears, and where the
-/// avatar ([onProfile]) and the bell ([onNotifications]) lead. The app
-/// mounts one [FrostedAccountScope] above its router; the top bars and the
-/// sidebar read it, so no page passes the person around. [profileLocation]
-/// is the profile page's path: the sidebar's foot is current there (a
-/// `:name` segment stands for any one, so '/:root/profile' is the profile
-/// pushed on any root). [notificationsLocation] is the bell's page, where
-/// the sidebar marks nothing current, as the source's notifications do.
+/// avatar, the [name] and the quiet [meta] line ("Profile and settings") at the
+/// sidebar's foot, the [unread] count the bell wears, and where the avatar
+/// ([onProfile]) and the bell ([onNotifications]) lead. The app mounts one
+/// [FrostedAccountScope] above its router; the top bars and the sidebar read
+/// it, so no page passes the person around. [profileLocation] is the profile
+/// page's path: the sidebar's foot is current there (a `:name` segment stands
+/// for any one, so '/:root/profile' is the profile pushed on any root).
+/// [notificationsLocation] is the bell's page, where the sidebar marks nothing
+/// current, as Frosted's notifications do.
 ///
 /// ```dart
 /// FrostedAccount(name: 'Maren Holt', initials: 'MH', meta: 'Profile and settings', unread: 1, onProfile: (context) => Navigator.of(context).pushNamed('/profile'))
@@ -66,7 +66,7 @@ class FrostedAccount {
 
   /// The notifications page's path, read as [profileLocation] is
   /// ('/:root/notifications'): while it is shown the sidebar marks no
-  /// destination current, as the source's notifications light none.
+  /// destination current, as Frosted's notifications light none.
   final String? notificationsLocation;
 
   /// Whether the page at [path] is the profile, or a page under it, by
@@ -131,9 +131,8 @@ class FrostedAccountScope extends InheritedWidget {
   }
 }
 
-/// The bell, then the avatar, of [account], 8 apart: what a top bar wears
-/// at its end on a root (`.top-r`) and on a desktop detail. Plumbing of
-/// the bars.
+/// The bell, then the avatar, of [account], 8 apart: what a top bar wears at
+/// its end on a root and on a desktop detail. Plumbing of the bars.
 ///
 /// ```dart
 /// FrostedAccountMarks(account: const FrostedAccount(name: 'Maya Chen', initials: 'MC'))
@@ -229,7 +228,7 @@ class FrostedBell extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FrostedIconButton(
     FrostedGlyphs.bell,
-    label: FrostedLocalizations.of(context).unreadNotifications(unread),
+    semanticLabel: FrostedLocalizations.of(context).unreadNotifications(unread),
     badge: unread > 0,
     onPressed: onPressed,
   );

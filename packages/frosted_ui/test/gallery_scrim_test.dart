@@ -10,7 +10,7 @@ import 'package:frosted_ui/frosted_ui.dart';
 // The bar is the example app's; a test raises routes under it there.
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 
 void main() {

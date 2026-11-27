@@ -15,11 +15,10 @@ import 'package:ui_core/ui_core.dart';
 
 import '../internal/shared_words.dart';
 
-/// What a page shows while its content loads (DERIVED, as the error state:
-/// the source draws neither): a thin ring of the faint line with an ink arc
-/// turning on it, over [message] in the quiet ink, centred where the
-/// content will stand. Announced to a screen reader as a live region. The
-/// arc holds still under Reduce Motion (`FrostedMotion.of`).
+/// What a page shows while its content loads: a thin ring of the faint line
+/// with an ink arc turning on it, over [message] in the quiet ink, centred
+/// where the content will stand. Announced to a screen reader as a live region.
+/// The arc holds still under Reduce Motion (`FrostedMotion.of`).
 ///
 /// ```dart
 /// FrostedLoadingState(message: 'Loading your accounts')
@@ -283,13 +282,12 @@ class FrostedStatusView extends StatelessWidget {
   }
 }
 
-/// What a list shows when nothing is in it, as the source's empty search
-/// does (`.tile.glass-tile.empty`): a glass tile with the spectrum along
-/// its top edge holding the prism (a beam of ink meeting a glass prism and
-/// leaving it as four fans of colour), the [title] in the name type, one
-/// [body] sentence in the quiet ink at most 300 wide (420 on the desktop),
-/// and the one next act ([actionLabel], the ink button with its
-/// [actionIcon]).
+/// What a list shows when nothing is in it: a
+/// glass tile with the spectrum along its top edge holding the prism (a beam of
+/// ink meeting a glass prism and leaving it as four fans of colour), the
+/// [title] in the name type, one [body] sentence in the quiet ink at most 300
+/// wide (420 on the desktop), and the one next act ([actionLabel], the ink
+/// button with its [actionIcon]).
 ///
 /// ```dart
 /// FrostedEmptyState(title: 'No results for “sushi”', body: 'Only money that came in is searched while Money in is on.', actionLabel: 'Clear filters', actionIcon: FrostedGlyphs.close, onAction: clear)
@@ -412,12 +410,11 @@ class FrostedEmptyState extends StatelessWidget {
   }
 }
 
-/// The empty state's art, as the source draws it (`.empty-art`): a beam
-/// of the ink from the left meeting a prism of glass edged in the
-/// spectrum, and leaving it to the right as four fans of lilac, rose,
-/// peach and mint on a wash of white; 220 by 120 on a phone, 330 by 180 at
-/// desktop width ([wide] pins one), scaled down to the width it is given.
-/// Decoration: it says nothing.
+/// The empty state's art: a beam of the ink from the left meeting a prism of
+/// glass edged in the spectrum, and leaving it to the right as four fans of
+/// lilac, rose, peach and mint on a wash of white; 220 by 120 on a phone, 330
+/// by 180 at desktop width ([wide] pins one), scaled down to the width it is
+/// given. Decoration: it says nothing.
 ///
 /// ```dart
 /// FrostedSpectrumArt()
@@ -467,7 +464,7 @@ class FrostedSpectrumArt extends StatelessWidget {
   }
 }
 
-/// The source's drawing, in its 220 by 120 box.
+/// The empty state's drawing, in its 220 by 120 box.
 class _FrostedPainter extends CustomPainter {
   const _FrostedPainter({
     required this.ink,
@@ -640,8 +637,7 @@ Widget _errorMark(FrostedThemeData t) {
   );
 }
 
-/// The glass tile an empty or a failed list stands in, as the source's
-/// empty search does (`.tile.glass-tile`): a pane with the tile's edge as a
+/// The glass tile an empty or a failed list stands in: a pane with the tile's edge as a
 /// ring just outside it and the tile's lift, [rim] along its top edge (the
 /// spectrum for an empty list, the over hue for a failed one) and [child]
 /// centred in it.

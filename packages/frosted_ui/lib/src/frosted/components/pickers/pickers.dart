@@ -92,21 +92,21 @@ const int _wheelRows = 5;
 /// (Cupertino's picker): the chosen row on a band of the brighter glass
 /// with its hairline edge and rim, the rows above and below it receding and
 /// fading to nothing. It settles on a row and hands over that row's value.
-/// Read aloud as an adjustable value named [label]: a swipe up or down
+/// Read aloud as an adjustable value named [semanticLabel]: a swipe up or down
 /// turns it a row. A disabled option stands faded and the wheel turns past
 /// it. ui_core's [RawPicker] is the behaviour: the arrows, Page Up
 /// and Down, Home and End, and typing a row's first letters turn it on a
 /// spring, and a row crossing the band ticks.
 ///
 /// ```dart
-/// FrostedWheelPicker<int>(label: 'Guests', options: [for (var n = 1; n <= 12; n++) FrostedSelectOption(n, '$n')], value: guests, onChanged: (v) => setState(() => guests = v))
+/// FrostedWheelPicker<int>(semanticLabel: 'Guests', options: [for (var n = 1; n <= 12; n++) FrostedSelectOption(n, '$n')], value: guests, onChanged: (v) => setState(() => guests = v))
 /// ```
 class FrostedWheelPicker<T> extends StatelessWidget {
   /// A wheel over [options], standing on [value].
   const FrostedWheelPicker({
     required this.options,
     required this.value,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.looping = false,
     this.width,
@@ -120,7 +120,7 @@ class FrostedWheelPicker<T> extends StatelessWidget {
   final T value;
 
   /// What a screen reader calls the wheel.
-  final String label;
+  final String semanticLabel;
 
   /// Hands over the value the wheel settles on; null leaves it inert.
   final ValueChanged<T>? onChanged;
@@ -148,7 +148,7 @@ class FrostedWheelPicker<T> extends StatelessWidget {
               RawPickerColumn(
                 itemCount: options.length,
                 itemLabel: (i) => options[i].label,
-                semanticLabel: label,
+                semanticLabel: semanticLabel,
                 isItemEnabled: (i) => options[i].enabled,
                 looping: looping,
               ),
@@ -177,7 +177,7 @@ class FrostedWheelPicker<T> extends StatelessWidget {
     properties
       ..add(IterableProperty<FrostedSelectOption<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
       ..add(FlagProperty('looping', value: looping, ifTrue: 'looping'))
       ..add(DoubleProperty('width', width, defaultValue: null));
@@ -323,12 +323,12 @@ Widget _wheels(
 // Time picker
 // ---------------------------------------------------------------------------
 
-/// A time of day on wheels (Cupertino's time picker, `showTimePicker`'s
-/// role): the hour, the minute and, on the 12-hour clock, the half of the
-/// day, side by side on one band of the brighter glass. Each wheel is read
-/// aloud as an adjustable value (Hour, Minute) and turns with the arrow
-/// keys once focused. [minuteInterval] steps the minutes (5 shows :00,
-/// :05 …). [showFrostedTimePicker] raises it in a card with Cancel and OK.
+/// A time of day on wheels (Cupertino's time picker, `showTimePicker`'s role):
+/// the hour, the minute and, on the 12-hour clock, the half of the day, side by
+/// side on one band of the brighter glass. Each wheel is read aloud as an
+/// adjustable value (Hour, Minute) and turns with the arrow keys once focused.
+/// [minuteInterval] steps the minutes (5 shows:00,:05 …).
+/// [showFrostedTimePicker] raises it in a card with Cancel and OK.
 ///
 /// ```dart
 /// FrostedTimePicker(value: alarm, onChanged: (v) => setState(() => alarm = v))
@@ -737,7 +737,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
     Widget step(IconData glyph, String label, VoidCallback? go) =>
         FrostedPressable(
           onPressed: go,
-          label: label,
+          semanticLabel: label,
           radius: 18,
           child: SizedBox.square(
             dimension: 36,
@@ -889,7 +889,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
 
       return FrostedPressable(
         onPressed: allowed && change != null ? () => change(day) : null,
-        label: shared.fullDate(day),
+        semanticLabel: shared.fullDate(day),
         selected: chosen,
         radius: dayCorner,
         shape: dayCut,

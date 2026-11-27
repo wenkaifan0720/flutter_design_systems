@@ -112,7 +112,7 @@ class _MonthState extends State<_Month> {
             final picked = await FrostedMenu.show<String>(
               anchor,
               title: kitSay('Spent by month'),
-              label: kitSay('Months'),
+              semanticLabel: kitSay('Months'),
               items: _items(month),
             );
             if (picked != null) {
@@ -133,7 +133,7 @@ Widget kitSpecimenMenuMonths() => Align(
   alignment: AlignmentDirectional.centerEnd,
   child: FrostedMenu<String>(
     title: kitSay('Spent by month'),
-    label: kitSay('Months'),
+    semanticLabel: kitSay('Months'),
     items: _items('October 2026'),
     onSelected: (_) {},
   ),

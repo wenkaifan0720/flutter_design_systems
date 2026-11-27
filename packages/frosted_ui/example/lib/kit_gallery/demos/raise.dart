@@ -80,7 +80,7 @@ Widget kitRaiseDemo(Brightness brightness) => kitScreen(
             message: 'Share with your team',
             child: FrostedIconButton(
               FrostedGlyphs.share,
-              label: 'Share',
+              semanticLabel: 'Share',
               onPressed: () {},
             ),
           ),

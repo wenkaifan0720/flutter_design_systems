@@ -1,4 +1,4 @@
-# frosted_ui's renames in 0.5.0, which `dart fix` makes. Each lists the package's libraries, as dart fix renames a
+# frosted_ui's renames in 0.5.0 and 0.8.0, which `dart fix` makes. Each lists the package's libraries, as dart fix renames a
 # name only where it is imported through a listed library.
 version: 1
 transforms:
@@ -1352,3 +1352,751 @@ transforms:
       - kind: 'renameParameter'
         oldName: 'destructive'
         newName: 'isDestructiveAction'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedScrollArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedScrollArea'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCarouselView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'builder'
+      inClass: 'FrostedCarouselView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedCarouselView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFilterChipGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedFilterChipGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSwitch'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedSwitch'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMonthSwitch'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedMonthSwitch'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedQuickActions'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedQuickActions'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedActionTiles'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedActionTiles'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedQuickAmounts'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedQuickAmounts'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSwapButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedSwapButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedBreadcrumb'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedBreadcrumb'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPopover'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedPopover'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedHoverCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedHoverCard'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedRating'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedRating'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedChoices'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedChoices'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSlider'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedSlider'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPressable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedPressable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCheckbox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedCheckbox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedButtonGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedButtonGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMenuBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedMenuBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedContextMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedContextMenu'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedMenu'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedWheelPicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedWheelPicker'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedDataTable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedDataTable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTreeView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedTreeView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'rim'
+      inClass: 'FrostedCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'record'
+      inClass: 'FrostedCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'hero'
+      inClass: 'FrostedCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'ghost'
+      inClass: 'FrostedCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedCard'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFacedCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedFacedCard'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInsight'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedInsight'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      method: 'show'
+      inClass: 'FrostedMenu'
+      static: true
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Import 'package:frosted_ui/frosted_host.dart'"
+    date: 2026-11-26
+    element:
+      uris: ['frosted_ui.dart']
+      class: 'FrostedNavigationBar'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:frosted_ui/frosted_host.dart']
+          class: 'FrostedNavigationBar'
+  - title: "Import 'package:frosted_ui/frosted_host.dart'"
+    date: 2026-11-26
+    element:
+      uris: ['frosted_ui.dart']
+      class: 'FrostedNavItem'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:frosted_ui/frosted_host.dart']
+          class: 'FrostedNavItem'
+  - title: "Import 'package:frosted_ui/frosted_host.dart'"
+    date: 2026-11-26
+    element:
+      uris: ['frosted_ui.dart']
+      class: 'FrostedNavAction'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:frosted_ui/frosted_host.dart']
+          class: 'FrostedNavAction'
+  - title: "Import 'package:frosted_ui/frosted_host.dart'"
+    date: 2026-11-26
+    element:
+      uris: ['frosted_ui.dart']
+      class: 'FrostedNavigationRail'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:frosted_ui/frosted_host.dart']
+          class: 'FrostedNavigationRail'
+  - title: "Import 'package:frosted_ui/frosted_host.dart'"
+    date: 2026-11-26
+    element:
+      uris: ['frosted_ui.dart']
+      class: 'FrostedNavigationDrawer'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:frosted_ui/frosted_host.dart']
+          class: 'FrostedNavigationDrawer'
+  - title: "Import 'package:frosted_ui/frosted_host.dart'"
+    date: 2026-11-26
+    element:
+      uris: ['frosted_ui.dart']
+      class: 'FrostedSidebarAction'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:frosted_ui/frosted_host.dart']
+          class: 'FrostedSidebarAction'

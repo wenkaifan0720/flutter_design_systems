@@ -199,13 +199,15 @@ List<Widget> _barActs(BuildContext context) {
   return [
     FrostedIconButton(
       t.isDark ? LucideIcons.sun : LucideIcons.moon,
-      label: t.isDark ? kitSay('Light appearance') : kitSay('Dark appearance'),
+      semanticLabel: t.isDark
+          ? kitSay('Light appearance')
+          : kitSay('Dark appearance'),
       onPressed: () =>
           host.onBrightness(t.isDark ? Brightness.light : Brightness.dark),
     ),
     FrostedIconButton(
       FrostedGlyphs.close,
-      label: kitSay('Back to the gallery'),
+      semanticLabel: kitSay('Back to the gallery'),
       onPressed: host.onExit,
     ),
   ];
@@ -616,7 +618,7 @@ class _HarborActivityState extends State<HarborActivity> {
       ),
       const SizedBox(height: 12),
       FrostedFilterChipGroup<_Show>(
-        label: kitSay('Show'),
+        semanticLabel: kitSay('Show'),
         value: _show,
         onChanged: (v) => setState(() => _show = v),
         options: [

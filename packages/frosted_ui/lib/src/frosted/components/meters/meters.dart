@@ -59,10 +59,10 @@ const double _looseWidth = 320;
 // a three-across legend's entries per row (`.legend--3`).
 const int _legendRows = 4;
 
-/// metric: `.pa-legend .lg { padding: 10px 0 }` on the desktop.
+/// The room over and under an allocation's legend row on the desktop.
 const double _allocationRowInset = 10;
 
-/// metric: `.pa-legend .lg .nm { font-size: 14px }` (500 14/1.2).
+/// An allocation legend's name size (medium, on a 1.2 line).
 const double _allocationName = 14;
 const int _legendAcross = 3;
 // metric: merchant cards across on the desktop (`.a-tm .merchants`).
@@ -117,14 +117,14 @@ double _widthOf(BoxConstraints constraints) =>
 
 /// How tall a [FrostedTrack] stands.
 enum FrostedTrackSize {
-  /// 40 tall, 56 on the desktop (`.prism-lg`): a page's own track, its
-  /// bands wide enough for a [FrostedSegmentLabel].
+  /// 40 tall, 56 on the desktop: a page's own track, its bands wide enough for
+  /// a [FrostedSegmentLabel].
   large,
 
-  /// 16 tall (`.prism-sm`): a tile's track under its figures.
+  /// 16 tall: a tile's track under its figures.
   small,
 
-  /// 10 tall (`.prism-xs`): a balance change's.
+  /// 10 tall: a balance change's.
   extraSmall;
 
   /// The track's height at [context].
@@ -145,24 +145,23 @@ enum FrostedTrackSize {
 
 /// What a band of a [FrostedTrack] is made of.
 enum FrostedBandVariant {
-  /// The hue's own band (`.seg`): its a to b under a top sheen.
+  /// The hue's own band: its a to b under a top sheen.
   hue,
 
-  /// A part of the hue in its tint (`.seg--part`): the rest of a category
-  /// beside the record's merchant.
+  /// A part of the hue in its tint: the rest of a category beside the record's
+  /// merchant.
   part,
 
-  /// What is left of a whole, in the wash (`.seg--left`): a goal's room.
+  /// What is left of a whole, in the wash: a goal's room.
   left,
 
-  /// What came in and stayed, in the money-in tint (`.seg--kept`).
+  /// What came in and stayed, in the money-in tint.
   kept,
 
-  /// Money leaving an account, white over the hue's edge (`.seg--leave`).
+  /// Money leaving an account, white over the hue's edge.
   leave,
 
-  /// Money arriving, the hue's b to a under a brighter sheen
-  /// (`.seg--arrive`).
+  /// Money arriving, the hue's b to a under a brighter sheen.
   arrive,
 }
 
@@ -214,8 +213,8 @@ final class FrostedBand {
   final Key? key;
 }
 
-/// The words inside a band of a [FrostedTrack] (`.seg-l`): a name 500 12
-/// over an amount 600 14 in the display face, in the band's deep ink.
+/// The words inside a band of a [FrostedTrack]: a name 500 12 over an amount
+/// 600 14 in the display face, in the band's deep ink.
 ///
 /// ```dart
 /// FrostedSegmentLabel('You', '\$14.00')
@@ -298,9 +297,8 @@ class FrostedSegmentLabel extends StatelessWidget {
   }
 }
 
-/// The pace tick across a track or a tube (`.pace`, `.tube-tick`): a 1.5
-/// wide line of the pace ink in a 1.5 ring of the track's white, reaching
-/// past both edges.
+/// The pace tick across a track or a tube: a 1.5 wide line of the pace ink in a
+/// 1.5 ring of the track's white, reaching past both edges.
 ///
 /// ```dart
 /// FrostedPaceTick(height: 20)
@@ -340,12 +338,11 @@ class FrostedPaceTick extends StatelessWidget {
   }
 }
 
-/// The captions under a track (`.prism-scale`): one at each end in the
-/// caption's type (`.cap`) unless they set their own, each its own width
-/// while both fit and both narrowed in proportion when they do not (the
-/// flex row's shrink, so a long start keeps the line a short end leaves
-/// it), 16 tall at least, and the pace's label anchored 8 before its tick
-/// (`.pace-l`).
+/// The captions under a track: one at each end in the caption's type unless
+/// they set their own, each its own width while both fit and both narrowed in
+/// proportion when they do not (the flex row's shrink, so a long start keeps
+/// the line a short end leaves it), 16 tall at least, and the pace's label
+/// anchored 8 before its tick.
 ///
 /// ```dart
 /// FrostedScale(start: Text('\$0'), paceAt: 212, paceLabel: 'Budget \$250')
@@ -418,11 +415,10 @@ class FrostedScale extends StatelessWidget {
   }
 }
 
-/// A scale's two ends across its width as `.prism-scale { display: flex;
-/// justify-content: space-between }` sets them: each its own width while
+/// A scale's two ends across its width: each its own width while
 /// both fit, the first at the start and the last at the end, both at the
 /// top; when they do not fit, both narrowed in proportion to their own
-/// widths (`flex-shrink: 1` weighs by the basis). Unbounded, each keeps
+/// widths. Unbounded, each keeps
 /// its own width.
 class _ScaleEnds extends MultiChildRenderObjectWidget {
   const _ScaleEnds({required super.children});
@@ -552,9 +548,9 @@ class _RenderScaleEnds extends RenderBox
       defaultHitTestChildren(result, position: position);
 }
 
-/// The prism track (`.prism-track`): one glass tube of bands joined by white
-/// hairlines, each band's width its weight's share of the whole, a pace
-/// tick where a budget stands and captions under it. Frosted's signature.
+/// The prism track: one glass tube of bands joined by white hairlines, each
+/// band's width its weight's share of the whole, a pace tick where a budget
+/// stands and captions under it. Frosted's signature.
 ///
 /// ```dart
 /// FrostedTrack(bands: [FrostedBand(20860, hue: t.hues.azure, name: 'Emergency fund'), FrostedBand(5460, variant: FrostedBandVariant.left, name: 'to go')])
@@ -592,8 +588,7 @@ class FrostedTrack extends StatelessWidget {
   /// The caption at the scale's end.
   final Widget? scaleEnd;
 
-  /// The room between the track and its scale: 10 (`.prism-scale {
-  /// margin-top: 10px }`), 8 in Activity's flow (`.flow .prism-scale`).
+  /// The room between the track and its scale: 10, 8 in Activity's flow.
   final double scaleGap;
 
   /// What a screen reader says; the named bands and their shares when
@@ -868,20 +863,19 @@ class _BandBox extends StatelessWidget {
 
 /// How a [FrostedLegend] lays its entries.
 enum FrostedLegendVariant {
-  /// Two columns filled top to bottom, four rows each (`.legend`): Home's
-  /// eight categories.
+  /// Two columns filled top to bottom, four rows each: Home's eight categories.
   columns,
 
-  /// Three across, spread between the ends (`.legend--3`): the goals.
+  /// Three across, spread between the ends: the goals.
   threeColumns,
 
-  /// Rows of swatch, name, share and amount (`.parts`): an allocation's
-  /// kinds, where an account's month went.
+  /// Rows of swatch, name, share and amount: an allocation's kinds, where an
+  /// account's month went.
   rows,
 
-  /// Three across on a phone; on the desktop, rows with hairlines between
-  /// in a side column, the name in the page ink and the amount at the end
-  /// (`.legend--3.pa-legend`): where the year's saving went.
+  /// Three across on a phone; on the desktop, rows with hairlines between in a
+  /// side column, the name in the page ink and the amount at the end: where the
+  /// year's saving went.
   allocation,
 }
 
@@ -902,8 +896,8 @@ class _LegendScope extends InheritedWidget {
 /// `.part`'s line: 14px at 1.3.
 const double _partLine = 18.2;
 
-/// One entry of a [FrostedLegend] (`.lg`, `.part`): the hue's swatch, the
-/// name and, under or after it, the amount and the share.
+/// One entry of a [FrostedLegend]: the hue's swatch, the name and, under or
+/// after it, the amount and the share.
 ///
 /// ```dart
 /// FrostedLegendEntry('Emergency fund', hue: t.hues.azure, amount: 20860)
@@ -929,14 +923,13 @@ class FrostedLegendEntry extends StatelessWidget {
   /// The entry's amount, unsigned.
   final num? amount;
 
-  /// The entry's share of the whole, as a percent (a row's `.part-p`).
+  /// The entry's share of the whole, as a percent.
   final int? share;
 
-  /// Whether the swatch is the part tint (`.sw--part`).
+  /// Whether the swatch is the part tint.
   final bool part;
 
-  /// Whether the entry is the record's own (`.part.this`): its words in
-  /// the primary ink.
+  /// Whether the entry is the record's own: its words in the primary ink.
   final bool current;
 
   String get _words => [
@@ -1059,8 +1052,8 @@ class FrostedLegendEntry extends StatelessWidget {
   }
 }
 
-/// The legend under a [FrostedTrack] (`.legend`, `.parts`): what each band
-/// is, as the track's hues, names and amounts.
+/// The legend under a [FrostedTrack]: what each band is, as the track's hues,
+/// names and amounts.
 ///
 /// ```dart
 /// FrostedLegend(variant: FrostedLegendVariant.threeColumns, children: [FrostedLegendEntry('Emergency fund', hue: t.hues.azure, amount: 20860)])
@@ -1151,11 +1144,10 @@ class FrostedLegend extends StatelessWidget {
     return _LegendScope(variant: variant, child: body);
   }
 
-  /// Three across, spread between the ends (`.legend--3`: `repeat(3, auto)`
-  /// tracks, `justify-content: space-between`): each entry at its own width
+  /// Three across, spread between the ends: each entry at its own width
   /// and the free room shared between them, never under
   /// [FrostedChromeMetrics.legendColumnGap]. Three that cannot fit in a row
-  /// break onto the next (the source's names would wrap in place); every
+  /// break onto the next; every
   /// row of three is 12 under the one before.
   Widget _three() {
     final rows = <List<Widget>>[];
@@ -1200,17 +1192,17 @@ class FrostedLegend extends StatelessWidget {
 
 /// What a [FrostedBar] is drawn as.
 enum FrostedBarVariant {
-  /// 6 tall on the wash (`.bar`): a merchant's share.
+  /// 6 tall on the wash: a merchant's share.
   bar,
 
-  /// 4 tall on the wash (`.bar--thin`): a merchant's share in a row.
+  /// 4 tall on the wash: a merchant's share in a row.
   thin,
 
-  /// 8 tall, the track's glass with a lit top edge (`.tube`): a goal's, a
-  /// month's against the one before.
+  /// 8 tall, the track's glass with a lit top edge: a goal's, a month's against
+  /// the one before.
   tube,
 
-  /// 12 tall (`.tube--lg`): a card's limit.
+  /// 12 tall: a card's limit.
   tubeLarge;
 
   double get _height => switch (this) {
@@ -1224,9 +1216,9 @@ enum FrostedBarVariant {
       this == FrostedBarVariant.tube || this == FrostedBarVariant.tubeLarge;
 }
 
-/// A share of a whole as one bar of the hue (`.bar`, `.tube`): a goal's
-/// saved, a card's used limit, a merchant's share of a category; a tick
-/// where a budget stands and a caption at each end when asked.
+/// A share of a whole as one bar of the hue: a goal's saved, a card's used
+/// limit, a merchant's share of a category; a tick where a budget stands and a
+/// caption at each end when asked.
 ///
 /// ```dart
 /// FrostedBar(0.71, hue: t.hues.sunset)
@@ -1257,13 +1249,13 @@ class FrostedBar extends StatelessWidget {
   /// Where the tick stands, 0 to 1; null draws none.
   final double? tick;
 
-  /// The caption at the scale's start (`.ob-scale`), 8 under the bar.
+  /// The caption at the scale's start, 8 under the bar.
   final String? scaleStart;
 
   /// The caption at the scale's end.
   final String? scaleEnd;
 
-  /// Whether the whole stands at .45 (`.lim--off`): a frozen card's limit.
+  /// Whether the whole stands at .45: a frozen card's limit.
   final bool dimmed;
 
   /// What a screen reader says; the percent when null.
@@ -1406,9 +1398,9 @@ enum FrostedMeterSize {
   small,
 }
 
-/// A pane's meter (`.meter`): 4 tall (3 in a small pane) on a white track,
-/// the hue's band filling its share; over its budget, the budget's share
-/// in the hue and the rest in the over red, 1 apart.
+/// A pane's meter: 4 tall (3 in a small pane) on a white track, the hue's band
+/// filling its share; over its budget, the budget's share in the hue and the
+/// rest in the over red, 1 apart.
 ///
 /// ```dart
 /// FrostedMeter(0.92, hue: t.hues.orchid)
@@ -1431,8 +1423,7 @@ class FrostedMeter extends StatelessWidget {
   /// The fill's hue.
   final FrostedHue hue;
 
-  /// Whether the pane is over its budget (`.meter--over`): no track, the
-  /// rest in the over red.
+  /// Whether the pane is over its budget: no track, the rest in the over red.
   final bool over;
 
   /// How tall the meter stands: 4, or a small pane's 3.
@@ -1539,13 +1530,13 @@ enum FrostedBudgetBarSize {
   /// 6 tall: a budget's bar in a row or a tile.
   regular,
 
-  /// 10 tall (`.overbar--lg`): a category page's own bar.
+  /// 10 tall: a category page's own bar.
   large,
 }
 
-/// A category over its budget as one bar (`.overbar`): the budget's share
-/// of what was spent in the hue, the rest in the over red, 2 apart, and
-/// under it the budget at the start and the amount over at the end.
+/// A category over its budget as one bar: the budget's share of what was spent
+/// in the hue, the rest in the over red, 2 apart, and under it the budget at
+/// the start and the amount over at the end.
 ///
 /// ```dart
 /// FrostedBudgetBar(spent: 286.40, budget: 250, hue: t.hues.coral)
@@ -1573,11 +1564,10 @@ class FrostedBudgetBar extends StatelessWidget {
   /// The budget's hue.
   final FrostedHue hue;
 
-  /// How tall the bar stands: 6, or a category page's 10 (`.overbar--lg`).
+  /// How tall the bar stands: 6, or a category page's 10.
   final FrostedBudgetBarSize size;
 
-  /// The budget caption's ink (`.ob-scale` inherits: the hero's ink, a
-  /// card's quiet ink); the surrounding text's, else the page ink, when
+  /// The budget caption's ink (the hero's ink, a card's quiet ink); the surrounding text's, else the page ink, when
   /// null. The amount over is always in the over ink.
   final Color? ink;
 
@@ -1729,8 +1719,8 @@ class FrostedBudgetBar extends StatelessWidget {
 // Compare and merchant bars
 // ---------------------------------------------------------------------------
 
-/// One month of a [FrostedCompareBars] (`.cmp-r`): its name and amount on a
-/// baseline over a tube, the budget's tick across it.
+/// One month of a [FrostedCompareBars]: its name and amount on a baseline over
+/// a tube, the budget's tick across it.
 ///
 /// ```dart
 /// FrostedCompareRow(name: 'September', amount: 263.10, fraction: 0.92, hue: t.hues.coral, tick: 0.87)
@@ -1806,8 +1796,8 @@ class FrostedCompareRow extends StatelessWidget {
   }
 }
 
-/// A month against the month before (`.cmp`): each a [FrostedCompareRow] on
-/// one scale, 16 apart, the budget's tick across both.
+/// A month against the month before: each a [FrostedCompareRow] on one scale,
+/// 16 apart, the budget's tick across both.
 ///
 /// ```dart
 /// FrostedCompareBars(children: [FrostedCompareRow(name: 'September', amount: 263.10, fraction: 263.10 / 286.40, hue: hue), FrostedCompareRow(name: 'October so far', amount: 241.80, fraction: 241.80 / 286.40, hue: hue)])
@@ -1833,9 +1823,9 @@ class FrostedCompareBars extends StatelessWidget {
   }
 }
 
-/// One merchant of a [FrostedMerchantBars] (`.merch`): its monogram, name
-/// and visits, its amount at the end and its share as a thin bar under
-/// them; a card of its own on the desktop. A link when [onPressed] is given.
+/// One merchant of a [FrostedMerchantBars]: its monogram, name and visits, its
+/// amount at the end and its share as a thin bar under them; a card of its own
+/// on the desktop. A link when [onPressed] is given.
 ///
 /// ```dart
 /// FrostedMerchant(name: 'Blue Fern Café', subtitle: '13 visits', amount: 84.25, fraction: 1, hue: t.hues.coral, onPressed: open)
@@ -1975,7 +1965,7 @@ class FrostedMerchant extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: words,
+      semanticLabel: words,
       role: FrostedPressRole.link,
       radius: wide ? FrostedBreakpoints.innerRadius(context) : 0,
       child: body,
@@ -2003,9 +1993,8 @@ class FrostedMerchant extends StatelessWidget {
   }
 }
 
-/// A category's merchants as bars (`.merchants`): each a [FrostedMerchant]
-/// in falling order, rows 2 apart on a phone, cards four across on the
-/// desktop.
+/// A category's merchants as bars: each a [FrostedMerchant] in falling order,
+/// rows 2 apart on a phone, cards four across on the desktop.
 ///
 /// ```dart
 /// FrostedMerchantBars(children: [FrostedMerchant(name: 'Blue Fern Café', subtitle: '13 visits', amount: 84.25, fraction: 1, hue: hue), FrostedMerchant(name: 'Northside Market', subtitle: '6 visits', amount: 52.40, fraction: .62, hue: hue)])
@@ -2064,9 +2053,9 @@ class FrostedMerchantBars extends StatelessWidget {
 // In against out, the split
 // ---------------------------------------------------------------------------
 
-/// A month's money in against what went out (`.flow`): the two figures in
-/// their columns, under them a small track of where the money went with
-/// what was kept as its last band, and a line of captions under that.
+/// A month's money in against what went out: the two figures in their columns,
+/// under them a small track of where the money went with what was kept as its
+/// last band, and a line of captions under that.
 ///
 /// ```dart
 /// FrostedInOut(moneyIn: 6825, spent: 2486.12, bands: [FrostedBand(1150, hue: t.hues.periwinkle, name: 'Rent'), FrostedBand(412.36, hue: t.hues.orchid, name: 'Groceries')])
@@ -2115,9 +2104,9 @@ class FrostedInOut extends StatelessWidget {
   /// What a screen reader says.
   final String? label;
 
-  /// The room between the track and its captions: 8 inside a `.flow`, the
+  /// The room between the track and its captions: 8 inside a flow, the
   /// scale's own 10 ([FrostedChromeMetrics.frostedScaleGap]) where the track
-  /// stands loose in its tile (an account's `.flow-bar`).
+  /// stands loose in its tile (an account's).
   final double scaleGap;
 
   @override
@@ -2266,9 +2255,8 @@ final class FrostedShare {
   final num amount;
 }
 
-/// A split's shares as one track of the purchase's hue (`.prism-split`),
-/// each share's name and amount inside its band, the first at its start
-/// and the others at their ends.
+/// A split's shares as one track of the purchase's hue, each share's name and
+/// amount inside its band, the first at its start and the others at their ends.
 ///
 /// ```dart
 /// FrostedSplitBar(hue: t.hues.lemon, shares: [FrostedShare('You', 14), FrostedShare('Jonah', 14)])
@@ -2327,10 +2315,9 @@ class FrostedSplitBar extends StatelessWidget {
 // The statement timeline, the visit strip, the due line
 // ---------------------------------------------------------------------------
 
-/// A statement's last payment, closing and due day on one rule (`.stl`),
-/// spaced by their dates: a pearl bead where it was paid, an ink ring where
-/// it closed, a faint ring where it is due; each with its caption and
-/// amount under it.
+/// A statement's last payment, closing and due day on one rule, spaced by their
+/// dates: a pearl bead where it was paid, an ink ring where it closed, a faint
+/// ring where it is due; each with its caption and amount under it.
 ///
 /// ```dart
 /// FrostedStatementTimeline(paid: DateTime(2026, 10, 12), closed: DateTime(2026, 10, 28), due: DateTime(2026, 11, 12), paidAmount: 1180.22, closedAmount: 1326.44)
@@ -2562,11 +2549,10 @@ class FrostedStatementTimeline extends StatelessWidget {
   }
 }
 
-/// A merchant's visits across a month (`.strip`): a rule with a tick for
-/// each day, a dot of the hue on each day visited (stacked when more than
-/// one), the record's own visit a white dot ringed in the hue, and the
-/// month's first, middle and last day under it (Today in the last's place
-/// while the month runs).
+/// A merchant's visits across a month: a rule with a tick for each day, a dot
+/// of the hue on each day visited (stacked when more than one), the record's
+/// own visit a white dot ringed in the hue, and the month's first, middle and
+/// last day under it (Today in the last's place while the month runs).
 ///
 /// ```dart
 /// FrostedVisitStrip(month: DateTime(2026, 9), visits: [DateTime(2026, 9, 29)], current: DateTime(2026, 9, 29), hue: t.hues.coral)
@@ -2787,9 +2773,9 @@ class FrostedVisitStrip extends StatelessWidget {
   }
 }
 
-/// The month between two due days on a pane's floor (`.due-line`): a rule
-/// in the pane's ink from a dot of the hue (paid) to a white dot ringed in
-/// it (due next), their words under each end.
+/// The month between two due days on a pane's floor: a rule in the pane's ink
+/// from a dot of the hue (paid) to a white dot ringed in it (due next), their
+/// words under each end.
 ///
 /// ```dart
 /// FrostedDueLine(hue: t.hues.periwinkle, start: 'Paid Oct 1', end: 'Next due Nov 1')
@@ -2905,10 +2891,9 @@ class FrostedDueLine extends StatelessWidget {
 // Balance changes
 // ---------------------------------------------------------------------------
 
-/// One account a move touches (`.chg`): its token, name and the amount
-/// moved, its balance after over the one before struck through, and a
-/// least track of the balance with the part leaving faint or the part
-/// arriving bright at its end.
+/// One account a move touches: its token, name and the amount moved, its
+/// balance after over the one before struck through, and a least track of the
+/// balance with the part leaving faint or the part arriving bright at its end.
 ///
 /// ```dart
 /// FrostedBalanceChange(name: 'Everyday', icon: FrostedGlyphs.wallet, hue: t.hues.cyan, before: 6248.30, after: 5748.30)
@@ -3039,7 +3024,7 @@ class FrostedBalanceChange extends StatelessWidget {
 }
 
 /// The accounts a move touches, each a [FrostedBalanceChange], a hairline
-/// between them (`.chg + .chg`): a review's or a receipt's Balances now.
+/// between them: a review's or a receipt's Balances now.
 ///
 /// ```dart
 /// FrostedBalanceChanges(children: [FrostedBalanceChange(name: 'Everyday', icon: FrostedGlyphs.wallet, hue: t.hues.cyan, before: 6248.30, after: 5748.30), FrostedBalanceChange(name: 'Savings', icon: FrostedGlyphs.wallet, hue: t.hues.mint, before: 12400, after: 12900)])
@@ -3096,9 +3081,9 @@ class FrostedBalanceChanges extends StatelessWidget {
 // The route beam, the done mark
 // ---------------------------------------------------------------------------
 
-/// A move's route at the head of its review (`.route`): the source's
-/// large token, a beam from its hue through the prism's lavender to the
-/// destination's with an arrow in the middle, and the destination's token.
+/// A move's route at the head of its review: Frosted's large token, a beam from
+/// its hue through the prism's lavender to the destination's with an arrow in
+/// the middle, and the destination's token.
 ///
 /// ```dart
 /// FrostedRoute(fromName: 'Everyday', fromIcon: FrostedGlyphs.wallet, fromHue: t.hues.cyan, toName: 'Savings', toIcon: FrostedGlyphs.landmark, toHue: t.hues.seafoam)
@@ -3120,10 +3105,10 @@ class FrostedRoute extends StatelessWidget {
   /// Where the money comes from.
   final String fromName;
 
-  /// The source's glyph.
+  /// Frosted's glyph.
   final IconData fromIcon;
 
-  /// The source's hue.
+  /// Frosted's hue.
   final FrostedHue fromHue;
 
   /// Where the money goes.
@@ -3176,23 +3161,26 @@ class FrostedRoute extends StatelessWidget {
               hue: fromHue,
               size: FrostedMarkSize.large,
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: FrostedChromeMetrics.routeLineGap,
-              children: [
-                beam(fromHue.b, mid),
-                // Points the way of the move: a glyph that mirrors itself
-                // (the default arrow) was turned back by a second flip.
-                Transform.flip(
-                  flipX: rtl && !glyph.matchTextDirection,
-                  child: Icon(
-                    glyph,
-                    size: FrostedChromeMetrics.routeGlyph,
-                    color: t.colorScheme.textSecondary,
+            // The beams give way to the marks as they grow with the text.
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: FrostedChromeMetrics.routeLineGap,
+                children: [
+                  Flexible(child: beam(fromHue.b, mid)),
+                  // Points the way of the move: a glyph that mirrors itself
+                  // (the default arrow) was turned back by a second flip.
+                  Transform.flip(
+                    flipX: rtl && !glyph.matchTextDirection,
+                    child: Icon(
+                      glyph,
+                      size: FrostedChromeMetrics.routeGlyph,
+                      color: t.colorScheme.textSecondary,
+                    ),
                   ),
-                ),
-                beam(mid, toHue.a),
-              ],
+                  Flexible(child: beam(mid, toHue.a)),
+                ],
+              ),
             ),
             FrostedIconMark(toIcon, hue: toHue, size: FrostedMarkSize.large),
           ],
@@ -3222,10 +3210,10 @@ class FrostedRoute extends StatelessWidget {
   }
 }
 
-/// The mark at the head of a finished flow's page (`.done-art`): four rings
-/// of the spectrum fading outward over a soft glow, the check on the ink
-/// act in a white halo in the middle; 200 across, pulled 12 into the head
-/// above and 4 into the words below.
+/// The mark at the head of a finished flow's page: four rings of the spectrum
+/// fading outward over a soft glow, the check on the ink act in a white halo in
+/// the middle; 200 across, pulled 12 into the head above and 4 into the words
+/// below.
 ///
 /// ```dart
 /// FrostedDoneMark()
@@ -3324,8 +3312,7 @@ class FrostedDoneMark extends StatelessWidget {
   }
 }
 
-/// The done mark's rings (`.done-rings`): the SVG's glow and its four
-/// strokes of the spectrum, drawn at the box's size.
+/// The done mark's rings: a glow and four strokes of the spectrum, drawn at the box's size.
 class _DoneRings extends CustomPainter {
   const _DoneRings();
 

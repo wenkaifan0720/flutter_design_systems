@@ -107,7 +107,7 @@ class FrostedMaterialRecipe {
   final Color opaque;
 
   /// The filter over what is behind: blurred, then one colour matrix that
-  /// saturates it (CSS's `saturate()`) and scales its lightness into the
+  /// saturates it and scales its lightness into the
   /// glass's span, `ceiling - floor`: a grey `g` comes out
   /// `g * (ceiling - floor)`, a hue as far from that grey as it was on light
   /// glass, and dimmed half as much as its lightness on dark glass.

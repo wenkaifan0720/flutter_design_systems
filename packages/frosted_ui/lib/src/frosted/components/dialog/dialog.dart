@@ -31,9 +31,8 @@ import '../../internal/act_row.dart';
 /// else stacked with the last on top, as ui_core's `RawActionBar` lays
 /// them out. This is the card;
 /// [FrostedDialog.show] raises it over the whole app and completes with
-/// whether it was confirmed (null when dismissed). Captured on the desktop
-/// (the Freeze sheet: Cancel / Freeze); on a phone the same card over the
-/// scrim is DERIVED.
+/// whether it was confirmed (null when dismissed). A phone shows the same
+/// card over the scrim.
 ///
 /// ```dart
 /// FrostedDialog(title: 'Freeze this card?', message: 'Payments stop until you unfreeze it.', confirmLabel: 'Freeze', cancelLabel: 'Cancel', onConfirm: freeze, onCancel: close)
@@ -334,7 +333,7 @@ class _DangerAct extends StatelessWidget implements FrostedSizedAct {
     );
     final act = FrostedPressable(
       onPressed: onTap,
-      label: label,
+      semanticLabel: label,
       radius: height / 2,
       child: FrostedDim(off: onTap == null, child: face),
     );

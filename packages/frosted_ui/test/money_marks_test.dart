@@ -148,7 +148,7 @@ Widget _everything(BuildContext context) {
           const FrostedTag('On track', tone: FrostedTone.success),
           const FrostedTag('Credit', variant: FrostedTagVariant.glass),
           FrostedSwatch(th.hues.orchid),
-          const FrostedCheckbox(value: true, label: 'Done'),
+          const FrostedCheckbox(value: true, semanticLabel: 'Done'),
         ],
       ),
       const FrostedPeople(
@@ -180,7 +180,7 @@ void main() {
     testWidgets('each amount is read aloud as one, in every preset and mode', (
       t,
     ) async {
-      for (final preset in FrostedThemeData.presets) {
+      for (final preset in [for (final p in FrostedThemeData.palettes) p.id]) {
         for (final brightness in Brightness.values) {
           await _pump(
             t,
@@ -676,10 +676,9 @@ void main() {
         );
         final th = _theme(t, FrostedMonogram);
         expect(find.text('BF'), findsOneWidget);
-        expect(
-          _node(t, 'Blue Fern Café'),
-          isSemantics(label: 'Blue Fern Café', isImage: true),
-        );
+        // Beside the words that name it, an unlabelled monogram is
+        // decoration: a screen reader passes it by.
+        expect(find.bySemanticsLabel('Blue Fern Café'), findsNothing);
         expect(_style(t, 'BF').color, th.hues.coral.ink);
         expect(_style(t, 'BF').fontSize, 13);
         expect(_style(t, 'BF').fontWeight, FontWeight.w600);
@@ -823,12 +822,12 @@ void main() {
       expect(_style(t, 'NS').color, th.hues.emerald.ink);
       expect(find.byIcon(LucideIcons.arrowLeftRight), findsOneWidget);
       expect(find.byIcon(LucideIcons.creditCard), findsOneWidget);
-      for (final name in [
-        'Blue Fern Café',
-        'Northwind Studio',
-        'Move',
-        'Card payment',
-      ]) {
+      // A merchant's or a payer's initials repeat the row's title beside
+      // them: decoration. A move's and a payment's glyph say what they are.
+      for (final name in ['Blue Fern Café', 'Northwind Studio']) {
+        expect(find.bySemanticsLabel(name), findsNothing, reason: name);
+      }
+      for (final name in ['Move', 'Card payment']) {
         expect(
           _node(t, name),
           isSemantics(label: name, isImage: true),
@@ -1120,12 +1119,12 @@ void main() {
               false,
               (done, set) => FrostedCheckbox(
                 value: done,
-                label: 'Stretch',
+                semanticLabel: 'Stretch',
                 onChanged: (v) => set(v!),
               ),
               seen: seen,
             ),
-            const FrostedCheckbox(value: true, label: 'Drink water'),
+            const FrostedCheckbox(value: true, semanticLabel: 'Drink water'),
           ],
         ),
       );
@@ -1173,18 +1172,22 @@ void main() {
               (v, set) => FrostedCheckbox(
                 value: v,
                 tristate: true,
-                label: 'All bills',
+                semanticLabel: 'All bills',
                 onChanged: set,
               ),
               seen: seen,
             ),
             FrostedCheckbox(
               value: null,
-              label: 'Some',
+              semanticLabel: 'Some',
               tristate: true,
               onChanged: some.add,
             ),
-            const FrostedCheckbox(value: false, label: 'Terms', error: true),
+            const FrostedCheckbox(
+              value: false,
+              semanticLabel: 'Terms',
+              error: true,
+            ),
           ],
         ),
       );

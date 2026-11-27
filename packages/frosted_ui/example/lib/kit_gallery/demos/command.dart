@@ -142,7 +142,7 @@ Widget kitCommandDemo(Brightness brightness) => kitScreen(
       children: [
         Builder(
           builder: (context) => FrostedContextMenu(
-            label: 'Note',
+            semanticLabel: 'Note',
             items: [
               RawMenuEntry(
                 label: 'Copy',

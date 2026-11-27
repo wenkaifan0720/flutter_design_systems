@@ -5,11 +5,10 @@ import '../../chrome_metrics.dart';
 import '../../format.dart';
 import '../../theme.dart';
 
-/// How large a [FrostedMoney] stands, as the source's `.money--96/--64/--40/
-/// --28`: the whole dollars at the size, its `$` (with any sign) and its
-/// cents stepped down to the cents size and dropped from the top.
+/// How large a [FrostedMoney] stands (96, 64, 40 or 28): the whole dollars at the size, its `$` (with any sign) and its cents
+/// stepped down to the cents size and dropped from the top.
 enum FrostedMoneySize {
-  /// 96, cents 40: the desktop's hero figure (`.money--96`; a phone draws
+  /// 96, cents 40: the desktop's hero figure (a phone draws
   /// it at [large]).
   extraLarge(
     FrostedChromeMetrics.moneyGiant,
@@ -60,15 +59,14 @@ enum FrostedMoneySize {
   final double tracking;
 }
 
-/// A figure that stands alone, as the source's `.money` sets it: the whole
-/// dollars carry the weight in the display face; the `$` (with its sign when
-/// [sign]) before it and the cents after step down to the cents size, ride
-/// the cap line and go quiet. Money in ([flow] inflow, or [sign] with a
-/// positive amount) is set in the green of money in, its `$` and cents at
-/// 0.72. [unsigned] drops a negative's minus (a card's balance owed);
-/// [cents] false prints whole dollars; [ink] recolours the dollars (a pane's
-/// figure in its own ink); [fit] shrinks one wider than its room. Read aloud
-/// as one amount.
+/// A figure that stands alone: the whole dollars
+/// carry the weight in the display face; the `$` (with its sign when [sign])
+/// before it and the cents after step down to the cents size, ride the cap line
+/// and go quiet. Money in ([flow] inflow, or [sign] with a positive amount) is
+/// set in the green of money in, its `$` and cents at 0.72. [unsigned] drops a
+/// negative's minus (a card's balance owed); [cents] false prints whole
+/// dollars; [ink] recolours the dollars (a pane's figure in its own ink); [fit]
+/// shrinks one wider than its room. Read aloud as one amount.
 ///
 /// ```dart
 /// FrostedMoney(48210.66)
@@ -281,17 +279,17 @@ enum FrostedAmountSize {
   /// 14: a part's or a menu option's amount.
   small,
 
-  /// 16: an amount at a row's end (`.amt`).
+  /// 16: an amount at a row's end.
   regular,
 
-  /// 20, -.02em: a stat's figure (`.stat-v`, `.fig-v`, `.cfig-v`).
+  /// 20, -.02em: a stat's figure.
   large,
 
   /// 28, -.025em: a stat's figure on the desktop.
   extraLarge,
 }
 
-/// An amount in a column, as the source's `.amt`: the display face at 16 in
+/// An amount in a column: the display face at 16 in
 /// figures of one width, right-aligned, its cents in the quiet ink. [signed]
 /// (the default) reads its direction: a positive amount is money in, in the
 /// green with its plus; a negative carries a true minus. [signed] false is a
@@ -442,10 +440,10 @@ class FrostedAmount extends StatelessWidget {
   }
 }
 
-/// Figures inside a line of words, as the source's `.num`: the display face
-/// at the line's own size and colour, medium, in figures of one width ("··
-/// 4821", "of $4,000 limit", "13 results"). [style] replaces the line's
-/// style it would inherit.
+/// Figures inside a line of words: the display face at the
+/// line's own size and colour, medium, in figures of one width ("·· 4821", "of
+/// $4,000 limit", "13 results"). [style] replaces the line's style it would
+/// inherit.
 ///
 /// ```dart
 /// FrostedNumberText('4,000')
@@ -501,12 +499,12 @@ const double _percentSignGap = 1;
 
 /// How large a [FrostedPercent] stands.
 enum FrostedPercentSize {
-  /// 20, -.02em: a category's share of its budget (`.pct`), a goal's
-  /// progress in its row (`.goal-pct`).
+  /// 20, -.02em: a category's share of its budget, a goal's progress in its
+  /// row.
   regular,
 
-  /// 16, -.01em, at least 40 wide and right-aligned: a goal card's share
-  /// after its tube (`.gc-p`).
+  /// 16, -.01em, at least 40 wide and right-aligned: a goal card's share after
+  /// its tube.
   small,
 }
 
@@ -617,28 +615,27 @@ class FrostedPercent extends StatelessWidget {
 
 /// How a set of [FrostedFigure]s is laid out in a [FrostedStats].
 enum FrostedStatVariant {
-  /// `.stats`: one under the other with hairlines between, each figure at
+  /// One under the other with hairlines between, each figure at
   /// the line's start and its caption at the end; on the desktop a row of
   /// columns, the caption over its figure at 28, hairlines between.
   lines,
 
-  /// `.figs`: side by side 24 apart, each caption over its figure.
+  /// Side by side 24 apart, each caption over its figure.
   columns,
 
-  /// `.cfigs`: three across (.8, 1.2 and 1 of the width) with inset
+  /// Three across (.8, 1.2 and 1 of the width) with inset
   /// hairlines between, a caption over each figure and its note under; on
   /// the desktop one under the other, label beside figure, hairlines
   /// between.
   cells,
 }
 
-/// One stat: a caption and its figure (stat-tile), as the source's `.stat`,
-/// `.fig` and `.cfig` set them: the caption in the caption ink over the
-/// figure at 20 in the display face, tabular. [flow] inflow sets the figure
-/// in the green with its plus; [signed] keeps a negative's minus; [value]
-/// replaces the amount with any figure (a percentage, a count); [note] a
-/// second caption under the figure (a card's "of $4,000"). Several share a
-/// [FrostedStats]. Read aloud as the caption then the figure.
+/// One stat: a caption and its figure: the caption in the caption ink over the figure at 20
+/// in the display face, tabular. [flow] inflow sets the figure in the green
+/// with its plus; [signed] keeps a negative's minus; [value] replaces the
+/// amount with any figure (a percentage, a count); [note] a second caption
+/// under the figure (a card's "of $4,000"). Several share a [FrostedStats].
+/// Read aloud as the caption then the figure.
 ///
 /// ```dart
 /// FrostedFigure(3214.09, caption: 'Spent')
@@ -735,9 +732,8 @@ class FrostedFigure extends StatelessWidget {
 }
 
 /// A set of [FrostedFigure]s in one of three arrangements: the lines of a
-/// spending tile with hairlines between (`.stats`), the columns of a
-/// record's summary (`.figs`), or a card's three cells (`.cfigs`). Read
-/// as its figures in order.
+/// spending tile with hairlines between, the columns of a record's summary, or
+/// a card's three cells. Read as its figures in order.
 ///
 /// ```dart
 /// FrostedStats(children: [FrostedFigure(3214.09, caption: 'Spent'), FrostedFigure(285.91, caption: 'Left')])
@@ -992,11 +988,11 @@ class FrostedStats extends StatelessWidget {
   }
 }
 
-/// A figure that rolls to its new value (animated-number): a [FrostedMoney]
-/// in digits of one width that counts from where it stood to [amount] when
-/// it changes, easing out over [duration]; a screen reader hears the amount
-/// it lands on, never the ones between. With animation off it stands
-/// still. Drawn from the tokens: the source never rolls a figure.
+/// A figure that rolls to its new value (animated-number): a [FrostedMoney] in
+/// digits of one width that counts from where it stood to [amount] when it
+/// changes, easing out over [duration]; a screen reader hears the amount it
+/// lands on, never the ones between. With animation off it stands still. Drawn
+/// from the tokens: Frosted never rolls a figure.
 ///
 /// ```dart
 /// FrostedCounter(balance, size: FrostedMoneySize.regular)

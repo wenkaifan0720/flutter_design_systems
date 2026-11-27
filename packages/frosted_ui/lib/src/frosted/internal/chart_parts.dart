@@ -6,8 +6,8 @@ import 'package:flutter/widgets.dart';
 import '../chrome_metrics.dart';
 import '../theme.dart';
 
-/// The gutter a chart keeps at its end for its grid's values (the source's
-/// `G`): 40 (48 from 1024) on the trails and the goal, 36 (40) on the
+/// The gutter a chart keeps at its end for its grid's values: 40 (48 from
+/// 1024) on the trails and the goal, 36 (40) on the
 /// spend chart, the bars and the steps. Plumbing of the charts.
 enum FrostedChartGutter {
   /// The trails' and the goal's gutter.
@@ -29,8 +29,7 @@ enum FrostedChartGutter {
   };
 }
 
-/// A Fritsch-Carlson monotone cubic through [pts] (the source's
-/// `monotone`): a C segment between each pair, the tangents damped so the
+/// A Fritsch-Carlson monotone cubic through [pts]: a C segment between each pair, the tangents damped so the
 /// curve never overshoots a point. Plumbing of the charts.
 Path frostedMonotonePath(List<Offset> pts) {
   final n = pts.length;
@@ -112,8 +111,7 @@ Path frostedDashes(Path path, List<double> pattern) {
   return out;
 }
 
-/// Paints a hairline across [width] at each of [ys] (the source's
-/// `_hgrid`: 1 wide in the grid ink). Plumbing of the charts.
+/// Paints a hairline across [width] at each of [ys], 1 wide in the grid ink. Plumbing of the charts.
 void frostedPaintGrid(Canvas canvas, List<double> ys, double width, Color ink) {
   final paint = Paint()
     ..color = ink
@@ -124,7 +122,7 @@ void frostedPaintGrid(Canvas canvas, List<double> ys, double width, Color ink) {
   }
 }
 
-/// The dot that ends a line (the source's `_end`): a halo 20 across in the
+/// The dot that ends a line: a halo 20 across in the
 /// end ink at 14%, then a ring 9 across in the page ground stroked 2.5 in
 /// the end ink. [halo] false draws the ring alone (a projection's end, in
 /// its goal's [ink]). Plumbing of the charts.
@@ -150,8 +148,8 @@ void frostedPaintEndDot(
   );
 }
 
-/// The line's spectrum from [from] to [to] (the source's three stops at 0,
-/// .55 and 1 in user space). Plumbing of the charts.
+/// The line's spectrum from [from] to [to], its three stops at 0, .55 and 1
+/// along the way. Plumbing of the charts.
 ui.Shader frostedSpectrum(Offset from, Offset to, List<Color> line) =>
     ui.Gradient.linear(
       from,
@@ -177,7 +175,7 @@ Paint frostedRulePaint(Color ink, double width) => Paint()
   ..strokeWidth = width
   ..strokeCap = StrokeCap.round;
 
-/// The light under a line (the source's `_area_fill`): the area ink from
+/// The light under a line: the area ink from
 /// [top] fading to [to] (nothing, by default) at [foot]. Plumbing of the
 /// charts.
 Paint frostedAreaPaint(
@@ -191,7 +189,7 @@ Paint frostedAreaPaint(
     to ?? inks.areaTo,
   ]);
 
-/// A bar's light (the source's vertical `_grad`): [top] in the hue's
+/// A bar's light, top to foot: [top] in the hue's
 /// second stop down to [foot] in its first, at [opacity]. Plumbing of the
 /// charts.
 Paint frostedBarPaint(
@@ -205,7 +203,7 @@ Paint frostedBarPaint(
     hue.a.withValues(alpha: hue.a.a * opacity),
   ]);
 
-/// The grid for [vals] (the source's `value_range`): lines on the nice
+/// The grid for [vals]: lines on the nice
 /// step (1, 2, 2.5 or 5 times a power of ten) that wastes the least of the
 /// plot, two to [lines] + 1 of them; the floor a fifth of the span under
 /// the lowest line, or zero when [zero] (then the zero line is left out of
@@ -272,7 +270,7 @@ Paint frostedBarPaint(
   return (lo: g0 - (grid.last - g0) * 0.2, hi: hi, grid: grid, step: step);
 }
 
-/// A grid value as the source's `dollars_short` prints it: "$7.5k",
+/// A grid value in short dollars: "$7.5k",
 /// "$50k", "$75", "$0". Plumbing of the charts.
 String frostedDollarsShort(double g) {
   String plain(double v) {
@@ -292,18 +290,17 @@ String frostedDollarsShort(double g) {
 /// column). Plumbing of the charts.
 double frostedSlot(int i, int n, double width) => (i + 0.5) / n * width;
 
-/// Where a chart's word stands against its point, as the source's CSS
-/// places each one. Plumbing of the charts.
+/// Where a chart's word stands against its point. Plumbing of the charts.
 enum FrostedLabelAnchor {
-  /// A gridline's value (`.y-lbl`): its right edge at the point, centred
+  /// A gridline's value: its right edge at the point, centred
   /// on the line.
   gridEnd,
 
-  /// A rule's name (`.b-lbl`): its left edge at the point, its foot 4 over
+  /// A rule's name: its left edge at the point, its foot 4 over
   /// the rule.
   ruleStart,
 
-  /// A note at its point (`.a-lbl`): its top left corner there.
+  /// A note at its point: its top left corner there.
   at,
 
   /// A note over a cliff (`.mk.mk-up`): 6 in from the point, its foot 5
@@ -314,32 +311,32 @@ enum FrostedLabelAnchor {
   /// under it.
   noteDown,
 
-  /// A step's name (`.mk-step`): 8 in from the point, centred on it.
+  /// A step's name: 8 in from the point, centred on it.
   noteStep,
 
-  /// The end of a projection, over it (`.mk-end.mk-up`): its right edge at
+  /// The end of a projection, over it: its right edge at
   /// the point, its foot 10 over.
   endUp,
 
-  /// The end of a projection, under it (`.mk-end.mk-dn`): its right edge at
+  /// The end of a projection, under it: its right edge at
   /// the point, its head 10 under, dropped by the dashes' rise over its own
   /// width so it clears them.
   endDown,
 
-  /// A bar's value (`.bar-v`): centred on the point, its foot 6 over.
+  /// A bar's value: centred on the point, its foot 6 over.
   barValue,
 
-  /// The latest bar's value (`.bar-v--end`): its right edge at the point,
+  /// The latest bar's value: its right edge at the point,
   /// its foot 6 over.
   barValueEnd,
 
-  /// An axis word centred under its point (`.x-days .c`).
+  /// An axis word centred under its point.
   centre,
 
   /// An axis word starting at its point (the first).
   start,
 
-  /// An axis word ending at its point (`.x-days .r`).
+  /// An axis word ending at its point.
   end,
 }
 
@@ -470,8 +467,8 @@ class FrostedAxisWord {
 
 /// The room a chart's axis words take under its plot past their own 8
 /// ([FrostedChromeMetrics.chartLabelsGap]): [extra] more where the axis is
-/// one item of a column with a gap, as in a record's chart (`.rec-chart`,
-/// `.cat-chart`: the gap of 10 over the axis's own margin), none where the
+/// one item of a column with a gap, as in a record's chart (the gap of 10
+/// over the axis's own margin), none where the
 /// chart stands alone. Plumbing of the charts.
 class FrostedChartAxisRoom extends InheritedWidget {
   /// Creates a [FrostedChartAxisRoom].
@@ -496,12 +493,11 @@ class FrostedChartAxisRoom extends InheritedWidget {
       oldWidget.extra != extra;
 }
 
-/// A chart's row of day words (`.x-days`): 16 tall, 8 under the plot (and
+/// A chart's row of day words: 16 tall, 8 under the plot (and
 /// a [FrostedChartAxisRoom]'s extra), its
 /// end inset by [endInset] (the plot's gutter), each word in 12/1 in the
-/// third ink at its fraction of the row, centred (`.c`), flush at the
-/// start (the first) or the end (`.r`); the current one in the page ink,
-/// semibold (`.now`). Plumbing of the charts.
+/// third ink at its fraction of the row, centred, flush at the start (the
+/// first) or the end (the last); the current one in the page ink, semibold. Plumbing of the charts.
 class FrostedDaysAxis extends StatelessWidget {
   /// Creates a [FrostedDaysAxis].
   const FrostedDaysAxis({

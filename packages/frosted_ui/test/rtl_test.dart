@@ -189,7 +189,7 @@ void main() {
         direction,
         StatefulBuilder(
           builder: (context, set) => FrostedSlider(
-            label: 'Volume',
+            semanticLabel: 'Volume',
             value: value,
             onChanged: (v) => set(() => value = v),
           ),

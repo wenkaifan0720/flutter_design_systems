@@ -1,0 +1,12 @@
+// The navigation parts frosted_ui 0.8.0 moved to frosted_host.dart, named through frosted_ui.dart; dart fix imports
+// frosted_host.dart (frosted_host.dart.expect).
+import 'package:frosted_ui/frosted_host.dart';
+import 'package:frosted_ui/frosted_ui.dart';
+
+FrostedHost? host;
+FrostedNavigationBar? bar;
+FrostedNavItem? item;
+FrostedNavAction? action;
+FrostedNavigationRail? rail;
+FrostedNavigationDrawer? drawer;
+FrostedSidebarAction? sidebarAction;

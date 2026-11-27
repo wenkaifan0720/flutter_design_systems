@@ -52,7 +52,7 @@ void main() {
   for (final brightness in Brightness.values) {
     test('the quiet inks stay quieter than the ink (${brightness.name})', () {
       final themes = [
-        for (final p in FrostedThemeData.presets)
+        for (final p in [for (final p in FrostedThemeData.palettes) p.id])
           FrostedThemeData.preset(p, brightness),
         for (final accent in const [
           Color(0xFF1F3A68),

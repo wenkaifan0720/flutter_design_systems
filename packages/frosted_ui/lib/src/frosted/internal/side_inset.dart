@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 /// How far the desktop sidebar stands over the left of the pages under it:
 /// a page lays its content out to the right of [inset] and its sky on under
-/// the sidebar's glass, as the source's grid does. The shell publishes it on
+/// the sidebar's glass. The shell publishes it on
 /// the desktop; elsewhere it is none. Plumbing of the shell and the screen;
 /// pages never place one.
 class FrostedSideInset extends InheritedWidget {

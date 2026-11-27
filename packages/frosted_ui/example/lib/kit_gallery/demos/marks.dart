@@ -119,10 +119,11 @@ Widget kitSpecimenTokens() => Builder(
 Widget kitSpecimenMarkSizes() => Builder(
   builder: (context) {
     final t = context.frostedTheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
+    // A Wrap: the marks grow with the text, and take a second line.
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.end,
       spacing: FrostedSpacing.s12,
+      runSpacing: FrostedSpacing.s12,
       children: [
         for (final size in FrostedMarkSize.values) ...[
           FrostedMonogram('Blue Fern Café', hue: t.hues.coral, size: size),
@@ -226,7 +227,7 @@ Widget kitSpecimenCheck() => Builder(
           children: [
             FrostedCheckbox(
               value: false,
-              label: 'Round up spare change',
+              semanticLabel: 'Round up spare change',
               onChanged: (_) {},
             ),
             // Flexible: at large text the words wrap beside the box.
@@ -243,7 +244,11 @@ Widget kitSpecimenCheck() => Builder(
           spacing: FrostedSpacing.s8,
           children: [
             // A live check (a null onChanged would paint it disabled).
-            FrostedCheckbox(value: true, label: 'Rent paid', onChanged: (_) {}),
+            FrostedCheckbox(
+              value: true,
+              semanticLabel: 'Rent paid',
+              onChanged: (_) {},
+            ),
             Flexible(child: Text('Rent paid', style: t.textTheme.titleMedium)),
           ],
         ),
@@ -254,7 +259,7 @@ Widget kitSpecimenCheck() => Builder(
             FrostedCheckbox(
               value: null,
               tristate: true,
-              label: 'Some bills paid',
+              semanticLabel: 'Some bills paid',
               onChanged: (_) {},
             ),
             Flexible(

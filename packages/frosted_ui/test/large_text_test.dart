@@ -121,7 +121,9 @@ void main() {
     expect(words.bottom, lessThanOrEqualTo(tag.bottom));
   });
 
-  testWidgets("at 200% a status tag's figure keeps the tag's size", (t) async {
+  testWidgets("at 200% a status tag grows with its words, its figure inside", (
+    t,
+  ) async {
     const part = Align(
       alignment: AlignmentDirectional.centerStart,
       child: FrostedTag('results', figure: '13'),
@@ -130,7 +132,7 @@ void main() {
     final rest = t.getSize(find.byType(FrostedTag));
     await _pump(t, part, scale: 2);
     final tag = t.getRect(find.byType(FrostedTag));
-    expect(tag.size, rest);
+    expect(tag.height, rest.height * 2);
     final figure = t.getRect(find.text('13'));
     expect(figure.top, greaterThanOrEqualTo(tag.top));
     expect(figure.bottom, lessThanOrEqualTo(tag.bottom));

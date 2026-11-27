@@ -111,7 +111,7 @@ Widget kitSpecimenTile() => Builder(
     final t = context.frostedTheme;
     return FrostedCard(
       onPressed: _open,
-      label: 'October so far',
+      semanticLabel: 'October so far',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,7 +621,7 @@ Widget kitSpecimenInsight() => Builder(
     hue: context.frostedTheme.hues.coral,
     visits: 13,
     onPressed: _open,
-    label: 'Insight: Dining out',
+    semanticLabel: 'Insight: Dining out',
   ),
 );
 

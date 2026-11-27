@@ -1,20 +1,22 @@
-// The README's first Dart block is a whole app of 12 lines or fewer (the production bar's line 5): it imports
-// frosted_ui, calls runApp and puts Frosted's theme over one widget. Copied into a file of this package and analysed,
-// it compiles with no error and no warning.
+// The README's first whole app is the mount (its install line, its imports, then the host): it imports frosted_ui
+// and material_ui, calls runApp and mounts FrostedHost in the app's builder. Copied into a file of this package and
+// analysed, it compiles with no error and no warning.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('the README opens with a minimal app that compiles', () {
+  test('the README\'s first app mounts the host and compiles', () {
     final readme = File('README.md').readAsStringSync();
-    final block = RegExp(r'```dart\n([\s\S]*?)```')
-        .firstMatch(readme)!
-        .group(1)!;
-    expect(block.trimRight().split('\n'), hasLength(lessThanOrEqualTo(12)));
+    final blocks = [
+      for (final m in RegExp(r'```dart\n([\s\S]*?)```').allMatches(readme))
+        m.group(1)!,
+    ];
+    final block = blocks.firstWhere((b) => b.contains('runApp('));
     expect(block, contains("import 'package:frosted_ui/frosted_ui.dart';"));
-    expect(block, contains('runApp('));
-    expect(block, contains('FrostedTheme('));
+    expect(block, contains("import 'package:material_ui/material_ui.dart';"));
+    expect(block, contains('FrostedHost('));
+    expect(block, isNot(contains('package:flutter/material.dart')));
     final dir = Directory('test/zz_readme_app')..createSync(recursive: true);
     addTearDown(() => dir.deleteSync(recursive: true));
     final app = File('${dir.path}/main.dart')..writeAsStringSync(block);

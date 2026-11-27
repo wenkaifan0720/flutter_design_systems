@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../components/pressable/pressable.dart' show FrostedFocusRing;
+import '../glyphs.dart';
 import '../theme.dart';
 import 'dim.dart';
 import 'face.dart';
@@ -11,9 +13,8 @@ import 'styled.dart';
 // The field parts every text control stands on: its label, its help or
 // error line and its well. Plumbing of the components.
 
-/// A field's label, silent to a screen reader (the control names itself)
-/// (`.field-l { font: 500 12px/1.3 var(--font-t);
-/// color: var(--ink-2) }`).
+/// A field's label, silent to a screen reader (the control names itself):
+/// 12 point medium in the secondary ink.
 class FrostedFieldLabel extends StatelessWidget {
   /// A label saying [text].
   const FrostedFieldLabel(this.text, {super.key});
@@ -31,8 +32,7 @@ class FrostedFieldLabel extends StatelessWidget {
   );
 }
 
-/// A field's help line (`.field-h { font: 400 12px/1.3 var(--font-t);
-/// color: var(--ink-3) }`).
+/// A field's help line: 12 point regular in the third ink.
 class FrostedFieldHint extends StatelessWidget {
   /// A help line saying [text], or what is wrong when [error].
   const FrostedFieldHint(this.text, {this.error = false, super.key});
@@ -40,19 +40,165 @@ class FrostedFieldHint extends StatelessWidget {
   /// The line's words.
   final String text;
 
-  /// Whether it says what is wrong: the over ink, announced as it appears.
+  /// Whether it says what is wrong: led by the danger mark in the over ink,
+  /// announced as it appears.
   final bool error;
 
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final line = Text(
-      text,
-      style: error
-          ? t.textTheme.bodySmall.line(15.6).c(t.colorScheme.over)
-          : t.textTheme.bodySmall.line(15.6),
+    if (error) {
+      return Semantics(
+        liveRegion: true,
+        child: FrostedErrorWords(child: Text(text)),
+      );
+    }
+    return Text(text, style: t.textTheme.bodySmall.line(15.6));
+  }
+}
+
+/// What is wrong with a field or a choice: [child]'s words in the over ink,
+/// led by the danger mark, so an error reads as one by its mark as well as
+/// its colour. The mark is silent and grows with the text. Plumbing of the
+/// components.
+class FrostedErrorWords extends StatelessWidget {
+  /// [child] as an error.
+  const FrostedErrorWords({required this.child, super.key});
+
+  /// The words.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    final style = t.textTheme.bodySmall.line(15.6).c(t.colorScheme.over);
+    final scaler = MediaQuery.textScalerOf(context);
+    final line = scaler.scale(style.fontSize!) * style.height!;
+    return DefaultTextStyle.merge(
+      style: style,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: FrostedSpacing.s4,
+        children: [
+          ExcludeSemantics(
+            child: SizedBox(
+              height: line,
+              child: Center(
+                child: Icon(
+                  FrostedGlyphs.danger,
+                  size: scaler.scale(13),
+                  color: t.colorScheme.over,
+                ),
+              ),
+            ),
+          ),
+          Flexible(child: child),
+        ],
+      ),
     );
-    return error ? Semantics(liveRegion: true, child: line) : line;
+  }
+}
+
+/// The line under a field (its help, or what is wrong) as it comes, changes
+/// and goes: the room it takes eases open or shut as its words fade, so
+/// what stands below the field slides rather than jumps. [gap] stands over
+/// the words and comes and goes with them. A line of another key or type
+/// (help to error) crosses; the same line with new words changes in place.
+/// Under Reduce Motion, or with [eased] false, it cuts. Plumbing of the
+/// components.
+class FrostedHintSlot extends StatelessWidget {
+  /// The line [child] (null for none) under a gap of [gap].
+  const FrostedHintSlot({
+    required this.child,
+    this.gap = 0,
+    this.eased = true,
+    super.key,
+  });
+
+  /// The line, or null for none.
+  final Widget? child;
+
+  /// The room over the line, which goes with it.
+  final double gap;
+
+  /// Whether the line eases in and out; false cuts (a list opening over
+  /// it).
+  final bool eased;
+
+  @override
+  Widget build(BuildContext context) {
+    final motion = FrostedMotion.of(context);
+    final line = child;
+    final Widget current = line == null
+        ? const SizedBox.shrink(key: ValueKey<Type>(FrostedHintSlot))
+        : Padding(
+            key: line.key ?? ValueKey<Type>(line.runtimeType),
+            padding: EdgeInsets.only(top: gap),
+            child: line,
+          );
+    if (!eased) return current;
+    return AnimatedSwitcher(
+      duration: motion.base,
+      switchInCurve: motion.curve,
+      switchOutCurve: motion.curve,
+      transitionBuilder: (child, animation) => SizeTransition(
+        sizeFactor: animation,
+        alignment: AlignmentDirectional.topStart,
+        child: FadeTransition(opacity: animation, child: child),
+      ),
+      layoutBuilder: (current, previous) => Stack(
+        alignment: AlignmentDirectional.topStart,
+        children: [...previous, ?current],
+      ),
+      child: current,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 0.0))
+      ..add(FlagProperty('eased', value: eased, ifFalse: 'cuts'));
+  }
+}
+
+/// A field's label in the label's ink, turning to the danger's while the
+/// field is wrong and back as it is put right, easing across
+/// ([FrostedMotion.fast]). Plumbing of the components.
+class FrostedLabelInk extends StatelessWidget {
+  /// [child] in the label's ink, or the danger's while [error].
+  const FrostedLabelInk({required this.error, required this.child, super.key});
+
+  /// Whether the field is wrong.
+  final bool error;
+
+  /// The label.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    final motion = FrostedMotion.of(context);
+    final style = t.textTheme.labelSmall.line(15.6);
+    final rest = style.color ?? t.colorScheme.textSecondary;
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: error ? 1 : 0),
+      duration: motion.fast,
+      curve: motion.curve,
+      builder: (context, wrong, child) => DefaultTextStyle.merge(
+        style: style.c(Color.lerp(rest, t.colorScheme.over, wrong)!),
+        child: child!,
+      ),
+      child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(FlagProperty('error', value: error, ifTrue: 'error'));
   }
 }
 
@@ -73,31 +219,47 @@ Widget frostedFieldColumn(
   return Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     mainAxisSize: MainAxisSize.min,
-    spacing: FrostedChromeMetrics.fieldLabelGap,
     children: [
-      if (parts.label case final label?)
-        DefaultTextStyle.merge(
-          style: t.textTheme.labelSmall.line(15.6),
-          child: label,
-        ),
-      parts.control,
-      if (words != null && hint)
-        (hintBuilder ?? (w) => w)(
-          DefaultTextStyle.merge(
-            style: parts.error != null
-                ? t.textTheme.bodySmall.line(15.6).c(t.colorScheme.over)
-                : t.textTheme.bodySmall.line(15.6),
-            child: words,
-          ),
-        ),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: FrostedChromeMetrics.fieldLabelGap,
+        children: [
+          // A wrong field's label takes its message's danger ink.
+          if (parts.label case final label?)
+            FrostedLabelInk(error: parts.error != null, child: label),
+          parts.control,
+        ],
+      ),
+      // The help or the error eases in under the field; a list open over
+      // it hides it at once.
+      FrostedHintSlot(
+        gap: FrostedChromeMetrics.fieldLabelGap,
+        eased: hint,
+        child: words == null || !hint
+            ? null
+            : KeyedSubtree(
+                key: ValueKey<bool>(parts.error != null),
+                child: (hintBuilder ?? (w) => w)(
+                  parts.error != null
+                      ? FrostedErrorWords(child: words)
+                      : DefaultTextStyle.merge(
+                          style: t.textTheme.bodySmall.line(15.6),
+                          child: words,
+                        ),
+                ),
+              ),
+      ),
     ],
   );
 }
 
-/// The recessed glass a field stands in (`.inp`, `.amount-in`, `.pick-r`):
-/// a step darker than what holds it, with a thin neutral rim. Focus clears
-/// its frost ([FrostedFocusRing]); a wrong field keeps the same rim and says
-/// what is wrong in its message ([FrostedFieldHint]) in the over ink.
+/// The recessed glass a field stands in (a text entry, an amount, a
+/// picker's row): a step darker than what holds it, with a thin neutral rim. Focus clears
+/// its frost ([FrostedFocusRing]); a wrong field's glass takes the danger's
+/// tint, its rim kept the glass's, the field shows the danger's mark at its
+/// end, and its label and message take the danger's ink, the message saying
+/// what is wrong ([FrostedErrorWords]).
 class FrostedWell extends StatelessWidget {
   /// A well round [child].
   const FrostedWell({
@@ -120,8 +282,8 @@ class FrostedWell extends StatelessWidget {
   /// Whether the field holds focus: its frost clears.
   final bool focused;
 
-  /// Whether the field is wrong. Its style's error layer applies; the well
-  /// itself keeps its neutral rim, as the message carries the warning.
+  /// Whether the field is wrong: the glass takes the danger's tint (unless
+  /// its style's error layer sets an overlay) and keeps its rim.
   final bool error;
 
   /// Whether the field takes input; a disabled well fades to half.
@@ -152,8 +314,8 @@ class FrostedWell extends StatelessWidget {
     // A field is recessed glass: a step darker than what holds it, shaded
     // along its top inside edge.
     // By day the well wears one even lit rim all round, never a dark line;
-    // by night its edge is the night glass's rim. Wrong or not, the rim stays
-    // neutral. Holding focus, its frost clears as every part's does
+    // by night its edge is the night glass's rim. Wrong, the glass takes the
+    // danger's tint and the rim stays the glass's. Holding focus, its frost clears as every part's does
     // (FrostedFocusRing: more of the colour behind, its rim a little
     // brighter).
     final day = !t.isDark;
@@ -164,7 +326,7 @@ class FrostedWell extends StatelessWidget {
       ),
       shape: cut,
       color: s.fill,
-      wash: s.overlay,
+      wash: s.overlay ?? (error ? t.colorScheme.overTint : null),
       edge: side?.color,
       edges: side == null
           ? const EdgeInsets.all(FrostedChromeMetrics.outline)

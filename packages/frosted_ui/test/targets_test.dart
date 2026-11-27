@@ -34,10 +34,14 @@ void main() {
               FrostedBell(unread: 1, onPressed: () => rung++),
               FrostedCheckbox(
                 value: false,
-                label: 'Stretch',
+                semanticLabel: 'Stretch',
                 onChanged: checks.add,
               ),
-              FrostedSwitch(value: false, label: 'Alerts', onChanged: (_) {}),
+              FrostedSwitch(
+                value: false,
+                semanticLabel: 'Alerts',
+                onChanged: (_) {},
+              ),
             ],
           ),
         ),

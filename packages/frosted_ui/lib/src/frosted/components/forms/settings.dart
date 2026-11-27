@@ -18,10 +18,8 @@ import '../../internal/flush_end.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/cap.dart';
 
-/// A tile's head as `.tile-h` sets it (the title in `.t20`, at least 24
-/// tall), with the margin the settings and form tiles override to [gap]
-/// (`.set-tile .tile-h { margin-bottom: 4px }`, `.form-tile .tile-h
-/// { margin-bottom: 16px }`).
+/// A tile's head: the title at 20 point, at least 24 tall, [gap] over what
+/// follows (4 on a settings tile, 16 on a form tile).
 class _TileHead extends StatelessWidget {
   const _TileHead(this.title, {required this.gap});
 
@@ -49,10 +47,8 @@ class _TileHead extends StatelessWidget {
   }
 }
 
-/// Marks a settings row that stands under another (`.set-row + .set-row
-/// { border-top: 1px solid var(--line) }`): its hairline is its own top
-/// border, inside its 52 (the page's `box-sizing: border-box`), not a row
-/// of its own between the two.
+/// Marks a settings row that stands under another: its hairline is its own
+/// top border, inside its 52, not a row of its own between the two.
 class _Ruled extends InheritedWidget {
   const _Ruled({required super.child});
 
@@ -67,7 +63,7 @@ class _Ruled extends InheritedWidget {
 // Settings rows
 // ---------------------------------------------------------------------------
 
-/// A settings row's layout (`.set-row`): the title over its line taking the
+/// A settings row's layout: the title over its line taking the
 /// width, then what the row ends in, 12 apart, at least 52 tall with 8
 /// above and below.
 class _SetRow extends StatelessWidget {
@@ -142,13 +138,13 @@ class _SetRow extends StatelessWidget {
   }
 }
 
-/// A setting beside its switch (`.set-row` with a `.tgl`): the title in
-/// the body over a quiet 12 line, the [FrostedSwitch] at the end; the whole
-/// row is the switch's label and flips it. The page owns [value]; a null
-/// [onChanged] dims the whole row, words and switch as one, and leaves it
-/// inert, unless [readOnly] reports the setting at full strength. Stands in a [FrostedSettingsGroup],
-/// which draws the hairlines between rows. A screen reader hears one
-/// switch named [label], its line as the hint.
+/// A setting beside its switch: the title in the body over a quiet 12 line, the
+/// [FrostedSwitch] at the end; the whole row is the switch's label and flips
+/// it. The page owns [value]; a null [onChanged] dims the whole row, words and
+/// switch as one, and leaves it inert, unless [readOnly] reports the setting at
+/// full strength. Stands in a [FrostedSettingsGroup], which draws the hairlines
+/// between rows. A screen reader hears one switch named [label], its line as
+/// the hint.
 ///
 /// ```dart
 /// FrostedSwitchRow(label: 'Face ID', note: 'To open the app and approve payments', value: faceId, onChanged: (v) => setState(() => faceId = v))
@@ -203,7 +199,7 @@ class FrostedSwitchRow extends StatelessWidget {
             autofocus: autofocus,
             value: value,
             onChanged: onChanged,
-            label: label,
+            semanticLabel: label,
             readOnly: readOnly,
           ),
         ],
@@ -247,13 +243,13 @@ class FrostedSwitchRow extends StatelessWidget {
   }
 }
 
-/// A setting that opens a page (`.set-row` with a `.set-v` and a chevron):
-/// the title in the body over a quiet 12 line, its current [value] in the
-/// secondary ink at the end (Monthly spending limit, $2,000) before a 16
-/// chevron. A null [onPressed] leaves it inert; [enabled] false dims the whole row
-/// to the source's `.set-row--off` share, a limit the frozen card cannot
-/// change. Stands in a [FrostedSettingsGroup]. A screen reader hears a link
-/// named [title] with [value].
+/// A setting that opens a page: the
+/// title in the body over a quiet 12 line, its current [value] in the secondary
+/// ink at the end (Monthly spending limit, $2,000) before a 16 chevron. A null
+/// [onPressed] leaves it inert; [enabled] false dims the whole row to the
+/// disabled share, a limit the frozen card cannot change. Stands in a
+/// [FrostedSettingsGroup]. A screen reader hears a link named [title] with
+/// [value].
 ///
 /// ```dart
 /// FrostedValueRow(title: 'Monthly spending limit', subtitle: r'$1,259.82 spent in October', value: r'$2,000', onPressed: openLimit)
@@ -289,7 +285,7 @@ class FrostedValueRow extends StatelessWidget {
   /// {@macro frosted.autofocus}
   final bool autofocus;
 
-  /// Whether the row takes taps; false dims it to `.set-row--off`'s .45.
+  /// Whether the row takes taps; false dims it to .45.
   final bool enabled;
 
   @override
@@ -321,7 +317,7 @@ class FrostedValueRow extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: enabled ? onPressed : null,
-      label: title,
+      semanticLabel: title,
       value: value,
       role: FrostedPressRole.link,
       radius: FrostedCorners.r14,
@@ -357,10 +353,9 @@ class FrostedValueRow extends StatelessWidget {
   }
 }
 
-/// Settings rows in a tile (`.set-tile`): the title in the tile's head 4
-/// over the list, each row under another ruled off by a hairline at its
-/// top, inside its own 52. Takes
-/// [FrostedSwitchRow]s and [FrostedValueRow]s in order.
+/// Settings rows in a tile: the title in the tile's head 4 over the list, each
+/// row under another ruled off by a hairline at its top, inside its own 52.
+/// Takes [FrostedSwitchRow]s and [FrostedValueRow]s in order.
 ///
 /// ```dart
 /// FrostedSettingsGroup(title: 'Security', children: [FrostedSwitchRow(label: 'Face ID', note: 'To open the app and approve payments', value: faceId, onChanged: setFaceId), FrostedValueRow(title: 'Change passcode', onPressed: openPasscode)])
@@ -403,14 +398,13 @@ class FrostedSettingsGroup extends StatelessWidget {
 // Form rows and sections
 // ---------------------------------------------------------------------------
 
-/// A labelled row of a form (`.set-row`): the label in the body over a
-/// quiet [detail], at least 52 tall with 8 above and below, 12 between its
-/// parts; before them an optional [leading] glyph on a 32 quiet token
-/// (DERIVED: the source's rows carry none), after them the setting's
+/// A labelled row of a form: the label in the body over a quiet [detail], at
+/// least 52 tall with 8 above and below, 12 between its parts; before them an
+/// optional [leading] glyph on a 32 quiet token, after them the setting's
 /// [value] in the secondary ink or a [trailing] control (a [FrostedSwitch]),
 /// and a 16 chevron when [onPressed] opens a page. A row with a control reads
-/// as its words and the control; one without reads as one line, or one
-/// link when it opens.
+/// as its words and the control; one without reads as one line, or one link
+/// when it opens.
 ///
 /// ```dart
 /// FrostedFormRow(label: 'Currency', value: 'USD', onPressed: pickCurrency)
@@ -522,7 +516,7 @@ class FrostedFormRow extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
-        label: label,
+        semanticLabel: label,
         value: value,
         role: FrostedPressRole.link,
         radius: FrostedCorners.r14,
@@ -560,8 +554,8 @@ class FrostedFormRow extends StatelessWidget {
   }
 }
 
-/// Two fields sharing a line (`.form-2`): each half the width, 12 apart
-/// (a goal's Target beside its Date).
+/// Two fields sharing a line: each half the width, 12 apart (a goal's Target
+/// beside its Date).
 ///
 /// ```dart
 /// FrostedFieldPair(FrostedAmountField(labelText: 'Target', size: FrostedAmountFieldSize.small, value: target, onChanged: setTarget), FrostedTextField(labelText: 'Date', hintText: 'Month and year', value: date, onChanged: setDate))
@@ -587,10 +581,10 @@ class FrostedFieldPair extends StatelessWidget {
   );
 }
 
-/// A form (`.form`): its fields, rows and pickers 16 apart in a column,
-/// in a tile with [title] in its head 16 over them (`.form-tile`), or
-/// [bare] on a sheet's body (`.sheet-b--form`). A [FrostedSwapButton] among the
-/// children is the gap between its two pickers: none is added round it.
+/// A form: its fields, rows and pickers 16 apart in a column, in a tile with
+/// [title] in its head 16 over them, or [bare] on a sheet's body. A
+/// [FrostedSwapButton] among the children is the gap between its two pickers:
+/// none is added round it.
 ///
 /// ```dart
 /// FrostedFormSection(title: 'New goal', children: [name, FrostedFieldPair(target, date), icons])

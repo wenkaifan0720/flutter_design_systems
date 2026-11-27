@@ -43,7 +43,7 @@ const _behind = <Color>[
 ];
 
 void main() {
-  for (final preset in FrostedThemeData.presets) {
+  for (final preset in [for (final p in FrostedThemeData.palettes) p.id]) {
     for (final mode in Brightness.values) {
       test('words on a cleared part read as at rest: $preset ${mode.name}', () {
         final t = FrostedThemeData.preset(preset, mode);
@@ -94,7 +94,7 @@ void main() {
 
   test('a clearing at 0 leaves what is behind as it is', () {
     final t = FrostedThemeData.preset(
-      FrostedThemeData.presets.first,
+      FrostedThemeData.palettes.first.id,
       Brightness.light,
     );
     final (matrix, lift) = FrostedClearPatch.of(t, 0);

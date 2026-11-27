@@ -1,3 +1,78 @@
+## 0.8.0
+
+- Requires ui_core 0.8.2.
+- New `FrostedAppShell`, the app's frame in the main library, on ui_core's `RawAdaptiveShell.branches`: its places in
+  the glass tab bar on a phone and a tablet and in the sidebar from 1024 wide, each place keeping its own stack of pages.
+  A page pushed in a place keeps the sidebar beside it while the tab bar steps away (`hideBarOnPush`); back pops it.
+  Toasts keep clear of the tab bar. The sidebar has a width of its own (`sidebarWidth`).
+- `FrostedNavigationBar`, `FrostedNavItem`, `FrostedNavAction`, `FrostedNavigationRail`, `FrostedNavigationDrawer`
+  and `FrostedSidebarAction` move to `package:frosted_ui/frosted_host.dart`, for an app that builds a frame of its
+  own: import it beside `frosted_ui.dart` (`dart fix --apply` adds the import). `FrostedHost` and `FrostedPage` are in the main library.
+- Palettes: `FrostedThemeData.palettes` is the six as ui_core's `RawNamedPalette` (an `id` to store, a `label` to
+  show, swatches by day and by night), for an app's palette picker. `FrostedHost(palette:)` and
+  `FrostedThemeData(palette:)` take one; the host eases a change of palette. `FrostedThemeData.presets` is removed:
+  read `FrostedThemeData.palettes.map((p) => p.id)`. `FrostedThemeData.preset` takes an id it doesn't know (a stored
+  `'cobalt'`) as the first palette, opal, where it threw.
+- New `FrostedRadio.suffix`: a part that follows the words, right beside them at any width (a palette's swatches in a
+  palette picker). It is drawn, not read; the label names the choice.
+- A wrong `FrostedTextField` (and the fields on it) and a wrong `FrostedDateField` show the danger's mark at the
+  field's end, in the danger's ink, beside the glass's tint: the field itself reads as wrong, not only its label and
+  message.
+- A field turning wrong, or right again, eases where it changed in one frame: its message fades in as the room under
+  the field opens, so what stands below slides rather than jumps, and the label's ink and the mark at the field's end
+  ease to the danger's; a date field's calendar crosses to the mark. A radio group's and a code entry's message ease
+  the same way. Under Reduce Motion each cuts. `FrostedHintSlot` and `FrostedLabelInk` (in `frosted_parts.dart`)
+  draw it for a field of an app's own.
+- By day a part the keyboard focuses rises a little, on a close, faint shadow (the raised shade at its own strength,
+  3 px below), where it cast a broad, dark one. The frost clearing and the rim's light are unchanged.
+- Removed `FrostedThemeData.cobalt`, deprecated in 0.7.0: use `FrostedThemeData.from(accent: Color(0xFF0668DE))`.
+- A name only a screen reader hears is `semanticLabel`; `label` is kept for words a part draws. Renamed on
+  `FrostedIconButton`, `FrostedSwitch`, `FrostedCheckbox`, `FrostedSlider`, `FrostedRating`, `FrostedChoices`,
+  `FrostedToggleGroup`, `FrostedButtonGroup`, `FrostedPressable`, `FrostedTabBar`, `FrostedBreadcrumb`,
+  `FrostedPagination`, `FrostedPageDots`, `FrostedScrollArea`, `FrostedCarouselView`, `FrostedFilterChipGroup`,
+  `FrostedMonthSwitch`, `FrostedQuickActions`, `FrostedActionTiles`, `FrostedQuickAmounts`, `FrostedSwapButton`,
+  `FrostedPopover`, `FrostedHoverCard`, `FrostedMenuBar`, `FrostedContextMenu`, `FrostedMenu` (and
+  `FrostedMenu.show`), `FrostedWheelPicker`, `FrostedDataTable`, `FrostedTreeView`, `FrostedCard` (each
+  constructor), `FrostedFacedCard`, `FrostedInsight` and `FrostedNavigationRail`. `dart fix --apply` makes the
+  renames.
+- A control inside `FrostedFormField` (a slider, a switch, a rating) is heard once, by the field's label. A row's name
+  leaves out a monogram that repeats its title and keeps its status tag; a control at the row's end (its `action`)
+  stays a stop of its own.
+- `FrostedListTile`'s trailing part keeps to two thirds of the line, at the row's end in either direction; a long tag
+  gives way with an ellipsis where it overflowed the row.
+- New `FrostedScaffold.maxWidth`: the bar's title and actions, the body and the footer's acts hold to one column on
+  the start edge of a wide window.
+- `FrostedWordmark` sets the app's name as written (it lower-cased it), and takes the app's own `logo` in place of
+  the ink mark.
+- An on `FrostedSwitch` tints its glass with the palette's act inside the track's lit rim, so on and off read apart
+  at a glance and the rim is the same; the knob's side still says which.
+- An on toggle of `FrostedToggleGroup` stands on the chosen plate, the brightest glass on the strip, as a
+  `FrostedSegmentedButton`'s choice does (it stood on a solid plate, by night as dark as the strip).
+- Form fields take their column's width at every size, as a text field does; one alone in a row keeps to its content.
+  New `FrostedDateField` (a nullable day, shown with its year: "Nov 9, 2026") and `FrostedTextFormField` (a
+  `FormField` with `validator`, `onSaved` and reset). A wrong field's glass takes the danger's tint, its rim the
+  glass's; its label takes the danger's ink and its message leads with the danger mark.
+- A filled `FrostedSegmentedButton` shares its field's width equally among its segments while each label fits its
+  share, as Material's segmented button does (each took its label's width and an equal share of the rest).
+- The status inks (information, success, warning, danger) stand apart from each other and from the quiet ink in every
+  palette, by day and by night, each with as much colour as its tone holds (ui_core_test's `DesignToneCheck`): a tag,
+  a banner or an amount says which it is by its colour. By night the washes dim until the page's words read 9:1 on
+  every peak, so the inks keep their colour there; a warning stands 40 degrees of hue from the danger.
+- By night the quiet inks (a note, a figure's cents, a caption) read 4.5:1 on a pane tinted by any hue of the spectrum.
+  By day and by night a hue's ink reads 4.5:1 on its small solid (a monogram's letters, a glyph token) as well as on
+  its tint, so by day most hue inks are a step deeper.
+- A switch, a slider, a rating and a navigation tab show their focus after a key and not after a press of a pointer,
+  as ui_core's parts do (`RawFocusShown`).
+- `FrostedWordmark` stands at the start of a slot wider than it, in either direction (a right-to-left sidebar's).
+- `FrostedRowEnd`'s note gives way with an ellipsis in a narrow row.
+- Tags, monograms, glyph tokens and date blocks grow with the reader's text, as large as the row's words at 130% and
+  200%.
+- The docs say what each part is in plain words, without the design notes they were written from.
+- `example/lib/main.dart` is Shelf, one app to copy: the host, the shell with three places, a list with a pushed page, a
+  form, a dialog and settings with the six palettes. The gallery is `example/lib/gallery.dart`.
+- The README: the install line every snippet compiles after, the host, building an app (the shell, a list and its page,
+  forms, dialogs, the palette picker), the building blocks and which row to use.
+
 ## 0.7.0
 
 - Requires ui_core 0.7.1. Every target's floor is 40 by 40 (WCAG 2.2's minimum) under a finger and a pointer; it was 48 and 44.

@@ -8,18 +8,16 @@ import '../../theme.dart';
 import '../host.dart';
 
 /// A picture: a photo ([image]) fading in over a ground of the system's own
-/// making, in a hairline frame of the glass edge with corners of 14. The
-/// ground is the night the system keeps over media: the dark canvas under
-/// its three washes of light and a ribbon of the prism's band, each placed
-/// from the [seed] alone (a title, an id), so the same words give the same
-/// ground and a list of pictures that have not loaded, or never will, still
-/// reads as a set. Without a photo the ground stands as the picture. It
-/// takes the width it is given; with [aspect] (width over height) it sets
-/// its own height, else it fills the height given. [child] is the media
-/// slot, laid over the picture in the night's ink ([FrostedMediaGround]: a
-/// duration, a tag, a play mark). With [label] it is read as an image;
-/// without, as decoration. DERIVED: the source has no pictures; the ground
-/// is drawn from the night theme and its lights.
+/// making, in a hairline frame of the glass edge with corners of 14. The ground
+/// is the night the system keeps over media: the dark canvas under its three
+/// washes of light and a ribbon of the prism's band, each placed from the
+/// [seed] alone (a title, an id), so the same words give the same ground and a
+/// list of pictures that have not loaded, or never will, still reads as a set.
+/// Without a photo the ground stands as the picture. It takes the width it is
+/// given; with [aspect] (width over height) it sets its own height, else it
+/// fills the height given. [child] is the media slot, laid over the picture in
+/// the night's ink ([FrostedMediaGround]: a duration, a tag, a play mark). With
+/// [label] it is read as an image; without, as decoration.
 ///
 /// ```dart
 /// FrostedMedia(image: NetworkImage(cover), seed: 'Lisbon in May', aspect: 16 / 9, label: 'Lisbon in May')

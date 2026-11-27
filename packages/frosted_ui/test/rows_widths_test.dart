@@ -1,11 +1,12 @@
 // ui_core's row and width checks over every gallery page:
 // - rows: every pair of controls sharing a row shows one top and one bottom by its drawn outline, and its capitals on
 //   the row's centre line, under each density Frosted ships, by day and by night (DesignRowCheck);
-// - widths: from 600 wide every select's closed face, button, stepper and segmented control keeps to its content and
-//   padding, at most 320, at 600, 1024, 1440 and 1920 (DesignWidthCheck);
+// - widths: from 600 wide every button, stepper and unfilled segmented control keeps to its content and padding, at
+//   most 320, at 600, 1024, 1440 and 1920 (DesignWidthCheck); a select and a filled segmented control are a form's
+//   fields and take the form's column;
 // - lists: every select's, combobox's and multi-select's list, open at 390 and 1440, at least the field's width, on
 //   its leading edge, its words on the field's (DesignWidthCheck.checkList);
-// - own widths: from 600 up every segmented strip, filled or not,
+// - own widths: from 600 up every unfilled segmented strip,
 //   the month switch, every group of choice cards or tiles (quick amounts, icon picker, quick actions, ways to move
 //   money) and the credit card keeps to its content: as wide at 1024 as at 1440, at its line's start, a strip's screen reader box
 //   the strip's, an icon well about square;
@@ -26,7 +27,7 @@ import 'ui_core_checks.dart';
 // The gallery is the example app; a test sets the theme it shows.
 // ignore_for_file: avoid_relative_lib_imports, avoid_print
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 
 const _densities = {
   'standard': FrostedDensity.standard,
@@ -403,7 +404,13 @@ void main() {
           final seen = <(String, Rect)>[];
           for (final e
               in find
-                  .byWidgetPredicate((w) => _ownWidth.containsKey(_kind(w)))
+                  .byWidgetPredicate(
+                    (w) =>
+                        _ownWidth.containsKey(_kind(w)) &&
+                        // A filled strip is a form's field: it takes its
+                        // column, as the form's other fields do.
+                        !(w is FrostedSegmentedButton && w.fill),
+                  )
                   .evaluate()) {
             final kind = _ownWidth[_kind(e.widget)]!;
             final r = _drawn(e);
@@ -516,7 +523,7 @@ void main() {
           'Customize': find.widgetWithText(FrostedButton, 'Customize'),
         } else
           'Customize': find.byWidgetPredicate(
-            (w) => w is FrostedIconButton && w.label == 'Customize',
+            (w) => w is FrostedIconButton && w.semanticLabel == 'Customize',
           ),
       };
       final faces = {

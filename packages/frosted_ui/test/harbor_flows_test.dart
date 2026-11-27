@@ -8,7 +8,7 @@ import 'package:frosted_ui/frosted_ui.dart';
 
 // The gallery is the example app; a test reads its pages from there.
 // ignore: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/harbor.dart';
 import 'gallery_support.dart' show loadBundledFonts, settle;

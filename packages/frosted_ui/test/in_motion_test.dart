@@ -13,7 +13,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 const _ground = Color(0xFFFFFFFF);
 const _page = ValueKey('page');
@@ -65,7 +64,7 @@ void main() {
     Widget carousel({double fraction = 1}) => FrostedCarouselView(
       height: 180,
       viewportFraction: fraction,
-      label: 'Places',
+      semanticLabel: 'Places',
       children: const [
         ColoredBox(color: Color(0xFFD03030)),
         ColoredBox(color: Color(0xFF3050D0)),

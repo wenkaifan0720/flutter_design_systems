@@ -10,7 +10,7 @@ import 'package:frosted_ui/frosted_host.dart';
 
 // The bar is the example app's; a test opens its pages there.
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 
 /// [words] as a node's whole label or one of its lines (a node merges its texts a line each).

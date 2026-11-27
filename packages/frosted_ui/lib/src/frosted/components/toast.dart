@@ -13,12 +13,11 @@ import '../internal/toaster.dart';
 import '../theme.dart';
 import 'pressable/pressable.dart';
 
-/// A short confirmation over the page, as the source raises one (Moved to
-/// Groceries, Card number copied): the ink slab rising 12 over the tab bar
-/// on a root, 16 over the bottom edge elsewhere, 16 in from either side;
-/// at desktop width 380 wide at the window's bottom right, 32 in. It stays
-/// a few seconds, longer with its one inline action (Undo), and a new toast
-/// replaces the one still showing.
+/// A short confirmation over the page (Moved to Groceries, Card number copied):
+/// the ink slab rising 12 over the tab bar on a root, 16 over the bottom edge
+/// elsewhere, 16 in from either side; at desktop width 380 wide at the window's
+/// bottom right, 32 in. It stays a few seconds, longer with its one inline
+/// action (Undo), and a new toast replaces the one still showing.
 ///
 /// ```dart
 /// FrostedToast.show(context, 'Moved to Groceries', actionLabel: 'Undo', onAction: undo);
@@ -65,13 +64,13 @@ abstract final class FrostedToast {
 }
 
 /// The toast's face, drawn in place (a still of a toast on a showcase or a
-/// walkthrough frame): the ink slab with a light along its top and its
-/// shadow (`.toast`), the round mark in the money-in green wearing the
-/// [icon], the [message] in the toast's type, and the one action's word
-/// ([actionLabel]) on its own faint pill at the end. A [title] stands over
-/// the message in the semibold; a [tone] other than success takes its glyph
-/// and its ink for the mark (info, a warning, danger). A page confirms
-/// through [FrostedToast.show], never by standing this in its body.
+/// walkthrough frame): the ink slab with a light along its top and its shadow,
+/// the round mark in the money-in green wearing the [icon], the [message] in
+/// the toast's type, and the one action's word ([actionLabel]) on its own faint
+/// pill at the end. A [title] stands over the message in the semibold; a [tone]
+/// other than success takes its glyph and its ink for the mark (info, a
+/// warning, danger). A page confirms through [FrostedToast.show], never by
+/// standing this in its body.
 ///
 /// ```dart
 /// FrostedSnackBar('Moved to Groceries', actionLabel: 'Undo', onAction: undo)
@@ -244,7 +243,7 @@ class FrostedSnackBar extends StatelessWidget {
                   container: true,
                   child: FrostedPressable(
                     onPressed: onAction,
-                    label: actionLabel,
+                    semanticLabel: actionLabel,
                     radius: act / 2,
                     child: Container(
                       height: act,

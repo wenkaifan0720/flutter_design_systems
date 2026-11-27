@@ -43,14 +43,14 @@ const double _pressedScale = 0.97;
 /// size in the middle.
 ///
 /// A null [onPressed] makes it inert: the child is drawn as it is, the node
-/// is announced as disabled, and nothing answers a press or a key. [label] is
+/// is announced as disabled, and nothing answers a press or a key. [semanticLabel] is
 /// the spoken name and replaces what the child says when [excludeChild] is
 /// true.
 ///
 /// ```dart
 /// FrostedPressable(
 ///   onPressed: open,
-///   label: 'Everyday account',
+///   semanticLabel: 'Everyday account',
 ///   radius: 18,
 ///   child: card,
 /// )
@@ -62,7 +62,7 @@ class FrostedPressable extends StatelessWidget {
     this.child,
     this.builder,
     this.onLongPress,
-    this.label,
+    this.semanticLabel,
     this.value,
     this.role = FrostedPressRole.button,
     this.selected,
@@ -104,7 +104,7 @@ class FrostedPressable extends StatelessWidget {
   builder;
 
   /// The spoken name; null leaves the child's own semantics.
-  final String? label;
+  final String? semanticLabel;
 
   /// The spoken value after the name (the month a switch shows).
   final String? value;
@@ -141,7 +141,7 @@ class FrostedPressable extends StatelessWidget {
   /// it (a row in a list, a row in a menu), rather than out round it.
   final bool ringInside;
 
-  /// Whether the child's own semantics are replaced by [label].
+  /// Whether the child's own semantics are replaced by [semanticLabel].
   final bool excludeChild;
 
   /// The opacity of the face while a finger is down: full by default, the
@@ -169,7 +169,7 @@ class FrostedPressable extends StatelessWidget {
     focusNode: focusNode,
     autofocus: autofocus,
     selected: selected ?? toggled ?? checked ?? false,
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     semanticValue: value,
     button: role == FrostedPressRole.button,
     link: role == FrostedPressRole.link,
@@ -179,7 +179,7 @@ class FrostedPressable extends StatelessWidget {
     checked: checked,
     expanded: expanded,
     inMutuallyExclusiveGroup: inMutuallyExclusiveGroup,
-    excludeSemantics: excludeChild && label != null,
+    excludeSemantics: excludeChild && semanticLabel != null,
     builder: (context, states, child) => frostedPressableFace(
       context,
       states,
@@ -199,7 +199,7 @@ class FrostedPressable extends StatelessWidget {
     properties
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         EnumProperty<FrostedPressRole>(

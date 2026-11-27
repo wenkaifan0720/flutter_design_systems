@@ -1,4 +1,4 @@
-// Each name frosted_ui 0.5.0 renamed, used once; dart fix renames it (frosted_ui.dart.expect).
+// Each name frosted_ui 0.5.0 and 0.8.0 renamed, used once; dart fix renames it (frosted_ui.dart.expect).
 import 'package:frosted_ui/frosted_parts.dart';
 
 dynamic d;
@@ -197,4 +197,113 @@ void fields(
   a67.destructive;
   a68.destructive;
   a69.destructive;
+}
+
+void semanticLabels(
+  FrostedScrollArea b0,
+  FrostedCarouselView b1,
+  FrostedFilterChipGroup<Object> b2,
+  FrostedSwitch b3,
+  FrostedMonthSwitch b4,
+  FrostedQuickActions b5,
+  FrostedActionTiles b6,
+  FrostedQuickAmounts b7,
+  FrostedSwapButton b8,
+  FrostedTabBar b9,
+  FrostedBreadcrumb b10,
+  FrostedPagination b11,
+  FrostedPageDots b12,
+  FrostedPopover b13,
+  FrostedHoverCard b14,
+  FrostedRating b15,
+  FrostedChoices<Object> b16,
+  FrostedSlider b17,
+  FrostedPressable b18,
+  FrostedCheckbox b19,
+  FrostedToggleGroup<Object> b20,
+  FrostedButtonGroup b21,
+  FrostedIconButton b22,
+  FrostedMenuBar b23,
+  FrostedContextMenu b24,
+  FrostedMenu<Object> b25,
+  FrostedWheelPicker<Object> b26,
+  FrostedDataTable<Object> b27,
+  FrostedTreeView<Object> b28,
+  FrostedCard b29,
+  FrostedFacedCard b30,
+  FrostedInsight b31,
+  FrostedNavigationRail b32,
+) {
+  FrostedScrollArea(label: d);
+  FrostedCarouselView(label: d);
+  FrostedCarouselView.builder(label: d);
+  FrostedFilterChipGroup<Object>(label: d);
+  FrostedSwitch(label: d);
+  FrostedMonthSwitch(label: d);
+  FrostedQuickActions(label: d);
+  FrostedActionTiles(label: d);
+  FrostedQuickAmounts(label: d);
+  FrostedSwapButton(label: d);
+  FrostedTabBar(label: d);
+  FrostedBreadcrumb(label: d);
+  FrostedPagination(label: d);
+  FrostedPageDots(label: d);
+  FrostedPopover(label: d);
+  FrostedHoverCard(label: d);
+  FrostedRating(label: d);
+  FrostedChoices<Object>(label: d);
+  FrostedSlider(label: d);
+  FrostedPressable(label: d);
+  FrostedCheckbox(label: d);
+  FrostedToggleGroup<Object>(label: d);
+  FrostedButtonGroup(label: d);
+  FrostedIconButton(label: d);
+  FrostedMenuBar(label: d);
+  FrostedContextMenu(label: d);
+  FrostedMenu<Object>(label: d);
+  FrostedWheelPicker<Object>(label: d);
+  FrostedDataTable<Object>(label: d);
+  FrostedTreeView<Object>(label: d);
+  FrostedCard(label: d);
+  FrostedCard.rim(label: d);
+  FrostedCard.record(label: d);
+  FrostedCard.hero(label: d);
+  FrostedCard.ghost(label: d);
+  FrostedFacedCard(label: d);
+  FrostedInsight(label: d);
+  FrostedNavigationRail(label: d);
+  FrostedMenu.show<Object>(d, items: d, label: d);
+  b0.label;
+  b1.label;
+  b2.label;
+  b3.label;
+  b4.label;
+  b5.label;
+  b6.label;
+  b7.label;
+  b8.label;
+  b9.label;
+  b10.label;
+  b11.label;
+  b12.label;
+  b13.label;
+  b14.label;
+  b15.label;
+  b16.label;
+  b17.label;
+  b18.label;
+  b19.label;
+  b20.label;
+  b21.label;
+  b22.label;
+  b23.label;
+  b24.label;
+  b25.label;
+  b26.label;
+  b27.label;
+  b28.label;
+  b29.label;
+  b30.label;
+  b31.label;
+  b32.label;
 }

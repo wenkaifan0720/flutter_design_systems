@@ -168,7 +168,7 @@ class FrostedTextContextMenu extends StatelessWidget {
       for (final item in buttonItems)
         FrostedPressable(
           onPressed: item.onPressed,
-          label: labelOf(context, item),
+          semanticLabel: labelOf(context, item),
           radius: FrostedCorners.r12,
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: floor, minWidth: floor),

@@ -242,7 +242,7 @@ void main() {
                 FrostedFilterOption('every', 'Everyday'),
               ],
               value: 'every',
-              label: 'Accounts',
+              semanticLabel: 'Accounts',
               onChanged: null,
             ),
           ],
@@ -505,14 +505,14 @@ void main() {
             false,
             (value, set) => FrostedSwitch(
               value: value,
-              label: 'Weekly summary',
+              semanticLabel: 'Weekly summary',
               onChanged: set,
             ),
             seen: seen,
           ),
           const FrostedSwitch(
             value: true,
-            label: 'Contactless',
+            semanticLabel: 'Contactless',
             onChanged: null,
           ),
         ],
@@ -549,11 +549,15 @@ void main() {
         children: [
           FrostedSwitch(
             value: true,
-            label: 'Auto-save',
+            semanticLabel: 'Auto-save',
             onChanged: null,
             readOnly: true,
           ),
-          FrostedSwitch(value: true, label: 'Contactless', onChanged: null),
+          FrostedSwitch(
+            value: true,
+            semanticLabel: 'Contactless',
+            onChanged: null,
+          ),
         ],
       ),
     );
@@ -568,7 +572,9 @@ void main() {
       ),
     );
     Finder faded(String label) => find.descendant(
-      of: find.byWidgetPredicate((w) => w is FrostedSwitch && w.label == label),
+      of: find.byWidgetPredicate(
+        (w) => w is FrostedSwitch && w.semanticLabel == label,
+      ),
       matching: find.byWidgetPredicate(
         // A dim, not the unlit focus light (0).
         (w) => w is AnimatedOpacity && w.opacity > 0 && w.opacity < 1,
@@ -869,7 +875,7 @@ void main() {
           note: 'Lisbon in May',
           onPressed: () => opens++,
         ),
-      ], label: 'Ways to move money'),
+      ], semanticLabel: 'Ways to move money'),
     );
     expect(find.bySemanticsLabel('Ways to move money'), findsOneWidget);
     expect(
@@ -944,7 +950,7 @@ void main() {
       ),
     );
     Finder well(String label) => find.byWidgetPredicate(
-      (w) => w is FrostedPressable && w.label == label,
+      (w) => w is FrostedPressable && w.semanticLabel == label,
     );
     final wells = [for (final c in _icons) t.getRect(well(c.label))];
     const across = (358 - 5 * 8) / 6;
@@ -1247,7 +1253,7 @@ void main() {
             detail: 'Every Sunday evening',
             trailing: FrostedSwitch(
               value: true,
-              label: 'Summary alerts',
+              semanticLabel: 'Summary alerts',
               onChanged: (_) {},
             ),
           ),

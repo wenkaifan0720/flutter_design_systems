@@ -22,9 +22,10 @@ import '../money/money.dart';
 import '../../localizations.dart';
 import '../../internal/dim.dart';
 import '../../internal/cap.dart';
+import '../../internal/text_growth.dart';
 
-/// How large a mark stands: a row's (36, `.mono`, `.tok`), a ticket's or a
-/// browse card's (32), a record's (56, `.mono--lg`, `.tok--lg`).
+/// How large a mark stands: a row's (36), a ticket's or a browse card's
+/// (32), a record's (56).
 enum FrostedMarkSize {
   /// 32 across, corners 10, its glyph 16 and its letters 12.
   small(
@@ -67,22 +68,31 @@ enum FrostedMarkSize {
 
 /// The tinted squircle a monogram or a token sits on: the hue's small
 /// solid with its hairline inside the edge, or the wash with no edge when
-/// there is no hue (`.mono`, `.tok`; `.tok--q`).
+/// there is no hue.
 class _Squircle extends StatelessWidget {
-  const _Squircle({required this.size, required this.hue, required this.child});
+  const _Squircle({
+    required this.size,
+    required this.hue,
+    required this.growth,
+    required this.child,
+  });
 
   final FrostedMarkSize size;
   final FrostedHue? hue;
+
+  // The reader's text size's growth ([frostedTextGrowth]): the squircle
+  // grows with the words and the glyph it holds.
+  final double growth;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     return SizedBox.square(
-      dimension: size.side,
+      dimension: size.side * growth,
       child: FrostedFace(
         material: FrostedMaterial.paint,
-        radius: BorderRadius.circular(size.radius),
+        radius: BorderRadius.circular(size.radius * growth),
         color: hue?.tintSolid ?? t.glass.wash,
         ring: hue?.edge,
         child: Center(child: child),
@@ -91,11 +101,15 @@ class _Squircle extends StatelessWidget {
   }
 }
 
-/// A merchant's or a payer's monogram (logo): the initials from [name] on
-/// a squircle of the category's [hue] (its small solid, its hairline, its
-/// ink for the letters), or on the wash in the tertiary ink when the hue is
-/// null. 36 in a row, 32 on a ticket, 56 on a record. Read aloud as
-/// [label], else as the name.
+/// A name's initials on a tinted square, to lead a row or a record (as
+/// Material's `CircleAvatar` with letters).
+///
+/// The first letters of [name] stand on the [hue]'s tint in its ink, or on
+/// plain glass in the quiet ink when [hue] is null. It is 36 across in a row
+/// ([FrostedMarkSize.regular]), 32 small and 56 large, and grows with the
+/// reader's text size. Beside the words that name it (a row's title) it is
+/// decoration, which a screen reader passes by; give it a [label] when it
+/// stands alone.
 ///
 /// ```dart
 /// FrostedMonogram('Blue Fern Café', hue: context.frostedTheme.hues.coral)
@@ -119,33 +133,38 @@ class FrostedMonogram extends StatelessWidget {
   /// How large it stands.
   final FrostedMarkSize size;
 
-  /// What a screen reader says; null says the name.
+  /// What a screen reader says; null leaves it out as decoration.
   final String? label;
 
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    return Semantics(
-      label: label ?? name,
-      image: true,
-      child: ExcludeSemantics(
-        child: _Squircle(
-          size: size,
-          hue: hue,
-          child: frostedCapCentred(
-            Text(
-              FrostedFormat.initials(name),
-              maxLines: 1,
-              textScaler: TextScaler.noScaling,
-              // `.mono`: 600 13/1 in the display face.
-              style: t.textTheme.monogram
-                  .at(size.type)
-                  .copyWith(height: 1)
-                  .c(hue?.ink ?? t.colorScheme.textTertiary),
-            ),
-          ),
+    final growth = frostedTextGrowth(context);
+    final mark = _Squircle(
+      size: size,
+      hue: hue,
+      growth: growth,
+      child: frostedCapCentred(
+        Text(
+          FrostedFormat.initials(name),
+          maxLines: 1,
+          // Grown with the squircle, so the letters keep their room in it.
+          textScaler: TextScaler.noScaling,
+          style: t.textTheme.monogram
+              .at(size.type * growth)
+              .copyWith(height: 1)
+              .c(hue?.ink ?? t.colorScheme.textTertiary),
         ),
       ),
+    );
+    // Beside the words that name it (a row's title, a record's heading) the
+    // letters would only repeat them: it is decoration unless it is given
+    // words of its own.
+    if (label == null) return ExcludeSemantics(child: mark);
+    return Semantics(
+      label: label,
+      image: true,
+      child: ExcludeSemantics(child: mark),
     );
   }
 
@@ -169,9 +188,9 @@ class FrostedMonogram extends StatelessWidget {
 /// A glyph on a tinted squircle (icon-tile): an account's, a goal's or a
 /// category's mark in its [hue] (the glass of its small solid, its hairline,
 /// the Lucide glyph in its ink), 36 in a row, 32 on a browse card, 56 on a
-/// record. [quiet] is the plain token (`.tok--q`): the wash, the tertiary
-/// ink, no hairline, its glyph 16. Read aloud as [label]; without one it
-/// is decoration beside the words that name it.
+/// record. [quiet] is the plain token: the wash, the tertiary ink, no hairline,
+/// its glyph 16. Read aloud as [label]; without one it is decoration beside the
+/// words that name it.
 ///
 /// ```dart
 /// FrostedIconMark(FrostedGlyphs.wallet, hue: context.frostedTheme.hues.cyan, label: 'Everyday')
@@ -206,12 +225,15 @@ class FrostedIconMark extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final tinted = quiet ? null : hue;
+    final growth = frostedTextGrowth(context);
     final token = _Squircle(
       size: size,
       hue: tinted,
+      growth: growth,
       child: Icon(
         icon,
-        size: quiet ? FrostedChromeMetrics.markSmallGlyph : size.glyph,
+        size:
+            (quiet ? FrostedChromeMetrics.markSmallGlyph : size.glyph) * growth,
         color: tinted?.ink ?? t.colorScheme.textTertiary,
       ),
     );
@@ -241,10 +263,10 @@ class FrostedIconMark extends StatelessWidget {
   }
 }
 
-/// A date as a block (date-block): the month over the day on a 40 by 44
-/// round of the wash, as a bill's row leads (`.date`). [soon] with its
-/// [hue] is a bill due within days: the hue's small solid, its hairline, its
-/// ink for both lines (the month at 0.75). Read aloud as the date.
+/// A date as a block (date-block): the month over the day on a 40 by 44 round
+/// of the wash, as a bill's row leads. [soon] with its [hue] is a bill due
+/// within days: the hue's small solid, its hairline, its ink for both lines
+/// (the month at 0.75). Read aloud as the date.
 ///
 /// ```dart
 /// FrostedDateBlock(DateTime(2026, 11, 1))
@@ -270,20 +292,25 @@ class FrostedDateBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final lit = soon ? hue : null;
+    final growth = frostedTextGrowth(context);
+    final month = t.textTheme.labelMedium;
+    final day = t.textTheme.titleLarge.medium;
     return Semantics(
       label: FrostedFormat.date(date),
       image: true,
       child: ExcludeSemantics(
         child: SizedBox.fromSize(
-          size: FrostedChromeMetrics.dateBlock,
+          size: FrostedChromeMetrics.dateBlock * growth,
           child: FrostedFace(
             material: FrostedMaterial.paint,
-            radius: BorderRadius.circular(FrostedChromeMetrics.dateBlockRadius),
+            radius: BorderRadius.circular(
+              FrostedChromeMetrics.dateBlockRadius * growth,
+            ),
             color: lit?.tintSolid ?? t.glass.wash,
             ring: lit?.edge,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              spacing: FrostedChromeMetrics.dateGap,
+              spacing: FrostedChromeMetrics.dateGap * growth,
               children: [
                 // `.date b`: 500 12/1 in the text face, the tertiary ink
                 // (the hue's ink at 0.75 when soon).
@@ -291,7 +318,8 @@ class FrostedDateBlock extends StatelessWidget {
                   FrostedFormat.month(date, short: true),
                   maxLines: 1,
                   textScaler: TextScaler.noScaling,
-                  style: t.textTheme.labelMedium
+                  style: month
+                      .at(month.fontSize! * growth)
                       .copyWith(height: 1)
                       .c(
                         lit == null
@@ -304,7 +332,8 @@ class FrostedDateBlock extends StatelessWidget {
                   RawWidgetsLocalizations.of(context).formatDecimal(date.day),
                   maxLines: 1,
                   textScaler: TextScaler.noScaling,
-                  style: t.textTheme.titleLarge.medium
+                  style: day
+                      .at(day.fontSize! * growth)
                       .copyWith(height: 1)
                       .tracked(-0.01)
                       .c(lit?.ink ?? t.colorScheme.textPrimary),
@@ -428,10 +457,10 @@ enum _MarkKind { purchase, income, move, payment }
 
 /// What a [FrostedTag] stands on.
 enum FrostedTagVariant {
-  /// `.chip`: the wash (or its tone's tint) on the page.
+  /// The wash (or its tone's tint) on the page.
   wash,
 
-  /// `.glass`: the card's pill, glass with a light ring inside its hairline
+  /// The card's pill: glass with a light ring inside its hairline
   /// (the theme's sheens: white glass on the day's pearl, a dark glass on
   /// the night's smoked one).
   glass,
@@ -443,7 +472,7 @@ enum FrostedTagVariant {
 /// red, the warning's amber, a frozen card's cold). [figure] sets figures
 /// after the words at 14 in the display face ("13 results"), [lead]
 /// figures before them ("+$73.42 interest in October", or with [figure]
-/// round a dot: "$1,259.82 · 0.53%"), 4 apart as `.chip`'s gap sets them.
+/// round a dot: "$1,259.82 · 0.53%"), 4 apart.
 /// It states; it does not act. Read aloud as its words.
 ///
 /// ```dart
@@ -492,39 +521,57 @@ class FrostedTag extends StatelessWidget {
     final t = context.frostedTheme;
     final glass = variant == FrostedTagVariant.glass;
     final ink = glass ? t.pearl.textSecondary : t.toneInk(tone);
-    final words = t.textTheme.labelSmall.copyWith(height: 1).c(ink);
+    // The pill, its words, its figures and its glyph grow together with the
+    // reader's text size, so a tag stands as large as the row's words.
+    final growth = frostedTextGrowth(context);
+    final base = t.textTheme.labelSmall;
+    final words = base.at(base.fontSize! * growth).copyWith(height: 1).c(ink);
+    final height = FrostedChromeMetrics.chipHeight * growth;
     return Semantics(
       label: [?lead, label, ?figure].join(' '),
       excludeSemantics: true,
       child: SizedBox(
-        height: FrostedChromeMetrics.chipHeight,
+        height: height,
         child: FrostedFace(
           material: FrostedMaterial.paint,
-          radius: BorderRadius.circular(FrostedChromeMetrics.chipHeight / 2),
+          radius: BorderRadius.circular(height / 2),
           color: glass ? t.sheens.pillFill : t.toneTint(tone),
           ring: glass ? t.sheens.pillRing : null,
           shadows: glass
               ? [BoxShadow(color: t.sheens.pillEdge, spreadRadius: 1)]
               : const <BoxShadow>[],
-          padding: const EdgeInsets.symmetric(
-            horizontal: FrostedChromeMetrics.chipInset,
+          padding: EdgeInsets.symmetric(
+            horizontal: FrostedChromeMetrics.chipInset * growth,
           ),
-          // A tag keeps its size at large text, its figures with its words
-          // (a "13" at 200% stood out of its pill beside a 100% "results").
+          // Sized above by the growth, so the words and the figures scale
+          // once, together (a "13" scaled on its own stood out of its pill).
           child: MediaQuery.withNoTextScaling(
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              spacing: FrostedChromeMetrics.chipGap,
+              spacing: FrostedChromeMetrics.chipGap * growth,
               children: [
                 if (icon != null)
-                  Icon(icon, size: FrostedChromeMetrics.chipGlyph, color: ink),
+                  Icon(
+                    icon,
+                    size: FrostedChromeMetrics.chipGlyph * growth,
+                    color: ink,
+                  ),
                 if (lead != null)
-                  // `.chip .num` first: the figures lead the words.
-                  FrostedNumberText(lead!, style: words.at(14)),
-                Text(label, maxLines: 1, softWrap: false, style: words),
+                  // The figures lead the words, a size up.
+                  FrostedNumberText(lead!, style: words.at(14 * growth)),
+                // Held to a narrower slot (a row's end), the words give way.
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: words,
+                  ),
+                ),
                 if (figure != null)
-                  // `.chip .num`: the figures a size up, in the display face.
-                  FrostedNumberText(figure!, style: words.at(14)),
+                  // The figures a size up, in the display face.
+                  FrostedNumberText(figure!, style: words.at(14 * growth)),
               ],
             ),
           ),
@@ -558,9 +605,9 @@ class FrostedTag extends StatelessWidget {
   }
 }
 
-/// A swatch of a hue: an 8 round of its two stops at 135 degrees (`.sw`),
-/// before a legend's name; [part] is the quiet share of a split (`.sw--
-/// part`): the hue's small solid in its hairline. Decoration.
+/// A swatch of a hue: an 8 round of its two stops at 135 degrees, before a
+/// legend's name; [part] is the quiet share of a split: the hue's small solid
+/// in its hairline. Decoration.
 ///
 /// ```dart
 /// FrostedSwatch(context.frostedTheme.hues.orchid)
@@ -701,7 +748,7 @@ class FrostedPerson extends StatelessWidget {
     }
     return FrostedPressable(
       onPressed: () => onChanged!(!selected),
-      label: spoken,
+      semanticLabel: spoken,
       selected: selected,
       radius: FrostedChromeMetrics.avatarLarge / 2,
       child: person,
@@ -721,7 +768,7 @@ class FrostedPerson extends StatelessWidget {
 }
 
 /// A row of [FrostedPerson]s across the width, 8 apart, each given an equal
-/// share (`.people`).
+/// share.
 ///
 /// ```dart
 /// FrostedPeople(children: [FrostedPerson('Jonah Reyes'), FrostedPerson('Ines Park')])
@@ -752,17 +799,17 @@ class FrostedPeople extends StatelessWidget {
 /// is done (a dash when [value] is null, the mixed state of a check over
 /// several) and a little more frost in the opening. With [onChanged] a
 /// press, Enter or Space flips it; without, it is a mark that only reports.
-/// [label] is what a screen reader calls it; [error] prints the mark in the
+/// [semanticLabel] is what a screen reader calls it; [error] prints the mark in the
 /// over ink (a "!" in an empty check) and says so, the ring kept neutral.
 ///
 /// ```dart
-/// FrostedCheckbox(value: kept, label: 'Walk 5,000 steps', onChanged: (v) => setState(() => kept = v!))
+/// FrostedCheckbox(value: kept, semanticLabel: 'Walk 5,000 steps', onChanged: (v) => setState(() => kept = v!))
 /// ```
 class FrostedCheckbox extends StatelessWidget {
   /// Creates a [FrostedCheckbox].
   const FrostedCheckbox({
     required this.value,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.error = false,
     this.tristate = false,
@@ -789,7 +836,7 @@ class FrostedCheckbox extends StatelessWidget {
   final bool autofocus;
 
   /// What the thing is, for a screen reader.
-  final String label;
+  final String semanticLabel;
 
   /// Whether what it stands for is wrong as it is (a term not agreed to):
   /// its mark is printed in the over ink, and a screen reader hears it.
@@ -806,7 +853,7 @@ class FrostedCheckbox extends StatelessWidget {
   /// ```dart
   /// FrostedCheckbox(
   ///   value: kept,
-  ///   label: 'Walk 5,000 steps',
+  ///   semanticLabel: 'Walk 5,000 steps',
   ///   onChanged: keep,
   ///   style: const FrostedStyle(
   ///     shape: WidgetStatePropertyAll(
@@ -921,7 +968,7 @@ class FrostedCheckbox extends StatelessWidget {
       // table's select-all) never lends that region its check and its tap.
       child: Semantics(
         container: true,
-        label: label,
+        label: semanticLabel,
         checked: value ?? false,
         mixed: value == null,
         enabled: live,
@@ -987,7 +1034,7 @@ class FrostedCheckbox extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(FlagProperty('error', value: error, ifTrue: 'error'))
       ..add(FlagProperty('tristate', value: tristate, ifTrue: 'tristate'))
       ..add(

@@ -128,18 +128,26 @@ Widget kitSpecimenSegmentedFill() => _Live<String>(
 Widget kitSpecimenSwitches() => kitRow([
   _Live<bool>(
     true,
-    (value, set) => FrostedSwitch(value: value, onChanged: set, label: 'Bills'),
+    (value, set) =>
+        FrostedSwitch(value: value, onChanged: set, semanticLabel: 'Bills'),
   ),
   _Live<bool>(
     false,
-    (value, set) =>
-        FrostedSwitch(value: value, onChanged: set, label: 'Weekly summary'),
+    (value, set) => FrostedSwitch(
+      value: value,
+      onChanged: set,
+      semanticLabel: 'Weekly summary',
+    ),
   ),
-  const FrostedSwitch(value: true, onChanged: null, label: 'Contactless'),
   const FrostedSwitch(
     value: true,
     onChanged: null,
-    label: 'Auto-save',
+    semanticLabel: 'Contactless',
+  ),
+  const FrostedSwitch(
+    value: true,
+    onChanged: null,
+    semanticLabel: 'Auto-save',
     readOnly: true,
   ),
 ]);
@@ -194,7 +202,7 @@ Widget kitSpecimenActionTiles() => FrostedActionTiles([
     tail: r'$28.00',
     onPressed: () {},
   ),
-], label: 'Ways to move money');
+], semanticLabel: 'Ways to move money');
 
 // --- Activity's scope chips and Spending's month switch (controls.dart) ---
 

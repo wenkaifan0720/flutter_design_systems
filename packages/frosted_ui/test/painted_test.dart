@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 Future<void> _pump(WidgetTester t, Widget child) async {
   t.view.physicalSize = const Size(390, 844);
@@ -98,7 +97,7 @@ void main() {
     await _pump(
       t,
       FrostedToggleGroup<String>(
-        label: 'Text style',
+        semanticLabel: 'Text style',
         multiSelectionEnabled: true,
         segments: const [
           FrostedButtonSegment('b', 'Bold'),

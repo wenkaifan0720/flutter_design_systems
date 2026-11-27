@@ -89,7 +89,7 @@ final stateParts = <StatePart>[
     'Icon button',
     (on, _) => FrostedIconButton(
       FrostedGlyphs.add,
-      label: 'Add',
+      semanticLabel: 'Add',
       onPressed: on ? _noop : null,
     ),
   ),
@@ -145,7 +145,7 @@ final stateParts = <StatePart>[
     'Checkbox',
     (on, wrong) => FrostedCheckbox(
       value: false,
-      label: 'Agree',
+      semanticLabel: 'Agree',
       error: wrong,
       onChanged: on ? _drop : null,
     ),
@@ -177,7 +177,7 @@ final stateParts = <StatePart>[
   _p(
     'Choices',
     (on, _) => FrostedChoices<String>(
-      label: 'Size',
+      semanticLabel: 'Size',
       options: _sizes,
       value: 'm',
       onChanged: on ? _drop : null,
@@ -201,7 +201,7 @@ final stateParts = <StatePart>[
     'Switch',
     (on, _) => FrostedSwitch(
       value: false,
-      label: 'Wi-Fi',
+      semanticLabel: 'Wi-Fi',
       onChanged: on ? _drop : null,
     ),
   ),
@@ -219,7 +219,7 @@ final stateParts = <StatePart>[
       width: 240,
       child: FrostedSlider(
         value: .4,
-        label: 'Volume',
+        semanticLabel: 'Volume',
         onChanged: on ? _drop : null,
       ),
     ),
@@ -242,7 +242,7 @@ final stateParts = <StatePart>[
     'Rating',
     (on, _) => FrostedRating(
       value: 3,
-      label: 'Your rating',
+      semanticLabel: 'Your rating',
       onChanged: on ? _drop : null,
     ),
     press: false,
@@ -402,7 +402,7 @@ final stateParts = <StatePart>[
     (on, _) => FrostedWheelPicker<String>(
       options: _sizes,
       value: 'm',
-      label: 'Size',
+      semanticLabel: 'Size',
       onChanged: on ? _drop : null,
     ),
     press: false,
@@ -608,7 +608,7 @@ Widget _radios(String kind, String? initial, FocusNode before) {
                     ],
                   )
                 : FrostedToggleGroup<String>(
-                    label: 'Alignment',
+                    semanticLabel: 'Alignment',
                     segments: const [
                       FrostedButtonSegment('A', 'A'),
                       FrostedButtonSegment('B', 'B'),

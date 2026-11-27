@@ -11,7 +11,7 @@ import 'package:frosted_ui/frosted_ui.dart';
 // The panel is the example app's; a test reads its settings from there.
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 
 /// Every setting: each knob away from the look's own, each accent of your own, and every knob at once.

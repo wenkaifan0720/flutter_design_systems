@@ -53,13 +53,17 @@ class FrostedButtonGroupItem {
 /// ```
 class FrostedButtonGroup extends StatelessWidget {
   /// A group of [items].
-  const FrostedButtonGroup({required this.items, this.label, super.key});
+  const FrostedButtonGroup({
+    required this.items,
+    this.semanticLabel,
+    super.key,
+  });
 
   /// The acts, start to end.
   final List<FrostedButtonGroupItem> items;
 
   /// What a screen reader calls the group.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +109,7 @@ class FrostedButtonGroup extends StatelessWidget {
         FrostedPressable(
           key: item.key,
           onPressed: item.onPressed,
-          label: item.label,
+          semanticLabel: item.label,
           selected: item.selected,
           radius: h / 2,
           child: face,
@@ -114,7 +118,7 @@ class FrostedButtonGroup extends StatelessWidget {
     }
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       child: FocusTraversalGroup(
         child: FrostedFace(
@@ -138,7 +142,7 @@ class FrostedButtonGroup extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<FrostedButtonGroupItem>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

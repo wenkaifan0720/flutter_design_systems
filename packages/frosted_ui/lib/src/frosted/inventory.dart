@@ -31,6 +31,7 @@ import 'components/nav_bar.dart';
 import 'components/pickers/pickers.dart';
 import 'components/popover/popover.dart';
 import 'components/progress/progress.dart';
+import 'components/rail/rail.dart';
 import 'components/raise/raise.dart';
 import 'components/screen.dart';
 import 'components/scroll/scroll.dart';
@@ -70,7 +71,7 @@ final RawInventory frostedInventory = RawInventory(
       'IconButton',
       (context) => const FrostedIconButton(
         FrostedGlyphs.add,
-        label: 'Add',
+        semanticLabel: 'Add',
         onPressed: _none,
       ),
     ),
@@ -157,14 +158,20 @@ final RawInventory frostedInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Select',
-      (context) => const FrostedSelect<String>(
-        labelText: 'Size',
-        value: 'm',
-        options: [
-          FrostedSelectOption('s', 'Small'),
-          FrostedSelectOption('m', 'Medium'),
+      // Alone, as a filter, a select keeps to its content; in a form's
+      // column it takes the column.
+      (context) => const Row(
+        children: [
+          FrostedSelect<String>(
+            labelText: 'Size',
+            value: 'm',
+            options: [
+              FrostedSelectOption('s', 'Small'),
+              FrostedSelectOption('m', 'Medium'),
+            ],
+            onChanged: _drop,
+          ),
         ],
-        onChanged: _drop,
       ),
     ),
     RawInventoryEntry.present(
@@ -185,8 +192,11 @@ final RawInventory frostedInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Checkbox',
-      (context) =>
-          const FrostedCheckbox(value: true, label: 'Agree', onChanged: _drop),
+      (context) => const FrostedCheckbox(
+        value: true,
+        semanticLabel: 'Agree',
+        onChanged: _drop,
+      ),
     ),
     RawInventoryEntry.present(
       'RadioGroup',
@@ -199,13 +209,19 @@ final RawInventory frostedInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Switch',
-      (context) =>
-          const FrostedSwitch(value: true, onChanged: _drop, label: 'Wi-Fi'),
+      (context) => const FrostedSwitch(
+        value: true,
+        onChanged: _drop,
+        semanticLabel: 'Wi-Fi',
+      ),
     ),
     RawInventoryEntry.present(
       'Slider',
-      (context) =>
-          const FrostedSlider(value: .4, onChanged: _drop, label: 'Volume'),
+      (context) => const FrostedSlider(
+        value: .4,
+        onChanged: _drop,
+        semanticLabel: 'Volume',
+      ),
     ),
     RawInventoryEntry.present(
       'RangeSlider',
@@ -232,7 +248,7 @@ final RawInventory frostedInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Rating',
-      (context) => const FrostedRating(value: 4, label: 'Your rating'),
+      (context) => const FrostedRating(value: 4, semanticLabel: 'Your rating'),
     ),
     RawInventoryEntry.present(
       'FileUpload',
@@ -271,7 +287,7 @@ final RawInventory frostedInventory = RawInventory(
       (context) => const FrostedWheelPicker<int>(
         options: [FrostedSelectOption(1, 'One'), FrostedSelectOption(2, 'Two')],
         value: 1,
-        label: 'Count',
+        semanticLabel: 'Count',
         onChanged: _drop,
       ),
     ),
@@ -352,8 +368,11 @@ final RawInventory frostedInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'PageDots',
-      (context) =>
-          const FrostedPageDots(pageCount: 4, selectedIndex: 0, label: 'Page'),
+      (context) => const FrostedPageDots(
+        pageCount: 4,
+        selectedIndex: 0,
+        semanticLabel: 'Page',
+      ),
     ),
     RawInventoryEntry.present(
       'MenuBar',

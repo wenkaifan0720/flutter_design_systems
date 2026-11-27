@@ -1,5 +1,5 @@
 // What Frosted declares for ui_core's checks, with its reasons: ui_core's
-// sweep reads this file, and rows_widths_test checks the same.
+// sweep reads this file.
 //
 // listWordsIndent: how far an open list's words stand in from its field's.
 const uiCoreChecks = (

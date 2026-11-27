@@ -1,12 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawFocusShown;
 
 import '../components/pressable/pressable.dart';
 
 /// Keyboard reach for an adjustable control (the switch, the sliders, the
 /// stepper, the segmented strip): it takes focus, answers [keys], and clears
-/// its frost ([FrostedFocusRing]) while the keyboard, not a pointer, holds
-/// focus.
+/// its frost ([FrostedFocusRing]) while it holds the focus and the focus shows:
+/// after a key, not after a press of a pointer ([RawFocusShown]).
 /// Plumbing of the controls; pages never place one.
 class FrostedKeyFocus extends StatefulWidget {
   /// Creates a [FrostedKeyFocus].
@@ -52,28 +53,21 @@ class FrostedKeyFocus extends StatefulWidget {
 }
 
 class _FrostedKeyFocusState extends State<FrostedKeyFocus> {
-  bool _focused = false;
   bool _hovered = false;
-  bool _keyboard = _isKeyboard(FocusManager.instance.highlightMode);
-
-  static bool _isKeyboard(FocusHighlightMode mode) =>
-      mode == FocusHighlightMode.traditional;
+  late final RawFocusShown _focus;
 
   @override
   void initState() {
     super.initState();
-    FocusManager.instance.addHighlightModeListener(_onMode);
+    _focus = RawFocusShown((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
   void dispose() {
-    FocusManager.instance.removeHighlightModeListener(_onMode);
+    _focus.dispose();
     super.dispose();
-  }
-
-  void _onMode(FocusHighlightMode mode) {
-    final keyboard = _isKeyboard(mode);
-    if (keyboard != _keyboard) setState(() => _keyboard = keyboard);
   }
 
   @override
@@ -86,7 +80,7 @@ class _FrostedKeyFocusState extends State<FrostedKeyFocus> {
       includeSemantics: false,
       canRequestFocus: widget.enabled,
       skipTraversal: !widget.enabled,
-      onFocusChange: (focused) => setState(() => _focused = focused),
+      onFocusChange: _focus.focused,
       onKeyEvent: (node, event) {
         if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
           return KeyEventResult.ignored;
@@ -102,7 +96,7 @@ class _FrostedKeyFocusState extends State<FrostedKeyFocus> {
         onEnter: (_) => setState(() => _hovered = true),
         onExit: (_) => setState(() => _hovered = false),
         child: FrostedFocusRing(
-          shown: _focused && _keyboard,
+          shown: _focus.value,
           hovered: _hovered && widget.enabled,
           radius: widget.radius,
           insets: at,

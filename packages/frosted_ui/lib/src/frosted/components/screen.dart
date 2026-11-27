@@ -19,14 +19,12 @@ import 'sheet.dart';
 import 'top_bar.dart';
 
 /// Root of every page: the theme's backdrop, still behind the page as it
-/// scrolls (the glass over it shows it passing), then the page in a column at the
-/// gutter: its top bar and, the page's gap under it, the [body] (the bar is
-/// the first child of the source's `.main`, whose gap of 10 on a phone and
-/// 16 on the desktop stands between it and the first tile). On a phone the
-/// bar is pinned over
-/// the page on its frost (`.top { position: sticky }`): the page runs up
-/// under the status bar and the light with it, and scrolls under the bar;
-/// on the desktop the bar stands in the page and scrolls away with it.
+/// scrolls (the glass over it shows it passing), then the page in a column
+/// at the gutter: its top bar and, 10 under it on a phone and 16 on a
+/// desktop, the [body]. On a phone the bar is pinned over the page on its
+/// frost: the page runs up under the status bar and the light with it, and
+/// scrolls under the bar; on a desktop the bar stands in the page and
+/// scrolls away with it.
 ///
 /// Top contract. A [FrostedAppBar] in [topBar] takes the register its route
 /// earns: a tab's title on a root (Home's greeting through
@@ -40,15 +38,18 @@ import 'top_bar.dart';
 /// The column. On a phone the page stands 16 in from either edge and keeps
 /// 20 under its last tile; at desktop width the gutter is 32 with 40 under
 /// the last tile, and the page stands right of the sidebar while its light
-/// runs on under the sidebar's glass.
+/// runs on under the sidebar's glass. [maxWidth] holds the column to a
+/// measure on its start edge: the bar's title and actions, the body and the
+/// footer's acts all keep to it, so an act never stands a window's width
+/// from what it acts on.
 ///
-/// Bottom contract. The body reserves whatever stands over the bottom edge:
-/// the safe-area inset or, on a nav root, the shell's tab bar, published as
-/// [ShellInsets]; the page scrolls on under the bar's fade. In scroll mode
-/// the reserve is scroll padding; with `scroll: false` it is published as
-/// MediaQuery bottom padding for the page's own scrollable. A nav root never
-/// owns the bottom edge: a [footer] (DERIVED: the source's acts stand in
-/// the page) belongs to pushed, sheet and shell-free pages, standing on the
+/// Bottom contract. The body keeps clear of what stands over the bottom
+/// edge: the safe-area inset, or a tab bar laid over a root page.
+/// [FrostedAppShell] lays its pages out above its tab bar, so they keep
+/// clear of the inset alone. In scroll mode the room is scroll padding; with
+/// `scroll: false` it is published as MediaQuery bottom padding for the
+/// page's own scrollable. A root page never owns the bottom edge: a
+/// [footer] belongs to pushed, sheet and shell-free pages, standing on the
 /// canvas with the page fading into it above.
 ///
 /// On a sheet's card the page is the sheet: no light, the card's room, the
@@ -68,6 +69,7 @@ class FrostedScaffold extends StatefulWidget {
     this.scroll = true,
     this.padding,
     this.lights = true,
+    this.maxWidth,
   });
 
   /// The page's content.
@@ -76,11 +78,8 @@ class FrostedScaffold extends StatefulWidget {
   /// Usually a [FrostedAppBar]; unset derives the route's own (see above).
   final Widget? topBar;
 
-  /// Pinned above the bottom edge: a page's one act (DERIVED: the source
-  /// pins none; Review transfer ends its form in Edit and Transfer, a
-  /// `FrostedButtonRow` inline after, and a page that follows the source sets
-  /// its acts the same way, in its body). Gets the footer band and the
-  /// safe-area inset.
+  /// Pinned above the bottom edge: a page's one act. Gets the footer band and
+  /// the safe-area inset.
   final Widget? footer;
 
   /// Wrap the page in a scroll view.
@@ -93,6 +92,12 @@ class FrostedScaffold extends StatefulWidget {
   /// still behind the page for its glass to show; false leaves the plain
   /// ground.
   final bool lights;
+
+  /// The widest the page's column grows, its padding included, on its start
+  /// edge: the bar, the body and the footer hold to it, the rest of a wide
+  /// window left to the backdrop. Null spans the page's box (a form reads
+  /// well at 720).
+  final double? maxWidth;
 
   /// The band the [footer] stands in, round its content.
   static const EdgeInsets footerInsets = EdgeInsets.fromLTRB(
@@ -117,7 +122,8 @@ class FrostedScaffold extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(FlagProperty('lights', value: lights, ifFalse: 'lights: false'));
+      ..add(FlagProperty('lights', value: lights, ifFalse: 'lights: false'))
+      ..add(DoubleProperty('maxWidth', maxWidth, defaultValue: null));
   }
 }
 
@@ -143,9 +149,26 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final measure = widget.maxWidth;
+    if (measure == null) return _page(context, 0);
+    // What a wide box leaves past the measure stands at the column's end.
+    final side = FrostedSideInset.of(context);
+    return LayoutBuilder(
+      builder: (context, box) => _page(
+        context,
+        box.maxWidth.isFinite
+            ? math.max(0.0, box.maxWidth - side - measure)
+            : 0.0,
+      ),
+    );
+  }
+
+  /// The page, [past] left empty at its column's end.
+  Widget _page(BuildContext context, double past) {
     final t = context.frostedTheme;
     final mq = MediaQuery.of(context);
     final register = RoutePresentation.of(context);
+    final measured = EdgeInsetsDirectional.only(end: past);
     final bar = _resolveBar(context);
     if (register == RoutePresentation.sheet &&
         FrostedSheetShell.around(context)) {
@@ -205,7 +228,10 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
           top: top,
           child: page(
             Padding(
-              padding: EdgeInsets.only(left: room.left, right: room.right),
+              padding: EdgeInsets.only(
+                left: room.left,
+                right: room.right,
+              ).add(measured),
               child: bar!,
             ),
           ),
@@ -236,10 +262,12 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
                       child: RawKeylineRegion(
                         label: 'screen',
                         child: Padding(
-                          padding: room.copyWith(
-                            top: room.top + barRoom + (pinned ? barGap : 0),
-                            bottom: room.bottom + reserve,
-                          ),
+                          padding: room
+                              .copyWith(
+                                top: room.top + barRoom + (pinned ? barGap : 0),
+                                bottom: room.bottom + reserve,
+                              )
+                              .add(measured),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [...head, widget.body],
@@ -268,7 +296,7 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
                       top: barRoom + room.top + (pinned ? barGap : 0),
                       left: room.left,
                       right: room.right,
-                    ),
+                    ).add(measured),
                     child: MediaQuery(
                       data: mq.copyWith(
                         padding: mq.padding.copyWith(top: 0, bottom: reserve),
@@ -340,12 +368,12 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
                       child: Padding(
                         padding: FrostedScaffold.footerInsets.copyWith(
                           left:
-                              (rtl ? 0 : side) +
+                              (rtl ? past : side) +
                               (wide
                                   ? room.left
                                   : FrostedScaffold.footerInsets.left),
                           right:
-                              (rtl ? side : 0) +
+                              (rtl ? side : past) +
                               (wide
                                   ? room.right
                                   : FrostedScaffold.footerInsets.right),

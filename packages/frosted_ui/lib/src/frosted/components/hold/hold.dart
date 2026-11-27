@@ -479,7 +479,7 @@ class _FrostedDisclosureState extends State<FrostedDisclosure> {
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
           onPressed: _toggle,
-          label: widget.title,
+          semanticLabel: widget.title,
           value: widget.meta,
           expanded: open,
           radius: FrostedCorners.r12,

@@ -22,8 +22,9 @@ import '../../internal/dim.dart';
 import '../../internal/cap.dart';
 
 /// One choice of a [FrostedRadioGroup]: its [value], its [label], a quiet
-/// [note] under it, and whether it can be chosen ([enabled]). Built by the
-/// group it stands in.
+/// [note] under it, what follows its words ([suffix]: a palette's
+/// swatches), and whether it can be chosen ([enabled]). Built by the group
+/// it stands in.
 ///
 /// ```dart
 /// FrostedRadioGroup<String>(labelText: 'Plan', value: plan, onChanged: setPlan, options: const [FrostedRadio('free', 'Free'), FrostedRadio('pro', 'Pro', note: 'Billed yearly')])
@@ -34,6 +35,7 @@ class FrostedRadio<T> extends StatelessWidget {
     this.value,
     this.label, {
     this.note,
+    this.suffix,
     this.enabled = true,
     this.style,
     super.key,
@@ -47,6 +49,11 @@ class FrostedRadio<T> extends StatelessWidget {
 
   /// A line under the words.
   final String? note;
+
+  /// What follows the words, right beside them at any width, as an input's
+  /// suffix follows its text: a palette's swatches, so they read as that
+  /// palette's colours. It is drawn, not read: the [label] names the choice.
+  final Widget? suffix;
 
   /// Whether it can be chosen.
   final bool enabled;
@@ -128,7 +135,9 @@ class FrostedRadio<T> extends StatelessWidget {
           spacing: FrostedSpacing.s12,
           children: [
             mark,
-            Expanded(
+            // The words keep to their own width, so what follows them stands
+            // beside them.
+            Flexible(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: FrostedSpacing.s8,
@@ -149,6 +158,7 @@ class FrostedRadio<T> extends StatelessWidget {
                 ),
               ),
             ),
+            ?suffix,
           ],
         ),
       );
@@ -208,6 +218,7 @@ class FrostedRadio<T> extends StatelessWidget {
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(StringProperty('label', label))
       ..add(StringProperty('note', note, defaultValue: null))
+      ..add(FlagProperty('suffix', value: suffix != null, ifTrue: 'suffix'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
@@ -345,14 +356,16 @@ class FrostedRadioGroup<T> extends StatelessWidget {
                   takesChoice: onChanged != null,
                   child: option,
                 ),
-              if (errorText case final error?)
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    error,
-                    style: t.textTheme.bodySmall.c(t.colorScheme.over),
+              // What is wrong eases in under the choices.
+              FrostedHintSlot(
+                child: switch (errorText) {
+                  final error? => Semantics(
+                    liveRegion: true,
+                    child: FrostedErrorWords(child: Text(error)),
                   ),
-                ),
+                  null => null,
+                },
+              ),
             ],
           ),
         ),
@@ -524,7 +537,7 @@ class FrostedChip extends StatelessWidget {
                   FrostedLaneKey(
                     child: FrostedPressable(
                       onPressed: isEnabled ? close : null,
-                      label: deleteLabel ?? '${words.remove} $label',
+                      semanticLabel: deleteLabel ?? '${words.remove} $label',
                       radius: 12,
                       child: SizedBox.square(
                         dimension: 24,
@@ -581,7 +594,7 @@ class FrostedChip extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: isEnabled ? onPressed : null,
-      label: label,
+      semanticLabel: label,
       selected: selected,
       excludeChild: close == null,
       radius: FrostedStyleLayers.radiusOf(cut, h, h / 2),
@@ -626,21 +639,21 @@ class FrostedChip extends StatelessWidget {
 /// hairline when it is not. With [onChanged] a press or a drag along the
 /// row sets it (a pointer resting over it shows what a press would set),
 /// the arrow keys step it, Home or 0 clears it, End fills it and a digit
-/// sets that many; without, it only states. Read aloud as [label] and
+/// sets that many; without, it only states. Read aloud as [semanticLabel] and
 /// "3 of 5". ui_core's [RawRating] is the behaviour.
 ///
 /// ```dart
-/// FrostedRating(value: stars, label: 'Your rating', onChanged: (v) => setState(() => stars = v))
+/// FrostedRating(value: stars, semanticLabel: 'Your rating', onChanged: (v) => setState(() => stars = v))
 /// ```
 ///
 /// ```dart
-/// FrostedRating(value: 4.5, label: 'Average', allowHalf: true, size: 16)
+/// FrostedRating(value: 4.5, semanticLabel: 'Average', allowHalf: true, size: 16)
 /// ```
 class FrostedRating extends StatelessWidget {
   /// [value] stars of [max].
   const FrostedRating({
     required this.value,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.max = 5,
     this.allowHalf = false,
@@ -654,7 +667,7 @@ class FrostedRating extends StatelessWidget {
   final double value;
 
   /// What a screen reader calls it.
-  final String label;
+  final String semanticLabel;
 
   /// Called with the score set; null leaves it stating.
   final ValueChanged<double>? onChanged;
@@ -690,7 +703,7 @@ class FrostedRating extends StatelessWidget {
       allowHalf: allowHalf,
       focusNode: node,
       autofocus: autofocus,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       semanticFormatterCallback: spoken,
       itemBuilder: (context, item) => CustomPaint(
         size: Size.square(size),
@@ -736,7 +749,7 @@ class FrostedRating extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DoubleProperty('value', value))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
       )
@@ -773,24 +786,20 @@ class _KeyRing extends StatefulWidget {
 
 class _KeyRingState extends State<_KeyRing> {
   FocusNode? _own;
+  late final RawFocusShown _focus;
 
   FocusNode get _node => widget.focusNode ?? (_own ??= FocusNode());
 
-  bool get _keyboard =>
-      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
-
-  void _changed() {
-    if (mounted) setState(() {});
-  }
+  void _changed() => _focus.focused(_node.hasFocus);
 
   @override
   void initState() {
     super.initState();
+    _focus = RawFocusShown((_) {
+      if (mounted) setState(() {});
+    });
     _node.addListener(_changed);
-    FocusManager.instance.addHighlightModeListener(_moded);
   }
-
-  void _moded(FocusHighlightMode _) => _changed();
 
   @override
   void didUpdateWidget(_KeyRing old) {
@@ -805,14 +814,14 @@ class _KeyRingState extends State<_KeyRing> {
   @override
   void dispose() {
     _node.removeListener(_changed);
-    FocusManager.instance.removeHighlightModeListener(_moded);
+    _focus.dispose();
     _own?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => FrostedFocusRing(
-    shown: _node.hasFocus && _keyboard,
+    shown: _focus.value,
     radius: widget.radius,
     child: widget.builder(_node),
   );
@@ -1042,10 +1051,7 @@ class FrostedFileUpload extends StatelessWidget {
           if (errorText case final error?)
             Semantics(
               liveRegion: true,
-              child: Text(
-                error,
-                style: t.textTheme.bodySmall.c(t.colorScheme.over),
-              ),
+              child: FrostedErrorWords(child: Text(error)),
             ),
         ],
       ),
@@ -1114,10 +1120,7 @@ class _FileRow extends StatelessWidget {
                   style: t.textTheme.titleMedium,
                 ),
                 if (file.error case final error?)
-                  Text(
-                    error,
-                    style: t.textTheme.bodySmall.c(t.colorScheme.over),
-                  )
+                  FrostedErrorWords(child: Text(error))
                 else if (progress != null)
                   FrostedLinearProgressIndicator(
                     value: progress,
@@ -1132,7 +1135,7 @@ class _FileRow extends StatelessWidget {
           if (onRemoved case final remove?)
             FrostedPressable(
               onPressed: remove,
-              label: '${words.remove} ${file.name}',
+              semanticLabel: '${words.remove} ${file.name}',
               radius: 14,
               child: SizedBox.square(
                 dimension: 28,
@@ -1235,7 +1238,7 @@ class FrostedCheckRow extends StatelessWidget {
                 child: ExcludeSemantics(
                   child: FrostedCheckbox(
                     value: value,
-                    label: label,
+                    semanticLabel: label,
                     tristate: tristate,
                     onChanged: change == null ? null : (_) {},
                   ),
@@ -1251,7 +1254,7 @@ class FrostedCheckRow extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: change == null ? null : () => change(_next),
-      label: words == null ? label : '$label, $words',
+      semanticLabel: words == null ? label : '$label, $words',
       role: FrostedPressRole.control,
       checked: value ?? false,
       excludeChild: true,
@@ -1284,11 +1287,11 @@ class FrostedCheckRow extends StatelessWidget {
 /// One value of a few, as a run of chips (tiles of Material's
 /// `ChoiceChip`): each option a [FrostedChip], the chosen one lit, wrapping
 /// onto a new line when the row runs out, 8 apart. A screen reader hears a
-/// group named [label] of buttons, the chosen one selected. A null
+/// group named [semanticLabel] of buttons, the chosen one selected. A null
 /// [onChanged] leaves them inert; a disabled option stands faded.
 ///
 /// ```dart
-/// FrostedChoices<String>(label: 'Size', options: const [FrostedSelectOption('s', 'Small'), FrostedSelectOption('m', 'Medium'), FrostedSelectOption('l', 'Large')], value: size, onChanged: (v) => setState(() => size = v))
+/// FrostedChoices<String>(semanticLabel: 'Size', options: const [FrostedSelectOption('s', 'Small'), FrostedSelectOption('m', 'Medium'), FrostedSelectOption('l', 'Large')], value: size, onChanged: (v) => setState(() => size = v))
 /// ```
 class FrostedChoices<T> extends StatelessWidget {
   /// Chips over [options], [value] lit.
@@ -1296,7 +1299,7 @@ class FrostedChoices<T> extends StatelessWidget {
     required this.options,
     this.value,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -1310,14 +1313,14 @@ class FrostedChoices<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// What a screen reader calls the group.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final change = onChanged;
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       child: FocusTraversalGroup(
         // The chips stand 8 apart, their targets taking the room between
@@ -1346,6 +1349,6 @@ class FrostedChoices<T> extends StatelessWidget {
       ..add(IterableProperty<FrostedSelectOption<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

@@ -46,23 +46,20 @@ class FrostedSwipeAction {
   final FrostedSwipeTone tone;
 }
 
-/// Actions revealed by swiping a row sideways: dragging the row uncovers
-/// tiles ([FrostedSwipeAction], 84 wide with the 8 toward the row, corners
-/// of 14) standing in the gap it leaves, the first nearest the edge. Let go
-/// past half their width and the row settles open; short of that it
-/// settles shut. A press on an open row closes it, a press on a tile does
-/// it and closes the row. With [fullSwipe] a drag past 65% of the width
-/// does the first action on that edge (the row's delete), its tile
-/// widening to say so. The arrows open a side from the keyboard and Escape
-/// closes it; each action is also a custom action on the row, so a screen
-/// reader reaches it without the gesture. ui_core's [RawSwipeActions]
-/// is the behaviour. [initiallyOpen] starts the row open, its trailing
-/// actions showing (the leading ones when it has no trailing): a preview,
-/// or a one-time hint that the row swipes; it closes as any open row does.
-/// The tiles are as tall as the row, and the row is at least a target tall
-/// ([FrostedBreakpoints.hitTargetOf]).
-/// DERIVED: the source has no swipes; the tiles take the wash,
-/// the ink act and the danger fill.
+/// Actions revealed by swiping a row sideways: dragging the row uncovers tiles
+/// ([FrostedSwipeAction], 84 wide with the 8 toward the row, corners of 14)
+/// standing in the gap it leaves, the first nearest the edge. Let go past half
+/// their width and the row settles open; short of that it settles shut. A press
+/// on an open row closes it, a press on a tile does it and closes the row. With
+/// [fullSwipe] a drag past 65% of the width does the first action on that edge
+/// (the row's delete), its tile widening to say so. The arrows open a side from
+/// the keyboard and Escape closes it; each action is also a custom action on
+/// the row, so a screen reader reaches it without the gesture. ui_core's
+/// [RawSwipeActions] is the behaviour. [initiallyOpen] starts the row open, its
+/// trailing actions showing (the leading ones when it has no trailing): a
+/// preview, or a one-time hint that the row swipes; it closes as any open row
+/// does. The tiles are as tall as the row, and the row is at least a target
+/// tall ([FrostedBreakpoints.hitTargetOf]).
 ///
 /// ```dart
 /// FrostedSwipeActions(trailing: [FrostedSwipeAction(label: 'Delete', icon: FrostedGlyphs.delete, tone: FrostedSwipeTone.destructive, onPressed: delete)], fullSwipe: true, child: row)

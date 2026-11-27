@@ -74,14 +74,13 @@ Widget _ownWidth(BuildContext context, Widget child) =>
         child: IntrinsicWidth(child: child),
       );
 
-/// The source's `--edge` (`0 0 0 1px`): a hairline ring just outside a
-/// white or glass face, taking no room, as the tiles draw it; [color] in
+/// A hairline ring just outside a white or glass face, taking no room, as the tiles draw it; [color] in
 /// place of the glass edge, at the theme's regular stroke.
 BoxShadow _edge(FrostedThemeData t, [Color? color]) =>
     frostedShadow(color: color ?? t.glass.edge, spread: FrostedStrokes.regular);
 
-/// A field's label over a choice group a form labels (`.field-l { font:
-/// 500 12px/1.3 var(--font-t); color: var(--ink-2) }`), 8 over it.
+/// A field's label over a choice group a form labels (12 point medium in
+/// the secondary ink), 8 over it.
 class _Labelled extends StatelessWidget {
   const _Labelled(this.label, {required this.child});
 
@@ -126,15 +125,14 @@ class FrostedFilterOption<T> {
   final Key? key;
 }
 
-/// One choice among a row of pill chips that scopes the list under it
-/// (All, Unread, Starred, Archived): each 32
-/// tall on the faint glass with its hairline ring, 4 apart; the chosen one
-/// on thicker, brighter glass of its own, which fades in where the chip
-/// stands (nothing slides between the chips). On a phone the row runs on under the page's
-/// gutters and scrolls, as the source's `.filters` does; on the desktop it
-/// takes its own width. The page owns [value]; a null [onChanged] leaves the
-/// row inert. A screen reader hears a group named [label] of buttons, the
-/// chosen one selected.
+/// One choice among a row of pill chips that scopes the list under it (All,
+/// Unread, Starred, Archived): each 32 tall on the faint glass with its
+/// hairline ring, 4 apart; the chosen one on thicker, brighter glass of its
+/// own, which fades in where the chip stands (nothing slides between the
+/// chips). On a phone the row runs on under the page's gutters and scrolls; on the
+/// desktop it takes its own width. The page
+/// owns [value]; a null [onChanged] leaves the row inert. A screen reader hears
+/// a group named [semanticLabel] of buttons, the chosen one selected.
 ///
 /// ```dart
 /// FrostedFilterChipGroup(options: const [FrostedFilterOption('all', 'All'), FrostedFilterOption('in', 'Money in'), FrostedFilterOption('out', 'Money out')], value: scope, onChanged: (v) => setState(() => scope = v))
@@ -145,7 +143,7 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
     required this.options,
     required this.value,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -159,11 +157,11 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// What a screen reader calls the row.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final label = this.label ?? FrostedLocalizations.of(context).filters;
+    final label = semanticLabel ?? FrostedLocalizations.of(context).filters;
     final t = context.frostedTheme;
     // The chips' words grow with the reader's text, the pill by their extra
     // line, so they never fill it to the rim.
@@ -249,7 +247,7 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       return FrostedPressable(
         key: item.key,
         onPressed: onChanged == null ? null : () => onChanged!(item.value),
-        label: item.label,
+        semanticLabel: item.label,
         selected: on,
         radius: height / 2,
         child: face,
@@ -319,7 +317,7 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       ..add(IterableProperty<FrostedFilterOption<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -344,15 +342,15 @@ class FrostedButtonSegment<T> {
   final Key? key;
 }
 
-/// One choice among a few words in a pill of the wash (1M, 3M, 1Y, All;
-/// Today, Tomorrow, Choose a date): each segment 26 tall and at least 36
-/// wide, the chosen one raised on a white face with its hairline edge and
-/// soft shadow; [fill] is the form's `.field .seg-ctl`, the segments 36
-/// tall and, below 600 wide, sharing the field's width (from 600 up every
-/// strip keeps to its segments, at the line's start), and [labelled] writes
-/// [label] over it as the field's label. The page owns [value]; a null [onChanged]
-/// leaves it inert. A screen reader hears a group named [label] of
-/// buttons, the chosen one selected.
+/// One choice among a few words in a pill of the wash (1M, 3M, 1Y, All; Today,
+/// Tomorrow, Choose a date): each segment 26 tall and at least 36 wide, the
+/// chosen one raised on a white face with its hairline edge and soft shadow;
+/// [fill] is a form field's, the segments 36 tall and, below 600
+/// wide, sharing the field's width (from 600 up every strip keeps to its
+/// segments, at the line's start), and [labelled] writes [label] over it as the
+/// field's label. The page owns [value]; a null [onChanged] leaves it inert. A
+/// screen reader hears a group named [label] of buttons, the chosen one
+/// selected.
 ///
 /// ```dart
 /// FrostedSegmentedButton(segments: const [FrostedButtonSegment('1m', '1M'), FrostedButtonSegment('3m', '3M'), FrostedButtonSegment('1y', '1Y'), FrostedButtonSegment('all', 'All')], value: range, onChanged: (v) => setState(() => range = v), label: 'Range')
@@ -382,11 +380,12 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
   /// What a screen reader calls the control (Range, When, Split).
   final String label;
 
-  /// Whether the pill is a form field's: its segments 36 tall, and below 600
-  /// wide the pill takes the field's width, the segments sharing it as a
-  /// form does. Each segment gets its label width and an equal share of
-  /// the remaining space. Choices stack when their labels need more room. From 600 up
-  /// it keeps to its segments, as every strip does.
+  /// Whether the pill is a form field: its segments 36 tall, and the pill
+  /// takes the field's width at every size, as a form's other fields do.
+  /// The segments share it equally while each label fits its share, else
+  /// each gets its label's width and an equal share of the rest; the
+  /// choices stack when their labels need more room. Without it the pill
+  /// keeps to its segments.
   final bool fill;
 
   /// Whether [label] is written over the pill as a field's label (When,
@@ -419,10 +418,10 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    // Below 600 a filled strip shares its field's width among its segments;
-    // from 600 up every strip keeps to its segments, a filled
-    // one still at the field's height.
-    final share = fill && MediaQuery.sizeOf(context).width < frostedMeasureFrom;
+    // A filled strip shares its field's width among its segments at every
+    // size, as a form's other fields take it; an unfilled one keeps to its
+    // segments.
+    final share = fill;
     final base = fill
         ? t.textTheme.labelSmall.at(_segmentFillWord)
         : t.textTheme.labelSmall;
@@ -496,7 +495,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
       return FrostedPressable(
         key: item.key,
         onPressed: onChanged == null ? null : () => onChanged!(item.value),
-        label: item.label,
+        semanticLabel: item.label,
         selected: on,
         radius: plateRadius,
         shape: cut,
@@ -581,8 +580,9 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
 }
 
 /// Arranges segments with a two-point gap. Each segment keeps its label's
-/// natural width, and [fill] shares any extra room equally. When the row
-/// would clip a label, the segments stack and fill the available width.
+/// natural width; [fill] shares the room equally while every label fits its
+/// share, else shares the extra room equally. When the row would clip a
+/// label, the segments stack and fill the available width.
 class _SegmentShares extends MultiChildRenderObjectWidget {
   const _SegmentShares({required this.fill, required super.children});
 
@@ -644,6 +644,14 @@ class _RenderSegmentShares extends RenderBox
     final total = own.fold(0.0, (a, b) => a + b);
     if (total > room + .01) {
       return (widths: List.filled(own.length, width), stacked: true);
+    }
+    // Filled, the segments share the room equally, as Material's segmented
+    // button's do, while each label fits its share.
+    if (_fill) {
+      final even = room / own.length;
+      if (own.every((w) => w <= even + .01)) {
+        return (widths: List.filled(own.length, even), stacked: false);
+      }
     }
     final extra = _fill ? (room - total) / own.length : 0.0;
     return (widths: [for (final w in own) w + extra], stacked: false);
@@ -742,24 +750,23 @@ class _RenderSegmentShares extends RenderBox
 // Switch
 // ---------------------------------------------------------------------------
 
-/// A settings toggle (`.tgl`): a 44 by 26 pill, the faint ink track with a
-/// white 22 knob at its start, the ink act under the knob at its end when
-/// on. The page owns [value]; a null [onChanged] draws it at the disabled
-/// share (`.tgl:disabled { opacity: .4 }`) and inert, unless [readOnly]
-/// keeps it at full strength as a setting reported, not taken. Lays out at
-/// its own size and answers taps over the target floor round it, and
+/// A settings toggle: a 44 by 26 pill, the faint ink track with a white 22 knob
+/// at its start, the ink act under the knob at its end when on. The page owns
+/// [value]; a null [onChanged] draws it at the disabled share and inert, unless
+/// [readOnly] keeps it at full strength as a setting reported, not taken. Lays
+/// out at its own size and answers taps over the target floor round it, and
 /// Enter and Space from the keyboard. A screen reader hears a switch named
-/// [label], on or off.
+/// [semanticLabel], on or off.
 ///
 /// ```dart
-/// FrostedSwitch(value: faceId, onChanged: (v) => setState(() => faceId = v), label: 'Face ID')
+/// FrostedSwitch(value: faceId, onChanged: (v) => setState(() => faceId = v), semanticLabel: 'Face ID')
 /// ```
 class FrostedSwitch extends StatelessWidget {
   /// Creates a [FrostedSwitch].
   const FrostedSwitch({
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.readOnly = false,
     this.style,
     this.focusNode,
@@ -783,7 +790,7 @@ class FrostedSwitch extends StatelessWidget {
   final bool autofocus;
 
   /// What a screen reader calls the switch.
-  final String label;
+  final String semanticLabel;
 
   /// Draws [value] as a live switch does but takes no tap, key or focus,
   /// and says it is read only: a setting its page shows on. Takes a null
@@ -799,7 +806,7 @@ class FrostedSwitch extends StatelessWidget {
   /// FrostedSwitch(
   ///   value: on,
   ///   onChanged: setOn,
-  ///   label: 'Face ID',
+  ///   semanticLabel: 'Face ID',
   ///   style: FrostedStyle(
   ///     fill: WidgetStateProperty.resolveWith(
   ///       (states) => states.contains(WidgetState.selected)
@@ -841,8 +848,12 @@ class FrostedSwitch extends StatelessWidget {
             ? t.colorScheme.toggleKnob
             : t.colorScheme.textPrimary);
     // The track is recessed glass, on or off. On, the knob stands at the end,
-    // a check is printed in the room it left and the glass takes a little
-    // more frost; the knob is a disc of glass with the glass's own light rim.
+    // a check is printed in the room it left and the glass is tinted with the
+    // act, so on reads at a glance and the track stays glass (light under
+    // it, never filled); the knob is a disc of glass with the glass's own
+    // light rim.
+    final dark = t.brightness == Brightness.dark;
+    final onWash = t.colorScheme.accent.withValues(alpha: dark ? .2 : .32);
     final slide = Padding(
       padding: const EdgeInsets.all(FrostedChromeMetrics.toggleInset),
       child: AnimatedAlign(
@@ -873,9 +884,41 @@ class FrostedSwitch extends StatelessWidget {
         FrostedChromeMetrics.toggleWidth -
         FrostedChromeMetrics.toggleKnob -
         2 * FrostedChromeMetrics.toggleInset;
+    // The act's tint lies on the glass inside the rim, so the lit hairline
+    // round the track is the same on and off.
+    final tint = s.overlay == null
+        ? Positioned.fill(
+            child: Padding(
+              padding: fill != null || edge != null
+                  ? edges
+                  : const EdgeInsets.all(FrostedChromeMetrics.outline),
+              child: AnimatedOpacity(
+                opacity: value ? 1 : 0,
+                duration: duration,
+                curve: motion.curve,
+                child: DecoratedBox(
+                  decoration: ShapeDecoration(
+                    color: onWash,
+                    shape:
+                        FrostedStyleLayers.around(
+                          cut,
+                          -FrostedChromeMetrics.outline,
+                        ) ??
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            math.max(0, radius - FrostedChromeMetrics.outline),
+                          ),
+                        ),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : null;
     final inside = Stack(
       fit: StackFit.expand,
       children: [
+        ?tint,
         PositionedDirectional(
           start: FrostedChromeMetrics.toggleInset,
           top: 0,
@@ -903,7 +946,7 @@ class FrostedSwitch extends StatelessWidget {
         radius: BorderRadius.circular(radius),
         shape: cut,
         color: fill,
-        wash: s.overlay ?? (value ? t.glass.wash : null),
+        wash: s.overlay,
         edge: edge,
         edges: edges,
         child: inside,
@@ -916,7 +959,7 @@ class FrostedSwitch extends StatelessWidget {
         material: FrostedMaterial.well,
         radius: BorderRadius.circular(radius),
         shape: cut,
-        wash: s.overlay ?? (value ? t.glass.wash : null),
+        wash: s.overlay,
         ring: frostedLitEdge(t, t.controlEdge),
         child: inside,
       );
@@ -934,7 +977,7 @@ class FrostedSwitch extends StatelessWidget {
     return FrostedOwnSize(
       child: Semantics(
         container: true,
-        label: label,
+        label: semanticLabel,
         toggled: value,
         enabled: shown,
         readOnly: readOnly,
@@ -986,7 +1029,7 @@ class FrostedSwitch extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
@@ -998,16 +1041,15 @@ class FrostedSwitch extends StatelessWidget {
 // Month switch
 // ---------------------------------------------------------------------------
 
-/// Spending's month switch (`.switch`): a pill of the wash, 3 inside, with
-/// a 32 white round arrow at each end (one with nowhere to go drawn quiet
-/// at .6 and skipped by a screen reader), the month before as a 12 word
-/// after the first arrow, and the current month as a 600 14 display word
-/// with a 14 chevron that opens the months. It fills the line on a phone
-/// and takes its own width from 600 up. The page keeps the month and
-/// hands [onOpen] the switch's own context, to hang a Stage T FrostedMenu of
-/// months from the whole pill. A screen reader hears a group named [label]
-/// of three buttons: Previous month, Choose month with the month as its
-/// value, and Next month.
+/// Spending's month switch: a pill of the wash, 3 inside, with a 32 white round
+/// arrow at each end (one with nowhere to go drawn quiet at .6 and skipped by a
+/// screen reader), the month before as a 12 word after the first arrow, and the
+/// current month as a 600 14 display word with a 14 chevron that opens the
+/// months. It fills the line on a phone and takes its own width from 600 up.
+/// The page keeps the month and hands [onOpen] the switch's own context, to
+/// hang a Stage T FrostedMenu of months from the whole pill. A screen reader
+/// hears a group named [semanticLabel] of three buttons: Previous month, Choose month
+/// with the month as its value, and Next month.
 ///
 /// ```dart
 /// FrostedMonthSwitch(month: 'October 2026', previous: 'September', onEarlier: back, onLater: null, onOpen: (anchor) => FrostedMenu.show<int>(anchor, items: months, title: 'Spent each month', anchor: anchor))
@@ -1020,7 +1062,7 @@ class FrostedMonthSwitch extends StatelessWidget {
     this.previous,
     this.onEarlier,
     this.onLater,
-    this.label,
+    this.semanticLabel,
     this.openKey,
     super.key,
   });
@@ -1041,14 +1083,14 @@ class FrostedMonthSwitch extends StatelessWidget {
   final VoidCallback? onLater;
 
   /// What a screen reader calls the group.
-  final String? label;
+  final String? semanticLabel;
 
   /// The walkthrough key set on the month's own hit target.
   final Key? openKey;
 
   @override
   Widget build(BuildContext context) {
-    final label = this.label ?? FrostedLocalizations.of(context).month;
+    final label = semanticLabel ?? FrostedLocalizations.of(context).month;
     final t = context.frostedTheme;
     // From 600 up the switch keeps to its arrows and month, at
     // the line's start, as the desktop's does; below 600 it runs the line.
@@ -1080,7 +1122,7 @@ class FrostedMonthSwitch extends StatelessWidget {
       final current = FrostedPressable(
         key: openKey,
         onPressed: () => onOpen(anchor),
-        label: FrostedLocalizations.of(context).chooseMonth,
+        semanticLabel: FrostedLocalizations.of(context).chooseMonth,
         value: month,
         radius: FrostedChromeMetrics.monthHeight / 2,
         child: SizedBox(
@@ -1214,7 +1256,7 @@ class FrostedMonthSwitch extends StatelessWidget {
       )
       ..add(ObjectFlagProperty<VoidCallback>.has('onEarlier', onEarlier))
       ..add(ObjectFlagProperty<VoidCallback>.has('onLater', onLater))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DiagnosticsProperty<Key>('openKey', openKey, defaultValue: null));
   }
 }
@@ -1251,7 +1293,7 @@ Widget _monthStep(
   }
   return FrostedPressable(
     onPressed: onTap,
-    label: name,
+    semanticLabel: name,
     radius: arrow / 2,
     child: SizedBox.square(
       dimension: arrow,
@@ -1301,28 +1343,29 @@ class FrostedQuickAction {
   final Key? key;
 }
 
-/// Home's quick actions (`.qa`): a tile 14 by 8 inside holding four ways
-/// across, 4 apart, each a 44 round of the brighter glass with its rim and
-/// edge wearing an 18 glyph in the ink, its word 8 under in the secondary
-/// ink (Transfer, Pay a bill, Add to goal, Split). Each is a link named by
-/// its word; [label] names the group.
+/// Home's quick actions: a tile 14 by 8 inside holding four ways across, 4
+/// apart, each a 44 round of the brighter glass with its rim and edge wearing
+/// an 18 glyph in the ink, its word 8 under in the secondary ink (Transfer, Pay
+/// a bill, Add to goal, Split). Each is a link named by its word; [semanticLabel] names
+/// the group.
 ///
 /// ```dart
 /// FrostedQuickActions([FrostedQuickAction(FrostedGlyphs.arrowLeftRight, 'Transfer', onPressed: transfer), FrostedQuickAction(FrostedGlyphs.receipt, 'Pay a bill', onPressed: bills), FrostedQuickAction(FrostedGlyphs.piggyBank, 'Add to goal', onPressed: goal), FrostedQuickAction(FrostedGlyphs.split, 'Split', onPressed: split)])
 /// ```
 class FrostedQuickActions extends StatelessWidget {
   /// Creates a [FrostedQuickActions].
-  const FrostedQuickActions(this.actions, {this.label, super.key});
+  const FrostedQuickActions(this.actions, {this.semanticLabel, super.key});
 
   /// The actions, in order.
   final List<FrostedQuickAction> actions;
 
   /// What a screen reader calls the group.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final label = this.label ?? FrostedLocalizations.of(context).quickActions;
+    final label =
+        semanticLabel ?? FrostedLocalizations.of(context).quickActions;
     final t = context.frostedTheme;
     const round = FrostedChromeMetrics.actionRound;
     // .qa-b { gap: 8px; font: 500 12px/1.2 var(--font-t); color: var(--ink-2) }
@@ -1331,7 +1374,7 @@ class FrostedQuickActions extends StatelessWidget {
     Widget action(FrostedQuickAction a) => FrostedPressable(
       key: a.key,
       onPressed: a.onPressed,
-      label: a.label,
+      semanticLabel: a.label,
       role: FrostedPressRole.link,
       radius: FrostedCorners.r12,
       child: Column(
@@ -1403,7 +1446,7 @@ class FrostedQuickActions extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<FrostedQuickAction>('actions', actions))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1436,8 +1479,8 @@ class FrostedActionTile {
   /// short with an ellipsis.
   final String? note;
 
-  /// More after the note where the desktop has the room, set off with a
-  /// middle dot ($2,541.40), as the source's `.desk` span is.
+  /// More after the note where the desktop has the room, set off with a middle
+  /// dot ($2,541.40).
   final String? tail;
 
   /// Where the tile goes; null shows it inert.
@@ -1447,25 +1490,25 @@ class FrostedActionTile {
   final Key? key;
 }
 
-/// Move's ways to move money (`.mv-acts`): tiles two across, 8 apart (the
-/// desktop's gap on the desktop), each the faint glass 14 round with its
-/// hairline ring, 10 inside (16 on the desktop), its glyph on a 32 (40)
-/// round of the ink act beside its word in the 600 16 display face over a
-/// quiet 12 (14) line; the tiles of a row equal in height. Each is one
-/// link read as its word and its line; [label] names the group.
+/// Move's ways to move money: tiles two across, 8 apart (the desktop's gap on
+/// the desktop), each the faint glass 14 round with its hairline ring, 10
+/// inside (16 on the desktop), its glyph on a 32 (40) round of the ink act
+/// beside its word in the 600 16 display face over a quiet 12 (14) line; the
+/// tiles of a row equal in height. Each is one link read as its word and its
+/// line; [semanticLabel] names the group.
 ///
 /// ```dart
-/// FrostedActionTiles([FrostedActionTile(FrostedGlyphs.arrowLeftRight, 'Transfer', note: 'Your accounts', onPressed: transfer), FrostedActionTile(FrostedGlyphs.receipt, 'Pay a bill', note: '6 in November', tail: r'$2,541.40', onPressed: bills)], label: 'Ways to move money')
+/// FrostedActionTiles([FrostedActionTile(FrostedGlyphs.arrowLeftRight, 'Transfer', note: 'Your accounts', onPressed: transfer), FrostedActionTile(FrostedGlyphs.receipt, 'Pay a bill', note: '6 in November', tail: r'$2,541.40', onPressed: bills)], semanticLabel: 'Ways to move money')
 /// ```
 class FrostedActionTiles extends StatelessWidget {
   /// Creates a [FrostedActionTiles].
-  const FrostedActionTiles(this.tiles, {this.label, super.key});
+  const FrostedActionTiles(this.tiles, {this.semanticLabel, super.key});
 
   /// The tiles, in order.
   final List<FrostedActionTile> tiles;
 
   /// What a screen reader calls the tiles together.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1593,12 +1636,12 @@ class FrostedActionTiles extends StatelessWidget {
           ),
       ],
     );
-    if (label == null) return _ownWidth(context, grid);
+    if (semanticLabel == null) return _ownWidth(context, grid);
     return _ownWidth(
       context,
       Semantics(
         container: true,
-        label: label,
+        label: semanticLabel,
         explicitChildNodes: true,
         child: grid,
       ),
@@ -1610,7 +1653,7 @@ class FrostedActionTiles extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<FrostedActionTile>('tiles', tiles))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1635,13 +1678,13 @@ class FrostedQuickAmount {
   final Key? key;
 }
 
-/// A goal's quick amounts (`.qamts`): wells three across, 8 apart, each the
-/// whole-dollar figure in the display face over a quiet 12 word, 10 by 6
-/// inside on the white well with its hairline ring; the chosen one stays
-/// glass, a little clearer, with a dot printed in its top corner and its
-/// word in the secondary ink. The page owns [value] (the chosen
-/// amount, or none); a null [onChanged] leaves them inert. A screen reader
-/// hears a group named [label] of buttons, the chosen one selected.
+/// A goal's quick amounts: wells three across, 8 apart, each the whole-dollar
+/// figure in the display face over a quiet 12 word, 10 by 6 inside on the white
+/// well with its hairline ring; the chosen one stays glass, a little clearer,
+/// with a dot printed in its top corner and its word in the secondary ink. The
+/// page owns [value] (the chosen amount, or none); a null [onChanged] leaves
+/// them inert. A screen reader hears a group named [semanticLabel] of buttons, the
+/// chosen one selected.
 ///
 /// ```dart
 /// FrostedQuickAmounts(options: const [FrostedQuickAmount(100, 'A month'), FrostedQuickAmount(200, 'Two months'), FrostedQuickAmount(1160, 'The rest')], value: amount, onChanged: (v) => setState(() => amount = v))
@@ -1652,7 +1695,7 @@ class FrostedQuickAmounts extends StatelessWidget {
     required this.options,
     required this.value,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -1666,11 +1709,12 @@ class FrostedQuickAmounts extends StatelessWidget {
   final ValueChanged<num>? onChanged;
 
   /// What a screen reader calls the group.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final label = this.label ?? FrostedLocalizations.of(context).quickAmounts;
+    final label =
+        semanticLabel ?? FrostedLocalizations.of(context).quickAmounts;
     final t = context.frostedTheme;
     // .qamt { gap: 4px; padding: 10px 6px; border-radius: 12px;
     //   background: rgba(255,255,255,.82);
@@ -1724,7 +1768,7 @@ class FrostedQuickAmounts extends StatelessWidget {
       return FrostedPressable(
         key: item.key,
         onPressed: onChanged == null ? null : () => onChanged!(item.amount),
-        label: '$figure, ${item.label}',
+        semanticLabel: '$figure, ${item.label}',
         selected: on,
         radius: FrostedChromeMetrics.quickAmountRadius,
         child: _chosenDot(t, on, face),
@@ -1754,7 +1798,7 @@ class FrostedQuickAmounts extends StatelessWidget {
       ..add(IterableProperty<FrostedQuickAmount>('options', options))
       ..add(DiagnosticsProperty<num>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<num>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1808,13 +1852,13 @@ class FrostedIconChoice {
   final Key? key;
 }
 
-/// A goal's icon picker (`.icons`): wells six across, 8 apart, each 44 tall
-/// and 12 round on the white well with its hairline ring, an 18 glyph in
-/// the secondary ink; the chosen one stays glass, a little clearer, its
-/// glyph in the ink and a dot printed in its top corner; [labelled]
-/// writes [label] over the wells as the field's label. The page owns
-/// [value], a choice's word; a null [onChanged] leaves them inert. A screen
-/// reader hears a group named [label] of buttons, the chosen one selected.
+/// A goal's icon picker: wells six across, 8 apart, each 44 tall and 12 round
+/// on the white well with its hairline ring, an 18 glyph in the secondary ink;
+/// the chosen one stays glass, a little clearer, its glyph in the ink and a dot
+/// printed in its top corner; [labelled] writes [label] over the wells as the
+/// field's label. The page owns [value], a choice's word; a null [onChanged]
+/// leaves them inert. A screen reader hears a group named [label] of buttons,
+/// the chosen one selected.
 ///
 /// ```dart
 /// FrostedIconPicker(icons: const [FrostedIconChoice(FrostedGlyphs.plane, 'Plane'), FrostedIconChoice(FrostedGlyphs.bike, 'Bike'), FrostedIconChoice(FrostedGlyphs.house, 'Home')], value: icon, onChanged: (v) => setState(() => icon = v))
@@ -1859,7 +1903,7 @@ class FrostedIconPicker extends StatelessWidget {
       return FrostedPressable(
         key: choice.key,
         onPressed: onChanged == null ? null : () => onChanged!(choice.label),
-        label: choice.label,
+        semanticLabel: choice.label,
         selected: on,
         radius: FrostedChromeMetrics.iconWellRadius,
         child: SizedBox(

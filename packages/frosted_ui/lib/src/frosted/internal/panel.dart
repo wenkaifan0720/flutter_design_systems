@@ -153,13 +153,13 @@ class _RenderDrawn extends RenderProxyBox {
   }
 }
 
-/// A row of a [FrostedPanel] painted for its [states] (`.menu-i`): 40 tall,
+/// A row of a [FrostedPanel] painted for its [states]: 40 tall,
 /// and at least a finger's target on every platform
 /// ([FrostedBreakpoints.touchTargetOf]), so the row a tap reaches is the row a screen reader
 /// outlines and no neighbour's; 10 in, corners 10; the check's column 16 wide when [checkable], then the
 /// [label] in the link type, then [trailing]. The chosen row (`selected`)
 /// stands on the chosen plate, the brighter glass every chosen chip, segment
-/// and link stands on (law 6), with the check and its words in the ink,
+/// and link stands on, with the check and its words in the ink,
 /// semibold; the list's one held row (`focused`: the keys', or the
 /// pointer's where the list moves its highlight with the pointer) and a
 /// press lay the quieter wash under a row that is not chosen, so neither

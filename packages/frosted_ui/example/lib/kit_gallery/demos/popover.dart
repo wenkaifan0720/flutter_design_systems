@@ -20,7 +20,7 @@ Widget kitPopoverDemo(Brightness brightness) => kitScreen(
           KitHeld<bool>(
             false,
             (unread, set) => FrostedPopover(
-              label: 'Filter',
+              semanticLabel: 'Filter',
               builder: (context, controller, _) => FrostedButton.glass(
                 'Filter',
                 onPressed: () =>
@@ -50,7 +50,7 @@ Widget kitPopoverDemo(Brightness brightness) => kitScreen(
       children: [
         kitRow([
           FrostedHoverCard(
-            label: 'Maya Chen',
+            semanticLabel: 'Maya Chen',
             content: const Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +96,7 @@ class _OpenPopoverState extends State<_OpenPopover> {
     child: Align(
       alignment: AlignmentDirectional.topStart,
       child: FrostedPopover(
-        label: 'Reminders',
+        semanticLabel: 'Reminders',
         controller: _controller,
         builder: (context, controller, _) => FrostedButton.glass(
           'Remind me',

@@ -329,7 +329,7 @@ void main() {
 
   group('structure', () {
     _test('every face builds in both presets, light and dark', (t) async {
-      for (final preset in FrostedThemeData.presets) {
+      for (final preset in [for (final p in FrostedThemeData.palettes) p.id]) {
         for (final brightness in Brightness.values) {
           await _pumpAll(
             t,
@@ -352,7 +352,7 @@ void main() {
       await _pump(
         t,
         FrostedCard(
-          label: 'October so far',
+          semanticLabel: 'October so far',
           onPressed: () => opened++,
           child: const Text('words'),
         ),
@@ -366,7 +366,7 @@ void main() {
     _test('a tile without a tap names its group', (t) async {
       await _pump(
         t,
-        const FrostedCard(label: 'Budget', child: Text('On pace')),
+        const FrostedCard(semanticLabel: 'Budget', child: Text('On pace')),
       );
       final node = _node(t, find.bySemanticsLabel(RegExp('^Budget')));
       expect(node, isSemantics(isLink: false, hasTapAction: false));

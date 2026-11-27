@@ -188,7 +188,7 @@ Widget kitSpecimenFormRowControl() => FrostedSettingsGroup(
       trailing: FrostedSwitch(
         value: true,
         onChanged: (_) {},
-        label: kitSay('Round-ups'),
+        semanticLabel: kitSay('Round-ups'),
       ),
     ),
     FrostedFormRow(
@@ -197,7 +197,7 @@ Widget kitSpecimenFormRowControl() => FrostedSettingsGroup(
       trailing: FrostedSwitch(
         value: false,
         onChanged: (_) {},
-        label: kitSay('Card freeze'),
+        semanticLabel: kitSay('Card freeze'),
       ),
     ),
   ],

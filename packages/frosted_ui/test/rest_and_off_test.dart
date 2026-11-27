@@ -27,12 +27,12 @@ const _capture = ValueKey('ground');
 final _parts = <String, Widget>{
   'round check': const FrostedCheckbox(
     value: false,
-    label: 'Agree',
+    semanticLabel: 'Agree',
     onChanged: _drop,
   ),
   'square check': const FrostedCheckbox(
     value: false,
-    label: 'Done',
+    semanticLabel: 'Done',
     onChanged: _drop,
     style: FrostedStyle(
       shape: WidgetStatePropertyAll(
@@ -48,10 +48,14 @@ final _parts = <String, Widget>{
     onChanged: _drop,
     options: [FrostedRadio('free', 'Free'), FrostedRadio('pro', 'Pro')],
   ),
-  'star': const FrostedRating(value: 0, label: 'Your rating', onChanged: _drop),
+  'star': const FrostedRating(
+    value: 0,
+    semanticLabel: 'Your rating',
+    onChanged: _drop,
+  ),
   'off switch': const FrostedSwitch(
     value: false,
-    label: 'Share',
+    semanticLabel: 'Share',
     onChanged: _drop,
   ),
   'menu option': const SizedBox(
@@ -174,7 +178,7 @@ void main() {
       'ground than a field\'s, and it shows, every preset, by day and by '
       'night', (tester) async {
     final faults = <String>[];
-    for (final preset in FrostedThemeData.presets) {
+    for (final preset in [for (final p in FrostedThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         final t = FrostedThemeData.preset(preset, brightness);
         final page = t.colorScheme.background.withValues(alpha: 1);

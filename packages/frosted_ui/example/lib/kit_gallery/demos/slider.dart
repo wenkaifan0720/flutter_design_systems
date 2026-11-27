@@ -18,7 +18,8 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
       children: [
         _Held(
           0.35,
-          (v, set) => FrostedSlider(value: v, label: 'Reach', onChanged: set),
+          (v, set) =>
+              FrostedSlider(value: v, semanticLabel: 'Reach', onChanged: set),
         ),
       ],
     ),
@@ -32,7 +33,7 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
             min: 0,
             max: 100,
             divisions: 10,
-            label: 'Alert at',
+            semanticLabel: 'Alert at',
             semanticFormatterCallback: (v) => '${v.round()}% of budget',
             onChanged: set,
           ),
@@ -60,7 +61,11 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
     kitSection(
       'Inert',
       children: [
-        const FrostedSlider(value: 0.5, label: 'Locked', onChanged: null),
+        const FrostedSlider(
+          value: 0.5,
+          semanticLabel: 'Locked',
+          onChanged: null,
+        ),
       ],
     ),
     kitSection(
@@ -72,7 +77,7 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
 
 /// A continuous slider a third of the way.
 Widget kitSpecimenSliderContinuous() =>
-    FrostedSlider(value: 0.35, label: 'Reach', onChanged: (_) {});
+    FrostedSlider(value: 0.35, semanticLabel: 'Reach', onChanged: (_) {});
 
 /// A stepped slider on its beads, 60 of 100.
 Widget kitSpecimenSliderStepped() => FrostedSlider(
@@ -80,7 +85,7 @@ Widget kitSpecimenSliderStepped() => FrostedSlider(
   min: 0,
   max: 100,
   divisions: 10,
-  label: 'Alert at',
+  semanticLabel: 'Alert at',
   semanticFormatterCallback: (v) => '${v.round()}% of budget',
   onChanged: (_) {},
 );

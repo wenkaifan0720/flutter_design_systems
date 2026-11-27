@@ -214,8 +214,8 @@ class _ClearedState extends State<_Cleared> {
       fit: StackFit.passthrough,
       clipBehavior: Clip.none,
       children: [
-        // By day the keyboard's part rises: a soft shadow under it, outside
-        // its outline.
+        // By day the keyboard's part rises a little: a close, faint shadow
+        // under it, outside its outline.
         placed(
           TweenAnimationBuilder<double>(
             tween: Tween(end: t.isDark ? 0.0 : widget.lit),
@@ -365,24 +365,25 @@ class _RenderRimLight extends RenderBox {
 }
 
 /// The shadow a part rises on by day while the keyboard holds it, at [lit]
-/// (0 to 1): the theme's raised shade, deeper and further below, the way a
-/// floating pane stands off the glass. None by night, where the rim's light
-/// shows focus, and none at rest. It is drawn for a part 36 high: a focused
-/// part casts it scaled to its size, from 0.55 to 1.25 times.
+/// (0 to 1): a close, faint shadow in the theme's raised shade, no deeper
+/// than the shade itself, so the part stands a little off the glass with a
+/// clean edge and nothing smudged round it. None by night, where the rim's
+/// light shows focus, and none at rest. It is drawn for a part 36 high: a
+/// focused part casts it scaled to its size, from 0.55 to 1.25 times.
 List<BoxShadow> frostedLift(FrostedThemeData t, double lit) {
   if (t.isDark || lit <= 0) return const <BoxShadow>[];
   final raised = t.shadows.raised;
   final shade = raised.isEmpty
       ? const Color(0x2E2A2464)
       : raised.first.color.withValues(alpha: 1);
-  final strength = raised.isEmpty ? .18 : raised.first.color.a;
-  // One broad, low shadow: its edge never reads as a line along the part.
+  final strength = raised.isEmpty ? .16 : raised.first.color.a;
+  // One close shadow: raised a little, its edge soft but near the part.
   return [
     BoxShadow(
-      color: shade.withValues(alpha: math.min(1, strength * 2) * lit),
-      offset: Offset(0, 10 * lit),
-      blurRadius: 26 * lit,
-      spreadRadius: -6,
+      color: shade.withValues(alpha: math.min(.16, strength) * lit),
+      offset: Offset(0, 3 * lit),
+      blurRadius: 10 * lit,
+      spreadRadius: -2,
     ),
   ];
 }
@@ -613,13 +614,11 @@ List<double> frostedSaturate(double s) => <double>[
   0,
 ];
 
-/// A face as the source's stylesheet draws one, in CSS's order: its outer
-/// shadows (outside the face only, as CSS clips a box's shadow to outside
-/// its border box, so a translucent face is never darkened by its own
-/// shadow), its fill (a colour and gradients, the first painted first), the
-/// light along its top inside edge ([sheen], `inset 0 1px 0`), a ring inside
-/// its edge ([ring], `inset 0 0 0 1px`), its edge (1 wide on the [edges]
-/// it has), then its child.
+/// A face, painted in this order: its outer shadows (outside the face only,
+/// so a translucent face is never darkened by its own shadow), its fill (a
+/// colour and gradients, the first painted first), the light along its top
+/// inside edge ([sheen]), a ring inside its edge ([ring]), its edge (1 wide
+/// on the [edges] it has), then its child.
 ///
 /// Its [material] decides what is under the fill. Paint is the fill alone.
 /// Glass first blurs what is behind it inside its shape (sharing one read of

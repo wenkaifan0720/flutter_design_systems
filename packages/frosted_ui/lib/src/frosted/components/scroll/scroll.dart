@@ -35,7 +35,7 @@ class FrostedScrollArea extends StatelessWidget {
     this.axis = Axis.vertical,
     this.alwaysShown = false,
     this.focusable = true,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -63,7 +63,7 @@ class FrostedScrollArea extends StatelessWidget {
   final bool focusable;
 
   /// What a screen reader calls the area.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +75,7 @@ class FrostedScrollArea extends StatelessWidget {
       focusable: focusable,
       focusNode: focusNode,
       autofocus: autofocus,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       visibility: alwaysShown
           ? RawScrollbarVisibility.always
           : RawScrollbarVisibility.auto,
@@ -153,7 +153,7 @@ class FrostedScrollArea extends StatelessWidget {
           ifFalse: 'focusable: false',
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -334,7 +334,7 @@ class FrostedCarouselView extends StatelessWidget {
     this.loop = false,
     this.autoplay,
     this.onPageChanged,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -350,7 +350,7 @@ class FrostedCarouselView extends StatelessWidget {
     this.loop = false,
     this.autoplay,
     this.onPageChanged,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -382,7 +382,7 @@ class FrostedCarouselView extends StatelessWidget {
 
   /// What a screen reader calls it; null says
   /// `RawWidgetsLocalizations.carouselLabel` ("Carousel" in English).
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
@@ -409,7 +409,7 @@ class FrostedCarouselView extends StatelessWidget {
       autofocus: autofocus,
       // Null names: RawWidgetsLocalizations' carouselLabel and
       // carouselSlideLabel ("Slide 2 of 5").
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       duration: FrostedMotion.of(context).base,
       // A peeking slide keeps its own corners. A whole slide is held by the
       // frame alone: with its own corners too, the sliver of a slide coming
@@ -429,7 +429,7 @@ class FrostedCarouselView extends StatelessWidget {
         Widget step(IconData glyph, String name, VoidCallback? go) =>
             FrostedIconButton(
               glyph,
-              label: name,
+              semanticLabel: name,
               size: FrostedIconButtonSize.small,
               onPressed: go,
             );
@@ -488,7 +488,7 @@ class FrostedCarouselView extends StatelessWidget {
                     position: controls.position,
                     // The dots say where the slides stand ("Slide 1 of 5"; its
                     // index counts from 0), the carousel its [label].
-                    label: shared.carouselSlideLabel(
+                    semanticLabel: shared.carouselSlideLabel(
                       controls.page,
                       controls.count,
                     ),
@@ -536,7 +536,7 @@ class FrostedCarouselView extends StatelessWidget {
           onPageChanged,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',

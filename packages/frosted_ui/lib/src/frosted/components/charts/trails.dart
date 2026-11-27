@@ -35,19 +35,18 @@ class FrostedChartNote {
   final String text;
 }
 
-/// A run of values as a line of the spectrum (violet through mauve to
-/// rose, 2.5 wide), the light under it fading to the floor, hairline
-/// gridlines with their values at the end and the last value ringed as
-/// today. The default is a year by month (the net worth): one column per
-/// value, the grid every $10k, the [months]' initials under it (their short
-/// names from 1024 wide), the [current] one in the page ink.
-/// [FrostedTrailChart.days] draws a month by day through the days' centres
-/// (an account's value); [FrostedTrailChart.steps] a balance: flat runs with
-/// a cliff on each day it moved, from its [start] at the month's first
-/// moment, the cliffs named by [notes]; both set [marks] under the plot.
-/// [bare] keeps the line alone, a sparkline in a row. Sized by its width;
-/// the plot stands [height] tall (the source's phone and desktop heights
-/// by default).
+/// A run of values as a line of the spectrum (violet through mauve to rose, 2.5
+/// wide), the light under it fading to the floor, hairline gridlines with their
+/// values at the end and the last value ringed as today. The default is a year
+/// by month (the net worth): one column per value, the grid every $10k, the
+/// [months]' initials under it (their short names from 1024 wide), the
+/// [current] one in the page ink. [FrostedTrailChart.days] draws a month by day
+/// through the days' centres (an account's value); [FrostedTrailChart.steps] a
+/// balance: flat runs with a cliff on each day it moved, from its [start] at
+/// the month's first moment, the cliffs named by [notes]; both set [marks]
+/// under the plot. [bare] keeps the line alone, a sparkline in a row. Sized by
+/// its width; the plot stands [height] tall (Frosted's phone and desktop
+/// heights by default).
 ///
 /// ```dart
 /// FrostedTrailChart(values: netWorthByMonth, months: const ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'], label: 'Net worth over the last 12 months')
@@ -145,7 +144,7 @@ class FrostedTrailChart extends StatelessWidget {
   /// How many gridlines a day face aims for.
   final int lines;
 
-  /// The plot's height; the source's for the width when null.
+  /// The plot's height; Frosted's for the width when null.
   final double? height;
   final _TrailFace _face;
 
@@ -990,14 +989,13 @@ class _GoalPainter extends CustomPainter {
 /// What a key's line stands for: the spectrum line, the pace's dots, or a
 /// goal's projection dashes.
 enum FrostedKeySwatch {
-  /// The spent or saved line: the spectrum, violet to rose (`.k-line`).
+  /// The spent or saved line: the spectrum, violet to rose.
   line,
 
-  /// The budget pace: dots 4 on and 3 off in the pace ink (`.k-pace`).
+  /// The budget pace: dots 4 on and 3 off in the pace ink.
   pace,
 
-  /// A projection: dashes 2 on and 4 off, 2.5 tall, in the goal's hue
-  /// (`.k-proj`).
+  /// A projection: dashes 2 on and 4 off, 2.5 tall, in the goal's hue.
   projection,
 }
 
@@ -1127,8 +1125,8 @@ class _SwatchPainter extends CustomPainter {
       old.swatch != swatch || old.inks != inks || old.hue != hue;
 }
 
-/// A chart's key: its [keys] in a line 16 apart, wrapping (`.cum-legend`),
-/// or 12 apart in a chart's head ([inHead], `.keys`).
+/// A chart's key: its [keys] in a line 16 apart, wrapping, or 12 apart in a
+/// chart's head ([inHead]).
 ///
 /// ```dart
 /// FrostedChartKey(keys: const [FrostedKey(FrostedKeySwatch.line, 'Spent', figure: '\$2,486.12'), FrostedKey(FrostedKeySwatch.pace, 'Budget pace')])

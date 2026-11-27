@@ -60,7 +60,7 @@ Widget kitHoldDemo(Brightness brightness) => kitScreen(
             label: '3 unread',
             child: FrostedIconButton(
               FrostedGlyphs.bell,
-              label: 'Notifications',
+              semanticLabel: 'Notifications',
               onPressed: () {},
             ),
           ),

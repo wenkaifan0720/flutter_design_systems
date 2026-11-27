@@ -92,7 +92,7 @@ class _Palettes extends StatelessWidget {
           spacing: gap,
           runSpacing: gap,
           children: [
-            for (final id in FrostedThemeData.presets)
+            for (final id in [for (final p in FrostedThemeData.palettes) p.id])
               SizedBox(
                 width: each,
                 child: _Palette(id, FrostedThemeData.preset(id, t.brightness)),

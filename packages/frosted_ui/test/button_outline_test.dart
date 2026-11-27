@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 const _stage = ValueKey('stage');
 const _width = 400;
@@ -148,7 +147,7 @@ void main() {
   for (final brightness in Brightness.values) {
     final day = brightness == Brightness.light ? 'day' : 'night';
     final t = FrostedThemeData.preset(
-      FrostedThemeData.presets.first,
+      FrostedThemeData.palettes.first.id,
       brightness,
     );
 

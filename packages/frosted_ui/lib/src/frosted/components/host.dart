@@ -25,20 +25,31 @@ import 'toast.dart';
 /// ```dart
 /// MaterialApp.router(routerConfig: router, builder: (context, child) => FrostedHost(child: child!))
 /// ```
+///
+/// ```dart
+/// MaterialApp(builder: (context, child) => FrostedHost(palette: FrostedThemeData.palettes[2], child: child!), home: const Text('Home'))
+/// ```
 class FrostedHost extends StatelessWidget {
   /// Creates a [FrostedHost].
   const FrostedHost({
     required this.child,
+    this.palette,
     this.theme,
     this.darkTheme,
     this.brightness,
     super.key,
   });
 
-  /// The light theme; null is the default preset's.
+  /// The palette both appearances are built from, one of
+  /// [FrostedThemeData.palettes] (the app's stored choice, say); null is
+  /// the first, opal. A change of palette eases from the old colours to
+  /// the new.
+  final RawNamedPalette? palette;
+
+  /// The light theme; null is [palette]'s.
   final FrostedThemeData? theme;
 
-  /// The dark theme; null is the default preset's.
+  /// The dark theme; null is [theme]'s night, else [palette]'s.
   final FrostedThemeData? darkTheme;
 
   /// Pins the appearance; null follows the platform (or the preview frame).
@@ -88,20 +99,14 @@ class FrostedHost extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
+    final id = (palette ?? FrostedThemeData.palettes.first).id;
     final night =
         darkTheme ??
         theme?.darkTwin ??
-        FrostedThemeData.preset(
-          FrostedThemeData.presets.first,
-          Brightness.dark,
-        );
+        FrostedThemeData.preset(id, Brightness.dark);
     final t = wanted == Brightness.dark
         ? night
-        : theme ??
-              FrostedThemeData.preset(
-                FrostedThemeData.presets.first,
-                Brightness.light,
-              );
+        : theme ?? FrostedThemeData.preset(id, Brightness.light);
     final motion = FrostedMotion.of(context);
     // One light under the whole app: every page's backdrop paints its part.
     final app = FrostedLightFrame(
@@ -147,6 +152,13 @@ class FrostedHost extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
+      ..add(
+        DiagnosticsProperty<RawNamedPalette>(
+          'palette',
+          palette,
+          defaultValue: null,
+        ),
+      )
       ..add(
         DiagnosticsProperty<FrostedThemeData>(
           'theme',

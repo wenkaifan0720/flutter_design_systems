@@ -49,7 +49,7 @@ Widget kitScrollDemo(Brightness brightness) => kitScreen(
         // gutter (the page view centres its first page).
         FrostedCarouselView(
           height: 160,
-          label: 'Highlights',
+          semanticLabel: 'Highlights',
           children: [
             // Warm and cool by turns: two warm slides side by side (sunset,
             // lemon) still read as one pane mid-swipe.
@@ -165,7 +165,7 @@ class _AreaState extends State<_Area> {
     height: 200,
     child: FrostedScrollArea(
       controller: _scroll,
-      label: 'Lists',
+      semanticLabel: 'Lists',
       child: ListView(
         controller: _scroll,
         children: [for (final item in _items) FrostedListTile(title: item)],
@@ -178,7 +178,7 @@ class _AreaState extends State<_Area> {
 Widget kitSpecimenCarousel() => FrostedCarouselView(
   height: 160,
   viewportFraction: .8,
-  label: 'Highlights',
+  semanticLabel: 'Highlights',
   children: const [
     _Pane('Morning', round: false),
     _Pane('Noon', round: false),

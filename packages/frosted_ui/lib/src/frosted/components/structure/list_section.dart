@@ -69,7 +69,7 @@ class FrostedListSection extends StatelessWidget {
     if (title == null) {
       return FrostedFacedCard(
         face: FrostedCardFace.list,
-        label: label,
+        semanticLabel: label,
         child: group,
       );
     }
@@ -84,7 +84,7 @@ class FrostedListSection extends StatelessWidget {
       // the room the last row leaves under its words is given back.
       return FrostedFacedCard(
         face: FrostedCardFace.list,
-        label: label,
+        semanticLabel: label,
         padding: EdgeInsets.all(pad),
         child: FrostedFlushEnd(
           child: Column(
@@ -117,7 +117,7 @@ class FrostedListSection extends StatelessWidget {
         FrostedSectionHeader(title, aside: aside, trailing: trailing),
         FrostedFacedCard(
           face: FrostedCardFace.list,
-          label: label,
+          semanticLabel: label,
           child: group,
         ),
       ],

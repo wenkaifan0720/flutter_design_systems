@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 /// The window width from which a control stops taking its column's width.
@@ -28,6 +29,41 @@ class FrostedControlMeasure extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: frostedControlMeasure),
         child: child,
       ),
+    );
+  }
+}
+
+/// A field's width: its column's, or, standing alone where nothing bounds
+/// its width (a filter in a toolbar's row), its content's. Plumbing of the
+/// components.
+class FrostedFieldWidth extends SingleChildRenderObjectWidget {
+  /// Sizes [child] as a field.
+  const FrostedFieldWidth({required Widget super.child, super.key});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderFieldWidth();
+}
+
+class _RenderFieldWidth extends RenderProxyBox {
+  @override
+  void performLayout() {
+    final child = this.child!;
+    if (constraints.hasBoundedWidth) {
+      child.layout(constraints, parentUsesSize: true);
+    } else {
+      final width = child.getMaxIntrinsicWidth(constraints.maxHeight);
+      child.layout(constraints.tighten(width: width), parentUsesSize: true);
+    }
+    size = constraints.constrain(child.size);
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final child = this.child!;
+    if (constraints.hasBoundedWidth) return child.getDryLayout(constraints);
+    final width = child.getMaxIntrinsicWidth(constraints.maxHeight);
+    return constraints.constrain(
+      child.getDryLayout(constraints.tighten(width: width)),
     );
   }
 }

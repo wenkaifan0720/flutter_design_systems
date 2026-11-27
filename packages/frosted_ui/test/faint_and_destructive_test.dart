@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/dim.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 
@@ -40,7 +39,7 @@ Future<void> _pump(WidgetTester tester, String preset, Brightness b) async {
 }
 
 void main() {
-  for (final preset in FrostedThemeData.presets) {
+  for (final preset in [for (final p in FrostedThemeData.palettes) p.id]) {
     for (final b in Brightness.values) {
       testWidgets('$preset ${b.name}: an ink act out of use is faint glass '
           'with a readable word; a destructive act holds 4.5:1', (

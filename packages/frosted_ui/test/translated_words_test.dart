@@ -6,7 +6,6 @@ import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 
 void main() {

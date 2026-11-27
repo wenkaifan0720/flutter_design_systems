@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 Widget _group(
   String kind,
@@ -29,7 +28,7 @@ Widget _group(
     ],
   ),
   _ => FrostedToggleGroup<String>(
-    label: 'Alignment',
+    semanticLabel: 'Alignment',
     emptySelectionAllowed: allowEmpty,
     segments: const [
       FrostedButtonSegment('A', 'A'),

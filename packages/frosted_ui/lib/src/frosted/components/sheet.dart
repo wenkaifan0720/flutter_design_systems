@@ -21,15 +21,14 @@ import '../internal/act_row.dart';
 
 export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 
-/// A sheet's head (`.sheet-h`): its [title] in the sheet's type (the h1
-/// set on a line of 24) and, at its end, the small round close ([close];
-/// none for a dialog that closes by its own Cancel), or at its start the
-/// way back ([leading], a sheet that closes back), 12 between, at least 40
-/// tall. The page sheet's top bar draws it, and [FrostedSheetShell] heads
-/// its card with it.
+/// A sheet's head: its [title] in the sheet's type (the h1 set on a line of 24)
+/// and, at its end, the small round close ([close]; none for a dialog that
+/// closes by its own Cancel), or at its start the way back ([leading], a sheet
+/// that closes back), 12 between, at least 40 tall. The page sheet's top bar
+/// draws it, and [FrostedSheetShell] heads its card with it.
 ///
 /// ```dart
-/// FrostedSheetHead(title: 'Category', close: FrostedIconButton(FrostedGlyphs.close, label: RawWidgetsLocalizations.of(context).closeButtonLabel, size: FrostedIconButtonSize.small, onPressed: close))
+/// FrostedSheetHead(title: 'Category', close: FrostedIconButton(FrostedGlyphs.close, semanticLabel: RawWidgetsLocalizations.of(context).closeButtonLabel, size: FrostedIconButtonSize.small, onPressed: close))
 /// ```
 class FrostedSheetHead extends StatelessWidget {
   /// Creates a [FrostedSheetHead].
@@ -86,20 +85,19 @@ class FrostedSheetHead extends StatelessWidget {
   }
 }
 
-/// A modal sheet's card, drawn in place (`.sheet`): on a phone it rises
-/// off the bottom edge, its top corners at 22 and no edge along its foot,
-/// the grabber over the head; on a tablet or the desktop (from
-/// [FrostedBreakpoints.medium]) it stands centred, 440 wide,
-/// every corner at 20 and no grabber. Its face is the source's: white
-/// shading to the palest lilac at its foot, a rim of light along its top,
-/// its hairline edge and a soft shadow rising over the scrim. The head
-/// ([FrostedSheetHead]: the [title] and the close), then the body's
+/// A modal sheet's card, drawn in place: on a phone it rises off the bottom
+/// edge, its top corners at 22 and no edge along its foot, the grabber over the
+/// head; on a tablet or the desktop (from [FrostedBreakpoints.medium]) it
+/// stands centred, 440 wide, every corner at 20 and no grabber. Its face is
+/// Frosted's: white shading to the palest lilac at its foot, a rim of light
+/// along its top, its hairline edge and a soft shadow rising over the scrim.
+/// The head ([FrostedSheetHead]: the [title] and the close), then the body's
 /// [children] 12 under it (a run of [FrostedOption]s with a hairline between
-/// each two, as the source's group of choices), then the [foot] 16 under
-/// that: one button takes the whole width, two share it. The card scrolls
-/// once its parts outgrow 88% of the screen (the window less 64 on a
-/// tablet or the desktop). For a sheet composed in place; [FrostedSheet.show] presents this
-/// same widget, so the two never drift apart.
+/// each two, as Frosted's group of choices), then the [foot] 16 under that: one
+/// button takes the whole width, two share it. The card scrolls once its parts
+/// outgrow 88% of the screen (the window less 64 on a tablet or the desktop).
+/// For a sheet composed in place; [FrostedSheet.show] presents this same
+/// widget, so the two never drift apart.
 ///
 /// ```dart
 /// FrostedSheetShell(title: 'Add money', foot: [FrostedButton('Add \$250', onPressed: add)], children: [amount, chips, from])
@@ -161,15 +159,14 @@ class FrostedSheetShell extends StatelessWidget {
           FrostedChromeMetrics.sheetBottom,
         );
 
-  /// The foot's acts laid out as the source's `.btn-row`: each takes an
-  /// even share of the width, the gap of the width apart; when one doesn't
-  /// fit its share they stack, the confirming one (the last) on top.
+  /// The foot's acts in a row: each takes an even share
+  /// of the width, the gap of the width apart; when one doesn't fit its share
+  /// they stack, the confirming one (the last) on top.
   static Widget footOf(List<Widget> acts) => FrostedActBar(acts);
 
   /// The body's parts in order, a hairline between two consecutive
-  /// [FrostedOption]s (`.opt + .opt { border-top }`): drawn on the later
-  /// one's top inside its own 52 (the source's border-box), so options
-  /// stand 52 apart.
+  /// [FrostedOption]s: drawn on the later one's top inside its own 52, so
+  /// options stand 52 apart.
   static Iterable<Widget> _grouped(List<Widget> parts) sync* {
     for (final (i, part) in parts.indexed) {
       yield i > 0 && part is FrostedOption && parts[i - 1] is FrostedOption
@@ -197,7 +194,7 @@ class FrostedSheetShell extends StatelessWidget {
                   ? FrostedIconButton(
                       FrostedGlyphs.close,
                       key: closeKey,
-                      label: RawWidgetsLocalizations.of(context)
+                      semanticLabel: RawWidgetsLocalizations.of(context)
                           .closeButtonLabel,
                       size: FrostedIconButtonSize.small,
                       onPressed:
@@ -231,11 +228,10 @@ class FrostedSheetShell extends StatelessWidget {
   }
 }
 
-/// The card a sheet stands on, as the source draws it: the sheet's face (on
-/// a phone open at its foot, on a tablet or the desktop a whole dialog with its own
-/// shadow), its content clipped to its corners and marked as on a card
-/// ([FrostedSheetShell.around]). Plumbing of the sheets; a page never places
-/// one.
+/// The card a sheet stands on: the sheet's face (on a phone open at its foot,
+/// on a tablet or the desktop a whole dialog with its own shadow), its content
+/// clipped to its corners and marked as on a card ([FrostedSheetShell.around]).
+/// Plumbing of the sheets; a page never places one.
 ///
 /// ```dart
 /// FrostedSheetCard(child: FrostedSheetShell(title: 'Category', children: options))
@@ -451,7 +447,8 @@ class FrostedSheet extends StatelessWidget {
                   title: title,
                   close: FrostedIconButton(
                     FrostedGlyphs.close,
-                    label: RawWidgetsLocalizations.of(context).closeButtonLabel,
+                    semanticLabel: RawWidgetsLocalizations.of(context)
+                        .closeButtonLabel,
                     size: FrostedIconButtonSize.small,
                     onPressed:
                         onClose ?? () => Navigator.of(context).maybePop(),

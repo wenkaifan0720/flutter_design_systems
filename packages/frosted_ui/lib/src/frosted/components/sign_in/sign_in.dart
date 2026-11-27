@@ -170,7 +170,7 @@ class FrostedSignInButton extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: press,
-        label: words,
+        semanticLabel: words,
         radius: FrostedChromeMetrics.buttonWideHeight / 2,
         child: FrostedDim(off: onPressed == null, child: face),
       ),

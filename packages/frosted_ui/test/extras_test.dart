@@ -114,15 +114,18 @@ void main() {
           children: [
             _Owner<double>(
               0.2,
-              (v, set) =>
-                  FrostedSlider(value: v, label: 'Reach', onChanged: set),
+              (v, set) => FrostedSlider(
+                value: v,
+                semanticLabel: 'Reach',
+                onChanged: set,
+              ),
               seen: seen,
             ),
             _Owner<double>(
               50,
               (v, set) => FrostedSlider(
                 value: v,
-                label: 'Limit',
+                semanticLabel: 'Limit',
                 min: 0,
                 max: 100,
                 divisions: 4,
@@ -154,7 +157,7 @@ void main() {
           0.2,
           (v, set) => FrostedSlider(
             value: v,
-            label: 'Reach',
+            semanticLabel: 'Reach',
             onChanged: set,
             onChangeStart: (v) => log.add('start ${v.toStringAsFixed(2)}'),
             onChangeEnd: (v) => log.add('end ${v.toStringAsFixed(2)}'),
@@ -198,7 +201,7 @@ void main() {
               40,
               (v, set) => FrostedSlider(
                 value: v,
-                label: 'Alert at',
+                semanticLabel: 'Alert at',
                 min: 0,
                 max: 100,
                 divisions: 10,
@@ -207,7 +210,11 @@ void main() {
               ),
               seen: seen,
             ),
-            const FrostedSlider(value: 0.5, label: 'Locked', onChanged: null),
+            const FrostedSlider(
+              value: 0.5,
+              semanticLabel: 'Locked',
+              onChanged: null,
+            ),
           ],
         ),
       );
@@ -241,7 +248,7 @@ void main() {
         'page', (t) async {
       await _pump(
         t,
-        const FrostedSlider(value: 1, label: 'Full', onChanged: _noop),
+        const FrostedSlider(value: 1, semanticLabel: 'Full', onChanged: _noop),
       );
       expect(
         _node(t, 'Full'),
@@ -252,7 +259,8 @@ void main() {
         t,
         _Owner<double>(
           0.5,
-          (v, set) => FrostedSlider(value: v, label: 'Reach', onChanged: set),
+          (v, set) =>
+              FrostedSlider(value: v, semanticLabel: 'Reach', onChanged: set),
           seen: seen,
         ),
         direction: TextDirection.rtl,
@@ -294,7 +302,7 @@ void main() {
                 'Rewards',
               ],
               selectedIndex: 1,
-              label: 'More sections',
+              semanticLabel: 'More sections',
               onChanged: (_) {},
             ),
           ],
@@ -843,7 +851,7 @@ void main() {
         onChanged: (_) {},
       ),
       FrostedPagination(pageCount: 5, selectedIndex: 1, onChanged: (_) {}),
-      FrostedRating(value: 3, label: 'Rating', onChanged: (_) {}),
+      FrostedRating(value: 3, semanticLabel: 'Rating', onChanged: (_) {}),
     ]) {
       // Offered 0 to 300 tall, as a box of a set height offers it.
       await _pump(

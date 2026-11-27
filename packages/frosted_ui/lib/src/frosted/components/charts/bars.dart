@@ -53,9 +53,8 @@ class FrostedAxisMark {
     : slot = -1,
       edge = FrostedAxisEdge.end;
 
-  /// Starting at [slot]'s centre rather than centred under it: the first
-  /// day's word under a chart whose days are columns, as category.py's
-  /// day_axis sets "Oct 1" (`left: (d - .5) / n`, no `.c`).
+  /// Starting at [slot]'s centre rather than centred under it: the first day's
+  /// word under a chart whose days are columns ("Oct 1").
   const FrostedAxisMark.startingAt(
     this.slot,
     this.label, {
@@ -130,16 +129,15 @@ class FrostedBarSeries {
   final List<num> values;
 }
 
-/// Pill bars of a hue's light from $0 on hairline gridlines, their values
-/// at the end. The default is a month day by day: a bar for each day's
-/// spending, a faint dot on the floor of a day without any, nothing for
-/// the days to come, the [marks] under it. [FrostedDayBars.months] is a year
-/// by month: the latest month in the hue's full light and the earlier ones
-/// at .45, its [value] over the latest bar, the [months]' initials under
-/// the columns (their short names from 1024 wide). [FrostedDayBars.stacked]
-/// builds each month's bar of one band per [series], parted by a
-/// hairline, the earlier months at half strength. Sized by its width;
-/// [height] is the plot's.
+/// Pill bars of a hue's light from $0 on hairline gridlines, their values at
+/// the end. The default is a month day by day: a bar for each day's spending, a
+/// faint dot on the floor of a day without any, nothing for the days to come,
+/// the [marks] under it. [FrostedDayBars.months] is a year by month: the latest
+/// month in the hue's full light and the earlier ones at .45, its [value] over
+/// the latest bar, the [months]' initials under the columns (their short names
+/// from 1024 wide). [FrostedDayBars.stacked] builds each month's bar of one
+/// band per [series], parted by a hairline, the earlier months at half
+/// strength. Sized by its width; [height] is the plot's.
 ///
 /// ```dart
 /// FrostedDayBars(values: diningByDay, daysInMonth: 31, hue: theme.hues.coral, marks: octoberAxis, label: 'Dining out, each day in October')
@@ -241,7 +239,7 @@ class FrostedDayBars extends StatelessWidget {
   /// How many gridlines the chart aims for.
   final int lines;
 
-  /// The plot's height; the source's for the width when null.
+  /// The plot's height; Frosted's for the width when null.
   final double? height;
   final _BarsFace _face;
 

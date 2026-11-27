@@ -88,7 +88,7 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
           (v, set) => Align(
             alignment: AlignmentDirectional.centerStart,
             child: FrostedWheelPicker<int>(
-              label: 'Guests',
+              semanticLabel: 'Guests',
               value: v,
               onChanged: set,
               width: 360,
@@ -144,7 +144,7 @@ Widget kitSpecimenTimePicker() => FrostedTimePicker(
 
 /// How many share a bill.
 Widget kitSpecimenWheelPicker() => FrostedWheelPicker<int>(
-  label: 'Split between',
+  semanticLabel: 'Split between',
   options: [for (var n = 1; n <= 8; n++) FrostedSelectOption(n, '$n')],
   value: 3,
   onChanged: (_) {},

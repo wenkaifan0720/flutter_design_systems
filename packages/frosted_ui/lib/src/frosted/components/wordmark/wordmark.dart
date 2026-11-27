@@ -7,9 +7,9 @@ import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
 import '../../theme.dart';
 
-/// How a [FrostedWordmark] sets the name: beside its [mark] (the ink tile
-/// with the glyph lit by the spectrum, as the source's `.brand` stands
-/// it), as [type] alone in the wordmark face, or on a [badge] of the ink.
+/// How a [FrostedWordmark] sets the name: beside its [mark] (the ink tile with
+/// the glyph lit by the spectrum), as [type]
+/// alone in the wordmark face, or on a [badge] of the ink.
 enum FrostedWordmarkForm {
   /// The name beside its mark.
   mark,
@@ -21,8 +21,8 @@ enum FrostedWordmarkForm {
   badge,
 }
 
-/// The app's name as its mark: lower case in the wordmark type, with its
-/// form's company. The sidebar heads itself with it, and a nav root's head
+/// The app's name as its mark: in the wordmark type as it is given, with
+/// its form's company: the ink mark, or the app's own [logo] in its place. The sidebar heads itself with it, and a nav root's head
 /// takes it where its title would stand (`FrostedPageHeader.wordmark`). It
 /// shrinks to the room it is given rather than overflowing. Read aloud as
 /// the name alone. One to a page; the page's title still says where it is.
@@ -34,41 +34,63 @@ enum FrostedWordmarkForm {
 /// ```dart
 /// FrostedWordmark('Northlight', glyph: FrostedGlyphs.sparkles)
 /// ```
+///
+/// ```dart
+/// FrostedWordmark('Shelf', logo: FlutterLogo())
+/// ```
 class FrostedWordmark extends StatelessWidget {
   /// Creates a [FrostedWordmark].
   const FrostedWordmark(
     this.name, {
     this.form = FrostedWordmarkForm.mark,
     this.glyph = FrostedGlyphs.triangle,
+    this.logo,
     super.key,
   });
 
-  /// The app's name, set in lower case.
+  /// The app's name, drawn as it is given.
   final String name;
 
   /// How it sets the name.
   final FrostedWordmarkForm form;
 
-  /// The glyph on the mark, from the Lucide set (the source's own is a
-  /// prism).
+  /// The glyph on the mark, from the Lucide set.
   final IconData glyph;
 
+  /// The app's own logo, standing in the mark's place in a 28 square (its
+  /// words beside it); null draws the ink mark with [glyph]. Decoration:
+  /// the wordmark is read as [name].
+  final Widget? logo;
+
   @override
-  Widget build(BuildContext context) => Directionality(
-    // Figures, codes and marks read left to right in any language.
-    textDirection: TextDirection.ltr,
-    child: Builder(builder: _ltrBuild),
+  Widget build(BuildContext context) => Align(
+    // The lockup stands at the start of a slot wider than it, in either
+    // direction.
+    alignment: AlignmentDirectional.centerStart,
+    widthFactor: 1,
+    heightFactor: 1,
+    child: Directionality(
+      // Figures, codes and marks read left to right in any language.
+      textDirection: TextDirection.ltr,
+      child: Builder(builder: _ltrBuild),
+    ),
   );
 
   Widget _ltrBuild(BuildContext context) {
     final t = context.frostedTheme;
-    final word = name.toLowerCase();
+    final word = name;
     final Widget mark = switch (form) {
       FrostedWordmarkForm.mark => Row(
         mainAxisSize: MainAxisSize.min,
         spacing: FrostedChromeMetrics.brandGap,
         children: [
-          FrostedMark(glyph: glyph),
+          if (logo case final logo?)
+            SizedBox.square(
+              dimension: FrostedChromeMetrics.inkMark,
+              child: logo,
+            )
+          else
+            FrostedMark(glyph: glyph),
           Flexible(
             child: Text(
               word,
@@ -124,13 +146,14 @@ class FrostedWordmark extends StatelessWidget {
           glyph,
           defaultValue: FrostedGlyphs.triangle,
         ),
-      );
+      )
+      ..add(DiagnosticsProperty<Widget>('logo', logo, defaultValue: null));
   }
 }
 
-/// The ink mark (`.mark`): a tile 28 across with its corners at 9 on the
-/// ink, a light along its top, its [glyph] 18 lit by the spectrum. The
-/// wordmark's company; a sign-in's or an about page's mark on its own.
+/// The ink mark: a tile 28 across with its corners at 9 on the ink, a light
+/// along its top, its [glyph] 18 lit by the spectrum. The wordmark's company; a
+/// sign-in's or an about page's mark on its own.
 ///
 /// ```dart
 /// FrostedMark(glyph: FrostedGlyphs.triangle)

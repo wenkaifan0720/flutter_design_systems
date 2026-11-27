@@ -41,7 +41,7 @@ void main() {
     });
   }
 
-  for (final palette in FrostedThemeData.presets) {
+  for (final palette in [for (final p in FrostedThemeData.palettes) p.id]) {
     for (final brightness in Brightness.values) {
       testWidgets('a pane\'s share, note and due days read in $palette '
           '(${brightness.name})', (t) async {

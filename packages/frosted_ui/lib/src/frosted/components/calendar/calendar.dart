@@ -301,7 +301,7 @@ class _FrostedMonths extends StatelessWidget {
       alignment: side,
       child: FrostedPressable(
         onPressed: go,
-        label: label,
+        semanticLabel: label,
         radius: 18,
         child: SizedBox.square(
           dimension: 36,

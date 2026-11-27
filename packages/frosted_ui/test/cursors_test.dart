@@ -70,8 +70,8 @@ void main() {
   testWidgets('a live slider shows the click cursor over its track and its '
       'knob; an inert one defers', (t) async {
     await _pump(t, const [
-      FrostedSlider(label: 'Volume', value: .4, onChanged: _drop),
-      FrostedSlider(label: 'Locked', value: .4, onChanged: null),
+      FrostedSlider(semanticLabel: 'Volume', value: .4, onChanged: _drop),
+      FrostedSlider(semanticLabel: 'Locked', value: .4, onChanged: null),
     ]);
     final live = find.byType(FrostedSlider).first;
     final off = find.byType(FrostedSlider).last;

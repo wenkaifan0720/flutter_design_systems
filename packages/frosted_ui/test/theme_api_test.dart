@@ -32,7 +32,7 @@ void main() {
         'jade': FrostedThemeData.jade,
         'copper': FrostedThemeData.copper,
       };
-      expect(named.keys, FrostedThemeData.presets);
+      expect(named.keys, [for (final p in FrostedThemeData.palettes) p.id]);
       named.forEach((id, make) {
         for (final b in Brightness.values) {
           expect(identical(make(b), FrostedThemeData.preset(id, b)), isTrue);
@@ -40,12 +40,18 @@ void main() {
       });
     });
 
-    test('cobalt resolves until 0.8.0, outside the presets', () {
-      expect(FrostedThemeData.presets, isNot(contains('cobalt')));
-      for (final b in Brightness.values) {
-        final cobalt = FrostedThemeData.cobalt(b);
-        expect(identical(cobalt, FrostedThemeData.preset('cobalt', b)), isTrue);
-        expect(cobalt.id, 'cobalt');
+    test('a stored id no palette has (retired cobalt) gives opal', () {
+      expect([
+        for (final p in FrostedThemeData.palettes) p.id,
+      ], isNot(contains('cobalt')));
+      for (final id in ['cobalt', 'no-such-palette']) {
+        for (final b in Brightness.values) {
+          expect(
+            identical(FrostedThemeData.preset(id, b), FrostedThemeData.opal(b)),
+            isTrue,
+            reason: id,
+          );
+        }
       }
     });
 
@@ -411,7 +417,7 @@ void main() {
       await tester.pumpWidget(probe((c) => seen = c));
       expect(FrostedTheme.maybeOf(seen), isNull);
       final fallback = FrostedTheme.of(seen);
-      expect(fallback.id, FrostedThemeData.presets.first);
+      expect(fallback.id, FrostedThemeData.palettes.first.id);
       expect(fallback.brightness, Brightness.light);
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
       addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);

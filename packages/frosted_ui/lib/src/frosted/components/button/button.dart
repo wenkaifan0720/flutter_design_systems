@@ -47,8 +47,8 @@ enum FrostedButtonSize {
   /// sheet's act.
   regular,
 
-  /// 32 tall and 14 in, its word 12 and its glyph 14 (`.btn--sm`): a
-  /// button in a tile's head or a line of words (See all, Edit).
+  /// 32 tall and 14 in, its word 12 and its glyph 14: a button in a tile's head
+  /// or a line of words (See all, Edit).
   small,
 }
 
@@ -62,7 +62,7 @@ const LinearGradient _shadedLight = LinearGradient(
 
 /// A pill wearing a word: [label] in the label type, an optional [icon] 8
 /// before it, 44 tall and as wide as its word; with [expand] it takes all
-/// the width there is, 48 tall with its word 16 (`.btn--wide`, a sheet's
+/// the width there is, 48 tall with its word 16 (a sheet's
 /// foot); a small one ([size]) is 32 tall. A null [onPressed] draws it at the
 /// disabled share without its lift, and makes it inert.
 ///
@@ -82,9 +82,9 @@ const LinearGradient _shadedLight = LinearGradient(
 /// FrostedButton.destructive('Delete task', icon: FrostedGlyphs.delete, onPressed: delete)
 /// ```
 class FrostedButton extends StatelessWidget {
-  /// Creates the page's or the sheet's one act (`.btn--ink`): the word on
-  /// the ink with a light along its top edge, standing in its own lift
-  /// (Move money, Review transfer, Add \$250).
+  /// Creates the page's or the sheet's one act: the word on the ink with a
+  /// light along its top edge, standing in its own lift (Move money, Review
+  /// transfer, Add \$250).
   const FrostedButton(
     this.label, {
     required this.onPressed,
@@ -98,9 +98,8 @@ class FrostedButton extends StatelessWidget {
     super.key,
   }) : _face = _Face.ink;
 
-  /// Creates a lesser act (`.btn--glass`): the brighter glass with its rim
-  /// of light and hairline edge, the word in the ink (Clear filters,
-  /// Cancel).
+  /// Creates a lesser act: the brighter glass with its rim of light and
+  /// hairline edge, the word in the ink (Clear filters, Cancel).
   const FrostedButton.glass(
     this.label, {
     required this.onPressed,
@@ -446,7 +445,7 @@ class FrostedButton extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: semanticLabel ?? label,
+      semanticLabel: semanticLabel ?? label,
       radius: FrostedStyleLayers.radiusOf(cut, height, height / 2),
       shape: cut,
       builder: (context, states, _) => draw(states),
@@ -497,11 +496,9 @@ class FrostedButton extends StatelessWidget {
   }
 }
 
-/// A button's glyph and word, [inset] either side while they fit (`.btn {
-/// padding: 0 20px }`); handed less (a `.btn-row` half), they eat into
-/// that room, still centred, as the source's `white-space: nowrap` content
-/// overflows its content box into the padding; only past the button's whole
-/// width does the word narrow. Its intrinsic widths keep the whole inset.
+/// A button's glyph and word, [inset] either side while they fit; handed
+/// less (half a button row), they eat into that room, still centred, on one
+/// line; only past the button's whole width does the word narrow. Its intrinsic widths keep the whole inset.
 /// The spill stops where the face's [round] corner would cut the words: a
 /// line as tall as large text makes it (200%) stays inside the pill's ends.
 class _Spill extends SingleChildRenderObjectWidget {
@@ -714,18 +711,17 @@ class _RenderSpill extends RenderShiftedBox {
   }
 }
 
-/// Buttons side by side, 10 apart on a phone and 16 on the desktop, as the source's `.btn-row` sets them:
-/// equal shares of the line (`repeat(2, minmax(0, 1fr))`), a button's
-/// word and glyph eating into its own inset where its share is short of
-/// it; one whose word and glyph alone are wider than its share keeps
-/// their width and the others share what is left (when even those do not
-/// fit, all narrow in proportion). [columns] cuts the line into that many
-/// shares however many buttons stand in it, so a lone act keeps its half
-/// at the line's start (`.btn-row` is two columns); null gives each button
-/// a share. Give it [FrostedButton]s without `expand`: each takes the width
-/// it is handed. Every button in it shows the size the largest asks for, so
-/// the row shows one top and one bottom: the glass and the ink differ in
-/// their fill, never in their height.
+/// Buttons side by side, 10 apart on a phone and 16 on the desktop: equal
+/// shares of the line, a button's word and glyph eating into its own inset where
+/// its share is short of it; one whose word and glyph alone are wider than its
+/// share keeps their width and the others share what is left (when even those
+/// do not fit, all narrow in proportion). [columns] cuts the line into that
+/// many shares however many buttons stand in it, so a lone act keeps its half
+/// at the line's start; null gives each button a
+/// share. Give it [FrostedButton]s without `expand`: each takes the width it is
+/// handed. Every button in it shows the size the largest asks for, so the row
+/// shows one top and one bottom: the glass and the ink differ in their fill,
+/// never in their height.
 ///
 /// ```dart
 /// FrostedButtonRow(children: [FrostedButton.glass('Cancel', onPressed: cancel), FrostedButton('Freeze', icon: FrostedGlyphs.snowflake, onPressed: freeze)])
@@ -957,14 +953,12 @@ class _RenderButtonRow extends RenderBox
       defaultHitTestChildren(result, position: position);
 }
 
-/// A line in the meta type with one run of it a link, as the source sets an
-/// `a` inside its `p.meta` (the search summary's merchant, the alerts' foot):
-/// the line in the quieter ink, and [link], the first place its words stand
-/// in [text], in the working ink over a hairline of the page ink at 20%,
-/// hung just under the letters' own box as CSS hangs an inline link's
-/// border (the line keeps its height). The link is its own link node and
-/// tap target, keyed by [linkKey]; a null [onPressed] leaves it inert. The link
-/// keeps to one line, as a word does.
+/// A line in the meta type with one run of it a link (the search summary's merchant, the alerts' foot): the line in the quieter
+/// ink, and [link], the first place its words stand in [text], in the working
+/// ink over a hairline of the page ink at 20%, hung just under the letters' own
+/// box (the line keeps its height). The
+/// link is its own link node and tap target, keyed by [linkKey]; a null
+/// [onPressed] leaves it inert. The link keeps to one line, as a word does.
 ///
 /// ```dart
 /// FrostedLink('at Blue Fern Café in October, \$6.48 a visit', link: 'Blue Fern Café', onPressed: openCategory)
@@ -1031,7 +1025,7 @@ class FrostedLink extends StatelessWidget {
                 autofocus: autofocus,
                 key: linkKey,
                 onPressed: onPressed,
-                label: link,
+                semanticLabel: link,
                 role: FrostedPressRole.link,
                 child: FrostedDim(
                   off: onPressed == null,

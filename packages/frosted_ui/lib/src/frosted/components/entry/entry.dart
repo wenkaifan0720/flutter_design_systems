@@ -16,10 +16,16 @@ import '../../theme.dart';
 import '../forms/forms.dart';
 import '../icon-button/round_button.dart';
 import '../actions/actions.dart' show FrostedButtonGroup;
-import '../choices/choices.dart' show FrostedChoices, FrostedRadioGroup;
+import '../choices/choices.dart'
+    show FrostedChoices, FrostedRadioGroup, FrostedRating;
 import '../color_picker/color_picker.dart' show FrostedColorPicker;
 import '../controls/controls.dart'
-    show FrostedFilterChipGroup, FrostedIconPicker, FrostedSegmentedButton;
+    show
+        FrostedFilterChipGroup,
+        FrostedIconPicker,
+        FrostedSegmentedButton,
+        FrostedSwitch;
+import '../slider/slider.dart' show FrostedSlider;
 import '../toggle/toggle.dart' show FrostedToggleGroup;
 import '../../internal/dim.dart';
 
@@ -115,7 +121,7 @@ class FrostedPasswordField extends StatelessWidget {
         ],
         trailing: FrostedIconButton(
           password.obscured ? FrostedGlyphs.show : FrostedGlyphs.hide,
-          label: password.toggleLabel,
+          semanticLabel: password.toggleLabel,
           size: FrostedIconButtonSize.small,
           onPressed: enabled ? password.toggle : null,
         ),
@@ -514,90 +520,108 @@ class FrostedInputOtp extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
-      spacing: FrostedChromeMetrics.fieldLabelGap,
       children: [
-        if (label != null) FrostedFieldLabel(label),
-        RawOtpField(
-          length: length,
-          controller: controller,
-          focusNode: focusNode,
-          onChanged: onChanged,
-          onCompleted: onCompleted,
-          onSubmitted: onSubmitted,
-          autofocus: autofocus,
-          enabled: enabled,
-          isError: error != null,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-          autofillHints: autofillHints,
-          textDirection: Directionality.of(context),
-          semanticLabel: label ?? words.oneTimeCode,
-          contextMenuBuilder: (context, anchors, items) =>
-              FrostedTextContextMenu(anchors: anchors, buttonItems: items),
-          // The boxes keep their size while they fit; a column narrower
-          // than the code shrinks the row whole.
-          layoutBuilder: (context, slots) => FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: AlignmentDirectional.centerStart,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: FrostedSpacing.s8,
-              children: slots,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          spacing: FrostedChromeMetrics.fieldLabelGap,
+          children: [
+            if (label != null) FrostedFieldLabel(label),
+            RawOtpField(
+              length: length,
+              controller: controller,
+              focusNode: focusNode,
+              onChanged: onChanged,
+              onCompleted: onCompleted,
+              onSubmitted: onSubmitted,
+              autofocus: autofocus,
+              enabled: enabled,
+              isError: error != null,
+              obscureText: obscureText,
+              keyboardType: keyboardType,
+              inputFormatters: inputFormatters,
+              autofillHints: autofillHints,
+              textDirection: Directionality.of(context),
+              semanticLabel: label ?? words.oneTimeCode,
+              contextMenuBuilder: (context, anchors, items) =>
+                  FrostedTextContextMenu(anchors: anchors, buttonItems: items),
+              // The boxes keep their size while they fit; a column narrower
+              // than the code shrinks the row whole.
+              layoutBuilder: (context, slots) => FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: FrostedSpacing.s8,
+                  children: slots,
+                ),
+              ),
+              slotBuilder: (context, slot) {
+                final lit = slot.active && slot.focused;
+                // 48 wide, at least 56 tall (larger text grows it), the figure
+                // on its centre by alignment.
+                final box = ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    maxWidth: 48,
+                    minHeight: 56,
+                  ),
+                  // Each box is a well, as every field is (FrostedWell): recessed
+                  // glass a step darker than what holds it, its rim the well's
+                  // light one. The next box clears as a focused field does; a
+                  // wrong one says so in the message under the boxes.
+                  child: FrostedCleared(
+                    level: lit ? 1 : 0,
+                    outline: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(FrostedCorners.r12),
+                      ),
+                    ),
+                    child: FrostedFace(
+                      material: FrostedMaterial.well,
+                      radius: BorderRadius.circular(FrostedCorners.r12),
+                      ring: frostedLitEdge(t, t.controlEdge),
+                      edges: const EdgeInsets.all(FrostedStrokes.heavy),
+                      child: Center(
+                        child: slot.character.isEmpty
+                            ? (lit
+                                  ? Container(
+                                      width: FrostedStrokes.heavy,
+                                      height: 24,
+                                      color: t.colorScheme.accent,
+                                    )
+                                  : null)
+                            : Text(
+                                slot.obscured ? '•' : slot.character,
+                                style: t.textTheme.amount.c(
+                                  t.colorScheme.textPrimary,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                );
+                return FrostedDim(off: !slot.enabled, child: box);
+              },
             ),
-          ),
-          slotBuilder: (context, slot) {
-            final lit = slot.active && slot.focused;
-            // 48 wide, at least 56 tall (larger text grows it), the figure
-            // on its centre by alignment.
-            final box = ConstrainedBox(
-              constraints: const BoxConstraints(
-                minWidth: 48,
-                maxWidth: 48,
-                minHeight: 56,
-              ),
-              // Each box is a well, as every field is (FrostedWell): recessed
-              // glass a step darker than what holds it, its rim the well's
-              // light one. The next box clears as a focused field does; a
-              // wrong one says so in the message under the boxes.
-              child: FrostedCleared(
-                level: lit ? 1 : 0,
-                outline: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(FrostedCorners.r12),
-                  ),
-                ),
-                child: FrostedFace(
-                  material: FrostedMaterial.well,
-                  radius: BorderRadius.circular(FrostedCorners.r12),
-                  ring: frostedLitEdge(t, t.controlEdge),
-                  edges: const EdgeInsets.all(FrostedStrokes.heavy),
-                  child: Center(
-                    child: slot.character.isEmpty
-                        ? (lit
-                              ? Container(
-                                  width: FrostedStrokes.heavy,
-                                  height: 24,
-                                  color: t.colorScheme.accent,
-                                )
-                              : null)
-                        : Text(
-                            slot.obscured ? '•' : slot.character,
-                            style: t.textTheme.amount.c(
-                              t.colorScheme.textPrimary,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-            );
-            return FrostedDim(off: !slot.enabled, child: box);
+          ],
+        ),
+        // The help or what is wrong eases in under the boxes.
+        FrostedHintSlot(
+          gap: FrostedChromeMetrics.fieldLabelGap,
+          child: switch ((error, helper)) {
+            (final error?, _) => FrostedFieldHint(
+              error,
+              error: true,
+              key: const ValueKey<bool>(true),
+            ),
+            (null, final helper?) => FrostedFieldHint(
+              helper,
+              key: const ValueKey<bool>(false),
+            ),
+            (null, null) => null,
           },
         ),
-        if (error != null)
-          FrostedFieldHint(error, error: true)
-        else if (helper != null)
-          FrostedFieldHint(helper),
       ],
     );
   }
@@ -733,15 +757,19 @@ class FrostedFormField extends StatelessWidget {
     _ => false,
   };
 
-  // The name a group gives its own node, seen through the same wrappers.
+  // The name a control or a group gives its own node, seen through the same
+  // wrappers.
   static String? _ownName(Widget w) => switch (w) {
+    FrostedSlider(:final semanticLabel) => semanticLabel,
+    FrostedSwitch(:final semanticLabel) => semanticLabel,
+    FrostedRating(:final semanticLabel) => semanticLabel,
     FrostedSegmentedButton(:final label) => label,
     FrostedRadioGroup(labelText: final label) => label,
     FrostedNumberField(labelText: final label) => label,
-    FrostedChoices(:final label) => label,
-    FrostedToggleGroup(:final label) => label,
-    FrostedButtonGroup(:final label) => label,
-    FrostedFilterChipGroup(:final label) => label,
+    FrostedChoices(:final semanticLabel) => semanticLabel,
+    FrostedToggleGroup(:final semanticLabel) => semanticLabel,
+    FrostedButtonGroup(:final semanticLabel) => semanticLabel,
+    FrostedFilterChipGroup(:final semanticLabel) => semanticLabel,
     FrostedIconPicker(:final label) => label,
     Align(:final child?) ||
     Padding(:final child?) ||
@@ -772,11 +800,10 @@ class FrostedFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final merge = mergeSemantics ?? !_isGroup(child);
-    // A group that already says the label's words on its own node: the
-    // field draws the label but does not say it, so it is read once, not
-    // "Priority, Priority" (ui_core 0.3.2's rule, which applies when a field
-    // decides for itself).
-    final own = merge ? null : _ownName(child)?.trim().toLowerCase();
+    // A control or a group that already says the label's words on its own
+    // node: the field draws the label but does not say it, so it is read
+    // once, not "Text size, Text size".
+    final own = _ownName(child)?.trim().toLowerCase();
     final heard = own != null && own == labelText?.trim().toLowerCase();
     return RawInputDecorator(
       labelText: heard ? null : labelText,
@@ -795,33 +822,47 @@ class FrostedFormField extends StatelessWidget {
         final column = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
-          spacing: FrostedChromeMetrics.fieldLabelGap,
           children: [
-            if (head != null)
-              DefaultTextStyle.merge(
-                style: t.textTheme.labelSmall.line(15.6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(child: head),
-                    if (parts.required)
-                      ExcludeSemantics(
-                        child: Text(
-                          ' *',
-                          style: TextStyle(color: t.colorScheme.over),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            parts.control,
-            if (hint != null)
-              DefaultTextStyle.merge(
-                style: parts.error != null
-                    ? t.textTheme.bodySmall.line(15.6).c(t.colorScheme.over)
-                    : t.textTheme.bodySmall.line(15.6),
-                child: hint,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              spacing: FrostedChromeMetrics.fieldLabelGap,
+              children: [
+                if (head != null)
+                  DefaultTextStyle.merge(
+                    style: t.textTheme.labelSmall.line(15.6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(child: head),
+                        if (parts.required)
+                          ExcludeSemantics(
+                            child: Text(
+                              ' *',
+                              style: TextStyle(color: t.colorScheme.over),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                parts.control,
+              ],
+            ),
+            // The help or what is wrong eases in under the control.
+            FrostedHintSlot(
+              gap: FrostedChromeMetrics.fieldLabelGap,
+              child: hint == null
+                  ? null
+                  : KeyedSubtree(
+                      key: ValueKey<bool>(parts.error != null),
+                      child: parts.error != null
+                          ? FrostedErrorWords(child: hint)
+                          : DefaultTextStyle.merge(
+                              style: t.textTheme.bodySmall.line(15.6),
+                              child: hint,
+                            ),
+                    ),
+            ),
           ],
         );
         return FrostedDim(off: !parts.enabled, child: column);

@@ -14,7 +14,7 @@ const String _package = 'lucide_icons_flutter';
 /// Every glyph Frosted draws.
 ///
 /// ```dart
-/// FrostedIconButton(FrostedGlyphs.back, label: 'Back', onPressed: pop)
+/// FrostedIconButton(FrostedGlyphs.back, semanticLabel: 'Back', onPressed: pop)
 /// ```
 abstract final class FrostedGlyphs {
   /// Goes back a page; mirrors in a right-to-left language.

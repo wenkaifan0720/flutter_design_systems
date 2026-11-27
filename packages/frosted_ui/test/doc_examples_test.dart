@@ -454,12 +454,12 @@ void main() {
       ),
       'FrostedRating': (context) => FrostedRating(
         value: stars,
-        label: 'Your rating',
+        semanticLabel: 'Your rating',
         onChanged: (v) => setState(() => stars = v),
       ),
       'FrostedRating 2': (context) => FrostedRating(
         value: 4.5,
-        label: 'Average',
+        semanticLabel: 'Average',
         allowHalf: true,
         size: 16,
       ),
@@ -477,7 +477,7 @@ void main() {
         onChanged: (v) => setState(() => receipt = v ?? false),
       ),
       'FrostedChoices': (context) => FrostedChoices<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         options: const [
           FrostedSelectOption('s', 'Small'),
           FrostedSelectOption('m', 'Medium'),
@@ -592,12 +592,12 @@ void main() {
       'FrostedSwitch': (context) => FrostedSwitch(
         value: faceId,
         onChanged: (v) => setState(() => faceId = v),
-        label: 'Face ID',
+        semanticLabel: 'Face ID',
       ),
       'FrostedSwitch 2': (context) => FrostedSwitch(
         value: on,
         onChanged: setOn,
-        label: 'Face ID',
+        semanticLabel: 'Face ID',
         style: FrostedStyle(
           fill: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
@@ -656,7 +656,7 @@ void main() {
           tail: r'$2,541.40',
           onPressed: bills,
         ),
-      ], label: 'Ways to move money'),
+      ], semanticLabel: 'Ways to move money'),
       'FrostedQuickAmounts': (context) {
         num? amount = 580;
         return FrostedQuickAmounts(
@@ -760,6 +760,57 @@ void main() {
                 : null,
           ),
         ),
+      ),
+      'FrostedTextFormField': (context) {
+        String? title;
+        return FrostedTextFormField(
+          labelText: 'Title',
+          validator: (v) =>
+              (v ?? '').trim().isEmpty ? 'Give the book a title' : null,
+          onSaved: (v) => title = v!,
+        );
+      },
+      'FrostedDateField': (context) {
+        DateTime? finished;
+        return FrostedDateField(
+          labelText: 'Finished',
+          value: finished,
+          lastDate: DateTime.now(),
+          onChanged: (day) => setState(() => finished = day),
+        );
+      },
+      'FrostedAppShell': (context) => FrostedAppShell(
+        header: const FrostedWordmark('Harbor'),
+        destinations: const [
+          RawNavigationDestination(label: 'Home', icon: FrostedGlyphs.house),
+          RawNavigationDestination(
+            label: 'Account',
+            icon: FrostedGlyphs.person,
+          ),
+        ],
+        branches: [
+          (context) => const Text('Home'),
+          (context) => const Text('Account'),
+        ],
+      ),
+      'FrostedThemeData.palettes': (context) {
+        const saved = 'quartz';
+        return FrostedHost(
+          palette: FrostedThemeData.palettes.firstWhere((p) => p.id == saved),
+          child: child,
+        );
+      },
+      'FrostedThemeData.preset': (context) {
+        final theme = FrostedThemeData.preset(
+          FrostedThemeData.palettes[2].id,
+          Brightness.dark,
+        );
+        return null;
+      },
+      'FrostedHost 2': (context) => MaterialApp(
+        builder: (context, child) =>
+            FrostedHost(palette: FrostedThemeData.palettes[2], child: child!),
+        home: const Text('Home'),
       ),
       'FrostedTextArea': (context) => FrostedTextArea(
         labelText: 'Notes',
@@ -935,12 +986,12 @@ void main() {
           FrostedMediaGround(child: FrostedAppBar(title: 'Clips')),
       'FrostedIconButton': (context) => FrostedIconButton(
         FrostedGlyphs.chevronLeft,
-        label: 'Back to Home',
+        semanticLabel: 'Back to Home',
         onPressed: () => Navigator.of(context).maybePop(),
       ),
       'FrostedIconButton 2': (context) => FrostedIconButton(
         FrostedGlyphs.bell,
-        label: 'Notifications',
+        semanticLabel: 'Notifications',
         onPressed: open,
         style: const FrostedStyle(
           shape: WidgetStatePropertyAll(
@@ -1010,12 +1061,12 @@ void main() {
       ),
       'FrostedCheckbox': (context) => FrostedCheckbox(
         value: kept,
-        label: 'Walk 5,000 steps',
+        semanticLabel: 'Walk 5,000 steps',
         onChanged: (v) => setState(() => kept = v!),
       ),
       'FrostedCheckbox 2': (context) => FrostedCheckbox(
         value: kept,
-        label: 'Walk 5,000 steps',
+        semanticLabel: 'Walk 5,000 steps',
         onChanged: keep,
         style: const FrostedStyle(
           shape: WidgetStatePropertyAll(
@@ -1252,7 +1303,7 @@ void main() {
         return FrostedPageDots(
           pageCount: 4,
           selectedIndex: page,
-          label: 'Welcome',
+          semanticLabel: 'Welcome',
           onChanged: (i) => controller.animateToPage(i, duration: d, curve: c),
         );
       },
@@ -1285,7 +1336,7 @@ void main() {
       ),
       'FrostedTime': (context) => const FrostedTime(hour: 9, minute: 30),
       'FrostedWheelPicker': (context) => FrostedWheelPicker<int>(
-        label: 'Guests',
+        semanticLabel: 'Guests',
         options: [for (var n = 1; n <= 12; n++) FrostedSelectOption(n, '$n')],
         value: guests,
         onChanged: (v) => setState(() => guests = v),
@@ -1318,7 +1369,7 @@ void main() {
         return null;
       },
       'FrostedPopover': (context) => FrostedPopover(
-        label: 'Filter',
+        semanticLabel: 'Filter',
         builder: (context, controller, _) => FrostedButton.glass(
           'Filter',
           onPressed: () =>
@@ -1341,7 +1392,7 @@ void main() {
       ),
       'FrostedPressable': (context) => FrostedPressable(
         onPressed: open,
-        label: 'Everyday account',
+        semanticLabel: 'Everyday account',
         radius: 18,
         child: card,
       ),
@@ -1382,7 +1433,7 @@ void main() {
       'Builder 2': (context) => Builder(
         builder: (anchor) => FrostedIconButton(
           FrostedGlyphs.more,
-          label: 'More',
+          semanticLabel: 'More',
           onPressed: () async {
             final v = await showFrostedMenu<String>(
               anchor,
@@ -1442,7 +1493,7 @@ void main() {
         message: 'Copy link',
         child: FrostedIconButton(
           FrostedGlyphs.share,
-          label: 'Copy link',
+          semanticLabel: 'Copy link',
           onPressed: copy,
         ),
       ),
@@ -1497,7 +1548,7 @@ void main() {
         title: 'Category',
         close: FrostedIconButton(
           FrostedGlyphs.close,
-          label: RawWidgetsLocalizations.of(context).closeButtonLabel,
+          semanticLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
           size: FrostedIconButtonSize.small,
           onPressed: close,
         ),
@@ -1609,7 +1660,7 @@ void main() {
         min: 0,
         max: 100,
         divisions: 20,
-        label: 'Alert at',
+        semanticLabel: 'Alert at',
         semanticFormatterCallback: (v) => '\${v.round()}% of budget',
         onChanged: setAlertAt,
         onChangeEnd: saveAlertAt,
@@ -1617,7 +1668,7 @@ void main() {
       'FrostedSlider 2': (context) => FrostedSlider(
         value: volume,
         onChanged: setVolume,
-        label: 'Volume',
+        semanticLabel: 'Volume',
         style: const FrostedStyle(
           fill: WidgetStatePropertyAll(Color(0xFF5B5BD6)),
         ),
@@ -1692,7 +1743,7 @@ void main() {
         onPressed: open,
         action: FrostedIconButton(
           FrostedGlyphs.more,
-          label: 'Actions',
+          semanticLabel: 'Actions',
           onPressed: menu,
         ),
       ),
@@ -1886,7 +1937,7 @@ void main() {
         ),
       ),
       'FrostedToggleGroup': (context) => FrostedToggleGroup<String>(
-        label: 'Text style',
+        semanticLabel: 'Text style',
         multiSelectionEnabled: true,
         segments: const [
           FrostedButtonSegment('b', 'Bold'),
@@ -1931,6 +1982,8 @@ void main() {
       'FrostedWordmark': (context) => FrostedWordmark('Harbor'),
       'FrostedWordmark 2': (context) =>
           FrostedWordmark('Northlight', glyph: FrostedGlyphs.sparkles),
+      'FrostedWordmark 3': (context) =>
+          FrostedWordmark('Shelf', logo: FlutterLogo()),
       'FrostedMark': (context) => FrostedMark(glyph: FrostedGlyphs.triangle),
       'TextField': (context) => TextField(
         selectionControls: FrostedTextSelectionControls.of(
@@ -1959,8 +2012,11 @@ void main() {
       },
       'Text': (context) =>
           Text(FrostedFormat.money(-1326.44), style: t.textTheme.amount),
-      'FrostedIconButton 3': (context) =>
-          FrostedIconButton(FrostedGlyphs.back, label: 'Back', onPressed: pop),
+      'FrostedIconButton 3': (context) => FrostedIconButton(
+        FrostedGlyphs.back,
+        semanticLabel: 'Back',
+        onPressed: pop,
+      ),
       'FrostedScaffold 2': (context) => FrostedScaffold(
         scroll: false,
         topBar: const FrostedAppBar(title: 'Inventory'),

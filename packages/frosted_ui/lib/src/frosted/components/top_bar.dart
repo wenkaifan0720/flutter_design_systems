@@ -66,7 +66,7 @@ class FrostedBack extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         close ? FrostedGlyphs.close : FrostedGlyphs.chevronLeft,
-        label: spoken,
+        semanticLabel: spoken,
         size: FrostedIconButtonSize.small,
         onPressed: onPressed,
       );
@@ -76,7 +76,7 @@ class FrostedBack extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         close ? FrostedGlyphs.close : FrostedGlyphs.chevronLeft,
-        label: spoken,
+        semanticLabel: spoken,
         onPressed: onPressed,
       );
     }
@@ -114,7 +114,7 @@ class FrostedBack extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: spoken,
+      semanticLabel: spoken,
       role: FrostedPressRole.link,
       child: crumb,
     );
@@ -151,8 +151,8 @@ class _BackLabel extends InheritedWidget {
   bool updateShouldNotify(_BackLabel oldWidget) => label != oldWidget.label;
 }
 
-/// The head of a page, in the register its route earns
-/// (`RoutePresentation.of`), as the source sets its three (`.top`):
+/// The head of a page, in the register its route earns (`RoutePresentation.of`)
+/// its three:
 ///
 /// - a tab's root: the [caption] in the quiet caption type ("October
 ///   2026") 2 over the page's [title] in the h1 type, the page's own
@@ -160,7 +160,7 @@ class _BackLabel extends InheritedWidget {
 ///   same bar with the day for its caption ([FrostedAppBar.greeting]); on the
 ///   desktop the title is set large, 6 under its caption, and the bar
 ///   stands 32 under the window's top;
-/// - a pushed page (`.top--detail`): the round back button, the [title]
+/// - a pushed page: the round back button, the [title]
 ///   (what the page is: Account, Transaction) centred in the h2 type, and a
 ///   balancing space; on the desktop the crumb naming where back goes
 ///   ([backLabel]) 6 over the title set large, the bell and avatar at the

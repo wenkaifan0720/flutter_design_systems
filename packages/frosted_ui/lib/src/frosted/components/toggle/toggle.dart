@@ -7,7 +7,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
-import '../../internal/css_shadow.dart';
+import '../../internal/chosen_plate.dart';
 import '../../internal/face.dart';
 import '../../internal/menu_wake.dart';
 import '../../internal/panel.dart';
@@ -22,9 +22,9 @@ import '../../internal/cap.dart';
 // ---------------------------------------------------------------------------
 
 /// A strip of toggles (shadcn's ToggleGroup, a toolbar's Bold, Italic,
-/// Underline): [segments] on the wash, the ones that are on raised as white
-/// plates with the ink and semibold, as [FrostedSegmentedButton] draws its
-/// choice. With [multiSelectionEnabled] each toggles on its own; without, it is one
+/// Underline): [segments] on the wash, the ones that are on standing on the
+/// chosen plate (the brightest glass on the strip) with the ink and semibold,
+/// as [FrostedSegmentedButton] draws its choice. With [multiSelectionEnabled] each toggles on its own; without, it is one
 /// choice and a press on the chosen one keeps it unless [emptySelectionAllowed]. One
 /// Tab stop for the strip, Space or Return to press. Several at once,
 /// ui_core's [RawSegmentedButton] is the behaviour: the arrows move between
@@ -33,7 +33,7 @@ import '../../internal/cap.dart';
 /// the chosen toggle and the four arrows choose as they move, wrapping.
 ///
 /// ```dart
-/// FrostedToggleGroup<String>(label: 'Text style', multiSelectionEnabled: true, segments: const [FrostedButtonSegment('b', 'Bold'), FrostedButtonSegment('i', 'Italic')], selected: styles, onSelectionChanged: (v) => setState(() => styles = v))
+/// FrostedToggleGroup<String>(semanticLabel: 'Text style', multiSelectionEnabled: true, segments: const [FrostedButtonSegment('b', 'Bold'), FrostedButtonSegment('i', 'Italic')], selected: styles, onSelectionChanged: (v) => setState(() => styles = v))
 /// ```
 class FrostedToggleGroup<T> extends StatelessWidget {
   /// A strip of [segments], [selected] on.
@@ -43,7 +43,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
     required this.onSelectionChanged,
     this.multiSelectionEnabled = false,
     this.emptySelectionAllowed = false,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -63,7 +63,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
   final bool emptySelectionAllowed;
 
   /// What a screen reader calls the strip.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -129,37 +129,45 @@ class FrostedToggleGroup<T> extends StatelessWidget {
       final lit = states.contains(WidgetState.pressed);
       var words = t.textTheme.labelSmall;
       if (on) words = words.semibold.c(t.colorScheme.textPrimary);
+      final motion = FrostedMotion.of(context);
+      // An on toggle stands on the chosen plate, the brightest glass on the
+      // strip, as a segmented button's choice does; it fades in and out.
       final plate = SizedBox(
         height: height,
-        child: FrostedFace(
-          material: FrostedMaterial.paint,
-          radius: BorderRadius.circular(height / 2),
-          color: on ? t.glass.plane : (lit ? t.glass.fill : null),
-          shadows: on
-              ? [
-                  frostedShadow(
-                    color: t.glass.edge,
-                    spread: FrostedChromeMetrics.outline,
-                  ),
-                  ...t.shadows.raised,
-                ]
-              : const <BoxShadow>[],
-          padding: t.density.padding(
-            const EdgeInsets.symmetric(
-              horizontal: FrostedChromeMetrics.segmentInset,
-            ),
-          ),
-          child: Center(
-            widthFactor: 1,
-            child: frostedCapCentred(
-              Text(
-                labels[value] ?? '$value',
-                maxLines: 1,
-                softWrap: false,
-                style: words,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: AnimatedOpacity(
+                opacity: on ? 1 : 0,
+                duration: motion.fast,
+                curve: motion.curve,
+                child: FrostedChosenPlate(
+                  radius: BorderRadius.circular(height / 2),
+                ),
               ),
             ),
-          ),
+            FrostedFace(
+              material: FrostedMaterial.paint,
+              radius: BorderRadius.circular(height / 2),
+              color: !on && lit ? t.glass.fill : null,
+              padding: t.density.padding(
+                const EdgeInsets.symmetric(
+                  horizontal: FrostedChromeMetrics.segmentInset,
+                ),
+              ),
+              child: Center(
+                widthFactor: 1,
+                child: frostedCapCentred(
+                  Text(
+                    labels[value] ?? '$value',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: words,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
       final face = FrostedDim(
@@ -190,7 +198,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
         multiSelectionEnabled: true,
         emptySelectionAllowed: emptySelectionAllowed,
         labelOf: (value) => labels[value] ?? '$value',
-        semanticLabel: label,
+        semanticLabel: semanticLabel,
         minimumSize: minimum,
         layoutBuilder: row,
         itemBuilder: (context, value, states) => toggle(value, states),
@@ -203,7 +211,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: RadioGroup<T>(
         groupValue: chosen,
         onChanged: (value) {
@@ -260,7 +268,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
           ifTrue: 'allowEmpty',
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

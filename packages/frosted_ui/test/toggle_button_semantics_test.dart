@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 Matcher _toggleButton(String label, {required bool selected}) => isSemantics(
   label: label,
@@ -50,7 +49,7 @@ void main() {
           for (final on in [true, false])
             FrostedIconButton(
               FrostedGlyphs.share,
-              label: on ? 'Shared' : 'Not shared',
+              semanticLabel: on ? 'Shared' : 'Not shared',
               selected: on,
               onPressed: () {},
             ),

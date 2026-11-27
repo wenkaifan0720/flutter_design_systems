@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 const _chips = ['All', 'Money in', 'Pending', 'Harbor Card'];
 const _segments = ['Light', 'Dark', 'System'];
@@ -19,7 +18,7 @@ void main() {
       tester.view.devicePixelRatio = dpr;
       addTearDown(tester.view.reset);
       final t = FrostedThemeData.preset(
-        FrostedThemeData.presets.first,
+        FrostedThemeData.palettes.first.id,
         Brightness.light,
       );
       await tester.pumpWidget(

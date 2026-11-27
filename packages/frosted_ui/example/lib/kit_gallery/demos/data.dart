@@ -76,7 +76,7 @@ Widget kitSpecimenDataTable() => KitOwned<RawDataTableController<_File>>(
   _filesTable,
   (rows) => FrostedDataTable<_File>(
     controller: rows,
-    label: 'Files',
+    semanticLabel: 'Files',
     cellBuilder: (context, f, column) => Text(switch (column.id) {
       'name' => f.name,
       'kind' => f.kind,
@@ -90,7 +90,7 @@ Widget kitSpecimenTreeView() => KitOwned<RawTreeController<_Folder>>(
   _folders,
   (nodes) => FrostedTreeView<_Folder>(
     controller: nodes,
-    label: 'Folders',
+    semanticLabel: 'Folders',
     labelOf: (f) => f.name,
     leadingOf: (f) =>
         Icon(f.children.isEmpty ? LucideIcons.file : LucideIcons.folder),

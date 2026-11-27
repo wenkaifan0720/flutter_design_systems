@@ -79,25 +79,24 @@ class FrostedNavItem {
   final String? actionLabel;
 }
 
-/// The phone tab bar, as the source draws it (`.tabbar`): a frosted slab
-/// of glass 64 tall with its corners at 22, a rim of light along its top,
-/// its hairline edge and a soft shadow under it, standing on the page's
-/// gutter (16 in from the screen's sides) over a fade into the canvas (12
-/// under it, or the system's inset where that is more). The chosen tab's
-/// plate stands 4 inside the slab on every side, its corners concentric
-/// with the slab's. The tabs share its width evenly, each its
-/// glyph 4 over its word in the faint ink, the selected one in the ink with
-/// its word semibold. The middle of five tabs, or the shell's [action], is
-/// the ink pill: the app's main act printing its glyph and its word on the
-/// ink, ringed while its page is shown. An [accessory] stands 8 over the
-/// slab. On the media ground ([solid]) the band is the solid ground and
-/// nothing blurs. From a tablet's width ([FrostedBreakpoints.medium]) the
-/// slab hugs its tabs ([FrostedChromeMetrics.tabBarTabMedium] each) in the
-/// middle of the foot rather than spanning the window, as wide as an
-/// [accessory] needs at least.
+/// The phone tab bar: a frosted slab of glass 64 tall with its corners at 22, a
+/// rim of light along its top, its hairline edge and a soft shadow under it,
+/// standing on the page's gutter (16 in from the screen's sides) over a fade
+/// into the canvas (12 under it, or the system's inset where that is more). The
+/// chosen tab's plate stands 4 inside the slab on every side, its corners
+/// concentric with the slab's. The tabs share its width evenly, each its glyph
+/// 4 over its word in the faint ink, the selected one in the ink with its word
+/// semibold. The middle of five tabs, or the shell's [action], is the ink pill:
+/// the app's main act printing its glyph and its word on the ink, ringed while
+/// its page is shown. An [accessory] stands 8 over the slab. On the media
+/// ground ([solid]) the band is the solid ground and nothing blurs. From a
+/// tablet's width ([FrostedBreakpoints.medium]) the slab hugs its tabs
+/// ([FrostedChromeMetrics.tabBarTabMedium] each) in the middle of the foot
+/// rather than spanning the window, as wide as an [accessory] needs at least.
 ///
-/// The shell mounts the one bar at the foot of every root; a page never
-/// composes navigation.
+/// For an app that builds a frame of its own: mount the one bar at the foot
+/// of every root, outside the pages. `FrostedAppShell` draws its own tab
+/// bar.
 ///
 /// ```dart
 /// FrostedNavigationBar(items: tabs, selectedIndex: 0, onDestinationSelected: select)
@@ -150,8 +149,7 @@ class FrostedNavigationBar extends StatelessWidget {
   final FrostedStyle? style;
 
   /// Where the ink pill stands among [count] tabs: the middle one of five
-  /// (the source's Move) when the shell has no act of its own; none
-  /// otherwise.
+  /// (Frosted's Move) when the shell has no act of its own; none otherwise.
   static int? actTab(int count, {required bool action}) =>
       !action && count == 5 ? 2 : null;
 
@@ -530,12 +528,11 @@ class _Tab extends StatelessWidget {
   }
 }
 
-/// The ink pill in the tab bar's middle (`.move-btn`): the app's main act,
-/// 40 tall, its glyph 5 before its word on the ink with a light along its
-/// top and its own lift; ringed in white and ink while [current]. Unlit
-/// ([lit] false) it is a pill of the brighter glass with its glyph and
-/// word in the ink. Read as a button named [label]. The tab bar stands its
-/// middle tab or the shell's act as one.
+/// The ink pill in the tab bar's middle: the app's main act, 40 tall, its glyph
+/// 5 before its word on the ink with a light along its top and its own lift;
+/// ringed in white and ink while [current]. Unlit ([lit] false) it is a pill of
+/// the brighter glass with its glyph and word in the ink. Read as a button
+/// named [label]. The tab bar stands its middle tab or the shell's act as one.
 ///
 /// ```dart
 /// FrostedNavAction(icon: FrostedGlyphs.arrowRightLeft, label: 'Move', selected: true, onPressed: openMove)

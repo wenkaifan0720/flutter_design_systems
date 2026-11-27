@@ -164,7 +164,7 @@ const _litByDay = {
 void main() {
   test('every glass keeps its words over any backdrop, in every preset', () {
     final faults = <String>[];
-    for (final id in FrostedThemeData.presets) {
+    for (final id in [for (final p in FrostedThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         final t = FrostedThemeData.preset(id, brightness);
         final materials = t.materials;
@@ -195,7 +195,7 @@ void main() {
     double apart(Color a, Color b) => math.sqrt(
       math.pow(a.r - b.r, 2) + math.pow(a.g - b.g, 2) + math.pow(a.b - b.b, 2),
     );
-    for (final id in FrostedThemeData.presets) {
+    for (final id in [for (final p in FrostedThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         final m = FrostedThemeData.preset(id, brightness).materials;
         for (final glass in [m.sheer, m.pane, m.bar]) {
@@ -214,7 +214,7 @@ void main() {
   test('a control\'s boundary reads 3:1 off any glass and the page, in '
       'every preset', () {
     final faults = <String>[];
-    for (final id in FrostedThemeData.presets) {
+    for (final id in [for (final p in FrostedThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         final t = FrostedThemeData.preset(id, brightness);
         final page = t.colorScheme.background.withValues(alpha: 1);
@@ -239,7 +239,7 @@ void main() {
     testWidgets('each control draws its state in the control edge by '
         '${brightness.name}', (tester) async {
       final t = FrostedThemeData.preset(
-        FrostedThemeData.presets.first,
+        FrostedThemeData.palettes.first.id,
         brightness,
       );
       void drop(Object? _) {}
@@ -251,7 +251,7 @@ void main() {
         'an off switch': FrostedSwitch(
           value: false,
           onChanged: drop,
-          label: 'Weekly summary',
+          semanticLabel: 'Weekly summary',
         ),
         'a chosen segment': FrostedSegmentedButton<int>(
           segments: const [
@@ -289,7 +289,7 @@ void main() {
         ),
         'an empty check': FrostedCheckbox(
           value: false,
-          label: 'Agree',
+          semanticLabel: 'Agree',
           onChanged: drop,
         ),
         'an unchosen radio': FrostedRadioGroup<String>(
@@ -333,7 +333,7 @@ void main() {
   }
 
   test('thicker glass floats higher: a slab is no thinner than a pane', () {
-    for (final id in FrostedThemeData.presets) {
+    for (final id in [for (final p in FrostedThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         final m = FrostedThemeData.preset(id, brightness).materials;
         expect(m.slab.tint.a, greaterThanOrEqualTo(m.pane.tint.a), reason: id);
@@ -345,7 +345,7 @@ void main() {
 
   for (final brightness in Brightness.values) {
     final t = FrostedThemeData.preset(
-      FrostedThemeData.presets.first,
+      FrostedThemeData.palettes.first.id,
       brightness,
     );
     for (final material in _glass) {
@@ -396,7 +396,7 @@ void main() {
     testWidgets('a slab over the ink button by ${brightness.name} moves its '
         'ground by a few percent at most', (tester) async {
       final t = FrostedThemeData.preset(
-        FrostedThemeData.presets.first,
+        FrostedThemeData.palettes.first.id,
         brightness,
       );
       tester.view.physicalSize = const Size(640, 400);
@@ -469,7 +469,7 @@ void main() {
     addTearDown(tester.view.reset);
     for (final brightness in Brightness.values) {
       final t = FrostedThemeData.preset(
-        FrostedThemeData.presets.first,
+        FrostedThemeData.palettes.first.id,
         brightness,
       ).copyWith(opaqueMaterials: true);
       for (final material in _glass) {

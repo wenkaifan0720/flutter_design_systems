@@ -25,6 +25,7 @@ import '../../internal/css_shadow.dart';
 import '../../internal/ellipse.dart';
 import '../../internal/face.dart';
 import '../../internal/flush_end.dart';
+import '../../internal/row_line.dart';
 import '../../internal/styled.dart';
 import '../../theme.dart';
 import '../marks/marks.dart';
@@ -74,16 +75,13 @@ const double _recordTint = 0.04;
 
 /// How a card is drawn (kept back from the barrel: [FrostedCard] names its
 /// faces by constructor, and the parts that hold a face of their own draw it
-/// with [FrostedFacedCard]): [plain] the glass with its light along the
-/// top (`.tile`); [rim] the spectrum rim 1px along the top instead
-/// (`.glass-tile`); [record] the rim over a wash of the hue from the top
-/// start corner (`.rec-hero`, `.cat-hero`, `.note-new`); [hero] the rim over
-/// a wash from the top centre, its content centred (`.txn-hero`,
-/// `.rv-hero`); [account] the glass washed from the top end corner
-/// (`.acct`); [insight] the hue's wash down the glass in its own edge
-/// (`.insight`); [ghost] the faint white of something not yet real
-/// (`.goal-card--ghost`); [list] the glass with the rows' room top and
-/// bottom (`.list-tile`).
+/// with [FrostedFacedCard]): [plain] the glass with its light along the top;
+/// [rim] the spectrum rim 1px along the top instead; [record] the rim over a
+/// wash of the hue from the top start corner; [hero] the rim over a wash from
+/// the top centre, its content centred; [account] the glass washed from the top
+/// end corner; [insight] the hue's wash down the glass in its own edge; [ghost]
+/// the faint white of something not yet real; [list] the glass with the rows'
+/// room top and bottom.
 enum FrostedCardFace {
   /// The glass with its light along the top.
   plain,
@@ -111,14 +109,13 @@ enum FrostedCardFace {
 }
 
 /// The frosted glass tile every Frosted surface stands on: the translucent
-/// glass over the canvas (no blur, as decision 14 keeps the frost for the
-/// chrome), its corners at the page's tile radius, its [padding] the page's
+/// glass over the canvas (no blur: the frost is the chrome's), its corners at the page's tile radius, its [padding] the page's
 /// inset, its light along the top, the hairline edge round it and the lift
 /// under it. Its faces are its constructors: the plain tile, [FrostedCard.rim]
 /// (the spectrum rim along the top), [FrostedCard.record] and
 /// [FrostedCard.hero] (the rim over a wash of [hue]) and [FrostedCard.ghost]
 /// (the faint outline of something not yet real). With [onPressed] the whole tile is one link,
-/// [label] its spoken name (without a tap, [label] names the group).
+/// [semanticLabel] its spoken name (without a tap, [semanticLabel] names the group).
 ///
 /// ```dart
 /// FrostedCard(child: Text('On pace'))
@@ -128,12 +125,12 @@ enum FrostedCardFace {
 /// FrostedCard.record(hue: t.hues.cyan, child: body)
 /// ```
 class FrostedCard extends StatelessWidget {
-  /// The glass with its light along the top (`.tile`).
+  /// The glass with its light along the top.
   const FrostedCard({
     required this.child,
     this.padding,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -141,13 +138,12 @@ class FrostedCard extends StatelessWidget {
   }) : hue = null,
        _face = FrostedCardFace.plain;
 
-  /// The spectrum rim, 1 along the top, in place of the light
-  /// (`.glass-tile`).
+  /// The spectrum rim, 1 along the top, in place of the light.
   const FrostedCard.rim({
     required this.child,
     this.padding,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -155,40 +151,39 @@ class FrostedCard extends StatelessWidget {
   }) : hue = null,
        _face = FrostedCardFace.rim;
 
-  /// The rim over a wash of [hue] from the top start corner (`.rec-hero`,
-  /// `.cat-hero`, `.note-new`): a record's or a category's head tile.
+  /// The rim over a wash of [hue] from the top start corner: a record's or a
+  /// category's head tile.
   const FrostedCard.record({
     required this.child,
     this.hue,
     this.padding,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
     super.key,
   }) : _face = FrostedCardFace.record;
 
-  /// The rim over a wash of [hue] from the top centre, the content centred
-  /// (`.txn-hero`, `.rv-hero`).
+  /// The rim over a wash of [hue] from the top centre, the content centred.
   const FrostedCard.hero({
     required this.child,
     this.hue,
     this.padding,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
     super.key,
   }) : _face = FrostedCardFace.hero;
 
-  /// The faint white of something not yet real (`.goal-card--ghost`).
+  /// The faint white of something not yet real.
   const FrostedCard.ghost({
     required this.child,
     this.padding,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -217,7 +212,7 @@ class FrostedCard extends StatelessWidget {
   final bool autofocus;
 
   /// The spoken name of the tile.
-  final String? label;
+  final String? semanticLabel;
 
   /// This card's own style, over `FrostedThemeData.components.card`: its
   /// fill, the words' colour and style, the edge's colour or a whole side
@@ -244,7 +239,7 @@ class FrostedCard extends StatelessWidget {
     hue: hue,
     padding: padding,
     onPressed: onPressed,
-    label: label,
+    semanticLabel: semanticLabel,
     style: style,
     child: child,
   );
@@ -271,7 +266,7 @@ class FrostedCard extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
       );
@@ -290,7 +285,7 @@ class FrostedFacedCard extends StatelessWidget {
     this.hue,
     this.padding,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -319,7 +314,7 @@ class FrostedFacedCard extends StatelessWidget {
   final bool autofocus;
 
   /// The spoken name of the tile.
-  final String? label;
+  final String? semanticLabel;
 
   /// The card's own style, over `FrostedThemeData.components.card`.
   final FrostedStyle? style;
@@ -481,7 +476,7 @@ class FrostedFacedCard extends StatelessWidget {
               )
             : child,
       );
-      inside = RawKeylineRegion(label: this.label ?? 'card', child: inside);
+      inside = RawKeylineRegion(label: semanticLabel ?? 'card', child: inside);
       if (rim) {
         // The rim lies over the content, which keeps the tile's width: a
         // loose Stack would let a centred hero shrink to its words and stand
@@ -539,7 +534,7 @@ class FrostedFacedCard extends StatelessWidget {
     }
 
     final onPressed = this.onPressed;
-    final label = this.label;
+    final label = semanticLabel;
     if (onPressed != null) {
       final cut = cutOf(layers);
       // One link saying the tile's words, or [label] alone when given.
@@ -549,7 +544,7 @@ class FrostedFacedCard extends StatelessWidget {
           autofocus: autofocus,
           onPressed: onPressed,
           role: FrostedPressRole.link,
-          label: label,
+          semanticLabel: label,
           radius: radiusOf(cut),
           shape: cut,
           builder: (context, states, _) => draw(states),
@@ -585,7 +580,7 @@ class FrostedFacedCard extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
       );
@@ -627,9 +622,9 @@ LinearGradient _insightWash(FrostedHue hue) {
   );
 }
 
-/// [child] under a hairline, as `.note-r + .note-r` and the desktop grid's
-/// `.kv-r:nth-child(n + 4)` rule a border-top between rows that grow by it
-/// (a line with a min-height takes the hairline inside it: [_Ruled]).
+/// [child] under a hairline, as notes and the desktop grid's later rows
+/// stand, growing by it (a line with a least height takes the hairline
+/// inside it: [_Ruled]).
 class _Lined extends StatelessWidget {
   const _Lined({required this.child});
 
@@ -712,8 +707,8 @@ class FrostedCardHeader extends StatelessWidget {
 
 /// A section's head on the canvas: its title in the display face with an
 /// [aside] (a count, a sum) or an [trailing] at the far end on the same
-/// baseline; the desktop draws none, its tiles carrying their own heads
-/// (`.sec-h { display: none }` from 1024).
+/// baseline; from 1024 wide it draws none, the tiles carrying their own
+/// heads.
 ///
 /// ```dart
 /// FrostedSectionHeader('Accounts', aside: '5 accounts')
@@ -832,7 +827,7 @@ class FrostedListTile extends StatelessWidget {
   ///   title: 'Write the brief',
   ///   selected: true,
   ///   onPressed: open,
-  ///   action: FrostedIconButton(FrostedGlyphs.more, label: 'Actions', onPressed: menu),
+  ///   action: FrostedIconButton(FrostedGlyphs.more, semanticLabel: 'Actions', onPressed: menu),
   /// )
   /// ```
   final Widget? action;
@@ -849,7 +844,7 @@ class FrostedListTile extends StatelessWidget {
   /// Whether the row answers: false paints it disabled, at the same size.
   final bool enabled;
 
-  /// Whether this is the row the page stands on (`.rows--mark .row.this`).
+  /// Whether this is the row the page stands on.
   final bool selected;
 
   /// How many lines the title may take before it ellipsizes.
@@ -875,8 +870,6 @@ class FrostedListTile extends StatelessWidget {
     final t = context.frostedTheme;
     final leading = this.leading;
     final meta = this.meta;
-    final mid = this.mid;
-    final trailing = this.trailing;
     final s = FrostedStyleLayers(style, t.components.listTile, {
       if (selected) WidgetState.selected,
       if (!enabled) WidgetState.disabled,
@@ -894,34 +887,34 @@ class FrostedListTile extends StatelessWidget {
             children: [
               ?leading,
               Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: FrostedChromeMetrics.rowLineGap,
-                  children: [
-                    // .row-t { font: 500 16px/1.25 }
-                    frostedCapCentred(
-                      Text(
-                        title,
-                        style: s.words(t.textTheme.titleMedium),
-                        maxLines: titleLines,
-                        overflow: TextOverflow.ellipsis,
+                child: _withEnd(
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: FrostedChromeMetrics.rowLineGap,
+                    children: [
+                      // .row-t { font: 500 16px/1.25 }
+                      frostedCapCentred(
+                        Text(
+                          title,
+                          style: s.words(t.textTheme.titleMedium),
+                          maxLines: titleLines,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    // .row-s { font: 400 14px/1.3; color: var(--ink-2);
-                    // white-space: nowrap; text-overflow: ellipsis }
-                    if (meta != null)
-                      Text(
-                        meta,
-                        style: t.textTheme.bodyMedium.line(18.2),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
+                      // .row-s { font: 400 14px/1.3; color: var(--ink-2);
+                      // white-space: nowrap; text-overflow: ellipsis }
+                      if (meta != null)
+                        Text(
+                          meta,
+                          style: t.textTheme.bodyMedium.line(18.2),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
                 ),
               ),
-              ?mid,
-              ?trailing,
             ],
           ),
         ),
@@ -944,6 +937,31 @@ class FrostedListTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// [words] and, at the line's end, the [mid] column and the [trailing]
+  /// part, held to two thirds of the line so the title keeps a third.
+  Widget _withEnd(Widget words) {
+    final mid = this.mid, trailing = this.trailing;
+    final Widget? end = switch ((mid, trailing)) {
+      (null, null) => null,
+      (final m?, null) => m,
+      (null, final e?) => e,
+      (final m?, final e?) => Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: FrostedChromeMetrics.rowGap,
+        children: [
+          Flexible(child: m),
+          e,
+        ],
+      ),
+    };
+    if (end == null) return words;
+    return FrostedRowLine(
+      title: words,
+      end: end,
+      gap: FrostedChromeMetrics.rowGap,
     );
   }
 
@@ -1095,7 +1113,15 @@ class FrostedRowEnd extends StatelessWidget {
                   size: FrostedChromeMetrics.rowPendingGlyph,
                   color: ink,
                 ),
-              Text(note, style: t.textTheme.labelSmall.c(ink), maxLines: 1),
+              Flexible(
+                child: Text(
+                  note,
+                  style: t.textTheme.labelSmall.c(ink),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
       ],
@@ -1155,7 +1181,7 @@ class FrostedTransactionRow extends StatelessWidget {
   /// Whether the entry is not yet settled (its sum in the quiet ink).
   final bool pending;
 
-  /// The account's name, drawn on the desktop only (`.row-acct`).
+  /// The account's name, drawn on the desktop only.
   final String? account;
 
   /// A glyph for the account it rode, after the sub line.
@@ -1529,8 +1555,7 @@ class FrostedKeyValue extends StatelessWidget {
 }
 
 /// Marks the [FrostedKeyValue] under it as one after another: drawn under
-/// the hairline `.kv-r + .kv-r` sets, inside its 52 (the source's boxes
-/// are border-box, so the line takes none of the row's height).
+/// a hairline inside its 52, so the line takes none of the row's height.
 class _Ruled extends InheritedWidget {
   const _Ruled({required super.child});
 
@@ -1706,7 +1731,7 @@ class FrostedDescriptionList extends StatelessWidget {
   /// The facts, in order.
   final List<FrostedKeyValue> children;
 
-  /// Whether the desktop lays the facts out three across (`.kv--grid`).
+  /// Whether the desktop lays the facts out three across.
   final bool grid;
 
   @override
@@ -1772,14 +1797,13 @@ class FrostedDescriptionList extends StatelessWidget {
 enum _HeroFace { record, centred, review }
 
 /// A record's head in its tile: its [mark] beside its [title] over its
-/// [subtitle] (an [trailing] act after them), its [amount] in the display face over
-/// what it is [of], its [chips] (and a full-width [note]) under, then the
-/// page's own [child] (a chart, a meter); the tile washed in [hue] from
-/// its top start corner (`.rec-hero`, `.cat-hero`). [FrostedRecordHero.centred]
-/// is a transaction's: the large mark, the title and sub, the figure and
-/// its chips all centred under the wash (`.txn-hero`); [FrostedRecordHero.review]
-/// a move's: its [route] (from one token to another) over the figure and a
-/// line saying where (`.rv-hero`).
+/// [subtitle] (an [trailing] act after them), its [amount] in the display face
+/// over what it is [of], its [chips] (and a full-width [note]) under, then the
+/// page's own [child] (a chart, a meter); the tile washed in [hue] from its top
+/// start corner. [FrostedRecordHero.centred] is a transaction's: the large
+/// mark, the title and sub, the figure and its chips all centred under the
+/// wash; [FrostedRecordHero.review] a move's: its [route] (from one token to
+/// another) over the figure and a line saying where.
 ///
 /// ```dart
 /// FrostedRecordHero(mark: FrostedIconMark(FrostedGlyphs.wallet, hue: everyday), title: 'Everyday', subtitle: 'Checking ·· 4821', amount: 6248.30, of: 'Available now', hue: everyday)
@@ -1864,13 +1888,12 @@ class FrostedRecordHero extends StatelessWidget {
   /// The record's figure.
   final num amount;
 
-  /// The line under the figure: what the figure is of (`.of`); a
-  /// `**strong**` run in it is set semibold in the ink (`.strong`), as the
-  /// source sets the percent of a budget or a target.
+  /// The line under the figure: what the figure is of; a `**strong**` run in it
+  /// is set semibold in the ink the percent of a budget or a target.
   final String? of;
 
-  /// What stands at the of-line's end on its line (`.cat-of`: a category's
-  /// chip, over by or left).
+  /// What stands at the of-line's end on its line (a category's chip, over
+  /// by or left).
   final Widget? ofEnd;
 
   /// Which way the figure moves money (in, out, neither).
@@ -1885,10 +1908,10 @@ class FrostedRecordHero extends StatelessWidget {
   /// The hue the head is washed with.
   final FrostedHue? hue;
 
-  /// The chips (and subs) under the figure (`.rec-chips`, `.txn-meta`).
+  /// The chips (and subs) under the figure.
   final List<Widget> chips;
 
-  /// A caption taking a whole line after the chips (`.rec-note`).
+  /// A caption taking a whole line after the chips.
   final String? note;
 
   /// An act at the head's end (a category's Edit budget).
@@ -1898,7 +1921,7 @@ class FrostedRecordHero extends StatelessWidget {
   final Widget? child;
 
   /// The review's route (a FrostedRoute: the two tokens and the beams),
-  /// carrying `.route`'s own 8 under it.
+  /// carrying its own 8 under it.
   final Widget? route;
 
   /// The spoken name of the whole.
@@ -1921,7 +1944,7 @@ class FrostedRecordHero extends StatelessWidget {
       case _HeroFace.record:
         return FrostedCard.record(
           hue: hue,
-          label: label,
+          semanticLabel: label,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2012,7 +2035,7 @@ class FrostedRecordHero extends StatelessWidget {
         // .txn-hero .money { margin: 14px 0 12px } .txn-meta { gap: 8px }
         return FrostedCard.hero(
           hue: hue,
-          label: label,
+          semanticLabel: label,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -2072,7 +2095,7 @@ class FrostedRecordHero extends StatelessWidget {
         final pad = FrostedBreakpoints.pad(context);
         return FrostedCard.hero(
           hue: hue,
-          label: label,
+          semanticLabel: label,
           padding: EdgeInsets.fromLTRB(
             pad,
             FrostedChromeMetrics.reviewTop,
@@ -2136,12 +2159,10 @@ class FrostedRecordHero extends StatelessWidget {
   }
 }
 
-/// A record's chart (`.rec-chart`, `.cat-chart`): its [head] (a caption,
-/// or a caption with the chart's keys or a sum at the far end) over the
-/// [chart], 10 apart, the chart's axis words 10 further under the plot
-/// than a lone chart's, as the source's column lays its axis out as an
-/// item of its own (`.rec-chart { gap: 10px }`, `.rec-chart .chart {
-/// margin-top: 0 }`). A [FrostedRecordHero.child], or a tile's own.
+/// A record's chart: its [head] (a caption, or a caption with the chart's keys
+/// or a sum at the far end) over the [chart], 10 apart, the chart's axis words
+/// 10 further under the plot than a lone chart's its axis out as an item of its
+/// own. A [FrostedRecordHero.child], or a tile's own.
 ///
 /// ```dart
 /// FrostedRecordChart(head: Text('Balance through October', style: t.textTheme.bodySmall), chart: FrostedTrailChart.steps(values: balance, start: opening, daysInMonth: 31, marks: axis, label: 'Everyday balance through October'))
@@ -2191,7 +2212,7 @@ class FrostedInsight extends StatelessWidget {
     this.visitsLabel,
     this.child,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -2232,7 +2253,7 @@ class FrostedInsight extends StatelessWidget {
   final bool autofocus;
 
   /// What a screen reader calls the tile.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -2252,7 +2273,7 @@ class FrostedInsight extends StatelessWidget {
       face: FrostedCardFace.insight,
       hue: hue,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: semanticLabel,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2312,7 +2333,7 @@ class FrostedInsight extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -2515,7 +2536,7 @@ class FrostedSuggestion extends StatelessWidget {
   }
 }
 
-/// The 8 point unread dot (`.unread-dot`), the coral alone on the row's glass.
+/// The 8 point unread dot, the coral alone on the row's glass.
 class _UnreadDot extends StatelessWidget {
   const _UnreadDot();
 
@@ -2750,7 +2771,7 @@ class FrostedNoteHero extends StatelessWidget {
       autofocus: autofocus,
       hue: hue,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2850,8 +2871,8 @@ class FrostedNudge extends StatelessWidget {
   /// The nudge's words.
   final String text;
 
-  /// The mark's glyph; null for the clock the source sets on its warning,
-  /// or the check when [ok].
+  /// The mark's glyph; null for the clock Frosted sets on its warning, or the
+  /// check when [ok].
   final IconData? icon;
 
   /// Whether it is good news (the calm ink, not the warm one).
@@ -2955,9 +2976,8 @@ class FrostedBanner extends StatelessWidget {
   /// The banner's words.
   final String body;
 
-  /// The inset round the mark and the words; 14 16 when null. A page that
-  /// sets its own (the Cards page's desktop banner, `.pg-cards .a-bn
-  /// { padding: 14px 20px }`) hands it here.
+  /// The inset round the mark and the words; 14 16 when null. A page that sets
+  /// its own (14 20 for a banner across a desktop page) hands it here.
   final EdgeInsetsGeometry? padding;
 
   @override
@@ -3228,7 +3248,7 @@ class FrostedAccountCard extends StatelessWidget {
   /// A line under the figure (interest this month).
   final String? note;
 
-  /// The note's tone, set in the tone's ink (`.acct-note.in`: money in);
+  /// The note's tone, set in the tone's ink (money in's green);
   /// null for the secondary ink.
   final FrostedTone? noteTone;
 
@@ -3260,7 +3280,7 @@ class FrostedAccountCard extends StatelessWidget {
       face: FrostedCardFace.account,
       hue: hue,
       onPressed: onPressed,
-      label: onPressed == null ? null : '$name, $kind',
+      semanticLabel: onPressed == null ? null : '$name, $kind',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -73,7 +73,7 @@ class FrostedStepsChart extends StatelessWidget {
   /// How many gridlines the chart aims for.
   final int lines;
 
-  /// The plot's height; the source's for the width when null.
+  /// The plot's height; Frosted's for the width when null.
   final double? height;
 
   @override

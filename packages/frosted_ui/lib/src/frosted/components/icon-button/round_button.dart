@@ -35,23 +35,22 @@ enum FrostedIconButtonSize {
   final double glyph;
 }
 
-/// A round button of the brighter glass (`.icon-btn`) wearing one glyph in
-/// the ink, its rim of light along the top and its hairline edge: back,
-/// close, the bell. A screen reader hears it as a button named [label]; a
-/// null [onPressed] draws it at the disabled share and inert. A toggle
-/// (bold, a favourite) says whether it is on through [selected]: on, the
-/// disc stays glass, a little clearer, with a dot printed under its glyph;
-/// null is a plain act. It lays out at its disc and takes taps over the platform's touch
-/// target round it.
+/// A round button of the brighter glass wearing one glyph in the ink, its rim
+/// of light along the top and its hairline edge: back, close, the bell. A
+/// screen reader hears it as a button named [semanticLabel]; a null [onPressed] draws
+/// it at the disabled share and inert. A toggle (bold, a favourite) says
+/// whether it is on through [selected]: on, the disc stays glass, a little
+/// clearer, with a dot printed under its glyph; null is a plain act. It lays
+/// out at its disc and takes taps over the platform's touch target round it.
 ///
 /// ```dart
-/// FrostedIconButton(FrostedGlyphs.chevronLeft, label: 'Back to Home', onPressed: () => Navigator.of(context).maybePop())
+/// FrostedIconButton(FrostedGlyphs.chevronLeft, semanticLabel: 'Back to Home', onPressed: () => Navigator.of(context).maybePop())
 /// ```
 class FrostedIconButton extends StatelessWidget {
   /// Creates a [FrostedIconButton].
   const FrostedIconButton(
     this.icon, {
-    required this.label,
+    required this.semanticLabel,
     this.onPressed,
     this.selected,
     this.size = FrostedIconButtonSize.regular,
@@ -66,7 +65,7 @@ class FrostedIconButton extends StatelessWidget {
   final IconData icon;
 
   /// What a screen reader says.
-  final String label;
+  final String semanticLabel;
 
   /// What a press does; null draws the button inert.
   final VoidCallback? onPressed;
@@ -96,7 +95,7 @@ class FrostedIconButton extends StatelessWidget {
   /// ```dart
   /// FrostedIconButton(
   ///   FrostedGlyphs.bell,
-  ///   label: 'Notifications',
+  ///   semanticLabel: 'Notifications',
   ///   onPressed: open,
   ///   style: const FrostedStyle(
   ///     shape: WidgetStatePropertyAll(
@@ -119,7 +118,7 @@ class FrostedIconButton extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: semanticLabel,
       // A toggle button: a button, selected while on, as Flutter's
       // `IconButton(isSelected:)` says it.
       selected: selected,
@@ -143,7 +142,7 @@ class FrostedIconButton extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<IconData>('icon', icon))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -296,9 +295,9 @@ Widget _cutForDot(
   );
 }
 
-/// The dot of something unread (`.dot`): 7 across in the coral; the bell's
-/// unread mark. Whatever it stands over is cut clear of it by 2 (a gap is
-/// cut, never painted), as the bell's glyph is.
+/// The dot of something unread: 7 across in the coral; the bell's unread mark.
+/// Whatever it stands over is cut clear of it by 2 (a gap is cut, never
+/// painted), as the bell's glyph is.
 ///
 /// ```dart
 /// FrostedBadgeDot()

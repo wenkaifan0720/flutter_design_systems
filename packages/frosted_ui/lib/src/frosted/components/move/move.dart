@@ -2,214 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
-import '../nav_bar.dart';
 import '../pressable/pressable.dart';
 import '../../internal/dim.dart';
-
-/// The destinations as a narrow column down the window's start edge, for a
-/// window too wide for the tab bar and too narrow for the sidebar: 80 wide
-/// in the sidebar's translucent white with its hairline at the end, each
-/// destination its glyph in a 56 by 32 pill over its word, the selected
-/// one's pill on the brighter glass with its glyph in the ink. [leading]
-/// stands over the destinations (the main act), [trailing] at the foot.
-/// Each destination is a link that says whether it is selected; the arrow
-/// keys and Tab move between them.
-///
-/// ```dart
-/// FrostedNavigationRail(items: tabs, selectedIndex: index, onDestinationSelected: (i) => setState(() => index = i))
-/// ```
-class FrostedNavigationRail extends StatelessWidget {
-  /// A rail of [items], [selectedIndex] lit.
-  const FrostedNavigationRail({
-    required this.items,
-    this.selectedIndex,
-    this.onDestinationSelected,
-    this.leading,
-    this.trailing,
-    this.label,
-    super.key,
-  }) : assert(
-         selectedIndex == null || selectedIndex >= 0,
-         'A rail\'s selected index is not negative.',
-       );
-
-  /// The destinations, in the tab bar's order.
-  final List<FrostedNavItem> items;
-
-  /// The selected destination's index; null lights none.
-  final int? selectedIndex;
-
-  /// Called with the index of the pressed destination.
-  final ValueChanged<int>? onDestinationSelected;
-
-  /// What stands over the destinations.
-  final Widget? leading;
-
-  /// What stands at the rail's foot.
-  final Widget? trailing;
-
-  /// What a screen reader calls the rail.
-  final String? label;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.frostedTheme;
-    return Semantics(
-      container: true,
-      explicitChildNodes: true,
-      label: label,
-      child: SizedBox(
-        width: 80,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: t.glass.sidebar,
-            border: BorderDirectional(
-              end: BorderSide(
-                color: t.glass.sidebarEdge,
-                width: FrostedStrokes.hairline,
-              ),
-            ),
-          ),
-          child: SafeArea(
-            right: false,
-            child: FocusTraversalGroup(
-              // The trailing part stands at the foot while the places fit;
-              // a rail shorter than its places scrolls them.
-              child: CustomScrollView(
-                primary: false,
-                slivers: [
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: FrostedSpacing.s16),
-                        if (leading case final leading?) ...[
-                          leading,
-                          const SizedBox(height: FrostedSpacing.s16),
-                        ],
-                        for (final (i, item) in items.indexed)
-                          _RailDestination(
-                            item: item,
-                            selected: i == selectedIndex,
-                            onPressed: onDestinationSelected == null
-                                ? null
-                                : () => onDestinationSelected!(i),
-                          ),
-                        const Spacer(),
-                        ?trailing,
-                        const SizedBox(height: FrostedSpacing.s16),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(IterableProperty<FrostedNavItem>('items', items))
-      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: null))
-      ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has(
-          'onDestinationSelected',
-          onDestinationSelected,
-        ),
-      )
-      ..add(StringProperty('label', label, defaultValue: null));
-  }
-}
-
-class _RailDestination extends StatelessWidget {
-  const _RailDestination({
-    required this.item,
-    required this.selected,
-    required this.onPressed,
-  });
-
-  final FrostedNavItem item;
-  final bool selected;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.frostedTheme;
-    final motion = FrostedMotion.of(context);
-    const pill = Size(56, 32);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: FrostedSpacing.s4),
-      child: FrostedPressable(
-        key: item.key,
-        onPressed: onPressed,
-        label: item.label,
-        role: FrostedPressRole.link,
-        selected: selected,
-        radius: pill.height / 2,
-        // 56 tall, and taller as large text needs it.
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: 72,
-            maxWidth: 72,
-            minHeight: 56,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            spacing: FrostedSpacing.s4,
-            children: [
-              AnimatedContainer(
-                duration: motion.fast,
-                curve: motion.curve,
-                width: pill.width,
-                height: pill.height,
-                decoration: ShapeDecoration(
-                  shape: FrostedCorners.full.copyWith(
-                    side: selected
-                        ? BorderSide(
-                            color: t.glass.edge,
-                            width: FrostedStrokes.hairline,
-                          )
-                        : BorderSide.none,
-                  ),
-                  color: selected ? t.glass.navCurrent : null,
-                ),
-                child: Icon(
-                  selected ? (item.selectedIcon ?? item.icon) : item.icon,
-                  size: FrostedChromeMetrics.navGlyph,
-                  color: selected
-                      ? t.colorScheme.textPrimary
-                      : t.colorScheme.textTertiary,
-                ),
-              ),
-              Text(
-                item.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: selected
-                    ? t.textTheme.labelSmall.semibold.c(
-                        t.colorScheme.textPrimary,
-                      )
-                    : t.textTheme.labelSmall.c(t.colorScheme.textSecondary),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// One step of a [FrostedBreadcrumb]: its [label], and where a press takes
 /// the reader ([onPressed]); the last step is the page itself.
@@ -238,13 +37,13 @@ class FrostedBreadcrumbItem {
 /// ```
 class FrostedBreadcrumb extends StatelessWidget {
   /// The trail of [items], root first.
-  const FrostedBreadcrumb({required this.items, this.label, super.key});
+  const FrostedBreadcrumb({required this.items, this.semanticLabel, super.key});
 
   /// The steps, root first; the last is the page.
   final List<FrostedBreadcrumbItem> items;
 
   /// What a screen reader calls the trail.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +88,7 @@ class FrostedBreadcrumb extends StatelessWidget {
             : FrostedPressable(
                 key: item.key,
                 onPressed: item.onPressed,
-                label: item.label,
+                semanticLabel: item.label,
                 role: FrostedPressRole.link,
                 radius: FrostedSpacing.s4,
                 child: word,
@@ -298,7 +97,7 @@ class FrostedBreadcrumb extends StatelessWidget {
     }
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       // The crumbs stand 6 apart, their targets taking the room between
       // them (ui_core's chip group).
@@ -316,7 +115,7 @@ class FrostedBreadcrumb extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<FrostedBreadcrumbItem>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -338,7 +137,7 @@ class FrostedPagination extends StatelessWidget {
     required this.pageCount,
     required this.selectedIndex,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     super.key,
   }) : assert(pageCount > 0),
        assert(
@@ -356,7 +155,7 @@ class FrostedPagination extends StatelessWidget {
   final ValueChanged<int>? onChanged;
 
   /// What a screen reader calls it.
-  final String? label;
+  final String? semanticLabel;
 
   /// The pages shown in [width] at [target] apiece: every one when up to
   /// seven fit (four or fewer always show), else the ends and the selected
@@ -414,7 +213,7 @@ class FrostedPagination extends StatelessWidget {
           alignment: side,
           child: FrostedPressable(
             onPressed: live && onChanged != null ? () => go(to) : null,
-            label: name,
+            semanticLabel: name,
             radius: d / 2,
             child: SizedBox.square(
               dimension: d,
@@ -429,7 +228,7 @@ class FrostedPagination extends StatelessWidget {
     );
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       // The targets stand edge to edge: a tap between two faces goes to
       // the nearer.
@@ -463,7 +262,7 @@ class FrostedPagination extends StatelessWidget {
             else
               FrostedPressable(
                 onPressed: onChanged == null ? null : () => go(page),
-                label: words.page(page + 1, pageCount),
+                semanticLabel: words.page(page + 1, pageCount),
                 selected: page == selectedIndex,
                 radius: d / 2,
                 child: ConstrainedBox(
@@ -514,7 +313,7 @@ class FrostedPagination extends StatelessWidget {
       ..add(IntProperty('pageCount', pageCount))
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -625,19 +424,19 @@ class FrostedStepProgress extends StatelessWidget {
 /// Which of a few pages is shown: [pageCount] dots, the selected one a short
 /// capsule in the ink, the rest small rounds of the strong hairline. With
 /// [onChanged] each dot takes a press (in a target of the floor, 40) and
-/// the arrow keys move along them; read aloud as [label] and the page's
+/// the arrow keys move along them; read aloud as [semanticLabel] and the page's
 /// place. Given a [position], the capsule moves with the pages as they
 /// slide.
 ///
 /// ```dart
-/// FrostedPageDots(pageCount: 4, selectedIndex: page, label: 'Welcome', onChanged: (i) => controller.animateToPage(i, duration: d, curve: c))
+/// FrostedPageDots(pageCount: 4, selectedIndex: page, semanticLabel: 'Welcome', onChanged: (i) => controller.animateToPage(i, duration: d, curve: c))
 /// ```
 class FrostedPageDots extends StatelessWidget {
   /// [pageCount] dots, [selectedIndex] (from 0) lit.
   const FrostedPageDots({
     required this.pageCount,
     required this.selectedIndex,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.position,
     super.key,
@@ -654,7 +453,7 @@ class FrostedPageDots extends StatelessWidget {
   final int selectedIndex;
 
   /// What a screen reader calls the pages.
-  final String label;
+  final String semanticLabel;
 
   /// Called with the dot pressed; null makes the dots display only.
   final ValueChanged<int>? onChanged;
@@ -720,7 +519,7 @@ class FrostedPageDots extends StatelessWidget {
     final live = onChanged;
     if (live == null) {
       return Semantics(
-        label: label,
+        label: semanticLabel,
         value: words.page(selectedIndex + 1, pageCount),
         excludeSemantics: true,
         child: Row(
@@ -733,7 +532,7 @@ class FrostedPageDots extends StatelessWidget {
     final target = FrostedBreakpoints.hitTargetOf(context);
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -741,7 +540,7 @@ class FrostedPageDots extends StatelessWidget {
           for (var i = 0; i < pageCount; i++)
             FrostedPressable(
               onPressed: () => live(i),
-              label: words.page(i + 1, pageCount),
+              semanticLabel: words.page(i + 1, pageCount),
               selected: i == selectedIndex,
               radius: 3,
               child: SizedBox(
@@ -761,7 +560,7 @@ class FrostedPageDots extends StatelessWidget {
     properties
       ..add(IntProperty('pageCount', pageCount))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
       ..add(
         DiagnosticsProperty<ValueListenable<double>>(

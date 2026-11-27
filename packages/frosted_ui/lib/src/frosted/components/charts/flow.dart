@@ -51,13 +51,13 @@ class FrostedFanEnd {
   final Key? key;
 }
 
-/// One account's money fanning out to where it goes: a source bar at the
-/// start holding every flow stacked in the [source]'s light, a ribbon per
-/// flow keeping its thickness and turning from that light into its own
-/// hue, a bar of that hue where it lands, and its row beside it (the name,
-/// what it is and its amount, a link when it leads somewhere). The flows
-/// are spaced so each row has room; the plot stands [height] tall (the
-/// source's phone and desktop heights by default). Sized by its width.
+/// One account's money fanning out to where it goes: a source bar at the start
+/// holding every flow stacked in the [source]'s light, a ribbon per flow
+/// keeping its thickness and turning from that light into its own hue, a bar of
+/// that hue where it lands, and its row beside it (the name, what it is and its
+/// amount, a link when it leads somewhere). The flows are spaced so each row
+/// has room; the plot stands [height] tall (Frosted's phone and desktop heights
+/// by default). Sized by its width.
 ///
 /// ```dart
 /// FrostedFan(flows: scheduled, source: theme.hues.cyan, label: 'What leaves Everyday on its own in November')
@@ -334,7 +334,7 @@ class _FanRow extends StatelessWidget {
       key: flow.key,
       onPressed: onTap,
       role: FrostedPressRole.link,
-      label: [
+      semanticLabel: [
         flow.title,
         ?subtitle,
         FrostedFormat.money(flow.amount),

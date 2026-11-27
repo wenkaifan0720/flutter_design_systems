@@ -130,7 +130,7 @@ void main() {
               'm',
               seen: seen,
               (v, set) => FrostedChoices<String>(
-                label: 'Size',
+                semanticLabel: 'Size',
                 value: v,
                 onChanged: set,
                 options: const [
@@ -164,8 +164,11 @@ void main() {
         _Owner<double>(
           3,
           seen: seen,
-          (v, set) =>
-              FrostedRating(value: v, label: 'Your rating', onChanged: set),
+          (v, set) => FrostedRating(
+            value: v,
+            semanticLabel: 'Your rating',
+            onChanged: set,
+          ),
         ),
       );
       _props(t, 'Your rating').onIncrease!();
@@ -249,7 +252,7 @@ void main() {
               2,
               seen: guests,
               (v, set) => FrostedWheelPicker<int>(
-                label: 'Guests',
+                semanticLabel: 'Guests',
                 value: v,
                 onChanged: set,
                 options: [
@@ -394,7 +397,7 @@ void main() {
         t,
         FrostedIconButton(
           FrostedGlyphs.share,
-          label: 'Shared',
+          semanticLabel: 'Shared',
           selected: true,
           onPressed: () {},
         ),
@@ -498,7 +501,7 @@ void main() {
             message: 'Share with your team',
             child: FrostedIconButton(
               FrostedGlyphs.share,
-              label: 'Share',
+              semanticLabel: 'Share',
               onPressed: () {},
             ),
           ),
@@ -524,7 +527,7 @@ void main() {
             message: 'Share with your team',
             child: FrostedIconButton(
               FrostedGlyphs.share,
-              label: 'Share',
+              semanticLabel: 'Share',
               onPressed: () {},
             ),
           ),

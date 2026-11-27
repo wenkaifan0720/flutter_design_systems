@@ -64,7 +64,7 @@ Future<void> settle(WidgetTester tester) async {
 
 /// Every preset by day and by night.
 Iterable<(String, Brightness)> get presetsAndModes sync* {
-  for (final preset in FrostedThemeData.presets) {
+  for (final preset in [for (final p in FrostedThemeData.palettes) p.id]) {
     for (final b in Brightness.values) {
       yield (preset, b);
     }

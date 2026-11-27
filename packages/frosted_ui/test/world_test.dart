@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 import 'touch_floor.dart';
 import 'world_checks.dart';
@@ -54,7 +53,11 @@ Widget _screen(
           leading: const Icon(FrostedGlyphs.house),
           onPressed: () {},
         ),
-        const FrostedSlider(label: 'Volume', value: .4, onChanged: _drop),
+        const FrostedSlider(
+          semanticLabel: 'Volume',
+          value: .4,
+          onChanged: _drop,
+        ),
       ],
     ),
   ),

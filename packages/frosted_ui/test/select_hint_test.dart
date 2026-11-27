@@ -93,7 +93,7 @@ void main() {
   for (final brightness in Brightness.values) {
     final day = brightness == Brightness.light ? 'day' : 'night';
     final t = FrostedThemeData.preset(
-      FrostedThemeData.presets.first,
+      FrostedThemeData.palettes.first.id,
       brightness,
     );
 

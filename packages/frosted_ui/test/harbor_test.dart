@@ -51,7 +51,7 @@ class _HarnessState extends State<_Harness> {
   late FrostedBackdropKind _backdrop = widget.backdrop;
 
   FrostedThemeData _theme(Brightness b) =>
-      FrostedThemeData.preset(FrostedThemeData.presets.first, b).copyWith(
+      FrostedThemeData.preset(FrostedThemeData.palettes.first.id, b).copyWith(
         backdrop: switch (_backdrop) {
           FrostedBackdropKind.night => const FrostedBackdrop.night(),
           FrostedBackdropKind.plain => const FrostedBackdrop.plain(),

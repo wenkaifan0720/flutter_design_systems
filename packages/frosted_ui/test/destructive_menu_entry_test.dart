@@ -6,7 +6,6 @@ import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:frosted_ui/frosted_host.dart';
 
 Widget _host(FrostedThemeData t, Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,

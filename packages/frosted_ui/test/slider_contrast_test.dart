@@ -37,7 +37,7 @@ void main() {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         FrostedSlider(
-                          label: 'Reach',
+                          semanticLabel: 'Reach',
                           value: .6,
                           onChanged: (_) {},
                         ),

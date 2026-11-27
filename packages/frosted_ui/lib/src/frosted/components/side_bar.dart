@@ -14,21 +14,21 @@ import 'pressable/pressable.dart';
 import '../internal/chosen_plate.dart';
 import '../internal/dim.dart';
 
-/// The desktop sidebar, as the source stands it from 1024 wide (`.side`):
-/// a column 240 wide down the window's left edge in a translucent white
-/// over the light, a hairline at its right edge, 28 above its parts, 20 at
-/// their start, 16 at their end and 24 under them, 24 between: the app's
-/// wordmark ([brand], its mark on the ink), the main act as the ink button
-/// (the tab the phone draws as the pill, or the shell's [action]), the tabs
-/// as links in pills (the selected one on the brighter glass, its glyph and
-/// word in the ink), and at the foot the account: the avatar, the name and
-/// its quiet line, on the lit pill while its profile is shown. On a page
-/// that lights none ([noneCurrent]: the notifications) no destination is
-/// current. A [header] stands in the wordmark's place and a [footer] in the
-/// account's.
+/// The desktop sidebar from 1024 wide: a column 240 wide down the window's left
+/// edge in a translucent white over the light, a hairline at its right edge, 28
+/// above its parts, 20 at their start, 16 at their end and 24 under them, 24
+/// between: the app's wordmark ([brand], its mark on the ink), the main act as
+/// the ink button (the tab the phone draws as the pill, or the shell's
+/// [action]), the tabs as links in pills (the selected one on the brighter
+/// glass, its glyph and word in the ink), and at the foot the account: the
+/// avatar, the name and its quiet line, on the lit pill while its profile is
+/// shown. On a page that lights none ([noneCurrent]: the notifications) no
+/// destination is current. A [header] stands in the wordmark's place and a
+/// [footer] in the account's.
 ///
-/// The shell mounts it in place of the tab bar at desktop width; a page
-/// never composes navigation.
+/// For an app that builds a frame of its own: mount it in place of the tab
+/// bar at desktop width, outside the pages. `FrostedAppShell` draws its own
+/// sidebar.
 ///
 /// ```dart
 /// FrostedNavigationDrawer(items: tabs, selectedIndex: 0, onDestinationSelected: select, brand: 'Harbor')
@@ -207,9 +207,9 @@ class FrostedNavigationDrawer extends StatelessWidget {
   }
 }
 
-/// The sidebar's main act (`.btn-move`): the ink button 40 tall across the
-/// sidebar, its glyph 8 before its word, both on the ink; ringed in white
-/// and ink while [current] (Move money).
+/// The sidebar's main act: the ink button 40 tall across the sidebar, its glyph
+/// 8 before its word, both on the ink; ringed in white and ink while [current]
+/// (Move money).
 ///
 /// ```dart
 /// FrostedSidebarAction(icon: FrostedGlyphs.arrowRightLeft, label: 'Move money', onPressed: openMove)
@@ -252,7 +252,7 @@ class FrostedSidebarAction extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       role: FrostedPressRole.link,
       selected: selected ? true : null,
       radius: h / 2,
@@ -365,7 +365,7 @@ class _Link extends StatelessWidget {
     return FrostedPressable(
       key: item.key,
       onPressed: onTap,
-      label: item.label,
+      semanticLabel: item.label,
       selected: selected,
       radius: h / 2,
       child: SizedBox(
@@ -456,7 +456,7 @@ class _Foot extends StatelessWidget {
     );
     return FrostedPressable(
       onPressed: open == null ? null : () => open(context),
-      label: [account.name, ?meta].join(', '),
+      semanticLabel: [account.name, ?meta].join(', '),
       role: FrostedPressRole.link,
       selected: current ? true : null,
       radius: FrostedCorners.rFull,

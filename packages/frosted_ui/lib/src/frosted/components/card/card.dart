@@ -94,7 +94,7 @@ const double _paneHazeEnd = 0.7;
 const double _paneShareOpacity = 0.72;
 const double _paneMetaOpacity = 0.8;
 
-/// The pane head's line (`.cell-n`, `.cell-p`: 12/1.25).
+/// The pane head's line: 12 point words on a 15 line.
 const double _paneHeadLine = 15;
 // metric: the new-goal card's inset ring is the CSS's 1.5 drawn 1
 // (`.new-goal`).
@@ -358,7 +358,7 @@ class FrostedCreditCard extends StatelessWidget {
               focusNode: focusNode,
               autofocus: autofocus,
               onPressed: onPressed,
-              label: words,
+              semanticLabel: words,
               role: FrostedPressRole.link,
               radius: radius,
               builder: (context, states, _) {
@@ -748,8 +748,8 @@ class _OrbitsPainter extends CustomPainter {
   bool shouldRepaint(_OrbitsPainter oldDelegate) => false;
 }
 
-/// The glow under the pearl credit card: a pill of the pearl's three
-/// lights blurred 36 (44 on the desktop) at .7; fills the box it is given.
+/// The glow under the pearl credit card: a pill of the pearl's three lights
+/// blurred 36 (44 on the desktop) at .7; fills the box it is given.
 ///
 /// ```dart
 /// FrostedCardGlow()
@@ -784,10 +784,9 @@ class FrostedCardGlow extends StatelessWidget {
   }
 }
 
-/// The frost over a frozen card (`.frost`): a cold wash under a haze and
-/// fine streaks, lit inward along its edge, the snowflake on a white round
-/// and the word under it in the cold ink. The CSS also blurs what lies
-/// under it 5; the frost draws without that blur (DERIVED).
+/// The frost over a frozen card: a cold wash under a haze and fine streaks, lit
+/// inward along its edge, the snowflake on a white round and the word under it
+/// in the cold ink. What lies under it is not blurred.
 ///
 /// ```dart
 /// FrostedFrost(radius: 16)
@@ -970,9 +969,9 @@ class _FrostPainter extends CustomPainter {
 // The debit card, the card number
 // ---------------------------------------------------------------------------
 
-/// A debit card's art (`.dcard`): 92 x 58 of cool glass in a rim of the
-/// cyan hue's blues, the ink mark and its kind at the top, its last four at
-/// the foot. A picture; its words stand beside it.
+/// A debit card's art: 92 x 58 of cool glass in a rim of the cyan hue's blues,
+/// the ink mark and its kind at the top, its last four at the foot. A picture;
+/// its words stand beside it.
 ///
 /// ```dart
 /// FrostedDebitCard(mask: '3907')
@@ -1100,9 +1099,9 @@ class FrostedDebitCard extends StatelessWidget {
   }
 }
 
-/// A card's number, expiry, CVC and name for the person alone (`.cnum`,
-/// `.cnum-3`): the four groups spread across a well, the three facts in
-/// their columns under it. In the card's details sheet, never on a page.
+/// A card's number, expiry, CVC and name for the person alone: the four groups
+/// spread across a well, the three facts in their columns under it. In the
+/// card's details sheet, never on a page.
 ///
 /// ```dart
 /// FrostedCardNumber(number: '4242424242427730', expires: '09/29', cvc: '317', name: 'Maren Holt')
@@ -1348,10 +1347,9 @@ enum FrostedGoalStatus {
   };
 }
 
-/// A goal's card (`.goal-card`): its token, name and date with its status
-/// chip at the end, the saved figure against the target, and a tube with
-/// the percent at its end; the desktop stacks the token over the name. A
-/// link to the goal when [onPressed].
+/// A goal's card: its token, name and date with its status chip at the end, the
+/// saved figure against the target, and a tube with the percent at its end; the
+/// desktop stacks the token over the name. A link to the goal when [onPressed].
 ///
 /// ```dart
 /// FrostedGoalCard(name: 'Lisbon in May', subtitle: 'by May 2027', icon: FrostedGlyphs.plane, hue: t.hues.sunset, saved: 2840, target: 4000, status: FrostedGoalStatus.behind, onPressed: open)
@@ -1513,7 +1511,7 @@ class FrostedGoalCard extends StatelessWidget {
             : FrostedChromeMetrics.tileInset,
       ),
       onPressed: onPressed,
-      label: words,
+      semanticLabel: words,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -1554,9 +1552,9 @@ class FrostedGoalCard extends StatelessWidget {
   }
 }
 
-/// A goal in Home's list (`.goal`): its token, name and "saved of target ·
-/// by when", the percent and its status at the end, and a tube under them.
-/// A link to the goal when [onPressed].
+/// A goal in Home's list: its token, name and "saved of target · by when", the
+/// percent and its status at the end, and a tube under them. A link to the goal
+/// when [onPressed].
 ///
 /// ```dart
 /// FrostedGoalRow(name: 'Lisbon in May', icon: FrostedGlyphs.plane, hue: t.hues.sunset, saved: 2840, target: 4000, by: 'May 2027', status: FrostedGoalStatus.behind, first: true, onPressed: open)
@@ -1697,7 +1695,7 @@ class FrostedGoalRow extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: words,
+      semanticLabel: words,
       role: FrostedPressRole.link,
       child: body,
     );
@@ -1733,9 +1731,9 @@ class FrostedGoalRow extends StatelessWidget {
   }
 }
 
-/// The card that starts a goal (`.new-goal`): the plus on the ink act, the
-/// title in bold over its line, a chevron at the end; the desktop stacks
-/// the plus over the words among the goal cards.
+/// The card that starts a goal: the plus on the ink act, the title in bold over
+/// its line, a chevron at the end; the desktop stacks the plus over the words
+/// among the goal cards.
 ///
 /// ```dart
 /// FrostedNewGoal(onPressed: startGoal)
@@ -1857,7 +1855,7 @@ class FrostedNewGoal extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: '$title, $subtitle',
+      semanticLabel: '$title, $subtitle',
       role: FrostedPressRole.link,
       radius: FrostedChromeMetrics.ghostRadius,
       child: face,
@@ -1888,8 +1886,8 @@ class FrostedNewGoal extends StatelessWidget {
 
 /// What a [FrostedPane] is in the mosaic.
 enum FrostedPaneVariant {
-  /// The band across the top (`.cell--xl`): the rent, its figure 40 over
-  /// its ticket, the due line on its floor.
+  /// The band across the top: the rent, its figure 40 over its ticket, the due
+  /// line on its floor.
   wide,
 
   /// A column's first pane: its figure 28 over a meter.
@@ -1898,16 +1896,16 @@ enum FrostedPaneVariant {
   /// A pane under another: its figure 20 over a meter.
   regular,
 
-  /// A pane in the block of four (`.cell--s`): its figure 16 over a 3 tall
-  /// meter, its share hidden on a phone and on the desktop its percent
-  /// alone (`head(cid, full=False)`: "72%").
+  /// A pane in the block of four: its figure 16 over a 3 tall meter, its share
+  /// hidden on a phone and on the desktop its percent alone (`head(cid,
+  /// full=False)`: "72%").
   small,
 }
 
-/// One pane of tinted glass in the [FrostedMosaic] (`.cell`): the category's
-/// name and its share of budget on one line, the figure under them in ink,
-/// and on its floor a meter with a note under it (or the rent's due line).
-/// A link to the category when [onPressed].
+/// One pane of tinted glass in the [FrostedMosaic]: the category's name and its
+/// share of budget on one line, the figure under them in ink, and on its floor
+/// a meter with a note under it (or the rent's due line). A link to the
+/// category when [onPressed].
 ///
 /// ```dart
 /// FrostedPane(name: 'Groceries', hue: t.hues.orchid, spent: 412.36, budget: 450, variant: FrostedPaneVariant.featured, meta: '8% less than Sep', onPressed: open)
@@ -1990,9 +1988,9 @@ class FrostedPane extends StatelessWidget {
   /// The pane's share of the whole it is laid by.
   double get weight => math.max(0, spent.toDouble());
 
-  /// The pane's padding (`.cell` 10, 12 on the desktop; `.cell--s` 8, 10 by
-  /// 12), also the least a flex slot of the mosaic gives it: a `flex-basis:
-  /// 0` box is never smaller than its padding.
+  /// The pane's padding (10, 12 on the desktop; a small pane 8, 10 by 12),
+  /// also the least a slot of the mosaic gives it: a pane is never smaller
+  /// than its padding.
   EdgeInsets _inset(bool wide) => variant == FrostedPaneVariant.small
       ? wide
             ? FrostedChromeMetrics.paneSmallInsetWide
@@ -2240,7 +2238,7 @@ class FrostedPane extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: words,
+      semanticLabel: words,
       role: FrostedPressRole.link,
       radius: radius,
       child: face,
@@ -2398,14 +2396,13 @@ class _Weighted extends StatelessWidget {
   );
 }
 
-/// The spend mosaic (`.mosaic-tile`): panes of tinted glass in a tile,
-/// 540 tall, each pane's room its spend. The first pane is the band across
-/// the top (the rent); the rest, in falling order, fill two columns: the
-/// first and third down the first column, the second over a block of the
-/// rest, two across, down the second. Groups start from 24 and a pane from
-/// its padding (a `flex-basis: 0` box is never smaller than its padding),
-/// then each takes its spend's share of what is left. Frosted's second
-/// signature.
+/// The spend mosaic: panes of tinted glass in a tile, 540 tall, each pane's
+/// room its spend. The first pane is the band across the top (the rent); the
+/// rest, in falling order, fill two columns: the first and third down the first
+/// column, the second over a block of the rest, two across, down the second.
+/// Groups start from 24 and a pane from its padding (a `flex-basis: 0` box is
+/// never smaller than its padding), then each takes its spend's share of what
+/// is left. Frosted's second signature.
 ///
 /// ```dart
 /// FrostedMosaic(title: 'October', panes: [FrostedPane.rent(name: 'Rent & home', hue: t.hues.periwinkle, spent: 1150, budget: 1150, ticket: Text('Linden Court'), paid: 'Paid Oct 1', nextDue: 'Due Nov 1'), FrostedPane(name: 'Groceries', hue: t.hues.orchid, spent: 412.36, budget: 450)])

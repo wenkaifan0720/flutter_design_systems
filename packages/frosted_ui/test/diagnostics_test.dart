@@ -68,24 +68,35 @@ void main() {
         const FrostedSlider(
           value: .5,
           onChanged: _changed,
-          label: 'Volume',
+          semanticLabel: 'Volume',
           divisions: 4,
         ),
       ),
-      ['value: 0.5', 'has onChanged', 'label: "Volume"', 'divisions: 4'],
+      [
+        'value: 0.5',
+        'has onChanged',
+        'semanticLabel: "Volume"',
+        'divisions: 4',
+      ],
     );
     expect(
       _description(
         const FrostedSlider(
           value: 3,
           onChanged: null,
-          label: 'Volume',
+          semanticLabel: 'Volume',
           min: 1,
           max: 5,
           autofocus: true,
         ),
       ),
-      ['value: 3.0', 'autofocus', 'label: "Volume"', 'min: 1.0', 'max: 5.0'],
+      [
+        'value: 3.0',
+        'autofocus',
+        'semanticLabel: "Volume"',
+        'min: 1.0',
+        'max: 5.0',
+      ],
     );
     expect(
       _description(const FrostedButton('Save', onPressed: null)),
@@ -102,14 +113,19 @@ void main() {
   group('a value out of its range asserts', () {
     final cases = <String, Object? Function()>{
       'a slider past its max': () =>
-          FrostedSlider(value: 2, onChanged: null, label: 'Volume'),
-      'a slider whose max is its min': () =>
-          FrostedSlider(value: 0, min: 0, max: 0, onChanged: null, label: 'V'),
+          FrostedSlider(value: 2, onChanged: null, semanticLabel: 'Volume'),
+      'a slider whose max is its min': () => FrostedSlider(
+        value: 0,
+        min: 0,
+        max: 0,
+        onChanged: null,
+        semanticLabel: 'V',
+      ),
       'a slider of no divisions': () => FrostedSlider(
         value: .5,
         divisions: 0,
         onChanged: null,
-        label: 'Volume',
+        semanticLabel: 'Volume',
       ),
       'a range slider whose max passes its min': () => FrostedRangeSlider(
         values: const RawRangeValues(.2, .4),
@@ -118,7 +134,7 @@ void main() {
         onChanged: null,
       ),
       'a rating past its max': () =>
-          FrostedRating(value: 6, label: 'Your rating'),
+          FrostedRating(value: 6, semanticLabel: 'Your rating'),
       'a progress bar past full': () =>
           FrostedLinearProgressIndicator(label: 'Upload', value: 1.5),
       'a number field below its min': () => FrostedNumberField(
@@ -134,8 +150,11 @@ void main() {
       ),
       'a page past the last': () =>
           FrostedPagination(pageCount: 3, selectedIndex: 3),
-      'page dots past the last': () =>
-          FrostedPageDots(pageCount: 4, selectedIndex: 4, label: 'Welcome'),
+      'page dots past the last': () => FrostedPageDots(
+        pageCount: 4,
+        selectedIndex: 4,
+        semanticLabel: 'Welcome',
+      ),
       'a pane share past whole': () => FrostedResizable(
         first: const SizedBox(),
         second: const SizedBox(),

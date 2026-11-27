@@ -19,14 +19,13 @@ import '../pressable/pressable.dart';
 import '../../internal/dim.dart';
 import '../../internal/cap.dart';
 
-/// One choice in a sheet, as the source sets its options (`.opt`): an
-/// optional [hue] swatch (a category's light) or [lead] mark, the [label]
-/// in the body type, a quiet [trailing] note (an amount), and at the end the
-/// round check, 24 across: a ring while unchosen, and when [selected] the
-/// same ring round a little clearer glass with its tick printed in the ink,
-/// the chosen one's label semibold. At least 52 tall,
-/// 6 over and under, its parts 12 apart, a hairline between two. A null
-/// [onPressed] leaves it inert.
+/// One choice in a sheet its options: an optional [hue] swatch (a category's
+/// light) or [lead] mark, the [label] in the body type, a quiet [trailing] note
+/// (an amount), and at the end the round check, 24 across: a ring while
+/// unchosen, and when [selected] the same ring round a little clearer glass
+/// with its tick printed in the ink, the chosen one's label semibold. At least
+/// 52 tall, 6 over and under, its parts 12 apart, a hairline between two. A
+/// null [onPressed] leaves it inert.
 ///
 /// ```dart
 /// FrostedOption(label: 'Dining out', hue: t.hue(2).a, selected: true, onPressed: () => Navigator.of(context).pop('dining'))
@@ -105,7 +104,7 @@ class FrostedOption extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       selected: selected,
       radius: FrostedCorners.r10,
       child: ConstrainedBox(
@@ -202,7 +201,7 @@ class FrostedOption extends StatelessWidget {
   }
 }
 
-/// A category's light as a swatch (`.sw`): 8 across in its [color].
+/// A category's light as a swatch: 8 across in its [color].
 ///
 /// ```dart
 /// FrostedHueDot(t.hue(0).a)
@@ -276,15 +275,14 @@ class FrostedMenuItem<T> {
   final Key? key;
 }
 
-/// A menu dropping from the control that opened it, as the source's month
-/// menu does (`.menu`): a white card 288 wide, 6 inside, its corners at
-/// 16, a hairline round it and a deep soft shadow, its [title] in the
-/// caption type over the [items]: each a row 40 tall with its corners at
-/// 10, the check's column 16 wide before the label, the chosen one on the
-/// wash with its label in the ink. It stands 8 under the control, centred
-/// on it on a phone and with its end on the control's end at desktop width,
-/// and drops no scrim. [show] opens it and completes with the chosen value,
-/// or null when it is dismissed (a tap outside, the system back).
+/// A menu dropping from the control that opened it: a white card 288 wide, 6 inside, its corners at 16, a hairline round
+/// it and a deep soft shadow, its [title] in the caption type over the [items]:
+/// each a row 40 tall with its corners at 10, the check's column 16 wide before
+/// the label, the chosen one on the wash with its label in the ink. It stands 8
+/// under the control, centred on it on a phone and with its end on the
+/// control's end at desktop width, and drops no scrim. [show] opens it and
+/// completes with the chosen value, or null when it is dismissed (a tap
+/// outside, the system back).
 ///
 /// ```dart
 /// Builder(builder: (anchor) => FrostedButton.glass('October 2026', onPressed: () async { final month = await FrostedMenu.show<String>(anchor, title: 'Spent each month', items: months); }))
@@ -295,7 +293,7 @@ class FrostedMenu<T> extends StatelessWidget {
     required this.items,
     required this.onSelected,
     this.title,
-    this.label,
+    this.semanticLabel,
     this.width,
     super.key,
   }) : _rows = null,
@@ -311,7 +309,7 @@ class FrostedMenu<T> extends StatelessWidget {
     required this.items,
     required this.onSelected,
     this.title,
-    this.label,
+    this.semanticLabel,
     this.width,
   });
 
@@ -328,7 +326,7 @@ class FrostedMenu<T> extends StatelessWidget {
   /// The items, in order.
   final List<FrostedMenuItem<T>> items;
 
-  /// The menu's width; null keeps the source's 288.
+  /// The menu's width; null keeps Frosted's 288.
   final double? width;
 
   /// Called with the chosen item's value.
@@ -338,15 +336,15 @@ class FrostedMenu<T> extends StatelessWidget {
   final String? title;
 
   /// What a screen reader calls the menu; null says the [title].
-  final String? label;
+  final String? semanticLabel;
 
-  /// Opens a menu under the control [context] belongs to, over the whole
-  /// app: the context of a [Builder] round that control, never the page's
-  /// (whose box is the whole screen, so the menu would drop from nowhere).
-  /// [anchor] widens the box it drops from: a context round the control's
-  /// row, as the source hangs the month menu from the whole month switch.
-  /// With [fitAnchor] the menu is at least as wide as that box and stands
-  /// on its leading edge, as a select's list stands under its field.
+  /// Opens a menu under the control [context] belongs to, over the whole app:
+  /// the context of a [Builder] round that control, never the page's (whose box
+  /// is the whole screen, so the menu would drop from nowhere). [anchor] widens
+  /// the box it drops from: a context round the control's row (a month
+  /// menu hangs from the whole month switch). With [fitAnchor] the menu is
+  /// at least as wide as that box and stands on its leading edge, as a select's
+  /// list stands under its field.
   ///
   /// The keyboard walks it as every list ui_core opens: opened by a key
   /// (Enter, Space or an arrow on its control) the chosen item takes the
@@ -359,7 +357,7 @@ class FrostedMenu<T> extends StatelessWidget {
     BuildContext context, {
     required List<FrostedMenuItem<T>> items,
     String? title,
-    String? label,
+    String? semanticLabel,
     BuildContext? anchor,
     bool fitAnchor = false,
   }) {
@@ -394,7 +392,7 @@ class FrostedMenu<T> extends StatelessWidget {
           _MenuKeys<T>(
             items: items,
             title: title,
-            label: label,
+            label: semanticLabel,
             keyed: keyed,
             width: fitAnchor
                 ? math.max(FrostedChromeMetrics.menuWidth, rect.width)
@@ -448,7 +446,7 @@ class FrostedMenu<T> extends StatelessWidget {
       scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
-      label: label ?? head,
+      label: semanticLabel ?? head,
       child: Material(
         type: MaterialType.transparency,
         child: SizedBox(
@@ -522,16 +520,16 @@ class FrostedMenu<T> extends StatelessWidget {
       ..add(DoubleProperty('width', width, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(StringProperty('title', title, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
-/// A menu's row (`.menu-i`): 40 tall, 10 in, corners 10; the check's
+/// A menu's row: 40 tall, 10 in, corners 10; the check's
 /// column 16 wide, then the label in the link type, then the end note; the
 /// chosen one on the chosen plate, its label in the ink and semibold; a loss
 /// sets its label in the over ink, lit or not. The
 /// row the keys or a moving pointer last went to lights with the quieter
-/// wash (law 7: the row a press would pick), never the plate, so it never
+/// wash (the row a press would pick), never the plate, so it never
 /// reads as a second choice; one row at a time. The keyboard's ring stands
 /// inside the row, concentric with the menu, never against its edge.
 class _MenuRow extends StatelessWidget {
@@ -630,7 +628,7 @@ class _MenuRow extends StatelessWidget {
         onPressed: onTap,
         focusNode: focusNode,
         autofocus: autofocus,
-        label: label,
+        semanticLabel: label,
         selected: checked,
         radius: FrostedChromeMetrics.menuItemRadius,
         ringInside: true,
@@ -918,7 +916,7 @@ class _MenuKeysState<T> extends State<_MenuKeys<T>> {
       _start,
       items: widget.items,
       title: widget.title,
-      label: widget.label,
+      semanticLabel: widget.label,
       width: widget.width,
       onSelected: widget.onSelected,
     ),

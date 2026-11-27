@@ -68,7 +68,7 @@ Future<T?> showFrostedDialog<T>(
 /// the system back, Escape). The same as [FrostedMenu.show].
 ///
 /// ```dart
-/// Builder(builder: (anchor) => FrostedIconButton(FrostedGlyphs.more, label: 'More', onPressed: () async { final v = await showFrostedMenu<String>(anchor, items: const [FrostedMenuItem('rename', 'Rename'), FrostedMenuItem('delete', 'Delete')]); }))
+/// Builder(builder: (anchor) => FrostedIconButton(FrostedGlyphs.more, semanticLabel: 'More', onPressed: () async { final v = await showFrostedMenu<String>(anchor, items: const [FrostedMenuItem('rename', 'Rename'), FrostedMenuItem('delete', 'Delete')]); }))
 /// ```
 Future<T?> showFrostedMenu<T>(
   BuildContext context, {
@@ -81,7 +81,7 @@ Future<T?> showFrostedMenu<T>(
   items: items,
   anchor: anchor,
   title: title,
-  label: label,
+  semanticLabel: label,
 );
 
 /// Shows [message] as a [FrostedSnackBar] over the page for a few seconds,
@@ -195,7 +195,7 @@ class FrostedActionSheet<T> extends StatelessWidget {
     }) => FrostedPressable(
       key: key,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 56),
         child: Center(
@@ -373,7 +373,7 @@ Future<T?> showFrostedActionSheet<T>(
 /// as the child's tooltip.
 ///
 /// ```dart
-/// FrostedTooltip(message: 'Copy link', child: FrostedIconButton(FrostedGlyphs.share, label: 'Copy link', onPressed: copy))
+/// FrostedTooltip(message: 'Copy link', child: FrostedIconButton(FrostedGlyphs.share, semanticLabel: 'Copy link', onPressed: copy))
 /// ```
 class FrostedTooltip extends StatelessWidget {
   /// [message] over [child].

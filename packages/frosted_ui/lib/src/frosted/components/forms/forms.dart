@@ -24,15 +24,16 @@ import '../../internal/field_owner.dart';
 import '../../internal/styled.dart';
 import '../../internal/bare_field.dart';
 import '../../internal/hit_slop.dart';
-import '../../internal/measure.dart';
 import '../../theme.dart';
 import '../icon-button/round_button.dart';
 import '../menu/menu.dart';
+import '../pickers/pickers.dart' show showFrostedDatePicker;
 import '../pressable/pressable.dart';
 import '../../localizations.dart';
 import '../../editing.dart';
 import '../../internal/dim.dart';
 import '../../internal/cap.dart';
+import '../../internal/measure.dart' show FrostedFieldWidth;
 
 import 'package:ui_core/ui_core.dart';
 
@@ -60,8 +61,8 @@ const double _swapShadowBlur = 10;
 const double _swapShadowSpread = -6;
 const double _swapShadowOpacity = 0.3;
 
-/// The source's `--edge` (`0 0 0 1px`): a hairline ring just outside a
-/// white or glass face, taking no room, as the tiles draw it.
+/// A hairline ring just outside a white or glass face, taking no room, as
+/// the tiles draw it.
 BoxShadow _edge(FrostedThemeData t) =>
     frostedShadow(color: t.glass.edge, spread: FrostedChromeMetrics.outline);
 
@@ -69,12 +70,12 @@ BoxShadow _edge(FrostedThemeData t) =>
 // Text field
 // ---------------------------------------------------------------------------
 
-/// A line of text in a well (`.field` + `.inp`): the label 8 over a 48
-/// well, 12 round, 14 in at each side, the text 400 16 in the ink and the
-/// placeholder in the tertiary ink, an optional help line 8 under
-/// (`.field-h`). The page owns the text through [value] and [onChanged],
-/// or hands a [controller]; with neither callback nor controller the
-/// field is read only. A screen reader hears a text field named [labelText].
+/// A line of text in a well: the label 8 over a 48 well, 12
+/// round, 14 in at each side, the text 400 16 in the ink and the placeholder in
+/// the tertiary ink, an optional help line 8 under. The page owns the text
+/// through [value] and [onChanged], or hands a [controller]; with neither
+/// callback nor controller the field is read only. A screen reader hears a text
+/// field named [labelText].
 ///
 /// ```dart
 /// FrostedTextField(labelText: 'Name', hintText: 'What are you saving for?', value: name, onChanged: (v) => setState(() => name = v))
@@ -136,7 +137,7 @@ class FrostedTextField extends StatefulWidget {
   /// Whether the text is hidden as it is typed (a passcode).
   final bool obscureText;
 
-  /// What the platform's autofill may offer (`AutofillHints.email`, ...).
+  /// What the platform's autofill may offer (`AutofillHints.email`,...).
   final Iterable<String>? autofillHints;
 
   /// What the text is held to as it is typed.
@@ -363,12 +364,11 @@ class _FrostedTextFieldState extends State<FrostedTextField>
           // The line answers taps from the well's top to its bottom.
           child: FrostedFieldRoom(
             child: Row(
-              spacing: FrostedSpacing.s8,
               crossAxisAlignment: multi
                   ? CrossAxisAlignment.start
                   : CrossAxisAlignment.center,
               children: [
-                if (widget.leading case final leading?)
+                if (widget.leading case final leading?) ...[
                   DefaultTextStyle.merge(
                     style: style.c(t.colorScheme.textTertiary),
                     child: IconTheme.merge(
@@ -379,6 +379,8 @@ class _FrostedTextFieldState extends State<FrostedTextField>
                       child: leading,
                     ),
                   ),
+                  const SizedBox(width: FrostedSpacing.s8),
+                ],
                 Expanded(
                   child: FrostedFieldTarget(
                     label: widget.labelText,
@@ -437,10 +439,20 @@ class _FrostedTextFieldState extends State<FrostedTextField>
                 // A trailing key keeps to the field's end keyline.
                 // A key beside the entry (a password's reveal) keeps a node
                 // of its own, so the entry's node stays the field's.
-                if (widget.trailing case final trailing?)
+                if (widget.trailing case final trailing?) ...[
+                  const SizedBox(width: FrostedSpacing.s8),
                   FrostedTargetSide(
                     alignment: AlignmentDirectional.centerEnd,
                     child: Semantics(container: true, child: trailing),
+                  ),
+                ]
+                // Wrong, the field shows the danger's mark at its end; the
+                // message under it says what is wrong.
+                else
+                  _ErrorMarkSlot(
+                    shown: widget.errorText != null,
+                    gap: FrostedSpacing.s8,
+                    mark: _errorMark(t),
                   ),
               ],
             ),
@@ -579,21 +591,21 @@ enum FrostedAmountFieldSize {
   regular,
 
   /// A 48 well, 12 round, the figure 400 16 in the text face on the centre
-  /// line (`.amount-in--sm`): an amount among a form's fields.
+  /// line: an amount among a form's fields.
   small,
 }
 
-/// An amount in a well (`.amount-in`): the label 8 over a 64 well, 14
-/// round, with the dollar sign in the quiet ink (500 16 display, dropped 6)
-/// before the figure in the 500 40 display face, tabular and tracked
-/// −.03em, 12 under the top; the placeholder at .22 of the ink. A small
-/// [size] is the form's `.amount-in--sm`: a 48 well, 12 round, the figure 400 16 in
-/// the text face on the centre line. [centered] is a stepper's
-/// `.amount-in--c`: the sign and figure together on the well's centre, the
-/// figure given three characters' room. [showLabel] false drops the label,
-/// keeping it as the spoken name. Takes digits and one point; the page owns the text
-/// through [value] and [onChanged], or a [controller]; with neither it is
-/// read only. A screen reader hears a text field named [labelText].
+/// An amount in a well: the label 8 over a 64 well, 14 round, with the dollar
+/// sign in the quiet ink (500 16 display, dropped 6) before the figure in the
+/// 500 40 display face, tabular and tracked −.03em, 12 under the top; the
+/// placeholder at .22 of the ink. A small [size] is a form's:
+/// a 48 well, 12 round, the figure 400 16 in the text face on the centre line.
+/// [centered] is a stepper's: the sign and figure together on
+/// the well's centre, the figure given three characters' room. [showLabel]
+/// false drops the label, keeping it as the spoken name. Takes digits and one
+/// point; the page owns the text through [value] and [onChanged], or a
+/// [controller]; with neither it is read only. A screen reader hears a text
+/// field named [labelText].
 ///
 /// ```dart
 /// FrostedAmountField(labelText: 'Amount', value: amount, onChanged: (v) => setState(() => amount = v))
@@ -663,11 +675,10 @@ class FrostedAmountField extends StatefulWidget {
   /// {@macro frosted.helper}
   final String? helperText;
 
-  /// How large the field stands: the 64 well, or the form's 48
-  /// (`.amount-in--sm`).
+  /// How large the field stands: the 64 well, or the form's 48.
   final FrostedAmountFieldSize size;
 
-  /// The sign and figure on the well's centre (`.amount-in--c`).
+  /// The sign and figure on the well's centre.
   final bool centered;
 
   /// Whether the [labelText] stands over the well; without it the label stays
@@ -957,12 +968,168 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
 }
 
 // ---------------------------------------------------------------------------
+// Text form field
+// ---------------------------------------------------------------------------
+
+/// A [FrostedTextField] in a [Form], as Material's `TextFormField` is: its
+/// [validator] runs when the form validates (or as [autovalidateMode] says)
+/// and what it returns stands under the well as the field's error; [onSaved]
+/// hands the text over when the form saves, and resetting the form brings
+/// [initialValue] back. Keep the text in a [controller] or start it at
+/// [initialValue], not both.
+///
+/// ```dart
+/// FrostedTextFormField(labelText: 'Title', validator: (v) => (v ?? '').trim().isEmpty ? 'Give the book a title' : null, onSaved: (v) => title = v!)
+/// ```
+class FrostedTextFormField extends FormField<String> {
+  /// A text field named [labelText] that takes part in its [Form].
+  FrostedTextFormField({
+    required String labelText,
+    this.controller,
+    String? initialValue,
+    FocusNode? focusNode,
+    String? hintText,
+    String? helperText,
+    Widget? leading,
+    Widget? trailing,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    bool autofocus = false,
+    bool obscureText = false,
+    Iterable<String>? autofillHints,
+    List<TextInputFormatter>? inputFormatters,
+    int? maxLength,
+    int? minLines,
+    int? maxLines = 1,
+    this.onChanged,
+    ValueChanged<String>? onFieldSubmitted,
+    VoidCallback? onEditingComplete,
+    TextDirection? textDirection,
+    FrostedStyle? style,
+    super.onSaved,
+    super.validator,
+    super.forceErrorText,
+    super.enabled,
+    AutovalidateMode? autovalidateMode,
+    super.key,
+  }) : assert(
+         initialValue == null || controller == null,
+         'Start the text in the controller or at initialValue, not both.',
+       ),
+       super(
+         initialValue: controller?.text ?? initialValue ?? '',
+         autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
+         builder: (field) {
+           final state = field as _FrostedTextFormFieldState;
+           return FrostedTextField(
+             labelText: labelText,
+             controller: state._controller,
+             focusNode: focusNode,
+             hintText: hintText,
+             helperText: helperText,
+             errorText: field.errorText,
+             leading: leading,
+             trailing: trailing,
+             keyboardType: keyboardType,
+             textInputAction: textInputAction,
+             autofocus: autofocus,
+             obscureText: obscureText,
+             autofillHints: autofillHints,
+             inputFormatters: inputFormatters,
+             maxLength: maxLength,
+             minLines: minLines,
+             maxLines: maxLines,
+             enabled: field.widget.enabled,
+             textDirection: textDirection,
+             style: style,
+             onChanged: (text) {
+               field.didChange(text);
+               onChanged?.call(text);
+             },
+             onSubmitted: onFieldSubmitted,
+             onEditingComplete: onEditingComplete,
+           );
+         },
+       );
+
+  /// The text's controller, when the page keeps one; without it the field
+  /// keeps its own, started at the initial value.
+  final TextEditingController? controller;
+
+  /// Called as the text changes, and with the initial text when the form
+  /// resets.
+  final ValueChanged<String>? onChanged;
+
+  @override
+  FormFieldState<String> createState() => _FrostedTextFormFieldState();
+}
+
+class _FrostedTextFormFieldState extends FormFieldState<String> {
+  TextEditingController? _own;
+
+  FrostedTextFormField get _field => widget as FrostedTextFormField;
+
+  TextEditingController get _controller => _field.controller ?? _own!;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_field.controller == null) {
+      _own = TextEditingController(text: widget.initialValue);
+    }
+    _controller.addListener(_fromController);
+  }
+
+  @override
+  void didUpdateWidget(covariant FrostedTextFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_field.controller == oldWidget.controller) return;
+    (oldWidget.controller ?? _own)?.removeListener(_fromController);
+    if (_field.controller == null) {
+      _own = TextEditingController.fromValue(oldWidget.controller?.value);
+    } else {
+      _own?.dispose();
+      _own = null;
+      setValue(_field.controller!.text);
+    }
+    _controller.addListener(_fromController);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_fromController);
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChange(String? value) {
+    super.didChange(value);
+    if (_controller.text != value) _controller.text = value ?? '';
+  }
+
+  @override
+  void reset() {
+    // The text goes back first, so the controller's listener finds nothing
+    // changed.
+    _controller.text = widget.initialValue ?? '';
+    super.reset();
+    _field.onChanged?.call(_controller.text);
+  }
+
+  // Text set on the controller by the page counts as the field's value.
+  void _fromController() {
+    if (_controller.text != value) didChange(_controller.text);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
 
-/// The search pill's face (`.search`): 44 tall on the brighter glass with
-/// its rim and hairline edge, 16 in at each side; once it holds a query
-/// (`.search--on`) the plane at .9 and the ink.
+/// The search pill's face: 44 tall on the brighter glass with
+/// its rim and hairline edge, 16 in at each side; once it holds a query,
+/// the plane at .9 and the ink.
 class _SearchPill extends StatelessWidget {
   const _SearchPill({
     required this.typed,
@@ -1053,14 +1220,14 @@ class _SearchPill extends StatelessWidget {
   }
 }
 
-/// A line of search (`.search` with its input): the pill with the 18 glass
-/// glyph, the query 400 16 in the ink, the placeholder in the tertiary
-/// ink; once it holds a query the pill brightens and a 28 round of the
-/// wash with a 14 cross clears it (`.search-x`). The page owns the query
-/// through [value] and [onChanged], or hands a [controller]. [onClear]
-/// makes the clear a link of the page's (back to the plain list); without
-/// it the clear empties the field. A screen reader hears a search field
-/// named [labelText] (else [hintText]) and a button, [clearLabel] (Clear).
+/// A line of search: the pill with the 18 glass
+/// glyph, the query 400 16 in the ink, the placeholder in the tertiary ink;
+/// once it holds a query the pill brightens and a 28 round of the wash with a
+/// 14 cross clears it. The page owns the query through [value] and [onChanged],
+/// or hands a [controller]. [onClear] makes the clear a link of the page's
+/// (back to the plain list); without it the clear empties the field. A screen
+/// reader hears a search field named [labelText] (else [hintText]) and a
+/// button, [clearLabel] (Clear).
 ///
 /// ```dart
 /// FrostedSearchField(hintText: 'Search activity', value: query, onChanged: (v) => setState(() => query = v))
@@ -1185,7 +1352,7 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
       child: FrostedPressable(
         key: widget.clearKey,
         onPressed: widget.onClear ?? _clear,
-        label:
+        semanticLabel:
             widget.clearLabel ??
             RawWidgetsLocalizations.of(context).clearButtonTooltip,
         role: widget.onClear == null
@@ -1307,7 +1474,7 @@ class FrostedSearchLink extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: labelText ?? hintText,
+      semanticLabel: labelText ?? hintText,
       value: typed ? value : null,
       role: FrostedPressRole.link,
       radius: FrostedChromeMetrics.search / 2,
@@ -1358,12 +1525,12 @@ class FrostedSearchLink extends StatelessWidget {
 // Picker row and swap
 // ---------------------------------------------------------------------------
 
-/// A choice that opens a picker (`.pick`): the label 8 over a well at least
-/// 60 tall, 14 round, 10 in (14 at its end), holding the choice's mark
-/// ([leading], a [FrostedIconMark]), its [title] in the body over a quiet
-/// [subtitle], what the page puts at the end ([trailing], a [FrostedAmount])
-/// and a 16 chevron down. One button read as the label, the title and the
-/// subtitle; a null [onPressed] leaves it inert.
+/// A choice that opens a picker: the label 8 over a well at least 60 tall, 14
+/// round, 10 in (14 at its end), holding the choice's mark ([leading], a
+/// [FrostedIconMark]), its [title] in the body over a quiet [subtitle], what
+/// the page puts at the end ([trailing], a [FrostedAmount]) and a 16 chevron
+/// down. One button read as the label, the title and the subtitle; a null
+/// [onPressed] leaves it inert.
 ///
 /// ```dart
 /// FrostedPickerRow(label: 'From', title: 'Everyday', subtitle: 'Checking ·· 4821', leading: FrostedIconMark(FrostedGlyphs.wallet, hue: t.hues.cyan), trailing: const FrostedAmount(6248.30, signed: false), onPressed: pickFrom)
@@ -1466,7 +1633,7 @@ class FrostedPickerRow extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: onPressed,
-          label: subtitle == null
+          semanticLabel: subtitle == null
               ? '$label: $title'
               : '$label: $title, $subtitle',
           radius: FrostedChromeMetrics.pickerRadius,
@@ -1495,12 +1662,12 @@ class FrostedPickerRow extends StatelessWidget {
   }
 }
 
-/// The arrow between a transfer's From and To (`.swap`): a 32 white round
-/// with its hairline edge and lift, a 16 arrow down in the secondary ink,
-/// centred on the 16 between the two [FrostedPickerRow]s and over both wells.
-/// It is that 16: a [FrostedFormSection] puts no gap of its own round it. The
-/// source draws it as a mark a screen reader skips; with [onPressed] it is a
-/// button named [label] that swaps the two (DERIVED).
+/// The arrow between a transfer's From and To: a 32 white round with its
+/// hairline edge and lift, a 16 arrow down in the secondary ink, centred on the
+/// 16 between the two [FrostedPickerRow]s and over both wells. It is that 16: a
+/// [FrostedFormSection] puts no gap of its own round it. Frosted draws it as a
+/// mark a screen reader skips; with [onPressed] it is a button named [semanticLabel]
+/// that swaps the two.
 ///
 /// ```dart
 /// FrostedSwapButton()
@@ -1509,7 +1676,7 @@ class FrostedSwapButton extends StatelessWidget {
   /// Creates a [FrostedSwapButton].
   const FrostedSwapButton({
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -1525,11 +1692,10 @@ class FrostedSwapButton extends StatelessWidget {
   final bool autofocus;
 
   /// The button's spoken name, with [onPressed].
-  final String? label;
+  final String? semanticLabel;
 
-  /// The height the swap stands in: the form's gap, the mark's own line
-  /// and its two negative margins (`.swap { margin: -14px 0; height: 12px }`
-  /// in a `.form { gap: 16px }`), which come to the one gap again.
+  /// The height the swap stands in: the form's gap, the mark's own line and its
+  /// two negative margins, which come to the one gap again.
   static const double height =
       FrostedChromeMetrics.formGap -
       FrostedChromeMetrics.swapPull +
@@ -1539,7 +1705,7 @@ class FrostedSwapButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = this.label ?? FrostedLocalizations.of(context).swap;
+    final label = semanticLabel ?? FrostedLocalizations.of(context).swap;
     final t = context.frostedTheme;
     const d = FrostedChromeMetrics.swap;
     // .swap span { width: 32px; height: 32px; background: #fff;
@@ -1576,7 +1742,7 @@ class FrostedSwapButton extends StatelessWidget {
             focusNode: focusNode,
             autofocus: autofocus,
             onPressed: onPressed,
-            label: label,
+            semanticLabel: label,
             radius: d / 2,
             child: disc,
           );
@@ -1603,7 +1769,7 @@ class FrostedSwapButton extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1611,20 +1777,19 @@ class FrostedSwapButton extends StatelessWidget {
 // Stepper
 // ---------------------------------------------------------------------------
 
-/// A number you step (`.stepper`): a 48 glass round with a minus, the
-/// number's well with its figure on the centre, and a 48 round with a plus,
-/// 12 apart; an optional [note] centred 8 under (a month). The figure is a
-/// plain number, with its [unit] after it (2 people); with [money] it is an
-/// amount, the currency sign before it (a budget's $250).
-/// The page owns [value]; each round moves it to the next multiple of
-/// [step] from [min] that way (repeating while held), never under [min] or
-/// over [max] (a round with nowhere to go is disabled). A figure typed
-/// into the well is handed back as it is typed while it stands between
-/// [min] and [max] (so a Save beside it reads it), and as it is taken
-/// (Return, or the focus leaving) clamped to them; one that does not read
-/// puts the value back. Up and Down in the well step too. A null [onChanged]
-/// leaves it inert. A screen reader hears a text field named [labelText] that
-/// steps up and down; the rounds are for the eye and the finger. ui_core's
+/// A number you step: a 48 glass round with a minus, the number's well with its
+/// figure on the centre, and a 48 round with a plus, 12 apart; an optional
+/// [note] centred 8 under (a month). The figure is a plain number, with its
+/// [unit] after it (2 people); with [money] it is an amount, the currency sign
+/// before it (a budget's $250). The page owns [value]; each round moves it to
+/// the next multiple of [step] from [min] that way (repeating while held),
+/// never under [min] or over [max] (a round with nowhere to go is disabled). A
+/// figure typed into the well is handed back as it is typed while it stands
+/// between [min] and [max] (so a Save beside it reads it), and as it is taken
+/// (Return, or the focus leaving) clamped to them; one that does not read puts
+/// the value back. Up and Down in the well step too. A null [onChanged] leaves
+/// it inert. A screen reader hears a text field named [labelText] that steps up
+/// and down; the rounds are for the eye and the finger. ui_core's
 /// [RawNumberField] is the behaviour.
 ///
 /// ```dart
@@ -1682,9 +1847,9 @@ class FrostedNumberField extends StatelessWidget {
   /// The quiet line centred under the stepper (a month).
   final String? note;
 
-  /// The words after the figure for a value, in the quiet ink, so a count
-  /// says what it counts (`(n) => n == 1 ? 'person' : 'people'`); read with
-  /// the figure. Null, none.
+  /// The words after the figure for a value, in the quiet ink, so a count says
+  /// what it counts (`(n) => n == 1 ? 'person' : 'people'`); read with the
+  /// figure. Null, none.
   final String Function(int value)? unit;
 
   /// Whether the figure is an amount of money: the currency sign before it
@@ -2137,7 +2302,7 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
       final picked = await FrostedMenu.show<T>(
         anchor,
         fitAnchor: true,
-        label: label ?? words.select,
+        semanticLabel: label ?? words.select,
         items: [
           for (final o in options)
             FrostedMenuItem<T>(
@@ -2183,7 +2348,7 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
           // Under its label the field names the press (ui_core's decorator:
           // a button's own name is not the field's, so both would be read);
           // with no label the press names itself.
-          label: label == null ? words.select : null,
+          semanticLabel: label == null ? words.select : null,
           value: chosen?.label,
           radius: FrostedCorners.r12,
           child: ConstrainedBox(
@@ -2236,9 +2401,9 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
         ),
       ),
     );
-    // From 600 up the select stands at most 320 wide at its column's start:
-    // one word never runs the width of a page.
-    return FrostedControlMeasure(
+    // Like a text field, it takes its column's width at every size, so a
+    // form's fields share one edge; alone in a row, its content's.
+    return FrostedFieldWidth(
       child: RawInputDecorator(
         labelText: label,
         helperText: help,
@@ -2257,6 +2422,193 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
         child: field,
       ),
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Date field
+// ---------------------------------------------------------------------------
+
+/// A day in a field's well, picked from a calendar: the label over the well,
+/// the day in it as a field shows one, with its year ("Nov 9, 2026"), or the
+/// [hintText] in the tertiary ink while there is none, and a calendar glyph
+/// at its end. A press raises [showFrostedDatePicker] on the day, between
+/// [firstDate] and [lastDate]; the day chosen comes back through
+/// [onChanged], and a cancel changes nothing. A null [value] is no day yet;
+/// a null [onChanged] leaves the field faded and inert. A screen reader hears
+/// a button named [labelText] with the day as its value.
+///
+/// ```dart
+/// FrostedDateField(labelText: 'Finished', value: finished, lastDate: DateTime.now(), onChanged: (day) => setState(() => finished = day))
+/// ```
+class FrostedDateField extends StatelessWidget {
+  /// A field for a day named [labelText]; a null [onChanged] disables it.
+  const FrostedDateField({
+    required this.labelText,
+    required this.value,
+    required this.onChanged,
+    this.firstDate,
+    this.lastDate,
+    this.hintText,
+    this.helperText,
+    this.errorText,
+    this.focusNode,
+    this.autofocus = false,
+    super.key,
+  });
+
+  /// The words over the well, the field's spoken name and the calendar's
+  /// title.
+  final String labelText;
+
+  /// The day shown; null shows the [hintText].
+  final DateTime? value;
+
+  /// Hands over the day chosen in the calendar.
+  final ValueChanged<DateTime>? onChanged;
+
+  /// The first day the calendar offers; null leaves it open.
+  final DateTime? firstDate;
+
+  /// The last day the calendar offers; null leaves it open.
+  final DateTime? lastDate;
+
+  /// What the well says before a day is chosen ("Select a date", by
+  /// default).
+  final String? hintText;
+
+  /// {@macro frosted.helper}
+  final String? helperText;
+
+  /// {@macro frosted.error}
+  final String? errorText;
+
+  /// {@macro frosted.focusNode}
+  final FocusNode? focusNode;
+
+  /// {@macro frosted.autofocus}
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    final words = FrostedLocalizations.of(context);
+    final day = value;
+    final change = onChanged;
+    Future<void> pick(ValueChanged<DateTime> change) async {
+      final picked = await showFrostedDatePicker(
+        context,
+        initialDate: day,
+        first: firstDate,
+        last: lastDate,
+        title: labelText,
+      );
+      if (picked != null && picked != day) change(picked);
+    }
+
+    final field = FrostedPressable(
+      focusNode: focusNode,
+      autofocus: autofocus,
+      onPressed: change == null ? null : () => pick(change),
+      // Under its label the field names the press; the day is its value.
+      value: day == null ? null : words.shortDate(day),
+      radius: FrostedCorners.r12,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: FrostedChromeMetrics.field,
+        ),
+        child: FrostedWell(
+          error: errorText != null,
+          enabled: change != null,
+          padding: const EdgeInsets.symmetric(
+            horizontal: FrostedChromeMetrics.fieldInset,
+          ),
+          child: Row(
+            spacing: FrostedSpacing.s8,
+            children: [
+              Expanded(
+                child: ExcludeSemantics(
+                  child: frostedCapCentred(
+                    Text(
+                      day == null
+                          ? hintText ?? words.selectDate
+                          : words.shortDate(day),
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: day == null
+                          ? t.textTheme.bodyLarge
+                                .line(19.2)
+                                .c(t.colorScheme.textTertiary)
+                          : t.textTheme.bodyLarge.line(19.2),
+                    ),
+                  ),
+                ),
+              ),
+              // Wrong, the mark takes the calendar's place, crossing to it.
+              AnimatedSwitcher(
+                duration: FrostedMotion.of(context).fast,
+                child: errorText != null
+                    ? KeyedSubtree(
+                        key: const ValueKey<bool>(true),
+                        child: _errorMark(t),
+                      )
+                    : Icon(
+                        key: const ValueKey<bool>(false),
+                        FrostedGlyphs.calendar,
+                        size: FrostedChromeMetrics.pickerGlyph,
+                        color: t.colorScheme.textTertiary,
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    // Its column's width, as a text field's; alone in a row, its content's.
+    return FrostedFieldWidth(
+      child: RawInputDecorator(
+        labelText: labelText,
+        helperText: helperText,
+        errorText: errorText,
+        enabled: change != null,
+        focusNode: focusNode,
+        builder: frostedFieldColumn,
+        child: field,
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('labelText', labelText))
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -2286,3 +2638,55 @@ InputDecoration _bareDecoration({String? hint, TextStyle? hintStyle}) =>
       errorBorder: InputBorder.none,
       focusedErrorBorder: InputBorder.none,
     );
+
+// The mark's place at a text field's end: while the field is wrong the mark
+// fades in there, the entry giving it its room ([gap] and the mark's width)
+// as it comes, and out as the field is put right; nothing stands there while
+// it is right. Under Reduce Motion it cuts.
+class _ErrorMarkSlot extends StatelessWidget {
+  const _ErrorMarkSlot({
+    required this.shown,
+    required this.gap,
+    required this.mark,
+  });
+
+  final bool shown;
+  final double gap;
+  final Widget mark;
+
+  @override
+  Widget build(BuildContext context) {
+    final motion = FrostedMotion.of(context);
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: shown ? 1 : 0),
+      duration: motion.fast,
+      curve: motion.curve,
+      builder: (context, v, child) => switch (v) {
+        <= 0 => const SizedBox.shrink(),
+        >= 1 => child!,
+        _ => ClipRect(
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            widthFactor: v,
+            heightFactor: 1,
+            child: Opacity(opacity: v, child: child),
+          ),
+        ),
+      },
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(start: gap),
+        child: mark,
+      ),
+    );
+  }
+}
+
+// A wrong field's mark at its end: the danger's glyph in its ink, silent (the
+// field reads its message).
+Widget _errorMark(FrostedThemeData t) => ExcludeSemantics(
+  child: Icon(
+    FrostedGlyphs.danger,
+    size: FrostedChromeMetrics.pickerGlyph,
+    color: t.colorScheme.over,
+  ),
+);

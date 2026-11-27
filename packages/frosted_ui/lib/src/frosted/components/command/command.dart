@@ -66,13 +66,13 @@ String frostedShortcutLabel(
 /// ```
 class FrostedMenuBar extends StatelessWidget {
   /// A menu bar of [menus].
-  const FrostedMenuBar({required this.menus, this.label, super.key});
+  const FrostedMenuBar({required this.menus, this.semanticLabel, super.key});
 
   /// The bar's menus, in order.
   final List<RawMenuEntry> menus;
 
   /// What a screen reader calls the bar.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +91,8 @@ class FrostedMenuBar extends StatelessWidget {
       // opens under a resting pointer, so a menu the keys open would light
       // that row rather than the first.
       highlightFollowsPointer: false,
-      semanticLabel: label ?? RawWidgetsLocalizations.of(context).menuBarLabel,
+      semanticLabel:
+          semanticLabel ?? RawWidgetsLocalizations.of(context).menuBarLabel,
       barBuilder: (context, items) => SizedBox(
         height: reach,
         child: Stack(
@@ -169,7 +170,7 @@ class FrostedMenuBar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RawMenuEntry>('menus', menus))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -262,7 +263,7 @@ class FrostedContextMenu extends StatelessWidget {
   const FrostedContextMenu({
     required this.items,
     required this.child,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -274,7 +275,7 @@ class FrostedContextMenu extends StatelessWidget {
   final Widget child;
 
   /// What a screen reader calls the menu; null: none.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -287,7 +288,7 @@ class FrostedContextMenu extends StatelessWidget {
       // opens under a resting pointer, so a menu the keys open would light
       // that row rather than the first.
       highlightFollowsPointer: false,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       itemBuilder: (context, entry, level, states) =>
           _menuRow(context, entry, states),
       dividerBuilder: _menuDivider,
@@ -301,7 +302,7 @@ class FrostedContextMenu extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RawMenuEntry>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

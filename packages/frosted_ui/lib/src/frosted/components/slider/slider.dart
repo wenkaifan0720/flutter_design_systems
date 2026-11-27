@@ -16,20 +16,20 @@ import '../../internal/dim.dart';
 /// white knob 22 across in the toggle's shadow. Drag it or press where it
 /// should stand; the arrow keys move it a step. With [divisions] it stands
 /// only on the beads along the tube. Read aloud as an adjustable value named
-/// [label], saying [semanticFormatterCallback]'s words for it (the share of the way by
+/// [semanticLabel], saying [semanticFormatterCallback]'s words for it (the share of the way by
 /// default). [onChangeStart] and [onChangeEnd] bracket a drag, a press or
 /// a key step, for work that should wait for the hand to lift (saving the
 /// value). A null [onChanged] disables the slider.
 ///
 /// ```dart
-/// FrostedSlider(value: alertAt, min: 0, max: 100, divisions: 20, label: 'Alert at', semanticFormatterCallback: (v) => '\${v.round()}% of budget', onChanged: setAlertAt, onChangeEnd: saveAlertAt)
+/// FrostedSlider(value: alertAt, min: 0, max: 100, divisions: 20, semanticLabel: 'Alert at', semanticFormatterCallback: (v) => '\${v.round()}% of budget', onChanged: setAlertAt, onChangeEnd: saveAlertAt)
 /// ```
 class FrostedSlider extends StatelessWidget {
   /// Creates a [FrostedSlider].
   const FrostedSlider({
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.min = 0,
     this.max = 1,
     this.divisions,
@@ -69,7 +69,7 @@ class FrostedSlider extends StatelessWidget {
   final ValueChanged<double>? onChangeEnd;
 
   /// What a screen reader calls it.
-  final String label;
+  final String semanticLabel;
 
   /// The least value.
   final double min;
@@ -94,7 +94,7 @@ class FrostedSlider extends StatelessWidget {
   /// FrostedSlider(
   ///   value: volume,
   ///   onChanged: setVolume,
-  ///   label: 'Volume',
+  ///   semanticLabel: 'Volume',
   ///   style: const FrostedStyle(
   ///     fill: WidgetStatePropertyAll(Color(0xFF5B5BD6)),
   ///   ),
@@ -312,7 +312,7 @@ class FrostedSlider extends StatelessWidget {
     slider = FrostedDim(off: !live, child: slider);
     return Semantics(
       slider: true,
-      label: label,
+      label: semanticLabel,
       value: _spoken(value),
       increasedValue: up == null
           ? null
@@ -356,7 +356,7 @@ class FrostedSlider extends StatelessWidget {
           onChangeEnd,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(DoubleProperty('min', min, defaultValue: 0))
       ..add(DoubleProperty('max', max, defaultValue: 1))
       ..add(IntProperty('divisions', divisions, defaultValue: null))

@@ -1,4 +1,4 @@
-// Each name frosted_ui 0.5.0 renamed, used once; dart fix renames it (frosted_ui.dart.expect).
+// Each name frosted_ui 0.5.0 and 0.8.0 renamed, used once; dart fix renames it (frosted_ui.dart.expect).
 import 'package:frosted_ui/frosted_parts.dart';
 
 dynamic d;
@@ -47,7 +47,7 @@ void constructors() {
     emptySelectionAllowed: d,
   );
   FrostedDatePicker(firstDate: d, lastDate: d);
-  FrostedPageDots(pageCount: d, selectedIndex: d, label: d);
+  FrostedPageDots(pageCount: d, selectedIndex: d, semanticLabel: d);
   FrostedMenuItem<Object>(d, d, isDestructiveAction: d);
   FrostedActionSheetAction<Object>(d, isDestructiveAction: d);
   FrostedPanelRow(label: d, states: d, isDestructiveAction: d);
@@ -197,4 +197,113 @@ void fields(
   a67.isDestructiveAction;
   a68.isDestructiveAction;
   a69.isDestructiveAction;
+}
+
+void semanticLabels(
+  FrostedScrollArea b0,
+  FrostedCarouselView b1,
+  FrostedFilterChipGroup<Object> b2,
+  FrostedSwitch b3,
+  FrostedMonthSwitch b4,
+  FrostedQuickActions b5,
+  FrostedActionTiles b6,
+  FrostedQuickAmounts b7,
+  FrostedSwapButton b8,
+  FrostedTabBar b9,
+  FrostedBreadcrumb b10,
+  FrostedPagination b11,
+  FrostedPageDots b12,
+  FrostedPopover b13,
+  FrostedHoverCard b14,
+  FrostedRating b15,
+  FrostedChoices<Object> b16,
+  FrostedSlider b17,
+  FrostedPressable b18,
+  FrostedCheckbox b19,
+  FrostedToggleGroup<Object> b20,
+  FrostedButtonGroup b21,
+  FrostedIconButton b22,
+  FrostedMenuBar b23,
+  FrostedContextMenu b24,
+  FrostedMenu<Object> b25,
+  FrostedWheelPicker<Object> b26,
+  FrostedDataTable<Object> b27,
+  FrostedTreeView<Object> b28,
+  FrostedCard b29,
+  FrostedFacedCard b30,
+  FrostedInsight b31,
+  FrostedNavigationRail b32,
+) {
+  FrostedScrollArea(semanticLabel: d);
+  FrostedCarouselView(semanticLabel: d);
+  FrostedCarouselView.builder(semanticLabel: d);
+  FrostedFilterChipGroup<Object>(semanticLabel: d);
+  FrostedSwitch(semanticLabel: d);
+  FrostedMonthSwitch(semanticLabel: d);
+  FrostedQuickActions(semanticLabel: d);
+  FrostedActionTiles(semanticLabel: d);
+  FrostedQuickAmounts(semanticLabel: d);
+  FrostedSwapButton(semanticLabel: d);
+  FrostedTabBar(semanticLabel: d);
+  FrostedBreadcrumb(semanticLabel: d);
+  FrostedPagination(semanticLabel: d);
+  FrostedPageDots(semanticLabel: d);
+  FrostedPopover(semanticLabel: d);
+  FrostedHoverCard(semanticLabel: d);
+  FrostedRating(semanticLabel: d);
+  FrostedChoices<Object>(semanticLabel: d);
+  FrostedSlider(semanticLabel: d);
+  FrostedPressable(semanticLabel: d);
+  FrostedCheckbox(semanticLabel: d);
+  FrostedToggleGroup<Object>(semanticLabel: d);
+  FrostedButtonGroup(semanticLabel: d);
+  FrostedIconButton(semanticLabel: d);
+  FrostedMenuBar(semanticLabel: d);
+  FrostedContextMenu(semanticLabel: d);
+  FrostedMenu<Object>(semanticLabel: d);
+  FrostedWheelPicker<Object>(semanticLabel: d);
+  FrostedDataTable<Object>(semanticLabel: d);
+  FrostedTreeView<Object>(semanticLabel: d);
+  FrostedCard(semanticLabel: d);
+  FrostedCard.rim(semanticLabel: d);
+  FrostedCard.record(semanticLabel: d);
+  FrostedCard.hero(semanticLabel: d);
+  FrostedCard.ghost(semanticLabel: d);
+  FrostedFacedCard(semanticLabel: d);
+  FrostedInsight(semanticLabel: d);
+  FrostedNavigationRail(semanticLabel: d);
+  FrostedMenu.show<Object>(d, items: d, semanticLabel: d);
+  b0.semanticLabel;
+  b1.semanticLabel;
+  b2.semanticLabel;
+  b3.semanticLabel;
+  b4.semanticLabel;
+  b5.semanticLabel;
+  b6.semanticLabel;
+  b7.semanticLabel;
+  b8.semanticLabel;
+  b9.semanticLabel;
+  b10.semanticLabel;
+  b11.semanticLabel;
+  b12.semanticLabel;
+  b13.semanticLabel;
+  b14.semanticLabel;
+  b15.semanticLabel;
+  b16.semanticLabel;
+  b17.semanticLabel;
+  b18.semanticLabel;
+  b19.semanticLabel;
+  b20.semanticLabel;
+  b21.semanticLabel;
+  b22.semanticLabel;
+  b23.semanticLabel;
+  b24.semanticLabel;
+  b25.semanticLabel;
+  b26.semanticLabel;
+  b27.semanticLabel;
+  b28.semanticLabel;
+  b29.semanticLabel;
+  b30.semanticLabel;
+  b31.semanticLabel;
+  b32.semanticLabel;
 }

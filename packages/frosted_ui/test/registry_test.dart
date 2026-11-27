@@ -40,7 +40,12 @@ void main() {
           ?.builder
           ?.call(context);
       if (specimen == null) continue;
-      final kind = specimen.runtimeType.toString().split('<').first;
+      // A specimen laid in a row keeps to its content, as a filter does; the
+      // part is the row's one child.
+      final part = specimen is Row && specimen.children.length == 1
+          ? specimen.children.single
+          : specimen;
+      final kind = part.runtimeType.toString().split('<').first;
       // A specimen holding a controller stands in the State that owns and
       // disposes of it, as an app's page would; the part is what it builds.
       if (kind == '_Owned') {

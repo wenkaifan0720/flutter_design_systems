@@ -18,7 +18,7 @@ Widget kitToggleDemo(Brightness brightness) => kitScreen(
         KitHeld<Set<String>>(
           const {'left'},
           (on, set) => FrostedToggleGroup<String>(
-            label: 'Alignment',
+            semanticLabel: 'Alignment',
             segments: const [
               FrostedButtonSegment('left', 'Left'),
               FrostedButtonSegment('centre', 'Centre'),
@@ -36,7 +36,7 @@ Widget kitToggleDemo(Brightness brightness) => kitScreen(
         KitHeld<Set<String>>(
           const {'b'},
           (on, set) => FrostedToggleGroup<String>(
-            label: 'Text style',
+            semanticLabel: 'Text style',
             multiSelectionEnabled: true,
             emptySelectionAllowed: true,
             segments: const [
@@ -54,7 +54,7 @@ Widget kitToggleDemo(Brightness brightness) => kitScreen(
       'Inert',
       children: [
         const FrostedToggleGroup<String>(
-          label: 'View',
+          semanticLabel: 'View',
           segments: [
             FrostedButtonSegment('list', 'List'),
             FrostedButtonSegment('grid', 'Grid'),
@@ -107,7 +107,7 @@ Widget kitSpecimenSplitButton() => Center(
 Widget kitSpecimenToggleGroup() => Center(
   heightFactor: 1,
   child: FrostedToggleGroup<String>(
-    label: 'Show',
+    semanticLabel: 'Show',
     multiSelectionEnabled: true,
     segments: const [
       FrostedButtonSegment('in', 'Money in'),

@@ -19,7 +19,7 @@ enum FrostedAvatarSize {
   /// 36 across, 13: the sidebar foot's and a row's.
   small(FrostedChromeMetrics.avatarSmall, FrostedChromeMetrics.avatarTypeSmall),
 
-  /// 52 across, 16: a person in a row of people (`.pearl`).
+  /// 52 across, 16: a person in a row of people.
   large(FrostedChromeMetrics.avatarLarge, FrostedChromeMetrics.avatarTypeLarge),
 
   /// 80 across, 28: the profile's own ([FrostedProfileHero]).
@@ -39,12 +39,11 @@ enum FrostedAvatarSize {
 
 /// The owner as their [initials] on a pearl of light, lilac through rose to
 /// peach, in the display face, with the rim of light along its top and its
-/// hairline edge (`.avatar`); an [image] (a photo) fills the disc instead,
-/// the initials showing until it loads or when it fails. With [onPressed]
-/// it is a link named [name] (the bar's avatar opening the profile);
-/// without, an image of the person. [dimmed] draws one not chosen at the
-/// quieter share and [selected] one chosen in a ring of white and ink (a
-/// row of people).
+/// hairline edge; an [image] (a photo) fills the disc instead, the initials
+/// showing until it loads or when it fails. With [onPressed] it is a link named
+/// [name] (the bar's avatar opening the profile); without, an image of the
+/// person. [dimmed] draws one not chosen at the quieter share and [selected]
+/// one chosen in a ring of white and ink (a row of people).
 ///
 /// ```dart
 /// FrostedAvatar('MH', name: 'Profile and settings', onPressed: () => Navigator.of(context).pushNamed('/profile'))
@@ -226,7 +225,7 @@ class FrostedAvatar extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: name ?? initials,
+      semanticLabel: name ?? initials,
       role: FrostedPressRole.link,
       radius: FrostedStyleLayers.radiusOf(cut, d, d / 2),
       shape: cut,
@@ -281,12 +280,11 @@ class FrostedProfileCount {
   final String label;
 }
 
-/// The owner as the profile leads (`.me-hero`): the [initials] on the
-/// profile's [FrostedAvatar], the [name] in the name type 14 under it, the
-/// quiet [meta] line 6 under (Member since October 2023), the [contact]
-/// lines in the quieter ink, and the [counts] three across over a hairline
-/// (DERIVED: the source keeps its counts in a tile below), each figure over
-/// its caption; all centred. Read as the name, its heading.
+/// The owner as the profile leads: the [initials] on the profile's
+/// [FrostedAvatar], the [name] in the name type 14 under it, the quiet [meta]
+/// line 6 under (Member since October 2023), the [contact] lines in the quieter
+/// ink, and the [counts] three across over a hairline, each figure over its
+/// caption; all centred. Read as the name, its heading.
 ///
 /// ```dart
 /// FrostedProfileHero(initials: 'MH', name: 'Maren Holt', meta: 'Member since October 2023', contact: const ['maren.holt@example.com', '+1 (415) 555-0142'], counts: const [FrostedProfileCount(5, 'Accounts'), FrostedProfileCount(2, 'Cards'), FrostedProfileCount(3, 'Goals')])

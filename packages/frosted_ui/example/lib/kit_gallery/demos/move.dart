@@ -4,6 +4,7 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:frosted_ui/frosted_ui.dart';
+import 'package:frosted_ui/frosted_host.dart';
 
 import '../kit.dart';
 
@@ -30,7 +31,7 @@ Widget kitMoveDemo(Brightness brightness) => kitScreen(
                   child: KitHeld<int>(
                     0,
                     (i, set) => FrostedNavigationRail(
-                      label: 'Sections',
+                      semanticLabel: 'Sections',
                       items: sampleTabs,
                       selectedIndex: i,
                       onDestinationSelected: set,
@@ -93,7 +94,7 @@ Widget kitMoveDemo(Brightness brightness) => kitScreen(
             (i, set) => FrostedPageDots(
               pageCount: 5,
               selectedIndex: i,
-              label: 'Welcome pages',
+              semanticLabel: 'Welcome pages',
               onChanged: set,
             ),
           ),
@@ -128,7 +129,7 @@ Widget kitSpecimenPageDots() => Center(
   child: FrostedPageDots(
     pageCount: 4,
     selectedIndex: 1,
-    label: 'Welcome',
+    semanticLabel: 'Welcome',
     onChanged: (_) {},
   ),
 );

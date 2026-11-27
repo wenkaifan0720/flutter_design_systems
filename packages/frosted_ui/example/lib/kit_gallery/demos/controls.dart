@@ -93,7 +93,7 @@ Widget kitControlsDemo(Brightness brightness) => kitScreen(
         kitRow([
           const FrostedIconButton(
             LucideIcons.share,
-            label: 'Share',
+            semanticLabel: 'Share',
             onPressed: null,
           ),
           const FrostedBell(unread: 0, onPressed: null),
@@ -206,13 +206,13 @@ Widget kitSpecimenRoundButtons() => Row(
   children: [
     FrostedIconButton(
       FrostedGlyphs.back,
-      label: 'Back to Home',
+      semanticLabel: 'Back to Home',
       onPressed: () {},
     ),
     FrostedBell(unread: 1, onPressed: () {}),
     FrostedIconButton(
       LucideIcons.x,
-      label: 'Close',
+      semanticLabel: 'Close',
       size: FrostedIconButtonSize.small,
       onPressed: () {},
     ),
