@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'button.dart';
 import 'fonts.dart';
 import 'internal/menu.dart';
@@ -71,7 +72,10 @@ class ClayButtonGroup extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.buttonGroupStyle], const {});
-    final radius = clayRadiusOf(layered.shape, ClayRadius.control);
+    final radius = clayRadiusOf(
+      layered.shape,
+      theme.shapeScheme.corners.medium,
+    );
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -368,7 +372,7 @@ class ClayToggleGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final radius = ClayRadius.control;
+    final radius = theme.shapeScheme.corners.medium;
     final byValue = {for (final t in toggles) t.value: t};
     final values = [for (final t in toggles) t.value];
     bool enabled(T v) =>
@@ -561,7 +565,10 @@ class ClaySplitButton extends StatelessWidget {
     final height = theme.controlHeight;
     final layered = RawStyleOf([style, theme.splitButtonStyle], const {});
     final fill = layered.fill ?? (filled ? c.accent : c.clay);
-    final radius = clayRadiusOf(layered.shape, ClayRadius.control);
+    final radius = clayRadiusOf(
+      layered.shape,
+      theme.shapeScheme.corners.medium,
+    );
     final words = layered.foreground ?? (filled ? c.onColor(fill) : c.ink);
     return SizedBox(
       height: height,
@@ -694,12 +701,13 @@ class ClayLink extends StatelessWidget {
                 : c.accentInk);
         return TapTargetPadding(
           child: AnimatedClaySurface(
-            face: ClayFace.well(c, radius: 8).copyWith(
-              color: c.well.withValues(alpha: 0),
-              lightOpacity: 0,
-              shadeOpacity: 0,
-              focus: states.contains(WidgetState.focused) ? 1 : 0,
-            ),
+            face: ClayFace.well(c, radius: clayCornerBetween(theme, 8))
+                .copyWith(
+                  color: c.well.withValues(alpha: 0),
+                  lightOpacity: 0,
+                  shadeOpacity: 0,
+                  focus: states.contains(WidgetState.focused) ? 1 : 0,
+                ),
             child: ClayPressDepth(
               pressed: pressed,
               builder: (depth) => Transform.translate(
@@ -778,7 +786,7 @@ class ClayKbd extends StatelessWidget {
           face: ClayFace.raised(
             c,
             color: layered.fill,
-            radius: 7,
+            radius: clayCornerBetween(theme, 7),
           ).copyWith(elevation: 0.6),
           child: Padding(
             padding: const EdgeInsets.symmetric(

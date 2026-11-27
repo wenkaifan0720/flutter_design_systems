@@ -1146,7 +1146,7 @@ transforms:
   - title: "Rename to 'onDestinationSelected'"
     date: 2026-11-22
     element:
-      uris: ['clay_ui.dart', 'clay_parts.dart']
+      uris: ['clay_host.dart', 'clay_parts.dart']
       constructor: ''
       inClass: 'ClayAppShell'
     changes:
@@ -1156,7 +1156,7 @@ transforms:
   - title: "Rename to 'onDestinationSelected'"
     date: 2026-11-22
     element:
-      uris: ['clay_ui.dart', 'clay_parts.dart']
+      uris: ['clay_host.dart', 'clay_parts.dart']
       field: 'onSelected'
       inClass: 'ClayAppShell'
     changes:

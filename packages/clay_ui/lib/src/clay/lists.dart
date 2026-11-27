@@ -52,7 +52,7 @@ class ClaySectionHeader extends StatelessWidget {
         padding:
             layered.padding(Directionality.of(context)) ??
             const EdgeInsetsDirectional.only(
-              start: ClaySpacing.roomy,
+              start: ClayListTile.inset,
               end: ClaySpacing.small,
               top: ClaySpacing.regular,
               bottom: ClaySpacing.small,
@@ -76,7 +76,7 @@ class ClaySectionHeader extends StatelessWidget {
   }
 }
 
-/// A group of rows on one raised slab of white clay, rounded 24, a faint
+/// A group of rows on one raised slab of white clay at the large step, a faint
 /// groove between rows, with an optional [header] above and [footer] under.
 ///
 /// ```dart
@@ -123,8 +123,8 @@ class ClayGroup extends StatelessWidget {
         dividerIndent ??
         (first is ClayListTile && first.leading != null
             ? ClayListTile.leadingExtent
-            : ClaySpacing.roomy);
-    final radius = clayRadiusOf(layered.shape, ClayRadius.large);
+            : ClayListTile.inset);
+    final radius = clayRadiusOf(layered.shape, theme.shapeScheme.corners.large);
     return RawKeylineRegion(
       label: header ?? 'Group',
       indents: [indent],
@@ -144,7 +144,7 @@ class ClayGroup extends StatelessWidget {
                   // Inset at both ends, so no groove runs into the slab's
                   // rounded edge.
                   if (i > 0)
-                    ClayGroove(indent: indent, endIndent: ClaySpacing.roomy),
+                    ClayGroove(indent: indent, endIndent: ClayListTile.inset),
                   row,
                 ],
               ],
@@ -153,8 +153,8 @@ class ClayGroup extends StatelessWidget {
           if (footer != null)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: ClaySpacing.roomy,
-                end: ClaySpacing.roomy,
+                start: ClayListTile.inset,
+                end: ClayListTile.inset,
                 top: ClaySpacing.small,
               ),
               child: Text(footer!, style: theme.textTheme.secondary),
@@ -176,10 +176,12 @@ class ClayGroup extends StatelessWidget {
 
 /// The faint groove between two rows on a slab: a 1 px line of the well's
 /// colour from [indent] to [endIndent], pressed into the clay rather than
-/// drawn on it.
+/// drawn on it. Its lower lip catches the light, as a well's lit edge does,
+/// so it reads as a cut on the ground as well as on a slab, by day and by
+/// night.
 ///
 /// ```dart
-/// const ClayGroove(indent: 20)
+/// const ClayGroove(indent: ClayListTile.inset)
 /// ```
 class ClayGroove extends StatelessWidget {
   /// A groove from [indent] to [endIndent].
@@ -207,14 +209,27 @@ class ClayGroove extends StatelessWidget {
     final night = c.brightness == Brightness.dark;
     final layered = RawStyleOf([style, theme.grooveStyle], const {});
     final side = layered.side;
+    // A cut whose lower lip catches the light: by day as a well's lit edge,
+    // by night faintly, where a dark line alone would sink into the ground.
+    final lip = side == null && layered.edge == null;
     return Padding(
       padding: EdgeInsetsDirectional.only(start: indent, end: endIndent),
       child: Container(
         height: side?.width ?? 1,
-        color:
-            side?.color ??
-            layered.edge ??
-            (night ? c.well.withValues(alpha: 0.7) : c.well),
+        decoration: BoxDecoration(
+          color:
+              side?.color ??
+              layered.edge ??
+              (night ? c.well.withValues(alpha: 0.7) : c.well),
+          boxShadow: lip
+              ? [
+                  BoxShadow(
+                    color: c.light.withValues(alpha: night ? 0.08 : 0.75),
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
       ),
     );
   }
@@ -262,10 +277,16 @@ class ClayListTile extends StatelessWidget {
   /// A second line under them.
   final String? subtitle;
 
-  /// A glyph or a badge before them.
+  /// A glyph, an avatar or a swatch before the words. It is decoration and
+  /// stays out of what a screen reader hears for the row (an avatar's
+  /// monogram would say the title again); words that matter go in [title]
+  /// or [subtitle].
   final Widget? leading;
 
-  /// A control at the row's end (a switch, a checkbox).
+  /// A control at the row's end (a switch, a checkbox, a key). On a row
+  /// that opens something it keeps a node of its own, which a screen reader
+  /// reaches apart from the row; on a row that is itself a checkbox or a
+  /// switch ([checked], [toggled]) it is the row's.
   final Widget? trailing;
 
   /// A value at the row's end.
@@ -274,8 +295,9 @@ class ClayListTile extends StatelessWidget {
   /// Called when the row is pressed; null: the row is not a control.
   final VoidCallback? onTap;
 
-  /// Whether the row is the one shown beside the list (a list beside its
-  /// detail).
+  /// Whether the row is the chosen one: the one shown beside the list (a
+  /// list beside its detail), or the choice in force (a palette in a list of
+  /// them). A screen reader hears it selected.
   final bool selected;
 
   /// Whether the row is itself a checkbox (a trailing `ClayCheckbox` its
@@ -348,7 +370,7 @@ class ClayListTile extends StatelessWidget {
           ? theme.rowHeight
           : theme.rowHeight + 12;
       final largeText = MediaQuery.textScalerOf(context).scale(10) >= 15;
-      final plateRadius = ClayRadius.large - plateInset;
+      final plateRadius = theme.shapeScheme.corners.large - plateInset;
       final well = ClayFace.well(c, radius: plateRadius);
       final ClayFace plate;
       if (pressed) {
@@ -401,9 +423,12 @@ class ClayListTile extends StatelessWidget {
                       if (leading != null) ...[
                         IconTheme.merge(
                           data: IconThemeData(size: 20, color: muted),
-                          child: SizedBox(
-                            width: 36,
-                            child: Center(child: leading),
+                          // Decoration: it stays out of the row's name.
+                          child: ExcludeSemantics(
+                            child: SizedBox(
+                              width: 36,
+                              child: Center(child: leading),
+                            ),
                           ),
                         ),
                         const SizedBox(width: ClaySpacing.medium),
@@ -455,18 +480,21 @@ class ClayListTile extends StatelessWidget {
                   final valueStyle = theme.textTheme.body.copyWith(
                     color: muted,
                   );
-                  // Under large text, on a row narrower than twelve of its
-                  // words' ems (a phone's), the row's end (its value, its
-                  // control) stands under its words at the row's end, as
-                  // list rows stack at large text: the words keep the row's
-                  // width rather than break a word a line beside it. A list's
-                  // rows share their width, so they all stack or none do. On
-                  // a wider row (a desk's pane) the end stays beside its
-                  // words where both fit, and a part too wide for that goes
-                  // under them. The chevron stays beside.
+                  // Under large text, on a row narrower than sixteen of its
+                  // words' ems (a phone's, at one and a half times the text
+                  // and up), the row's end (its value, its control) stands
+                  // under its words at the row's end, as list rows stack at
+                  // large text: the words keep the row's width rather than
+                  // break a word a line beside it. A list's rows share their
+                  // width, so they all stack or none do. On a wider row (a
+                  // desk's pane) the end stays beside its words, which wrap
+                  // beside it, and goes under them only when it would leave
+                  // them less than half the row: that turns on the end's
+                  // width, so rows with the same end agree. The chevron
+                  // stays beside.
                   final scaler = MediaQuery.textScalerOf(context);
                   final em = scaler.scale(titleStyle.fontSize ?? 16);
-                  final narrow = box.maxWidth < 12 * em;
+                  final narrow = box.maxWidth < 16 * em;
                   if (largeText &&
                       narrow &&
                       (trailing != null || trailingText != null)) {
@@ -600,6 +628,9 @@ class ClayListTile extends StatelessWidget {
       checked: checked,
       toggled: toggled,
       semanticLabel: semanticLabel,
+      // A control at the end keeps a node of its own, reached apart from
+      // the row, unless the row is that control (a checkbox or switch row).
+      mergeSemantics: trailing == null || checked != null || toggled != null,
       builder: (context, states, _) => body(states),
     );
   }
@@ -718,8 +749,8 @@ class ClayIconTile extends StatelessWidget {
   }
 }
 
-/// A Clay card: a raised slab of white clay, rounded 24, padded 20, holding
-/// [child]. With [onTap] it is a control: a press squashes it in.
+/// A Clay card: a raised slab of white clay at the large step, padded 20,
+/// holding [child]. With [onTap] it is a control: a press squashes it in.
 ///
 /// ```dart
 /// ClayCard(onTap: () {}, child: const Text('Drink water'))
@@ -761,7 +792,10 @@ class ClayCard extends StatelessWidget {
     Widget face(Set<WidgetState> states) {
       final layered = RawStyleOf([style, theme.cardStyle], states);
       final fill = color ?? layered.fill ?? c.clay;
-      final radius = clayRadiusOf(layered.shape, ClayRadius.large);
+      final radius = clayRadiusOf(
+        layered.shape,
+        theme.shapeScheme.corners.large,
+      );
       return AnimatedClaySurface(
         face: ClayFace.raised(c, color: fill, radius: radius).copyWith(
           press: states.contains(WidgetState.pressed) ? 0.6 : 0,
@@ -795,9 +829,11 @@ class ClayCard extends StatelessWidget {
   }
 }
 
-/// A row's heading at its start and its [end] part at its end, beside it
-/// when the two fit on one line, else under it, still at the end: the
-/// heading keeps its start either way.
+/// A row's heading at its start and its end part at its end: beside it
+/// while the end leaves the heading half the row and its longest word (the
+/// heading wraps in what is left), else under it, still at the end. The
+/// heading keeps its start either way, and the choice turns on the end's
+/// width alone, so a list's rows with the same end make the same one.
 class _HeadingAndEnd extends MultiChildRenderObjectWidget {
   _HeadingAndEnd({required Widget heading, required Widget end})
     : super(children: [heading, end]);
@@ -851,12 +887,25 @@ class _RenderHeadingAndEnd extends RenderBox
   ) {
     final loose = BoxConstraints(maxWidth: constraints.maxWidth);
     final end = size(_end, loose);
-    final heading = size(_heading, loose);
-    // Unbounded, the two stand side by side at their own widths.
-    final width = constraints.hasBoundedWidth
+    // Unbounded, the two stand side by side at their own widths. Bounded,
+    // the end stays beside while it leaves the words half the row and their
+    // longest word, and the words wrap in what it leaves them.
+    final bounded = constraints.hasBoundedWidth;
+    final room = constraints.maxWidth - _gap - end.width;
+    final beside =
+        !bounded ||
+        room >=
+            math.max(
+              constraints.maxWidth / 2,
+              _heading.getMinIntrinsicWidth(double.infinity),
+            );
+    final heading = size(
+      _heading,
+      beside && bounded ? BoxConstraints(maxWidth: room) : loose,
+    );
+    final width = bounded
         ? constraints.maxWidth
         : heading.width + _gap + end.width;
-    final beside = heading.width + _gap + end.width <= width;
     final rtl = _textDirection == TextDirection.rtl;
     double startOf(double w) => rtl ? width - w : 0;
     double endOf(double w) => rtl ? 0 : width - w;

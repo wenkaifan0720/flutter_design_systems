@@ -50,6 +50,11 @@ abstract final class ClayMetrics {
   /// The widest a column of reading or of a form stands.
   static const double readingWidth = 640;
 
+  /// The widest a page's body stands, inside the page's margins. On a
+  /// tablet and a desk a page's top bar and its footer stand on the same
+  /// column, so an app's own content lines up with them at this width.
+  static const double pageWidth = 1080;
+
   /// From this width the bottom bar gives way to the rail.
   static const double railBreakpoint = 600;
 
@@ -61,28 +66,6 @@ abstract final class ClayMetrics {
 
   /// The sidebar's width.
   static const double sidebarWidth = 264;
-}
-
-/// Clay's corners: generous and continuous (a rounded superellipse, so a
-/// corner flows into its side with no visible join). Each part takes the
-/// step that fits its size; round things (a radio, a switch's ball, a chip)
-/// are stadiums and circles.
-abstract final class ClayRadius {
-  /// A small part: a checkbox, a tag.
-  static const double small = 9;
-
-  /// A control: a button, a field, a select.
-  static const double control = 16;
-
-  /// A group of rows, a card, a menu.
-  static const double large = 24;
-
-  /// A dialog, a sheet, a floating dock.
-  static const double extraLarge = 32;
-
-  /// [radius] for a part [height] high, never more than half of it.
-  static double fit(double radius, double height) =>
-      math.min(radius, height / 2);
 }
 
 /// Clay's spacing, on a 4 px grid.
@@ -247,7 +230,7 @@ class ClayColors with Diagnosticable {
       accent = const Color(0xFFFF7A5C),
       onAccent = const Color(0xFF2B1630),
       accentInk = const Color(0xFFB53A1C),
-      danger = const Color(0xFFF2617A),
+      danger = const Color(0xFFF0577F),
       onDanger = const Color(0xFF2B0E16),
       dangerInk = const Color(0xFFB4213C),
       success = const Color(0xFF2E7D5B),
@@ -276,7 +259,7 @@ class ClayColors with Diagnosticable {
       danger = const Color(0xFFE85C76),
       onDanger = const Color(0xFF22080F),
       dangerInk = const Color(0xFFFF8FA3),
-      success = const Color(0xFF7FD8AE),
+      success = const Color(0xFFB5E6A0),
       focus = const Color(0xFFFF9C82),
       inverse = const Color(0xFFEDEAFB),
       onInverse = const Color(0xFF221D36),
@@ -511,7 +494,7 @@ class ClayColors with Diagnosticable {
     required this.onInverse,
     required this.scrim,
   }) : brightness = Brightness.light,
-       danger = const Color(0xFFF2617A),
+       danger = const Color(0xFFF0577F),
        onDanger = const Color(0xFF2B0E16),
        dangerInk = const Color(0xFFB4213C),
        success = const Color(0xFF2E7D5B),
@@ -540,7 +523,7 @@ class ClayColors with Diagnosticable {
        danger = const Color(0xFFE85C76),
        onDanger = const Color(0xFF22080F),
        dangerInk = const Color(0xFFFF8FA3),
-       success = const Color(0xFF7FD8AE),
+       success = const Color(0xFFB5E6A0),
        light = const Color(0xFFFFFFFF),
        tints = _nightTints;
 
@@ -996,6 +979,7 @@ class ClayThemeData with Diagnosticable {
     ClayColors? colors,
     ClayTextTheme? textTheme,
     ClayDensity? density,
+    RawShapeScheme? shapeScheme,
     this.buttonStyle,
     this.filledButtonStyle,
     this.textButtonStyle,
@@ -1091,7 +1075,11 @@ class ClayThemeData with Diagnosticable {
              ink: (colors ?? const ClayColors.light()).ink,
              secondaryInk: (colors ?? const ClayColors.light()).inkSecondary,
            ),
-       density = density ?? ClayDensity.adaptivePlatformDensity;
+       density = density ?? ClayDensity.adaptivePlatformDensity,
+       shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? defaultShapeScheme,
+         look: 'Clay',
+       );
 
   /// Clay by day. [fontFamilyFallback] reaches every text style, as
   /// [ThemeData.fontFamilyFallback] does.
@@ -1209,6 +1197,53 @@ class ClayThemeData with Diagnosticable {
     'lavender',
   ];
 
+  /// Clay's six palettes, for an app's palette picker: each of the
+  /// [presets] by its id, with its name and its key and ground by day and
+  /// by night. The first, Clay's own, is the default.
+  ///
+  /// ```dart
+  /// ClayHost(
+  ///   palette: ClayThemeData.palettes.firstWhere((p) => p.id == 'mint'),
+  ///   child: const SizedBox(),
+  /// )
+  /// ```
+  static final List<RawNamedPalette> palettes = List.unmodifiable([
+    for (final id in presets)
+      RawNamedPalette(
+        id: id,
+        label: id[0].toUpperCase() + id.substring(1),
+        swatches: _swatches(id, Brightness.light),
+        darkSwatches: _swatches(id, Brightness.dark),
+      ),
+  ]);
+
+  static List<Color> _swatches(String id, Brightness brightness) {
+    final colors = ClayColors.preset(id, brightness);
+    return [colors.accent, colors.ground];
+  }
+
+  /// The theme of [palette] at [brightness]: one of [palettes] gives its
+  /// preset; an app's own gives [ClayThemeData.from] its first swatch as
+  /// the key.
+  factory ClayThemeData.fromPalette(
+    RawNamedPalette palette,
+    Brightness brightness, {
+    ClayDensity? density,
+    List<String>? fontFamilyFallback,
+  }) => palettes.contains(palette)
+      ? ClayThemeData.preset(
+          palette.id,
+          brightness,
+          density: density,
+          fontFamilyFallback: fontFamilyFallback,
+        )
+      : ClayThemeData.from(
+          accent: palette.swatchesFor(brightness).first,
+          brightness: brightness,
+          density: density,
+          fontFamilyFallback: fontFamilyFallback,
+        );
+
   /// The preset named [name] at [brightness].
   factory ClayThemeData.preset(
     String name,
@@ -1232,6 +1267,53 @@ class ClayThemeData with Diagnosticable {
 
   /// How tight controls stand.
   final ClayDensity density;
+
+  /// The shapes an app can change, held to [shapeLimits]: Clay's corner
+  /// steps, which its parts take by size (a checkbox and a tag
+  /// [RawCorner.small], a control [RawCorner.medium], a group of rows, a
+  /// card and a menu [RawCorner.large], a dialog and a sheet
+  /// [RawCorner.extraLarge], a chart's bars [RawCorner.extraSmall]), and the
+  /// [RawShapeScheme.depth] of its relief: how soft and far its shadows
+  /// fall, how deep its light and shade reach in, how far a press sinks.
+  /// Round parts (a radio, a switch's ball, a chip, the dock's places) stay
+  /// stadiums and circles, and the dock's corners follow its places'.
+  /// Clay draws no lines, so it opens no stroke.
+  ///
+  /// ```dart
+  /// ClayThemeData.clay(Brightness.light).copyWith(shapeScheme: ClayThemeData.defaultShapeScheme.copyWith(depth: 1.25))
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Clay's own shapes: continuous corners (a rounded superellipse, so a
+  /// corner flows into its side with no join) of 6, 9, 16, 24 and 32, and
+  /// its relief at 1.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      style: RawCornerStyle.continuous,
+      extraSmall: 6,
+      small: 9,
+      medium: 16,
+      large: 24,
+      extraLarge: 32,
+    ),
+    depth: 1,
+  );
+
+  /// The bands Clay holds a [shapeScheme] to, so that every end still reads
+  /// as soft clay: continuous corners alone (inflated clay shows no join, so
+  /// no bevel, notch or step), each step within about a quarter of its own
+  /// (a control's corners up to 20: past that a key reads as a chip, which
+  /// is a stadium), no stroke, and a relief from 0.75 (where the smallest
+  /// parts still puff) to 1.5.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    styles: {RawCornerStyle.continuous},
+    extraSmall: RawBand(4, 8),
+    small: RawBand(6, 12),
+    medium: RawBand(12, 20),
+    large: RawBand(18, 30),
+    extraLarge: RawBand(24, 40),
+    depth: RawBand(0.75, 1.5),
+  );
 
   /// Every `ClayButton`'s style.
   final ClayStyle? buttonStyle;
@@ -1511,6 +1593,7 @@ class ClayThemeData with Diagnosticable {
     ClayColors? colors,
     ClayTextTheme? textTheme,
     ClayDensity? density,
+    RawShapeScheme? shapeScheme,
     ClayStyle? buttonStyle,
     ClayStyle? filledButtonStyle,
     ClayStyle? textButtonStyle,
@@ -1603,6 +1686,7 @@ class ClayThemeData with Diagnosticable {
     colors: colors ?? this.colors,
     textTheme: textTheme ?? this.textTheme,
     density: density ?? this.density,
+    shapeScheme: shapeScheme ?? this.shapeScheme,
     buttonStyle: buttonStyle ?? this.buttonStyle,
     filledButtonStyle: filledButtonStyle ?? this.filledButtonStyle,
     textButtonStyle: textButtonStyle ?? this.textButtonStyle,
@@ -1884,6 +1968,7 @@ class ClayThemeData with Diagnosticable {
       colors: ClayColors.lerp(a.colors, b.colors, t),
       textTheme: ClayTextTheme.lerp(a.textTheme, b.textTheme, t),
       density: ClayDensity.lerp(a.density, b.density, t),
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
     );
   }
 
@@ -1893,11 +1978,17 @@ class ClayThemeData with Diagnosticable {
       other.colors == colors &&
       other.textTheme == textTheme &&
       other.density == density &&
+      other.shapeScheme == shapeScheme &&
       listEquals(other._styles, _styles);
 
   @override
-  int get hashCode =>
-      Object.hash(colors, textTheme, density, Object.hashAll(_styles));
+  int get hashCode => Object.hash(
+    colors,
+    textTheme,
+    density,
+    shapeScheme,
+    Object.hashAll(_styles),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1905,7 +1996,8 @@ class ClayThemeData with Diagnosticable {
     properties
       ..add(DiagnosticsProperty<ClayColors>('colors', colors))
       ..add(DiagnosticsProperty<ClayTextTheme>('textTheme', textTheme))
-      ..add(DiagnosticsProperty<ClayDensity>('density', density));
+      ..add(DiagnosticsProperty<ClayDensity>('density', density))
+      ..add(DiagnosticsProperty<RawShapeScheme>('shapeScheme', shapeScheme));
     for (final (i, s) in _styles.indexed) {
       properties.add(
         DiagnosticsProperty<ClayStyle>(_styleNames[i], s, defaultValue: null),
@@ -2133,7 +2225,7 @@ class _ClayThemeTween extends Tween<ClayThemeData> {
   ClayThemeData lerp(double t) => ClayThemeData.lerp(begin!, end!, t);
 }
 
-/// `context.clayTheme`: the [ClayThemeData] above.
+/// Reads the [ClayThemeData] above a context as `context.clayTheme`.
 extension ClayThemeContext on BuildContext {
   /// The [ClayThemeData] above this context ([ClayTheme.of]).
   ClayThemeData get clayTheme => ClayTheme.of(this);

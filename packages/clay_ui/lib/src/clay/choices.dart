@@ -138,12 +138,13 @@ class ClayCheckMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = ClayTheme.of(context).colors;
+    final theme = ClayTheme.of(context);
+    final c = theme.colors;
     final disabled = states.contains(WidgetState.disabled);
     final on = value != false;
     final side = style?.minimumSize?.width ?? 24;
     final fill = style?.fill ?? c.accent;
-    final radius = math.min(ClayRadius.small - 1, side / 3);
+    final radius = math.min(theme.shapeScheme.corners.small - 1, side / 3);
     var face = on
         ? (disabled
               ? ClayFace.flat(c, color: c.well, radius: radius)
@@ -945,7 +946,7 @@ class ClaySegmentedButton<T> extends StatelessWidget {
                   child: ClaySurface(
                     face: ClayFace.well(
                       c,
-                      radius: ClayRadius.control,
+                      radius: theme.shapeScheme.corners.medium,
                     ).copyWith(shadeOpacity: enabled ? null : 0.1),
                   ),
                 ),
@@ -964,11 +965,13 @@ class ClaySegmentedButton<T> extends StatelessWidget {
                             ? ClayFace.raised(
                                 c,
                                 color: layered.fill ?? c.risen,
-                                radius: ClayRadius.control - inset,
+                                radius:
+                                    theme.shapeScheme.corners.medium - inset,
                               )
                             : ClayFace.flat(
                                 c,
-                                radius: ClayRadius.control - inset,
+                                radius:
+                                    theme.shapeScheme.corners.medium - inset,
                               ),
                       ),
                     );
@@ -1067,7 +1070,7 @@ class _Segment<T> extends StatelessWidget {
           pressed: states.contains(WidgetState.pressed),
           builder: (depth) => CustomPaint(
             foregroundPainter: focused
-                ? _SegmentRim(c.focus, ClayRadius.control - 4)
+                ? _SegmentRim(c.focus, theme.shapeScheme.corners.medium - 4)
                 : null,
             child: Transform.translate(
               offset: Offset(0, depth),

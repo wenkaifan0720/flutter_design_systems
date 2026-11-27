@@ -165,13 +165,29 @@ class ClayFieldMessage extends StatelessWidget {
   }
 }
 
-/// A Clay text field: a well pressed into the ground, rounded 16, the words
-/// on its floor. Focus brings a 2 px rim of the focus colour up inside the
-/// well's edge; an [errorText] rims it in the danger colour and says itself
+/// A Clay text field: a well pressed into the ground at the control step, the
+/// words on its floor. Focus brings a 2 px rim of the focus colour up inside
+/// the well's edge; an [errorText] rims it in the danger colour and says itself
 /// under it.
 ///
 /// The caller owns a [controller] or [focusNode] it passes; without one the
 /// field makes its own and disposes it.
+///
+/// A form checks it as Material's `TextFormField` is checked: put it in a
+/// [RawFormField] under a [ClayForm], hand it the field's error, and give
+/// both one [focusNode], so a failed submit moves the focus to it.
+///
+/// ```dart
+/// RawFormField<String>(
+///   validator: (value) =>
+///       (value ?? '').trim().isEmpty ? 'Add a title' : null,
+///   builder: (field) => ClayTextField(
+///     labelText: 'Title',
+///     errorText: field.errorText,
+///     onChanged: field.didChange,
+///   ),
+/// )
+/// ```
 ///
 /// ```dart
 /// ClayTextField(labelText: 'Habit name', hintText: 'Drink water', onChanged: (value) {})
@@ -362,7 +378,10 @@ class _ClayTextFieldState extends State<ClayTextField> {
         .merge(layered.textStyle)
         .copyWith(color: widget.enabled ? c.ink : c.inkDisabled);
     final oneLine = widget.maxLines == 1;
-    final radius = clayRadiusOf(layered.shape, ClayRadius.control);
+    final radius = clayRadiusOf(
+      layered.shape,
+      theme.shapeScheme.corners.medium,
+    );
     var face = ClayFace.well(c, color: layered.fill, radius: radius);
     face = face.copyWith(
       // Off, the well fills nearly level with the ground.

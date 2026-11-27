@@ -240,7 +240,11 @@ class _Moves extends StatelessWidget {
           width: 96,
           height: 64,
           child: ClaySurface(
-            face: ClayFace.raised(c, color: c.risen, radius: ClayRadius.large),
+            face: ClayFace.raised(
+              c,
+              color: c.risen,
+              radius: ClayTheme.of(context).shapeScheme.corners.large,
+            ),
           ),
         ),
       ),
@@ -253,7 +257,11 @@ class _Moves extends StatelessWidget {
           width: 96,
           height: 64,
           child: ClaySurface(
-            face: ClayFace.raised(c, color: c.accent, radius: ClayRadius.large),
+            face: ClayFace.raised(
+              c,
+              color: c.accent,
+              radius: ClayTheme.of(context).shapeScheme.corners.large,
+            ),
           ),
         ),
       ),
@@ -265,7 +273,12 @@ class _Moves extends StatelessWidget {
         specimen: SizedBox(
           width: 96,
           height: 64,
-          child: ClaySurface(face: ClayFace.well(c, radius: ClayRadius.large)),
+          child: ClaySurface(
+            face: ClayFace.well(
+              c,
+              radius: ClayTheme.of(context).shapeScheme.corners.large,
+            ),
+          ),
         ),
       ),
     ];

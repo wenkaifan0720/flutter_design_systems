@@ -10,34 +10,40 @@ lists, dialogs, sheets and toasts, with matching light and dark themes.
 
 ## Install
 
-```yaml
-dependencies:
-  clay_ui: ^0.5.0
+```sh
+flutter pub add clay_ui material_ui lucide_icons_flutter
 ```
 
-The example uses `MaterialApp` from `material_ui` (`flutter pub add material_ui`).
+`material_ui` is Flutter's Material as a package (from Flutter 3.50 it leaves the SDK): your app's `MaterialApp`.
+Import `package:clay_ui/clay_ui.dart` and `package:material_ui/material_ui.dart` (it brings Flutter's widgets); Clay's
+library doesn't export `flutter/widgets.dart`. It re-exports ui_core, so `RawWidgetsLocalizations` and the `Raw*`
+parts come with it. Clay's own parts draw their glyphs from Lucide; the snippets below use `LucideIcons` from
+`lucide_icons_flutter` for the app's own icons.
 
-## Quick start
-
-The smallest app: Clay's theme round one button.
+A whole app: Clay over a `MaterialApp`, one page and one key.
 
 ```dart
 import 'package:clay_ui/clay_ui.dart';
-import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() => runApp(
-  WidgetsApp(
-    color: const Color(0xFFFF7A5C),
-    builder: (context, _) => ClayTheme(
-      data: ClayThemeData.clay(Brightness.light),
-      child: Center(child: ClayButton.filled('Add habit', onPressed: () {})),
+  MaterialApp(
+    builder: (context, child) => ClayHost(child: child!),
+    home: ClayScreen(
+      topBar: const ClayTopBar(title: 'Shelf'),
+      body: ClayButton.filled('Add a book', onPressed: () {}),
     ),
   ),
 );
 ```
 
-A fuller app: load the bundled font before `runApp`. Wrap the navigator in `ClayTheme` using your app's `builder` so routes and
-overlays share the same colours and typography. Add `ClayToaster` to show toasts.
+## Mount Clay
+
+`ClayHost` is the one mount. Put it in your app's `builder:`, above the Navigator, so every page, dialog and sheet
+stands inside it. It gives the theme for the brightness in force (by day, by night, or as the device is; `theme` and
+`darkTheme`, or a `palette`'s), holds the layer toasts show in (`showClayToast` needs it) and lays the ground. A
+change of appearance or palette moves across, as a Material app's theme change does. Load the bundled face before the
+first frame, and give the app Clay's page transitions:
 
 ```dart
 import 'package:clay_ui/clay_ui.dart';
@@ -45,153 +51,375 @@ import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await clayLoadFonts();
-  runApp(
-    MaterialApp(
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: clayPageTransitions,
-        ),
-      ),
-      builder: (context, child) => ClayTheme(
-        data: ClayThemeData.clay(MediaQuery.platformBrightnessOf(context)),
-        child: ClayToaster(child: child!),
-      ),
-      home: const TodayPage(),
-    ),
-  );
+  await clayLoadFonts(); // the first frame is set in Rubik
+  runApp(const App(appearance: null));
 }
 
-class TodayPage extends StatelessWidget {
-  const TodayPage({super.key});
+class App extends StatelessWidget {
+  const App({super.key, required this.appearance});
+
+  /// Light or dark, pinned by the reader; null follows the device.
+  final Brightness? appearance;
 
   @override
-  Widget build(BuildContext context) => ClayScaffold(
-    body: Center(
-      child: ClayButton.filled('Add habit', onPressed: () {}),
+  Widget build(BuildContext context) => MaterialApp(
+    theme: ThemeData(
+      pageTransitionsTheme: const PageTransitionsTheme(builders: clayPageTransitions),
+    ),
+    localizationsDelegates: const [
+      DefaultRawWidgetsLocalizations.delegate,
+      DefaultMaterialLocalizations.delegate,
+      DefaultWidgetsLocalizations.delegate,
+    ],
+    builder: (context, child) => ClayHost(brightness: appearance, child: child!),
+    home: const ClayScreen(
+      topBar: ClayTopBar(title: 'Shelf'),
+      body: Text('Your reading list'),
     ),
   );
 }
 ```
 
-`clayPageTransitions` supplies page transitions on each platform, including the iOS swipe-back gesture.
+`clayPageTransitions` gives each platform its page transition, the iOS swipe back included. Under a `CupertinoApp`
+(from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same place; a field is Flutter's Material text
+field underneath, so list `DefaultMaterialLocalizations.delegate` there too.
 
-### CupertinoApp and WidgetsApp
+## Build an app
 
-`ClayTheme` goes in the builder of any app widget. With `CupertinoApp` from `cupertino_ui`:
+The example app, [example/lib/main.dart](example/lib/main.dart), is a whole reading list to copy: these are its parts.
+The gallery, every component on a page of its own, is `example/lib/gallery.dart` (`flutter run -t lib/gallery.dart`).
 
-```dart
-CupertinoApp(
-  builder: (context, child) => ClayTheme(
-    data: ClayThemeData.clay(MediaQuery.platformBrightnessOf(context)),
-    child: ClayToaster(child: child!),
-  ),
-  home: const TodayPage(),
-)
-```
+### The shell and its places
 
-With Flutter's `WidgetsApp`:
-
-```dart
-WidgetsApp(
-  color: const Color(0xFFFF7A59),
-  builder: (context, child) => ClayTheme(
-    data: ClayThemeData.clay(MediaQuery.platformBrightnessOf(context)),
-    child: ClayToaster(child: child!),
-  ),
-  pageRouteBuilder: <T>(settings, builder) =>
-      PageRouteBuilder<T>(settings: settings, pageBuilder: (context, _, _) => builder(context)),
-  home: const TodayPage(),
-)
-```
-
-## Everyday parts
-
-A form: a field, a select and the screen's one coral key.
+`ClayScaffold.branches` holds the app's places: the floating dock along a phone's foot, the rail from 600 wide and
+the sidebar from 1024. Each place keeps its own pages; a page pushed on one stands beside the rail or the sidebar (a
+phone's dock steps away for it), back pops it, and choosing the place again goes back to its first page. The arrow
+keys move between the places. An `action`, the app's one key, stands at the dock's end and under the `brand` on a
+rail or a sidebar.
 
 ```dart
-Column(
-  crossAxisAlignment: CrossAxisAlignment.stretch,
-  children: [
-    ClayTextField(labelText: 'Habit name', hintText: 'Drink water', onChanged: setName),
-    const SizedBox(height: 24),
-    ClaySelect<String>(
-      labelText: 'Repeat',
-      value: repeat,
-      items: const [
-        ClaySelectItem(value: 'daily', label: 'Every day'),
-        ClaySelectItem(value: 'weekdays', label: 'Weekdays'),
-      ],
-      onChanged: (value) => setState(() => repeat = value),
-    ),
-    const SizedBox(height: 24),
-    ClayButton.filled('Add habit', onPressed: save),
-  ],
-)
-```
+import 'package:clay_ui/clay_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:material_ui/material_ui.dart';
 
-Rows live in a group; a switch applies at once:
+class ShelfShell extends StatefulWidget {
+  const ShelfShell({super.key});
 
-```dart
-ClayGroup(
-  header: 'Reminders',
-  children: [
-    ClayListTile(title: 'Morning check-in', trailingText: '8:00', onTap: editTime),
-    ClayListTile(
-      title: 'Evening review',
-      trailing: ClaySwitch(
-        value: evening,
-        onChanged: (value) => setState(() => evening = value),
-        semanticLabel: 'Evening review',
-      ),
-    ),
-  ],
-)
-```
+  @override
+  State<ShelfShell> createState() => _ShelfShellState();
+}
 
-A short question asks with a dialog, and a toast confirms what was done:
+class _ShelfShellState extends State<ShelfShell> {
+  int _place = 0;
 
-```dart
-final delete = await showClayDialog<bool>(
-  context: context,
-  isAlert: true,
-  builder: (context) => ClayDialog(
-    title: 'Delete this habit?',
-    content: const Text('Its 42-day streak goes with it.'),
-    actions: [
-      ClayDialogAction(label: 'Keep', onPressed: () => Navigator.pop(context, false)),
-      ClayDialogAction(
-        label: 'Delete',
-        isDefaultAction: true,
-        isDestructiveAction: true,
-        onPressed: () => Navigator.pop(context, true),
-      ),
+  @override
+  Widget build(BuildContext context) => ClayScaffold.branches(
+    destinations: const [
+      ClayDestination(icon: LucideIcons.bookOpen, label: 'Books'),
+      ClayDestination(icon: LucideIcons.plus, label: 'Add'),
+      ClayDestination(icon: LucideIcons.settings, label: 'Settings'),
     ],
-  ),
-);
-if (delete ?? false) showClayToast(context, 'Habit deleted', actionLabel: 'Undo');
+    selectedIndex: _place,
+    onDestinationSelected: (place) => setState(() => _place = place),
+    branches: [
+      (context) => const ClayScreen(topBar: ClayTopBar(title: 'Books'), body: Text('Your reading list')),
+      (context) => const ClayScreen(topBar: ClayTopBar(title: 'Add a book'), body: Text('Title')),
+      (context) => const ClayScreen(topBar: ClayTopBar(title: 'Settings'), body: Text('Appearance')),
+    ],
+  );
+}
 ```
 
-## Components
+### A list and its pages
 
-- **Forms** include text fields, selects, checkboxes, radios and radio groups, switches, segmented buttons and chips.
-- **Navigation** includes a top bar, tabs, a floating dock, a rail and a sidebar. `ClayScaffold` picks one for the
-  window width.
-- **Display** includes slabs of rows, cards, badges, progress bars and rings.
-- **Overlays** include dialogs, sheets and toasts.
+A `ClayGroup` of `ClayListTile`s on one slab of clay, each pushing its own page. A pushed page's top bar takes its
+way back from `ClayTopBar.autoLeading`: a back ball on a page, a close ball on a sheet. A tile's `trailing` holds a
+tag, or a control of its own that keeps its own tap.
 
-The example app, Steady, uses these widgets to track habits, log a day and set reminders.
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
-## Customize the theme
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key, required this.titles});
 
-Clay comes in six palettes, each designed by day and by night: `clay` (the default), `mint`, `sky`, `butter`, `peach`
-and `lavender`. Pick one with `ClayThemeData.preset('mint', Brightness.light)`; `ClayThemeData.presets` lists them and
-`ClayColors.preset` gives a palette's colours alone.
+  final List<String> titles;
 
-Use `ClayThemeData.clay(Brightness.dark)` for the night palette. Use `ClayThemeData.from(accent: color)` for a brand
-colour: the factory picks the accent's readable words and keeps its text and focus colours at AA contrast. Every part
-takes a `style:` over its part theme in `ClayThemeData`, and `ClaySurface` with `ClayFace` draws your own parts in the
-same clay.
+  @override
+  Widget build(BuildContext context) => ClayScreen(
+    topBar: const ClayTopBar(title: 'Books'),
+    body: ClayGroup(
+      header: '${titles.length} books',
+      children: [
+        for (final title in titles)
+          ClayListTile(
+            title: title,
+            subtitle: 'George Eliot',
+            trailing: const ClayTag('Reading', tone: ClayTagTone.accent),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => ClayScreen(
+                  topBar: ClayTopBar(title: title, leading: ClayTopBar.autoLeading(context)),
+                  body: ClayDescriptionList(entries: [ClayDescription('Title', title)]),
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+```
+
+### Forms
+
+Stand the fields in a `Column` with `ClaySpacing.large` between them, in a column of a readable width (the example
+holds its pages to 640 from the start edge). Every field takes the column's width. A control that is not a field (a
+segmented button, a slider) takes its label and help from `ClayFormField`, so its words start where a field's do.
+Check the answers when the reader saves: give each problem to its field's `errorText`, in words, and move the focus
+to the first one. A `ClayDatePicker` with a null `value` is an optional date; a chosen day prints as 2 Oct 2026. The
+page's one coral key stands in `ClayScreen`'s `footer` on a phone, in the thumb's reach.
+
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class AddBookForm extends StatefulWidget {
+  const AddBookForm({super.key, required this.onSaved});
+
+  final void Function(String title, String format, DateTime? started) onSaved;
+
+  @override
+  State<AddBookForm> createState() => _AddBookFormState();
+}
+
+class _AddBookFormState extends State<AddBookForm> {
+  final _title = TextEditingController();
+  final _titleFocus = FocusNode();
+  String _format = 'paperback';
+  String _status = 'toRead';
+  DateTime? _started;
+  String? _titleError;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  // The form's check: the field's error in words, or null.
+  String? _checkTitle(String title) => title.trim().isEmpty ? 'Enter the book’s title' : null;
+
+  void _save() {
+    setState(() => _titleError = _checkTitle(_title.text));
+    if (_titleError != null) return _titleFocus.requestFocus();
+    widget.onSaved(_title.text.trim(), _format, _started);
+  }
+
+  @override
+  Widget build(BuildContext context) => ClayScreen(
+    topBar: const ClayTopBar(title: 'Add a book'),
+    footer: ClayButton.filled('Save book', onPressed: _save),
+    body: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: ClaySpacing.large,
+      children: [
+        ClayTextField(
+          labelText: 'Title',
+          controller: _title,
+          focusNode: _titleFocus,
+          errorText: _titleError,
+        ),
+        ClaySelect<String>(
+          labelText: 'Format',
+          value: _format,
+          items: const [
+            ClaySelectItem(value: 'paperback', label: 'Paperback'),
+            ClaySelectItem(value: 'ebook', label: 'Ebook'),
+          ],
+          onChanged: (format) => setState(() => _format = format),
+        ),
+        ClayFormField(
+          labelText: 'Status',
+          child: ClaySegmentedButton<String>(
+            segments: const [
+              ClaySegment(value: 'toRead', label: 'To read'),
+              ClaySegment(value: 'reading', label: 'Reading'),
+              ClaySegment(value: 'done', label: 'Done'),
+            ],
+            selected: _status,
+            onChanged: (status) => setState(() => _status = status),
+          ),
+        ),
+        ClayDatePicker(
+          labelText: 'Date started',
+          helperText: 'Optional',
+          value: _started,
+          firstDate: DateTime(1900),
+          lastDate: DateTime(2100),
+          onChanged: (day) => setState(() => _started = day),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+### Dialogs and toasts
+
+`showClayDialog` returns what the dialog is popped with: pop it with the answer from each `ClayDialogAction`, and
+Escape, a tap beside it or system back give `null`. A destructive action takes the danger red
+(`isDestructiveAction`). `showClayToast` says what happened, with a way back where there is one.
+
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+Future<void> confirmDelete(BuildContext context, String title, {required VoidCallback delete, required VoidCallback undo}) async {
+  final sure = await showClayDialog<bool>(
+    context: context,
+    builder: (context) => ClayDialog(
+      title: 'Delete “$title”?',
+      content: const Text('It comes off your list.'),
+      actions: [
+        ClayDialogAction(label: 'Keep it', onPressed: () => Navigator.of(context).pop(false)),
+        ClayDialogAction(
+          label: 'Delete book',
+          isDefaultAction: true,
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    ),
+  );
+  if (sure != true || !context.mounted) return;
+  delete();
+  showClayToast(context, 'Deleted “$title”', actionLabel: 'Undo', onAction: undo);
+}
+```
+
+### Let the reader choose a palette
+
+`ClayThemeData.palettes` are the six, each with an id to store, a label to show and the swatches it gives by day and
+by night (its accent first). Show each by its colour as it shows now (`swatchesFor` the theme's brightness), a ball of
+clay beside its name; the row in force is `selected`. Hand the chosen one to the host.
+
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class PalettePicker extends StatelessWidget {
+  const PalettePicker({super.key, required this.palette, required this.onChanged});
+
+  final RawNamedPalette palette;
+  final ValueChanged<RawNamedPalette> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = ClayTheme.of(context).colors;
+    return ClayGroup(
+      header: 'Colour',
+      children: [
+        for (final p in ClayThemeData.palettes)
+          ClayListTile(
+            // Its accent as it shows now, beside its name.
+            leading: SizedBox.square(
+              dimension: 24,
+              child: ClaySurface(
+                face: ClayFace.raised(colors, color: p.swatchesFor(colors.brightness).first, radius: 12),
+              ),
+            ),
+            title: p.label,
+            selected: p.id == palette.id,
+            showChevron: false,
+            onTap: () => onChanged(p),
+          ),
+      ],
+    );
+  }
+}
+
+// Over the app: ClayHost(palette: palette, brightness: appearance, child: child!)
+```
+
+## Building blocks
+
+| For | Use |
+| --- | --- |
+| The app and its pages | `ClayHost`, `ClayScaffold`, `ClayScreen`, `ClayTopBar`, `ClayDestination`, `ClayNavigationBar`, `ClayNavigationRail`, `ClaySidebar`, `ClayTabBar`, `ClaySplitView` |
+| Lists | `ClayGroup`, `ClayListTile`, `ClaySectionHeader`, `ClayGroove`, `ClayCard`, `ClayIconTile`, `ClayDescriptionList`, `ClayDisclosure`, `ClayDisclosureGroup`, `ClaySwipeRow`, `ClayReorderableList`, `ClayPullToRefresh`, `ClayTree`, `ClayTimeline`, `ClayCarousel` |
+| Actions | `ClayButton` (`.filled`), `ClayIconButton`, `ClayButtonGroup`, `ClayToggle`, `ClayToggleGroup`, `ClaySplitButton`, `ClayLink`, `ClayKbd` |
+| Form fields | `ClayTextField`, `ClayTextArea`, `ClayPasswordField`, `ClaySearchField`, `ClayNumberField`, `ClayOtpField`, `ClayInputGroup`, `ClaySelect`, `ClayCombobox`, `ClayTagInput`, `ClayForm`, `ClayFormField`, `ClayFileDrop` |
+| Choices | `ClayCheckbox`, `ClayRadio`, `ClayRadioGroup`, `ClaySwitch`, `ClaySegmentedButton`, `ClayChip`, `ClaySlider`, `ClayRangeSlider`, `ClayRating`, `ClayColorPicker` |
+| Dates and times | `ClayDatePicker`, `ClayDateRangePicker`, `ClayCalendar`, `ClayTimePicker`, `ClayTimeField`, `ClayWheelPicker` |
+| Figures and charts | `ClayMeter`, `ClayDataTable`, `ClayTable`, `ClayLineChart`, `ClayAreaChart`, `ClayBarChart`, `ClayPieChart`, `ClaySparkline` |
+| Marks | `ClayTag`, `ClayBadge`, `ClayAvatar`, `ClayAvatarGroup`, `ClaySkeleton`, `ClayMedia` |
+| Progress and messages | `ClayProgressBar`, `ClayProgressRing`, `ClaySpinner`, `ClayStepProgress`, `showClayToast`, `ClayBanner`, `ClayStateView`, `ClayTooltip` |
+| Over the page | `showClayDialog` and `ClayDialog`, `showClayBottomSheet`, `showClaySideSheet`, `showClayActionSheet`, `ClaySheetPage`, `ClayMenu`, `ClayContextMenu`, `ClayPopover`, `ClayHoverCard`, `ClayMenuBar`, `showClayCommandPalette` |
+| Wayfinding | `ClayBreadcrumb`, `ClayPagination`, `ClayPageDots`, `ClayScrollArea` |
+| Your own parts | `ClaySurface`, `ClayFace`, `ClayWell`, `AnimatedClaySurface`, `ClaySpacing`, `ClayMetrics` |
+
+## Make it yours
+
+`ClayTheme.of(context)` returns the `ClayThemeData` in scope. Clay comes in six palettes, each designed by day and
+by night: `clay` (the default), `mint`, `sky`, `butter`, `peach` and `lavender` (`ClayThemeData.palettes`, or
+`ClayThemeData.preset('mint', Brightness.light)`). `ClayThemeData.from(accent: color)` takes a brand colour: it picks
+the accent's readable words and keeps the text and focus colours at AA contrast. Every part takes a `style:` over its
+part theme in `ClayThemeData`, and `ClaySurface` with `ClayFace` draws your own parts in the same clay.
+
+### Shapes
+
+`ClayThemeData.shapeScheme` is the one source of Clay's corners and relief. Each part takes a step of it: bars and
+chart fills the extra-small, a checkbox and a tag the small, controls the medium, groups, cards and menus the large,
+dialogs and sheets the extra-large; balls, pills and the dock's places stay round. `depth` scales the relief: how far
+a part stands above the ground and how far a press sinks it. A theme opens only what keeps clay clay; a value past its
+band is held at the band's end (a debug build says so), and a corner style other than the continuous curve, or a
+stroke, is set aside.
+
+| Part | Default | Band |
+| --- | --- | --- |
+| Corner style | continuous | fixed |
+| `extraSmall` | 6 | 4–8 |
+| `small` | 9 | 6–12 |
+| `medium` | 16 | 12–20 |
+| `large` | 24 | 18–30 |
+| `extraLarge` | 32 | 24–40 |
+| `full` | stadium | fixed |
+| Stroke | none | none |
+| `depth` | 1 | 0.75–1.5 |
+
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+// A firmer clay: tighter corners, shallower relief.
+ClayThemeData firm(Brightness brightness) {
+  final theme = ClayThemeData.clay(brightness);
+  final shapes = theme.shapeScheme;
+  return theme.copyWith(
+    shapeScheme: shapes.copyWith(
+      corners: shapes.corners.copyWith(small: 7, medium: 12, large: 18, extraLarge: 24),
+      depth: 0.75,
+    ),
+  );
+}
+
+Widget host(BuildContext context, Widget? child) =>
+    ClayHost(theme: firm(Brightness.light), darkTheme: firm(Brightness.dark), child: child!);
+```
+
+## Testing your app
+
+Pump the app with `ClayHost` in its `builder:`, as the app has it, and `await clayLoadFonts()` in `setUpAll` so the
+words measure as on a device. Icon-only keys are found by their tooltip (`find.byTooltip('Back')`). A place in the
+dock, the rail or the sidebar is a tab with its place in the set: `find.bySemanticsLabel('Books\nTab 1 of 3')`.
+
+## Hosting one page
+
+`package:clay_ui/clay_host.dart` holds `ClayAppShell`, `ClayTab` and `ClayShellAction`: a host's frame round one
+page that something else chooses, a router's or a preview's. An app that keeps its own places builds on
+`ClayScaffold.branches`.
 
 ## Performance
 
@@ -204,24 +432,25 @@ Clay supports Android, iOS, web, macOS, Windows and Linux.
 
 ## Accessibility
 
-Text meets WCAG AA contrast on every surface by day and by night. Keyboard focus brings a 2 px rim of the focus colour
-up inside a part's own edge. Tab reaches each control; the arrow keys move within tabs and open lists. A radio group,
-a segmented button and a one-choice toggle group are Flutter's `RadioGroup`, each choice a `RawRadio`: one Tab stop, on
-the choice, whose arrows choose as they move. A screen reader hears each checkbox, radio and switch as one, with its
+Text meets WCAG AA contrast on every surface by day and by night. Touch targets are at least 40 dp, ui_core's touch
+floor, for a finger and a pointer alike. Keyboard focus brings a 2 px rim of the focus colour up inside a part's own
+edge. Tab reaches each control; the arrow keys move within tabs, the navigation's places and open lists. A radio group,
+a segmented button and a one-choice toggle group are Flutter's `RadioGroup`, each choice a `RawRadio`: one Tab stop,
+on the choice, whose arrows choose as they move. A screen reader hears each checkbox, radio and switch as one, with its
 state, and never as a button; a toggle button (a selected icon button, a filter chip) is a button that is selected, as
-Flutter's `IconButton(isSelected:)` is. A tooltip shows on the keys' focus as on a pointer's rest. Dialogs, sheets, tabs
-and toasts respect reduced motion.
+Flutter's `IconButton(isSelected:)` is. A tooltip shows on the keys' focus as on a pointer's rest. Text scales with
+the platform setting. Dialogs, sheets, tabs, toasts and the navigation respect reduced motion.
 
 ## Right to left and languages
 
 Controls follow the ambient `Directionality`, and the light falls from the top-leading corner in either direction.
-Add `RawWidgetsLocalizations.delegate` to your app for the controls' own words in 30 languages. Use `clayPlural` for
-phrases that depend on a count. Figures follow the locale: dates, times, the number field, the charts' scales,
-readouts and shares, and a meter's percentage write the reader's digits, Arabic-Indic in Arabic.
+Add `DefaultRawWidgetsLocalizations.delegate` to your app for the controls' own words in 30 languages. Use
+`clayPlural` for phrases that depend on a count. Figures follow the locale: dates, times, the number field, the
+charts' scales, readouts and shares, and a meter's percentage write the reader's digits, Arabic-Indic in Arabic.
 
 ## Requirements
 
-Flutter 3.47.0 or later.
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.8.4 and re-exports it.
 
 ## Licence
 

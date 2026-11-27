@@ -106,7 +106,10 @@ class _ClayDisclosureState extends State<ClayDisclosure> {
           builder: (context, states, _) {
             final pressed = states.contains(WidgetState.pressed);
             final hovered = states.contains(WidgetState.hovered);
-            final well = ClayFace.well(c, radius: ClayRadius.control);
+            final well = ClayFace.well(
+              c,
+              radius: theme.shapeScheme.corners.medium,
+            );
             final show = pressed ? 1.0 : (hovered ? 0.4 : 0.0);
             return Padding(
               padding: const EdgeInsets.all(ClaySpacing.tight),
@@ -213,7 +216,7 @@ class _ClayDisclosureState extends State<ClayDisclosure> {
       face: ClayFace.raised(
         c,
         color: layered.fill,
-        radius: clayRadiusOf(layered.shape, ClayRadius.large),
+        radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
       ),
       child: body,
     );
@@ -254,7 +257,7 @@ class ClayDisclosureGroup extends StatelessWidget {
       face: ClayFace.raised(
         theme.colors,
         color: layered.fill,
-        radius: clayRadiusOf(layered.shape, ClayRadius.large),
+        radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
       ),
       child: _InGroup(
         child: Column(
@@ -378,7 +381,7 @@ class ClayTable extends StatelessWidget {
       face: ClayFace.raised(
         c,
         color: layered.fill,
-        radius: clayRadiusOf(layered.shape, ClayRadius.large),
+        radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: ClaySpacing.small),
@@ -487,7 +490,9 @@ class ClayDescriptionList extends StatelessWidget {
                   ),
                   child: wide
                       ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          // The term and its description on one baseline.
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
                           children: [
                             Expanded(
                               flex: 2,
@@ -1085,7 +1090,12 @@ class ClayTag extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 14, color: words),
+                // The glyph grows with its word.
+                Icon(
+                  icon,
+                  size: MediaQuery.textScalerOf(context).scale(14),
+                  color: words,
+                ),
                 const SizedBox(width: ClaySpacing.tight),
               ],
               RawCapCenter(
@@ -1132,7 +1142,7 @@ class ClayMedia extends StatelessWidget {
     required this.semanticLabel,
     this.aspectRatio = 4 / 3,
     this.fit = BoxFit.cover,
-    this.radius = ClayRadius.large,
+    this.radius,
     this.style,
   });
 
@@ -1149,8 +1159,9 @@ class ClayMedia extends StatelessWidget {
   /// How it fills its frame.
   final BoxFit fit;
 
-  /// Its corners.
-  final double radius;
+  /// Its corners; null, the theme's large step ([RawCorner.large] of
+  /// [ClayThemeData.shapeScheme]).
+  final double? radius;
 
   /// Its own style, over [ClayThemeData.mediaStyle]: `fill` the frame's
   /// well, `foreground` the glyph shown while there is no picture, `shape`
@@ -1162,7 +1173,10 @@ class ClayMedia extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.mediaStyle], const {});
-    final radius = clayRadiusOf(layered.shape, this.radius);
+    final radius = clayRadiusOf(
+      layered.shape,
+      this.radius ?? theme.shapeScheme.corners.large,
+    );
     final blank = Center(
       child: Icon(
         LucideIcons.image,
@@ -1474,7 +1488,7 @@ class ClayBanner extends StatelessWidget {
         face: ClayFace.raised(
           c,
           color: layered.fill ?? Color.lerp(c.clay, hue, 0.12),
-          radius: clayRadiusOf(layered.shape, ClayRadius.large),
+          radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
         ),
         child: Padding(
           padding: const EdgeInsets.all(ClaySpacing.regular),

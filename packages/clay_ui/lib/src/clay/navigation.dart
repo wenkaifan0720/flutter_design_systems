@@ -20,8 +20,11 @@ import 'surface.dart';
 import 'theme.dart';
 
 /// A Clay top bar, on the ground: a back ball at its start, the place's
-/// [title], its [actions] at the end. [large] sets the title big under the
-/// bar on a phone and a tablet; on a desk it stays on the bar's line.
+/// [title], its [actions] at the end. The title keeps to one line and ends
+/// in an ellipsis where it is too long, and grows with the text size to
+/// 150%. [large] sets the title big under the bar on a phone and a tablet,
+/// on up to two lines; on a desk it stays on the bar's line. From 600 the
+/// bar stands on the page's column ([ClayMetrics.pageWidth]), over the body.
 ///
 /// ```dart
 /// ClayTopBar(title: 'Habits', onBack: () {})
@@ -176,38 +179,48 @@ class ClayTopBar extends StatelessWidget {
       color: layered.fill ?? c.ground,
       child: Padding(
         padding: EdgeInsets.only(top: top),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            row,
-            if (large)
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                  start: margin,
-                  end: margin,
-                  bottom: ClaySpacing.medium,
-                ),
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.display.copyWith(color: ink),
+        // On a tablet and a desk the bar stands on the page's column
+        // ([ClayMetrics.pageWidth] in its margins), as the page's body does.
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: ClayMetrics.pageWidth + 2 * margin,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                row,
+                if (large)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      start: margin,
+                      end: margin,
+                      bottom: ClaySpacing.medium,
+                    ),
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.display.copyWith(color: ink),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            if (bottom != null)
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                  start: margin,
-                  end: margin,
-                  bottom: ClaySpacing.medium,
-                ),
-                child: bottom,
-              ),
-          ],
+                if (bottom != null)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      start: margin,
+                      end: margin,
+                      bottom: ClaySpacing.medium,
+                    ),
+                    child: bottom,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -454,20 +467,21 @@ class _SideFace extends StatelessWidget {
     final ink = chosen ? (layered.foreground ?? c.ink) : c.inkSecondary;
     final weight = chosen ? FontWeight.w600 : FontWeight.w500;
     final hovered = states.contains(WidgetState.hovered);
-    final rest = ClayFace.well(c, radius: ClayRadius.control).copyWith(
-      color: c.well.withValues(alpha: hovered ? 0.6 : 0),
-      lightOpacity: 0,
-      shadeOpacity: 0,
-    );
+    final rest = ClayFace.well(c, radius: theme.shapeScheme.corners.medium)
+        .copyWith(
+          color: c.well.withValues(alpha: hovered ? 0.6 : 0),
+          lightOpacity: 0,
+          shadeOpacity: 0,
+        );
     final face =
         (chosen
                 ? ClayFace.raised(
                     c,
                     color: layered.fill ?? c.risen,
-                    radius: ClayRadius.control,
+                    radius: theme.shapeScheme.corners.medium,
                   )
                 : states.contains(WidgetState.pressed)
-                ? ClayFace.well(c, radius: ClayRadius.control)
+                ? ClayFace.well(c, radius: theme.shapeScheme.corners.medium)
                 : rest)
             .copyWith(
               press: chosen && states.contains(WidgetState.pressed) ? 1 : 0,
@@ -545,7 +559,22 @@ class ClayNavigationBar extends StatelessWidget {
     required this.onDestinationSelected,
     this.action,
     this.style,
-  });
+  }) : _places = null,
+       _group = null;
+
+  const ClayNavigationBar._shell(
+    this._places,
+    this._group, {
+    required this.selectedIndex,
+    this.action,
+  }) : destinations = const [],
+       onDestinationSelected = _ignore,
+       style = null;
+
+  final List<Widget>? _places;
+
+  // The shell's tab bar, round the places alone (the action stands apart).
+  final Widget Function(Widget places)? _group;
 
   /// The places.
   final List<ClayDestination> destinations;
@@ -572,6 +601,22 @@ class ClayNavigationBar extends StatelessWidget {
     final bottom = MediaQuery.paddingOf(context).bottom;
     final width = MediaQuery.sizeOf(context).width;
     final margin = ClaySpacing.pageMargin(width) - 4;
+    final places =
+        _places ??
+        [
+          for (final (i, d) in destinations.indexed)
+            _Place(
+              destination: d,
+              chosen: i == selectedIndex,
+              onPressed: () => onDestinationSelected(i),
+              face: (states) =>
+                  _DockFace(destination: d, states: states, style: style),
+            ),
+        ];
+    final row = Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [for (final place in places) Expanded(child: place)],
+    );
     return _clamped(
       ColoredBox(
         color: c.ground,
@@ -591,24 +636,7 @@ class ClayNavigationBar extends StatelessWidget {
                     face: ClayFace.raised(c, radius: 26),
                     child: Padding(
                       padding: const EdgeInsets.all(ClaySpacing.tight),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (final (i, d) in destinations.indexed)
-                            Expanded(
-                              child: _Place(
-                                destination: d,
-                                chosen: i == selectedIndex,
-                                onPressed: () => onDestinationSelected(i),
-                                face: (states) => _DockFace(
-                                  destination: d,
-                                  states: states,
-                                  style: style,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+                      child: _group?.call(row) ?? row,
                     ),
                   ),
                 ),
@@ -820,7 +848,13 @@ class ClaySidebar extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.fromLTRB(
             ClaySpacing.regular,
-            top + ClaySpacing.roomy,
+            // The first place stands on the top bar's line, level with the
+            // page's title and its back ball.
+            top +
+                ((ClayTopBar.height - theme.density.height(44)) / 2).clamp(
+                  0.0,
+                  ClaySpacing.roomy,
+                ),
             ClaySpacing.regular,
             ClaySpacing.regular,
           ),
@@ -866,19 +900,30 @@ class ClaySidebar extends StatelessWidget {
   }
 }
 
-/// A Clay app's frame: the [topBar] over the [body], and the places as a
-/// floating dock on a phone (under 600 px), a rail on a tablet, a sidebar on
-/// a desk (from 1024 px). Built on ui_core's adaptive shell: the arrows move
-/// through the places, a screen reader hears a navigation region.
+/// A Clay app's frame: the places as a floating dock on a phone (under
+/// 600 px), a rail on a tablet, a sidebar on a desk (from 1024 px), and the
+/// page beside them. Built on ui_core's adaptive shell at every width: the
+/// places are one tab stop, the arrows moving along them; a screen reader
+/// hears the dock's tabs, each with its place ("Tab 1 of 3"), and the
+/// sidebar as the navigation menu; toasts keep clear of the dock.
+///
+/// [ClayScaffold.branches] gives each place its own stack of pages: a page
+/// pushed with `Navigator.of(context).push` stands over its place, the rail
+/// or the sidebar still beside it while a phone's dock steps away
+/// ([hideBarOnPush]), and back pops it. Choosing the place again goes back
+/// to its first page. A page pushed on the app's root navigator covers the
+/// whole frame. [ClayScaffold] stands the app's own [body] under its
+/// [topBar] instead (an `IndexedStack`, or a router's branches), and hides
+/// the dock with [showNavigation] while a page of its own is pushed.
 ///
 /// ```dart
-/// ClayScaffold(topBar: const ClayTopBar(title: 'Today'), destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onDestinationSelected: (index) {}, body: const SizedBox.expand())
+/// ClayScaffold.branches(destinations: const [ClayDestination(icon: LucideIcons.sun, label: 'Today'), ClayDestination(icon: LucideIcons.listChecks, label: 'Habits')], selectedIndex: 0, onDestinationSelected: (index) {}, branches: [(context) => const Text('Today'), (context) => const Text('Habits')])
 /// ```
 class ClayScaffold extends StatelessWidget {
-  /// A frame round [body].
+  /// A frame round the app's own [body].
   const ClayScaffold({
     super.key,
-    required this.body,
+    required Widget this.body,
     this.topBar,
     this.destinations = const [],
     this.selectedIndex = 0,
@@ -888,12 +933,34 @@ class ClayScaffold extends StatelessWidget {
     this.sideFooter,
     this.showNavigation = true,
     this.style,
-  });
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination,
+       hideBarOnPush = false;
 
-  /// The page.
-  final Widget body;
+  /// A frame whose places each keep their own stack of pages, starting on
+  /// its [branches] page (a [ClayScreen] with its own top bar).
+  const ClayScaffold.branches({
+    super.key,
+    required this.destinations,
+    required this.selectedIndex,
+    required ValueChanged<int> this.onDestinationSelected,
+    required List<WidgetBuilder> this.branches,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
+    this.brand,
+    this.action,
+    this.sideFooter,
+    this.style,
+  }) : body = null,
+       topBar = null,
+       showNavigation = true;
 
-  /// The bar over it.
+  /// The page, or a router's branches; null with [branches].
+  final Widget? body;
+
+  /// The bar over [body]; null with [branches], whose pages bring their own.
   final Widget? topBar;
 
   /// The app's places; none: a page with no places (a pushed page).
@@ -902,8 +969,23 @@ class ClayScaffold extends StatelessWidget {
   /// The current place.
   final int selectedIndex;
 
-  /// Called with the place chosen.
+  /// Called with the place chosen (the current one again included).
   final ValueChanged<int>? onDestinationSelected;
+
+  /// Each place's first page; null with [body].
+  final List<WidgetBuilder>? branches;
+
+  /// The places' navigators' keys, to push onto a place from outside (a
+  /// notification opening a record); null: the frame's own.
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place at its first page: to the first place,
+  /// then out of the app.
+  final RawBranchBackBehavior backBehavior;
+
+  /// Whether a phone's dock steps away while a page is pushed over a place
+  /// ([ClayScaffold.branches]); the rail and the sidebar stay.
+  final bool hideBarOnPush;
 
   /// The app's mark atop a rail or a sidebar.
   final Widget? brand;
@@ -915,12 +997,21 @@ class ClayScaffold extends StatelessWidget {
   /// What stands at the sidebar's foot.
   final Widget? sideFooter;
 
-  /// Whether the places show (a phone page can hide its dock).
+  /// Whether a phone's dock shows over the app's own [body]: false while a
+  /// page of the app's is pushed over a place, and the dock steps away (the
+  /// rail and the sidebar stay).
   final bool showNavigation;
 
   /// Its own style, over [ClayThemeData.scaffoldStyle]: `fill` the ground
   /// the page and its navigation stand on.
   final ClayStyle? style;
+
+  static RawNavigationMode _modeFor(double width) =>
+      width < ClayMetrics.railBreakpoint
+      ? RawNavigationMode.bar
+      : width >= ClayMetrics.sidebarBreakpoint
+      ? RawNavigationMode.sidebar
+      : RawNavigationMode.rail;
 
   @override
   Widget build(BuildContext context) {
@@ -928,125 +1019,129 @@ class ClayScaffold extends StatelessWidget {
     final ground =
         RawStyleOf([style, theme.scaffoldStyle], const {}).fill ??
         theme.colors.ground;
-    final width = MediaQuery.sizeOf(context).width;
+    final open = body;
     final places = destinations.isNotEmpty && onDestinationSelected != null;
-    final phone = width < ClayMetrics.railBreakpoint;
-    final bar = places && phone && showNavigation;
-    final page = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ?topBar,
-        Expanded(
-          child: MediaQuery.removePadding(
-            context: context,
-            removeTop: topBar != null,
-            removeBottom: bar,
-            // The body keeps its children's nodes apart. A Navigator here
-            // would otherwise hang its route's node off this one, and a list
-            // opening over the route gives the route a node between them:
-            // on the web the focused field's input moves into it and the
-            // browser blurs it, so the tap that opened the list loses focus.
-            child: Semantics(
-              container: true,
-              explicitChildNodes: true,
-              child: body,
-            ),
-          ),
-        ),
-      ],
-    );
-    if (!places || phone) {
+    if (!places) {
       return ColoredBox(
         color: ground,
-        child: !bar
-            ? page
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(child: page),
-                        // The page fades into the ground above the dock,
-                        // rather than stopping at a line.
-                        PositionedDirectional(
-                          start: 0,
-                          end: 0,
-                          bottom: 0,
-                          height: ClaySpacing.large,
-                          child: IgnorePointer(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [ground.withValues(alpha: 0), ground],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Toasts stand above the dock.
-                  RawToasterKeepClear(
-                    child: ClayNavigationBar(
-                      destinations: destinations,
-                      selectedIndex: selectedIndex,
-                      onDestinationSelected: onDestinationSelected!,
-                      action: action,
-                    ),
-                  ),
-                ],
-              ),
+        child: _page(context, open ?? const SizedBox.shrink()),
       );
     }
-    final wide = width >= ClayMetrics.sidebarBreakpoint;
+    final raw = [
+      for (final d in destinations)
+        RawNavigationDestination(
+          label: d.label,
+          icon: d.icon,
+          selectedIcon: d.selectedIcon,
+          data: d,
+        ),
+    ];
+    Widget face(
+      BuildContext context,
+      RawNavigationDestination destination,
+      RawDestinationDetails details,
+    ) {
+      final d = destination.data! as ClayDestination;
+      return KeyedSubtree(
+        key: d.key,
+        child: switch (details.mode) {
+          RawNavigationMode.sidebar => _SideFace(
+            destination: d,
+            states: details.states,
+            style: null,
+          ),
+          RawNavigationMode.rail => _RailFace(
+            destination: d,
+            states: details.states,
+            style: null,
+          ),
+          RawNavigationMode.bar || RawNavigationMode.top => _DockFace(
+            destination: d,
+            states: details.states,
+            style: null,
+          ),
+        },
+      );
+    }
+
+    Widget navigation(BuildContext context, RawNavigationDetails details) =>
+        switch (details.mode) {
+          RawNavigationMode.sidebar => ClaySidebar._shell(
+            details.destinations,
+            selectedIndex: details.selectedIndex,
+            header: _head(true),
+            footer: sideFooter,
+          ),
+          RawNavigationMode.rail => ClayNavigationRail._shell(
+            details.destinations,
+            selectedIndex: details.selectedIndex,
+            leading: _head(false),
+          ),
+          RawNavigationMode.bar || RawNavigationMode.top => _Dock(
+            ground: ground,
+            visibility: details.visibility,
+            child: ClayNavigationBar._shell(
+              details.destinations,
+              details.group,
+              selectedIndex: details.selectedIndex,
+              action: action,
+            ),
+          ),
+        };
+    // The width the window gives, as Clay's dock, its page margins and its
+    // action read it.
+    final mode = _modeFor(MediaQuery.sizeOf(context).width);
+    final stacks = branches;
     return ColoredBox(
       color: ground,
-      child: RawAdaptiveShell(
-        mode: wide ? RawNavigationMode.sidebar : RawNavigationMode.rail,
-        destinations: [
-          for (final d in destinations)
-            RawNavigationDestination(
-              label: d.label,
-              icon: d.icon,
-              selectedIcon: d.selectedIcon,
-              data: d,
+      child: stacks == null
+          ? RawAdaptiveShell(
+              destinations: raw,
+              selectedIndex: selectedIndex,
+              onDestinationSelected: onDestinationSelected,
+              destinationBuilder: face,
+              navigationBuilder: navigation,
+              mode: mode,
+              showNavigation: showNavigation,
+              body: _page(context, open!),
+            )
+          : RawAdaptiveShell.branches(
+              destinations: raw,
+              selectedIndex: selectedIndex,
+              onDestinationSelected: onDestinationSelected,
+              destinationBuilder: face,
+              navigationBuilder: navigation,
+              mode: mode,
+              branches: stacks,
+              navigatorKeys: navigatorKeys,
+              backBehavior: backBehavior,
+              hideBarOnPush: hideBarOnPush,
             ),
-        ],
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onDestinationSelected,
-        destinationBuilder: (context, destination, details) {
-          final d = destination.data! as ClayDestination;
-          return KeyedSubtree(
-            key: d.key,
-            child: details.mode == RawNavigationMode.sidebar
-                ? _SideFace(destination: d, states: details.states, style: null)
-                : _RailFace(
-                    destination: d,
-                    states: details.states,
-                    style: null,
-                  ),
-          );
-        },
-        navigationBuilder: (context, details) => wide
-            ? ClaySidebar._shell(
-                details.destinations,
-                selectedIndex: details.selectedIndex,
-                header: _head(true),
-                footer: sideFooter,
-              )
-            : ClayNavigationRail._shell(
-                details.destinations,
-                selectedIndex: details.selectedIndex,
-                leading: _head(false),
-              ),
-        body: page,
-      ),
     );
   }
+
+  // The top bar over the page; the page keeps its children's nodes apart.
+  // A Navigator here would otherwise hang its route's node off this one,
+  // and a list opening over the route gives the route a node between them:
+  // on the web the focused field's input moves into it and the browser
+  // blurs it, so the tap that opened the list loses focus.
+  Widget _page(BuildContext context, Widget page) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      ?topBar,
+      Expanded(
+        child: MediaQuery.removePadding(
+          context: context,
+          removeTop: topBar != null,
+          child: Semantics(
+            container: true,
+            explicitChildNodes: true,
+            child: page,
+          ),
+        ),
+      ),
+    ],
+  );
 
   Widget? _head(bool wide) {
     final act = action;
@@ -1079,6 +1174,28 @@ class ClayScaffold extends StatelessWidget {
         ),
       )
       ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(IntProperty('branches', branches?.length, defaultValue: null))
+      ..add(
+        IterableProperty<GlobalKey<NavigatorState>>(
+          'navigatorKeys',
+          navigatorKeys,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<RawBranchBackBehavior>(
+          'backBehavior',
+          backBehavior,
+          defaultValue: RawBranchBackBehavior.firstDestination,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideBarOnPush',
+          value: hideBarOnPush,
+          ifTrue: 'dock hidden on push',
+        ),
+      )
       ..add(
         FlagProperty(
           'showNavigation',
@@ -1087,6 +1204,50 @@ class ClayScaffold extends StatelessWidget {
         ),
       );
   }
+}
+
+// A phone's dock in the frame: the page fades into the ground above it,
+// rather than stopping at a line, and the fade goes as the dock steps away.
+class _Dock extends StatelessWidget {
+  const _Dock({
+    required this.ground,
+    required this.visibility,
+    required this.child,
+  });
+
+  final Color ground;
+  final Animation<double> visibility;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    clipBehavior: Clip.none,
+    children: [
+      child,
+      PositionedDirectional(
+        start: 0,
+        end: 0,
+        top: -ClaySpacing.large,
+        height: ClaySpacing.large,
+        child: IgnorePointer(
+          child: AnimatedBuilder(
+            animation: visibility,
+            builder: (context, fade) =>
+                Opacity(opacity: visibility.value.clamp(0.0, 1.0), child: fade),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [ground.withValues(alpha: 0), ground],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
 }
 
 /// Clay's tabs: their names on the ground, the current one on a white clay

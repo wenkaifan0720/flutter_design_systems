@@ -5,6 +5,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:clay_ui/clay_ui.dart';
+import 'package:clay_ui/clay_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _act = ValueKey<String>('act');

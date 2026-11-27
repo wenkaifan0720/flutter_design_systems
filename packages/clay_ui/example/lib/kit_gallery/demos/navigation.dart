@@ -184,7 +184,9 @@ class _Frame extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
     position: DecorationPosition.foreground,
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(ClayRadius.large),
+      borderRadius: BorderRadius.circular(
+        ClayTheme.of(context).shapeScheme.corners.large,
+      ),
       border: Border.all(
         color: ClayTheme.of(context).colors.track.withValues(alpha: 0.35),
         width: 1.5,

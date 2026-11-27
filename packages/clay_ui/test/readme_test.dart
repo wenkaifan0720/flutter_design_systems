@@ -1,5 +1,5 @@
 // The README's first Dart block is the smallest app: at most 12 lines, it
-// imports clay_ui, calls runApp, wraps Clay's theme round one widget, and it
+// imports clay_ui, calls runApp, mounts Clay's host over the app, and it
 // compiles (copied into a file in the package and analyzed).
 import 'dart:io';
 
@@ -16,7 +16,7 @@ void main() {
       expect(block.trim().split('\n'), hasLength(lessThanOrEqualTo(12)));
       expect(block, contains("import 'package:clay_ui/clay_ui.dart';"));
       expect(block, contains('runApp('));
-      expect(block, contains('ClayTheme('));
+      expect(block, contains('ClayHost('));
       final dir = Directory('test/_readme')..createSync(recursive: true);
       addTearDown(() => dir.deleteSync(recursive: true));
       final source = File('${dir.path}/minimal_app.dart')

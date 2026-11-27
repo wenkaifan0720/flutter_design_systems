@@ -29,7 +29,7 @@ ClayFace clayEntryFace(
   final face = ClayFace.well(
     c,
     color: fill,
-    radius: radius ?? ClayRadius.control,
+    radius: radius ?? theme.shapeScheme.corners.medium,
   );
   return face.copyWith(
     // Off, the well fills nearly level with the ground.

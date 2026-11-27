@@ -4,6 +4,8 @@
 /// tree.
 library;
 
+import 'internal/corners.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -30,7 +32,7 @@ ClayFace _rowFace(
   ClayColors c,
   Set<WidgetState> states, {
   required bool chosen,
-  double radius = ClayRadius.control - 4,
+  required double radius,
   Color? fill,
 }) {
   final pressed = states.contains(WidgetState.pressed);
@@ -155,7 +157,12 @@ class ClayDataTable<R> extends StatelessWidget {
       selectable: selectable,
       onActivate: onActivate,
       headerBuilder: (context, column, sort, states) => AnimatedClaySurface(
-        face: _rowFace(c, states, chosen: false, radius: 10),
+        face: _rowFace(
+          c,
+          states,
+          chosen: false,
+          radius: clayCornerBetween(theme, 10),
+        ),
         // A heading sorts on a tap: a finger's height (the touch floor) on
         // every input, so the heading row keeps one height.
         child: ConstrainedBox(
@@ -213,7 +220,12 @@ class ClayDataTable<R> extends StatelessWidget {
                   button: false,
                   checked: page == RawDataTableSelection.all,
                   builder: (context, states, _) => AnimatedClaySurface(
-                    face: _rowFace(c, states, chosen: false, radius: 10),
+                    face: _rowFace(
+                      c,
+                      states,
+                      chosen: false,
+                      radius: clayCornerBetween(theme, 10),
+                    ),
                     child: SizedBox(
                       width: _box,
                       child: Center(
@@ -262,7 +274,7 @@ class ClayDataTable<R> extends StatelessWidget {
                   c,
                   row.states,
                   chosen: row.selected,
-                  radius: 12,
+                  radius: clayCornerBetween(theme, 12),
                   fill: row.selected ? layered.fill : null,
                 ),
                 child: IntrinsicHeight(
@@ -308,7 +320,10 @@ class ClayDataTable<R> extends StatelessWidget {
             face: ClayFace.raised(
               c,
               color: frame.fill,
-              radius: clayRadiusOf(frame.shape, ClayRadius.large),
+              radius: clayRadiusOf(
+                frame.shape,
+                theme.shapeScheme.corners.large,
+              ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: ClaySpacing.small),
@@ -495,7 +510,7 @@ class ClayScrollArea extends StatelessWidget {
         );
       },
       frameBuilder: (context, focused, area) => AnimatedClaySurface(
-        face: ClayFace.flat(c, radius: 12).copyWith(
+        face: ClayFace.flat(c, radius: clayCornerBetween(theme, 12)).copyWith(
           color: c.ground.withValues(alpha: 0),
           shadowOpacity: 0,
           lightOpacity: 0,
@@ -704,7 +719,7 @@ class ClayCarousel extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layered = RawStyleOf([style, theme.carouselStyle], const {});
-    final radius = clayRadiusOf(layered.shape, ClayRadius.large);
+    final radius = clayRadiusOf(layered.shape, theme.shapeScheme.corners.large);
     return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
@@ -818,7 +833,7 @@ class ClayReorderableList<T extends Object> extends StatelessWidget {
     final c = theme.colors;
     final rowHeight = theme.controlHeight + 8;
     final layered = RawStyleOf([style, theme.reorderableListStyle], const {});
-    final radius = clayRadiusOf(layered.shape, ClayRadius.large);
+    final radius = clayRadiusOf(layered.shape, theme.shapeScheme.corners.large);
     return ClaySurface(
       face: ClayFace.raised(c, color: layered.fill, radius: radius),
       child: ClipRRect(
@@ -837,7 +852,7 @@ class ClayReorderableList<T extends Object> extends StatelessWidget {
                 face: ClayFace.floating(
                   c,
                   color: layered.fill,
-                  radius: ClayRadius.control,
+                  radius: theme.shapeScheme.corners.medium,
                 ),
                 child: child,
               ),
@@ -974,8 +989,12 @@ class ClaySwipeRow extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.all(ClaySpacing.tight),
             child: AnimatedClaySurface(
-              face: ClayFace.raised(c, color: fill, radius: ClayRadius.control)
-                  .copyWith(
+              face:
+                  ClayFace.raised(
+                    c,
+                    color: fill,
+                    radius: theme.shapeScheme.corners.medium,
+                  ).copyWith(
                     elevation: details.armed ? 1 : 0.6,
                     press: pressed ? 1 : 0,
                     focus: details.states.contains(WidgetState.focused) ? 1 : 0,
@@ -1185,7 +1204,7 @@ class ClayTree<T extends Object> extends StatelessWidget {
                     c,
                     states,
                     chosen: item.selected,
-                    radius: 12,
+                    radius: clayCornerBetween(theme, 12),
                     fill: item.selected ? layered.fill : null,
                   ),
                   child: Row(

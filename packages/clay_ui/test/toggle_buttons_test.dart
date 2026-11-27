@@ -8,8 +8,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:clay_ui/clay_ui.dart';
 
-/// The flags a screen reader reads off the one node [label] names (or, with
-/// none, the one button).
+/// The flags a screen reader reads off the one node [label] names, as its
+/// label or its tooltip (or, with none, the one button).
 String _flags(WidgetTester tester, {String? label}) {
   final node = find.semantics
       .byPredicate((node) {
@@ -17,7 +17,7 @@ String _flags(WidgetTester tester, {String? label}) {
         final data = node.getSemanticsData();
         return label == null
             ? data.flagsCollection.isButton
-            : data.label == label;
+            : data.label == label || data.tooltip == label;
       })
       .evaluate()
       .single;

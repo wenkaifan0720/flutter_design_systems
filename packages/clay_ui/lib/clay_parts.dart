@@ -14,6 +14,7 @@ export 'package:ui_core/inventory.dart';
 
 export 'clay_ui.dart';
 export 'clay_host.dart';
+export 'src/clay/internal/corners.dart';
 export 'src/clay/internal/entry_parts.dart';
 export 'src/clay/internal/inventory.dart';
 export 'src/clay/internal/keys_shown.dart';

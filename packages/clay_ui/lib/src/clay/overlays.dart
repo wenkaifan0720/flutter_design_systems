@@ -36,10 +36,10 @@ class ClayDialogAction {
   final bool isDestructiveAction;
 }
 
-/// A Clay dialog: a floating slab of white clay, rounded 32, its [title],
-/// its [content] in the secondary ink, and its keys at its foot (stacked
-/// full width when they do not fit side by side). The safe key takes the
-/// focus as it opens.
+/// A Clay dialog: a floating slab of white clay at the extra-large step, its
+/// [title], its [content] in the secondary ink, and its keys at its foot
+/// (stacked full width when they do not fit side by side). The safe key takes
+/// the focus as it opens.
 ///
 /// ```dart
 /// ClayDialog(title: 'Delete this habit?', content: const Text('Its 42-day streak goes with it.'), actions: [ClayDialogAction(label: 'Keep', onPressed: () {}), ClayDialogAction(label: 'Delete', onPressed: () {}, isDefaultAction: true, isDestructiveAction: true)])
@@ -118,7 +118,10 @@ class ClayDialog extends StatelessWidget {
         face: ClayFace.floating(
           c,
           color: layered.fill,
-          radius: clayRadiusOf(layered.shape, ClayRadius.extraLarge),
+          radius: clayRadiusOf(
+            layered.shape,
+            theme.shapeScheme.corners.extraLarge,
+          ),
         ),
         child: RawKeylineRegion(
           label: 'Dialog',
@@ -257,12 +260,12 @@ Future<T?> showClayDialog<T>({
   );
 }
 
-/// Shows a Clay sheet: a slab of clay floating up from the foot of the
-/// screen (edge to edge on a phone, its top corners rounded 32; a floating
-/// card from 600 px), a grip pressed into its top, its [title] and a close
-/// ball, [builder]'s content under them and [footerBuilder]'s keys at its
-/// foot. A drag down or a tap beside it closes it; Escape and Android's back
-/// do too.
+/// Shows a Clay sheet: a slab of clay floating up from the foot of the screen
+/// (edge to edge on a phone, its top corners at the extra-large step; a
+/// floating card from 600 px), a grip pressed into its top, its [title] and a
+/// close ball, [builder]'s content under them and [footerBuilder]'s keys at its
+/// foot. A drag down or a tap beside it closes it; Escape and Android's back do
+/// too.
 ///
 /// ```dart
 /// showClayBottomSheet<void>(context: context, title: 'Reminder time', builder: (context) => const Text('8:00'))
@@ -367,7 +370,7 @@ class _Sheet extends StatelessWidget {
         ? ClaySpacing.large
         : ClaySpacing.pageMargin(size.width);
     final words = RawWidgetsLocalizations.of(context);
-    const radius = ClayRadius.extraLarge;
+    final radius = theme.shapeScheme.corners.extraLarge;
     final panel = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -460,7 +463,7 @@ class _Sheet extends StatelessWidget {
       child: framed
           ? panel
           : Padding(
-              padding: const EdgeInsets.only(bottom: radius),
+              padding: EdgeInsets.only(bottom: radius),
               child: panel,
             ),
     );
@@ -480,7 +483,7 @@ class _Sheet extends StatelessWidget {
             : ClipRect(
                 clipper: const _ClipBelow(),
                 child: Transform.translate(
-                  offset: const Offset(0, radius),
+                  offset: Offset(0, radius),
                   child: sheet,
                 ),
               ),
@@ -594,7 +597,7 @@ class _PageSheet extends StatelessWidget {
     final c = theme.colors;
     final size = MediaQuery.sizeOf(context);
     final framed = size.width >= ClayMetrics.railBreakpoint;
-    const radius = ClayRadius.extraLarge;
+    final radius = theme.shapeScheme.corners.extraLarge;
     final panel = Column(
       mainAxisSize: drawer ? MainAxisSize.min : MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -629,7 +632,7 @@ class _PageSheet extends StatelessWidget {
       child: framed
           ? panel
           : Padding(
-              padding: const EdgeInsets.only(bottom: radius),
+              padding: EdgeInsets.only(bottom: radius),
               child: panel,
             ),
     );
@@ -649,7 +652,7 @@ class _PageSheet extends StatelessWidget {
             : ClipRect(
                 clipper: const _ClipBelow(),
                 child: Transform.translate(
-                  offset: const Offset(0, radius),
+                  offset: Offset(0, radius),
                   child: sheet,
                 ),
               ),
@@ -754,7 +757,7 @@ class _SidePanel extends StatelessWidget {
         face: ClayFace.floating(
           c,
           color: layered.fill,
-          radius: ClayRadius.extraLarge,
+          radius: theme.shapeScheme.corners.extraLarge,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -917,7 +920,10 @@ class _ActionSheet<T> extends StatelessWidget {
     final c = theme.colors;
     final pad = MediaQuery.paddingOf(context);
     final navigator = Navigator.of(context);
-    final face = ClayFace.floating(c, radius: ClayRadius.extraLarge);
+    final face = ClayFace.floating(
+      c,
+      radius: theme.shapeScheme.corners.extraLarge,
+    );
     // The route names it for a screen reader (its title).
     return Semantics(
       explicitChildNodes: true,
@@ -1054,7 +1060,7 @@ class _Toast extends StatelessWidget {
     final face = ClayFace.floating(
       c,
       color: layered.fill,
-      radius: ClayRadius.large,
+      radius: theme.shapeScheme.corners.large,
     ).copyWith(focus: details.focused ? 1 : 0);
     return _Inflate(
       animation: details.animation,

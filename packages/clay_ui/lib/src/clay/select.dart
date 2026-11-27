@@ -111,7 +111,10 @@ class ClaySelect<T> extends StatelessWidget {
           [style, theme.selectStyle],
           {...states, if (errorText != null) WidgetState.error},
         );
-        final radius = clayRadiusOf(layered.shape, ClayRadius.control);
+        final radius = clayRadiusOf(
+          layered.shape,
+          theme.shapeScheme.corners.medium,
+        );
         final fill = layered.fill ?? c.clay;
         var face = enabled
             ? ClayFace.raised(c, color: fill, radius: radius)

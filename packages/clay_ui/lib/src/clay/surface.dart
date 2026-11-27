@@ -26,7 +26,7 @@ import 'theme.dart';
 /// the ground (a field, a groove).
 ///
 /// ```dart
-/// ClayFace.raised(ClayTheme.of(context).colors, radius: ClayRadius.large)
+/// ClayFace.raised(ClayTheme.of(context).colors, radius: ClayTheme.of(context).shapeScheme.corners.large)
 /// ```
 @immutable
 class ClayFace with Diagnosticable {
@@ -35,7 +35,7 @@ class ClayFace with Diagnosticable {
     required this.color,
     required this.shade,
     required this.light,
-    this.radius = ClayRadius.control,
+    this.radius = 16,
     this.elevation = 1,
     this.press = 0,
     this.lift = 0,
@@ -51,7 +51,7 @@ class ClayFace with Diagnosticable {
   factory ClayFace.raised(
     ClayColors colors, {
     Color? color,
-    double radius = ClayRadius.control,
+    double radius = 16,
   }) {
     final fill = color ?? colors.clay;
     final night = colors.brightness == Brightness.dark;
@@ -72,7 +72,7 @@ class ClayFace with Diagnosticable {
   factory ClayFace.floating(
     ClayColors colors, {
     Color? color,
-    double radius = ClayRadius.extraLarge,
+    double radius = 32,
   }) => ClayFace.raised(
     colors,
     color: color,
@@ -80,11 +80,7 @@ class ClayFace with Diagnosticable {
   ).copyWith(elevation: 2);
 
   /// A well pressed into the ground: a field, a groove, a track.
-  factory ClayFace.well(
-    ClayColors colors, {
-    Color? color,
-    double radius = ClayRadius.control,
-  }) {
+  factory ClayFace.well(ClayColors colors, {Color? color, double radius = 16}) {
     final night = colors.brightness == Brightness.dark;
     final fill = color ?? colors.well;
     return ClayFace(
@@ -104,7 +100,7 @@ class ClayFace with Diagnosticable {
   factory ClayFace.flat(
     ClayColors colors, {
     Color? color,
-    double radius = ClayRadius.control,
+    double radius = 16,
   }) => ClayFace.raised(
     colors,
     color: color,
@@ -121,7 +117,8 @@ class ClayFace with Diagnosticable {
   final Color light;
 
   /// Its corner radius; half its shorter side or more makes a stadium or a
-  /// circle.
+  /// circle. A part passes its step of [ClayThemeData.shapeScheme]; 16 (the
+  /// control step's own) by default.
   final double radius;
 
   /// How far it stands from the ground: -1 a well, 0 flat, 1 raised, 2
@@ -276,7 +273,7 @@ class ClayFace with Diagnosticable {
 /// outline is always a rounded superellipse; a shape gives it its radius.
 ///
 /// ```dart
-/// clayRadiusOf(const StadiumBorder(), ClayRadius.control)
+/// clayRadiusOf(const StadiumBorder(), 16)
 /// ```
 double clayRadiusOf(OutlinedBorder? shape, double fallback) {
   BorderRadiusGeometry? corners;
@@ -361,13 +358,21 @@ class ClaySurface extends StatelessWidget {
         child: content,
       );
     }
-    final travel = face.travel;
+    // The theme's depth deepens or flattens the relief: its shadow, its
+    // light and shade, and how far a press sinks. It moves in sixteenths,
+    // so a theme change on its way across reuses the cached masks.
+    final depth =
+        ((ClayTheme.maybeOf(context)?.shapeScheme.depth ?? 1) * 16)
+            .roundToDouble() /
+        16;
+    final travel = face.travel * depth;
     if (content != null && travel != 0) {
       content = Transform.translate(offset: Offset(0, travel), child: content);
     }
     return _ClayPaint(
       painter: _ClayPainter(
         face: face,
+        depth: depth,
         mirrored: Directionality.maybeOf(context) == TextDirection.rtl,
         pixelRatio: MediaQuery.maybeDevicePixelRatioOf(context) ?? 2,
       ),
@@ -434,11 +439,15 @@ double _scaleFor(Size size) =>
 class _ClayPainter extends CustomPainter {
   _ClayPainter({
     required this.face,
+    required this.depth,
     required this.mirrored,
     required this.pixelRatio,
   });
 
   final ClayFace face;
+
+  // The theme's relief, 1 by Clay's design.
+  final double depth;
   final bool mirrored;
   final double pixelRatio;
 
@@ -460,8 +469,8 @@ class _ClayPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final f = face;
     final whole = Offset.zero & size;
-    final k = _scaleFor(size);
-    final rect = whole.translate(0, f.travel);
+    final k = _scaleFor(size) * depth;
+    final rect = whole.translate(0, f.travel * depth);
     final radius = math.min(f.radius, math.min(size.width, size.height) / 2);
     // A press sinks the part into the ground: its shadow tightens and fades,
     // and is gone once it is all the way in.
@@ -496,7 +505,8 @@ class _ClayPainter extends CustomPainter {
       }
     }
     clayDrawShape(canvas, rect, radius, Paint()..color = f.color);
-    final inner = (math.min(size.width, size.height) * 0.09).clamp(2.0, 8.0);
+    final inner =
+        (math.min(size.width, size.height) * 0.09).clamp(2.0, 8.0) * depth;
     final raised = f.elevation >= 0;
     // A raised part's light and shade go as it sinks; the dent's come up
     // below.
@@ -579,6 +589,7 @@ class _ClayPainter extends CustomPainter {
   @override
   bool shouldRepaint(_ClayPainter old) =>
       old.face != face ||
+      old.depth != depth ||
       old.mirrored != mirrored ||
       old.pixelRatio != pixelRatio;
 }
@@ -674,23 +685,27 @@ class _AnimatedClaySurfaceState extends State<AnimatedClaySurface>
 /// ```
 class ClayWell extends StatelessWidget {
   /// [child] in a well with corners of [radius].
-  const ClayWell({super.key, this.radius = ClayRadius.control, this.child});
+  const ClayWell({super.key, this.radius, this.child});
 
-  /// The well's corner radius.
-  final double radius;
+  /// The well's corner radius; null, the theme's control step
+  /// ([RawCorner.medium] of [ClayThemeData.shapeScheme]).
+  final double? radius;
 
   /// What sits in it.
   final Widget? child;
 
   @override
   Widget build(BuildContext context) => ClaySurface(
-    face: ClayFace.well(ClayTheme.of(context).colors, radius: radius),
+    face: ClayFace.well(
+      ClayTheme.of(context).colors,
+      radius: radius ?? ClayTheme.of(context).shapeScheme.corners.medium,
+    ),
     child: child,
   );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DoubleProperty('radius', radius));
+    properties.add(DoubleProperty('radius', radius, defaultValue: null));
   }
 }

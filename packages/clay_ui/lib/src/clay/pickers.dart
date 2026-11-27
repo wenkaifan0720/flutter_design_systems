@@ -528,10 +528,14 @@ class _PickerField extends StatelessWidget {
     required this.error,
     required this.semanticLabel,
     required this.styles,
+    this.spoken,
   });
 
   final RawOverlayAnchor anchor;
   final String? text;
+
+  /// What a screen reader hears for [text]; null: [text].
+  final String? spoken;
   final String? hint;
   final IconData icon;
   final bool enabled;
@@ -547,7 +551,7 @@ class _PickerField extends StatelessWidget {
     return RawButton(
       onPressed: enabled ? anchor.toggle : null,
       semanticLabel: semanticLabel,
-      semanticValue: text,
+      semanticValue: spoken ?? text,
       expanded: anchor.isOpen,
       mouseCursor: SystemMouseCursors.click,
       builder: (context, states, _) {
@@ -563,7 +567,7 @@ class _PickerField extends StatelessWidget {
           },
           fill: layered.fill,
           edge: layered.edge,
-          radius: clayRadiusOf(layered.shape, ClayRadius.control),
+          radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.medium),
         );
         final ball = height - 12;
         // Its height is a floor: a date on two lines makes the well taller.
@@ -652,7 +656,7 @@ Widget _fieldColumn({
 );
 
 Widget _calendarPanel(BuildContext context, Widget calendar) => ClaySurface(
-  face: clayMenuFace(ClayTheme.of(context).colors),
+  face: clayMenuFace(ClayTheme.of(context)),
   child: SingleChildScrollView(
     primary: false,
     padding: const EdgeInsets.all(ClaySpacing.medium),
@@ -738,7 +742,9 @@ class ClayDatePicker extends StatelessWidget {
         stiffness: ClayMotion.panelStiffness,
         anchorBuilder: (context, anchor) => _PickerField(
           anchor: anchor,
-          text: value == null ? null : words.formatFullDate(value!),
+          // The day as every date shows ("2 Oct 2026"), said in full.
+          text: value == null ? null : words.formatMediumDate(value!),
+          spoken: value == null ? null : words.formatFullDate(value!),
           hint: hintText,
           icon: LucideIcons.calendar,
           enabled: enabled,
@@ -1008,12 +1014,12 @@ String _rangeWords(
       '${words.formatShortMonthDay(end)} ${words.formatYear(end)}';
 }
 
-Widget _drumWell(ClayColors c, Widget child) => ClaySurface(
-  face: ClayFace.well(c, radius: ClayRadius.large),
+Widget _drumWell(ClayThemeData theme, Widget child) => ClaySurface(
+  face: ClayFace.well(theme.colors, radius: theme.shapeScheme.corners.large),
   child: Padding(
     padding: const EdgeInsets.all(ClaySpacing.tight),
     child: ClipRRect(
-      borderRadius: BorderRadius.circular(ClayRadius.large - 4),
+      borderRadius: BorderRadius.circular(theme.shapeScheme.corners.large - 4),
       // The drums keep their width; in a box narrower than that they draw
       // smaller, whole, rather than run past the well's edge.
       child: Center(
@@ -1074,10 +1080,9 @@ class ClayWheelPicker<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    final c = theme.colors;
     final at = math.max(0, items.indexOf(value));
     return _drumWell(
-      c,
+      theme,
       _drums(
         context,
         columns: [
@@ -1206,7 +1211,7 @@ class ClayTimePicker extends StatelessWidget {
 
     final change = onChanged;
     return _drumWell(
-      c,
+      theme,
       Directionality(
         // A clock reads hour then minute in every language.
         textDirection: TextDirection.ltr,
@@ -1570,11 +1575,13 @@ class _ClayColorPickerState extends State<ClayColorPicker> {
       showAlpha: widget.showAlpha,
       areaHeight: 180,
       areaBuilder: (context, area) => ClaySurface(
-        face: ClayFace.well(c, radius: ClayRadius.control),
+        face: ClayFace.well(c, radius: theme.shapeScheme.corners.medium),
         child: Padding(
           padding: const EdgeInsets.all(ClaySpacing.tight),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(ClayRadius.control - 4),
+            borderRadius: BorderRadius.circular(
+              theme.shapeScheme.corners.medium - 4,
+            ),
             child: CustomPaint(
               painter: _AreaPainter(area.color.hue),
               size: Size.infinite,

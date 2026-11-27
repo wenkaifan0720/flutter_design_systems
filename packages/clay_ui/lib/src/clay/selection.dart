@@ -774,7 +774,10 @@ class ClayFileDrop extends StatelessWidget {
           face: ClayFace.well(
             c,
             color: layered.fill,
-            radius: clayRadiusOf(layered.shape, ClayRadius.large),
+            radius: clayRadiusOf(
+              layered.shape,
+              theme.shapeScheme.corners.large,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(ClaySpacing.large),

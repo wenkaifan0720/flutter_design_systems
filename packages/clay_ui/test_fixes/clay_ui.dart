@@ -1,6 +1,7 @@
 // The names clay_ui 0.3.0 renames: clay_ui.dart calls them as before `dart fix --apply`,
 // clay_ui.dart.expect as after.
 import 'package:flutter/widgets.dart';
+import 'package:clay_ui/clay_host.dart';
 import 'package:clay_ui/clay_ui.dart';
 
 void calls(BuildContext context) {

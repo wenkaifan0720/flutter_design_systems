@@ -3,8 +3,7 @@
 /// raises one in (a sheet's is `ClaySheetPage`); [ClayPreview] one page
 /// alone, as the app stands it; [ClayLoadingState] and [ClayErrorState] a
 /// page whose data is on its way or lost; [ClayInput] the plain one-line
-/// field; [ClayTab] and [ClayShellAction] an app shell's places and its one
-/// act.
+/// field.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -12,6 +11,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'app_shell.dart';
 import 'button.dart';
 import 'display.dart';
 import 'navigation.dart';
@@ -20,23 +20,22 @@ import 'page_transitions.dart';
 import 'text_field.dart';
 import 'theme.dart';
 
-/// The widest a page's content stands, inside its margins: a calm desktop
-/// reads in one column of this width, centred.
-const double _pageWidth = 1080;
-
 /// The app's host, mounted once over its navigator (`WidgetsApp.builder`):
-/// Clay's theme for the brightness asked for, its toasts and its ground.
+/// Clay's theme for the brightness asked for, in the [palette] chosen, its
+/// toasts and its ground. A change of brightness or palette moves across,
+/// as a Material app's theme change does.
 ///
 /// ```dart
 /// MaterialApp(builder: (context, child) => ClayHost(child: child!))
 /// ```
 class ClayHost extends StatelessWidget {
   /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
-  /// asks; either left out is the clay preset in that brightness.
+  /// asks; either left out is [palette] in that brightness.
   const ClayHost({
     super.key,
     this.theme,
     this.darkTheme,
+    this.palette,
     this.brightness,
     required this.child,
   });
@@ -46,6 +45,11 @@ class ClayHost extends StatelessWidget {
 
   /// The theme by night.
   final ClayThemeData? darkTheme;
+
+  /// The palette by day and by night where [theme] or [darkTheme] is null:
+  /// one of [ClayThemeData.palettes] (the app's stored choice) or the app's
+  /// own; null, Clay's own.
+  final RawNamedPalette? palette;
 
   /// The brightness to draw in; null follows the preview's or the
   /// platform's.
@@ -62,11 +66,19 @@ class ClayHost extends StatelessWidget {
         MediaQuery.platformBrightnessOf(context);
     final data =
         (wanted == Brightness.dark ? darkTheme : theme) ??
-        ClayThemeData.preset(ClayThemeData.presets.first, wanted);
-    return ClayTheme(
+        ClayThemeData.fromPalette(
+          palette ?? ClayThemeData.palettes.first,
+          wanted,
+        );
+    return AnimatedClayTheme(
       data: data,
       child: ClayToaster(
-        child: ColoredBox(color: data.colors.ground, child: child),
+        child: Builder(
+          builder: (context) => ColoredBox(
+            color: ClayTheme.of(context).colors.ground,
+            child: child,
+          ),
+        ),
       ),
     );
   }
@@ -82,6 +94,13 @@ class ClayHost extends StatelessWidget {
         DiagnosticsProperty<ClayThemeData>(
           'darkTheme',
           darkTheme,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RawNamedPalette>(
+          'palette',
+          palette,
           defaultValue: null,
         ),
       )
@@ -168,7 +187,9 @@ class ClayScreen extends StatelessWidget {
             alignment: Alignment.topCenter,
             heightFactor: scroll ? 1 : null,
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: _pageWidth + 2 * margin),
+              constraints: BoxConstraints(
+                maxWidth: ClayMetrics.pageWidth + 2 * margin,
+              ),
               child: page,
             ),
           );
@@ -215,24 +236,33 @@ class ClayScreen extends StatelessWidget {
           ?bar,
           if (sheet) Flexible(child: above) else Expanded(child: above),
           if (foot != null)
-            // Toasts stand above the foot, as above the dock.
+            // Toasts stand above the foot, as above the dock. Its keys end
+            // where the page's column does.
             RawToasterKeepClear(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  margin,
-                  ClaySpacing.medium,
-                  margin,
-                  ClaySpacing.medium + media.padding.bottom,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: ClayMetrics.pageWidth + 2 * margin,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      margin,
+                      ClaySpacing.medium,
+                      margin,
+                      ClaySpacing.medium + media.padding.bottom,
+                    ),
+                    child: framed
+                        ? Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 360),
+                              child: foot,
+                            ),
+                          )
+                        : foot,
+                  ),
                 ),
-                child: framed
-                    ? Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 360),
-                          child: foot,
-                        ),
-                      )
-                    : foot,
               ),
             ),
         ],
@@ -512,200 +542,6 @@ class ClayPreview extends StatelessWidget {
   }
 }
 
-/// The app's places and its one act round a root page: [ClayScaffold]'s
-/// dock on a phone, its rail on a tablet, its sidebar on a desktop. The act
-/// is coral clay in the chrome, never floating over the page: a ball at the
-/// dock's end on a phone, under the app's name at the head of the rail, a
-/// worded key under it on the sidebar. An app on a router mounts it
-/// through `ClayShell`; a preview mounts it directly.
-///
-/// ```dart
-/// ClayAppShell(tabs: const [ClayTab(LucideIcons.sun, 'Today'), ClayTab(LucideIcons.listChecks, 'Habits')], selectedIndex: 0, onDestinationSelected: (i) {}, child: const TodayPage())
-/// ```
-class ClayAppShell extends StatelessWidget {
-  /// [child] with the app's [tabs].
-  const ClayAppShell({
-    super.key,
-    required this.tabs,
-    required this.selectedIndex,
-    required this.onDestinationSelected,
-    required this.child,
-    this.action,
-    this.brand,
-    this.showPlaces = true,
-  });
-
-  /// The app's places.
-  final List<ClayTab> tabs;
-
-  /// The place shown.
-  final int selectedIndex;
-
-  /// Called with the place chosen.
-  final ValueChanged<int> onDestinationSelected;
-
-  /// The page.
-  final Widget child;
-
-  /// The app's one act.
-  final ShellAction? action;
-
-  /// The app's name, at the head of the rail or the sidebar.
-  final String? brand;
-
-  /// Whether a phone's dock stands: false while a page pushed over the root
-  /// covers it (a rail or a sidebar stays).
-  final bool showPlaces;
-
-  @override
-  Widget build(BuildContext context) {
-    final act = action;
-    final name = brand;
-    return ClayScaffold(
-      destinations: [
-        for (final tab in tabs)
-          ClayDestination(icon: tab.icon, label: tab.label, key: tab.key),
-      ],
-      selectedIndex: selectedIndex,
-      onDestinationSelected: tabs.isNotEmpty ? onDestinationSelected : null,
-      showNavigation: showPlaces,
-      brand: name == null || name.isEmpty ? null : _Brand(name),
-      action: act == null ? null : _ActKey(act),
-      body: child,
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(IterableProperty<ClayTab>('tabs', tabs))
-      ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has(
-          'onDestinationSelected',
-          onDestinationSelected,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      )
-      ..add(StringProperty('brand', brand, defaultValue: null))
-      ..add(
-        FlagProperty('showPlaces', value: showPlaces, ifTrue: 'showPlaces'),
-      );
-  }
-}
-
-/// The app's name at the head of its places: in the title type where it
-/// fits, its first letter where it does not (a rail).
-class _Brand extends StatelessWidget {
-  const _Brand(this.name);
-
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ClayTheme.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < 120;
-        return Semantics(
-          header: true,
-          label: name,
-          child: ExcludeSemantics(
-            child: Text(
-              narrow ? name.characters.first.toUpperCase() : name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: narrow ? TextAlign.center : TextAlign.start,
-              style: theme.textTheme.title.copyWith(color: theme.colors.ink),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// The shell's act: coral clay when it is the app's standing invitation
-/// ([ShellAction.accent]), else plain clay. The sidebar has room for its
-/// words: a key with its glyph; elsewhere a ball.
-class _ActKey extends StatelessWidget {
-  const _ActKey(this.action);
-
-  final ShellAction action;
-
-  @override
-  Widget build(BuildContext context) {
-    final words = action.label ?? 'New';
-    void press() => action.onPressed(context);
-    final wide =
-        MediaQuery.sizeOf(context).width >= ClayMetrics.sidebarBreakpoint;
-    if (wide) {
-      final glyph = Icon(action.icon);
-      return KeyedSubtree(
-        key: action.key,
-        child: action.accent
-            ? ClayButton.filled(words, onPressed: press, icon: glyph)
-            : ClayButton(words, onPressed: press, icon: glyph),
-      );
-    }
-    return KeyedSubtree(
-      key: action.key,
-      child: action.accent
-          ? ClayIconButton.filled(
-              onPressed: press,
-              tooltip: words,
-              icon: Icon(action.icon),
-            )
-          : ClayIconButton(
-              onPressed: press,
-              tooltip: words,
-              icon: Icon(action.icon),
-            ),
-    );
-  }
-}
-
-/// One of an app shell's places as an app declares it: its glyph, its name
-/// and the key on its cell.
-///
-/// ```dart
-/// ClayTab(LucideIcons.sun, 'Today', ValueKey('open-today'))
-/// ```
-@immutable
-class ClayTab {
-  /// A place called [label], shown by [icon].
-  const ClayTab(this.icon, this.label, [this.key]);
-
-  /// Its glyph.
-  final IconData icon;
-
-  /// Its name.
-  final String label;
-
-  /// The key on its cell.
-  final Key? key;
-}
-
-/// The app's one act beside its places (add, log, capture): coral clay in
-/// the chrome when [accent], plain clay when not.
-///
-/// ```dart
-/// ClayShellAction(icon: LucideIcons.plus, accent: true, onPressed: (context) => openNewHabit(context))
-/// ```
-class ClayShellAction extends ShellAction {
-  /// An act wearing [icon].
-  const ClayShellAction({
-    required super.icon,
-    required super.onPressed,
-    super.label,
-    super.accent = true,
-    super.key,
-  });
-}
-
 /// While a page's data is on its way: the spinner over its word, centred.
 ///
 /// ```dart
@@ -715,7 +551,8 @@ class ClayLoadingState extends StatelessWidget {
   /// The page waiting.
   const ClayLoadingState({super.key, this.label});
 
-  /// What a screen reader says; null takes the design kit's ("Loading").
+  /// The words under the spinner, which a screen reader hears too; null
+  /// takes the design kit's ("Loading").
   final String? label;
 
   @override

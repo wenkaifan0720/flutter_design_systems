@@ -15,9 +15,9 @@ import '../theme.dart';
 /// a row's own inset, its words start where a field's do.
 const double clayMenuInset = ClaySpacing.tight;
 
-/// The panel's corner radius; a row's is this less [clayMenuInset], so the
-/// two curves run side by side.
-const double clayMenuRadius = ClayRadius.large;
+/// The panel's corner radius in [theme] (its large step); a row's is this
+/// less [clayMenuInset], so the two curves run side by side.
+double clayMenuRadius(ClayThemeData theme) => theme.shapeScheme.corners.large;
 
 /// One row of a [ClayMenuList].
 @immutable
@@ -153,7 +153,11 @@ class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
         return KeyEventResult.ignored;
       },
       child: ClaySurface(
-        face: ClayFace.floating(c, color: panel, radius: clayMenuRadius),
+        face: ClayFace.floating(
+          c,
+          color: panel,
+          radius: clayMenuRadius(ClayTheme.of(context)),
+        ),
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: math.min(fullHeight, cap)),
           child: MouseRegion(
@@ -203,7 +207,10 @@ class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
               ? c.accentInk
               : c.ink;
           final weight = isChosen ? FontWeight.w600 : FontWeight.w400;
-          final well = ClayFace.well(c, radius: clayMenuRadius - clayMenuInset);
+          final well = ClayFace.well(
+            c,
+            radius: clayMenuRadius(ClayTheme.of(context)) - clayMenuInset,
+          );
           final show = lit || pressed;
           return SizedBox(
             height: widget.rowHeight,
@@ -400,7 +407,10 @@ class ClayMenuRow extends StatelessWidget {
         ? c.accentInk
         : c.ink;
     final weight = chosen ? FontWeight.w600 : FontWeight.w400;
-    final well = ClayFace.well(c, radius: clayMenuRadius - clayMenuInset);
+    final well = ClayFace.well(
+      c,
+      radius: clayMenuRadius(ClayTheme.of(context)) - clayMenuInset,
+    );
     return SizedBox(
       height: height ?? theme.density.height(ClayMetrics.controlHeight - 4),
       child: AnimatedClaySurface(
@@ -463,12 +473,13 @@ class ClayMenuRow extends StatelessWidget {
 
 /// The clay a menu or a field's options float in: by night a shade
 /// lighter than the cards, so it stands off what it covers.
-ClayFace clayMenuFace(ClayColors c) {
+ClayFace clayMenuFace(ClayThemeData theme) {
+  final c = theme.colors;
   final night = c.brightness == Brightness.dark;
   return ClayFace.floating(
     c,
     color: night ? Color.lerp(c.clay, c.light, 0.06)! : c.clay,
-    radius: clayMenuRadius,
+    radius: clayMenuRadius(theme),
   );
 }
 
@@ -489,7 +500,7 @@ Widget clayMenuPanel(
   body = width == null
       ? IntrinsicWidth(stepWidth: 8, child: body)
       : SizedBox(width: width, child: body);
-  final face = clayMenuFace(c);
+  final face = clayMenuFace(ClayTheme.of(context));
   return ClaySurface(
     face: fill == null ? face : face.tinted(c, fill),
     child: ConstrainedBox(

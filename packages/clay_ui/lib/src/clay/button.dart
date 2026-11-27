@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'popovers.dart' show ClayTooltip;
 import 'surface.dart';
 import 'theme.dart';
 
@@ -212,7 +213,7 @@ class ClayButtonFace extends StatelessWidget {
             : isDestructiveAction
             ? c.dangerInk
             : c.ink);
-    final radius = _radius(layered.shape, ClayRadius.control);
+    final radius = _radius(layered.shape, theme.shapeScheme.corners.medium);
     // A disabled key lies level with the ground: no float, as Material's
     // disabled keys lose their elevation.
     var face = disabled
@@ -467,7 +468,9 @@ enum _IconKind { clay, filled, plain }
 /// A round Clay ball holding a glyph: white clay by default, coral with
 /// [ClayIconButton.filled], or a bare glyph with [ClayIconButton.plain] (on
 /// a bar, beside a field). [isSelected] holds a toggling ball on: it warms
-/// toward the accent.
+/// toward the accent. Its [tooltip] stands over it on a hover, a long press
+/// or the focus, as `IconButton.tooltip` does, and names it to a screen
+/// reader and to `find.byTooltip`.
 ///
 /// ```dart
 /// ClayIconButton(onPressed: () {}, icon: const Icon(IconData(0x41)), tooltip: 'Edit')
@@ -515,7 +518,8 @@ class ClayIconButton extends StatelessWidget {
   /// The glyph.
   final Widget icon;
 
-  /// What the ball does, for a screen reader.
+  /// What the ball does: shown in a [ClayTooltip] over it, and its name to
+  /// a screen reader.
   final String tooltip;
 
   /// Whether a toggling ball is on (warmed toward the accent); null for a
@@ -537,44 +541,95 @@ class ClayIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    return RawButton(
-      onPressed: onPressed,
-      focusNode: focusNode,
-      autofocus: autofocus,
-      selected: isSelected ?? false,
-      semanticSelected: isSelected,
-      semanticLabel: tooltip,
-      excludeSemantics: true,
-      builder: (context, states, _) {
-        final layered = RawStyleOf([style, theme.iconButtonStyle], states);
-        final disabled = states.contains(WidgetState.disabled);
-        final pressed = states.contains(WidgetState.pressed);
-        final focused = states.contains(WidgetState.focused);
-        final on = isSelected ?? false;
-        final side = layered.minimumSize?.height ?? theme.controlHeight - 4;
-        final glyph = layered.iconSize ?? 20;
-        if (_kind == _IconKind.plain) {
+    // The tip names the ball, once: the button takes no label of its own,
+    // as Material's IconButton under its Tooltip.
+    return ClayTooltip(
+      message: tooltip,
+      child: RawButton(
+        onPressed: onPressed,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        selected: isSelected ?? false,
+        semanticSelected: isSelected,
+        excludeSemantics: true,
+        builder: (context, states, _) {
+          final layered = RawStyleOf([style, theme.iconButtonStyle], states);
+          final disabled = states.contains(WidgetState.disabled);
+          final pressed = states.contains(WidgetState.pressed);
+          final focused = states.contains(WidgetState.focused);
+          final on = isSelected ?? false;
+          final side = layered.minimumSize?.height ?? theme.controlHeight - 4;
+          final glyph = layered.iconSize ?? 20;
+          if (_kind == _IconKind.plain) {
+            final colour =
+                layered.foreground ??
+                (disabled
+                    ? c.inkDisabled
+                    : on
+                    ? c.accentInk
+                    : c.ink);
+            return TapTargetPadding(
+              child: SizedBox.square(
+                dimension: side,
+                child: AnimatedClaySurface(
+                  // A bare glyph shows its press and its focus as a small well
+                  // opening under it.
+                  face: ClayFace.well(c, radius: side / 2).copyWith(
+                    lightOpacity: pressed || focused ? null : 0,
+                    shadeOpacity: pressed || focused ? null : 0,
+                    color: pressed || focused
+                        ? null
+                        : c.well.withValues(alpha: 0),
+                    focus: focused ? 1 : 0,
+                  ),
+                  child: Center(
+                    child: IconTheme.merge(
+                      data: IconThemeData(size: glyph, color: colour),
+                      child: icon,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+          final filled = _kind == _IconKind.filled;
+          final fill = layered.fill ?? (filled ? c.accent : c.clay);
+          ClayFace face;
+          if (disabled) {
+            face = ClayFace.flat(
+              c,
+              radius: side / 2,
+            ).copyWith(shadowOpacity: 0);
+          } else if (on) {
+            // Held on, the ball warms toward the accent (or takes its style's
+            // fill): what is chosen takes colour and stands up.
+            face = ClayFace.raised(
+              c,
+              color: layered.fill ?? clayChosenFill(c),
+              radius: side / 2,
+            );
+          } else {
+            face = ClayFace.raised(c, color: fill, radius: side / 2);
+          }
+          face = face.copyWith(
+            press: pressed ? 1 : 0,
+            lift: states.contains(WidgetState.hovered) ? 0.6 : 0,
+            focus: focused ? 1 : 0,
+          );
           final colour =
               layered.foreground ??
               (disabled
                   ? c.inkDisabled
                   : on
-                  ? c.accentInk
+                  ? c.onColor(layered.fill ?? clayChosenFill(c))
+                  : filled
+                  ? c.onColor(fill)
                   : c.ink);
           return TapTargetPadding(
             child: SizedBox.square(
               dimension: side,
               child: AnimatedClaySurface(
-                // A bare glyph shows its press and its focus as a small well
-                // opening under it.
-                face: ClayFace.well(c, radius: side / 2).copyWith(
-                  lightOpacity: pressed || focused ? null : 0,
-                  shadeOpacity: pressed || focused ? null : 0,
-                  color: pressed || focused
-                      ? null
-                      : c.well.withValues(alpha: 0),
-                  focus: focused ? 1 : 0,
-                ),
+                face: face,
                 child: Center(
                   child: IconTheme.merge(
                     data: IconThemeData(size: glyph, color: colour),
@@ -584,52 +639,8 @@ class ClayIconButton extends StatelessWidget {
               ),
             ),
           );
-        }
-        final filled = _kind == _IconKind.filled;
-        final fill = layered.fill ?? (filled ? c.accent : c.clay);
-        ClayFace face;
-        if (disabled) {
-          face = ClayFace.flat(c, radius: side / 2).copyWith(shadowOpacity: 0);
-        } else if (on) {
-          // Held on, the ball warms toward the accent (or takes its style's
-          // fill): what is chosen takes colour and stands up.
-          face = ClayFace.raised(
-            c,
-            color: layered.fill ?? clayChosenFill(c),
-            radius: side / 2,
-          );
-        } else {
-          face = ClayFace.raised(c, color: fill, radius: side / 2);
-        }
-        face = face.copyWith(
-          press: pressed ? 1 : 0,
-          lift: states.contains(WidgetState.hovered) ? 0.6 : 0,
-          focus: focused ? 1 : 0,
-        );
-        final colour =
-            layered.foreground ??
-            (disabled
-                ? c.inkDisabled
-                : on
-                ? c.onColor(layered.fill ?? clayChosenFill(c))
-                : filled
-                ? c.onColor(fill)
-                : c.ink);
-        return TapTargetPadding(
-          child: SizedBox.square(
-            dimension: side,
-            child: AnimatedClaySurface(
-              face: face,
-              child: Center(
-                child: IconTheme.merge(
-                  data: IconThemeData(size: glyph, color: colour),
-                  child: icon,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 

@@ -588,7 +588,10 @@ class _ClayInputGroupState extends State<ClayInputGroup>
                 states,
                 fill: layered.fill,
                 edge: layered.edge,
-                radius: clayRadiusOf(layered.shape, ClayRadius.control),
+                radius: clayRadiusOf(
+                  layered.shape,
+                  theme.shapeScheme.corners.medium,
+                ),
               ),
               child: child,
             ),
@@ -775,7 +778,10 @@ class ClayOtpField extends StatelessWidget {
                 states,
                 fill: layered.fill,
                 edge: layered.edge,
-                radius: clayRadiusOf(layered.shape, ClayRadius.control - 2),
+                radius: clayRadiusOf(
+                  layered.shape,
+                  theme.shapeScheme.corners.medium - 2,
+                ),
               ),
               child: Center(
                 child: Text(
@@ -909,7 +915,10 @@ class ClayNumberField extends StatelessWidget {
                     field.states,
                     fill: layered.fill,
                     edge: layered.edge,
-                    radius: clayRadiusOf(layered.shape, ClayRadius.control),
+                    radius: clayRadiusOf(
+                      layered.shape,
+                      theme.shapeScheme.corners.medium,
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -996,9 +1005,8 @@ class ClayNumberField extends StatelessWidget {
 /// The panel a field's options float in: the menu's clay, as wide as the
 /// field.
 Widget _optionPanel(BuildContext context, Widget list) {
-  final c = ClayTheme.of(context).colors;
   return ClaySurface(
-    face: clayMenuFace(c),
+    face: clayMenuFace(ClayTheme.of(context)),
     child: Padding(padding: const EdgeInsets.all(clayMenuInset), child: list),
   );
 }
@@ -1642,7 +1650,9 @@ typedef ClayForm = RawForm;
 /// above it names it to a screen reader, the error under it is announced
 /// as it appears. A group of controls (a segmented choice, a number's
 /// keys, chips) keeps each control's own node and tap, and the label names
-/// the group ([mergeSemantics]).
+/// the group ([mergeSemantics]). Its words start where a text field's do
+/// ([ClayMetrics.fieldInset] in), so a form's labels stand on one line;
+/// [inset] false starts them at the control's edge.
 ///
 /// ```dart
 /// ClayFormField(labelText: 'Reminders', helperText: 'A nudge at its time', child: ClaySwitch(value: true, onChanged: (_) {}))
@@ -1659,11 +1669,17 @@ class ClayFormField extends StatelessWidget {
     this.enabled = true,
     this.focusNode,
     this.mergeSemantics,
+    this.inset = true,
     this.style,
   });
 
   /// The control.
   final Widget child;
+
+  /// Whether its label, help and error start where a text field's words do
+  /// ([ClayMetrics.fieldInset] in), on the form's one label line; false
+  /// starts them at the control's edge, for a control standing alone.
+  final bool inset;
 
   /// The words above it.
   final String? labelText;
@@ -1704,6 +1720,7 @@ class ClayFormField extends StatelessWidget {
         .copyWith(fontSize: 14, height: 20 / 14)
         .merge(layered.textStyle)
         .copyWith(color: enabled ? layered.foreground ?? c.ink : c.inkDisabled);
+    final side = inset ? ClayMetrics.fieldInset : 0.0;
     return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
@@ -1718,7 +1735,11 @@ class ClayFormField extends StatelessWidget {
         children: [
           if (parts.label != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: ClaySpacing.small),
+              padding: EdgeInsetsDirectional.only(
+                start: side,
+                end: side,
+                bottom: ClaySpacing.small,
+              ),
               child: DefaultTextStyle.merge(
                 style: labelStyle,
                 child: Row(
@@ -1740,9 +1761,10 @@ class ClayFormField extends StatelessWidget {
           ),
           if (parts.error != null)
             Padding(
-              padding: const EdgeInsetsDirectional.only(
+              padding: EdgeInsetsDirectional.only(
                 top: ClaySpacing.small,
-                start: ClaySpacing.tight,
+                start: side,
+                end: side,
               ),
               child: DefaultTextStyle.merge(
                 style: theme.textTheme.secondary.copyWith(color: c.dangerInk),
@@ -1751,9 +1773,10 @@ class ClayFormField extends StatelessWidget {
             )
           else if (parts.helper != null)
             Padding(
-              padding: const EdgeInsetsDirectional.only(
+              padding: EdgeInsetsDirectional.only(
                 top: ClaySpacing.small,
-                start: ClaySpacing.tight,
+                start: side,
+                end: side,
               ),
               child: DefaultTextStyle.merge(
                 style: theme.textTheme.secondary,
@@ -1772,6 +1795,7 @@ class ClayFormField extends StatelessWidget {
     properties
       ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
-      ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'required'));
+      ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'required'))
+      ..add(FlagProperty('inset', value: inset, ifFalse: 'at the edge'));
   }
 }

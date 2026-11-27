@@ -137,7 +137,7 @@ class _RowsState extends State<_Rows> {
       ),
       const SizedBox(height: ClaySpacing.regular),
       const ClaySectionHeader('A header alone'),
-      const ClayGroove(indent: 20),
+      const ClayGroove(indent: ClayListTile.inset),
     ],
   );
 }
@@ -497,7 +497,7 @@ class _Carousel extends StatelessWidget {
         return ClaySurface(
           face: ClayFace.flat(
             theme.colors,
-            radius: ClayRadius.large - 4,
+            radius: ClayTheme.of(context).shapeScheme.corners.large - 4,
           ).copyWith(color: theme.colors.tint(tint), shadowOpacity: 0),
           child: Padding(
             padding: const EdgeInsets.all(ClaySpacing.large),

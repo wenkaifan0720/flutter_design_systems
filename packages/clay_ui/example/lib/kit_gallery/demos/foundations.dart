@@ -62,13 +62,41 @@ class _Depths extends StatelessWidget {
     );
     return KitRow(
       children: [
-        swatch('Well', ClayFace.well(c, radius: ClayRadius.large)),
-        swatch('Flat', ClayFace.flat(c, radius: ClayRadius.large)),
-        swatch('Raised', ClayFace.raised(c, radius: ClayRadius.large)),
-        swatch('Floating', ClayFace.floating(c, radius: ClayRadius.large)),
+        swatch(
+          'Well',
+          ClayFace.well(
+            c,
+            radius: ClayTheme.of(context).shapeScheme.corners.large,
+          ),
+        ),
+        swatch(
+          'Flat',
+          ClayFace.flat(
+            c,
+            radius: ClayTheme.of(context).shapeScheme.corners.large,
+          ),
+        ),
+        swatch(
+          'Raised',
+          ClayFace.raised(
+            c,
+            radius: ClayTheme.of(context).shapeScheme.corners.large,
+          ),
+        ),
+        swatch(
+          'Floating',
+          ClayFace.floating(
+            c,
+            radius: ClayTheme.of(context).shapeScheme.corners.large,
+          ),
+        ),
         swatch(
           'Accent',
-          ClayFace.raised(c, color: c.accent, radius: ClayRadius.large),
+          ClayFace.raised(
+            c,
+            color: c.accent,
+            radius: ClayTheme.of(context).shapeScheme.corners.large,
+          ),
         ),
       ],
     );
@@ -98,7 +126,7 @@ class _Palette extends StatelessWidget {
                 face: ClayFace.raised(
                   c,
                   color: fill,
-                  radius: ClayRadius.control,
+                  radius: ClayTheme.of(context).shapeScheme.corners.medium,
                 ),
                 child: rim == null
                     ? words
@@ -106,6 +134,7 @@ class _Palette extends StatelessWidget {
                         foregroundPainter: _LitRim(
                           rim,
                           Directionality.of(context),
+                          ClayTheme.of(context).shapeScheme.corners.medium,
                         ),
                         child: words,
                       ),
@@ -144,7 +173,11 @@ class _Palettes extends StatelessWidget {
       Color? fill,
       required Color ink,
     }) => ClaySurface(
-      face: ClayFace.raised(c, color: fill, radius: ClayRadius.control),
+      face: ClayFace.raised(
+        c,
+        color: fill,
+        radius: ClayTheme.of(context).shapeScheme.corners.medium,
+      ),
       child: Center(
         child: Text('Aa', style: style.copyWith(color: ink)),
       ),
@@ -170,7 +203,10 @@ class _Palettes extends StatelessWidget {
                           face: ClayFace.flat(
                             c,
                             color: c.ground,
-                            radius: ClayRadius.large,
+                            radius: ClayTheme.of(context)
+                                .shapeScheme
+                                .corners
+                                .large,
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(ClaySpacing.small),
@@ -242,20 +278,18 @@ Color? paletteRim(ClayColors colors, Color fill) {
 /// where the light falls (mirrored right to left), fading down the leading
 /// side; its bottom and its trailing side stay in shade.
 class _LitRim extends CustomPainter {
-  const _LitRim(this.rim, this.direction);
+  const _LitRim(this.rim, this.direction, this.radius);
 
   final Color rim;
   final TextDirection direction;
+  final double radius;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final shape = Path()
       ..addRSuperellipse(
-        RSuperellipse.fromRectAndRadius(
-          rect,
-          const Radius.circular(ClayRadius.control),
-        ),
+        RSuperellipse.fromRectAndRadius(rect, Radius.circular(radius)),
       );
     // Where the light falls, as on every raised part: inside the shape and
     // outside itself moved toward the lower trailing corner, so the top and
@@ -271,7 +305,7 @@ class _LitRim extends CustomPainter {
           rect.shift(
             Offset(direction == TextDirection.rtl ? -reach : reach, reach),
           ),
-          const Radius.circular(ClayRadius.control),
+          Radius.circular(radius),
         ),
       );
     canvas
@@ -295,7 +329,7 @@ class _LitRim extends CustomPainter {
 
   @override
   bool shouldRepaint(_LitRim old) =>
-      old.rim != rim || old.direction != direction;
+      old.rim != rim || old.direction != direction || old.radius != radius;
 }
 
 class _Type extends StatelessWidget {

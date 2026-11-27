@@ -248,9 +248,9 @@ class _Card extends StatelessWidget {
     return SizedBox(
       width: width,
       child: ClaySurface(
-        face: clayMenuFace(c).copyWith(
+        face: clayMenuFace(theme).copyWith(
           color: layered.fill,
-          radius: clayRadiusOf(layered.shape, ClayRadius.large),
+          radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
         ),
         child: Padding(
           padding:
@@ -401,7 +401,9 @@ class ClayHoverCard extends StatelessWidget {
 
 /// A tooltip: a small dark slab of clay with [message], floating above
 /// [child] once the pointer rests on it, or on a long press. One shows at a
-/// time; Escape hides it.
+/// time; Escape hides it. Where no overlay stands over it (a toast's key,
+/// over the app's navigator) it shows nothing and names [child] for a
+/// screen reader alone.
 ///
 /// ```dart
 /// ClayTooltip(message: 'Streak so far', child: const Text('12'))
@@ -425,7 +427,18 @@ class ClayTooltip extends StatelessWidget {
   final ClayStyle? style;
 
   @override
-  Widget build(BuildContext context) => RawTooltipPlacement(
+  Widget build(BuildContext context) {
+    // Over the app's navigator (a toast's key) no overlay stands to show a
+    // tip in: the words name the child for a screen reader alone.
+    if (Overlay.maybeOf(context) == null) {
+      return MergeSemantics(
+        child: Semantics(tooltip: message, child: child),
+      );
+    }
+    return _tip(context);
+  }
+
+  Widget _tip(BuildContext context) => RawTooltipPlacement(
     placement: const RawPopoverPlacement(
       side: RawPopoverSide.above,
       align: RawPopoverAlign.center,
@@ -584,7 +597,7 @@ class _Tip extends StatelessWidget {
         face: ClayFace.raised(
           c,
           color: fill,
-          radius: ClayRadius.small + 3,
+          radius: theme.shapeScheme.corners.small + 3,
         ).copyWith(elevation: 0.8),
         child: Padding(
           padding: const EdgeInsets.symmetric(

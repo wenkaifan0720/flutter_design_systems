@@ -738,7 +738,7 @@ class ClayMenuBar extends StatelessWidget {
           face: ClayFace.raised(
             c,
             color: bar.fill,
-            radius: ClayRadius.control,
+            radius: theme.shapeScheme.corners.medium,
           ).copyWith(elevation: 0.6),
           child: Padding(
             padding: const EdgeInsets.all(inset),
@@ -766,7 +766,10 @@ class ClayMenuBar extends StatelessWidget {
         final pressed = states.contains(WidgetState.pressed);
         final hovered = states.contains(WidgetState.hovered);
         final show = open || pressed ? 1.0 : (hovered ? 0.45 : 0.0);
-        final well = ClayFace.well(c, radius: ClayRadius.control - inset);
+        final well = ClayFace.well(
+          c,
+          radius: theme.shapeScheme.corners.medium - inset,
+        );
         return AnimatedClaySurface(
           face: well.copyWith(
             color: well.color.withValues(alpha: well.color.a * show),
@@ -995,14 +998,16 @@ class ClayCommandPalette extends StatelessWidget {
 
 Widget _palettePanel(BuildContext context, ClayStyle? style, Widget child) {
   final theme = ClayTheme.of(context);
-  final c = theme.colors;
   final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 560),
     child: ClaySurface(
-      face: clayMenuFace(c).copyWith(
+      face: clayMenuFace(theme).copyWith(
         color: layered.fill,
-        radius: clayRadiusOf(layered.shape, ClayRadius.extraLarge),
+        radius: clayRadiusOf(
+          layered.shape,
+          theme.shapeScheme.corners.extraLarge,
+        ),
       ),
       child: Padding(
         padding:

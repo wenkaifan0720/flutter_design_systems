@@ -286,11 +286,11 @@ void _ball(Canvas canvas, ClayColors c, Offset at, Color ring, double r) {
 
 /// A focused chart's rim: the 2 px band of the focus colour every focused
 /// Clay part takes, just inside its edge.
-void _focusRim(Canvas canvas, ClayColors c, Size size) {
+void _focusRim(Canvas canvas, ClayColors c, Size size, double radius) {
   clayDrawShape(
     canvas,
     (Offset.zero & size).deflate(1),
-    ClayRadius.control - 1,
+    radius - 1,
     Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
@@ -308,11 +308,15 @@ TextPainter _label(String text, TextStyle style, TextDirection direction) =>
 /// The grid as soft grooves pressed across the plot, and the axes' words.
 abstract class _AxesPainter extends CustomPainter {
   _AxesPainter({
+    required this.corner,
     required this.details,
     required this.colors,
     required this.labelStyle,
     required this.direction,
   });
+
+  // The corner of the chart's well, which its focus rim follows.
+  final double corner;
 
   final RawChartDetails details;
   final ClayColors colors;
@@ -379,6 +383,7 @@ abstract class _AxesPainter extends CustomPainter {
 
 class _LinePainter extends _AxesPainter {
   _LinePainter({
+    required super.corner,
     required super.details,
     required super.colors,
     required super.labelStyle,
@@ -471,7 +476,9 @@ class _LinePainter extends _AxesPainter {
         _ball(canvas, c, at, palette[i], i == a.series ? 7 : 5);
       }
     }
-    if (d.states.contains(WidgetState.focused)) _focusRim(canvas, c, size);
+    if (d.states.contains(WidgetState.focused)) {
+      _focusRim(canvas, c, size, corner);
+    }
   }
 
   @override
@@ -522,6 +529,7 @@ List<({int series, int index, Rect rect})> _bars(
 /// The bar chart's ground: the picked band's dent, the grid and the words.
 class _BarPainter extends _AxesPainter {
   _BarPainter({
+    required super.corner,
     required super.details,
     required super.colors,
     required super.labelStyle,
@@ -557,7 +565,9 @@ class _BarPainter extends _AxesPainter {
       );
     }
     paintAxes(canvas);
-    if (d.states.contains(WidgetState.focused)) _focusRim(canvas, c, size);
+    if (d.states.contains(WidgetState.focused)) {
+      _focusRim(canvas, c, size, corner);
+    }
   }
 }
 
@@ -611,7 +621,7 @@ class _Readout extends StatelessWidget {
           face: ClayFace.raised(
             c,
             color: c.inverse,
-            radius: ClayRadius.small + 3,
+            radius: theme.shapeScheme.corners.small + 3,
           ).copyWith(elevation: 0.8),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -691,7 +701,7 @@ class _Legend extends StatelessWidget {
                     face: ClayFace.raised(
                       c,
                       color: color,
-                      radius: 6,
+                      radius: theme.shapeScheme.corners.extraSmall,
                     ).copyWith(elevation: 0.5),
                   ),
                 ),
@@ -941,6 +951,7 @@ class ClayLineChart extends StatelessWidget {
       yIncludesZero: yIncludesZero,
       onActivePointChanged: onActivePointChanged,
       paint: (d, labels, direction) => _LinePainter(
+        corner: ClayTheme.of(context).shapeScheme.corners.medium,
         details: d,
         colors: c,
         labelStyle: labels,
@@ -1058,6 +1069,7 @@ class ClayBarChart extends StatelessWidget {
       labelColor: layered.foreground,
       onActivePointChanged: onActivePointChanged,
       paint: (d, labels, direction) => _BarPainter(
+        corner: ClayTheme.of(context).shapeScheme.corners.medium,
         details: d,
         colors: c,
         labelStyle: labels,
@@ -1110,12 +1122,16 @@ const double _donutPush = 5;
 /// pressed into the ground. The picked piece eases out and rises by [lift].
 class _DonutPainter extends CustomPainter {
   _DonutPainter({
+    required this.corner,
     required this.details,
     required this.colors,
     required this.palette,
     required this.lift,
     required this.mirrored,
   });
+
+  // The corner of the chart's well, which its focus rim follows.
+  final double corner;
 
   final RawPieChartDetails details;
   final ClayColors colors;
@@ -1201,7 +1217,9 @@ class _DonutPainter extends CustomPainter {
         mirrored: mirrored,
       );
     }
-    if (d.states.contains(WidgetState.focused)) _focusRim(canvas, c, size);
+    if (d.states.contains(WidgetState.focused)) {
+      _focusRim(canvas, c, size, corner);
+    }
   }
 
   @override
@@ -1278,6 +1296,7 @@ class _DonutState extends State<_Donut> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) => CustomPaint(
     size: widget.details.size,
     painter: _DonutPainter(
+      corner: ClayTheme.of(context).shapeScheme.corners.medium,
       details: widget.details,
       colors: widget.colors,
       palette: widget.palette,
@@ -1475,10 +1494,14 @@ Rect _inCircle(
 
 class _SparkPainter extends CustomPainter {
   _SparkPainter({
+    required this.corner,
     required this.details,
     required this.colors,
     required this.color,
   });
+
+  // The corner of the chart's well, which its focus rim follows.
+  final double corner;
 
   final RawChartDetails details;
   final ClayColors colors;
@@ -1506,7 +1529,9 @@ class _SparkPainter extends CustomPainter {
         a == null ? 3.5 : 5,
       );
     }
-    if (d.states.contains(WidgetState.focused)) _focusRim(canvas, c, size);
+    if (d.states.contains(WidgetState.focused)) {
+      _focusRim(canvas, c, size, corner);
+    }
   }
 
   @override
@@ -1578,7 +1603,12 @@ class ClaySparkline extends StatelessWidget {
         stiffness: ClayMotion.panelStiffness,
         builder: (context, d) => CustomPaint(
           size: d.size,
-          painter: _SparkPainter(details: d, colors: c, color: color),
+          painter: _SparkPainter(
+            corner: ClayTheme.of(context).shapeScheme.corners.medium,
+            details: d,
+            colors: c,
+            color: color,
+          ),
         ),
       ),
     );

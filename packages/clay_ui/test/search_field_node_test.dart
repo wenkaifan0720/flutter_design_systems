@@ -29,10 +29,10 @@ void main() {
     await tester.tap(field);
     await tester.pumpAndSettle();
     final before = tester.getSemantics(field).id;
-    expect(find.bySemanticsLabel('Clear'), findsNothing);
+    expect(find.byTooltip('Clear'), findsNothing);
     await tester.enterText(field, 's');
     await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel('Clear'), findsOneWidget);
+    expect(find.byTooltip('Clear'), findsOneWidget);
     expect(
       tester.getSemantics(field).id,
       before,
@@ -40,7 +40,7 @@ void main() {
     );
     await tester.enterText(field, '');
     await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel('Clear'), findsNothing);
+    expect(find.byTooltip('Clear'), findsNothing);
     expect(tester.getSemantics(field).id, before);
     semantics.dispose();
   });
