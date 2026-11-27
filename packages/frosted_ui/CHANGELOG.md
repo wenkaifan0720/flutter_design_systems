@@ -1,3 +1,13 @@
+## 0.8.1
+
+- Requires ui_core 0.8.3.
+- A screen's footer stands on the bar's glass, edged on top by the lit hairline, as a phone's bar is at its foot: the
+  page passes under it, blurred, and rests a margin over it, where an opaque band of the canvas cut it off under a
+  fade. A docked `FrostedActionBar` stands on the same glass.
+- From 600 wide a footer's acts stand at the column's end, as the action bar's one act does, where a `FrostedButtonRow`
+  in a footer stood at the line's start. A row in a page's body keeps the line's start; on a phone the acts span it.
+- `FrostedChromeMetrics.footerFade` is deprecated: nothing draws a fade over the page any more.
+
 ## 0.8.0
 
 - Requires ui_core 0.8.2.

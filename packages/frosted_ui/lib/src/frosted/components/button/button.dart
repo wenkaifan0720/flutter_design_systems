@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../../chrome_metrics.dart';
 import '../../internal/act_row.dart';
 import '../../internal/face.dart';
+import '../../internal/footer_band.dart';
 import '../../internal/ink_on.dart';
 import '../../internal/measure.dart';
 import '../../internal/own_size.dart';
@@ -718,7 +719,9 @@ class _RenderSpill extends RenderShiftedBox {
 /// do not fit, all narrow in proportion). [columns] cuts the line into that
 /// many shares however many buttons stand in it, so a lone act keeps its half
 /// at the line's start; null gives each button a
-/// share. Give it [FrostedButton]s without `expand`: each takes the width it is
+/// share. In a screen's or a sheet's footer the room the acts leave goes
+/// before them: from 600 wide, where each keeps a button's measure, they
+/// stand at the column's end, as the action bar's one act does. Give it [FrostedButton]s without `expand`: each takes the width it is
 /// handed. Every button in it shows the size the largest asks for, so the row
 /// shows one top and one bottom: the glass and the ink differ in their fill,
 /// never in their height.
@@ -762,6 +765,7 @@ class _ButtonRow extends MultiChildRenderObjectWidget {
     FrostedBreakpoints.gap(context),
     columns,
     _cap(context),
+    FrostedFooterBand.around(context),
   );
 
   @override
@@ -770,11 +774,13 @@ class _ButtonRow extends MultiChildRenderObjectWidget {
       ..direction = Directionality.of(context)
       ..gap = FrostedBreakpoints.gap(context)
       ..columns = columns
-      ..cap = _cap(context);
+      ..cap = _cap(context)
+      ..atEnd = FrostedFooterBand.around(context);
   }
 
   /// From 600 wide a share is at most a control's measure (320): a pair of
-  /// acts stands at the line's start, not across a desktop column.
+  /// acts stands at the line's start in a page's body, at its end in a
+  /// footer (as the action bar's one act), not across a desktop column.
   static double _cap(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= frostedMeasureFrom
       ? frostedControlMeasure
@@ -787,7 +793,22 @@ class _RenderButtonRow extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, _RowData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _RowData> {
-  _RenderButtonRow(this._direction, this._gap, this._columns, this._cap);
+  _RenderButtonRow(
+    this._direction,
+    this._gap,
+    this._columns,
+    this._cap,
+    this._atEnd,
+  );
+
+  /// Whether the acts stand at the line's end when they leave room (a
+  /// footer's), rather than at its start.
+  bool _atEnd;
+  set atEnd(bool value) {
+    if (value == _atEnd) return;
+    _atEnd = value;
+    markNeedsLayout();
+  }
 
   double _cap;
   set cap(double value) {
@@ -931,7 +952,10 @@ class _RenderButtonRow extends RenderBox
       );
       h = math.max(h, c.size.height);
     }
-    var x = 0.0;
+    // The room the acts leave (a capped share, an empty column) goes before
+    // them in a footer.
+    final used = widths.fold(0.0, (a, b) => a + b) + _gaps(widths.length);
+    var x = _atEnd ? math.max(0.0, extent - used) : 0.0;
     i = 0;
     for (var c = firstChild; c != null; c = childAfter(c)) {
       final w = widths[i++];

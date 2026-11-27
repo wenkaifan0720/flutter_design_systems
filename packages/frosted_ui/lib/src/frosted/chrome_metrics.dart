@@ -223,7 +223,12 @@ abstract final class FrostedChromeMetrics {
   /// An accessory stands 8 over the slab.
   static const double accessoryGap = 8;
 
-  /// A page fades into the canvas over the 32 above its footer's band.
+  /// Drawn by nothing since 0.8.1: a footer stands on the bar's glass with
+  /// the page passing under it, and no fade covers the page.
+  @Deprecated(
+    'No longer drawn: the footer stands on glass, with no fade over the page. '
+    'Removed in 0.9.0.',
+  )
   static const double footerFade = 32;
 
   /// The frost behind a tile of glass: a blur of 24, the colour behind it

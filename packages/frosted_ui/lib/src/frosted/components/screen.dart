@@ -78,8 +78,10 @@ class FrostedScaffold extends StatefulWidget {
   /// Usually a [FrostedAppBar]; unset derives the route's own (see above).
   final Widget? topBar;
 
-  /// Pinned above the bottom edge: a page's one act. Gets the footer band and
-  /// the safe-area inset.
+  /// Pinned above the bottom edge: a page's one act. Stands on the footer's
+  /// band of the bar's glass, the safe-area inset in it, with the page
+  /// passing under it; from 600 wide a [FrostedButtonRow]'s acts stand at
+  /// the column's end there.
   final Widget? footer;
 
   /// Wrap the page in a scroll view.
@@ -136,6 +138,13 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
     if (height != _bar) setState(() => _bar = height);
   }
 
+  /// The footer's band as laid out: the page's reserve under it.
+  double? _foot;
+
+  void _measuredFoot(double height) {
+    if (height != _foot) setState(() => _foot = height);
+  }
+
   /// The bar this screen mounts: the authored one, the route's derived one
   /// when [FrostedScaffold.topBar] is unset, nothing under [FrostedAppBar.none].
   Widget? _resolveBar(BuildContext context) {
@@ -184,10 +193,19 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
     final wide = FrostedBreakpoints.isWide(context);
     final side = FrostedSideInset.of(context);
     final top = mq.padding.top;
-    // The shell's allowance already spans the device inset, as does the
-    // footer's band: a max, never a sum.
-    final bodyInset = footer == null ? mq.padding.bottom : 0.0;
-    final reserve = math.max(bodyInset, shellAllowance);
+    // The shell's allowance already spans the device inset: a max, never a
+    // sum. A footer's band spans it too, and the page runs on under it, so
+    // its height is the reserve; until it is measured (a page's first frame),
+    // the standard band's.
+    final reserve = footer == null
+        ? math.max(mq.padding.bottom, shellAllowance)
+        : _foot ??
+              FrostedScaffold.footerInsets.top +
+                  FrostedChromeMetrics.buttonHeight +
+                  math.max(
+                    FrostedScaffold.footerInsets.bottom,
+                    mq.viewPadding.bottom,
+                  );
     final room =
         widget.padding?.resolve(Directionality.of(context)) ??
         (wide ? FrostedInsets.screenWide : FrostedInsets.screen);
@@ -318,82 +336,55 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
       );
     }
 
+    // The footer stands over the page's foot on the bar's glass, as a phone's
+    // bar over its head: the page passes under it, blurred, and rests a
+    // margin over it (its measured height is the page's reserve).
+    Widget footBand(Widget footer) => Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: FrostedReportHeight(
+        onHeight: _measuredFoot,
+        child: FrostedBottomStand(
+          child: FrostedFootGlass(
+            padding: FrostedScaffold.footerInsets.copyWith(
+              left:
+                  (rtl ? past : side) +
+                  (wide ? room.left : FrostedScaffold.footerInsets.left),
+              right:
+                  (rtl ? side : past) +
+                  (wide ? room.right : FrostedScaffold.footerInsets.right),
+              bottom: math.max(
+                FrostedScaffold.footerInsets.bottom,
+                // An open keyboard swallows the home-indicator region, so
+                // the footer hugs it.
+                (mq.viewPadding.bottom - mq.viewInsets.bottom).clamp(
+                  0.0,
+                  double.infinity,
+                ),
+              ),
+            ),
+            child: FrostedFooterBand(child: footer),
+          ),
+        ),
+      ),
+    );
+
     // The backdrop stands still behind the page; the page's glass reads it
-    // once between them (a BackdropGroup), the bar over them reads it all.
+    // once between them (a BackdropGroup), the bars over them read it all.
     final stage = Stack(
       fit: StackFit.expand,
       children: [
         if (widget.lights) const FrostedBackdropView(),
         BackdropGroup(child: content),
         if (pinned) pinnedBar(),
+        if (footer != null) footBand(footer),
       ],
     );
 
     return ColoredBox(
       color: t.colorScheme.background,
-      child: Material(
-        type: MaterialType.transparency,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: stage),
-            if (footer != null)
-              FrostedBottomStand(
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // The page fades into the canvas above the band.
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: -FrostedChromeMetrics.footerFade,
-                      height: FrostedChromeMetrics.footerFade,
-                      child: IgnorePointer(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                t.colorScheme.background.withValues(alpha: 0),
-                                t.colorScheme.background,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    ColoredBox(
-                      color: t.colorScheme.background,
-                      child: Padding(
-                        padding: FrostedScaffold.footerInsets.copyWith(
-                          left:
-                              (rtl ? past : side) +
-                              (wide
-                                  ? room.left
-                                  : FrostedScaffold.footerInsets.left),
-                          right:
-                              (rtl ? side : past) +
-                              (wide
-                                  ? room.right
-                                  : FrostedScaffold.footerInsets.right),
-                          bottom: math.max(
-                            FrostedScaffold.footerInsets.bottom,
-                            // An open keyboard swallows the home-indicator
-                            // region, so the footer hugs it.
-                            (mq.viewPadding.bottom - mq.viewInsets.bottom)
-                                .clamp(0.0, double.infinity),
-                          ),
-                        ),
-                        child: FrostedFooterBand(child: footer),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
+      child: Material(type: MaterialType.transparency, child: stage),
     );
   }
 

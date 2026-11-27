@@ -150,18 +150,16 @@ class FrostedActionBar extends StatelessWidget {
     }
     // In a screen's footer the screen draws the band; the bar is its content.
     if (FrostedFooterBand.around(context)) return content;
+    // Docked, it stands on the footer's glass, the page passing under it.
     return FrostedBottomStand(
-      child: ColoredBox(
-        color: t.colorScheme.background,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            FrostedChromeMetrics.actionBarSide,
-            FrostedChromeMetrics.actionBarTop,
-            FrostedChromeMetrics.actionBarSide,
-            math.max(FrostedChromeMetrics.actionBarTop, inset),
-          ),
-          child: FrostedFooterBand(child: content),
+      child: FrostedFootGlass(
+        padding: EdgeInsets.fromLTRB(
+          FrostedChromeMetrics.actionBarSide,
+          FrostedChromeMetrics.actionBarTop,
+          FrostedChromeMetrics.actionBarSide,
+          math.max(FrostedChromeMetrics.actionBarTop, inset),
         ),
+        child: FrostedFooterBand(child: content),
       ),
     );
   }
