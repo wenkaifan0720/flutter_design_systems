@@ -695,6 +695,12 @@ class KeycapHoverCard extends StatelessWidget {
 /// it. Built on Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix`
 /// and `RawTooltipPlacement`.
 ///
+/// Over the key that opens a [KeycapMenu] or a [KeycapPopover], put it in
+/// their `builder`, round the key. There it holds its tab back while the
+/// menu is open, so Escape closes the menu at once. A tooltip round the
+/// whole menu can't tell that the menu is open: its tab can show over the
+/// open menu and, on Flutter 3.50, take the first Escape.
+///
 /// ```dart
 /// KeycapTooltip(message: 'Bold', child: KeycapIconButton(icon: const Icon(LucideIcons.bold), semanticLabel: 'Bold', onPressed: bold))
 /// ```
@@ -718,15 +724,93 @@ class KeycapTooltip extends StatelessWidget {
   final KeycapStyle? style;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = KeycapTheme.of(context);
-    final c = theme.colors;
-    final layered = RawStyleOf([style, theme.tooltipStyle], const {});
-    // Over a key whose menu or popover is open the tab is held back, as a
-    // modal menu's barrier keeps a pointer from the key under it.
-    final held =
+  Widget build(BuildContext context) =>
+      _KeycapTooltipBody(message: message, style: style, child: child);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('message', message));
+  }
+}
+
+/// [KeycapTooltip]'s state: whether its tooltip is there, and the key kept
+/// the same as it comes and goes.
+class _KeycapTooltipBody extends StatefulWidget {
+  const _KeycapTooltipBody({
+    required this.message,
+    required this.style,
+    required this.child,
+  });
+
+  final String message;
+  final KeycapStyle? style;
+  final Widget child;
+
+  @override
+  State<_KeycapTooltipBody> createState() => _KeycapTooltipState();
+}
+
+class _KeycapTooltipState extends State<_KeycapTooltipBody> {
+  // The key keeps its own state (its focus, its press, its hover) as the
+  // tooltip round it comes and goes.
+  final GlobalKey _control = GlobalKey();
+
+  // Whether the key's menu or popover is open (see build).
+  bool _held = false;
+
+  // Whether a mouse is over the key.
+  bool _hovered = false;
+
+  // No tooltip round the key: while it is held, and after it while a mouse
+  // still rests on the key. A press had put the tab away as the menu opened,
+  // and a tooltip mounted under a resting pointer would show it again with no
+  // pointer coming back, so it waits for the pointer to leave.
+  bool _bare = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _held =
         context.dependOnInheritedWidgetOfExactType<_TooltipsHeld>()?.held ??
         false;
+    _bare = _held || (_bare && _hovered);
+  }
+
+  void _enter(PointerEnterEvent event) => _hovered = true;
+
+  void _exit(PointerExitEvent event) {
+    _hovered = false;
+    if (_bare && !_held && mounted) setState(() => _bare = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final message = widget.message;
+    final theme = KeycapTheme.of(context);
+    final c = theme.colors;
+    final layered = RawStyleOf([widget.style, theme.tooltipStyle], const {});
+    // It shows on the keyboard's focus as well.
+    final control = KeyedSubtree(
+      key: _control,
+      child: MouseRegion(
+        opaque: false,
+        onEnter: _enter,
+        onExit: _exit,
+        child: RawTooltipFocusFix(child: widget.child),
+      ),
+    );
+    // Over a key whose menu or popover is open the tab is held back, as a
+    // modal menu's barrier keeps a pointer from the key under it: no
+    // tooltip at all, not an empty one. An open tooltip takes the first
+    // Escape (Flutter 3.50's RawTooltip dismisses the open tips before
+    // anything else hears it), so an empty one would keep the menu open.
+    // The key's name is still said.
+    if (_bare) {
+      return MergeSemantics(
+        child: Semantics(tooltip: message, child: control),
+      );
+    }
     // One node, the tooltip on its control, as the published look read.
     return MergeSemantics(
       child: RawTooltipPlacement(
@@ -742,47 +826,38 @@ class KeycapTooltip extends StatelessWidget {
           semanticsTooltip: message,
           hoverDelay: const Duration(milliseconds: 500),
           positionDelegate: positionDelegate,
-          tooltipBuilder: (context, animation) => held
-              ? const SizedBox.shrink()
-              : FadeTransition(
-                  opacity: animation,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: KeycapSpacing.small + 2,
-                      vertical: KeycapSpacing.tight + 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: layered.fill ?? c.toast,
-                      borderRadius: BorderRadius.circular(
-                        KeycapMetrics.smallKeyRadius,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: c.shadow.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      message,
-                      style: theme.textTheme.secondary.copyWith(
-                        color: layered.foreground ?? c.onToast,
-                      ),
-                    ),
-                  ),
+          tooltipBuilder: (context, animation) => FadeTransition(
+            opacity: animation,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: KeycapSpacing.small + 2,
+                vertical: KeycapSpacing.tight + 2,
+              ),
+              decoration: BoxDecoration(
+                color: layered.fill ?? c.toast,
+                borderRadius: BorderRadius.circular(
+                  KeycapMetrics.smallKeyRadius,
                 ),
-          // It shows on the keyboard's focus as well.
-          child: RawTooltipFocusFix(child: child),
+                boxShadow: [
+                  BoxShadow(
+                    color: c.shadow.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                message,
+                style: theme.textTheme.secondary.copyWith(
+                  color: layered.foreground ?? c.onToast,
+                ),
+              ),
+            ),
+          ),
+          child: control,
         ),
       ),
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(StringProperty('message', message));
   }
 }
 

@@ -1,3 +1,12 @@
+## 0.6.2
+
+- `KeycapTooltip`: over a key whose menu or popover is open, no tooltip opens at all (it had opened an empty one).
+  On Flutter 3.50, whose `RawTooltip` dismisses open tips before anything else hears Escape, the empty tip took
+  the first Escape after a pointer came back over the key, and the menu stayed open. The key keeps its focus, press
+  and hover as the tooltip comes and goes. As before, a mouse resting on the key when its menu closes brings no
+  tooltip back until it leaves and returns, and a screen reader still hears the key's name. Its docs say where
+  it goes over a menu's or a popover's key: in their `builder`, round the key.
+
 ## 0.6.1
 
 - Requires ui_core 0.8.5 (ui_core_test 0.6.2 for the checks).
