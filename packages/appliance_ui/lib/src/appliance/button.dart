@@ -242,7 +242,7 @@ ApplianceFace _keyFace(
       return ApplianceFace(
         top: c.face.withValues(alpha: 0),
         bottom: c.face.withValues(alpha: 0),
-        radius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
+        radius: BorderRadius.circular(theme.radiusSmallKey),
         travel: pressed ? 0.7 : 0,
         foreground: disabled
             ? disabledInk
@@ -256,17 +256,21 @@ ApplianceFace _keyFace(
       );
     case _ButtonKind.key:
       if (disabled) {
-        return ApplianceFace.key(c)
-            .asDisabled(c)
-            .copyWith(foreground: legend, focus: focus);
+        return ApplianceFace.key(
+          c,
+          radius: theme.radiusKey,
+        ).asDisabled(c).copyWith(foreground: legend, focus: focus);
       }
-      return (pressed ? ApplianceFace.keyDown(c) : ApplianceFace.key(c))
+      return (pressed
+              ? ApplianceFace.keyDown(c, radius: theme.radiusKey)
+              : ApplianceFace.key(c, radius: theme.radiusKey))
           .copyWith(foreground: legend, focus: focus);
     case _ButtonKind.filled:
       if (disabled) {
-        return ApplianceFace.key(c)
-            .asDisabled(c)
-            .copyWith(foreground: legend, focus: focus);
+        return ApplianceFace.key(
+          c,
+          radius: theme.radiusKey,
+        ).asDisabled(c).copyWith(foreground: legend, focus: focus);
       }
       final top = destructive ? c.danger : c.signalTop;
       final bottom = destructive
@@ -281,7 +285,7 @@ ApplianceFace _keyFace(
         bottom: pressed ? Color.lerp(top, c.shade, 0.04)! : bottom,
         lift: pressed ? -0.5 : 1,
         travel: pressed ? 1 : 0,
-        radius: BorderRadius.circular(ApplianceMetrics.keyRadius),
+        radius: BorderRadius.circular(theme.radiusKey),
         foreground: words,
         focus: _litRim.withValues(alpha: applianceControlLight(states)),
       );

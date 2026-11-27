@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'internal/state_plate.dart';
 import 'material.dart';
 import 'theme.dart';
@@ -65,7 +66,8 @@ class ApplianceAvatar extends StatelessWidget {
   /// Its diameter.
   final double size;
 
-  /// Its style, over [ApplianceThemeData.avatarStyle].
+  /// Its style, over [ApplianceThemeData.avatarStyle]. An avatar stays a
+  /// round lens, as a lamp does: a style's corners leave it round.
   final ApplianceStyle? style;
 
   @override
@@ -108,7 +110,10 @@ class ApplianceAvatar extends StatelessWidget {
               ApplianceFace.well(
                 c,
                 fill: c.trough,
+                radius: theme.radiusWell,
               ).copyWith(radius: BorderRadius.circular(side / 2)),
+              // An avatar is a disc, as a lamp is round.
+              corners: false,
             ),
             child: Padding(
               padding: EdgeInsets.all(ring),
@@ -306,11 +311,27 @@ class ApplianceTag extends StatelessWidget {
                 horizontal: ApplianceSpacing.small,
                 vertical: ApplianceSpacing.nudge,
               ),
-          decoration: BoxDecoration(
-            color: layered.fill ?? c.well,
-            borderRadius: BorderRadius.circular(3),
-            border: Border.all(color: c.hairline),
-          ),
+          // A printed plate, half a small key's corner; a style's corners
+          // shape it, its rule drawn round them.
+          decoration: switch (applianceOuterCorners(
+            theme,
+            layered,
+            theme.radiusSmallKey / 2,
+            Directionality.of(context),
+          )) {
+            null => BoxDecoration(
+              color: layered.fill ?? c.well,
+              borderRadius: BorderRadius.circular(theme.radiusSmallKey / 2),
+              border: Border.all(color: c.hairline),
+            ),
+            final radii => ShapeDecoration(
+              color: layered.fill ?? c.well,
+              shape: ApplianceCornerShape(
+                radii,
+                side: BorderSide(color: c.hairline),
+              ),
+            ),
+          },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -388,7 +409,9 @@ class ApplianceMedia extends StatelessWidget {
   /// What stands in until it comes.
   final Widget? placeholder;
 
-  /// Its style, over [ApplianceThemeData.panelStyle]: fill (the well).
+  /// Its style, over [ApplianceThemeData.panelStyle]: fill (the well), and
+  /// corners or shape (the well's; the picture follows them, a window's
+  /// inset in).
   final ApplianceStyle? style;
 
   @override
@@ -397,7 +420,16 @@ class ApplianceMedia extends StatelessWidget {
       style,
       ApplianceTheme.of(context).panelStyle,
     ], const {});
-    final c = ApplianceTheme.of(context).colors;
+    final theme = ApplianceTheme.of(context);
+    final c = theme.colors;
+    final direction = Directionality.of(context);
+    final outer = applianceOuterCorners(
+      theme,
+      look,
+      theme.radiusWell,
+      direction,
+    );
+    final inner = theme.radiusWell - ApplianceMetrics.windowInset;
     final floor = ColoredBox(
       color: c.trough,
       child: Center(
@@ -414,12 +446,22 @@ class ApplianceMedia extends StatelessWidget {
         child: AspectRatio(
           aspectRatio: aspectRatio,
           child: ApplianceSurface(
-            face: ApplianceFace.well(c, fill: look.fill ?? c.trough),
+            face: ApplianceFace.well(
+              c,
+              fill: look.fill ?? c.trough,
+              radius: theme.radiusWell,
+            ).copyWith(borderRadius: outer),
             child: Padding(
               padding: const EdgeInsets.all(ApplianceMetrics.windowInset),
+              // The picture's clip stands concentric with the well's corners,
+              // a window's inset in.
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  ApplianceMetrics.wellRadius - ApplianceMetrics.windowInset,
+                borderRadius: BorderRadius.circular(inner),
+                clipper: applianceWindowClip(
+                  outer,
+                  inner,
+                  inset: ApplianceMetrics.windowInset,
+                  direction: direction,
                 ),
                 child: image != null
                     ? _picture(image!, floor)

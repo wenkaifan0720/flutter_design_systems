@@ -52,25 +52,43 @@ enum ApplianceDepth {
 /// are not settings: they are what Appliance is.
 abstract final class ApplianceMetrics {
   /// A faceplate's corner: a moulded panel's generous radius.
+  @Deprecated(
+    "Read the theme's corner, ApplianceTheme.of(context).radiusPanel, which follows its shapeScheme. Removed in 0.8.0.",
+  )
   static const double panelRadius = 14;
 
   /// A key's corner.
+  @Deprecated(
+    "Read the theme's corner, ApplianceTheme.of(context).radiusKey, which follows its shapeScheme. Removed in 0.8.0.",
+  )
   static const double keyRadius = 10;
 
   /// A well's corner (a field, a select's face).
+  @Deprecated(
+    "Read the theme's corner, ApplianceTheme.of(context).radiusWell, which follows its shapeScheme. Removed in 0.8.0.",
+  )
   static const double wellRadius = 10;
 
   /// A small key's corner (a checkbox).
+  @Deprecated(
+    "Read the theme's corner, ApplianceTheme.of(context).radiusSmallKey, which follows its shapeScheme. Removed in 0.8.0.",
+  )
   static const double smallKeyRadius = 6;
 
   /// A selector's trough corner; its block stands [troughInset] inside with
   /// the concentric corner (`troughRadius - troughInset`).
+  @Deprecated(
+    "Read the theme's corner, ApplianceTheme.of(context).radiusTrough, which follows its shapeScheme. Removed in 0.8.0.",
+  )
   static const double troughRadius = 12;
 
   /// The room between a trough's wall and its block, on every side.
   static const double troughInset = 4;
 
   /// A lid's corner (a dialog, a sheet's top, a menu).
+  @Deprecated(
+    "Read the theme's corner, ApplianceTheme.of(context).radiusLid, which follows its shapeScheme. Removed in 0.8.0.",
+  )
   static const double lidRadius = 16;
 
   /// A key's height at [RawDensity.standard], before density.
@@ -940,6 +958,7 @@ class ApplianceThemeData with Diagnosticable {
     ApplianceTextTheme? textTheme,
     RawDensity? density,
     this.texture = true,
+    RawShapeScheme? shapeScheme,
     this.buttonStyle,
     this.filledButtonStyle,
     this.textButtonStyle,
@@ -969,7 +988,11 @@ class ApplianceThemeData with Diagnosticable {
     this.avatarStyle,
     this.calendarStyle,
   }) : textTheme = textTheme ?? ApplianceTextTheme.from(colors),
-       density = density ?? RawDensity.adaptivePlatformDensity;
+       density = density ?? RawDensity.adaptivePlatformDensity,
+       shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? defaultShapeScheme,
+         look: 'Appliance',
+       );
 
   /// Warm-white plastic by day.
   factory ApplianceThemeData.light({RawDensity? density}) =>
@@ -1097,6 +1120,77 @@ class ApplianceThemeData with Diagnosticable {
   /// platform's high contrast whatever this says.
   final bool texture;
 
+  /// The corners every part reads, through [radiusSmallKey] to [radiusLid]:
+  /// Appliance's moulded radii by default ([defaultShapeScheme]), held to
+  /// [shapeLimits] whatever an app asks, so each end still reads as moulded
+  /// plastic. Lamps, knobs and radio keys stay round, the light and the
+  /// parting lines stay Appliance's: no stroke and no depth are opened. A
+  /// change of corners eases across with the theme ([lerp]).
+  ///
+  /// ```dart
+  /// final softer = ApplianceThemeData.light().copyWith(
+  ///   shapeScheme: ApplianceThemeData.defaultShapeScheme.copyWith(
+  ///     corners: ApplianceThemeData.defaultShapeScheme.corners.scaled(1.25),
+  ///   ),
+  /// );
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Appliance's own corners: round, 6, 10, 12, 14 and 16.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 6,
+      small: 10,
+      medium: 12,
+      large: 14,
+      extraLarge: 16,
+    ),
+  );
+
+  /// The bands Appliance holds a [shapeScheme] to, so every end still reads
+  /// as moulded plastic: round corners alone; a key from 6 to 14 (under 6 it
+  /// reads as machined metal, over 14 as a toy's); each other step in
+  /// proportion; no stroke and no depth. An app's part may take its own
+  /// step on each corner (a part's style's `corners`), held to the steps
+  /// from extra small to extra large or a capsule: a moulded corner is never
+  /// sharp, and a capsule key is a form appliances are moulded in.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(4, 8),
+    small: RawBand(6, 14),
+    medium: RawBand(8, 16),
+    large: RawBand(10, 20),
+    extraLarge: RawBand(12, 24),
+    cornerFreedom: RawCornerFreedom.perCorner,
+    cornerSteps: {
+      RawCorner.extraSmall,
+      RawCorner.small,
+      RawCorner.medium,
+      RawCorner.large,
+      RawCorner.extraLarge,
+      RawCorner.full,
+    },
+  );
+
+  /// A small key's corner (a checkbox): 6 by default ([RawCorner.extraSmall]).
+  double get radiusSmallKey => shapeScheme.corners.extraSmall;
+
+  /// A key's corner: 10 by default ([RawCorner.small]).
+  double get radiusKey => shapeScheme.corners.small;
+
+  /// A well's corner (a field, a select's face): a key's ([radiusKey]).
+  double get radiusWell => shapeScheme.corners.small;
+
+  /// A selector's trough: 12 by default ([RawCorner.medium]); its block
+  /// stands [ApplianceMetrics.troughInset] inside, concentric.
+  double get radiusTrough => shapeScheme.corners.medium;
+
+  /// A faceplate's corner: 14 by default ([RawCorner.large]).
+  double get radiusPanel => shapeScheme.corners.large;
+
+  /// A lid's corner (a dialog, a sheet's top, a menu): 16 by default
+  /// ([RawCorner.extraLarge]).
+  double get radiusLid => shapeScheme.corners.extraLarge;
+
   /// [ApplianceButton]'s ordinary key.
   final ApplianceStyle? buttonStyle;
 
@@ -1199,6 +1293,7 @@ class ApplianceThemeData with Diagnosticable {
     ApplianceTextTheme? textTheme,
     RawDensity? density,
     bool? texture,
+    RawShapeScheme? shapeScheme,
     ApplianceStyle? buttonStyle,
     ApplianceStyle? filledButtonStyle,
     ApplianceStyle? textButtonStyle,
@@ -1236,6 +1331,7 @@ class ApplianceThemeData with Diagnosticable {
             : this.textTheme._recoloured(this.colors, colors)),
     density: density ?? this.density,
     texture: texture ?? this.texture,
+    shapeScheme: shapeScheme ?? this.shapeScheme,
     buttonStyle: buttonStyle ?? this.buttonStyle,
     filledButtonStyle: filledButtonStyle ?? this.filledButtonStyle,
     textButtonStyle: textButtonStyle ?? this.textButtonStyle,
@@ -1312,6 +1408,7 @@ class ApplianceThemeData with Diagnosticable {
       textTheme: ApplianceTextTheme.lerp(a.textTheme, b.textTheme, t),
       density: RawDensity.lerp(a.density, b.density, t),
       texture: t < 0.5 ? a.texture : b.texture,
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       buttonStyle: at(0),
       filledButtonStyle: at(1),
       textButtonStyle: at(2),
@@ -1350,11 +1447,18 @@ class ApplianceThemeData with Diagnosticable {
       other.textTheme == textTheme &&
       other.density == density &&
       other.texture == texture &&
+      other.shapeScheme == shapeScheme &&
       listEquals(other._styles, _styles);
 
   @override
-  int get hashCode =>
-      Object.hash(colors, textTheme, density, texture, Object.hashAll(_styles));
+  int get hashCode => Object.hash(
+    colors,
+    textTheme,
+    density,
+    texture,
+    shapeScheme,
+    Object.hashAll(_styles),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1363,7 +1467,8 @@ class ApplianceThemeData with Diagnosticable {
       ..add(DiagnosticsProperty<ApplianceColors>('colors', colors))
       ..add(DiagnosticsProperty<ApplianceTextTheme>('textTheme', textTheme))
       ..add(DiagnosticsProperty<RawDensity>('density', density))
-      ..add(FlagProperty('texture', value: texture, ifFalse: 'no texture'));
+      ..add(FlagProperty('texture', value: texture, ifFalse: 'no texture'))
+      ..add(DiagnosticsProperty<RawShapeScheme>('shapeScheme', shapeScheme));
   }
 }
 

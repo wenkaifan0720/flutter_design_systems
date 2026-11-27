@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'internal/glyphs.dart';
 import 'internal/keep_in_view.dart';
 import 'internal/type_ahead.dart';
@@ -219,10 +220,10 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
             final disabled = !enabled;
             final down = states.contains(WidgetState.pressed) || open;
             final base = disabled
-                ? ApplianceFace.key(c).asDisabled(c)
+                ? ApplianceFace.key(c, radius: theme.radiusKey).asDisabled(c)
                 : down
-                ? ApplianceFace.keyDown(c)
-                : ApplianceFace.key(c);
+                ? ApplianceFace.keyDown(c, radius: theme.radiusKey)
+                : ApplianceFace.key(c, radius: theme.radiusKey);
             final ink = disabled ? c.printDisabled : c.print;
             final f = layered.on(
               base.copyWith(
@@ -403,25 +404,45 @@ class ApplianceMenuPlate extends StatelessWidget {
   /// itself (a combobox's).
   final bool scroll;
 
-  /// The plate's corner.
-  static const double radius = ApplianceMetrics.troughRadius;
+  /// The plate's corner at Appliance's own scheme.
+  @Deprecated(
+    "Read the theme's corner, ApplianceTheme.of(context).radiusTrough, which follows its shapeScheme. Removed in 0.8.0.",
+  )
+  static const double radius = 12;
 
-  /// A lit row's corner, concentric with the plate's.
-  static const double rowRadius = radius - ApplianceSpacing.tight;
+  /// A lit row's corner, concentric with the plate's, at Appliance's own
+  /// scheme.
+  @Deprecated(
+    "Read the theme's corner less ApplianceSpacing.tight, which follows its shapeScheme. Removed in 0.8.0.",
+  )
+  static const double rowRadius = 8;
 
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final panel = RawStyleOf([theme.menuStyle], const {});
-    final face = panel.on(
-      ApplianceFace(
-        top: theme.colors.keyTop,
-        bottom: theme.colors.face,
-        lift: 1,
-        radius: BorderRadius.circular(radius),
-        foreground: theme.colors.print,
-      ),
+    final direction = Directionality.of(context);
+    // The menu style's corners shape the plate; its shade and its clip
+    // follow them. The rows inside keep their own.
+    final radii = applianceOuterCorners(
+      theme,
+      panel,
+      theme.radiusTrough,
+      direction,
     );
+    final own = BorderRadius.circular(theme.radiusTrough);
+    final face = panel
+        .on(
+          ApplianceFace(
+            top: theme.colors.keyTop,
+            bottom: theme.colors.face,
+            lift: 1,
+            radius: own,
+            foreground: theme.colors.print,
+          ),
+          corners: false,
+        )
+        .copyWith(borderRadius: radii);
     final night = theme.colors.brightness == Brightness.dark;
     return Padding(
       // Room under the plate for its shade.
@@ -429,9 +450,10 @@ class ApplianceMenuPlate extends StatelessWidget {
       child: DecoratedBox(
         // A lid lifted off the panel casts a longer, softer shade than a key
         // seated in it; what the plate covers sinks into that shade.
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          boxShadow: [
+        decoration: applianceShadowed(
+          radii: radii,
+          own: own,
+          shadows: [
             // Close round its edge, where the corners lift off what they
             // cover,
             BoxShadow(
@@ -455,7 +477,10 @@ class ApplianceMenuPlate extends StatelessWidget {
               maxHeight: maxHeight ?? double.infinity,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(radius),
+              borderRadius: own,
+              clipper: radii == null
+                  ? null
+                  : ApplianceCornerClipper(radii, direction),
               child: scroll
                   ? SingleChildScrollView(
                       padding: const EdgeInsets.all(ApplianceSpacing.tight),
@@ -599,7 +624,8 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                       lift: lit ? -0.6 : 0,
                       travel: lit ? 0.6 : 0,
                       radius: BorderRadius.circular(
-                        ApplianceMenuPlate.rowRadius,
+                        ApplianceTheme.of(context).radiusTrough -
+                            ApplianceSpacing.tight,
                       ),
                       foreground: words,
                     );

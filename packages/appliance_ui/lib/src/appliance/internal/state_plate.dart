@@ -69,7 +69,11 @@ class ApplianceStatePlate extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minWidth: 120, minHeight: 56),
               child: ApplianceSurface(
-                face: ApplianceFace.well(c, fill: look.fill ?? c.display),
+                face: ApplianceFace.well(
+                  c,
+                  fill: look.fill ?? c.display,
+                  radius: theme.radiusWell,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,

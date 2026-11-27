@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'lists.dart';
 import 'material.dart';
 import 'menus.dart';
@@ -20,15 +21,15 @@ export 'package:ui_core/ui_core.dart' show RawSplitAction;
 
 /// The trough a strip of keys is set in: sunk into the panel, the keys
 /// standing in it [ApplianceMetrics.capInset] from its rim, concentric.
-ApplianceFace _strip(ApplianceColors c) => ApplianceFace.well(
-  c,
-  radius: ApplianceMetrics.troughRadius,
-  fill: c.trough,
+ApplianceFace _strip(ApplianceThemeData theme) => ApplianceFace.well(
+  theme.colors,
+  radius: theme.radiusTrough,
+  fill: theme.colors.trough,
 );
 
 /// A key's corner inside the strip: the trough's, less the room between.
-const double _keyInStrip =
-    ApplianceMetrics.troughRadius - ApplianceMetrics.capInset;
+double _keyInStrip(ApplianceThemeData theme) =>
+    theme.radiusTrough - ApplianceMetrics.capInset;
 
 /// A toolbar: keys set side by side in one moulded strip, as the controls of
 /// a device sit in one recess. Each child is a key ([ApplianceIconButton],
@@ -64,22 +65,27 @@ class ApplianceToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final look = RawStyleOf([
-      style,
-      ApplianceTheme.of(context).toggleStyle,
-    ], const {});
-    final c = ApplianceTheme.of(context).colors;
+    final theme = ApplianceTheme.of(context);
+    final look = RawStyleOf([style, theme.toggleStyle], const {});
     return Semantics(
       container: true,
       label: semanticLabel,
       explicitChildNodes: true,
       child: ApplianceSurface(
-        face: _strip(c).copyWith(
+        // A style's corners shape the strip; the keys in it are the app's
+        // own and keep theirs.
+        face: _strip(theme).copyWith(
           radius: BorderRadius.circular(
-            ApplianceMetrics.keyRadius + ApplianceMetrics.capInset,
+            theme.radiusKey + ApplianceMetrics.capInset,
           ),
           top: look.fill,
           bottom: look.fill,
+          borderRadius: applianceOuterCorners(
+            theme,
+            look,
+            theme.radiusKey + ApplianceMetrics.capInset,
+            Directionality.of(context),
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(ApplianceMetrics.capInset),
@@ -191,8 +197,17 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
     final c = theme.colors;
     final byValue = {for (final o in options) o.value: o};
     final height = theme.controlHeight - 2 * ApplianceMetrics.capInset;
+    // A style's corners shape the strip's outer corners; the keys at its
+    // ends follow them, concentric, and the joins between keys stay.
+    final outer = applianceOuterCorners(
+      theme,
+      RawStyleOf([style, theme.buttonStyle], const {}),
+      theme.radiusTrough,
+      Directionality.of(context),
+    );
+    final last = options.length - 1;
     return ApplianceSurface(
-      face: _strip(c),
+      face: _strip(theme).copyWith(borderRadius: outer),
       // Each key reaches over the strip's inset above and below it: the
       // strip's whole height is its target.
       child: Padding(
@@ -225,16 +240,28 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
             final down = states.contains(WidgetState.selected);
             final disabled = states.contains(WidgetState.disabled);
             final held = states.contains(WidgetState.pressed);
+            final own = _keyInStrip(theme);
+            final i = options.indexWhere((o) => o.value == value);
             final base = down || held
-                ? ApplianceFace.keyDown(c, radius: _keyInStrip)
-                : ApplianceFace.key(c, radius: _keyInStrip);
+                ? ApplianceFace.keyDown(c, radius: own)
+                : ApplianceFace.key(c, radius: own);
             final face = layered.on(
               (disabled && !down ? base.asDisabled(c) : base).copyWith(
                 foreground: disabled ? c.printDisabled : c.print,
                 focus: states.contains(WidgetState.focused)
                     ? c.focus
                     : c.focus.withValues(alpha: 0),
+                borderRadius: outer == null
+                    ? null
+                    : applianceKeyCorners(
+                        outer,
+                        own,
+                        inset: ApplianceMetrics.capInset,
+                        starts: i == 0,
+                        ends: i == last,
+                      ),
               ),
+              corners: false,
             );
             return Padding(
               padding: const EdgeInsets.symmetric(
@@ -361,7 +388,15 @@ class ApplianceSplitButton extends StatelessWidget {
     ], const {});
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    const r = Radius.circular(ApplianceMetrics.keyRadius);
+    final r = Radius.circular(theme.radiusKey);
+    // A style's corners shape the pair's outer corners: the main key's start
+    // ones and the menu key's end ones; the seam between them stays square.
+    final outer = applianceOuterCorners(
+      theme,
+      look,
+      theme.radiusKey,
+      Directionality.of(context),
+    );
     return RawSplitButton(
       label: label,
       onPressed: onPressed,
@@ -384,15 +419,30 @@ class ApplianceSplitButton extends StatelessWidget {
         final disabled = states.contains(WidgetState.disabled);
         final down = states.contains(WidgetState.pressed) || (!main && open);
         final radius = main
-            ? const BorderRadiusDirectional.horizontal(start: r)
-            : const BorderRadiusDirectional.horizontal(end: r);
-        final face = applianceKeyFace(
-          c,
-          filled: filled,
-          down: down,
-          disabled: disabled,
-          focused: states.contains(WidgetState.focused),
-        ).copyWith(radius: radius.resolve(Directionality.of(context)));
+            ? BorderRadiusDirectional.horizontal(start: r)
+            : BorderRadiusDirectional.horizontal(end: r);
+        final face =
+            applianceKeyFace(
+              c,
+              filled: filled,
+              down: down,
+              disabled: disabled,
+              focused: states.contains(WidgetState.focused),
+              radius: theme.radiusKey,
+            ).copyWith(
+              radius: radius.resolve(Directionality.of(context)),
+              borderRadius: outer == null
+                  ? null
+                  : main
+                  ? BorderRadiusDirectional.only(
+                      topStart: outer.topStart,
+                      bottomStart: outer.bottomStart,
+                    )
+                  : BorderRadiusDirectional.only(
+                      topEnd: outer.topEnd,
+                      bottomEnd: outer.bottomEnd,
+                    ),
+            );
         return TapTargetPadding(
           child: SizedBox(
             height: theme.controlHeight,
@@ -474,7 +524,7 @@ ApplianceFace applianceKeyFace(
   bool down = false,
   bool disabled = false,
   bool focused = false,
-  double radius = ApplianceMetrics.keyRadius,
+  double radius = 10,
 }) {
   final focus = focused ? c.focus : c.focus.withValues(alpha: 0);
   if (disabled) {
@@ -661,10 +711,15 @@ class ApplianceKbd extends StatelessWidget {
         vertical: ApplianceSpacing.nudge,
       ),
       child: ApplianceSurface(
-        face: ApplianceFace.key(
-          theme.colors,
-          radius: ApplianceSpacing.tight,
-        ).copyWith(lift: 0.6),
+        // A keycap's corner, two under a small key's; a style's corners
+        // shape it.
+        face: applianceCornersOn(
+          ApplianceFace.key(
+            theme.colors,
+            radius: theme.radiusSmallKey - 2,
+          ).copyWith(lift: 0.6),
+          look,
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
           child: Padding(

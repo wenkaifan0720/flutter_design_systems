@@ -141,6 +141,8 @@ class _Cap extends StatelessWidget {
               )
             : c.printDisabled,
       ),
+      // A thumb is a mechanism and keeps its own form.
+      corners: false,
     );
     return SizedBox.fromSize(
       size: _capSize,
@@ -221,7 +223,8 @@ class ApplianceSlider extends StatefulWidget {
   /// {@macro design.autofocus}
   final bool autofocus;
 
-  /// The cap's style, over [ApplianceThemeData.sliderStyle].
+  /// The cap's style, over [ApplianceThemeData.sliderStyle]. The cap keeps
+  /// its moulded form: a style's corners leave it.
   final ApplianceStyle? style;
 
   @override
@@ -441,7 +444,8 @@ class ApplianceRangeSlider extends StatelessWidget {
   /// Called as a drag ends.
   final ValueChanged<RawRangeValues>? onChangeEnd;
 
-  /// The caps' style, over [ApplianceThemeData.sliderStyle].
+  /// The caps' style, over [ApplianceThemeData.sliderStyle]. A cap keeps
+  /// its moulded form: a style's corners leave it.
   final ApplianceStyle? style;
 
   @override

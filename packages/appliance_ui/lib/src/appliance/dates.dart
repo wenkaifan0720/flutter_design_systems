@@ -127,7 +127,7 @@ class _SmallKey extends StatelessWidget {
           down: states.contains(WidgetState.pressed),
           disabled: onPressed == null,
           focused: states.contains(WidgetState.focused),
-          radius: ApplianceMetrics.smallKeyRadius,
+          radius: ApplianceTheme.of(context).radiusSmallKey,
         );
         return TapTargetPadding(
           child: SizedBox.square(
@@ -238,7 +238,7 @@ Widget _day(
   final previewEnd = day.inPreview && day.isPreviewEnd;
   final end = day.selected || day.isRangeStart || day.isRangeEnd || previewEnd;
   final band = day.inMonth && (day.inRange || day.inPreview);
-  const radius = ApplianceMetrics.smallKeyRadius;
+  final radius = theme.radiusSmallKey;
   final ApplianceFace face;
   if (!day.enabled) {
     face = ApplianceFace(
@@ -289,10 +289,8 @@ Widget _day(
                       ? c.trough
                       : c.trough.withValues(alpha: 0.6),
                   borderRadius: BorderRadiusDirectional.horizontal(
-                    start: startCap
-                        ? const Radius.circular(radius)
-                        : Radius.zero,
-                    end: endCap ? const Radius.circular(radius) : Radius.zero,
+                    start: startCap ? Radius.circular(radius) : Radius.zero,
+                    end: endCap ? Radius.circular(radius) : Radius.zero,
                   ).resolve(Directionality.of(context)),
                 ),
               ),
@@ -588,10 +586,10 @@ class _PickerKeyState extends State<_PickerKey> {
           );
           final down = states.contains(WidgetState.pressed) || open;
           final base = !enabled
-              ? ApplianceFace.key(c).asDisabled(c)
+              ? ApplianceFace.key(c, radius: theme.radiusKey).asDisabled(c)
               : down
-              ? ApplianceFace.keyDown(c)
-              : ApplianceFace.key(c);
+              ? ApplianceFace.keyDown(c, radius: theme.radiusKey)
+              : ApplianceFace.key(c, radius: theme.radiusKey);
           final f = layered.on(
             base.copyWith(
               foreground: enabled ? c.print : c.printDisabled,
@@ -1209,7 +1207,11 @@ class ApplianceTimePicker extends StatelessWidget {
         ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
         : words.formatDecimal(n);
     final window = ApplianceSurface(
-      face: ApplianceFace.well(c, fill: look.fill ?? c.display),
+      face: ApplianceFace.well(
+        c,
+        fill: look.fill ?? c.display,
+        radius: theme.radiusWell,
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: ApplianceSpacing.small,
@@ -1317,7 +1319,7 @@ class _Meridiem extends StatelessWidget {
             down: on || states.contains(WidgetState.pressed),
             disabled: change == null,
             focused: states.contains(WidgetState.focused),
-            radius: ApplianceMetrics.smallKeyRadius,
+            radius: theme.radiusSmallKey,
           );
           return TapTargetPadding(
             child: SizedBox(

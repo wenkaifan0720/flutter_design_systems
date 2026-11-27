@@ -1,3 +1,14 @@
+## 0.7.0
+
+- Requires ui_core 0.8.5.
+- **Corners on the theme**: `ApplianceThemeData.shapeScheme` (ui_core's `RawShapeScheme`) holds Appliance's moulded radii, 6, 10, 12, 14 and 16 by default, so nothing moves at rest. It is held to `ApplianceThemeData.shapeLimits`: round only, a key from 6 to 14, each other step in its band, no stroke and no depth. Every part takes its corner from it, read as `radiusSmallKey`, `radiusKey`, `radiusWell`, `radiusTrough`, `radiusPanel` and `radiusLid`. A change eases across with the theme (under Reduce Motion a short change with no swing); `copyWith`, `lerp`, `==` and `hashCode` see it.
+- **A part's own corners**: a style's `corners` (ui_core's `RawCorners`) name a step per corner, start and end as the part reads, so they turn right to left: cut two diagonal corners, or round the top start alone. Appliance holds each to its steps, extra small to extra large or a capsule end (a moulded corner is never sharp), and says so once in debug; a style's `shape` wins as given. A toolbar, a toggle group, a split button, a segmented button, a tab bar and a stepper take them on their outer corners only: the keys at the ends follow, concentric (a selector's block as it comes to either end), and the joins stay. A sheet takes its top corners, a side sheet those of its inner edge. The shadows of a dialog, a sheet, a menu, a tooltip and a toast follow them, and so does what a part holds: a picture, a carousel's slides, a colour area, an input group's words, a menu's rows. A press that changes a part's corners eases them. Lamps, knobs, radio keys, switches, slider caps and avatars keep their own forms.
+- `ApplianceFace.corners` and `ApplianceFace.borderRadius` carry a face's own corners (`borderRadius` wins, as a shape does), and `ApplianceFace.resolveCorners(theme, direction)` holds and draws them; `paintApplianceFace` takes a `textDirection`. `ApplianceStyleFace.on(face, corners: false)` leaves a face's corners as they are.
+- **Lists**: `ApplianceListGroup` clips its rows to its plate's corners, so a row a swipe slides aside stays inside the plate (its words and glyph slid out onto the housing). `AppliancePanel(clip: true)` clips to the corners the plate is drawn with, a style's own included.
+- **Toasts**: a toast stands above an `ApplianceScreen`'s footer, and above a phone's key strip under it (after a save it covered the footer's Delete key).
+- **Readme**: the Navigation section shows `ApplianceScaffold.branches` with a page pushed in a place, and says how back, choosing a place again, the side panel's header, `navigatorKeys` and a form on a place's first page behave.
+- Deprecated `ApplianceMetrics.panelRadius`, `.keyRadius`, `.wellRadius`, `.smallKeyRadius`, `.troughRadius` and `.lidRadius`, and `ApplianceMenuPlate.radius` and `.rowRadius`: read the theme's corner (`ApplianceTheme.of(context).radiusKey`), which follows `shapeScheme`. They go in 0.8.0.
+
 ## 0.6.0
 
 - Requires ui_core 0.8.3.

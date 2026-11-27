@@ -325,7 +325,7 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
         );
     final oneLine = widget.maxLines == 1;
     final face = layered.on(
-      ApplianceFace.well(c).copyWith(
+      ApplianceFace.well(c, radius: theme.radiusWell).copyWith(
         lift: widget.enabled ? -1 : -0.5,
         foreground: words.color,
         edge: widget.errorText != null ? c.danger : null,

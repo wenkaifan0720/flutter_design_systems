@@ -9,7 +9,6 @@ import 'package:ui_core/ui_core.dart';
 
 import 'internal/control_light.dart';
 import 'material.dart';
-import 'select.dart';
 import 'theme.dart';
 
 /// One row of an open menu, painted for its [states]. A command is a key:
@@ -89,7 +88,9 @@ class ApplianceMenuRow extends StatelessWidget {
       bottom: down ? c.keyDownBottom : c.keyDownBottom.withValues(alpha: 0),
       lift: down ? -0.6 : 0,
       travel: down ? 0.6 : 0,
-      radius: BorderRadius.circular(ApplianceMenuPlate.rowRadius),
+      radius: BorderRadius.circular(
+        theme.radiusTrough - ApplianceSpacing.tight,
+      ),
       foreground: words,
     );
     return ConstrainedBox(

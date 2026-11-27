@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'internal/glyphs.dart';
 import 'internal/menu_paint.dart';
 import 'material.dart';
@@ -40,7 +41,7 @@ class _Plate extends StatelessWidget {
             top: c.keyTop,
             bottom: c.face,
             lift: 1.4,
-            radius: BorderRadius.circular(ApplianceMetrics.troughRadius),
+            radius: BorderRadius.circular(theme.radiusTrough),
             foreground: c.print,
           ),
         ),
@@ -248,7 +249,17 @@ class ApplianceTooltip extends StatelessWidget {
                       horizontal: ApplianceSpacing.small + 2,
                       vertical: ApplianceSpacing.tight + 2,
                     ),
-                decoration: _tooltipGlass(c, layered.fill ?? c.display),
+                decoration: _tooltipGlass(
+                  c,
+                  layered.fill ?? c.display,
+                  theme.radiusSmallKey - 2,
+                  applianceOuterCorners(
+                    theme,
+                    layered,
+                    theme.radiusSmallKey - 2,
+                    Directionality.of(context),
+                  ),
+                ),
                 child: Text(
                   message,
                   style: layered.text(
@@ -275,24 +286,40 @@ class ApplianceTooltip extends StatelessWidget {
 
 // A tooltip's glass: by night smoked glass in a metal bezel; by day a pale
 // LCD in a dark bezel, standing off the panel on a soft shadow.
-BoxDecoration _tooltipGlass(ApplianceColors c, Color glass) {
+// A tooltip's glass: its corner two under a small key's ([radius]), or the
+// corners a style gives it ([radii]), its bezel drawn round them.
+Decoration _tooltipGlass(
+  ApplianceColors c,
+  Color glass,
+  double radius,
+  BorderRadiusGeometry? radii,
+) {
   final lcd = glass.computeLuminance() > 0.4;
+  final bezel = BorderSide(
+    color: lcd ? Color.lerp(glass, c.onDisplay, 0.55)! : c.metalDark,
+    width: 1.5,
+  );
+  final shadows = lcd
+      ? [
+          BoxShadow(
+            color: c.shade.withValues(alpha: 0.22),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ]
+      : null;
+  if (radii != null) {
+    return ShapeDecoration(
+      color: glass,
+      shape: ApplianceCornerShape(radii, side: bezel),
+      shadows: shadows,
+    );
+  }
   return BoxDecoration(
     color: glass,
-    borderRadius: BorderRadius.circular(ApplianceSpacing.tight),
-    border: Border.all(
-      color: lcd ? Color.lerp(glass, c.onDisplay, 0.55)! : c.metalDark,
-      width: 1.5,
-    ),
-    boxShadow: lcd
-        ? [
-            BoxShadow(
-              color: c.shade.withValues(alpha: 0.22),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ]
-        : null,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.fromBorderSide(bezel),
+    boxShadow: shadows,
   );
 }
 
@@ -548,7 +575,7 @@ class ApplianceBanner extends StatelessWidget {
         face: layered.on(
           ApplianceFace.well(
             c,
-            radius: ApplianceMetrics.troughRadius,
+            radius: theme.radiusTrough,
             fill: c.trough,
           ).copyWith(
             edge: tone == ApplianceBannerTone.danger ? c.danger : null,
@@ -617,7 +644,7 @@ class ApplianceBanner extends StatelessWidget {
                             ? c.keyDownBottom
                             : c.keyDownBottom.withValues(alpha: 0),
                         radius: BorderRadius.circular(
-                          ApplianceMetrics.troughRadius - keyInset,
+                          theme.radiusTrough - keyInset,
                         ),
                         lift: pressed ? -.6 : 0,
                         focus: states.contains(WidgetState.focused)

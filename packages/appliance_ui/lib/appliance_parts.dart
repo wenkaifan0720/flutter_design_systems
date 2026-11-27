@@ -16,6 +16,7 @@ export 'appliance_ui.dart';
 export 'appliance_host.dart';
 export 'src/appliance/internal/bare_field.dart';
 export 'src/appliance/internal/control_light.dart';
+export 'src/appliance/internal/corners.dart';
 export 'src/appliance/internal/field_frame.dart';
 export 'src/appliance/internal/glyphs.dart';
 export 'src/appliance/internal/keep_in_view.dart';

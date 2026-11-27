@@ -16,6 +16,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'internal/spring_value.dart';
 import 'internal/control_light.dart';
+import 'internal/corners.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -92,7 +93,7 @@ class ApplianceCheckbox extends StatelessWidget {
         final disabled = states.contains(WidgetState.disabled);
         final latched = value != false;
         final down = latched || states.contains(WidgetState.pressed);
-        final radius = ApplianceMetrics.smallKeyRadius;
+        final radius = theme.radiusSmallKey;
         var face = down
             ? ApplianceFace.keyDown(c, radius: radius)
             : ApplianceFace.key(c, radius: radius);
@@ -216,7 +217,8 @@ class ApplianceRadio<T> extends StatefulWidget {
   /// Whether it takes the focus as it mounts.
   final bool autofocus;
 
-  /// Its style, over [ApplianceThemeData.toggleStyle].
+  /// Its style, over [ApplianceThemeData.toggleStyle]. A radio key stays
+  /// round: a style's corners leave it round.
   final ApplianceStyle? style;
 
   /// The key's diameter.
@@ -683,7 +685,8 @@ class ApplianceSwitch extends StatelessWidget {
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
-  /// Its style, over [ApplianceThemeData.toggleStyle].
+  /// Its style, over [ApplianceThemeData.toggleStyle]. Its slot and its
+  /// slider keep their moulded form: a style's corners leave them.
   final ApplianceStyle? style;
 
   /// The slot's size.
@@ -721,13 +724,16 @@ class ApplianceSwitch extends StatelessWidget {
               top: lit,
               bottom: value ? Color.lerp(lit, c.signalBottom, 0.5)! : lit,
               lift: -1,
-              radius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
+              radius: BorderRadius.circular(theme.radiusSmallKey),
               foreground: disabled
                   ? c.printDisabled
                   : value
                   ? c.onSignal
                   : c.print,
             ),
+            // A slide switch is a mechanism: its slot and cap keep their
+            // own form, as a radio key stays round.
+            corners: false,
           );
           return TapTargetPadding(
             child: SizedBox.fromSize(
@@ -765,7 +771,7 @@ class ApplianceSwitch extends StatelessWidget {
                                 ApplianceFace.key(
                                   c,
                                   radius:
-                                      ApplianceMetrics.smallKeyRadius -
+                                      theme.radiusSmallKey -
                                       ApplianceMetrics.capInset,
                                 ).copyWith(
                                   lift: disabled ? 0.4 : (held ? 0.6 : 1),
@@ -1061,22 +1067,39 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
             painter.dispose();
           }
         }
+        // A style's corners shape the trough's outer corners; the block
+        // eases to them, concentric, as it comes to either end.
+        final outer = applianceOuterCorners(
+          theme,
+          frame,
+          theme.radiusTrough,
+          direction,
+        );
         final trough = _troughFace(
           frame,
           ApplianceFace(
             top: c.trough,
             bottom: c.trough,
             lift: -1,
-            radius: BorderRadius.circular(ApplianceMetrics.troughRadius),
+            radius: BorderRadius.circular(theme.radiusTrough),
             foreground: c.print,
           ),
-        );
-        final block = ApplianceSurface(
-          face: ApplianceFace.key(
-            c,
-            radius:
-                ApplianceMetrics.troughRadius - ApplianceMetrics.troughInset,
-          ).copyWith(lift: off ? 0.4 : 1),
+        ).copyWith(borderRadius: outer);
+        final blockRadius = theme.radiusTrough - inset;
+        Widget block(double at) => ApplianceSurface(
+          face: ApplianceFace.key(c, radius: blockRadius).copyWith(
+            lift: off ? 0.4 : 1,
+            borderRadius: outer == null
+                ? null
+                : applianceSlidingCorners(
+                    outer,
+                    blockRadius,
+                    inset: inset,
+                    at: at,
+                    count: segments.length,
+                    most: math.min(each, height - 2 * inset) / 2,
+                  ),
+          ),
         );
         final control = Semantics(
           // Tabs are named by ui_core's tab bar.
@@ -1096,9 +1119,10 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
                         index: index,
                         onChanged: onChanged,
                         semanticLabel: semanticLabel,
-                        block: Padding(
+                        each: each,
+                        block: (at) => Padding(
                           padding: const EdgeInsets.symmetric(vertical: inset),
-                          child: block,
+                          child: block(at),
                         ),
                         legend: (context, s, states) => _legend(
                           context,
@@ -1122,7 +1146,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
                               top: inset,
                               bottom: inset,
                               width: each,
-                              child: block,
+                              child: block(at),
                             ),
                           ),
                           _SegmentRadios(
@@ -1246,7 +1270,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
             : chosen
             ? c.print
             : c.printMuted);
-    final radius = ApplianceMetrics.troughRadius - ApplianceMetrics.troughInset;
+    final radius = theme.radiusTrough - ApplianceMetrics.troughInset;
     // The lamp before the glyph and words says which position is chosen, as
     // a chip's does. Stacked in a narrow space, it stands beside the glyph,
     // or over the words, so the words keep the whole width. Out of use, the
@@ -1426,6 +1450,7 @@ class _TabStrip<T> extends StatefulWidget {
     required this.index,
     required this.onChanged,
     required this.semanticLabel,
+    required this.each,
     required this.block,
     required this.legend,
   });
@@ -1434,7 +1459,12 @@ class _TabStrip<T> extends StatefulWidget {
   final int index;
   final ValueChanged<T>? onChanged;
   final String? semanticLabel;
-  final Widget block;
+
+  // Each tab's width, to read where the block stands.
+  final double each;
+
+  // The block standing at a place, 0 the first tab.
+  final Widget Function(double at) block;
   final Widget Function(
     BuildContext context,
     ApplianceSegment<T> segment,
@@ -1493,7 +1523,15 @@ class _TabStripState<T> extends State<_TabStrip<T>>
           enabled: widget.onChanged != null,
         ),
     ],
-    indicatorBuilder: (context, details) => widget.block,
+    indicatorBuilder: (context, details) {
+      final r = details.tabRect;
+      final ltr = Directionality.of(context) == TextDirection.ltr;
+      final across = widget.segments.length * widget.each;
+      final at = widget.each <= 0
+          ? 0.0
+          : (ltr ? r.left : across - r.right) / widget.each;
+      return widget.block(at);
+    },
     tabBuilder: (context, tab, details) =>
         widget.legend(context, widget.segments[details.index], details.states),
   );
@@ -1706,6 +1744,12 @@ class ApplianceStepper extends StatelessWidget {
       52.0,
       figureSize.width + 2 * ApplianceSpacing.medium,
     );
+    final outer = applianceOuterCorners(
+      theme,
+      frame,
+      theme.radiusKey,
+      Directionality.of(context),
+    );
     Widget stepKey(bool up, String label) {
       final to = (up ? value + step : value - step).clamp(min, max);
       final can = !off && to != value;
@@ -1718,14 +1762,32 @@ class ApplianceStepper extends StatelessWidget {
           final disabled = states.contains(WidgetState.disabled);
           final pressed = states.contains(WidgetState.pressed);
           final base = pressed
-              ? ApplianceFace.keyDown(c)
-              : ApplianceFace.key(c);
+              ? ApplianceFace.keyDown(c, radius: theme.radiusKey)
+              : ApplianceFace.key(c, radius: theme.radiusKey);
           final face = (disabled ? base.asDisabled(c) : base).copyWith(
             foreground:
                 layered.foreground ?? (disabled ? c.printDisabled : c.print),
             focus: states.contains(WidgetState.focused)
                 ? c.focus
                 : _none(c.focus),
+            // A style's corners shape the stepper's outer corners: the
+            // start ones on the key before the window, the end ones on the
+            // key after it.
+            borderRadius: outer == null
+                ? null
+                : up
+                ? BorderRadiusDirectional.only(
+                    topStart: Radius.circular(theme.radiusKey),
+                    bottomStart: Radius.circular(theme.radiusKey),
+                    topEnd: outer.topEnd,
+                    bottomEnd: outer.bottomEnd,
+                  )
+                : BorderRadiusDirectional.only(
+                    topStart: outer.topStart,
+                    bottomStart: outer.bottomStart,
+                    topEnd: Radius.circular(theme.radiusKey),
+                    bottomEnd: Radius.circular(theme.radiusKey),
+                  ),
           );
           return TapTargetPadding(
             child: SizedBox.square(
@@ -1745,7 +1807,7 @@ class ApplianceStepper extends StatelessWidget {
     final window = ApplianceFace.well(
       c,
       fill: frame.fill ?? c.display,
-      radius: ApplianceMetrics.smallKeyRadius + 2,
+      radius: theme.radiusSmallKey + 2,
     );
     return Align(
       alignment: AlignmentDirectional.centerStart,

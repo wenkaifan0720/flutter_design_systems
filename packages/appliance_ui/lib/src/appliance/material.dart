@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'theme.dart';
 
 const Color _clear = Color(0x00000000);
@@ -32,6 +33,8 @@ class ApplianceFace with Diagnosticable {
     this.seam = 0,
     this.travel = 0,
     this.radius = BorderRadius.zero,
+    this.corners,
+    this.borderRadius,
     this.circle = false,
     this.foreground = _clear,
     this.focus = _clear,
@@ -42,7 +45,7 @@ class ApplianceFace with Diagnosticable {
   /// A raised key's face in [colors]: the key plastic, standing out.
   factory ApplianceFace.key(
     ApplianceColors colors, {
-    double radius = ApplianceMetrics.keyRadius,
+    double radius = 10,
     bool circle = false,
   }) => ApplianceFace(
     top: colors.keyTop,
@@ -56,7 +59,7 @@ class ApplianceFace with Diagnosticable {
   /// The same key held or latched down: in shade, sunk into the panel.
   factory ApplianceFace.keyDown(
     ApplianceColors colors, {
-    double radius = ApplianceMetrics.keyRadius,
+    double radius = 10,
     bool circle = false,
   }) => ApplianceFace(
     top: colors.keyDownTop,
@@ -71,7 +74,7 @@ class ApplianceFace with Diagnosticable {
   /// A sunken well in [colors]: a field, a display window.
   factory ApplianceFace.well(
     ApplianceColors colors, {
-    double radius = ApplianceMetrics.wellRadius,
+    double radius = 10,
     Color? fill,
   }) => ApplianceFace(
     top: fill ?? colors.well,
@@ -82,16 +85,14 @@ class ApplianceFace with Diagnosticable {
   );
 
   /// A faceplate seated in the housing at a parting line, flush.
-  factory ApplianceFace.plate(
-    ApplianceColors colors, {
-    double radius = ApplianceMetrics.panelRadius,
-  }) => ApplianceFace(
-    top: colors.face,
-    bottom: colors.face,
-    seam: 1,
-    radius: BorderRadius.circular(radius),
-    foreground: colors.print,
-  );
+  factory ApplianceFace.plate(ApplianceColors colors, {double radius = 14}) =>
+      ApplianceFace(
+        top: colors.face,
+        bottom: colors.face,
+        seam: 1,
+        radius: BorderRadius.circular(radius),
+        foreground: colors.print,
+      );
 
   /// The plastic at the top.
   final Color top;
@@ -110,8 +111,24 @@ class ApplianceFace with Diagnosticable {
   /// 0 to 1 of [ApplianceMetrics.pressTravel].
   final double travel;
 
-  /// The corners.
+  /// The corners Appliance draws the face with: the theme's step for the
+  /// part ([ApplianceThemeData.radiusKey] and the rest).
   final BorderRadius radius;
+
+  /// The step each corner takes when a part's style names its own
+  /// (`RawStyle.corners`), held to [ApplianceThemeData.shapeLimits] and
+  /// drawn at the theme's [ApplianceThemeData.shapeScheme] where the face is
+  /// drawn ([resolveCorners]); a corner left null keeps [radius]'s. Null:
+  /// every corner [radius]'s.
+  final RawCorners? corners;
+
+  /// Each corner's own radius, outside Appliance's bands: what a part's
+  /// style's `shape` gives (as Material's `ButtonStyle.shape` takes any
+  /// border), or what [corners] resolve to. It wins over [corners] and
+  /// [radius]; a radius past half the face's shorter side stands at that
+  /// half, so a corner of `double.infinity` is a full round end. A [circle]
+  /// stays round.
+  final BorderRadiusGeometry? borderRadius;
 
   /// Whether the face is round (a radio key, a knob): [radius] is ignored.
   final bool circle;
@@ -161,6 +178,8 @@ class ApplianceFace with Diagnosticable {
     double? seam,
     double? travel,
     BorderRadius? radius,
+    RawCorners? corners,
+    BorderRadiusGeometry? borderRadius,
     bool? circle,
     Color? foreground,
     Color? focus,
@@ -173,11 +192,101 @@ class ApplianceFace with Diagnosticable {
     seam: seam ?? this.seam,
     travel: travel ?? this.travel,
     radius: radius ?? this.radius,
+    corners: corners ?? this.corners,
+    borderRadius: borderRadius ?? this.borderRadius,
     circle: circle ?? this.circle,
     foreground: foreground ?? this.foreground,
     focus: focus ?? this.focus,
     focusReach: focusReach ?? this.focusReach,
     edge: edge ?? this.edge,
+  );
+
+  // Its corners as radii, for a lerp that moves them one by one.
+  BorderRadiusGeometry get _radii => borderRadius ?? radius;
+
+  // A full round end (`double.infinity`) as a radius past any part's half,
+  // so a corner eases to and from it instead of failing the lerp.
+  static BorderRadiusGeometry _finite(BorderRadiusGeometry r) {
+    Radius f(Radius c) =>
+        Radius.elliptical(math.min(c.x, _roundEnd), math.min(c.y, _roundEnd));
+    return switch (r) {
+      BorderRadius() => BorderRadius.only(
+        topLeft: f(r.topLeft),
+        topRight: f(r.topRight),
+        bottomLeft: f(r.bottomLeft),
+        bottomRight: f(r.bottomRight),
+      ),
+      BorderRadiusDirectional() => BorderRadiusDirectional.only(
+        topStart: f(r.topStart),
+        topEnd: f(r.topEnd),
+        bottomStart: f(r.bottomStart),
+        bottomEnd: f(r.bottomEnd),
+      ),
+      _ => r,
+    };
+  }
+
+  static const double _roundEnd = 1000;
+
+  /// This face with its [corners] drawn at [theme]'s, laid in [direction]:
+  /// each step held to [ApplianceThemeData.shapeLimits] (in debug a step
+  /// moved is said once) and set at [ApplianceThemeData.shapeScheme]'s
+  /// radius, as [borderRadius]. A face with no [corners], or one whose
+  /// [borderRadius] is given, is itself. [ApplianceSurface] calls it, so a
+  /// part only names the steps.
+  ApplianceFace resolveCorners(
+    ApplianceThemeData theme, [
+    TextDirection direction = TextDirection.ltr,
+  ]) {
+    final asked = corners;
+    if (asked == null) return this;
+    if (borderRadius != null) return _withCorners(borderRadius);
+    final held = ApplianceThemeData.shapeLimits.clampCorners(
+      asked,
+      base: const RawCorners(),
+      look: 'Appliance',
+    );
+    final scale = theme.shapeScheme.corners;
+    final ltr = direction == TextDirection.ltr;
+    Radius at(RawCorner? step, Radius own) => switch (step) {
+      null => own,
+      RawCorner.none => Radius.zero,
+      RawCorner.extraSmall => Radius.circular(scale.extraSmall),
+      RawCorner.small => Radius.circular(scale.small),
+      RawCorner.medium => Radius.circular(scale.medium),
+      RawCorner.large => Radius.circular(scale.large),
+      RawCorner.extraLarge => Radius.circular(scale.extraLarge),
+      RawCorner.full => const Radius.circular(double.infinity),
+    };
+    return _withCorners(
+      BorderRadiusDirectional.only(
+        topStart: at(held.topStart, ltr ? radius.topLeft : radius.topRight),
+        topEnd: at(held.topEnd, ltr ? radius.topRight : radius.topLeft),
+        bottomStart: at(
+          held.bottomStart,
+          ltr ? radius.bottomLeft : radius.bottomRight,
+        ),
+        bottomEnd: at(
+          held.bottomEnd,
+          ltr ? radius.bottomRight : radius.bottomLeft,
+        ),
+      ),
+    );
+  }
+
+  ApplianceFace _withCorners(BorderRadiusGeometry? radii) => ApplianceFace(
+    top: top,
+    bottom: bottom,
+    lift: lift,
+    seam: seam,
+    travel: travel,
+    radius: radius,
+    borderRadius: radii,
+    circle: circle,
+    foreground: foreground,
+    focus: focus,
+    focusReach: focusReach,
+    edge: edge,
   );
 
   /// Between [a] and [b] by [t].
@@ -192,6 +301,10 @@ class ApplianceFace with Diagnosticable {
       seam: at(a.seam, b.seam),
       travel: at(a.travel, b.travel),
       radius: BorderRadius.lerp(a.radius, b.radius, t)!,
+      corners: t < 0.5 ? a.corners : b.corners,
+      borderRadius: a.borderRadius == null && b.borderRadius == null
+          ? null
+          : BorderRadiusGeometry.lerp(_finite(a._radii), _finite(b._radii), t),
       circle: t < 0.5 ? a.circle : b.circle,
       foreground: Color.lerp(a.foreground, b.foreground, t)!,
       focus: Color.lerp(a.focus, b.focus, t)!,
@@ -209,6 +322,8 @@ class ApplianceFace with Diagnosticable {
       other.seam == seam &&
       other.travel == travel &&
       other.radius == radius &&
+      other.corners == corners &&
+      other.borderRadius == borderRadius &&
       other.circle == circle &&
       other.foreground == foreground &&
       other.focus == focus &&
@@ -223,6 +338,8 @@ class ApplianceFace with Diagnosticable {
     seam,
     travel,
     radius,
+    corners,
+    borderRadius,
     circle,
     foreground,
     focus,
@@ -240,7 +357,17 @@ class ApplianceFace with Diagnosticable {
       ..add(DoubleProperty('seam', seam, defaultValue: 0))
       ..add(DoubleProperty('travel', travel, defaultValue: 0))
       ..add(ColorProperty('focus', focus, defaultValue: _clear))
-      ..add(DoubleProperty('focusReach', focusReach, defaultValue: 0));
+      ..add(DoubleProperty('focusReach', focusReach, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<RawCorners>('corners', corners, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>(
+          'borderRadius',
+          borderRadius,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -262,10 +389,12 @@ class ApplianceSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = ApplianceTheme.of(context).colors;
+    final theme = ApplianceTheme.of(context);
+    final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final face = this.face.resolveCorners(theme, direction);
     final contrast = MediaQuery.maybeHighContrastOf(context) ?? false;
     return CustomPaint(
-      painter: _FacePainter(face, colors, contrast),
+      painter: _FacePainter(face, theme.colors, contrast, direction),
       child: child == null
           ? null
           : Transform.translate(
@@ -289,34 +418,51 @@ class ApplianceSurface extends StatelessWidget {
 }
 
 class _FacePainter extends CustomPainter {
-  _FacePainter(this.face, this.colors, this.contrast);
+  _FacePainter(this.face, this.colors, this.contrast, this.direction);
 
   final ApplianceFace face;
   final ApplianceColors colors;
   final bool contrast;
+  final TextDirection direction;
 
   @override
   void paint(Canvas canvas, Size size) {
-    paintApplianceFace(canvas, Offset.zero & size, face, colors, contrast);
+    paintApplianceFace(
+      canvas,
+      Offset.zero & size,
+      face,
+      colors,
+      contrast,
+      direction,
+    );
   }
 
   @override
   bool shouldRepaint(_FacePainter old) =>
-      old.face != face || old.colors != colors || old.contrast != contrast;
+      old.face != face ||
+      old.colors != colors ||
+      old.contrast != contrast ||
+      old.direction != direction;
 }
 
 /// Paints [face] filling [rect] on [canvas] in [colors]: what
 /// [ApplianceSurface] draws, for a part that paints its own (a switch's cap,
-/// a selector's block). Under high [contrast] the edges darken.
+/// a selector's block). Under high [contrast] the edges darken. A face's own
+/// corners ([ApplianceFace.borderRadius]) are laid in [textDirection]: a
+/// start corner is the left one in left-to-right text.
 void paintApplianceFace(
   Canvas canvas,
   Rect rect,
   ApplianceFace face,
   ApplianceColors colors, [
   bool contrast = false,
+  TextDirection textDirection = TextDirection.ltr,
 ]) {
+  final own = face.borderRadius;
   final r = face.circle
       ? RRect.fromRectAndRadius(rect, Radius.circular(rect.shortestSide / 2))
+      : own != null
+      ? applianceCornerRect(rect, own, textDirection)
       : face.radius.toRRect(rect);
   final night = colors.brightness == Brightness.dark;
   final shade = colors.shade;
@@ -537,7 +683,14 @@ class _AnimatedApplianceSurfaceState extends State<AnimatedApplianceSurface>
   late ApplianceFace _from = widget.face;
   late ApplianceFace _to = widget.face;
 
-  ApplianceFace get _now => ApplianceFace.lerp(_from, _to, _t.value);
+  // Both ends drawn at the theme's corners, so a part's own corners ease
+  // with the rest of the face and follow a change of shapeScheme.
+  ApplianceFace _now(ApplianceThemeData theme, TextDirection direction) =>
+      ApplianceFace.lerp(
+        _from.resolveCorners(theme, direction),
+        _to.resolveCorners(theme, direction),
+        _t.value,
+      );
 
   @override
   void didUpdateWidget(AnimatedApplianceSurface old) {
@@ -546,7 +699,10 @@ class _AnimatedApplianceSurfaceState extends State<AnimatedApplianceSurface>
     final going = widget.face;
     final down = going.lift < _to.lift || going.travel > _to.travel;
     final up = going.lift > _to.lift || going.travel < _to.travel;
-    _from = _now;
+    _from = _now(
+      ApplianceTheme.of(context),
+      Directionality.maybeOf(context) ?? TextDirection.ltr,
+    );
     _to = going;
     final policy = RawMotionPolicy.of(context);
     final token = down
@@ -580,7 +736,13 @@ class _AnimatedApplianceSurfaceState extends State<AnimatedApplianceSurface>
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _t,
     builder: (context, child) {
-      final surface = ApplianceSurface(face: _now, child: child);
+      final surface = ApplianceSurface(
+        face: _now(
+          ApplianceTheme.of(context),
+          Directionality.maybeOf(context) ?? TextDirection.ltr,
+        ),
+        child: child,
+      );
       return widget.control ? RawKeylineFace(child: surface) : surface;
     },
     child: widget.child,
@@ -940,16 +1102,34 @@ class _LampPainter extends CustomPainter {
 /// the corners stay the look's.
 extension ApplianceStyleFace on RawStyleOf {
   /// [face] in these layers' colours.
-  ApplianceFace on(ApplianceFace face) {
+  ///
+  /// A `corners` names each corner's step (drawn at the theme's scale where
+  /// the face is drawn, [ApplianceFace.resolveCorners]); a `shape` gives
+  /// the corners as they are and wins.
+  ///
+  /// A part that keeps its own form whatever its style asks (a switch's slot,
+  /// a slider's thumb, an avatar's disc, a key inside a composite whose
+  /// outer corners take the style's) passes [corners] false.
+  ApplianceFace on(ApplianceFace face, {bool corners = true}) {
     final fill = this.fill;
     final foreground = this.foreground;
     final edge = side?.color ?? this.edge;
-    if (fill == null && foreground == null && edge == null) return face;
+    final own = corners ? this.corners : null;
+    final radii = corners ? applianceRadiiOf(shape) : null;
+    if (fill == null &&
+        foreground == null &&
+        edge == null &&
+        own == null &&
+        radii == null) {
+      return face;
+    }
     return face.copyWith(
       top: fill,
       bottom: fill,
       foreground: foreground,
       edge: edge,
+      corners: own,
+      borderRadius: radii,
     );
   }
 

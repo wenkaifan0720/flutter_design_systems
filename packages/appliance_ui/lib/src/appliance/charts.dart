@@ -96,6 +96,7 @@ class _Window extends StatelessWidget {
           ApplianceFace.well(
             c,
             fill: c.display,
+            radius: theme.radiusWell,
           ).copyWith(focus: focused ? c.focus : c.focus.withValues(alpha: 0)),
         ),
         child: Padding(

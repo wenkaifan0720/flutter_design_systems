@@ -7,7 +7,7 @@ import '../kit.dart';
 Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Type and colour',
-  sections: const [_Depths(), _Type(), _Colours(), _Finishes()],
+  sections: const [_Depths(), _OwnCorners(), _Type(), _Colours(), _Finishes()],
 );
 
 class _Depths extends StatelessWidget {
@@ -15,8 +15,9 @@ class _Depths extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.applianceTheme.colors;
-    final t = context.applianceTheme.textTheme;
+    final theme = context.applianceTheme;
+    final c = theme.colors;
+    final t = theme.textTheme;
     Widget sample(String name, ApplianceFace face) => Column(
       children: [
         SizedBox(width: 88, height: 56, child: ApplianceSurface(face: face)),
@@ -30,10 +31,13 @@ class _Depths extends StatelessWidget {
       children: [
         KitRow(
           children: [
-            sample('Sunken', ApplianceFace.well(c)),
-            sample('Level', ApplianceFace.plate(c)),
-            sample('Raised', ApplianceFace.key(c)),
-            sample('Latched', ApplianceFace.keyDown(c)),
+            sample('Sunken', ApplianceFace.well(c, radius: theme.radiusWell)),
+            sample('Level', ApplianceFace.plate(c, radius: theme.radiusPanel)),
+            sample('Raised', ApplianceFace.key(c, radius: theme.radiusKey)),
+            sample(
+              'Latched',
+              ApplianceFace.keyDown(c, radius: theme.radiusKey),
+            ),
           ],
         ),
         const KitRow(
@@ -184,7 +188,7 @@ class _Finishes extends StatelessWidget {
                                     colors: [c.housingTop, c.housingBottom],
                                   ),
                                   borderRadius: BorderRadius.circular(
-                                    ApplianceMetrics.keyRadius,
+                                    theme.radiusKey,
                                   ),
                                 ),
                                 child: Padding(
@@ -231,6 +235,56 @@ class _Finishes extends StatelessWidget {
               ],
             );
           },
+        ),
+      ],
+    );
+  }
+}
+
+/// A style's own corners on a faceplate and a key, held to Appliance's steps.
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.applianceTheme.textTheme;
+    return KitSection(
+      title: "A part's own corners",
+      note:
+          "A style's corners name a step per corner, start and end as the part "
+          'reads: a faceplate with two diagonal corners drawn tighter, a key '
+          'with a capsule end. Appliance holds each to its steps: a moulded '
+          'corner is never sharp.',
+      children: [
+        KitRow(
+          children: [
+            SizedBox(
+              width: 220,
+              child: AppliancePanel(
+                style: const ApplianceStyle(
+                  corners: WidgetStatePropertyAll(
+                    RawCorners(
+                      topStart: RawCorner.extraSmall,
+                      bottomEnd: RawCorner.extraSmall,
+                    ),
+                  ),
+                ),
+                child: Text('Two corners tighter', style: t.secondary),
+              ),
+            ),
+            ApplianceButton.filled(
+              'Start',
+              style: const ApplianceStyle(
+                corners: WidgetStatePropertyAll(
+                  RawCorners(
+                    topStart: RawCorner.large,
+                    bottomEnd: RawCorner.full,
+                  ),
+                ),
+              ),
+              onPressed: () {},
+            ),
+          ],
         ),
       ],
     );

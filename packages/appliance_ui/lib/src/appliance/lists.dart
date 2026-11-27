@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'display.dart' show ApplianceAvatar, ApplianceTag;
 import 'internal/control_light.dart';
+import 'internal/corners.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -72,7 +73,7 @@ class AppliancePanel extends StatelessWidget {
       final layered = RawStyleOf([style, theme.panelStyle], states);
       final pressed = states.contains(WidgetState.pressed);
       final face = layered.on(
-        ApplianceFace.plate(c).copyWith(
+        ApplianceFace.plate(c, radius: theme.radiusPanel).copyWith(
           top: pressed ? Color.lerp(c.face, c.keyDownTop, 0.5) : null,
           bottom: pressed ? Color.lerp(c.face, c.keyDownBottom, 0.5) : null,
           lift: pressed ? -0.3 : 0,
@@ -88,8 +89,13 @@ class AppliancePanel extends StatelessWidget {
         child: child,
       );
       if (clip) {
+        final direction = Directionality.of(context);
+        final drawn = face.resolveCorners(theme, direction);
         inner = ClipRRect(
-          borderRadius: BorderRadius.circular(ApplianceMetrics.panelRadius),
+          clipper: ApplianceCornerClipper(
+            drawn.borderRadius ?? drawn.radius,
+            direction,
+          ),
           child: inner,
         );
       }
@@ -195,7 +201,9 @@ class ApplianceSectionHeader extends StatelessWidget {
 }
 
 /// Rows on one faceplate, split by hairline seams, with a caps [header]
-/// printed over the plate and a [footer] note under it.
+/// printed over the plate and a [footer] note under it. The plate clips its
+/// rows to its corners, so a row a swipe slides aside
+/// ([ApplianceSwipeActions]) stays inside it.
 ///
 /// ```dart
 /// ApplianceListGroup(header: 'Account', children: [ApplianceListTile(title: 'Name', trailingText: 'Rosa Lind', onTap: () {})])
@@ -237,6 +245,7 @@ class ApplianceListGroup extends StatelessWidget {
           ApplianceSectionHeader(header!, trailing: headerTrailing),
         AppliancePanel(
           padding: EdgeInsets.zero,
+          clip: true,
           style: style,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -511,9 +520,7 @@ class ApplianceListTile extends StatelessWidget {
           bottom: down ? c.keyDownBottom : _none(c.keyDownBottom),
           lift: down ? -0.6 : 0,
           travel: down ? 0.6 : 0,
-          radius: BorderRadius.circular(
-            ApplianceMetrics.panelRadius - keyInset,
-          ),
+          radius: BorderRadius.circular(theme.radiusPanel - keyInset),
           foreground: ink,
         ),
       );

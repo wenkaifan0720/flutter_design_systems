@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'actions.dart';
 import 'button.dart';
 import 'choices.dart';
@@ -161,9 +162,7 @@ class _ApplianceDisclosureState extends State<ApplianceDisclosure> {
                           ? c.keyDownBottom
                           : c.keyDownBottom.withValues(alpha: 0),
                       lift: pressed ? -0.5 : 0,
-                      radius: BorderRadius.circular(
-                        ApplianceMetrics.smallKeyRadius,
-                      ),
+                      radius: BorderRadius.circular(theme.radiusSmallKey),
                       foreground: c.print,
                       focus: states.contains(WidgetState.focused)
                           ? c.focus
@@ -563,6 +562,8 @@ class ApplianceDataTable<R> extends StatelessWidget {
                     ? c.focus
                     : c.focus.withValues(alpha: 0),
               ),
+              // A lit row of a ruled table is a highlight, not a plate.
+              corners: false,
             ),
             child: cells(
               rowCells,
@@ -705,7 +706,9 @@ class _ApplianceScrollAreaState extends State<ApplianceScrollArea> {
       frameBuilder: (context, focused, area) => DecoratedBox(
         position: DecorationPosition.foreground,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
+          borderRadius: BorderRadius.circular(
+            ApplianceTheme.of(context).radiusSmallKey,
+          ),
           border: Border.all(
             color: focused ? c.focus : c.focus.withValues(alpha: 0),
             width: ApplianceMetrics.focusWidth,
@@ -882,7 +885,9 @@ class ApplianceCarousel extends StatelessWidget {
   /// Its name for a screen reader.
   final String? semanticLabel;
 
-  /// Its style, over [ApplianceThemeData.displayStyle]: fill (the window).
+  /// Its style, over [ApplianceThemeData.displayStyle]: fill (the window),
+  /// and corners or shape (the window's; the slides follow them, a
+  /// window's inset in).
   final ApplianceStyle? style;
 
   @override
@@ -891,7 +896,15 @@ class ApplianceCarousel extends StatelessWidget {
       style,
       ApplianceTheme.of(context).displayStyle,
     ], const {});
-    final c = ApplianceTheme.of(context).colors;
+    final theme = ApplianceTheme.of(context);
+    final c = theme.colors;
+    final direction = Directionality.of(context);
+    final outer = applianceOuterCorners(
+      theme,
+      look,
+      theme.radiusWell,
+      direction,
+    );
     return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
@@ -905,16 +918,28 @@ class ApplianceCarousel extends StatelessWidget {
           SizedBox(
             height: height,
             child: ApplianceSurface(
-              face: ApplianceFace.well(c, fill: look.fill ?? c.trough).copyWith(
-                focus: controls.focused
-                    ? c.focus
-                    : c.focus.withValues(alpha: 0),
-              ),
+              face:
+                  ApplianceFace.well(
+                    c,
+                    fill: look.fill ?? c.trough,
+                    radius: theme.radiusWell,
+                  ).copyWith(
+                    borderRadius: outer,
+                    focus: controls.focused
+                        ? c.focus
+                        : c.focus.withValues(alpha: 0),
+                  ),
               child: Padding(
                 padding: const EdgeInsets.all(ApplianceMetrics.windowInset),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(
-                    ApplianceMetrics.wellRadius - ApplianceMetrics.windowInset,
+                    theme.radiusWell - ApplianceMetrics.windowInset,
+                  ),
+                  clipper: applianceWindowClip(
+                    outer,
+                    theme.radiusWell - ApplianceMetrics.windowInset,
+                    inset: ApplianceMetrics.windowInset,
+                    direction: direction,
                   ),
                   child: viewport,
                 ),
@@ -1062,7 +1087,7 @@ class ApplianceReorderableList<T extends Object> extends StatelessWidget {
         builder: (context, _) => ApplianceSurface(
           face: ApplianceFace.key(
             c,
-            radius: ApplianceMetrics.smallKeyRadius,
+            radius: theme.radiusSmallKey,
           ).copyWith(lift: 1 + animation.value * 1.5),
           child: child,
         ),
@@ -1305,7 +1330,7 @@ class ApplianceTree<T extends Object> extends StatelessWidget {
                   ? c.keyDownBottom
                   : c.keyDownBottom.withValues(alpha: 0),
               lift: lit ? -0.5 : 0,
-              radius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
+              radius: BorderRadius.circular(theme.radiusSmallKey),
               foreground: look.foreground ?? c.print,
               focus: item.states.contains(WidgetState.focused)
                   ? c.focus

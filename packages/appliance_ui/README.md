@@ -10,7 +10,7 @@ Appliance is a Flutter widget library with moulded keys, indicator lamps and rec
 
 ```yaml
 dependencies:
-  appliance_ui: ^0.6.0
+  appliance_ui: ^0.7.0
 ```
 
 The smallest app: `ApplianceHost` in the app's `builder` gives everything under it Appliance's theme, by day and by night as the platform is.
@@ -59,8 +59,74 @@ A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `bu
 
 `ApplianceScaffold` shows a bottom bar below 600 logical pixels, a navigation rail from 600 pixels, and a side panel from 1024 pixels. Pass the current destination in `selectedIndex` and update it in `onSelected`. The bottom bar can use a second row when destination names need more space.
 
-![By night: Larder's orders at 1440 px, the open order with its lamp-lit progress, beside the basket on a 390 px phone](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/appliance_ui/screenshots/night_orders_basket.webp)
+`ApplianceScaffold.branches` gives each place a navigator of its own, starting on its builder's page, so a page opened in one place stays open while you look at another. Each page draws its own `ApplianceScreen`:
 
+```dart
+import 'package:appliance_ui/appliance_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class Shell extends StatefulWidget {
+  const Shell({super.key});
+
+  @override
+  State<Shell> createState() => _ShellState();
+}
+
+class _ShellState extends State<Shell> {
+  int place = 0;
+
+  @override
+  Widget build(BuildContext context) => ApplianceScaffold.branches(
+    header: Text('Shelf', style: ApplianceTheme.of(context).textTheme.heading),
+    destinations: const [
+      ApplianceDestination(icon: LucideIcons.libraryBig, label: 'Books'),
+      ApplianceDestination(icon: LucideIcons.settings, label: 'Settings'),
+    ],
+    selectedIndex: place,
+    onSelected: (index) => setState(() => place = index),
+    branches: [
+      (context) => const BooksPage(),
+      (context) => const ApplianceScreen(
+        topBar: ApplianceAppBar(title: 'Settings'),
+        body: Text('Appearance and text size'),
+      ),
+    ],
+  );
+}
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => ApplianceScreen(
+    topBar: const ApplianceAppBar(title: 'Books'),
+    body: ApplianceListGroup(
+      children: [
+        ApplianceListTile(
+          title: 'Stoner',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => const ApplianceScreen(
+                topBar: ApplianceAppBar(title: 'Stoner'),
+                body: Text('John Williams'),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+- A page pushed in a place keeps the rail or the side panel beside it; on a phone the key strip steps away while it stands. Back pops it before it leaves the place.
+- Choosing the current place again pops it to its first page. Back from a first page goes to the first place; `backBehavior: RawBranchBackBehavior.history` goes to the place chosen before instead, and `none` leaves the app.
+- From 1024 pixels `header` stands at the side panel's top, `sideLegend` over its places and `sideFooter` at its foot; `railLeading` is the rail's top, and `action` the app's one act (a key at the strip's end, the rail's top, under the side panel's header).
+- Pass `navigatorKeys` to push onto a place from outside it (a notification opening an order): select the place, then push on its key's `currentState`.
+- A place's first page keeps its state while another place is shown, a form's entries included. Clear a form there yourself when it is saved: `formKey.currentState!.reset()` on its `Form`, or its fields' controllers.
+- Without branches, `ApplianceScaffold(destinations: …, selectedIndex: place, onSelected: …, body: pages[place])` shows one page per place and keeps no pages of its own.
+
+![By night: Larder's orders at 1440 px, the open order with its lamp-lit progress, beside the basket on a 390 px phone](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/appliance_ui/screenshots/night_orders_basket.webp)
 ## Everyday parts
 
 Controls take a value and an `onChanged`, and buttons an `onPressed`; leave the callback null to disable one. Appliance draws [Lucide](https://lucide.dev) icons: `LucideIcons` comes with `package:appliance_ui/appliance_ui.dart`, with no import of its own.
@@ -307,6 +373,32 @@ final theme = ApplianceThemeData.from(
 ```
 
 Use `theme.copyWith(texture: false)` for smooth housing. High-contrast mode also removes the grain. Set component defaults on the theme or pass an `ApplianceStyle` to an individual control.
+
+The light from above and the parting lines stay Appliance's. The corners are the theme's `shapeScheme`, Appliance's moulded radii by default, held to bands that still read as moulded plastic (a key from 6 to 14, round only):
+
+```dart
+final softer = ApplianceThemeData.light().copyWith(
+  shapeScheme: ApplianceThemeData.defaultShapeScheme.copyWith(
+    corners: ApplianceThemeData.defaultShapeScheme.corners.scaled(1.25),
+  ),
+);
+```
+
+A part takes its own corners from its style, a step per corner, start and end as it reads, so they turn right to left:
+
+```dart
+final start = ApplianceButton.filled(
+  'Start',
+  style: const ApplianceStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topStart: RawCorner.large, bottomEnd: RawCorner.full),
+    ),
+  ),
+  onPressed: () {},
+);
+```
+
+Each corner holds to Appliance's steps, extra small to extra large or a capsule end: a moulded corner is never sharp. A toolbar, a toggle group, a split button, a segmented button, a tab bar and a stepper take them on their outer corners, their end keys following; a style's `shape` wins as given. Lamps, knobs, radio keys, switches, slider caps and avatars keep their own forms.
 
 ## Accessibility and right to left
 

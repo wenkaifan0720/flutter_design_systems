@@ -13,6 +13,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'feedback.dart';
 import 'internal/bare_field.dart';
+import 'internal/corners.dart';
 import 'internal/glyphs.dart';
 import 'internal/control_light.dart';
 import 'material.dart';
@@ -27,12 +28,13 @@ export 'package:ui_core/ui_core.dart' show RawOptionSearch;
 
 /// A well's face in [states], as a text field draws it.
 ApplianceFace _wellFace(
-  ApplianceColors c,
+  ApplianceThemeData theme,
   Set<WidgetState> states, {
   bool error = false,
 }) {
+  final c = theme.colors;
   final disabled = states.contains(WidgetState.disabled);
-  return ApplianceFace.well(c).copyWith(
+  return ApplianceFace.well(c, radius: theme.radiusWell).copyWith(
     lift: disabled ? -0.5 : -1,
     edge: error ? c.danger : null,
     focus: states.contains(WidgetState.focused)
@@ -265,7 +267,6 @@ class _ApplianceComboboxState<T extends Object>
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
-    final c = theme.colors;
     final error = widget.errorText != null;
     return applianceFieldFrame(
       labelText: widget.labelText,
@@ -310,7 +311,7 @@ class _ApplianceComboboxState<T extends Object>
                 ? SystemMouseCursors.text
                 : SystemMouseCursors.basic,
             child: AnimatedApplianceSurface(
-              face: layered.on(_wellFace(c, states, error: error)),
+              face: layered.on(_wellFace(theme, states, error: error)),
               child: Padding(
                 padding: const EdgeInsetsDirectional.only(
                   start: ApplianceSpacing.medium,
@@ -497,7 +498,6 @@ class _ApplianceTagInputState<T extends Object>
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
-    final c = theme.colors;
     final error = widget.errorText != null;
     final states = <WidgetState>{
       if (!_enabled) WidgetState.disabled,
@@ -548,7 +548,7 @@ class _ApplianceTagInputState<T extends Object>
                   ? SystemMouseCursors.text
                   : SystemMouseCursors.basic,
               child: AnimatedApplianceSurface(
-                face: layered.on(_wellFace(c, states, error: error)),
+                face: layered.on(_wellFace(theme, states, error: error)),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: theme.controlHeight),
                   // A run of tags is the field's row high, never under the
@@ -637,7 +637,7 @@ class _TagKey extends StatelessWidget {
     final c = theme.colors;
     final key = ApplianceFace.key(
       c,
-      radius: ApplianceMetrics.wellRadius - ApplianceSpacing.small,
+      radius: theme.radiusWell - ApplianceSpacing.small,
     );
     final face = (enabled ? key.copyWith(lift: 0.8) : key.asDisabled(c))
         .copyWith(
@@ -987,16 +987,19 @@ class ApplianceDropZone extends StatelessWidget {
     final t = theme.textTheme;
     final enabled = onPressed != null;
     return ApplianceSurface(
-      face:
-          ApplianceFace.well(
-            c,
-            radius: ApplianceMetrics.panelRadius,
-            fill: look.fill ?? c.trough,
-          ).copyWith(
-            lift: -1.4,
-            edge: active ? c.signal : null,
-            focus: active ? c.signal : c.signal.withValues(alpha: 0),
-          ),
+      // A style's corners shape the well; its key keeps its own.
+      face: applianceCornersOn(
+        ApplianceFace.well(
+          c,
+          radius: theme.radiusPanel,
+          fill: look.fill ?? c.trough,
+        ).copyWith(
+          lift: -1.4,
+          edge: active ? c.signal : null,
+          focus: active ? c.signal : c.signal.withValues(alpha: 0),
+        ),
+        look,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(ApplianceSpacing.large),
         child: Column(
@@ -1045,6 +1048,7 @@ class ApplianceDropZone extends StatelessWidget {
                 final pressed = states.contains(WidgetState.pressed);
                 final key = ApplianceFace.key(
                   c,
+                  radius: theme.radiusKey,
                 ).copyWith(lift: pressed ? -0.7 : 1, travel: pressed ? 1 : 0);
                 final face = (enabled ? key : key.asDisabled(c)).copyWith(
                   foreground: enabled ? c.print : c.printDisabled,
@@ -1205,7 +1209,9 @@ class ApplianceColorPicker extends StatefulWidget {
   /// The window's height.
   final double areaHeight;
 
-  /// Its style, over [ApplianceThemeData.displayStyle]: fill (the window).
+  /// Its style, over [ApplianceThemeData.displayStyle]: fill (the area's
+  /// well), and corners or shape (the well's; the colours inside follow
+  /// them, a cap's inset in).
   final ApplianceStyle? style;
 
   @override
@@ -1264,7 +1270,16 @@ class _ApplianceColorPickerState extends State<ApplianceColorPicker> {
     ], const {});
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final direction = Directionality.of(context);
+    final rtl = direction == TextDirection.rtl;
+    // The area is laid out left to right whatever the reading; its corners
+    // stand where the app's reading puts them, so they are laid here.
+    final outer = applianceOuterCorners(
+      theme,
+      look,
+      theme.radiusWell,
+      direction,
+    );
     return RawColorPicker(
       controller: _controller,
       showAlpha: widget.showAlpha,
@@ -1283,9 +1298,10 @@ class _ApplianceColorPickerState extends State<ApplianceColorPicker> {
         face:
             ApplianceFace.well(
               c,
-              radius: ApplianceMetrics.wellRadius,
+              radius: theme.radiusWell,
               fill: look.fill ?? c.display,
             ).copyWith(
+              borderRadius: outer?.resolve(direction),
               focus: area.states.contains(WidgetState.focused)
                   ? c.focus
                   : c.focus.withValues(alpha: 0),
@@ -1294,7 +1310,13 @@ class _ApplianceColorPickerState extends State<ApplianceColorPicker> {
           padding: const EdgeInsets.all(ApplianceMetrics.capInset),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(
-              ApplianceMetrics.wellRadius - ApplianceMetrics.capInset,
+              theme.radiusWell - ApplianceMetrics.capInset,
+            ),
+            clipper: applianceWindowClip(
+              outer,
+              theme.radiusWell - ApplianceMetrics.capInset,
+              inset: ApplianceMetrics.capInset,
+              direction: direction,
             ),
             child: CustomPaint(
               painter: _AreaPainter(area.color.hue),

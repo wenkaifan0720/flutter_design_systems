@@ -487,6 +487,7 @@ class _ActKey extends StatelessWidget {
             filled: action.accent,
             down: states.contains(WidgetState.pressed),
             focused: states.contains(WidgetState.focused),
+            radius: theme.radiusKey,
           );
           return TapTargetPadding(
             child: SizedBox(
@@ -561,9 +562,7 @@ Widget _navKeyPaint(
     ...states,
     if (current) WidgetState.selected,
   });
-  final face = layered.on(
-    _navFace(theme, states, current, ApplianceMetrics.keyRadius),
-  );
+  final face = layered.on(_navFace(theme, states, current, theme.radiusKey));
   return TapTargetPadding(
     child: AnimatedApplianceSurface(
       face: face,
@@ -1450,7 +1449,8 @@ class ApplianceScreen extends StatelessWidget {
   /// Its top bar.
   final Widget? topBar;
 
-  /// What stands fixed at its foot (a checkout's total and its key).
+  /// What stands fixed at its foot (a checkout's total and its key). Toasts
+  /// stand above it.
   final Widget? footer;
 
   /// Whether the body scrolls.
@@ -1513,31 +1513,35 @@ class ApplianceScreen extends StatelessWidget {
             if (foot != null)
               _PageMeasure(
                 maxWidth: fullBleed ? null : maxWidth,
-                child: Builder(
-                  builder: (context) => ApplianceHousing(
-                    seam: AxisDirection.up,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        margin,
-                        ApplianceSpacing.regular,
-                        margin,
-                        ApplianceSpacing.regular + media.padding.bottom,
-                      ),
-                      // At the end of the body's measure, not the window's.
-                      child: media.size.width >= 600
-                          ? _onMeasure(
-                              context,
-                              Align(
-                                alignment: AlignmentDirectional.centerEnd,
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 400,
+                // Toasts stand above the footer's band (and above a key
+                // strip under it), as over the strip itself.
+                child: RawToasterKeepClear(
+                  child: Builder(
+                    builder: (context) => ApplianceHousing(
+                      seam: AxisDirection.up,
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          margin,
+                          ApplianceSpacing.regular,
+                          margin,
+                          ApplianceSpacing.regular + media.padding.bottom,
+                        ),
+                        // At the end of the body's measure, not the window's.
+                        child: media.size.width >= 600
+                            ? _onMeasure(
+                                context,
+                                Align(
+                                  alignment: AlignmentDirectional.centerEnd,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 400,
+                                    ),
+                                    child: foot,
                                   ),
-                                  child: foot,
                                 ),
-                              ),
-                            )
-                          : foot,
+                              )
+                            : foot,
+                      ),
                     ),
                   ),
                 ),

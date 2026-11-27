@@ -11,6 +11,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'actions.dart';
 import 'internal/bare_field.dart';
+import 'internal/corners.dart';
 import 'internal/glyphs.dart';
 import 'internal/menu_paint.dart';
 import 'lists.dart';
@@ -214,7 +215,7 @@ class _PageKey extends StatelessWidget {
             down: current || states.contains(WidgetState.pressed),
             disabled: onPressed == null && !current,
             focused: states.contains(WidgetState.focused),
-            radius: ApplianceMetrics.smallKeyRadius,
+            radius: theme.radiusSmallKey,
           ),
         );
         return TapTargetPadding(
@@ -679,10 +680,14 @@ class ApplianceMenuBar extends StatelessWidget {
       menus: menus,
       semanticLabel: semanticLabel,
       barBuilder: (context, items) => ApplianceSurface(
-        face: ApplianceFace.well(
-          c,
-          radius: ApplianceMetrics.troughRadius,
-          fill: look.fill ?? c.trough,
+        // A style's corners shape the bar's well; its keys keep their own.
+        face: applianceCornersOn(
+          ApplianceFace.well(
+            c,
+            radius: theme.radiusTrough,
+            fill: look.fill ?? c.trough,
+          ),
+          look,
         ),
         // Each key reaches over the well's inset above and below it.
         child: Padding(
@@ -714,7 +719,7 @@ class ApplianceMenuBar extends StatelessWidget {
           lift: down ? -0.6 : 0,
           travel: down ? 0.6 : 0,
           radius: BorderRadius.circular(
-            ApplianceMetrics.troughRadius - ApplianceMetrics.capInset,
+            theme.radiusTrough - ApplianceMetrics.capInset,
           ),
           foreground: entry.enabled ? c.print : c.printDisabled,
           focus: states.contains(WidgetState.focused)
@@ -878,8 +883,10 @@ class _PaletteWell extends StatelessWidget {
     final c = theme.colors;
     final focused = field.focusNode.hasFocus;
     return AnimatedApplianceSurface(
-      face: ApplianceFace.well(c)
-          .copyWith(focus: focused ? c.focus : c.focus.withValues(alpha: 0)),
+      face: ApplianceFace.well(
+        c,
+        radius: theme.radiusWell,
+      ).copyWith(focus: focused ? c.focus : c.focus.withValues(alpha: 0)),
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
           start: ApplianceSpacing.medium,
@@ -976,7 +983,10 @@ Future<void> showApplianceCommandPalette({
           horizontal: ApplianceSpacing.regular,
         ),
         child: ApplianceSurface(
-          face: ApplianceFace.plate(ApplianceTheme.of(context).colors),
+          face: ApplianceFace.plate(
+            ApplianceTheme.of(context).colors,
+            radius: ApplianceTheme.of(context).radiusPanel,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(ApplianceSpacing.medium),
             child: palette,

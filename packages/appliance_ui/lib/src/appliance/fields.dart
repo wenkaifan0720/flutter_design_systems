@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'internal/glyphs.dart';
 import 'material.dart';
 import 'text_field.dart';
@@ -50,11 +51,11 @@ class _WellKey extends StatelessWidget {
             (down
                     ? ApplianceFace.keyDown(
                         c,
-                        radius: ApplianceMetrics.smallKeyRadius,
+                        radius: ApplianceTheme.of(context).radiusSmallKey,
                       )
                     : ApplianceFace.key(
                         c,
-                        radius: ApplianceMetrics.smallKeyRadius,
+                        radius: ApplianceTheme.of(context).radiusSmallKey,
                       ))
                 .copyWith(
                   lift: disabled ? 0.3 : null,
@@ -507,7 +508,7 @@ class _ApplianceInputGroupState extends State<ApplianceInputGroup> {
             theme.textFieldStyle,
           ], states);
           final face = layered.on(
-            ApplianceFace.well(c).copyWith(
+            ApplianceFace.well(c, radius: theme.radiusWell).copyWith(
               lift: widget.enabled ? -1 : -0.5,
               edge: error ? c.danger : null,
               focus: states.contains(WidgetState.focused)
@@ -515,9 +516,19 @@ class _ApplianceInputGroupState extends State<ApplianceInputGroup> {
                   : c.focus.withValues(alpha: 0),
             ),
           );
+          // What the well holds stays inside the corners it is drawn
+          // with, an app's own included.
+          final direction = Directionality.of(context);
+          final drawn = face.resolveCorners(theme, direction).borderRadius;
           return AnimatedApplianceSurface(
             face: face,
-            child: ClipRRect(borderRadius: face.radius, child: child),
+            child: ClipRRect(
+              borderRadius: face.radius,
+              clipper: drawn == null
+                  ? null
+                  : ApplianceCornerClipper(drawn, direction),
+              child: child,
+            ),
           );
         },
         child: SizedBox(
@@ -682,7 +693,7 @@ class ApplianceOtpField extends StatelessWidget {
         final face = layered.on(
           ApplianceFace.well(
             c,
-            radius: ApplianceMetrics.smallKeyRadius,
+            radius: theme.radiusSmallKey,
             fill: c.display,
           ).copyWith(
             lift: slot.enabled ? -1 : -0.5,

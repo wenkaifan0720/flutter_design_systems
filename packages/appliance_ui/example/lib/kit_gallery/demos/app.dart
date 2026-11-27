@@ -86,7 +86,9 @@ class _Framed extends StatelessWidget {
             width: 360,
             height: 520,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(ApplianceMetrics.panelRadius),
+              borderRadius: BorderRadius.circular(
+                ApplianceTheme.of(context).radiusPanel,
+              ),
               child: AppliancePreview(
                 brightness: night ? Brightness.dark : Brightness.light,
                 tabs: const [
@@ -155,7 +157,9 @@ class _PagesState extends State<_Pages> {
           width: 360,
           height: 420,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(ApplianceMetrics.panelRadius),
+            borderRadius: BorderRadius.circular(
+              ApplianceTheme.of(context).radiusPanel,
+            ),
             // A router inside the page stands in a semantics container of its
             // own: its first page's modal barrier would otherwise hide from a
             // screen reader everything the gallery painted before it.

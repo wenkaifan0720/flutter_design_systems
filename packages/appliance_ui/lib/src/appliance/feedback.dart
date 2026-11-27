@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'internal/spring_value.dart';
 import 'material.dart';
 import 'theme.dart';
@@ -515,6 +516,7 @@ class ApplianceStatusView extends StatelessWidget {
               face: ApplianceFace.well(
                 c,
                 fill: layered.fill ?? c.trough,
+                radius: theme.radiusWell,
               ).copyWith(radius: BorderRadius.circular(32)),
               child: Center(
                 child: status == ApplianceStatus.working
@@ -625,7 +627,14 @@ class ApplianceMeter extends StatelessWidget {
               width: width,
               height: width * 0.58,
               child: ApplianceSurface(
-                face: ApplianceFace.well(c, fill: layered.fill ?? c.well),
+                face: applianceCornersOn(
+                  ApplianceFace.well(
+                    c,
+                    fill: layered.fill ?? c.well,
+                    radius: theme.radiusWell,
+                  ),
+                  layered,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(ApplianceSpacing.small),
                   child: ApplianceSpringValue(

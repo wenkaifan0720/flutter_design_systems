@@ -15,6 +15,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
+import 'internal/corners.dart';
 import 'material.dart';
 import 'menus.dart';
 import 'theme.dart';
@@ -78,6 +79,7 @@ class ApplianceDialog extends StatelessWidget {
             : null,
         child: _Lid(
           fill: layered.fill,
+          look: layered,
           child: Padding(
             padding:
                 layered.padding(Directionality.of(context)) ??
@@ -140,25 +142,44 @@ class ApplianceDialog extends StatelessWidget {
 /// A lid: a raised plate with a soft, wide shade under it, as a hinged lid
 /// stands proud of the housing.
 class _Lid extends StatelessWidget {
-  const _Lid({required this.child, this.fill, this.top = true});
+  const _Lid({required this.child, this.fill, this.top = true, this.look});
 
   final Widget child;
   final Color? fill;
   final bool top;
 
+  // The part's style: its corners shape the lid (a sheet's top ones alone,
+  // its foot square on the screen's edge), and its shade follows them.
+  final RawStyleOf? look;
+
   @override
   Widget build(BuildContext context) {
-    final c = ApplianceTheme.of(context).colors;
+    final theme = ApplianceTheme.of(context);
+    final c = theme.colors;
     final night = c.brightness == Brightness.dark;
     final radius = top
-        ? BorderRadius.circular(ApplianceMetrics.lidRadius)
-        : const BorderRadius.vertical(
-            top: Radius.circular(ApplianceMetrics.lidRadius),
+        ? BorderRadius.circular(theme.radiusLid)
+        : BorderRadius.vertical(top: Radius.circular(theme.radiusLid));
+    final look = this.look;
+    final outer = look == null
+        ? null
+        : applianceOuterCorners(
+            theme,
+            look,
+            theme.radiusLid,
+            Directionality.of(context),
+          );
+    final radii = outer == null || top
+        ? outer
+        : BorderRadiusDirectional.only(
+            topStart: outer.topStart,
+            topEnd: outer.topEnd,
           );
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: [
+      decoration: applianceShadowed(
+        radii: radii,
+        own: radius,
+        shadows: [
           BoxShadow(
             color: c.shade.withValues(alpha: night ? 0.5 : 0.18),
             blurRadius: 32,
@@ -172,6 +193,7 @@ class _Lid extends StatelessWidget {
           bottom: fill ?? c.face,
           lift: 1,
           radius: radius,
+          borderRadius: radii,
           foreground: c.print,
         ),
         child: child,
@@ -373,6 +395,7 @@ class ApplianceSheet extends StatelessWidget {
         child: _Lid(
           top: false,
           fill: layered.fill,
+          look: layered,
           child: Padding(
             padding: EdgeInsets.only(bottom: media.padding.bottom),
             child: Stack(
@@ -640,8 +663,15 @@ class _Toast extends StatelessWidget {
       glass.computeLuminance() > 0.4 ? c.signalInk : c.signalTop,
       on: [glass],
     );
-    const glassRadius =
-        ApplianceMetrics.lidRadius - ApplianceMetrics.windowInset;
+    final glassRadius = theme.radiusLid - ApplianceMetrics.windowInset;
+    // A style's corners shape the toast's lid; its glass follows them,
+    // concentric, a window's inset in.
+    final outer = applianceOuterCorners(
+      theme,
+      layered,
+      theme.radiusLid,
+      Directionality.of(context),
+    );
     const keyInset = ApplianceSpacing.tight;
     Widget key({
       required String label,
@@ -687,14 +717,23 @@ class _Toast extends StatelessWidget {
         liveRegion: true,
         container: true,
         child: _Lid(
+          look: layered,
           child: Padding(
             padding: const EdgeInsets.all(ApplianceMetrics.windowInset),
             child: ApplianceSurface(
-              face: ApplianceFace.well(
-                c,
-                fill: glass,
-                radius: glassRadius,
-              ).copyWith(focus: details.focused ? c.focus : _none(c.focus)),
+              face: ApplianceFace.well(c, fill: glass, radius: glassRadius)
+                  .copyWith(
+                    focus: details.focused ? c.focus : _none(c.focus),
+                    borderRadius: outer == null
+                        ? null
+                        : applianceKeyCorners(
+                            outer,
+                            glassRadius,
+                            inset: ApplianceMetrics.windowInset,
+                            starts: true,
+                            ends: true,
+                          ),
+                  ),
               child: Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(
                   ApplianceSpacing.medium,
@@ -831,19 +870,39 @@ class ApplianceSideSheet extends StatelessWidget {
     final layered = RawStyleOf([style, theme.dialogStyle], const {});
     final words = RawWidgetsLocalizations.of(context);
     final media = MediaQuery.of(context);
-    const r = Radius.circular(ApplianceMetrics.lidRadius);
+    final r = Radius.circular(theme.radiusLid);
     final radius = side == AxisDirection.left
-        ? const BorderRadius.horizontal(right: r)
-        : const BorderRadius.horizontal(left: r);
+        ? BorderRadius.horizontal(right: r)
+        : BorderRadius.horizontal(left: r);
+    // A style's corners shape the sheet's inner edge alone; the edge on the
+    // screen's side stays square.
+    final outer = applianceOuterCorners(
+      theme,
+      layered,
+      theme.radiusLid,
+      Directionality.of(context),
+    )?.resolve(Directionality.of(context));
+    final radii = outer == null
+        ? null
+        : side == AxisDirection.left
+        ? BorderRadius.only(
+            topRight: outer.topRight,
+            bottomRight: outer.bottomRight,
+          )
+        : BorderRadius.only(
+            topLeft: outer.topLeft,
+            bottomLeft: outer.bottomLeft,
+          );
     return Semantics(
       scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
       label: title,
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: radius,
-          boxShadow: [
+        decoration: applianceShadowed(
+          radii: radii,
+          own: radius,
+          shadows: [
             BoxShadow(
               color: c.shade.withValues(
                 alpha: c.brightness == Brightness.dark ? 0.5 : 0.18,
@@ -858,6 +917,7 @@ class ApplianceSideSheet extends StatelessWidget {
             bottom: layered.fill ?? c.face,
             lift: 1,
             radius: radius,
+            borderRadius: radii,
             foreground: c.print,
           ),
           child: Padding(
@@ -1056,6 +1116,7 @@ class ApplianceActionSheet extends StatelessWidget {
         explicitChildNodes: true,
         child: _Lid(
           top: false,
+          look: look,
           child: Padding(
             padding: EdgeInsets.fromLTRB(
               ApplianceSpacing.regular,
@@ -1222,8 +1283,8 @@ class ApplianceSheetPage<T> extends Page<T> {
                 child: ClipRRect(
                   borderRadius: size == ApplianceSheetSize.fullScreen
                       ? BorderRadius.zero
-                      : const BorderRadius.vertical(
-                          top: Radius.circular(ApplianceMetrics.lidRadius),
+                      : BorderRadius.vertical(
+                          top: Radius.circular(theme.radiusLid),
                         ),
                   child: MediaQuery(
                     data: media.copyWith(
