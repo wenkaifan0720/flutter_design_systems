@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 final MinimalThemeData _look = MinimalThemeData.preset(
@@ -92,7 +91,7 @@ final List<_Case> _cases = [
     name: 'icon button',
     build: (s) => MinimalIconButton(
       LucideIcons.plus,
-      label: 'Add',
+      semanticLabel: 'Add',
       onPressed: () {},
       variant: MinimalIconButtonVariant.secondary,
       style: s,
@@ -119,7 +118,7 @@ final List<_Case> _cases = [
     name: 'checkbox',
     build: (s) => MinimalCheckbox(
       value: true,
-      label: 'Done',
+      semanticLabel: 'Done',
       onChanged: (_) {},
       style: s,
     ),
@@ -262,7 +261,7 @@ void main() {
       'outline icon button': (
         MinimalIconButton(
           LucideIcons.plus,
-          label: 'Add',
+          semanticLabel: 'Add',
           onPressed: () {},
           variant: MinimalIconButtonVariant.outline,
         ),
@@ -292,7 +291,7 @@ void main() {
         0,
       ),
       'checkbox': (
-        MinimalCheckbox(value: false, label: 'Done', onChanged: (_) {}),
+        MinimalCheckbox(value: false, semanticLabel: 'Done', onChanged: (_) {}),
         BoxDecoration(
           color: t.card,
           borderRadius: BorderRadius.circular(4),
@@ -303,7 +302,7 @@ void main() {
       'large checkbox': (
         MinimalCheckbox(
           value: false,
-          label: 'Agree',
+          semanticLabel: 'Agree',
           size: 20,
           onChanged: (_) {},
         ),
@@ -589,7 +588,7 @@ void main() {
       ),
       'ghost icon button': MinimalIconButton(
         LucideIcons.x,
-        label: 'Close',
+        semanticLabel: 'Close',
         onPressed: () {},
       ),
       'tappable card': MinimalCard(onPressed: () {}, child: const Text('Plan')),

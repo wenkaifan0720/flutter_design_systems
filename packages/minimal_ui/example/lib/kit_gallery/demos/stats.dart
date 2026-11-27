@@ -231,7 +231,7 @@ class _ProgressDemoState extends State<_ProgressDemo> {
           MinimalLinearProgressIndicator(
             value: _pages / _goal,
             tone: _pages >= _goal ? MinimalTone.success : MinimalTone.primary,
-            label: 'Read 20 pages',
+            semanticLabel: 'Read 20 pages',
           ),
         ),
         const MinimalGap(MinimalSpacing.s8),
@@ -259,7 +259,7 @@ class _ProgressDemoState extends State<_ProgressDemo> {
           '8/8',
           const MinimalLinearProgressIndicator(
             value: 1,
-            label: 'Drink water',
+            semanticLabel: 'Drink water',
             tone: MinimalTone.success,
           ),
         ),
@@ -269,7 +269,7 @@ class _ProgressDemoState extends State<_ProgressDemo> {
           '43/50',
           const MinimalLinearProgressIndicator(
             value: 0.86,
-            label: 'Reminder quota',
+            semanticLabel: 'Reminder quota',
             tone: MinimalTone.warning,
           ),
         ),
@@ -279,7 +279,7 @@ class _ProgressDemoState extends State<_ProgressDemo> {
           '1.94 of 2 GB',
           const MinimalLinearProgressIndicator(
             value: 0.97,
-            label: 'Storage',
+            semanticLabel: 'Storage',
             tone: MinimalTone.destructive,
           ),
         ),
@@ -287,7 +287,10 @@ class _ProgressDemoState extends State<_ProgressDemo> {
         line(
           'Not started',
           '0%',
-          const MinimalLinearProgressIndicator(value: 0, label: 'Not started'),
+          const MinimalLinearProgressIndicator(
+            value: 0,
+            semanticLabel: 'Not started',
+          ),
         ),
         const MinimalGap(MinimalSpacing.s12),
         line(
@@ -295,7 +298,7 @@ class _ProgressDemoState extends State<_ProgressDemo> {
           '40%',
           const MinimalLinearProgressIndicator(
             value: 0.4,
-            label: 'Neutral',
+            semanticLabel: 'Neutral',
             tone: MinimalTone.neutral,
             height: 6,
           ),
@@ -555,7 +558,7 @@ Widget kitSpecimenKpiStripDay() => const MinimalStatRow.joined(
 Widget kitSpecimenProgressBarGoal() => const _ProgressLine(
   'Read 20 pages',
   '12/20',
-  MinimalLinearProgressIndicator(value: 0.6, label: 'Read 20 pages'),
+  MinimalLinearProgressIndicator(value: 0.6, semanticLabel: 'Read 20 pages'),
 );
 
 /// A goal met, in the success tone.
@@ -564,7 +567,7 @@ Widget kitSpecimenProgressBarMet() => const _ProgressLine(
   '8/8',
   MinimalLinearProgressIndicator(
     value: 1,
-    label: 'Drink water',
+    semanticLabel: 'Drink water',
     tone: MinimalTone.success,
   ),
 );

@@ -30,7 +30,7 @@ void main() {
                   MinimalButtonSegment(2, 'Year'),
                 ],
                 value: v,
-                label: 'Range',
+                semanticLabel: 'Range',
                 onChanged: (next) {
                   seen.add(next);
                   set(next);

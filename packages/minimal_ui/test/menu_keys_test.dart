@@ -16,7 +16,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 const _labels = ['Every day', 'Weekdays', 'Weekends', 'Monthly', 'Custom…'];
 
@@ -85,7 +84,7 @@ final List<_Kind> _kinds = [
     build: (value, onChanged) => MinimalMenu.button(
       Icons.filter_list,
       text: value ?? 'Any',
-      label: 'Filter',
+      semanticLabel: 'Filter',
       items: _items(value, onChanged),
     ),
     trigger: () => find.bySemanticsLabel(RegExp('^Filter')).first,
@@ -354,7 +353,7 @@ void main() {
           name: 'actions',
           build: (value, onChanged) => MinimalMenu.button(
             Icons.more_horiz,
-            label: 'Actions',
+            semanticLabel: 'Actions',
             items: [
               const MinimalMenuItem('Rename'),
               MinimalMenuItem('Duplicate', onPressed: () => ran.add('dup')),

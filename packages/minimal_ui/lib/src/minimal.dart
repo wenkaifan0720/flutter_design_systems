@@ -1,14 +1,15 @@
-/// Minimal, whole: the design tokens, the host, the shell, the pages and
-/// the preview, and the component kit — a dense pro-tool grammar of 44 px
-/// rows, hairlines instead of containers and mono tabular numbers. Page code
-/// imports this barrel for every widget it draws, and go_router for
-/// navigation.
+/// Minimal, whole: the theme and its six palettes, the host that mounts
+/// them, the app shell and the component kit — a dense pro-tool grammar of
+/// 44 px rows, hairlines instead of containers and mono tabular numbers. An
+/// app imports this library for every widget it draws.
 library;
 
 export 'minimal/component_themes.dart';
 export 'minimal/components/action_bar.dart';
 export 'minimal/components/action_sheet.dart';
 export 'minimal/components/activity.dart';
+export 'minimal/components/app_shell.dart';
+export 'minimal/components/shell_action.dart';
 export 'minimal/components/avatar.dart';
 export 'minimal/components/badge.dart';
 export 'minimal/components/banner.dart';
@@ -39,6 +40,7 @@ export 'minimal/components/form.dart';
 export 'minimal/components/form_field.dart';
 export 'minimal/components/group_header.dart';
 export 'minimal/components/heatmap.dart';
+export 'minimal/components/host.dart';
 export 'minimal/components/icon_button.dart';
 export 'minimal/components/icon_tile.dart';
 export 'minimal/components/img.dart';
@@ -51,6 +53,7 @@ export 'minimal/components/menu.dart';
 export 'minimal/components/menu_bar.dart';
 export 'minimal/components/meta_row.dart';
 export 'minimal/components/nav_bar.dart';
+export 'minimal/components/nav_item.dart';
 export 'minimal/components/navigation.dart';
 export 'minimal/components/overlays.dart';
 export 'minimal/components/pagination.dart';

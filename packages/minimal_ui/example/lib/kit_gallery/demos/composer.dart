@@ -97,7 +97,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
           onSend: (_) {},
           action: MinimalComposerAction(
             icon: LucideIcons.cornerDownLeft,
-            label: 'Reply',
+            semanticLabel: 'Reply',
             onPressed: () {},
           ),
         ),
@@ -121,7 +121,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
             MinimalComposerAction(
               variant: MinimalComposerVariant.assistant,
               icon: MinimalComposerAction.stop,
-              label: 'Stop response',
+              semanticLabel: 'Stop response',
               onPressed: _noop,
             ),
           ],

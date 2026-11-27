@@ -251,7 +251,7 @@ class _MembersState extends State<_Members> {
               ),
               MinimalIconButton(
                 LucideIcons.minus,
-                label: 'Remove member',
+                semanticLabel: 'Remove member',
                 size: MinimalButtonSize.small,
                 variant: MinimalIconButtonVariant.outline,
                 onPressed: _count > 1
@@ -261,7 +261,7 @@ class _MembersState extends State<_Members> {
               const MinimalGap(MinimalSpacing.s4),
               MinimalIconButton(
                 LucideIcons.plus,
-                label: 'Add member',
+                semanticLabel: 'Add member',
                 size: MinimalButtonSize.small,
                 variant: MinimalIconButtonVariant.outline,
                 onPressed: _count < _everyone.length

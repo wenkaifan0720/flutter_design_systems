@@ -148,7 +148,7 @@ Widget kitOverlaysDemo(Brightness brightness) => kitScreen(
         // In a row, so the trigger hugs its label as the others do.
         kitRow([
           MinimalPopover(
-            label: 'Share',
+            semanticLabel: 'Share',
             anchor: (context, toggle, open) => MinimalButton(
               'Share',
               icon: LucideIcons.share2,

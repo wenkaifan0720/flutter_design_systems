@@ -152,7 +152,7 @@ class MinimalBanner extends StatelessWidget {
                   ),
                 ),
               ),
-              label: MinimalLocalizations.of(context).dismissAlert,
+              semanticLabel: MinimalLocalizations.of(context).dismissAlert,
               onPressed: dismiss,
             ),
           ],

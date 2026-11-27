@@ -21,13 +21,15 @@ import '../internal/tap_band.dart';
 import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../theme.dart';
+import '../internal/message_reveal.dart';
 import 'pressable.dart';
 
 /// Minimal's text field: a 32 px box (the control height a md button
 /// shares) on a 1 px rule at the control radius, a 12 px label above it, a
-/// helper or an error under it. Focus turns the rule to the accent (the
-/// danger's when the field is in error). Keyboard focus draws a single
-/// 2 px accent ring over the rule. `mono: true` sets the value in Geist Mono
+/// helper or an error under it. Focus draws a single 2 px accent edge over
+/// the rule; a field in error keeps the danger tone, focused or not, so a
+/// failed save that moves focus to the field still shows what is wrong.
+/// [required] puts a quiet asterisk after the label and says "required". `mono: true` sets the value in Geist Mono
 /// with tabular figures, for a number, an id, a time; a [suffix] prints its
 /// unit at the end. Read-only and disabled fields sink onto the quiet
 /// [MinimalThemeData.sunken] fill; a disabled one dims to the kit's 0.45.
@@ -96,6 +98,7 @@ class MinimalTextField extends StatefulWidget {
     this.onEditingComplete,
     this.trailing,
     this.invalid = false,
+    this.required = false,
     this.fieldBuilder,
     this.fieldStyle,
   }) : assert(maxLines >= 1, 'maxLines starts at 1'),
@@ -125,6 +128,10 @@ class MinimalTextField extends StatefulWidget {
 
   /// What it holds, over the box.
   final String? labelText;
+
+  /// Whether it must be filled: a quiet asterisk after [labelText], and
+  /// "required" said with its name, as [MinimalFormField.required].
+  final bool required;
 
   /// What an empty field says.
   final String? hintText;
@@ -354,6 +361,7 @@ class MinimalTextField extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
       ..add(
         ObjectFlagProperty<Widget Function(Widget field)>.has(
           'fieldBuilder',
@@ -515,7 +523,12 @@ class _MinimalTextFieldState extends State<MinimalTextField>
         fill: so.fill ?? (muted ? t.sunken : t.card),
         side: so.rim(ruleColor, t.rim),
       ),
-      foregroundDecoration: minimalFocusEdge(t, shown: focused, shape: shape),
+      foregroundDecoration: minimalFocusEdge(
+        t,
+        shown: focused,
+        invalid: inError,
+        shape: shape,
+      ),
       builder: (context, _) => Row(
         crossAxisAlignment: multiline
             ? CrossAxisAlignment.start
@@ -601,6 +614,8 @@ class _MinimalTextFieldState extends State<MinimalTextField>
       helperText: helper,
       errorText: error,
       invalid: widget.invalid,
+      required: widget.required,
+      requiredHint: MinimalLocalizations.of(context).required,
       enabled: widget.enabled,
       focusNode: focusNode,
       // A tap anywhere on the box focuses the field (the field's own tap,
@@ -628,22 +643,42 @@ class _MinimalTextFieldState extends State<MinimalTextField>
             if (name != null) ...[
               DefaultTextStyle.merge(
                 style: t.caption.medium.c(t.foreground),
-                child: name,
+                child: parts.required
+                    ? Row(
+                        children: [
+                          Flexible(child: name),
+                          ExcludeSemantics(
+                            child: Text(
+                              ' *',
+                              style: t.caption.medium.c(t.textTertiary),
+                            ),
+                          ),
+                        ],
+                      )
+                    : name,
               ),
               const MinimalGap(MinimalChromeMetrics.iconGap),
             ],
             parts.control,
-            if (message != null) ...[
-              const MinimalGap(MinimalChromeMetrics.iconGap),
-              DefaultTextStyle.merge(
-                style: t.caption.c(
-                  parts.errorText != null
-                      ? t.destructiveInk
-                      : t.mutedForeground,
-                ),
-                child: message,
-              ),
-            ],
+            // The line grows open and fades in (and out), never jumps.
+            MinimalMessageReveal(
+              id: parts.errorText,
+              child: !(message != null)
+                  ? const SizedBox(width: double.infinity)
+                  : Padding(
+                      padding: const EdgeInsets.only(
+                        top: MinimalChromeMetrics.iconGap,
+                      ),
+                      child: DefaultTextStyle.merge(
+                        style: t.caption.c(
+                          parts.errorText != null
+                              ? t.destructiveInk
+                              : t.mutedForeground,
+                        ),
+                        child: message,
+                      ),
+                    ),
+            ),
           ],
         );
       },

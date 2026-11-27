@@ -10,7 +10,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 /// A page one push deep, with a control for each overlay.
 Widget _app() => MaterialApp(
@@ -48,7 +47,7 @@ class _PageTwo extends StatelessWidget {
           const Text('Page two'),
           MinimalMenu.button(
             Icons.more_horiz,
-            label: 'Actions',
+            semanticLabel: 'Actions',
             items: [
               MinimalMenuItem('Rename', onPressed: () {}),
               MinimalMenuItem('Archive', onPressed: () {}),

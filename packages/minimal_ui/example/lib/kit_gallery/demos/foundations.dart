@@ -230,7 +230,9 @@ class _Presets extends StatelessWidget {
     final t = context.minimalTheme;
     return _Panel(
       rows: [
-        for (final id in MinimalThemeData.presets)
+        for (final id in [
+          for (final palette in MinimalThemeData.palettes) palette.id,
+        ])
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Row(

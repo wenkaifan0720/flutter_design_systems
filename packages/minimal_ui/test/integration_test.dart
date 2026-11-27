@@ -187,7 +187,7 @@ void main() {
             children: [
               MinimalIconButton(
                 LucideIcons.star,
-                label: 'Favourite',
+                semanticLabel: 'Favourite',
                 selected: true,
                 onPressed: () {},
               ),
@@ -242,7 +242,7 @@ void main() {
             for (final on in const [true, false]) ...[
               MinimalIconButton(
                 LucideIcons.star,
-                label: 'Minimal $on',
+                semanticLabel: 'Minimal $on',
                 selected: on,
                 onPressed: () {},
               ),
@@ -353,7 +353,7 @@ void main() {
         _app(
           Builder(
             builder: (context) => MinimalMenu(
-              label: 'Actions',
+              semanticLabel: 'Actions',
               items: [
                 MinimalMenuItem(
                   'Copy ID',
@@ -389,7 +389,7 @@ void main() {
           MinimalMenu.button(
             LucideIcons.calendarDays,
             text: 'Today',
-            label: 'Date range',
+            semanticLabel: 'Date range',
             items: [MinimalMenuItem('Today', onPressed: () {})],
           ),
         ),
@@ -625,7 +625,7 @@ void main() {
             titleTrailing: MinimalMenu.button(
               LucideIcons.calendarDays,
               text: 'Today',
-              label: 'Date range',
+              semanticLabel: 'Date range',
               items: [MinimalMenuItem('Today', onPressed: () {})],
             ),
           ),

@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 double _strength(WidgetTester tester, Finder of) => tester
@@ -34,7 +33,7 @@ void main() {
                 for (final variant in MinimalIconButtonVariant.values)
                   MinimalIconButton(
                     LucideIcons.play,
-                    label: variant.name,
+                    semanticLabel: variant.name,
                     variant: variant,
                   ),
               ],

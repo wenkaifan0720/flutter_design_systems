@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -5,7 +7,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../chrome_metrics.dart';
 import '../internal/bar_actions.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
+import '../internal/page_measure.dart';
 import '../internal/sheet_header.dart';
+import '../internal/tap_band.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'icon_button.dart';
@@ -30,12 +35,15 @@ import 'route_chrome.dart';
 /// would print (`Orders  Today ▾`: a [MinimalMenu.button] range or scope
 /// menu); the compact and sheet registers ignore it.
 ///
+/// On a [MinimalScaffold] with a `maxWidth` the title and actions stand in
+/// the page's measure, over the body's column, and the hairline spans the page.
+///
 /// `large` pins the root register on or off; null (the default) derives it.
 /// Leave [leading] unset so the route's exit appears; never author a back or
 /// close control.
 ///
 /// ```dart
-/// MinimalAppBar(title: 'Today', subtitle: 'Fri 28 Aug', actions: [MinimalIconButton(LucideIcons.search, label: 'Search', onPressed: search), MinimalIconButton(LucideIcons.plus, label: 'New habit', variant: MinimalIconButtonVariant.primary, onPressed: add)])
+/// MinimalAppBar(title: 'Today', subtitle: 'Fri 28 Aug', actions: [MinimalIconButton(LucideIcons.search, semanticLabel: 'Search', onPressed: search), MinimalIconButton(LucideIcons.plus, semanticLabel: 'New habit', variant: MinimalIconButtonVariant.primary, onPressed: add)])
 /// ```
 class MinimalAppBar extends StatelessWidget {
   /// A page's top bar.
@@ -87,14 +95,14 @@ class MinimalAppBar extends StatelessWidget {
       MinimalRouteChrome.pushed => MinimalIconButton(
         LucideIcons.chevronLeftDir,
         key: key,
-        label: MinimalLocalizations.of(context).back,
+        semanticLabel: MinimalLocalizations.of(context).back,
         variant: MinimalIconButtonVariant.outline,
         onPressed: onPressed,
       ),
       MinimalRouteChrome.sheet => MinimalIconButton(
         LucideIcons.x,
         key: key,
-        label: MinimalLocalizations.of(context).close,
+        semanticLabel: MinimalLocalizations.of(context).close,
         variant: MinimalIconButtonVariant.ghost,
         onPressed: onPressed,
       ),
@@ -123,6 +131,55 @@ class MinimalAppBar extends StatelessWidget {
 
     final lead = leading ?? exit;
     final isLarge = large ?? register == MinimalRouteChrome.root;
+    // A bar icon button's target is the tap floor round its face; on the
+    // keylines the target grows inward (as the calendar's chevrons do), so
+    // the faces stand on the gutter as the page's words do, and the air to
+    // the breadcrumb is measured from the back button's face.
+    final reach = math.max(
+      0.0,
+      minimalTapFloor(context) -
+          t.density.height(MinimalChromeMetrics.barControl),
+    );
+    final crumbGap = lead is MinimalIconButton
+        ? math.max(0.0, MinimalChromeMetrics.barCrumbGap - reach)
+        : MinimalChromeMetrics.barCrumbGap;
+    // On a page held to a measure (MinimalScaffold.maxWidth) the title and
+    // the actions stand in its column; the hairline still spans the page.
+    final row = Row(
+      children: [
+        if (lead != null) ...[
+          MinimalTapAlignment(
+            alignment: AlignmentDirectional.centerStart,
+            child: lead,
+          ),
+          SizedBox(width: crumbGap),
+        ],
+        Expanded(
+          child: isLarge
+              ? _RootTitle(
+                  title: title,
+                  meta: subtitle,
+                  trailing: titleTrailing,
+                )
+              : _CompactTitle(
+                  parent: register == MinimalRouteChrome.root ? null : parent,
+                  title: title,
+                  meta: subtitle,
+                ),
+        ),
+        for (final (i, action) in barActions.indexed) ...[
+          SizedBox(
+            width: i == 0
+                ? MinimalSpacing.s8
+                : MinimalChromeMetrics.barActionGap,
+          ),
+          MinimalTapAlignment(
+            alignment: AlignmentDirectional.centerEnd,
+            child: action,
+          ),
+        ],
+      ],
+    );
     return Container(
       height: MinimalChromeMetrics.barHeight,
       padding: const EdgeInsetsDirectional.only(
@@ -133,34 +190,12 @@ class MinimalAppBar extends StatelessWidget {
         color: t.background,
         border: Border(bottom: t.rule),
       ),
-      child: Row(
-        children: [
-          if (lead != null) ...[
-            lead,
-            const SizedBox(width: MinimalChromeMetrics.barCrumbGap),
-          ],
-          Expanded(
-            child: isLarge
-                ? _RootTitle(
-                    title: title,
-                    meta: subtitle,
-                    trailing: titleTrailing,
-                  )
-                : _CompactTitle(
-                    parent: register == MinimalRouteChrome.root ? null : parent,
-                    title: title,
-                    meta: subtitle,
-                  ),
-          ),
-          for (final (i, action) in barActions.indexed) ...[
-            SizedBox(
-              width: i == 0
-                  ? MinimalSpacing.s8
-                  : MinimalChromeMetrics.barActionGap,
-            ),
-            action,
-          ],
-        ],
+      child: MinimalPageMeasure.hold(
+        row,
+        maxWidth: MinimalPageMeasure.maybeOf(context),
+        inset:
+            MinimalChromeMetrics.barInsetStart +
+            MinimalChromeMetrics.barInsetEnd,
       ),
     );
   }

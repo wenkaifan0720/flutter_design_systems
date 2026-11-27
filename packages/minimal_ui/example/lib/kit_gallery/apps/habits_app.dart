@@ -244,7 +244,7 @@ class _AllHabits extends StatelessWidget {
         actions: [
           MinimalIconButton(
             LucideIcons.plus,
-            label: ar('New habit', 'عادة جديدة'),
+            semanticLabel: ar('New habit', 'عادة جديدة'),
             variant: MinimalIconButtonVariant.primary,
             onPressed: () => _newHabit(context, habits),
           ),
@@ -350,6 +350,7 @@ class _SettingsState extends State<_Settings> {
     final sure =
         await showMinimalDialog<bool>(
           context,
+          isAlert: true,
           builder: (_) => MinimalDialog(
             title: ar('Erase every habit?', 'أتمحو كل العادات؟'),
             message: ar(
@@ -436,7 +437,7 @@ class _SettingsState extends State<_Settings> {
                   ),
                 ],
                 value: _weekStarts,
-                label: ar('Week starts on', 'يبدأ الأسبوع في'),
+                semanticLabel: ar('Week starts on', 'يبدأ الأسبوع في'),
                 small: true,
                 onChanged: (day) => setState(() => _weekStarts = day),
               ),

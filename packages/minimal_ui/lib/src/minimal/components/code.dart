@@ -194,7 +194,7 @@ class MinimalCodeBlock extends StatelessWidget {
             alignment: AlignmentDirectional.centerEnd,
             child: MinimalIconButton(
               LucideIcons.copy,
-              label: MinimalLocalizations.of(context).copy,
+              semanticLabel: MinimalLocalizations.of(context).copy,
               size: MinimalButtonSize.small,
               variant: MinimalIconButtonVariant.ghost,
               onPressed: () => _copy(context),

@@ -33,7 +33,7 @@ enum MinimalIconButtonVariant {
 /// a sheet's close. The hit area pads out to the tap floor.
 ///
 /// The default [variant] is ghost, or outline in a [MinimalAppBar].
-/// Supply a [label] so screen readers announce the button's action.
+/// Supply a [semanticLabel] so screen readers announce the button's action.
 ///
 /// [selected] makes it an on/off control (a favourite star, a pin): on is
 /// said in ink, as every Minimal choice is (the glyph goes from the muted
@@ -49,16 +49,16 @@ enum MinimalIconButtonVariant {
 /// `t.rim` is the outline's rim.
 ///
 /// ```dart
-/// MinimalAppBar(title: 'Today', actions: [MinimalIconButton(LucideIcons.search, label: 'Search', onPressed: search)])
+/// MinimalAppBar(title: 'Today', actions: [MinimalIconButton(LucideIcons.search, semanticLabel: 'Search', onPressed: search)])
 /// ```
 class MinimalIconButton extends StatelessWidget {
-  /// A button showing [icon], called [label].
+  /// A button showing [icon], called [semanticLabel].
   const MinimalIconButton(
     this.icon, {
     super.key,
     this.onPressed,
     this.variant,
-    this.label,
+    this.semanticLabel,
     this.size = MinimalButtonSize.medium,
     this.selected,
     this.style,
@@ -70,7 +70,7 @@ class MinimalIconButton extends StatelessWidget {
   final IconData icon;
 
   /// What the control does, in words: announced, never printed.
-  final String? label;
+  final String? semanticLabel;
 
   /// Its press; null disables it.
   final VoidCallback? onPressed;
@@ -151,7 +151,7 @@ class MinimalIconButton extends StatelessWidget {
       onPressed: onPressed,
       // A control with no action is disabled.
       enabled: onPressed != null,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       selected: selected,
       style: rest.press,
       shape: t.shapes.small,
@@ -191,7 +191,7 @@ class MinimalIconButton extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IconDataProperty('icon', icon))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         EnumProperty<MinimalIconButtonVariant>(

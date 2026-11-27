@@ -29,10 +29,12 @@ void main() {
     expect(block.trim().split('\n'), hasLength(lessThanOrEqualTo(12)));
   });
 
-  testWidgets('the start runs: its row stands in the theme', (tester) async {
+  testWidgets("the start runs: its row stands in the host's theme", (
+    tester,
+  ) async {
     start.main();
     await tester.pump();
-    expect(find.text('Replace the lobby lights'), findsOneWidget);
+    expect(find.text('Middlemarch'), findsOneWidget);
     expect(
       MinimalTheme.of(tester.element(find.byType(MinimalListTile))).id,
       'standard',

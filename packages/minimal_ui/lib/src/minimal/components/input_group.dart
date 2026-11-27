@@ -24,6 +24,7 @@ import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../shapes.dart';
 import '../theme.dart';
+import '../internal/message_reveal.dart';
 import 'button.dart';
 import 'icon_button.dart';
 import 'input.dart';
@@ -341,6 +342,7 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
           foregroundDecoration: minimalFocusEdge(
             t,
             shown: within,
+            invalid: states.wrong,
             shape: shape,
           ),
           child: minimalClip(
@@ -402,15 +404,25 @@ Widget _framed(
             const MinimalGap(MinimalChromeMetrics.iconGap),
           ],
           parts.control,
-          if (message != null) ...[
-            const MinimalGap(MinimalChromeMetrics.iconGap),
-            DefaultTextStyle.merge(
-              style: t.caption.c(
-                parts.errorText != null ? t.destructiveInk : t.mutedForeground,
-              ),
-              child: message,
-            ),
-          ],
+          // The line grows open and fades in (and out), never jumps.
+          MinimalMessageReveal(
+            id: parts.errorText,
+            child: !(message != null)
+                ? const SizedBox(width: double.infinity)
+                : Padding(
+                    padding: const EdgeInsets.only(
+                      top: MinimalChromeMetrics.iconGap,
+                    ),
+                    child: DefaultTextStyle.merge(
+                      style: t.caption.c(
+                        parts.errorText != null
+                            ? t.destructiveInk
+                            : t.mutedForeground,
+                      ),
+                      child: message,
+                    ),
+                  ),
+          ),
         ],
       );
     },
@@ -594,7 +606,7 @@ class _MinimalPasswordFieldState extends State<MinimalPasswordField> {
         fieldStyle: widget.fieldStyle,
         trailing: MinimalIconButton(
           password.obscured ? LucideIcons.eye : LucideIcons.eyeOff,
-          label: password.toggleLabel,
+          semanticLabel: password.toggleLabel,
           size: MinimalButtonSize.small,
           onPressed: widget.enabled ? password.toggle : null,
         ),

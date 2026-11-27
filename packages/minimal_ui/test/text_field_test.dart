@@ -273,7 +273,7 @@ void main() {
               obscureText: !shown,
               trailing: MinimalIconButton(
                 LucideIcons.eye,
-                label: 'Show',
+                semanticLabel: 'Show',
                 size: MinimalButtonSize.small,
                 onPressed: () => setState(() => shown = !shown),
               ),
@@ -413,7 +413,7 @@ void main() {
             ),
             trailing: MinimalIconButton(
               LucideIcons.x,
-              label: 'Clear',
+              semanticLabel: 'Clear',
               size: MinimalButtonSize.small,
               onPressed: () {},
             ),

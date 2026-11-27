@@ -57,7 +57,7 @@ void main() {
                     onTap: () {},
                     trailing: MinimalMenu.button(
                       LucideIcons.ellipsis,
-                      label: 'Task actions',
+                      semanticLabel: 'Task actions',
                       items: [MinimalMenuItem('Delete', onPressed: () {})],
                     ),
                   ),

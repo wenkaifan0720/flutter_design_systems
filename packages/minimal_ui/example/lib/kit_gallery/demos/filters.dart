@@ -23,7 +23,7 @@ Widget kitFiltersDemo(Brightness brightness) => kitScreen(
           filters: const [('Open', 6), ('Ready', 9), ('Done', 23)],
           trailing: MinimalIconButton(
             LucideIcons.slidersHorizontal,
-            label: 'Display options',
+            semanticLabel: 'Display options',
             variant: MinimalIconButtonVariant.outline,
             size: MinimalButtonSize.small,
             onPressed: () {},
@@ -309,7 +309,7 @@ Widget kitSpecimenFilterBarTrailing() => _Body(
   child: MinimalFilterBar(
     trailing: MinimalIconButton(
       LucideIcons.slidersHorizontal,
-      label: 'Display options',
+      semanticLabel: 'Display options',
       variant: MinimalIconButtonVariant.outline,
       size: MinimalButtonSize.small,
       onPressed: () {},

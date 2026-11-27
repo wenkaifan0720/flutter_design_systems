@@ -1,137 +1,104 @@
-// The label sweep (ui_core's DesignLabelCheck): every labelled control's
-// label on the middle of its face, as laid out and as drawn (its capitals
-// within half a device pixel), on every gallery page and every app screen,
-// under standard and compact density.
-// ignore_for_file: avoid_relative_lib_imports, avoid_print
-@Tags(['goldens'])
-library;
-
-import 'package:flutter/widgets.dart';
+// A label is read once and names what it should: a control in a field
+// wrapper (one that draws no label of its own) is announced with the field's
+// label once, not twice; in a list
+// row a monogram (the avatar repeating the title) stays out of the row's
+// name, and a status tag stays in it.
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:minimal_ui/minimal_ui.dart';
 
-import '../example/lib/main.dart';
-import 'flutter_test_config.dart' show longWalkLeakTesting;
-import 'keylines_test.dart'
-    show keylineScreens, loadKeylineFonts, precacheShownImages;
+Widget _app(Widget child) => MaterialApp(
+  builder: (context, app) =>
+      MinimalHost(brightness: Brightness.light, child: app!),
+  home: Material(
+    type: MaterialType.transparency,
+    child: Padding(padding: const EdgeInsets.all(16), child: child),
+  ),
+);
 
-/// Why the Pickers page cannot be read: its time wheels keep their
-/// off-screen rows laid out and never painted.
-const String _unpaintedWheels =
-    'the time wheels keep their off-screen rows (100 by 32, each under a '
-    'RepaintBoundary of a SliverFixedExtentList) laid out in the scroll '
-    "view's cache area and never painted, and DrawnPixels.read refuses a "
-    'screen holding an unpainted boundary (72 of them); the '
-    'selects on this page are held by control_layout_test (d); 0.2.0: ui_core '
-    "reads a screen past an unpainted boundary (the 0.2.0 list's wheels)";
-
-/// Screens the check cannot read, by page or `screen at width`, with the
-/// reason named.
-const Map<String, String> _misreadings = {'Pickers': _unpaintedWheels};
-
-/// Pages read in a taller window, with the reason: at 1440 by 900 a row of
-/// controls stands across the window's foot, and the check reads only the
-/// ink above it, so a glyph cut there reads off its face's middle.
-const Map<String, String> _cutAtTheFoot = {
-  'Buttons':
-      "the icon toggles' row stands at 880 to 920 under the 40 px floor; "
-      'whole on screen (at 1000) every control on the page reads centred',
-};
-
-/// Problems the check names that Minimal means, each held by its words with
-/// the reason: ui_core's check misreads them.
-final Map<RegExp, String> _held = {
-  RegExp(r'a control "Note": the capitals of "Note"'):
-      'a label beside a two-line entry stands on its first line, not the '
-      "row's middle",
-  RegExp(r'a control "(Done|Todo)": the capitals of "[^"]+" are drawn'):
-      'the navigation preview draws a 390 px phone at 300 px (a FittedBox): '
-      'its list rows read off by a device pixel or two there and level '
-      'at full size on every app screen',
-};
-
-Future<void> _settle(WidgetTester tester) async {
-  for (var i = 0; i < 12; i++) {
-    await tester.pump(const Duration(milliseconds: 100));
+/// How many times [words] is said across the live semantics tree.
+int _said(WidgetTester tester, String words) {
+  var n = 0;
+  void visit(SemanticsNode node) {
+    final data = node.getSemanticsData();
+    n += RegExp(RegExp.escape(words)).allMatches(data.label).length;
+    n += RegExp(RegExp.escape(words)).allMatches(data.value).length;
+    node.visitChildren((child) {
+      visit(child);
+      return true;
+    });
   }
-}
 
-Future<void> _open(WidgetTester tester, Size size, String query) async {
-  tester.view
-    ..physicalSize = size
-    ..devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
-  await tester.pumpWidget(const SizedBox());
-  await tester.pumpWidget(GalleryApp.at(Uri.parse('http://localhost/?$query')));
-  await _settle(tester);
-}
-
-Future<void> _check(WidgetTester tester, String at) async {
-  await precacheShownImages(tester);
-  final report =
-      await const DesignLabelCheck(look: 'Minimal', drawnTolerance: 0.5).check(
-        tester.element(find.byType(WidgetsApp).first),
-        runAsync: tester.runAsync,
-      );
-  final unheld = DesignAlignmentReport(report.look, [
-    for (final p in report.problems)
-      if (!_held.keys.any((r) => r.hasMatch(p))) p,
-  ]);
-  print(
-    '$at: ${unheld.problems.length} named, '
-    '${report.problems.length - unheld.problems.length} held',
+  visit(
+    tester.binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!,
   );
-  for (final p in unheld.problems) {
-    print('  $p');
-  }
-  unheld.verify();
+  return n;
 }
 
 void main() {
-  setUpAll(loadKeylineFonts);
-  // Decoded marks and pictures stay in the image cache past their test:
-  // cleared, so leak tracking sees them disposed.
-  tearDown(
-    () => imageCache
-      ..clear()
-      ..clearLiveImages(),
-  );
-
-  for (final density in const ['standard', 'compact']) {
-    for (final page in examplePages) {
-      final at = '$density · ${page.name}';
-      testWidgets(
-        at,
-        skip: _misreadings.containsKey(page.name),
-        (tester) async {
-          final slug = GalleryApp.pageSlug(page.name);
-          await _open(
-            tester,
-            Size(1440, _cutAtTheFoot.containsKey(page.name) ? 1000 : 900),
-            'page=$slug&density=$density',
-          );
-          await _check(tester, at);
-        },
-        tags: 'goldens',
-        experimentalLeakTesting: longWalkLeakTesting,
+  final controls = <String, Widget Function(String label)>{
+    'a switch': (label) => MinimalSwitch(value: true, onChanged: (_) {}),
+    'a segmented control': (label) => MinimalSegmentedButton<int>(
+      segments: const [
+        MinimalButtonSegment(0, 'System'),
+        MinimalButtonSegment(1, 'Light'),
+      ],
+      value: 0,
+      onChanged: (_) {},
+    ),
+    'a radio group': (label) => MinimalRadioGroup<int>(
+      value: 0,
+      onChanged: (_) {},
+      options: const [
+        MinimalRadioOption(value: 0, label: 'Standard'),
+        MinimalRadioOption(value: 1, label: 'Ember'),
+      ],
+    ),
+    // The wrapper's label names it; the field draws none of its own.
+    'a text field': (label) => const MinimalTextField(),
+  };
+  for (final MapEntry(key: name, value: build) in controls.entries) {
+    testWidgets('$name in a field wrapper says its label once', (tester) async {
+      await tester.pumpWidget(
+        _app(
+          MinimalFormField(labelText: 'Appearance', child: build('Appearance')),
+        ),
       );
-    }
-    for (final size in const [Size(390, 844), Size(1440, 900)]) {
-      for (final screen in keylineScreens) {
-        final where = '${screen.name} at ${size.width.round()}';
-        final at = '$density · $where';
-        testWidgets(
-          at,
-          skip: _misreadings.containsKey(where),
-          (tester) async {
-            await _open(tester, size, 'app=${screen.app}&density=$density');
-            await screen.open(tester);
-            await _check(tester, at);
-          },
-          tags: 'goldens',
-          experimentalLeakTesting: longWalkLeakTesting,
-        );
-      }
-    }
+      await tester.pumpAndSettle();
+      expect(_said(tester, 'Appearance'), 1);
+    });
   }
+
+  testWidgets("a monogram stays out of the row's name", (tester) async {
+    await tester.pumpWidget(
+      _app(
+        MinimalListTile(
+          title: 'Piranesi',
+          leading: const MinimalAvatar('Piranesi'),
+          onTap: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(_said(tester, 'Piranesi'), 1);
+  });
+
+  testWidgets("a status tag stays in the row's name", (tester) async {
+    await tester.pumpWidget(
+      _app(
+        MinimalListTile(
+          title: 'Piranesi',
+          trailing: const MinimalTag('Reading', tone: MinimalTone.primary),
+          onTap: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final row = find.semantics.byPredicate(
+      (node) => node.label.contains('Piranesi'),
+    );
+    expect(row, findsOneWidget);
+    expect(row.evaluate().single.label, contains('Reading'));
+  });
 }

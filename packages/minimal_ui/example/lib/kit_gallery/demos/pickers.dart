@@ -385,13 +385,13 @@ class _MenusState extends State<_Menus> {
         kitRow([
           MinimalMenu.button(
             LucideIcons.ellipsis,
-            label: 'Habit actions',
+            semanticLabel: 'Habit actions',
             items: actions,
           ),
           MinimalMenu.button(
             LucideIcons.arrowDownUp,
             text: 'Sort: $_sort',
-            label: 'Sort habits',
+            semanticLabel: 'Sort habits',
             items: [
               for (final sort in const ['Streak', 'Name', 'Time of day'])
                 MinimalMenuItem(
@@ -409,7 +409,7 @@ class _MenusState extends State<_Menus> {
           children: [
             const MinimalMenu.button(
               LucideIcons.ellipsisVertical,
-              label: 'No actions',
+              semanticLabel: 'No actions',
               items: [],
             ),
             const MinimalGap(MinimalSpacing.s12),
@@ -431,7 +431,7 @@ class _MenusState extends State<_Menus> {
                 gutter: false,
                 children: [
                   MinimalMenu(
-                    label: 'Morning run actions',
+                    semanticLabel: 'Morning run actions',
                     trigger: MinimalMenuTrigger.longPress,
                     items: actions,
                     child: MinimalListTile(

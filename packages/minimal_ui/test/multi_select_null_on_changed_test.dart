@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 Widget _host(Widget child) => MaterialApp(
   builder: (context, navigator) => MinimalHost(

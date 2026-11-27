@@ -9,7 +9,6 @@ import 'package:flutter/semantics.dart' show SemanticsNode;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 // The host stands above the Navigator, as an app mounts it.
@@ -343,7 +342,7 @@ void main() {
     Widget group(ValueChanged<String> seen) => _Owner<String?>(
       initial: 'free',
       builder: (v, set) => MinimalRadioGroup<String>(
-        label: 'Plan',
+        semanticLabel: 'Plan',
         value: v,
         onChanged: (next) {
           seen(next);
@@ -393,7 +392,7 @@ void main() {
       initial: 2,
       builder: (v, set) => MinimalRating(
         value: v,
-        label: 'Your rating',
+        semanticLabel: 'Your rating',
         allowClear: clear,
         onChanged: (n) {
           seen.add(n);
@@ -513,7 +512,7 @@ void main() {
         _host(
           Semantics(
             container: true,
-            child: const MinimalRating(value: 3.5, label: 'Average'),
+            child: const MinimalRating(value: 3.5, semanticLabel: 'Average'),
           ),
         ),
       );
@@ -927,7 +926,10 @@ void main() {
               const SizedBox(width: 16),
               Semantics(
                 container: true,
-                child: const MinimalBadge(count: 120, label: '120 unread'),
+                child: const MinimalBadge(
+                  count: 120,
+                  semanticLabel: '120 unread',
+                ),
               ),
             ],
           ),
@@ -1153,7 +1155,7 @@ void main() {
                 container: true,
                 child: const MinimalCircularProgressIndicator(
                   value: 0.4,
-                  label: 'Upload',
+                  semanticLabel: 'Upload',
                 ),
               ),
             ],
@@ -1505,7 +1507,7 @@ void main() {
         ],
       ),
       'MinimalRating': () =>
-          MinimalRating(value: 3, label: 'Rating', onChanged: (_) {}),
+          MinimalRating(value: 3, semanticLabel: 'Rating', onChanged: (_) {}),
       'MinimalTimePicker': () => MinimalTimePicker(
         labelText: 'Reminder',
         value: DateTime(2026, 1, 1, 7, 30),

@@ -13,12 +13,15 @@ double _worst(Color ink, Iterable<Color> grounds) => grounds
 
 void main() {
   test('the look ships six presets, the standard one first', () {
-    expect(MinimalThemeData.presets, hasLength(6));
-    expect(MinimalThemeData.presets.first, 'standard');
-    expect(MinimalThemeData.presets.toSet(), hasLength(6));
+    final ids = [for (final palette in MinimalThemeData.palettes) palette.id];
+    expect(ids, hasLength(6));
+    expect(ids.first, 'standard');
+    expect({...ids}, hasLength(6));
   });
 
-  for (final id in MinimalThemeData.presets) {
+  for (final id in [
+    for (final palette in MinimalThemeData.palettes) palette.id,
+  ]) {
     for (final brightness in Brightness.values) {
       test('$id, ${brightness.name}: every bar holds', () {
         final t = MinimalThemeData.preset(id, brightness);

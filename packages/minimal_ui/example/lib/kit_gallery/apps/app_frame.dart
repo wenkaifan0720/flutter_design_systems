@@ -405,7 +405,7 @@ class KitGalleryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MinimalMenu.button(
     LucideIcons.layoutGrid,
-    label: ar('Gallery', 'المعرض'),
+    semanticLabel: ar('Gallery', 'المعرض'),
     items: [
       MinimalMenuItem(
         ar('Back to the gallery', 'العودة إلى المعرض'),

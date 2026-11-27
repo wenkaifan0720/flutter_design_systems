@@ -17,7 +17,7 @@ import '../example/lib/kit_gallery/demos/input_group.dart';
 import '../example/lib/kit_gallery/demos/shell.dart';
 import '../example/lib/kit_gallery/demos/status.dart';
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'world_checks.dart';
 

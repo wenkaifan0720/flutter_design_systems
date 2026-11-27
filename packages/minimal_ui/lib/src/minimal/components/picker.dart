@@ -4,12 +4,12 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
 import '../internal/field.dart';
 import '../internal/menu_keys.dart';
+import '../internal/trailing_glyph.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'menu.dart';
@@ -67,7 +67,8 @@ enum MinimalSelectPresentation {
 /// in the quiet ink at the start, the chosen value (its glyph, its label)
 /// in the ink at the end over an up-down chevron — or a forward chevron
 /// when it opens a sheet. A 44 px hairline row, like every Minimal form
-/// row; with no [onChanged] or no options it is disabled: it dims, and its
+/// row: rows that follow one another stand hairline to hairline, with no gap
+/// between them, as a settings list's do; with no [onChanged] or no options it is disabled: it dims, and its
 /// value takes the quiet ink, so it never reads stronger than an enabled
 /// row's.
 /// It rules itself: stand it in a `MinimalFormSection`, never in a
@@ -167,7 +168,7 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
       await showMinimalMenu(
         context,
         anchor: box.localToGlobal(Offset.zero) & box.size,
-        label: widget.labelText,
+        semanticLabel: widget.labelText,
         items: [
           for (final option in widget.options)
             MinimalMenuItem(
@@ -283,12 +284,12 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
                       ),
                     ),
                     const MinimalGap(MinimalChromeMetrics.iconGap),
-                    MinimalIcon(
-                      widget.presentation == MinimalSelectPresentation.menu
-                          ? LucideIcons.chevronsUpDown
-                          : LucideIcons.chevronRightDir,
-                      size: MinimalIconSize.i16,
+                    // Its ink, not its box, ends on the row's end keyline,
+                    // as a row's chevron does.
+                    MinimalTrailingChevron(
                       color: t.textTertiary,
+                      upDown:
+                          widget.presentation == MinimalSelectPresentation.menu,
                     ),
                   ],
                 ),

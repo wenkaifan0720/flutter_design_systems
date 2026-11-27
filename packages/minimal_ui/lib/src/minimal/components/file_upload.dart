@@ -261,7 +261,8 @@ class _FileRow extends StatelessWidget {
                   LucideIcons.x,
                   size: MinimalButtonSize.small,
                   variant: MinimalIconButtonVariant.ghost,
-                  label: MinimalLocalizations.of(context).removeFile(file.name),
+                  semanticLabel: MinimalLocalizations.of(context)
+                      .removeFile(file.name),
                   onPressed: () => remove(file),
                 ),
               ],
@@ -283,7 +284,7 @@ class _FileRow extends StatelessWidget {
                   ? Text(error, style: t.bodySmall.c(t.destructiveInk))
                   : MinimalLinearProgressIndicator(
                       value: progress,
-                      label: file.name,
+                      semanticLabel: file.name,
                     ),
             ),
         ],

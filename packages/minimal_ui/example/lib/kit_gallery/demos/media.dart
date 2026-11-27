@@ -298,7 +298,7 @@ class _RevealListState extends State<_RevealList> {
               ),
               trailing: MinimalIconButton(
                 LucideIcons.x,
-                label: 'Remove $name',
+                semanticLabel: 'Remove $name',
                 size: MinimalButtonSize.small,
                 onPressed: () => setState(() => _shown.remove(i)),
               ),

@@ -19,6 +19,7 @@ Widget kitNavigationDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Rail, sidebar, pages',
   sections: [
+    kitSection('App shell', children: [_LiveShell()]),
     kitSection('Navigation rail', children: [_LiveRail()]),
     kitSection('Sidebar', children: [_LiveSidebar()]),
     kitSection('Pagination', children: [_LivePages()]),
@@ -26,6 +27,58 @@ Widget kitNavigationDemo(Brightness brightness) => kitScreen(
     kitSection('Step progress', children: [_LiveSteps()]),
   ],
 );
+
+/// The app's shell in a window of its own: the phone's bar in a narrow
+/// column, the rail or the sidebar in a wide one, by the window's width.
+class _LiveShell extends StatefulWidget {
+  @override
+  State<_LiveShell> createState() => _LiveShellState();
+}
+
+class _LiveShellState extends State<_LiveShell> {
+  int _at = 0;
+
+  /// A phone's frame for the bar where the window is wider than a phone's
+  /// but the column too narrow for the rail: the bar only ever spans a
+  /// phone's window.
+  static const double _phone = 320;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final wide =
+          box.maxWidth >= MinimalLayout.compact ||
+          MinimalLayout.isCompact(context);
+      return Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: SizedBox(
+          width: wide ? box.maxWidth : _phone,
+          child: _frame(context),
+        ),
+      );
+    },
+  );
+
+  Widget _frame(BuildContext context) {
+    final t = context.minimalTheme;
+    return Container(
+      height: _Window._height + 80,
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(color: t.background, shape: t.shapes.medium),
+      foregroundDecoration: ShapeDecoration(
+        shape: t.shapes.medium.copyWith(
+          side: BorderSide(color: t.border, width: t.hairline),
+        ),
+      ),
+      child: MinimalAppShell(
+        destinations: _places,
+        selectedIndex: _at,
+        onDestinationSelected: (i) => setState(() => _at = i),
+        body: _Page(_places[_at].label ?? ''),
+      ),
+    );
+  }
+}
 
 class _LiveRail extends StatefulWidget {
   @override

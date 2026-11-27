@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 /// [child] at the top left of a page [width] wide, under a MinimalHost.
 Widget pageApp(Widget child, {double width = 390}) => MaterialApp(

@@ -46,7 +46,7 @@ void main() {
             onTap: () {},
             trailing: MinimalMenu.button(
               LucideIcons.ellipsis,
-              label: 'Habit actions',
+              semanticLabel: 'Habit actions',
               items: _items(),
             ),
           ),
@@ -64,7 +64,7 @@ void main() {
         Align(
           child: MinimalMenu.button(
             LucideIcons.ellipsis,
-            label: 'Habit actions',
+            semanticLabel: 'Habit actions',
             items: _items(),
           ),
         ),

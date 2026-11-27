@@ -32,7 +32,7 @@ import '../theme.dart';
 /// the clearing tap and the preview under a finger.
 ///
 /// ```dart
-/// MinimalRating(value: stars.toDouble(), onChanged: (v) => setState(() => stars = v), label: 'Your rating')
+/// MinimalRating(value: stars.toDouble(), onChanged: (v) => setState(() => stars = v), semanticLabel: 'Your rating')
 /// ```
 class MinimalRating extends StatefulWidget {
   /// A rating out of [max] stars.
@@ -42,7 +42,7 @@ class MinimalRating extends StatefulWidget {
     this.onChanged,
     this.max = 5,
     this.size = 20,
-    this.label,
+    this.semanticLabel,
     this.allowClear = true,
     this.focusNode,
     this.autofocus = false,
@@ -63,7 +63,7 @@ class MinimalRating extends StatefulWidget {
   final double size;
 
   /// What is being rated, for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   /// A tap on the current score clears it.
   final bool allowClear;
@@ -85,7 +85,7 @@ class MinimalRating extends StatefulWidget {
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
       ..add(IntProperty('max', max, defaultValue: 5))
       ..add(DoubleProperty('size', size, defaultValue: 20))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         FlagProperty(
           'allowClear',
@@ -193,7 +193,7 @@ class _MinimalRatingState extends State<MinimalRating> {
       // No onChanged: a mark, read as a value rather than as disabled.
       readOnly: !live,
       itemCount: widget.max,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       semanticFormatterCallback: (v) => l.ratingOf(_format(v), widget.max),
       focusNode: node,
       autofocus: widget.autofocus,

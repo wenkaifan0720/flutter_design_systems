@@ -19,10 +19,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'keylines_test.dart' show keylineScreens, loadKeylineFonts;
 

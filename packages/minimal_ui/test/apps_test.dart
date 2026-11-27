@@ -8,7 +8,7 @@ import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 
 import '../example/lib/kit_gallery/apps/app_frame.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 
 void main() {

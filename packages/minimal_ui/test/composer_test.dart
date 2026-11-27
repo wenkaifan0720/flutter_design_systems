@@ -272,7 +272,7 @@ void main() {
               onSend: (_) {},
               action: MinimalComposerAction(
                 icon: LucideIcons.cornerDownLeft,
-                label: 'Reply',
+                semanticLabel: 'Reply',
                 onPressed: () => replied += 1,
               ),
             ),

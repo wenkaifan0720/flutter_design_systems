@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawFocusShown;
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
@@ -51,7 +52,7 @@ class MinimalSegmentedButton<T> extends StatefulWidget {
     required this.segments,
     required this.value,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.small = false,
     this.expand = true,
     this.style,
@@ -67,7 +68,7 @@ class MinimalSegmentedButton<T> extends StatefulWidget {
   final ValueChanged<T>? onChanged;
 
   /// What the choice is about, announced before the segments.
-  final String? label;
+  final String? semanticLabel;
 
   /// The 28 px register, for a toolbar or a dense header.
   final bool small;
@@ -89,7 +90,7 @@ class MinimalSegmentedButton<T> extends StatefulWidget {
       ..add(IterableProperty<MinimalButtonSegment<T>>('segments', segments))
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(FlagProperty('small', value: small, ifTrue: 'small'))
       ..add(FlagProperty('expand', value: expand, ifFalse: 'expand: false'))
       ..add(
@@ -120,6 +121,18 @@ class MinimalButtonSegment<T> {
 }
 
 class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
+  // Focus shows as ui_core's parts show it: after a key, not after a
+  // click (on the web, a click that focuses through semantics too).
+  late final RawFocusShown _shown = RawFocusShown((shown) {
+    if (mounted) setState(() => _focus = shown);
+  });
+
+  @override
+  void dispose() {
+    _shown.dispose();
+    super.dispose();
+  }
+
   bool _focus = false;
 
   int get _index =>
@@ -346,11 +359,11 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
 
     return Semantics(
       container: true,
-      label: widget.label,
+      label: widget.semanticLabel,
       explicitChildNodes: true,
       child: FocusableActionDetector(
         enabled: enabled,
-        onShowFocusHighlight: (v) => setState(() => _focus = v),
+        onFocusChange: _shown.focused,
         shortcuts: minimalSeekShortcuts,
         actions: <Type, Action<Intent>>{
           MinimalSeekIntent: CallbackAction<MinimalSeekIntent>(

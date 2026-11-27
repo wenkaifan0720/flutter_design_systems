@@ -76,13 +76,13 @@ void main() {
   ) async {
     await _screen(t, const KitHabitsApp(gallery: null, screen: 'habits'));
     Finder star() => find.byWidgetPredicate(
-      (w) => w is MinimalIconButton && w.label == 'Favourite',
+      (w) => w is MinimalIconButton && w.semanticLabel == 'Favourite',
     );
     Future<void> open(String name) => _tap(t, find.text(name).first);
     Future<void> back() => _tap(
       t,
       find.byWidgetPredicate(
-        (w) => w is MinimalIconButton && w.label == 'Back',
+        (w) => w is MinimalIconButton && w.semanticLabel == 'Back',
       ),
     );
     await open('Morning run');

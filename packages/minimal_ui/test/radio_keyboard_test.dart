@@ -226,7 +226,7 @@ void main() {
                   Focus(focusNode: before, child: const Text('Before')),
                   MinimalRadioGroup<String>(
                     key: _group,
-                    label: 'Plan',
+                    semanticLabel: 'Plan',
                     value: chosen,
                     onChanged: (v) => setState(() => chosen = v),
                     options: [
@@ -284,15 +284,23 @@ void main() {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            MinimalCheckbox(value: true, label: 'Box', onChanged: (_) {}),
+            MinimalCheckbox(
+              value: true,
+              semanticLabel: 'Box',
+              onChanged: (_) {},
+            ),
             const MinimalCheckbox(
               value: false,
-              label: 'Box off',
+              semanticLabel: 'Box off',
               onChanged: null,
             ),
             MinimalSwitch(value: true, label: 'Switch', onChanged: (_) {}),
             const MinimalSwitch(value: false, label: 'Switch off'),
-            MinimalRadio(selected: true, label: 'Radio', onPressed: () {}),
+            MinimalRadio(
+              selected: true,
+              semanticLabel: 'Radio',
+              onPressed: () {},
+            ),
             MinimalChoiceRow(title: 'Row', selected: false, onPressed: () {}),
             MinimalStatusIcon(
               MinimalTaskStatus.done,

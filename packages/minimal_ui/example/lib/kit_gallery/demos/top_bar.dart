@@ -28,12 +28,12 @@ Widget kitTopBarDemo(Brightness brightness) => kitScreen(
             actions: [
               MinimalIconButton(
                 LucideIcons.search,
-                label: 'Search',
+                semanticLabel: 'Search',
                 onPressed: () {},
               ),
               MinimalIconButton(
                 LucideIcons.plus,
-                label: 'New habit',
+                semanticLabel: 'New habit',
                 variant: MinimalIconButtonVariant.primary,
                 onPressed: () {},
               ),
@@ -47,7 +47,7 @@ Widget kitTopBarDemo(Brightness brightness) => kitScreen(
             titleTrailing: MinimalMenu.button(
               LucideIcons.calendarDays,
               text: 'Today',
-              label: 'Date range',
+              semanticLabel: 'Date range',
               items: [
                 MinimalMenuItem('Today', selected: true, onPressed: () {}),
                 MinimalMenuItem('Yesterday', onPressed: () {}),
@@ -57,12 +57,12 @@ Widget kitTopBarDemo(Brightness brightness) => kitScreen(
             actions: [
               MinimalIconButton(
                 LucideIcons.search,
-                label: 'Search',
+                semanticLabel: 'Search',
                 onPressed: () {},
               ),
               MinimalIconButton(
                 LucideIcons.slidersHorizontal,
-                label: 'Filters',
+                semanticLabel: 'Filters',
                 onPressed: () {},
               ),
             ],
@@ -82,12 +82,12 @@ Widget kitTopBarDemo(Brightness brightness) => kitScreen(
             actions: [
               MinimalIconButton(
                 LucideIcons.star,
-                label: 'Favourite',
+                semanticLabel: 'Favourite',
                 onPressed: () {},
               ),
               MinimalIconButton(
                 LucideIcons.ellipsis,
-                label: 'More',
+                semanticLabel: 'More',
                 onPressed: () {},
               ),
             ],
@@ -183,10 +183,14 @@ Widget kitSpecimenTopBarRoot() => MinimalScaffold(
     title: 'Today',
     subtitle: 'Fri 28 Aug',
     actions: [
-      MinimalIconButton(LucideIcons.search, label: 'Search', onPressed: () {}),
+      MinimalIconButton(
+        LucideIcons.search,
+        semanticLabel: 'Search',
+        onPressed: () {},
+      ),
       MinimalIconButton(
         LucideIcons.plus,
-        label: 'New habit',
+        semanticLabel: 'New habit',
         variant: MinimalIconButtonVariant.primary,
         onPressed: () {},
       ),
@@ -207,7 +211,7 @@ Widget kitSpecimenTopBarPushed() => _SpecimenRoute(
       actions: [
         MinimalMenu.button(
           LucideIcons.ellipsis,
-          label: 'Habit actions',
+          semanticLabel: 'Habit actions',
           items: [
             MinimalMenuItem('Rename', onPressed: () {}),
             MinimalMenuItem(

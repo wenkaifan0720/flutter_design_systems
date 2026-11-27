@@ -10,6 +10,8 @@ import 'navigation.dart';
 import 'sheet.dart';
 import 'shell_frame.dart';
 import '../ground.dart';
+import 'shell_action.dart';
+import 'nav_item.dart';
 
 /// How a previewed page stands in the app: as a nav root over the shell's
 /// bar, pushed off one, or raised as a sheet.

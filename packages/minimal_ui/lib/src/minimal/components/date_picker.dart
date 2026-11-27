@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawFocusShown;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -80,6 +81,10 @@ enum MinimalDatePickerPresentation {
 /// moments that can be chosen) grey the days outside them and clamp every
 /// change into range.
 ///
+/// [value] may be null: an optional date (a day started, a due date) that is
+/// not set yet. Its pill then prints [hintText] in the quiet ink, and the
+/// picker opens on [currentDate]'s month (the clock's when that is null too).
+///
 /// ```dart
 /// MinimalDatePicker(labelText: 'Reminder', value: remindAt, mode: MinimalDatePickerMode.time, onChanged: setRemindAt)
 /// ```
@@ -88,7 +93,8 @@ class MinimalDatePicker extends StatefulWidget {
   const MinimalDatePicker({
     super.key,
     required this.labelText,
-    required this.value,
+    this.value,
+    this.hintText,
     this.onChanged,
     this.mode = MinimalDatePickerMode.dateAndTime,
     this.presentation = MinimalDatePickerPresentation.compact,
@@ -98,14 +104,18 @@ class MinimalDatePicker extends StatefulWidget {
     this.confirmSelection = false,
     this.currentDate,
     this.icon,
+    this.focusNode,
     this.autofocus = false,
   });
 
   /// What it picks.
   final String labelText;
 
-  /// The moment it shows.
-  final DateTime value;
+  /// The moment it shows; null shows [hintText] until one is picked.
+  final DateTime? value;
+
+  /// What an unset [value]'s pill says; null takes the localized "Choose".
+  final String? hintText;
 
   /// Null disables the picker.
   final ValueChanged<DateTime>? onChanged;
@@ -140,6 +150,12 @@ class MinimalDatePicker extends StatefulWidget {
   /// opens, in its popover or its sheet, always does.
   final bool autofocus;
 
+  /// The compact picker's first pill's focus (the date's, or the time's when
+  /// it picks a time alone), for a caller that moves focus to it: a
+  /// `RawFormField` round it, which a failed submit focuses; null keeps one
+  /// of its own. The inline and wheel pickers take none.
+  final FocusNode? focusNode;
+
   @override
   State<MinimalDatePicker> createState() => _MinimalDatePickerState();
 
@@ -148,7 +164,8 @@ class MinimalDatePicker extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('labelText', labelText))
-      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
@@ -198,7 +215,14 @@ class MinimalDatePicker extends StatefulWidget {
         ),
       )
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
-      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -224,7 +248,7 @@ bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
 class _MinimalDatePickerState extends State<MinimalDatePicker> {
-  late DateTime _month = DateTime(widget.value.year, widget.value.month);
+  late DateTime _month = DateTime(_seed.year, _seed.month);
 
   /// The day the keyboard stands on in the shown month; null starts at
   /// the choice (or today, or the 1st).
@@ -234,12 +258,19 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
   @override
   void didUpdateWidget(MinimalDatePicker old) {
     super.didUpdateWidget(old);
-    if (old.value.year != widget.value.year ||
-        old.value.month != widget.value.month) {
-      _month = DateTime(widget.value.year, widget.value.month);
+    final was = old.value;
+    final now = widget.value;
+    if (now != null &&
+        (was == null || was.year != now.year || was.month != now.month)) {
+      _month = DateTime(now.year, now.month);
       _cursor = null;
     }
   }
+
+  /// The moment the picker stands on: the value, else [currentDate], else
+  /// the clock's (an unset value has to open on some month).
+  DateTime get _seed =>
+      widget.value ?? widget.currentDate ?? _clamp(DateTime.now());
 
   @override
   void dispose() {
@@ -257,18 +288,12 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
 
   void _change(DateTime v) => widget.onChanged?.call(_clamp(v));
 
-  String _dateText() =>
-      MinimalFormat.date(widget.value, words: MinimalLocalizations.of(context));
+  String _dateText(DateTime value) =>
+      MinimalFormat.date(value, words: MinimalLocalizations.of(context));
 
-  String _timeText() => widget.use24HourFormat
-      ? MinimalFormat.clock(
-          widget.value,
-          words: MinimalLocalizations.of(context),
-        )
-      : MinimalFormat.time12(
-          widget.value,
-          words: MinimalLocalizations.of(context),
-        );
+  String _timeText(DateTime value) => widget.use24HourFormat
+      ? MinimalFormat.clock(value, words: MinimalLocalizations.of(context))
+      : MinimalFormat.time12(value, words: MinimalLocalizations.of(context));
 
   /// A picker for [mode] alone, standing in a popover or a sheet.
   MinimalDatePicker _panel(
@@ -292,7 +317,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
 
   Future<void> _open(MinimalDatePickerMode mode, BuildContext anchor) async {
     if (widget.onChanged == null) return;
-    var draft = _clamp(widget.value);
+    var draft = _clamp(_seed);
     // On a phone's width the anchored calendar would stand over the fields
     // under its pill: the picker rises in the sheet, as with
     // confirmSelection.
@@ -301,7 +326,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
       await MinimalMenu.popover<void>(
         context,
         anchor: box.localToGlobal(Offset.zero) & box.size,
-        label: widget.labelText,
+        semanticLabel: widget.labelText,
         width: mode == MinimalDatePickerMode.time
             ? _DateMetrics.timeWidth
             : _DateMetrics.calendarWidthOf(context),
@@ -382,11 +407,19 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
   Widget _compact(BuildContext context) {
     final t = context.minimalTheme;
     final icon = widget.icon;
+    final value = widget.value;
     final enabled = widget.onChanged != null;
-    Widget pill(String text, MinimalDatePickerMode mode) {
+    Widget pill(String? text, MinimalDatePickerMode mode) {
+      final unset = text == null;
+      final first =
+          mode == MinimalDatePickerMode.date ||
+          widget.mode == MinimalDatePickerMode.time;
       final label =
           '${widget.labelText}, '
           '${mode == MinimalDatePickerMode.time ? 'time' : 'date'}';
+      // In a form field showing an error the pill's edge takes the danger
+      // colour, as a text field's does.
+      final wrong = MinimalFieldErrorScope.of(context);
       final face = Container(
         constraints: const BoxConstraints(
           minHeight: MinimalChromeMetrics.controlSm,
@@ -395,7 +428,10 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
         // A value in a hairline on the ground, as a field's; no grey well.
         decoration: minimalFrame(
           MinimalShapes.inset(t.shapes.small, 1),
-          side: BorderSide(color: t.border, width: t.hairline),
+          side: BorderSide(
+            color: wrong ? t.destructive : t.border,
+            width: t.hairline,
+          ),
         ),
         // Shrink-wrapped: the pill is as wide as its value.
         child: Center(
@@ -407,11 +443,22 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
           // At a large text size a value too wide for its room wraps
           // between its words ("20 Nov" over "2026") and the pill grows
           // with it, as a Material text field does: never a figure cut off.
+          // Unset, the pill says so in the quiet ink, as a field's hint.
           child: minimalCapLabel(
             Text(
-              text,
+              text ??
+                  widget.hintText ??
+                  MinimalLocalizations.of(context).choose,
               textWidthBasis: TextWidthBasis.longestLine,
-              style: enabled
+              // Words, not figures: unset, the sans at the value's size.
+              style: unset
+                  ? t.body
+                        .copyWith(
+                          fontSize: t.monoValue.fontSize,
+                          height: t.monoValue.height,
+                        )
+                        .c(t.mutedForeground)
+                  : enabled
                   ? t.monoValue.medium
                   : t.monoValue.c(t.mutedForeground),
             ),
@@ -440,6 +487,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
           child: enabled
               ? Builder(
                   builder: (pillContext) => MinimalPressable(
+                    focusNode: first ? widget.focusNode : null,
                     onPressed: () => _open(mode, pillContext),
                     shape: MinimalShapes.inset(t.shapes.small, 1),
                     outset: EdgeInsets.symmetric(vertical: -inset),
@@ -500,9 +548,15 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                   spacing: MinimalChromeMetrics.iconGap,
                   children: [
                     if (widget.mode != MinimalDatePickerMode.time)
-                      pill(_dateText(), MinimalDatePickerMode.date),
+                      pill(
+                        value == null ? null : _dateText(value),
+                        MinimalDatePickerMode.date,
+                      ),
                     if (widget.mode != MinimalDatePickerMode.date)
-                      pill(_timeText(), MinimalDatePickerMode.time),
+                      pill(
+                        value == null ? null : _timeText(value),
+                        MinimalDatePickerMode.time,
+                      ),
                   ],
                 ),
               ),
@@ -530,27 +584,19 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     if (cursor != null) return cursor.clamp(1, days);
     bool shown(DateTime? d) =>
         d != null && d.year == _month.year && d.month == _month.month;
-    if (shown(widget.value)) return widget.value.day;
+    final value = widget.value;
+    if (value != null && shown(value)) return value.day;
     final today = widget.currentDate;
     if (today != null && shown(today)) return today.day;
     return 1;
   }
 
-  DateTime _dayAt(int n) => widget.value.isUtc
-      ? DateTime.utc(
-          _month.year,
-          _month.month,
-          n,
-          widget.value.hour,
-          widget.value.minute,
-        )
-      : DateTime(
-          _month.year,
-          _month.month,
-          n,
-          widget.value.hour,
-          widget.value.minute,
-        );
+  DateTime _dayAt(int n) {
+    final at = _seed;
+    return at.isUtc
+        ? DateTime.utc(_month.year, _month.month, n, at.hour, at.minute)
+        : DateTime(_month.year, _month.month, n, at.hour, at.minute);
+  }
 
   /// Whether [day] can be chosen: the picker is live and the day touches
   /// the allowed range.
@@ -640,7 +686,8 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     Widget cell(int n) {
       final day = _dayAt(n);
       final open = _isOpen(day);
-      final selected = _sameDay(day, widget.value);
+      final value = widget.value;
+      final selected = value != null && _sameDay(day, value);
       final isToday = today != null && _sameDay(day, today);
       final ink = selected
           ? t.primaryForeground
@@ -728,7 +775,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                 alignment: AlignmentDirectional.centerEnd,
                 child: MinimalIconButton(
                   LucideIcons.chevronLeftDir,
-                  label: MinimalLocalizations.of(context).previousMonth,
+                  semanticLabel: MinimalLocalizations.of(context).previousMonth,
                   size: MinimalButtonSize.small,
                   onPressed: enabled ? () => _stepMonth(-1) : null,
                 ),
@@ -739,7 +786,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                 alignment: AlignmentDirectional.centerEnd,
                 child: MinimalIconButton(
                   LucideIcons.chevronRightDir,
-                  label: MinimalLocalizations.of(context).nextMonth,
+                  semanticLabel: MinimalLocalizations.of(context).nextMonth,
                   size: MinimalButtonSize.small,
                   onPressed: enabled ? () => _stepMonth(1) : null,
                 ),
@@ -802,7 +849,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
   }
 
   Widget _timeColumns({bool fill = false}) {
-    final value = widget.value;
+    final value = _seed;
     final minutes = <int>{
       for (var m = 0; m < 60; m += _DateMetrics.minuteStep) m,
       value.minute,
@@ -885,6 +932,12 @@ class _TimeColumn extends StatefulWidget {
 }
 
 class _TimeColumnState extends State<_TimeColumn> {
+  // Focus shows as ui_core's parts show it: after a key, not after a
+  // click (on the web, a click that focuses through semantics too).
+  late final RawFocusShown _shown = RawFocusShown((shown) {
+    if (mounted) setState(() => _focus = shown);
+  });
+
   /// How many times the values repeat down the column: enough that no
   /// scroll reaches either end, so it reads as a loop.
   static const int _laps = 200;
@@ -944,6 +997,7 @@ class _TimeColumnState extends State<_TimeColumn> {
 
   @override
   void dispose() {
+    _shown.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -1045,7 +1099,7 @@ class _TimeColumnState extends State<_TimeColumn> {
               mouseCursor: onChanged == null
                   ? SystemMouseCursors.basic
                   : SystemMouseCursors.click,
-              onShowFocusHighlight: (v) => setState(() => _focus = v),
+              onFocusChange: _shown.focused,
               shortcuts: const <ShortcutActivator, Intent>{
                 SingleActivator(LogicalKeyboardKey.arrowDown): _WheelStep(1),
                 SingleActivator(LogicalKeyboardKey.arrowUp): _WheelStep(-1),

@@ -504,7 +504,7 @@ class _KitIssuesPageState extends State<KitIssuesPage> {
             LucideIcons.listFilter,
             // A filter in force shows in the bar: the pill names it.
             text: priority?.labelIn(context),
-            label: ar('Filter by priority', 'التصفية حسب الأولوية'),
+            semanticLabel: ar('Filter by priority', 'التصفية حسب الأولوية'),
             items: [
               MinimalMenuItem(
                 ar('Any priority', 'أي أولوية'),
@@ -548,7 +548,7 @@ class _KitIssuesPageState extends State<KitIssuesPage> {
                     MinimalButtonSegment(2, ar('Subscribed', 'المتابَعة')),
                   ],
                   value: _view,
-                  label: ar('Issues', 'المهام'),
+                  semanticLabel: ar('Issues', 'المهام'),
                   onChanged: (i) => setState(() {
                     _view = i;
                     _selected = null;

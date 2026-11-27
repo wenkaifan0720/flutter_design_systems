@@ -122,7 +122,7 @@ enum MinimalMenuTrigger {
 /// `t.rim`, as a button does.
 ///
 /// ```dart
-/// MinimalMenu(label: 'Habit actions', items: [MinimalMenuItem('Rename', onPressed: rename)], child: moreGlyph)
+/// MinimalMenu(semanticLabel: 'Habit actions', items: [MinimalMenuItem('Rename', onPressed: rename)], child: moreGlyph)
 /// ```
 class MinimalMenu extends StatefulWidget {
   /// A menu of [items] opened from [child].
@@ -131,7 +131,7 @@ class MinimalMenu extends StatefulWidget {
     required this.items,
     required Widget this.child,
     this.trigger = MinimalMenuTrigger.tap,
-    this.label,
+    this.semanticLabel,
     this.style,
   }) : icon = null,
        text = null,
@@ -142,14 +142,14 @@ class MinimalMenu extends StatefulWidget {
   /// [small].
   ///
   /// ```dart
-  /// MinimalMenu.button(LucideIcons.arrowDownUp, text: 'Sort: $sort', label: 'Sort habits', items: sorts)
+  /// MinimalMenu.button(LucideIcons.arrowDownUp, text: 'Sort: $sort', semanticLabel: 'Sort habits', items: sorts)
   /// ```
   const MinimalMenu.button(
     IconData this.icon, {
     super.key,
     required this.items,
     this.text,
-    this.label,
+    this.semanticLabel,
     this.small = false,
     this.style,
   }) : child = null,
@@ -167,7 +167,7 @@ class MinimalMenu extends StatefulWidget {
   final MinimalMenuTrigger trigger;
 
   /// What the control announces, and what the open menu is named.
-  final String? label;
+  final String? semanticLabel;
 
   /// The glyph of a [MinimalMenu.button].
   final IconData? icon;
@@ -190,7 +190,7 @@ class MinimalMenu extends StatefulWidget {
   static Future<T?> popover<T>(
     BuildContext context, {
     required Rect anchor,
-    required String label,
+    required String semanticLabel,
     required WidgetBuilder builder,
     double width = _MenuMetrics.width,
     MinimalStyle? style,
@@ -208,8 +208,9 @@ class MinimalMenu extends StatefulWidget {
         .push<T>(
           _PopoverRoute<T>(
             anchor: anchor,
-            label: label,
-            dismissLabel: '${MinimalLocalizations.of(context).dismiss} $label',
+            label: semanticLabel,
+            dismissLabel:
+                '${MinimalLocalizations.of(context).dismiss} $semanticLabel',
             width: width,
             duration: still ? Duration.zero : MinimalMotion.fast,
             themes: themes,
@@ -241,7 +242,7 @@ class MinimalMenu extends StatefulWidget {
           defaultValue: MinimalMenuTrigger.tap,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(StringProperty('text', text, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('small', small))
@@ -259,7 +260,7 @@ Future<void> showMinimalMenu(
   BuildContext context, {
   required Rect anchor,
   required List<MinimalMenuItem> items,
-  String? label,
+  String? semanticLabel,
   double width = _MenuMetrics.width,
   MinimalStyle? style,
 }) async {
@@ -268,7 +269,7 @@ Future<void> showMinimalMenu(
   final chosen = await MinimalMenu.popover<int>(
     context,
     anchor: anchor,
-    label: label ?? MinimalLocalizations.of(context).actions,
+    semanticLabel: semanticLabel ?? MinimalLocalizations.of(context).actions,
     // Never narrower than what opened it: a list from a select's value or
     // an expanded button covers that control's width.
     width: math.max(width, anchor.width),
@@ -290,7 +291,8 @@ class _MinimalMenuState extends State<MinimalMenu> {
       context,
       anchor: box.localToGlobal(Offset.zero) & box.size,
       items: widget.items,
-      label: widget.label ?? MinimalLocalizations.of(context).moreActions,
+      semanticLabel:
+          widget.semanticLabel ?? MinimalLocalizations.of(context).moreActions,
       style: widget.style,
     );
     _open = false;
@@ -377,7 +379,8 @@ class _MinimalMenuState extends State<MinimalMenu> {
           onPressed: _show,
           enabled: widget.items.isNotEmpty,
           semanticLabel:
-              widget.label ?? MinimalLocalizations.of(context).moreActions,
+              widget.semanticLabel ??
+              MinimalLocalizations.of(context).moreActions,
           shape: text == null ? t.shapes.small : _pill(t),
           child: child,
         ),
@@ -390,7 +393,8 @@ class _MinimalMenuState extends State<MinimalMenu> {
     }
     return _MinimalContextMenu(
       items: widget.items,
-      label: widget.label ?? MinimalLocalizations.of(context).moreActions,
+      label:
+          widget.semanticLabel ?? MinimalLocalizations.of(context).moreActions,
       style: widget.style,
       child: child,
     );
@@ -426,6 +430,18 @@ class _MinimalContextMenu extends StatefulWidget {
 }
 
 class _MinimalContextMenuState extends State<_MinimalContextMenu> {
+  // Focus shows as ui_core's parts show it: after a key, not after a
+  // click (on the web, a click that focuses through semantics too).
+  late final RawFocusShown _shown = RawFocusShown((shown) {
+    if (mounted) setState(() => _focus = shown);
+  });
+
+  @override
+  void dispose() {
+    _shown.dispose();
+    super.dispose();
+  }
+
   bool _held = false;
   bool _focus = false;
   Offset? _downAt;
@@ -524,7 +540,7 @@ class _MinimalContextMenuState extends State<_MinimalContextMenu> {
         onPointerCancel: enabled ? _up : null,
         child: FocusableActionDetector(
           enabled: enabled,
-          onShowFocusHighlight: (v) => setState(() => _focus = v),
+          onFocusChange: _shown.focused,
           child: AnimatedContainer(
             duration: MinimalMotion.fast,
             curve: MinimalMotion.out,

@@ -84,7 +84,7 @@ Widget kitPanesDemo(Brightness brightness) => kitScreen(
             child: MinimalScrollArea(
               height: 200,
               padding: const EdgeInsets.all(MinimalCard.inset),
-              label: 'Release notes',
+              semanticLabel: 'Release notes',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [for (final n in _notes) _note(context, n)],

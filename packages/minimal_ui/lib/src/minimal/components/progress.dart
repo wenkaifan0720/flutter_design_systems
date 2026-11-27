@@ -15,14 +15,14 @@ import 'tag.dart';
 /// reduced motion.
 ///
 /// ```dart
-/// MinimalLinearProgressIndicator(value: 0.62, label: 'Upload')
+/// MinimalLinearProgressIndicator(value: 0.62, semanticLabel: 'Upload')
 /// ```
 class MinimalLinearProgressIndicator extends StatefulWidget {
   /// A bar showing progress.
   const MinimalLinearProgressIndicator({
     super.key,
     this.value,
-    required this.label,
+    required this.semanticLabel,
     this.tone = MinimalTone.primary,
     this.height = MinimalLinearProgressIndicator.thickness,
   }) : assert(height > 0, 'a bar has a height');
@@ -31,7 +31,7 @@ class MinimalLinearProgressIndicator extends StatefulWidget {
   final double? value;
 
   /// What a screen reader announces before the percentage ('Upload').
-  final String label;
+  final String semanticLabel;
 
   /// The fill's colour: the accent for a quantity in flight, success for a
   /// goal met, warn or danger for a quota running out.
@@ -55,7 +55,7 @@ class MinimalLinearProgressIndicator extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DoubleProperty('value', value, defaultValue: null))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         EnumProperty<MinimalTone>(
           'tone',
@@ -112,7 +112,7 @@ class _MinimalLinearProgressIndicatorState
     if (value == null) {
       final rtl = Directionality.of(context) == TextDirection.rtl;
       return Semantics(
-        label: widget.label,
+        label: widget.semanticLabel,
         child: SizedBox(
           height: height,
           width: double.infinity,
@@ -138,7 +138,7 @@ class _MinimalLinearProgressIndicatorState
     final v = value.clamp(0.0, 1.0);
     final duration = context.minimalStill ? Duration.zero : MinimalMotion.base;
     return Semantics(
-      label: widget.label,
+      label: widget.semanticLabel,
       value: '${(v * 100).round()}%',
       // A capsule by role, in the scale's own family; the fill clips to it.
       child: ClipPath(

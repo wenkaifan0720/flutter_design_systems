@@ -34,7 +34,7 @@ class MinimalBadge extends StatelessWidget {
     this.child,
     this.max = 99,
     this.tone = MinimalTone.destructive,
-    this.label,
+    this.semanticLabel,
     this.style,
   });
 
@@ -53,7 +53,7 @@ class MinimalBadge extends StatelessWidget {
   final MinimalTone tone;
 
   /// What a screen reader hears ("3 unread"); null says the count.
-  final String? label;
+  final String? semanticLabel;
 
   /// This badge's style, over `components.badge`.
   final MinimalStyle? style;
@@ -118,7 +118,8 @@ class MinimalBadge extends StatelessWidget {
               ),
             ),
           );
-    final spoken = label ?? (n == null ? null : (n > max ? '$max+' : '$n'));
+    final spoken =
+        semanticLabel ?? (n == null ? null : (n > max ? '$max+' : '$n'));
     final badge = Semantics(
       label: spoken,
       child: ExcludeSemantics(child: mark),
@@ -174,7 +175,7 @@ class MinimalBadge extends StatelessWidget {
           defaultValue: MinimalTone.destructive,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
       );

@@ -166,7 +166,7 @@ class _Files extends StatelessWidget {
   Widget build(BuildContext context) => MinimalCard(
     padding: const EdgeInsets.all(MinimalSpacing.s4),
     child: MinimalTreeView<_Node>(
-      label: 'Files',
+      semanticLabel: 'Files',
       roots: _tree,
       childrenOf: (n) => n.children,
       labelOf: (n) => n.name,
@@ -199,7 +199,7 @@ Widget kitSpecimenTreeView() => Padding(
   child: MinimalCard(
     padding: const EdgeInsets.all(MinimalSpacing.s4),
     child: MinimalTreeView<_Node>(
-      label: 'Files',
+      semanticLabel: 'Files',
       roots: _tree,
       childrenOf: (n) => n.children,
       labelOf: (n) => n.name,

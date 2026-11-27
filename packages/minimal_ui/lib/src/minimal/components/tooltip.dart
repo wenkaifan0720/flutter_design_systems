@@ -31,7 +31,7 @@ import '../theme.dart';
 /// foreground, edge or side, shape, padding and textStyle.
 ///
 /// ```dart
-/// MinimalTooltip(message: 'Archive', child: MinimalIconButton(LucideIcons.archive, label: 'Archive', onPressed: archive))
+/// MinimalTooltip(message: 'Archive', child: MinimalIconButton(LucideIcons.archive, semanticLabel: 'Archive', onPressed: archive))
 /// ```
 class MinimalTooltip extends StatelessWidget {
   /// [message], shown by [child] after a moment under the pointer or a long

@@ -32,14 +32,14 @@ void main() {
             ]) ...[
               MinimalIconButton(
                 Icons.star_border,
-                label: 'Pin',
+                semanticLabel: 'Pin',
                 variant: variant,
                 selected: true,
                 onPressed: doNothing,
               ),
               MinimalIconButton(
                 Icons.star_border,
-                label: 'Pin',
+                semanticLabel: 'Pin',
                 variant: variant,
                 selected: false,
                 onPressed: doNothing,
@@ -47,7 +47,7 @@ void main() {
             ],
             const MinimalIconButton(
               Icons.search,
-              label: 'Search',
+              semanticLabel: 'Search',
               variant: MinimalIconButtonVariant.outline,
               onPressed: doNothing,
             ),

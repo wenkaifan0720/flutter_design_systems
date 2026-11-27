@@ -5,7 +5,6 @@ import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 import 'faces.dart';
 import 'support/display_host.dart';
@@ -271,7 +270,7 @@ void main() {
             'Evening',
             trailing: MinimalIconButton(
               Icons.add,
-              label: 'Add habit',
+              semanticLabel: 'Add habit',
               size: MinimalButtonSize.small,
               onPressed: () => adds += 1,
             ),

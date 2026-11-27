@@ -110,3 +110,47 @@ MinimalTextTheme v1 = MinimalTextTheme.from(any);
 void command(BuildContext context) =>
     MinimalCommand.show(context, actions: any, hintText: any);
 
+// minimal_ui 0.8.0: a label only a screen reader hears is a semanticLabel.
+void spokenLabels(BuildContext context) {
+  MinimalIconButton(any, semanticLabel: any);
+  MinimalToggleGroup(items: any, selected: any, semanticLabel: any);
+  MinimalCircularProgressIndicator(semanticLabel: any);
+  MinimalComposerAction(semanticLabel: any);
+  MinimalBadge(semanticLabel: any);
+  MinimalCarouselView(children: any, semanticLabel: any);
+  MinimalMenu(items: any, child: any, semanticLabel: any);
+  MinimalCheckbox(value: any, onChanged: any, semanticLabel: any);
+  MinimalCheckMark(value: any, semanticLabel: any);
+  MinimalPopover(anchor: any, content: any, semanticLabel: any);
+  MinimalRadio(selected: any, onPressed: any, semanticLabel: any);
+  MinimalRadioGroup(options: any, value: any, semanticLabel: any);
+  MinimalMenuBar(menus: any, semanticLabel: any);
+  MinimalLinearProgressIndicator(semanticLabel: any);
+  MinimalTreeView(roots: any, childrenOf: any, labelOf: any, semanticLabel: any);
+  MinimalScrollArea(child: any, semanticLabel: any);
+  MinimalResizable(first: any, second: any, semanticLabel: any);
+  MinimalMenu.button(any, items: any, semanticLabel: any);
+  MinimalMenu.popover<void>(context, anchor: any, builder: any, semanticLabel: any);
+  showMinimalMenu(context, anchor: any, items: any, semanticLabel: any);
+  MinimalRating(value: any, semanticLabel: any);
+  MinimalSegmentedButton(segments: any, value: any, onChanged: any, semanticLabel: any);
+}
+Object? s0(MinimalIconButton w) => w.semanticLabel;
+Object? s1(MinimalToggleGroup w) => w.semanticLabel;
+Object? s2(MinimalCircularProgressIndicator w) => w.semanticLabel;
+Object? s3(MinimalComposerAction w) => w.semanticLabel;
+Object? s4(MinimalBadge w) => w.semanticLabel;
+Object? s5(MinimalCarouselView w) => w.semanticLabel;
+Object? s6(MinimalMenu w) => w.semanticLabel;
+Object? s7(MinimalCheckbox w) => w.semanticLabel;
+Object? s8(MinimalCheckMark w) => w.semanticLabel;
+Object? s9(MinimalPopover w) => w.semanticLabel;
+Object? s10(MinimalRadio w) => w.semanticLabel;
+Object? s11(MinimalRadioGroup w) => w.semanticLabel;
+Object? s12(MinimalMenuBar w) => w.semanticLabel;
+Object? s13(MinimalLinearProgressIndicator w) => w.semanticLabel;
+Object? s14(MinimalTreeView w) => w.semanticLabel;
+Object? s15(MinimalScrollArea w) => w.semanticLabel;
+Object? s16(MinimalResizable w) => w.semanticLabel;
+Object? s17(MinimalRating w) => w.semanticLabel;
+Object? s18(MinimalSegmentedButton w) => w.semanticLabel;

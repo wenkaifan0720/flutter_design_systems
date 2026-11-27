@@ -416,13 +416,21 @@ BorderRadiusGeometry _foot(BorderRadiusGeometry radius) {
 /// keeps Tab inside it; as it closes the focus goes back to what opened it.
 /// The route is ui_core's ([RawModalDialogRoute]); Minimal paints it.
 ///
+/// [isAlert] raises a question that wants an answer (delete this? leave
+/// without saving?), as Flutter's `AlertDialog` is: a screen reader hears an
+/// alert, not a dialog, and a tap on the scrim leaves it standing, so a stray
+/// tap answers nothing; Escape and the dialog's own keys still answer.
+/// [barrierDismissible] overrides the scrim; null: it closes a dialog and
+/// leaves an alert.
+///
 /// ```dart
-/// final sure = await showMinimalDialog<bool>(context, builder: (context) => const MinimalDialog(title: 'Archive habit?', confirmLabel: 'Archive', cancelLabel: 'Keep')) ?? false;
+/// final sure = await showMinimalDialog<bool>(context, isAlert: true, builder: (context) => const MinimalDialog(title: 'Archive habit?', confirmLabel: 'Archive', cancelLabel: 'Keep')) ?? false;
 /// ```
 Future<T?> showMinimalDialog<T>(
   BuildContext context, {
   required WidgetBuilder builder,
-  bool barrierDismissible = true,
+  bool isAlert = false,
+  bool? barrierDismissible,
   bool useRootNavigator = true,
 }) {
   final t = context.minimalTheme;
@@ -432,6 +440,7 @@ Future<T?> showMinimalDialog<T>(
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
     RawModalDialogRoute<T>(
+      isAlert: isAlert,
       barrierColor: t.overlay,
       barrierDismissible: barrierDismissible,
       barrierLabel: MinimalLocalizations.of(context).dismiss,

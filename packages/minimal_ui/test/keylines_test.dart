@@ -16,7 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 
 String _kind(Widget w) => w.runtimeType.toString().split('<').first;
@@ -521,7 +521,7 @@ final List<KeylineScreen> keylineScreens = [
       await tester.tap(
         find
             .byWidgetPredicate(
-              (w) => w is MinimalIconButton && w.label == 'New habit',
+              (w) => w is MinimalIconButton && w.semanticLabel == 'New habit',
             )
             .first,
       );

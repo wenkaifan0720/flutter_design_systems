@@ -20,7 +20,7 @@ import 'pressable.dart';
 /// A null [onChanged] disables it, as Flutter's `Checkbox`: it dims and
 /// swallows taps. A tick that is a picture rather than a control (a row
 /// that is itself the control, a finished line's tick) is a
-/// [MinimalCheckMark]. Give a check that stands without words a [label].
+/// [MinimalCheckMark]. Give a check that stands without words a [semanticLabel].
 /// The hit area pads out to the tap floor.
 ///
 /// [style] dresses one check, `components.checkbox` every one, resolved
@@ -29,7 +29,7 @@ import 'pressable.dart';
 /// [size]). `t.rim` is its edge.
 ///
 /// ```dart
-/// MinimalCheckbox(value: done, label: 'Meditate', onChanged: (v) => setState(() => done = v))
+/// MinimalCheckbox(value: done, semanticLabel: 'Meditate', onChanged: (v) => setState(() => done = v))
 /// ```
 class MinimalCheckbox extends StatelessWidget {
   /// A checkbox showing [value].
@@ -38,7 +38,7 @@ class MinimalCheckbox extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.size = 16,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -54,7 +54,7 @@ class MinimalCheckbox extends StatelessWidget {
   final double size;
 
   /// What is being checked, announced (never printed).
-  final String? label;
+  final String? semanticLabel;
 
   /// This check's style, over `components.checkbox`.
   final MinimalStyle? style;
@@ -86,7 +86,7 @@ class MinimalCheckbox extends StatelessWidget {
           MinimalTapAlignment.maybeOf(context) ??
           AlignmentDirectional.centerStart,
       style: MinimalStyleOf(layers, const {}).press,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       checked: value,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -106,7 +106,7 @@ class MinimalCheckbox extends StatelessWidget {
       ..add(DiagnosticsProperty<bool>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
       ..add(DoubleProperty('size', size, defaultValue: 16))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
       )
@@ -125,7 +125,7 @@ class MinimalCheckbox extends StatelessWidget {
 /// itself the control (a picker's option, a bulk-select row) shows its
 /// state with one, and so does a finished line's tick. It renders at full
 /// ink, takes no press and no focus, and lets taps through to what holds
-/// it; [label] announces it. It wears `components.checkbox` as
+/// it; [semanticLabel] announces it. It wears `components.checkbox` as
 /// [MinimalCheckbox] does, so the two read as one part.
 ///
 /// ```dart
@@ -137,7 +137,7 @@ class MinimalCheckMark extends StatelessWidget {
     super.key,
     required this.value,
     this.size = 16,
-    this.label,
+    this.semanticLabel,
     this.style,
   });
 
@@ -148,7 +148,7 @@ class MinimalCheckMark extends StatelessWidget {
   final double size;
 
   /// What it marks, announced (never printed).
-  final String? label;
+  final String? semanticLabel;
 
   /// This mark's style, over `components.checkbox`.
   final MinimalStyle? style;
@@ -158,7 +158,7 @@ class MinimalCheckMark extends StatelessWidget {
     final t = context.minimalTheme;
     return Semantics(
       checked: value,
-      label: label,
+      label: semanticLabel,
       child: _CheckFace(
         value: value,
         size: size,
@@ -174,7 +174,7 @@ class MinimalCheckMark extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<bool>('value', value))
       ..add(DoubleProperty('size', size, defaultValue: 16))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
       );

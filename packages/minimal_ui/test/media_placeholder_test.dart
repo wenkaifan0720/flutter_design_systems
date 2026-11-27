@@ -48,7 +48,9 @@ void main() {
     testWidgets('placeholders are flat quiet fills, no gradient and no hue', (
       tester,
     ) async {
-      for (final id in MinimalThemeData.presets) {
+      for (final id in [
+        for (final palette in MinimalThemeData.palettes) palette.id,
+      ]) {
         for (final b in Brightness.values) {
           final t = MinimalThemeData.preset(id, b);
           await tester.pumpWidget(

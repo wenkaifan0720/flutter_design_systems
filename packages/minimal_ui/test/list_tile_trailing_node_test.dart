@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 void main() {
@@ -33,7 +32,7 @@ void main() {
                 onTap: () => opened++,
                 trailing: MinimalMenu.button(
                   LucideIcons.ellipsis,
-                  label: 'Task actions',
+                  semanticLabel: 'Task actions',
                   items: [MinimalMenuItem('Delete', onPressed: () {})],
                 ),
               ),

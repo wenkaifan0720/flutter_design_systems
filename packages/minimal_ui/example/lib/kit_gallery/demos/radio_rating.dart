@@ -16,7 +16,7 @@ Widget kitRadioRatingDemo(Brightness brightness) => kitScreen(
     kitSection(
       'Read-only',
       children: [
-        const MinimalRating(value: 4.5, label: 'Average rating'),
+        const MinimalRating(value: 4.5, semanticLabel: 'Average rating'),
         kitNote('A mark shows halves; a control sets whole stars.'),
       ],
     ),
@@ -33,7 +33,7 @@ class _LivePlanState extends State<_LivePlan> {
 
   @override
   Widget build(BuildContext context) => MinimalRadioGroup<String>(
-    label: 'Plan',
+    semanticLabel: 'Plan',
     value: _plan,
     onChanged: (v) => setState(() => _plan = v),
     options: const [
@@ -72,7 +72,7 @@ class _LiveSpeedState extends State<_LiveSpeed> {
 
   @override
   Widget build(BuildContext context) => MinimalRadioGroup<String>(
-    label: 'Delivery',
+    semanticLabel: 'Delivery',
     direction: Axis.horizontal,
     value: _speed,
     onChanged: (v) => setState(() => _speed = v),
@@ -94,7 +94,7 @@ class _LiveRatingState extends State<_LiveRating> {
   @override
   Widget build(BuildContext context) => MinimalRating(
     value: _stars.toDouble(),
-    label: 'Your rating',
+    semanticLabel: 'Your rating',
     onChanged: (v) => setState(() => _stars = v),
   );
 }
@@ -103,7 +103,7 @@ class _LiveRatingState extends State<_LiveRating> {
 
 /// Three plans, Pro chosen.
 Widget kitSpecimenRadioGroupPlans() => MinimalRadioGroup<String>(
-  label: 'Plan',
+  semanticLabel: 'Plan',
   value: 'pro',
   onChanged: (_) {},
   options: const [
@@ -127,4 +127,4 @@ Widget kitSpecimenRadioGroupPlans() => MinimalRadioGroup<String>(
 
 /// Four stars of five, as a control.
 Widget kitSpecimenRatingFour() =>
-    MinimalRating(value: 4, label: 'Your rating', onChanged: (_) {});
+    MinimalRating(value: 4, semanticLabel: 'Your rating', onChanged: (_) {});

@@ -85,7 +85,7 @@ void main() {
                     MinimalButtonSegment('Sun', 'Sun'),
                   ],
                   value: 'Mon',
-                  label: 'Week starts on',
+                  semanticLabel: 'Week starts on',
                   small: true,
                   onChanged: (_) {},
                 ),

@@ -82,18 +82,24 @@ extension MinimalFieldType on MinimalThemeData {
 /// A focused field's edge: the accent over the field's rim, reaching
 /// [MinimalFieldMetrics.focusEdge] in from [shape]'s outline and never past
 /// it. However focus came (a tap, a click, Tab), the field shows it the same
-/// way, with no ring outside, and an invalid field takes the accent while it
-/// has focus. Always a border, transparent when not [shown]: a Container
+/// way, with no ring outside. An [invalid] field's edge takes the danger tone
+/// while it has focus, as Material's focused error border does, so the error
+/// still reads with the caret in the field. Always a border, transparent when not [shown]: a Container
 /// that gains or loses a foreground decoration re-parents its child, and
 /// the text field would be rebuilt (and lose its input) on the first focus.
 Decoration minimalFocusEdge(
   MinimalThemeData t, {
   required bool shown,
+  bool invalid = false,
   OutlinedBorder? shape,
 }) => minimalFrame(
   shape ?? t.shapes.small,
   side: BorderSide(
-    color: shown ? t.ring : const Color(0x00000000),
+    color: !shown
+        ? const Color(0x00000000)
+        : invalid
+        ? t.destructive
+        : t.ring,
     width: MinimalFieldMetrics.focusEdge,
   ),
 );

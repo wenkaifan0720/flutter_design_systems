@@ -318,7 +318,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
         : _quiet(
             MinimalIconButton(
               LucideIcons.paperclip,
-              label: MinimalLocalizations.of(context).addAttachment,
+              semanticLabel: MinimalLocalizations.of(context).addAttachment,
               // The assistant's toolbar is a row of small controls; the
               // messages box seats standard ones.
               size: assistant
@@ -358,7 +358,8 @@ class _MinimalComposerState extends State<MinimalComposer> {
               (widget.busy
                   ? MinimalComposerAction(
                       icon: MinimalComposerAction.stop,
-                      label: MinimalLocalizations.of(context).stopResponse,
+                      semanticLabel: MinimalLocalizations.of(context)
+                          .stopResponse,
                       variant: widget.variant,
                       onPressed: _wire(widget.onStop),
                     )
@@ -474,7 +475,8 @@ class _MinimalComposerState extends State<MinimalComposer> {
                     _quiet(
                       MinimalIconButton(
                         LucideIcons.mic,
-                        label: MinimalLocalizations.of(context).dictateMessage,
+                        semanticLabel: MinimalLocalizations.of(context)
+                            .dictateMessage,
                         size: MinimalButtonSize.small,
                         variant: MinimalIconButtonVariant.ghost,
                         onPressed: _wire(widget.onDictate),
@@ -558,7 +560,7 @@ class MinimalComposerAction extends StatelessWidget {
     super.key,
     this.onPressed,
     this.icon = LucideIcons.arrowUp,
-    this.label,
+    this.semanticLabel,
     this.variant = MinimalComposerVariant.messages,
     this.focusNode,
     this.autofocus = false,
@@ -571,7 +573,7 @@ class MinimalComposerAction extends StatelessWidget {
   final IconData icon;
 
   /// What a screen reader announces.
-  final String? label;
+  final String? semanticLabel;
 
   /// The composer register it matches.
   final MinimalComposerVariant variant;
@@ -596,7 +598,7 @@ class MinimalComposerAction extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       icon: icon,
-      label: label ?? MinimalLocalizations.of(context).sendMessage,
+      label: semanticLabel ?? MinimalLocalizations.of(context).sendMessage,
       onPressed: onPressed,
       fill: t.primary,
       glyph: t.primaryForeground,
@@ -616,7 +618,7 @@ class MinimalComposerAction extends StatelessWidget {
           defaultValue: LucideIcons.arrowUp,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         EnumProperty<MinimalComposerVariant>(
           'variant',
@@ -751,7 +753,7 @@ class _AttachmentChip extends StatelessWidget {
             excluding: quiet,
             child: MinimalIconButton(
               LucideIcons.x,
-              label: MinimalLocalizations.of(context).removeAttachment,
+              semanticLabel: MinimalLocalizations.of(context).removeAttachment,
               size: MinimalButtonSize.small,
               variant: MinimalIconButtonVariant.ghost,
               onPressed: onRemove,

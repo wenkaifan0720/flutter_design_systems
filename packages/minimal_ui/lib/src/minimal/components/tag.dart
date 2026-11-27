@@ -123,7 +123,8 @@ class MinimalTag extends StatelessWidget {
   /// ([tone] is then ignored).
   final MinimalTone? dot;
 
-  /// A 12 px glyph before the label, in the tone's ink.
+  /// A 12 px glyph before the label, in the tone's ink; it grows with the
+  /// reader's text, as the label does.
   final IconData? icon;
 
   /// The tag's height at the default text scale.
@@ -137,19 +138,24 @@ class MinimalTag extends StatelessWidget {
     final colors = t.tone(mark == null ? tone : MinimalTone.neutral);
     final ink = mark == null ? colors.foreground : t.foreground;
     final glyph = icon;
+    // The glyph grows with the reader's text, as the words do; the dot is a
+    // mark of colour and keeps its 6 px.
+    final scale = MediaQuery.textScalerOf(context);
     return Container(
       constraints: const BoxConstraints(minHeight: height),
       padding: const EdgeInsets.symmetric(
         horizontal: _padX,
         vertical: MinimalSpacing.s2,
       ),
-      decoration: minimalFrame(
-        t.shapes.mark,
-        fill: colors.background,
-        side: neutral
-            ? BorderSide(color: t.border, width: t.hairline)
-            : BorderSide.none,
-      ),
+      decoration: minimalFrame(t.shapes.mark, fill: colors.background),
+      // The neutral tag's hairline, inside its edge, so it stands as tall
+      // and as tight as a toned tag.
+      foregroundDecoration: neutral
+          ? minimalFrame(
+              t.shapes.mark,
+              side: BorderSide(color: t.border, width: t.hairline),
+            )
+          : null,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -164,7 +170,7 @@ class MinimalTag extends StatelessWidget {
             ),
             const MinimalGap(MinimalSpacing.s4 + 1),
           ] else if (glyph != null) ...[
-            MinimalIcon(glyph, size: _glyph, color: ink),
+            MinimalIcon(glyph, size: scale.scale(_glyph), color: ink),
             const MinimalGap(MinimalSpacing.s4),
           ],
           Flexible(

@@ -416,7 +416,8 @@ class MinimalBottomSheet extends StatelessWidget {
 
   /// Whether a sheet page raised in a window [width] wide stands as a
   /// centred card rather than rising from the bottom edge: from
-  /// [MinimalLayout.expanded], where the shell stands its tabs in a rail.
+  /// [MinimalLayout.expanded], where the shell stands its places in a
+  /// sidebar.
   static bool centresAt(double width) => width >= MinimalLayout.expanded;
 
   /// The route a declared sheet page rides in a wide window: [pageRoute]'s
@@ -486,7 +487,7 @@ class MinimalBottomSheet extends StatelessWidget {
           close: closable
               ? MinimalIconButton(
                   LucideIcons.x,
-                  label: MinimalLocalizations.of(context).close,
+                  semanticLabel: MinimalLocalizations.of(context).close,
                   variant: MinimalIconButtonVariant.ghost,
                   onPressed: () => Navigator.of(context).maybePop(),
                 )

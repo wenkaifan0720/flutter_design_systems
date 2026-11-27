@@ -27,6 +27,7 @@ class MinimalRadioOption<T> {
     required this.value,
     required this.label,
     this.subtitle,
+    this.secondary,
     this.enabled = true,
   });
 
@@ -38,6 +39,11 @@ class MinimalRadioOption<T> {
 
   /// A line under the label.
   final String? subtitle;
+
+  /// What shows after the label, as `RadioListTile.secondary` does: a
+  /// palette's swatches, say. It only shows; a screen reader hears the
+  /// label.
+  final Widget? secondary;
 
   /// False greys this option alone.
   final bool enabled;
@@ -59,7 +65,7 @@ class MinimalRadioOption<T> {
 /// dot), edge or side, overlay and shape.
 ///
 /// ```dart
-/// MinimalRadio(selected: plan == 'pro', label: 'Pro', onPressed: () => setPlan('pro'))
+/// MinimalRadio(selected: plan == 'pro', semanticLabel: 'Pro', onPressed: () => setPlan('pro'))
 /// ```
 class MinimalRadio extends StatelessWidget {
   /// A radio showing whether it is [selected].
@@ -67,7 +73,7 @@ class MinimalRadio extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.size = 16,
     this.style,
     this.focusNode,
@@ -89,7 +95,7 @@ class MinimalRadio extends StatelessWidget {
     this.size = 16,
     this.style,
   }) : onPressed = null,
-       label = null,
+       semanticLabel = null,
        focusNode = null,
        autofocus = false,
        _mark = enabled;
@@ -101,7 +107,7 @@ class MinimalRadio extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// What a screen reader hears for it.
-  final String? label;
+  final String? semanticLabel;
 
   /// The circle's diameter.
   final double size;
@@ -174,7 +180,7 @@ class MinimalRadio extends StatelessWidget {
           AlignmentDirectional.centerStart,
 
       style: MinimalStyleOf(layers, const {}).press,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       checked: selected,
       inMutuallyExclusiveGroup: true,
       focusNode: focusNode,
@@ -191,7 +197,7 @@ class MinimalRadio extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<bool>('selected', selected))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('size', size, defaultValue: 16))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
@@ -232,8 +238,9 @@ class MinimalRadioGroup<T> extends StatelessWidget {
     required this.value,
     this.onChanged,
     this.direction = Axis.vertical,
-    this.label,
+    this.semanticLabel,
     this.style,
+    this.focusNode,
   });
 
   /// The options, top to bottom.
@@ -249,14 +256,21 @@ class MinimalRadioGroup<T> extends StatelessWidget {
   final Axis direction;
 
   /// The group's name, for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   /// Every radio's style, over `components.radio`.
   final MinimalStyle? style;
 
+  /// The focus of the chosen option, or of the first enabled one while none
+  /// is chosen, for a caller that moves focus to the group: a `RawFormField`
+  /// round it, which a failed submit focuses; null keeps the options' own.
+  final FocusNode? focusNode;
+
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
+    final chosen = options.indexWhere((o) => o.value == value && o.enabled);
+    final focused = chosen >= 0 ? chosen : options.indexWhere((o) => o.enabled);
     // Options that carry a description run taller than an option's least
     // height; space between them keeps each description with its own
     // label rather than halfway to the next.
@@ -282,7 +296,7 @@ class MinimalRadioGroup<T> extends StatelessWidget {
           );
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       child: RadioGroup<T>(
         groupValue: value,
         // RadioGroup takes no null: a group that takes no choice gives a
@@ -294,9 +308,10 @@ class MinimalRadioGroup<T> extends StatelessWidget {
         },
         child: RadioGroupKeyboardFix<T>(
           child: layout([
-            for (final option in options)
+            for (final (i, option) in options.indexed)
               _Option<T>(
                 key: ValueKey<T>(option.value),
+                focusNode: i == focused ? focusNode : null,
                 option: option,
                 selected: option.value == value,
                 offered: onChanged != null,
@@ -319,9 +334,16 @@ class MinimalRadioGroup<T> extends StatelessWidget {
       ..add(
         EnumProperty<Axis>('direction', direction, defaultValue: Axis.vertical),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -329,6 +351,7 @@ class MinimalRadioGroup<T> extends StatelessWidget {
 class _Option<T> extends StatefulWidget {
   const _Option({
     super.key,
+    this.focusNode,
     required this.option,
     required this.selected,
     required this.offered,
@@ -336,6 +359,7 @@ class _Option<T> extends StatefulWidget {
     required this.style,
   });
 
+  final FocusNode? focusNode;
   final MinimalRadioOption<T> option;
   final bool selected;
   final bool offered;
@@ -412,6 +436,17 @@ class _OptionState<T> extends State<_Option<T>> {
                 ],
               ),
             ),
+            if (option.secondary case final secondary?) ...[
+              const MinimalGap(MinimalSpacing.s8),
+              // Centred on the label's first line, as the circle is.
+              SizedBox(
+                height: (_Option._markDrop + 8) * 2,
+                child: Center(
+                  widthFactor: 1,
+                  child: ExcludeSemantics(child: secondary),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -441,7 +476,7 @@ class _OptionState<T> extends State<_Option<T>> {
               value: option.value,
               mouseCursor: WidgetStateMouseCursor.clickable,
               toggleable: false,
-              focusNode: _node,
+              focusNode: widget.focusNode ?? _node,
               autofocus: false,
               groupRegistry: RadioGroup.maybeOf<T>(context),
               enabled: enabled,

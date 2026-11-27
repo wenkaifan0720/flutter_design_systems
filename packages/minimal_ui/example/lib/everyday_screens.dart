@@ -2,7 +2,7 @@
 // round (right to left, the gallery speaks Arabic).
 import 'package:flutter/widgets.dart';
 
-import 'main.dart';
+import 'gallery.dart';
 
 /// Every everyday screen: its id (`?app=…&screen=<id>` opens it) and the app opened at it.
 final everydayScreens =

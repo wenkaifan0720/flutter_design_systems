@@ -7,7 +7,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 Widget _page(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
@@ -65,7 +64,7 @@ void main() {
     'a busy button': MinimalButton('Saving', onPressed: () {}, busy: true),
     'a spinner': const MinimalCircularProgressIndicator(),
     'a progress bar of no known total': const MinimalLinearProgressIndicator(
-      label: 'Uploading',
+      semanticLabel: 'Uploading',
     ),
     'a skeleton': const MinimalSkeleton(width: 120),
     'the loading state': const MinimalLoadingState(),
@@ -111,13 +110,20 @@ void main() {
     );
     _ios(tester, true);
     await tester.pump();
-    await tester.tap(find.byType(MinimalSwitch));
+    // The track: the switch keeps its size at its line's start.
+    final track = find
+        .descendant(
+          of: find.byType(MinimalSwitch),
+          matching: find.byType(MinimalPressable),
+        )
+        .first;
+    await tester.tap(track);
     await tester.pump();
     expect(on, isTrue);
     expect(tester.binding.hasScheduledFrame, isFalse, reason: 'it eased');
     _ios(tester, false);
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(MinimalSwitch));
+    await tester.tap(track);
     await tester.pump();
     expect(on, isFalse);
     expect(tester.binding.hasScheduledFrame, isTrue, reason: 'it did not ease');

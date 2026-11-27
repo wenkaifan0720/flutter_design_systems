@@ -76,7 +76,7 @@ class _Slides extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MinimalCarouselView(
-    label: label,
+    semanticLabel: label,
     height: _height(MediaQuery.textScalerOf(context).scale(10) / 10),
     viewportFraction: viewportFraction,
     loop: loop,

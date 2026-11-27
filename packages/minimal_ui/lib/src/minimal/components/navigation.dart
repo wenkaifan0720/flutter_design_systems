@@ -1,19 +1,17 @@
 /// Navigation for wide windows: a rail of glyphs, and a sidebar of rows.
 library;
 
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
-import '../internal/cap_label.dart';
 import '../internal/controls.dart';
-import '../internal/face.dart';
+import '../internal/nav_faces.dart';
 import '../theme.dart';
 import 'nav_bar.dart';
 import 'pressable.dart';
+import 'nav_item.dart';
 
 /// The arrow keys walk a column of destinations.
 Widget _walk(Widget child) => Shortcuts(
@@ -75,28 +73,7 @@ class MinimalNavigationRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    const fontSize = MinimalChromeMetrics.tabLabel;
-    final scaler = MediaQuery.textScalerOf(context);
-    var cellWidth = cell;
-    if (scaler.scale(fontSize) > fontSize) {
-      final caption = t.caption.copyWith(fontSize: fontSize).medium;
-      for (final item in destinations) {
-        for (final word
-            in item.label?.split(RegExp(r'\s+')) ?? const <String>[]) {
-          final wordWidth = TextPainter.computeWidth(
-            text: TextSpan(text: word, style: caption),
-            textScaler: scaler,
-            textDirection: Directionality.of(context),
-            maxLines: 1,
-          ).ceilToDouble();
-          if (wordWidth > cellWidth) cellWidth = wordWidth;
-        }
-      }
-      cellWidth = cellWidth.clamp(
-        cell,
-        math.max(cell, MediaQuery.sizeOf(context).width / 2),
-      );
-    }
+    final cellWidth = minimalRailCellWidth(context, destinations);
     final shape = t.shapes.small;
     final select = onDestinationSelected;
     final rtl = Directionality.of(context) == TextDirection.rtl;
@@ -188,51 +165,14 @@ class _RailCell extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.minimalTheme;
-    final inkTo = selected ? t.foreground : t.mutedForeground;
-    final label = item.label;
-    final caption = t.caption.copyWith(fontSize: MinimalChromeMetrics.tabLabel);
-    return MinimalPressable(
-      onPressed: onPressed,
-      selected: selected,
-      shape: shape,
-      semanticLabel: label ?? item.semanticLabel,
-      // The current place's ink fades in, the last one's out.
-      child: MinimalFace(
-        width: width,
-        constraints: const BoxConstraints(
-          minHeight: MinimalNavigationRail.cell,
-        ),
-        padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s8),
-        ink: inkTo,
-        builder: (context, lerped) {
-          final ink = lerped ?? inkTo;
-          return ExcludeSemantics(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                MinimalIcon(
-                  item.icon,
-                  size: MinimalChromeMetrics.tabIcon,
-                  color: ink,
-                ),
-                if (label != null) ...[
-                  const MinimalGap(MinimalChromeMetrics.tabLabelGap),
-                  Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: (selected ? caption.medium : caption).c(ink),
-                  ),
-                ],
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => MinimalPressable(
+    onPressed: onPressed,
+    selected: selected,
+    shape: shape,
+    semanticLabel: item.label ?? item.semanticLabel,
+    // The current place's ink fades in, the last one's out.
+    child: MinimalRailFace(item: item, selected: selected, width: width),
+  );
 }
 
 /// A titled run of a [MinimalNavigationDrawer]'s destinations ("Workspace",
@@ -404,43 +344,14 @@ class _DrawerRow extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.minimalTheme;
-    final shape = t.shapes.small;
-    final inkTo = selected ? t.foreground : t.mutedForeground;
-    final label = item.label ?? item.semanticLabel ?? '';
-    return Padding(
-      padding: const EdgeInsets.only(bottom: MinimalSpacing.s2),
-      child: MinimalPressable(
-        onPressed: onPressed,
-        selected: selected,
-        shape: shape,
-        focusInside: true,
-        child: MinimalFace(
-          height: t.density.height(MinimalChromeMetrics.control),
-          padding: const EdgeInsets.symmetric(horizontal: MinimalSpacing.s8),
-          ink: inkTo,
-          builder: (context, lerped) {
-            final ink = lerped ?? inkTo;
-            return Row(
-              children: [
-                MinimalIcon(item.icon, size: MinimalIconSize.i16, color: ink),
-                const MinimalGap(MinimalSpacing.s8),
-                Expanded(
-                  child: minimalCapLabel(
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: (selected ? t.body.medium : t.body).c(ink),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: MinimalSpacing.s2),
+    child: MinimalPressable(
+      onPressed: onPressed,
+      selected: selected,
+      shape: context.minimalTheme.shapes.small,
+      focusInside: true,
+      child: MinimalSidebarFace(item: item, selected: selected),
+    ),
+  );
 }

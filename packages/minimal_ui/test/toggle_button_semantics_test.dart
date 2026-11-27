@@ -52,7 +52,7 @@ void main() {
         _host(
           MinimalIconButton(
             LucideIcons.pin,
-            label: 'Pin',
+            semanticLabel: 'Pin',
             selected: on,
             onPressed: () {},
           ),
@@ -69,7 +69,11 @@ void main() {
       'state', (tester) async {
     await tester.pumpWidget(
       _host(
-        MinimalIconButton(LucideIcons.info, label: 'Help', onPressed: () {}),
+        MinimalIconButton(
+          LucideIcons.info,
+          semanticLabel: 'Help',
+          onPressed: () {},
+        ),
       ),
     );
     expect(

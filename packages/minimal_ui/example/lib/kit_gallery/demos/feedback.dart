@@ -16,7 +16,7 @@ Widget kitFeedbackDemo(Brightness brightness) => kitScreen(
       'Circular progress',
       children: [
         kitRow(const [
-          MinimalCircularProgressIndicator(label: 'Syncing'),
+          MinimalCircularProgressIndicator(semanticLabel: 'Syncing'),
           MinimalCircularProgressIndicator(value: 0.35, size: 24),
           MinimalCircularProgressIndicator(
             value: 1,
@@ -73,7 +73,7 @@ Widget kitSpecimenCircularProgress() => Builder(
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const MinimalCircularProgressIndicator(label: 'Syncing'),
+        const MinimalCircularProgressIndicator(semanticLabel: 'Syncing'),
         const MinimalGap(MinimalSpacing.s8),
         Text('Syncing…', style: t.bodySmall.c(t.mutedForeground)),
       ],

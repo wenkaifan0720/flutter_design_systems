@@ -68,7 +68,9 @@ enum MinimalTaskStatus {
 /// the cross are cut out of their disc, so whatever row the glyph sits on
 /// (a highlighted one, a table header) shows through them.
 ///
-/// With [onPressed] the glyph is the row's quick status control (tap to mark
+/// A screen reader hears the state's name, in the app's words
+/// ([MinimalTaskStatus.labelIn]); [semanticLabel] says something else. With
+/// [onPressed] the glyph is the row's quick status control (tap to mark
 /// done): a checkbox that announces its label and whether it is
 /// [checked], and pads its hit area to the tap floor.
 ///
@@ -97,7 +99,8 @@ class MinimalStatusIcon extends StatelessWidget {
   /// Makes the glyph a control; null leaves it a mark.
   final VoidCallback? onPressed;
 
-  /// What a screen reader announces; null takes [MinimalTaskStatus.label]. With
+  /// What a screen reader announces; null takes the state's name in the
+  /// app's words ([MinimalTaskStatus.labelIn]). With
   /// [onPressed] the checked state is announced after it, so a label names the
   /// row (`Meditate`), not its state.
   final String? semanticLabel;
@@ -130,8 +133,9 @@ class MinimalStatusIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final label = semanticLabel ?? status.labelIn(context);
+    // A mark beside words grows with the reader's text, as they do.
     final glyph = SizedBox.square(
-      dimension: size,
+      dimension: MediaQuery.textScalerOf(context).scale(size),
       child: CustomPaint(
         painter: _StatusPainter(
           status,
@@ -362,7 +366,8 @@ class MinimalPriorityIcon extends StatelessWidget {
     // faint dashes whose ink it cannot find.
     final glyph = RawKeylineFace(
       child: SizedBox.square(
-        dimension: size,
+        // A mark beside words grows with the reader's text, as they do.
+        dimension: MediaQuery.textScalerOf(context).scale(size),
         child: CustomPaint(
           painter: _PriorityPainter(
             priority,

@@ -276,7 +276,7 @@ class _FiltersState extends State<_Filters> {
               children: [
                 MinimalCheckbox(
                   value: _on.contains(label),
-                  label: label,
+                  semanticLabel: label,
                   onChanged: (v) =>
                       setState(() => v ? _on.add(label) : _on.remove(label)),
                 ),

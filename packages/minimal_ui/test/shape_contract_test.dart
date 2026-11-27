@@ -10,6 +10,9 @@
 // - in the state matrix every pressed, disabled and error cell differs from idle pixel for pixel at idle's size (an
 //   error may add its message below), a part with a chosen face pressed on its chosen item as well as off;
 // - labels in a row of controls share one centre line.
+// The package's export adds the host library's import for the host names
+// this file lists as strings below; nothing here uses it.
+// ignore_for_file: unused_import
 import 'dart:async';
 
 import 'dart:io';
@@ -169,7 +172,7 @@ final Map<String, _Framed> _framed = {
   'MinimalIconButton': _f(
     () => const MinimalIconButton(
       LucideIcons.x,
-      label: 'Close',
+      semanticLabel: 'Close',
       onPressed: _tap,
       variant: MinimalIconButtonVariant.outline,
     ),
@@ -203,7 +206,11 @@ final Map<String, _Framed> _framed = {
   ),
   'MinimalCheckMark': _f(() => const MinimalCheckMark(value: true), _mark),
   'MinimalRadio': _f(
-    () => const MinimalRadio(selected: true, onPressed: _tap, label: 'Pro'),
+    () => const MinimalRadio(
+      selected: true,
+      onPressed: _tap,
+      semanticLabel: 'Pro',
+    ),
     _round,
     highlight: true,
   ),
@@ -236,7 +243,7 @@ final Map<String, _Framed> _framed = {
         MinimalButtonSegment(1, 'Week'),
       ],
       value: 0,
-      label: 'Range',
+      semanticLabel: 'Range',
       onChanged: (_) {},
     ),
     _small,
@@ -326,7 +333,7 @@ final Map<String, _Framed> _framed = {
   // The parts painted on ui_core's behaviours.
   'MinimalToggleGroup': _f(
     () => MinimalToggleGroup<String>(
-      label: 'View',
+      semanticLabel: 'View',
       selected: const {'list'},
       onSelectionChanged: (_) {},
       items: const [
@@ -448,6 +455,10 @@ const Map<String, String> _frameless = {
   'MinimalNavigationBar': 'a full-bleed bar; its create square is a button',
   'MinimalNavigationRail': 'full-bleed; its press wash is shapes.small',
   'MinimalNavigationDrawer': 'full-bleed; its press wash is shapes.small',
+  'MinimalAppShell':
+      'full-bleed chrome: the bar, rail and sidebar faces; their press wash is '
+      'shapes.small',
+  'MinimalTextFormField': 'a MinimalTextField in a form, which draws the frame',
   'MinimalTabBar': 'an underline indicator; its focus ring is shapes.mark',
   'MinimalBreadcrumb': 'words; each crumb is a pressable on shapes.mark',
   'MinimalLink': 'words; its pressable is shapes.mark',
@@ -760,7 +771,10 @@ void main() {
           _host(
             const SizedBox(
               width: 200,
-              child: MinimalLinearProgressIndicator(value: 0.4, label: 'Up'),
+              child: MinimalLinearProgressIndicator(
+                value: 0.4,
+                semanticLabel: 'Up',
+              ),
             ),
             theme,
           ),
@@ -858,7 +872,7 @@ void main() {
                 message: 'Archive',
                 child: MinimalIconButton(
                   LucideIcons.archive,
-                  label: 'Archive',
+                  semanticLabel: 'Archive',
                   onPressed: _tap,
                 ),
               );
@@ -1009,7 +1023,7 @@ void main() {
         'MinimalIconButton ${v.name}': _stated(
           ({enabled = true, error}) => MinimalIconButton(
             LucideIcons.x,
-            label: 'Close',
+            semanticLabel: 'Close',
             variant: v,
             onPressed: enabled ? _tap : null,
           ),
@@ -1025,14 +1039,14 @@ void main() {
       'MinimalCheckbox': _stated(
         ({enabled = true, error}) => MinimalCheckbox(
           value: false,
-          label: 'Agree',
+          semanticLabel: 'Agree',
           onChanged: enabled ? (_) {} : null,
         ),
       ),
       'MinimalRadio': _stated(
         ({enabled = true, error}) => MinimalRadio(
           selected: false,
-          label: 'Pro',
+          semanticLabel: 'Pro',
           onPressed: enabled ? _tap : null,
         ),
       ),
@@ -1052,7 +1066,7 @@ void main() {
               MinimalButtonSegment(2, 'Mo'),
             ],
             value: 0,
-            label: 'Range',
+            semanticLabel: 'Range',
             onChanged: enabled ? (_) {} : null,
           ),
         ),
@@ -1127,7 +1141,7 @@ void main() {
       'MinimalRating': _stated(
         ({enabled = true, error}) => MinimalRating(
           value: 2,
-          label: 'Rating',
+          semanticLabel: 'Rating',
           onChanged: enabled ? (_) {} : null,
         ),
         // With no onChanged a rating is a score shown, not a control
@@ -1150,7 +1164,7 @@ void main() {
       ),
       'MinimalToggleGroup': _stated(
         ({enabled = true, error}) => MinimalToggleGroup<String>(
-          label: 'Text style',
+          semanticLabel: 'Text style',
           multiSelectionEnabled: true,
           emptySelectionAllowed: true,
           selected: const {},
@@ -1168,7 +1182,7 @@ void main() {
       // same as idle). Each of these presses the chosen item itself.
       'MinimalToggleGroup on': _stated(
         ({enabled = true, error}) => MinimalToggleGroup<String>(
-          label: 'Text style',
+          semanticLabel: 'Text style',
           multiSelectionEnabled: true,
           emptySelectionAllowed: true,
           selected: const {'b'},
@@ -1204,7 +1218,7 @@ void main() {
               MinimalButtonSegment(2, 'Mo'),
             ],
             value: 0,
-            label: 'Range',
+            semanticLabel: 'Range',
             onChanged: enabled ? (_) {} : null,
           ),
         ),
@@ -1223,14 +1237,14 @@ void main() {
       'MinimalCheckbox on': _stated(
         ({enabled = true, error}) => MinimalCheckbox(
           value: true,
-          label: 'Agree',
+          semanticLabel: 'Agree',
           onChanged: enabled ? (_) {} : null,
         ),
       ),
       'MinimalRadio on': _stated(
         ({enabled = true, error}) => MinimalRadio(
           selected: true,
-          label: 'Pro',
+          semanticLabel: 'Pro',
           onPressed: enabled ? _tap : null,
         ),
       ),

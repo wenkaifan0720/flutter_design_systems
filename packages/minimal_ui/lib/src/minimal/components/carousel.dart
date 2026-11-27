@@ -44,7 +44,7 @@ class MinimalCarouselView extends StatelessWidget {
     this.autoplay,
     this.initialPage = 0,
     this.onPageChanged,
-    this.label,
+    this.semanticLabel,
     this.showControls = true,
     this.focusNode,
     this.autofocus = false,
@@ -78,7 +78,7 @@ class MinimalCarouselView extends StatelessWidget {
   final ValueChanged<int>? onPageChanged;
 
   /// What a screen reader calls it.
-  final String? label;
+  final String? semanticLabel;
 
   /// Whether the arrows, dots and pause stand under the slides.
   final bool showControls;
@@ -98,7 +98,7 @@ class MinimalCarouselView extends StatelessWidget {
       onPageChanged: onPageChanged,
       focusNode: focusNode,
       autofocus: autofocus,
-      semanticLabel: label ?? words.carousel,
+      semanticLabel: semanticLabel ?? words.carousel,
       slideLabel: words.slideOf,
       duration: context.minimalStill ? Duration.zero : MinimalMotion.slow,
       itemBuilder: (context, i) => Padding(
@@ -137,7 +137,7 @@ class MinimalCarouselView extends StatelessWidget {
                     alignment: AlignmentDirectional.centerStart,
                     child: MinimalIconButton(
                       rtl ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
-                      label: words.previousSlide,
+                      semanticLabel: words.previousSlide,
                       variant: MinimalIconButtonVariant.outline,
                       size: MinimalButtonSize.small,
                       onPressed: c.previous,
@@ -163,7 +163,7 @@ class MinimalCarouselView extends StatelessWidget {
                         if (c.togglePlay != null) ...[
                           MinimalIconButton(
                             c.playing ? LucideIcons.pause : LucideIcons.play,
-                            label: c.playing ? words.pause : words.play,
+                            semanticLabel: c.playing ? words.pause : words.play,
                             // One row of controls, one register: the
                             // arrows'.
                             variant: MinimalIconButtonVariant.outline,
@@ -176,7 +176,7 @@ class MinimalCarouselView extends StatelessWidget {
                           rtl
                               ? LucideIcons.chevronLeft
                               : LucideIcons.chevronRight,
-                          label: words.nextSlide,
+                          semanticLabel: words.nextSlide,
                           variant: MinimalIconButtonVariant.outline,
                           size: MinimalButtonSize.small,
                           onPressed: c.next,
@@ -220,7 +220,7 @@ class MinimalCarouselView extends StatelessWidget {
           onPageChanged,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         FlagProperty(
           'showControls',

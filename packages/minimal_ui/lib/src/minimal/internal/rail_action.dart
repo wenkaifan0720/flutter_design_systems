@@ -2,14 +2,15 @@ import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
 import '../components/pressable.dart';
-import '../components/shell_frame.dart';
+import '../components/app_shell.dart';
 import 'styled.dart';
 import '../localizations.dart';
 import '../theme.dart';
+import '../components/shell_action.dart';
 
 /// The shell's act as a rail's leading square: the ink square (the accent's
 /// when [MinimalShellAction.primary]) the bottom bar ends with, standing at the
-/// top of the rail instead. `MinimalShell` and `MinimalPreview` stand it in
+/// top of the rail instead. [MinimalAppShell] and `MinimalPreview` stand it in
 /// their rail form.
 class MinimalRailAction extends StatelessWidget {
   /// The rail's square for [action].

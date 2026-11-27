@@ -129,7 +129,7 @@ class MinimalMenuBar extends StatelessWidget {
   const MinimalMenuBar({
     super.key,
     required this.menus,
-    this.label,
+    this.semanticLabel,
     this.style,
   });
 
@@ -137,7 +137,7 @@ class MinimalMenuBar extends StatelessWidget {
   final List<MinimalMenuEntry> menus;
 
   /// What a screen reader calls the bar.
-  final String? label;
+  final String? semanticLabel;
 
   /// The strip's style.
   final MinimalStyle? style;
@@ -204,7 +204,8 @@ class MinimalMenuBar extends StatelessWidget {
     return MinimalTapBand(
       child: RawMenuBar(
         menus: [for (final m in menus) m._design(context)],
-        semanticLabel: label ?? MinimalLocalizations.of(context).menuBar,
+        semanticLabel:
+            semanticLabel ?? MinimalLocalizations.of(context).menuBar,
         itemBuilder: (context, entry, level, states) =>
             level == RawMenuLevel.bar ? top(entry, states) : row(entry, states),
         dividerBuilder: (context) => Padding(
@@ -254,7 +255,7 @@ class MinimalMenuBar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<MinimalMenuEntry>('menus', menus))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
       );

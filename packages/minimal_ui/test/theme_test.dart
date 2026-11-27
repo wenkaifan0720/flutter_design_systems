@@ -49,7 +49,10 @@ const Map<String, (Color, Color?)> _fromColors = {
 };
 
 /// Every theme the bars are held for: the presets, then [_fromColors].
-final List<String> _ids = [...MinimalThemeData.presets, ..._fromColors.keys];
+final List<String> _ids = [
+  ...[for (final palette in MinimalThemeData.palettes) palette.id],
+  ..._fromColors.keys,
+];
 
 MinimalThemeData _theme(String id, Brightness brightness) {
   final from = _fromColors[id];

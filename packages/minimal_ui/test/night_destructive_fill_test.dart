@@ -131,7 +131,9 @@ void main() {
   });
 
   group('by night in every preset', () {
-    for (final preset in MinimalThemeData.presets) {
+    for (final preset in [
+      for (final palette in MinimalThemeData.palettes) palette.id,
+    ]) {
       testWidgets('in $preset a destructive button stands quieter than the '
           'main one beside it, its words white', (tester) async {
         final t = MinimalThemeData.preset(preset, Brightness.dark);

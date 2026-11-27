@@ -13,7 +13,11 @@ void main() {
     var taps = 0;
     await tester.pumpWidget(
       centredHost(
-        MinimalIconButton(Icons.add, label: 'Add', onPressed: () => taps += 1),
+        MinimalIconButton(
+          Icons.add,
+          semanticLabel: 'Add',
+          onPressed: () => taps += 1,
+        ),
       ),
     );
     final box = faceOf(tester, find.byType(MinimalIconButton));
@@ -29,7 +33,11 @@ void main() {
     final handle = tester.ensureSemantics();
     await tester.pumpWidget(
       centredHost(
-        MinimalIconButton(Icons.search, label: 'Search', onPressed: () {}),
+        MinimalIconButton(
+          Icons.search,
+          semanticLabel: 'Search',
+          onPressed: () {},
+        ),
       ),
     );
     expect(find.bySemanticsLabel('Search'), findsOneWidget);

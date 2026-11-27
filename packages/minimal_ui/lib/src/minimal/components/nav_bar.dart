@@ -3,66 +3,12 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
-import '../internal/face.dart';
+import '../internal/nav_faces.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'pressable.dart';
-import '../ground.dart';
-
-/// A destination in a [MinimalNavigationBar].
-/// The standard constructor shows its icon and text. [MinimalNavItem.iconOnly]
-/// uses [semanticLabel] to announce a destination with a hidden label.
-@immutable
-class MinimalNavItem {
-  /// A destination showing [icon] and [label].
-  const MinimalNavItem(this.icon, [this.label, this.key])
-    : semanticLabel = null,
-      ground = MinimalGround.surface,
-      assert(
-        label != null,
-        'A tab needs words: pass its label, or use '
-        'MinimalNavItem.iconOnly(icon, semanticLabel: ...).',
-      );
-
-  /// A tab that prints only its glyph; a screen reader still hears
-  /// [semanticLabel].
-  const MinimalNavItem.iconOnly(
-    this.icon, {
-    required String this.semanticLabel,
-    this.key,
-    this.ground = MinimalGround.surface,
-  }) : label = null;
-
-  /// A tab whose root stands on the media ground: while it is selected the
-  /// shell draws its bar in the dark tokens and the root ends at the bar's
-  /// top. Its root page stands on media through
-  /// `MinimalPage(ground: MinimalGround.media)`.
-  ///
-  /// ```dart
-  /// MinimalNavItem.media(LucideIcons.play, 'Watch')
-  /// ```
-  const MinimalNavItem.media(this.icon, String this.label, [this.key])
-    : semanticLabel = null,
-      ground = MinimalGround.media;
-
-  /// Its glyph.
-  final IconData icon;
-
-  /// The words printed under the glyph; null only for
-  /// [MinimalNavItem.iconOnly].
-  final String? label;
-
-  /// A key for its tab, for tests to find it.
-  final Key? key;
-
-  /// What a screen reader announces for a glyph-only tab.
-  final String? semanticLabel;
-
-  /// The ground this tab's root stands on. It paints the shell's BAR while
-  /// the tab is selected; the root page publishes its own.
-  final MinimalGround ground;
-}
+import 'nav_item.dart';
 
 /// Minimal's bottom navigation: a slim bar docked on the bottom edge — a
 /// 1 px top hairline over [MinimalChromeMetrics.tabHeight] of the ground, then
@@ -71,7 +17,8 @@ class MinimalNavItem {
 /// [action] stands as a square at the trailing end: the app's one act
 /// reachable from every root.
 ///
-/// `MinimalShell` mounts it; a page never composes nav itself.
+/// An app's bar is [MinimalAppShell]'s, which paints these places and gives
+/// them their tab semantics; this bar is for a frame of the app's own.
 ///
 /// ```dart
 /// MinimalNavigationBar(items: const [MinimalNavItem(LucideIcons.calendarCheck, 'Today'), MinimalNavItem(LucideIcons.listChecks, 'Habits')], selectedIndex: tab, onDestinationSelected: go)
@@ -223,49 +170,14 @@ class _Tab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.minimalTheme;
-    final inkTo = active ? t.foreground : t.mutedForeground;
-    final label = item.label;
     // The selected state rides the pressable's own node — the one a screen
     // reader focuses — so the current tab is announced as selected.
     return MinimalPressable(
       onPressed: onPressed,
-      semanticLabel: item.semanticLabel ?? label,
+      semanticLabel: item.semanticLabel ?? item.label,
       selected: active,
       // The current tab's ink fades in, the last one's out.
-      child: MinimalFace(
-        height: MinimalChromeMetrics.tabHeight,
-        ink: inkTo,
-        builder: (context, lerped) {
-          final ink = lerped ?? inkTo;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              MinimalIcon(
-                item.icon,
-                size: MinimalChromeMetrics.tabIcon,
-                color: ink,
-              ),
-              if (label != null) ...[
-                const SizedBox(height: MinimalChromeMetrics.tabLabelGap),
-                // The pressable already announces the label.
-                ExcludeSemantics(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: t.caption.medium.copyWith(
-                      fontSize: MinimalChromeMetrics.tabLabel,
-                      height: MinimalChromeMetrics.tabLabelLeading,
-                      color: ink,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          );
-        },
-      ),
+      child: MinimalTabFace(item: item, selected: active),
     );
   }
 }

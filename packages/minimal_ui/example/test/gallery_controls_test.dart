@@ -5,7 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui_example/kit_gallery/demos/toggle_check.dart';
 import 'package:minimal_ui_example/kit_gallery/kit.dart' show kitEmbedded;
-import 'package:minimal_ui_example/main.dart' show CustomizePanel, Knobs;
+import 'package:minimal_ui_example/gallery.dart' show CustomizePanel, Knobs;
 
 Future<void> _show(WidgetTester t, Widget child) async {
   t.view.devicePixelRatio = 1;
@@ -66,7 +66,7 @@ void main() {
         (w) => w is MinimalSwitch && w.label == 'Off',
       );
       final box = find.byWidgetPredicate(
-        (w) => w is MinimalCheckbox && w.label == 'Off',
+        (w) => w is MinimalCheckbox && w.semanticLabel == 'Off',
       );
       final element = t.element(toggle);
       await t.ensureVisible(toggle);

@@ -136,7 +136,7 @@ class MinimalSheet extends StatelessWidget {
                   scope: subtitle,
                   close: MinimalIconButton(
                     LucideIcons.x,
-                    label: MinimalLocalizations.of(context).close,
+                    semanticLabel: MinimalLocalizations.of(context).close,
                     variant: MinimalIconButtonVariant.ghost,
                     onPressed:
                         onClose ?? () => Navigator.of(context).maybePop(),
@@ -302,7 +302,7 @@ class MinimalPopover extends StatelessWidget {
     required this.content,
     this.side = MinimalSide.bottom,
     this.width = 280,
-    this.label,
+    this.semanticLabel,
     this.style,
   });
 
@@ -320,7 +320,7 @@ class MinimalPopover extends StatelessWidget {
   final double width;
 
   /// What a screen reader calls the card.
-  final String? label;
+  final String? semanticLabel;
 
   /// The card's style, over `components.menu`.
   final MinimalStyle? style;
@@ -333,7 +333,7 @@ class MinimalPopover extends StatelessWidget {
       gap: 6,
       matchAnchorWidth: false,
     ),
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     anchorBuilder: (context, a) => anchor(context, a.toggle, a.isOpen),
     overlayBuilder: (context, info) => minimalKitPresence(
       context,
@@ -365,7 +365,7 @@ class MinimalPopover extends StatelessWidget {
         ),
       )
       ..add(DoubleProperty('width', width, defaultValue: 280))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
       );

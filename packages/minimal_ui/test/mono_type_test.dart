@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 /// The mono register's word gap, measured with the real faces: a date or a
 /// stamp set in Geist Mono reads as one space (`25 Sep`, not `25  Sep`),

@@ -43,15 +43,23 @@ Widget kitToggleCheckDemo(Brightness brightness) => kitScreen(
           const _LiveExample(initialValue: true),
           const _Labeled(
             'Disabled',
-            MinimalCheckbox(value: false, label: 'Disabled', onChanged: null),
+            MinimalCheckbox(
+              value: false,
+              semanticLabel: 'Disabled',
+              onChanged: null,
+            ),
           ),
           const _Labeled(
             'Disabled on',
-            MinimalCheckbox(value: true, label: 'Disabled on', onChanged: null),
+            MinimalCheckbox(
+              value: true,
+              semanticLabel: 'Disabled on',
+              onChanged: null,
+            ),
           ),
           const _Labeled(
             'Read-only',
-            MinimalCheckMark(value: true, label: 'Kept'),
+            MinimalCheckMark(value: true, semanticLabel: 'Kept'),
           ),
           const _LiveExample(initialValue: true, large: true),
         ]),
@@ -96,7 +104,7 @@ class _LiveExampleState extends State<_LiveExample> {
           ? MinimalSwitch(value: _value, label: caption, onChanged: change)
           : MinimalCheckbox(
               value: _value,
-              label: caption,
+              semanticLabel: caption,
               size: widget.large ? 20 : 16,
               onChanged: change,
             ),
@@ -296,7 +304,7 @@ class _ChecklistState extends State<_Checklist> {
               title: name,
               leading: MinimalCheckbox(
                 value: _done[name]!,
-                label: name,
+                semanticLabel: name,
                 onChanged: (v) => setState(() => _done[name] = v),
               ),
               trailing: Text(
@@ -343,7 +351,7 @@ class _AgreementState extends State<_Agreement> {
           children: [
             MinimalCheckbox(
               value: _agreed,
-              label: 'Agree to the guidelines',
+              semanticLabel: 'Agree to the guidelines',
               onChanged: (v) => setState(() => _agreed = v),
             ),
             const MinimalGap(MinimalSpacing.s12),
@@ -433,7 +441,7 @@ Widget kitSpecimenCheckChecklist() => _Body(
       MinimalListTile(
         leading: MinimalCheckbox(
           value: true,
-          label: 'Meditate',
+          semanticLabel: 'Meditate',
           onChanged: (_) {},
         ),
         title: 'Meditate',
@@ -443,7 +451,7 @@ Widget kitSpecimenCheckChecklist() => _Body(
       MinimalListTile(
         leading: MinimalCheckbox(
           value: true,
-          label: 'Morning run',
+          semanticLabel: 'Morning run',
           onChanged: (_) {},
         ),
         title: 'Morning run',
@@ -463,7 +471,7 @@ Widget kitSpecimenCheckConsent() => Builder(
         MinimalCheckbox(
           value: false,
           size: 20,
-          label: 'Agree to the guidelines',
+          semanticLabel: 'Agree to the guidelines',
           onChanged: (_) {},
         ),
         const MinimalGap(MinimalSpacing.s12),

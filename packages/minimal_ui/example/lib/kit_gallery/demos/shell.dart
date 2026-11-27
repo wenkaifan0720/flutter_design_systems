@@ -215,7 +215,7 @@ class _HabitDetail extends StatelessWidget {
         actions: [
           MinimalIconButton(
             LucideIcons.star,
-            label: 'Favourite',
+            semanticLabel: 'Favourite',
             onPressed: () {},
           ),
         ],
@@ -265,12 +265,12 @@ class _HabitsRoot extends StatelessWidget {
       actions: [
         MinimalIconButton(
           LucideIcons.search,
-          label: 'Search',
+          semanticLabel: 'Search',
           onPressed: () {},
         ),
         MinimalIconButton(
           LucideIcons.layoutGrid,
-          label: 'Switch view',
+          semanticLabel: 'Switch view',
           onPressed: () => Navigator.of(context)
               .push(MinimalFadeRoute<void>(builder: (_) => const _BoardView())),
         ),

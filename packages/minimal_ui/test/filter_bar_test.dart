@@ -118,7 +118,7 @@ void main() {
               child: MinimalFilterBar(
                 trailing: MinimalIconButton(
                   LucideIcons.slidersHorizontal,
-                  label: 'Display',
+                  semanticLabel: 'Display',
                   onPressed: () {},
                 ),
                 children: [
@@ -152,7 +152,7 @@ void main() {
             child: MinimalFilterBar(
               trailing: MinimalIconButton(
                 LucideIcons.slidersHorizontal,
-                label: 'Display',
+                semanticLabel: 'Display',
                 onPressed: () => display += 1,
               ),
               children: [

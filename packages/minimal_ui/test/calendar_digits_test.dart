@@ -3,7 +3,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 Future<void> _pump(WidgetTester t, Locale locale) async {
   t.view.physicalSize = const Size(390, 844);

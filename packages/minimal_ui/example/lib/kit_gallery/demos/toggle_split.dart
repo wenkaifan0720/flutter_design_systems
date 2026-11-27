@@ -27,7 +27,7 @@ Widget kitToggleSplitDemo(Brightness brightness) => kitScreen(
       children: [
         _Static(
           (value, set) => MinimalToggleGroup<String>(
-            label: 'Density',
+            semanticLabel: 'Density',
             outlined: false,
             small: true,
             selected: {value},
@@ -117,7 +117,7 @@ class _ViewState extends State<_View> {
 
   @override
   Widget build(BuildContext context) => MinimalToggleGroup<String>(
-    label: 'View',
+    semanticLabel: 'View',
     selected: {_view},
     onSelectionChanged: (s) => setState(() => _view = s.single),
     items: _views,
@@ -136,7 +136,7 @@ class _MarksState extends State<_Marks> {
 
   @override
   Widget build(BuildContext context) => MinimalToggleGroup<String>(
-    label: 'Text style',
+    semanticLabel: 'Text style',
     multiSelectionEnabled: true,
     emptySelectionAllowed: true,
     selected: _on,
@@ -180,7 +180,7 @@ class _StaticState<T> extends State<_Static<T>> {
 /// A view switch, one on.
 Widget kitSpecimenToggleGroup() => Center(
   child: MinimalToggleGroup<String>(
-    label: 'View',
+    semanticLabel: 'View',
     selected: const {'board'},
     onSelectionChanged: (_) {},
     items: _views,

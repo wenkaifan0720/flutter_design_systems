@@ -18,7 +18,7 @@ void main() {
             initial: false,
             builder: (v, set) => MinimalCheckbox(
               value: v,
-              label: 'Meditate',
+              semanticLabel: 'Meditate',
               onChanged: (next) {
                 seen.add(next);
                 set(next);
@@ -52,7 +52,7 @@ void main() {
     ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
-        paddedHost(const MinimalCheckMark(value: true, label: 'Kept')),
+        paddedHost(const MinimalCheckMark(value: true, semanticLabel: 'Kept')),
       );
       expect(find.byType(MinimalPressable), findsNothing);
       expect(

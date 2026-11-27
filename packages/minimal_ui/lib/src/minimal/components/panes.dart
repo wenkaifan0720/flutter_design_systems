@@ -42,7 +42,7 @@ class MinimalScrollArea extends StatefulWidget {
     this.height,
     this.width,
     this.alwaysShown = false,
-    this.label,
+    this.semanticLabel,
     this.shape,
     this.padding = EdgeInsets.zero,
     this.focusNode,
@@ -74,7 +74,7 @@ class MinimalScrollArea extends StatefulWidget {
   final bool alwaysShown;
 
   /// What a screen reader calls the region.
-  final String? label;
+  final String? semanticLabel;
 
   /// The outline of its focus ring and clip; `shapes.small` unstated.
   final OutlinedBorder? shape;
@@ -110,7 +110,7 @@ class MinimalScrollArea extends StatefulWidget {
       ..add(
         FlagProperty('alwaysShown', value: alwaysShown, ifTrue: 'alwaysShown'),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
       )
@@ -149,7 +149,7 @@ class _MinimalScrollAreaState extends State<MinimalScrollArea> {
       visibility: widget.alwaysShown
           ? RawScrollbarVisibility.always
           : RawScrollbarVisibility.auto,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       thumbBuilder: (context, thumb) {
@@ -228,7 +228,7 @@ class MinimalResizable extends StatelessWidget {
     this.minFirst = 0,
     this.minSecond = 0,
     this.handle = false,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
   });
@@ -267,7 +267,7 @@ class MinimalResizable extends StatelessWidget {
   final bool handle;
 
   /// What a screen reader calls the divider; Resize unstated.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +285,7 @@ class MinimalResizable extends StatelessWidget {
       dividerThickness: t.hairline,
       focusNode: focusNode,
       autofocus: autofocus,
-      semanticLabel: label ?? MinimalLocalizations.of(context).resize,
+      semanticLabel: semanticLabel ?? MinimalLocalizations.of(context).resize,
       dividerBuilder: (context, states, axis) {
         final ring = states.ring;
         final held = states.contains(WidgetState.pressed);
@@ -362,7 +362,7 @@ class MinimalResizable extends StatelessWidget {
       ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
       ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
       ..add(FlagProperty('handle', value: handle, ifTrue: 'handle'))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

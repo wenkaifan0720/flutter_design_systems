@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'support/scrolling_host.dart';
@@ -34,7 +33,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalMenu(
-            label: 'Habit actions',
+            semanticLabel: 'Habit actions',
             items: items(log),
             child: const Text('More'),
           ),
@@ -59,7 +58,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalMenu(
-            label: 'Habit actions',
+            semanticLabel: 'Habit actions',
             items: items(log),
             child: const Text('More'),
           ),
@@ -85,7 +84,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalMenu(
-            label: 'Habit actions',
+            semanticLabel: 'Habit actions',
             items: items(log),
             child: const Text('More'),
           ),
@@ -108,7 +107,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalMenu(
-            label: 'Row actions',
+            semanticLabel: 'Row actions',
             trigger: MinimalMenuTrigger.longPress,
             items: items([]),
             child: GestureDetector(
@@ -132,7 +131,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           const MinimalMenu(
-            label: 'No actions',
+            semanticLabel: 'No actions',
             items: [],
             child: Text('More'),
           ),
@@ -170,7 +169,7 @@ void main() {
         bottomHost(
           MinimalMenu.button(
             LucideIcons.ellipsis,
-            label: 'Habit actions',
+            semanticLabel: 'Habit actions',
             items: [
               for (final label in const ['Edit', 'Duplicate', 'Archive'])
                 MinimalMenuItem(label, onPressed: () {}),
@@ -197,7 +196,7 @@ void main() {
           MinimalMenu.button(
             LucideIcons.arrowDownUp,
             text: 'Sort: Streak',
-            label: 'Sort habits',
+            semanticLabel: 'Sort habits',
             items: [MinimalMenuItem('Name', onPressed: () {})],
           ),
         ),
@@ -213,7 +212,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalMenu(
-            label: 'Row actions',
+            semanticLabel: 'Row actions',
             trigger: MinimalMenuTrigger.longPress,
             items: [MinimalMenuItem('Edit', onPressed: () {})],
             child: const Text('Morning run'),
@@ -241,7 +240,7 @@ void main() {
               brightness: Brightness.dark,
               child: Center(
                 child: MinimalMenu(
-                  label: 'Habit actions',
+                  semanticLabel: 'Habit actions',
                   items: [MinimalMenuItem('Edit', onPressed: () {})],
                   child: const Text('More'),
                 ),

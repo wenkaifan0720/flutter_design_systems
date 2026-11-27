@@ -599,7 +599,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
               Directionality.of(context) == TextDirection.rtl
                   ? LucideIcons.chevronRight
                   : LucideIcons.chevronLeft,
-              label: words.previousPage,
+              semanticLabel: words.previousPage,
               size: MinimalButtonSize.small,
               onPressed: _table.page > 0
                   ? () => _table.goToPage(_table.page - 1)
@@ -610,7 +610,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
               Directionality.of(context) == TextDirection.rtl
                   ? LucideIcons.chevronLeft
                   : LucideIcons.chevronRight,
-              label: words.nextPage,
+              semanticLabel: words.nextPage,
               size: MinimalButtonSize.small,
               onPressed: _table.page < _table.pageCount - 1
                   ? () => _table.goToPage(_table.page + 1)

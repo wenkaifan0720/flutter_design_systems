@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
+import '../internal/row_trailing.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -47,7 +48,8 @@ class MinimalAvatar extends StatelessWidget {
   /// Whose it is: its initials and its spoken label.
   final String name;
 
-  /// Its diameter.
+  /// Its diameter at the default text scale. Up to 40 (a row's register)
+  /// it grows with the reader's text; a larger disc keeps it.
   final double size;
 
   /// A placeholder picture in place of the initials.
@@ -120,6 +122,11 @@ class MinimalAvatar extends StatelessWidget {
     final plate = so.shape;
     final slotId = media;
     final picture = image;
+    // A disc in a row's register (up to 40) grows with the reader's text, as
+    // the name beside it does; a larger one is a portrait and keeps its size.
+    final size = this.size > _rowMax
+        ? this.size
+        : MediaQuery.textScalerOf(context).scale(this.size);
     Widget clip(Widget child) => plate == null
         ? ClipOval(child: child)
         : minimalClip(plate, child: child);
@@ -131,14 +138,19 @@ class MinimalAvatar extends StatelessWidget {
           child: MinimalMediaImage(
             slotId: slotId,
             fit: BoxFit.cover,
-            fallback: _initials(t, so),
+            fallback: _initials(t, so, size),
           ),
         ),
       );
     } else if (picture != null) {
       face = clip(MinimalMedia(picture, width: size, height: size, radius: 0));
     } else {
-      face = _initials(t, so);
+      face = _initials(t, so, size);
+    }
+    // In a row it only repeats (the title's own name), it says nothing: the
+    // row's title already does.
+    if (MinimalRowLeading.repeatsTitle(context, name)) {
+      return ExcludeSemantics(child: face);
     }
     return Semantics(
       image: true,
@@ -147,7 +159,10 @@ class MinimalAvatar extends StatelessWidget {
     );
   }
 
-  Widget _initials(MinimalThemeData t, MinimalStyleOf so) {
+  /// The largest disc that grows with the reader's text: a row's.
+  static const double _rowMax = 40;
+
+  Widget _initials(MinimalThemeData t, MinimalStyleOf so, double size) {
     final colors = colorsOf(name, t);
     final fill = so.fill ?? colors.fill;
     final ink = so.foreground ?? colors.ink;
@@ -171,8 +186,8 @@ class MinimalAvatar extends StatelessWidget {
       child: Text(
         initialsOf(name),
         maxLines: 1,
-        // The initials are sized to the disc, not to the reader's text
-        // scale: the disc does not grow, so its letters must not.
+        // The initials are sized to the disc, which has already grown with
+        // the reader's text: scaling them again would overfill it.
         textScaler: TextScaler.noScaling,
         style: so.text(
           t.caption.semibold.copyWith(

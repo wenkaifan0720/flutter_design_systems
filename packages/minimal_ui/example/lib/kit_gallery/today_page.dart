@@ -101,7 +101,7 @@ class _KitTodayPageState extends State<KitTodayPage> {
         actions: [
           MinimalIconButton(
             LucideIcons.plus,
-            label: ar('New habit', 'عادة جديدة'),
+            semanticLabel: ar('New habit', 'عادة جديدة'),
             variant: MinimalIconButtonVariant.primary,
             onPressed: widget.onNew ?? () {},
           ),

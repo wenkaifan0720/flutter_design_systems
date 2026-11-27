@@ -2,6 +2,9 @@
 // The example is the package's live gallery: every page builds without an error at a phone's
 // width and at a desktop's, and every widget the package exports is built by at least one page. A widget no page
 // builds fails the last test by name, so the next one added can't slip through unseen.
+// The export adds minimal_host.dart for MinimalHitTarget, named below as host-only.
+// ignore_for_file: unused_import
+
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
@@ -11,12 +14,12 @@ import 'package:minimal_ui/minimal_host.dart';
 
 import '../example/lib/kit_gallery/apps/app_frame.dart';
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 
-/// Exported for 0.1's callers, drawn by no part since ui_core's
-/// TapTargetPadding took its place.
-const _retired = {'MinimalHitTarget'};
+/// Drip's host layer: its kit parts wrap a control in it to pass the tap
+/// floor's margin through a box that stops taps; no gallery page needs it.
+const _hostOnly = {'MinimalHitTarget'};
 
 /// Every public widget class the package's library declares, outside its
 /// internal helpers.
@@ -235,7 +238,7 @@ void main() {
     final exported = _exportedWidgets();
     expect(exported, isNotEmpty);
     expect(
-      exported.difference(built).difference(_retired).toList()..sort(),
+      exported.difference(built).difference(_hostOnly).toList()..sort(),
       isEmpty,
       reason: 'each of these needs a live demo on one of the example pages',
     );

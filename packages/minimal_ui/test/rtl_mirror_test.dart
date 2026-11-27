@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'world_checks.dart';
@@ -73,7 +72,7 @@ final Map<String, _Case> _cases = {
         MinimalButtonSegment(2, 'Month'),
       ],
       value: 0,
-      label: 'Range',
+      semanticLabel: 'Range',
       onChanged: _ignore,
     ),
     mark: () => find.text('Day'),
@@ -129,13 +128,20 @@ final Map<String, _Case> _cases = {
     part: MinimalAppBar(
       title: 'Today',
       actions: [
-        MinimalIconButton(LucideIcons.plus, label: 'Add', onPressed: () {}),
+        MinimalIconButton(
+          LucideIcons.plus,
+          semanticLabel: 'Add',
+          onPressed: () {},
+        ),
       ],
     ),
     mark: () => find.byType(MinimalIconButton).last,
   ),
   'MinimalLinearProgressIndicator': (
-    part: const MinimalLinearProgressIndicator(value: 0.25, label: 'Upload'),
+    part: const MinimalLinearProgressIndicator(
+      value: 0.25,
+      semanticLabel: 'Upload',
+    ),
     mark: () => find.byType(FractionallySizedBox),
   ),
 };

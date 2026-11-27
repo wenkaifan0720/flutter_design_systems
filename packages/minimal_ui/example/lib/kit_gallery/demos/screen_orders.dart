@@ -464,7 +464,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
         titleTrailing: MinimalMenu.button(
           LucideIcons.calendarDays,
           text: _range.label,
-          label: ar('Date range', 'النطاق الزمني'),
+          semanticLabel: ar('Date range', 'النطاق الزمني'),
           items: [
             for (final range in _Range.values)
               MinimalMenuItem(

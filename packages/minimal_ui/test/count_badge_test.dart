@@ -30,7 +30,9 @@ void main() {
 
     testWidgets("every count's numerals clear 4.5:1 on its fill, in every "
         'preset and either mode', (tester) async {
-      for (final preset in MinimalThemeData.presets) {
+      for (final preset in [
+        for (final palette in MinimalThemeData.palettes) palette.id,
+      ]) {
         for (final brightness in Brightness.values) {
           final t = MinimalThemeData.preset(preset, brightness);
           await tester.pumpWidget(

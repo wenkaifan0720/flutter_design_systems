@@ -21,6 +21,7 @@ import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../shapes.dart';
 import '../theme.dart';
+import '../internal/message_reveal.dart';
 import 'feedback.dart';
 import 'input.dart';
 import 'pressable.dart';
@@ -659,6 +660,7 @@ class _MinimalMultiSelectState<T extends Object>
           foregroundDecoration: minimalFocusEdge(
             t,
             shown: within,
+            invalid: states.wrong,
             shape: shape,
           ),
           child: MinimalTapReach(
@@ -784,17 +786,25 @@ class _MinimalMultiSelectState<T extends Object>
               const MinimalGap(MinimalChromeMetrics.iconGap),
             ],
             parts.control,
-            if (message != null) ...[
-              const MinimalGap(MinimalChromeMetrics.iconGap),
-              DefaultTextStyle.merge(
-                style: t.caption.c(
-                  parts.errorText != null
-                      ? t.destructiveInk
-                      : t.mutedForeground,
-                ),
-                child: message,
-              ),
-            ],
+            // The line grows open and fades in (and out), never jumps.
+            MinimalMessageReveal(
+              id: parts.errorText,
+              child: !(message != null)
+                  ? const SizedBox(width: double.infinity)
+                  : Padding(
+                      padding: const EdgeInsets.only(
+                        top: MinimalChromeMetrics.iconGap,
+                      ),
+                      child: DefaultTextStyle.merge(
+                        style: t.caption.c(
+                          parts.errorText != null
+                              ? t.destructiveInk
+                              : t.mutedForeground,
+                        ),
+                        child: message,
+                      ),
+                    ),
+            ),
           ],
         );
       },

@@ -68,6 +68,7 @@ class _HabitPageState extends State<KitHabitPage> {
     final sure =
         await showMinimalDialog<bool>(
           context,
+          isAlert: true,
           builder: (_) => MinimalDialog(
             title: ar('Archive ${habit.name}?', 'أتؤرشف «${habit.name}»؟'),
             message: ar(
@@ -131,13 +132,13 @@ class _HabitPageState extends State<KitHabitPage> {
         actions: [
           MinimalIconButton(
             LucideIcons.star,
-            label: ar('Favourite', 'مفضلة'),
+            semanticLabel: ar('Favourite', 'مفضلة'),
             selected: habit.favourite,
             onPressed: () => _habits.toggleFavourite(habit),
           ),
           MinimalMenu.button(
             LucideIcons.ellipsis,
-            label: ar('Habit actions', 'إجراءات العادة'),
+            semanticLabel: ar('Habit actions', 'إجراءات العادة'),
             items: [
               MinimalMenuItem(
                 habit.paused

@@ -25,7 +25,7 @@ void main() {
     await tester.pumpAndSettle();
     final close = tester.getRect(
       find.byWidgetPredicate(
-        (w) => w is MinimalIconButton && w.label == 'Close',
+        (w) => w is MinimalIconButton && w.semanticLabel == 'Close',
       ),
     );
     await tester.tapAt(

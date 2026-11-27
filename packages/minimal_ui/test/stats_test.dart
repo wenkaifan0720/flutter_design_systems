@@ -113,9 +113,12 @@ void main() {
         displayHost(
           const Column(
             children: [
-              MinimalLinearProgressIndicator(value: 0.62, label: 'Upload'),
-              MinimalLinearProgressIndicator(value: 1.4, label: 'Goal'),
-              MinimalLinearProgressIndicator(value: -1, label: 'Empty'),
+              MinimalLinearProgressIndicator(
+                value: 0.62,
+                semanticLabel: 'Upload',
+              ),
+              MinimalLinearProgressIndicator(value: 1.4, semanticLabel: 'Goal'),
+              MinimalLinearProgressIndicator(value: -1, semanticLabel: 'Empty'),
             ],
           ),
         ),
@@ -265,7 +268,10 @@ void main() {
           data: const MediaQueryData(disableAnimations: true),
           child: SizedBox(
             width: 200,
-            child: MinimalLinearProgressIndicator(value: v, label: 'Progress'),
+            child: MinimalLinearProgressIndicator(
+              value: v,
+              semanticLabel: 'Progress',
+            ),
           ),
         ),
       );

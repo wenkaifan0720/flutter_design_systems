@@ -15,7 +15,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// The densities Minimal offers, chosen (a theme that follows the platform
@@ -96,7 +95,7 @@ final DesignAlignmentMatrix minimalAlignment = DesignAlignmentMatrix(
           DesignInlineControl.iconButton,
           (context, label) => MinimalIconButton(
             LucideIcons.plus,
-            label: label,
+            semanticLabel: label,
             onPressed: () {},
           ),
         ),
@@ -168,7 +167,7 @@ final DesignAlignmentMatrix minimalAlignment = DesignAlignmentMatrix(
           DesignInlineControl.iconButton,
           (context, label) => MinimalIconButton(
             LucideIcons.plus,
-            label: label,
+            semanticLabel: label,
             size: MinimalButtonSize.small,
             onPressed: () {},
           ),
@@ -194,7 +193,7 @@ final DesignAlignmentMatrix minimalAlignment = DesignAlignmentMatrix(
           (context, label) => MinimalMenu.button(
             LucideIcons.calendarDays,
             text: label,
-            label: 'Range',
+            semanticLabel: 'Range',
             small: true,
             items: [MinimalMenuItem(label, onPressed: () {})],
           ),

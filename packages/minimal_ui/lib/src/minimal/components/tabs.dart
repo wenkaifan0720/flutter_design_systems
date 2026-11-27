@@ -31,6 +31,12 @@ import '../theme.dart';
 /// label's glyphs sit exactly on the gutter) while the hairline runs edge
 /// to edge. A null [onChanged] disables the strip.
 ///
+/// With a [controller] (ui_core's `RawTabController`, as Flutter's `TabBar`
+/// takes a `TabController`) the strip and a `RawTabBarView` of the tabs'
+/// panels share one choice: a tap, an arrow or a swipe of the panels moves
+/// both, and a screen reader hears each tab control its panel. Without one,
+/// [selectedIndex] and [onChanged] hold the choice.
+///
 /// ```dart
 /// MinimalTabBar(tabs: ['Overview', 'Activity', 'Notes'], counts: [null, 12, 3], selectedIndex: tab, onChanged: go)
 /// ```
@@ -39,20 +45,37 @@ class MinimalTabBar extends StatefulWidget {
   const MinimalTabBar({
     super.key,
     required this.tabs,
-    required this.selectedIndex,
+    this.selectedIndex,
     this.onChanged,
+    this.controller,
+    this.icons,
     this.counts,
     this.padding = EdgeInsets.zero,
-  });
+  }) : assert(
+         controller != null || selectedIndex != null,
+         'a tab bar takes a controller or a selectedIndex',
+       );
 
   /// The tabs' names.
   final List<String> tabs;
 
-  /// The current tab.
-  final int selectedIndex;
+  /// The current tab, when no [controller] holds it.
+  final int? selectedIndex;
 
-  /// Null disables the strip.
+  /// Called with the tab chosen. Without a [controller], null disables the
+  /// strip.
   final ValueChanged<int>? onChanged;
+
+  /// The choice the strip shares with a `RawTabBarView` of the panels; the
+  /// caller's, who disposes it.
+  ///
+  /// ```dart
+  /// MinimalTabBar(tabs: const ['Overview', 'Activity'], controller: tabs)
+  /// ```
+  final RawTabController? controller;
+
+  /// One glyph per tab (null for a tab without one), before its name.
+  final List<IconData?>? icons;
 
   /// One count per tab (null for a tab without one), printed in mono after
   /// its label.
@@ -69,8 +92,16 @@ class MinimalTabBar extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<String>('tabs', tabs))
-      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<RawTabController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<IconData?>('icons', icons, defaultValue: null))
       ..add(IterableProperty<int?>('counts', counts, defaultValue: null))
       ..add(
         DiagnosticsProperty<EdgeInsetsGeometry>(
@@ -89,14 +120,27 @@ const double _halo = MinimalSpacing.s8;
 
 class _MinimalTabBarState extends State<MinimalTabBar>
     with TickerProviderStateMixin {
-  late RawTabController _controller = _make();
+  // The strip's own choice, when the caller holds no controller.
+  RawTabController? _own;
+  late RawTabController _controller;
+  late int _shown;
   List<GlobalKey> _keys = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = _take();
+    _shown = _controller.index;
+  }
+
+  RawTabController _take() =>
+      (widget.controller ?? (_own = _make()))..addListener(_chosen);
 
   RawTabController _make() => RawTabController(
     length: widget.tabs.length,
-    initialIndex: widget.selectedIndex,
+    initialIndex: widget.selectedIndex ?? 0,
     vsync: this,
-  )..addListener(_chosen);
+  );
 
   List<GlobalKey> _keysFor(int n) {
     if (_keys.length != n) _keys = [for (var i = 0; i < n; i++) GlobalKey()];
@@ -106,19 +150,29 @@ class _MinimalTabBarState extends State<MinimalTabBar>
   @override
   void didUpdateWidget(MinimalTabBar old) {
     super.didUpdateWidget(old);
-    if (widget.tabs.length != _controller.length) {
-      final gone = _controller..removeListener(_chosen);
-      _controller = _make();
-      WidgetsBinding.instance.addPostFrameCallback((_) => gone.dispose());
-    } else if (_controller.index != widget.selectedIndex) {
-      _controller.index = widget.selectedIndex;
+    final caller = widget.controller;
+    if (caller != old.controller ||
+        (caller == null && widget.tabs.length != _controller.length)) {
+      _controller.removeListener(_chosen);
+      final gone = _own;
+      _own = null;
+      _controller = _take();
+      _shown = _controller.index;
+      if (gone != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => gone.dispose());
+      }
+    } else if (caller == null) {
+      final index = widget.selectedIndex!;
+      if (_controller.index != index) _controller.index = index;
     }
-    if (widget.selectedIndex == old.selectedIndex) return;
-    // A choice made off screen (a key press, a parent) scrolls into view.
-    final forward = widget.selectedIndex > old.selectedIndex;
+  }
+
+  // A choice made off screen (a key press, a parent, a swipe of the
+  // panels) scrolls into view.
+  void _reveal(int index, {required bool forward}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || widget.selectedIndex >= _keys.length) return;
-      final tab = _keys[widget.selectedIndex].currentContext;
+      if (!mounted || index >= _keys.length) return;
+      final tab = _keys[index].currentContext;
       if (tab == null) return;
       final instant = tab.minimalStill;
       Scrollable.ensureVisible(
@@ -134,25 +188,33 @@ class _MinimalTabBarState extends State<MinimalTabBar>
 
   @override
   void dispose() {
-    _controller
-      ..removeListener(_chosen)
-      ..dispose();
+    _controller.removeListener(_chosen);
+    _own?.dispose();
     super.dispose();
   }
 
-  // The bar chose a tab (a tap, an arrow): the page hears it; a page that
-  // keeps its own choice puts the bar back.
+  // The choice moved (a tap, an arrow, the panels, the parent): the strip
+  // shows it and scrolls to it, and the page hears a choice it didn't make.
+  // Without a controller, a page that keeps its own choice puts the bar
+  // back.
   void _chosen() {
     final i = _controller.index;
-    if (i == widget.selectedIndex) return;
+    if (i == _shown) return;
+    final forward = i > _shown;
+    setState(() => _shown = i);
+    _reveal(i, forward: forward);
     final onChanged = widget.onChanged;
+    final kept = widget.selectedIndex;
+    if (widget.controller == null && i == kept) return;
     if (onChanged != null) {
       RawHaptics.of(context).selectionChanged?.call();
       onChanged(i);
     }
+    if (widget.controller != null || kept == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _controller.index != widget.selectedIndex) {
-        _controller.index = widget.selectedIndex;
+      final kept = widget.selectedIndex;
+      if (mounted && kept != null && _controller.index != kept) {
+        _controller.index = kept;
       }
     });
   }
@@ -161,11 +223,13 @@ class _MinimalTabBarState extends State<MinimalTabBar>
   Widget build(BuildContext context) {
     final tabs = widget.tabs;
     final counts = widget.counts;
-    final index = widget.selectedIndex;
+    final icons = widget.icons;
+    final index = _controller.index;
     assert(counts == null || counts.length == tabs.length, 'a count per tab');
+    assert(icons == null || icons.length == tabs.length, 'a glyph per tab');
     assert(index >= 0 && index < tabs.length, 'index out of range');
     final t = context.minimalTheme;
-    final enabled = widget.onChanged != null;
+    final enabled = widget.controller != null || widget.onChanged != null;
     final instant = context.minimalStill;
     final keys = _keysFor(tabs.length);
     final current = _controller.index;
@@ -224,6 +288,17 @@ class _MinimalTabBarState extends State<MinimalTabBar>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (icons?[i] case final glyph?) ...[
+                    MinimalFace(
+                      ink: selected ? t.foreground : t.mutedForeground,
+                      builder: (context, ink) => Icon(
+                        glyph,
+                        size: MediaQuery.textScalerOf(context).scale(16),
+                        color: ink ?? t.mutedForeground,
+                      ),
+                    ),
+                    const MinimalGap(MinimalSpacing.s8),
+                  ],
                   // The label's ink lerps as the tab is chosen.
                   MinimalFace(
                     ink: selected ? t.foreground : t.mutedForeground,

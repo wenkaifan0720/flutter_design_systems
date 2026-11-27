@@ -111,7 +111,7 @@ Widget _iconButtons({
       variant == MinimalIconButtonVariant.primary
           ? LucideIcons.plus
           : LucideIcons.search,
-      label: variant == MinimalIconButtonVariant.primary
+      semanticLabel: variant == MinimalIconButtonVariant.primary
           ? 'New habit'
           : 'Search',
       variant: variant,
@@ -201,7 +201,7 @@ class _FavouriteState extends State<_Favourite> {
 
   Widget _star(int i) => MinimalIconButton(
     LucideIcons.star,
-    label: 'Favourite',
+    semanticLabel: 'Favourite',
     variant: _variants[i ~/ 2],
     selected: _on[i],
     onPressed: () => setState(() => _on[i] = !_on[i]),
@@ -283,14 +283,14 @@ Widget kitSpecimenIconButtonOutline() => Row(
   children: [
     MinimalIconButton(
       LucideIcons.search,
-      label: 'Search',
+      semanticLabel: 'Search',
       variant: MinimalIconButtonVariant.outline,
       onPressed: () {},
     ),
     const MinimalGap(MinimalSpacing.s8),
     MinimalIconButton(
       LucideIcons.slidersHorizontal,
-      label: 'Filters',
+      semanticLabel: 'Filters',
       variant: MinimalIconButtonVariant.outline,
       onPressed: () {},
     ),
@@ -303,7 +303,7 @@ Widget kitSpecimenIconButtonSolid() => Row(
   children: [
     MinimalIconButton(
       LucideIcons.plus,
-      label: 'New habit',
+      semanticLabel: 'New habit',
       variant: MinimalIconButtonVariant.primary,
       onPressed: () {},
     ),
@@ -316,7 +316,7 @@ Widget kitSpecimenIconButtonGhost() => Row(
   children: [
     MinimalIconButton(
       LucideIcons.star,
-      label: 'Favourite',
+      semanticLabel: 'Favourite',
       variant: MinimalIconButtonVariant.ghost,
       selected: true,
       onPressed: () {},
@@ -324,7 +324,7 @@ Widget kitSpecimenIconButtonGhost() => Row(
     const MinimalGap(MinimalSpacing.s8),
     MinimalIconButton(
       LucideIcons.ellipsis,
-      label: 'More',
+      semanticLabel: 'More',
       variant: MinimalIconButtonVariant.ghost,
       onPressed: () {},
     ),

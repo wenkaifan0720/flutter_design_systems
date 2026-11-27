@@ -83,7 +83,7 @@ class MinimalToggleGroup<T> extends StatelessWidget {
     this.onSelectionChanged,
     this.multiSelectionEnabled = false,
     this.emptySelectionAllowed = false,
-    this.label,
+    this.semanticLabel,
     this.small = false,
     this.outlined = true,
     this.style,
@@ -105,7 +105,7 @@ class MinimalToggleGroup<T> extends StatelessWidget {
   final bool emptySelectionAllowed;
 
   /// What the group is about, announced before its toggles.
-  final String? label;
+  final String? semanticLabel;
 
   /// The 28 px register, for a dense toolbar.
   final bool small;
@@ -222,7 +222,7 @@ class MinimalToggleGroup<T> extends StatelessWidget {
       onSelectionChanged: onSelectionChanged,
       multiSelectionEnabled: multiSelectionEnabled,
       emptySelectionAllowed: emptySelectionAllowed,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       minimumSize: Size.zero,
       isEnabled: (v) => byValue[v]!.enabled,
       labelOf: items.any((i) => i.semanticLabel != null)
@@ -296,7 +296,7 @@ class MinimalToggleGroup<T> extends StatelessWidget {
           ifTrue: 'emptySelectionAllowed',
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(FlagProperty('small', value: small, ifTrue: 'small'))
       ..add(
         FlagProperty('outlined', value: outlined, ifFalse: 'outlined: false'),

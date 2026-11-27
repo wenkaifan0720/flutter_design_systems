@@ -139,65 +139,73 @@ class _MinimalSwitchState extends State<MinimalSwitch> {
     // thumb sits concentric inside it.
     final track = MinimalStyleOf(layers, const {}).shape ?? t.shapes.pill;
 
-    return MinimalPressable(
-      focusNode: widget.focusNode,
-      autofocus: widget.autofocus,
-      onPressed: enabled ? () => _commit(!widget.value) : null,
-      enabled: enabled,
-      shape: widget.showLabel ? t.shapes.mark : track,
-      // A bare mark stands on its start keyline, its target growing
-      // toward the end (a list row's trailing slot says the end).
-      tapAlignment:
-          MinimalTapAlignment.maybeOf(context) ??
-          AlignmentDirectional.centerStart,
+    final alignment =
+        MinimalTapAlignment.maybeOf(context) ??
+        AlignmentDirectional.centerStart;
+    // The track keeps its own size where a column stretches its children
+    // (a form's column): it stood the column's width, the words unseen.
+    return Align(
+      alignment: alignment,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: MinimalPressable(
+        focusNode: widget.focusNode,
+        autofocus: widget.autofocus,
+        onPressed: enabled ? () => _commit(!widget.value) : null,
+        enabled: enabled,
+        shape: widget.showLabel ? t.shapes.mark : track,
+        // A bare mark stands on its start keyline, its target growing
+        // toward the end (a list row's trailing slot says the end).
+        tapAlignment: alignment,
 
-      style: MinimalStyleOf(layers, const {}).press,
-      semanticLabel: widget.label,
-      // On the pressable's own node: one control, a switch, that announces
-      // its on/off state.
-      toggled: widget.value,
-      builder: (context, states) => _labelled(
-        t,
-        GestureDetector(
-          // The pressable owns the tap and its semantics; this only throws
-          // the thumb.
-          excludeFromSemantics: true,
-          onHorizontalDragStart: enabled
-              ? (_) => setState(() => _drag = widget.value ? 1 : 0)
-              : null,
-          onHorizontalDragUpdate: enabled
-              ? (d) => setState(
-                  () => _drag =
-                      ((_drag ?? fraction) +
-                              (rtl ? -1 : 1) * d.delta.dx / _travel)
-                          .clamp(0.0, 1.0),
-                )
-              : null,
-          onHorizontalDragEnd: enabled
-              ? (_) => _commit((_drag ?? fraction) >= 0.5)
-              : null,
-          onHorizontalDragCancel: () => setState(() => _drag = null),
-          child: AnimatedContainer(
-            duration: duration,
-            curve: MinimalMotion.out,
-            width: _trackWidth,
-            height: _trackHeight,
-            padding: const EdgeInsets.all(_inset),
-            decoration: _track(t, layers, states, fraction, track),
-            child: AnimatedAlign(
-              // A dragged thumb follows the finger exactly.
-              duration: _drag == null ? duration : Duration.zero,
+        style: MinimalStyleOf(layers, const {}).press,
+        semanticLabel: widget.label,
+        // On the pressable's own node: one control, a switch, that announces
+        // its on/off state.
+        toggled: widget.value,
+        builder: (context, states) => _labelled(
+          t,
+          GestureDetector(
+            // The pressable owns the tap and its semantics; this only throws
+            // the thumb.
+            excludeFromSemantics: true,
+            onHorizontalDragStart: enabled
+                ? (_) => setState(() => _drag = widget.value ? 1 : 0)
+                : null,
+            onHorizontalDragUpdate: enabled
+                ? (d) => setState(
+                    () => _drag =
+                        ((_drag ?? fraction) +
+                                (rtl ? -1 : 1) * d.delta.dx / _travel)
+                            .clamp(0.0, 1.0),
+                  )
+                : null,
+            onHorizontalDragEnd: enabled
+                ? (_) => _commit((_drag ?? fraction) >= 0.5)
+                : null,
+            onHorizontalDragCancel: () => setState(() => _drag = null),
+            child: AnimatedContainer(
+              duration: duration,
               curve: MinimalMotion.out,
-              alignment: Alignment((rtl ? -1 : 1) * (fraction * 2 - 1), 0),
-              child: AnimatedContainer(
-                duration: duration,
+              width: _trackWidth,
+              height: _trackHeight,
+              padding: const EdgeInsets.all(_inset),
+              decoration: _track(t, layers, states, fraction, track),
+              child: AnimatedAlign(
+                // A dragged thumb follows the finger exactly.
+                duration: _drag == null ? duration : Duration.zero,
                 curve: MinimalMotion.out,
-                width: _thumb,
-                height: _thumb,
-                decoration: _knob(
-                  MinimalStyleOf(layers, _at(states, on)),
-                  thumb,
-                  track,
+                alignment: Alignment((rtl ? -1 : 1) * (fraction * 2 - 1), 0),
+                child: AnimatedContainer(
+                  duration: duration,
+                  curve: MinimalMotion.out,
+                  width: _thumb,
+                  height: _thumb,
+                  decoration: _knob(
+                    MinimalStyleOf(layers, _at(states, on)),
+                    thumb,
+                    track,
+                  ),
                 ),
               ),
             ),

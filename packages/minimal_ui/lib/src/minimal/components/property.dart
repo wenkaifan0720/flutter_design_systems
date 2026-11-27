@@ -586,7 +586,7 @@ VoidCallback? _menuOpener(
       context,
       anchor: box.localToGlobal(Offset.zero) & box.size,
       items: items,
-      label: label,
+      semanticLabel: label,
     );
   };
 }

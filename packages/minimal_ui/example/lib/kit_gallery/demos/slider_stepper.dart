@@ -241,14 +241,14 @@ class _StreakState extends State<_Streak> {
           ),
           MinimalIconButton(
             LucideIcons.minus,
-            label: 'Shorter streak',
+            semanticLabel: 'Shorter streak',
             variant: MinimalIconButtonVariant.outline,
             onPressed: _streak > 0 ? () => setState(() => _streak -= 1) : null,
           ),
           const MinimalGap(6),
           MinimalIconButton(
             LucideIcons.plus,
-            label: 'Longer streak',
+            semanticLabel: 'Longer streak',
             variant: MinimalIconButtonVariant.outline,
             onPressed: () => setState(() => _streak += 1),
           ),

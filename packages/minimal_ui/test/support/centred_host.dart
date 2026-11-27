@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 /// [child] centred on a page under a MinimalHost at [brightness]. The host
 /// stands above the Navigator, as an app mounts it, so overlays (a dialog, a

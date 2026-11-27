@@ -17,14 +17,14 @@ import 'tag.dart';
 /// quarter arc turns once a second unless reduced motion is enabled.
 ///
 /// ```dart
-/// MinimalCircularProgressIndicator(label: 'Syncing')
+/// MinimalCircularProgressIndicator(semanticLabel: 'Syncing')
 /// ```
 class MinimalCircularProgressIndicator extends StatefulWidget {
   /// A spinning ring.
   const MinimalCircularProgressIndicator({
     super.key,
     this.value,
-    this.label,
+    this.semanticLabel,
     this.size = 16,
     this.strokeWidth = 2,
     this.tone = MinimalTone.primary,
@@ -35,7 +35,7 @@ class MinimalCircularProgressIndicator extends StatefulWidget {
   final double? value;
 
   /// What a screen reader hears; null says the localized "Loading".
-  final String? label;
+  final String? semanticLabel;
 
   /// Its diameter.
   final double size;
@@ -56,7 +56,7 @@ class MinimalCircularProgressIndicator extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DoubleProperty('value', value, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('size', size, defaultValue: 16))
       ..add(DoubleProperty('strokeWidth', strokeWidth, defaultValue: 2))
       ..add(
@@ -103,7 +103,7 @@ class _MinimalCircularProgressIndicatorState
     final t = context.minimalTheme;
     final value = widget.value;
     return Semantics(
-      label: widget.label ?? MinimalLocalizations.of(context).loading,
+      label: widget.semanticLabel ?? MinimalLocalizations.of(context).loading,
       value: value == null ? null : '${(value.clamp(0.0, 1.0) * 100).round()}%',
       child: SizedBox.square(
         dimension: widget.size,

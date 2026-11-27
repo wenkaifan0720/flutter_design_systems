@@ -125,7 +125,7 @@ Widget kitSpecimenTooltipIcons() => kitRow([
     message: 'Archive',
     child: MinimalIconButton(
       LucideIcons.archive,
-      label: 'Archive',
+      semanticLabel: 'Archive',
       onPressed: () {},
     ),
   ),
@@ -133,7 +133,7 @@ Widget kitSpecimenTooltipIcons() => kitRow([
     message: 'Copy link',
     child: MinimalIconButton(
       LucideIcons.link,
-      label: 'Copy link',
+      semanticLabel: 'Copy link',
       onPressed: () {},
     ),
   ),

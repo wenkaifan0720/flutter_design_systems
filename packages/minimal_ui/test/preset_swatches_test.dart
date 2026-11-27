@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 import '../example/lib/kit_gallery/demos/foundations.dart';
 import '../example/lib/kit_gallery/kit.dart';
@@ -42,8 +41,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('PRESETS'), findsOneWidget);
-      expect(MinimalThemeData.presets, hasLength(greaterThanOrEqualTo(3)));
-      for (final id in MinimalThemeData.presets) {
+      expect([
+        for (final palette in MinimalThemeData.palettes) palette.id,
+      ], hasLength(greaterThanOrEqualTo(3)));
+      for (final id in [
+        for (final palette in MinimalThemeData.palettes) palette.id,
+      ]) {
         expect(find.text(id), findsOneWidget, reason: id);
         for (final b in Brightness.values) {
           final preset = MinimalThemeData.preset(id, b);

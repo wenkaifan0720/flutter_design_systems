@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 
 const _habits = [
@@ -72,7 +71,7 @@ void main() {
       alignment: AlignmentDirectional.centerStart,
       child: MinimalMenu.button(
         Icons.more_horiz,
-        label: 'Habit actions',
+        semanticLabel: 'Habit actions',
         items: [
           for (final h in _habits.take(5)) MinimalMenuItem(h, onPressed: () {}),
           MinimalMenuItem(

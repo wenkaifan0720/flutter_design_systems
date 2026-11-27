@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
+import '../internal/page_measure.dart';
 import '../theme.dart';
 import 'shell_frame.dart';
 import 'states.dart';
@@ -33,6 +34,11 @@ import 'route_chrome.dart';
 /// In a sheet the screen is as tall as its content (up to the card's cap):
 /// the card, not the screen, is the surface.
 ///
+/// On a wide window [maxWidth] holds the page to a measure on its start
+/// edge: the body, the [topBar]'s title and actions and the [footer]'s
+/// content stand in one column, so an action never sits a window's width
+/// from what it acts on. [MinimalLayout.contentWidth] is Minimal's measure.
+///
 /// ```dart
 /// MinimalScaffold(topBar: MinimalAppBar(title: 'Today', subtitle: 'Fri 28 Aug'), padding: EdgeInsets.zero, body: Column(children: rows))
 /// ```
@@ -47,6 +53,7 @@ class MinimalScaffold extends StatelessWidget {
     this.scroll = true,
     this.padding,
     this.fullBleed = false,
+    this.maxWidth,
   }) : assert(
          footer == null || floating == null,
          'footer and floating both claim the bottom edge — pick one',
@@ -54,6 +61,12 @@ class MinimalScaffold extends StatelessWidget {
 
   /// The page's content.
   final Widget body;
+
+  /// The widest the page's column grows, its padding included: the body,
+  /// the [topBar]'s title and actions and the [footer]'s content stand in
+  /// it, on the start edge; the bar's and the footer's hairlines still span
+  /// the page. Null spans the page's whole width.
+  final double? maxWidth;
 
   /// Usually a [MinimalAppBar]. Unset, a root has no bar and a pushed or
   /// sheet page gets the bare derived one.
@@ -148,7 +161,11 @@ class MinimalScaffold extends StatelessWidget {
                 double.infinity,
               ),
             ),
-            child: footer,
+            child: MinimalPageMeasure.hold(
+              footer,
+              maxWidth: maxWidth,
+              inset: 2 * MinimalChromeMetrics.gutter,
+            ),
           ),
         ),
       );
@@ -175,24 +192,29 @@ class MinimalScaffold extends StatelessWidget {
     final bottomReserve = math.max(bodyInset, floatAllowance);
 
     final barHeight = bar == null ? 0.0 : MinimalChromeMetrics.barHeight;
+    final basePad = (padding ?? MinimalInsets.screen).resolve(
+      Directionality.of(context),
+    );
+    final scrolled =
+        scroll && !(body is MinimalLoadingState || body is MinimalErrorState);
+    final measured = MinimalPageMeasure.hold(
+      body,
+      maxWidth: maxWidth,
+      inset: scrolled ? basePad.horizontal : 0,
+    );
     final pageBody = fullBleed
         ? MediaQuery(
             data: mq.copyWith(
               padding: mq.padding.copyWith(top: mq.padding.top + barHeight),
             ),
-            child: body,
+            child: measured,
           )
-        : body;
-
-    final basePad = (padding ?? MinimalInsets.screen).resolve(
-      Directionality.of(context),
-    );
+        : measured;
     // A loading or error state that IS the page has nothing to scroll: it
     // takes the height under the bar, so it stands in the middle of the
     // glass rather than at the top of an unbounded scroll view.
-    final whole = body is MinimalLoadingState || body is MinimalErrorState;
     final Widget content;
-    if (scroll && !whole) {
+    if (scrolled) {
       content = MediaQuery.removePadding(
         context: context,
         removeBottom: true,
@@ -253,7 +275,7 @@ class MinimalScaffold extends StatelessWidget {
       );
     }
 
-    return Scaffold(
+    final page = Scaffold(
       backgroundColor: t.background,
       body: Stack(
         children: [
@@ -275,6 +297,10 @@ class MinimalScaffold extends StatelessWidget {
         ],
       ),
     );
+    final measure = maxWidth;
+    return measure == null
+        ? page
+        : MinimalPageMeasure(maxWidth: measure, child: page);
   }
 
   static const EdgeInsets _sheetPadding = EdgeInsets.fromLTRB(
@@ -296,7 +322,8 @@ class MinimalScaffold extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(FlagProperty('fullBleed', value: fullBleed, ifTrue: 'fullBleed'));
+      ..add(FlagProperty('fullBleed', value: fullBleed, ifTrue: 'fullBleed'))
+      ..add(DoubleProperty('maxWidth', maxWidth, defaultValue: null));
   }
 }
 

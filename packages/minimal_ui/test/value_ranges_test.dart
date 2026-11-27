@@ -50,7 +50,7 @@ void main() {
           MinimalMeter(label: 'Storage', value: 1, warningAt: _(1.5)),
       'ring without a size': () => MinimalCircularProgressIndicator(size: _(0)),
       'bar without a height': () =>
-          MinimalLinearProgressIndicator(label: 'Upload', height: _(0)),
+          MinimalLinearProgressIndicator(semanticLabel: 'Upload', height: _(0)),
     };
     for (final MapEntry(key: name, value: build) in cases.entries) {
       expect(build, throwsAssertionError, reason: name);

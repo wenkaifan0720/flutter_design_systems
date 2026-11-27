@@ -50,15 +50,6 @@ abstract final class MinimalChromeMetrics {
   /// The root title's size (the face and weight are the theme's h2).
   static const double barTitle = 17;
 
-  /// A sheet's header band before minimal_ui 0.7.0, when it held the close's
-  /// 44 px target. The band now stands at the tap floor in force.
-  @Deprecated(
-    'The sheet header stands at the tap floor in force: '
-    'RawTapTargets.of(context).floorOn(). '
-    'This feature was deprecated after minimal_ui 0.7.0 and goes in 0.8.0.',
-  )
-  static const double sheetBar = 44;
-
   /// The sheet header's context pill: its side padding and its corners.
   static const double sheetPillPad = 7;
 

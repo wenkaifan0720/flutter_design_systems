@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 import 'faces.dart';
 import 'support/padded_host.dart';
@@ -138,7 +137,9 @@ void main() {
         ),
         home: Center(child: MinimalSwitch(value: true, onChanged: (_) {})),
       );
-      for (final preset in MinimalThemeData.presets) {
+      for (final preset in [
+        for (final palette in MinimalThemeData.palettes) palette.id,
+      ]) {
         await tester.pumpWidget(host(preset, Brightness.light));
         await tester.pumpAndSettle();
         expect(thumb(), MinimalThemeData.preset(preset, Brightness.light).card);

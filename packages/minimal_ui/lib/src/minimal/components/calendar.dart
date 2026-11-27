@@ -238,7 +238,7 @@ class _Grid extends StatelessWidget {
                   alignment: AlignmentDirectional.centerEnd,
                   child: MinimalIconButton(
                     LucideIcons.chevronLeftDir,
-                    label: words.previousMonth,
+                    semanticLabel: words.previousMonth,
                     size: MinimalButtonSize.small,
                     onPressed:
                         h.previous ??
@@ -253,7 +253,7 @@ class _Grid extends StatelessWidget {
                   alignment: AlignmentDirectional.centerEnd,
                   child: MinimalIconButton(
                     LucideIcons.chevronRightDir,
-                    label: words.nextMonth,
+                    semanticLabel: words.nextMonth,
                     size: MinimalButtonSize.small,
                     onPressed:
                         h.next ??

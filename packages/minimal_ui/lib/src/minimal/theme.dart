@@ -32,7 +32,7 @@ import 'shapes.dart';
 /// and selection, a divider, a scaffold's ground), and no Minimal component
 /// reads it for a token.
 
-/// 4pt spacing scale.
+/// The spacing scale: steps of 4 px, with 2 px for a hairline's air.
 abstract final class MinimalSpacing {
   /// 2 px: a hairline's air, a badge's offset.
   static const double s2 = 2;
@@ -339,28 +339,19 @@ class MinimalIcon extends StatelessWidget {
   }
 }
 
-/// Responsive layout invariants shared by Minimal apps.
+/// The window widths Minimal's layout changes at, and the measures it
+/// keeps. Under [compact] a phone's layout (one column, a tab bar), from
+/// [expanded] a desktop's (a sidebar, the widest measure), a rail between.
+/// The shell, the sheets, the dialogs and the pickers all read these two;
+/// an app that lays out by the window reads them too, not numbers of its
+/// own.
 abstract final class MinimalLayout {
   /// Below this width the layout is a phone's: one column, a tab bar.
   static const double compact = 600;
 
-  /// From this width the layout is a desktop's: a rail, the widest measure.
+  /// From this width the layout is a desktop's: a sidebar, the widest
+  /// measure.
   static const double expanded = 960;
-
-  /// The touch-target floor Minimal declared before ui_core 0.7.0 moved a
-  /// finger's floor to 40. Read the floor in force instead.
-  @Deprecated(
-    'Read the floor in force: RawTapTargets.of(context).floorOn(). '
-    'This feature was deprecated after minimal_ui 0.7.0 and goes in 0.8.0.',
-  )
-  static const double minHitTarget = 44;
-
-  /// The pointer's target floor (WCAG 2.5.8).
-  @Deprecated(
-    'Read the floor in force: RawTapTargets.of(context).floorOn(). '
-    'This feature was deprecated after minimal_ui 0.7.0 and goes in 0.8.0.',
-  )
-  static const double pointerHitTarget = 24;
 
   /// Minimal's floors, declared by [MinimalTheme] for the parts under it:
   /// 40 by 40 for a finger, 24 by 24 for a pointer (WCAG 2.5.8). Density
@@ -1131,25 +1122,61 @@ class MinimalThemeData with Diagnosticable {
   factory MinimalThemeData.berry([Brightness brightness = Brightness.light]) =>
       MinimalThemeData.preset('berry', brightness);
 
-  /// The preset ids [preset] builds, the default first. Each is designed in
-  /// light and dark.
-  static const List<String> presets = <String>[
-    'standard',
-    'graphite',
-    'ember',
-    'iris',
-    'lagoon',
-    'berry',
+  /// The palettes [preset] builds, the default first, each designed by day
+  /// and by night: what an app's palette picker lists (each [RawNamedPalette]
+  /// its label and its accent and ground as swatches) and the [RawNamedPalette.id]
+  /// an app stores and hands back to [preset] or [MinimalHost.palette].
+  /// `standard` spends a blue accent, `graphite` the ink itself, `ember`
+  /// an orange on warm neutrals, `iris` a purple on cool greys, `lagoon` a
+  /// cyan on slate greys and `berry` a magenta on zinc greys.
+  static const List<RawNamedPalette> palettes = <RawNamedPalette>[
+    RawNamedPalette(
+      id: 'standard',
+      label: 'Standard',
+      swatches: [Color(0xFF3E63DD), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFF4669E0), Color(0xFF0E0E11)],
+    ),
+    RawNamedPalette(
+      id: 'graphite',
+      label: 'Graphite',
+      swatches: [Color(0xFF17171A), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFEDEDF0), Color(0xFF0E0E11)],
+    ),
+    RawNamedPalette(
+      id: 'ember',
+      label: 'Ember',
+      swatches: [Color(0xFFE5602F), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFFF8A5C), Color(0xFF110F0E)],
+    ),
+    RawNamedPalette(
+      id: 'iris',
+      label: 'Iris',
+      swatches: [Color(0xFF9417CF), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFC05EED), Color(0xFF0E0E13)],
+    ),
+    RawNamedPalette(
+      id: 'lagoon',
+      label: 'Lagoon',
+      swatches: [Color(0xFF0E7490), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFF22B8D6), Color(0xFF0C0E13)],
+    ),
+    RawNamedPalette(
+      id: 'berry',
+      label: 'Berry',
+      swatches: [Color(0xFFB0278F), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFE86AB8), Color(0xFF0D0E13)],
+    ),
   ];
 
-  /// The theme for one preset in one appearance. `standard` spends a blue
-  /// accent, `graphite` spends the ink itself, `ember` runs warm neutrals
-  /// under an orange accent (with its own cooler crimson for danger, so the
-  /// two never read as one colour), `iris` a purple on cool greys, `lagoon`
-  /// a cyan on slate greys and `berry` a magenta on zinc greys. Throws
-  /// [ArgumentError] for an id that is not in [presets]. The same id and
+  /// The theme for one of [palettes], by its id, in one appearance. Throws
+  /// [ArgumentError] for an id that is not one of theirs (an app restoring a
+  /// stored id it no longer trusts reads [palettes] first). The same id and
   /// brightness always return the same instance, so a rebuild that asks
   /// again notifies nothing.
+  ///
+  /// ```dart
+  /// MinimalThemeData.preset(MinimalThemeData.palettes[2].id, Brightness.dark)
+  /// ```
   factory MinimalThemeData.preset(String id, Brightness brightness) {
     // Iris, lagoon and berry are drawn from their two colours as [from]
     // draws a brand: every role in its own hue, at the presets' bars.
@@ -1173,7 +1200,8 @@ class MinimalThemeData with Diagnosticable {
       _ => throw ArgumentError.value(
         id,
         'id',
-        'not a Minimal preset (${presets.join(', ')})',
+        'not one of Minimal\'s palettes '
+            '(${[for (final palette in palettes) palette.id].join(', ')})',
       ),
     };
     return _presets[(id, brightness)] ??= MinimalThemeData(
@@ -1241,7 +1269,7 @@ class MinimalThemeData with Diagnosticable {
   /// What's in scope at [context]; the same as [MinimalTheme.of].
   static MinimalThemeData of(BuildContext context) => MinimalTheme.of(context);
 
-  /// Which preset this is (one of [presets]), or `custom`.
+  /// Which of [palettes] this is (its id), or `custom`.
   final String id;
 
   /// The colour roles.

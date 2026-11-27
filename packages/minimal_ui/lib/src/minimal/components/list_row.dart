@@ -236,6 +236,76 @@ class MinimalListTile extends StatelessWidget {
             ),
           );
 
+    // The title and what stands under it.
+    final Widget words = Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: twoLines ? MinimalSpacing.s8 : MinimalSpacing.s4,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // A one-line row's title stands on the row's middle by
+          // its capitals; over a subtitle it keeps its line.
+          if (sub == null && below == null)
+            minimalCapLabel(
+              Text(
+                title,
+                style: t.body.medium.c(titleColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            )
+          else
+            Text(
+              title,
+              style: t.body.medium.c(titleColor),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          if (sub != null) ...[
+            const MinimalGap(MinimalSpacing.s2),
+            Text(
+              sub,
+              style: caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (below != null) ...[
+            const MinimalGap(MinimalSpacing.s4),
+            DefaultTextStyle.merge(
+              style: caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              child: below,
+            ),
+          ],
+          if (stacked) ...[
+            const MinimalGap(MinimalSpacing.s4),
+            Wrap(
+              spacing: _gap,
+              runSpacing: MinimalSpacing.s4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [?trail, ?metaText],
+            ),
+          ],
+        ],
+      ),
+    );
+
+    // The trailing part on the line, held to two thirds of it (a long tag
+    // ellipsizes, the title keeps a third); last in the row, a control stands
+    // on the end keyline.
+    final Widget? endPart = trail == null || stacked
+        ? null
+        : metaText == null
+        ? MinimalTapAlignment(
+            alignment: AlignmentDirectional.centerEnd,
+            child: trail,
+          )
+        : trail;
+
     // The content line spans the row's whole box — its height and its side
     // padding — so a leading or trailing control's target stands inside it
     // rather than being cut off at a padded inner edge. The side
@@ -267,78 +337,14 @@ class MinimalListTile extends StatelessWidget {
               ),
               const MinimalGap(_gap),
             ] else if (lead != null) ...[
-              slot(lead),
+              slot(MinimalRowLeading(title: title, child: lead)),
               const MinimalGap(_gap),
             ],
             Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: twoLines ? MinimalSpacing.s8 : MinimalSpacing.s4,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // A one-line row's title stands on the row's middle by
-                    // its capitals; over a subtitle it keeps its line.
-                    if (sub == null && below == null)
-                      minimalCapLabel(
-                        Text(
-                          title,
-                          style: t.body.medium.c(titleColor),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      )
-                    else
-                      Text(
-                        title,
-                        style: t.body.medium.c(titleColor),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    if (sub != null) ...[
-                      const MinimalGap(MinimalSpacing.s2),
-                      Text(
-                        sub,
-                        style: caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    if (below != null) ...[
-                      const MinimalGap(MinimalSpacing.s4),
-                      DefaultTextStyle.merge(
-                        style: caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        child: below,
-                      ),
-                    ],
-                    if (stacked) ...[
-                      const MinimalGap(MinimalSpacing.s4),
-                      Wrap(
-                        spacing: _gap,
-                        runSpacing: MinimalSpacing.s4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [?trail, ?metaText],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+              child: endPart == null
+                  ? words
+                  : MinimalRowLine(title: words, end: endPart, gap: _gap),
             ),
-            if (trail != null && !stacked) ...[
-              const MinimalGap(_gap),
-              // Last in the row, a control stands on the end keyline.
-              if (metaText == null)
-                MinimalTapAlignment(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: trail,
-                )
-              else
-                trail,
-            ],
             if (metaText != null && !stacked) ...[
               const MinimalGap(_gap),
               if (metaWidth == null)

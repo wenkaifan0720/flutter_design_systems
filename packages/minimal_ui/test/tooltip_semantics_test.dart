@@ -29,7 +29,11 @@ void main() {
   final keys = <String, (String, Widget)>{
     'MinimalIconButton': (
       'Copy link',
-      MinimalIconButton(LucideIcons.link, label: 'Copy link', onPressed: () {}),
+      MinimalIconButton(
+        LucideIcons.link,
+        semanticLabel: 'Copy link',
+        onPressed: () {},
+      ),
     ),
     'MinimalButton': ('Archive', MinimalButton('Archive', onPressed: () {})),
   };

@@ -77,6 +77,7 @@ import 'components/toggle_group.dart';
 import 'components/tooltip.dart';
 import 'components/top_bar.dart';
 import 'theme.dart';
+import 'components/nav_item.dart';
 
 void _none() {}
 
@@ -189,7 +190,7 @@ final RawInventory minimalInventory = RawInventory(
       'IconButton',
       (_) => const MinimalIconButton(
         LucideIcons.search,
-        label: 'Search',
+        semanticLabel: 'Search',
         onPressed: _none,
       ),
     ),
@@ -220,7 +221,7 @@ final RawInventory minimalInventory = RawInventory(
     _live(
       'ToggleGroup',
       (_) => MinimalToggleGroup<String>(
-        label: 'View',
+        semanticLabel: 'View',
         selected: const {'list'},
         onSelectionChanged: (_) {},
         items: const [
@@ -301,7 +302,7 @@ final RawInventory minimalInventory = RawInventory(
       'Checkbox',
       (_) => MinimalCheckbox(
         value: true,
-        label: 'Agree to the guidelines',
+        semanticLabel: 'Agree to the guidelines',
         onChanged: (_) {},
       ),
     ),
@@ -368,7 +369,11 @@ final RawInventory minimalInventory = RawInventory(
     ),
     _live(
       'Rating',
-      (_) => MinimalRating(value: 4, label: 'Your rating', onChanged: (_) {}),
+      (_) => MinimalRating(
+        value: 4,
+        semanticLabel: 'Your rating',
+        onChanged: (_) {},
+      ),
     ),
     _live(
       'FileUpload',
@@ -667,7 +672,7 @@ final RawInventory minimalInventory = RawInventory(
       (context) => MinimalScrollArea(
         height: 120,
         alwaysShown: true,
-        label: 'Release notes',
+        semanticLabel: 'Release notes',
         padding: const EdgeInsetsDirectional.only(start: MinimalCard.inset),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -927,7 +932,7 @@ final RawInventory minimalInventory = RawInventory(
         message: 'Archive',
         child: MinimalIconButton(
           LucideIcons.archive,
-          label: 'Archive',
+          semanticLabel: 'Archive',
           onPressed: _none,
         ),
       ),
@@ -935,7 +940,7 @@ final RawInventory minimalInventory = RawInventory(
     _live(
       'Menu',
       (_) => const MinimalMenu(
-        label: 'Habit actions',
+        semanticLabel: 'Habit actions',
         items: [MinimalMenuItem('Rename', onPressed: _none)],
         child: MinimalIcon(LucideIcons.ellipsis),
       ),
@@ -954,7 +959,10 @@ final RawInventory minimalInventory = RawInventory(
     // Feedback
     _live(
       'LinearProgressIndicator',
-      (_) => const MinimalLinearProgressIndicator(value: 0.62, label: 'Upload'),
+      (_) => const MinimalLinearProgressIndicator(
+        value: 0.62,
+        semanticLabel: 'Upload',
+      ),
     ),
     _live(
       'CircularProgressIndicator',
@@ -1095,7 +1103,7 @@ double _overhangOf(String id, MinimalThemeData t) => switch (id) {
 /// What a lone check prints after its square: the words it announces, as a
 /// form sets them beside it (the part itself only announces them).
 String? _wordsOf(Widget? specimen) =>
-    specimen is MinimalCheckbox ? specimen.label : null;
+    specimen is MinimalCheckbox ? specimen.semanticLabel : null;
 
 /// [minimalInventory] listed in Minimal's own hand: each group under a
 /// section header counting the rows Minimal carries, each row its name in

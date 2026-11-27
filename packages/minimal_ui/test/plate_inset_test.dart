@@ -224,7 +224,9 @@ void main() {
     }
   }
 
-  for (final preset in MinimalThemeData.presets) {
+  for (final preset in [
+    for (final palette in MinimalThemeData.palettes) palette.id,
+  ]) {
     for (final light in Brightness.values) {
       testWidgets(
         'field hints and disabled labels have readable contrast in $preset $light',
@@ -348,7 +350,9 @@ void main() {
       const MinimalInputRow(labelText: 'Habit', hintText: 'Morning run'),
     ),
   ];
-  for (final preset in MinimalThemeData.presets) {
+  for (final preset in [
+    for (final palette in MinimalThemeData.palettes) palette.id,
+  ]) {
     for (final light in Brightness.values) {
       for (final (prompt, field) in prompts) {
         testWidgets('the prompt "$prompt" reads at 4.5:1 in $preset $light', (
@@ -790,6 +794,10 @@ void main() {
                   .floor();
               // From the shot's side to the field's outline, then the accent
               // run that starts there.
+              // A field in error keeps its danger edge when focused.
+              final ink = name.endsWith('in error')
+                  ? theme.destructive
+                  : theme.ring;
               (int, int) band(_Pixels shot, {required bool left}) {
                 int at(int i) => left ? i : shot.width - 1 - i;
                 var i = 0;
@@ -797,7 +805,7 @@ void main() {
                   i++;
                 }
                 final outline = i;
-                while (shot.near(at(i), y, theme.ring)) {
+                while (shot.near(at(i), y, ink)) {
                   i++;
                 }
                 return (outline, i - outline);
@@ -823,10 +831,14 @@ void main() {
                   reason:
                       '$name: 1.5 px of accent at the $side edge, at DPR $_dpr',
                 );
+                // At rest a field in error wears its danger hairline; any
+                // other wears no accent.
                 expect(
                   band(rest, left: left).$2,
-                  0,
-                  reason: '$name: no accent at rest',
+                  name.endsWith('in error')
+                      ? (theme.hairline * _dpr).round()
+                      : 0,
+                  reason: '$name: no focus edge at rest',
                 );
               }
               focus.unfocus();

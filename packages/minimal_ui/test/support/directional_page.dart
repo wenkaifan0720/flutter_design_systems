@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 /// [child] on a full-bleed page [width] wide at [scale], read [direction].
 Widget directionalPage(

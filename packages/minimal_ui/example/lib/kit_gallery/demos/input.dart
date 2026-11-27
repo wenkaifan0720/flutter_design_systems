@@ -15,6 +15,7 @@ Widget kitInputDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Input & form',
   sections: [
+    kitSection('In a form', children: [_LiveFormField()]),
     kitSection(
       'Field',
       children: [
@@ -480,4 +481,34 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       UnconstrainedBox(constrainedAxis: Axis.horizontal, child: child);
+}
+
+/// A form's text field: the form checks it on submit and then as it is
+/// edited, its error in the danger ink.
+class _LiveFormField extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => MinimalForm(
+    onSubmit: () {},
+    child: Builder(
+      builder: (context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: MinimalSpacing.s16,
+        children: [
+          MinimalTextFormField(
+            labelText: 'Title',
+            required: true,
+            validator: (value) =>
+                (value ?? '').trim().isEmpty ? 'Enter a title' : null,
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: MinimalButton(
+              'Check',
+              onPressed: () => MinimalForm.submit(context),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

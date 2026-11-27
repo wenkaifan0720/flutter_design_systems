@@ -184,4 +184,4 @@ void main() {
 }
 
 bool Function(Widget) _labelled(String label) =>
-    (widget) => widget is MinimalIconButton && widget.label == label;
+    (widget) => widget is MinimalIconButton && widget.semanticLabel == label;

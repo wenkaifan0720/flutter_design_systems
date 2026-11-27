@@ -111,6 +111,9 @@ void setState(VoidCallback change) => change();
 // What a caller holds.
 final MinimalThemeData t = MinimalThemeData.standard();
 int page = 1;
+int place = 0;
+bool wide = true;
+String title = '';
 const int tab = 0;
 const int view = 0;
 const int filter = 1;
@@ -204,6 +207,38 @@ class InboxPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Text('Inbox');
+}
+
+class HomePage extends StatelessWidget {
+  /// The inbox.
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Home');
+}
+
+class BooksPage extends StatelessWidget {
+  /// The inbox.
+  const BooksPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Books');
+}
+
+class SettingsPage extends StatelessWidget {
+  /// The inbox.
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Settings');
+}
+
+class BookForm extends StatelessWidget {
+  /// The inbox.
+  const BookForm({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('New book');
 }
 
 /// An app's page, as the docs name one.
@@ -353,7 +388,7 @@ final Map<String, DocExample> _examples = {
       MinimalSparkline(weekly, height: 26, color: t.success),
   'MinimalCheckbox': (context) => MinimalCheckbox(
     value: done,
-    label: 'Meditate',
+    semanticLabel: 'Meditate',
     onChanged: (v) => setState(() => done = v),
   ),
   'MinimalCheckMark': (context) => const MinimalCheckMark(value: picked),
@@ -483,6 +518,7 @@ final Map<String, DocExample> _examples = {
     final sure =
         await showMinimalDialog<bool>(
           context,
+          isAlert: true,
           builder: (context) => const MinimalDialog(
             title: 'Archive habit?',
             confirmLabel: 'Archive',
@@ -499,7 +535,7 @@ final Map<String, DocExample> _examples = {
   'MinimalDivider': (context) => const MinimalDivider(label: 'or'),
   'MinimalCircularProgressIndicator': (context) => const TickerMode(
     enabled: false,
-    child: MinimalCircularProgressIndicator(label: 'Syncing'),
+    child: MinimalCircularProgressIndicator(semanticLabel: 'Syncing'),
   ),
   'MinimalSkeleton': (context) =>
       const TickerMode(enabled: false, child: MinimalSkeleton.text(lines: 3)),
@@ -577,18 +613,81 @@ final Map<String, DocExample> _examples = {
       const MinimalSectionHeader('Morning', count: '2/3'),
   'MinimalHeatmap': (context) => MinimalHeatmap(levels: last84, today: 81),
   'MaterialApp': (context) =>
-      () => MaterialApp.router(
-        routerConfig: router,
-        builder: (context, child) => MinimalHost(
-          light: MinimalThemeData.preset('standard', Brightness.light),
-          dark: MinimalThemeData.preset('standard', Brightness.dark),
-          child: child!,
-        ),
+      () => MaterialApp(
+        builder: (context, child) =>
+            MinimalHost(palette: MinimalThemeData.palettes[2], child: child!),
+        home: const HomePage(),
       ),
+  'MinimalThemeData.preset': (context) {
+    _use(
+      MinimalThemeData.preset(MinimalThemeData.palettes[2].id, Brightness.dark),
+    );
+    return null;
+  },
+  'MinimalAppShell': (context) => MinimalAppShell.branches(
+    destinations: const [
+      MinimalNavItem(LucideIcons.bookOpen, 'Books'),
+      MinimalNavItem(LucideIcons.settings, 'Settings'),
+    ],
+    selectedIndex: place,
+    onDestinationSelected: (index) => setState(() => place = index),
+    branches: [
+      (context) => const BooksPage(),
+      (context) => const SettingsPage(),
+    ],
+  ),
+  'MinimalAppShell.onExtendedChanged': (context) => MinimalAppShell(
+    destinations: const [
+      MinimalNavItem(LucideIcons.bookOpen, 'Books'),
+      MinimalNavItem(LucideIcons.settings, 'Settings'),
+    ],
+    selectedIndex: place,
+    onDestinationSelected: go,
+    extended: wide,
+    onExtendedChanged: (value) => setState(() => wide = value),
+    body: const BooksPage(),
+  ),
+  'MinimalShellAction': (context) {
+    _use(
+      MinimalShellAction(
+        icon: LucideIcons.plus,
+        label: 'Add a book',
+        onPressed: (context) => Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (context) => const BookForm())),
+      ),
+    );
+    return null;
+  },
+  'MinimalForm, a column': (context) => MinimalForm(
+    onSubmit: save,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: MinimalSpacing.s16,
+      children: [
+        MinimalTextFormField(
+          labelText: 'Title',
+          required: true,
+          validator: (value) =>
+              (value ?? '').trim().isEmpty ? 'Enter a title' : null,
+        ),
+      ],
+    ),
+  ),
+  'MinimalTextFormField': (context) => MinimalTextFormField(
+    labelText: 'Title',
+    required: true,
+    validator: (value) => (value ?? '').trim().isEmpty ? 'Enter a title' : null,
+    onSaved: (value) => title = value!,
+  ),
   'MinimalAppBar': (context) => const MinimalAppBar(
     title: 'Today',
     actions: [
-      MinimalIconButton(LucideIcons.search, label: 'Search', onPressed: search),
+      MinimalIconButton(
+        LucideIcons.search,
+        semanticLabel: 'Search',
+        onPressed: search,
+      ),
     ],
   ),
   'MinimalListTile': (context) => const MinimalListTile(
@@ -675,14 +774,14 @@ final Map<String, DocExample> _examples = {
     onPressed: rename,
   ),
   'MinimalMenu': (context) => const MinimalMenu(
-    label: 'Habit actions',
+    semanticLabel: 'Habit actions',
     items: [MinimalMenuItem('Rename', onPressed: rename)],
     child: moreGlyph,
   ),
   'MinimalMenu 2': (context) => const MinimalMenu.button(
     LucideIcons.arrowDownUp,
     text: 'Sort: $sort',
-    label: 'Sort habits',
+    semanticLabel: 'Sort habits',
     items: sorts,
   ),
   'MinimalMenuEntry': (context) => const MinimalMenuEntry(
@@ -828,7 +927,10 @@ final Map<String, DocExample> _examples = {
     child: const TodayPage(),
   ),
   'MinimalLinearProgressIndicator': (context) =>
-      const MinimalLinearProgressIndicator(value: 0.62, label: 'Upload'),
+      const MinimalLinearProgressIndicator(
+        value: 0.62,
+        semanticLabel: 'Upload',
+      ),
   'MinimalDescriptionList': (context) => const MinimalDescriptionList(
     properties: [
       MinimalProperty(
@@ -871,7 +973,7 @@ final Map<String, DocExample> _examples = {
   ),
   'MinimalRadio': (context) => MinimalRadio(
     selected: plan == 'pro',
-    label: 'Pro',
+    semanticLabel: 'Pro',
     onPressed: () => setPlan('pro'),
   ),
   'MinimalRadio.mark': (context) =>
@@ -895,7 +997,7 @@ final Map<String, DocExample> _examples = {
   'MinimalRating': (context) => MinimalRating(
     value: stars.toDouble(),
     onChanged: (v) => setState(() => stars = v),
-    label: 'Your rating',
+    semanticLabel: 'Your rating',
   ),
   'MinimalReveal': (context) => const MinimalReveal(
     visible: showNote,
@@ -1164,6 +1266,13 @@ final Map<String, DocExample> _examples = {
     selectedIndex: tab,
     onChanged: go,
   ),
+  'MinimalTabBar.controller': (context) {
+    final tabs = _own(RawTabController(length: 2, vsync: const TestVSync()));
+    return MinimalTabBar(
+      tabs: const ['Overview', 'Activity'],
+      controller: tabs,
+    );
+  },
   'MinimalTag': (context) =>
       const MinimalTag('Overdue', tone: MinimalTone.destructive),
   'MinimalTag 2': (context) =>
@@ -1219,7 +1328,7 @@ final Map<String, DocExample> _examples = {
     message: 'Archive',
     child: MinimalIconButton(
       LucideIcons.archive,
-      label: 'Archive',
+      semanticLabel: 'Archive',
       onPressed: archive,
     ),
   ),
@@ -1227,10 +1336,14 @@ final Map<String, DocExample> _examples = {
     title: 'Today',
     subtitle: 'Fri 28 Aug',
     actions: [
-      MinimalIconButton(LucideIcons.search, label: 'Search', onPressed: search),
+      MinimalIconButton(
+        LucideIcons.search,
+        semanticLabel: 'Search',
+        onPressed: search,
+      ),
       MinimalIconButton(
         LucideIcons.plus,
-        label: 'New habit',
+        semanticLabel: 'New habit',
         variant: MinimalIconButtonVariant.primary,
         onPressed: add,
       ),

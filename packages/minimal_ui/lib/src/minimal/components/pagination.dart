@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawFocusShown;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -93,7 +94,7 @@ class MinimalPagination extends StatelessWidget {
     final back = MinimalIconButton(
       rtl ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
       variant: MinimalIconButtonVariant.ghost,
-      label: l.previousPage,
+      semanticLabel: l.previousPage,
       onPressed: change == null || current == 0
           ? null
           : () => change(current - 1),
@@ -101,7 +102,7 @@ class MinimalPagination extends StatelessWidget {
     final on = MinimalIconButton(
       rtl ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
       variant: MinimalIconButtonVariant.ghost,
-      label: l.nextPage,
+      semanticLabel: l.nextPage,
       onPressed: change == null || current == pageCount - 1
           ? null
           : () => change(current + 1),
@@ -318,6 +319,18 @@ class MinimalPageDots extends StatefulWidget {
 }
 
 class _MinimalPageDotsState extends State<MinimalPageDots> {
+  // Focus shows as ui_core's parts show it: after a key, not after a
+  // click (on the web, a click that focuses through semantics too).
+  late final RawFocusShown _shown = RawFocusShown((shown) {
+    if (mounted) setState(() => _focus = shown);
+  });
+
+  @override
+  void dispose() {
+    _shown.dispose();
+    super.dispose();
+  }
+
   bool _focus = false;
 
   void _step(int by) {
@@ -416,7 +429,7 @@ class _MinimalPageDotsState extends State<MinimalPageDots> {
       onDecrease: selected > 0 ? () => _step(-1) : null,
       child: ExcludeSemantics(
         child: FocusableActionDetector(
-          onShowFocusHighlight: (v) => setState(() => _focus = v),
+          onFocusChange: _shown.focused,
           mouseCursor: SystemMouseCursors.click,
           shortcuts: minimalSeekShortcuts,
           actions: <Type, Action<Intent>>{

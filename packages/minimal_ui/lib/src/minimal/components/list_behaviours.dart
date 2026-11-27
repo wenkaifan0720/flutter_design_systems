@@ -339,7 +339,7 @@ class MinimalTreeView<T extends Object> extends StatefulWidget {
     this.initiallyExpanded = const [],
     this.onSelected,
     this.onActivate,
-    this.label,
+    this.semanticLabel,
   });
 
   /// The top nodes.
@@ -364,7 +364,7 @@ class MinimalTreeView<T extends Object> extends StatefulWidget {
   final ValueChanged<T>? onActivate;
 
   /// What a screen reader calls the tree.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   State<MinimalTreeView<T>> createState() => _MinimalTreeViewState<T>();
@@ -390,7 +390,7 @@ class MinimalTreeView<T extends Object> extends StatefulWidget {
       ..add(IterableProperty<T>('initiallyExpanded', initiallyExpanded))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -432,7 +432,7 @@ class _MinimalTreeViewState<T extends Object>
       controller: _tree,
       labelOf: widget.labelOf,
       onActivate: widget.onActivate,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       levelHint: words.treeLevel,
       rowBuilder: (context, item) {
         final node = item.row.node;

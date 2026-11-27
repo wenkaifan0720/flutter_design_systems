@@ -5,11 +5,10 @@ import 'package:minimal_ui/minimal_ui.dart';
 
 void main() => runApp(
   MaterialApp(
-    builder: (context, child) =>
-        MinimalTheme(data: MinimalThemeData.standard(), child: child!),
+    builder: (context, child) => MinimalHost(child: child!),
     home: const MinimalScaffold(
-      topBar: MinimalAppBar(title: 'Requests'),
-      body: MinimalListTile(title: 'Replace the lobby lights', meta: 'REQ-142'),
+      topBar: MinimalAppBar(title: 'Books'),
+      body: MinimalListTile(title: 'Middlemarch', meta: 'George Eliot'),
     ),
   ),
 );

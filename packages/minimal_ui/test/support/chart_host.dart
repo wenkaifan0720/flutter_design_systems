@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 /// [child] centred on a page with 18 px round it, under a MinimalHost in
 /// [preset] that stands above the Navigator, at [brightness], read

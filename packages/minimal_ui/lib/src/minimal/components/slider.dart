@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawFocusShown;
 
 import '../component_themes.dart';
 import '../internal/controls.dart';
@@ -184,6 +185,18 @@ const double _track = 4;
 const double _tickRadius = 1.5;
 
 class _MinimalSliderState extends State<MinimalSlider> {
+  // Focus shows as ui_core's parts show it: after a key, not after a
+  // click (on the web, a click that focuses through semantics too).
+  late final RawFocusShown _shown = RawFocusShown((shown) {
+    if (mounted) setState(() => _focus = shown);
+  });
+
+  @override
+  void dispose() {
+    _shown.dispose();
+    super.dispose();
+  }
+
   bool _down = false;
   bool _focus = false;
 
@@ -377,7 +390,7 @@ class _MinimalSliderState extends State<MinimalSlider> {
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       enabled: enabled,
-      onShowFocusHighlight: (on) => setState(() => _focus = on),
+      onFocusChange: _shown.focused,
       // A slider drags: the open hand, closed while it holds the thumb.
       mouseCursor: !enabled
           ? SystemMouseCursors.basic

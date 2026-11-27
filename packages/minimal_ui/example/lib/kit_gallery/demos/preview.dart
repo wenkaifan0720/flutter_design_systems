@@ -68,7 +68,7 @@ class _PresentationsState extends State<_Presentations> {
                   ),
               ],
               value: _presentation,
-              label: 'Presentation',
+              semanticLabel: 'Presentation',
               onChanged: (p) => setState(() => _presentation = p),
             ),
           ),
@@ -216,12 +216,12 @@ class _HabitPage extends StatelessWidget {
         actions: [
           MinimalIconButton(
             LucideIcons.star,
-            label: 'Favourite',
+            semanticLabel: 'Favourite',
             onPressed: () {},
           ),
           MinimalIconButton(
             LucideIcons.ellipsis,
-            label: 'More',
+            semanticLabel: 'More',
             onPressed: () {},
           ),
         ],

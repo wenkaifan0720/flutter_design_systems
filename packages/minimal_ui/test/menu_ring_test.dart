@@ -14,7 +14,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
-import 'package:minimal_ui/minimal_host.dart';
 
 const _labels = ['Rename', 'Duplicate', 'Archive', 'Delete'];
 
@@ -46,7 +45,7 @@ Widget _host(Widget child, {Brightness brightness = Brightness.light}) =>
 Widget _button() => MinimalMenu.button(
   Icons.more_horiz,
   text: 'More',
-  label: 'Habit actions',
+  semanticLabel: 'Habit actions',
   items: _items(),
 );
 
@@ -235,7 +234,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         MinimalMenu(
-          label: 'Row actions',
+          semanticLabel: 'Row actions',
           trigger: MinimalMenuTrigger.longPress,
           items: _items(),
           child: const Text('Morning run'),

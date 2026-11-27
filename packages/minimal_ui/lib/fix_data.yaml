@@ -1,4 +1,5 @@
-# minimal_ui's renames, which `dart fix` makes: Flutter's names for Flutter's ideas (0.5.0).
+# minimal_ui's renames, which `dart fix` makes: Flutter's names for Flutter's ideas (0.5.0), and a label only a
+# screen reader hears named semanticLabel (0.8.0).
 version: 1
 transforms:
   - title: "Use MinimalToggleGroup's new parameter names"
@@ -952,3 +953,393 @@ transforms:
       - kind: 'renameParameter'
         oldName: 'hint'
         newName: 'hintText'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalCircularProgressIndicator'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalCircularProgressIndicator'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalComposerAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalComposerAction'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalCarouselView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalCarouselView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalMenu'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalCheckbox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalCheckbox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalCheckMark'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalCheckMark'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalPopover'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalPopover'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalRadio'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalRadio'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalMenuBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalMenuBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalLinearProgressIndicator'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalLinearProgressIndicator'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalTreeView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalTreeView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalScrollArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalScrollArea'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalResizable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalResizable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'button'
+      inClass: 'MinimalMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      method: 'popover'
+      inClass: 'MinimalMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      function: 'showMinimalMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalRating'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalRating'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalSegmentedButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalSegmentedButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
