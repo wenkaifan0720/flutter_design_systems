@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import 'hatch.dart';
 
-/// The source's engraving primitives, drawn on a canvas in the
+/// Ledger's engraving primitives, drawn on a canvas in the
 /// source's own units: every stroke width, dash and opacity is the one its
 /// SVG writes. Plumbing of the engravings.
 
@@ -54,7 +54,7 @@ double? Function(double x) ledgerInterp(List<Offset> points) {
   final xs = [for (final p in points) p.dx];
   return (x) {
     if (x < xs.first - 1e-9 || x > xs.last + 1e-9) return null;
-    // The first segment holding x, as the source walks them: one before
+    // The first segment holding x, as Ledger walks them: one before
     // the first point at or past x.
     var lo = 0, hi = xs.length;
     while (lo < hi) {

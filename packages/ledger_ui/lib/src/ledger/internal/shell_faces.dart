@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 /// The destinations ui_core's shell built (its navigation builder's), for a
 /// Ledger bar to lay out in place of presses of its own: [LedgerNavBar] and
-/// [LedgerSideBar] under [LedgerNavigationFrame]. Each paints its face
+/// [LedgerSideBar] under [LedgerAppShell]. Each paints its face
 /// through the bar's [LedgerDestinationFaces].
 class LedgerShellDestinations extends InheritedWidget {
   /// Publishes the shell's [destinations] to the bar in [child].

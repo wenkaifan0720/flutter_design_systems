@@ -6,7 +6,7 @@ import '../marks/marks.dart';
 import '../money/money.dart';
 import '../pressable/pressable.dart';
 
-/// A notification's row (`.note-row`): its glyph, its [title] on the dot
+/// A notification's row: its glyph, its [title] on the dot
 /// leader to [when] (the time today, else the date) and its [body] under
 /// it, the title free to wrap. An [unread] one stands on the green wash
 /// fading across (14 by 12 inside, 6 round), its glyph green, its title
@@ -140,7 +140,7 @@ class LedgerNoteRow extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: unread ? '$title, $unreadLabel' : title,
+      semanticLabel: unread ? '$title, $unreadLabel' : title,
       child: unread
           ? Container(
               padding: const EdgeInsets.symmetric(
@@ -166,7 +166,7 @@ class LedgerNoteRow extends StatelessWidget {
   }
 }
 
-/// What an act does, one line of it (`.effect`): a glyph (the ink's ring
+/// What an act does, one line of it: a glyph (the ink's ring
 /// for what stops), its [title] in the semibold over its words in the
 /// second ink at 14; 12 above and below.
 ///
@@ -237,11 +237,11 @@ class LedgerEffect extends StatelessWidget {
   }
 }
 
-/// What an act does, all of it (`.effects`): its [LedgerEffect]s one under
-/// another, a hairline between each and the next (`.effect`'s rule, none
+/// What an act does, all of it: its [LedgerEffect]s one under
+/// another, a hairline between each and the next (none
 /// under the last); 6 under what leads it. A freeze dialog's body under
 /// its lead, and the frozen card's notice ([ruled]: a hairline above the
-/// effects, under the 6, as `.frozen-banner .effects` has it).
+/// effects, under the 6).
 ///
 /// ```dart
 /// LedgerEffects(children: [LedgerEffect(icon: LucideIcons.ban, title: 'Declined', text: 'New purchases and cash withdrawals.', blocking: true), LedgerEffect(icon: LucideIcons.check, title: 'Still goes through', text: 'Autopay on Nov 12, refunds and payments.')])

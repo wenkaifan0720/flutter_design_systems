@@ -7,18 +7,20 @@ import '../../internal/cap_center.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
+import '../marks/marks.dart' show LedgerTag;
+
 /// The owner's avatar: their [initials] in the italic serif on a 36 ink
-/// disc, saying [label] (Profile and settings). A null [onTap] draws it
+/// disc, saying [semanticLabel] (Profile and settings). A null [onTap] draws it
 /// unpressable (the sidebar's foot presses as a whole).
 ///
 /// ```dart
-/// LedgerAvatar(initials: 'MH', label: 'Profile and settings', onTap: () {})
+/// LedgerAvatar(initials: 'MH', semanticLabel: 'Profile and settings', onTap: () {})
 /// ```
 class LedgerAvatar extends StatelessWidget {
-  /// The avatar of [initials], saying [label].
+  /// The avatar of [initials], saying [semanticLabel].
   const LedgerAvatar({
     required this.initials,
-    this.label,
+    this.semanticLabel,
     this.onTap,
     this.focusNode,
     this.autofocus = false,
@@ -36,7 +38,7 @@ class LedgerAvatar extends StatelessWidget {
   final AlignmentDirectional tapAlignment;
 
   /// What a press opens, spoken; null speaks the initials.
-  final String? label;
+  final String? semanticLabel;
 
   /// Opens the profile; null draws it unpressable.
   final VoidCallback? onTap;
@@ -60,7 +62,7 @@ class LedgerAvatar extends StatelessWidget {
       ..add(
         DiagnosticsProperty<AlignmentDirectional>('tapAlignment', tapAlignment),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -75,9 +77,13 @@ class LedgerAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
+    // With a larger text the disc and its letters grow with the words, to
+    // the marks' 130% at most ([LedgerTag.textScale]).
+    final scaler = MediaQuery.textScalerOf(context)
+        .clamp(maxScaleFactor: LedgerTag.textScale);
     final disc = Container(
-      width: LedgerChromeMetrics.avatar,
-      height: LedgerChromeMetrics.avatar,
+      width: LedgerChromeMetrics.avatar * scaler.scale(1),
+      height: LedgerChromeMetrics.avatar * scaler.scale(1),
       alignment: Alignment.center,
       decoration: BoxDecoration(shape: BoxShape.circle, color: t.avatar),
       // Its capitals on the disc's middle, as every face's label stands.
@@ -87,14 +93,14 @@ class LedgerAvatar extends StatelessWidget {
           initials,
           maxLines: 1,
           softWrap: false,
-          textScaler: TextScaler.noScaling,
+          textScaler: scaler,
           style: t.initials.colored(t.onAvatar),
         ),
       ),
     );
     if (onTap == null) {
       return Semantics(
-        label: label ?? initials,
+        label: semanticLabel ?? initials,
         excludeSemantics: true,
         child: disc,
       );
@@ -105,7 +111,7 @@ class LedgerAvatar extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onTap: onTap,
-        label: label ?? initials,
+        semanticLabel: semanticLabel ?? initials,
         radius: LedgerChromeMetrics.avatar / 2,
         child: disc,
       ),

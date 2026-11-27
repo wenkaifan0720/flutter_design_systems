@@ -102,7 +102,7 @@ class LedgerSearchEntry extends StatelessWidget {
         if (onFilterPressed != null)
           LedgerPressable(
             onTap: onFilterPressed,
-            label: filterLabel,
+            semanticLabel: filterLabel,
             value: filterCount > 0 ? '$filterCount in force' : null,
             radius: t.controlRadius,
             child: SizedBox.square(
@@ -166,7 +166,7 @@ class LedgerSearchEntry extends StatelessWidget {
     );
   }
 
-  // DERIVED: the filter square is the field's 46, 8 from it; its mark 16.
+  // The filter square is the field's 46, 8 from it; its mark 16.
   static const double _gap = 8;
   static const double _mark = 16;
   // The count's mark seated on the sliders glyph's upper corner, measured

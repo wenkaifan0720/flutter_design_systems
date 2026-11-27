@@ -1,8 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 /// Sets how far the buttons under it keep their words from their ends: a row of
-/// buttons sharing its width pads each 16 (`.form-actions-row .btn`,
-/// `.card-acts .btn`: padding 0 16px) where a button alone keeps 22. The row
+/// buttons sharing its width pads each 16 where a button alone keeps 22. The row
 /// wraps its buttons in it; [LedgerButtonEnds.of] tells a button its pad. A
 /// quiet button keeps its own 13. Plumbing of the components; pages never place
 /// one.

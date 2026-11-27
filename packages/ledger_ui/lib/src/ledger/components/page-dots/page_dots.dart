@@ -88,7 +88,12 @@ class LedgerPageDots extends StatelessWidget {
             TapTargetPadding(
               child: LedgerPressable(
                 onTap: i == page ? _stay : () => change(i),
-                label: ledgerPosition(context, 'Page', i + 1, pageCount),
+                semanticLabel: ledgerPosition(
+                  context,
+                  'Page',
+                  i + 1,
+                  pageCount,
+                ),
                 selected: i == page,
                 radius: _thick,
                 child: Builder(

@@ -129,21 +129,40 @@ class LedgerSwipeActions extends StatelessWidget {
     }
     painter.dispose();
     final count = math.max(1, math.max(leading.length, trailing.length));
-    return LayoutBuilder(
-      builder: (context, box) => RawSwipeActions(
-        startActions: [for (final a in leading) _design(a)],
-        endActions: [for (final a in trailing) _design(a)],
-        actionExtent: math.max(1.0, math.min(width, box.maxWidth / count)),
-        // A ledger's row never runs an act on a long swipe: it resists past
-        // its acts, and an act is taken by its press.
-        fullSwipe: false,
-        initiallyOpen: initiallyOpen,
-        actionBuilder: (context, action, details) =>
-            _Cell(action: action.data! as LedgerSwipeAction),
-        child: child,
+    // The row slides within its own edges: it never runs into the page's
+    // gutter, as an open row is cut where the list ends. The cut is at its
+    // sides only, so what a row draws under its face (a focused row's
+    // double rule) still shows.
+    return ClipRect(
+      clipper: const _SidesClipper(),
+      child: LayoutBuilder(
+        builder: (context, box) => RawSwipeActions(
+          startActions: [for (final a in leading) _design(a)],
+          endActions: [for (final a in trailing) _design(a)],
+          actionExtent: math.max(1.0, math.min(width, box.maxWidth / count)),
+          // A ledger's row never runs an act on a long swipe: it resists past
+          // its acts, and an act is taken by its press.
+          fullSwipe: false,
+          initiallyOpen: initiallyOpen,
+          actionBuilder: (context, action, details) =>
+              _Cell(action: action.data! as LedgerSwipeAction),
+          child: child,
+        ),
       ),
     );
   }
+}
+
+/// The row's own width, and the height of a row above and below it.
+class _SidesClipper extends CustomClipper<Rect> {
+  const _SidesClipper();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(0, -size.height, size.width, 2 * size.height);
+
+  @override
+  bool shouldReclip(_SidesClipper oldClipper) => false;
 }
 
 /// The action's icon and label on a solid background.

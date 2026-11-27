@@ -1,0 +1,50 @@
+// Each name ledger_ui 0.8.0 renamed, used once; dart fix renames it (ledger_ui_080.dart.expect).
+import 'package:ledger_ui/ledger_parts.dart';
+
+dynamic d;
+
+void constructors() {
+  LedgerPressable(onTap: d, child: d, semanticLabel: d);
+  LedgerRadioPress<Object>(value: d, enabled: d, child: d, semanticLabel: d);
+  LedgerMoreLink(d, onTap: d, semanticLabel: d);
+  LedgerAvatarStack(names: d, semanticLabel: d);
+  LedgerAvatar(initials: d, semanticLabel: d);
+  LedgerBadge(child: d, semanticLabel: d);
+  LedgerCheck(value: d, semanticLabel: d);
+  LedgerChipRow(children: d, semanticLabel: d);
+  LedgerFilters<Object>(options: d, value: d, semanticLabel: d);
+  LedgerWeekStrip(days: d, semanticLabel: d);
+  LedgerAppShell(
+    destinations: d,
+    selectedIndex: d,
+    onDestinationSelected: d,
+    body: d,
+  );
+  RawPalette.contrastRatio(d, d);
+}
+
+void fields(
+  LedgerPressable a0,
+  LedgerRadioPress<Object> a1,
+  LedgerMoreLink a2,
+  LedgerAvatarStack a3,
+  LedgerAvatar a4,
+  LedgerBadge a5,
+  LedgerCheck a6,
+  LedgerChipRow a7,
+  LedgerFilters<Object> a8,
+  LedgerToggleGroup<Object> a9,
+  LedgerWeekStrip a10,
+) {
+  a0.semanticLabel;
+  a1.semanticLabel;
+  a2.semanticLabel;
+  a3.semanticLabel;
+  a4.semanticLabel;
+  a5.semanticLabel;
+  a6.semanticLabel;
+  a7.semanticLabel;
+  a8.semanticLabel;
+  a9.semanticLabel;
+  a10.semanticLabel;
+}

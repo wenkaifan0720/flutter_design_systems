@@ -447,13 +447,13 @@ void main() {
           runSpacing: LedgerSpacing.s8,
           children: [
             LedgerFilters(
-              label: 'Direction',
+              semanticLabel: 'Direction',
               options: const ['All', 'Money in', 'Money out'],
               value: 'All',
               onChanged: direction.add,
             ),
             LedgerFilters<String>(
-              label: 'Account',
+              semanticLabel: 'Account',
               options: const ['Wren Card', 'Everyday'],
               value: null,
               onChanged: account.add,
@@ -498,7 +498,7 @@ void main() {
       await _everywhere(
         t,
         const LedgerFilters(
-          label: 'Direction',
+          semanticLabel: 'Direction',
           options: ['All', 'Money in', 'Money out'],
           value: 'All',
         ),
@@ -516,7 +516,7 @@ void main() {
       await _everywhere(
         t,
         const LedgerFilters(
-          label: 'Direction',
+          semanticLabel: 'Direction',
           options: ['All', 'Money in', 'Money out'],
           value: 'All',
         ),

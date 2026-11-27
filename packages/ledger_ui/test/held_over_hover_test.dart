@@ -14,7 +14,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _shot = ValueKey('control');
@@ -123,11 +122,11 @@ void main() {
     ),
     'chip': (LedgerChip('Paid', onTap: () {}), find.text('Paid')),
     'check': (
-      LedgerCheck(value: false, label: 'Pay rent', onChanged: (_) {}),
+      LedgerCheck(value: false, semanticLabel: 'Pay rent', onChanged: (_) {}),
       find.byType(LedgerCheck),
     ),
     'check, ticked': (
-      LedgerCheck(value: true, label: 'Pay rent', onChanged: (_) {}),
+      LedgerCheck(value: true, semanticLabel: 'Pay rent', onChanged: (_) {}),
       find.byType(LedgerCheck),
     ),
     'checkbox': (
@@ -221,7 +220,7 @@ void main() {
       find.text('October 2026'),
     ),
     'avatar': (
-      LedgerAvatar(initials: 'MH', label: 'Profile', onTap: () {}),
+      LedgerAvatar(initials: 'MH', semanticLabel: 'Profile', onTap: () {}),
       find.byType(LedgerAvatar),
     ),
     'file pick': (
@@ -244,7 +243,7 @@ void main() {
     ),
     'filter': (
       LedgerFilters(
-        label: 'Direction',
+        semanticLabel: 'Direction',
         options: const ['All', 'Money in', 'Money out'],
         value: 'All',
         onChanged: (_) {},
@@ -341,7 +340,7 @@ void main() {
       LedgerToggleGroup<String>(
         options: const ['Day', 'Week', 'Month'],
         selected: const {'Day'},
-        label: 'Range',
+        semanticLabel: 'Range',
         labelOf: (v) => v,
         onSelectionChanged: (_) {},
       ),

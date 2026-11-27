@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 
 /// Presses each of [radios] (a group's RawRadios, saying [values] in turn)
 /// at its start, its middle, its end, its top and its bottom, each time from
@@ -89,7 +88,7 @@ void main() {
                   ValueListenableBuilder(
                     valueListenable: pill,
                     builder: (context, value, _) => LedgerToggleGroup<String>(
-                      label: 'Range',
+                      semanticLabel: 'Range',
                       options: span,
                       labelOf: (v) => v,
                       selected: {value},

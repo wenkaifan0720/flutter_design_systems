@@ -78,7 +78,7 @@ class _Swatches extends StatelessWidget {
   }
 }
 
-/// The six presets ([LedgerThemeData.presets]) in the page's appearance,
+/// The six presets ([LedgerThemeData.palettes]) in the page's appearance,
 /// each a slip of its own paper under its own theme: its name, its inks and
 /// a line of money in beside one spent past a limit.
 class _Presets extends StatelessWidget {
@@ -97,7 +97,7 @@ class _Presets extends StatelessWidget {
             ? 2
             : 1;
         const gap = LedgerSpacing.s12;
-        const ids = LedgerThemeData.presets;
+        final ids = [for (final p in LedgerThemeData.palettes) p.id];
         Widget slip(String id) => LedgerTheme(
           data: LedgerThemeData.preset(
             id,

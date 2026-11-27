@@ -35,7 +35,7 @@ typedef _Widths = ({
 });
 
 /// [w] in a [room] narrower than its columns: `.tx`'s fixed columns need
-/// 760 with the day and time, which the source's 1024 to 1180 board lacks
+/// 760 with the day and time, which Ledger's 1024 to 1180 board lacks
 /// (its grid spills to the right). Here the category and account columns
 /// give way first, then the time's, never below [_cellMin], so the
 /// merchant keeps [_nameMin] and the amount stands whole; a room wide
@@ -119,7 +119,7 @@ class _RegisterScope extends InheritedWidget {
       old.dense != dense;
 }
 
-/// The register (`.register`): the transactions as a statement, its day
+/// The register: the transactions as a statement, its day
 /// groups 20 apart (28 on the desktop), a month rule where it runs back
 /// into an earlier month. On the desktop its rows stand in columns (time,
 /// mark, merchant, category, account, amount, as [columns] keeps them)
@@ -292,7 +292,7 @@ class _ColumnHeads extends StatelessWidget {
   static const double _gap = 16;
 }
 
-/// A day of the register (`.daygroup`): its head (the day in the capitals,
+/// A day of the register: its head (the day in the capitals,
 /// its date [note] for Today and Yesterday, its [net] at the end: what was
 /// spent and received, moves between the owner's accounts left out) over
 /// its [rows], denser than a page's rows (36 marks, 10 above and below).
@@ -471,7 +471,7 @@ class LedgerDayGroup extends StatelessWidget {
   static const double _netLine = 20;
 }
 
-/// One transaction in the register (`.tx`): its mark (the merchant's
+/// One transaction in the register: its mark (the merchant's
 /// monogram, green on its wash for money in, a dashed [glyph] for a move
 /// between the owner's accounts), its [title] (a [pending] one tagged),
 /// under it its [category] and [when], its signed amount at the end; on
@@ -581,7 +581,7 @@ class LedgerTransactionRow extends StatelessWidget {
                 : LedgerMonogramTone.plain,
             size: dense ? LedgerMonogramSize.dense : LedgerMonogramSize.row,
           );
-    // One line, as the source sets it; at a large text size the name wraps,
+    // One line, as Ledger sets it; at a large text size the name wraps,
     // whole.
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
     final name = ledgerTitle(
@@ -710,7 +710,7 @@ class LedgerTransactionRow extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: words,
+      semanticLabel: words,
       child: row,
     );
   }
@@ -724,7 +724,7 @@ class LedgerTransactionRow extends StatelessWidget {
   );
 }
 
-/// The bills' list (`.ledger.bills`): its rows with the hairline between,
+/// The bills' list: its rows with the hairline between,
 /// on the desktop under the column [heads] (due, payee, account, status,
 /// amount).
 ///
@@ -794,7 +794,7 @@ class LedgerBillList extends StatelessWidget {
   }
 }
 
-/// A bill (`.billrow`): its due date as a date tab, the payee on the dot
+/// A bill: its due date as a date tab, the payee on the dot
 /// leader to the amount, the account under the payee and its [status]
 /// under the amount (green on autopay); on the desktop a statement line
 /// with the account and the status in their columns. One link, read as
@@ -870,7 +870,7 @@ class LedgerBillRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
-    // One line, as the source sets it; at a large text size the payee and
+    // One line, as Ledger sets it; at a large text size the payee and
     // the account wrap, whole.
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
     final title = Text(
@@ -982,7 +982,8 @@ class LedgerBillRow extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: '$name, ${LedgerFormat.money(amount)}, ${LedgerFormat.date(due)}',
+      semanticLabel:
+          '$name, ${LedgerFormat.money(amount)}, ${LedgerFormat.date(due)}',
       child: row,
     );
   }

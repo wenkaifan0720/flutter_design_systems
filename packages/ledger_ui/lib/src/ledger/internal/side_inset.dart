@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 /// How far the desktop sidebar stands over the left of the pages under it:
-/// a page lays its content out to the right of [inset], as the source's
+/// a page lays its content out to the right of [inset], as Ledger's
 /// grid does. The shell publishes it on
 /// the desktop; elsewhere it is none. Plumbing of the shell and the screen;
 /// pages never place one.

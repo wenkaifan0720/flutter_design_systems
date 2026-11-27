@@ -6,7 +6,6 @@ import 'dart:ui' show SemanticsFlags, Tristate;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 void main() {
@@ -31,7 +30,7 @@ void main() {
                   ),
                 ),
               LedgerToggleGroup<String>(
-                label: 'Columns',
+                semanticLabel: 'Columns',
                 options: const ['Date', 'Payee'],
                 labelOf: (c) => c,
                 multiSelectionEnabled: true,

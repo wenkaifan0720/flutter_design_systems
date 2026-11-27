@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart' show ShellAction;
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -19,7 +18,7 @@ import 'nav_bar.dart';
 import 'pressable/pressable.dart';
 import 'top_bar.dart';
 
-/// The desktop's sidebar, as the source's `.sidebar` draws it in its 248
+/// The desktop's sidebar, as Ledger's `.sidebar` draws it in its 248
 /// column of sunken paper, a rule down its end: the wordmark at 30, the
 /// green act (the tab bar's disc, Move money, or the shell's act), the
 /// other destinations as links of 40 (the current one on raised paper,
@@ -74,7 +73,7 @@ class LedgerSideBar extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
 
   /// The shell's act, standing as the green act.
-  final ShellAction? action;
+  final LedgerShellAction? action;
 
   /// The app's name for the wordmark; null draws none.
   final String? brand;
@@ -99,7 +98,11 @@ class LedgerSideBar extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<LedgerShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       )
       ..add(StringProperty('brand', brand, defaultValue: null))
       ..add(
@@ -118,7 +121,7 @@ class LedgerSideBar extends StatelessWidget {
     final act = action;
     final disc = LedgerNavBar.discTab(items.length, action: act != null);
     final current = profileSelected ? -1 : selectedIndex ?? -1;
-    // Under [LedgerNavigationFrame] ui_core's shell presses the
+    // Under [LedgerAppShell] ui_core's shell presses the
     // destinations (one tab stop, the arrows along them) and the bar paints
     // them.
     final built = LedgerShellDestinations.maybeOf(context);
@@ -145,9 +148,14 @@ class LedgerSideBar extends StatelessWidget {
           )
         : null;
     final name = brand;
-    final Widget bar = extended
-        ? _side(context, account, green, disc, current, name, dest)
-        : _rail(context, account, act, disc, current, name, dest);
+    // Its own width, the side bar's or the rail's: in a Row of the app's
+    // own it stands at it, never across the row.
+    final Widget bar = SizedBox(
+      width: extended ? width : railWidth,
+      child: extended
+          ? _side(context, account, green, disc, current, name, dest)
+          : _rail(context, account, act, disc, current, name, dest),
+    );
     if (built == null) return bar;
     return LedgerDestinationFaces(
       paint: (context, i, states) {
@@ -257,7 +265,7 @@ class LedgerSideBar extends StatelessWidget {
   Widget _rail(
     BuildContext context,
     LedgerAccount? account,
-    ShellAction? act,
+    LedgerShellAction? act,
     int? disc,
     int current,
     String? name,
@@ -281,7 +289,7 @@ class LedgerSideBar extends StatelessWidget {
               label: name,
               child: LedgerPressable(
                 onTap: items.isEmpty ? null : () => onDestinationSelected(0),
-                label: name,
+                semanticLabel: name,
                 child: const LedgerBrandMark(size: 30),
               ),
             ),
@@ -333,7 +341,7 @@ class LedgerSideBar extends StatelessWidget {
           if (account != null)
             LedgerAvatar(
               initials: account.initials,
-              label: 'Profile and settings',
+              semanticLabel: 'Profile and settings',
               onTap: account.onProfilePressed == null
                   ? null
                   : () => account.onProfilePressed!(context),
@@ -419,7 +427,7 @@ class _RailMark extends StatelessWidget {
     }
     return LedgerPressable(
       onTap: onTap,
-      label: label,
+      semanticLabel: label,
       selected: on,
       radius: _size / 2,
       child: face,
@@ -427,7 +435,7 @@ class _RailMark extends StatelessWidget {
   }
 }
 
-/// The sidebar's green act (`.btn-move`): 44 tall, round, its glyph and its
+/// The sidebar's green act: 44 tall, round, its glyph and its
 /// words in the raised paper, the green drop under it; current, a ring of
 /// the sidebar's paper and a green ring past it instead.
 class _SideAct extends StatelessWidget {
@@ -458,7 +466,7 @@ class _SideAct extends StatelessWidget {
         ? LedgerStateFace(states: shell, radius: t.controlRadius, child: face)
         : LedgerPressable(
             onTap: onTap,
-            label: label,
+            semanticLabel: label,
             selected: current,
             radius: t.controlRadius,
             child: face,
@@ -516,7 +524,7 @@ class _SideAct extends StatelessWidget {
   }
 }
 
-/// One destination's link (`.nav a`).
+/// One destination's link.
 class _Link extends StatelessWidget {
   const _Link({
     required this.item,
@@ -550,7 +558,7 @@ class _Link extends StatelessWidget {
         : LedgerPressable(
             key: item.key,
             onTap: onTap,
-            label: item.label,
+            semanticLabel: item.label,
             selected: current,
             radius: t.controlRadius,
             child: face,
@@ -609,7 +617,7 @@ class _Link extends StatelessWidget {
   }
 }
 
-/// The sidebar's foot (`.side-profile`): the owner over a rule, opening the
+/// The sidebar's foot: the owner over a rule, opening the
 /// profile.
 class _Foot extends StatelessWidget {
   const _Foot({required this.account, required this.current});
@@ -638,7 +646,7 @@ class _Foot extends StatelessWidget {
       ),
       child: LedgerPressable(
         onTap: open == null ? null : () => open(context),
-        label: 'Profile and settings',
+        semanticLabel: 'Profile and settings',
         selected: current,
         child: ConstrainedBox(
           constraints: BoxConstraints(

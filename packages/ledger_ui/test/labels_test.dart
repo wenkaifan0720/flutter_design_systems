@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 
 import '../example/lib/gallery_pages.dart';

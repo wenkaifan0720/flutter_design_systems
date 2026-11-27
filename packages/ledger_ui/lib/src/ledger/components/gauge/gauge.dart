@@ -26,7 +26,7 @@ enum LedgerGaugeTone {
 /// at 250 of 300, room left for going over). Its [paceLabel] stands over
 /// the pace's line, its [startLabel] and [endLabel] under its ends, its
 /// [budgetLabel] under the budget. Spending past its end stops at its
-/// end, clipped to its box as the source's svg is. In right to left it runs
+/// end, clipped to its box as Ledger's svg is. In right to left it runs
 /// from the right, its labels mirrored with it. Read as its label and the
 /// share spent.
 ///
@@ -547,42 +547,42 @@ class _RulePainter extends CustomPainter {
   bool shouldRepaint(_RulePainter old) => true;
 }
 
-/// A key's swatch, as the source draws each in a chart's legend.
+/// A key's swatch, as Ledger draws each in a chart's legend.
 enum LedgerKeySwatch {
-  /// An inked line, 18 long (`.sw`).
+  /// An inked line, 18 long.
   line,
 
-  /// The budget's pace, dashed green (`.sw-pace`).
+  /// The budget's pace, dashed green.
   pace,
 
   /// A hatched bar, 10 square (`swatch_bar`).
   bar,
 
-  /// A payday's green ring, 8 round (`.sw-pay`).
+  /// A payday's green ring, 8 round.
   payday,
 
-  /// The budget's ink tick (`.sw-tick`).
+  /// The budget's ink tick.
   tick,
 
-  /// The suggestion's dashed green tick (`.sw-tick-g`).
+  /// The suggestion's dashed green tick.
   suggestion,
 
-  /// The spent bar on its side, hatched (`.sw-bar-h`).
+  /// The spent bar on its side, hatched.
   spent,
 
   /// The spent bar past its budget, in the vermilion.
   spentOver,
 
-  /// A hatched bar in the green, 10 square (`.sw-bar-g`): Savings' interest.
+  /// A hatched bar in the green, 10 square: Savings' interest.
   barGreen,
 
-  /// An allocation's stocks, hatched in the ink, 12 square (`.sw-ink`).
+  /// An allocation's stocks, hatched in the ink, 12 square.
   allocationInk,
 
-  /// An allocation's bonds, hatched the other way in the green (`.sw-green`).
+  /// An allocation's bonds, hatched the other way in the green.
   allocationGreen,
 
-  /// An allocation's cash, hatched sparse in the faint ink (`.sw-pale`).
+  /// An allocation's cash, hatched sparse in the faint ink.
   allocationPale,
 }
 
@@ -602,7 +602,7 @@ class LedgerKeyEntry {
   final String label;
 }
 
-/// A chart's key (`.legend`): each swatch 6 before its words in the third
+/// A chart's key: each swatch 6 before its words in the third
 /// ink's mono, wrapping 16 apart (6 between lines).
 ///
 /// ```dart

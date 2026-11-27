@@ -17,6 +17,31 @@ import 'top_bar.dart';
 export 'package:ui_core/host.dart' show PreviewPlatform, RoutePresentation;
 export 'package:ui_core/host.dart' show PreviewDevice, PreviewPlatformDevice;
 
+/// A runtime [NavTab] as one of Ledger's places, keeping the [ground] its
+/// page stands on: over a media tab's page the bar stands on the media
+/// ground ([LedgerMediaGround]).
+class LedgerTabItem extends LedgerNavItem {
+  /// The place [tab] asks for.
+  LedgerTabItem(this.tab) : super(tab.icon, tab.label, tab.key);
+
+  /// The runtime's tab.
+  final NavTab tab;
+
+  @override
+  IconData? get selectedIcon => tab.selectedIcon;
+
+  /// What its page stands on: the surface or media.
+  ChromeGround get ground => tab.ground;
+
+  /// Whether the place at [index] of [items] stands its page on media.
+  static bool mediaAt(List<LedgerNavItem> items, int index) =>
+      index < items.length &&
+      switch (items[index]) {
+        final LedgerTabItem tab => tab.ground == ChromeGround.media,
+        _ => false,
+      };
+}
+
 /// How a previewed page stands in the app: as a nav root over the shell's
 /// bar, pushed off one, or raised as a page sheet.
 enum LedgerPresentation {
@@ -88,7 +113,7 @@ class LedgerPreview extends StatelessWidget {
   final int selectedIndex;
 
   /// The shell's act, the disc in the bar's middle.
-  final ShellAction? action;
+  final LedgerShellAction? action;
 
   /// The app's name: the sidebar's wordmark at desktop width, and the
   /// phone bar's (the preview's app takes it as its title, which the bar's
@@ -144,7 +169,11 @@ class LedgerPreview extends StatelessWidget {
       ..add(IterableProperty<LedgerNavItem>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<LedgerShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       )
       ..add(StringProperty('brand', brand, defaultValue: null))
       ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
@@ -236,7 +265,7 @@ class _Root extends StatelessWidget {
 
   final List<LedgerNavItem> tabs;
   final int activeIndex;
-  final ShellAction? action;
+  final LedgerShellAction? action;
   final String? brand;
   final String? location;
   final Widget child;
@@ -244,9 +273,7 @@ class _Root extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (tabs.isEmpty) return child;
-    final media =
-        activeIndex < tabs.length &&
-        tabs[activeIndex].ground == ChromeGround.media;
+    final media = LedgerTabItem.mediaAt(tabs, activeIndex);
     if (LedgerLayout.isWide(context)) {
       return _Beside(
         tabs: tabs,
@@ -315,7 +342,7 @@ class _Beside extends StatelessWidget {
 
   final List<LedgerNavItem> tabs;
   final int activeIndex;
-  final ShellAction? action;
+  final LedgerShellAction? action;
   final String? brand;
   final String? location;
   final Widget child;
@@ -323,9 +350,7 @@ class _Beside extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (tabs.isEmpty || !LedgerLayout.isWide(context)) return child;
-    final media =
-        activeIndex < tabs.length &&
-        tabs[activeIndex].ground == ChromeGround.media;
+    final media = LedgerTabItem.mediaAt(tabs, activeIndex);
     final side = LedgerSideBar(
       items: tabs,
       // A page none of the destinations is (the notifications) lights none.

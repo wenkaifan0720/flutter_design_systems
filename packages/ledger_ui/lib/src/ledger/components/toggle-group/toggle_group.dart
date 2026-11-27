@@ -32,14 +32,14 @@ import '../../theme.dart';
 /// row without letting it change.
 ///
 /// ```dart
-/// LedgerToggleGroup<String>(label: 'Show', options: const ['day', 'week', 'month'], labelOf: (v) => v, selected: const {'week'}, onSelectionChanged: (next) {})
+/// LedgerToggleGroup<String>(semanticLabel: 'Show', options: const ['day', 'week', 'month'], labelOf: (v) => v, selected: const {'week'}, onSelectionChanged: (next) {})
 /// ```
 class LedgerToggleGroup<T> extends StatelessWidget {
   /// Pills for [options], [selected] chosen.
   const LedgerToggleGroup({
     required this.options,
     required this.selected,
-    required this.label,
+    required this.semanticLabel,
     required this.labelOf,
     this.onSelectionChanged,
     this.multiSelectionEnabled = false,
@@ -56,7 +56,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
   final Set<T> selected;
 
   /// What the row chooses, for a screen reader.
-  final String label;
+  final String semanticLabel;
 
   /// Each value's words.
   final String Function(T value) labelOf;
@@ -88,7 +88,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
     properties
       ..add(IterableProperty<T>('options', options))
       ..add(IterableProperty<T>('selected', selected))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<ValueChanged<Set<T>>>.has(
           'onSelectionChanged',
@@ -150,7 +150,8 @@ class LedgerToggleGroup<T> extends StatelessWidget {
         ),
         builder: (context, s, _) => ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: math.max(_height, least?.height ?? 0),
+            // 32 at the standard density, 4 off a step.
+            minHeight: math.max(t.density.height(_height), least?.height ?? 0),
             minWidth: least?.width ?? 0,
           ),
           child: DecoratedBox(
@@ -161,9 +162,9 @@ class LedgerToggleGroup<T> extends StatelessWidget {
               // on its rule.
               padding:
                   so.padding(Directionality.of(context)) ??
-                  const EdgeInsets.symmetric(
+                  EdgeInsets.symmetric(
                     horizontal: _pad,
-                    vertical: (_height - _line) / 2,
+                    vertical: (t.density.height(_height) - _line) / 2,
                   ),
               child: Center(
                 widthFactor: 1,
@@ -208,7 +209,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
       selectFollowsFocus: !multiSelectionEnabled,
       isEnabled: change == null ? (_) => false : isEnabled,
       labelOf: labelOf,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       minimumSize: minimumSize,
       layoutBuilder: layout,
       itemBuilder: pill,
@@ -231,7 +232,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
     layout: layout,
   );
 
-  // The filters' pill: 32 tall, 12 at its ends (13 in the source), 500 11/16 tracked .02, 6
+  // The filters' pill: 32 tall, 12 at its ends, 500 11/16 tracked .02, 6
   // apart; each laid out at the tap floor.
   static const double _height = 32;
   static const double _pad = 12;
@@ -363,7 +364,7 @@ class _PillRadiosState<T> extends State<_PillRadios<T>> {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: group.label,
+      label: group.semanticLabel,
       child: CallbackShortcuts(
         bindings: {
           const SingleActivator(LogicalKeyboardKey.home): () =>

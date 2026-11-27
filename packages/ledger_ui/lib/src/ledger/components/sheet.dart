@@ -17,7 +17,7 @@ import '../theme.dart';
 import 'host.dart';
 import 'icon-button/icon_button.dart';
 
-/// A sheet's head (`.sheet-head`): its [title] in the serif, the ringed
+/// A sheet's head: its [title] in the serif, the ringed
 /// [close] at its end hung 6 into the gutter, an ink rule under both; 14
 /// over the title on a phone (under the grip), 26 on the desktop's dialog.
 /// [leading] and [actions] stand before the title and before the close.
@@ -162,7 +162,7 @@ class LedgerSheetShell extends StatelessWidget {
           LedgerChromeMetrics.sheetFoot,
         );
 
-  /// The foot's acts laid out as the source's: each takes an even share of
+  /// The foot's acts laid out as Ledger's: each takes an even share of
   /// the card's width, 12 apart (the card is their measure, so a desktop
   /// dialog's two acts share its 440 as a phone's share its width, and a
   /// phone's one act spans its sheet). From 600 wide each act keeps to 320
@@ -251,7 +251,7 @@ class LedgerSheetShell extends StatelessWidget {
   }
 }
 
-/// The card a sheet stands on, as the source draws it: the raised paper
+/// The card a sheet stands on, as Ledger draws it: the raised paper
 /// (on a phone open at its foot, at desktop width a whole dialog with its
 /// own deeper shadow), its content clipped to its corners and marked as on
 /// a card ([LedgerSheetShell.around]). Plumbing of the sheets; a page never
@@ -340,7 +340,7 @@ abstract final class LedgerSheet {
   }
 
   /// The dialog's width at desktop width: 480 for a task, 440 for a
-  /// [confirm] (the source's `.modal-sheet.dialog`).
+  /// [confirm].
   static double dialogWidth({bool confirm = false}) => confirm
       ? LedgerChromeMetrics.dialogNarrow
       : LedgerChromeMetrics.dialogWidth;

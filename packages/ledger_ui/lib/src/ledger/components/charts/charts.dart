@@ -10,7 +10,7 @@ import '../../internal/plot.dart';
 import '../../theme.dart';
 
 /// A line across a plot at [value], its [label] at the plot's end above it
-/// (`.ylab`: $2k, 60k).
+/// ($2k, 60k).
 ///
 /// ```dart
 /// LedgerGridLine(2000, '\$2k')
@@ -26,7 +26,7 @@ class LedgerGridLine {
   final String label;
 }
 
-/// A day ringed on a month's plot and labelled (`.mark`): a payday above
+/// A day ringed on a month's plot and labelled: a payday above
 /// its point, a card's payment [below] it.
 ///
 /// ```dart
@@ -47,7 +47,7 @@ class LedgerChartMark {
   final bool below;
 }
 
-/// A note hung on a plot's point on a leader [lift] above it (`.anno`):
+/// A note hung on a plot's point on a leader [lift] above it:
 /// the rent's jump on day 1, a large bill's step; its `**strong**` run in
 /// the ink. [deskLift] stands it on the desktop's plot, and [deskText]
 /// words it there (a phone's note may break where the desktop's runs on).
@@ -304,7 +304,7 @@ class _WithRuler extends StatelessWidget {
 /// and today's [endLabel] beside its point; [months] keys each month under
 /// it (the last green), each key centred under its point and whole however
 /// narrow its slot (an empty key draws nothing, so a day's or a year's
-/// range can key only some points). Sized by its width: the source's 342
+/// range can key only some points). Sized by its width: Ledger's 342
 /// by 168 on a phone, 712 by 330 from 1024, or [height]. Read as its label
 /// and end.
 ///
@@ -435,7 +435,7 @@ class LedgerNetWorthChart extends StatelessWidget {
   }
 }
 
-/// The keys under the net worth's points (`.xlabs`): one slot per point and the
+/// The keys under the net worth's points: one slot per point and the
 /// plot's gutter after them (`repeat(12, 1fr) 30px`, 36 from 1024), 8 under the
 /// plot, each key centred on its slot (its point) in the 10 mono on 12 (11 from
 /// 1024), the [now] key medium in the green. CSS's `1fr` slot never clips its
@@ -929,7 +929,7 @@ class LedgerDayBars extends StatelessWidget {
 /// record's own [current] day solid; the days ahead shaded; a tick for
 /// every day, long on the weeks. [moneyIn] inks it green (a payer).
 /// [startLabel] and [endLabel] stand 4 under it at its two ends
-/// (`.ruler-labs`: Oct 1, Oct 31).
+/// (Oct 1, Oct 31).
 ///
 /// ```dart
 /// LedgerVisitRuler(visits: const [(28, 6.75), (23, 6.5)], days: 31, today: 28, current: 28, startLabel: 'Oct 1', endLabel: 'Oct 31')

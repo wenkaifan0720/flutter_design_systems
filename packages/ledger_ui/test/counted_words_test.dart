@@ -5,7 +5,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 
 Widget _app(Locale locale, Widget page) => WidgetsApp(
   color: const Color(0xFF000000),

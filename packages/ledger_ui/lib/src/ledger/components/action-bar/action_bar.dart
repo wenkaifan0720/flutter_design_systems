@@ -195,7 +195,7 @@ class LedgerActionBar extends StatelessWidget {
     );
   }
 
-  // DERIVED (the source stands its acts in the page): the summary and the act
+  // The summary and the act
   // 16 apart, a floating card padded 16, the text scale at which it stacks.
   static const double _gap = 16;
   static const double _card = 16;

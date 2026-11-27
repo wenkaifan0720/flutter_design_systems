@@ -133,12 +133,12 @@ void main() {
             size,
             _app(
               StatefulBuilder(
-                builder: (context, set) => LedgerNavigationFrame(
+                builder: (context, set) => LedgerAppShell(
                   destinations: items,
                   selectedIndex: chosen,
                   onDestinationSelected: (i) => set(() => chosen = i),
                   brand: 'Quill',
-                  action: ShellAction(
+                  action: LedgerShellAction(
                     icon: LucideIcons.plus,
                     label: 'New entry',
                     onPressed: (_) => acted++,

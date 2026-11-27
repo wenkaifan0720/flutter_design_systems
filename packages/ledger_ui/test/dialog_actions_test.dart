@@ -8,7 +8,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 
 void _size(WidgetTester t, Size size) {
   t.view.physicalSize = size;

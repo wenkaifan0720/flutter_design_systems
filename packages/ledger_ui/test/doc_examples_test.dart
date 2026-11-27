@@ -82,12 +82,39 @@ void main() {
         selectedIndex: 0,
         onDestinationSelected: select,
       ),
-      'LedgerNavigationFrame': (context) => LedgerNavigationFrame(
+      'LedgerAppShell': (context) => LedgerAppShell(
         destinations: tabs,
         selectedIndex: tab,
         onDestinationSelected: (i) => setState(() => tab = i),
         brand: 'Quill',
         body: pages[tab],
+      ),
+      'LedgerAppShell.branches': (context) => LedgerAppShell.branches(
+        destinations: const [
+          LedgerNavItem(LucideIcons.house, 'Home'),
+          LedgerNavItem(LucideIcons.list, 'Activity'),
+        ],
+        selectedIndex: index,
+        onDestinationSelected: (i) => setState(() => index = i),
+        brand: 'Quill',
+        branches: [
+          (context) => const HomePage(),
+          (context) => const ActivityPage(),
+        ],
+      ),
+      'LedgerShellAction': (context) => LedgerShellAction(
+        icon: LucideIcons.plus,
+        label: 'Add an entry',
+        onPressed: (context) => Navigator.of(context).push(entryRoute()),
+      ),
+      'MaterialApp': (context) => MaterialApp(
+        builder: (context, child) =>
+            LedgerHost(brightness: appearance, child: child!),
+        home: const HomePage(),
+      ),
+      'LedgerHost.palette': (context) => LedgerHost(
+        palette: LedgerThemeData.palettes.firstWhere((p) => p.id == paletteId),
+        child: app,
       ),
       'LedgerPreview': (context) => LedgerPreview(
         presentation: LedgerPresentation.pushed,
@@ -557,7 +584,7 @@ void main() {
         onTap: () => pick('Groceries'),
       ),
       'LedgerChipRow': (context) => LedgerChipRow(
-        label: 'Categories',
+        semanticLabel: 'Categories',
         children: [
           for (final c in categories)
             LedgerChip(
@@ -701,7 +728,7 @@ void main() {
         onSelected: (v) {},
       ),
       'LedgerToggleGroup': (context) => LedgerToggleGroup<String>(
-        label: 'Show',
+        semanticLabel: 'Show',
         options: const ['day', 'week', 'month'],
         labelOf: (v) => v,
         selected: const {'week'},
@@ -988,7 +1015,7 @@ void main() {
       ),
       'LedgerAvatar': (context) => LedgerAvatar(
         initials: 'MH',
-        label: 'Profile and settings',
+        semanticLabel: 'Profile and settings',
         onTap: () {},
       ),
       'LedgerPasswordField': (context) => LedgerPasswordField(
@@ -1063,7 +1090,7 @@ void main() {
       ),
       'LedgerCheck': (context) => LedgerCheck(
         value: done,
-        label: 'Pay rent',
+        semanticLabel: 'Pay rent',
         onChanged: (v) => setState(() => done = v),
       ),
       'LedgerHead': (context) => LedgerHead('Accounts', note: 'Balance'),
@@ -1159,7 +1186,7 @@ void main() {
           LedgerDayMark.upcoming,
           LedgerDayMark.upcoming,
         ],
-        label: 'Morning pages this week',
+        semanticLabel: 'Morning pages this week',
       ),
       'LedgerGuilloche': (context) => LedgerGuilloche(size: 320),
       'LedgerGuillocheBand': (context) => LedgerGuillocheBand(),
@@ -1186,14 +1213,14 @@ void main() {
             onChanged: (r) {},
           ),
       'LedgerFilters': (context) => LedgerFilters(
-        label: 'Direction',
+        semanticLabel: 'Direction',
         options: const ['All', 'Money in', 'Money out'],
         value: 'All',
         onChanged: (f) {},
       ),
       'LedgerFilters 2': (context) =>
           LedgerFilters<({String words, bool? incoming})>(
-            label: 'Direction',
+            semanticLabel: 'Direction',
             options: directions,
             value: directions.first,
             labelOf: (d) => d.words,

@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
@@ -11,13 +10,11 @@ import '../internal/shell_faces.dart';
 import '../internal/state_face.dart';
 import '../theme.dart';
 
-/// One destination of the app's root, as generated apps declare a tab: its
-/// glyph, the [label] the tab bar and the sidebar print (and speak) and the
-/// walkthrough [key] set on its hit target, positionally. While current it
-/// wears its [selectedIcon] (null keeps [icon]); its page stands on its
-/// [ground] (the design kit's surface or media). As the bar's green disc
-/// (the app's main act), the sidebar's green act says its [actLabel]
-/// ([LedgerNavItem.act]).
+/// One of the app's places: its glyph, the [label] the tab bar and the
+/// sidebar print (and speak) and the [key] set on its hit target, for a
+/// test to find it by. While current it wears its [selectedIcon] (null
+/// keeps [icon]). As the bar's green disc (the app's main act), the
+/// sidebar's green act says its [actLabel] ([LedgerNavItem.act]).
 ///
 /// ```dart
 /// LedgerNavItem(LucideIcons.chartPie, 'Spending', ValueKey('open-spending'))
@@ -27,7 +24,6 @@ class LedgerNavItem {
   /// A destination with [icon] and [label].
   const LedgerNavItem(this.icon, this.label, [this.key])
     : selectedIcon = null,
-      ground = ChromeGround.surface,
       actLabel = null;
 
   /// The app's main act as a tab (the green disc on a phone), whose act in
@@ -41,17 +37,7 @@ class LedgerNavItem {
     this.label, {
     required String this.actLabel,
     this.key,
-  }) : selectedIcon = null,
-       ground = ChromeGround.surface;
-
-  /// The item a runtime [NavTab] asks for.
-  LedgerNavItem.fromTab(NavTab tab)
-    : icon = tab.icon,
-      label = tab.label,
-      selectedIcon = tab.selectedIcon,
-      key = tab.key,
-      ground = tab.ground,
-      actLabel = null;
+  }) : selectedIcon = null;
 
   /// The destination's glyph.
   final IconData icon;
@@ -62,17 +48,55 @@ class LedgerNavItem {
   /// The glyph while current; null keeps [icon].
   final IconData? selectedIcon;
 
-  /// The walkthrough key set on its hit target.
+  /// The key set on its hit target.
   final Key? key;
-
-  /// What its page stands on: the design kit's surface or media.
-  final ChromeGround ground;
 
   /// The sidebar act's words when this item is the disc.
   final String? actLabel;
 }
 
-/// The phone's tab bar, as the source's `.tabbar` draws it: raised
+/// The app's one act beside its places, when it is not one of them (Add,
+/// Compose): the green disc in the middle of a phone's tabs, the green act
+/// under the wordmark from 1024 wide. Give it a [label]: it is what a
+/// screen reader says, and in the sidebar what the act says.
+///
+/// ```dart
+/// LedgerShellAction(
+///   icon: LucideIcons.plus,
+///   label: 'Add an entry',
+///   onPressed: (context) => Navigator.of(context).push(entryRoute()),
+/// )
+/// ```
+@immutable
+class LedgerShellAction {
+  /// The act.
+  const LedgerShellAction({
+    required this.icon,
+    required this.onPressed,
+    this.label,
+    this.accent = true,
+    this.key,
+  });
+
+  /// Its glyph.
+  final IconData icon;
+
+  /// What it does, run with a context under the app's navigator.
+  final void Function(BuildContext context) onPressed;
+
+  /// Its words: what a screen reader says, and in the sidebar what the act
+  /// says.
+  final String? label;
+
+  /// Whether it stands in the seal's green; Ledger draws its act green
+  /// either way, as Ledger's main act is.
+  final bool accent;
+
+  /// The key its control carries, for a test to find it by.
+  final Key? key;
+}
+
+/// The phone's tab bar, as Ledger's `.tabbar` draws it: raised
 /// paper 84 tall with a rule over it, five columns of a 22 glyph over its
 /// name in the third ink (the current one in the ink, the green tick under
 /// it), the middle destination drawn as the green disc ringed in the paper
@@ -80,10 +104,10 @@ class LedgerNavItem {
 /// as its tallest column and never shorter than the bar's room over its 22
 /// foot, each column at the row's foot: the disc's column fills the bar
 /// from its rule and the tabs end 7 over the bar's foot, where the
-/// browser's grid sets them. A [ShellAction] given to the shell stands
+/// browser's grid sets them. A [LedgerShellAction] given to the shell stands
 /// as the disc instead, between the tabs. [accessory] rides 8 over the
-/// bar. It is paper, opaque: the source frosts it, but a page scrolled
-/// under glass smears through (no glass, no glow).
+/// bar. It is paper, opaque: a page scrolled under glass would smear
+/// through (no glass, no glow).
 ///
 /// ```dart
 /// LedgerNavBar(items: tabs, selectedIndex: 0, onDestinationSelected: select)
@@ -109,7 +133,7 @@ class LedgerNavBar extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
 
   /// The shell's act, drawn as the disc.
-  final ShellAction? action;
+  final LedgerShellAction? action;
 
   /// A widget riding 8 over the bar.
   final Widget? accessory;
@@ -262,7 +286,11 @@ class LedgerNavBar extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<LedgerShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       );
   }
 
@@ -272,12 +300,14 @@ class LedgerNavBar extends StatelessWidget {
     final inset = MediaQuery.paddingOf(context).bottom;
     final act = action;
     final disc = discTab(items.length, action: act != null);
-    // Under [LedgerNavigationFrame] ui_core's shell presses the tabs (one
+    // Under [LedgerAppShell] ui_core's shell presses the tabs (one
     // tab stop, the arrows along them, a tab bar to a screen reader) and
     // the bar paints them.
     final built = LedgerShellDestinations.maybeOf(context);
+    // A destination's key stands on what takes its press: the tab's own, or
+    // the shell's press round the face it paints.
     _Tab tab(int i, {Set<WidgetState>? states}) => _Tab(
-      key: items[i].key,
+      key: states == null ? items[i].key : null,
       icon: i == selectedIndex
           ? (items[i].selectedIcon ?? items[i].icon)
           : items[i].icon,
@@ -289,7 +319,10 @@ class LedgerNavBar extends StatelessWidget {
     );
     final cells = <Widget>[
       for (var i = 0; i < items.length; i++)
-        if (built != null && i < built.length) built[i] else tab(i),
+        if (built != null && i < built.length)
+          KeyedSubtree(key: items[i].key, child: built[i])
+        else
+          tab(i),
     ];
     if (act != null) {
       final press = _Tab(
@@ -315,7 +348,7 @@ class LedgerNavBar extends StatelessWidget {
     );
     final height = heightIn(inset);
     final foot = math.max(LedgerChromeMetrics.tabBarFoot, inset);
-    // The source's grid hangs its one row from under the rule: the row is
+    // Ledger's grid hangs its one row from under the rule: the row is
     // as tall as its tallest column (the disc's 76) and never shorter than
     // the room over the foot (61), and every column stands at the row's
     // foot. The disc's column so fills the bar from the rule, and the row

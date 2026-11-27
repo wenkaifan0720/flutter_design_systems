@@ -9,7 +9,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 
 Future<void> _pump(WidgetTester t, Widget field) async {
   await t.pumpWidget(

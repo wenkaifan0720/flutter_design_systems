@@ -201,7 +201,7 @@ Widget kitSpecimenAvatar() => Align(
   alignment: AlignmentDirectional.centerStart,
   child: LedgerAvatar(
     initials: 'MH',
-    label: 'Profile and settings',
+    semanticLabel: 'Profile and settings',
     onTap: () {},
     tapAlignment: AlignmentDirectional.centerStart,
   ),

@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 
 /// Sets iOS's Reduce Motion, and only it, for the rest of the test.
 void _iosReduceMotion(WidgetTester t, bool on) {

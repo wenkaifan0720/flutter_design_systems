@@ -22,8 +22,7 @@ import '../../internal/entry_open.dart';
 /// [prefix] stands before the words in the serif (a currency sign) and makes
 /// the field a sum's: its words are typed in the serif at 22 too, as Ledger
 /// sets money ([sumOf]), sign and figures left to right in either direction,
-/// and from 600 it stands at a short entry's measure
-/// ([LedgerLayout.fieldMeasure]); [trailing] after them (a clear or a reveal
+/// across its column as every field is; [trailing] after them (a clear or a reveal
 /// button). [enabled] false holds it in the third ink on the light rule.
 /// Validate in a `RawForm` with a `RawFormField` around it and pass its
 /// error here.
@@ -273,9 +272,44 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
       widget.controller ?? (_ownController ??= TextEditingController());
   FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
 
+  // The node the field listens to for its focus, to come into view whole.
+  late FocusNode _listened;
+
+  @override
+  void initState() {
+    super.initState();
+    _listened = _focus..addListener(_focusChanged);
+  }
+
+  // A field that takes the focus comes into view whole, its label and its
+  // problem with it, before Flutter's text field shows its caret and 20
+  // round it (a Ledger field's label stands above those 20): a form's
+  // first problem, focused after its check, is read with its name.
+  void _focusChanged() {
+    if (!_listened.hasFocus) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_listened.hasFocus) return;
+      final box = context.findRenderObject();
+      if (box is! RenderBox || !box.hasSize) return;
+      // With the room a form's column keeps under the bar round it.
+      box.showOnScreen(
+        rect: Rect.fromLTRB(
+          0,
+          -_revealRoom,
+          box.size.width,
+          box.size.height + _revealRoom,
+        ),
+      );
+    });
+  }
+
   @override
   void didUpdateWidget(LedgerTextField old) {
     super.didUpdateWidget(old);
+    if (!identical(_focus, _listened)) {
+      _listened.removeListener(_focusChanged);
+      _listened = _focus..addListener(_focusChanged);
+    }
     // Flutter's TextField's swap: the words carry over when the caller
     // takes its controller back, and the input's own goes when one comes.
     if (widget.controller == null && old.controller != null) {
@@ -288,6 +322,7 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
 
   @override
   void dispose() {
+    _listened.removeListener(_focusChanged);
     _ownController?.dispose();
     _ownFocus?.dispose();
     super.dispose();
@@ -433,10 +468,12 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
         ),
       ),
     );
-    // A sum is a short entry: at its measure from 600, as a select is; free
-    // words keep their column.
-    return prefix == null ? field : LedgerLayout.measured(context, field);
+    // Every field, a sum's too, takes its column: one width in a form.
+    return field;
   }
 
   static const double _gap = 6;
+
+  /// The room kept round a field that comes into view on taking the focus.
+  static const double _revealRoom = 24;
 }

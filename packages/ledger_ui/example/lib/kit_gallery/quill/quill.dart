@@ -10,7 +10,6 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../gallery_words.dart';
@@ -479,14 +478,13 @@ class QuillFrameState extends State<QuillFrame> {
     // nearest navigator: the frame's from 600. Choosing another
     // destination replaces its page in place, and what was pushed on it
     // goes too; only a push is laid down in Ledger's page motion.
-    final framed =
-        MediaQuery.sizeOf(context).width >= LedgerNavigationFrame.railFrom;
-    return LedgerNavigationFrame(
+    final framed = MediaQuery.sizeOf(context).width >= LedgerAppShell.railFrom;
+    return LedgerAppShell(
       destinations: _destinations(context),
       selectedIndex: _page.index,
       onDestinationSelected: (i) => _go(QuillPage.values[i]),
       brand: context.say('Quill'),
-      action: ShellAction(
+      action: LedgerShellAction(
         icon: LucideIcons.plus,
         label: context.say('New entry'),
         onPressed: (_) => _newEntry(),

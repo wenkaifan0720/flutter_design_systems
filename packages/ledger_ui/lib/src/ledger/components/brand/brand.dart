@@ -8,7 +8,7 @@ import '../../theme.dart';
 import '../pressable/pressable.dart';
 
 /// The brand mark: a ruled globe, its lower half engraved in 45° hatching,
-/// drawn in the green as the source's `brand_mark` draws it on its 24 grid
+/// drawn in the green as Ledger's `brand_mark` draws it on its 24 grid
 /// (the ring 10.6 round at 1.3, the rule across at 1.3, the hatch 2.3 apart
 /// at .8 inside 8.6, under the rule). Scales with [size]; [color] inks it
 /// otherwise (a card's face prints it in its own green).
@@ -163,7 +163,7 @@ class LedgerWordmark extends StatelessWidget {
     return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
-        label: '$name, home',
+        semanticLabel: '$name, home',
         role: LedgerPressRole.link,
         child: mark,
       ),

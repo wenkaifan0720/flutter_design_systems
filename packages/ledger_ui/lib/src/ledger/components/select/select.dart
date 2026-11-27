@@ -46,9 +46,9 @@ class LedgerSelectItem<T> {
 /// arrow keys move at once, round from the last to the first, Home and End
 /// go to its ends, a letter to the next option it starts, Enter chooses and
 /// closes, and Escape closes, the keyboard back on the field. A null
-/// [onChanged] disables it. From 600 it stands at a short entry's measure
-/// (at the start of its slot, at most [LedgerLayout.fieldMeasure]); on a
-/// phone it spans the column. Its list is the field's width, on the field's
+/// [onChanged] disables it. It spans its column at every width, as a text
+/// field does ([LedgerScreen.form] keeps a form's column to
+/// [LedgerLayout.formMeasure]). Its list is the field's width, on the field's
 /// leading edge, wider only to fit its widest option (at most 320, as
 /// ui_core holds every list from a field). The field's words stand on the
 /// rule with no inset; the list's rows keep their 16, so its words stand 16
@@ -154,92 +154,88 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
     final enabled = widget.onChanged != null;
     final chosen = _chosen;
     final hint = widget.hintText ?? 'Choose one';
-    return LedgerLayout.measured(
-      context,
-      RawInputDecorator(
-        labelText: widget.labelText,
-        helperText: widget.helperText,
-        errorText: widget.errorText,
-        required: widget.isRequired,
-        enabled: enabled,
+    return RawInputDecorator(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      required: widget.isRequired,
+      enabled: enabled,
+      focusNode: _focus,
+      builder: (context, parts) => LedgerFieldFrame(
+        parts: parts,
         focusNode: _focus,
-        builder: (context, parts) => LedgerFieldFrame(
-          parts: parts,
-          focusNode: _focus,
-          line: parts.control,
+        line: parts.control,
+      ),
+      child: RawPopover(
+        arrowKeyNavigation: true,
+        semanticLabel: widget.labelText,
+        placement: const RawPopoverPlacement(
+          gap: 6,
+          matchAnchorWidth: true,
+          preferredExtent: 240,
         ),
-        child: RawPopover(
-          arrowKeyNavigation: true,
-          semanticLabel: widget.labelText,
-          placement: const RawPopoverPlacement(
-            gap: 6,
-            matchAnchorWidth: true,
-            preferredExtent: 240,
-          ),
-          // Down opens the list from the field, as Enter and Space do.
-          anchorBuilder: (context, anchor) => CallbackShortcuts(
-            bindings: {
-              if (enabled && !anchor.isOpen)
-                const SingleActivator(LogicalKeyboardKey.arrowDown):
-                    anchor.open,
-            },
-            child: LedgerPressable(
-              onTap: enabled ? anchor.toggle : null,
-              focusNode: _focus,
-              autofocus: widget.autofocus,
-              label: widget.labelText == null ? hint : null,
-              value: chosen?.label,
-              expanded: anchor.isOpen,
-              isError: widget.errorText != null,
-              child: SizedBox(
-                height: LedgerTextField.heightOf(t),
-                child: Row(
-                  spacing: LedgerSpacing.s8,
-                  children: [
-                    Expanded(
-                      child: ledgerCapCenter(
-                        words,
-                        Text(
-                          chosen?.label ?? hint,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.ellipsis,
-                          style: chosen == null
-                              ? words
-                                    .copyWith(fontWeight: FontWeight.w400)
-                                    .colored(t.textTertiary)
-                              : words.colored(
-                                  enabled ? t.textPrimary : t.textTertiary,
-                                ),
-                        ),
+        // Down opens the list from the field, as Enter and Space do.
+        anchorBuilder: (context, anchor) => CallbackShortcuts(
+          bindings: {
+            if (enabled && !anchor.isOpen)
+              const SingleActivator(LogicalKeyboardKey.arrowDown): anchor.open,
+          },
+          child: LedgerPressable(
+            onTap: enabled ? anchor.toggle : null,
+            focusNode: _focus,
+            autofocus: widget.autofocus,
+            semanticLabel: widget.labelText == null ? hint : null,
+            value: chosen?.label,
+            expanded: anchor.isOpen,
+            isError: widget.errorText != null,
+            child: SizedBox(
+              height: LedgerTextField.heightOf(t),
+              child: Row(
+                spacing: LedgerSpacing.s8,
+                children: [
+                  Expanded(
+                    child: ledgerCapCenter(
+                      words,
+                      Text(
+                        chosen?.label ?? hint,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: chosen == null
+                            ? words
+                                  .copyWith(fontWeight: FontWeight.w400)
+                                  .colored(t.textTertiary)
+                            : words.colored(
+                                enabled ? t.textPrimary : t.textTertiary,
+                              ),
                       ),
                     ),
-                    AnimatedRotation(
-                      turns: anchor.isOpen ? .5 : 0,
-                      duration: const Duration(milliseconds: 160),
-                      child: LedgerEndGlyph(
-                        LucideIcons.chevronDown,
-                        size: _chevron,
-                        color: enabled ? t.textSecondary : t.textTertiary,
-                      ),
+                  ),
+                  AnimatedRotation(
+                    turns: anchor.isOpen ? .5 : 0,
+                    duration: const Duration(milliseconds: 160),
+                    child: LedgerEndGlyph(
+                      LucideIcons.chevronDown,
+                      size: _chevron,
+                      color: enabled ? t.textSecondary : t.textTertiary,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-          overlayBuilder: (context, info) => FadeTransition(
-            // The overlay's spring can pass 1; an opacity can't.
-            opacity: info.animation.drive(_unit),
-            child: _SelectList<T>(
-              items: widget.items,
-              value: widget.value,
-              maxHeight: info.maxSize.height,
-              onChosen: (value) {
-                info.close();
-                widget.onChanged?.call(value);
-              },
-            ),
+        ),
+        overlayBuilder: (context, info) => FadeTransition(
+          // The overlay's spring can pass 1; an opacity can't.
+          opacity: info.animation.drive(_unit),
+          child: _SelectList<T>(
+            items: widget.items,
+            value: widget.value,
+            maxHeight: info.maxSize.height,
+            onChosen: (value) {
+              info.close();
+              widget.onChanged?.call(value);
+            },
           ),
         ),
       ),
@@ -394,7 +390,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                       // A list opens on what is chosen: the popover leaves
                       // the focus on it as it mounts and keeps it in view.
                       autofocus: item.enabled && item.value == value,
-                      label: item.label,
+                      semanticLabel: item.label,
                       selected: item.value == value,
                       radius: 0,
                       rulesFocus: false,

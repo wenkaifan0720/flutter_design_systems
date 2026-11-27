@@ -33,7 +33,8 @@ enum _Face { ringed, filled, ink, text }
 /// after with [iconAfter]; a left or right chevron or arrow turns the other
 /// way in a right-to-left page). [expand] stretches it across its room: its
 /// column on a phone; from 600 up to 320 (`LedgerLayout.fieldMeasure`),
-/// wider only for longer words, at the start of its slot.
+/// wider only for longer words, at the start of its slot; in a
+/// [LedgerButtonRow], its share of the row.
 ///
 /// - `LedgerButton(label)` is the ordinary act, ringed in the ink (at
 ///   [LedgerButtonSize.small], ringed in the rule on the raised paper).
@@ -283,7 +284,10 @@ class LedgerButton extends StatelessWidget {
     // From 600 a button keeps to its words; one that [expand]s fills its
     // room up to the measure (320), wider only for longer words, at the
     // start of its slot: never a banner across a wide column.
-    final measured = LedgerLayout.keepsMeasure(context);
+    // In a row of acts ([LedgerButtonRow]) the row gives each its share,
+    // up to the measure each: a button there fills its share.
+    final inRow = LedgerButtonEnds.of(context) != null;
+    final measured = LedgerLayout.keepsMeasure(context) && !inRow;
     final ends = _face == _Face.text
         ? _textPad
         : small
@@ -423,7 +427,7 @@ class LedgerButton extends StatelessWidget {
     final button = TapTargetPadding(
       child: LedgerPressable(
         onTap: onPressed,
-        label: semanticLabel ?? label,
+        semanticLabel: semanticLabel ?? label,
         radius: t.controlRadius,
         focusNode: focusNode,
         autofocus: autofocus,

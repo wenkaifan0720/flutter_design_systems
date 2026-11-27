@@ -220,7 +220,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
     }
     final width = MediaQuery.sizeOf(context).width;
     final wide = LedgerLayout.isWide(context);
-    final paired = width >= LedgerNavigationFrame.railFrom;
+    final paired = width >= LedgerAppShell.railFrom;
     // On a phone the act spans the page's foot band; from 600 it ends the
     // form at its own width, as a desktop form's act does, not a bar across
     // it.
@@ -361,8 +361,13 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
     } else {
       body = measured;
     }
+    // On a desktop the page holds the form's column and the receipt beside
+    // it, wider than one form's measure, so it stands as a page; the form
+    // keeps its own measure above.
+    final topBar = LedgerTopBar(title: context.say('New entry'));
+    if (wide) return LedgerScreen(topBar: topBar, body: body);
     return LedgerScreen.form(
-      topBar: LedgerTopBar(title: context.say('New entry')),
+      topBar: topBar,
       footer: paired ? null : save,
       body: body,
     );

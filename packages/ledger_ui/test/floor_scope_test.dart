@@ -2,7 +2,6 @@
 // RawTapTargetScope, which every part follows, those that drew a fixed 44 or 48 before 0.7.0 too.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 
 const _declared = 52.0;

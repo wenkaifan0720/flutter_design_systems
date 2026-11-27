@@ -15,7 +15,7 @@ import '../money/money.dart';
 import '../seal/seal.dart';
 import '../structure/structure.dart';
 
-/// A slip of the light paper (`.sheet`): 6 round, lifted off the page by
+/// A slip of the light paper: 6 round, lifted off the page by
 /// its shadow. What a receipt, a cheque and a memo are printed on.
 ///
 /// ```dart
@@ -78,7 +78,7 @@ class LedgerSlip extends StatelessWidget {
 /// their words.
 double _side(bool wide) => wide ? 36 : 20;
 
-/// A slip's band of guilloche across its head (`.receipt-band`): 14 tall,
+/// A slip's band of guilloche across its head: 14 tall,
 /// the green at .5, its top corners the slip's. It stands first on a
 /// [LedgerSlip], edge to edge (outside the slip's side room), over a
 /// [LedgerSlipHead]: how a page prints its own slip (a new goal's form, a
@@ -111,7 +111,7 @@ class LedgerSlipBand extends StatelessWidget {
   }
 }
 
-/// The tear line across a slip (`.stub`): a half-round notch cut from
+/// The tear line across a slip: a half-round notch cut from
 /// each edge (9 by 18, the page's paper showing) and the perforation
 /// between them, 14 in from each (22 from 1024). It says nothing.
 ///
@@ -191,7 +191,7 @@ class _NotchPainter extends CustomPainter {
   bool shouldRepaint(_NotchPainter old) => old.t != t || old.start != start;
 }
 
-/// A slip's head (`.receipt-head`): what the slip is ([start]: its kind)
+/// A slip's head: what the slip is ([start]: its kind)
 /// and its number, date or class at the far side ([end]), in the mono
 /// capitals at 10; 12 under the [LedgerSlipBand] (16 from 1024), 18 over
 /// what follows (26). Inside the slip's side room.
@@ -221,7 +221,7 @@ class LedgerSlipHead extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
-    // `.receipt-head .meta`: 10 in the source, set 11 here (no words under
+    // `.receipt-head .meta`: set 11 (no words under
     // 11 px), on the meta's 16px line (`.meta`: 11px/16px);
     // `.receipt-head`: padding 12px 0 18px (16px 0 26px from 1024), gap 12px.
     final style = t.meta.sized(11).line(16);
@@ -255,7 +255,7 @@ class LedgerSlipHead extends StatelessWidget {
   }
 }
 
-/// A transaction's receipt (`.receipt`), printed on a [LedgerSlip]: the
+/// A transaction's receipt, printed on a [LedgerSlip]: the
 /// guilloche band, its [kind] and [number], the [leading] beside the [name]
 /// in the serif and its [subtitle], the engraved [figure] with the [seal]
 /// pressed at its end (both sized for a receipt), the tear line, then its
@@ -306,7 +306,7 @@ class LedgerReceipt extends StatelessWidget {
   /// slot (a column beside a form) it takes the phone's.
   static const double _deskFrom = 520;
 
-  /// Between the figure and its seal (the source's 12).
+  /// Between the figure and its seal (Ledger's 12).
   static const double _figureSealGap = LedgerSpacing.s12;
 
   @override
@@ -345,7 +345,7 @@ class LedgerReceipt extends StatelessWidget {
     );
     // `.receipt .seal`: margin 0 -4px -6px 0 (0 4px 0 0 from 1024). Its
     // ring ends on the slip's side room here, as the details' values do:
-    // the source's 4 past it on a phone (4 short from 1024) read as nearly
+    // Ledger's 4 past it on a phone (4 short from 1024) read as nearly
     // aligned, not as stamped. It still sinks 6 into the stub's room.
     final pressed = wide
         ? SizedBox.square(dimension: size, child: stamp)
@@ -470,11 +470,11 @@ class _Bleed extends StatelessWidget {
   );
 }
 
-/// A transfer drawn as a cheque (`.cheque`), printed on a [LedgerSlip]:
+/// A transfer drawn as a cheque, printed on a [LedgerSlip]:
 /// the guilloche band, its [kind] and [date], its [lines] (the pick lines,
 /// the amount, the note), the tear line and the [micr] line at its foot
 /// in the spaced mono. A sent cheque carries its [stamp], pressed across
-/// it at the stamp's size (`.seal-stamp`: 132 down and 14 in from its end;
+/// it at the stamp's size (132 down and 14 in from its end;
 /// 136 and 40 from 1024, clear of the amount's box); at a large text size,
 /// under its lines at their end.
 ///
@@ -546,7 +546,7 @@ class LedgerCheque extends StatelessWidget {
       children: [
         _slip(context, wide),
         PositionedDirectional(
-          // From 1024 the source's 150 put the seal's foot 8 into the
+          // From 1024 Ledger's 150 put the seal's foot 8 into the
           // amount's box, cutting its frame; 136 stands it clear.
           top: wide ? 136 : 132,
           end: wide ? 40 : 14,

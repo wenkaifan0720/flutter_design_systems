@@ -53,10 +53,14 @@ class LedgerScreen extends StatelessWidget {
     this.backdrop,
   }) : _form = false;
 
-  /// A flow step's form column (`.form-col`: the transfer, its review, done,
+  /// A flow step's form column (the transfer, its review, done,
   /// the split, a new goal): on a phone it stands 24 under the bar, where a
-  /// page's first section stands 28 (`.cell-first`); on the desktop both stand
-  /// under the masthead's own 36.
+  /// page's first section stands 28; on the desktop both stand
+  /// under the masthead's own 36. The column spans the page up to
+  /// [LedgerLayout.formMeasure] (640), at its start, and its fields span
+  /// the column: one width for every field; a [footer]'s acts keep to it
+  /// too. A record's page (its details, a review) stands on it as well, so
+  /// a desktop's rows never run its name and its value a window apart.
   const LedgerScreen.form({
     super.key,
     required this.body,
@@ -84,13 +88,11 @@ class LedgerScreen extends StatelessWidget {
   /// The room round the body; null is the page's own.
   final EdgeInsetsGeometry? padding;
 
-  /// A drawing behind the page's column (the source's `.main`, which clips
-  /// it), filling it from under the bar: it places its own art.
+  /// A drawing behind the page's column (which clips it), filling it from under the bar: it places its own art.
   final Widget? backdrop;
 
   /// The footer band's room: 16 over its acts and 24 under them (the
-  /// device's inset when larger), the gutter at its sides. DERIVED: the
-  /// source stands its acts in the page.
+  /// device's inset when larger), the gutter at its sides.
   static const EdgeInsets footerInsets = EdgeInsets.fromLTRB(
     LedgerChromeMetrics.gutter,
     LedgerChromeMetrics.footerTop,
@@ -98,8 +100,7 @@ class LedgerScreen extends StatelessWidget {
     LedgerChromeMetrics.footerFoot,
   );
 
-  /// `.form-col { margin-top: 24px }`: a form's column under
-  /// the phone's bar.
+  /// A form's column under the phone's bar.
   static const double _formTop = 24;
 
   Widget? _resolveBar(BuildContext context) {
@@ -171,10 +172,15 @@ class LedgerScreen extends StatelessWidget {
             height: _form ? _formTop : LedgerChromeMetrics.firstSectionGap,
           )
         : null;
+    final column = _form ? LedgerLayout.formColumn(body) : body;
     Widget page(Widget content) => Padding(
       padding: EdgeInsetsDirectional.only(start: side),
       child: content,
     );
+    // On a phone the page scrolls under the strip's band, not behind it: the
+    // strip is opaque paper, and a field brought into view (focused after a
+    // form's check) stands under it rather than behind it.
+    final under = scrollable && strip ? top : 0.0;
     final Widget content;
     if (scrollable) {
       content = MediaQuery.removePadding(
@@ -189,7 +195,7 @@ class LedgerScreen extends StatelessWidget {
                 if (backdrop != null)
                   Positioned(
                     left: 0,
-                    top: top,
+                    top: top - under,
                     right: 0,
                     bottom: 0,
                     child: ClipRect(child: backdrop),
@@ -200,12 +206,12 @@ class LedgerScreen extends StatelessWidget {
                   label: 'page',
                   child: Padding(
                     padding: room.copyWith(
-                      top: room.top + top,
+                      top: room.top + top - under,
                       bottom: room.bottom + reserve,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [?masthead, ?firstGap, body],
+                      children: [?masthead, ?firstGap, column],
                     ),
                   ),
                 ),
@@ -232,7 +238,7 @@ class LedgerScreen extends StatelessWidget {
               children: [
                 ?masthead,
                 ?firstGap,
-                Expanded(child: body),
+                Expanded(child: column),
               ],
             ),
           ),
@@ -249,7 +255,7 @@ class LedgerScreen extends StatelessWidget {
             Expanded(
               child: Stack(
                 children: [
-                  Positioned.fill(child: content),
+                  Positioned.fill(top: under, child: content),
                   if (strip)
                     Positioned(
                       left: 0,
@@ -289,7 +295,13 @@ class LedgerScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: LedgerFooterBand(child: footer!),
+                  // A form's acts stand on its column's measure, as its
+                  // fields do.
+                  child: _form
+                      ? LedgerLayout.formColumn(
+                          LedgerFooterBand(child: footer!),
+                        )
+                      : LedgerFooterBand(child: footer!),
                 ),
               ),
           ],

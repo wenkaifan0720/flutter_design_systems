@@ -38,7 +38,7 @@ Widget kitMarginsDemo(Brightness brightness) => kitScreen(
           LedgerBadge(
             count: 120,
             urgent: true,
-            label: 'to file',
+            semanticLabel: 'to file',
             child: LedgerIconButton.outlined(
               LucideIcons.fileText,
               semanticLabel: 'Receipts',

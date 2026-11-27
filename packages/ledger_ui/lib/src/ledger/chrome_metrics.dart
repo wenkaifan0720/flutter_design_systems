@@ -1,6 +1,4 @@
-/// The measures Ledger's chrome and figures are drawn at, each the value
-/// Ledger's source stylesheet sets (its CSS rule named beside it). A
-/// measure the source holds no instance of says DERIVED.
+/// The measures Ledger's chrome and figures are drawn at.
 ///
 /// Components read these; pages never do (a page's spacing is
 /// [LedgerSpacing]'s, its type the theme's).
@@ -25,7 +23,7 @@ abstract final class LedgerChromeMetrics {
   static const double gutterWide = 56;
 
   /// `.main`: the room under the last section, 40 under a tab's page, 48
-  /// under a pushed page (`.is-detail`), 72 on the desktop; 40 over the
+  /// under a pushed page, 72 on the desktop; 40 over the
   /// desktop's masthead.
   static const double pageFoot = 40;
 
@@ -38,7 +36,7 @@ abstract final class LedgerChromeMetrics {
   /// The room over the desktop's masthead.
   static const double pageTopWide = 40;
 
-  /// `.cell` and `.cell-first`: a section 48 under the one before (56 on
+  /// A section stands 48 under the one before (56 on
   /// the desktop), the first 28 under the masthead.
   static const double sectionGap = 48;
 
@@ -48,7 +46,7 @@ abstract final class LedgerChromeMetrics {
   /// The first section's distance under the masthead.
   static const double firstSectionGap = 28;
 
-  /// A footer band's room: 16 over its acts, 24 under them. DERIVED (the
+  /// A footer band's room: 16 over its acts, 24 under them. (the
   /// source stands its acts in the page).
   static const double footerTop = 16;
 
@@ -67,7 +65,7 @@ abstract final class LedgerChromeMetrics {
   /// The distance between the masthead's title and its tools, at their feet.
   static const double mastToolsGap = 24;
 
-  /// `.greeting, .title-l`: the title 6 under the meta (8 on the desktop,
+  /// The masthead's title stands 6 under the meta (8 on the desktop,
   /// where it sets at 40).
   static const double titleGap = 6;
 
@@ -77,8 +75,8 @@ abstract final class LedgerChromeMetrics {
   /// The masthead title's size on the desktop.
   static const double titleWide = 40;
 
-  /// The desktop's crumb stands in the eyebrow's line (DERIVED, one page
-  /// frame: the source set it over the meta, 6 above it and 10 over the
+  /// The desktop's crumb stands in the eyebrow's line (one page
+  /// frame: Ledger sets it over the meta, 6 above it and 10 over the
   /// title, so a pushed page's title stood 8 under a tab's); a meta with it
   /// follows on that line, 6 past a faint dot.
   static const double crumbToMeta = 6;
@@ -123,19 +121,17 @@ abstract final class LedgerChromeMetrics {
 
   // ---- the top bar (phone) -----------------------------------------------------
 
-  /// `.topbar`: 60 tall, the page's paper (the source's frost laid opaque), a hairline
-  /// under it; its faces on the page's 24 gutter at both sides, a detail's
-  /// too (the source pads 16 at its end and on a detail, which set the
-  /// avatar and the way back 8 off the page's column).
+  /// The phone's top bar: 60 tall, the page's paper, a hairline under it;
+  /// its faces on the page's 24 gutter at both sides, a detail's too.
   static const double topBarHeight = 60;
 
   /// The top bar's side padding, on the page's gutter.
   static const double topBarSide = 24;
 
-  /// `.topbar-slot`: the empty 36 that balances a detail's back.
+  /// The empty 36 that balances a detail's back.
   static const double topBarSlot = 36;
 
-  /// `.brand`: the mark 24, 10 from the word; the sidebar's word at 30.
+  /// The brand: the mark 24, 10 from the word; the sidebar's word at 30.
   static const double brandMark = 24;
 
   /// The brand mark's distance from the word.
@@ -144,8 +140,8 @@ abstract final class LedgerChromeMetrics {
   /// The side bar's wordmark size.
   static const double wordmarkWide = 30;
 
-  /// `.icon-btn`: 40 round, its glyph 20; `.back` and `.ring-btn` 36 with a
-  /// rule round them, their glyph 18.
+  /// An icon button: 40 round, its glyph 20; the way back and a ringed
+  /// button 36 with a rule round them, their glyph 18.
   static const double iconButton = 40;
 
   /// An icon button's glyph size.
@@ -157,7 +153,7 @@ abstract final class LedgerChromeMetrics {
   /// A ringed button's glyph size.
   static const double ringGlyph = 18;
 
-  /// `.icon-btn .dot`: 9 across, 8 from the top and 9 from the end, ringed
+  /// An icon button's dot: 9 across, 8 from the top and 9 from the end, ringed
   /// 2 in the paper.
   static const double dot = 9;
 
@@ -175,8 +171,8 @@ abstract final class LedgerChromeMetrics {
 
   // ---- the tab bar (phone) -------------------------------------------------------
 
-  /// `.tabbar`: 84 tall, padded 8 at its sides and 22 under its tabs (over
-  /// the home indicator), the raised paper (the source's frost laid opaque), a rule over it.
+  /// The phone's tab bar: 84 tall, padded 8 at its sides and 22 under its
+  /// tabs (over the home indicator), the raised paper, a rule over it.
   static const double tabBarHeight = 84;
 
   /// The tab bar's side padding.
@@ -198,7 +194,7 @@ abstract final class LedgerChromeMetrics {
   /// How far the tick is drawn up into the gap above it.
   static const double tickLift = 2;
 
-  /// `.tab-move .move`: the 52 green disc, ringed 5 in the raised paper,
+  /// The tab bar's act: the 52 green disc, ringed 5 in the raised paper,
   /// standing 2 into the gap under it.
   static const double disc = 52;
 
@@ -209,7 +205,7 @@ abstract final class LedgerChromeMetrics {
   static const double discSink = 2;
 
   /// An accessory the shell stands over the tab bar rides 8 over it.
-  /// DERIVED (the source has none).
+  ///
   static const double accessoryGap = 8;
 
   // ---- the sidebar (desktop) -----------------------------------------------------
@@ -220,7 +216,7 @@ abstract final class LedgerChromeMetrics {
   /// `.sidebar`: padded 30 over, 20 at its sides and foot, its parts 28
   /// apart. Its faces (the act, the chosen row, the rule) stand on its
   /// column; the mark, the nav glyphs and the avatar on one inner keyline,
-  /// the nav's 12 inside it (the source pads the brand and the profile 8,
+  /// the nav's 12 inside it (Ledger pads the brand and the profile 8,
   /// so the mark, the glyphs and the avatar stood on three lines).
   static const double sideTop = 30;
 
@@ -233,7 +229,7 @@ abstract final class LedgerChromeMetrics {
   /// The inset of the side bar's brand, on the nav's inner keyline.
   static const double sideBrandInset = navPad;
 
-  /// `.btn-move`: 44 tall, its words 14, its glyph 18 and 10 from its
+  /// The sidebar's act: 44 tall, its words 14, its glyph 18 and 10 from its
   /// words; when current, a 3 ring of the sidebar's paper and a 1 green ring
   /// past it.
   static const double sideAct = 44;
@@ -263,7 +259,7 @@ abstract final class LedgerChromeMetrics {
   /// A side bar link's glyph distance from its words.
   static const double navGlyphGap = 12;
 
-  /// `.side-profile`: padded 16 over (on the side bar's inner keyline at
+  /// The sidebar's foot: padded 16 over (on the side bar's inner keyline at
   /// its sides), a rule over it, its parts 12 apart, its chevron 16.
   static const double profileTop = 16;
 
@@ -278,14 +274,14 @@ abstract final class LedgerChromeMetrics {
 
   // ---- sheets --------------------------------------------------------------------
 
-  /// `.modal-sheet` on a phone: at most 90% of the window, padded 24 at its
+  /// A sheet on a phone: at most 90% of the window, padded 24 at its
   /// sides and 32 under.
   static const double sheetMaxShare = 0.9;
 
   /// A phone sheet's room under its content.
   static const double sheetFoot = 32;
 
-  /// `.modal-sheet` on the desktop: a dialog 480 wide (440 for a dialog of
+  /// A sheet on the desktop: a dialog 480 wide (440 for a dialog of
   /// acts), at most 84% of the window, padded 32 at its sides and under.
   static const double dialogWidth = 480;
 
@@ -307,8 +303,8 @@ abstract final class LedgerChromeMetrics {
   /// The sheet grip's distance under the sheet's top.
   static const double gripTop = 8;
 
-  /// `.sheet-head`: 14 over its title (26 on the desktop), 12 under, an ink
-  /// rule under it; its title and close 12 apart; `.sheet-x` hung 6 into
+  /// A sheet's head: 14 over its title (26 on the desktop), 12 under, an
+  /// ink rule under it; its title and close 12 apart; its close hung 6 into
   /// the gutter.
   static const double sheetHeadTop = 14;
 
@@ -321,7 +317,7 @@ abstract final class LedgerChromeMetrics {
   /// The distance between the sheet head's title and its close.
   static const double sheetHeadGap = 12;
 
-  /// `.sheet-body` 8 under the head; `.sheet-foot` 20 over the acts.
+  /// A sheet's body stands 8 under its head; its foot 20 over the acts.
   static const double sheetBodyTop = 8;
 
   /// The room over a sheet's acts.
@@ -346,8 +342,8 @@ abstract final class LedgerChromeMetrics {
   /// The toast's width on the desktop.
   static const double toastWidth = 380;
 
-  /// `.toast`: at least 56 tall, padded 10 (14 at its start), its parts 12
-  /// apart; `.toast-ic` 28 round, its glyph 15; `.toast-act` 36 tall, padded
+  /// A toast: at least 56 tall, padded 10 (14 at its start), its parts 12
+  /// apart; its glyph's ring 28 round, the glyph 15; its act 36 tall, padded
   /// 14.
   static const double toastMinHeight = 56;
 
@@ -373,7 +369,7 @@ abstract final class LedgerChromeMetrics {
   static const double toastActPad = 14;
 
   /// How long a toast stays: 3.2 s, 5.6 s with an act to reach for; it
-  /// rises 12 as it comes. DERIVED (the source's toast stays until closed).
+  /// rises 12 as it comes.
   static const Duration toastDwell = Duration(milliseconds: 3200);
 
   /// How long a toast with an act stays.
@@ -400,7 +396,7 @@ abstract final class LedgerChromeMetrics {
   /// A button's glyph distance from its words.
   static const double buttonGap = 10;
 
-  /// `.btn-quiet`: 32 tall, padded 12 (13 in the source), its glyph 15 and 6 from its words.
+  /// A quiet button: 32 tall, padded 12, its glyph 15 and 6 from its words.
   static const double quietButton = 32;
 
   /// A small button's side padding.
@@ -412,10 +408,10 @@ abstract final class LedgerChromeMetrics {
   /// A small button's glyph distance from its words.
   static const double quietGap = 6;
 
-  /// `.btn-row`: two acts side by side 12 apart.
+  /// Two acts side by side stand 12 apart.
   static const double buttonRowGap = 12;
 
-  /// `.btn[disabled]`: opacity .38.
+  /// A disabled button's opacity: .38.
   static const double disabledOpacity = .38;
 
   // ---- sections --------------------------------------------------------------------
@@ -430,8 +426,8 @@ abstract final class LedgerChromeMetrics {
   /// The first thing after a head stands this far under it.
   static const double headAfter = 8;
 
-  /// `.head-link`: its chevron 14, 2 from its words, its ink ending on the
-  /// column's end (the source hangs its box 3 past it).
+  /// A head's link: its chevron 14, 2 from its words, its ink ending on the
+  /// column's end.
   static const double linkGlyph = 14;
 
   /// A head link's chevron distance from its words.
@@ -461,10 +457,9 @@ abstract final class LedgerChromeMetrics {
   /// The rule under the figure's cents.
   static const double centsRule = 1;
 
-  /// The figure's sizes on the desktop (`.fig` is 88 on a phone, `.fig-m`
-  /// 44): a page's head 152 (`.hero .fig`, `.spent-top .fig`), a
-  /// transaction's receipt 120 (`.receipt .fig`), a card's balance 72
-  /// (`.card-sum .fig`), a section's 56 (`.fig-m`).
+  /// The figure's sizes on the desktop (88 and 44 on a phone): a page's
+  /// head 152, a transaction's receipt 120, a card's balance 72, a
+  /// section's 56.
   static const double heroFigureWide = 152;
 
   /// A transaction receipt's figure on the desktop.
@@ -476,7 +471,7 @@ abstract final class LedgerChromeMetrics {
   /// A section's figure on the desktop.
   static const double sectionFigureWide = 56;
 
-  /// A review's amount (`.amount-ro .fig`): 56 on a phone, 72 on the
+  /// A review's amount: 56 on a phone, 72 on the
   /// desktop.
   static const double entryFigure = 56;
 
@@ -547,7 +542,7 @@ abstract final class LedgerChromeMetrics {
   /// The distance between the blank ledger page's ruled lines.
   static const double emptyLines = 32;
 
-  /// `.empty-t` 18 under the seal, set 32 on 34. The title's last line
+  /// An empty page's title: 18 under the seal, set 32 on 34. The title's last line
   /// stands on the page's first rule, the body's lines on the rules under
   /// it and the act's words on a rule clear of them.
   static const double emptyTitleTop = 18;
@@ -572,15 +567,14 @@ abstract final class LedgerChromeMetrics {
   /// The ink seal's turn off square, in degrees.
   static const double sealTurnInk = -5;
 
-  /// A kit's waiting ring: DERIVED (the source draws no wait).
+  /// A kit's waiting ring's size.
   static const double loadingRing = 28;
 
   /// A kit's waiting ring's stroke.
   static const double loadingStroke = 1.5;
 
   /// Focus: the accountant's double rule in the ink under the control, each
-  /// of its two lines this thick. DERIVED (the source draws the browser's
-  /// own).
+  /// of its two lines this thick.
   static const double focusRing = 1.5;
 
   /// The gap between the focus double rule's two lines; the rule stands
@@ -589,13 +583,4 @@ abstract final class LedgerChromeMetrics {
 
   /// The loading leader's length: its dots draw in across it, one by one.
   static const double loadingLeader = 96;
-
-  /// Ledger's old 44 floor. Ledger's parts stand on ui_core's floor in
-  /// force instead (`RawTapTargets.of(context).floorOn()`).
-  @Deprecated(
-    'Read RawTapTargets.of(context).floorOn(): the floor in force, 40 by 40 '
-    'by default. This feature was deprecated after v0.6.0 and goes in 0.8.0.',
-  )
-  // ignore: deprecated_member_use_from_same_package
-  static const double minHit = LedgerLayout.minHitTarget;
 }

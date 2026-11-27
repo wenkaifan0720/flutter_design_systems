@@ -9,32 +9,39 @@ A Flutter design system kept in ink on warm paper, with ruled tables, tabular am
 ## Install
 
 ```sh
-flutter pub add ledger_ui material_ui
+flutter pub add ledger_ui material_ui lucide_icons_flutter
 ```
 
-A whole app: Ledger's faces loaded and its theme over a bare `WidgetsApp`, one page and one button.
+`material_ui` is Flutter's Material as a package (from Flutter 3.50 it leaves the SDK): your app's `MaterialApp`.
+`lucide_icons_flutter` holds the glyphs the snippets here use; Ledger's own are Lucide's too. Import
+`package:ledger_ui/ledger_ui.dart` and `package:material_ui/material_ui.dart` (it brings Flutter's widgets); Ledger's
+library doesn't export `flutter/widgets.dart`. It re-exports ui_core, so `RawWidgetsLocalizations` and the `Raw*`
+parts come with it.
+
+A whole app: Ledger over a `MaterialApp`, one page and one button.
 
 ```dart
-import 'package:flutter/widgets.dart';
 import 'package:ledger_ui/ledger_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await ledgerLoadFonts();
-  runApp(WidgetsApp(
-    color: const Color(0xFF1E5A44),
-    builder: (context, _) => LedgerTheme(data: LedgerThemeData.light(), child: LedgerScreen(
-      body: Center(child: LedgerButton.filled('Move money', onPressed: () {})))),
-  ));
-}
+void main() => runApp(
+  MaterialApp(
+    builder: (context, child) => LedgerHost(child: child!),
+    home: LedgerScreen(
+      topBar: const LedgerTopBar(title: 'Shelf'),
+      body: LedgerButton.filled('Add a book', onPressed: () {}),
+    ),
+  ),
+);
 ```
 
-`material_ui` is the Material library Ledger is built on, for the quick start's `MaterialApp` (Flutter 3.50
-deprecates `package:flutter/material.dart`).
+## Mount Ledger
 
-## Quick start
-
-Put `LedgerTheme` in the app’s `builder` so routes, dialogs and overlays inherit the theme. It works with `MaterialApp`, `CupertinoApp` and `WidgetsApp`.
+`LedgerHost` is the one mount. Put it in your app's `builder:`, above the Navigator, so every page, dialog and menu
+stands inside it. It gives the theme for the brightness in force (by day, by night, or as the device is; `theme` and
+`darkTheme`, or a `palette`'s), the paper behind the app and the body type, Ledger's page motion for every route a
+`MaterialApp` pushes, and the toaster `LedgerToast.show` needs. A change of appearance or palette fades across the
+paper and the ink. Load Ledger's faces before the first frame:
 
 ```dart
 import 'package:ledger_ui/ledger_ui.dart';
@@ -42,150 +49,293 @@ import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ledgerLoadFonts();
-  runApp(const App());
+  await ledgerLoadFonts(); // the first frame is set in Ledger's faces
+  runApp(const App(appearance: null));
 }
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({super.key, required this.appearance});
+
+  /// Light or dark, pinned by the reader; null follows the device.
+  final Brightness? appearance;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: ledgerPageTransitions)),
-    builder: (context, child) => LedgerTheme(
-      data: MediaQuery.platformBrightnessOf(context) == Brightness.dark
-          ? LedgerThemeData.dark()
-          : LedgerThemeData.light(),
-      child: child!,
+    localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+    builder: (context, child) => LedgerHost(brightness: appearance, child: child!),
+    home: const LedgerScreen(
+      topBar: LedgerTopBar(title: 'Shelf'),
+      body: Text('Your reading list'),
     ),
-    home: const Center(child: Text('Accounts')),
   );
 }
 ```
 
-Under a `CupertinoApp` (from `cupertino_ui`) it is the same `builder:`. With no Material words in the app, `LedgerTheme` supplies them to its fields:
+Under a `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same place. A bare
+`LedgerTheme` gives a subtree the theme alone: no toasts, no paper, no fade.
+
+## Build an app
+
+The example app, [example/lib/main.dart](example/lib/main.dart), is a whole reading list to copy: these are its parts.
+
+### The shell and its places
+
+`LedgerAppShell.branches` holds the app's places: a tab bar along a phone's foot, a rail from 600 wide and the side bar
+from 1024. Each place keeps its own pages; a page pushed on one stands beside the rail or the side bar (a phone's bar
+steps away for it), back pops it, and choosing the place again goes back to its first page. Arrow keys move between the
+places and F6 moves the focus between them and the page.
 
 ```dart
-CupertinoApp(
-  builder: (context, child) => LedgerTheme(
-    data: LedgerThemeData.light(),
-    child: child!,
-  ),
-  home: const AccountsPage(),
-);
+import 'package:ledger_ui/ledger_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:material_ui/material_ui.dart';
+
+class ShelfShell extends StatefulWidget {
+  const ShelfShell({super.key});
+
+  @override
+  State<ShelfShell> createState() => _ShelfShellState();
+}
+
+class _ShelfShellState extends State<ShelfShell> {
+  int _place = 0;
+
+  @override
+  Widget build(BuildContext context) => LedgerAppShell.branches(
+    brand: 'Shelf',
+    destinations: const [
+      LedgerNavItem(LucideIcons.libraryBig, 'Books'),
+      LedgerNavItem(LucideIcons.plus, 'Add'),
+      LedgerNavItem(LucideIcons.settings, 'Settings'),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (place) => setState(() => _place = place),
+    branches: [
+      (context) => const LedgerScreen(topBar: LedgerTopBar(title: 'Books'), body: Text('Your reading list')),
+      (context) => const LedgerScreen(topBar: LedgerTopBar(title: 'Add a book'), body: Text('Title')),
+      (context) => const LedgerScreen(topBar: LedgerTopBar(title: 'Settings'), body: Text('Appearance')),
+    ],
+  );
+}
 ```
 
-A bare `WidgetsApp` asks for its colour and how to build a route:
+### A list and its pages
+
+A section of rows under a head, each pushing its own page. A pushed page's `LedgerTopBar.backLabel` names the way back
+(a chevron on a phone, a crumb over the title beside the rail and the side bar). A record's page stands on
+`LedgerScreen.form`'s column, as a form does, so a desktop never sets a name and its value a window apart.
 
 ```dart
-WidgetsApp(
-  color: const Color(0xFF2F6B4F),
-  builder: (context, child) => LedgerTheme(
-    data: LedgerThemeData.light(),
-    child: child!,
-  ),
-  pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-      PageRouteBuilder<T>(
-        settings: settings,
-        pageBuilder: (context, _, _) => builder(context),
+import 'package:ledger_ui/ledger_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key, required this.titles});
+
+  final List<String> titles;
+
+  @override
+  Widget build(BuildContext context) => LedgerScreen(
+    topBar: const LedgerTopBar(title: 'Books'),
+    body: LedgerSection(
+      head: LedgerHead(LedgerFormat.plural(titles.length, 'book')),
+      child: LedgerRows(
+        children: [
+          for (final title in titles)
+            LedgerRow(
+              title: title,
+              subtitle: 'Reading',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => LedgerScreen.form(
+                    topBar: LedgerTopBar(title: title, backLabel: 'Books'),
+                    body: LedgerRows(children: [LedgerKeyValue('Title', title)]),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
-  home: const AccountsPage(),
-);
+    ),
+  );
+}
 ```
 
-`ledgerPageTransitions` applies Ledger’s short fade and 8-pixel slide to pushed routes. Navigation destinations switch in place. The iOS back gesture and Android system back are supported. Reduced motion follows the platform setting.
+### Forms
 
-## Examples
-
-A page is a `LedgerScreen` with its top bar and body:
+Put a form on a `LedgerScreen.form`: its column spans the page up to `LedgerLayout.formMeasure` (640), and every field
+in it (a text field, a select, a sum, a date) takes the column's width. Stand the fields in a `Column` with
+`LedgerSpacing.s24` between them. Check the answers when the reader saves: give each problem to its field's
+`errorText`, in words, and move the focus to the first one. A `LedgerDatePicker` with a null `value` is an optional
+date: its line asks for one until it is chosen.
 
 ```dart
-LedgerScreen(
-  topBar: const LedgerTopBar(title: 'Accounts'),
-  body: LedgerSection(
-    head: const LedgerHead('Everyday', note: 'Balance'),
-    child: LedgerRows(
+import 'package:ledger_ui/ledger_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class AddBookPage extends StatefulWidget {
+  const AddBookPage({super.key, required this.onSaved});
+
+  final void Function(String title, String format, DateTime? started) onSaved;
+
+  @override
+  State<AddBookPage> createState() => _AddBookPageState();
+}
+
+class _AddBookPageState extends State<AddBookPage> {
+  final _title = TextEditingController();
+  final _titleFocus = FocusNode();
+  String _format = 'paperback';
+  DateTime? _started;
+  String? _titleError;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  // The form's check: the field's error in words, or null.
+  String? _checkTitle(String title) => title.trim().isEmpty ? 'Enter the book’s title' : null;
+
+  void _save() {
+    setState(() => _titleError = _checkTitle(_title.text));
+    if (_titleError != null) return _titleFocus.requestFocus();
+    widget.onSaved(_title.text.trim(), _format, _started);
+  }
+
+  @override
+  Widget build(BuildContext context) => LedgerScreen.form(
+    topBar: const LedgerTopBar(title: 'Add a book'),
+    body: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: LedgerSpacing.s24,
       children: [
-        LedgerRow(
-          leading: const LedgerGlyph(LucideIcons.wallet),
-          title: 'Checking',
-          subtitle: '··4821',
-          subtitleMonospace: true,
-          value: const LedgerAmount(6248.30),
-          onTap: () => openAccount('checking'),
+        LedgerTextField(
+          labelText: 'Title',
+          controller: _title,
+          focusNode: _titleFocus,
+          errorText: _titleError,
+          isRequired: true,
         ),
-        LedgerRow(
-          leading: const LedgerGlyph(LucideIcons.piggyBank),
-          title: 'Savings',
-          value: const LedgerAmount(18420.00),
-          onTap: () => openAccount('savings'),
+        LedgerSelect<String>(
+          labelText: 'Format',
+          value: _format,
+          items: const [
+            LedgerSelectItem(value: 'paperback', label: 'Paperback'),
+            LedgerSelectItem(value: 'ebook', label: 'Ebook'),
+          ],
+          onChanged: (format) => setState(() => _format = format),
         ),
+        LedgerDatePicker(
+          labelText: 'Date started',
+          value: _started,
+          onChanged: (day) => setState(() => _started = day),
+        ),
+        LedgerButton.filled('Save book', expand: true, onPressed: _save),
       ],
     ),
-  ),
-)
+  );
+}
 ```
 
-Use `LedgerButton.filled` for the primary action. The default button is outlined, `.ink` uses a dark fill, and `.text` has no border. Set `isDestructiveAction` for a destructive action.
+A field that only shows a value, or wraps a control that has no label of its own (a toggle group, a slider), is a
+`LedgerField`: its `labelText` over the control, read with it.
+
+### Dialogs and toasts
+
+`LedgerDialog.show` returns the reader's answer: `true` for the confirm, `false` for Cancel, `null` when it is
+dismissed (Escape, the scrim, system back). A destructive one first focuses Cancel. `LedgerToast.show` says what
+happened.
 
 ```dart
-LedgerButton.filled('Transfer', onPressed: transfer, expand: true);
-LedgerButton('Cancel', onPressed: () => Navigator.pop(context));
+import 'package:ledger_ui/ledger_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+Future<bool> confirmDelete(BuildContext context, String title) async {
+  final delete = await LedgerDialog.show(
+    context,
+    title: 'Delete “$title”?',
+    body: 'It comes off your list. You cannot undo this.',
+    type: LedgerDialogType.destructive,
+    confirmLabel: 'Delete book',
+    cancelLabel: 'Keep it',
+  );
+  if (delete != true || !context.mounted) return false;
+  LedgerToast.show(context, 'Deleted “$title”');
+  return true;
+}
 ```
 
-Text fields and selects share the same labelled underline.
+### Let the reader choose a palette
+
+`LedgerThemeData.palettes` are Ledger's six, each with an id to store, a label to show and the swatches it gives by
+day and by night (its seal and its paper). Show each by its colour as it shows now (`swatchesFor` the theme's
+brightness) beside its name, as a radio's `leading`, and hand the chosen one to the host.
 
 ```dart
-LedgerTextField(labelText: 'Note', hintText: 'What it is for', controller: note);
+import 'package:ledger_ui/ledger_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
-LedgerSelect<String>(
-  labelText: 'Currency',
-  value: currency,
-  items: const [
-    LedgerSelectItem(value: 'USD', label: 'US dollar'),
-    LedgerSelectItem(value: 'EUR', label: 'Euro'),
-  ],
-  onChanged: (value) => setState(() => currency = value),
-);
+class PalettePicker extends StatelessWidget {
+  const PalettePicker({super.key, required this.palette, required this.onChanged});
+
+  final RawNamedPalette palette;
+  final ValueChanged<RawNamedPalette> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.ledgerTheme;
+    return LedgerSection(
+      head: const LedgerHead('Colour'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final p in LedgerThemeData.palettes)
+            LedgerRadio<String>(
+              value: p.id,
+              groupValue: palette.id,
+              label: p.label,
+              // Its seal as it shows now, beside its name.
+              leading: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: p.swatchesFor(t.brightness).first,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: t.border),
+                ),
+              ),
+              onChanged: (id) => onChanged(LedgerThemeData.palettes.firstWhere((p) => p.id == id)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// Over the app: LedgerHost(palette: palette, brightness: appearance, child: child!)
 ```
 
-For a number in a form, such as an estimate in minutes or a number of copies, use `LedgerStepper(size: LedgerStepperSize.field, …)`. The number sits on a text field's rule at the same height, accepts typing within `min` and `max`, and shows the plain number. `format` sets what a screen reader announces. The default size is the budget's large figure. Both sizes show the plain number in the reader's digits; money is yours to ask for, for instance `format: (value) => LedgerFormat.money(value, showCents: false)` for a budget in whole dollars. `LedgerPieChart` works the same way: pass `format: LedgerFormat.money` when its shares are money.
+## Building blocks
 
-To display tab content, give `LedgerTabs` a bounded height and supply one child per tab. The pages follow the tab selection, accept swipes and use their tab labels as accessible names.
+| For | Use |
+| --- | --- |
+| The app and its pages | `LedgerHost`, `LedgerAppShell`, `LedgerScreen` (`.form` for a form's column), `LedgerTopBar`, `LedgerNavBar`, `LedgerSideBar`, `LedgerShellAction`, `LedgerPageTransitions` |
+| Sections and rows | `LedgerSection` and `LedgerHead`, `LedgerRows` and `LedgerRow`, `LedgerKeyValue`, `LedgerSettingRow`, `LedgerToggleRow`, `LedgerSwipeActions`, `LedgerReorderableList`, `LedgerDisclosure`, `LedgerDivider`, `LedgerFactColumns` |
+| Actions | `LedgerButton` (`.filled`, `.ink`, `.text`), `LedgerButtonRow`, `LedgerIconButton`, `LedgerSplitButton`, `LedgerActionBar`, `LedgerQuickActions`, `LedgerMenu` |
+| Form fields | `LedgerTextField`, `LedgerTextArea`, `LedgerPasswordField`, `LedgerSearchField`, `LedgerCodeField`, `LedgerInputGroup`, `LedgerField`, `LedgerSelect`, `LedgerCombobox`, `LedgerMultiSelect`, `LedgerStepper`, `LedgerFileUpload` |
+| Choices | `LedgerRadio`, `LedgerCheckbox`, `LedgerSwitch`, `LedgerSegmentedControl`, `LedgerToggleGroup`, `LedgerChipRow`, `LedgerFilters`, `LedgerSlider`, `LedgerRangeSlider`, `LedgerIconPicker` |
+| Dates | `LedgerDatePicker`, `LedgerDateRangePicker`, `LedgerWeekStrip`, `LedgerFormat` (dates, money, counts) |
+| Money and figures | `LedgerAmount`, `LedgerFigure`, `LedgerDelta`, `LedgerGauge`, `LedgerProgressBar`, `LedgerProgressRing`, `LedgerTransactionRow`, `LedgerRegister`, `LedgerDataTable`, `LedgerReceipt` |
+| Charts | `LedgerPieChart`, `LedgerSparkline`, `LedgerMonthBars`, `LedgerDayBars`, `LedgerCumulativeChart`, `LedgerNetWorthChart`, `LedgerGoalChart`, `LedgerChartKey` |
+| Marks | `LedgerTag`, `LedgerPill`, `LedgerBadge`, `LedgerAvatar`, `LedgerMonogram`, `LedgerGlyph`, `LedgerSeal`, `LedgerSkeleton` |
+| Messages | `LedgerToast`, `LedgerBanner`, `LedgerEmptyState`, `LedgerTooltip` |
+| Over the page | `LedgerDialog`, `LedgerSheet`, `LedgerSideSheet`, `LedgerActionSheet`, `LedgerPopover`, `showLedgerCommandPalette` |
+| Layout | `LedgerTabs`, `LedgerCarousel`, `LedgerTimeline`, `LedgerPagination`, `LedgerPageDots`, `LedgerScrollArea`, `LedgerPullToRefresh`, `LedgerLayout`, `LedgerSpacing`, `LedgerGap` |
 
-`LedgerDialog.show` returns the user’s choice. A destructive confirmation initially focuses Cancel. Escape, tapping the scrim and system back dismiss the dialog with `null`.
-
-```dart
-final confirmed = await LedgerDialog.show(
-  context,
-  title: 'Delete this entry?',
-  body: 'It leaves your records for good.',
-  type: LedgerDialogType.destructive,
-  confirmLabel: 'Delete',
-);
-```
-
-`LedgerNavigationFrame` displays a bottom bar below 600 logical pixels, a rail from 600, and a sidebar from 1024. The current page keeps its state as the window resizes. Arrow keys move between destinations and F6 switches focus between navigation and the page.
-
-```dart
-LedgerNavigationFrame(
-  destinations: const [
-    LedgerNavItem(LucideIcons.house, 'Home'),
-    LedgerNavItem(LucideIcons.list, 'Activity'),
-    LedgerNavItem(LucideIcons.settings, 'Settings'),
-  ],
-  selectedIndex: tab,
-  onDestinationSelected: (i) => setState(() => tab = i),
-  brand: 'Quill',
-  body: pages[tab],
-);
-```
-
-| | |
-|---|---|
-| ![A transaction at 390 by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/ledger_ui/screenshots/transaction-390-day.png) | ![Settings at 390 by lamplight](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/ledger_ui/screenshots/settings-390-night.png) |
-
-## Theme
+## Make it yours
 
 `LedgerTheme.of(context)` (or `context.ledgerTheme`) returns the `LedgerThemeData` in scope: its colours, its type
 (the serif for heads and figures, the sans for words, the mono for amounts), its density and its radii. Restyle a part
@@ -209,29 +359,25 @@ LedgerThemeData.from(
 LedgerThemeData.light().copyWith(density: LedgerDensity.compact);
 ```
 
-Use `LedgerThemeData.from` to derive a coordinated palette from your accent, by day and by night; `nightPaper`, `nightInk` and `nightAccent` set the night's own. Use `copyWith` for individual overrides. The semantic money colours are `moneyIn` for income, `over` for spending over a limit, and `move` for transfers. The preset corner radii and all three densities can be customized.
+`LedgerThemeData.from` derives a coordinated palette from your accent, by day and by night; `nightPaper`, `nightInk`
+and `nightAccent` set the night's own. Use `copyWith` for single overrides. The money colours are `moneyIn` for
+income, `over` for spending past a limit and `move` for transfers.
 
-## Component styles
-
-Most controls accept `value` and `onChanged`. A null callback disables the control. Supply a `TextEditingController` when you need to manage field contents from your app.
-
-Use `LedgerThemeData.components` for app-wide component defaults. On widgets with a `style` parameter, a local `LedgerStyle` overrides those defaults. Buttons, fields, chips, switches, banners and dialogs support styles. Selects, sliders, navigation and sheets use the surrounding theme. Field styles control the underline, paper, padding and text.
+Most controls take `value` and `onChanged`; a null callback disables the control. `LedgerThemeData.components` holds
+app-wide component defaults, and a widget's own `style:` (a `LedgerStyle`) wins over them. Buttons, fields, chips,
+switches, banners and dialogs take styles; selects, sliders, navigation and sheets follow the theme.
 
 ```dart
-// Use the accent colour while the button is enabled.
+// The accent on one button while it is enabled.
 final green = context.ledgerTheme.accentText;
 final inGreen = WidgetStateProperty.resolveWith(
   (states) => states.contains(WidgetState.disabled) ? null : green,
 );
-LedgerButton(
-  'Export',
-  onPressed: export,
-  style: LedgerStyle(edge: inGreen, foreground: inGreen),
-)
+LedgerButton('Export', onPressed: () {}, style: LedgerStyle(edge: inGreen, foreground: inGreen));
 ```
 
 Labels and glyphs are a `String` and an `IconData` where Flutter would take a `Widget`, as in
-`LedgerButton.filled('Save', icon: LucideIcons.check)`. Use the label for the action’s accessible name.
+`LedgerButton.filled('Save', icon: LucideIcons.check)`. A control without words of its own takes a `semanticLabel`.
 
 ## Change one component
 
@@ -249,12 +395,14 @@ pressable, the rules, the leader, the engraving and the other helpers). The rest
 
 ## Example app
 
-Run the app in `example/` to explore Quill, a household ledger with an account overview, transaction register, entry form and settings. Its Foundations page shows the six presets side by side, in light and dark mode.
+[example/lib/main.dart](example/lib/main.dart) is Shelf, the reading list above, whole: the shell, the list and its
+pages, the form, the dialog and the settings with the six palettes. Ledger's gallery, Quill (a household ledger with
+every part on a page of its own), is `flutter run -t lib/gallery.dart` in `example/`.
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.7.2 and re-exports it, so `RawWidgetsLocalizations`
-and the `Raw*` parts come with the one import.
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux. The package depends on ui_core
+^0.8.0 and re-exports it.
 
 ## Licences
 

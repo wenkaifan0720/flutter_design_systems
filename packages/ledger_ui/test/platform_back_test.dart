@@ -8,7 +8,6 @@ import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 
 /// A first page with a push to an entry page, under [LedgerHost] alone: the host's theme stands nearest the
 /// navigator, so the pushed MaterialPageRoute takes Ledger's motion from it.

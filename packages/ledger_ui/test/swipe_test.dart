@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const Size _phone = Size(390, 844);
@@ -123,16 +122,30 @@ void main() {
       expect(find.text('DELETE'), findsNothing);
     });
 
-    testWidgets('offers every act as a custom action', (t) async {
-      await _pump(t, row());
-      final acts = find.descendant(
+    testWidgets('an open row is cut at its own edges, not the gutter', (
+      t,
+    ) async {
+      await _pump(t, row(open: true));
+      await t.pumpAndSettle();
+      final area = t.getRect(find.byType(LedgerSwipeActions));
+      final clip = find.descendant(
         of: find.byType(LedgerSwipeActions),
-        matching: find.byWidgetPredicate(
-          (w) => w is Semantics && w.properties.customSemanticsActions != null,
-        ),
+        matching: find.byType(ClipRect),
       );
-      final data = t.getSemantics(acts.first).getSemanticsData();
+      expect(clip, findsWidgets);
+      expect(t.getRect(clip.first), area);
+      // The row itself has slid past the area's start: the clip is what
+      // keeps it off the gutter.
+      expect(t.getRect(find.byType(LedgerRow)).left, lessThan(area.left));
+    });
+
+    testWidgets('offers every act as a custom action on the row', (t) async {
+      final semantics = t.ensureSemantics();
+      await _pump(t, row());
+      // The row's own node: its words, its press and its acts, one node.
+      final data = t.getSemantics(find.text('Studio rent')).getSemanticsData();
       expect(data.customSemanticsActionIds, hasLength(3));
+      semantics.dispose();
     });
   });
 }

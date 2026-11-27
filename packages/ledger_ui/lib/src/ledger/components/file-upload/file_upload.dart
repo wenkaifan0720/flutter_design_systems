@@ -105,7 +105,7 @@ class LedgerFileUpload extends StatelessWidget {
           ),
         LedgerPressable(
           onTap: onPick,
-          label: labelText == null ? hintText : '$labelText: $hintText',
+          semanticLabel: labelText == null ? hintText : '$labelText: $hintText',
           radius: t.controlRadius,
           child: Builder(
             builder: (context) {

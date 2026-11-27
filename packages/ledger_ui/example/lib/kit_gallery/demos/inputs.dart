@@ -180,13 +180,13 @@ class _LiveState extends State<_Live> {
         runSpacing: LedgerSpacing.s8,
         children: [
           LedgerFilters(
-            label: 'Direction',
+            semanticLabel: 'Direction',
             options: const ['All', 'Money in', 'Money out'],
             value: _direction,
             onChanged: (d) => setState(() => _direction = d),
           ),
           LedgerFilters(
-            label: 'Account',
+            semanticLabel: 'Account',
             options: const ['Wren Card', 'Everyday'],
             value: _account,
             onChanged: (a) => setState(() => _account = a),
@@ -264,13 +264,13 @@ Widget kitSpecimenFilters() => Wrap(
   runSpacing: LedgerSpacing.s8,
   children: [
     LedgerFilters(
-      label: 'Direction',
+      semanticLabel: 'Direction',
       options: const ['All', 'Money in', 'Money out'],
       value: 'All',
       onChanged: (_) {},
     ),
     LedgerFilters(
-      label: 'Account',
+      semanticLabel: 'Account',
       options: const ['Wren Card', 'Everyday'],
       value: null,
       onChanged: (_) {},

@@ -183,7 +183,7 @@ class _LedgerTabsState extends State<LedgerTabs> with TickerProviderStateMixin {
     );
   }
 
-  // DERIVED (the source's tab bar is the shell's): tabs 28 apart.
+  // Tabs 28 apart.
   static const double _gap = 28;
 }
 

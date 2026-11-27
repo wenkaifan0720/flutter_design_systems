@@ -208,7 +208,7 @@ class _QuillRegisterState extends State<QuillRegister> {
             ),
             const LedgerGap(LedgerSpacing.s16),
             LedgerFilters(
-              label: context.say('Show'),
+              semanticLabel: context.say('Show'),
               options: [for (final f in _filters) context.say(f)],
               value: context.say(_filter),
               onChanged: (f) => setState(

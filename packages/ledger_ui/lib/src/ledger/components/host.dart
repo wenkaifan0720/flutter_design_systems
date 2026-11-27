@@ -1,32 +1,36 @@
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 
 import '../page_motion.dart';
 import '../theme.dart';
 import 'toast.dart';
 
-/// The one mount of Ledger. Picks the theme for the brightness in force,
-/// publishes it as a [LedgerTheme], gives the platform primitives
-/// beneath the thin Material `ThemeData` they read, paints the ground behind
-/// the app, sets the body type as the default text style, carries status-bar
-/// polarity, and lets the reader's text size reach [maxTextScale] (200%):
-/// rows grow and wrap to it, and past it a page stands at 200% rather than
-/// break. Day to night (or
-/// one theme to another) the paper and the ink fade across in
-/// [LedgerMotion.slow] ([AnimatedLedgerTheme]); with reduced motion on they
-/// change at once. It hosts the toasts ([LedgerToaster]). Every render host
-/// mounts it once above its Navigator: the app in its router builder, a page
-/// preview in its own.
+/// Ledger over a whole app, its one mount: the theme for the brightness in
+/// force ([theme] by day, [darkTheme] by night, or a [palette]'s), published
+/// as a [LedgerTheme]; the ground painted behind the app, the body type as
+/// the default text style, the status bar's polarity, Ledger's page motion
+/// for pushed routes, and the toasts ([LedgerToaster]) for
+/// `LedgerToast.show`. It lets the reader's text size reach [maxTextScale]
+/// (200%): rows grow and wrap to it, and past it a page stands at 200%
+/// rather than break. Day to night, or one palette to another, the paper and
+/// the ink fade across in [LedgerMotion.slow] ([AnimatedLedgerTheme]); with
+/// reduced motion on they change at once.
+///
+/// Mount it once in the app's `builder`, above its Navigator, so every
+/// page, dialog and menu stands inside it. A bare [LedgerTheme] gives a
+/// subtree the theme alone: no toasts, no ground, no fade.
 ///
 /// The host follows the ambient platform for behaviour (scroll physics, text
 /// selection, back gestures) and never pins one; inside a preview frame it
 /// follows the frame's register.
-///
 /// ```dart
-/// MaterialApp.router(builder: (context, child) => LedgerHost(child: child!))
+/// MaterialApp(
+///   builder: (context, child) => LedgerHost(brightness: appearance, child: child!),
+///   home: const HomePage(),
+/// )
 /// ```
 class LedgerHost extends StatelessWidget {
   /// Mounts Ledger over [child].
@@ -34,6 +38,7 @@ class LedgerHost extends StatelessWidget {
     required this.child,
     this.theme,
     this.darkTheme,
+    this.palette,
     this.brightness,
     super.key,
   });
@@ -43,6 +48,11 @@ class LedgerHost extends StatelessWidget {
 
   /// The dark theme; null is the default preset's.
   final LedgerThemeData? darkTheme;
+
+  /// The palette by day and by night where [theme] or [darkTheme] is null:
+  /// one of [LedgerThemeData.palettes] (the app's stored choice) or the
+  /// app's own ([LedgerThemeData.fromPalette]); null is Quire.
+  final RawNamedPalette? palette;
 
   /// Pins the appearance; null follows the platform (or the preview frame).
   final Brightness? brightness;
@@ -106,6 +116,13 @@ class LedgerHost extends StatelessWidget {
         ),
       )
       ..add(
+        DiagnosticsProperty<RawNamedPalette>(
+          'palette',
+          palette,
+          defaultValue: null,
+        ),
+      )
+      ..add(
         DiagnosticsProperty<Brightness>(
           'brightness',
           brightness,
@@ -120,16 +137,12 @@ class LedgerHost extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
+    final chosen = palette ?? LedgerThemeData.palettes.first;
     final night =
-        darkTheme ??
-        LedgerThemeData.preset(LedgerThemeData.presets.first, Brightness.dark);
+        darkTheme ?? LedgerThemeData.fromPalette(chosen, Brightness.dark);
     final t = wanted == Brightness.dark
         ? night
-        : theme ??
-              LedgerThemeData.preset(
-                LedgerThemeData.presets.first,
-                Brightness.light,
-              );
+        : theme ?? LedgerThemeData.fromPalette(chosen, Brightness.light);
     final platform = PreviewFrame.targetPlatformOf(context);
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: maxTextScale,

@@ -29,7 +29,7 @@ enum LedgerGlyphTone {
   selected,
 }
 
-/// How large a [LedgerGlyph] stands, and its glyph, as the source sizes
+/// How large a [LedgerGlyph] stands, and its glyph, as Ledger sizes
 /// `.glyph` where it stands.
 enum LedgerGlyphSize {
   /// 40, its glyph 18: a row's lead.
@@ -60,7 +60,7 @@ enum LedgerGlyphSize {
   final double glyph;
 }
 
-/// A round mark wearing one Lucide glyph (`.glyph`): an account's, a
+/// A round mark wearing one Lucide glyph: an account's, a
 /// category's, a goal's, a move's (dashed). It names nothing to a screen
 /// reader; the row it leads says what it is.
 ///
@@ -146,12 +146,12 @@ enum LedgerMonogramTone {
   /// Green on the green wash: who paid the owner.
   moneyIn,
 
-  /// `.member-mg`: ink ground, `--paper-hi` letters, box-shadow 0 0 0 3px
-  /// paper-hi, 0 0 0 4px ink.
+  /// Ink ground, raised-paper letters, ringed 3 in the raised paper and 1
+  /// in the ink past it: the member card's.
   inked,
 }
 
-/// How large a [LedgerMonogram] stands, and its letters, as the source
+/// How large a [LedgerMonogram] stands, and its letters, as Ledger
 /// sizes `.mg` where it stands.
 enum LedgerMonogramSize {
   /// 40, its letters 16: a row's lead.
@@ -168,7 +168,7 @@ enum LedgerMonogramSize {
   record(56, 22, 64, 24),
 
   /// 72, 84 on the desktop, its letters 30 (32): the account holder's on
-  /// the member card (`.member-mg` 72, italic 30/1; 84 and 32 from 1024).
+  /// the member card (72, italic 30/1; 84 and 32 from 1024).
   member(72, 30, 84, 32);
 
   const LedgerMonogramSize(
@@ -193,7 +193,7 @@ enum LedgerMonogramSize {
 }
 
 /// A merchant's or a person's initials in the italic serif inside a fine
-/// ring (`.mg`): "BF" for Blue Fern Café, green on its wash for who paid
+/// ring: "BF" for Blue Fern Café, green on its wash for who paid
 /// the owner, the paper's letters on the ink for the account holder
 /// ([LedgerMonogramTone.inked]). [selected] rings a chosen person in the
 /// green, the paper between. It names nothing to a screen reader; the row
@@ -221,7 +221,7 @@ class LedgerMonogram extends StatelessWidget {
     super.key,
   });
 
-  /// Whose initials: the first letters of its first two words.
+  /// Whose initials: the first letters of its first and last words.
   final String name;
 
   /// The letters, when not the name's own (a person's chosen pair).
@@ -233,7 +233,7 @@ class LedgerMonogram extends StatelessWidget {
   /// How large it stands.
   final LedgerMonogramSize size;
 
-  /// Whether the person is the one chosen (`.person.is-on`).
+  /// Whether the person is the one chosen.
   final bool selected;
 
   @override
@@ -251,7 +251,12 @@ class LedgerMonogram extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
-    final round = wide ? size.desk : size.phone;
+    // With a larger text the disc and its letters grow with the words, to
+    // the marks' 130% at most ([LedgerTag.textScale]).
+    final grow = MediaQuery.textScalerOf(context)
+        .clamp(maxScaleFactor: LedgerTag.textScale)
+        .scale(1);
+    final round = (wide ? size.desk : size.phone) * grow;
     final green = tone == LedgerMonogramTone.moneyIn || selected;
     final inked = tone == LedgerMonogramTone.inked && !selected;
     final record = size == LedgerMonogramSize.record;
@@ -301,10 +306,11 @@ class LedgerMonogram extends StatelessWidget {
                 ]
               : null,
         ),
-        // Its capitals on the disc's middle, as every face's label stands;
-        // engraved in the disc, they keep their size with a large text (a
-        // screen reader hears the row's name, not these).
-        child: MediaQuery.withNoTextScaling(
+        // Its capitals on the disc's middle, as every face's label stands,
+        // growing with the disc (a screen reader hears the row's name, not
+        // these).
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: LedgerTag.textScale,
           child: ledgerCapCenter(
             letters,
             Text(
@@ -344,8 +350,8 @@ class LedgerDashedFrame extends StatelessWidget {
   /// What the frame holds.
   final Widget child;
 
-  /// Inside the dashes: 18 for a new goal's tile (`.goal-new`), 16 18 for
-  /// a goal's blank preview (`.goal-blank`).
+  /// Inside the dashes: 18 for a new goal's tile, 16 18 for
+  /// a goal's blank preview.
   final EdgeInsetsGeometry padding;
 
   @override
@@ -369,7 +375,7 @@ class LedgerDashedFrame extends StatelessWidget {
   }
 }
 
-/// A day as a date tab (`.when`): the month in tracked mono capitals over
+/// A day as a date tab: the month in tracked mono capitals over
 /// the day in the serif, on a small slip of the light paper, 40 by 44.
 /// It names nothing to a screen reader; its row says the date.
 ///
@@ -462,7 +468,7 @@ enum LedgerPillSize {
 }
 
 /// A figure's change or a record's state in the mono on its wash, round
-/// (`.pill`): +3.86%, −6% vs September, Autopay on. It never acts.
+///: +3.86%, −6% vs September, Autopay on. It never acts.
 ///
 /// ```dart
 /// LedgerPill('+3.86%')
@@ -553,7 +559,7 @@ enum LedgerTagTone {
   unread,
 }
 
-/// A word ringed small after a title in mono capitals (`.tag`): Pending
+/// A word ringed small after a title in mono capitals: Pending
 /// after a purchase not yet posted, New after an unread notification.
 ///
 /// ```dart
@@ -616,7 +622,7 @@ class LedgerTag extends StatelessWidget {
   /// The most a tag's word grows with the reader's text (130%).
   static const double textScale = 1.3;
 
-  // `.tag`: 18 tall, 0 6 (7 in the source), a 1 px ring.
+  // `.tag`: 18 tall, 0 6, a 1 px ring.
   static const double _height = 18;
   static const double _pad = 6;
 }

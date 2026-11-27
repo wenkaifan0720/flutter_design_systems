@@ -9,7 +9,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _desk = Size(1440, 900);
@@ -210,7 +209,7 @@ void main() {
                 textDirection: direction,
                 child: LedgerHost(brightness: Brightness.light, child: page!),
               ),
-              home: LedgerNavigationFrame(
+              home: LedgerAppShell(
                 destinations: const [
                   LedgerNavItem(LucideIcons.house, 'Home'),
                   LedgerNavItem(LucideIcons.chartPie, 'Spending'),

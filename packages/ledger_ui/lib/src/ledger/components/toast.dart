@@ -16,7 +16,7 @@ import '../theme.dart';
 import 'host.dart';
 import 'pressable/pressable.dart';
 
-/// A short confirmation over the page, as the source raises one (Moved to
+/// A short confirmation over the page, as Ledger raises one (Moved to
 /// Groceries, Card number copied): the toast rising 12 clear of the tab bar
 /// on a tab's page (96 over its foot), 24 over the bottom edge elsewhere,
 /// 16 in from either side; at desktop width 380 wide at the window's bottom
@@ -82,7 +82,7 @@ abstract final class LedgerToast {
       ShellInsets.of(context),
       box is RenderBox ? LedgerBottomStand.reachOf(context, box) : 0.0,
     );
-    // The source stands it 96 over a tab's foot, 12 clear of the 84 bar,
+    // Ledger stands it 96 over a tab's foot, 12 clear of the 84 bar,
     // and 24 over any other.
     const clear =
         LedgerChromeMetrics.toastOverBar - LedgerChromeMetrics.tabBarHeight;
@@ -339,7 +339,7 @@ class LedgerToastCard extends StatelessWidget {
                 child: TapTargetPadding(
                   child: LedgerPressable(
                     onTap: onActionPressed,
-                    label: actionLabel,
+                    semanticLabel: actionLabel,
                     radius: act / 2,
                     child: Container(
                       height: larger ? null : act,

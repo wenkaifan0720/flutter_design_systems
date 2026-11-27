@@ -12,7 +12,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ui_core_test/ui_core_test.dart' show DesignRadioGroupCheck;
 
@@ -329,7 +328,7 @@ void main() {
         t,
         (d) => _app(
           d,
-          LedgerNavigationFrame(
+          LedgerAppShell(
             destinations: _tabs,
             selectedIndex: 0,
             onDestinationSelected: (_) {},
@@ -351,7 +350,7 @@ void main() {
         t,
         (d) => _app(
           d,
-          LedgerNavigationFrame(
+          LedgerAppShell(
             destinations: _tabs,
             selectedIndex: 0,
             onDestinationSelected: (_) {},
@@ -518,7 +517,7 @@ void main() {
                     Focus(focusNode: before, child: const Text('Before')),
                     LedgerToggleGroup<String>(
                       key: const ValueKey('radios'),
-                      label: 'Period',
+                      semanticLabel: 'Period',
                       options: periods,
                       labelOf: (p) => p,
                       selected: {?chosen},
@@ -616,7 +615,7 @@ void main() {
       await t.pumpAndSettle();
       final marks = t.widgetList<LedgerCheck>(find.byType(LedgerCheck));
       expect(
-        [for (final m in marks) m.label],
+        [for (final m in marks) m.semanticLabel],
         containsAll(const [
           'Order the cotton paper',
           'Mix the walnut ink',
@@ -631,13 +630,13 @@ void main() {
         expect(
           t.getSemantics(find.byElementPredicate((e) => e == element)),
           isSemantics(
-            label: mark.label,
+            label: mark.semanticLabel,
             hasCheckedState: true,
             isChecked: mark.value,
             isButton: false,
             hasTapAction: true,
           ),
-          reason: mark.label,
+          reason: mark.semanticLabel,
         );
         read++;
       }

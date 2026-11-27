@@ -68,7 +68,7 @@ enum LedgerDatePickerPresentation {
 /// LedgerDatePicker(labelText: 'Due', value: due, mode: LedgerDatePickerMode.dateAndTime, onChanged: setDue)
 /// ```
 class LedgerDatePicker extends StatefulWidget {
-  /// A picker named [labelText] showing [value].
+  /// A picker named [labelText] showing [value]; null shows none chosen.
   const LedgerDatePicker({
     required this.value,
     required this.onChanged,
@@ -82,8 +82,10 @@ class LedgerDatePicker extends StatefulWidget {
     super.key,
   });
 
-  /// The day and time chosen.
-  final DateTime value;
+  /// The day and time chosen; null while none is (an optional date): the
+  /// compact line asks for one, and its picker opens on [currentDate], or
+  /// today, with no day struck.
+  final DateTime? value;
 
   /// Told the new value; null holds the picker and dims it.
   final ValueChanged<DateTime>? onChanged;
@@ -115,7 +117,7 @@ class LedgerDatePicker extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
@@ -160,7 +162,12 @@ class LedgerDatePicker extends StatefulWidget {
 class _LedgerDatePickerState extends State<LedgerDatePicker> {
   /// Where an unbounded day wheel is centred: the value it started on, so a
   /// change never moves the window under the finger.
-  late final DateTime _anchor = _day(widget.value);
+  late final DateTime _anchor = _day(_shown);
+
+  /// The value the picker stands on: the chosen one, or, with none chosen,
+  /// [LedgerDatePicker.currentDate] or today, inside the range.
+  DateTime get _shown =>
+      widget.value ?? _kept(widget.currentDate ?? DateTime.now());
 
   bool get _hasDate => widget.mode != LedgerDatePickerMode.time;
   bool get _hasTime => widget.mode != LedgerDatePickerMode.date;
@@ -179,7 +186,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
   void _set(DateTime v) => widget.onChanged?.call(_kept(v));
 
   Future<void> _raise(LedgerDatePickerMode part) async {
-    final draft = ValueNotifier<DateTime>(widget.value);
+    final draft = ValueNotifier<DateTime>(_shown);
     final picked = await LedgerSheet.show<DateTime>(
       context,
       title: widget.labelText,
@@ -225,7 +232,8 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
         children: [
           if (_hasDate)
             _Calendar(
-              value: widget.value,
+              value: _shown,
+              chosen: widget.value != null,
               today: widget.currentDate,
               first: widget.firstDate,
               last: widget.lastDate,
@@ -234,17 +242,13 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
                   day.year,
                   day.month,
                   day.day,
-                  widget.value.hour,
-                  widget.value.minute,
+                  _shown.hour,
+                  _shown.minute,
                 ),
               ),
             ),
           if (_hasTime)
-            _Clock(
-              value: widget.value,
-              use24h: widget.use24hFormat,
-              onChanged: _set,
-            ),
+            _Clock(value: _shown, use24h: widget.use24hFormat, onChanged: _set),
         ],
       ),
       LedgerDatePickerPresentation.wheel => Row(
@@ -254,7 +258,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
           if (_hasDate)
             Expanded(
               child: _DayWheel(
-                value: widget.value,
+                value: _shown,
                 anchor: _anchor,
                 first: widget.firstDate,
                 last: widget.lastDate,
@@ -265,14 +269,14 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
           if (_hasTime)
             _hasDate
                 ? _Clock(
-                    value: widget.value,
+                    value: _shown,
                     use24h: widget.use24hFormat,
                     onChanged: _set,
                     shrink: true,
                   )
                 : Expanded(
                     child: _Clock(
-                      value: widget.value,
+                      value: _shown,
                       use24h: widget.use24hFormat,
                       onChanged: _set,
                     ),
@@ -327,26 +331,42 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
           spacing: _gap / 2,
           children: [
             // Each pill is named by the picker's label and read as its value:
-            // the day or the clock in the reader's words.
-            if (_hasDate)
+            // the day or the clock in the reader's words. With none chosen,
+            // one pill asks for it.
+            if (v == null)
               _Pill(
-                dates.day(v),
+                _hasDate ? dates.ask : '--:--',
                 label: widget.labelText,
-                onTap: live ? () => _raise(LedgerDatePickerMode.date) : null,
-              ),
-            if (_hasTime)
-              _Pill(
-                dates.clock(v, use24h: widget.use24hFormat),
-                label: widget.labelText,
-                onTap: live ? () => _raise(LedgerDatePickerMode.time) : null,
-              ),
+                unset: true,
+                onTap: live
+                    ? () => _raise(
+                        _hasDate
+                            ? LedgerDatePickerMode.date
+                            : LedgerDatePickerMode.time,
+                      )
+                    : null,
+              )
+            else ...[
+              if (_hasDate)
+                _Pill(
+                  dates.day(v),
+                  label: widget.labelText,
+                  onTap: live ? () => _raise(LedgerDatePickerMode.date) : null,
+                ),
+              if (_hasTime)
+                _Pill(
+                  dates.clock(v, use24h: widget.use24hFormat),
+                  label: widget.labelText,
+                  onTap: live ? () => _raise(LedgerDatePickerMode.time) : null,
+                ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  // DERIVED (the source picks dates on a keypad of chips): the calendar and
+  // The calendar and
   // its time 12 apart, the pills 8 apart, the compact line 6 above and under.
   static const double _gap = 12;
   static const double _lineGap = 6;
@@ -372,19 +392,12 @@ class _Dates {
 
   /// A day with its year, as a pill prints it: "Nov 20, 2026",
   /// "٢٠ نوفمبر ٢٠٢٦", "20. Nov. 2026", "2026年11月20日".
-  String day(DateTime d) {
-    if (_english) return LedgerFormat.date(d, showYear: true);
-    final monthDay = _words.formatShortMonthDay(d);
-    final year = _words.formatYear(d);
-    // A year with its mark leads (Japanese's and Chinese's U+5E74 joined,
-    // Korean's spaced); a month that leads takes a comma before the year.
-    if (!_figures.hasMatch(year)) {
-      return year.endsWith('\u5E74') ? '$year$monthDay' : '$year $monthDay';
-    }
-    return _leadingFigure.hasMatch(monthDay)
-        ? '$monthDay $year'
-        : '$monthDay, $year';
-  }
+  String day(DateTime d) => _english
+      ? LedgerFormat.date(d, showYear: true)
+      : _words.formatMediumDate(d);
+
+  /// What a pill with no day chosen says: "Select date".
+  String get ask => _words.datePickerHelpText;
 
   /// A day in full, as a calendar's day is read: "Friday, November 20, 2026".
   String longDay(DateTime d) =>
@@ -460,9 +473,6 @@ class _Dates {
     'SA',
     'SU',
   ];
-
-  static final RegExp _figures = RegExp(r'^\p{Nd}+$', unicode: true);
-  static final RegExp _leadingFigure = RegExp(r'^\p{Nd}', unicode: true);
 }
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -470,11 +480,20 @@ DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 /// A value pill of the compact line: the mono words on the raised paper in a
 /// ring, 32 tall, laid out at the tap floor round it.
 class _Pill extends StatelessWidget {
-  const _Pill(this.text, {required this.label, required this.onTap});
+  const _Pill(
+    this.text, {
+    required this.label,
+    required this.onTap,
+    this.unset = false,
+  });
 
   final String text;
   final String label;
   final VoidCallback? onTap;
+
+  /// Whether it asks for a value none has chosen: its words in the second
+  /// ink.
+  final bool unset;
 
   @override
   Widget build(BuildContext context) {
@@ -482,7 +501,7 @@ class _Pill extends StatelessWidget {
     return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
-        label: label,
+        semanticLabel: label,
         value: text,
         radius: t.controlRadius,
         child: Container(
@@ -499,7 +518,9 @@ class _Pill extends StatelessWidget {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: t.pill.sized(_words).colored(t.textPrimary),
+              style: t.pill
+                  .sized(_words)
+                  .colored(unset ? t.textSecondary : t.textPrimary),
             ),
           ),
         ),
@@ -517,6 +538,7 @@ class _Pill extends StatelessWidget {
 class _Calendar extends StatefulWidget {
   const _Calendar({
     required this.value,
+    required this.chosen,
     required this.today,
     required this.first,
     required this.last,
@@ -524,6 +546,9 @@ class _Calendar extends StatefulWidget {
   });
 
   final DateTime value;
+
+  /// Whether [value] is chosen (struck), or only where the month opens.
+  final bool chosen;
   final DateTime? today;
   final DateTime? first;
   final DateTime? last;
@@ -658,7 +683,7 @@ class _CalendarState extends State<_Calendar> {
     final floor = RawTapTargets.of(context).floorOn().height;
     if (n < 1 || n > length) return SizedBox(height: floor);
     final d = DateTime(_month.year, _month.month, n);
-    final chosen = _same(d, widget.value);
+    final chosen = widget.chosen && _same(d, widget.value);
     final ringed = widget.today != null && _same(d, widget.today!);
     final open = _inRange(d);
     return LayoutBuilder(
@@ -673,7 +698,7 @@ class _CalendarState extends State<_Calendar> {
             child: TapTargetPadding(
               child: LedgerPressable(
                 onTap: open ? () => widget.onPick(d) : null,
-                label: dates.longDay(d),
+                semanticLabel: dates.longDay(d),
                 selected: chosen,
                 radius: mark / 2,
                 child: Container(
@@ -710,7 +735,7 @@ class _CalendarState extends State<_Calendar> {
     );
   }
 
-  // DERIVED (the source lists dates, it does not pick them): a day's cell is
+  // A day's cell is
   // the tap floor's target round a 36 mark, the head 12 over the weekdays.
   static const double _ring = 1.25;
   static const double _arrowGap = 8;
@@ -950,7 +975,7 @@ class _Wheel extends StatelessWidget {
     );
   }
 
-  // DERIVED (the source picks nothing on a wheel): five 40 point rows, the
+  // Five 40 point rows, the
   // chosen one between two ink rules, the others fading to .45; the column
   // stands flat (a wheel so wide its rows never visibly curve: paper does not
   // bend into a drum).

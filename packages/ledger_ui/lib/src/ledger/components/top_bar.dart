@@ -27,7 +27,7 @@ import 'sheet_page.dart';
 /// the profile page's path: the sidebar's foot is current there (a `:name`
 /// segment stands for any one, so '/:root/profile' is the profile pushed on any
 /// root). [notificationsLocation] is the bell's page, where the sidebar marks
-/// nothing current, as the source's notifications do. [searchHint] and
+/// nothing current, as Ledger's notifications do. [searchHint] and
 /// [onSearchPressed] are the app's search, which the desktop's masthead offers
 /// beside the bell.
 ///
@@ -78,7 +78,7 @@ class LedgerAccount {
 
   /// The notifications page's path, read as [profileLocation] is
   /// ('/:root/notifications'): while it is shown the sidebar marks no
-  /// destination current, as the source's notifications light none.
+  /// destination current, as Ledger's notifications light none.
   final String? notificationsLocation;
 
   /// The words the desktop masthead's search pill shows ("Search activity");
@@ -246,7 +246,7 @@ Widget _avatarOf(BuildContext context, LedgerAccount account, {Key? key}) {
   return LedgerAvatar(
     key: key,
     initials: account.initials,
-    label: 'Profile and settings',
+    semanticLabel: 'Profile and settings',
     onTap: open == null ? null : () => open(context),
     tapAlignment: AlignmentDirectional.centerEnd,
   );
@@ -377,7 +377,7 @@ class LedgerBack extends StatelessWidget {
       alignment: AlignmentDirectional.topStart,
       child: LedgerPressable(
         onTap: onPressed,
-        label: spoken,
+        semanticLabel: spoken,
         role: LedgerPressRole.link,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -411,7 +411,7 @@ class _BackLabel extends InheritedWidget {
 }
 
 /// The head of a page, in the register its route earns
-/// (`RoutePresentation.of`), as the source's shell draws it. A screen stands
+/// (`RoutePresentation.of`), as Ledger's shell draws it. A screen stands
 /// the one bar in two places:
 ///
 /// - the phone's top bar, 60 tall, opaque paper pinned over the page: on
@@ -483,8 +483,8 @@ class LedgerTopBar extends StatelessWidget {
   /// A control standing in the masthead's title place, in place of the
   /// [title]'s words: Spending's month bar (`.monthbar`, the way to earlier
   /// months, the month opening its menu, the way to the next), the page's own
-  /// part. It stands at the masthead's top on a phone (`.masthead` 24), 10
-  /// under the [meta] on the desktop (`.monthbar { margin-top: 10px }`). The
+  /// part. It stands at the masthead's top on a phone (24), 10
+  /// under the [meta] on the desktop. The
   /// source's phone bar carries its own date line, so a page passes [meta] for
   /// the desktop only (`meta_desk`). The phone's strip and a pushed page's bar
   /// still read [title].
@@ -606,8 +606,8 @@ class LedgerTopBar extends StatelessWidget {
     final top = MediaQuery.paddingOf(context).top;
     return Semantics(
       container: true,
-      // The page's paper, opaque: the source frosts the bar, but a page that
-      // scrolls under glass smears through it (no glass, no glow). 60 in
+      // The page's paper, opaque: a page that scrolls under glass would
+      // smear through it (no glass, no glow). 60 in
       // all, the hairline drawn over its foot: CSS's border-box leaves 59
       // over the hairline, which centres the 40 avatar and the 28 wordmark
       // on half pixels; on the whole 60 they stand on whole pixels (10 and
@@ -632,7 +632,7 @@ class LedgerTopBar extends StatelessWidget {
   /// desktop's meta.
   static const double _headingGapWide = 10;
 
-  // DERIVED: a pointer's floor (ui_core's 24), the crumb's least reach.
+  // A pointer's floor (ui_core's 24), the crumb's least reach.
   static const double _pointerReach = 24;
 
   /// The masthead: on a phone a tab's meta over its title; on the desktop
@@ -799,7 +799,7 @@ class _SearchPill extends StatelessWidget {
     final t = context.ledgerTheme;
     return LedgerPressable(
       onTap: onTap,
-      label: hint,
+      semanticLabel: hint,
       role: LedgerPressRole.link,
       radius: t.controlRadius,
       child: Container(

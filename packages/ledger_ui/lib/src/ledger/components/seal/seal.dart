@@ -18,8 +18,7 @@ enum LedgerSealTone {
   plain,
 }
 
-/// How large a [LedgerSeal] is pressed, on a phone and on the desktop, as
-/// the source sizes `.seal` where it stands.
+/// How large a [LedgerSeal] is pressed, on a phone and on the desktop.
 enum LedgerSealSize {
   /// 112, 120 on the desktop: a section's verdict, an empty page's.
   regular(LedgerChromeMetrics.seal, 120),

@@ -70,7 +70,7 @@ void main() {
   group('chips', () {
     Widget chips({String chosen = 'Open', ValueChanged<String>? pick}) =>
         LedgerChipRow(
-          label: 'Show',
+          semanticLabel: 'Show',
           children: [
             for (final f in const ['All', 'Open', 'Paid'])
               LedgerChip(
@@ -115,7 +115,7 @@ void main() {
       'lays out everywhere',
       (t) => _everywhere(
         t,
-        LedgerCheck(value: true, label: 'Done', onChanged: (_) {}),
+        LedgerCheck(value: true, semanticLabel: 'Done', onChanged: (_) {}),
       ),
     );
 
@@ -129,7 +129,7 @@ void main() {
             set = setState;
             return LedgerCheck(
               value: done,
-              label: 'Order paper',
+              semanticLabel: 'Order paper',
               onChanged: (v) => set(() => done = v),
             );
           },
@@ -149,7 +149,10 @@ void main() {
     });
 
     testWidgets('is a mark when nothing answers', (t) async {
-      await _pump(t, const LedgerCheck(value: true, label: 'Reconciled'));
+      await _pump(
+        t,
+        const LedgerCheck(value: true, semanticLabel: 'Reconciled'),
+      );
       expect(
         _node(t, 'Reconciled'),
         isSemantics(
@@ -725,9 +728,12 @@ void main() {
     testWidgets('lays out everywhere and reads as one node', (t) async {
       await _everywhere(
         t,
-        const LedgerWeekStrip(days: week, label: 'Morning pages'),
+        const LedgerWeekStrip(days: week, semanticLabel: 'Morning pages'),
       );
-      await _pump(t, const LedgerWeekStrip(days: week, label: 'Morning pages'));
+      await _pump(
+        t,
+        const LedgerWeekStrip(days: week, semanticLabel: 'Morning pages'),
+      );
       final node = _node(t, 'Morning pages');
       expect(node.value, contains('Wednesday missed'));
       expect(node.value, contains('Thursday today, still to do'));

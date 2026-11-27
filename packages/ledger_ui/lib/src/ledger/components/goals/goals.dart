@@ -8,7 +8,7 @@ import '../marks/marks.dart';
 import '../money/money.dart';
 import '../pressable/pressable.dart';
 
-/// A goal's line (`.goal`): its glyph and name on the leader to the share
+/// A goal's line: its glyph and name on the leader to the share
 /// saved, the green gauge under them, then what is saved of the target
 /// and [by] when (by May 2027, reaches May 2027); 16 above and below.
 /// The share ends at the line's end, the leader filling what the name
@@ -87,7 +87,7 @@ class LedgerGoalLine extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: [name, '$percent%', ?by].join(', '),
+      semanticLabel: [name, '$percent%', ?by].join(', '),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s16),
         child: _GoalBody(
@@ -207,7 +207,7 @@ class _GoalBody extends StatelessWidget {
 double _share(num saved, num target) =>
     target == 0 ? 0 : (saved / target).toDouble();
 
-/// A goal's card (`.goal-card`): its [LedgerGoalLine]'s parts 18 above
+/// A goal's card: its [LedgerGoalLine]'s parts 18 above
 /// and below, then its [status] pill (green on track, the ink behind) and
 /// its [note]; on the desktop the note stands in a 264 column beside them,
 /// 44 off. A [target] of 0 reads 0% on an empty gauge, as on
@@ -364,13 +364,13 @@ class LedgerGoalCard extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: [name, '$percent%', ?by, status].join(', '),
+      semanticLabel: [name, '$percent%', ?by, status].join(', '),
       child: card,
     );
   }
 }
 
-/// A category's month (`.cat`): its name on the leader to what it spent, the
+/// A category's month: its name on the leader to what it spent, the
 /// gauge under them (its budget at 250 of 300, the month's [pace] across it),
 /// then its [subtitle] and [trailingSubtitle]; over its budget the name, the
 /// amount and the end note vermilion. On the desktop one line: the name over
@@ -528,7 +528,7 @@ class LedgerCategoryLine extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: [
+      semanticLabel: [
         name,
         LedgerFormat.money(spent),
         ?subtitle,

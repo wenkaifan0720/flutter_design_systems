@@ -56,6 +56,13 @@ Future<void> _pump(
 LedgerThemeData _theme(WidgetTester t) =>
     t.element(find.byKey(_frame)).ledgerTheme;
 
+/// [child] in a side column on the right of the page, 320 wide: a desktop's
+/// column beside the page's own.
+Widget _sideColumn(Widget child) => Align(
+  alignment: AlignmentDirectional.topEnd,
+  child: SizedBox(width: 320, child: child),
+);
+
 /// Pumps [child] on a phone and at desktop width, light and dark. Each lays
 /// out clean (nothing overflows or throws, no words cut short), then
 /// [check] runs.
@@ -796,10 +803,16 @@ void main() {
       LedgerFact('Pace', '90%', note: 'Day 28 of 31; 92% spent'),
     ];
 
-    testWidgets('two across on a phone, one under another on the desktop', (
+    // Facts stack by their room: in a desktop's side column (under
+    // LedgerFacts.stackUnder) one under another; across a page's measure
+    // they stand across, as marks_and_facts_test holds.
+    testWidgets('two across on a phone, one under another in a side column', (
       t,
     ) async {
-      await _everywhere(t, const LedgerFacts(facts: month), (wide, theme) {
+      await _everywhere(t, _sideColumn(const LedgerFacts(facts: month)), (
+        wide,
+        theme,
+      ) {
         expect(_node(t, 'LEFT\n\$213.88\n3 days to go'), isNotNull);
         expect(_node(t, 'MONEY IN\n+\$6,825.00\nTwo paychecks'), isNotNull);
         expect(_node(t, 'VS SEPTEMBER\n−6%\n\$2,644.90 last month'), isNotNull);
@@ -818,31 +831,33 @@ void main() {
     testWidgets('three across under the ink rule, and the pair', (t) async {
       await _everywhere(
         t,
-        const Column(
-          children: [
-            LedgerFacts(
-              columns: LedgerFactColumns.three,
-              ruled: true,
-              facts: [
-                LedgerFact.money(
-                  'Money in',
-                  6825,
-                  note: 'Two paychecks',
-                  showSign: true,
-                  tone: LedgerTone.moneyIn,
-                ),
-                LedgerFact.money('Spent', 2486.12, note: '87 purchases'),
-                LedgerFact.money('Moved', 1830.22, note: 'Own accounts'),
-              ],
-            ),
-            LedgerFacts(
-              columns: LedgerFactColumns.pair,
-              facts: [
-                LedgerFact('Visits', '13', note: 'at Blue Fern Café'),
-                LedgerFact.money('Total', 84.25, note: 'in October'),
-              ],
-            ),
-          ],
+        _sideColumn(
+          const Column(
+            children: [
+              LedgerFacts(
+                columns: LedgerFactColumns.three,
+                ruled: true,
+                facts: [
+                  LedgerFact.money(
+                    'Money in',
+                    6825,
+                    note: 'Two paychecks',
+                    showSign: true,
+                    tone: LedgerTone.moneyIn,
+                  ),
+                  LedgerFact.money('Spent', 2486.12, note: '87 purchases'),
+                  LedgerFact.money('Moved', 1830.22, note: 'Own accounts'),
+                ],
+              ),
+              LedgerFacts(
+                columns: LedgerFactColumns.pair,
+                facts: [
+                  LedgerFact('Visits', '13', note: 'at Blue Fern Café'),
+                  LedgerFact.money('Total', 84.25, note: 'in October'),
+                ],
+              ),
+            ],
+          ),
         ),
         (wide, theme) {
           expect(_node(t, 'SPENT\n\$2,486.12\n87 purchases'), isNotNull);
@@ -1134,7 +1149,8 @@ void main() {
           ],
         ),
         (wide, theme) {
-          expect(find.text('BF'), findsOneWidget);
+          // The first and the last word: "Blue Fern Café" is BC.
+          expect(find.text('BC'), findsOneWidget);
           expect(t.widget<Text>(find.text('NS')).style?.color, theme.accent);
           expect(
             t.getSize(find.byType(LedgerMonogram).last).width,

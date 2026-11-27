@@ -248,11 +248,11 @@ class _ChipPainter extends CustomPainter {
   bool shouldRepaint(_ChipPainter old) => old.color != color;
 }
 
-/// A tear line of punched holes (`.perf`): a hole of the darker paper,
+/// A tear line of punched holes: a hole of the darker paper,
 /// shaded by the rule's ink, 2.1
 /// round (fading out by 2.6) every 9 along a strip 6 tall, whole holes
 /// only, the spare length split between its ends (a hole cut at an end
-/// reads as sliced by a slip's notch); [vertical] runs it down (`.vperf`).
+/// reads as sliced by a slip's notch); [vertical] runs it down.
 /// Says nothing.
 ///
 /// ```dart
@@ -279,7 +279,7 @@ class LedgerPerforation extends StatelessWidget {
       height: vertical ? null : 6,
       width: vertical ? 6 : null,
       child: CustomPaint(
-        // The source's holes of the darker paper alone read as nothing on
+        // Ledger's holes of the darker paper alone read as nothing on
         // the light paper (1.1:1, by day and by lamplight): each is shaded
         // by the rule's ink as well, so the tear line is seen.
         painter: _PerfPainter(
@@ -336,10 +336,10 @@ class _PerfPainter extends CustomPainter {
       old.color != color || old.vertical != vertical;
 }
 
-/// A page's watermark (`.watermark`): the guilloche rosette in the green
+/// A page's watermark: the guilloche rosette in the green
 /// at .36, fading out down its lower half (a phone's, 360 round), or at.
 /// 42 fading out from its middle (the desktop's, 300 round), placed as
-/// the source places it over the page's column (top −10, right −150 on a
+/// Ledger places it over the page's column (top −10, right −150 on a
 /// phone; top 156, left 476 from 1024). Stand it as a screen's backdrop
 /// (`LedgerScreen(backdrop: const LedgerWatermark())`); it says nothing.
 ///

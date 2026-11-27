@@ -31,7 +31,7 @@ enum LedgerCardSize {
   small,
 }
 
-/// A payment card's face, printed like a banknote (`.card-face`): its
+/// A payment card's face, printed like a banknote: its
 /// stock, a guilloche rosette off its corner, the brand mark and [brand]
 /// in the serif with the card's [kind], the engraved chip and the
 /// contactless mark, the [number] masked to its last group, the [holder]
@@ -84,7 +84,7 @@ class LedgerCardFace extends StatelessWidget {
   /// Pressed across the frozen card's corner.
   final LedgerSeal? seal;
 
-  // The ink stock's own print, as the source's stylesheet sets it.
+  // The ink stock's own print, as Ledger sets it.
   static const Color _inkStock = Color(0xFF141A1F);
   static const Color _inkStockLit = Color(0xFF28333C);
   static const Color _print = Color(0xFFEFE9DD);
@@ -97,7 +97,7 @@ class LedgerCardFace extends StatelessWidget {
   /// The day book of [night]'s preset (Ledger's own for a theme made
   /// [LedgerThemeData.from] colours).
   static LedgerThemeData _dayOf(LedgerThemeData night) =>
-      LedgerThemeData.presets.contains(night.id)
+      LedgerThemeData.palettes.any((p) => p.id == night.id)
       ? LedgerThemeData.preset(night.id, Brightness.light)
       : LedgerThemeData.light();
 
@@ -407,7 +407,7 @@ class LedgerCardFace extends StatelessWidget {
     );
     if (m.w.isInfinite) return sealed;
     // A face of its own width (`.card-sm` 264, `.card-face` 400 from 1024)
-    // stands at its room's start as the source's flex item does (`flex:
+    // stands at its room's start as Ledger's flex item does (`flex:
     // none`), never stretched across a column that holds it tight.
     return Align(
       alignment: AlignmentDirectional.topStart,
@@ -472,7 +472,7 @@ class _PaperStockPainter extends CustomPainter {
   bool shouldRepaint(_PaperStockPainter old) => false;
 }
 
-/// The frost over a frozen card (`.card-frost`): a wash of the page's
+/// The frost over a frozen card: a wash of the page's
 /// paper (.66 to .5 at 160°) and over it a hatch of it at .26, a line 1
 /// wide every 7 across 135°.
 class _Frost extends StatelessWidget {
@@ -524,7 +524,7 @@ class _FrostPainter extends CustomPainter {
   bool shouldRepaint(_FrostPainter old) => old.paper != paper;
 }
 
-/// A card's details shown on its ink (`.card-details`): under the label its
+/// A card's details shown on its ink: under the label its
 /// [number] in four groups spread across in the mono at 21, then under a
 /// faint rule its [expiry], its [cvc] and the [name] on it, each under its
 /// label. Printed as the card is (the ink stock's light from its top end

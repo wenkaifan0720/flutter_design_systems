@@ -23,12 +23,12 @@ enum LedgerDayMark {
 /// mono capitals, [LedgerDayMark.kept] a green check, [LedgerDayMark.missed] a
 /// voided ring, [LedgerDayMark.today] a ring in the ink with its letter firm,
 /// [LedgerDayMark.upcoming] a dot. Read only (a day is changed on the page it
-/// summarises). One node for a screen reader: its [label] and each day's name
+/// summarises). One node for a screen reader: its [semanticLabel] and each day's name
 /// with how it stands. [letters] and [names] start where the week does (Monday
 /// by default).
 ///
 /// ```dart
-/// LedgerWeekStrip(days: const [LedgerDayMark.kept, LedgerDayMark.kept, LedgerDayMark.missed, LedgerDayMark.today, LedgerDayMark.upcoming, LedgerDayMark.upcoming, LedgerDayMark.upcoming], label: 'Morning pages this week')
+/// LedgerWeekStrip(days: const [LedgerDayMark.kept, LedgerDayMark.kept, LedgerDayMark.missed, LedgerDayMark.today, LedgerDayMark.upcoming, LedgerDayMark.upcoming, LedgerDayMark.upcoming], semanticLabel: 'Morning pages this week')
 /// ```
 class LedgerWeekStrip extends StatelessWidget {
   /// A week of [days].
@@ -36,7 +36,7 @@ class LedgerWeekStrip extends StatelessWidget {
     required this.days,
     this.letters = _letters,
     this.names = _names,
-    this.label = 'This week',
+    this.semanticLabel = 'This week',
     super.key,
   });
 
@@ -50,7 +50,7 @@ class LedgerWeekStrip extends StatelessWidget {
   final List<String> names;
 
   /// What the week is of, spoken first.
-  final String label;
+  final String semanticLabel;
 
   static const List<String> _letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   static const List<String> _names = [
@@ -77,7 +77,7 @@ class LedgerWeekStrip extends StatelessWidget {
       ..add(IterableProperty<LedgerDayMark>('days', days))
       ..add(IterableProperty<String>('letters', letters))
       ..add(IterableProperty<String>('names', names))
-      ..add(StringProperty('label', label));
+      ..add(StringProperty('semanticLabel', semanticLabel));
   }
 
   @override
@@ -86,7 +86,7 @@ class LedgerWeekStrip extends StatelessWidget {
     assert(letters.length == 7 && names.length == 7, 'seven of each');
     final t = context.ledgerTheme;
     return Semantics(
-      label: label,
+      label: semanticLabel,
       value: [for (var i = 0; i < 7; i++) '${names[i]} ${_how(days[i])}']
           .join(', '),
       excludeSemantics: true,
@@ -131,7 +131,7 @@ class LedgerWeekStrip extends StatelessWidget {
     );
   }
 
-  // DERIVED (the source's habits are a heatmap): each day a column as wide
+  // Each day a column as wide
   // as its 20 mark, its letter centred 6 under, 34 apart (14 between), so
   // the first mark stands on the strip's start, not 5 in.
   static const double _column = _mark;

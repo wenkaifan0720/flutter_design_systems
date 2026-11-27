@@ -523,53 +523,43 @@ void main() {
     }
   }
 
-  // From 600 a select stands at its
-  // measure, at most LedgerLayout.fieldMeasure, never its column or the page; on a phone it spans its column. Its open
-  // list hugs its options, never narrower than the select.
-  testWidgets(
-    'a select stands at its measure from 600 and spans its column on a phone',
-    (t) async {
-      final wrong = <String>[];
-      for (final name in const ['entry', 'settings']) {
-        final s = _screens.firstWhere((s) => s.name == name);
-        for (final size in const [
-          _phone,
-          Size(600, 900),
-          Size(1024, 768),
-          _desktop,
-          Size(1920, 1080),
-        ]) {
-          await _open(t, s, size);
-          for (final e
-              in find.byWidgetPredicate((w) => w is LedgerSelect).evaluate()) {
-            final label = (e.widget as LedgerSelect).labelText;
-            final slot = (e.renderObject! as RenderBox).size.width;
-            final face = t.getRect(
-              find
-                  .descendant(
-                    of: find.byWidget(e.widget),
-                    matching: find.byType(LedgerPressable),
-                  )
-                  .first,
-            );
-            final at = '$name ${size.width.round()} "$label"';
-            if (size.width < LedgerLayout.measuredFrom) {
-              if ((face.width - slot).abs() > .5) {
-                wrong.add('$at: ${face.width} of its column $slot');
-              }
-            } else if (face.width > LedgerLayout.fieldMeasure + .5) {
-              wrong.add(
-                '$at: ${face.width} wide (at most ${LedgerLayout.fieldMeasure})',
-              );
-            }
+  // A select spans its column at every width, as a text field does (a form's column keeps to
+  // LedgerLayout.formMeasure). Its open list hugs its options, never narrower than the select.
+  testWidgets('a select spans its column at every width', (t) async {
+    final wrong = <String>[];
+    for (final name in const ['entry', 'settings']) {
+      final s = _screens.firstWhere((s) => s.name == name);
+      for (final size in const [
+        _phone,
+        Size(600, 900),
+        Size(1024, 768),
+        _desktop,
+        Size(1920, 1080),
+      ]) {
+        await _open(t, s, size);
+        for (final e
+            in find.byWidgetPredicate((w) => w is LedgerSelect).evaluate()) {
+          final label = (e.widget as LedgerSelect).labelText;
+          final slot = (e.renderObject! as RenderBox).size.width;
+          final face = t.getRect(
+            find
+                .descendant(
+                  of: find.byWidget(e.widget),
+                  matching: find.byType(LedgerPressable),
+                )
+                .first,
+          );
+          final at = '$name ${size.width.round()} "$label"';
+          if ((face.width - slot).abs() > .5) {
+            wrong.add('$at: ${face.width} of its column $slot');
           }
         }
       }
-      expect(wrong, isEmpty, reason: wrong.join('\n'));
-    },
-  );
+    }
+    expect(wrong, isEmpty, reason: wrong.join('\n'));
+  });
 
-  testWidgets("a select's open list hugs its options", (t) async {
+  testWidgets("a select's open list stands on the field's width", (t) async {
     await _open(t, _screens.firstWhere((s) => s.name == 'settings'), _desktop);
     final select = find.byWidgetPredicate(
       (w) => w is LedgerSelect && w.labelText == 'Density',
@@ -588,8 +578,8 @@ void main() {
           )
           .first,
     );
-    expect(list.width, greaterThanOrEqualTo(face.width - .5));
-    expect(list.width, lessThanOrEqualTo(LedgerLayout.fieldMeasure + .5));
+    // The field's width (wider only for a longer option), on its edge.
+    expect(list.width, moreOrLessEquals(face.width, epsilon: .5));
   });
 
   testWidgets(

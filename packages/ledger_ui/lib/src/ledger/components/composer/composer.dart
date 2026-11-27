@@ -330,7 +330,7 @@ class _LedgerComposerState extends State<LedgerComposer> {
           onTap: widget.onAttachPressed,
         );
 
-  // DERIVED (the source has no composer): the message round is the search
+  // The message round is the search
   // field's 46, its acts the 36 rings and discs of the top bar, 5 round them.
   static const int _messageLines = 5;
   static const int _assistantLines = 6;
@@ -449,7 +449,7 @@ class _Disc extends StatelessWidget {
     return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
-        label: label,
+        semanticLabel: label,
         radius: across / 2,
         child: Container(
           width: across,

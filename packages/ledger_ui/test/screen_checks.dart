@@ -26,7 +26,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 
@@ -519,7 +518,7 @@ final Map<String, int> _asideRows = {};
 /// discs): a circle as tall as its control, not a badge's dot.
 Set<String> _circles(WidgetTester t) => {
   for (final e in find.byType(LedgerPressable).evaluate())
-    if ((e.widget as LedgerPressable).label case final label?)
+    if ((e.widget as LedgerPressable).semanticLabel case final label?)
       if (find
           .descendant(
             of: find.byElementPredicate((x) => identical(x, e)),
@@ -592,7 +591,7 @@ Set<String> _namesWithin(WidgetTester t, Finder card) => {
       in find
           .descendant(of: card, matching: find.byType(LedgerPressable))
           .evaluate())
-    ?(e.widget as LedgerPressable).label,
+    ?(e.widget as LedgerPressable).semanticLabel,
 };
 
 /// Whether an as-drawn row finding concerns the overlay's own controls: one that names two controls, neither of them
@@ -706,6 +705,16 @@ Future<List<String>> _rowsAsDrawn(WidgetTester t) async {
 /// composer's Attach, with a composer on screen. Likewise a masthead's month bar (Earlier months, the month, the next
 /// month not yet there), read as a stepper since its disabled disc is drawn in pencil rather than faded: it stands in
 /// the title's place, its ways at the bar's two ends by design. Any other width finding fails.
+/// The first destinations of the navigation bars on screen. A phone's navigation bar says its destinations as tabs
+/// (ui_core's shell: "Tab 1 of 4"), so ui_core's width check takes it for a tab bar and holds it to its tabs' words
+/// from 600; the shell trades it for the side bar from 600, so only the inventory's specimen stands there, across its
+/// column as the bar stands across a phone. Its destinations are a glyph over their words, which the check reads one
+/// by one when they are not said as tabs.
+Set<String> _navBars(WidgetTester t) => {
+  for (final e in find.byType(LedgerNavBar).evaluate())
+    (e.widget as LedgerNavBar).items.first.label,
+};
+
 /// The titles of the disclosures on screen. ui_core's width check takes any one-line control with an expanded state
 /// for a select's closed face; a disclosure's head is a ruled row across its column (an accordion's), which opens its
 /// own section in place, never a list of choices, so it is held to its column, not to its words.
@@ -721,6 +730,7 @@ Future<List<String>> _widthsAsDrawn(WidgetTester t) async {
       .evaluate()
       .isNotEmpty;
   final disclosures = _disclosures(t);
+  final navBars = _navBars(t);
   return [
     for (final p in (await _widthCheck.check(
       _screen(t),
@@ -728,7 +738,8 @@ Future<List<String>> _widthsAsDrawn(WidgetTester t) async {
     )).problems)
       if (!(composer && p.startsWith('a stepper "Attach": ')) &&
           !(monthBar && p.startsWith('a stepper "Earlier months": ')) &&
-          !disclosures.any((d) => p.startsWith('a select "$d": ')))
+          !disclosures.any((d) => p.startsWith('a select "$d": ')) &&
+          !navBars.any((n) => p.startsWith('a tab bar "$n\n')))
         p,
   ];
 }
@@ -980,7 +991,7 @@ Future<List<String>> _fills(WidgetTester t) async {
       final above = thumb.$1 - ring.top, below = ring.bottom - thumb.$2;
       if ((above - below).abs() * _ratio > .5) {
         found.add(
-          'LedgerSegmentedControl: the chosen "${(p.widget as LedgerPressable).label}" stands ${above.toStringAsFixed(2)} inside '
+          'LedgerSegmentedControl: the chosen "${(p.widget as LedgerPressable).semanticLabel}" stands ${above.toStringAsFixed(2)} inside '
           'the ring above and ${below.toStringAsFixed(2)} below',
         );
       }
@@ -998,7 +1009,7 @@ Future<List<String>> _fills(WidgetTester t) async {
                 .evaluate())
           if (_shown(p.renderObject!))
             (
-              (p.widget as LedgerPressable).label ?? '',
+              (p.widget as LedgerPressable).semanticLabel ?? '',
               (p.widget as LedgerPressable).selected ?? false,
               _global(
                 p.renderObject! as RenderBox,
@@ -1070,7 +1081,7 @@ List<(String, Rect)> _faces(WidgetTester t) {
     if (f == null) continue;
     final r = _global(f, Offset.zero & f.size);
     if (r.height > 64 || r.width > 480 || !view.overlaps(r)) continue;
-    out.add(((e.widget as LedgerPressable).label ?? '', r));
+    out.add(((e.widget as LedgerPressable).semanticLabel ?? '', r));
   }
   return out;
 }

@@ -74,7 +74,7 @@ class _QuillSettingsState extends State<QuillSettings> {
     final prefs = QuillPrefs.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final wide = LedgerLayout.isWide(context);
-    final paired = width >= LedgerNavigationFrame.railFrom;
+    final paired = width >= LedgerAppShell.railFrom;
     final name = quillOwnerName(context);
 
     final profile = LedgerSection(

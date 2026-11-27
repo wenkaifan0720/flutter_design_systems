@@ -2,11 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
-/// The source's engraved hatching (`art.hatch`): parallel strokes at
+/// Ledger's engraved hatching (`art.hatch`): parallel strokes at
 /// [angle] degrees rising to the right, [spacing] apart measured across x,
 /// kept where [inside] holds within the box [x0], [y0], [x1], [y1] (walked
 /// in steps of [step]; a run shorter than .6 is dropped). The same walk, so
-/// a stroke starts and ends where the source's does. Plumbing of the
+/// a stroke starts and ends where Ledger's does. Plumbing of the
 /// engravings.
 Path ledgerHatch(
   bool Function(double x, double y) inside,

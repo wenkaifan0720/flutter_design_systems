@@ -57,13 +57,22 @@ void _expectReads(LedgerThemeData t) {
 }
 
 void main() {
-  test('six presets, the source first', () {
-    expect(LedgerThemeData.presets, hasLength(6));
-    expect(LedgerThemeData.presets.first, 'quire');
-    expect(LedgerThemeData.presets.toSet(), hasLength(6));
-    for (final id in LedgerThemeData.presets) {
+  test('six palettes, the source first, each a preset whose swatches are its seal and paper', () {
+    const palettes = LedgerThemeData.palettes;
+    expect(palettes, hasLength(6));
+    expect(palettes.first.id, 'quire');
+    expect({for (final p in palettes) p.id}, hasLength(6));
+    expect({for (final p in palettes) p.label}, hasLength(6));
+    for (final p in palettes) {
       for (final b in Brightness.values) {
-        final t = LedgerThemeData.preset(id, b);
+        final t = LedgerThemeData.preset(p.id, b);
+        expect(LedgerThemeData.fromPalette(p, b), same(t));
+        expect(p.swatchesFor(b), [
+          t.accent,
+          t.background,
+        ], reason: '${p.id} ${b.name}');
+        expect(t.brightness, b);
+        final id = p.id;
         expect(t.brightness, b);
         expect(
           t.background.computeLuminance() < t.textPrimary.computeLuminance(),
@@ -74,6 +83,26 @@ void main() {
       }
     }
   });
+
+  test(
+    "an app's own palette is its accent on its paper, by day and by night",
+    () {
+      const own = RawNamedPalette(
+        id: 'moss',
+        label: 'Moss',
+        swatches: [Color(0xFF3F6B2A), Color(0xFFF1F0E6)],
+        darkSwatches: [Color(0xFF9CC78A), Color(0xFF151A12)],
+      );
+      final day = LedgerThemeData.fromPalette(own, Brightness.light);
+      final night = LedgerThemeData.fromPalette(own, Brightness.dark);
+      expect(day.background, const Color(0xFFF1F0E6));
+      expect(day.accent, const Color(0xFF3F6B2A));
+      expect(night.brightness, Brightness.dark);
+      expect(night.background, const Color(0xFF151A12));
+      _expectReads(day);
+      _expectReads(night);
+    },
+  );
 
   test(
     "from()'s night is a dark paper in the paper's hue, its words reading",
@@ -181,5 +210,37 @@ void main() {
     double lum(Color c) => c.computeLuminance();
     expect(lum(day.textSecondary), lessThan(lum(day.textTertiary)));
     expect(lum(night.textSecondary), greaterThan(lum(night.textTertiary)));
+  });
+
+  testWidgets('the host takes a palette and blends to another', (tester) async {
+    late LedgerThemeData seen;
+    Widget host(RawNamedPalette palette) => Directionality(
+      textDirection: TextDirection.ltr,
+      child: LedgerHost(
+        brightness: Brightness.light,
+        palette: palette,
+        child: Builder(
+          builder: (context) {
+            seen = LedgerTheme.of(context);
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+    final from = LedgerThemeData.palettes[0];
+    final to = LedgerThemeData.palettes[2];
+    await tester.pumpWidget(host(from));
+    expect(
+      seen.accent,
+      LedgerThemeData.preset(from.id, Brightness.light).accent,
+    );
+    await tester.pumpWidget(host(to));
+    await tester.pump(LedgerMotion.slow ~/ 2);
+    final a = LedgerThemeData.preset(from.id, Brightness.light).accent;
+    final b = LedgerThemeData.preset(to.id, Brightness.light).accent;
+    expect(seen.accent, isNot(a));
+    expect(seen.accent, isNot(b));
+    await tester.pumpAndSettle();
+    expect(seen.accent, b);
   });
 }

@@ -170,7 +170,7 @@ class _Figure extends StatelessWidget {
     return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap ?? (shown ? _stay : null),
-        label: 'Page $page',
+        semanticLabel: 'Page $page',
         selected: shown,
         radius: t.smallRadius,
         child: Builder(

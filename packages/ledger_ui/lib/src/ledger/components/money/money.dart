@@ -25,8 +25,8 @@ enum LedgerFigureTone {
   over,
 }
 
-/// How large an engraved figure stands, on a phone and on the desktop, as
-/// the source sizes `.fig` where each page sets it. The sizes are the
+/// How large an engraved figure stands, on a phone and on the desktop. The
+/// sizes are the
 /// `quire` preset's; another preset scales them with its figure.
 enum LedgerFigureSize {
   /// 88 on both: a page's figure that does not grow (a statement's).
@@ -44,10 +44,10 @@ enum LedgerFigureSize {
   /// 56, 72 on the desktop: an amount under review before it moves.
   entry(LedgerChromeMetrics.entryFigure, LedgerChromeMetrics.entryFigureWide),
 
-  /// 44, 56 on the desktop (`.fig-m`): a section's figure.
+  /// 44, 56 on the desktop: a section's figure.
   section(44, LedgerChromeMetrics.sectionFigureWide),
 
-  /// 28 on a 30 line (`.fig-s`): a figure in a row of facts.
+  /// 28 on a 30 line: a figure in a row of facts.
   small(28, 28);
 
   const LedgerFigureSize(this.phone, this.desk);
@@ -70,8 +70,8 @@ enum LedgerFigureSize {
   }
 }
 
-/// The engraved figure, a page's one amount as the source sets it in the
-/// serif (`.fig`): its `$` (and its sign) hung at the cap height at .34 of
+/// The engraved figure, a page's one amount as Ledger sets it in the
+/// serif: its `$` (and its sign) hung at the cap height at .34 of
 /// the size in the second ink, the dollars, and the cents raised to the
 /// same height and underlined like a cheque's. [tone] inks it; [showSign] puts
 /// the plus on money received; [showCents] false drops the cents (a goal's
@@ -152,7 +152,7 @@ class LedgerFigure extends StatelessWidget {
           : '${parts.sign}\$${parts.whole}',
       excludeSemantics: true,
       // Whole at its size wherever it fits; in a room narrower than the
-      // figure (the desktop's margin from 1024 to 1180, where the source's
+      // figure (the desktop's margin from 1024 to 1180, where Ledger's
       // `nowrap` figure spills) it scales down whole instead of overflowing.
       // The Align hands the FittedBox loose constraints, so a tight width
       // never stretches the figure's box taller. The hung sign's drop sets
@@ -215,7 +215,7 @@ enum LedgerAmountSize {
   /// 14 on 20, medium: a row's amount.
   row(14, FontWeight.w500),
 
-  /// 15 on 20, bold: a statement's total (`.total .amt`). The source asks
+  /// 15 on 20, bold: a statement's total. Ledger asks
   /// 600 of a mono it loads at 400 and 500 only, and the browser thickens
   /// the 500 cut; Flutter thickens a cut only for a weight 200 over its
   /// own, so the total asks 700 of the same 500.
@@ -224,7 +224,7 @@ enum LedgerAmountSize {
   /// 13 on 20, medium: an option's amount in a menu, a tile's.
   small(13, FontWeight.w500),
 
-  /// 12 on 20, medium: a holding's change today (`.holding .h-today .amt`).
+  /// 12 on 20, medium: a holding's change today.
   today(12, FontWeight.w500);
 
   const LedgerAmountSize(this.size, this.weight);
@@ -236,7 +236,7 @@ enum LedgerAmountSize {
   final FontWeight weight;
 }
 
-/// The ledger amount, as the source sets money in its rows (`.amt`): the
+/// The ledger amount, as Ledger sets money in its rows: the
 /// mono at 14 on 20, its sign and dollars in the [tone]'s ink, its cents
 /// receding (regular, in the tone's quieter ink): money out in the ink,
 /// [LedgerTone.moneyIn] green, [LedgerTone.over] vermilion, a
@@ -423,7 +423,7 @@ class LedgerStatementTotal extends StatelessWidget {
 }
 
 /// A line of a name and its value on one baseline, the dot leader between
-/// them (`.leader`): dots of the faint ink (the full ink while the row
+/// them: dots of the faint ink (the full ink while the row
 /// above is hovered or pressed) every 5, 3 tall, standing on
 /// the baseline 8 clear of each, at least 16 long. The line fills its
 /// width; the [end] keeps its own, and the [start] gives way first. Where
@@ -432,7 +432,7 @@ class LedgerStatementTotal extends StatelessWidget {
 /// the leader under it running to the end, so neither is cut. A
 /// setting's line stands its leader 6 clear and lets it shrink to 8
 /// ([inset], [minLength]). [centred] stands the parts and the leader
-/// centred on the line instead (a goal's line, `.goal .line`: align-items
+/// centred on the line instead (a goal's line: align-items
 /// center, the leader align-self center).
 ///
 /// ```dart

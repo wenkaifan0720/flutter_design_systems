@@ -8,7 +8,7 @@ import 'package:ledger_ui/ledger_ui.dart';
 
 void main() {
   group('LedgerThemeData', () {
-    for (final id in LedgerThemeData.presets) {
+    for (final id in [for (final p in LedgerThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         final at = '$id ${brightness.name}';
         final theme = LedgerThemeData.preset(id, brightness);

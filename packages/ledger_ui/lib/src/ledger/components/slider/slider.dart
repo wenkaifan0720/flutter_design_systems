@@ -346,7 +346,7 @@ class _LedgerSliderState extends State<LedgerSlider> {
 }
 
 /// The track, its dot leader, the ticks of a stepped one and the knob, in
-/// one pass. DERIVED (the source draws no slider): the ink rule 2 thick, the
+/// one pass: the ink rule 2 thick, the
 /// leader's dots 5 apart as the leader tiles them, the knob 22 across.
 class _Track extends CustomPainter {
   _Track({

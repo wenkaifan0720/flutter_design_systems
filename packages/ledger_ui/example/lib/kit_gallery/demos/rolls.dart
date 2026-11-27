@@ -60,7 +60,7 @@ Widget kitSpecimenAvatarStack() => const Align(
 Widget kitSpecimenWeekStrip() => const Align(
   alignment: AlignmentDirectional.centerStart,
   child: LedgerWeekStrip(
-    label: 'Morning pages this week',
+    semanticLabel: 'Morning pages this week',
     days: [
       LedgerDayMark.kept,
       LedgerDayMark.missed,

@@ -15,6 +15,6 @@ String ledgerPosition(
 ) {
   final words = RawWidgetsLocalizations.of(context)
       .positionLabel(position, count);
-  // ui_core's English ("2 of 9") takes the source's noun before it.
+  // ui_core's English ("2 of 9") takes Ledger's noun before it.
   return words == '$position of $count' ? '$noun $words' : words;
 }

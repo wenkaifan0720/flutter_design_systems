@@ -59,7 +59,7 @@ class LedgerMenuItem {
   final Key? key;
 }
 
-/// A menu (`.menu`): a slip of the raised paper 300 wide, lifted on the
+/// A menu: a slip of the raised paper 300 wide, lifted on the
 /// menu's shadow, a mono [head] over its [items], one choice of a set
 /// (the months Spending can show): each 46 tall, the chosen one checked
 /// in the green on the paper. Stand it 10 under the control that opens it
@@ -193,7 +193,7 @@ class LedgerMenu extends StatelessWidget {
     return LedgerPressable(
       key: item.key,
       onTap: item.onTap,
-      label: item.label,
+      semanticLabel: item.label,
       value: amount == null ? null : LedgerFormat.money(amount),
       selected: on,
       rulesFocus: false,
@@ -259,7 +259,7 @@ class LedgerMenu extends StatelessWidget {
 
 // --- The suggestion ----------------------------------------------------------
 
-/// A suggested figure to take (`.suggest`): the [amount] in the green
+/// A suggested figure to take: the [amount] in the green
 /// serif, its [title] (semibold) over the [text] that says where it comes
 /// from, and a round [action] in the green mono capitals, on the green's
 /// faint wash in a green rule. The whole line is one button.
@@ -373,7 +373,8 @@ class LedgerSuggestion extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onTap: onTap,
-      label: semanticLabel ?? '$action the ${title.toLowerCase()} $figureText',
+      semanticLabel:
+          semanticLabel ?? '$action the ${title.toLowerCase()} $figureText',
       radius: t.cardRadius,
       child: Container(
         width: double.infinity,
@@ -434,7 +435,7 @@ class LedgerSuggestion extends StatelessWidget {
 
 // --- Categories: the tile, the option, the mini -------------------------------
 
-/// A category as a tile (`.cat-tile`): its glyph, its [name] and what it
+/// A category as a tile: its glyph, its [name] and what it
 /// spent this month, vermilion when [overBudget] its budget, on the raised
 /// paper in a fine rule. One link to the category. Stand them two by two
 /// in [LedgerCategoryTiles].
@@ -503,7 +504,7 @@ class LedgerCategoryTile extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: '$name, ${LedgerFormat.money(spent)}',
+      semanticLabel: '$name, ${LedgerFormat.money(spent)}',
       radius: t.cardRadius,
       child: Container(
         padding: const EdgeInsets.all(_pad),
@@ -536,7 +537,7 @@ class LedgerCategoryTile extends StatelessWidget {
   static const double _nameLine = 18;
 }
 
-/// Category tiles two to a line on a phone (`.cat-tiles`), sharing the
+/// Category tiles two to a line on a phone, sharing the
 /// column; from 600 each [tile] wide (its glyph, its name and its sum
 /// whole, never a word broken), as many to a line as the column holds up to
 /// four, from the column's start: a wide column never stretches them. 8
@@ -619,7 +620,7 @@ class LedgerCategoryTiles extends StatelessWidget {
   static const int _roomy = 4;
 }
 
-/// One option of a choice (`.opt`): its glyph, its [label] and a round
+/// One option of a choice: its glyph, its [label] and a round
 /// check at its end, 10 above and below; the [selected] one green (its
 /// glyph ringed and washed, the check filled). Stand them in `LedgerRows`
 /// for the hairlines between (a sheet's categories). Each is a button that
@@ -683,7 +684,7 @@ class LedgerOption extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onTap: onTap,
-      label: label,
+      semanticLabel: label,
       selected: selected,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: _pad),
@@ -737,7 +738,7 @@ class LedgerOption extends StatelessWidget {
   static const double _checkGlyph = 14;
 }
 
-/// A category's month in a record's margin (`.cat-mini`): its [name] on
+/// A category's month in a record's margin: its [name] on
 /// the leader to what it [spent], the gauge to its [budget] under them
 /// with the month's [pace], then its [subtitle] and [trailingSubtitle] (the end
 /// vermilion over budget). With no [budget] (a month gone by) the gauge
@@ -881,7 +882,7 @@ class LedgerCategoryMini extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: words,
+      semanticLabel: words,
       child: body,
     );
   }
@@ -910,7 +911,7 @@ class LedgerIconChoice {
   final String name;
 }
 
-/// A form's choice of one glyph (`.icon-grid`): its [choices] in rounds of
+/// A form's choice of one glyph: its [choices] in rounds of
 /// 48, five to a line spread across it on a phone (16 apart from its start
 /// from 600), 10 between lines; the [selectedIndex]
 /// one green on its wash, ringed out in the green past the paper. Read as
@@ -961,7 +962,7 @@ class LedgerIconPicker extends StatelessWidget {
       final on = i == selectedIndex;
       return LedgerPressable(
         onTap: onSelect == null ? null : () => onSelect(i),
-        label: '$semanticLabel: ${c.name.replaceAll('-', ' ')}',
+        semanticLabel: '$semanticLabel: ${c.name.replaceAll('-', ' ')}',
         selected: on,
         radius: _round / 2,
         child: Container(
@@ -1070,7 +1071,7 @@ class LedgerWay {
   final Key? key;
 }
 
-/// The ways to move money, large (`.bigs`): under an ink rule, two to a
+/// The ways to move money, large: under an ink rule, two to a
 /// line on a phone (each its glyph ringed in the ink beside its title in
 /// the serif 24, its words under both, ruled apart), four in a line from
 /// 1024 (the glyph over the title over the words); from 600 each at most
@@ -1237,7 +1238,7 @@ class LedgerWays extends StatelessWidget {
       key: w.key,
       onTap: w.onTap,
       role: LedgerPressRole.link,
-      label: '${w.title}, ${w.text}',
+      semanticLabel: '${w.title}, ${w.text}',
       child: Container(
         padding: pad,
         decoration: BoxDecoration(
@@ -1275,7 +1276,7 @@ class LedgerWays extends StatelessWidget {
 
 // --- Allocation and holdings ---------------------------------------------------
 
-/// One kind of an allocation (`.alloc-row`): its hatched swatch (the
+/// One kind of an allocation: its hatched swatch (the
 /// [tone] its part wears in the [LedgerStackBar] over it), its [name] on
 /// the leader to its [amount], and its [share] of the whole in the quiet
 /// mono, 11 above and below. Stand them in `LedgerRows` under the bar.
@@ -1386,7 +1387,7 @@ class LedgerAllocationRow extends StatelessWidget {
     );
   }
 
-  // `.alloc-row`: 12 0 (11 in the source: a 44 row), 10 apart; `.sw-alloc` 12 square; `.alloc-pct` 52
+  // `.alloc-row`: 12 0, 10 apart; `.sw-alloc` 12 square; `.alloc-pct` 52
   // wide, 400 12/20 mono.
   static const double _pad = 12;
   static const double _gap = 10;
@@ -1396,7 +1397,7 @@ class LedgerAllocationRow extends StatelessWidget {
   static const double _pctWidth = 52;
 }
 
-/// `.sw-ink`, `.sw-green`, `.sw-pale`: a 1 px frame round CSS's repeating
+/// A key's hatched swatch: a 1 px frame round repeating
 /// stripes (120° 0 .7 of 2.6; 60° .7 of 3 in the green; 120° .6 of 4.4 in
 /// the faint ink).
 class _AllocSwatch extends CustomPainter {
@@ -1435,7 +1436,7 @@ class _AllocSwatch extends CustomPainter {
   bool shouldRepaint(_AllocSwatch old) => old.tone != tone || old.t != t;
 }
 
-/// One fund of a portfolio (`.holding`): its monogram, its [name] over
+/// One fund of a portfolio: its monogram, its [name] over
 /// its [symbol] and [shares], its [value] over what it moved [today]
 /// (green when it rose). From 1024 one line: name, symbol, [kind],
 /// shares, value and today in their columns under [LedgerHoldings]'
@@ -1651,7 +1652,7 @@ class LedgerHoldingRow extends StatelessWidget {
   static const double _deskWords = 14;
 }
 
-/// What a fund moved today (`.h-today .amt`): the mono amount at 12 on 20,
+/// What a fund moved today: the mono amount at 12 on 20,
 /// signed, green when it rose, quiet when it held.
 class _Today extends StatelessWidget {
   const _Today(this.amount);
@@ -1699,7 +1700,7 @@ class _Today extends StatelessWidget {
   static const double _size = 12;
 }
 
-/// A portfolio's funds (`.holdings`): from 1024 the column heads over
+/// A portfolio's funds: from 1024 the column heads over
 /// them (Fund, Symbol, Kind, Shares, Value, Today, the last two at their
 /// ends) on a rule; then its [rows], the hairline between each.
 ///
@@ -1795,14 +1796,14 @@ class LedgerHoldings extends StatelessWidget {
   static const double _value = 132;
   static const double _today = 120;
 
-  // DERIVED: the table's set columns and six gaps (720), the name 160.
+  // The table's set columns and six gaps (720), the name 160.
   static const double _tableFrom =
       _mark + _symbol + _kind + _shares + _value + _today + 6 * 16 + 160;
 }
 
 // --- A row of two acts -----------------------------------------------------------
 
-/// Two acts side by side (`.form-actions-row`): each [children] item half
+/// Two acts side by side: each [children] item half
 /// the row, 12 apart (a sent transfer's Back to Home and View transfer).
 /// Give it `LedgerButton`s with `expand: true`.
 ///

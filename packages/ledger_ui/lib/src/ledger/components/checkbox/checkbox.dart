@@ -27,6 +27,7 @@ class _Choice extends StatelessWidget {
     required this.radius,
     this.live,
     this.press,
+    this.leading,
   });
 
   final Widget mark;
@@ -49,6 +50,9 @@ class _Choice extends StatelessWidget {
   // reader and the corner of its press.
   final Widget Function(Widget face, String? label, double radius)? press;
 
+  // Drawn between the mark and the words.
+  final Widget? leading;
+
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
@@ -70,6 +74,7 @@ class _Choice extends StatelessWidget {
             spacing: _gap,
             children: [
               mark,
+              ?leading,
               Flexible(
                 child: Text(
                   words,
@@ -91,7 +96,7 @@ class _Choice extends StatelessWidget {
         press?.call(face, semanticLabel ?? words, corner) ??
         LedgerPressable(
           onTap: onTap,
-          label: semanticLabel ?? words,
+          semanticLabel: semanticLabel ?? words,
           checked: mixed ? null : checked,
           mixed: mixed,
           inMutuallyExclusiveGroup: radio,
@@ -273,7 +278,8 @@ class LedgerCheckbox extends StatelessWidget {
 /// A radio: a 20 ring in the ink, an ink dot in it when [value] is the
 /// group's choice. With a [label] the words stand after it on one line, and
 /// the line is the target; with [toggleable] a press on the chosen one
-/// clears the choice (null).
+/// clears the choice (null). A [leading] part (a palette's colour) stands
+/// between the ring and the words.
 ///
 /// Under a RadioGroup it is one of the group's radios, as Flutter's Radio
 /// is: the group holds the choice and takes it, Tab reaches the group at its
@@ -299,8 +305,14 @@ class LedgerRadio<T> extends StatelessWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
+    this.leading,
     super.key,
   });
+
+  /// Drawn between the ring and the words, 12 from each: what the words
+  /// name, seen (a palette's colour, an account's mark). A screen reader
+  /// hears the words alone, so it adds nothing to the radio's name.
+  final Widget? leading;
 
   /// What choosing it sets.
   final T value;
@@ -351,7 +363,10 @@ class LedgerRadio<T> extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<Widget>('leading', leading, defaultValue: null),
+      );
   }
 
   @override
@@ -394,7 +409,7 @@ class LedgerRadio<T> extends StatelessWidget {
         enabled: live,
         registry: registry,
         toggleable: toggleable,
-        label: label,
+        semanticLabel: label,
         radius: radius,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -409,6 +424,7 @@ class LedgerRadio<T> extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       radius: _size / 2,
+      leading: leading,
     );
   }
 

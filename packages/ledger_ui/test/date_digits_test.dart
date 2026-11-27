@@ -3,7 +3,6 @@
 // in Arabic, Western in English.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 
 Future<void> _pump(WidgetTester t, Locale locale, Widget part) async {

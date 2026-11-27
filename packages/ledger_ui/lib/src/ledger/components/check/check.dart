@@ -14,12 +14,12 @@ import '../pressable/pressable.dart';
 /// null makes it a MARK, not a control (as a null callback holds any
 /// Flutter control): a finished line's tick, undimmed, that lets taps
 /// through. Give a check that stands without words a
-/// [label], spoken and never printed. It lays out at the tap floor round its
+/// [semanticLabel], spoken and never printed. It lays out at the tap floor round its
 /// ring (40 for a finger, 24 for a pointer), and a tap anywhere in that
 /// room reaches it.
 ///
 /// ```dart
-/// LedgerCheck(value: done, label: 'Pay rent', onChanged: (v) => setState(() => done = v))
+/// LedgerCheck(value: done, semanticLabel: 'Pay rent', onChanged: (v) => setState(() => done = v))
 /// ```
 class LedgerCheck extends StatelessWidget {
   /// A check at [value], changed by [onChanged].
@@ -27,7 +27,7 @@ class LedgerCheck extends StatelessWidget {
     required this.value,
     this.onChanged,
     this.size = 26,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
     this.tapAlignment = AlignmentDirectional.centerStart,
@@ -56,7 +56,7 @@ class LedgerCheck extends StatelessWidget {
   final double size;
 
   /// What is being ticked off, spoken.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -76,7 +76,7 @@ class LedgerCheck extends StatelessWidget {
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(DoubleProperty('size', size))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 
   @override
@@ -102,7 +102,7 @@ class LedgerCheck extends StatelessWidget {
     if (onChanged == null) {
       return Semantics(
         checked: value,
-        label: label,
+        label: semanticLabel,
         child: ExcludeSemantics(child: face),
       );
     }
@@ -115,7 +115,7 @@ class LedgerCheck extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onTap: () => onChanged!(!value),
-        label: label,
+        semanticLabel: semanticLabel,
         checked: value,
         radius: size / 2,
         child: face,

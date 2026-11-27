@@ -25,7 +25,7 @@ class LedgerBadge extends StatelessWidget {
     required this.child,
     this.count,
     this.urgent = false,
-    this.label = 'unread',
+    this.semanticLabel = 'unread',
     this.style,
     super.key,
   }) : assert(count == null || count >= 0);
@@ -40,7 +40,7 @@ class LedgerBadge extends StatelessWidget {
   final bool urgent;
 
   /// What the count counts, spoken after it ("3 unread").
-  final String label;
+  final String semanticLabel;
 
   /// The mark's look, over `components.badge`. It reads `fill`,
   /// `foreground`, `edge`, `side` and `textStyle`; an [urgent] mark is in
@@ -53,7 +53,7 @@ class LedgerBadge extends StatelessWidget {
     properties
       ..add(IntProperty('count', count, defaultValue: null))
       ..add(FlagProperty('urgent', value: urgent, ifTrue: 'urgent'))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
       );
@@ -115,7 +115,7 @@ class LedgerBadge extends StatelessWidget {
       widthFactor: 1,
       heightFactor: 1,
       child: Semantics(
-        value: shown && n != null ? '$n $label' : null,
+        value: shown && n != null ? '$n $semanticLabel' : null,
         child: Stack(
           clipBehavior: Clip.none,
           children: [

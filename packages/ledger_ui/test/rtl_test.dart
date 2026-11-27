@@ -7,7 +7,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const Size _phone = Size(390, 844);
@@ -244,7 +243,7 @@ void main() {
   testWidgets('the tab bar: its first and last destinations', (t) async {
     await _flips(
       t,
-      LedgerNavigationFrame(
+      LedgerAppShell(
         destinations: _tabs,
         selectedIndex: 0,
         onDestinationSelected: (_) {},
@@ -259,7 +258,7 @@ void main() {
   testWidgets('the side bar stands at the reading start', (t) async {
     await _flips(
       t,
-      LedgerNavigationFrame(
+      LedgerAppShell(
         destinations: _tabs,
         selectedIndex: 0,
         onDestinationSelected: (_) {},

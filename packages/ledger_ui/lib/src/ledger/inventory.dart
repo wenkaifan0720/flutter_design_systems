@@ -190,7 +190,7 @@ const Map<String, String> ledgerInventoryParts = {
   'NavigationRail': 'LedgerSideBar',
   'NavigationDrawer': 'LedgerSideBar (extended)',
   'TabBar': 'LedgerTabs',
-  'Scaffold': 'LedgerNavigationFrame',
+  'Scaffold': 'LedgerAppShell',
   'Card': 'LedgerSlip',
   'ListTile': 'LedgerRow',
   'ListSection': 'LedgerSection',
@@ -263,7 +263,7 @@ final RawInventory ledgerInventory = RawInventory(
       (_) => _Held<Set<String>>(
         const {'Month'},
         (context, v, set) => LedgerToggleGroup<String>(
-          label: 'Range',
+          semanticLabel: 'Range',
           options: const ['Week', 'Month', 'Year'],
           labelOf: (o) => o,
           selected: v,
@@ -872,7 +872,7 @@ final RawInventory ledgerInventory = RawInventory(
       'Scaffold',
       (_) => _Held<int>(
         0,
-        (context, v, set) => LedgerNavigationFrame(
+        (context, v, set) => LedgerAppShell(
           destinations: _tabs,
           selectedIndex: v,
           onDestinationSelected: set,
@@ -983,7 +983,7 @@ final RawInventory ledgerInventory = RawInventory(
     // Display
     RawInventoryEntry.present(
       'Avatar',
-      (_) => const LedgerAvatar(initials: 'MH', label: 'Maren Holt'),
+      (_) => const LedgerAvatar(initials: 'MH', semanticLabel: 'Maren Holt'),
     ),
     RawInventoryEntry.present(
       'AvatarGroup',

@@ -8,12 +8,10 @@
 ///
 /// {@canonicalFor chrome_metrics}
 /// {@canonicalFor chrome_metrics.LedgerChromeMetrics}
-/// {@canonicalFor host}
-/// {@canonicalFor host.LedgerHost}
-/// {@canonicalFor host.LedgerMediaGround}
 /// {@canonicalFor preview}
 /// {@canonicalFor preview.LedgerPresentation}
 /// {@canonicalFor preview.LedgerPreview}
+/// {@canonicalFor preview.LedgerTabItem}
 /// {@canonicalFor routes}
 /// {@canonicalFor routes.LedgerPage}
 /// {@canonicalFor sheet_page}
@@ -23,7 +21,6 @@ library;
 export 'package:ui_core/host.dart';
 
 export 'src/ledger/chrome_metrics.dart';
-export 'src/ledger/components/host.dart';
 export 'src/ledger/components/preview.dart';
 export 'src/ledger/components/routes.dart';
 export 'src/ledger/components/sheet_page.dart';

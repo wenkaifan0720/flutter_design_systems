@@ -63,7 +63,7 @@ void main() {
   });
 
   test('by day no two presets share an ink', () {
-    final ids = LedgerThemeData.presets;
+    final ids = [for (final p in LedgerThemeData.palettes) p.id];
     for (var i = 0; i < ids.length; i++) {
       for (var j = i + 1; j < ids.length; j++) {
         expect(

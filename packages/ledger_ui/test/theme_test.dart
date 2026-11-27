@@ -8,7 +8,7 @@ import 'package:ledger_ui/src/ledger/internal/themes/paper.g.dart';
 
 void main() {
   group('LedgerThemeData.preset', () {
-    for (final id in LedgerThemeData.presets) {
+    for (final id in [for (final p in LedgerThemeData.palettes) p.id]) {
       for (final brightness in Brightness.values) {
         test('$id ${brightness.name} builds its own appearance', () {
           final t = LedgerThemeData.preset(id, brightness);
@@ -256,7 +256,7 @@ void main() {
 
   group('paper corners', () {
     test('every preset keeps its own corners, within the bounds', () {
-      for (final id in LedgerThemeData.presets) {
+      for (final id in [for (final p in LedgerThemeData.palettes) p.id]) {
         for (final brightness in Brightness.values) {
           final t = LedgerThemeData.preset(id, brightness);
           expect(
@@ -415,7 +415,8 @@ void main() {
     });
 
     test('monograms, shares and counts', () {
-      expect(LedgerFormat.initials('Blue Fern Café'), 'BF');
+      expect(LedgerFormat.initials('Blue Fern Café'), 'BC');
+      expect(LedgerFormat.initials('Ursula K. Le Guin'), 'UG');
       expect(LedgerFormat.initials('Cloudbox'), 'CL');
       expect(LedgerFormat.initials('H&M'), 'HM');
       expect(LedgerFormat.initials(''), '');

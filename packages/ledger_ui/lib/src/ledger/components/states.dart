@@ -16,8 +16,7 @@ import 'seal/seal.dart';
 /// capitals, then a dot leader that draws itself in, dot by dot, like a
 /// line waiting for its figure (standing whole when motion is reduced), on
 /// its room's start where the first record will stand, as the error's and
-/// the empty page's words stand on theirs. DERIVED: the source draws no
-/// wait.
+/// the empty page's words stand on theirs.
 ///
 /// ```dart
 /// LedgerLoadingState(message: 'Loading activity')
@@ -73,7 +72,7 @@ class LedgerLoadingState extends StatelessWidget {
 
 /// What a page shows when its records could not be had: the blank ledger page
 /// with the [title] in the serif, the [message] under it and Try again
-/// ([onRetryPressed]). DERIVED: the source draws no failure; it is the empty
+/// ([onRetryPressed]): the empty
 /// page's paper without its seal, its margin ruled in the vermilion (a state
 /// is written).
 ///
@@ -124,7 +123,7 @@ class LedgerErrorState extends StatelessWidget {
   );
 }
 
-/// What a page shows when it has nothing, as the source's empty search
+/// What a page shows when it has nothing, as Ledger's empty search
 /// draws it: a blank page of ledger paper (ruled every 32, its double green
 /// margin rule down its start) stamped with the [seal] at its end, the
 /// [title] in the serif at 32 ([titleItalic] after it in the italic), the
@@ -218,7 +217,7 @@ class LedgerEmptyState extends StatelessWidget {
   );
 }
 
-/// The blank ledger page (`.empty.sheet`): a slip of raised paper with its
+/// The blank ledger page: a slip of raised paper with its
 /// double margin rule down its start (in the green rule at 18 and 22, in
 /// the vermilion when [failed]) and its head left unruled, as a ledger
 /// page's is. The [title] is written in the head, its last line on the

@@ -17,7 +17,7 @@ import '../money/money.dart';
 import '../pressable/pressable.dart';
 
 /// [text] with its `**strong**` runs set in [strong]: how a page's words
-/// mark the part the source sets in `<b>`.
+/// mark the part set in bold.
 TextSpan ledgerMarked(String text, TextStyle base, TextStyle strong) {
   final parts = text.split('**');
   return TextSpan(
@@ -30,7 +30,7 @@ TextSpan ledgerMarked(String text, TextStyle base, TextStyle strong) {
   );
 }
 
-/// A section's head (`.head`): the ink rule across the column, 11 under it
+/// A section's head: the ink rule across the column, 11 under it
 /// the [label] in the tracked capitals, a footnote mark beside it, and at
 /// its end a mono [note] (Balance, Day 28 of 31), the note as a green link
 /// with its chevron when [onTap] is set (All bills, View all), or a
@@ -100,7 +100,7 @@ class LedgerHead extends StatelessWidget {
   final bool faintRule;
 
   /// The walkthrough key set on the link's hit target (the note with
-  /// [onTap]; `.head-link`), not on the whole head.
+  /// [onTap]), not on the whole head.
   final Key? linkKey;
 
   @override
@@ -162,7 +162,11 @@ class LedgerHead extends StatelessWidget {
                   )
                 : null,
           ),
-          final words => Text(words.toUpperCase(), style: t.meta),
+          final words => Text(
+            words.toUpperCase(),
+            textAlign: TextAlign.end,
+            style: t.meta,
+          ),
         };
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
     return Container(
@@ -200,9 +204,15 @@ class LedgerHead extends StatelessWidget {
                 textBaseline: TextBaseline.alphabetic,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 spacing: LedgerChromeMetrics.headGap,
+                // A note longer than its room turns onto more lines at the
+                // end rather than run past the page; a control or a link
+                // keeps its own width.
                 children: [
                   Flexible(child: rubric),
-                  ?end,
+                  if (end != null)
+                    trailing == null && onTap == null
+                        ? Flexible(child: end)
+                        : end,
                 ],
               ),
             ),
@@ -258,12 +268,17 @@ class _HeadLink extends StatelessWidget {
     // (LedgerEndGlyph), so the link stands in the column.
     final box = headBox;
     return box == null
-        ? LedgerMoreLink(words, key: linkKey, label: label, onTap: onTap)
+        ? LedgerMoreLink(
+            words,
+            key: linkKey,
+            semanticLabel: label,
+            onTap: onTap,
+          )
         : LedgerMoreLink._inHead(
             words,
             box,
             key: linkKey,
-            label: label,
+            semanticLabel: label,
             onTap: onTap,
           );
   }
@@ -272,7 +287,7 @@ class _HeadLink extends StatelessWidget {
 /// A link standing on its own under what it closes (`a.head-link.more`:
 /// "See all 13 visits"): its [words] in
 /// the green mono capitals (500 11 on 16, tracked .04em), the 14 chevron 2
-/// after them; the link a head's note draws, outside a head. [label] names
+/// after them; the link a head's note draws, outside a head. [semanticLabel] names
 /// it when its words say too little; its key sits on its hit target.
 ///
 /// ```dart
@@ -280,8 +295,12 @@ class _HeadLink extends StatelessWidget {
 /// ```
 class LedgerMoreLink extends StatelessWidget {
   /// A link worded [words] that calls [onTap].
-  const LedgerMoreLink(this.words, {required this.onTap, this.label, super.key})
-    : _headBox = null;
+  const LedgerMoreLink(
+    this.words, {
+    required this.onTap,
+    this.semanticLabel,
+    super.key,
+  }) : _headBox = null;
 
   /// A head's link: its press the [box] tall from the head's rule, its words
   /// [top] under it, so the head's rubric and the link share a baseline.
@@ -289,7 +308,7 @@ class LedgerMoreLink extends StatelessWidget {
     this.words,
     this._headBox, {
     required this.onTap,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -302,7 +321,7 @@ class LedgerMoreLink extends StatelessWidget {
   final VoidCallback? onTap;
 
   /// Its spoken name; null speaks its words.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -310,7 +329,7 @@ class LedgerMoreLink extends StatelessWidget {
     properties
       ..add(StringProperty('words', words))
       ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 
   @override
@@ -333,7 +352,7 @@ class LedgerMoreLink extends StatelessWidget {
     final link = LedgerPressable(
       onTap: onTap,
       role: LedgerPressRole.link,
-      label: label ?? words,
+      semanticLabel: semanticLabel ?? words,
       ringInsets: box == null ? EdgeInsets.zero : EdgeInsets.only(top: box.top),
       child: box == null
           ? face
@@ -390,7 +409,7 @@ class LedgerSection extends StatelessWidget {
   );
 }
 
-/// A ledger's rows (`.ledger`): one under another, the hairline between
+/// A ledger's rows: one under another, the hairline between
 /// each, none after the last. [divided] false stands them with no rules
 /// (a list of lit rows).
 ///
@@ -432,7 +451,7 @@ class LedgerRows extends StatelessWidget {
   }
 }
 
-/// The ledger row (`.row`): a [leading] (a monogram, a glyph or a date tab),
+/// The ledger row: a [leading] (a monogram, a glyph or a date tab),
 /// the [title] joined to its [value] by the dot leader, and under them two sub
 /// lines, [subtitle] and [trailingSubtitle] (in the mono, or green, as their
 /// tones say), 14 above and below. [onTap] makes the whole row one link;
@@ -556,7 +575,8 @@ class LedgerRow extends StatelessWidget {
       endTone: trailingSubtitleTone,
     );
     final row = Padding(
-      padding: const EdgeInsets.symmetric(vertical: _pad),
+      // 52 at the standard density, 4 off a step.
+      padding: EdgeInsets.symmetric(vertical: t.density.padding(_pad)),
       child: Row(
         spacing: _gap,
         children: [
@@ -570,24 +590,45 @@ class LedgerRow extends StatelessWidget {
               ],
             ),
           ),
-          ?trailing,
         ],
       ),
     );
+    // The row's words, its tag and its press are one node.
+    final Widget named;
     if (onTap == null) {
-      return semanticLabel == null
+      named = semanticLabel == null
           ? MergeSemantics(child: row)
           : Semantics(label: semanticLabel, excludeSemantics: true, child: row);
+    } else {
+      named = MergeSemantics(
+        child: LedgerPressable(
+          focusNode: focusNode,
+          autofocus: autofocus,
+          onTap: onTap,
+          role: LedgerPressRole.link,
+          semanticLabel: semanticLabel,
+          excludeChild: semanticLabel != null,
+          child: ColoredBox(
+            color: t.background.withValues(alpha: 0),
+            child: row,
+          ),
+        ),
+      );
     }
-    return MergeSemantics(
-      child: LedgerPressable(
-        focusNode: focusNode,
-        autofocus: autofocus,
-        onTap: onTap,
-        role: LedgerPressRole.link,
-        label: semanticLabel,
-        excludeChild: semanticLabel != null,
-        child: ColoredBox(color: t.background.withValues(alpha: 0), child: row),
+    final end = trailing;
+    if (end == null) return named;
+    // A trailing control keeps its own node, and its own press, beside the
+    // row's; it takes half the row at most.
+    return LayoutBuilder(
+      builder: (context, box) => Row(
+        spacing: _gap,
+        children: [
+          Expanded(child: named),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: box.maxWidth / 2),
+            child: end,
+          ),
+        ],
       ),
     );
   }
@@ -636,8 +677,7 @@ Widget ledgerTitle(
 }
 
 /// Lays its words out no narrower than their longest word, as CSS breaks
-/// no word (`.row-main .line > .title { min-width: 0; white-space:
-/// normal }`): a lone word wider than the room stands
+/// no word: a lone word wider than the room stands
 /// whole and runs past its box's end, into the leader's margin, where
 /// Flutter would break it letter by letter. Its own box keeps the room it
 /// was given, so the leader and the value stand where they would.
@@ -801,7 +841,7 @@ Widget? ledgerSubLine(
 const double _mono = 12;
 const double _gap = 12;
 
-/// A record's key and its value on the dot leader (`.kv`): the key in the
+/// A record's key and its value on the dot leader: the key in the
 /// second ink, the value medium (in the mono when [monospace]: a mask), and an
 /// [action] 10 beside it (Change), 11 above and below. The key and the
 /// value read as one line; the action is its own button beside it. Stand
@@ -854,7 +894,7 @@ class LedgerKeyValue extends StatelessWidget {
         : words;
     final wraps = !monospace && MediaQuery.textScalerOf(context).scale(1) > 1;
     // The key and its value read as one node; the action (Change) stands
-    // outside the merge as its own button, as the source's separate
+    // outside the merge as its own button, as Ledger's separate
     // "Change category" button, so a tap on its node
     // reaches it.
     final line = MergeSemantics(
@@ -894,7 +934,7 @@ class LedgerKeyValue extends StatelessWidget {
     );
   }
 
-  // `.kv`: 12 0 (11 in the source: a 44 row), 15/20; `.kv-v .mono` 13 medium; the action 10 after it.
+  // `.kv`: 12 0, 15/20; `.kv-v .mono` 13 medium; the action 10 after it.
   static const double _pad = 12;
   static const double _line = 20;
   static const double _monoSize = 13;
@@ -903,7 +943,7 @@ class LedgerKeyValue extends StatelessWidget {
 
 /// How a [LedgerFacts] stands its facts: [two] across (one under another
 /// on the desktop's margin), [three] across (likewise), or [pair]: two
-/// across everywhere (`.facts-2`), under the ink rule only where no head
+/// across everywhere, under the ink rule only where no head
 /// stands over it ([LedgerFacts.ruled]), as on a phone.
 enum LedgerFactColumns {
   /// Two across; one under another on the desktop's margin.
@@ -970,10 +1010,11 @@ class LedgerFact {
   final LedgerTone tone;
 }
 
-/// A record's facts at a glance (`.facts`): each a label, a figure in the
-/// serif and a note, ruled in a grid of [columns] on a phone (the ink rule
-/// over them when [ruled]: no head stands above them), one under another
-/// in the desktop's margin (a [LedgerFactColumns.pair] two across there
+/// A record's facts at a glance: each a label, a figure in the
+/// serif and a note, ruled in a grid of [columns] (the ink rule over them
+/// when [ruled]: no head stands above them), on a phone and in a desktop
+/// column with room for them; one under another in a desktop's side column
+/// narrower than [stackUnder] (a [LedgerFactColumns.pair] two across there
 /// too, under the ink rule when [ruled]). Read fact by fact.
 ///
 /// ```dart
@@ -997,6 +1038,10 @@ class LedgerFacts extends StatelessWidget {
   /// Whether the ink rule stands over them (no head stands above).
   final bool ruled;
 
+  /// The room under which, on a desktop, the facts stand one under another:
+  /// a side column's, not a page's.
+  static const double stackUnder = 480;
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -1007,13 +1052,19 @@ class LedgerFacts extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      LayoutBuilder(builder: (context, box) => _laid(context, box.maxWidth));
+
+  Widget _laid(BuildContext context, double room) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
-    // At a large text size a phone's facts stand one under another, as the
-    // desktop's do, rather than break their words to fit a third of a line.
+    // A desktop's side column stands them one under another; a column with
+    // room keeps the grid. At a large text size a phone's facts stand one
+    // under another too, rather than break their words to fit a third of a
+    // line.
+    final side = wide && room < stackUnder;
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
-    final stacked = (wide || larger) && columns != LedgerFactColumns.pair;
+    final stacked = (side || larger) && columns != LedgerFactColumns.pair;
     final across = stacked
         ? 1
         : columns == LedgerFactColumns.three
@@ -1081,7 +1132,7 @@ class LedgerFacts extends StatelessWidget {
     // under a head, the desktop's pair too (its
     // `.facts-2` rule, loses to that selector); the
     // desktop's stacked facts draw none.
-    final topRule = ruled && (!wide || columns == LedgerFactColumns.pair);
+    final topRule = ruled && (!side || columns == LedgerFactColumns.pair);
     return Container(
       decoration: topRule
           ? BoxDecoration(
@@ -1208,7 +1259,7 @@ class LedgerNote {
   final String text;
 }
 
-/// A page's footnotes (`.notes`): each mark in the green mono hung in its
+/// A page's footnotes: each mark in the green mono hung in its
 /// 10 wide column, its words in the second ink, 8 apart: marginalia on the
 /// desktop, under the section on a phone.
 ///
@@ -1270,7 +1321,7 @@ class LedgerNotes extends StatelessWidget {
   static const double _markWidth = 10;
 }
 
-/// A record's head (`.rec-head`): its [leading] (a [LedgerGlyph] or a
+/// A record's head: its [leading] (a [LedgerGlyph] or a
 /// [LedgerMonogram] at record size) and beside it the record's [name] in
 /// the serif, 30 (40 on the desktop), its [subtitle] under it with a [mono]
 /// part (the mask). The name is read as a heading.
@@ -1369,7 +1420,7 @@ class LedgerRecordHead extends StatelessWidget {
   static const double _monoSize = 12;
 }
 
-/// Where a register runs back into an earlier month (`.month-rule`): the
+/// Where a register runs back into an earlier month: the
 /// ink rule, 12 under it the month in the capitals and a mono [note] at
 /// the end (Last month).
 ///
@@ -1429,7 +1480,7 @@ class LedgerMonthRule extends StatelessWidget {
   static const double _gap = 12;
 }
 
-/// A flag under a section (`.flag`): a vermilion bead, the words with
+/// A flag under a section: a vermilion bead, the words with
 /// their `**strong**` part in the vermilion (Dining out is **over by
 /// $36.40**), and a chevron at the end; the whole line one link.
 ///
@@ -1513,7 +1564,7 @@ class LedgerFlag extends StatelessWidget {
 }
 
 /// One way of a [LedgerQuickActions]: its glyph, its words, where it
-/// goes, and the walkthrough [key] its link carries (the source's
+/// goes, and the walkthrough [key] its link carries (Ledger's
 /// `.action` links).
 ///
 /// ```dart
@@ -1537,7 +1588,7 @@ class LedgerQuickAction {
   final Key? key;
 }
 
-/// The ways to move money (`.actions`): on a phone a strip ruled above
+/// The ways to move money: on a phone a strip ruled above
 /// and below, each way a 44 ink ring over its words, hairlines between;
 /// in the desktop's margin a list, each a 36 ring, its words and a
 /// chevron, the hairline under each. Every way is a link.
@@ -1576,7 +1627,7 @@ class LedgerQuickActions extends StatelessWidget {
       key: a.key,
       onTap: a.onTap,
       role: LedgerPressRole.link,
-      label: a.label,
+      semanticLabel: a.label,
       child: ColoredBox(color: t.background.withValues(alpha: 0), child: child),
     );
     // At a large text size a phone's strip becomes the desktop's list: a
@@ -1684,7 +1735,7 @@ class LedgerQuickActions extends StatelessWidget {
   static const double _chevron = 16;
 }
 
-/// A figure's change under it (`.delta`): an optional [rise] in the green
+/// A figure's change under it: an optional [rise] in the green
 /// after its arrow, then each of [words] (their `**strong**` runs in the
 /// ink), then a [pill], wrapping 10 apart, in the second ink at 15.
 ///

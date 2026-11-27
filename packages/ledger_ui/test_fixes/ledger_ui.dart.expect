@@ -49,7 +49,7 @@ void constructors() {
   LedgerToggleGroup<Object>(
     options: d,
     selected: d,
-    label: d,
+    semanticLabel: d,
     labelOf: d,
     onSelectionChanged: d,
     multiSelectionEnabled: d,

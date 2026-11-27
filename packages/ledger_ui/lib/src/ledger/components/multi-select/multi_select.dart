@@ -324,7 +324,7 @@ class _Tag extends StatelessWidget {
                 minSize: Size(floor.height, floor.height),
                 child: LedgerPressable(
                   onTap: onDeleted,
-                  label: '$remove $words',
+                  semanticLabel: '$remove $words',
                   radius: _cross / 2,
                   child: SizedBox(
                     width: _cross,

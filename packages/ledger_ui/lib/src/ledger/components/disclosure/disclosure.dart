@@ -99,7 +99,7 @@ class _LedgerDisclosureState extends State<LedgerDisclosure> {
       children: [
         LedgerPressable(
           onTap: _flip,
-          label: widget.title,
+          semanticLabel: widget.title,
           value: widget.note,
           expanded: _open,
           // The ring stops above the row's hairline, never over it.

@@ -21,7 +21,7 @@ import '../structure/structure.dart';
 TextStyle _serif(LedgerThemeData t, double px, double line, double em) =>
     t.title.sized(px).line(line).tracked(em);
 
-/// A card's statement printed on a slip (`.statement`): the guilloche band,
+/// A card's statement printed on a slip: the guilloche band,
 /// its [kind] and [number], the [balance] engraved under its label against
 /// when it is [due] (the date in the serif, [dueNote] in the mono under it)
 /// over the ink rule, then its [details] (key and value lines) and the
@@ -185,7 +185,7 @@ class LedgerStatementSlip extends StatelessWidget {
   }
 }
 
-/// A memo on its slip (`.memo`): a short verdict in the serif at 28 (its
+/// A memo on its slip: a short verdict in the serif at 28 (its
 /// [text], then its [over] words in the vermilion italic, then
 /// [textAfter]) beside its [seal] (pressed at the memo's 92; under the words
 /// at a large text size), and under a
@@ -216,7 +216,7 @@ class LedgerMemo extends StatelessWidget {
   /// The verdict's words before the over words.
   final String text;
 
-  /// The words set in the vermilion italic (`.over`): how far over.
+  /// The words set in the vermilion italic: how far over.
   final String? over;
 
   /// The verdict's words after them.
@@ -384,7 +384,7 @@ class LedgerMemo extends StatelessWidget {
   }
 }
 
-/// A memo slip (`.goal-memo`): a goal's standing as its [label] (in the
+/// A memo slip: a goal's standing as its [label] (in the
 /// second ink), the owner's own [note] in the serif at 22, and the
 /// [actions] it offers (buttons, 10 apart, wrapping), on the light paper.
 ///
@@ -452,7 +452,7 @@ class LedgerMemoSlip extends StatelessWidget {
   }
 }
 
-/// The frozen card's notice on its slip (`.frozen-banner`): the ringed
+/// The frozen card's notice on its slip: the ringed
 /// [icon] beside its [title] in the serif and its [text], then what being
 /// frozen does ([effects], under a hairline) and the act that undoes it
 /// ([actionLabel], the primary button across the slip). From 1024 the act
@@ -636,7 +636,7 @@ class LedgerFrozenBanner extends StatelessWidget {
   }
 }
 
-/// A dialog's lead (`.dialog-lead`): what the act does, said plainly in
+/// A dialog's lead: what the act does, said plainly in
 /// the serif at 22 before what it does in detail; 12 above, 4 under. Each
 /// line of [text] (split at \n) its own paragraph.
 ///
@@ -672,7 +672,7 @@ class LedgerDialogLead extends StatelessWidget {
   }
 }
 
-/// A done page's head (`.done-head`): what happened and when in the green
+/// A done page's head: what happened and when in the green
 /// mono ([meta]), then the [title] in the serif at 32 (44 from 1024)
 /// ending in its [emphasis] in the green italic, kept on the title's last
 /// line by a no-break space. The page's heading.
@@ -695,7 +695,7 @@ class LedgerDoneHead extends StatelessWidget {
   /// The title, in the serif, before its [emphasis].
   final String title;
 
-  /// Where it went: set in the green italic (`.done-t em`).
+  /// Where it went: set in the green italic.
   final String? emphasis;
 
   @override
@@ -767,7 +767,7 @@ class LedgerSplitHalf {
   final String? initials;
 }
 
-/// A purchase split as a ticket torn in two (`.ticket`), on the light
+/// A purchase split as a ticket torn in two, on the light
 /// paper: its [start] (what and when) and [end] (the total) in the mono
 /// over a hairline, then [mine] and [theirs] side by side, each a monogram,
 /// a name, what they did and their share engraved, the perforation and a
@@ -906,9 +906,9 @@ class LedgerSplitTicket extends StatelessWidget {
   }
 }
 
-/// The tear between a ticket's halves (`.ticket-perf`): 18 wide, its end
+/// The tear between a ticket's halves: 18 wide, its end
 /// half on the wash, the perforation running down its middle and a
-/// half-round notch (`.notch-b`, 18 by 9) cut from the foot.
+/// half-round notch, 18 by 9, cut from the foot.
 class _TicketPerf extends StatelessWidget {
   const _TicketPerf({required this.wash});
 
@@ -948,8 +948,8 @@ class _TicketPerf extends StatelessWidget {
   }
 }
 
-/// `.notch-b`: the page's paper, its top corners round (999px 999px 0 0),
-/// `inset 0 1px 0 rgba(20, 26, 31, .08)` along its round edge.
+/// The notch: the page's paper, its top corners round, a faint inner
+/// shadow along its round edge.
 class _NotchUpPainter extends CustomPainter {
   _NotchUpPainter(this.paper);
 
@@ -983,7 +983,7 @@ class _NotchUpPainter extends CustomPainter {
   bool shouldRepaint(_NotchUpPainter old) => old.paper != paper;
 }
 
-/// What a goal will hold once the money lands (`.add-after`): the [title] on
+/// What a goal will hold once the money lands: the [title] on
 /// the dot leader to the [value] (the sum and its share), the green gauge
 /// filled to [ratio], and under it how it adds up ([subtitle]) and the target
 /// ([trailingSubtitle]); a rule above and below. The add money sheet's line.
@@ -1078,7 +1078,7 @@ class LedgerSavedAfter extends StatelessWidget {
   }
 }
 
-/// The row that sums what came before the rows shown (`.row-before`): a
+/// The row that sums what came before the rows shown: a
 /// dashed box with its [icon] (40 by 44, the faint ink), the [title] in
 /// the second ink on the dot leader to its [value], and its [subtitle] (how
 /// many) under them; 14 above and below, as a ledger row.

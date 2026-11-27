@@ -434,7 +434,7 @@ class LedgerDialog extends StatelessWidget {
     );
   }
 
-  // DERIVED (the source's dialogs are sheets): the card 360 at most, 24 of
+  // The card 360 at most, 24 of
   // paper round its words (the head brings 14 of its own above), 16 between
   // the parts and 24 over the acts.
   static const double _width = 360;

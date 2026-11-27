@@ -21,7 +21,7 @@ class LedgerAvatarStack extends StatelessWidget {
     this.max = 4,
     this.total,
     this.size = 32,
-    this.label,
+    this.semanticLabel,
     super.key,
   }) : assert(max > 0, 'a stack shows at least one');
 
@@ -38,7 +38,7 @@ class LedgerAvatarStack extends StatelessWidget {
   final double size;
 
   /// Its name for a screen reader; null lists the first names.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -48,7 +48,7 @@ class LedgerAvatarStack extends StatelessWidget {
       ..add(IntProperty('max', max))
       ..add(IntProperty('total', total, defaultValue: null))
       ..add(DoubleProperty('size', size))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 
   @override
@@ -59,7 +59,7 @@ class LedgerAvatarStack extends StatelessWidget {
     final more = all - shown.length;
     final gap = size * _gap;
     return Semantics(
-      label: label ?? _spoken(shown, more),
+      label: semanticLabel ?? _spoken(shown, more),
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -113,7 +113,7 @@ class LedgerAvatarStack extends StatelessWidget {
         : list;
   }
 
-  // DERIVED (the source's avatar stands alone): the discs an eighth of one
+  // The discs an eighth of one
   // apart (4 at 32), the count twice that after the last; the initials at
   // 38% of the disc, the count at 40% in the mono.
   static const double _gap = .125;

@@ -74,7 +74,7 @@ class _RangeState extends State<_Range> {
 
   @override
   Widget build(BuildContext context) => LedgerToggleGroup<String>(
-    label: 'Range',
+    semanticLabel: 'Range',
     options: const ['Week', 'Month', 'Quarter', 'Year'],
     labelOf: (v) => v,
     selected: _range,
@@ -94,7 +94,7 @@ class _ColumnsState extends State<_Columns> {
 
   @override
   Widget build(BuildContext context) => LedgerToggleGroup<String>(
-    label: 'Columns',
+    semanticLabel: 'Columns',
     multiSelectionEnabled: true,
     emptySelectionAllowed: true,
     options: const ['Time', 'Payee', 'Category', 'Account', 'Amount'],

@@ -196,9 +196,9 @@ abstract final class LedgerFormat {
   /// The moment over Home's greeting: "Wednesday, October 28 · 7:40 PM".
   static String nowLabel(DateTime now) => '${today(now)} · ${time(now)}';
 
-  /// A monogram's letters: the first letters of a name's first two words,
-  /// or the first two of a one-word name: "Blue Fern Café" is "BF",
-  /// "Cloudbox" is "CL".
+  /// A monogram's letters: the first letters of a name's first and last
+  /// words, or the first two of a one-word name: "Blue Fern Café" is "BC",
+  /// "Ursula K. Le Guin" is "UG", "Cloudbox" is "CL".
   static String initials(String name) {
     final words = name
         .replaceAll('&', ' ')
@@ -206,7 +206,7 @@ abstract final class LedgerFormat {
         .where((w) => w.isNotEmpty && _alnum.hasMatch(w[0]))
         .toList();
     if (words.isEmpty) return '';
-    if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
+    if (words.length > 1) return (words.first[0] + words.last[0]).toUpperCase();
     final w = words.first;
     return w.substring(0, w.length < 2 ? w.length : 2).toUpperCase();
   }

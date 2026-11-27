@@ -1,5 +1,5 @@
 // The README's first Dart block is a whole app of 12 lines or fewer (the production bar's line 5): it imports
-// ledger_ui, calls runApp and puts Ledger's theme over one widget. Copied into a file of this package and
+// ledger_ui, calls runApp and mounts Ledger's host (theme, toasts) over the app. Copied into a file of this package and
 // analysed, it compiles with no error and no warning.
 import 'dart:io';
 
@@ -14,7 +14,7 @@ void main() {
     expect(block.trimRight().split('\n'), hasLength(lessThanOrEqualTo(12)));
     expect(block, contains("import 'package:ledger_ui/ledger_ui.dart';"));
     expect(block, contains('runApp('));
-    expect(block, contains('LedgerTheme('));
+    expect(block, contains('LedgerHost('));
     final dir = Directory('test/zz_readme_app')..createSync(recursive: true);
     addTearDown(() => dir.deleteSync(recursive: true));
     final app = File('${dir.path}/main.dart')..writeAsStringSync(block);

@@ -41,10 +41,10 @@ export 'tokens.dart';
 /// (gallery). Nothing else constructs a [LedgerThemeData].
 ///
 /// The comments here and in the parts call Ledger's source stylesheet "the
-/// source". A value it holds no instance of is marked DERIVED, and a role it
-/// fills only by a choice (one ink standing for two roles) JUDGMENT.
+/// source". A value it holds no instance of is marked and a role it
+/// fills only by a choice (one ink standing for two roles).
 
-/// The spacing scale: the steps the source pads and gaps by. The page
+/// The spacing scale: the steps Ledger pads and gaps by. The page
 /// gutter is 24 on a phone and 56 on the desktop; a section stands 48 under
 /// the one before it (56 on the desktop, 28 under the masthead); a row pads
 /// 14 above and below.
@@ -143,8 +143,7 @@ abstract final class LedgerIconSize {
   static const double i22 = 22;
 }
 
-/// Motion: durations and curves. DERIVED: the source is static pages and
-/// moves nothing but its overlays' open and close. Where the reader asks for
+/// Motion: durations and curves. Where the reader asks for
 /// reduced motion (Android's Remove animations, the web's
 /// prefers-reduced-motion or iOS's Reduce Motion: ui_core's
 /// `rawReduceMotionOf`), every change lands at once ([of]).
@@ -223,37 +222,42 @@ class LedgerGap extends StatelessWidget {
 
 /// Responsive layout invariants shared by Ledger apps.
 abstract final class LedgerLayout {
-  /// The width from which the app is the desktop one, as the source switches
+  /// The width from which the app is the desktop one, as Ledger switches
   /// at 1024: the sidebar replaces the tab bar and the top bar, the gutter
   /// grows to 56, the figures grow, a sheet becomes a centred dialog and a
   /// detail's way back a crumb over its title.
   static const double wide = 1024;
 
-  /// Ledger's old touch-target floor, 44. Ledger's parts stand on ui_core's
-  /// floor in force instead: [RawTapTargets.of] and `floorOn()` (40 by 40
-  /// unless an app's [RawTapTargetScope] says otherwise).
-  @Deprecated(
-    'Read RawTapTargets.of(context).floorOn(): the floor in force, 40 by 40 '
-    'by default. This feature was deprecated after v0.6.0 and goes in 0.8.0.',
-  )
-  static const double minHitTarget = 44;
-
-  /// A hairline rule's width: the one point the source draws every rule at,
+  /// A hairline rule's width: the one point Ledger draws every rule at,
   /// and the paper a knockout keeps round its words so no rule touches them.
   static const double hairline = 1;
 
-  /// The window width from which a form's short entries (a select, a sum)
-  /// stand at their own measure instead of across their column: the
-  /// rail's 600.
+  /// The window width from which a control (a stepper, a block act) stands
+  /// at its own measure instead of across its column: the rail's 600.
   static const double measuredFrom = 600;
 
-  /// The most a select, a sum's field, a stepper or a block act stands
-  /// across from [measuredFrom] (unless its words need more):
-  /// a blank sized to what goes in it, as a paper form's is, never the
-  /// column or the page. A form gives it a cell of its grid (a half or a
-  /// third of its column) and it stands at the start of the cell, up to
-  /// this.
+  /// The most a stepper or a block act stands across from [measuredFrom]
+  /// (unless its words need more): sized to what it holds, never the column
+  /// or the page. A form's fields don't keep to it: they take the form's
+  /// column ([formMeasure]).
   static const double fieldMeasure = 320;
+
+  /// The widest a form's column stands ([LedgerScreen.form]'s; a sheet's
+  /// 640): every field in it, words, a select, a sum, a date, takes the
+  /// column's width, one width for all, as the lines of a paper form run
+  /// to one margin.
+  static const double formMeasure = 640;
+
+  /// [form] at the form's measure: across its slot up to [formMeasure], at
+  /// the start of it.
+  static Widget formColumn(Widget form) => Align(
+    alignment: AlignmentDirectional.topStart,
+    heightFactor: 1,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: formMeasure),
+      child: form,
+    ),
+  );
 
   /// A bottom sheet's widest (Material's 640): on a tablet it stands as a
   /// card centred over the page, never stretched across it.
@@ -313,7 +317,7 @@ abstract final class LedgerLayout {
       isWide(context) ? LedgerSpacing.s56 : LedgerSpacing.s24;
 }
 
-/// How an amount or a figure is inked, as the source tells money apart:
+/// How an amount or a figure is inked, as Ledger tells money apart:
 /// [plain] in the page ink, [moneyIn] green, [over] vermilion (spent past a
 /// budget, and only then) and [move] the quiet ink of money moved between
 /// the owner's own accounts.
@@ -533,7 +537,9 @@ final class LedgerThemeData with Diagnosticable {
   /// Money in's wash.
   final Color successSubtle;
 
-  /// The source's caution, an ink pill (a goal behind): no amber in Ledger.
+  /// The caution: an ink pill (a goal behind), never an amber. Where a
+  /// palette inks money in as its ink (Carbon), the caution is the second
+  /// ink, so the two read apart.
   final Color warning;
 
   /// The caution pill's wash.
@@ -609,7 +615,7 @@ final class LedgerThemeData with Diagnosticable {
   /// The blank page's seal ink.
   final Color sealInk;
 
-  /// The three hatches the source tells parts apart by (it gives the
+  /// The three hatches Ledger tells parts apart by (it gives the
   /// categories glyphs, never hues): close ink, open green and pale ink.
   final Color hatchInk;
 
@@ -684,8 +690,8 @@ final class LedgerThemeData with Diagnosticable {
 
   /// A drop under the tab bar's Move disc. Empty in every Ledger theme: the
   /// disc is the green printed on the page, as a filled act is, and ink
-  /// casts no shadow (the source drops it 10 px in green; JUDGMENT). Give
-  /// one only for an app whose disc stands above the page.
+  /// casts no shadow. Give one only for an app whose disc stands above the
+  /// page.
   final List<BoxShadow> discShadow;
 
   // ---- type ---------------------------------------------------------------
@@ -814,17 +820,82 @@ final class LedgerThemeData with Diagnosticable {
   /// The mono's family: amounts, dates and numbers.
   static const String monoFace = 'PlexMono';
 
-  /// Every preset, the source's first.
-  static const List<String> presets = [
-    'quire',
-    'terracotta',
-    'indigo',
-    'verdigris',
-    'carbon',
-    'prussian',
+  /// Ledger's six palettes, for an app's palette picker; the first, Quire,
+  /// is the default. Each is one of [preset]'s books, its swatches the
+  /// seal's colour and the paper, by day and by lamplight: Quire's green on
+  /// warm paper, Terracotta's brick, Indigo's blue, Verdigris's teal,
+  /// Carbon's black on white and Prussian's blue on an account book's buff.
+  ///
+  /// ```dart
+  /// LedgerHost(
+  ///   palette: LedgerThemeData.palettes.firstWhere((p) => p.id == paletteId),
+  ///   child: app,
+  /// )
+  /// ```
+  static const List<RawNamedPalette> palettes = [
+    RawNamedPalette(
+      id: 'quire',
+      label: 'Quire',
+      swatches: [Color(0xFF1E5A44), Color(0xFFF2EDE3)],
+      darkSwatches: [Color(0xFF6FAA8C), Color(0xFF1A1815)],
+    ),
+    RawNamedPalette(
+      id: 'terracotta',
+      label: 'Terracotta',
+      swatches: [Color(0xFFA63F1F), Color(0xFFFBF7F0)],
+      darkSwatches: [Color(0xFFE08A57), Color(0xFF17120F)],
+    ),
+    RawNamedPalette(
+      id: 'indigo',
+      label: 'Indigo',
+      swatches: [Color(0xFF3A3FD8), Color(0xFFF4F6FA)],
+      darkSwatches: [Color(0xFF5984FF), Color(0xFF10141C)],
+    ),
+    RawNamedPalette(
+      id: 'verdigris',
+      label: 'Verdigris',
+      swatches: [Color(0xFF0B7D8C), Color(0xFFF3F7F9)],
+      darkSwatches: [Color(0xFF3FB6C6), Color(0xFF0F1A1F)],
+    ),
+    RawNamedPalette(
+      id: 'carbon',
+      label: 'Carbon',
+      swatches: [Color(0xFF111111), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFF2F2F2), Color(0xFF141414)],
+    ),
+    RawNamedPalette(
+      id: 'prussian',
+      label: 'Prussian',
+      swatches: [Color(0xFF1F4E86), Color(0xFFECE2C8)],
+      darkSwatches: [Color(0xFF6791CD), Color(0xFF0F1E33)],
+    ),
   ];
 
-  /// The preset [id] in [brightness]: `quire` (Ledger's own paper and ink,
+  /// The theme of [palette] in [brightness]: one of [palettes] is that
+  /// preset; an app's own is [LedgerThemeData.from] its swatches, the first
+  /// the accent and the second, when it has one, the paper (by day from
+  /// [RawNamedPalette.swatches], by night from
+  /// [RawNamedPalette.darkSwatches]).
+  factory LedgerThemeData.fromPalette(
+    RawNamedPalette palette,
+    Brightness brightness,
+  ) {
+    if (palettes.any((p) => p.id == palette.id && p == palette)) {
+      return preset(palette.id, brightness);
+    }
+    final day = palette.swatches, night = palette.darkSwatches;
+    final quire = preset(palettes.first.id, Brightness.light);
+    return LedgerThemeData.from(
+      paper: day.length > 1 ? day[1] : quire.background,
+      ink: quire.textPrimary,
+      accent: day.first,
+      brightness: brightness,
+      nightAccent: night.isEmpty ? null : night.first,
+      nightPaper: night.length > 1 ? night[1] : null,
+    );
+  }
+
+  /// The preset [id] (a [palettes] id) in [brightness]: `quire` (Ledger's own paper and ink,
   /// by day and by lamplight), one of the four token themes: `terracotta`
   /// (paper), `indigo` (signal), `verdigris` (frost) or `carbon`
   /// (gallery), or `prussian` (Prussian blue on an account book's buff
@@ -886,6 +957,18 @@ final class LedgerThemeData with Diagnosticable {
     galleryTokens,
     Brightness.dark,
   );
+
+  // How far apart two inks read: their tones and their chromas along their
+  // hues, in HCT, as one straight line.
+  static double _inksApart(Color a, Color b) {
+    final x = RawHct.fromColor(a), y = RawHct.fromColor(b);
+    double along(RawHct h, double Function(num) f) =>
+        h.chroma * f(h.hue * math.pi / 180);
+    final dt = x.tone - y.tone;
+    final da = along(x, math.cos) - along(y, math.cos);
+    final db = along(x, math.sin) - along(y, math.sin);
+    return math.sqrt(dt * dt + da * da + db * db);
+  }
 
   /// A token theme by day in its own inks, as prussian's navy is its seal's:
   /// the record's three inks keep their tones and take its accent's hue and a
@@ -1582,7 +1665,7 @@ final class LedgerThemeData with Diagnosticable {
 
   /// How an ink pressed into the paper (a seal's engraving, its words and
   /// its wash) lays over what is under it: multiplied into a light paper,
-  /// as the source sets it, and screened onto a dark one, where a multiply
+  /// as Ledger sets it, and screened onto a dark one, where a multiply
   /// would sink the ink into the night paper.
   BlendMode get pressBlend => isDark ? BlendMode.screen : BlendMode.multiply;
 
@@ -1594,7 +1677,7 @@ final class LedgerThemeData with Diagnosticable {
     LedgerTone.move => (ink: move, cents: moveCents),
   };
 
-  /// The source's type scale: each slot's face, size, line, weight and
+  /// Ledger's type scale: each slot's face, size, line, weight and
   /// tracking (in em), and the token slot a token set sizes it by.
   static const _scale = (
     figure: _Slot(_Face.serif, 88, 88 * .84, 400, -.012, _Anchor.giant),
@@ -1625,7 +1708,7 @@ final class LedgerThemeData with Diagnosticable {
     search: _Slot(_Face.sans, 15, 15, 400, 0, _Anchor.body),
   );
 
-  /// The size the source gives each token slot's place in its scale: what
+  /// The size Ledger gives each token slot's place in its scale: what
   /// a token set's slot is measured against when it sizes a Ledger slot.
   static double _sourceSize(_Anchor anchor) => switch (anchor) {
     _Anchor.giant => _scale.figure.size,
@@ -1688,9 +1771,9 @@ final class LedgerThemeData with Diagnosticable {
 
   /// A Ledger theme in an app's own colours: its [paper] (the page), its
   /// [ink] (words and rules) and its [accent] (the one act, money in and the
-  /// seal), with [over] for amounts past a limit (the source's vermilion by
+  /// seal), with [over] for amounts past a limit (Ledger's vermilion by
   /// default). The raised and sunken papers, the second, third and faint
-  /// inks, the rules and the washes follow from them as the source's do from
+  /// inks, the rules and the washes follow from them as Ledger's do from
   /// its own, and every ink that sets words takes the nearest tone of its
   /// hue that reads 4.5:1 on every paper ([RawPalette.readableTone]).
   ///
@@ -1788,7 +1871,7 @@ final class LedgerThemeData with Diagnosticable {
       paperLo: lo,
       ink: ink,
       // The second ink a quarter of the way to the paper, the third half
-      // way, as the source's stand: the second stays the darker by day.
+      // way, as Ledger's stand: the second stays the darker by day.
       ink2: words(Color.lerp(ink, paper, .25)!),
       ink3: words(Color.lerp(ink, paper, .5)!),
       ink4: Color.lerp(ink, paper, .62)!,
@@ -1814,7 +1897,7 @@ final class LedgerThemeData with Diagnosticable {
     return _build(id, b, inks);
   }
 
-  // The tones a book turned to its other side takes, as the source's day
+  // The tones a book turned to its other side takes, as Ledger's day
   // and night papers and inks stand (CIE L*, 0 black to 100 white).
   static const double _nightPaperTone = 9;
   // The least the ink stands off its paper: WCAG's enhanced 7:1, so the
@@ -1827,7 +1910,7 @@ final class LedgerThemeData with Diagnosticable {
   static LedgerThemeData _withDensity(LedgerThemeData t, LedgerDensity d) =>
       t.density == d ? t : t.copyWith(density: d);
 
-  /// The source's day inks, from `_Source`.
+  /// Ledger's day inks, from `_Source`.
   static final _Inks _dayInks = (
     paper: _Source.paper,
     paperHi: _Source.paperHi,
@@ -1885,7 +1968,7 @@ final class LedgerThemeData with Diagnosticable {
     brightness == Brightness.dark ? _nightInks : _dayInks,
   );
 
-  /// The whole theme from one set of inks: the source's roles, rules and
+  /// The whole theme from one set of inks: Ledger's roles, rules and
   /// type, in [i].
   static LedgerThemeData _build(String id, Brightness brightness, _Inks i) {
     final dark = brightness == Brightness.dark;
@@ -2030,7 +2113,7 @@ final class LedgerThemeData with Diagnosticable {
 
   /// A token theme dressed in Ledger's roles: the token set's colours,
   /// shadows, sizes and shape, Ledger's faces, weights, leading and
-  /// tracking (the bundled faces carry only the source's weights). Ledger's
+  /// tracking (the bundled faces carry only Ledger's weights). Ledger's
   /// own roles follow from the token roles by the rules below; a quiet ink
   /// that sets words, and the accent's words, are eased toward the next ink
   /// until they read (4.5:1) on every paper. Both appearances are the
@@ -2076,6 +2159,12 @@ final class LedgerThemeData with Diagnosticable {
     );
     final hairline = c.textPrimary.withValues(alpha: _Source.rule2.a);
     final accentText = RawPalette.readableTone(c.accentText, on: grounds);
+    // A goal behind wears the record's caution; where the record inks its
+    // caution as it inks money in (Carbon's black for both), the caution
+    // takes the second ink, so the two read apart.
+    final caution = _inksApart(c.warning, c.success) < 24
+        ? c.textSecondary
+        : c.warning;
     // The accent is one ink: words on the paper and, under `onAccent`, a
     // ground (a brand panel, the act stamped on it). Where the record's
     // `onAccent` cannot read 4.5:1 on the eased words (a deep blue lifted to
@@ -2117,7 +2206,7 @@ final class LedgerThemeData with Diagnosticable {
       success: c.success,
       onSuccess: c.onSuccess,
       successSubtle: c.successSubtle,
-      warning: c.warning,
+      warning: caution,
       warningSubtle: c.warningSubtle,
       danger: c.danger,
       onDanger: c.onDanger,
@@ -2200,16 +2289,6 @@ final class LedgerThemeData with Diagnosticable {
   /// A [lerp]'s paper corner [r] held from 0 to [most], where a theme
   /// animated on a curve that overshoots its ends would pass the bound.
   static double _within(double r, double most) => r.clamp(0, most).toDouble();
-
-  /// The WCAG contrast ratio of [ink] on [ground], 1..21, as it is seen: a
-  /// translucent ink is laid over the ground first. [ground] is opaque.
-  @Deprecated(
-    'Use RawPalette.contrastRatio, which reads a translucent ink over its '
-    'ground the same way. This feature was deprecated after v0.6.0 and goes '
-    'in 0.8.0.',
-  )
-  static double contrast(Color ink, Color ground) =>
-      RawPalette.contrastRatio(ink, ground);
 }
 
 enum _Face { sans, serif, italic, mono }
@@ -2243,7 +2322,7 @@ typedef _Inks = ({
   Color toastRing,
 });
 
-/// One step of the source's type scale.
+/// One step of Ledger's type scale.
 final class _Slot {
   const _Slot(
     this.face,
@@ -2568,66 +2647,20 @@ extension LedgerTextStyle on TextStyle {
   TextStyle tracked(double em) => copyWith(letterSpacing: em * fontSize!);
 }
 
-/// The values the `quire` preset is written in: the source stylesheet's
-/// custom properties, each under its own name (`--ink-2` is
-/// `_Source.ink2`), and the literal colours its rules set.
+/// The `quire` preset's values: its papers (the page, the raised paper, the
+/// sunken one), its four inks, its two rules, its green and its vermilion,
+/// and the literal colours of its chrome. Each role takes the colour that
+/// plays it: the raised paper for a slip, a sheet and a menu; the ink for a
+/// section's head and the strong border; one green for the accent and for
+/// money in; the vermilion only for over budget; the ink pill, never an
+/// amber, for its one caution. Its categories are told apart by glyphs and
+/// by three hatches, never by hues. The top bar and the tab bar are opaque
+/// paper, and the primary act and the Move disc cast no shadow: both are
+/// green printed on the page.
 ///
-/// ## Role mapping
-///
-/// The stylesheet names its palette by what each colour is (`--paper`,
-/// `--ink-2`, `--green-wash`), so each role takes the property of the rule
-/// that plays it (driftwood-authoring §3):
-///
-/// - The papers: `background` = `--paper` (the canvas), `surface` =
-///   `--paper-hi` (raised: a slip, a sheet, a menu, the current nav link),
-///   `surfaceAlt` = `--paper-lo` (sunken: the sidebar, an ink pill).
-/// - The inks: `textPrimary` = `--ink`, `textSecondary` = `--ink-2`,
-///   `textTertiary` = `--ink-3` (4.6:1 on the paper, so it sets the meta
-///   lines' words), `textFaint` = `--ink-4` (2.2:1: leaders, rings and
-///   chevrons only, never words).
-/// - The rules: `border` = `--rule` (14% ink), `hairline` = `--rule-2` (8%);
-///   both stay translucent as the source sets them. `headRule` and
-///   `borderStrong` = `--ink`: JUDGMENT, the source's strong rule is the
-///   ink itself (a section's head, a sheet's head, the double rule, the
-///   secondary button's ring), so the shared strong border is the ink.
-/// - The green: `accent` = `success` = `accentText` = `moneyIn` = `pace` =
-///   `seal` = `--green`. JUDGMENT: one green for the accent and for money
-///   in, as the source spends it on both and draws no other. `onAccent` =
-///   `--paper-hi` (the primary button's words). The wash
-///   (`accentSubtle`, `successSubtle`) = `--green-wash`; `accentRule` =
-///   `--green-rule`.
-/// - Vermilion: `danger` = `over` = `sealOver` = `--red`, which the source
-///   spends only on over budget; `dangerSubtle` = `--red-wash`.
-/// - `warning` = `--ink-2` on `warningSubtle` = `--paper-lo`: JUDGMENT, the
-///   source has no amber; its one caution (a goal behind) is the ink pill.
-/// - Cents: an amount's cents take its ink at 72% when green or vermilion
-///   (`.amt.in .c`, `.amt.over .c`), `--ink-3` when plain and `--ink-4` on
-///   a move; `move` = `--ink-3` (`.amt.move`).
-/// - The hatches: JUDGMENT, the source gives its categories glyphs, never
-///   hues, and tells parts of a whole apart by three hatches (`stack_bar`):
-///   close ink and open green at 85%, pale ink at 35%. They are the
-///   category roles.
-/// - The chrome's literals: the top bar `--paper` and the tab bar
-///   `--paper-hi`, opaque (the source frosts them at 82% and 84% under a
-///   blur; Ledger lays no glass), the scrim rgba(20, 26, 31, .44), the toast's act
-///   `#BFD8C9` and its glyph's ring rgba(249, 246, 240, .4). The sidebar is
-///   `--paper-lo`, the current link `--paper-hi` ringed in `--rule-2`, the
-///   Move disc ringed in `--paper-hi`, the bell's dot ringed in `--paper`,
-///   the avatar `--ink` with `--paper` initials, a menu's chosen item
-///   `--paper`.
-/// - Shadows: the rules' box-shadows (`--shadow-sheet`, the phone sheet's,
-///   the dialog's, the menu's and the toast's), as Flutter draws CSS's blur
-///   ([_css]). JUDGMENT: the source's drops under the primary act and the
-///   Move disc are left out; both are green printed on the page, and ink
-///   casts no shadow.
-///
-/// Type: the slots are the source's sizes, lines, weights and tracking
-/// (`_scale`). The source sets no `tnum`: the serif figures keep their own
-/// numerals, and the mono amounts are of one width by their face.
-///
-/// Dark is designed in `_Night`: the source has no dark appearance, and
-/// its night is the same book kept by lamplight rather than the ink and the
-/// paper swapped. The tests hold every appearance to the contrast bars.
+/// Dark is designed in `_Night`: the same book kept by lamplight rather than
+/// the ink and the paper swapped. The tests hold every appearance to the
+/// contrast bars.
 abstract final class _Source {
   static const Color paper = Color(0xFFF2EDE3);
   static const Color paperHi = Color(0xFFF9F6F0);
@@ -2658,16 +2691,15 @@ abstract final class _Source {
   static const double hatchStrong = .85;
   static const double hatchPale = .35;
 
-  /// `.topbar` and `.tabbar` backgrounds, laid opaque: the source's 82% and
-  /// 84% under a blur are frosted glass, and a page scrolled under them
-  /// smears through (no glass, no glow).
+  /// The top bar's and the tab bar's paper, opaque: a page scrolled under
+  /// them stays out of sight (no glass, no glow).
   static const Color topBarFill = Color.fromRGBO(242, 237, 227, 1);
   static const Color tabBarFill = Color.fromRGBO(249, 246, 240, 1);
 
-  /// `.scrim`.
+  /// The scrim under a sheet.
   static const Color scrim = Color.fromRGBO(20, 26, 31, .44);
 
-  /// `.toast-act` and `.toast-ic`'s border.
+  /// A toast's act and its glyph's ring.
   static const Color toastAction = Color(0xFFBFD8C9);
   static const Color toastRing = Color.fromRGBO(249, 246, 240, .4);
 
@@ -2679,15 +2711,15 @@ abstract final class _Source {
     _css(18, 36, -18, const Color.fromRGBO(20, 26, 31, .22)),
   ];
 
-  /// `.modal-sheet`: 0 -1px 0 rgba(20, 26, 31, .08), 0 -24px 48px -24px
-  /// rgba(20, 26, 31, .4).
+  /// A phone sheet's shadow: a hairline over its top and a soft fall above
+  /// it.
   static final List<BoxShadow> sheetShadow = [
     _css(-1, 0, 0, const Color.fromRGBO(20, 26, 31, .08)),
     _css(-24, 48, -24, const Color.fromRGBO(20, 26, 31, .4)),
   ];
 
-  /// The desktop `.modal-sheet`: 0 0 0 1px rgba(20, 26, 31, .08), 0 40px
-  /// 80px -24px rgba(20, 26, 31, .5).
+  /// A desktop dialog's shadow: a hairline round it and a deep soft fall
+  /// under it.
   static final List<BoxShadow> dialogShadow = [
     _css(0, 0, 1, const Color.fromRGBO(20, 26, 31, .08)),
     _css(40, 80, -24, const Color.fromRGBO(20, 26, 31, .5)),
@@ -2719,7 +2751,7 @@ abstract final class _Source {
 }
 
 /// The designed dark appearance of `quire`: the same book of records kept by
-/// lamplight. Written from the source's principles rather than inverted:
+/// lamplight. Written from Ledger's principles rather than inverted:
 ///
 /// - the papers stay paper: a warm umber night (#1A1815), the raised slip a
 ///   step lighter (#22201C), the sunken paper a step deeper (#13120F), so
@@ -2750,13 +2782,13 @@ abstract final class _Night {
   static const Color ink3 = Color(0xFF9A9386);
   static const Color ink4 = Color(0xFF5F5A51);
 
-  /// The night ink at the source's rule alphas (14%, 8%).
+  /// The night ink at Ledger's rule alphas (14%, 8%).
   static const Color rule = Color.fromRGBO(238, 232, 220, .14);
   static const Color rule2 = Color.fromRGBO(238, 232, 220, .08);
   static const Color green = Color(0xFF6FAA8C);
   static const Color greenWash = Color(0xFF282F28);
 
-  /// The jade at the source's green rule alpha (35%).
+  /// The jade at Ledger's green rule alpha (35%).
   static const Color greenRule = Color.fromRGBO(111, 170, 140, .35);
   static const Color red = Color(0xFFE57F68);
   static const Color redWash = Color(0xFF3A2822);

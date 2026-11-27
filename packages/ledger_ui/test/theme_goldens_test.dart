@@ -63,7 +63,7 @@ void _presets() {
       ),
   ];
 
-  for (final id in LedgerThemeData.presets) {
+  for (final id in [for (final p in LedgerThemeData.palettes) p.id]) {
     for (final brightness in Brightness.values) {
       testWidgets('$id ${brightness.name}', (t) async {
         t.view.physicalSize = const Size(390 * 2, 1600 * 2);

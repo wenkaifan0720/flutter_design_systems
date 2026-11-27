@@ -9,7 +9,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:ledger_ui/src/ledger/internal/face.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -49,7 +48,7 @@ double _depth(WidgetTester t, Finder finder) => t
 void main() {
   group('the primary act', () {
     test('casts no drop in any Ledger theme', () {
-      for (final id in LedgerThemeData.presets) {
+      for (final id in [for (final p in LedgerThemeData.palettes) p.id]) {
         for (final b in Brightness.values) {
           expect(
             LedgerThemeData.preset(id, b).primaryShadow,
@@ -63,7 +62,7 @@ void main() {
     });
 
     test('the Move disc casts none either', () {
-      for (final id in LedgerThemeData.presets) {
+      for (final id in [for (final p in LedgerThemeData.palettes) p.id]) {
         for (final b in Brightness.values) {
           expect(
             LedgerThemeData.preset(id, b).discShadow,

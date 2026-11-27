@@ -89,7 +89,7 @@ class LedgerActionSheet<T> extends StatelessWidget {
         for (final a in acts)
           LedgerPressable(
             onTap: () => onSelected(a.value),
-            label: a.label,
+            semanticLabel: a.label,
             child: Builder(
               builder: (context) {
                 final hot = LedgerPressStates.isHot(context);

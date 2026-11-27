@@ -45,7 +45,7 @@ class _LiveState extends State<_Live> {
     spacing: LedgerSpacing.s16,
     children: [
       LedgerChipRow(
-        label: 'Show',
+        semanticLabel: 'Show',
         children: [
           for (final f in _filters)
             LedgerChip(
@@ -60,7 +60,7 @@ class _LiveState extends State<_Live> {
         children: [
           LedgerCheck(
             value: _done,
-            label: 'Order the cotton paper',
+            semanticLabel: 'Order the cotton paper',
             onChanged: (v) => setState(() => _done = v),
           ),
           // The words tick it too, as a line on a list is ticked; the check
@@ -164,7 +164,7 @@ class _Words extends StatelessWidget {
 Widget kitSpecimenChipRest() => Align(
   alignment: AlignmentDirectional.centerStart,
   child: LedgerChipRow(
-    label: 'Show',
+    semanticLabel: 'Show',
     children: [
       LedgerChip('All', onTap: () {}),
       LedgerChip('Open', icon: LucideIcons.clock, onTap: () {}),
@@ -178,7 +178,7 @@ Widget kitSpecimenChipRest() => Align(
 Widget kitSpecimenChipSelected() => Align(
   alignment: AlignmentDirectional.centerStart,
   child: LedgerChipRow(
-    label: 'Show',
+    semanticLabel: 'Show',
     children: [
       LedgerChip('All', onTap: () {}),
       LedgerChip('Open', selected: true, count: 4, onTap: () {}),
@@ -196,7 +196,7 @@ Widget kitSpecimenCheckRest() => Column(
       Row(
         spacing: LedgerSpacing.s12,
         children: [
-          LedgerCheck(value: false, label: item, onChanged: (_) {}),
+          LedgerCheck(value: false, semanticLabel: item, onChanged: (_) {}),
           Expanded(child: _Words(item)),
         ],
       ),
@@ -211,7 +211,11 @@ Widget kitSpecimenCheckSelected() => Column(
     Row(
       spacing: LedgerSpacing.s12,
       children: [
-        LedgerCheck(value: true, label: 'Reconcile October', onChanged: (_) {}),
+        LedgerCheck(
+          value: true,
+          semanticLabel: 'Reconcile October',
+          onChanged: (_) {},
+        ),
         const Expanded(child: _Words('Reconcile October', struck: true)),
       ],
     ),
@@ -220,7 +224,7 @@ Widget kitSpecimenCheckSelected() => Column(
       children: [
         LedgerCheck(
           value: false,
-          label: 'Post the invoices',
+          semanticLabel: 'Post the invoices',
           onChanged: (_) {},
         ),
         const Expanded(child: _Words('Post the invoices')),

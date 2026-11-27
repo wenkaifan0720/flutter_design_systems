@@ -309,24 +309,31 @@ void main() {
     testWidgets("a figure's cents deepen its line as CSS's do", (t) async {
       await _everywhere(
         t,
-        const Column(
-          children: [
-            LedgerFacts(
-              facts: [
-                LedgerFact.money('Left', 213.88, note: '3 days to go'),
-                LedgerFact('Pace', '90%', note: 'Day 28 of 31; 92% spent'),
+        // In a side column, where a desktop's facts stack.
+        const Align(
+          alignment: AlignmentDirectional.topEnd,
+          child: SizedBox(
+            width: 320,
+            child: Column(
+              children: [
+                LedgerFacts(
+                  facts: [
+                    LedgerFact.money('Left', 213.88, note: '3 days to go'),
+                    LedgerFact('Pace', '90%', note: 'Day 28 of 31; 92% spent'),
+                  ],
+                ),
+                LedgerFacts(
+                  columns: LedgerFactColumns.three,
+                  ruled: true,
+                  facts: [
+                    LedgerFact.money('Spent', 2486.12, note: '87 purchases'),
+                    LedgerFact('Moves', '4', note: 'Own accounts'),
+                    LedgerFact.money('Moved', 1830.22, note: 'Own accounts'),
+                  ],
+                ),
               ],
             ),
-            LedgerFacts(
-              columns: LedgerFactColumns.three,
-              ruled: true,
-              facts: [
-                LedgerFact.money('Spent', 2486.12, note: '87 purchases'),
-                LedgerFact('Moves', '4', note: 'Own accounts'),
-                LedgerFact.money('Moved', 1830.22, note: 'Own accounts'),
-              ],
-            ),
-          ],
+          ),
         ),
         (wide, theme) {
           // `.fact .v` 28px/30px (32/34 stacked, 24/28 three across), the

@@ -3,8 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
 
-/// One label of a plot, placed as the source places its HTML over the SVG
-/// (`style="left:…%;top:…%"` in the plot's own units): its box's start at
+/// One label of a plot, placed in the plot's own units: its box's start at
 /// [left] (or its end at [right] from the plot's end), its top at [top],
 /// then moved by [shift] of its own size (CSS's `translate(-100%, -50%)` is
 /// `Offset(-1, -.5)`). Plumbing of the engravings.
@@ -42,9 +41,9 @@ typedef LedgerPlotParts = ({
 });
 
 /// A plot sized by its constraints: as wide as it may be, as tall as
-/// [height] or the source's aspect for its width class ([phoneAspect] up to
+/// [height] or Ledger's aspect for its width class ([phoneAspect] up to
 /// 1024, [deskAspect] from it), its engraving drawn by [draw] at that size
-/// in the source's own units (one unit a pixel), and its labels over it.
+/// in Ledger's own units (one unit a pixel), and its labels over it.
 /// Plumbing of the engravings.
 class LedgerPlot extends StatelessWidget {
   /// A plot drawn by [draw], sized by [height] or its aspects.
@@ -56,7 +55,7 @@ class LedgerPlot extends StatelessWidget {
     super.key,
   });
 
-  /// Height over width, as the source's phone and desktop plots stand.
+  /// Height over width, as Ledger's phone and desktop plots stand.
   final double phoneAspect;
 
   /// Height over width from 1024.
@@ -150,7 +149,7 @@ class _LabelLayout extends MultiChildLayoutDelegate {
   bool shouldRelayout(_LabelLayout old) => true;
 }
 
-/// The labels' type, as the source sets each kind over its plots. Plumbing
+/// The labels' type, as Ledger sets each kind over its plots. Plumbing
 /// of the engravings.
 extension LedgerPlotType on LedgerThemeData {
   /// `.ylab`: 400 10 on 12 in the mono, the third ink (11 from 1024).
@@ -169,7 +168,7 @@ extension LedgerPlotType on LedgerThemeData {
   TextStyle get plotNote =>
       meta.sized(11).line(13).tracked(0).colored(textSecondary);
 
-  /// `.caplab`, `.bracket-lab`: 400 10 on 12, the second ink.
+  /// A plot's caption: 11 on 12, the second ink.
   TextStyle get plotCaption =>
       meta.sized(11).line(12).tracked(0).colored(textSecondary);
 }
@@ -202,12 +201,12 @@ Widget ledgerPlotText(
   );
 }
 
-/// One label of a day ruler under a month's plot (`.xlab`): its words, the
+/// One label of a day ruler under a month's plot: its words, the
 /// x it stands centred on, and whether it is the first (set from the
 /// start, unshifted) or today's (in the ink, medium).
 typedef LedgerRulerMark = ({String text, double x, bool first, bool today});
 
-/// The day ruler under a month's plot (`.xruler`): 4 under it, 14 tall,
+/// The day ruler under a month's plot: 4 under it, 14 tall,
 /// each label centred on its day. Plumbing of the engravings.
 class LedgerDayRulerLabels extends StatelessWidget {
   /// The day ruler's [marks] across [width].
@@ -333,7 +332,7 @@ class LedgerDayRulerLabels extends StatelessWidget {
   static const double _fallbackSize = 10;
 }
 
-/// The keys under a plot of months (`.xlabs`): 8 under it, one per month
+/// The keys under a plot of months: 8 under it, one per month
 /// centred in its column, a [gutter] at the end left empty (the scale's
 /// column); the [now] month green, the [end] month in the ink. Plumbing of
 /// the engravings.

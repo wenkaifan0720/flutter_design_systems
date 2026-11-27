@@ -87,7 +87,7 @@ class LedgerBreadcrumb extends StatelessWidget {
                 child: LedgerPressable(
                   onTap: c.onTap,
                   role: LedgerPressRole.link,
-                  label: c.label,
+                  semanticLabel: c.label,
                   child: Builder(
                     builder: (context) {
                       final hot = LedgerPressStates.isHot(context);

@@ -1,4 +1,4 @@
-# ledger_ui's renames in 0.5.0, which `dart fix` makes. Each lists the package's libraries, as dart fix renames a
+# ledger_ui's renames in 0.5.0 and 0.8.0, which `dart fix` makes. Each lists the package's libraries, as dart fix renames a
 # name only where it is imported through a listed library.
 version: 1
 transforms:
@@ -1218,3 +1218,234 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'onSelectionChanged'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPressable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerPressable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerRadioPress'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerRadioPress'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerMoreLink'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerMoreLink'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerAvatarStack'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerAvatarStack'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerAvatar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerAvatar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCheck'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerCheck'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerChipRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerChipRow'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerFilters'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerFilters'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerWeekStrip'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerWeekStrip'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'LedgerAppShell'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      typedef: 'LedgerNavigationFrame'
+    changes:
+      - kind: 'rename'
+        newName: 'LedgerAppShell'
+  - title: "Replace with 'RawPalette.contrastRatio'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      method: 'contrast'
+      inClass: 'LedgerThemeData'
+      static: true
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: *uris
+          method: 'contrastRatio'
+          inClass: 'RawPalette'
+          static: true

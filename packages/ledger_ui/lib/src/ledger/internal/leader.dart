@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
 
-/// The dot leader as Chrome draws the source's `.leader`: a strip 3 tall
+/// The dot leader as Chrome draws Ledger's `.leader`: a strip 3 tall
 /// tiled every 5 from its start with one dot, centred 1.5 into the tile,
 /// solid to .85 and faded out by 1.15 (`radial-gradient(circle at 1.5px
 /// 1.5px, ink-4 .85px, transparent 1.15px)` repeated along x), the last

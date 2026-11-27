@@ -160,7 +160,7 @@ class LedgerChip extends StatelessWidget {
     return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
-        label: label,
+        semanticLabel: label,
         value: count == null ? null : '$count',
         selected: selected,
         radius: t.controlRadius,
@@ -187,33 +187,35 @@ class LedgerChip extends StatelessWidget {
 }
 
 /// Chips set in a row that wraps rather than overflows, 6 apart each way,
-/// naming the set to a screen reader by [label]. Each chip keeps its own
+/// naming the set to a screen reader by [semanticLabel]. Each chip keeps its own
 /// press and lays out at the tap floor; the row only lays them out and holds
 /// them together.
 ///
 /// ```dart
-/// LedgerChipRow(label: 'Categories', children: [for (final c in categories) LedgerChip(c.name, count: c.count, selected: picked.contains(c), onTap: () => toggle(c))])
+/// LedgerChipRow(semanticLabel: 'Categories', children: [for (final c in categories) LedgerChip(c.name, count: c.count, selected: picked.contains(c), onTap: () => toggle(c))])
 /// ```
 class LedgerChipRow extends StatelessWidget {
-  /// A wrapping row of [children], named [label].
-  const LedgerChipRow({required this.children, this.label, super.key});
+  /// A wrapping row of [children], named [semanticLabel].
+  const LedgerChipRow({required this.children, this.semanticLabel, super.key});
 
   /// The chips, usually [LedgerChip]s.
   final List<Widget> children;
 
   /// What the set chooses, spoken before its chips.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('label', label, defaultValue: null));
+    properties.add(
+      StringProperty('semanticLabel', semanticLabel, defaultValue: null),
+    );
   }
 
   @override
   Widget build(BuildContext context) => Semantics(
     container: true,
-    label: label,
+    label: semanticLabel,
     // The chips' faces stand the gap apart, their targets reaching into the
     // room between (ui_core's RawChipGroup).
     child: RawChipGroup(

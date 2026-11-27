@@ -25,7 +25,7 @@ import '../money/money.dart';
 import '../pressable/pressable.dart';
 import '../text-field/text_field.dart';
 
-/// A segmented set of words (`.chips`): the range of a chart (1M 3M 1Y
+/// A segmented set of words: the range of a chart (1M 3M 1Y
 /// All), Today or Later. The chosen one is set in the ink, the rest in
 /// the mono's second ink, all in one ring of the light paper; [onChanged]
 /// null shows the set without letting it change. The chips are radios of
@@ -108,7 +108,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     Widget chipOf(T o) => LedgerRadioPress<T>(
       value: o,
       enabled: onChanged != null,
-      label: _say(o),
+      semanticLabel: _say(o),
       // The focus rule runs the chip's whole width and stands on its foot:
       // its face is 2 inside the target above, and the rule's own drop under
       // a face is taken back.
@@ -209,7 +209,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     );
   }
 
-  // `.chips`: 2 inside its ring (3 in the source), 2 between; `.chip` 26 tall, 0 12.
+  // `.chips`: 2 inside its ring, 2 between; `.chip` 26 tall, 0 12.
   static const double _pad = 2;
   static const double _gap = 2;
   static const double _height = 26;
@@ -217,25 +217,25 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
   static const double _chipPad = 12;
 }
 
-/// Filter pills (`.filters`): each its own ring of the light paper, the
+/// Filter pills: each its own ring of the light paper, the
 /// chosen one in the ink, wrapping 6 apart; [value] null chooses none.
-/// [label] names the set. [onChanged] null shows them without letting
+/// [semanticLabel] names the set. [onChanged] null shows them without letting
 /// them change. [optionKeys] keys each pill by its value. The options are
 /// any values: [labelOf] words each (its `toString()` when null).
 ///
 /// ```dart
-/// LedgerFilters(label: 'Direction', options: const ['All', 'Money in', 'Money out'], value: 'All', onChanged: (f) {})
+/// LedgerFilters(semanticLabel: 'Direction', options: const ['All', 'Money in', 'Money out'], value: 'All', onChanged: (f) {})
 /// ```
 ///
 /// ```dart
-/// LedgerFilters<({String words, bool? incoming})>(label: 'Direction', options: directions, value: directions.first, labelOf: (d) => d.words, onChanged: (d) {})
+/// LedgerFilters<({String words, bool? incoming})>(semanticLabel: 'Direction', options: directions, value: directions.first, labelOf: (d) => d.words, onChanged: (d) {})
 /// ```
 class LedgerFilters<T> extends StatelessWidget {
-  /// Pills for each of [options], the [value] chosen, named [label].
+  /// Pills for each of [options], the [value] chosen, named [semanticLabel].
   const LedgerFilters({
     required this.options,
     required this.value,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.optionKeys,
     this.labelOf,
@@ -250,7 +250,7 @@ class LedgerFilters<T> extends StatelessWidget {
   final T? value;
 
   /// What the set filters, for a screen reader.
-  final String label;
+  final String semanticLabel;
 
   /// Called with the pill chosen; null shows them without letting them change.
   final ValueChanged<T?>? onChanged;
@@ -277,7 +277,7 @@ class LedgerFilters<T> extends StatelessWidget {
     properties
       ..add(IterableProperty<T>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<T?>>.has('onChanged', onChanged))
       ..add(
         DiagnosticsProperty<Map<T, Key>>(
@@ -297,7 +297,7 @@ class LedgerFilters<T> extends StatelessWidget {
     final words = t.meta.medium.sized(11).line(16).tracked(.02);
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       // The faces stand the gap apart, their targets reaching into the room
       // between (ui_core's RawChipGroup): in a Wrap each target's slack stood
       // between too.
@@ -313,7 +313,7 @@ class LedgerFilters<T> extends StatelessWidget {
                 onTap: onChanged == null
                     ? null
                     : () => onChanged!(o == value ? null : o),
-                label: wordsOf(o),
+                semanticLabel: wordsOf(o),
                 selected: o == value,
                 radius: t.controlRadius,
                 child: Builder(
@@ -342,7 +342,8 @@ class LedgerFilters<T> extends StatelessWidget {
                         ),
                       ),
                       builder: (context, s, _) => Container(
-                        height: _height,
+                        // 32 at the standard density, 4 off a step.
+                        height: t.density.height(_height),
                         padding:
                             so.padding(Directionality.of(context)) ??
                             const EdgeInsets.symmetric(horizontal: _pad),
@@ -379,7 +380,7 @@ class LedgerFilters<T> extends StatelessWidget {
   static const double _gap = 6;
 }
 
-/// The switch (`.toggle`): 44 by 26, its knob of the light paper on the
+/// The switch: 44 by 26, its knob of the light paper on the
 /// darker paper, at the end on the ink when on; a null [onChanged] dims it
 /// to .45. It lays out at the tap floor round its face. Says its [semanticLabel] and whether it
 /// is on.
@@ -487,7 +488,7 @@ class LedgerSwitch extends StatelessWidget {
     return TapTargetPadding(
       child: LedgerPressable(
         onTap: change == null ? null : () => change(!value),
-        label: semanticLabel,
+        semanticLabel: semanticLabel,
         toggled: value,
         radius: _height / 2,
         focusNode: focusNode,
@@ -544,7 +545,7 @@ class _SwitchPainter extends CustomPainter {
       Offset.zero & size,
       Radius.circular(size.height / 2),
     );
-    // Off, the source rings the darker paper in the rule (the ink at .14,
+    // Off, Ledger rings the darker paper in the rule (the ink at .14,
     // about 1.3:1 on the paper) and sets a paper knob on it: a switch read
     // as nothing there. Here its ring and a smaller knob are in the third
     // ink (over 4.5:1), so an off switch is seen as one (WCAG 1.4.11).
@@ -582,7 +583,7 @@ class _SwitchPainter extends CustomPainter {
   bool shouldRepaint(_SwitchPainter old) => old.at != at || old.t != t;
 }
 
-/// A switch's row (`.toggle-row`): its glyph, its [title] and [subtitle],
+/// A switch's row: its glyph, its [title] and [subtitle],
 /// the [LedgerSwitch] at the end; the whole row flips it. A null
 /// [onChanged] dims it (the third ink). Says its title and whether it is on.
 ///
@@ -656,7 +657,7 @@ class LedgerToggleRow extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onTap: off ? null : () => onChanged!(!value),
-      label: semanticLabel ?? title,
+      semanticLabel: semanticLabel ?? title,
       toggled: value,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
@@ -717,7 +718,7 @@ class LedgerToggleRow extends StatelessWidget {
   static const double _ownLine = 20;
 }
 
-/// A setting's row (`.set-row`): its glyph, its [title] on the dot leader
+/// A setting's row: its glyph, its [title] on the dot leader
 /// (6 clear, 8 at the least) to its [value], its [subtitle] under it, a
 /// faint chevron at the end. With [onTap] it opens its setting. With none
 /// it opens nothing and stands in the full ink, read as its words rather
@@ -875,7 +876,7 @@ class LedgerSettingRow extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onTap: enabled ? onTap : null,
-      label: semanticLabel ?? title,
+      semanticLabel: semanticLabel ?? title,
       value: value,
       child: line,
     );
@@ -886,7 +887,7 @@ class LedgerSettingRow extends StatelessWidget {
   static const double _chevron = 16;
 }
 
-/// The search field (`.search`), a round field of the light paper 46
+/// The search field, a round field of the light paper 46
 /// tall: as a link ([onTap]: Activity's, leading to the search) its glyph
 /// and [hintText]; live (no onTap) ringed in the ink, the words typed
 /// in the medium, a round clear at its end when [onCleared] is set and it
@@ -1020,7 +1021,7 @@ class LedgerSearchField extends StatelessWidget {
       return LedgerPressable(
         onTap: onTap,
         role: LedgerPressRole.link,
-        label: semanticLabel ?? hint,
+        semanticLabel: semanticLabel ?? hint,
         radius: t.controlRadius,
         child: box(
           ledgerCapCenter(
@@ -1089,7 +1090,7 @@ class LedgerSearchField extends StatelessWidget {
                       child: LedgerPressable(
                         key: clearKey,
                         onTap: onCleared,
-                        label: clearLabel ?? words.clearButtonTooltip,
+                        semanticLabel: clearLabel ?? words.clearButtonTooltip,
                         radius: _clear / 2,
                         child: Container(
                           width: _clear,
@@ -1117,7 +1118,7 @@ class LedgerSearchField extends StatelessWidget {
   static const double _clearGlyph = 14;
 }
 
-/// A form's field (`.field`): its [labelText] in the small capitals, then on
+/// A form's field: its [labelText] in the small capitals, then on
 /// the ink rule the words typed (the medium at 16; the [hintText] in
 /// the third ink) after an optional serif [prefix] ($), its [note] under
 /// it. 16 above it. Says its label. A [child] stands in the typed line's
@@ -1125,7 +1126,7 @@ class LedgerSearchField extends StatelessWidget {
 /// above it, 6 under it, at its start, no rule). A [value] stands there
 /// read only: the words as typed, which no one here types (a transfer's
 /// note shown on its cheque). On a cheque the rule is the faint ink
-/// (`.cheque .field-box`), the ink off one.
+///, the ink off one.
 ///
 /// ```dart
 /// LedgerField(labelText: 'Note', controller: note, hintText: 'What it is for')
@@ -1336,7 +1337,7 @@ class LedgerField extends StatelessWidget {
   }
 }
 
-/// A cheque's line (`.pick-row`): its [label] in the small capitals, then
+/// A cheque's line: its [label] in the small capitals, then
 /// the account's glyph, its [name] over its [mask] in the mono, its
 /// [balance] with its [note] (Available) at the end and, live ([onTap]),
 /// a chevron to choose another; read back (no onTap) it is no control. A
@@ -1531,7 +1532,7 @@ class LedgerPickLine extends StatelessWidget {
                 focusNode: focusNode,
                 autofocus: autofocus,
                 onTap: onTap,
-                label: '$label: $name',
+                semanticLabel: '$label: $name',
                 value: balance == null ? null : LedgerFormat.money(balance!),
                 child: line,
               ),
@@ -1546,7 +1547,7 @@ class LedgerPickLine extends StatelessWidget {
   }
 }
 
-/// A cheque's amount (`.amount-row`): its [labelText], then in a box ruled in the
+/// A cheque's amount: its [labelText], then in a box ruled in the
 /// ink the sum in the serif after its `$` (typed live with a [controller], else
 /// read back as the engraved [amount]), and under it the sum in [words] on the
 /// cheque's line with its [unit] (DOLLARS). The typed line stands as Chrome
@@ -1843,7 +1844,7 @@ class LedgerChequeAmount extends StatelessWidget {
 
 /// How large a [LedgerStepper] stands.
 enum LedgerStepperSize {
-  /// The budget's sum (`.stepper`): the figure in the serif, 72 (88 on the
+  /// The budget's sum: the figure in the serif, 72 (88 on the
   /// desktop), between two 48 rings. A display figure, stepped but not
   /// typed: a budget, a balance to set.
   figure,
@@ -1872,7 +1873,7 @@ enum LedgerStepperSize {
 /// reader ('45 minutes'); the line shows the plain number.
 ///
 /// [LedgerStepperSize.figure], the default, is the budget's stepper
-/// (`.stepper`): the sum in the serif, 72 (88 on the desktop), between two
+///: the sum in the serif, 72 (88 on the desktop), between two
 /// 48 rings that lower and raise it by [step], read as an adjustable value:
 /// the plain number unless [format] says otherwise (a budget passes whole
 /// dollars, `format: (v) => LedgerFormat.money(v, showCents: false)`); each ring says
@@ -1881,7 +1882,7 @@ enum LedgerStepperSize {
 /// own line, 1.05 of its size (75.6 at 72, 92.4 at 88, as the budget and
 /// add money sheets measure). [showRings]
 /// false shows the sum alone, chosen from elsewhere (the add sheet's
-/// amount under its chips, `.stepper-v.add-amount`: 4 above, 8 under),
+/// amount under its chips: 4 above, 8 under),
 /// still an adjustable value with [onChanged]; centred on a phone, at its
 /// slot's start from 600, as the rings are.
 ///
@@ -2032,7 +2033,7 @@ class LedgerStepper extends StatelessWidget {
     Widget ring(IconData icon, String name, VoidCallback? tap) =>
         LedgerPressable(
           onTap: tap,
-          label: name,
+          semanticLabel: name,
           radius: _ring / 2,
           child: Container(
             width: _ring,

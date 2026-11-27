@@ -311,3 +311,33 @@ RawDataTableController<({String title, String amount})> get table => _held(
     ],
   ),
 );
+
+/// The selected place of an app's shell.
+int index = 0;
+
+/// The appearance the reader chose; null follows the device.
+const Brightness? appearance = null;
+
+/// The palette id the app stored.
+const String paletteId = 'quire';
+
+/// The route of a new entry.
+Route<void> entryRoute() => route;
+
+/// An app's first page.
+class HomePage extends StatelessWidget {
+  /// The page.
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Home');
+}
+
+/// An app's second page.
+class ActivityPage extends StatelessWidget {
+  /// The page.
+  const ActivityPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Activity');
+}

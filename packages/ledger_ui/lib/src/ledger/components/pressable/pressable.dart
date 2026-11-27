@@ -37,14 +37,14 @@ enum LedgerPressRole {
 /// composed by hand one tap target.
 ///
 /// A null [onTap] makes it inert: the child is drawn as it is, the node is
-/// announced as disabled, and nothing answers a tap or a key. [label] is the
+/// announced as disabled, and nothing answers a tap or a key. [semanticLabel] is the
 /// spoken name and replaces what the child says when [excludeChild] is true.
 class LedgerPressable extends StatelessWidget {
   /// A control of [child] that calls [onTap].
   const LedgerPressable({
     required this.onTap,
     required this.child,
-    this.label,
+    this.semanticLabel,
     this.value,
     this.hint,
     this.role = LedgerPressRole.button,
@@ -77,7 +77,7 @@ class LedgerPressable extends StatelessWidget {
   final Widget child;
 
   /// The spoken name; null leaves the child's own semantics.
-  final String? label;
+  final String? semanticLabel;
 
   /// The spoken value after the name (the month a switch shows).
   final String? value;
@@ -124,7 +124,7 @@ class LedgerPressable extends StatelessWidget {
   /// face reads focus from [LedgerPressStates].
   final bool rulesFocus;
 
-  /// Whether the child's own semantics are replaced by [label].
+  /// Whether the child's own semantics are replaced by [semanticLabel].
   final bool excludeChild;
 
   /// The face's opacity while a finger is down; 1, the default, deepens its
@@ -144,7 +144,7 @@ class LedgerPressable extends StatelessWidget {
     properties
       ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
       ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(EnumProperty<LedgerPressRole>('role', role))
@@ -198,7 +198,7 @@ class LedgerPressable extends StatelessWidget {
       autofocus: autofocus,
       selected: selected ?? toggled ?? checked ?? false,
       isError: isError,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       semanticValue: value,
       semanticHint: hint,
       button: role == LedgerPressRole.button,
@@ -209,7 +209,7 @@ class LedgerPressable extends StatelessWidget {
       mixed: mixed,
       inMutuallyExclusiveGroup: inMutuallyExclusiveGroup,
       expanded: expanded,
-      excludeSemantics: excludeChild && label != null,
+      excludeSemantics: excludeChild && semanticLabel != null,
       child: child,
       builder: (context, states, child) => _dress(
         context,
@@ -274,7 +274,7 @@ Widget _dress(
 /// A radio in a [LedgerPressable]'s dress: Flutter's RawRadio, of the
 /// RadioGroup above it or of [registry], which takes the tap, the focus and
 /// the keys and says it is checked and one of a group; Ledger draws the
-/// press, the focus and the states over [child] as a pressable does. [label]
+/// press, the focus and the states over [child] as a pressable does. [semanticLabel]
 /// names it in place of what [child] says. Plumbing of the radios; not
 /// exported.
 class LedgerRadioPress<T> extends StatefulWidget {
@@ -285,7 +285,7 @@ class LedgerRadioPress<T> extends StatefulWidget {
     required this.child,
     this.registry,
     this.toggleable = false,
-    this.label,
+    this.semanticLabel,
     this.radius = 0,
     this.ringInsets = EdgeInsets.zero,
     this.focusNode,
@@ -309,7 +309,7 @@ class LedgerRadioPress<T> extends StatefulWidget {
   final bool toggleable;
 
   /// Its spoken name, in place of what [child] says.
-  final String? label;
+  final String? semanticLabel;
 
   /// As [LedgerPressable.radius].
   final double radius;
@@ -337,7 +337,7 @@ class LedgerRadioPress<T> extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('toggleable', value: toggleable, ifTrue: 'toggleable'))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('radius', radius))
       ..add(DiagnosticsProperty<EdgeInsetsGeometry>('ringInsets', ringInsets))
       ..add(
@@ -370,7 +370,7 @@ class _LedgerRadioPressState<T> extends State<LedgerRadioPress<T>> {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final node = _node;
-    final label = widget.label;
+    final label = widget.semanticLabel;
     return MergeSemantics(
       child: RawRadio<T>(
         value: widget.value,

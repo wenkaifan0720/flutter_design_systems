@@ -7,7 +7,7 @@ import '../receipt/receipt.dart';
 import '../seal/seal.dart';
 import '../structure/structure.dart';
 
-/// The account holder's certificate (`.member`), printed on a
+/// The account holder's certificate, printed on a
 /// [LedgerSlip]: the guilloche band, its [kind] and [since] in the mono,
 /// then the holder's [initials] inked on a disc beside the [seal] (from
 /// 1024 the [name] between them), the [name] in the serif 40 over its

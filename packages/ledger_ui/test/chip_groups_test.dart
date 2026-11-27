@@ -5,7 +5,6 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ledger_ui/ledger_host.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 
 const _gap = 6.0;
@@ -77,7 +76,7 @@ void main() {
       await t.pumpWidget(
         _app(
           LedgerFilters<String>(
-            label: 'Direction',
+            semanticLabel: 'Direction',
             options: const [
               'All',
               'Money in',
@@ -103,7 +102,7 @@ void main() {
       await t.pumpWidget(
         _app(
           LedgerChipRow(
-            label: 'Categories',
+            semanticLabel: 'Categories',
             children: [
               for (final c in const [
                 'Groceries',
