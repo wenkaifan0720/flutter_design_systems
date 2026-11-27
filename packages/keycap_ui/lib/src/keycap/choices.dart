@@ -813,7 +813,11 @@ class KeycapRowKey extends StatelessWidget {
               children: [
                 if (segment.icon != null) ...[
                   IconTheme.merge(
-                    data: IconThemeData(size: 18, color: face.legend),
+                    // The glyph grows with the words beside it.
+                    data: IconThemeData(
+                      size: MediaQuery.textScalerOf(context).scale(18),
+                      color: face.legend,
+                    ),
                     child: segment.icon!,
                   ),
                   const SizedBox(width: KeycapSpacing.small),

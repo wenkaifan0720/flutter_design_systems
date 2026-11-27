@@ -23,7 +23,8 @@ import 'page_transitions.dart';
 /// ```
 typedef KeycapStyle = RawStyle;
 
-/// How tight Keycap's controls stand: [RawDensity.standard] (a 48 px
+/// How tight Keycap's controls stand: ui_core's [RawDensity] under Keycap's
+/// name, the same type, so either name works. [RawDensity.standard] (a 48 px
 /// key), [RawDensity.comfortable] (44) or [RawDensity.compact] (40). A
 /// control's tap target stays at the floor for the input whatever the
 /// density. [KeycapThemeData.density] defaults to
@@ -180,6 +181,7 @@ class KeycapColors with Diagnosticable {
     required this.scrim,
     required this.toast,
     required this.onToast,
+    this._info,
   });
 
   /// The classic colourway in daylight: light cool-grey alphas, slate
@@ -414,6 +416,12 @@ class KeycapColors with Diagnosticable {
   /// What went right, as words or a mark.
   final Color success;
 
+  /// A note's ink (`KeycapTone.info`): [accentInk], unless the colourway's
+  /// key is too near [success]'s green to tell apart (sage's), then the
+  /// classic's cobalt, 4.5:1 on the same grounds.
+  Color get info => _info ?? accentInk;
+  final Color? _info;
+
   /// A rule between rows.
   final Color hairline;
 
@@ -461,6 +469,7 @@ class KeycapColors with Diagnosticable {
     Color? accentInk,
     Color? dangerInk,
     Color? success,
+    Color? info,
     Color? hairline,
     Color? edge,
     Color? focus,
@@ -491,6 +500,7 @@ class KeycapColors with Diagnosticable {
     accentInk: accentInk ?? this.accentInk,
     dangerInk: dangerInk ?? this.dangerInk,
     success: success ?? this.success,
+    info: info ?? _info,
     hairline: hairline ?? this.hairline,
     edge: edge ?? this.edge,
     focus: focus ?? this.focus,
@@ -527,6 +537,7 @@ class KeycapColors with Diagnosticable {
       accentInk: c(a.accentInk, b.accentInk),
       dangerInk: c(a.dangerInk, b.dangerInk),
       success: c(a.success, b.success),
+      info: c(a.info, b.info),
       hairline: c(a.hairline, b.hairline),
       edge: c(a.edge, b.edge),
       focus: c(a.focus, b.focus),
@@ -560,6 +571,7 @@ class KeycapColors with Diagnosticable {
     accentInk,
     dangerInk,
     success,
+    info,
     hairline,
     edge,
     focus,
@@ -614,6 +626,14 @@ KeycapCapColors _tinted(KeycapCapColors caps, RawNeutralTones tones) {
 // its focus the nearest tones of its hue that read on [base]'s grounds.
 KeycapColors _keyed(KeycapColors base, Color accent) {
   final night = base.brightness == Brightness.dark;
+  final grounds = [
+    base.ground,
+    base.well,
+    base.page,
+    base.pageSelected,
+    base.panel,
+  ];
+  final accentInk = RawPalette.readableTone(accent, on: grounds);
   final key = RawPalette.accentFill(
     accent,
     brightness: base.brightness,
@@ -630,10 +650,12 @@ KeycapColors _keyed(KeycapColors base, Color accent) {
     ),
     // Its words read on every ground they are painted on: the case, a well,
     // a page, a chosen row and a panel.
-    accentInk: RawPalette.readableTone(
-      accent,
-      on: [base.ground, base.well, base.page, base.pageSelected, base.panel],
-    ),
+    accentInk: accentInk,
+    // A note's ink stays apart from what went right: a key near success's
+    // green (sage's) leaves notes the classic's cobalt.
+    info: _apart(accentInk, base.success) < 24
+        ? RawPalette.readableTone(base.accentInk, on: grounds)
+        : null,
     latchedLegend: night
         ? RawPalette.readableTone(accent, on: [base.modifier.top])
         : null,
@@ -644,6 +666,19 @@ KeycapColors _keyed(KeycapColors base, Color accent) {
     ),
     backlight: accent.withValues(alpha: night ? 0.35 : 0),
   );
+}
+
+// Two inks' distance in HCT: their tones and their chromas along their hues,
+// as one straight line (ui_core_test's DesignToneCheck reads the same).
+double _apart(Color a, Color b) {
+  final x = RawHct.fromColor(a);
+  final y = RawHct.fromColor(b);
+  double along(RawHct h, double Function(double) f) =>
+      h.chroma * f(h.hue * math.pi / 180);
+  final dt = x.tone - y.tone;
+  final da = along(x, math.cos) - along(y, math.cos);
+  final db = along(x, math.sin) - along(y, math.sin);
+  return math.sqrt(dt * dt + da * da + db * db);
 }
 
 // A colourway of the classic keyboard: its plastics at their own tones in
@@ -1137,6 +1172,31 @@ class KeycapThemeData with Diagnosticable {
     'rose',
     'lilac',
     'ocean',
+  ];
+
+  /// The six colourways as ui_core's [RawNamedPalette]s, for an app's
+  /// palette picker: each one's id is its preset's (one of [presets]), its
+  /// swatches its accent key, a modifier and an alpha, by day and by night.
+  /// [KeycapThemeData.preset] with the id gives its theme, and `KeycapHost`
+  /// takes one as its `palette`.
+  ///
+  /// ```dart
+  /// KeycapThemeData.preset(KeycapThemeData.palettes[2].id, Brightness.dark)
+  /// ```
+  static final List<RawNamedPalette> palettes = [
+    for (final id in presets)
+      RawNamedPalette(
+        id: id,
+        label: '${id[0].toUpperCase()}${id.substring(1)}',
+        swatches: _swatches(KeycapColors.preset(id, Brightness.light)),
+        darkSwatches: _swatches(KeycapColors.preset(id, Brightness.dark)),
+      ),
+  ];
+
+  static List<Color> _swatches(KeycapColors c) => [
+    c.accent.top,
+    c.modifier.top,
+    c.alpha.top,
   ];
 
   /// The colourway [name], one of [presets], for [brightness]

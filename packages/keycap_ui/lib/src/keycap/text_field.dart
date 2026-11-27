@@ -129,7 +129,8 @@ class KeycapFieldMessage extends StatelessWidget {
 /// A text field: a well cut into the case, as tall as a key, with a
 /// [labelText] over it and a [helperText] or an [errorText] under it. Its
 /// words are centred on their capitals; focus lights a band inside the
-/// well's edge (the danger colour while [errorText] is set).
+/// well's edge (the danger colour while [errorText] is set). With a
+/// [validator] it checks itself in a `RawForm`, as `TextFormField` does.
 ///
 /// ```dart
 /// KeycapTextField(labelText: 'Title', controller: title, onChanged: rename)
@@ -150,6 +151,9 @@ class KeycapTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.onEditingComplete,
+    this.validator,
+    this.onSaved,
+    this.autovalidateMode,
     this.keyboardType,
     this.textInputAction,
     this.textCapitalization = TextCapitalization.none,
@@ -199,6 +203,18 @@ class KeycapTextField extends StatefulWidget {
 
   /// Called when the reader finishes editing.
   final VoidCallback? onEditingComplete;
+
+  /// Checks the words in a `RawForm`, as `TextFormField`'s does: the
+  /// error it returns shows under the field, and the form's submit puts the
+  /// focus on the first wrong field. Null: no check.
+  final FormFieldValidator<String>? validator;
+
+  /// Called with the words when the form saves.
+  final FormFieldSetter<String>? onSaved;
+
+  /// When the [validator] runs by itself: on the form's submit only when
+  /// null.
+  final AutovalidateMode? autovalidateMode;
 
   /// The keyboard to show.
   final TextInputType? keyboardType;
@@ -293,10 +309,38 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final validator = widget.validator;
+    if (validator == null && widget.onSaved == null) {
+      return _field(context, widget.errorText, widget.onChanged);
+    }
+    // In a RawForm: the form's submit checks it, shows its error under it
+    // and puts the focus on the first wrong field; a given errorText wins.
+    return RawFormField<String>(
+      focusNode: _focus,
+      initialValue: _controller.text,
+      validator: validator == null ? null : (_) => validator(_controller.text),
+      onSaved: widget.onSaved == null
+          ? null
+          : (_) => widget.onSaved!(_controller.text),
+      autovalidateMode: widget.autovalidateMode,
+      enabled: widget.enabled,
+      builder: (state) =>
+          _field(context, widget.errorText ?? state.errorText, (value) {
+            state.didChange(value);
+            widget.onChanged?.call(value);
+          }),
+    );
+  }
+
+  Widget _field(
+    BuildContext context,
+    String? errorText,
+    ValueChanged<String>? onChanged,
+  ) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final focused = _focus.hasFocus;
-    final wrong = widget.errorText != null;
+    final wrong = errorText != null;
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (focused) WidgetState.focused,
@@ -340,7 +384,7 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
           textCapitalization: widget.textCapitalization,
           autofillHints: widget.autofillHints,
           inputFormatters: widget.inputFormatters,
-          onChanged: widget.onChanged,
+          onChanged: onChanged,
           onSubmitted: widget.onSubmitted,
           onEditingComplete: widget.onEditingComplete,
           enabled: widget.enabled,
@@ -436,7 +480,7 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
     return KeycapField(
       labelText: widget.labelText,
       helperText: widget.helperText,
-      errorText: widget.errorText,
+      errorText: errorText,
       enabled: widget.enabled,
       focusNode: _focus,
       child: well,

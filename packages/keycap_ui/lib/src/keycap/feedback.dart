@@ -498,15 +498,32 @@ enum KeycapTone {
   warning,
 
   /// Something went wrong.
-  danger,
+  danger;
+
+  /// The tone's ink in [colors]: what a banner's glyph and words, a status
+  /// view's glyph and a tag's words print in. The four stay apart in every
+  /// colourway, by day and by night.
+  ///
+  /// ```dart
+  /// KeycapTone.success.inkIn(KeycapTheme.of(context).colors)
+  /// ```
+  Color inkIn(KeycapColors colors) => switch (this) {
+    KeycapTone.info => colors.info,
+    KeycapTone.success => colors.success,
+    KeycapTone.warning => colors.ink,
+    KeycapTone.danger => colors.dangerInk,
+  };
 }
 
-(IconData, Color) _toneOf(KeycapTone tone, KeycapColors c) => switch (tone) {
-  KeycapTone.info => (LucideIcons.info, c.accentInk),
-  KeycapTone.success => (LucideIcons.circleCheck, c.success),
-  KeycapTone.warning => (LucideIcons.triangleAlert, c.ink),
-  KeycapTone.danger => (LucideIcons.circleAlert, c.dangerInk),
-};
+(IconData, Color) _toneOf(KeycapTone tone, KeycapColors c) => (
+  switch (tone) {
+    KeycapTone.info => LucideIcons.info,
+    KeycapTone.success => LucideIcons.circleCheck,
+    KeycapTone.warning => LucideIcons.triangleAlert,
+    KeycapTone.danger => LucideIcons.circleAlert,
+  },
+  tone.inkIn(c),
+);
 
 /// A message on the page, in a well of its own: its glyph and words in the
 /// [tone]'s ink, a [title] over a [message], and its actions printed under

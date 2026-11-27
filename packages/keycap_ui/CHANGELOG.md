@@ -1,3 +1,21 @@
+## 0.6.0
+
+- Requires ui_core 0.8.2.
+- **Breaking:** `KeycapSelect.maxWideWidth` is removed: a select, a date, range and time field take their column's width at every width, as a text field does (they stood at most about 336 wide from 600 up), so a form's fields stand on one edge. A date field's month keeps seven days' width, at the field's start.
+- **Breaking:** `KeycapCalendar.dayExtent` is removed, as 0.5.0 said: read `RawTapTargets.of(context).touch`. `dart fix` has no move for it, since the floor needs a `BuildContext`.
+- `KeycapScaffold` stands on ui_core's `RawAdaptiveShell` at every width: the row of places under 600, the rail to 1024, the side column past it (`KeycapScaffold.modeFor`; `modeForWidth` picks others). On a phone a screen reader hears the places as tabs, the current one selected (they were plain buttons there). `KeycapScaffold.branches` keeps a stack per place: a pushed page keeps the rail or the side column while the phone's row steps away, and back pops the place's stack (`navigatorKeys`, `backBehavior`, `hideBarOnPush`).
+- `KeycapHost.palette` builds both appearances from one of `KeycapThemeData.palettes`, the six colourways as ui_core's `RawNamedPalette`s (id, label, and the accent, a modifier and an alpha as swatches by day and by night) for an app's colourway picker.
+- `KeycapColors.info`, the information tone, and `KeycapTone.inkIn`: a note's ink stays apart from a success's, the accent's and a warning's in every colourway (in sage the info tone was the success green); tags and banners read it.
+- `KeycapScreen`'s footer stands on the body's column (`maxWidth`, at the page's start), so a form's Save key ends where its fields do; on a desk it stood at the window's far edge.
+- `KeycapTextField` takes `validator`, `onSaved` and `autovalidateMode`, as `TextFormField` does: in a `RawForm` (or a `Form`) it checks with the form, its error under it with the well's edge in the danger colour, and takes the focus when it is the first one wrong.
+- `KeycapFormat.date`: one medium date with the year in the reader's language, "Nov 14, 2026" in English, as the date field writes its day.
+- A date, range or time field reads its label once: the label names the field, and `semanticLabel`, when given, replaces it (both were read).
+- On a phone a menu, a popover and a hover card keep inside the page's margin (they opened 8 px from the screen's edge).
+- By night, a destructive key's words and a date, range or time field's hint read 4.5:1 on their key in every colourway: they take the nearest tone of the danger ink and of the quiet ink that reads there (3.7:1 at worst before).
+- A glyph beside a key's words, a tag's and a segment's glyph grow with the reader's text, and a `KeycapAvatar`'s face with its letters up to twice its side.
+- The example is an app to copy (`example/lib/main.dart`, Shelf): `KeycapHost` with light, dark or the platform's appearance and a colourway, `KeycapScaffold.branches` with three places, a list that pushes a page and its dialog, a form that checks its fields with a date, and settings showing each colourway's swatches, in the device's language; on a desk its list and form keep to one column 720 wide. The gallery (Jotter and every part's page) runs with `flutter run -t lib/gallery.dart`.
+- The README builds an app: the install line names `lucide_icons_flutter` beside `material_ui`; `KeycapHost` as the one mount, a list and its page, a dialog that pops with its answer, a checked form with a date, the colourway picker and `KeycapScaffold.branches`; a Building blocks table; labels and density stated. Every Dart block in it compiles as written (ui_core_test's `DesignReadmeCheck`).
+
 ## 0.5.0
 
 - Six colourways, each by day and by night: `classic` (the default), `retro`, `sage`, `rose`, `lilac` and `ocean` (`KeycapThemeData.presets`, `KeycapThemeData.preset`, `KeycapColors.preset`). The example's Foundations shows them.

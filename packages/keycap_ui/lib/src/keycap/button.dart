@@ -176,7 +176,14 @@ class KeycapButton extends StatelessWidget {
         if (isDestructiveAction &&
             kind == KeycapKind.alpha &&
             !states.contains(WidgetState.disabled)) {
-          face = face.copyWith(legend: theme.colors.dangerInk);
+          // The danger ink in the tone that reads 4.5:1 on this key's top, by
+          // night too (the ink is set for the case).
+          face = face.copyWith(
+            legend: RawPalette.readableTone(
+              theme.colors.dangerInk,
+              on: [face.top],
+            ),
+          );
         }
         face = layered.on(face);
         final padding =
@@ -255,8 +262,12 @@ class _Legend extends StatelessWidget {
       textAlign: TextAlign.center,
       child: RawCapCenter(capHeightFactor: theme.capHeightFactor, child: child),
     );
+    // The glyph grows with the legend's words beside it.
     return IconTheme.merge(
-      data: IconThemeData(color: color, size: iconSize),
+      data: IconThemeData(
+        color: color,
+        size: MediaQuery.textScalerOf(context).scale(iconSize),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -561,6 +572,8 @@ class KeycapLegendKey extends StatelessWidget {
         final line =
             MediaQuery.textScalerOf(context).scale(label.fontSize!) *
             (label.height ?? 1);
+        // The glyph grows with the legend's words beside it.
+        final glyph = MediaQuery.textScalerOf(context).scale(18);
         return TapTargetPadding(
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: h),
@@ -586,11 +599,11 @@ class KeycapLegendKey extends StatelessWidget {
                       children: [
                         if (icon != null) ...[
                           SizedBox(
-                            height: math.max(18.0, line),
+                            height: math.max(glyph, line),
                             child: Center(
                               child: IconTheme.merge(
                                 data: IconThemeData(
-                                  size: 18,
+                                  size: glyph,
                                   color: face.legend,
                                 ),
                                 child: icon!,
@@ -810,7 +823,10 @@ class KeycapLink extends StatelessWidget {
                           decorationThickness: 1.5,
                         ),
                     child: IconTheme.merge(
-                      data: IconThemeData(color: color, size: 16),
+                      data: IconThemeData(
+                        color: color,
+                        size: MediaQuery.textScalerOf(context).scale(16),
+                      ),
                       child: child,
                     ),
                   );

@@ -120,9 +120,10 @@ class KeycapMenu extends StatelessWidget {
   Widget build(BuildContext context) => RawPopover(
     arrowKeyNavigation: true,
     semanticLabel: semanticLabel,
-    placement: const RawPopoverPlacement(
+    // It keeps inside the page's margin, as the page's own rows do.
+    placement: RawPopoverPlacement(
       gap: KeycapSpacing.tight + 2,
-      margin: KeycapSpacing.small,
+      margin: KeycapSpacing.pageMargin(MediaQuery.sizeOf(context).width),
       matchAnchorWidth: false,
       maxWidth: 320,
     ),
@@ -565,7 +566,7 @@ class KeycapPopover extends StatelessWidget {
     semanticLabel: semanticLabel,
     placement: RawPopoverPlacement(
       gap: KeycapSpacing.small,
-      margin: KeycapSpacing.small,
+      margin: KeycapSpacing.pageMargin(MediaQuery.sizeOf(context).width),
       matchAnchorWidth: false,
       maxWidth: width,
       preferredExtent: 240,
@@ -662,7 +663,7 @@ class KeycapHoverCard extends StatelessWidget {
     focusOnOpen: false,
     placement: RawPopoverPlacement(
       gap: KeycapSpacing.small,
-      margin: KeycapSpacing.small,
+      margin: KeycapSpacing.pageMargin(MediaQuery.sizeOf(context).width),
       matchAnchorWidth: false,
       maxWidth: width,
     ),

@@ -16,7 +16,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'cap.dart';
 import 'choices.dart';
-import 'internal/field_width.dart';
 import 'internal/small_key.dart';
 import 'overlays.dart' show KeycapSheet, showKeycapSheet;
 import 'select.dart';
@@ -45,6 +44,19 @@ String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
     }
   }
   return full;
+}
+
+/// Keycap's formats: a day as its date key shows it.
+abstract final class KeycapFormat {
+  /// [date] with its year, as a [KeycapDatePicker]'s key shows it: the
+  /// short month and the day, then the year, in the locale's order
+  /// ('Jan 4, 2026'; '4 Jan 2026' where the day comes first).
+  ///
+  /// ```dart
+  /// Text('Started ${KeycapFormat.date(context, book.started)}')
+  /// ```
+  static String date(BuildContext context, DateTime date) =>
+      _dateLabel(RawWidgetsLocalizations.of(context), date);
 }
 
 /// A day's least width and height: the touch floor, on every input (as
@@ -300,15 +312,6 @@ class KeycapCalendar extends StatelessWidget {
   /// Overrides, over [KeycapThemeData.calendarStyle].
   final KeycapStyle? style;
 
-  /// A day's least width and height under ui_core's default touch floor. A
-  /// calendar reads the floor in effect (an app's `RawTapTargetScope` moves
-  /// it).
-  @Deprecated(
-    'A day is the touch floor at least: read RawTapTargets.of(context).touch. '
-    'This will be removed in 0.6.0.',
-  )
-  static const double dayExtent = 40;
-
   @override
   Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
     maxScaleFactor: 2,
@@ -354,6 +357,7 @@ class _PickerKey extends StatefulWidget {
     required this.error,
     required this.icon,
     required this.semanticLabel,
+    required this.title,
     required this.semanticValue,
     required this.panel,
     required this.style,
@@ -364,7 +368,11 @@ class _PickerKey extends StatefulWidget {
   final bool enabled;
   final bool error;
   final IconData icon;
+  // The key's own name, only when it has no field label: the KeycapField
+  // round it names it with its label, read once.
   final String? semanticLabel;
+  // The panel's name: the field's label, or [semanticLabel].
+  final String? title;
   final String? semanticValue;
   final Widget Function(BuildContext context, VoidCallback close) panel;
   final KeycapStyle? style;
@@ -387,11 +395,11 @@ class _PickerKeyState extends State<_PickerKey> {
     setState(() => _sheetOpen = true);
     await showKeycapSheet<void>(
       context: context,
-      semanticLabel: widget.semanticLabel,
+      semanticLabel: widget.title,
       builder: (context) {
         void close() => Navigator.of(context).pop();
         return KeycapSheet(
-          title: widget.semanticLabel,
+          title: widget.title,
           onClose: close,
           child: Center(
             child: ConstrainedBox(
@@ -446,7 +454,8 @@ class _PickerKeyState extends State<_PickerKey> {
           final words = !enabled
               ? c.inkDisabled
               : empty
-              ? c.inkMuted
+              // The hint in the tone that reads 4.5:1 on the key's top.
+              ? RawPalette.readableTone(c.inkMuted, on: [face.top])
               : face.legend;
           return TapTargetPadding(
             child: ConstrainedBox(
@@ -499,7 +508,7 @@ class _PickerKeyState extends State<_PickerKey> {
         : MediaQuery.sizeOf(context).width < 600
         ? key(onPressed: _openSheet, open: _sheetOpen)
         : RawPopover(
-            semanticLabel: semanticLabel,
+            semanticLabel: widget.title,
             // The calendar wants its whole month (two, side by side, for a
             // range on a desk) before it picks a side: low on a phone it
             // opens above the field rather than below in a sliver.
@@ -526,7 +535,7 @@ class _PickerKeyState extends State<_PickerKey> {
               ),
             ),
           );
-    return keycapFieldWidth(context, box, KeycapSelect.maxWideWidth);
+    return box;
   }
 }
 
@@ -565,7 +574,9 @@ class _CalendarPanelState extends State<_CalendarPanel> {
 }
 
 /// A day picked from a month: a key that shows the day and, pressed, lays
-/// a [KeycapCalendar] over the keyboard; choosing a day closes it.
+/// a [KeycapCalendar] over the keyboard; choosing a day closes it. The key
+/// takes its column's width, as a text field does, and shows the day as
+/// [KeycapFormat.date] writes it.
 ///
 /// ```dart
 /// KeycapDatePicker(labelText: 'Remind me on', value: day, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (d) => setState(() => day = d))
@@ -640,7 +651,8 @@ class KeycapDatePicker extends StatelessWidget {
         enabled: enabled,
         error: errorText != null,
         icon: LucideIcons.calendar,
-        semanticLabel: semanticLabel ?? labelText,
+        semanticLabel: semanticLabel,
+        title: semanticLabel ?? labelText,
         semanticValue: chosen == null ? null : words.formatFullDate(chosen),
         style: style,
         panel: (context, close) => _CalendarPanel(
@@ -753,7 +765,8 @@ class KeycapDateRangePicker extends StatelessWidget {
         enabled: enabled,
         error: errorText != null,
         icon: LucideIcons.calendarRange,
-        semanticLabel: semanticLabel ?? labelText,
+        semanticLabel: semanticLabel,
+        title: semanticLabel ?? labelText,
         semanticValue: range == null
             ? null
             : end == null
@@ -856,7 +869,8 @@ class KeycapTimePicker extends StatelessWidget {
         enabled: enabled,
         error: errorText != null,
         icon: LucideIcons.clock,
-        semanticLabel: semanticLabel ?? labelText,
+        semanticLabel: semanticLabel,
+        title: semanticLabel ?? labelText,
         semanticValue: t == null ? null : words(t),
         style: style,
         panel: (context, close) => _TimePanel(

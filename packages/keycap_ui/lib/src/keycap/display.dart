@@ -17,6 +17,11 @@ import 'cap.dart';
 import 'feedback.dart';
 import 'theme.dart';
 
+// A face's side under the reader's text size: it grows with text up to
+// twice its side, as its initials do, and no further.
+double _faceSide(BuildContext context, double size) =>
+    MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 2).scale(size);
+
 String _initials(String name) {
   final words = name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
   final letters = [for (final w in words.take(2)) w.characters.first];
@@ -25,7 +30,8 @@ String _initials(String name) {
 
 /// A person: a flat tile of modifier plastic, their initials printed on
 /// it, or their picture ([slotId]) set in it. Its corners are a quarter of
-/// its size, as a key's are of its height.
+/// its size, as a key's are of its height. It grows with the reader's text
+/// size up to twice [size], its initials with it.
 ///
 /// ```dart
 /// const KeycapAvatar(name: 'Rosa Ines Vidal')
@@ -59,16 +65,16 @@ class KeycapAvatar extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.avatarStyle], const {});
-    final r = BorderRadius.circular(size / 4);
+    final side = _faceSide(context, size);
+    final r = BorderRadius.circular(side / 4);
     final letters = Center(
       child: Text(
         _initials(name),
         maxLines: 1,
-        // Printed on the picture at its size: the picture does not grow
-        // with text, so neither do they.
+        // Printed on the tile at its side, which has grown with text.
         textScaler: TextScaler.noScaling,
         style: theme.textTheme.label.copyWith(
-          fontSize: size * 0.38,
+          fontSize: side * 0.38,
           height: 1,
           fontWeight: FontWeight.w600,
           color: layered.foreground ?? c.modifier.legend,
@@ -80,7 +86,7 @@ class KeycapAvatar extends StatelessWidget {
       image: slotId != null,
       excludeSemantics: true,
       child: SizedBox.square(
-        dimension: size,
+        dimension: side,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: layered.fill ?? c.modifier.top,
@@ -139,15 +145,17 @@ class KeycapAvatarGroup extends StatelessWidget {
     final shown = names.take(max).toList();
     final rest = names.length - shown.length;
     const ring = 2.0;
+    // Each face grows with text, as a lone one does.
+    final side = _faceSide(context, size);
     // Overlapped by a fifth: enough to read as one group, little enough
     // that each face's initials stay whole.
-    final step = size * 0.8;
+    final step = side * 0.8;
     final count = shown.length + (rest > 0 ? 1 : 0);
     Widget ringed(Widget child) => Container(
       padding: const EdgeInsets.all(ring),
       decoration: BoxDecoration(
         color: c.ground,
-        borderRadius: BorderRadius.circular(size / 4 + ring),
+        borderRadius: BorderRadius.circular(side / 4 + ring),
       ),
       child: child,
     );
@@ -155,8 +163,8 @@ class KeycapAvatarGroup extends StatelessWidget {
       label: rest > 0 ? '${shown.join(', ')} and $rest more' : shown.join(', '),
       excludeSemantics: true,
       child: SizedBox(
-        width: step * math.max(0, count - 1) + size + 2 * ring,
-        height: size + 2 * ring,
+        width: step * math.max(0, count - 1) + side + 2 * ring,
+        height: side + 2 * ring,
         child: Stack(
           children: [
             for (final (i, n) in shown.indexed)
@@ -169,11 +177,11 @@ class KeycapAvatarGroup extends StatelessWidget {
                 start: shown.length * step,
                 child: ringed(
                   SizedBox.square(
-                    dimension: size,
+                    dimension: side,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: c.well,
-                        borderRadius: BorderRadius.circular(size / 4),
+                        borderRadius: BorderRadius.circular(side / 4),
                       ),
                       child: Center(
                         child: Text(
@@ -181,7 +189,7 @@ class KeycapAvatarGroup extends StatelessWidget {
                           // Printed on a face's size, as initials are.
                           textScaler: TextScaler.noScaling,
                           style: theme.textTheme.figure.copyWith(
-                            fontSize: size * 0.36,
+                            fontSize: side * 0.36,
                             color: c.inkMuted,
                           ),
                         ),
@@ -319,15 +327,7 @@ class KeycapTag extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.tagStyle], const {});
-    final ink =
-        layered.foreground ??
-        switch (tone) {
-          null => c.ink,
-          KeycapTone.info => c.accentInk,
-          KeycapTone.success => c.success,
-          KeycapTone.warning => c.ink,
-          KeycapTone.danger => c.dangerInk,
-        };
+    final ink = layered.foreground ?? tone?.inkIn(c) ?? c.ink;
     return SizedBox(
       height: KeycapMetrics.grown(
         context,
@@ -342,7 +342,12 @@ class KeycapTag extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 14, color: ink),
+              // The glyph grows with the word beside it.
+              Icon(
+                icon,
+                size: MediaQuery.textScalerOf(context).scale(14),
+                color: ink,
+              ),
               const SizedBox(width: KeycapSpacing.tight),
             ],
             Text(

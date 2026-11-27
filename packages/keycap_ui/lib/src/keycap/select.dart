@@ -13,7 +13,6 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'cap.dart';
-import 'internal/field_width.dart';
 import 'internal/keep_in_view.dart';
 import 'internal/spring_value.dart';
 import 'internal/type_ahead.dart';
@@ -48,8 +47,8 @@ class KeycapSelectItem<T> {
 /// its end. Pressed (or Down, Up, Space or Enter on it) it lays the
 /// [items] over the keyboard, opened on the chosen one; from the keyboard
 /// that row is lit, from a pointer none is until the pointer goes over one.
-/// From 600 wide it stands at most [maxWideWidth] wide, as a field does,
-/// but spans a column not much wider than that (a pane, a dialog).
+/// It takes its column's width at every width, as a text field does, so
+/// the fields of a form stand on one edge.
 ///
 /// ```dart
 /// KeycapSelect<String>(labelText: 'Format', value: format, items: formats, onChanged: setFormat)
@@ -99,9 +98,6 @@ class KeycapSelect<T> extends StatefulWidget {
 
   /// Overrides for the key, over [KeycapThemeData.selectStyle].
   final KeycapStyle? style;
-
-  /// The widest a select stands on a screen 600 or more wide.
-  static const double maxWideWidth = 320;
 
   @override
   State<KeycapSelect<T>> createState() => _KeycapSelectState<T>();
@@ -310,7 +306,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
       focusNode: _focus,
       child: box,
     );
-    return keycapFieldWidth(context, field, KeycapSelect.maxWideWidth);
+    return field;
   }
 }
 
