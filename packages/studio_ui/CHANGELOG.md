@@ -1,3 +1,24 @@
+## 0.6.0
+
+- Requires ui_core 0.8.3. `StudioAppShell.branches` and `StudioScaffold.branches` give each place a navigator of its own, on ui_core's `RawAdaptiveShell.branches`: a page pushed on a place keeps the rail or the side panel beside it, the phone's key bank steps away for it, back pops the place before it leaves it, and choosing the place again returns to its first page. The act stands over each place's first page.
+- `StudioThemeData.palettes` lists the six palettes as ui_core's `RawNamedPalette`s (each its label, and its lamp and its metal as swatches for a picker); `StudioThemeData.presets` goes: read each palette's `id`. `StudioHost(palette:)` builds a palette's theme by day and by night, and the host moves to a new palette or brightness smoothly, the chassis too (at once under Reduce Motion).
+- **Forms**: `StudioTextFormField` is a text field in a `StudioForm`, as `TextFormField` in a `Form` (`validator`, `onSaved`, `autovalidateMode`; a failed `StudioForm.submit` shows every error and focuses the first field that is wrong), on ui_core's `RawForm`. In a column every field takes the column's width.
+- **Dates**: a date field and a date range field show a day as the day, its month short and the year ("Nov 3, 2026"), ui_core's medium date, in place of the full date with its weekday.
+- Removed: `studioContrast` (deprecated in 0.5.0); `dart fix` writes ui_core's `RawPalette.contrastRatio`.
+- `StudioShellAction` is Studio's own class, no longer a `ShellAction`; `StudioAppShell.action` and `StudioPreview.action` take it.
+- **Pages**: `StudioScreen.maxWidth` (1200 by default) holds the bar's title and actions, the body and the footer's act to one centred column on a wide window, so a form's Save stands under its fields.
+- **Rows**: a `StudioTag` at a row's end is read with the row's name; any other part there (a menu key) keeps its own node beside the row's. The end part takes its own width, up to two thirds of the line, and a long tag ellipsizes.
+- **Tags**: a plain tag is unlit, its words neutral on the display's glass; a lit tag's words take the palette's lit legend on the readout's backlit glass, its lamp on. Each reads at 4.5:1 on its glass, and plain and lit stand apart by day as by night.
+- **Destructive keys**: a destructive main key's cap is the graphite warmed by the danger light, apart from the main key and from the key beside it in both rooms, its legend reading at 4.5:1 (it read 3.7:1 by night); an ordinary destructive key's red legend reads at 4.5:1 on its cap.
+- **Text size**: a row's leading glyph and an avatar under 40 px grow with the reader's text, up to 40; a tag's lamp stays 6 px.
+- `StudioRadioGroup(secondaryOf:)` shows a widget after a choice's words, as `RadioListTile.secondary` does (a palette's swatches); a screen reader hears the words alone.
+- The rail shows the app's whole name at its head, set smaller to fit, not its first letter.
+- `LucideIcons` comes with `package:studio_ui/studio_ui.dart`, so an app's own glyphs match Studio's.
+- The example is Takes, one app to copy (`example/lib/main.dart`): the host by day, by night or as the platform is, the shell with three places, a list with a pushed page, a form with a date, a dialog answered and settings with the six palettes, each with its colours beside its name. The gallery is `example/lib/gallery.dart`, and the example depends on pub.dev packages alone. The README builds an app from it, and every Dart block in it compiles after its install line.
+- **Messages under fields**: a field's error or help line grows open as it fades in, and fades before it folds away, so the fields under it move rather than jump; under Reduce Motion it is there at once.
+- **Rows**: a row's title eases to its hover and focus ink with the row's face; it switched in one frame. A latched icon key's glyph lights with the key, as its face does.
+- **Focus after a mouse**: `StudioFader` and `StudioKnob` show their focus as ui_core's parts do (`RawFocusShown` on the focus itself): a Tab after a mouse that came before any other input (a trackpad on an iPad, a mouse on Android) lights it; it stayed unlit.
+
 ## 0.5.1
 
 - By day the `moss` preset's metal stands two tones lighter, a pale anodised olive: at the silver's own tones the olive read as khaki. Every word reads at least as well as before (the lit legend and the focus ring stay at their 4.5:1 and 3:1), a key's top stays under white, and moss by night, the other presets and `StudioThemeData.from` are unchanged.

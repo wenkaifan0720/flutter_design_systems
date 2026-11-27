@@ -12,6 +12,7 @@ import 'package:ui_core/ui_core.dart';
 import 'internal/control_light.dart';
 
 import 'choices.dart';
+import 'display.dart' show StudioTag;
 import 'panel.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -243,7 +244,9 @@ class StudioListTile extends StatelessWidget {
   /// A glyph or a picture at its start.
   final Widget? leading;
 
-  /// A control at its end.
+  /// What stands at its end: a [StudioTag] (a status, read with the row's
+  /// name) or a control (a menu key, which keeps its own node beside the
+  /// row's). It takes its own width, up to two thirds of the line.
   final Widget? trailing;
 
   /// A value at its end, in the muted ink.
@@ -291,6 +294,11 @@ class StudioListTile extends StatelessWidget {
     final action = toggle
         ? (enabled && onChanged != null ? () => onChanged!(!value) : null)
         : (enabled ? onTap : null);
+
+    // A tag at the end is the row's status, read with its name; any other
+    // part there is a control, which keeps its own node.
+    final tag = trailing is StudioTag ? trailing! as StudioTag : null;
+    final control = trailing != null && tag == null;
 
     Widget body(Set<WidgetState> states) {
       final layered = RawStyleOf(
@@ -345,44 +353,62 @@ class StudioListTile extends StatelessWidget {
                   if (leading != null) ...[
                     IconTheme.merge(
                       data: IconThemeData(
-                        size: layered.iconSize ?? 24,
-                        color: ink,
+                        // The glyph grows with the reader's text, as the
+                        // title beside it does, up to a row avatar's 40.
+                        size:
+                            layered.iconSize ??
+                            math.min(
+                              40,
+                              MediaQuery.textScalerOf(context).scale(24),
+                            ),
+                        // The surface's ink, eased with its face.
+                        color: IconTheme.of(context).color ?? ink,
                       ),
                       child: leading!,
                     ),
                     const SizedBox(width: StudioSpacing.medium),
                   ],
                   Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RawCapCenter(
-                          capHeightFactor: theme.capHeightFactor,
-                          child: Text(
-                            title,
-                            style: layered.text(
-                              theme.textTheme.body.copyWith(
-                                color: ink,
-                                fontWeight: FontWeight.w500,
-                                height: 22 / 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (subtitle != null)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: StudioSpacing.hair,
-                            ),
+                    child: ExcludeSemantics(
+                      // The row's name says them.
+                      excluding: control,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RawCapCenter(
+                            capHeightFactor: theme.capHeightFactor,
                             child: Text(
-                              subtitle!,
-                              style: theme.textTheme.secondary.copyWith(
-                                color: muted,
+                              title,
+                              style: layered.text(
+                                theme.textTheme.body.copyWith(
+                                  // The surface's ink, eased with its face
+                                  // from state to state (a hover, focus).
+                                  color:
+                                      DefaultTextStyle.of(context)
+                                          .style
+                                          .color ??
+                                      ink,
+                                  fontWeight: FontWeight.w500,
+                                  height: 22 / 16,
+                                ),
                               ),
                             ),
                           ),
-                      ],
+                          if (subtitle != null)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: StudioSpacing.hair,
+                              ),
+                              child: Text(
+                                subtitle!,
+                                style: theme.textTheme.secondary.copyWith(
+                                  color: muted,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   if (trailingText != null) ...[
@@ -395,6 +421,7 @@ class StudioListTile extends StatelessWidget {
                       ),
                       child: Text(
                         trailingText!,
+                        semanticsLabel: control ? '' : null,
                         textAlign: TextAlign.end,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -402,9 +429,18 @@ class StudioListTile extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if (trailing != null) ...[
+                  if (trailing case final end?) ...[
                     const SizedBox(width: StudioSpacing.medium),
-                    trailing!,
+                    // Its own width, up to two thirds of the line: a long
+                    // tag ellipsizes rather than pushing the title out.
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: box.maxWidth.isFinite
+                            ? box.maxWidth * 2 / 3
+                            : double.infinity,
+                      ),
+                      child: control ? end : ExcludeSemantics(child: end),
+                    ),
                   ],
                   if (toggle) ...[
                     const SizedBox(width: StudioSpacing.medium),
@@ -445,14 +481,15 @@ class StudioListTile extends StatelessWidget {
 
     final label =
         semanticLabel ??
-        [title, ?subtitle, if (!toggle) ?trailingText].join(', ');
+        [title, ?subtitle, if (!toggle) ?trailingText, ?tag?.label].join(', ');
     if (action == null && !toggle) {
       return Semantics(
         container: true,
         selected: selected ? true : null,
         label: label,
-        excludeSemantics: true,
+        excludeSemantics: !control,
         child: ExcludeSemantics(
+          excluding: !control,
           child: body({if (!enabled) WidgetState.disabled}),
         ),
       );
@@ -463,7 +500,9 @@ class StudioListTile extends StatelessWidget {
       semanticSelected: selected ? true : null,
       toggled: toggle ? value : null,
       semanticLabel: label,
-      excludeSemantics: true,
+      // A control at the end keeps its own node beside the row's.
+      excludeSemantics: !control,
+      mergeSemantics: !control,
       builder: (context, states, _) => body(states),
     );
   }

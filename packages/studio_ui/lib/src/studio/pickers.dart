@@ -733,7 +733,7 @@ class StudioDatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
-    final text = value == null ? null : words.formatFullDate(value!);
+    final text = value == null ? null : words.formatMediumDate(value!);
     return _labelled(
       !enabled
           ? _PickerWindow(
@@ -851,8 +851,8 @@ class StudioDateRangePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final text = value == null
         ? null
-        : '${words.formatFullDate(value!.start)} – '
-              '${words.formatFullDate(value!.end)}';
+        : '${words.formatMediumDate(value!.start)} – '
+              '${words.formatMediumDate(value!.end)}';
     return _labelled(
       !enabled
           ? _PickerWindow(

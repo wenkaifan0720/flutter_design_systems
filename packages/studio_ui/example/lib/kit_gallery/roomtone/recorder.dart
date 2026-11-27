@@ -8,7 +8,6 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:studio_ui/studio_ui.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'data.dart';
 import 'publish.dart';

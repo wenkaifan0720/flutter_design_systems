@@ -16,6 +16,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'actions.dart';
 import 'feedback.dart';
+import 'internal/page_measure.dart';
 import 'navigation.dart';
 import 'overlays.dart';
 import 'surface.dart';
@@ -23,32 +24,39 @@ import 'text_field.dart';
 import 'theme.dart';
 import 'transitions.dart';
 
-/// The widest a page's content stands, inside its margins: past it, a desk's
-/// page keeps its column and the panel's metal runs on either side.
-const double _pageWidth = 1200;
-
 /// The app's host, mounted once over its navigator (`WidgetsApp.builder`):
 /// Studio's theme for the brightness asked for, its toasts and the chassis
 /// under every page.
 ///
+/// It builds [palette]'s theme by day and by night (or takes [theme] and
+/// [darkTheme] as given), follows the platform's brightness unless
+/// [brightness] pins one, and moves to a new brightness or palette smoothly,
+/// every colour at once ([AnimatedStudioTheme]; at once under Reduce
+/// Motion).
+///
 /// ```dart
-/// MaterialApp(builder: (context, child) => StudioHost(child: child!))
+/// MaterialApp(builder: (context, child) => StudioHost(palette: StudioThemeData.palettes[1], child: child!))
 /// ```
 class StudioHost extends StatelessWidget {
   /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
-  /// asks; either left out is the default preset in that brightness.
+  /// asks; either left out is [palette]'s in that brightness.
   const StudioHost({
     super.key,
+    this.palette,
     this.theme,
     this.darkTheme,
     this.brightness,
     required this.child,
   });
 
-  /// The theme by day.
+  /// The palette both brightnesses are built from, one of
+  /// [StudioThemeData.palettes]; null takes the first, `anodised`.
+  final RawNamedPalette? palette;
+
+  /// The theme by day; null builds [palette]'s.
   final StudioThemeData? theme;
 
-  /// The theme by night.
+  /// The theme by night; null builds [palette]'s.
   final StudioThemeData? darkTheme;
 
   /// The brightness to draw in; null follows the preview's or the
@@ -66,11 +74,19 @@ class StudioHost extends StatelessWidget {
         MediaQuery.platformBrightnessOf(context);
     final data =
         (wanted == Brightness.dark ? darkTheme : theme) ??
-        StudioThemeData.preset(StudioThemeData.presets.first, wanted);
-    return StudioTheme(
+        StudioThemeData.preset(
+          (palette ?? StudioThemeData.palettes.first).id,
+          wanted,
+        );
+    return AnimatedStudioTheme(
       data: data,
       child: StudioToaster(
-        child: ColoredBox(color: data.colors.chassis, child: child),
+        child: Builder(
+          builder: (context) => ColoredBox(
+            color: context.studioTheme.colors.chassis,
+            child: child,
+          ),
+        ),
       ),
     );
   }
@@ -79,6 +95,13 @@ class StudioHost extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
+      ..add(
+        DiagnosticsProperty<RawNamedPalette>(
+          'palette',
+          palette,
+          defaultValue: null,
+        ),
+      )
       ..add(
         DiagnosticsProperty<StudioThemeData>(
           'light',
@@ -105,9 +128,10 @@ class StudioHost extends StatelessWidget {
 
 /// A page: a panel of brushed metal with its [topBar] (a pushed page's way
 /// back stands in it), its [body] in the page's margins on the 4 px grid, no
-/// wider than 1200 px, and its [footer] fixed at its foot on the bar's
-/// metal. In a sheet it is as tall as its content allows and stands on the
-/// sheet's own panel.
+/// wider than [maxWidth], and its [footer] fixed at its foot on the bar's
+/// metal. On a wide window the bar's title and actions, the body and the
+/// footer's action share that one centred column. In a sheet it is as tall
+/// as its content allows and stands on the sheet's own panel.
 ///
 /// ```dart
 /// StudioScreen(topBar: const StudioAppBar(title: 'Episode'), body: const Text('Recorded in one take.'))
@@ -122,6 +146,7 @@ class StudioScreen extends StatelessWidget {
     this.scroll = true,
     this.fullBleed = false,
     this.scrollController,
+    this.maxWidth = 1200,
   });
 
   /// The page's content.
@@ -143,6 +168,11 @@ class StudioScreen extends StatelessWidget {
 
   /// The page's scroll controller.
   final ScrollController? scrollController;
+
+  /// The page's measure: the widest its column stands on a wide window, the
+  /// bar's title and actions, the body and the footer's action on it. A
+  /// form's page might take 600.
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +205,7 @@ class StudioScreen extends StatelessWidget {
             alignment: Alignment.topCenter,
             heightFactor: scroll ? 1 : null,
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: _pageWidth + 2 * margin),
+              constraints: BoxConstraints(maxWidth: maxWidth + 2 * margin),
               child: page,
             ),
           );
@@ -193,7 +223,7 @@ class StudioScreen extends StatelessWidget {
       mainAxisSize: hug ? MainAxisSize.min : MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ?bar,
+        if (bar != null) PageMeasure(maxWidth: maxWidth, child: bar),
         if (hug) Flexible(child: content) else Expanded(child: content),
         if (foot != null)
           // The foot: a strip of the bar's metal, its action at the end
@@ -217,11 +247,18 @@ class StudioScreen extends StatelessWidget {
                   StudioSpacing.medium + media.padding.bottom,
                 ),
                 child: framed
-                    ? Align(
-                        alignment: AlignmentDirectional.centerEnd,
+                    // At the end of the page's column, under the body's end.
+                    ? Center(
+                        heightFactor: 1,
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 360),
-                          child: foot,
+                          constraints: BoxConstraints(maxWidth: maxWidth),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 360),
+                              child: foot,
+                            ),
+                          ),
                         ),
                       )
                     : foot,
@@ -259,6 +296,7 @@ class StudioScreen extends StatelessWidget {
     properties
       ..add(FlagProperty('scroll', value: scroll, ifTrue: 'scroll'))
       ..add(FlagProperty('fullBleed', value: fullBleed, ifTrue: 'fullBleed'))
+      ..add(DoubleProperty('maxWidth', maxWidth, defaultValue: 1200))
       ..add(
         DiagnosticsProperty<ScrollController>(
           'scrollController',
@@ -430,7 +468,7 @@ class StudioPreview extends StatelessWidget {
   final int selectedIndex;
 
   /// The app's one act, on a root.
-  final ShellAction? action;
+  final StudioShellAction? action;
 
   /// The app's name, at the head of its places on a tablet or a desk.
   final String? brand;
@@ -523,7 +561,11 @@ class StudioPreview extends StatelessWidget {
       ..add(IterableProperty<StudioTab>('tabs', tabs))
       ..add(IntProperty('activeIndex', selectedIndex))
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<StudioShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       )
       ..add(StringProperty('brand', brand, defaultValue: null))
       ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
@@ -531,11 +573,16 @@ class StudioPreview extends StatelessWidget {
   }
 }
 
-/// The app's places and its one act round a root page: [StudioScaffold]'s
+/// The app's places and its one act round its pages: [StudioScaffold]'s
 /// key bank on a phone, its rail on a tablet, its side panel on a desk, and
-/// the act a [StudioFloatingKey] over the page's bottom end, which the
-/// page's [StudioScreen] keeps clear. An app on a router mounts it through
-/// `StudioShell`; a preview mounts it directly.
+/// the act a [StudioFloatingKey] over a root page's bottom end, which the
+/// page's [StudioScreen] keeps clear.
+///
+/// [StudioAppShell.branches] gives each place a navigator of its own: a page
+/// pushed on one keeps the rail or the side panel while the phone's key bank
+/// steps away for it, and back pops it before it leaves the place. The plain
+/// constructor stands [child], the app's own page or navigator, beside the
+/// places.
 ///
 /// ```dart
 /// StudioAppShell(tabs: const [StudioTab(LucideIcons.house, 'Home'), StudioTab(LucideIcons.mic, 'Record')], selectedIndex: 0, onSelected: (i) {}, child: const HomePage())
@@ -547,11 +594,32 @@ class StudioAppShell extends StatelessWidget {
     required this.tabs,
     required this.selectedIndex,
     required this.onSelected,
-    required this.child,
+    required Widget this.child,
     this.action,
     this.brand,
     this.showPlaces = true,
-  });
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination;
+
+  /// A shell whose places each keep a navigator of their own, starting on
+  /// its [branches] page; the act stands over each place's first page.
+  ///
+  /// ```dart
+  /// StudioAppShell.branches(tabs: const [StudioTab(LucideIcons.house, 'Home'), StudioTab(LucideIcons.mic, 'Record')], selectedIndex: 0, onSelected: (i) {}, branches: [(context) => const HomePage(), (context) => const RecordPage()])
+  /// ```
+  const StudioAppShell.branches({
+    super.key,
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onSelected,
+    required List<WidgetBuilder> this.branches,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.action,
+    this.brand,
+  }) : child = null,
+       showPlaces = true;
 
   /// The app's places.
   final List<StudioTab> tabs;
@@ -562,17 +630,28 @@ class StudioAppShell extends StatelessWidget {
   /// Called with the place chosen.
   final ValueChanged<int> onSelected;
 
-  /// The page.
-  final Widget child;
+  /// The page, or the app's own navigator; null with [branches].
+  final Widget? child;
+
+  /// Each place's first page; null with [child].
+  final List<WidgetBuilder>? branches;
+
+  /// The places' navigators' keys, to push onto a place from outside it;
+  /// null keeps the shell's own.
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place's first page.
+  final RawBranchBackBehavior backBehavior;
 
   /// The app's one act.
-  final ShellAction? action;
+  final StudioShellAction? action;
 
   /// The app's name, at the head of the rail or the side panel.
   final String? brand;
 
   /// Whether a phone's key bank stands: false while a page pushed over the
-  /// root covers it (a rail or a side panel stays).
+  /// root covers it (a rail or a side panel stays). The branches form steps
+  /// it away itself.
   final bool showPlaces;
 
   @override
@@ -580,41 +659,33 @@ class StudioAppShell extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     final phone = width < StudioMetrics.tablet;
     final places = showPlaces || !phone;
-    final act = places ? action : null;
     final name = brand;
-    final margin = StudioSpacing.pageMargin(width);
+    final head = name == null || name.isEmpty ? null : _Brand(name);
+    final destinations = [
+      for (final tab in tabs)
+        StudioDestination(icon: Icon(tab.icon), label: tab.label, key: tab.key),
+    ];
+    final branches = this.branches;
+    if (branches != null) {
+      return StudioScaffold.branches(
+        destinations: destinations,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onSelected,
+        header: head,
+        navigatorKeys: navigatorKeys,
+        backBehavior: backBehavior,
+        branches: [
+          for (final first in branches)
+            (context) => _ActOverRoot(action: action, child: first(context)),
+        ],
+      );
+    }
     return StudioScaffold(
-      destinations: places
-          ? [
-              for (final tab in tabs)
-                StudioDestination(
-                  icon: Icon(tab.icon),
-                  label: tab.label,
-                  key: tab.key,
-                ),
-            ]
-          : const [],
+      destinations: places ? destinations : const [],
       selectedIndex: selectedIndex,
       onDestinationSelected: places ? onSelected : null,
-      header: name == null || name.isEmpty ? null : _Brand(name),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: ShellInsets(
-              bottomInset: act == null
-                  ? 0
-                  : _ActKey.side + StudioSpacing.regular,
-              child: child,
-            ),
-          ),
-          if (act != null)
-            PositionedDirectional(
-              end: margin,
-              bottom: StudioSpacing.regular,
-              child: _ActKey(act),
-            ),
-        ],
-      ),
+      header: head,
+      body: _ActOverRoot(action: places ? action : null, child: child!),
     );
   }
 
@@ -626,11 +697,16 @@ class StudioAppShell extends StatelessWidget {
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<StudioShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       )
       ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(FlagProperty('showPlaces', value: showPlaces, ifTrue: 'showPlaces'))
       ..add(
-        FlagProperty('showPlaces', value: showPlaces, ifTrue: 'showPlaces'),
+        FlagProperty('branches', value: branches != null, ifTrue: 'branches'),
       );
   }
 }
@@ -656,15 +732,29 @@ class _Brand extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                 vertical: StudioSpacing.small,
               ),
-              child: Text(
-                narrow ? name.characters.first.toUpperCase() : name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: narrow ? TextAlign.center : TextAlign.start,
-                style: theme.textTheme.title.copyWith(
-                  color: theme.colors.legend,
-                ),
-              ),
+              // At a rail's width the whole name, set as a legend and made
+              // smaller still if it must, to fit the rail's head.
+              child: narrow
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.label.copyWith(
+                          color: theme.colors.legend,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )
+                  : Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.title.copyWith(
+                        color: theme.colors.legend,
+                      ),
+                    ),
             ),
           ),
         );
@@ -673,13 +763,44 @@ class _Brand extends StatelessWidget {
   }
 }
 
+/// A root page with the shell's act over its bottom end, the page keeping
+/// clear of it.
+class _ActOverRoot extends StatelessWidget {
+  const _ActOverRoot({required this.action, required this.child});
+
+  final StudioShellAction? action;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final act = action;
+    final margin = StudioSpacing.pageMargin(MediaQuery.sizeOf(context).width);
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: ShellInsets(
+            bottomInset: act == null ? 0 : _ActKey.side + StudioSpacing.regular,
+            child: child,
+          ),
+        ),
+        if (act != null)
+          PositionedDirectional(
+            end: margin,
+            bottom: StudioSpacing.regular,
+            child: _ActKey(act),
+          ),
+      ],
+    );
+  }
+}
+
 /// The shell's act: the graphite floating key, its glyph and lamp lit, when
-/// it is the app's standing invitation ([ShellAction.accent]); an aluminium
-/// one, unlit, when not.
+/// it is the app's standing invitation ([StudioShellAction.accent]); an
+/// aluminium one, unlit, when not.
 class _ActKey extends StatelessWidget {
   const _ActKey(this.action);
 
-  final ShellAction action;
+  final StudioShellAction action;
 
   /// The key's side.
   static const double side = 56;
@@ -732,15 +853,40 @@ class StudioTab {
 /// ```dart
 /// StudioShellAction(icon: LucideIcons.mic, accent: true, onPressed: (context) => startRecording(context))
 /// ```
-class StudioShellAction extends ShellAction {
+@immutable
+class StudioShellAction with Diagnosticable {
   /// An act wearing [icon].
   const StudioShellAction({
-    required super.icon,
-    required super.onPressed,
-    super.label,
-    super.accent = true,
-    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.label,
+    this.accent = true,
+    this.key,
   });
+
+  /// The glyph it wears.
+  final IconData icon;
+
+  /// What it does, run with a context under the app's navigator.
+  final void Function(BuildContext context) onPressed;
+
+  /// Its words, its tooltip and its spoken name; null says "New".
+  final String? label;
+
+  /// Whether it is the app's standing invitation: the graphite key, lit.
+  final bool accent;
+
+  /// The key on its floating key.
+  final Key? key;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('accent', value: accent, ifFalse: 'not accent'));
+  }
 }
 
 /// While a page's data is on its way: the chasing lamps over their word,
@@ -753,7 +899,8 @@ class StudioLoadingState extends StatelessWidget {
   /// The page waiting.
   const StudioLoadingState({super.key, this.label});
 
-  /// What a screen reader says; null takes the design kit's ("Loading").
+  /// The word under the lamps, which a screen reader says too; null takes the
+  /// design kit's ("Loading").
   final String? label;
 
   @override

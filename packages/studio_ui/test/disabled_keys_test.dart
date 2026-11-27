@@ -5,7 +5,6 @@
 // gone. The legend keeps its disabled ink.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:studio_ui/studio_ui.dart';
 
 void _none() {}

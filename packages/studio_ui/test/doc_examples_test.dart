@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart'
     show MaterialApp, PageTransitionsTheme, ThemeData;
 import 'package:flutter/services.dart' show FontLoader, LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'doc_examples.dart';
 
@@ -86,6 +85,24 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Text('Home');
+}
+
+/// A second place [StudioScaffold.branches]'s example keeps.
+class LibraryPage extends StatelessWidget {
+  /// A page.
+  const LibraryPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Library');
+}
+
+/// A second place [StudioAppShell.branches]'s example keeps.
+class RecordPage extends StatelessWidget {
+  /// A page.
+  const RecordPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Record');
 }
 
 /// The page [StudioPage]'s example pushes.
@@ -779,6 +796,20 @@ final Map<String, DocExample> _examples = {
       body: page,
     );
   },
+  'StudioScaffold.branches': (context) {
+    const places = _places;
+    const tab = 0;
+    void go(int index) {}
+    return StudioScaffold.branches(
+      destinations: places,
+      selectedIndex: tab,
+      onDestinationSelected: go,
+      branches: [
+        (context) => const HomePage(),
+        (context) => const LibraryPage(),
+      ],
+    );
+  },
   // popovers.dart
   'StudioPopover': (context) {
     const speedControls = Text('1×, 1.5×, 2×');
@@ -831,7 +862,10 @@ final Map<String, DocExample> _examples = {
   'StudioHost': (context) =>
       // The app itself is not run here: it has no home, so its builder's
       // child is the navigator an app with routes would give it.
-      () => MaterialApp(builder: (context, child) => StudioHost(child: child!)),
+      () => MaterialApp(
+        builder: (context, child) =>
+            StudioHost(palette: StudioThemeData.palettes[1], child: child!),
+      ),
   'StudioScreen': (context) => const StudioScreen(
     topBar: StudioAppBar(title: 'Episode'),
     body: Text('Recorded in one take.'),
@@ -853,6 +887,42 @@ final Map<String, DocExample> _examples = {
     onSelected: (i) {},
     child: const HomePage(),
   ),
+  'StudioAppShell.branches': (context) => StudioAppShell.branches(
+    tabs: const [
+      StudioTab(LucideIcons.house, 'Home'),
+      StudioTab(LucideIcons.mic, 'Record'),
+    ],
+    selectedIndex: 0,
+    onSelected: (i) {},
+    branches: [(context) => const HomePage(), (context) => const RecordPage()],
+  ),
+  'StudioForm': (context) {
+    void save() {}
+    return StudioForm(
+      onSubmit: save,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: StudioSpacing.regular,
+        children: [
+          StudioTextFormField(
+            labelText: 'Title',
+            validator: (value) =>
+                (value ?? '').trim().isEmpty ? 'Enter a title' : null,
+          ),
+        ],
+      ),
+    );
+  },
+  'StudioTextFormField': (context) {
+    var title = '';
+    final field = StudioTextFormField(
+      labelText: 'Title',
+      validator: (value) =>
+          (value ?? '').trim().isEmpty ? 'Enter a title' : null,
+      onSaved: (value) => title = value!,
+    );
+    return (field, () => title);
+  },
   'StudioTab': (context) =>
       const StudioTab(LucideIcons.house, 'Home', ValueKey('open-home')),
   'StudioShellAction': (context) {
@@ -910,13 +980,6 @@ final Map<String, DocExample> _examples = {
       padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32)),
     );
     return StudioButton('Export', style: wide, onPressed: () {});
-  },
-  'studioContrast': (context) {
-    final colors = StudioTheme.of(context).colors;
-    // The example of a deprecated function, kept while it is.
-    // ignore: deprecated_member_use_from_same_package
-    final readable = studioContrast(colors.onDisplay, colors.display) >= 4.5;
-    return readable;
   },
   'StudioThemeData.from': (context) {
     final theme = StudioThemeData.from(indicator: const Color(0xFF4FD1C5));

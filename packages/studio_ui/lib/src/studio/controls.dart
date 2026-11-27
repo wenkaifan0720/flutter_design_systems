@@ -171,6 +171,19 @@ class StudioFader extends StatefulWidget {
 
 class _StudioFaderState extends State<StudioFader> {
   bool _focused = false;
+  // Focus shows as ui_core's parts show it: after a key, not after a click
+  // or a drag, and for a Tab after a mouse that came before any other input
+  // (a trackpad on an iPad), which leaves the detector's highlight stale.
+  late final RawFocusShown _focusShown = RawFocusShown((on) {
+    if (mounted) setState(() => _focused = on);
+  });
+
+  @override
+  void dispose() {
+    _focusShown.dispose();
+    super.dispose();
+  }
+
   bool _hovered = false;
   bool _held = false;
 
@@ -332,7 +345,7 @@ class _StudioFaderState extends State<StudioFader> {
             ? SystemMouseCursors.click
             : SystemMouseCursors.basic,
         onShowHoverHighlight: (v) => setState(() => _hovered = v),
-        onShowFocusHighlight: (v) => setState(() => _focused = v),
+        onFocusChange: _focusShown.focused,
         shortcuts: _stepKeys(rtl, widget.axis),
         actions: {
           _StepIntent: CallbackAction<_StepIntent>(
@@ -565,6 +578,12 @@ class _StudioKnobState extends State<StudioKnob>
     value: widget.value,
   );
   bool _focused = false;
+  // Focus shows as ui_core's parts show it: after a key, not after a click
+  // or a drag, and for a Tab after a mouse that came before any other input
+  // (a trackpad on an iPad), which leaves the detector's highlight stale.
+  late final RawFocusShown _focusShown = RawFocusShown((on) {
+    if (mounted) setState(() => _focused = on);
+  });
   double _raw = 0;
   bool _dragging = false;
   // A finger or the pointer's button on the knob.
@@ -611,6 +630,7 @@ class _StudioKnobState extends State<StudioKnob>
   @override
   void dispose() {
     _shown.dispose();
+    _focusShown.dispose();
     super.dispose();
   }
 
@@ -643,7 +663,7 @@ class _StudioKnobState extends State<StudioKnob>
         mouseCursor: enabled
             ? SystemMouseCursors.resizeUpDown
             : SystemMouseCursors.basic,
-        onShowFocusHighlight: (v) => setState(() => _focused = v),
+        onFocusChange: _focusShown.focused,
         shortcuts: _stepKeys(rtl, Axis.vertical),
         actions: {
           _StepIntent: CallbackAction<_StepIntent>(

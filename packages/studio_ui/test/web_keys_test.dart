@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:studio_ui/studio_ui.dart';
 
 // WidgetsApp's web activation keys.

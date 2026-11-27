@@ -22,5 +22,7 @@ export 'src/studio/internal/focus_light.dart';
 export 'src/studio/internal/inventory.dart';
 export 'src/studio/internal/label_stride.dart';
 export 'src/studio/internal/list_keys.dart';
+export 'src/studio/internal/message_reveal.dart';
+export 'src/studio/internal/page_measure.dart';
 export 'src/studio/internal/stepper_glyph.dart';
 export 'src/studio/internal/strip.dart';

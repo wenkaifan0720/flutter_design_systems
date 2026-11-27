@@ -533,16 +533,20 @@ class StudioAvatar extends StatelessWidget {
   /// Their picture.
   final ImageProvider? image;
 
-  /// Its diameter.
+  /// Its diameter. One under 40 grows with the reader's text, as the words
+  /// beside it do, up to 40.
   final double size;
 
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
+    final size = this.size < 40
+        ? math.min(40.0, MediaQuery.textScalerOf(context).scale(this.size))
+        : this.size;
     final initials = Center(
-      // The initials are sized to the disc, not to the reader's text: the
-      // name is read whole by a screen reader.
+      // The initials are sized to the disc, which grows with the reader's
+      // text: the name is read whole by a screen reader.
       child: Text(
         _initials(name),
         textScaler: TextScaler.noScaling,
@@ -787,7 +791,7 @@ class StudioBadge extends StatelessWidget {
 
 /// How a [StudioTag] reads.
 enum StudioTagTone {
-  /// Engraved, unlit.
+  /// Unlit: neutral words on the display's glass.
   plain,
 
   /// Its lamp lit: something live (new, on air).
@@ -797,9 +801,12 @@ enum StudioTagTone {
   danger,
 }
 
-/// A small legend window: a few words on readout glass (pale and lit from
-/// behind by day, dark by night: a state, a kind), its lamp lit for [StudioTagTone.lit] or red for
-/// [StudioTagTone.danger]. It is not a key.
+/// A small legend window: a few words behind glass, a state or a kind. A
+/// plain tag is unlit, its words neutral on the display's glass; a
+/// [StudioTagTone.lit] one glows, its lamp on and its words in the palette's
+/// lit legend on the readout's backlit glass; a [StudioTagTone.danger] one
+/// shows a red lamp and red words. Each reads at 4.5:1 on its glass. It is
+/// not a key.
 ///
 /// Reads [style]'s `fill`, `foreground` and `textStyle`, then
 /// [StudioThemeData.tagStyle].
@@ -833,8 +840,14 @@ class StudioTag extends StatelessWidget {
     final ink =
         layered.foreground ??
         switch (tone) {
-          StudioTagTone.plain => c.onReadout,
-          StudioTagTone.lit => c.onReadout,
+          StudioTagTone.plain => c.onDisplay,
+          // The palette's lit legend, deepened on the backlit glass by day
+          // until it reads there.
+          StudioTagTone.lit => RawPalette.readableTone(
+            c.litLegend,
+            on: [c.readout, c.readoutLow],
+            ratio: 4.5,
+          ),
           // The failure's red: deepened on the lit glass, lifted until it
           // reads on the dark glass.
           StudioTagTone.danger =>
@@ -844,8 +857,9 @@ class StudioTag extends StatelessWidget {
                 ? c.danger
                 : Color.lerp(c.danger, const Color(0xFFFFFFFF), 0.35)!,
         };
+    final glass = tone == StudioTagTone.plain ? c.displayFace : c.readoutFace;
     return StudioSurface(
-      face: c.readoutFace.copyWith(radius: 4, fill: layered.fill),
+      face: glass.copyWith(radius: 4, fill: layered.fill),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: StudioSpacing.small,
@@ -862,12 +876,16 @@ class StudioTag extends StatelessWidget {
               ),
               const SizedBox(width: StudioSpacing.tight + 2),
             ],
-            Text(
-              label,
-              style: layered.text(
-                theme.textTheme.caption.copyWith(
-                  color: ink,
-                  fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: layered.text(
+                  theme.textTheme.caption.copyWith(
+                    color: ink,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),

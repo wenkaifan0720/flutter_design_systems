@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'internal/strip.dart';
 import 'internal/control_light.dart';
+import 'internal/page_measure.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -164,39 +165,44 @@ class StudioAppBar extends StatelessWidget {
               height: height,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: margin),
-                child: Row(
-                  children: [
-                    if (lead != null) ...[
-                      lead,
-                      const SizedBox(width: StudioSpacing.medium),
-                    ],
-                    Expanded(
-                      child: title == null
-                          ? const SizedBox.shrink()
-                          : Semantics(
-                              header: true,
-                              child: RawCapCenter(
-                                capHeightFactor: theme.capHeightFactor,
-                                child: Text(
-                                  title!,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.title.copyWith(
-                                    fontSize: 18,
-                                    height: 24 / 18,
-                                    color:
-                                        layered.foreground ??
-                                        theme.colors.legend,
+                // On a page's measure: the title over the body's start, the
+                // actions over its end.
+                child: PageMeasure.hold(
+                  context,
+                  Row(
+                    children: [
+                      if (lead != null) ...[
+                        lead,
+                        const SizedBox(width: StudioSpacing.medium),
+                      ],
+                      Expanded(
+                        child: title == null
+                            ? const SizedBox.shrink()
+                            : Semantics(
+                                header: true,
+                                child: RawCapCenter(
+                                  capHeightFactor: theme.capHeightFactor,
+                                  child: Text(
+                                    title!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.title.copyWith(
+                                      fontSize: 18,
+                                      height: 24 / 18,
+                                      color:
+                                          layered.foreground ??
+                                          theme.colors.legend,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                    ),
-                    for (final (i, a) in actions.indexed) ...[
-                      if (i > 0) const SizedBox(width: StudioSpacing.small),
-                      a,
+                      ),
+                      for (final (i, a) in actions.indexed) ...[
+                        if (i > 0) const SizedBox(width: StudioSpacing.small),
+                        a,
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -205,7 +211,7 @@ class StudioAppBar extends StatelessWidget {
             if (bottom case final bottom?)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: margin),
-                child: bottom,
+                child: PageMeasure.hold(context, bottom),
               ),
           ],
         ),
@@ -1224,6 +1230,11 @@ class _TabLightPainter extends CustomPainter {
 /// focus between them and the page; a screen reader hears each as a tab and
 /// its place ("Tab 1 of 3"), the side navigation as the navigation menu.
 ///
+/// [StudioScaffold.branches] gives each place a navigator of its own: a
+/// page pushed on one keeps the rail or the side navigation beside it while
+/// the phone's bar steps away for it, and back pops it before it leaves the
+/// place. Each route draws its own [StudioScreen].
+///
 /// ```dart
 /// StudioScaffold(destinations: places, selectedIndex: tab, onDestinationSelected: go, appBar: const StudioAppBar(title: 'Home'), body: page)
 /// ```
@@ -1231,7 +1242,7 @@ class StudioScaffold extends StatelessWidget {
   /// A frame round [body].
   const StudioScaffold({
     super.key,
-    required this.body,
+    required Widget this.body,
     this.appBar,
     this.destinations = const [],
     this.selectedIndex = 0,
@@ -1239,10 +1250,43 @@ class StudioScaffold extends StatelessWidget {
     this.header,
     this.navigationFooter,
     this.bottom,
-  });
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination;
 
-  /// The page.
-  final Widget body;
+  /// A frame whose places each keep a navigator of their own, starting on
+  /// its [branches] page: a page pushed on a place keeps the rail or the
+  /// side navigation, and back pops it, then goes where [backBehavior] says.
+  ///
+  /// ```dart
+  /// StudioScaffold.branches(destinations: places, selectedIndex: tab, onDestinationSelected: go, branches: [(context) => const HomePage(), (context) => const LibraryPage()])
+  /// ```
+  const StudioScaffold.branches({
+    super.key,
+    required List<WidgetBuilder> this.branches,
+    required this.destinations,
+    required ValueChanged<int> this.onDestinationSelected,
+    this.selectedIndex = 0,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.header,
+    this.navigationFooter,
+  }) : body = null,
+       appBar = null,
+       bottom = null;
+
+  /// The page; null with [branches].
+  final Widget? body;
+
+  /// Each place's first page; null with [body].
+  final List<WidgetBuilder>? branches;
+
+  /// The places' navigators' keys, to push onto a place from outside it;
+  /// null keeps the frame's own.
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place's first page.
+  final RawBranchBackBehavior backBehavior;
 
   /// The bar above it.
   final Widget? appBar;
@@ -1271,7 +1315,8 @@ class StudioScaffold extends StatelessWidget {
     final c = theme.colors;
     final width = MediaQuery.sizeOf(context).width;
     final places = destinations.isNotEmpty && onDestinationSelected != null;
-    final page = Column(
+    final branches = this.branches;
+    Widget pageOf(Widget body) => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ?appBar,
@@ -1306,7 +1351,9 @@ class StudioScaffold extends StatelessWidget {
         ?bottom,
       ],
     );
-    if (!places) return ColoredBox(color: c.chassis, child: page);
+    if (!places && branches == null) {
+      return ColoredBox(color: c.chassis, child: pageOf(body!));
+    }
     // Studio's own widths: the rail from 600, the side navigation from 1024
     // (ui_core's classes open the sidebar at 1200).
     final mode = width < StudioMetrics.tablet
@@ -1328,93 +1375,120 @@ class StudioScaffold extends StatelessWidget {
         ],
       ),
     );
-    return ColoredBox(
-      color: c.chassis,
-      child: RawAdaptiveShell(
-        mode: mode,
-        destinations: [
-          for (final d in destinations)
-            RawNavigationDestination(
-              label: d.label,
-              // ui_core's shell reads no glyph (Studio paints its own); an
-              // [Icon]'s is passed on.
-              icon: _glyphOf(d.icon),
-              selectedIcon: switch (d.selectedIcon) {
-                final Widget w => _glyphOf(w),
-                null => null,
-              },
-              data: d,
-            ),
-        ],
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onDestinationSelected,
-        dampingRatio: StudioMotion.dampingRatio,
-        stiffness: StudioMotion.moveStiffness,
-        destinationBuilder: (context, destination, details) {
-          final d = destination.data! as StudioDestination;
-          final selected = details.states.contains(WidgetState.selected);
-          return KeyedSubtree(
-            key: d.key,
-            child: details.mode == RawNavigationMode.sidebar
-                ? _SideFace(
-                    destination: d,
-                    selected: selected,
-                    states: details.states,
-                    height:
-                        RawStyleOf([
-                          theme.sideNavigationStyle,
-                        ], const {}).minimumSize?.height ??
-                        theme.controlHeight,
-                    style: theme.sideNavigationStyle,
-                  )
-                : _BankFace(
-                    destination: d,
-                    selected: selected,
-                    states: details.states,
-                    style: details.mode == RawNavigationMode.bar
-                        ? theme.navigationBarStyle
-                        : theme.navigationRailStyle,
-                  ),
-          );
-        },
-        navigationBuilder: (context, details) => switch (details.mode) {
-          RawNavigationMode.bar => StudioNavigationBar._shell(
+    final shellPlaces = [
+      for (final d in destinations)
+        RawNavigationDestination(
+          label: d.label,
+          // ui_core's shell reads no glyph (Studio paints its own); an
+          // [Icon]'s is passed on.
+          icon: _glyphOf(d.icon),
+          selectedIcon: switch (d.selectedIcon) {
+            final Widget w => _glyphOf(w),
+            null => null,
+          },
+          data: d,
+        ),
+    ];
+    Widget destinationBuilder(
+      BuildContext context,
+      RawNavigationDestination destination,
+      RawDestinationDetails details,
+    ) {
+      final d = destination.data! as StudioDestination;
+      final selected = details.states.contains(WidgetState.selected);
+      return KeyedSubtree(
+        key: d.key,
+        child: details.mode == RawNavigationMode.sidebar
+            ? _SideFace(
+                destination: d,
+                selected: selected,
+                states: details.states,
+                height:
+                    RawStyleOf([
+                      theme.sideNavigationStyle,
+                    ], const {}).minimumSize?.height ??
+                    theme.controlHeight,
+                style: theme.sideNavigationStyle,
+              )
+            : _BankFace(
+                destination: d,
+                selected: selected,
+                states: details.states,
+                style: details.mode == RawNavigationMode.bar
+                    ? theme.navigationBarStyle
+                    : theme.navigationRailStyle,
+              ),
+      );
+    }
+
+    Widget navigationBuilder(
+      BuildContext context,
+      RawNavigationDetails details,
+    ) => switch (details.mode) {
+      // The shell never asks for a header across the top (it keeps
+      // ui_core's widths); were it to, the bar would stand for it.
+      RawNavigationMode.bar ||
+      RawNavigationMode.top => StudioNavigationBar._shell(
+        details.destinations,
+        selectedIndex: details.selectedIndex,
+      ),
+      RawNavigationMode.rail => Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          StudioNavigationRail._shell(
             details.destinations,
             selectedIndex: details.selectedIndex,
+            leading: header == null
+                ? null
+                : DefaultTextStyle.merge(
+                    style: theme.textTheme.caption.copyWith(color: c.legend),
+                    child: header!,
+                  ),
           ),
-          RawNavigationMode.rail => Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              StudioNavigationRail._shell(
-                details.destinations,
-                selectedIndex: details.selectedIndex,
-                leading: header == null
-                    ? null
-                    : DefaultTextStyle.merge(
-                        style: theme.textTheme.caption.copyWith(
-                          color: c.legend,
-                        ),
-                        child: header!,
-                      ),
-              ),
-              seam,
-            ],
-          ),
-          RawNavigationMode.sidebar => Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              StudioSideNavigation._shell(
-                details.destinations,
-                selectedIndex: details.selectedIndex,
-                header: header,
-                footer: navigationFooter,
-              ),
-              seam,
-            ],
-          ),
-        },
-        body: page,
+          seam,
+        ],
       ),
+      RawNavigationMode.sidebar => Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          StudioSideNavigation._shell(
+            details.destinations,
+            selectedIndex: details.selectedIndex,
+            header: header,
+            footer: navigationFooter,
+          ),
+          seam,
+        ],
+      ),
+    };
+    return ColoredBox(
+      color: c.chassis,
+      child: branches == null
+          ? RawAdaptiveShell(
+              mode: mode,
+              destinations: shellPlaces,
+              selectedIndex: selectedIndex,
+              onDestinationSelected: onDestinationSelected,
+              dampingRatio: StudioMotion.dampingRatio,
+              stiffness: StudioMotion.moveStiffness,
+              destinationBuilder: destinationBuilder,
+              navigationBuilder: navigationBuilder,
+              body: pageOf(body!),
+            )
+          // Each route draws its own screen's panel.
+          : RawAdaptiveShell.branches(
+              mode: mode,
+              destinations: shellPlaces,
+              selectedIndex: selectedIndex,
+              onDestinationSelected: onDestinationSelected,
+              dampingRatio: StudioMotion.dampingRatio,
+              stiffness: StudioMotion.moveStiffness,
+              destinationBuilder: destinationBuilder,
+              navigationBuilder: navigationBuilder,
+              branches: branches,
+              navigatorKeys: navigatorKeys,
+              backBehavior: backBehavior,
+            ),
     );
   }
 

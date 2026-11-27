@@ -6,7 +6,6 @@ import 'dart:async' show unawaited;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:studio_ui/studio_ui.dart';
 
 // The gallery's app frame; a test reads it from the example.

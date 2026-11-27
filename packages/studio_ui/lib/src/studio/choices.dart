@@ -513,6 +513,7 @@ class StudioRadioGroup<T> extends StatelessWidget {
     required this.value,
     required this.labelOf,
     required this.onChanged,
+    this.secondaryOf,
     this.isEnabled,
     this.direction = Axis.vertical,
     this.semanticLabel,
@@ -527,6 +528,11 @@ class StudioRadioGroup<T> extends StatelessWidget {
 
   /// The words beside a choice's key, which a screen reader says too.
   final String Function(T value) labelOf;
+
+  /// What shows after a choice's words, as `RadioListTile.secondary` does
+  /// (a palette's swatches); null or a null return shows nothing. It only
+  /// shows: a screen reader hears the words.
+  final Widget? Function(T value)? secondaryOf;
 
   /// Called with the choice the reader makes; null disables the group.
   final ValueChanged<T>? onChanged;
@@ -631,6 +637,7 @@ class _StudioRadioGroupBodyState<T> extends State<_StudioRadioGroupBody<T>> {
           key: ObjectKey(option),
           value: option,
           label: labelOf(option),
+          secondary: group.secondaryOf?.call(option),
           focusNode: _nodeFor(option),
           enabled: onChanged != null && (group.isEnabled?.call(option) ?? true),
           direction: direction,
@@ -679,6 +686,7 @@ class _StudioRadioRow<T> extends StatelessWidget {
     super.key,
     required this.value,
     required this.label,
+    required this.secondary,
     required this.focusNode,
     required this.enabled,
     required this.direction,
@@ -687,6 +695,7 @@ class _StudioRadioRow<T> extends StatelessWidget {
 
   final T value;
   final String label;
+  final Widget? secondary;
   final FocusNode focusNode;
   final bool enabled;
   final Axis direction;
@@ -744,6 +753,10 @@ class _StudioRadioRow<T> extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (secondary case final secondary?) ...[
+                          const SizedBox(width: StudioSpacing.small),
+                          secondary,
+                        ],
                       ],
                     ),
                   ),

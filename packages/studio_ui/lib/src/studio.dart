@@ -9,6 +9,9 @@
 /// [StudioSheetPage].
 library;
 
+// The glyphs Studio draws with, so an app's own glyphs match them.
+export 'package:lucide_icons_flutter/lucide_icons.dart' show LucideIcons;
+
 export 'studio/actions.dart';
 export 'studio/app.dart';
 export 'studio/button.dart';
@@ -20,6 +23,7 @@ export 'studio/display.dart';
 export 'studio/entry.dart';
 export 'studio/feedback.dart';
 export 'studio/fonts.dart';
+export 'studio/form.dart';
 export 'studio/lists.dart';
 export 'studio/menu.dart';
 export 'studio/navigation.dart';

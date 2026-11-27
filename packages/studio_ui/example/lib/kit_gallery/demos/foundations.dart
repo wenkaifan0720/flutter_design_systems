@@ -167,7 +167,7 @@ class _Presets extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final id in StudioThemeData.presets)
+        for (final id in [for (final p in StudioThemeData.palettes) p.id])
           Padding(
             padding: const EdgeInsets.only(bottom: StudioSpacing.medium),
             child: Column(

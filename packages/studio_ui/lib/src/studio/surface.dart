@@ -781,6 +781,17 @@ extension StudioFaces on StudioColors {
     brushed: true,
   );
 
+  /// A destructive main key's cap: the graphite warmed by the danger light,
+  /// so it stands apart from the main key and from the ordinary keys in
+  /// both rooms, its legend a warm white.
+  StudioFace get litKeyDangerFace => StudioFace(
+    fill: Color.lerp(litKey, danger, 0.35)!,
+    fillLow: Color.lerp(litKeyLow, danger, 0.35)!,
+    depth: StudioDepth.raised,
+    foreground: const Color(0xFFFFF1EE),
+    brushed: true,
+  );
+
   /// A panel module's metal.
   StudioFace get panelFace => StudioFace(
     fill: panel,

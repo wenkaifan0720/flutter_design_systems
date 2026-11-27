@@ -760,17 +760,6 @@ class StudioColors with Diagnosticable {
   }
 }
 
-/// The contrast between [a] and [b], as WCAG measures it (1 to 21).
-///
-/// ```dart
-/// final readable = studioContrast(colors.onDisplay, colors.display) >= 4.5;
-/// ```
-@Deprecated(
-  'Use RawPalette.contrastRatio from ui_core, the same WCAG ratio. '
-  'Deprecated in 0.5.0; removed in 0.6.0.',
-)
-double studioContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
-
 /// The face Studio sets its words in: Barlow unless an app gives its own.
 @immutable
 class StudioTypeface with Diagnosticable {
@@ -1225,22 +1214,55 @@ class StudioThemeData with Diagnosticable {
   // far as it goes while a key's top stays under white, proud of the panel.
   static const double _mossDayLift = 2;
 
-  /// The names of the look's six presets, the first its default: [preset]
-  /// takes one. anodised: amber lamps on silver and graphite; cobalt: blue
-  /// light on blue-anodised metal; teal: cyan lamps on blue-green steel; moss:
-  /// green lamps on olive, a pale olive by day; violet: violet light on plum;
-  /// graphite: cool
-  /// white lamps on neutral steel, the one set with no hue.
-  static const List<String> presets = [
-    'anodised',
-    'cobalt',
-    'teal',
-    'moss',
-    'violet',
-    'graphite',
+  /// The look's six palettes, the first its default, each by day and by
+  /// night: what an app's palette picker lists (each [RawNamedPalette] its
+  /// label, and its lamp and its metal as swatches) and the
+  /// [RawNamedPalette.id] an app stores and hands back to [preset] or
+  /// [StudioHost.palette]. anodised: amber lamps on silver and graphite;
+  /// cobalt: blue light on blue-anodised metal; teal: cyan lamps on
+  /// blue-green steel; moss: green lamps on olive, a pale olive by day;
+  /// violet: violet light on plum; graphite: cool white lamps on neutral
+  /// steel, the one set with no hue.
+  static const List<RawNamedPalette> palettes = <RawNamedPalette>[
+    RawNamedPalette(
+      id: 'anodised',
+      label: 'Anodised',
+      swatches: [Color(0xFFFFAE3A), Color(0xFFE3E5E8)],
+      darkSwatches: [Color(0xFFFFAE3A), Color(0xFF292B2F)],
+    ),
+    RawNamedPalette(
+      id: 'cobalt',
+      label: 'Cobalt',
+      swatches: [Color(0xFF4DA3FF), Color(0xFFE3E5ED)],
+      darkSwatches: [Color(0xFF4DA3FF), Color(0xFF292B30)],
+    ),
+    RawNamedPalette(
+      id: 'teal',
+      label: 'Teal',
+      swatches: [Color(0xFF2CD4C0), Color(0xFFDFE6E7)],
+      darkSwatches: [Color(0xFF2CD4C0), Color(0xFF262C2D)],
+    ),
+    RawNamedPalette(
+      id: 'moss',
+      label: 'Moss',
+      swatches: [Color(0xFF7BD34F), Color(0xFFEAECDE)],
+      darkSwatches: [Color(0xFF7BD34F), Color(0xFF2A2C24)],
+    ),
+    RawNamedPalette(
+      id: 'violet',
+      label: 'Violet',
+      swatches: [Color(0xFFB38CFF), Color(0xFFECE2EC)],
+      darkSwatches: [Color(0xFFB38CFF), Color(0xFF2E2A2F)],
+    ),
+    RawNamedPalette(
+      id: 'graphite',
+      label: 'Graphite',
+      swatches: [Color(0xFF313539), Color(0xFFE7E4E3)],
+      darkSwatches: [Color(0xFFDFE3E8), Color(0xFF2B2B2A)],
+    ),
   ];
 
-  /// The preset named [id] (one of [presets]) in [brightness]:
+  /// The preset of the palette [id] (one of [palettes]) in [brightness]:
   /// [StudioThemeData.anodised], or [StudioThemeData.from] its indicator
   /// and finish.
   ///
@@ -1252,7 +1274,10 @@ class StudioThemeData with Diagnosticable {
     Brightness brightness, {
     StudioDensity? density,
   }) {
-    assert(presets.contains(id), 'Studio has no preset "$id": $presets');
+    assert(
+      palettes.any((p) => p.id == id),
+      'Studio has no palette "$id": ${[for (final p in palettes) p.id]}',
+    );
     final (Color, Color)? light = switch (id) {
       'cobalt' => (const Color(0xFF4DA3FF), const Color(0xFF2C5A8C)),
       'teal' => (const Color(0xFF2CD4C0), const Color(0xFF7FA8AC)),

@@ -11,6 +11,7 @@ import 'package:ui_core/ui_core.dart';
 import 'internal/field_frame.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/message_reveal.dart';
 
 /// A field's label, printed on the metal above it: sentence case, in the
 /// legend's ink.
@@ -61,8 +62,13 @@ class StudioFieldMessage extends StatelessWidget {
   /// What is wrong; it takes the helper's place.
   final String? error;
 
+  // The line grows open and fades in (and out) as the field's words come
+  // and go, so the fields under it move with it and never jump.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      StudioMessageReveal(id: error, child: _line(context));
+
+  Widget _line(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final words = error ?? helper;

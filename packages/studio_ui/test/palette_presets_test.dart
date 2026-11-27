@@ -39,13 +39,29 @@ void _reads(StudioColors c, String name) {
   }
 }
 
+/// The palettes' ids, in their order.
+final List<String> _ids = [for (final p in StudioThemeData.palettes) p.id];
+
 void main() {
+  test("each palette's swatches are its lamp and its metal", () {
+    for (final palette in StudioThemeData.palettes) {
+      for (final b in Brightness.values) {
+        final c = StudioThemeData.preset(palette.id, b).colors;
+        expect(palette.swatchesFor(b), [
+          c.indicator,
+          c.panel,
+        ], reason: '${palette.id} ${b.name}');
+      }
+      expect(palette.label, isNotEmpty);
+    }
+  });
+
   test('Studio has six presets, its own first', () {
-    expect(StudioThemeData.presets, hasLength(6));
-    expect(StudioThemeData.presets.first, 'anodised');
-    expect(StudioThemeData.presets.toSet(), hasLength(6));
+    expect(_ids, hasLength(6));
+    expect(_ids.first, 'anodised');
+    expect(_ids.toSet(), hasLength(6));
     final lights = {
-      for (final id in StudioThemeData.presets)
+      for (final id in _ids)
         StudioThemeData.preset(id, Brightness.light).colors.indicator,
     };
     expect(lights, hasLength(6), reason: 'each preset has its own light');
@@ -58,7 +74,7 @@ void main() {
   });
 
   for (final b in Brightness.values) {
-    for (final id in StudioThemeData.presets) {
+    for (final id in _ids) {
       test('every word reads in $id by ${b.name}', () {
         _reads(StudioThemeData.preset(id, b).colors, '$id ${b.name}');
       });
@@ -200,7 +216,7 @@ void main() {
   }
 
   test('the words on a preset\'s lit glass take the glass\'s hue', () {
-    for (final id in StudioThemeData.presets.skip(1)) {
+    for (final id in _ids.skip(1)) {
       final c = StudioThemeData.preset(id, Brightness.light).colors;
       for (final ink in [c.onReadout, c.onReadoutMuted]) {
         expect(
@@ -303,7 +319,7 @@ void main() {
 
   test('a preset\'s unlit lamps are its own lamp, dark', () {
     for (final b in Brightness.values) {
-      for (final id in StudioThemeData.presets.skip(1)) {
+      for (final id in _ids.skip(1)) {
         final c = StudioThemeData.preset(id, b).colors;
         expect(
           hueGap(c.lampOff, c.indicator),

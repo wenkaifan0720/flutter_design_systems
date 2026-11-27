@@ -21,7 +21,8 @@ enum _KeyKind { plain, lit, text }
 /// are lit in the indicator light (amber means on: the key is not filled
 /// with it); [StudioButton.text] is a legend with no cap, whose recess shows
 /// only under a press. [isDestructiveAction] lights any of them in the danger
-/// colour.
+/// colour, and warms a main key's graphite with it, so a destructive main
+/// key stands apart from the main key and from the key beside it.
 ///
 /// A null [onPressed] disables it: its legend dims and a lit key's legend
 /// and lamp go out.
@@ -252,7 +253,16 @@ class StudioButton extends StatelessWidget {
           foreground: disabled
               ? disabledInk
               : isDestructiveAction
-              ? Color.lerp(c.dangerLegend, c.litLegend, cue * 0.35)!
+              ? Color.lerp(
+                  // Lifted until it reads down the whole cap.
+                  RawPalette.readableTone(
+                    c.dangerLegend,
+                    on: [c.key, c.keyLow],
+                    ratio: 4.5,
+                  ),
+                  c.litLegend,
+                  cue * 0.35,
+                )!
               : legend(c.onKey),
           fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
           presence: disabled ? studioUnpowered : 1,
@@ -268,11 +278,10 @@ class StudioButton extends StatelessWidget {
             presence: studioUnpowered,
           );
         }
-        return c.litKeyFace.copyWith(
-          travel: pressed ? 1 : 0,
-          rim: edge,
-          foreground: isDestructiveAction ? c.onLitKeyDanger : c.onLitKey,
-        );
+        // A destructive one is warmed by the danger light, apart from the
+        // main key and from the key beside it.
+        return (isDestructiveAction ? c.litKeyDangerFace : c.litKeyFace)
+            .copyWith(travel: pressed ? 1 : 0, rim: edge);
     }
   }
 
@@ -387,11 +396,10 @@ class StudioIconButton extends StatelessWidget {
             child: AnimatedStudioSurface(
               face: face,
               child: Center(
+                // The glyph takes the surface's ink, eased with its face
+                // from state to state.
                 child: IconTheme.merge(
-                  data: IconThemeData(
-                    size: layered.iconSize ?? 20,
-                    color: face.foreground,
-                  ),
+                  data: IconThemeData(size: layered.iconSize ?? 20),
                   child: icon,
                 ),
               ),

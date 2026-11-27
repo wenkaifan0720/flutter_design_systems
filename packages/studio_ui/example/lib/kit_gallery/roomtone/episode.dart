@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:studio_ui/studio_ui.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'data.dart';
 import 'roomtone.dart';
