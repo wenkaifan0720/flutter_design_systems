@@ -45,6 +45,7 @@ export 'src/roving_focus.dart';
 export 'src/roving_focus_intent.dart';
 export 'src/scroll_area.dart';
 export 'src/semantics_proxy.dart';
+export 'src/shapes.dart';
 export 'src/shortcut_label.dart';
 export 'src/side_sheet.dart';
 export 'src/spacing.dart';

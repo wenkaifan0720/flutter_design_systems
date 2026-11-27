@@ -8,7 +8,7 @@ it, so an app that uses a look rarely imports it directly. Add it to build a loo
 
 ```yaml
 dependencies:
-  ui_core: ^0.8.3
+  ui_core: ^0.8.4
 ```
 
 ```dart
@@ -432,6 +432,60 @@ Widget paletteRow(RawNamedPalette palette, Brightness brightness) => Row(
 );
 ```
 
+## Shapes a look can open
+
+A look may open its corners, its line weight and its depth to an app, as Material 3 opens its shape scale.
+`RawShapeScheme` holds three things:
+
+- a `RawCornerScale`: a radius per step (none, extra small, small, medium, large, extra large and full, with Material
+  3's numbers by default) and one `RawCornerStyle` for every corner (round, continuous, bevel, notch, step or
+  concave);
+- a `stroke`;
+- a `depth`.
+
+A null `stroke` or `depth` is "not opened": the look draws its own constant.
+
+`RawCornerBorder` is the `ShapeBorder` a style draws:
+
+- A round corner at rest draws and clips as an `RRect`, Flutter's fast path.
+- A `ShapeBorderTween` between two styles morphs the corner. Flutter's borders of two kinds switch halfway instead.
+- `inset` gives the face inside a frame with its corners concentric, and `outset` gives a focus ring's outline
+  around it.
+
+A look holds every scheme to its design with a `RawShapeLimits`: the styles it allows and a `RawBand` per value, so
+an app's "rounder" never breaks the look. In debug, a value held is printed once.
+
+A look puts the scheme on its theme data, holds it to its limits there, and lerps it in its theme's lerp. Its theme's
+API stays its own. A sketch:
+
+```dart
+class InkThemeData {
+  /// Ink's theme, the app's [shapeScheme] held to Ink's limits.
+  InkThemeData({RawShapeScheme shapeScheme = const RawShapeScheme()})
+    : shapeScheme = shapeLimits.clamp(shapeScheme, look: 'Ink');
+
+  const InkThemeData._(this.shapeScheme);
+
+  /// Ink's design: round or continuous corners, a medium corner from 8 to
+  /// 16, a stroke from 1 to 2, no depth.
+  static const shapeLimits = RawShapeLimits(
+    styles: {RawCornerStyle.round, RawCornerStyle.continuous},
+    medium: RawBand(8, 16),
+    stroke: RawBand(1, 2),
+  );
+
+  final RawShapeScheme shapeScheme;
+
+  /// A card's outline.
+  ShapeBorder get card => shapeScheme.corners.border(RawCorner.medium);
+
+  /// Between two held themes, not held again: a spring may pass a band's
+  /// end for a moment.
+  static InkThemeData lerp(InkThemeData a, InkThemeData b, double t) =>
+      InkThemeData._(RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t));
+}
+```
+
 ## A look's forms
 
 A form is one column of fields, and every field in it takes the column's width: a text entry, a select, a date field,
@@ -540,7 +594,7 @@ parameter's documentation says what the behaviour does given none (most make the
 
 ## Libraries
 
-- `package:ui_core/ui_core.dart`: the behaviours, motion, the words, a part's style (`RawStyle`), `RawCapCenter`, which centres a label
+- `package:ui_core/ui_core.dart`: the behaviours, motion, the words, a part's style (`RawStyle`), the shapes a look opens (`RawShapeScheme`, `RawCornerBorder`, `RawShapeLimits`), `RawCapCenter`, which centres a label
   by its capitals, `RawKeylineRegion`, which marks a card's keylines, and `RawKeylineFace`,
   which marks a face its pixels cannot show.
 - `package:ui_core/host.dart`: the scaffold contract the look packages share, for design-system authors. It is

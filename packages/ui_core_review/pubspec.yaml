@@ -14,7 +14,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.8.3
+  ui_core: ^0.8.4
   ui_core_test: ^0.6.1
 
 dev_dependencies:

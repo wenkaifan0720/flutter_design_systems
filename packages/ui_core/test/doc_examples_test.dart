@@ -1058,6 +1058,36 @@ final Map<String, DocExample> _examples = {
     final edge = brand.withTone(brand.tone - 12).toColor();
     return ColoredBox(color: edge);
   },
+  'RawCornerBorder': (context) => const DecoratedBox(
+    decoration: ShapeDecoration(
+      color: Color(0xFFE8E8EE),
+      shape: RawCornerBorder(
+        style: RawCornerStyle.bevel,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
+    child: SizedBox(width: 120, height: 48),
+  ),
+  'RawCornerBorder.inset': (context) =>
+      const RawCornerBorder(full: true).inset(const EdgeInsets.all(3)),
+  'RawCornerScale': (context) => const RawCornerScale(
+    small: 6,
+    medium: 10,
+    large: 20,
+  ).border(RawCorner.medium, side: const BorderSide(color: Color(0xFF8A8F99))),
+  'RawShapeScheme': (context) => RawShapeScheme.lerp(
+    const RawShapeScheme(stroke: 2),
+    const RawShapeScheme(
+      corners: RawCornerScale(style: RawCornerStyle.bevel),
+      stroke: 3,
+    ),
+    0.5,
+  ),
+  'RawBand': (context) => const RawBand(10, 20).clamp(40),
+  'RawShapeLimits': (context) => const RawShapeLimits(
+    medium: RawBand(10, 20),
+    stroke: RawBand(1, 3),
+  ).clamp(const RawShapeScheme(corners: RawCornerScale(medium: 40), stroke: 2)),
 };
 
 /// The host app's own layer (its router, its app chrome and its
