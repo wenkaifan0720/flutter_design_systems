@@ -71,13 +71,25 @@ class GlossButtonGroup extends StatelessWidget {
     final c = theme.colors;
     final height = theme.controlHeight;
     final corner = glossCorner(theme, RawCorner.small) + _troughInset;
+    // An app's corners for the group (its style's `corners`): the keys'
+    // outer corners take them and the trough runs concentric outside;
+    // the joins between keys stay.
+    final keys = glossCornersOf(
+      theme,
+      RawStyleOf([style, theme.buttonGroupStyle], const {}),
+      RawCorner.small,
+      Directionality.of(context),
+    );
     return Semantics(
       container: true,
       explicitChildNodes: true,
       child: SizedBox(
         height: height,
         child: GlossSurface(
-          face: GlossFace.well(c, radius: corner),
+          face: GlossFace.well(
+            c,
+            radius: corner,
+          ).copyWith(corners: glossCornersInset(keys, -_troughInset)),
           child: Padding(
             padding: const EdgeInsets.all(_troughInset),
             // Keys too wide for their row (long words, large text) scroll
@@ -94,6 +106,14 @@ class GlossButtonGroup extends StatelessWidget {
                       item: item,
                       iconOnly: iconsOnly && item.icon != null,
                       corner: corner - _troughInset,
+                      corners: keys == null
+                          ? null
+                          : glossEndCorners(
+                              keys,
+                              Radius.circular(corner - _troughInset),
+                              starts: i == 0,
+                              ends: i == items.length - 1,
+                            ),
                       style: style,
                     ),
                   ],
@@ -120,12 +140,15 @@ class _GroupKey extends StatelessWidget {
     required this.item,
     required this.iconOnly,
     required this.corner,
+    required this.corners,
     required this.style,
   });
 
   final GlossButtonGroupItem item;
   final bool iconOnly;
   final double corner;
+  // The key's own corners in a group an app gave corners; null, [corner].
+  final BorderRadius? corners;
   final GlossStyle? style;
 
   @override
@@ -141,6 +164,7 @@ class _GroupKey extends StatelessWidget {
         var face = GlossFace.pearl(c, radius: corner);
         if (layered.fill != null) face = face.glazed(layered.fill!);
         face = face.copyWith(
+          corners: corners,
           foreground: layered.foreground ?? (disabled ? c.inkDisabled : c.ink),
           lens: disabled ? 0.25 : null,
           lift: disabled ? 0.3 : null,
@@ -276,10 +300,21 @@ class GlossToggleGroup<T> extends StatelessWidget {
     final c = theme.colors;
     final corner = glossCorner(theme, RawCorner.small) + _troughInset;
     final byValue = {for (final t in toggles) t.value: t};
+    // An app's corners for the group: the end toggles' outer corners take
+    // them and the trough runs concentric outside; the joins stay.
+    final ends = glossCornersOf(
+      theme,
+      RawStyleOf([style, theme.toggleGroupStyle], const {}),
+      RawCorner.small,
+      Directionality.of(context),
+    );
     return SizedBox(
       height: theme.controlHeight,
       child: GlossSurface(
-        face: GlossFace.well(c, radius: corner),
+        face: GlossFace.well(
+          c,
+          radius: corner,
+        ).copyWith(corners: glossCornersInset(ends, -_troughInset)),
         child: Padding(
           padding: const EdgeInsets.all(_troughInset),
           child: RawSegmentedButton<T>(
@@ -327,7 +362,16 @@ class GlossToggleGroup<T> extends StatelessWidget {
                       radius: corner - _troughInset,
                     );
               if (on && layered.fill != null) face = face.glazed(layered.fill!);
+              final at = toggles.indexWhere((t) => t.value == value);
               face = face.copyWith(
+                corners: ends == null
+                    ? null
+                    : glossEndCorners(
+                        ends,
+                        Radius.circular(corner - _troughInset),
+                        starts: at == 0,
+                        ends: at == toggles.length - 1,
+                      ),
                 foreground:
                     layered.foreground ??
                     (disabled
@@ -501,14 +545,21 @@ class GlossSplitButton extends StatelessWidget {
                 : 0,
             focus: glossGlazeOf(c, states),
           );
-          final rtl = Directionality.of(context) == TextDirection.rtl;
-          final leftRound = main != rtl;
           // One moulded piece: each half round on its outer side, nearly
-          // square at the seam between them.
-          final shape = BorderRadius.horizontal(
-            left: Radius.circular(leftRound ? corner : 4),
-            right: Radius.circular(leftRound ? 4 : corner),
-          );
+          // square at the seam between them. A face is laid from the
+          // reading start (its left is the start), so the main half's
+          // left is its outer side in either direction. An app's corners
+          // (the style's `corners` or `shape`) take the outer sides.
+          const seam = Radius.circular(4);
+          final outer =
+              glossCornersOf(
+                theme,
+                layered,
+                RawCorner.full,
+                Directionality.of(context),
+              ) ??
+              BorderRadius.circular(corner);
+          final shape = glossEndCorners(outer, seam, starts: main, ends: !main);
           final child = main
               ? Padding(
                   padding: const EdgeInsetsDirectional.only(
@@ -638,6 +689,13 @@ class GlossLink extends StatelessWidget {
                 ? Color.lerp(c.jadeInk, c.ink, 0.45)!
                 : c.jadeInk);
         final clear = c.page.withValues(alpha: 0);
+        // An app's corners for the light beneath the letters.
+        final corners = glossCornersOf(
+          theme,
+          layered,
+          RawCorner.extraSmall,
+          Directionality.of(context),
+        );
         // The reflected light lies on the surface beneath the letters.
         return TapTargetPadding(
           child: GlossGlazeHighlight(
@@ -645,6 +703,7 @@ class GlossLink extends StatelessWidget {
             hovered: states.contains(WidgetState.hovered),
             pressed: states.contains(WidgetState.pressed),
             radius: glossCorner(theme, RawCorner.extraSmall, 8),
+            corners: corners,
             tint: true,
             child: AnimatedGlossSurface(
               face: GlossFace(
@@ -653,6 +712,7 @@ class GlossLink extends StatelessWidget {
                 bottom: clear,
                 foreground: ink,
                 radius: glossCorner(theme, RawCorner.extraSmall, 6),
+                corners: corners,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -715,18 +775,31 @@ class GlossKbd extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.kbdStyle], const {});
-    var face = GlossFace.pearl(
-      c,
-      radius: glossCorner(theme, RawCorner.extraSmall, 6),
-    );
+    var face =
+        GlossFace.pearl(
+          c,
+          radius: glossCorner(theme, RawCorner.extraSmall, 6),
+        ).copyWith(
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.extraSmall,
+            Directionality.of(context),
+          ),
+        );
     if (layered.fill != null) face = face.glazed(layered.fill!);
+    // By night the cap's letters take the ink: the quiet ink stood at 3.7:1
+    // on the night pearl, 3:1 at its lit top.
+    final ink =
+        layered.foreground ??
+        (c.brightness == Brightness.dark ? c.ink : c.inkSecondary);
     return Semantics(
       label: semanticLabel ?? label,
       excludeSemantics: true,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
         child: GlossSurface(
-          face: face.copyWith(foreground: layered.foreground ?? c.inkSecondary),
+          face: face.copyWith(foreground: ink),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
               GlossSpacing.small,
@@ -741,7 +814,7 @@ class GlossKbd extends StatelessWidget {
                 label,
                 style: theme.textTheme.caption
                     .copyWith(
-                      color: layered.foreground ?? c.inkSecondary,
+                      color: ink,
                       fontWeight: FontWeight.w600,
                       height: 1.6,
                       fontFeatures: const [FontFeature.tabularFigures()],

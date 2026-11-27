@@ -12,6 +12,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart' show glossCornersOutline, glossFullCorner;
+
+export 'internal/corners.dart' show glossFullCorner;
 import 'theme.dart';
 
 const Color _clear = Color(0x00000000);
@@ -185,7 +188,10 @@ class GlossFace with Diagnosticable {
   final double? radius;
 
   /// Each corner's own radius, over [radius]: a key moulded as one half of
-  /// a pair (a split key), round on its outer side only.
+  /// a pair (a split key), round on its outer side only, or the corners a
+  /// part's style gives it. Laid from the reading start, as the face's
+  /// light is: right to left, its left corners are drawn on the right. A
+  /// radius of [glossFullCorner] or more reaches half the shorter side.
   final BorderRadius? corners;
 
   /// A copy with the given fields replaced.
@@ -251,7 +257,7 @@ class GlossFace with Diagnosticable {
       radius: a.radius == null || b.radius == null
           ? (t < 0.5 ? a.radius : b.radius)
           : d(a.radius!, b.radius!),
-      corners: BorderRadius.lerp(a.corners, b.corners, t),
+      corners: _lerpCorners(a, b, t),
     );
   }
 
@@ -377,6 +383,54 @@ RRect glossOutline(Rect rect, double? radius) => RRect.fromRectAndRadius(
   ),
 );
 
+// [face]'s outline in [rect]: its own corners, else its radius.
+RRect _outlineOf(Rect rect, GlossFace face) {
+  final corners = face.corners;
+  if (corners == null) return glossOutline(rect, face.radius);
+  return _cornersOutline(rect, corners);
+}
+
+RRect _cornersOutline(Rect rect, BorderRadius corners) =>
+    glossCornersOutline(rect, corners);
+
+// [shape] turned about its middle: its left corners on the right.
+RRect _mirrored(RRect shape) => RRect.fromRectAndCorners(
+  shape.outerRect,
+  topLeft: shape.trRadius,
+  topRight: shape.tlRadius,
+  bottomLeft: shape.brRadius,
+  bottomRight: shape.blRadius,
+);
+
+// A face's corners on their way from [a]'s to [b]'s, with no snap: a face
+// with none takes its radius (a capsule's a full corner), and a full corner
+// eases into a finite one through the radii a part of a control's height
+// shows, not from a million down.
+BorderRadius? _lerpCorners(GlossFace a, GlossFace b, double t) {
+  if (a.corners == null && b.corners == null) return null;
+  if (t <= 0) return a.corners ?? _cornersOfRadius(a.radius);
+  if (t >= 1) return b.corners ?? _cornersOfRadius(b.radius);
+  final from = a.corners ?? _cornersOfRadius(a.radius);
+  final to = b.corners ?? _cornersOfRadius(b.radius);
+  // r / (r + k): a full corner near 1, a square one 0.
+  const k = 24.0;
+  double out(double r) =>
+      math.min(r, glossFullCorner) / (math.min(r, glossFullCorner) + k);
+  double back(double u) => u >= 0.999 ? glossFullCorner : k * u / (1 - u);
+  double one(double x, double y) => back(out(x) + (out(y) - out(x)) * t);
+  Radius r(Radius x, Radius y) =>
+      Radius.elliptical(one(x.x, y.x), one(x.y, y.y));
+  return BorderRadius.only(
+    topLeft: r(from.topLeft, to.topLeft),
+    topRight: r(from.topRight, to.topRight),
+    bottomLeft: r(from.bottomLeft, to.bottomLeft),
+    bottomRight: r(from.bottomRight, to.bottomRight),
+  );
+}
+
+BorderRadius _cornersOfRadius(double? radius) =>
+    BorderRadius.all(Radius.circular(radius ?? glossFullCorner));
+
 class _FacePainter extends CustomPainter {
   _FacePainter(
     this.face,
@@ -428,8 +482,7 @@ void paintGlossFace(
   final sink = math.max(0.0, -face.lift);
   final dy = raise > 0 ? face.travel * GlossMetrics.keyTravel : 0.0;
   final shifted = rect.shift(Offset(0, dy));
-  final outer =
-      face.corners?.toRRect(shifted) ?? glossOutline(shifted, face.radius);
+  final outer = _outlineOf(shifted, face);
 
   // The shadow a raised face casts below it: a contact shadow and a soft
   // ambient one, both shrinking as it is pressed home.
@@ -842,6 +895,7 @@ class GlossGlazeHighlight extends StatelessWidget {
     this.hovered = false,
     this.pressed = false,
     this.radius,
+    this.corners,
     this.inset = 0,
     this.inside = false,
     this.tint = false,
@@ -862,6 +916,10 @@ class GlossGlazeHighlight extends StatelessWidget {
 
   /// The corners of the glaze. A null radius gives a capsule.
   final double? radius;
+
+  /// Each corner's own radius, over [radius], laid from the reading start
+  /// as a [GlossFace.corners] is: the corners a part's style gives it.
+  final BorderRadius? corners;
 
   /// An inset from the edges of the box. Negative values use the full box.
   final double inset;
@@ -890,6 +948,7 @@ class GlossGlazeHighlight extends StatelessWidget {
         inset,
         inside,
         tint,
+        corners: corners,
         rtl: Directionality.maybeOf(context) == TextDirection.rtl,
       ),
       child: content,
@@ -919,6 +978,7 @@ class _GlazePainter extends CustomPainter {
     this.inset,
     this.inside,
     this.tint, {
+    this.corners,
     required this.rtl,
   });
   final Offset value;
@@ -928,6 +988,7 @@ class _GlazePainter extends CustomPainter {
   final double inset;
   final bool inside;
   final bool tint;
+  final BorderRadius? corners;
   final bool rtl;
 
   @override
@@ -938,15 +999,25 @@ class _GlazePainter extends CustomPainter {
       math.max(0, inset) + (inside ? 0.5 : 0),
     );
     if (box.isEmpty) return;
-    final face = glossOutline(box, radius);
+    // Laid from the start (the reflection is drawn turned right to left);
+    // the shade lies where the outline shows.
+    final fromStart = corners == null
+        ? glossOutline(box, radius)
+        : _cornersOutline(box, corners!);
+    final face = rtl && corners != null ? _mirrored(fromStart) : fromStart;
     final day = brightness == Brightness.light;
     if (!day) _shadeGlaze(canvas, face, color, light * (tint ? 1.18 : 1));
     _fromStart(
       canvas,
       face.outerRect,
       rtl,
-      () =>
-          _paintReflection(canvas, face, light, pale: day, pressure: value.dy),
+      () => _paintReflection(
+        canvas,
+        fromStart,
+        light,
+        pale: day,
+        pressure: value.dy,
+      ),
     );
   }
 
@@ -956,6 +1027,7 @@ class _GlazePainter extends CustomPainter {
       old.brightness != brightness ||
       old.color != color ||
       old.radius != radius ||
+      old.corners != corners ||
       old.inset != inset ||
       old.inside != inside ||
       old.tint != tint ||

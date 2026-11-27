@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../fonts.dart';
+import 'corners.dart';
 import '../surface.dart';
 import '../theme.dart';
 
@@ -176,7 +177,16 @@ Widget glossKeyPaint(
         minHeight: minimum.height,
       ),
       child: AnimatedGlossSurface(
-        face: face.copyWith(radius: _radius(layered)),
+        // An app's corners for the key (its style's `corners`, or a `shape`
+        // as given), else the pill.
+        face: face.copyWith(
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.full,
+            Directionality.of(context),
+          ),
+        ),
         child: Padding(
           padding: large
               ? padding +
@@ -205,13 +215,4 @@ Widget glossKeyPaint(
       ),
     ),
   );
-}
-
-double? _radius(RawStyleOf layered) {
-  final shape = layered.shape;
-  if (shape is RoundedRectangleBorder) {
-    final r = shape.borderRadius;
-    if (r is BorderRadius) return r.topLeft.x;
-  }
-  return null;
 }

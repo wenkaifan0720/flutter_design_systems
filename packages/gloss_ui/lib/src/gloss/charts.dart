@@ -137,6 +137,7 @@ class _Framed extends StatelessWidget {
     required this.height,
     required this.painter,
     required this.fill,
+    required this.corners,
   });
 
   final String semanticLabel;
@@ -145,6 +146,8 @@ class _Framed extends StatelessWidget {
   final double height;
   final CustomPainter painter;
   final Color? fill;
+  // The tray's corners an app gave (start on the left), or null.
+  final BorderRadius? corners;
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +156,7 @@ class _Framed extends StatelessWidget {
     var tray = GlossFace.well(
       c,
       radius: glossCorner(theme, RawCorner.medium),
-    ).copyWith(lift: -0.55);
+    ).copyWith(lift: -0.55, corners: corners);
     if (fill != null) tray = tray.glazed(fill!);
     return Semantics(
       label: semanticLabel,
@@ -647,6 +650,12 @@ class GlossLineChart extends StatelessWidget {
         ],
         height: height,
         fill: layered.fill,
+        corners: glossCornersOf(
+          theme,
+          layered,
+          RawCorner.medium,
+          Directionality.of(context),
+        ),
         painter: _LinePainter(
           c: c,
           text: theme.textTheme.caption.copyWith(color: c.inkSecondary),
@@ -751,6 +760,12 @@ class GlossBarChart extends StatelessWidget {
         ],
         height: height,
         fill: layered.fill,
+        corners: glossCornersOf(
+          theme,
+          layered,
+          RawCorner.medium,
+          Directionality.of(context),
+        ),
         painter: _BarPainter(
           c: c,
           corner: glossCorner(theme, RawCorner.extraSmall),

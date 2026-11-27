@@ -180,6 +180,12 @@ class _CrumbLink extends StatelessWidget {
               bottom: clear,
               foreground: ink,
               radius: glossCorner(theme, RawCorner.extraSmall, 6),
+              corners: glossCornersOf(
+                theme,
+                layered,
+                RawCorner.extraSmall,
+                Directionality.of(context),
+              ),
               focus: glossGlazeOf(c, states),
             ),
             child: Padding(
@@ -286,11 +292,22 @@ class GlossPagination extends StatelessWidget {
     final key = theme.controlHeight - 2 * inset;
     final corner = glossCorner(theme, RawCorner.small) + inset;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    // An app's corners for the keys (its style's `corners`): the arrows'
+    // outer corners take them and the trough runs concentric outside; the
+    // pages between keep their own.
+    final keys = glossCornersOf(
+      theme,
+      RawStyleOf([style, theme.paginationStyle], const {}),
+      RawCorner.small,
+      Directionality.of(context),
+    );
     Widget cell({
       required String semanticLabel,
       required VoidCallback? onPressed,
       required Widget child,
       bool current = false,
+      bool starts = false,
+      bool ends = false,
     }) => RawButton(
       onPressed: onPageChanged == null ? null : onPressed,
       semanticLabel: semanticLabel,
@@ -324,6 +341,14 @@ class GlossPagination extends StatelessWidget {
                 constraints: BoxConstraints(minWidth: key),
                 child: AnimatedGlossSurface(
                   face: face.copyWith(
+                    corners: keys == null
+                        ? null
+                        : glossEndCorners(
+                            keys,
+                            Radius.circular(corner - inset),
+                            starts: starts,
+                            ends: ends,
+                          ),
                     foreground:
                         layered.foreground ??
                         (disabled
@@ -363,13 +388,17 @@ class GlossPagination extends StatelessWidget {
       child: SizedBox(
         height: theme.controlHeight,
         child: GlossSurface(
-          face: GlossFace.well(c, radius: corner),
+          face: GlossFace.well(
+            c,
+            radius: corner,
+          ).copyWith(corners: glossCornersInset(keys, -inset)),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: inset),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 cell(
+                  starts: true,
                   semanticLabel: words.previousPageTooltip,
                   onPressed: page > 0 ? () => onPageChanged!(page - 1) : null,
                   child: Icon(
@@ -404,6 +433,7 @@ class GlossPagination extends StatelessWidget {
                       child: figure(p),
                     ),
                 cell(
+                  ends: true,
                   semanticLabel: words.nextPageTooltip,
                   onPressed: page < pageCount - 1
                       ? () => onPageChanged!(page + 1)
@@ -839,6 +869,12 @@ class GlossMenuBar extends StatelessWidget {
           face: plate.copyWith(
             foreground: layered.foreground ?? c.ink,
             focus: glossGlazeOf(c, states),
+            corners: glossCornersOf(
+              theme,
+              layered,
+              RawCorner.small,
+              Directionality.of(context),
+            ),
           ),
           child: Padding(
             padding:
@@ -1065,10 +1101,18 @@ Widget _palettePanel(BuildContext context, GlossStyle? style, Widget child) {
   final theme = GlossTheme.of(context);
   final c = theme.colors;
   final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
-  var face = glossPanelFace(
-    c,
-    radius: glossCorner(theme, RawCorner.extraLarge, 20),
-  );
+  var face =
+      glossPanelFace(
+        c,
+        radius: glossCorner(theme, RawCorner.extraLarge, 20),
+      ).copyWith(
+        corners: glossCornersOf(
+          theme,
+          layered,
+          RawCorner.extraLarge,
+          Directionality.of(context),
+        ),
+      );
   if (layered.fill != null) face = face.glazed(layered.fill!);
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 560),

@@ -161,6 +161,13 @@ class GlossCheckbox extends StatelessWidget {
                   GlossTheme.of(context),
                   RawCorner.extraSmall,
                 ),
+                // An app's corners for the socket, the insert concentric.
+                corners: glossCornersOf(
+                  theme,
+                  layered,
+                  RawCorner.extraSmall,
+                  Directionality.of(context),
+                ),
                 t: t,
                 round: false,
                 mixed: value == null,
@@ -629,6 +636,34 @@ void _fromStart(Canvas canvas, Rect rect, bool rtl, VoidCallback paint) {
   canvas.restore();
 }
 
+// [radii] at [scale] (an insert growing into its seat), a full corner
+// kept full.
+BorderRadius _scaledCorners(BorderRadius radii, double scale) {
+  Radius at(Radius r) => r.x >= glossFullCorner ? r : r * scale;
+  return BorderRadius.only(
+    topLeft: at(radii.topLeft),
+    topRight: at(radii.topRight),
+    bottomLeft: at(radii.bottomLeft),
+    bottomRight: at(radii.bottomRight),
+  );
+}
+
+// A segmented control's slot at [t] (0 the first of [count]) in a trough
+// whose corners an app gave: toward an end, its outer corners ease to the
+// trough's [ends]; between, its own [own] (a pill's), so the thumb keeps
+// its curve at the joins and slides with no snap.
+BorderRadius _slotCorners(BorderRadius ends, Radius own, double t, int count) {
+  final s = (1 - t).clamp(0.0, 1.0);
+  final e = (t - (count - 2)).clamp(0.0, 1.0);
+  Radius at(Radius end, double k) => Radius.lerp(own, end, k)!;
+  return BorderRadius.only(
+    topLeft: at(ends.topLeft, s),
+    bottomLeft: at(ends.bottomLeft, s),
+    topRight: at(ends.topRight, e),
+    bottomRight: at(ends.bottomRight, e),
+  );
+}
+
 class _SocketPainter extends CustomPainter {
   _SocketPainter({
     this.rtl = false,
@@ -643,11 +678,14 @@ class _SocketPainter extends CustomPainter {
     required this.focus,
     required this.highContrast,
     required this.corner,
+    this.corners,
   });
 
   final GlossColors colors;
   // A checkbox's socket corner: the theme's extraSmall step.
   final double corner;
+  // The socket's corners an app gave (start on the left), over [corner].
+  final BorderRadius? corners;
   final double t;
   final bool round;
   final bool mixed;
@@ -664,6 +702,7 @@ class _SocketPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final radius = round ? null : corner;
     var socket = GlossFace.well(colors, radius: radius).copyWith(
+      corners: round ? null : corners,
       lift: disabled ? -0.5 : (pressed ? -1 : -0.85),
       // A fine rim round the socket's mouth, so an empty one (a box not
       // ticked, a dot not chosen) reads on a well's floor, day and night.
@@ -703,10 +742,12 @@ class _SocketPainter extends CustomPainter {
         ? GlossFace.pearlOff(colors).copyWith(lift: 0.2)
         : GlossFace.gel(colors, radius: round ? null : corner - inset);
     if (fill != null && !disabled) gel = gel.glazed(fill!);
+    final own = round ? null : glossCornersInset(corners, inset);
     gel = gel.copyWith(
       focus: focus,
       lift: 0.35,
       radius: round ? null : (corner - inset) * scale,
+      corners: own == null ? null : _scaledCorners(own, scale),
     );
     canvas.saveLayer(
       rect.inflate(4),
@@ -754,6 +795,7 @@ class _SocketPainter extends CustomPainter {
   @override
   bool shouldRepaint(_SocketPainter old) =>
       old.corner != corner ||
+      old.corners != corners ||
       old.colors != colors ||
       old.t != t ||
       old.round != round ||
@@ -1167,6 +1209,21 @@ class GlossSegmentedButton<T> extends StatelessWidget {
               );
         final each = (width - 2 * inset) / segments.length;
         final rtl = Directionality.of(context) == TextDirection.rtl;
+        // An app's corners for the trough (the style's `corners` or
+        // `shape`): the slots at its ends take them, concentric; the joins
+        // between slots keep the thumb's own curve.
+        final ends = glossCornersInset(
+          glossCornersOf(
+            theme,
+            RawStyleOf([style, theme.segmentedButtonStyle], const {}),
+            RawCorner.full,
+            Directionality.of(context),
+          ),
+          inset,
+        );
+        final own = Radius.circular((height - inset * 2) / 2);
+        BorderRadius? slotCorners(double t) =>
+            ends == null ? null : _slotCorners(ends, own, t, segments.length);
         // A trough that hugs its slots stands at the start of a wider room
         // (a stretched column would otherwise pull it wide under its thumb).
         return Align(
@@ -1180,8 +1237,10 @@ class GlossSegmentedButton<T> extends StatelessWidget {
               children: [
                 Positioned.fill(
                   child: GlossSurface(
-                    face: GlossFace.well(c)
-                        .copyWith(lift: onChanged == null ? -0.5 : -1),
+                    face: GlossFace.well(c).copyWith(
+                      lift: onChanged == null ? -0.5 : -1,
+                      corners: glossCornersInset(ends, -inset),
+                    ),
                   ),
                 ),
                 _Sprung(
@@ -1196,9 +1255,12 @@ class GlossSegmentedButton<T> extends StatelessWidget {
                       width: each,
                       height: height - inset * 2,
                       child: GlossSurface(
-                        face: onChanged == null
-                            ? GlossFace.pearlOff(c).copyWith(foreground: c.ink)
-                            : GlossFace.pearl(c).copyWith(lift: 0.7),
+                        face:
+                            (onChanged == null
+                                    ? GlossFace.pearlOff(c)
+                                          .copyWith(foreground: c.ink)
+                                    : GlossFace.pearl(c).copyWith(lift: 0.7))
+                                .copyWith(corners: slotCorners(t)),
                       ),
                     );
                   },
@@ -1229,6 +1291,7 @@ class GlossSegmentedButton<T> extends StatelessWidget {
                                 style: label,
                                 height: height - inset * 2,
                                 layered: style,
+                                corners: slotCorners(i.toDouble()),
                               ),
                             ),
                         ],
@@ -1277,6 +1340,7 @@ class _Segment<T> extends StatefulWidget {
     required this.style,
     required this.height,
     required this.layered,
+    required this.corners,
   });
 
   final int index;
@@ -1286,6 +1350,8 @@ class _Segment<T> extends StatefulWidget {
   final TextStyle style;
   final double height;
   final GlossStyle? layered;
+  // The slot's corners in a trough an app gave corners (start on the left).
+  final BorderRadius? corners;
 
   @override
   State<_Segment<T>> createState() => _SegmentState<T>();
@@ -1366,6 +1432,7 @@ class _SegmentState<T> extends State<_Segment<T>> {
         hovered: states.contains(WidgetState.hovered),
         pressed: states.contains(WidgetState.pressed),
         inside: true,
+        corners: widget.corners,
         child: SizedBox(
           height: height,
           child: Transform.translate(
@@ -2008,6 +2075,13 @@ class GlossChip extends StatelessWidget {
         face = face.copyWith(
           foreground: colour,
           focus: glossGlazeOf(c, states),
+          // An app's corners for the chip, else its pill.
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.full,
+            Directionality.of(context),
+          ),
         );
         final height = math.max(32.0, theme.controlHeight - 12);
         // Its height is a floor: large words make the capsule taller, never

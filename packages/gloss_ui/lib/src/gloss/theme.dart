@@ -1117,12 +1117,22 @@ class GlossThemeData with Diagnosticable {
   /// the rim), each step within about a third of its own (a socket from 5,
   /// still a square socket, to 9, short of a radio's round one; a field up to
   /// 16, short of the search field's pill), no stroke and no depth.
+  ///
+  /// A part's corners each take their own step (cornerFreedom perCorner): a
+  /// style's `corners` can square two diagonal corners or round only the
+  /// top start one, since a glaze runs concentric with any round fillet and
+  /// a square corner is one Gloss already draws (a grouped well's inner
+  /// rows, a split key's join). Every step is open, a square corner and a
+  /// pill's end among them. A bead stays round (a radio's, a switch's and a
+  /// slider's, a page's dot, a step's): Gloss's bead is a sphere of glass,
+  /// and Material's Radio and Switch take no shape either.
   static const RawShapeLimits shapeLimits = RawShapeLimits(
     extraSmall: RawBand(5, 9),
     small: RawBand(8, 16),
     medium: RawBand(12, 22),
     large: RawBand(14, 24),
     extraLarge: RawBand(18, 32),
+    cornerFreedom: RawCornerFreedom.perCorner,
   );
 
   /// The pearl key's part theme ([GlossButton]).

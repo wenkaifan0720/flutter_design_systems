@@ -1154,6 +1154,15 @@ class GlossTree<T extends Object> extends StatelessWidget {
         if (item.selected && layered.fill != null) {
           plate = plate.glazed(layered.fill!);
         }
+        // An app's corners for the rows' plates.
+        plate = plate.copyWith(
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.medium,
+            Directionality.of(context),
+          ),
+        );
         final ink = layered.foreground ?? (item.selected ? c.jadeInk : c.ink);
         final icon = iconOf?.call(item.row.node);
         return SizedBox(

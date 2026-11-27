@@ -111,6 +111,12 @@ class _GlossDisclosureState extends State<GlossDisclosure> {
                   bottom: clear,
                   foreground: c.ink,
                   radius: glossCorner(theme, RawCorner.small),
+                  corners: glossCornersOf(
+                    theme,
+                    layered,
+                    RawCorner.small,
+                    Directionality.of(context),
+                  ),
                   focus: glossGlazeOf(c, states),
                 ),
                 child: Padding(
@@ -367,6 +373,14 @@ class GlossTable extends StatelessWidget {
     // The rows sit in a well below the page (law 3), not on a raised card.
     var card = GlossFace.well(c, radius: glossCorner(theme, RawCorner.medium));
     if (layered.fill != null) card = card.glazed(layered.fill!);
+    card = card.copyWith(
+      corners: glossCornersOf(
+        theme,
+        layered,
+        RawCorner.medium,
+        Directionality.of(context),
+      ),
+    );
     Widget cell(String text, GlossTableColumn col, {bool head = false}) =>
         Expanded(
           flex: (col.flex * 100).round(),
@@ -779,7 +793,10 @@ class GlossAvatar extends StatelessWidget {
     final layered = RawStyleOf([style, theme.avatarStyle], const {});
     // A face is read, not pressed: a level pearl disc (no lift, no shine
     // across it), apart from the beads a finger meets.
-    var face = GlossFace.pearl(c).copyWith(lift: 0, lens: 0);
+    // An app's corners for the disc (a picture clipped to them), else round.
+    final direction = Directionality.of(context);
+    final corners = glossCornersOf(theme, layered, RawCorner.full, direction);
+    var face = GlossFace.pearl(c).copyWith(lift: 0, lens: 0, corners: corners);
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return Semantics(
       label: name,
@@ -812,12 +829,15 @@ class GlossAvatar extends StatelessWidget {
             : Stack(
                 fit: StackFit.expand,
                 children: [
-                  ClipOval(
-                    child: Image(
+                  _pictureClip(
+                    corners,
+                    direction,
+                    Image(
                       image: image!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, _, _) => GlossSurface(
-                        face: GlossFace.pearl(c).copyWith(lift: 0, lens: 0),
+                        face: GlossFace.pearl(c)
+                            .copyWith(lift: 0, lens: 0, corners: corners),
                       ),
                     ),
                   ),
@@ -830,6 +850,7 @@ class GlossAvatar extends StatelessWidget {
                       edge: c.pearlEdge,
                       foreground: c.ink,
                       lens: 0.55,
+                      corners: corners,
                     ),
                   ),
                 ],
@@ -846,6 +867,18 @@ class GlossAvatar extends StatelessWidget {
       ..add(DoubleProperty('size', size));
   }
 }
+
+// [picture] clipped to an avatar's disc, or to the corners an app gave it.
+Widget _pictureClip(
+  BorderRadius? corners,
+  TextDirection direction,
+  Widget picture,
+) => corners == null
+    ? ClipOval(child: picture)
+    : ClipRRect(
+        clipper: GlossCornerClipper(corners, direction),
+        child: picture,
+      );
 
 /// Avatars overlapping in a row, each ringed in the page's colour, the
 /// ones past [max] counted on a last pearl bead.
@@ -979,6 +1012,14 @@ class GlossBadge extends StatelessWidget {
     final layered = RawStyleOf([style, theme.badgeStyle], const {});
     var face = GlossFace.ruby(c).copyWith(lift: 0.6);
     if (layered.fill != null) face = face.glazed(layered.fill!);
+    face = face.copyWith(
+      corners: glossCornersOf(
+        theme,
+        layered,
+        RawCorner.full,
+        Directionality.of(context),
+      ),
+    );
     final words = count > maxCount ? '$maxCount+' : '$count';
     final bead = Semantics(
       label: semanticLabel ?? words,
@@ -1129,6 +1170,14 @@ class GlossTag extends StatelessWidget {
       _ => GlossFace.pearl(c).glazed(glossAccentPlate(c)),
     };
     if (layered.fill != null) face = face.glazed(layered.fill!);
+    face = face.copyWith(
+      corners: glossCornersOf(
+        theme,
+        layered,
+        RawCorner.full,
+        Directionality.of(context),
+      ),
+    );
     final ink =
         layered.foreground ??
         switch (tone) {
@@ -1423,7 +1472,17 @@ class GlossMeter extends StatelessWidget {
     final share = max <= 0 ? 0.0 : (value / max).clamp(0.0, 1.0);
     final over = high != null && value > high!;
     final said = valueText ?? '${(share * 100).round()}%';
-    var gel = over ? GlossFace.ruby(c) : GlossFace.gel(c);
+    // An app's corners for the groove, the gel inside concentric with it.
+    final groove = glossCornersOf(
+      theme,
+      layered,
+      RawCorner.full,
+      Directionality.of(context),
+    );
+    final inner = glossCornersInset(groove, GlossMetrics.rimRoom);
+    var gel = (over ? GlossFace.ruby(c) : GlossFace.gel(c)).copyWith(
+      corners: inner,
+    );
     if (layered.fill != null) gel = gel.glazed(layered.fill!);
     return Semantics(
       label: label,
@@ -1454,23 +1513,35 @@ class GlossMeter extends StatelessWidget {
           SizedBox(
             height: 14,
             child: GlossSurface(
-              face: GlossFace.well(c),
+              face: GlossFace.well(c).copyWith(corners: groove),
               child: Padding(
                 padding: const EdgeInsets.all(GlossMetrics.rimRoom),
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(end: share),
-                    duration: const Duration(milliseconds: 420),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, t, _) => FractionallySizedBox(
-                      widthFactor: t,
-                      heightFactor: 1,
-                      child: t <= 0.001
-                          ? null
-                          : AnimatedGlossSurface(
-                              face: gel.copyWith(lift: 0, lens: 0.65),
-                            ),
+                child: LayoutBuilder(
+                  builder: (context, box) => Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(end: share),
+                      duration: const Duration(milliseconds: 420),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, t, _) => FractionallySizedBox(
+                        widthFactor: t,
+                        heightFactor: 1,
+                        child: t <= 0.001
+                            ? null
+                            : AnimatedGlossSurface(
+                                // Short of the groove's end, the gel's tip
+                                // keeps its own round end.
+                                face: gel.copyWith(
+                                  lift: 0,
+                                  lens: 0.65,
+                                  corners: glossFillCorners(
+                                    inner,
+                                    box.maxHeight,
+                                    (1 - t) * box.maxWidth,
+                                  ),
+                                ),
+                              ),
+                      ),
                     ),
                   ),
                 ),

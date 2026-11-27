@@ -290,6 +290,13 @@ class GlossListTile extends StatelessWidget {
         (light) => _RowPainter(
           colors: c,
           corner: glossCorner(GlossTheme.of(context), RawCorner.medium),
+          // An app's corners for the row, its plate concentric 4 inside.
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.medium,
+            Directionality.of(context),
+          ),
           floor: floor,
           selected: selected && !disabled,
           focus: light,
@@ -366,12 +373,17 @@ class GlossListTile extends StatelessWidget {
                             ? box.maxWidth * 0.45
                             : double.infinity,
                       ),
-                      child: Text(
-                        trailingText!,
-                        textAlign: TextAlign.end,
-                        maxLines: largeText ? 2 : 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.body.copyWith(color: muted),
+                      // Centred on its capitals as the title is, so the two
+                      // stand on one line.
+                      child: RawCapCenter(
+                        capHeightFactor: glossCapHeightFactor,
+                        child: Text(
+                          trailingText!,
+                          textAlign: TextAlign.end,
+                          maxLines: largeText ? 2 : 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.body.copyWith(color: muted),
+                        ),
                       ),
                     ),
                   ],
@@ -494,11 +506,14 @@ class _RowPainter extends CustomPainter {
     required this.focus,
     required this.rtl,
     required this.corner,
+    this.corners,
   });
 
   final GlossColors colors;
   // The well's corner: the theme's medium step.
   final double corner;
+  // The row's corners an app gave (start on the left), over [corner].
+  final BorderRadius? corners;
   final Color floor;
   final bool selected;
   final Color focus;
@@ -507,6 +522,7 @@ class _RowPainter extends CustomPainter {
   // Its plate fits 4 px inside the wall of the well.
   static const double _inset = 4;
   double get _radius => corner - _inset;
+  BorderRadius? get _plateCorners => glossCornersInset(corners, _inset);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -524,6 +540,7 @@ class _RowPainter extends CustomPainter {
           // A plate that carries words: by night no band of light across
           // its crown, where it would run behind the title.
           GlossFace.pearl(colors, radius: _radius).copyWith(
+            corners: _plateCorners,
             lift: 0.45,
             focus: focus,
             lens: colors.brightness == Brightness.light ? 0.4 : 0,
@@ -540,7 +557,9 @@ class _RowPainter extends CustomPainter {
       rtl,
       () => paintGlossHalo(
         canvas,
-        RRect.fromRectAndRadius(plate, Radius.circular(_radius)),
+        _plateCorners == null
+            ? RRect.fromRectAndRadius(plate, Radius.circular(_radius))
+            : glossCornersOutline(plate, _plateCorners!),
         focus,
         brightness: colors.brightness,
         inside: true,
@@ -555,7 +574,8 @@ class _RowPainter extends CustomPainter {
       old.selected != selected ||
       old.focus != focus ||
       old.rtl != rtl ||
-      old.corner != corner;
+      old.corner != corner ||
+      old.corners != corners;
 }
 
 // Gloss is lit once, from above and the reading start: right to left, what
@@ -648,10 +668,14 @@ class GlossCard extends StatelessWidget {
       );
       if (layered.fill != null) face = face.glazed(layered.fill!);
       final pressed = states.contains(WidgetState.pressed);
+      final direction = Directionality.of(context);
+      // An app's corners for the card, its clip following them.
+      final radii = glossCornersOf(theme, layered, RawCorner.large, direction);
       face = face.copyWith(
         edge: layered.edge,
         lift: pressed ? 0.1 : 0.35,
         focus: glossGlazeOf(c, states),
+        corners: radii,
       );
       return AnimatedGlossSurface(
         face: face,
@@ -659,6 +683,7 @@ class GlossCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(
             glossCorner(theme, RawCorner.large),
           ),
+          clipper: radii == null ? null : GlossCornerClipper(radii, direction),
           child: Padding(
             padding: layered.padding(Directionality.of(context)) ?? padding,
             child: child,

@@ -104,6 +104,19 @@ class GlossMenuRow extends StatelessWidget {
           glossCorner(GlossTheme.of(context), RawCorner.medium) -
           glossPanelInset,
     );
+    // An app's corners for the rows, drawn concentric inside the panel as
+    // Gloss's own are.
+    plate = plate.copyWith(
+      corners: glossCornersInset(
+        glossCornersOf(
+          theme,
+          layered,
+          RawCorner.medium,
+          Directionality.of(context),
+        ),
+        glossPanelInset,
+      ),
+    );
     if (layered.fill != null) plate = plate.glazed(layered.fill!);
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -616,10 +629,18 @@ class _Card extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, styleOf(theme)], const {});
-    var face = glossPanelFace(
-      c,
-      radius: glossCorner(GlossTheme.of(context), RawCorner.medium),
-    );
+    var face =
+        glossPanelFace(
+          c,
+          radius: glossCorner(GlossTheme.of(context), RawCorner.medium),
+        ).copyWith(
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.medium,
+            Directionality.of(context),
+          ),
+        );
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return SizedBox(
       width: width,
@@ -729,6 +750,12 @@ class _Smoke extends StatelessWidget {
       lens: 0.6,
       lift: 0.6,
       radius: glossCorner(theme, RawCorner.small, 10),
+      corners: glossCornersOf(
+        theme,
+        layered,
+        RawCorner.small,
+        Directionality.of(context),
+      ),
     );
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return ConstrainedBox(

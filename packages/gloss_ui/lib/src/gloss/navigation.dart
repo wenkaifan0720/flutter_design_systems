@@ -293,6 +293,13 @@ class _PocketFace extends StatelessWidget {
       lip: chosen || pressed ? null : c.lip.withValues(alpha: 0),
       foreground: words,
       focus: glossGlazeOf(c, states),
+      // An app's corners for the pocket, else its capsule.
+      corners: glossCornersOf(
+        theme,
+        layered,
+        RawCorner.full,
+        Directionality.of(context),
+      ),
     );
     return TapTargetPadding(
       child: Column(
@@ -395,6 +402,12 @@ class _SideFace extends StatelessWidget {
           face: face.copyWith(
             foreground: words,
             focus: glossGlazeOf(c, states),
+            corners: glossCornersOf(
+              theme,
+              layered,
+              RawCorner.small,
+              Directionality.of(context),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -1619,6 +1632,12 @@ class _GlossTabBarState extends State<GlossTabBar>
           hovered: details.states.contains(WidgetState.hovered),
           pressed: details.states.contains(WidgetState.pressed),
           inside: true,
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.full,
+            Directionality.of(context),
+          ),
           child: Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(

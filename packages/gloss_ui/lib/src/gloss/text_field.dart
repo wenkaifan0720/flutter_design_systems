@@ -278,13 +278,22 @@ class _GlossTextFieldState extends State<GlossTextField> {
     // The well every Gloss field is typed in: lit jade from inside when
     // focused, rimmed in ruby while its error shows (as the search,
     // password and other fields are).
-    final face = glossEntryFace(
-      theme,
-      states,
-      fill: layered.fill,
-      edge: layered.edge,
-      radius: glossCorner(theme, RawCorner.small),
-    );
+    final face =
+        glossEntryFace(
+          theme,
+          states,
+          fill: layered.fill,
+          edge: layered.edge,
+          radius: glossCorner(theme, RawCorner.small),
+        ).copyWith(
+          // An app's corners for the well, else its own small step.
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.small,
+            Directionality.of(context),
+          ),
+        );
     final entry = RawTextEntryBox(
       minHeight: theme.controlHeight,
       controller: _controller,

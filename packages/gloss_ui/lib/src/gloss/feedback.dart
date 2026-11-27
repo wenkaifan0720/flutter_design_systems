@@ -138,10 +138,18 @@ class GlossBanner extends StatelessWidget {
     // A level porcelain plate (it holds news, it is not an object to lift),
     // glazed faintly in its tone, its rim in the tone too.
     final ink = _toneInk(c, tone);
-    final porcelain = GlossFace.porcelain(
-      c,
-      radius: glossCorner(theme, RawCorner.large),
-    );
+    final porcelain =
+        GlossFace.porcelain(
+          c,
+          radius: glossCorner(theme, RawCorner.large),
+        ).copyWith(
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.large,
+            Directionality.of(context),
+          ),
+        );
     final glaze = tone == GlossBannerTone.info
         ? 0.0
         : c.brightness == Brightness.light
@@ -555,7 +563,15 @@ class GlossProgressBar extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.progressStyle], const {});
-    var gel = GlossFace.gel(c).copyWith(lift: 0, lens: 0.65);
+    // An app's corners for the groove, the gel inside concentric with it.
+    final groove = glossCornersOf(
+      theme,
+      layered,
+      RawCorner.full,
+      Directionality.of(context),
+    );
+    final inner = glossCornersInset(groove, GlossMetrics.rimRoom);
+    var gel = GlossFace.gel(c).copyWith(lift: 0, lens: 0.65, corners: inner);
     if (layered.fill != null) gel = gel.glazed(layered.fill!);
     final known = value?.clamp(0.0, 1.0);
     return Semantics(
@@ -565,20 +581,34 @@ class GlossProgressBar extends StatelessWidget {
       child: SizedBox(
         height: height,
         child: GlossSurface(
-          face: GlossFace.well(c),
+          face: GlossFace.well(c).copyWith(corners: groove),
           child: Padding(
             padding: const EdgeInsets.all(GlossMetrics.rimRoom),
             child: known != null
-                ? Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(end: known),
-                      duration: const Duration(milliseconds: 380),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, t, _) => FractionallySizedBox(
-                        widthFactor: t,
-                        heightFactor: 1,
-                        child: t <= 0.001 ? null : GlossSurface(face: gel),
+                ? LayoutBuilder(
+                    builder: (context, box) => Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(end: known),
+                        duration: const Duration(milliseconds: 380),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, t, _) => FractionallySizedBox(
+                          widthFactor: t,
+                          heightFactor: 1,
+                          child: t <= 0.001
+                              ? null
+                              : GlossSurface(
+                                  // Short of the groove's end, the gel's tip
+                                  // keeps its own round end.
+                                  face: gel.copyWith(
+                                    corners: glossFillCorners(
+                                      inner,
+                                      box.maxHeight,
+                                      (1 - t) * box.maxWidth,
+                                    ),
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
                   )
@@ -593,6 +623,12 @@ class GlossProgressBar extends StatelessWidget {
                         final x = -slug + (box.maxWidth + slug) * eased;
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(height),
+                          clipper: inner == null
+                              ? null
+                              : GlossCornerClipper(
+                                  inner,
+                                  Directionality.of(context),
+                                ),
                           child: Stack(
                             children: [
                               PositionedDirectional(

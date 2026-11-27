@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/key_paint.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -152,6 +153,13 @@ class GlossButton extends StatelessWidget {
                 focused: focused,
                 hovered: states.contains(WidgetState.hovered),
                 pressed: states.contains(WidgetState.pressed),
+                // An app's corners for the light, else its capsule.
+                corners: glossCornersOf(
+                  theme,
+                  layered,
+                  RawCorner.full,
+                  Directionality.of(context),
+                ),
                 tint: true,
                 child: Padding(
                   padding: padding,
@@ -382,6 +390,12 @@ class GlossIconButton extends StatelessWidget {
                   focused: states.contains(WidgetState.focused),
                   hovered: states.contains(WidgetState.hovered),
                   pressed: states.contains(WidgetState.pressed),
+                  corners: glossCornersOf(
+                    theme,
+                    layered,
+                    RawCorner.full,
+                    Directionality.of(context),
+                  ),
                   inside: true,
                   tint: true,
                   child: Center(
@@ -421,7 +435,17 @@ class GlossIconButton extends StatelessWidget {
           face = GlossFace.pearl(c).copyWith(travel: pressed ? 1 : 0);
         }
         if (layered.fill != null) face = face.glazed(layered.fill!);
-        face = face.copyWith(foreground: layered.foreground, focus: focus);
+        face = face.copyWith(
+          foreground: layered.foreground,
+          focus: focus,
+          // An app's corners for the bead, else its circle.
+          corners: glossCornersOf(
+            theme,
+            layered,
+            RawCorner.full,
+            Directionality.of(context),
+          ),
+        );
         return TapTargetPadding(
           child: SizedBox.square(
             dimension: side,

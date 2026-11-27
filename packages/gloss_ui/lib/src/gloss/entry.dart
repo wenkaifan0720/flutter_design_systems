@@ -242,13 +242,21 @@ class _GlossSearchFieldState extends State<GlossSearchField>
         return GlossEntryWell(
           focusNode: focusNode,
           enabled: widget.enabled,
-          face: glossEntryFace(
-            theme,
-            states,
-            fill: layered.fill,
-            edge: layered.edge,
-            radius: theme.controlHeight / 2,
-          ),
+          face:
+              glossEntryFace(
+                theme,
+                states,
+                fill: layered.fill,
+                edge: layered.edge,
+                radius: theme.controlHeight / 2,
+              ).copyWith(
+                corners: glossCornersOf(
+                  theme,
+                  layered,
+                  RawCorner.full,
+                  Directionality.of(context),
+                ),
+              ),
           leading: const Icon(LucideIcons.search),
           trailing: ListenableBuilder(
             listenable: controller,
@@ -373,12 +381,20 @@ class _GlossPasswordFieldState extends State<GlossPasswordField>
             return GlossEntryWell(
               focusNode: focusNode,
               enabled: widget.enabled,
-              face: glossEntryFace(
-                theme,
-                states,
-                fill: layered.fill,
-                edge: layered.edge,
-              ),
+              face:
+                  glossEntryFace(
+                    theme,
+                    states,
+                    fill: layered.fill,
+                    edge: layered.edge,
+                  ).copyWith(
+                    corners: glossCornersOf(
+                      theme,
+                      layered,
+                      RawCorner.small,
+                      Directionality.of(context),
+                    ),
+                  ),
               trailing: GlossIconButton.plain(
                 onPressed: widget.enabled ? password.toggle : null,
                 tooltip: password.toggleLabel,
@@ -538,12 +554,20 @@ class _GlossInputGroupState extends State<GlossInputGroup>
             height: theme.controlHeight,
             child: GlazePointerSurface(
               enabled: widget.enabled,
-              face: glossEntryFace(
-                theme,
-                states,
-                fill: layered.fill,
-                edge: layered.edge,
-              ),
+              face:
+                  glossEntryFace(
+                    theme,
+                    states,
+                    fill: layered.fill,
+                    edge: layered.edge,
+                  ).copyWith(
+                    corners: glossCornersOf(
+                      theme,
+                      layered,
+                      RawCorner.small,
+                      Directionality.of(context),
+                    ),
+                  ),
               child: child,
             ),
           );
@@ -679,6 +703,10 @@ class GlossOtpField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
+    // A code reads left to right in any app, but each box is the app's
+    // porcelain: its light and an app's corners follow the app's reading
+    // direction, as every other field's do.
+    final direction = Directionality.of(context);
     // The boxes start under the label, as every field's words do (the
     // code centres them in whatever width it is given).
     return Align(
@@ -717,17 +745,25 @@ class GlossOtpField extends StatelessWidget {
             if (slot.isError) WidgetState.error,
           };
           final layered = RawStyleOf([style, theme.otpFieldStyle], states);
-          return SizedBox(
+          final box = SizedBox(
             width: 44,
             height: theme.controlHeight + 4,
             child: GlazePointerSurface(
               enabled: slot.enabled,
-              face: glossEntryFace(
-                theme,
-                states,
-                fill: layered.fill,
-                edge: layered.edge,
-              ),
+              face:
+                  glossEntryFace(
+                    theme,
+                    states,
+                    fill: layered.fill,
+                    edge: layered.edge,
+                  ).copyWith(
+                    corners: glossCornersOf(
+                      theme,
+                      layered,
+                      RawCorner.small,
+                      direction,
+                    ),
+                  ),
               child: Center(
                 child: Text(
                   slot.obscured && slot.character.isNotEmpty
@@ -743,6 +779,7 @@ class GlossOtpField extends StatelessWidget {
               ),
             ),
           );
+          return Directionality(textDirection: direction, child: box);
         },
       ),
     );
@@ -1024,12 +1061,20 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
             return GlossEntryWell(
               focusNode: field.focusNode,
               enabled: enabled,
-              face: glossEntryFace(
-                theme,
-                states,
-                fill: layered.fill,
-                edge: layered.edge,
-              ),
+              face:
+                  glossEntryFace(
+                    theme,
+                    states,
+                    fill: layered.fill,
+                    edge: layered.edge,
+                  ).copyWith(
+                    corners: glossCornersOf(
+                      theme,
+                      layered,
+                      RawCorner.small,
+                      Directionality.of(context),
+                    ),
+                  ),
               // The select's dial bead, seated as the select seats it:
               // the two read as one kind of field.
               trailing: Padding(
@@ -1290,12 +1335,20 @@ class _TagWellState extends State<_TagWell> {
           constraints: BoxConstraints(minHeight: theme.controlHeight),
           child: GlazePointerSurface(
             enabled: widget.enabled,
-            face: glossEntryFace(
-              theme,
-              states,
-              fill: layered.fill,
-              edge: layered.edge,
-            ),
+            face:
+                glossEntryFace(
+                  theme,
+                  states,
+                  fill: layered.fill,
+                  edge: layered.edge,
+                ).copyWith(
+                  corners: glossCornersOf(
+                    theme,
+                    layered,
+                    RawCorner.small,
+                    Directionality.of(context),
+                  ),
+                ),
             // Each tag and the line stand in a slot a finger's height; the
             // well round them is a control's height for one row.
             child: Padding(

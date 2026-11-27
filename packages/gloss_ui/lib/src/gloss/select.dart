@@ -118,10 +118,19 @@ class GlossSelect<T> extends StatelessWidget {
           {...states, if (errorText != null) WidgetState.error},
         );
         final pressed = states.contains(WidgetState.pressed);
-        var well = GlossFace.well(
-          c,
-          radius: glossCorner(theme, RawCorner.small),
-        );
+        var well =
+            GlossFace.well(
+              c,
+              radius: glossCorner(theme, RawCorner.small),
+            ).copyWith(
+              // An app's corners for the field's well, else its own small step.
+              corners: glossCornersOf(
+                theme,
+                layered,
+                RawCorner.small,
+                Directionality.of(context),
+              ),
+            );
         if (layered.fill != null) well = well.glazed(layered.fill!);
         // Focused by the keys, the well lights jade from inside, as a
         // text field's does: that one mark, no reflection along its floor

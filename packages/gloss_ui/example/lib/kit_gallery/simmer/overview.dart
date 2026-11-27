@@ -185,7 +185,64 @@ class SimmerOverview extends StatelessWidget {
           simmerGroupGap,
           package,
         ],
+        simmerGroupGap,
+        const _OwnCorners(),
         if (index != null) ...[simmerGroupGap, index],
+      ],
+    );
+  }
+}
+
+/// A part's own corners: a style's `corners` squares two diagonal corners
+/// of a card and of the key on it, the others keeping their own (mirrored
+/// right to left).
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  static const _cut = GlossStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topStart: RawCorner.none, bottomEnd: RawCorner.none),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.glossTheme;
+    final t = theme.textTheme;
+    final c = theme.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const GlossSectionHeader('Corners of its own'),
+        const SizedBox(height: GlossSpacing.small),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: GlossCard(
+              style: _cut,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Lemon risotto', style: t.title.copyWith(color: c.ink)),
+                  const SizedBox(height: GlossSpacing.tight),
+                  Text(
+                    "A style's corners square two of this card's corners "
+                    "and two of its key's; the others keep their own.",
+                    style: t.secondary.copyWith(color: c.inkSecondary),
+                  ),
+                  const SizedBox(height: GlossSpacing.regular),
+                  GlossButton.filled(
+                    'Cook this',
+                    onPressed: () {},
+                    style: _cut,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
