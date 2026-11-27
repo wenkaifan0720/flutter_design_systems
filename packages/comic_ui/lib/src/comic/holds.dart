@@ -1,6 +1,7 @@
 /// Containers and disclosure in the vocabulary of inked panels and ruled rows.
 library;
 
+import 'package:ui_core/ui_core.dart' show RawCorner;
 import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;
@@ -20,6 +21,7 @@ import 'rows.dart';
 import 'theme.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/corners.dart';
 
 /// An inked card with a title and a stack of content. Given a height (cards sharing a row), a child wrapped in
 /// [ComicGrow] takes the slack, so what follows it (an action) stands on the card's foot, on one line across the row.
@@ -104,7 +106,7 @@ class ComicListSection extends StatelessWidget {
     // 2 px deeper at the foot on a desktop (20 over 22), which a group of rows would show as uneven ends.
     final end = math.max(0.0, math.max(inset.top, inset.bottom) - gap);
     final rows = comicInsetShape(
-      look.shape ?? t.shapes.medium,
+      comicPartShape(t, look, RawCorner.medium),
       comicRim(t, look, t.colors.nightLine, 3).width + gap,
     );
     return Semantics(

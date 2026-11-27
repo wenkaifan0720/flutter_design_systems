@@ -36,10 +36,15 @@ import 'internal/lettering.dart' show comicDisplayFor;
 import 'internal/track.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/corners.dart';
 
 class _Carried {
   _Carried(BuildContext context, NavigatorState navigator)
-    : themes = InheritedTheme.capture(from: context, to: navigator.context),
+    : this.into(context, navigator.context);
+
+  // What [context] reads, carried into a part built under [to], one of its ancestors.
+  _Carried.into(BuildContext context, BuildContext to)
+    : themes = InheritedTheme.capture(from: context, to: to),
       direction = Directionality.of(context),
       locale = Localizations.maybeLocaleOf(context),
       motion = ComicMotion.of(context),
@@ -393,7 +398,7 @@ class _ModalPanel extends StatelessWidget {
                 child: _RaisedFrame(
                   style: style,
                   theme: t.dialogTheme,
-                  shape: t.shapes.large,
+                  corner: RawCorner.large,
                   plate: true,
                   child: ComicColumn(
                     gap: 16,
@@ -643,7 +648,7 @@ class ComicBottomSheet extends StatelessWidget {
       scopesRoute: true,
       explicitChildNodes: true,
       child: AnimatedComicShape(
-        shape: look.shape ?? t.shapes.large,
+        shape: comicPartShape(t, look, RawCorner.large),
         builder: (context, shape) => DecoratedBox(
           decoration: ShapeDecoration(
             color: look.fill ?? t.colors.card,
@@ -1080,7 +1085,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
         ? current
         : widget.items.indexWhere((item) => item.enabled);
     final look = comicStyleOf([widget.style, t.menuTheme], const {});
-    final frame = look.shape ?? t.shapes.medium;
+    final frame = comicPartShape(t, look, RawCorner.medium);
     // A row sits 4 px inside the rim, so its corner is the menu's minus that inset: concentric, never a square
     // block inside a rounded menu. Its wash takes the same outline.
     final inset = comicRim(t, look, t.colors.nightLine, 3).width + 4;
@@ -1093,7 +1098,6 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
     return _RaisedFrame(
       style: widget.style,
       theme: t.menuTheme,
-      shape: t.shapes.medium,
       padding: const EdgeInsets.all(ComicSpace.tight),
       plate: widget._raised,
       scrolls: widget._raised,
@@ -1567,8 +1571,18 @@ class ComicTooltipFace extends StatelessWidget {
     style: ComicStyle.layered([
       style,
       ComicTheme.of(context).tooltipTheme,
+      // A box at the medium step, or the corners a style gives it.
       ComicStyle(
-        shape: WidgetStatePropertyAll(ComicTheme.of(context).shapes.medium),
+        shape: WidgetStatePropertyAll(
+          comicPartShape(
+            ComicTheme.of(context),
+            comicStyleOf([
+              style,
+              ComicTheme.of(context).tooltipTheme,
+            ], const {}),
+            RawCorner.medium,
+          ),
+        ),
       ),
     ]),
   );
@@ -1905,7 +1919,7 @@ class ComicSnackBar extends StatelessWidget {
         ? pad.left
         : pad.right;
     final shape = comicInsetShape(
-      surface.shape ?? t.shapes.medium,
+      comicPartShape(t, surface, RawCorner.medium),
       rim.width + end,
     );
     final actionStyle = ComicStyle(shape: WidgetStatePropertyAll(shape));
@@ -1940,7 +1954,6 @@ class ComicSnackBar extends StatelessWidget {
         style: style,
         theme: t.snackBarTheme,
         padding: EdgeInsets.all(inset),
-        shape: t.shapes.medium,
         plate: true,
         child: inline
             ? ComicMessageLine(
@@ -2007,8 +2020,11 @@ class ComicSnackBar extends StatelessWidget {
   }
 }
 
-/// Shows one announcement per navigator, replacing the previous one.
-/// Actions remain available indefinitely when accessible navigation is on.
+/// Shows [message] as a [ComicSnackBar] for [duration], in the app's one toaster that [ComicHost] holds above the
+/// navigator: it stays in sight when the app's place changes, and stands above the shell's tab bar, a page's footer and
+/// the keyboard, wherever it was raised from. Up to three stand stacked, the newest last; more wait their turn. Without
+/// a [ComicHost] it rises in the navigator's own overlay. An action stays until it is answered while a screen reader
+/// runs.
 ///
 /// ```dart
 /// showComicSnackBar(context, 'Saved', actionLabel: 'Undo', onAction: undo)
@@ -2024,11 +2040,34 @@ ComicRaised showComicSnackBar(
   Duration duration = const Duration(seconds: 4),
   String? dismissLabel,
 }) {
+  final handle = _Toasted();
+  final app = _AppToasts.of(context);
+  if (app != null) {
+    handle.attach(
+      app.show(
+        RawToast(
+          message: message,
+          title: title,
+          actionLabel: actionLabel,
+          onAction: onAction,
+          duration: duration,
+          data: _ToastShown(
+            carried: _Carried.into(context, app.context),
+            shell: 0,
+            hosted: true,
+            style: style,
+            tone: tone,
+            dismissLabel: dismissLabel,
+          ),
+        ),
+      ),
+    );
+    return handle;
+  }
   final navigator = Navigator.of(context);
   final overlay = navigator.overlay!;
   final words = ComicLocalizations.of(context);
   final host = _toasters[overlay] ??= _ToastHost(overlay, words);
-  final handle = _Toasted();
   host.raise(
     RawToast(
       message: message,
@@ -2058,12 +2097,16 @@ class _ToastShown {
   const _ToastShown({
     required this.carried,
     required this.shell,
+    this.hosted = false,
     this.style,
     this.tone,
     this.dismissLabel,
   });
   final _Carried carried;
   final double shell;
+
+  // In the app's toaster, which keeps it clear of the bars and the keyboard itself.
+  final bool hosted;
   final ComicStyle? style;
   final ComicTone? tone;
   final String? dismissLabel;
@@ -2133,13 +2176,17 @@ class _ToastHost {
 
   static Widget _toastFace(BuildContext context, RawToastDetails view) {
     final toast = view.toast;
-    final shown = toast.data! as _ToastShown;
+    final data = toast.data;
+    if (data is _ToastLine) return _lineFace(context, view, data);
+    final shown = data! as _ToastShown;
     return shown.carried.wrap(
       context,
       Transform.translate(
         offset: Offset(
           0,
-          -math.max(shown.shell, MediaQuery.viewInsetsOf(context).bottom),
+          shown.hosted
+              ? 0
+              : -math.max(shown.shell, MediaQuery.viewInsetsOf(context).bottom),
         ),
         child: AnimatedBuilder(
           animation: view.animation,
@@ -2172,10 +2219,104 @@ class _ToastHost {
   }
 }
 
+// A toast's face in the app's toaster: centred, 420 at most, a short pop from .92, opaque from its first frame and cut
+// away at the end: nothing fades (law 6).
+Widget _lineFace(BuildContext context, RawToastDetails view, _ToastLine line) =>
+    line.carried.wrap(
+      context,
+      Padding(
+        padding: EdgeInsets.only(top: view.index == 0 ? 0 : ComicSpace.close),
+        child: Align(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: AnimatedBuilder(
+              animation: view.animation,
+              builder: (context, face) => Transform.scale(
+                scale: .92 + .08 * view.animation.value.clamp(0.0, 1.0),
+                child: face,
+              ),
+              child: ComicToast._toasted(
+                view.toast.message,
+                tone: line.tone,
+                icon: line.icon,
+                style: line.style,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+/// The app's one toaster, which [ComicHost] holds above the navigator: every snack bar and toast raised under it
+/// ([showComicSnackBar], [showComicToast]) stands here, so it outlives a switch of place and keeps clear of the shell's
+/// navigation, a page's footer ([RawToasterKeepClear]) and the keyboard.
+class ComicAppToaster extends StatefulWidget {
+  /// Holds the toasts raised under [child].
+  const ComicAppToaster({super.key, required this.child});
+
+  /// The app: its navigator.
+  final Widget child;
+
+  @override
+  State<ComicAppToaster> createState() => _ComicAppToasterState();
+}
+
+class _ComicAppToasterState extends State<ComicAppToaster> {
+  final _toaster = GlobalKey<RawToasterState>(debugLabel: 'ComicAppToaster');
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.maybeOf(context);
+    Widget toaster = RawToaster(
+      key: _toaster,
+      regionLabel: ComicLocalizations.of(context).notifications,
+      toastBuilder: _ToastHost._toastFace,
+      // The app under the toasts reads the window as it is.
+      child: media == null
+          ? widget.child
+          : MediaQuery(data: media, child: widget.child),
+    );
+    if (media != null) {
+      // The keyboard is an edge the toasts keep clear of, as the safe inset is: they stand above it or above a bar
+      // the toaster keeps them clear of, whichever is higher.
+      toaster = MediaQuery(
+        data: media.copyWith(
+          padding: media.padding.copyWith(
+            bottom: math.max(media.padding.bottom, media.viewInsets.bottom),
+          ),
+        ),
+        child: toaster,
+      );
+    }
+    return _AppToasts(toaster: _toaster, child: toaster);
+  }
+}
+
+// Marks the app's toaster for what is raised under it.
+class _AppToasts extends InheritedWidget {
+  const _AppToasts({required this.toaster, required super.child});
+
+  final GlobalKey<RawToasterState> toaster;
+
+  // The app's toaster above [context]; null without a [ComicHost].
+  static RawToasterState? of(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_AppToasts>()?.toaster.currentState;
+
+  @override
+  bool updateShouldNotify(_AppToasts oldWidget) => oldWidget.toaster != toaster;
+}
+
 class _Toasted implements ComicRaised {
   RawToastController? _handle;
   bool _dismissed = false;
   final _closed = Completer<void>();
+
+  // A newer toast took its place: it is gone, and its handle no longer reaches the newer one.
+  void release() {
+    _handle = null;
+    finish();
+  }
 
   void attach(RawToastController handle) {
     _handle = handle;
@@ -2205,7 +2346,15 @@ class _Toasted implements ComicRaised {
 /// ```
 class ComicToast extends StatelessWidget {
   /// Creates a toast face.
-  const ComicToast(this.message, {super.key, this.tone, this.icon, this.style});
+  const ComicToast(this.message, {super.key, this.tone, this.icon, this.style})
+    : _live = true;
+
+  /// A toast face in the app's toaster, which speaks for it.
+  const ComicToast._toasted(this.message, {this.tone, this.icon, this.style})
+    : _live = false;
+
+  /// Speaks when it appears; the toaster speaks for the toasts it holds.
+  final bool _live;
 
   /// What happened, in a few words.
   final String message;
@@ -2223,14 +2372,13 @@ class ComicToast extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return Semantics(
-      liveRegion: true,
+      liveRegion: _live,
       container: true,
       label: message,
       excludeSemantics: true,
       child: _RaisedFrame(
         style: style,
         theme: t.snackBarTheme,
-        shape: t.shapes.medium,
         plate: true,
         padding: const EdgeInsets.symmetric(
           horizontal: ComicSpace.gap,
@@ -2275,8 +2423,22 @@ class ComicToast extends StatelessWidget {
 
 final _toasts = Expando<_Overlaid>();
 
-/// Shows [message] as a [ComicToast] above the page's foot for [duration], replacing the navigator's previous toast. It
-/// takes no focus and no press: a toast that needs an answer is a [showComicSnackBar].
+// The toast standing in each app toaster, which the next one replaces.
+final _hostedToasts = Expando<_Toasted>();
+const Object _comicToastId = #comicToast;
+
+class _ToastLine {
+  const _ToastLine({required this.carried, this.tone, this.icon, this.style});
+  final _Carried carried;
+  final ComicTone? tone;
+  final IconData? icon;
+  final ComicStyle? style;
+}
+
+/// Shows [message] as a [ComicToast] for [duration], in the app's one toaster that [ComicHost] holds above the
+/// navigator, replacing the toast standing there: it stays in sight when the app's place changes, and stands above the
+/// shell's tab bar, a page's footer and the keyboard, wherever it was raised from. Without a [ComicHost] it rises in the
+/// navigator's own overlay. It asks for nothing: a toast that needs an answer is a [showComicSnackBar].
 ///
 /// ```dart
 /// showComicToast(context, 'Link copied', tone: ComicTone.success)
@@ -2289,6 +2451,32 @@ ComicRaised showComicToast(
   ComicStyle? style,
   Duration duration = const Duration(milliseconds: 2500),
 }) {
+  final app = _AppToasts.of(context);
+  if (app != null) {
+    _hostedToasts[app]?.release();
+    final handle = _Toasted();
+    _hostedToasts[app] = handle;
+    handle.closed.whenComplete(() {
+      if (identical(_hostedToasts[app], handle)) _hostedToasts[app] = null;
+    });
+    handle.attach(
+      app.show(
+        RawToast(
+          // One toast at a time: the next takes this one's place, its time restarted.
+          id: _comicToastId,
+          message: message,
+          duration: duration,
+          data: _ToastLine(
+            carried: _Carried.into(context, app.context),
+            tone: tone,
+            icon: icon,
+            style: style,
+          ),
+        ),
+      ),
+    );
+    return handle;
+  }
   final navigator = Navigator.of(context);
   final overlay = navigator.overlay!;
   _toasts[overlay]?.dismiss();
@@ -2353,6 +2541,7 @@ class _RaisedFrame extends StatelessWidget {
     required this.theme,
     this.style,
     this.shape,
+    this.corner = RawCorner.medium,
     this.padding,
     this.plate = false,
     this.scrolls = false,
@@ -2360,7 +2549,12 @@ class _RaisedFrame extends StatelessWidget {
   final Widget child;
   final ComicStyle? style;
   final ComicStyle theme;
+
+  /// An outline given as it is (a [ComicRaisedFrame]'s shape); null, the frame's own at [corner], or the style's.
   final OutlinedBorder? shape;
+
+  /// The step of Comic's corner scale the frame's own corners take: large for a dialog, medium otherwise.
+  final RawCorner corner;
   final EdgeInsetsGeometry? padding;
 
   /// Floats over the page: it stands on its plate ([comicRaisedPlate]).
@@ -2385,7 +2579,7 @@ class _RaisedFrame extends StatelessWidget {
       content = DefaultTextStyle.merge(style: look.textStyle!, child: content);
     }
     return AnimatedComicShape(
-      shape: look.shape ?? shape,
+      shape: look.shape ?? shape ?? comicPartShape(t, look, corner),
       builder: (context, outline) {
         final edge = EdgeInsets.all(rim.width)
             .add(outline?.dimensions ?? EdgeInsets.zero);
@@ -2483,7 +2677,7 @@ class ComicRaisedFrame extends StatelessWidget {
     return _RaisedFrame(
       style: style,
       theme: t.menuTheme,
-      shape: shape ?? t.shapes.medium,
+      shape: shape,
       padding: padding,
       plate: plate,
       child: child,
@@ -2529,7 +2723,7 @@ double comicFieldListWords(ComicThemeData t, [ComicStyle? style]) {
 OutlinedBorder comicMenuRowShape(ComicThemeData t) {
   final look = comicStyleOf([t.menuTheme], const {});
   return comicInsetShape(
-    look.shape ?? t.shapes.medium,
+    comicPartShape(t, look, RawCorner.medium),
     comicRim(t, look, t.colors.nightLine, 3).width + 4,
   );
 }
@@ -3020,6 +3214,7 @@ Widget comicSearchFailed(
 /// would darken it (0x40, a quarter), so the page recedes while its colours between the dots stay its own. The dots
 /// swell in with the route and shrink away with it.
 ///
+/// By day the dots only darken what lies under them, so a dot that lands on a letter darker than it leaves it whole.
 /// Under a night [ComicTheme] the page is first dimmed under an overprint of its own ground ink, as process inks
 /// overprint, and the dots only lighten what lies under them: the page behind sits darker than the panel open over it,
 /// and a dot that lands on dimmed lettering leaves it whole.
@@ -3100,7 +3295,11 @@ class _ScrimPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final dim = this.dim;
     if (dim == null) {
-      if (grid.radius > 0) grid.paint(canvas, rect, ink);
+      if (grid.radius <= 0) return;
+      // By day the dots only darken: where the page is darker than they are, on a letter, it stays as it is.
+      canvas.saveLayer(rect, Paint()..blendMode = BlendMode.darken);
+      grid.paint(canvas, rect, ink);
+      canvas.restore();
       return;
     }
     canvas.drawRect(rect, Paint()..color = dim);

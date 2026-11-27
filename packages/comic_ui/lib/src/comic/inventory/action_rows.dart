@@ -20,6 +20,7 @@ import '../internal/lettering.dart' show comicDisplayFor;
 import '../internal/menu_rows.dart';
 import '../internal/style_guard.dart';
 import '../knobs.dart' show ComicSpace;
+import '../internal/corners.dart';
 
 /// One action in a [ComicButtonGroup].
 @immutable
@@ -66,7 +67,7 @@ class ComicButtonGroup extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final look = comicStyleOf([t.segmentedButtonTheme], const {});
     final rim = comicRim(t, look, c.nightLine);
-    final outer = look.shape ?? t.shapes.capsule;
+    final outer = comicPartShape(t, look, RawCorner.extraSmall);
     final inner = ComicTrack.cellShape(outer, rim);
     return Semantics(
       label: semanticLabel,
@@ -193,7 +194,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final look = comicStyleOf([t.segmentedButtonTheme], const {});
     final rim = comicRim(t, look, c.nightLine);
-    final outer = look.shape ?? t.shapes.capsule;
+    final outer = comicPartShape(t, look, RawCorner.extraSmall);
     final inner = ComicTrack.cellShape(outer, rim);
     final lit = comicStyleOf(
       [t.segmentedButtonTheme],
@@ -334,7 +335,7 @@ class ComicSplitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     final look = comicStyleOf([t.filledButtonTheme], const {});
-    final outer = look.shape ?? t.shapes.small;
+    final outer = comicPartShape(t, look, RawCorner.small);
     final rim = comicRim(t, look, c.nightLine);
     final inner = comicInsetShape(outer, rim.width + 3);
     final height = t.density.height(48);

@@ -490,6 +490,7 @@ List<Widget> _overview() => [
           );
         },
       ),
+      const _OwnCorners(),
       Builder(
         builder: (context) {
           final go = LiveNavigation.maybeOf(context)?.go;
@@ -534,6 +535,70 @@ List<Widget> _overview() => [
     ],
   ),
 ];
+
+/// A part's own corners: on a rounder scheme than Comic's square one, a card's style rounds two opposite corners and
+/// a button's its top start only, the other corners square.
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = ComicTheme.of(context);
+    final rounder = t.copyWith(
+      shapeScheme: t.shapeScheme.copyWith(
+        corners: t.shapeScheme.corners.copyWith(
+          extraSmall: 6,
+          small: 6,
+          medium: 10,
+          large: 14,
+        ),
+      ),
+    );
+    return Align(
+      alignment: AlignmentDirectional.topStart,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: ComicTheme(
+          data: rounder,
+          child: ComicCard(
+            title: kitSay(context, "A part's own corners"),
+            style: const ComicStyle(
+              corners: WidgetStatePropertyAll(
+                RawCorners(
+                  topStart: RawCorner.large,
+                  topEnd: RawCorner.none,
+                  bottomStart: RawCorner.none,
+                  bottomEnd: RawCorner.large,
+                ),
+              ),
+            ),
+            children: [
+              Text(
+                kitSay(
+                  context,
+                  "A style's corners shape one part on its own: this card is rounded at two opposite corners, its button at the top start only.",
+                ),
+              ),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: ComicButton.filled(
+                  kitSay(context, 'Send'),
+                  style: const ComicStyle(
+                    corners: WidgetStatePropertyAll(
+                      RawCorners.only(topStart: RawCorner.medium),
+                    ),
+                  ),
+                  onPressed: () =>
+                      kitFeedback(context, kitSay(context, 'Sent.')),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// One section that runs across the whole sheet rather than taking a column of two.
 class _Across extends StatelessWidget {

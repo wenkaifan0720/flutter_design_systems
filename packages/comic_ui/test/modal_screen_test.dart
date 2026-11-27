@@ -1,6 +1,7 @@
 // The page behind a modal is screened in Ben-Day dots: solid dots of the scrim's ink that cover as much of the page as
-// the scrim's alpha would darken it. By day that's all, no flat wash; at night one overprint of the page's ground dims
-// it first, and the dots over it only lighten, so they never punch a hole in the lettering behind. The dots stand clear
+// the scrim's alpha would darken it. By day that's all, no flat wash, and the dots only darken, so a letter they land on
+// stays whole; at night one overprint of the page's ground dims it first, and the dots over it only lighten, so they
+// never punch a hole in the lettering behind. The dots stand clear
 // of each other, at least a dot's radius of page between neighbours, so the screen reads as dots, never a checker.
 import 'dart:math' as math;
 
@@ -70,7 +71,7 @@ void main() {
           expect(layers, [BlendMode.lighten]);
         } else {
           expect(washes, isEmpty, reason: 'a flat wash over the page');
-          expect(layers, isEmpty);
+          expect(layers, [BlendMode.darken]);
         }
         expect(dots, hasLength(1));
         final dot = dots.single;

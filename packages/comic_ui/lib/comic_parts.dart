@@ -18,6 +18,7 @@ export 'src/comic/balloons.dart';
 export 'src/comic/component_themes.dart';
 export 'src/comic/frames.dart';
 export 'src/comic/internal/cap_label.dart';
+export 'src/comic/internal/corners.dart';
 export 'src/comic/internal/field_icon.dart';
 export 'src/comic/internal/field_label.dart';
 export 'src/comic/internal/footer_clear.dart';

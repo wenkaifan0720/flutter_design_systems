@@ -38,10 +38,13 @@ Future<void> main() async {
 ## Mount ComicHost
 
 `ComicHost` is the one mount an app needs, in its app's `builder`, above the navigator: Comic's theme by day and by
-night, the palette, the page's ground and the text defaults. Its `brightness` is light, dark, or null for the
-platform's setting; its `palette` is one of `ComicThemeData.palettes`. A new appearance or palette blends: every
-colour of the page lerps to it. Toasts, snack bars, dialogs and sheets need no mount of their own: each rises on the
-navigator's overlay in the theme it was raised in. Your navigator, routes and localizations stay yours.
+night, the palette, the page's ground, the text defaults and the app's toaster. Its `brightness` is light, dark, or
+null for the platform's setting; its `palette` is one of `ComicThemeData.palettes`. A new appearance or palette
+blends: every colour of the page lerps to it. Raise a toast or a snack bar with `showComicToast(context, ...)` or
+`showComicSnackBar(context, ...)` from any context under it, a place's page or the root: it stands in the host's
+toaster, in the theme it was raised in, stays in sight when the app's place changes, and stands above the shell's tab
+bar, a page's footer and the keyboard. Dialogs and sheets need no mount of their own: each rises on the navigator's
+overlay. Your navigator, routes and localizations stay yours.
 
 ```dart
 class HomePage extends StatelessWidget {
@@ -116,7 +119,11 @@ The example, `example/lib/main.dart`, is this app in one file to copy: a shelf o
 
 **A list and its page.** A page is a `ComicScaffold`: its top bar, then its column on newsprint. A list is a section
 of ruled rows; a row pushes its page with Flutter's own route, and the pushed page's bar has its way back (Escape and
-the back gesture pop it too).
+the back gesture pop it too). A row's `trailing` status is read with its name and lit with it, a `ComicTag` or a widget
+of your own that shows one; a control there keeps its own press. On a desktop the column reads: 880 wide at most, on
+the masthead's start, and the page's title, its actions and its footer end where it ends. A form reads better
+narrower (`ComicScaffold(maxWidth: 640)`), and a board of panels side by side takes the whole frame
+(`maxWidth: double.infinity`).
 
 ```dart
 class BookPage extends StatelessWidget {
@@ -434,8 +441,29 @@ final rounder = ComicThemeData(
 | style | round | round only | A bevel, a notch or a stair is another look's |
 | `stroke` | 2.5 | 2 to 4 | Every rim, rule and the focus ring, in proportion |
 | `depth` | 1 | 0.5 to 1.5 | A control's print (3 at 1), a raised panel's plate (4), the focus lift (2) |
+| a part's `corners` | its own | none to large, per corner | One part's corners through its style; full and extra large stand at large |
 
-One part takes a corner of its own through its style's `shape` (`ComicButton('Join', style: ComicStyle(shape: ...))`).
+One part takes corners of its own through its style's `corners`: a step of the scale at each corner, any of none to
+large, start and end mirrored right to left. On a rounder scheme, a card rounded at two opposite corners:
+
+```dart
+final issue = ComicCard(
+  title: 'No. 12',
+  style: const ComicStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(
+        topStart: RawCorner.large,
+        topEnd: RawCorner.none,
+        bottomStart: RawCorner.none,
+        bottomEnd: RawCorner.large,
+      ),
+    ),
+  ),
+  children: const [Text('The lake, at last')],
+);
+```
+
+A style's `shape` takes any outline as given, outside the bands (`ComicButton('Join', style: ComicStyle(shape: ...))`).
 Use `ComicTypeface` and `ComicDensity` to change type or spacing.
 
 Comic uses a plain tint for hover and press, a pop for keyboard focus (the part lifts up and toward the start off a

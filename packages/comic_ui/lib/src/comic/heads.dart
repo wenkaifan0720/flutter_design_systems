@@ -512,32 +512,37 @@ class ComicTag extends StatelessWidget {
             side: BorderSide(color: c.nightLine, width: t.rim(2)),
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null && !iconEnd) ...[
-              Icon(icon, size: 14, color: letters, applyTextScaling: true),
-              const SizedBox(width: ComicSpace.tight),
-            ],
-            Flexible(
-              child: CapLabel(
-                child: Text(
-                  word.toUpperCase(),
-                  style: t.type.text(
-                    12,
-                    1,
-                    weight: FontWeight.w800,
-                    color: letters,
-                    tracking: .05,
+        // Read as written: the capitals are only its lettering.
+        child: Semantics(
+          label: word,
+          excludeSemantics: true,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null && !iconEnd) ...[
+                Icon(icon, size: 14, color: letters, applyTextScaling: true),
+                const SizedBox(width: ComicSpace.tight),
+              ],
+              Flexible(
+                child: CapLabel(
+                  child: Text(
+                    word.toUpperCase(),
+                    style: t.type.text(
+                      12,
+                      1,
+                      weight: FontWeight.w800,
+                      color: letters,
+                      tracking: .05,
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (icon != null && iconEnd) ...[
-              const SizedBox(width: ComicSpace.tight),
-              Icon(icon, size: 14, color: letters, applyTextScaling: true),
+              if (icon != null && iconEnd) ...[
+                const SizedBox(width: ComicSpace.tight),
+                Icon(icon, size: 14, color: letters, applyTextScaling: true),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

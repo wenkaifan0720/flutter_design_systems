@@ -26,7 +26,7 @@ class ComicEmptyState extends StatelessWidget {
   /// The main content of the page or section.
   final String? body;
 
-  /// A `ComicMark` or a `ComicThought`, for what is missing.
+  /// An `Icon` or a `ComicThought`, for what is missing.
   final Widget? art;
 
   /// The optional action beside this content.

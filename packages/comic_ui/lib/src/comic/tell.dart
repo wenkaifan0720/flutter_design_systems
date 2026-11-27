@@ -22,6 +22,7 @@ import 'tones.dart';
 import 'internal/cap_label.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/corners.dart';
 
 /// A different mark for every meaning, so colour is never the only cue.
 ///
@@ -582,7 +583,7 @@ class ComicBadge extends StatelessWidget {
       value: '$count',
       child: ExcludeSemantics(
         child: AnimatedComicShape(
-          shape: look.shape ?? t.shapes.capsule,
+          shape: comicPartShape(t, look, RawCorner.extraSmall),
           builder: (context, shape) => Container(
             constraints: BoxConstraints(
               minWidth: look.minimumSize?.width ?? 0,

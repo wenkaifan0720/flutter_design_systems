@@ -1,6 +1,6 @@
 // Grounds, veils and tab bars that read by day and by night:
 // - a reply field stands on the night card by night, its cream rim clear of its fill, and on paper by day;
-// - a dialog dims the page with a flat veil, not a screen of dots that would cut its words into pieces;
+// - a dialog screens the page in a quiet tone of dots by day and by night, its words whole under it;
 // - at 200% on a phone a crowded tab bar holds its rim and shows the tab past it;
 // - disabled faces keep their words legible on a single flat ink tint.
 import 'dart:ui' as ui;
@@ -91,8 +91,13 @@ void main() {
             inInclusiveRange(1.2, 1.4),
           );
         } else {
-          // The words' own ink: a dot that lands on a letter is lost in it, so no word is perforated.
-          expect(ink.withValues(alpha: 1).toARGB32(), c.text.toARGB32());
+          // A quiet screen by day too: the words' ink let down to stand 1.6 to 2:1 off the page's ground, printed so it
+          // only darkens (modal_screen_test.dart), so a letter it lands on stays whole.
+          final dot = ink.withValues(alpha: 1).computeLuminance();
+          expect(
+            (c.background.computeLuminance() + .05) / (dot + .05),
+            inInclusiveRange(1.6, 2.0),
+          );
         }
         expect(ink.a, inExclusiveRange(0, 1));
       },

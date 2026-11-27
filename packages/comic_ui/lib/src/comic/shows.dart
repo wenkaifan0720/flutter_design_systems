@@ -433,7 +433,8 @@ class ComicAvatarGroup extends StatelessWidget {
   }
 }
 
-/// A measured quantity with a value, unit and ruled bar.
+/// A measured quantity with a value, unit and ruled bar. [max] is drawn only as the bar's length: the words read the value
+/// and [unit], so a goal that should be read goes in [label] ('Goal: 24 books').
 ///
 /// ```dart
 /// ComicMeter(label: 'Capacity', value: 35, max: 100, unit: 'pages')

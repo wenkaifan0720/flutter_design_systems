@@ -18,6 +18,7 @@ import '../theme.dart';
 import '../internal/style_guard.dart';
 import '../internal/lettering.dart' show comicDisplayFor;
 import '../knobs.dart' show ComicSpace;
+import '../internal/corners.dart';
 
 /// Raises [builder]'s [ComicSheet] from the screen's side: the end edge unless [edge] says otherwise. A tap on the
 /// scrim or a drag toward the edge closes it. Completes with what the sheet popped.
@@ -100,7 +101,11 @@ class ComicSheet extends StatelessWidget {
     final t = ComicTheme.of(context);
     final look = comicStyleOf([style, t.sheetTheme], const {});
     final rim = comicRim(t, look, t.colors.nightLine, 3);
-    final shape = (look.shape ?? t.shapes.large).copyWith(side: rim);
+    final shape = (comicPartShape(
+      t,
+      look,
+      RawCorner.large,
+    )).copyWith(side: rim);
     final body = SingleChildScrollView(
       padding: const EdgeInsets.all(ComicSpace.gap),
       child: child,

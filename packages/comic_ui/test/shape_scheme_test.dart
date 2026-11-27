@@ -1,4 +1,4 @@
-// F15: the corners, the ink's weight and the print's depth an app sets through ComicThemeData.shapeScheme, held to
+// The corners, the ink's weight and the print's depth an app sets through ComicThemeData.shapeScheme, held to
 // Comic's bands, drawn by its parts, and animated between two themes without a jump.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

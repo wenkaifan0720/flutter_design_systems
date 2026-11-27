@@ -1,6 +1,7 @@
 /// A value along an inked track, with a circular drag handle.
 library;
 
+import 'package:ui_core/ui_core.dart' show RawCorner;
 import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;
@@ -16,6 +17,8 @@ import 'knobs.dart' show ComicSpace;
 import 'internal/field_label.dart';
 
 import 'package:ui_core/ui_core.dart' show RawFocusShown;
+
+import 'internal/corners.dart';
 
 /// An adjustable value with keyboard, pointer and accessibility actions.
 ///
@@ -302,7 +305,7 @@ class _ComicSliderState extends State<ComicSlider> {
                   _moved = null;
                 },
                 child: AnimatedComicShape(
-                  shape: look.shape ?? t.shapes.capsule,
+                  shape: comicPartShape(t, look, RawCorner.extraSmall),
                   builder: (context, shape) => CustomPaint(
                     painter: _SliderInk(
                       (widget.value - widget.min) / _span,

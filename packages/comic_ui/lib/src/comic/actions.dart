@@ -1,6 +1,7 @@
 /// Secondary actions and chips on the same control scale as the primary action.
 library;
 
+import 'package:ui_core/ui_core.dart' show RawCorner;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -10,6 +11,7 @@ import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/corners.dart';
 
 /// A textual navigation action, underlined and announced as a link.
 ///
@@ -72,12 +74,12 @@ class ComicLink extends StatelessWidget {
       onPressed: onPressed,
       focusNode: focusNode,
       target: true,
-      outline: base.shapes(t.shapes.small),
+      outline: comicPartShapes(t, base, RawCorner.small),
       overlay: base.overlay,
       builder: (context, states) {
         final look = comicStyleOf(layers, states);
         return AnimatedComicShape(
-          shape: look.shape ?? t.shapes.small,
+          shape: comicPartShape(t, look, RawCorner.small),
           builder: (context, shape) => Container(
             constraints: BoxConstraints(
               minWidth: look.minimumSize?.width ?? 0,

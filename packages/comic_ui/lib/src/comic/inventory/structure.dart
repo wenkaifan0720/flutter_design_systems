@@ -25,6 +25,7 @@ import '../internal/style_guard.dart';
 import '../internal/menu_rows.dart';
 import 'action_rows.dart' show comicRaisedSurface;
 import 'inputs.dart' show ComicBareEditor;
+import '../internal/corners.dart';
 
 bool _lit(Set<WidgetState> states) =>
     !states.contains(WidgetState.disabled) &&
@@ -56,9 +57,13 @@ class ComicMenuBar extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final look = comicStyleOf([t.menuTheme], _none);
     final rim = comicRim(t, look, c.nightLine, 3);
-    final shape = (look.shape ?? t.shapes.medium).copyWith(side: rim);
+    final shape = (comicPartShape(
+      t,
+      look,
+      RawCorner.medium,
+    )).copyWith(side: rim);
     final itemShape = comicInsetShape(
-      look.shape ?? t.shapes.medium,
+      comicPartShape(t, look, RawCorner.medium),
       rim.width + 4,
     );
     return RawMenuBar(
@@ -336,7 +341,11 @@ class ComicCommand extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return _FocusWithin(
-      shape: comicStyleOf([t.menuTheme], _none).shape ?? t.shapes.medium,
+      shape: comicPartShape(
+        t,
+        comicStyleOf([t.menuTheme], _none),
+        RawCorner.medium,
+      ),
       // A palette standing in the page: no plate, which is for one floating over it.
       child: ComicRaisedFrame(
         plate: false,

@@ -1,16 +1,19 @@
-// The app's one mount above its navigator: Comic's theme by day and by night, its print run, the page's ground and the
-// text defaults. In the main library, so an app needs nothing past it.
+// The app's one mount above its navigator: Comic's theme by day and by night, its print run, the page's ground, the
+// text defaults and the app's toaster. In the main library, so an app needs nothing past it.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart' show RawNamedPalette;
 import 'package:ui_core/host.dart' show PreviewFrame;
 
 import 'press.dart' show comicStateCurve;
+import 'raised.dart' show ComicAppToaster;
 import 'theme.dart';
 
 /// The app's host, mounted once around the navigator: Comic's theme by day and by night (the platform's, or
-/// [brightness]), [palette]'s print run, the page's ground and the text defaults. A new appearance or palette moves:
-/// every colour of the page lerps to it.
+/// [brightness]), [palette]'s print run, the page's ground, the text defaults and the app's one toaster. A new
+/// appearance or palette moves: every colour of the page lerps to it. A snack bar or a toast raised anywhere under it
+/// (`showComicSnackBar`, `showComicToast`) stands in its toaster, above the navigator: it stays in sight when the app's
+/// place changes, and stands above the shell's tab bar, a page's footer and the keyboard.
 ///
 /// ```dart
 /// MaterialApp(builder: (context, child) => ComicHost(palette: ComicThemeData.palettes[1], child: child!), home: const Text('Home'))
@@ -60,7 +63,7 @@ class ComicHost extends StatelessWidget {
               style: t.type.body,
               child: IconTheme(
                 data: IconThemeData(color: t.colors.text, size: 22),
-                child: child,
+                child: ComicAppToaster(child: child),
               ),
             ),
           );

@@ -121,25 +121,22 @@ class BooksPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ComicScaffold(
     topBar: const ComicAppBar(title: 'Books'),
-    body: PageColumn(
-      child: ComicListSection(
-        children: [
-          for (final (index, book) in books.indexed)
-            ComicListTile(
-              isFirst: index == 0,
-              title: book.title,
-              subtitle: book.author,
-              // A row's name reads its tag: "Piranesi, Susanna Clarke, Read".
-              trailing: statusTag(book),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) =>
-                      BookPage(book: book, onRemove: onRemove),
-                ),
+    body: ComicListSection(
+      children: [
+        for (final (index, book) in books.indexed)
+          ComicListTile(
+            isFirst: index == 0,
+            title: book.title,
+            subtitle: book.author,
+            // A row's name reads its tag: "Piranesi, Susanna Clarke, Read".
+            trailing: statusTag(book),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => BookPage(book: book, onRemove: onRemove),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     ),
   );
 }
@@ -186,38 +183,36 @@ class BookPage extends StatelessWidget {
     final started = book.started;
     return ComicScaffold(
       topBar: ComicAppBar(title: book.title),
-      body: PageColumn(
-        child: ComicColumn(
-          gap: ComicSpace.wide,
-          children: [
-            ComicPanel(
-              caption: book.author,
-              // The status stands at the line's end, as it does in the book's row.
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      started == null
-                          ? 'Not started yet'
-                          : 'Started ${ComicFormat.date(started)}',
-                    ),
+      body: ComicColumn(
+        gap: ComicSpace.wide,
+        children: [
+          ComicPanel(
+            caption: book.author,
+            // The status stands at the line's end, as it does in the book's row.
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    started == null
+                        ? 'Not started yet'
+                        : 'Started ${ComicFormat.date(started)}',
                   ),
-                  const SizedBox(width: ComicSpace.close),
-                  statusTag(book),
-                ],
-              ),
+                ),
+                const SizedBox(width: ComicSpace.close),
+                statusTag(book),
+              ],
             ),
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: ComicButton(
-                'Remove from the shelf',
-                icon: ComicGlyphs.delete,
-                isDestructiveAction: true,
-                onPressed: () => _remove(context),
-              ),
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: ComicButton(
+              'Remove from the shelf',
+              icon: ComicGlyphs.delete,
+              isDestructiveAction: true,
+              onPressed: () => _remove(context),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -250,56 +245,56 @@ class _AddBookPageState extends State<AddBookPage> {
   @override
   Widget build(BuildContext context) => ComicScaffold(
     topBar: const ComicAppBar(title: 'Add a book'),
-    body: PageColumn(
-      child: RawForm(
-        key: form,
-        onSubmit: () {
-          widget.onAdd(
-            Book(title.text.trim(), author.text.trim(), started: started),
-          );
-          showComicToast(
-            context,
-            'Added ${title.text.trim()}',
-            tone: ComicTone.success,
-          );
-          form.currentState!.reset();
-          title.clear();
-          author.clear();
-          setState(() => started = null);
-        },
-        // Fields down a form keep one rhythm: ComicSpace.wide between them.
-        child: ComicColumn(
-          gap: ComicSpace.wide,
-          children: [
-            ComicTextField(
-              labelText: 'Title',
-              controller: title,
-              textInputAction: TextInputAction.next,
-              validator: (value) =>
-                  (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+    // A form reads in a narrower column on a desk than a list does.
+    maxWidth: 640,
+    body: RawForm(
+      key: form,
+      onSubmit: () {
+        widget.onAdd(
+          Book(title.text.trim(), author.text.trim(), started: started),
+        );
+        showComicToast(
+          context,
+          'Added ${title.text.trim()}',
+          tone: ComicTone.success,
+        );
+        form.currentState!.reset();
+        title.clear();
+        author.clear();
+        setState(() => started = null);
+      },
+      // Fields down a form keep one rhythm: ComicSpace.wide between them.
+      child: ComicColumn(
+        gap: ComicSpace.wide,
+        children: [
+          ComicTextField(
+            labelText: 'Title',
+            controller: title,
+            textInputAction: TextInputAction.next,
+            validator: (value) =>
+                (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+          ),
+          ComicTextField(
+            labelText: 'Author',
+            controller: author,
+            validator: (value) =>
+                (value ?? '').trim().isEmpty ? 'Enter who wrote it' : null,
+          ),
+          ComicDateField(
+            labelText: 'Started',
+            hintText: 'Not yet',
+            value: started,
+            lastDate: DateTime.now(),
+            onChanged: (day) => setState(() => started = day),
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: ComicButton.filled(
+              'Save',
+              onPressed: () => form.currentState!.submit(),
             ),
-            ComicTextField(
-              labelText: 'Author',
-              controller: author,
-              validator: (value) =>
-                  (value ?? '').trim().isEmpty ? 'Enter who wrote it' : null,
-            ),
-            ComicDateField(
-              labelText: 'Started',
-              hintText: 'Not yet',
-              value: started,
-              lastDate: DateTime.now(),
-              onChanged: (day) => setState(() => started = day),
-            ),
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: ComicButton.filled(
-                'Save',
-                onPressed: () => form.currentState!.submit(),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     ),
   );
@@ -396,29 +391,9 @@ class Swatches extends StatelessWidget {
   );
 }
 
-/// Where a book stands: read, being read, or waiting. A `ComicTag` itself, not a widget around one, so a row takes it
-/// for a tag and reads its word in the row's name.
+/// Where a book stands: read, being read, or waiting. A row reads its word in the row's name.
 ComicTag statusTag(Book book) => book.finished
     ? const ComicTag('Read', tone: ComicSpeaker.fact)
     : book.started != null
     ? const ComicTag('Reading', tone: ComicSpeaker.currentUser)
     : const ComicTag('To read');
-
-/// A page's column: on a desk a list, a book's page or a form reads in one column at the page's start, at most 720 wide
-/// (a form's measure), rather than across the window; on a phone it is the page's width.
-class PageColumn extends StatelessWidget {
-  /// Holds [child] to the column.
-  const PageColumn({super.key, required this.child});
-
-  /// The page's content.
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Align(
-    alignment: AlignmentDirectional.topStart,
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 720),
-      child: child,
-    ),
-  );
-}

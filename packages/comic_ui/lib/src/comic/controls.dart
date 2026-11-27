@@ -29,6 +29,7 @@ import 'internal/list_open.dart';
 import 'internal/menu_open.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/corners.dart';
 
 // Marks retain a four-pixel reading gutter within the caller's outline.
 // Their hit target grows with the face.
@@ -313,7 +314,7 @@ class _Filled extends StatelessWidget {
       busy: busy,
       focusNode: focusNode,
       autofocus: autofocus,
-      outline: look.shapes(t.shapes.small),
+      outline: comicPartShapes(t, look, RawCorner.small),
       overlay: look.overlay,
       plate: true,
       builder: (context, states) {
@@ -339,7 +340,7 @@ class _Filled extends StatelessWidget {
             );
         final rim = comicRim(t, look, c.nightLine);
         return AnimatedComicShape(
-          shape: look.shape ?? t.shapes.small,
+          shape: comicPartShape(t, look, RawCorner.small),
           builder: (context, shape) {
             final content = ConstrainedBox(
               constraints: BoxConstraints(
@@ -462,7 +463,7 @@ class _Outlined extends StatelessWidget {
       busy: busy,
       focusNode: focusNode,
       autofocus: autofocus,
-      outline: look.shapes(t.shapes.small),
+      outline: comicPartShapes(t, look, RawCorner.small),
       overlay: look.overlay,
       plate: true,
       builder: (context, states) {
@@ -488,7 +489,7 @@ class _Outlined extends StatelessWidget {
             );
         final rim = comicRim(t, look, c.nightLine);
         return AnimatedComicShape(
-          shape: look.shape ?? t.shapes.small,
+          shape: comicPartShape(t, look, RawCorner.small),
           builder: (context, shape) {
             // A button keeps to a measure (200 on a phone, 320 on a desk), never narrower than its widest word: its
             // words wrap between words, at any text size, never inside one.
@@ -643,7 +644,7 @@ class ComicIconButton extends StatelessWidget {
         focusNode: focusNode,
         selected: isSelected ? true : null,
         value: badgeLabel,
-        outline: base.shapes(t.shapes.small),
+        outline: comicPartShapes(t, base, RawCorner.small),
         overlay: base.overlay,
         sink: onPressed == null,
         targetAlignment: targetAlignment,
@@ -651,7 +652,7 @@ class ComicIconButton extends StatelessWidget {
           final look = comicStyleOf(layers, states);
           final rim = comicRim(t, look, c.nightLine);
           return AnimatedComicShape(
-            shape: look.shape ?? t.shapes.small,
+            shape: comicPartShape(t, look, RawCorner.small),
             builder: (context, shape) => comicOwnSize(
               width: _markExtent(
                 look.minimumSize?.width ?? t.density.height(size),
@@ -1153,7 +1154,11 @@ class ComicTextField extends StatelessWidget {
           )
         : this.trailing;
     final frame = AnimatedComicShape(
-      shape: look.shape ?? (maxLines > 1 ? t.shapes.medium : t.shapes.small),
+      shape: comicPartShape(
+        t,
+        look,
+        maxLines > 1 ? RawCorner.medium : RawCorner.small,
+      ),
       // The keyboard's field pops as every part does: the frame lifts off a hard print of itself (the frame recoloured
       // to the focus ink was the same ink as its rim in light).
       builder: (context, shape) => ComicHighlight(
@@ -1705,7 +1710,7 @@ class ComicSelectField extends StatelessWidget {
                 onPressed!();
                 return KeyEventResult.handled;
               },
-        outline: base.shapes(t.shapes.small),
+        outline: comicPartShapes(t, base, RawCorner.small),
         overlay: base.overlay,
         builder: (context, states) {
           final look = comicStyleOf(layers, states),
@@ -1720,7 +1725,7 @@ class ComicSelectField extends StatelessWidget {
               .merge(look.textStyle)
               .copyWith(color: ink);
           return AnimatedComicShape(
-            shape: look.shape ?? t.shapes.small,
+            shape: comicPartShape(t, look, RawCorner.small),
             builder: (context, shape) => ComicStateDecoration.box(
               constraints: BoxConstraints(
                 minWidth: look.minimumSize?.width ?? 0,
@@ -1903,13 +1908,13 @@ class ComicChip extends StatelessWidget {
       autofocus: autofocus,
       semanticLabel: label,
       selected: selected,
-      outline: base.shapes(t.shapes.capsule),
+      outline: comicPartShapes(t, base, RawCorner.extraSmall),
       overlay: base.overlay,
       builder: (context, states) {
         final look = comicStyleOf(layers, states),
             rim = comicRim(t, comicStyleOf(layers, states), c.nightLine);
         return AnimatedComicShape(
-          shape: look.shape ?? t.shapes.capsule,
+          shape: comicPartShape(t, look, RawCorner.extraSmall),
           builder: (context, shape) => ComicStateDecoration.box(
             constraints: BoxConstraints(
               minWidth: look.minimumSize?.width ?? 0,
@@ -2045,7 +2050,7 @@ class ComicChip extends StatelessWidget {
             ),
           );
           return AnimatedComicShape(
-            shape: look.shape ?? t.shapes.capsule,
+            shape: comicPartShape(t, look, RawCorner.extraSmall),
             builder: (context, shape) {
               final room =
                   (look.padding(direction) ??
@@ -2120,7 +2125,7 @@ class ComicChip extends StatelessWidget {
             onPressed: _press,
             focusNode: focusNode,
             autofocus: autofocus,
-            outline: base.shapes(t.shapes.capsule),
+            outline: comicPartShapes(t, base, RawCorner.extraSmall),
             overlay: base.overlay,
             builder: (context, states) => face(states),
           );
@@ -2305,7 +2310,9 @@ class ComicCheckbox extends StatelessWidget {
                 : c.nightLine,
           );
           return AnimatedComicShape(
-            shape: look.shape ?? box,
+            shape:
+                look.shape ??
+                comicCappedShape(comicPartShape(t, look, RawCorner.small), 7),
             builder: (context, shape) => comicOwnSize(
               width: _markExtent(
                 look.minimumSize?.width ?? 26,
@@ -2487,13 +2494,13 @@ class ComicChoiceBox extends StatelessWidget {
       button: !many && !inGroup,
       focusNode: focusNode,
       keys: onKeyEvent,
-      outline: look.shapes(t.shapes.small),
+      outline: comicPartShapes(t, look, RawCorner.small),
       overlay: look.overlay,
       builder: (context, states) {
         final look = comicStyleOf(layers, states),
             rim = comicRim(t, comicStyleOf(layers, states), c.nightLine);
         return AnimatedComicShape(
-          shape: look.shape ?? t.shapes.small,
+          shape: comicPartShape(t, look, RawCorner.small),
           builder: (context, shape) => ComicStateDecoration(
             decoration: ShapeDecoration(
               color:
@@ -2885,7 +2892,7 @@ class ComicNumberField extends StatelessWidget {
     // One trough at a field's height: less and more are square cells at its ends, the count between them. A press
     // marks a cell in the trough's outline moved in by the rim and 2 px, so the marks are concentric with it.
     final rim = comicRim(t, look, c.nightLine);
-    final outer = look.shape ?? t.shapes.small;
+    final outer = comicPartShape(t, look, RawCorner.small);
     final inner = ComicTrack.cellShape(outer, rim);
     final ink = look.foreground ?? (c.dark ? c.text : c.onPaper);
     final side = ComicTrack.fieldHeight(context) - 2 * rim.width;
@@ -3037,6 +3044,8 @@ class _SwitchPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size s) {
     final r = Offset.zero & s;
+    // A part's own corners name their start and end: the track and its knob draw them in the reading direction.
+    final direction = rtl ? TextDirection.rtl : TextDirection.ltr;
     final rim = side ?? BorderSide(color: c.nightLine, width: 2.5);
     final outline = shape?.copyWith(side: rim);
     if (outline == null) {
@@ -3052,12 +3061,12 @@ class _SwitchPainter extends CustomPainter {
       );
     } else {
       canvas.drawPath(
-        outline.getOuterPath(r),
+        outline.getOuterPath(r, textDirection: direction),
         fillPaint(
           fill ?? Color.lerp(c.dark ? c.card : c.control, c.caption, position)!,
         ),
       );
-      outline.paint(canvas, r);
+      outline.paint(canvas, r, textDirection: direction);
     }
     final knob = Rect.fromLTWH(
       5 + (s.width - s.height) * (rtl ? 1 - position : position),
@@ -3074,7 +3083,7 @@ class _SwitchPainter extends CustomPainter {
       );
     } else {
       canvas.drawPath(
-        comicInsetShape(shape!, 5).getOuterPath(knob),
+        comicInsetShape(shape!, 5).getOuterPath(knob, textDirection: direction),
         fillPaint(
           foreground ?? Color.lerp(c.nightLine, c.onCaption, position)!,
         ),
@@ -3148,7 +3157,7 @@ class ComicSwitch extends StatelessWidget {
         builder: (context, states) {
           final look = comicStyleOf([style, t.switchTheme], states);
           return AnimatedComicShape(
-            shape: look.shape ?? t.shapes.capsule,
+            shape: comicPartShape(t, look, RawCorner.extraSmall),
             builder: (context, shape) => Center(
               child: comicOwnSize(
                 width: 48,
@@ -3280,7 +3289,7 @@ class _Action extends StatelessWidget {
       // least target of their own.
       target: !boxed,
       plate: boxed,
-      outline: base.shapes(t.shapes.small),
+      outline: comicPartShapes(t, base, RawCorner.small),
       overlay: base.overlay,
       builder: (context, states) {
         final look = comicStyleOf(layers, states);
@@ -3293,7 +3302,7 @@ class _Action extends StatelessWidget {
           size == ComicButtonSize.small ? t.type.buttonSmall : t.type.button,
         ).merge(look.textStyle).copyWith(color: ink);
         return AnimatedComicShape(
-          shape: look.shape ?? t.shapes.small,
+          shape: comicPartShape(t, look, RawCorner.small),
           builder: (context, shape) => ComicStateDecoration(
             decoration: ShapeDecoration(
               color:
@@ -3367,7 +3376,7 @@ class _Action extends StatelessWidget {
     // wash and its pop), and the box they take, the one a tap and a screen reader reach, stands at least the floor. Held
     // at a set width (a phone's stacked actions) they stay centred in it.
     final dir = Directionality.of(context);
-    final restShape = base.shape ?? t.shapes.small;
+    final restShape = comicPartShape(t, base, RawCorner.small);
     final rest =
         !boxed &&
         (base.fill == null || base.fill!.a == 0) &&

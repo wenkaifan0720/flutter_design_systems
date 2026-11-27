@@ -29,6 +29,7 @@ import 'internal/lettering.dart'
     show comicCalendarScaleMost, comicTimeScaleMost;
 import 'knobs.dart' show ComicSpace;
 import 'internal/style_guard.dart';
+import 'internal/corners.dart';
 
 DateTime _day(DateTime day) => DateTime(day.year, day.month, day.day);
 String _locale(BuildContext context) {
@@ -319,10 +320,11 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
           widget.style,
           t.datePickerTheme,
         ], const {}).overlay,
-        outline: comicStyleOf([
-          widget.style,
-          t.datePickerTheme,
-        ], const {}).shapes(t.shapes.small),
+        outline: comicPartShapes(
+          t,
+          comicStyleOf([widget.style, t.datePickerTheme], const {}),
+          RawCorner.small,
+        ),
         builder: (context, states) {
           final look = comicStyleOf([widget.style, t.datePickerTheme], states);
           // The chosen day's lamp keeps the ink contour every lit fill has: the night line's cream on the yellow
@@ -351,7 +353,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
               ).width,
           ].reduce(math.max);
           return AnimatedComicShape(
-            shape: look.shape ?? t.shapes.small,
+            shape: comicPartShape(t, look, RawCorner.small),
             builder: (context, shape) => ComicStateDecoration(
               decoration: ShapeDecoration(
                 color: look.fill ?? (selected ? t.colors.caption : null),
@@ -495,7 +497,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
           minimumDayWidth,
           math.max(narrowestDay, _narrowestDay),
           rule,
-          rest.shape ?? t.shapes.small,
+          comicPartShape(t, rest, RawCorner.small),
         ),
       ),
     );
@@ -1237,7 +1239,7 @@ TextStyle _dayFigure(
     {WidgetState.disabled},
   ]) {
     final look = comicStyleOf([style, t.datePickerTheme], states);
-    final shape = look.shape ?? t.shapes.small;
+    final shape = comicPartShape(t, look, RawCorner.small);
     final rim = comicRim(
       t,
       look,

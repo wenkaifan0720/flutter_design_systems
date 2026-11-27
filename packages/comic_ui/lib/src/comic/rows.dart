@@ -9,7 +9,9 @@ import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
 import 'entries.dart' show ComicRadioGroup, ComicSegmentedButton;
+import 'actions.dart' show ComicLink;
 import 'heads.dart' show ComicTag;
+import 'raised.dart' show ComicMenuAnchor;
 import 'layout.dart';
 import 'theme.dart';
 import 'press.dart';
@@ -471,7 +473,7 @@ class ComicListTile extends StatelessWidget {
   /// [subtitle]: secondary information printed with the entry. [note]: secondary explanatory text.
   final String? subtitle, note;
 
-  /// A `ComicPerson`, a `ComicMark`, a `ComicCheckbox`, a `ComicMedia(width: 56)`: its own width stays.
+  /// A `ComicPerson`, an `Icon`, a `ComicCheckbox`, a `ComicMedia(width: 56)`: its own width stays.
   final Widget? leading;
 
   /// A figure or a `ComicTag` beside the title, or below when it needs more room: a status, read with the row's name.
@@ -490,14 +492,74 @@ class ComicListTile extends StatelessWidget {
     _ => null,
   };
 
-  // A trailing part that only shows something: a tag, words, a glyph. Anything else is taken for a control.
+  // A trailing part that only shows something: a tag, words, a glyph, or an app's own widget found to hold no control
+  // ([_TrailingSort]).
   static bool _shows(Widget? part) =>
-      part is ComicTag || part is Text || part is RichText || part is Icon;
+      part is ComicTag ||
+      part is Text ||
+      part is RichText ||
+      part is Icon ||
+      part is _ShownPart;
+
+  // Comic's own controls: each keeps its node and its press beside a row that presses.
+  static bool _controls(Widget part) =>
+      part is ComicIconButton ||
+      part is ComicButton ||
+      part is ComicMenuAnchor ||
+      part is ComicSwitch ||
+      part is ComicCheckbox ||
+      part is ComicChip ||
+      part is ComicLink;
+
+  // This row with [control] beside it, as an action stands, so the control keeps its node and its press.
+  ComicListTile _beside(Widget control) => ComicListTile(
+    title: title,
+    subtitle: subtitle,
+    note: note,
+    leading: leading,
+    onPressed: onPressed,
+    isFirst: isFirst,
+    semanticLabel: semanticLabel,
+    selected: selected,
+    isDestructiveAction: isDestructiveAction,
+    enabled: enabled,
+    focusNode: focusNode,
+    autofocus: autofocus,
+    action: action == null
+        ? control
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              control,
+              const SizedBox(width: ComicSpace.close),
+              action!,
+            ],
+          ),
+  );
+
+  // This row with [part] in it, read after the row's own words and lit with the row.
+  ComicListTile _holding(Widget part) => ComicListTile(
+    title: title,
+    subtitle: subtitle,
+    note: note,
+    leading: leading,
+    trailing: _ShownPart(part),
+    action: action,
+    onPressed: onPressed,
+    isFirst: isFirst,
+    semanticLabel: semanticLabel,
+    selected: selected,
+    isDestructiveAction: isDestructiveAction,
+    enabled: enabled,
+    focusNode: focusNode,
+    autofocus: autofocus,
+  );
 
   /// The whole row opens something.
   final VoidCallback? onPressed;
 
-  /// No rule above: the first row of a list.
+  /// No rule above: the first row of a list. Its list can't tell: a row often stands wrapped (in a swipe action, a key
+  /// of its own), so the first row says so.
   final bool isFirst;
 
   /// {@macro comic.focusNode}
@@ -509,32 +571,11 @@ class ComicListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    // A control in the trailing slot of a row that presses stands beside it, as an action does, so it keeps its node.
-    if (onPressed != null && trailing != null && !_shows(trailing)) {
-      return ComicListTile(
-        title: title,
-        subtitle: subtitle,
-        note: note,
-        leading: leading,
-        onPressed: onPressed,
-        isFirst: isFirst,
-        semanticLabel: semanticLabel,
-        selected: selected,
-        isDestructiveAction: isDestructiveAction,
-        enabled: enabled,
-        focusNode: focusNode,
-        autofocus: autofocus,
-        action: action == null
-            ? trailing
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  trailing!,
-                  const SizedBox(width: ComicSpace.close),
-                  action!,
-                ],
-              ),
-      );
+    // A control in the trailing slot of a row that presses stands beside it, as an action does, so it keeps its node. An
+    // app's own widget is sorted by what it holds.
+    final part = trailing;
+    if (onPressed != null && part != null && !_shows(part)) {
+      return _controls(part) ? _beside(part) : _TrailingSort(tile: this);
     }
     // Keep nested actions outside the row's named activation node.
     if (onPressed != null && action != null) {
@@ -594,6 +635,21 @@ class ComicListTile extends StatelessWidget {
         );
       },
     );
+    // An app's own status in the row is read after the row's own words, merged into the row's name; its mark is not.
+    final merged = trailing is _ShownPart && semanticLabel == null;
+    final Widget named = merged
+        ? Semantics(
+            label: [
+              title,
+              if (subtitle?.isNotEmpty == true) subtitle!,
+            ].join(', '),
+            excludeSemantics: true,
+            child: words,
+          )
+        : words;
+    final lead = merged && leading != null
+        ? ExcludeSemantics(child: leading!)
+        : leading;
     final grouped = RowFrame.maybeOf(context);
     // A group's first and last rows take up the padding the group leaves to them, so their fill reaches its corners.
     // In a group the first row pads as the last does, so the room above the first row's words equals the room under
@@ -616,10 +672,10 @@ class ComicListTile extends StatelessWidget {
               content: Row(
                 children: [
                   if (leading != null) ...[
-                    leading!,
+                    lead!,
                     const SizedBox(width: ComicSpace.near),
                   ],
-                  Expanded(child: words),
+                  Expanded(child: named),
                 ],
               ),
               action: trailing!,
@@ -634,10 +690,10 @@ class ComicListTile extends StatelessWidget {
               content: Row(
                 children: [
                   if (leading != null) ...[
-                    leading!,
+                    lead!,
                     const SizedBox(width: ComicSpace.near),
                   ],
-                  Expanded(child: words),
+                  Expanded(child: named),
                 ],
               ),
               action: action!,
@@ -654,12 +710,12 @@ class ComicListTile extends StatelessWidget {
                 );
           final mark = leading == null
               ? const <Widget>[]
-              : <Widget>[leading!, const SizedBox(width: ComicSpace.near)];
+              : <Widget>[lead!, const SizedBox(width: ComicSpace.near)];
           if (wide) {
             return Row(
               children: [
                 ...mark,
-                Expanded(child: words),
+                Expanded(child: named),
                 if (side != null) ...[
                   const SizedBox(width: ComicSpace.near),
                   side,
@@ -684,7 +740,7 @@ class ComicListTile extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: words),
+                        Expanded(child: named),
                         if (side != null) ...[
                           const SizedBox(width: ComicSpace.close),
                           side,
@@ -725,13 +781,15 @@ class ComicListTile extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: enabled ? onPressed : null,
-        semanticLabel:
-            semanticLabel ??
-            [
-              title,
-              if (subtitle?.isNotEmpty == true) subtitle!,
-              if (_spoken(trailing) case final said? when said.isNotEmpty) said,
-            ].join(', '),
+        semanticLabel: merged
+            ? null
+            : semanticLabel ??
+                  [
+                    title,
+                    if (subtitle?.isNotEmpty == true) subtitle!,
+                    if (_spoken(trailing) case final said? when said.isNotEmpty)
+                      said,
+                  ].join(', '),
         value: note,
         selected: selected ? true : null,
         outline: grouped == null ? null : WidgetStatePropertyAll(grouped),
@@ -826,6 +884,58 @@ class ComicListTile extends StatelessWidget {
         ),
       );
   }
+}
+
+// A row whose trailing part is an app's own widget: until it is built no one can tell a status from a control. It
+// stands in the row, read with the row's name and lit with it; once built, a part that holds a focusable control (a
+// button, a field) moves beside the row with its own node and press, as comic's own controls stand there.
+class _TrailingSort extends StatefulWidget {
+  const _TrailingSort({required this.tile});
+  final ComicListTile tile;
+  @override
+  State<_TrailingSort> createState() => _TrailingSortState();
+}
+
+class _TrailingSortState extends State<_TrailingSort> {
+  bool _control = false;
+  BuildContext? _part;
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _sort());
+    final part = Builder(
+      builder: (context) {
+        _part = context;
+        return widget.tile.trailing!;
+      },
+    );
+    return _control ? widget.tile._beside(part) : widget.tile._holding(part);
+  }
+
+  void _sort() {
+    final part = _part;
+    if (!mounted || part == null || !part.mounted) return;
+    var control = false;
+    void visit(Element element) {
+      if (control) return;
+      if (element.widget is Focus) {
+        control = true;
+        return;
+      }
+      element.visitChildElements(visit);
+    }
+
+    (part as Element).visitChildElements(visit);
+    if (control != _control) setState(() => _control = control);
+  }
+}
+
+// An app's own trailing widget that holds no control.
+class _ShownPart extends StatelessWidget {
+  const _ShownPart(this.child);
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => child;
 }
 
 // A row beside its action: the rule over both is drawn round them, not over the row alone.

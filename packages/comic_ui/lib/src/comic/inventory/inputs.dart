@@ -36,6 +36,7 @@ import '../styled.dart';
 import '../theme.dart';
 import '../internal/style_guard.dart';
 import '../knobs.dart' show ComicSpace;
+import '../internal/corners.dart';
 
 // ---------------------------------------------------------------------------------------------------------------------
 // The text field's parts, shared by the rows that hold an editor inside a frame of their own.
@@ -60,7 +61,7 @@ Widget _fieldFrame(
   final error =
           states.contains(WidgetState.error) || comicFieldInError(context),
       focused = states.contains(WidgetState.focused);
-  final shape = look.shape ?? t.shapes.small;
+  final shape = comicPartShape(t, look, RawCorner.small);
   final rim = comicRim(t, look, error ? c.tones.danger : c.nightLine);
   return ComicScreened(
     on: states.contains(WidgetState.disabled),
@@ -891,7 +892,7 @@ class _ComicMultiSelectState<T extends Object>
             comicRim(t, style, t.colors.nightLine).strokeInset +
             ComicSpace.close;
         final tagShape = comicInsetShape(
-          style.shape ?? t.shapes.small,
+          comicPartShape(t, style, RawCorner.small),
           tagInset,
         );
         return RawTagInput<T>(
@@ -1175,7 +1176,7 @@ class ComicRangeSlider extends StatelessWidget {
             rail: c.track,
             fill: look.fill ?? (live ? c.primaryText : c.textSecondary),
             rim: comicRim(t, look, c.nightLine, 2),
-            shape: look.shape ?? t.shapes.capsule,
+            shape: comicPartShape(t, look, RawCorner.extraSmall),
           ),
         ),
       ),
@@ -1321,7 +1322,10 @@ class _RailInk extends CustomPainter {
     // ComicSlider's does, its rim inside them.
     final reach = ComicSlider.inset - rim.width / 2;
     final rect = Rect.fromLTRB(-reach, 0, size.width + reach, size.height);
-    final path = shape.getOuterPath(rect);
+    final path = shape.getOuterPath(
+      rect,
+      textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+    );
     final paint = Paint();
     canvas.drawPath(path, paint..color = rail);
     canvas.save();
@@ -2347,7 +2351,7 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
     super.dispose();
   }
 
-  Widget _box(BuildContext context, RawOtpSlot slot) {
+  Widget _box(BuildContext context, RawOtpSlot slot, TextDirection page) {
     final t = ComicTheme.of(context), c = t.colors;
     final live = slot.active && slot.focused;
     final look = comicStyleOf(
@@ -2363,7 +2367,11 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
       look,
       slot.isError || comicFieldInError(context) ? c.tones.danger : c.nightLine,
     );
-    final shape = look.shape ?? t.shapes.small;
+    // The boxes read left to right in any app; their corners mirror with the page's.
+    final shape = comicPlacedShape(
+      comicPartShape(t, look, RawCorner.small),
+      page,
+    );
     // The box taking the next character wears the look's ring, as a text field does.
     return ComicScreened(
       on: !slot.enabled,
@@ -2427,7 +2435,8 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
           ],
         ],
       ),
-      slotBuilder: _box,
+      slotBuilder: (boxContext, slot) =>
+          _box(boxContext, slot, Directionality.of(context)),
     );
     return _fieldColumn(
       t,

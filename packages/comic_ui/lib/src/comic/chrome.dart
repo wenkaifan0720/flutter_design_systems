@@ -946,7 +946,9 @@ class ComicTab {
 }
 
 /// A page: the top bar, then the page's column on newsprint with its gutter. It holds the screen's one burst (see
-/// `ComicBurst`). [body] is usually `ComicSections(children: [...])`. A nav root leaves [topBar] out for the app's bar.
+/// `ComicBurst`). [body] is usually `ComicSections(children: [...])`. A place's first page under `ComicAppShell` gives its
+/// `ComicAppBar(title: ...)` too: a phone letters it in the bar, a desktop sets it at the head of the column under the
+/// masthead.
 ///
 /// ```dart
 /// ComicScaffold(topBar: ComicAppBar(title: 'Your stay'), body: ComicSections(children: [ComicTier(children: [a, b])]))
@@ -960,8 +962,13 @@ class ComicScaffold extends StatelessWidget {
     this.footer,
     this.scroll = true,
     this.fullBleed = false,
+    this.maxWidth = readableWidth,
     this.scrollController,
   });
+
+  /// The widest a page's content stands on a desktop: [maxWidth]'s default, a column that reads, from a list to a
+  /// form.
+  static const double readableWidth = 880;
 
   /// The main content of the page or section.
   final Widget body;
@@ -977,6 +984,12 @@ class ComicScaffold extends StatelessWidget {
 
   /// [body] takes the page's whole width, with no column and no inset.
   final bool fullBleed;
+
+  /// The widest the page's content stands, inside its gutters: on a wide window its column keeps the masthead's start
+  /// keyline and ends here, and the page's title, its actions and its footer's act end with it. A phone's page is
+  /// narrower than this and takes its whole width. 640 suits a form; [double.infinity] takes the desktop's whole frame
+  /// for a board of panels side by side.
+  final double maxWidth;
 
   /// The caller-owned scroll controller.
   final ScrollController? scrollController;
@@ -1044,8 +1057,11 @@ class ComicScaffold extends StatelessWidget {
               if (scroll) body else ComicGrow(child: body),
             ],
           );
-    // The page's measure: the width of its column, which the top bar's and the footer's contents keep to.
-    final measure = !fullBleed && scroll ? _pageMeasure : double.infinity;
+    // The page's measure: the width of its column with its gutters, which the top bar's and the footer's contents keep
+    // to. A sheet is narrower than any column.
+    final measure = fullBleed || sheet
+        ? double.infinity
+        : (maxWidth + inset.horizontal).clamp(0.0, _pageMeasure);
     // The page body is one keyline region: its panels and words hold the page's margins.
     final Widget region = RawKeylineRegion(
       label: 'Page',
@@ -1053,15 +1069,7 @@ class ComicScaffold extends StatelessWidget {
     );
     final Widget column = fullBleed
         ? inner
-        : scroll
-        ? Center(
-            heightFactor: 1,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _pageMeasure),
-              child: region,
-            ),
-          )
-        : region;
+        : _OnMeasure(measure: measure, child: region);
     final Widget content = scroll
         ? ScrollConfiguration(
             behavior: ScrollConfiguration.of(context)
@@ -1092,42 +1100,47 @@ class ComicScaffold extends StatelessWidget {
               if (bar != null && head == null)
                 _PageMeasure(measure: measure, child: bar),
               sheet ? Flexible(child: page) : Expanded(child: page),
-              // The tab bar draws its own rule and keeps clear of the home indicator: it stands bare.
+              // The tab bar draws its own rule and keeps clear of the home indicator: it stands bare. The app's toasts
+              // stand above the footer.
               if (footer is ComicNavigationBar)
-                KeyedSubtree(key: footerKey, child: footer!)
+                RawToasterKeepClear(
+                  child: KeyedSubtree(key: footerKey, child: footer!),
+                )
               else if (footer != null)
-                DecoratedBox(
-                  key: footerKey,
-                  decoration: BoxDecoration(
-                    color: c.card,
-                    border: Border(
-                      top: BorderSide(color: c.nightLine, width: t.rim(3)),
+                RawToasterKeepClear(
+                  child: DecoratedBox(
+                    key: footerKey,
+                    decoration: BoxDecoration(
+                      color: c.card,
+                      border: Border(
+                        top: BorderSide(color: c.nightLine, width: t.rim(3)),
+                      ),
                     ),
-                  ),
-                  child: SafeArea(
-                    top: false,
-                    // On a desktop the act ends where the page's column ends.
-                    child: _OnMeasure(
-                      measure: sheet ? double.infinity : measure,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: t.desk && !sheet
-                              ? ComicSpace.tier
-                              : ComicSpace.near,
-                          vertical: ComicSpace.near,
-                        ),
-                        child: t.desk && !sheet
-                            ? Align(
-                                alignment: AlignmentDirectional.centerEnd,
-                                heightFactor: 1,
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 360,
+                    child: SafeArea(
+                      top: false,
+                      // On a desktop the act ends where the page's column ends.
+                      child: _OnMeasure(
+                        measure: sheet ? double.infinity : measure,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: t.desk && !sheet
+                                ? ComicSpace.tier
+                                : ComicSpace.near,
+                            vertical: ComicSpace.near,
+                          ),
+                          child: t.desk && !sheet
+                              ? Align(
+                                  alignment: AlignmentDirectional.centerEnd,
+                                  heightFactor: 1,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 360,
+                                    ),
+                                    child: footer!,
                                   ),
-                                  child: footer!,
-                                ),
-                              )
-                            : footer!,
+                                )
+                              : footer!,
+                        ),
                       ),
                     ),
                   ),
@@ -1159,6 +1172,7 @@ class ComicScaffold extends StatelessWidget {
           defaultValue: false,
         ),
       )
+      ..add(DoubleProperty('maxWidth', maxWidth, defaultValue: readableWidth))
       ..add(
         DiagnosticsProperty<ScrollController>(
           'scrollController',
@@ -1372,8 +1386,13 @@ class ComicAppBar extends StatelessWidget {
           child: SizedBox(
             height: t.desk && !underMasthead ? 75 : 57,
             // On a desktop the bar's words keep to the page's column, as the title at its head does.
+            // A bar that carries the app's name is the app's masthead: it spans the desktop's frame, as the shell's does.
             child: _OnMeasure(
-              measure: t.desk ? _PageMeasure.of(context) : double.infinity,
+              measure: !t.desk
+                  ? double.infinity
+                  : logo != null
+                  ? _pageMeasure
+                  : _PageMeasure.of(context),
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: t.desk ? ComicSpace.tier : ComicSpace.near,
@@ -1925,7 +1944,7 @@ class ComicErrorState extends StatelessWidget {
   }
 }
 
-// The widest a page's column stands; past it the page centres the column.
+// The desktop's frame: the widest the masthead and a page's column stand; past it the frame stands in the middle.
 const double _pageMeasure = 1376;
 
 // The measure of the page a top bar stands on, so its words keep to the page's column.
@@ -1942,7 +1961,8 @@ class _PageMeasure extends InheritedWidget {
   bool updateShouldNotify(_PageMeasure old) => measure != old.measure;
 }
 
-// [child], no wider than [measure], centred in the width it is given.
+// [child] across [measure], or the width it is given when that is narrower, at the start of the desktop's frame: the
+// frame stands in the middle of a window wider than it, and a column narrower than the frame keeps its start keyline.
 class _OnMeasure extends StatelessWidget {
   const _OnMeasure({required this.measure, required this.child});
 
@@ -1950,15 +1970,24 @@ class _OnMeasure extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => measure == double.infinity
-      ? child
-      : Center(
+  Widget build(BuildContext context) {
+    if (measure == double.infinity) return child;
+    Widget across(double width, Widget child) => ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: width),
+      child: SizedBox(width: double.infinity, child: child),
+    );
+    return Center(
+      heightFactor: 1,
+      child: across(
+        _pageMeasure,
+        Align(
+          alignment: AlignmentDirectional.topStart,
           heightFactor: 1,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: measure),
-            child: child,
-          ),
-        );
+          child: across(measure, child),
+        ),
+      ),
+    );
+  }
 }
 
 // Holds a page's footer key for as long as the page stands, and tells what is

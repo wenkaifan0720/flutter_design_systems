@@ -56,7 +56,8 @@ export 'comic/raised.dart'
         comicFieldListWords,
         comicRaisedPlate,
         comicSearchFailed,
-        comicSearchNote;
+        comicSearchNote,
+        ComicAppToaster;
 
 export 'comic/editing.dart';
 
@@ -106,6 +107,9 @@ export 'package:ui_core/ui_core.dart' show RawNamedPalette;
 export 'package:ui_core/ui_core.dart'
     show
         RawBand,
+        RawCorner,
+        RawCornerFreedom,
+        RawCorners,
         RawCornerScale,
         RawCornerStyle,
         RawShapeLimits,

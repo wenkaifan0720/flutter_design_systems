@@ -540,7 +540,7 @@ enum ComicSplashLayout {
 }
 
 /// A page's opening panel: a scene or a picture running to the contour, a narration caption, a big outlined title, one burst, and a
-/// bar of facts along its foot. [art] fills it: a `ComicDrawing`, a `ComicMedia`, or a `ComicArtBand`. `titleHigh` sets the title up on
+/// bar of facts along its foot. [art] fills it: a `ComicMedia` or a `ComicArtBand`. `titleHigh` sets the title up on
 /// action lines with [figure] at its side and a [balloon] from the author. In a compact panel on a phone it becomes a band of about
 /// 130 lp with the title and a small burst, and drops the facts and the rest: the page's job then shows on the first screen. On a
 /// desktop [compact] keeps all of it at about 380 lp, not 540, so the panels beside it don't end on blank paper.

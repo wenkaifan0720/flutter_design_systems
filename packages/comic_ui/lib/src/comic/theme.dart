@@ -317,13 +317,17 @@ class ComicColors with Diagnosticable {
   /// The ink of the Ben-Day screen over the page behind an open surface, its alpha the share of the page the dots
   /// cover, a quarter. Denser, the dots run together into a checker.
   ///
-  /// By day it's the page's words' own ink ([text]): a dot that lands on a letter is the letter's ink, so no word under
-  /// the screen is perforated. At night [ComicScreenScrim] first dims the page under its own ground ([background]), and
-  /// the dots are the panels' navy ([card]) brought to stand 1.3:1 off that ground: a quiet screen that keeps the page
-  /// behind darker than the panel open over it. Cream dots made the page behind glare brighter than the dialog, and
-  /// black ones punched holes in its cream lettering.
-  Color get scrim => (dark ? _nightScreen(background, card, text) : text)
-      .withValues(alpha: 0x40 / 0xFF);
+  /// By day it's the words' ink ([text]) let down toward newsprint until it stands 1.8:1 off [background], and
+  /// [ComicScreenScrim] prints it so it only darkens: a dot that lands on a letter leaves it whole. A quiet tone, as the
+  /// night's is; dots in the words' full ink turned the page behind into noise. At night [ComicScreenScrim] first dims
+  /// the page under its own ground ([background]), and the dots are the panels' navy ([card]) brought to stand 1.3:1
+  /// off that ground: a quiet screen that keeps the page behind darker than the panel open over it. Cream dots made the
+  /// page behind glare brighter than the dialog, and black ones punched holes in its cream lettering.
+  Color get scrim =>
+      (dark
+              ? _nightScreen(background, card, text)
+              : _dayScreen(background, text))
+          .withValues(alpha: 0x40 / 0xFF);
 
   /// Semantic status inks on the current panel ground.
   ComicTones get tones => status ?? (dark ? ComicTones.dark : ComicTones.light);
@@ -1698,6 +1702,7 @@ class ComicThemeData with Diagnosticable {
   /// | full | a stadium | fixed | Round affordances (a radio, an avatar, a balloon's tail) stay round. |
   /// | stroke | 2.5 | 2 to 4 | A part's rim, with its rules and the focus ring in proportion (at 4: a 4 rim, 3.2 rules, a 4.8 ring). Under 2 the ink stops reading as a pen line; over 4 it fills a 40 px control. |
   /// | depth | 1 | 0.5 to 1.5 | The print under a control (3 at 1), a raised panel's plate (4) and a focused part's lift (2). Under half it stops reading as print; past 1.5 a part stands off its row. |
+  /// | a part's own corners | its own | per corner, none to large | A style's `corners` ([RawCorners]) sets each corner of one part to a step of this scale: a panel cut square at two diagonal corners, or rounded at its top start only, still reads as a pen-drawn panel on its print. Full and extra large are not offered: a round corner is kept for speech and round affordances. Start and end mirror right to left; a style's `shape` wins, as given. |
   ///
   /// ```dart
   /// final rounder = ComicThemeData(
@@ -1719,6 +1724,14 @@ class ComicThemeData with Diagnosticable {
     extraLarge: RawBand.fixed(0),
     stroke: RawBand(2, 4),
     depth: RawBand(.5, 1.5),
+    cornerFreedom: RawCornerFreedom.perCorner,
+    cornerSteps: {
+      RawCorner.none,
+      RawCorner.extraSmall,
+      RawCorner.small,
+      RawCorner.medium,
+      RawCorner.large,
+    },
   );
 
   /// The outlines [shapeScheme]'s corners draw, part by part.
@@ -3048,6 +3061,21 @@ ComicColors _comicFrom(
 
 // The night screen's dot: [panel] moved toward [ground] or toward [lettering], whichever way it must go, until it stands
 // 1.3:1 off [ground]: low enough to recede, high enough to read as a screen.
+// The words' ink let down toward newsprint until it stands 1.8:1 off it: the day's screen ink.
+Color _dayScreen(Color ground, Color lettering) {
+  final want = (ground.computeLuminance() + .05) / 1.8 - .05;
+  var low = 0.0, high = 1.0;
+  for (var i = 0; i < 24; i++) {
+    final t = (low + high) / 2;
+    if (Color.lerp(ground, lettering, t)!.computeLuminance() > want) {
+      low = t;
+    } else {
+      high = t;
+    }
+  }
+  return Color.lerp(ground, lettering, high)!;
+}
+
 Color _nightScreen(Color ground, Color panel, Color lettering) {
   final want = 1.3 * (ground.computeLuminance() + .05) - .05;
   final (from, to) = panel.computeLuminance() < want

@@ -25,6 +25,7 @@ import 'internal/cap_label.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
 import 'internal/field_label.dart';
+import 'internal/corners.dart';
 
 /// A multiline field, using Flutter's editor and Comic's selection menu.
 ///
@@ -987,7 +988,8 @@ class ComicButtonSegment<T> {
 
 /// Exclusive choices in one trough at a field's height: every segment one width, no dividers, the chosen one a thumb
 /// (the trough's outline moved in by its rim and 4 px, concentric under every corner family) that slides to the next
-/// choice. When the labels need more space, the segments stack at the reader's text size.
+/// choice. When the labels need more space, the segments stack at the reader's text size. It draws no label of its
+/// own: in a form, `ComicFormField('Theme', child: ComicSegmentedButton(...))` letters one over it and names the group.
 ///
 /// ```dart
 /// ComicSegmentedButton<String>(semanticLabel: 'View', segments: const [ComicButtonSegment('all', 'All'), ComicButtonSegment('saved', 'Saved')], value: 'all', onChanged: change)
@@ -1116,7 +1118,7 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
     final rim = comicRim(t, track, c.nightLine);
     // One trough at a field's height and rim, the segments side by side in it with no dividers, one width each; the
     // chosen one is a thumb, the trough's own outline moved in by its rim and 4 px, and it slides.
-    final shape = track.shape ?? t.shapes.capsule;
+    final shape = comicPartShape(t, track, RawCorner.extraSmall);
     // A column of segments keeps the corner of one row. Growing a stadium
     // to the height of the whole column would cut into the first and last labels.
     final outer = shape is StadiumBorder

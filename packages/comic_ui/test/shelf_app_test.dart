@@ -204,22 +204,23 @@ void main() {
     );
   });
 
-  testWidgets('on a desk a list and a form keep to one column, 720 at most', (
-    tester,
-  ) async {
-    await openApp(tester, 1440);
-    expect(
-      tester.getSize(find.byType(ComicListSection)).width,
-      lessThanOrEqualTo(720),
-    );
-    await tester.tap(find.bySemanticsLabel(RegExp('^Add a book')).first);
-    await settle(tester);
-    expect(
-      tester.getSize(find.byType(ComicTextField).first).width,
-      lessThanOrEqualTo(720),
-    );
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'on a desk a list keeps to the readable column and the form to a narrower one',
+    (tester) async {
+      await openApp(tester, 1440);
+      expect(
+        tester.getSize(find.byType(ComicListSection)).width,
+        lessThanOrEqualTo(ComicScaffold.readableWidth),
+      );
+      await tester.tap(find.bySemanticsLabel(RegExp('^Add a book')).first);
+      await settle(tester);
+      expect(
+        tester.getSize(find.byType(ComicTextField).first).width,
+        lessThanOrEqualTo(640),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   for (final b in Brightness.values) {
     testWidgets(

@@ -15,6 +15,7 @@ import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/corners.dart';
 
 /// Who a filled label belongs to: [narrator] is the narrator and today, [fact] a fact in full contour, [currentUser] is
 /// yours, [group] the group, [plain] a plain box. Each brings its own letters, and each follows the print run: the
@@ -96,7 +97,7 @@ class ComicCaption extends StatelessWidget {
       widthFactor: 1,
       heightFactor: 1,
       child: AnimatedComicShape(
-        shape: look.shape ?? t.shapes.small,
+        shape: comicPartShape(t, look, RawCorner.small),
         builder: (context, shape) => DecoratedBox(
           decoration: shape != null
               ? ShapeDecoration(
@@ -395,7 +396,7 @@ class ComicPanel extends StatelessWidget {
       onPressed: onPressed,
       semanticLabel: semanticLabel ?? caption,
       selected: selected,
-      outline: look.shapes(t.shapes.medium),
+      outline: comicPartShapes(t, look, RawCorner.medium),
       overlay: look.overlay,
       builder: _build,
     );
@@ -474,7 +475,9 @@ class ComicPanel extends StatelessWidget {
     }
     final content = inner;
     return AnimatedComicShape(
-      shape: look.shape ?? (slant == null ? t.shapes.medium : null),
+      shape: slant == null
+          ? comicPartShape(t, look, RawCorner.medium)
+          : look.shape,
       builder: (context, shape) {
         Widget box;
         if (shape != null) {
@@ -860,7 +863,7 @@ class ComicWell extends StatelessWidget {
       inside = DefaultTextStyle.merge(style: look.textStyle, child: inside);
     }
     return AnimatedComicShape(
-      shape: look.shape ?? t.shapes.medium,
+      shape: comicPartShape(t, look, RawCorner.medium),
       builder: (context, shape) => DecoratedBox(
         decoration: ShapeDecoration(
           color: look.fill ?? (lamp ? c.caption : c.inset),
