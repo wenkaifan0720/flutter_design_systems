@@ -6,6 +6,8 @@
 // words had been lightened to a pale rose (about #FFD4D7) that read nearly
 // white beside 'Keep'; then the key was moulded in ruby, the same as the
 // ruby gel beside it.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:async';
 import 'dart:math' as math;
 

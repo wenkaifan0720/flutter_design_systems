@@ -18,6 +18,7 @@ import 'internal/socket_rim.dart';
 import 'surface.dart';
 import 'theme.dart';
 import 'wayfinding.dart';
+import 'internal/corners.dart';
 
 /// A column of a [GlossDataTable].
 class GlossDataColumn<R> extends RawDataColumn<R> {
@@ -49,26 +50,30 @@ class GlossTableController<R> extends RawDataTableController<R> {
 
 /// A small socket a row's selection shows in: jade gel and a tick when on,
 /// a bar when some are.
-Widget _tick(GlossColors c, {required bool on, bool some = false}) =>
-    SizedBox.square(
-      dimension: 20,
-      child: AnimatedGlossSurface(
-        face: on || some
-            ? GlossFace.gel(c, radius: 6).copyWith(lift: 0.4)
-            : GlossFace.well(c, radius: 6).copyWith(edge: glossSocketRim(c)),
-        child: on
-            ? Icon(LucideIcons.check, size: 14, color: c.onJade)
-            : some
-            ? Center(
-                child: SizedBox(
-                  width: 9,
-                  height: 2,
-                  child: ColoredBox(color: c.onJade),
-                ),
-              )
-            : null,
-      ),
-    );
+Widget _tick(
+  GlossColors c, {
+  required double corner,
+  required bool on,
+  bool some = false,
+}) => SizedBox.square(
+  dimension: 20,
+  child: AnimatedGlossSurface(
+    face: on || some
+        ? GlossFace.gel(c, radius: corner).copyWith(lift: 0.4)
+        : GlossFace.well(c, radius: corner).copyWith(edge: glossSocketRim(c)),
+    child: on
+        ? Icon(LucideIcons.check, size: 14, color: c.onJade)
+        : some
+        ? Center(
+            child: SizedBox(
+              width: 9,
+              height: 2,
+              child: ColoredBox(color: c.onJade),
+            ),
+          )
+        : null,
+  ),
+);
 
 /// A data table: rows that sort by their headings, select, filter and
 /// page, on a porcelain card. The headings are letterpressed; a chosen row
@@ -135,7 +140,7 @@ class GlossDataTable<R> extends StatelessWidget {
           hovered: states.contains(WidgetState.hovered),
           pressed: states.contains(WidgetState.pressed),
           inside: true,
-          radius: 8,
+          radius: glossCorner(theme, RawCorner.small, 8),
           inset: 1,
           // A header sorts on a tap: a finger's height (the touch floor) on
           // every input, so the header row keeps one height.
@@ -212,13 +217,14 @@ class GlossDataTable<R> extends StatelessWidget {
                       hovered: states.contains(WidgetState.hovered),
                       pressed: states.contains(WidgetState.pressed),
                       inside: true,
-                      radius: 8,
+                      radius: glossCorner(theme, RawCorner.small, 8),
                       inset: 1,
                       child: SizedBox(
                         width: _box - GlossSpacing.tight,
                         child: Center(
                           child: _tick(
                             c,
+                            corner: glossCorner(theme, RawCorner.extraSmall, 6),
                             on: page == RawDataTableSelection.all,
                             some: page == RawDataTableSelection.some,
                           ),
@@ -259,21 +265,24 @@ class GlossDataTable<R> extends StatelessWidget {
         });
         final clear = c.page.withValues(alpha: 0);
         var plate = pressed
-            ? GlossFace.well(c, radius: 10).copyWith(lift: -0.6)
+            ? GlossFace.well(
+                c,
+                radius: glossCorner(theme, RawCorner.medium, 10),
+              ).copyWith(lift: -0.6)
             : row.selected
             ? GlossFace(
                 top: glaze,
                 middle: glaze,
                 bottom: glaze,
                 foreground: c.ink,
-                radius: 10,
+                radius: glossCorner(theme, RawCorner.medium, 10),
               )
             : GlossFace(
                 top: clear,
                 middle: clear,
                 bottom: clear,
                 foreground: c.ink,
-                radius: 10,
+                radius: glossCorner(theme, RawCorner.medium, 10),
               );
         if (row.selected && layered.fill != null) {
           plate = plate.glazed(layered.fill!);
@@ -303,7 +312,17 @@ class GlossDataTable<R> extends StatelessWidget {
                         ExcludeSemantics(
                           child: SizedBox(
                             width: _box - GlossSpacing.tight,
-                            child: Center(child: _tick(c, on: row.selected)),
+                            child: Center(
+                              child: _tick(
+                                c,
+                                corner: glossCorner(
+                                  theme,
+                                  RawCorner.extraSmall,
+                                  6,
+                                ),
+                                on: row.selected,
+                              ),
+                            ),
                           ),
                         ),
                       for (final (i, cellWidget) in cells.indexed)
@@ -329,7 +348,7 @@ class GlossDataTable<R> extends StatelessWidget {
       },
     );
     // The rows sit in a well below the page (law 3), not on a raised card.
-    var card = GlossFace.well(c, radius: GlossMetrics.wellRadius);
+    var card = GlossFace.well(c, radius: glossCorner(theme, RawCorner.medium));
     if (frame.fill != null) card = card.glazed(frame.fill!);
     return ListenableBuilder(
       listenable: controller,
@@ -475,7 +494,7 @@ class GlossScrollArea extends StatelessWidget {
           hovered: over,
           pressed: down,
           inside: true,
-          radius: 8,
+          radius: glossCorner(theme, RawCorner.small, 8),
           inset: 1,
           child: area,
         ),
@@ -682,13 +701,13 @@ class GlossCarousel extends StatelessWidget {
               enabled: itemCount > 0,
               face: GlossFace.well(
                 c,
-                radius: GlossMetrics.cardRadius,
+                radius: glossCorner(theme, RawCorner.large),
               ).copyWith(focus: glossFocusOf(c, focused: controls.focused)),
               child: Padding(
                 padding: const EdgeInsets.all(GlossMetrics.frameRim),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(
-                    GlossMetrics.cardRadius - 3,
+                    glossCorner(theme, RawCorner.large) - 3,
                   ),
                   child: viewport,
                 ),
@@ -777,9 +796,11 @@ class GlossReorderableList<T extends Object> extends StatelessWidget {
     final c = theme.colors;
     final rowHeight = theme.controlHeight + 8;
     return GlossSurface(
-      face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
+      face: GlossFace.well(c, radius: glossCorner(theme, RawCorner.medium)),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(GlossMetrics.wellRadius),
+        borderRadius: BorderRadius.circular(
+          glossCorner(theme, RawCorner.medium),
+        ),
         child: RawReorderableList<T>(
           items: items,
           onReorder: onReorder,
@@ -790,7 +811,10 @@ class GlossReorderableList<T extends Object> extends StatelessWidget {
             builder: (context, _) => Transform.scale(
               scale: 1 + 0.02 * animation.value,
               child: GlossSurface(
-                face: GlossFace.porcelain(c, radius: 14).copyWith(lift: 1),
+                face: GlossFace.porcelain(
+                  c,
+                  radius: glossCorner(theme, RawCorner.medium, 14),
+                ).copyWith(lift: 1),
                 child: child,
               ),
             ),
@@ -936,7 +960,12 @@ class GlossSwipeRow extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (a.icon != null) Icon(a.icon, size: 20, color: ink),
+                  if (a.icon != null)
+                    Icon(
+                      a.icon,
+                      size: MediaQuery.textScalerOf(context).scale(20),
+                      color: ink,
+                    ),
                   Text(
                     a.label,
                     maxLines: 1,
@@ -1103,21 +1132,24 @@ class GlossTree<T extends Object> extends StatelessWidget {
         final glaze = light ? const Color(0xFFDDF2EA) : const Color(0xFF1F3F35);
         final clear = c.page.withValues(alpha: 0);
         var plate = states.contains(WidgetState.pressed)
-            ? GlossFace.well(c, radius: 10).copyWith(lift: -0.6)
+            ? GlossFace.well(
+                c,
+                radius: glossCorner(theme, RawCorner.medium, 10),
+              ).copyWith(lift: -0.6)
             : item.selected
             ? GlossFace(
                 top: glaze,
                 middle: glaze,
                 bottom: glaze,
                 foreground: c.jadeInk,
-                radius: 10,
+                radius: glossCorner(theme, RawCorner.medium, 10),
               )
             : GlossFace(
                 top: clear,
                 middle: clear,
                 bottom: clear,
                 foreground: c.ink,
-                radius: 10,
+                radius: glossCorner(theme, RawCorner.medium, 10),
               );
         if (item.selected && layered.fill != null) {
           plate = plate.glazed(layered.fill!);
@@ -1195,7 +1227,11 @@ class GlossTree<T extends Object> extends StatelessWidget {
                             : null,
                       ),
                       if (icon != null) ...[
-                        Icon(icon, size: 18, color: ink),
+                        Icon(
+                          icon,
+                          size: MediaQuery.textScalerOf(context).scale(18),
+                          color: ink,
+                        ),
                         const SizedBox(width: GlossSpacing.small),
                       ],
                       Expanded(

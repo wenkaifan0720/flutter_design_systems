@@ -50,7 +50,7 @@ void main() {
   setUpAll(glossLoadFonts);
 
   for (final b in Brightness.values) {
-    for (final name in GlossThemeData.presets) {
+    for (final name in [for (final p in GlossThemeData.palettes) p.id]) {
       testWidgets("${b.name}, $name: a selected row's supporting words read "
           'on its pearl plate', (tester) async {
         final theme = GlossThemeData.preset(name, b);

@@ -16,6 +16,7 @@ import 'internal/chevron.dart';
 import 'internal/socket_rim.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// A disclosure: a title that opens to [child] under it, its chevron in a
 /// small pearl bead turning over as it opens.
@@ -109,7 +110,7 @@ class _GlossDisclosureState extends State<GlossDisclosure> {
                   middle: clear,
                   bottom: clear,
                   foreground: c.ink,
-                  radius: GlossMetrics.fieldRadius,
+                  radius: glossCorner(theme, RawCorner.small),
                   focus: glossGlazeOf(c, states),
                 ),
                 child: Padding(
@@ -210,10 +211,11 @@ class GlossDisclosureGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = GlossTheme.of(context).colors;
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
     // A group sits in a well below the page (law 3), not on a raised card.
     return GlossSurface(
-      face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
+      face: GlossFace.well(c, radius: glossCorner(theme, RawCorner.medium)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
         child: Column(
@@ -363,7 +365,7 @@ class GlossTable extends StatelessWidget {
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.tableStyle], const {});
     // The rows sit in a well below the page (law 3), not on a raised card.
-    var card = GlossFace.well(c, radius: GlossMetrics.wellRadius);
+    var card = GlossFace.well(c, radius: glossCorner(theme, RawCorner.medium));
     if (layered.fill != null) card = card.glazed(layered.fill!);
     Widget cell(String text, GlossTableColumn col, {bool head = false}) =>
         Expanded(
@@ -492,7 +494,7 @@ class GlossDescriptionList extends StatelessWidget {
     // The facts are a group, so they sit in a well, the lines between them
     // engraved in its floor.
     return GlossSurface(
-      face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
+      face: GlossFace.well(c, radius: glossCorner(theme, RawCorner.medium)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
         child: LayoutBuilder(
@@ -791,7 +793,8 @@ class GlossAvatar extends StatelessWidget {
                 // The initials are the disc's picture, sized to the disc as
                 // it is laid out (a row's leading slot may hold it smaller
                 // than [size]): they do not grow with the reader's text size
-                // (the name is what a screen reader says).
+                // (the name is what a screen reader says). They take the
+                // ink, which reads on the bead by night as well as by day.
                 child: LayoutBuilder(
                   builder: (context, box) => Center(
                     child: Text(
@@ -800,7 +803,7 @@ class GlossAvatar extends StatelessWidget {
                       style: theme.textTheme.label.copyWith(
                         fontSize: math.min(box.maxWidth, box.maxHeight) * 0.38,
                         height: 1,
-                        color: layered.foreground ?? c.inkSecondary,
+                        color: layered.foreground ?? c.ink,
                       ),
                     ),
                   ),
@@ -1048,18 +1051,39 @@ enum GlossTagTone {
   /// Pearl, second ink: a plain fact.
   neutral,
 
-  /// Pale jade: something good or chosen.
-  jade,
+  /// The palette's gel, pale: something good or chosen. It follows the
+  /// palette, its words in the gel's ink.
+  accent,
 
   /// Pale ruby: something to watch.
   danger,
+
+  /// The gel's tone before it followed the palette; the same as [accent].
+  @Deprecated(
+    'Use GlossTagTone.accent: the tone follows the palette. '
+    'Removed in 0.7.0.',
+  )
+  jade,
+}
+
+/// The pale glaze of [colors]' gel an accent tag stands on: the gel's hue at
+/// a page's tone by day (93) and a deep one by night (28), its colour held
+/// low, so the gel's ink reads on it in every palette.
+@visibleForTesting
+Color glossAccentPlate(GlossColors colors) {
+  final gel = RawHct.fromColor(colors.jade);
+  final day = colors.brightness == Brightness.light;
+  return gel
+      .withChroma(math.min(gel.chroma, day ? 16 : 22))
+      .withTone(day ? 93 : 28)
+      .toColor();
 }
 
 /// A tag: a small level enamel capsule naming a fact about a thing (Vegetarian,
 /// 3 left).
 ///
 /// ```dart
-/// const GlossTag('Vegetarian', tone: GlossTagTone.jade)
+/// const GlossTag('Vegetarian', tone: GlossTagTone.accent)
 /// ```
 class GlossTag extends StatelessWidget {
   /// A tag reading [label].
@@ -1089,26 +1113,28 @@ class GlossTag extends StatelessWidget {
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.tagStyle], const {});
     final light = c.brightness == Brightness.light;
+    // ignore: deprecated_member_use_from_same_package
+    final tone = this.tone == GlossTagTone.jade
+        ? GlossTagTone.accent
+        : this.tone;
     var face = switch (tone) {
       // A plain tag is enamel in the page's own grey, as the toned ones are
       // in theirs: never a pearl, which a finger would reach for.
       GlossTagTone.neutral => GlossFace.pearl(
         c,
       ).glazed(light ? const Color(0xFFE4E8ED) : const Color(0xFF2B3036)),
-      GlossTagTone.jade => GlossFace.pearl(
-        c,
-      ).glazed(light ? const Color(0xFFD5F2E6) : const Color(0xFF1F4A3C)),
       GlossTagTone.danger => GlossFace.pearl(
         c,
       ).glazed(light ? const Color(0xFFF8DEDD) : const Color(0xFF55282A)),
+      _ => GlossFace.pearl(c).glazed(glossAccentPlate(c)),
     };
     if (layered.fill != null) face = face.glazed(layered.fill!);
     final ink =
         layered.foreground ??
         switch (tone) {
           GlossTagTone.neutral => c.inkSecondary,
-          GlossTagTone.jade => c.jadeInk,
           GlossTagTone.danger => c.danger,
+          _ => c.jadeInk,
         };
     // A tag is read, not pressed: a level enamel label on the surface, no
     // lift and no shine across its words (only what a finger meets stands
@@ -1127,7 +1153,12 @@ class GlossTag extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 14, color: ink),
+                // The glyph grows with the words beside it.
+                Icon(
+                  icon,
+                  size: MediaQuery.textScalerOf(context).scale(14),
+                  color: ink,
+                ),
                 const SizedBox(width: GlossSpacing.tight),
               ],
               Flexible(
@@ -1173,7 +1204,7 @@ class GlossMedia extends StatelessWidget {
     required this.semanticLabel,
     this.aspectRatio = 16 / 9,
     this.fit = BoxFit.cover,
-    this.radius = GlossMetrics.cardRadius,
+    this.radius,
   });
 
   /// The picture; null: the empty frame.
@@ -1188,12 +1219,15 @@ class GlossMedia extends StatelessWidget {
   /// How the picture fills the frame.
   final BoxFit fit;
 
-  /// The frame's corner.
-  final double radius;
+  /// The frame's corner; null: the theme's [RawCorner.large] step, a
+  /// card's.
+  final double? radius;
 
   @override
   Widget build(BuildContext context) {
-    final c = GlossTheme.of(context).colors;
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
+    final corner = radius ?? glossCorner(theme, RawCorner.large);
     final empty = Center(
       child: Icon(
         LucideIcons.image,
@@ -1214,11 +1248,11 @@ class GlossMedia extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: aspectRatio,
         child: GlossSurface(
-          face: GlossFace.well(c, radius: radius),
+          face: GlossFace.well(c, radius: corner),
           child: Padding(
             padding: const EdgeInsets.all(GlossMetrics.frameRim),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(radius - 3),
+              borderRadius: BorderRadius.circular(corner - 3),
               child: image == null
                   ? empty
                   : Stack(

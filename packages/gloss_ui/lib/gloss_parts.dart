@@ -15,6 +15,7 @@ export 'package:ui_core/inventory.dart';
 export 'gloss_ui.dart';
 export 'gloss_host.dart';
 export 'src/gloss/internal/chevron.dart';
+export 'src/gloss/internal/corners.dart';
 export 'src/gloss/internal/entry_parts.dart';
 export 'src/gloss/internal/field_frame.dart';
 export 'src/gloss/internal/glaze_state.dart';

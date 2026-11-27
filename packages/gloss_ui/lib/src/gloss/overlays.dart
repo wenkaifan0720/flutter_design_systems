@@ -15,6 +15,7 @@ import 'internal/key_paint.dart';
 import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// One of a [GlossDialog]'s keys.
 @immutable
@@ -115,7 +116,7 @@ class GlossDialog extends StatelessWidget {
         child: child,
       ),
       frameBuilder: (context, details, child) => GlossSurface(
-        face: _panel(c),
+        face: _panel(theme),
         child: RawKeylineRegion(
           label: 'Dialog',
           child: Padding(
@@ -160,19 +161,24 @@ class GlossDialog extends StatelessWidget {
 }
 
 /// A raised porcelain panel: a dialog's, a sheet's.
-GlossFace _panel(GlossColors c, {double radius = GlossMetrics.panelRadius}) =>
-    GlossFace.porcelain(c, radius: radius).copyWith(
-      top: c.brightness == Brightness.light
-          ? const Color(0xFFFFFFFF)
-          : const Color(0xFF343A41),
-      middle: c.brightness == Brightness.light
-          ? const Color(0xFFF7F8FA)
-          : const Color(0xFF2B3036),
-      bottom: c.brightness == Brightness.light
-          ? const Color(0xFFF1F3F5)
-          : const Color(0xFF272B31),
-      lift: 1,
-    );
+GlossFace _panel(GlossThemeData theme) {
+  final c = theme.colors;
+  return GlossFace.porcelain(
+    c,
+    radius: glossCorner(theme, RawCorner.extraLarge),
+  ).copyWith(
+    top: c.brightness == Brightness.light
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xFF343A41),
+    middle: c.brightness == Brightness.light
+        ? const Color(0xFFF7F8FA)
+        : const Color(0xFF2B3036),
+    bottom: c.brightness == Brightness.light
+        ? const Color(0xFFF1F3F5)
+        : const Color(0xFF272B31),
+    lift: 1,
+  );
+}
 
 /// Shows the dialog [builder] makes over a dimmed page: it rises from 96%
 /// of its size on Gloss's panel spring and fades in. Escape or Back closes
@@ -757,10 +763,10 @@ class _Sheet extends StatelessWidget {
     // only.
     final sheet = GlossSurface(
       face: framed
-          ? _panel(c)
-          : _panel(c).copyWith(
-              corners: const BorderRadius.vertical(
-                top: Radius.circular(GlossMetrics.panelRadius),
+          ? _panel(theme)
+          : _panel(theme).copyWith(
+              corners: BorderRadius.vertical(
+                top: Radius.circular(glossCorner(theme, RawCorner.extraLarge)),
               ),
             ),
       child: panel,
@@ -886,7 +892,8 @@ class _PageSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = GlossTheme.of(context).colors;
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
     final size = MediaQuery.sizeOf(context);
     final framed = size.width >= GlossMetrics.railBreakpoint;
     final panel = Column(
@@ -916,10 +923,10 @@ class _PageSheet extends StatelessWidget {
     // only.
     final sheet = GlossSurface(
       face: framed
-          ? _panel(c)
-          : _panel(c).copyWith(
-              corners: const BorderRadius.vertical(
-                top: Radius.circular(GlossMetrics.panelRadius),
+          ? _panel(theme)
+          : _panel(theme).copyWith(
+              corners: BorderRadius.vertical(
+                top: Radius.circular(glossCorner(theme, RawCorner.extraLarge)),
               ),
             ),
       child: panel,
@@ -1023,12 +1030,11 @@ class _SidePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
-    final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
     final pad = MediaQuery.paddingOf(context);
     // It runs the window's whole height, so its corners are square: a
     // rounded one would show the window's own top bar through it.
-    final face = _panel(c).copyWith(corners: BorderRadius.zero);
+    final face = _panel(theme).copyWith(corners: BorderRadius.zero);
     return GlossSurface(
       face: face,
       child: Padding(
@@ -1215,7 +1221,7 @@ class _ActionSheet<T> extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               GlossSurface(
-                face: _panel(c),
+                face: _panel(theme),
                 child: Padding(
                   padding: const EdgeInsets.all(GlossSpacing.regular),
                   child: Column(
@@ -1260,7 +1266,7 @@ class _ActionSheet<T> extends StatelessWidget {
               ),
               const SizedBox(height: GlossSpacing.small),
               GlossSurface(
-                face: _panel(c),
+                face: _panel(theme),
                 child: Padding(
                   padding: const EdgeInsets.all(GlossSpacing.small),
                   child: GlossButton.text(

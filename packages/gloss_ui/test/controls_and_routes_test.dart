@@ -1,4 +1,6 @@
 // Interaction, layout and motion of Gloss controls and routes.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

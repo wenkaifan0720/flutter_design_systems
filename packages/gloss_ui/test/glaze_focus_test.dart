@@ -165,7 +165,7 @@ void _none() {}
     // The socket, centred in its tap target.
     return (
       Rect.fromCenter(center: box.center, width: 24, height: 24),
-      GlossMetrics.socketRadius,
+      GlossThemeData.defaultShapeScheme.corners.extraSmall,
     );
   }
   if (part.type == GlossSwitch) {

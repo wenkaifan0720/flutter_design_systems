@@ -4,6 +4,7 @@
 // and the states and the plain field do what they say.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gloss_ui/gloss_host.dart';
 import 'package:gloss_ui/gloss_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -52,13 +53,10 @@ void main() {
   ) async {
     await _at(tester, 390, _root('Simmer'));
     expect(
-      find.descendant(
-        of: find.byType(GlossNavigationBar),
-        matching: find.byKey(_act),
-      ),
+      find.descendant(of: find.byType(GlossBar), matching: find.byKey(_act)),
       findsOneWidget,
     );
-    final bar = tester.getRect(find.byType(GlossNavigationBar));
+    final bar = tester.getRect(find.byType(GlossBar));
     final act = tester.getRect(find.byKey(_act));
     expect(act.right, lessThanOrEqualTo(bar.right));
     final floor = RawTapTargets.of(tester.element(find.byKey(_act)))

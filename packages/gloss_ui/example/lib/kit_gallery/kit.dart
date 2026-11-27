@@ -78,7 +78,9 @@ class _KitPage extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     final margin = GlossSpacing.pageMargin(width);
     final route = ModalRoute.of(context);
-    return GlossScaffold(
+    return GlossScreen(
+      scroll: false,
+      fullBleed: true,
       topBar: GlossTopBar(
         title: title,
         onBack: route?.canPop ?? false

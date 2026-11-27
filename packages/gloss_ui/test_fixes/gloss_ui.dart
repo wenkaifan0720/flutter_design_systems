@@ -1,4 +1,4 @@
-// The names gloss_ui 0.3.0 renames: gloss_ui.dart calls them as before `dart fix --apply`,
+// The names gloss_ui 0.3.0 and 0.6.0 rename: gloss_ui.dart calls them as before `dart fix --apply`,
 // gloss_ui.dart.expect as after.
 import 'package:flutter/widgets.dart';
 import 'package:gloss_ui/gloss_ui.dart';
@@ -141,10 +141,10 @@ void calls(BuildContext context) {
   print(v16.dark);
   print(v16.activeIndex);
   final v17 = GlossAppShell(
-    tabs: const [],
+    destinations: const [],
+    branches: const [],
     selectedIndex: 1,
     onSelected: (_) {},
-    child: const SizedBox(),
   );
   print(v17.onSelected);
   final v18 = GlossNavigationBar(
@@ -250,4 +250,6 @@ void calls(BuildContext context) {
     v31,
     v32,
   ]);
+  // 0.6.0: the tag's palette tone.
+  print(GlossTag('Text', tone: GlossTagTone.jade));
 }

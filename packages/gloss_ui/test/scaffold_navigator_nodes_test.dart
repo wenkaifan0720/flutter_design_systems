@@ -3,6 +3,8 @@
 // pages: the combobox's field keeps the node path it had before the tap, so
 // on the web its input is not moved, and blurred, by the tap that opened the
 // list (a second tap was needed to type).
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';

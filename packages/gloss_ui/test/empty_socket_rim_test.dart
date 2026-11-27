@@ -2,6 +2,8 @@
 // come) keeps a fine rim round its mouth, as an empty checkbox does, so it
 // reads on its ground by day and by night (by night both were all but
 // gone, about 1.1:1).
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';

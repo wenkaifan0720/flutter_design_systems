@@ -12,6 +12,7 @@ import 'internal/entry_parts.dart';
 import 'internal/field_frame.dart';
 import 'internal/glaze_state.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// A field's label: [text] in the label face, 8 px above its field.
 ///
@@ -282,7 +283,7 @@ class _GlossTextFieldState extends State<GlossTextField> {
       states,
       fill: layered.fill,
       edge: layered.edge,
-      radius: GlossMetrics.fieldRadius,
+      radius: glossCorner(theme, RawCorner.small),
     );
     final entry = RawTextEntryBox(
       minHeight: theme.controlHeight,
@@ -404,5 +405,171 @@ class _GlossTextFieldState extends State<GlossTextField> {
       enabled: widget.enabled,
       child: box,
     );
+  }
+}
+
+/// A [GlossTextField] in a [Form] (a [GlossForm]), as Material's
+/// `TextFormField` is: its [validator] runs when the form validates (or as
+/// [autovalidateMode] says) and what it returns stands under the well as the
+/// field's error, its rim in ruby; [onSaved] hands the words over when the
+/// form saves, and resetting the form brings [initialValue] back. Keep the
+/// words in a [controller] or start them at [initialValue], not both.
+///
+/// ```dart
+/// GlossTextFormField(labelText: 'Title', validator: (v) => (v ?? '').trim().isEmpty ? 'Enter the title' : null, onSaved: (v) => title = v!)
+/// ```
+class GlossTextFormField extends FormField<String> {
+  /// A text field, [labelText] above it, that takes part in its [Form].
+  GlossTextFormField({
+    this.controller,
+    String? initialValue,
+    FocusNode? focusNode,
+    String? labelText,
+    String? hintText,
+    String? helperText,
+    Widget? prefixIcon,
+    Widget? suffix,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    Iterable<String>? autofillHints,
+    List<TextInputFormatter>? inputFormatters,
+    bool readOnly = false,
+    bool autofocus = false,
+    int? maxLines = 1,
+    int? minLines,
+    this.onChanged,
+    ValueChanged<String>? onFieldSubmitted,
+    GlossStyle? style,
+    super.onSaved,
+    super.validator,
+    super.forceErrorText,
+    super.enabled,
+    AutovalidateMode? autovalidateMode,
+    super.key,
+  }) : assert(
+         initialValue == null || controller == null,
+         'Start the words in the controller or at initialValue, not both.',
+       ),
+       super(
+         initialValue: controller?.text ?? initialValue ?? '',
+         autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
+         builder: (field) {
+           final state = field as _GlossTextFormFieldState;
+           return GlossTextField(
+             controller: state._controller,
+             focusNode: focusNode,
+             labelText: labelText,
+             hintText: hintText,
+             helperText: helperText,
+             errorText: field.errorText,
+             prefixIcon: prefixIcon,
+             suffix: suffix,
+             obscureText: obscureText,
+             keyboardType: keyboardType,
+             textInputAction: textInputAction,
+             textCapitalization: textCapitalization,
+             autofillHints: autofillHints,
+             inputFormatters: inputFormatters,
+             enabled: field.widget.enabled,
+             readOnly: readOnly,
+             autofocus: autofocus,
+             maxLines: maxLines,
+             minLines: minLines,
+             style: style,
+             onChanged: (text) {
+               field.didChange(text);
+               onChanged?.call(text);
+             },
+             onSubmitted: onFieldSubmitted,
+           );
+         },
+       );
+
+  /// The words' controller, when the page keeps one; without it the field
+  /// keeps its own, started at the initial value.
+  final TextEditingController? controller;
+
+  /// Called as the words change, and with the initial words when the form
+  /// resets.
+  final ValueChanged<String>? onChanged;
+
+  @override
+  FormFieldState<String> createState() => _GlossTextFormFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      );
+  }
+}
+
+class _GlossTextFormFieldState extends FormFieldState<String> {
+  TextEditingController? _own;
+
+  GlossTextFormField get _field => widget as GlossTextFormField;
+
+  TextEditingController get _controller => _field.controller ?? _own!;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_field.controller == null) {
+      _own = TextEditingController(text: widget.initialValue);
+    }
+    _controller.addListener(_fromController);
+  }
+
+  @override
+  void didUpdateWidget(covariant GlossTextFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_field.controller == oldWidget.controller) return;
+    (oldWidget.controller ?? _own)?.removeListener(_fromController);
+    if (_field.controller == null) {
+      _own = TextEditingController.fromValue(oldWidget.controller?.value);
+    } else {
+      _own?.dispose();
+      _own = null;
+      setValue(_field.controller!.text);
+    }
+    _controller.addListener(_fromController);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_fromController);
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChange(String? value) {
+    super.didChange(value);
+    if (_controller.text != value) _controller.text = value ?? '';
+  }
+
+  @override
+  void reset() {
+    // The words go back first, so the controller's listener finds nothing
+    // changed.
+    _controller.text = widget.initialValue ?? '';
+    super.reset();
+    _field.onChanged?.call(_controller.text);
+  }
+
+  // Words set on the controller by the page count as the field's value.
+  void _fromController() {
+    if (_controller.text != value) didChange(_controller.text);
   }
 }

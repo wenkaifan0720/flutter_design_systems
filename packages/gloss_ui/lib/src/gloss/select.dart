@@ -12,6 +12,7 @@ import 'internal/field_frame.dart';
 import 'internal/menu_parts.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// One choice of a [GlossSelect].
 @immutable
@@ -87,7 +88,13 @@ class GlossSelect<T> extends StatelessWidget {
   /// This select's own style, over [GlossThemeData.selectStyle].
   final GlossStyle? style;
 
-  /// The widest a select stands from 600 px of window up.
+  /// The widest a select stood from 600 px of window up, before it took its
+  /// column at every width.
+  @Deprecated(
+    'A select takes its column at every width, as every field does; a row '
+    'that wants it narrower gives it less (a SizedBox or a ConstrainedBox). '
+    'Removed in 0.7.0.',
+  )
   static const double maxWideWidth = 320;
 
   @override
@@ -111,7 +118,10 @@ class GlossSelect<T> extends StatelessWidget {
           {...states, if (errorText != null) WidgetState.error},
         );
         final pressed = states.contains(WidgetState.pressed);
-        var well = GlossFace.well(c, radius: GlossMetrics.fieldRadius);
+        var well = GlossFace.well(
+          c,
+          radius: glossCorner(theme, RawCorner.small),
+        );
         if (layered.fill != null) well = well.glazed(layered.fill!);
         // Focused by the keys, the well lights jade from inside, as a
         // text field's does: that one mark, no reflection along its floor
@@ -217,23 +227,14 @@ class GlossSelect<T> extends StatelessWidget {
               );
             },
           );
-    // From 600 up a select takes its words' room, never its column's.
-    final narrow = MediaQuery.sizeOf(context).width < 600;
-    final field = GlossFieldFrame(
+    // It takes its column at every width, as every field does (Material's
+    // dropdown field too); a row that wants it narrower gives it less.
+    return GlossFieldFrame(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
       enabled: enabled,
       child: box,
-    );
-    if (narrow) return field;
-    return Align(
-      alignment: AlignmentDirectional.topStart,
-      heightFactor: 1,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: maxWideWidth),
-        child: field,
-      ),
     );
   }
 
@@ -271,7 +272,6 @@ class _SelectList<T> extends StatefulWidget {
 
 class _SelectListState<T> extends State<_SelectList<T>> {
   static const double _inset = 4;
-  static const double _radius = 16;
 
   late final List<FocusNode> _nodes = [
     for (final item in widget.items)
@@ -291,12 +291,13 @@ class _SelectListState<T> extends State<_SelectList<T>> {
     final c = theme.colors;
     final light = c.brightness == Brightness.light;
     return GlossSurface(
-      face: GlossFace.porcelain(c, radius: _radius).copyWith(
-        lift: 1,
-        top: light ? const Color(0xFFFFFFFF) : const Color(0xFF343A41),
-        middle: light ? const Color(0xFFF8F9FA) : const Color(0xFF2C3137),
-        bottom: light ? const Color(0xFFF3F5F7) : const Color(0xFF282C32),
-      ),
+      face: GlossFace.porcelain(c, radius: glossCorner(theme, RawCorner.medium))
+          .copyWith(
+            lift: 1,
+            top: light ? const Color(0xFFFFFFFF) : const Color(0xFF343A41),
+            middle: light ? const Color(0xFFF8F9FA) : const Color(0xFF2C3137),
+            bottom: light ? const Color(0xFFF3F5F7) : const Color(0xFF282C32),
+          ),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight: (widget.rowHeight * 7.5 + 2 * _inset).clamp(
@@ -304,15 +305,25 @@ class _SelectListState<T> extends State<_SelectList<T>> {
             widget.maxHeight,
           ),
         ),
-        child: SingleChildScrollView(
+        // The rows scroll inside the rim: what passes the first or the last
+        // row's place is cut there, concentric with the panel, so no words
+        // run on into the panel's edge.
+        child: Padding(
           padding: const EdgeInsets.all(_inset),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (i, item) in widget.items.indexed)
-                _row(context, theme, c, i, item, light),
-            ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(
+              glossCorner(theme, RawCorner.medium) - _inset,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final (i, item) in widget.items.indexed)
+                    _row(context, theme, c, i, item, light),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -350,7 +361,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
             c,
             lit: lit,
             pressed: pressed,
-            radius: _radius - _inset,
+            radius: glossCorner(theme, RawCorner.medium) - _inset,
           );
           final words = !item.enabled
               ? c.inkDisabled

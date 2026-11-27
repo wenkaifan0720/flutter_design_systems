@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// What kind of news a [GlossBanner] brings.
 enum GlossBannerTone {
@@ -31,10 +32,26 @@ enum GlossBannerTone {
   danger,
 }
 
-/// The ink a tone's glyph and rim take, by day and by night.
+/// The ink [tone]'s sign, rim and words take in [colors], by day and by
+/// night: info a smoke grey, success the look's own jade, warning amber,
+/// danger ruby. Success keeps jade in every palette, walked until it reads
+/// on the page, so a sapphire or an amber gel never makes a success read as
+/// news or a warning.
+///
+/// ```dart
+/// final ink = glossToneInk(GlossTheme.of(context).colors, GlossBannerTone.success);
+/// ```
+Color glossToneInk(GlossColors colors, GlossBannerTone tone) =>
+    _toneInk(colors, tone);
+
 Color _toneInk(GlossColors c, GlossBannerTone tone) => switch (tone) {
   GlossBannerTone.info => c.inkSecondary,
-  GlossBannerTone.success => c.jadeInk,
+  GlossBannerTone.success => RawPalette.readableTone(
+    c.brightness == Brightness.light
+        ? const GlossColors.light().jadeInk
+        : const GlossColors.dark().jadeInk,
+    on: [c.page, c.well],
+  ),
   GlossBannerTone.warning =>
     c.brightness == Brightness.light
         ? const Color(0xFF8A5A00)
@@ -121,7 +138,10 @@ class GlossBanner extends StatelessWidget {
     // A level porcelain plate (it holds news, it is not an object to lift),
     // glazed faintly in its tone, its rim in the tone too.
     final ink = _toneInk(c, tone);
-    final porcelain = GlossFace.porcelain(c, radius: GlossMetrics.cardRadius);
+    final porcelain = GlossFace.porcelain(
+      c,
+      radius: glossCorner(theme, RawCorner.large),
+    );
     final glaze = tone == GlossBannerTone.info
         ? 0.0
         : c.brightness == Brightness.light

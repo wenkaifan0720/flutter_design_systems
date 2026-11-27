@@ -48,14 +48,15 @@ class _BarsState extends State<_Bars> {
     // Each bar is shown as a window cut from a screen: a hairline frame
     // round it, so its edges end where the screen's would.
     final c = context.glossTheme.colors;
+    final corner = context.glossTheme.shapeScheme.corners.small;
     Widget framed(Widget child) => DecoratedBox(
       position: DecorationPosition.foreground,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(GlossMetrics.fieldRadius),
+        borderRadius: BorderRadius.circular(corner),
         border: Border.all(color: c.hairline),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(GlossMetrics.fieldRadius),
+        borderRadius: BorderRadius.circular(corner),
         child: ColoredBox(
           color: c.page,
           child: MediaQuery.removePadding(

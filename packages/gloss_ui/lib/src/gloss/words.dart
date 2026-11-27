@@ -1,8 +1,10 @@
-// Gloss: counted words. A count a person reads or hears ("1 recipe",
+// Gloss: counted words and days. A count a person reads or hears ("1 recipe",
 // "3 recipes") takes its noun's form for that count in the reader's
-// language, by CLDR's plural rules: never "$n things" by concatenation.
+// language, by CLDR's plural rules: never "$n things" by concatenation. A
+// day shown takes one format, with its year.
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 /// The plural categories of CLDR: which form of a counted phrase a language
 /// uses for a count. English has [one] and [other]; Arabic has all six.
@@ -123,4 +125,18 @@ String glossPlural(
         GlossPluralCategory.other => other,
       } ??
       other;
+}
+
+/// Gloss's formats: how its parts show a value, so a page shows the same one
+/// the same way.
+abstract final class GlossFormat {
+  /// [value] as Gloss shows a chosen day, in a date field or a list's row:
+  /// the day, its month short and the year, in the reader's language
+  /// ("Nov 26, 2026" in American English, "26 nov. 2026" in French).
+  ///
+  /// ```dart
+  /// GlossFormat.mediumDate(context, DateTime(2026, 11, 26))
+  /// ```
+  static String mediumDate(BuildContext context, DateTime value) =>
+      RawWidgetsLocalizations.of(context).formatMediumDate(value);
 }

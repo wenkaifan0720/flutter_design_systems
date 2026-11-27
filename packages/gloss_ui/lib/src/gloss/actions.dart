@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'fonts.dart';
 import 'internal/chevron.dart';
 import 'internal/menu_parts.dart';
+import 'internal/corners.dart';
 import 'popovers.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -69,7 +70,7 @@ class GlossButtonGroup extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final height = theme.controlHeight;
-    final corner = GlossMetrics.fieldRadius + _troughInset;
+    final corner = glossCorner(theme, RawCorner.small) + _troughInset;
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -273,7 +274,7 @@ class GlossToggleGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final corner = GlossMetrics.fieldRadius + _troughInset;
+    final corner = glossCorner(theme, RawCorner.small) + _troughInset;
     final byValue = {for (final t in toggles) t.value: t};
     return SizedBox(
       height: theme.controlHeight,
@@ -558,7 +559,10 @@ class GlossSplitButton extends StatelessWidget {
         itemBuilder: (context, action, states) =>
             GlossMenuRow(label: action.label, states: states),
         surfaceBuilder: (context, info, items) => GlossSurface(
-          face: glossPanelFace(c),
+          face: glossPanelFace(
+            c,
+            radius: glossCorner(GlossTheme.of(context), RawCorner.medium),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(glossPanelInset),
             child: IntrinsicWidth(
@@ -640,7 +644,7 @@ class GlossLink extends StatelessWidget {
             focused: states.contains(WidgetState.focused),
             hovered: states.contains(WidgetState.hovered),
             pressed: states.contains(WidgetState.pressed),
-            radius: 8,
+            radius: glossCorner(theme, RawCorner.extraSmall, 8),
             tint: true,
             child: AnimatedGlossSurface(
               face: GlossFace(
@@ -648,7 +652,7 @@ class GlossLink extends StatelessWidget {
                 middle: clear,
                 bottom: clear,
                 foreground: ink,
-                radius: 6,
+                radius: glossCorner(theme, RawCorner.extraSmall, 6),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -711,7 +715,10 @@ class GlossKbd extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.kbdStyle], const {});
-    var face = GlossFace.pearl(c, radius: 6);
+    var face = GlossFace.pearl(
+      c,
+      radius: glossCorner(theme, RawCorner.extraSmall, 6),
+    );
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return Semantics(
       label: semanticLabel ?? label,

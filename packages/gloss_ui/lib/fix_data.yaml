@@ -1482,3 +1482,60 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'groupValue'
+
+  - title: "Rename to 'accent'"
+    date: 2026-11-27
+    element:
+      uris: ['gloss_ui.dart']
+      constant: 'jade'
+      inEnum: 'GlossTagTone'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['gloss_ui.dart']
+          constant: 'accent'
+          inEnum: 'GlossTagTone'
+
+  - title: "Import 'package:gloss_ui/gloss_host.dart'"
+    date: 2026-11-27
+    element:
+      uris: ['gloss_ui.dart']
+      class: 'GlossTab'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:gloss_ui/gloss_host.dart']
+          class: 'GlossTab'
+
+  - title: "Import 'package:gloss_ui/gloss_host.dart'"
+    date: 2026-11-27
+    element:
+      uris: ['gloss_ui.dart']
+      class: 'GlossShellAction'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:gloss_ui/gloss_host.dart']
+          class: 'GlossShellAction'
+
+  - title: "Import 'package:gloss_ui/gloss_host.dart'"
+    date: 2026-11-27
+    element:
+      uris: ['gloss_ui.dart']
+      class: 'GlossPreview'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:gloss_ui/gloss_host.dart']
+          class: 'GlossPreview'
+
+  - title: "Import 'package:gloss_ui/gloss_host.dart'"
+    date: 2026-11-27
+    element:
+      uris: ['gloss_ui.dart']
+      enum: 'GlossPresentation'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:gloss_ui/gloss_host.dart']
+          enum: 'GlossPresentation'

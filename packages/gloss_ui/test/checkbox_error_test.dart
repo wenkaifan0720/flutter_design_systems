@@ -2,6 +2,8 @@
 // mouth turns ruby, by day and by night, as Material's box turns its error
 // colour, and nothing stands between the socket and its words (a glyph used
 // to sit beside it, widening the gap to the label).
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:typed_data';
 
 import 'package:flutter/rendering.dart';

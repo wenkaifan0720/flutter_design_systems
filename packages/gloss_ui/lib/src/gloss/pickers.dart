@@ -16,10 +16,12 @@ import 'button.dart';
 import 'fonts.dart';
 import 'internal/field_frame.dart';
 import 'internal/menu_parts.dart';
+import 'internal/corners.dart';
 import 'overlays.dart' show showGlossSheet;
 import 'popovers.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'words.dart';
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -510,7 +512,10 @@ class _PickerField extends StatelessWidget {
         // Focused by the keys, the well lights jade from inside, as a
         // text field's does.
         final keyed = states.contains(WidgetState.focused);
-        var well = GlossFace.well(c, radius: GlossMetrics.fieldRadius);
+        var well = GlossFace.well(
+          c,
+          radius: glossCorner(theme, RawCorner.small),
+        );
         well = well.copyWith(
           lift: enabled ? -1 : -0.45,
           edge: error ? c.danger : (keyed ? c.focus : null),
@@ -617,7 +622,10 @@ Widget _calendarPanel(
         : double.infinity,
   ),
   child: GlossSurface(
-    face: glossPanelFace(GlossTheme.of(context).colors, radius: 20),
+    face: glossPanelFace(
+      GlossTheme.of(context).colors,
+      radius: glossCorner(GlossTheme.of(context), RawCorner.extraLarge, 20),
+    ),
     child: SingleChildScrollView(
       primary: false,
       padding: const EdgeInsets.all(GlossSpacing.medium),
@@ -734,7 +742,6 @@ class GlossDatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     Widget field(VoidCallback? onPressed, bool open) => _fieldColumn(
       label: labelText,
@@ -744,7 +751,7 @@ class GlossDatePicker extends StatelessWidget {
       box: _PickerField(
         onPressed: onPressed,
         open: open,
-        text: value == null ? null : words.formatFullDate(value!),
+        text: value == null ? null : GlossFormat.mediumDate(context, value!),
         hint: hintText,
         icon: LucideIcons.calendar,
         enabled: enabled,
@@ -853,7 +860,6 @@ class GlossDateRangePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final wide = MediaQuery.sizeOf(context).width >= 760;
     Widget field(VoidCallback? onPressed, bool open) => _fieldColumn(
@@ -866,8 +872,8 @@ class GlossDateRangePicker extends StatelessWidget {
         open: open,
         text: value == null
             ? null
-            : '${words.formatFullDate(value!.start)} – '
-                  '${words.formatFullDate(value!.end)}',
+            : '${GlossFormat.mediumDate(context, value!.start)} – '
+                  '${GlossFormat.mediumDate(context, value!.end)}',
         hint: hintText,
         icon: LucideIcons.calendarRange,
         enabled: enabled,
@@ -934,7 +940,11 @@ class GlossDateRangePicker extends StatelessWidget {
 /// row under a clear lens across its middle.
 /// The lens over a drum's chosen row: clear, its rim and the top light's
 /// sheen (by night a faint crown light, not a bar).
-GlossFace _drumLens(GlossColors c, {Set<WidgetState> states = const {}}) {
+GlossFace _drumLens(
+  GlossColors c, {
+  required double radius,
+  Set<WidgetState> states = const {},
+}) {
   final light = c.brightness == Brightness.light;
   return GlossFace(
     top: light ? const Color(0x2EFFFFFF) : const Color(0x14FFFFFF),
@@ -943,7 +953,7 @@ GlossFace _drumLens(GlossColors c, {Set<WidgetState> states = const {}}) {
     edge: light ? const Color(0x33000000) : const Color(0xFF15191D),
     foreground: c.ink,
     lens: light ? 0.7 : 0.3,
-    radius: 10,
+    radius: radius,
     focus: glossGlazeOf(c, states),
   );
 }
@@ -1022,10 +1032,18 @@ Widget _drums(
                               middle: const Color(0x00FFFFFF),
                               bottom: const Color(0x00FFFFFF),
                               foreground: c.ink,
-                              radius: 10,
+                              radius: glossCorner(theme, RawCorner.small, 10),
                               focus: glossGlazeOf(c, column.states),
                             )
-                          : _drumLens(c, states: column.states),
+                          : _drumLens(
+                              c,
+                              radius: glossCorner(
+                                GlossTheme.of(context),
+                                RawCorner.small,
+                                10,
+                              ),
+                              states: column.states,
+                            ),
                     ),
                   ),
                 ),
@@ -1038,14 +1056,22 @@ Widget _drums(
   );
 }
 
-Widget _drumWell(GlossColors c, Widget child) => GlossSurface(
-  face: GlossFace.well(c, radius: 18),
+Widget _drumWell(GlossThemeData theme, Widget child) => GlossSurface(
+  face: GlossFace.well(
+    theme.colors,
+    radius: glossCorner(theme, RawCorner.large),
+  ),
   child: Padding(
     padding: const EdgeInsets.symmetric(
       horizontal: GlossSpacing.tight + GlossMetrics.rimRoom,
       vertical: GlossSpacing.tight,
     ),
-    child: ClipRRect(borderRadius: BorderRadius.circular(14), child: child),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(
+        glossCorner(theme, RawCorner.large, 14),
+      ),
+      child: child,
+    ),
   ),
 );
 
@@ -1092,10 +1118,9 @@ class GlossWheelPicker<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = GlossTheme.of(context).colors;
     final at = math.max(0, items.indexOf(value));
     return _drumWell(
-      c,
+      GlossTheme.of(context),
       _drums(
         context,
         columns: [
@@ -1214,7 +1239,7 @@ class GlossTimePicker extends StatelessWidget {
 
     final change = onChanged;
     return _drumWell(
-      c,
+      GlossTheme.of(context),
       Directionality(
         // A clock reads hour then minute in every language.
         textDirection: TextDirection.ltr,
@@ -1248,7 +1273,16 @@ class GlossTimePicker extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                         horizontal: GlossSpacing.tight,
                       ),
-                      child: GlossSurface(face: _drumLens(c)),
+                      child: GlossSurface(
+                        face: _drumLens(
+                          c,
+                          radius: glossCorner(
+                            GlossTheme.of(context),
+                            RawCorner.small,
+                            10,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1363,11 +1397,16 @@ class _GlossColorPickerState extends State<GlossColorPicker> {
       showAlpha: widget.showAlpha,
       areaHeight: 180,
       areaBuilder: (context, area) => GlossSurface(
-        face: GlossFace.well(c, radius: 14),
+        face: GlossFace.well(
+          c,
+          radius: glossCorner(theme, RawCorner.medium, 14),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(GlossMetrics.frameRim),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(11),
+            borderRadius: BorderRadius.circular(
+              glossCorner(theme, RawCorner.medium, 11),
+            ),
             child: CustomPaint(
               painter: _AreaPainter(area.color.hue),
               size: Size.infinite,
@@ -1385,7 +1424,9 @@ class _GlossColorPickerState extends State<GlossColorPicker> {
             child: Padding(
               padding: const EdgeInsets.all(GlossMetrics.rimRoom),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(
+                  glossCorner(theme, RawCorner.medium, 8),
+                ),
                 child: CustomPaint(
                   painter: _TrackPainter(channel, color),
                   size: Size.infinite,

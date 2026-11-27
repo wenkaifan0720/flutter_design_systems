@@ -1,10 +1,8 @@
 /// Gloss's app frame: what an app's pages stand in. [GlossHost] once over
-/// the navigator; [GlossScreen] round each page; [GlossPage] the route a
-/// push raises one in (a sheet's is `GlossSheetPage`); [GlossPreview] one
-/// page alone, as the app stands it; [GlossLoadingState] and
-/// [GlossErrorState] a page whose data is on its way or lost; [GlossInput]
-/// the plain one-line field; [GlossTab] and [GlossShellAction] an app
-/// shell's places and its one act.
+/// the navigator; [GlossAppShell] round the app's places; [GlossScreen]
+/// round each page; [GlossPage] the route a push raises one in (a sheet's
+/// is `GlossSheetPage`); [GlossLoadingState] and [GlossErrorState] a page
+/// whose data is on its way or lost; [GlossInput] the plain one-line field.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -18,13 +16,8 @@ import 'feedback.dart';
 import 'navigation.dart';
 import 'overlays.dart';
 import 'page_transitions.dart';
-import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
-
-/// The widest a page's content stands, inside its margins: a calm desktop
-/// reads in one column of this width, centred.
-const double _pageWidth = 1080;
 
 /// The app's host, mounted once over its navigator (`WidgetsApp.builder`):
 /// Gloss's theme for the brightness asked for, its toasts and its porcelain
@@ -35,19 +28,25 @@ const double _pageWidth = 1080;
 /// ```
 class GlossHost extends StatelessWidget {
   /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
-  /// asks; either left out is the jade preset in that brightness.
+  /// asks; either left out is [palette]'s in that brightness.
   const GlossHost({
     super.key,
+    this.palette,
     this.theme,
     this.darkTheme,
     this.brightness,
     required this.child,
   });
 
-  /// The theme by day.
+  /// The palette both brightnesses are built from, one of
+  /// [GlossThemeData.palettes] (the app's stored choice, say); null is the
+  /// first, jade. A change of palette eases from the old colours to the new.
+  final RawNamedPalette? palette;
+
+  /// The theme by day; null is [palette]'s.
   final GlossThemeData? theme;
 
-  /// The theme by night.
+  /// The theme by night; null is [palette]'s.
   final GlossThemeData? darkTheme;
 
   /// The brightness to draw in; null follows the preview's or the
@@ -65,8 +64,13 @@ class GlossHost extends StatelessWidget {
         MediaQuery.platformBrightnessOf(context);
     final data =
         (wanted == Brightness.dark ? darkTheme : theme) ??
-        GlossThemeData.preset(GlossThemeData.presets.first, wanted);
-    return GlossTheme(
+        GlossThemeData.preset(
+          (palette ?? GlossThemeData.palettes.first).id,
+          wanted,
+        );
+    // Day to night, one palette to another: the app moves to the new theme
+    // (at once under Reduce Motion), as MaterialApp's theme does.
+    return AnimatedGlossTheme(
       data: data,
       child: GlossToaster(
         child: ColoredBox(color: data.colors.page, child: child),
@@ -78,6 +82,13 @@ class GlossHost extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
+      ..add(
+        DiagnosticsProperty<RawNamedPalette>(
+          'palette',
+          palette,
+          defaultValue: null,
+        ),
+      )
       ..add(
         DiagnosticsProperty<GlossThemeData>('theme', theme, defaultValue: null),
       )
@@ -170,7 +181,9 @@ class GlossScreen extends StatelessWidget {
             alignment: Alignment.topCenter,
             heightFactor: scroll ? 1 : null,
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: _pageWidth + 2 * margin),
+              constraints: BoxConstraints(
+                maxWidth: GlossSpacing.pageMeasure + 2 * margin,
+              ),
               child: page,
             ),
           );
@@ -199,22 +212,31 @@ class GlossScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const GlossDivider(),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      margin,
-                      GlossSpacing.medium,
-                      margin,
-                      GlossSpacing.medium + media.padding.bottom,
-                    ),
-                    child: framed
-                        ? Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 360),
-                              child: foot,
-                            ),
-                          )
-                        : foot,
+                  // Its keys keep to the page's column: on a wide screen
+                  // they end where the page's words do.
+                  LayoutBuilder(
+                    builder: (context, box) {
+                      final inset = GlossSpacing.pageInset(width, box.maxWidth);
+                      return Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          inset,
+                          GlossSpacing.medium,
+                          inset,
+                          GlossSpacing.medium + media.padding.bottom,
+                        ),
+                        child: framed
+                            ? Align(
+                                alignment: AlignmentDirectional.centerEnd,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 360,
+                                  ),
+                                  child: foot,
+                                ),
+                              )
+                            : foot,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -346,358 +368,6 @@ class _GlossPageRoute<T> extends PageRoute<T> {
       .buildTransitions<T>(this, context, animation, secondaryAnimation, child);
 }
 
-/// How a page stands in a [GlossPreview].
-enum GlossPresentation {
-  /// A root, over the app's places.
-  root,
-
-  /// Pushed over a root.
-  pushed,
-
-  /// Raised as a sheet.
-  sheet,
-}
-
-/// One page alone, as the app stands it: the same host, the same places
-/// and act on a root, the same route on a pushed page or a sheet, with no
-/// router.
-///
-/// ```dart
-/// GlossPreview(presentation: GlossPresentation.pushed, child: GlossScreen(body: const Text('Serves two.')))
-/// ```
-class GlossPreview extends StatelessWidget {
-  /// A preview of [child].
-  const GlossPreview({
-    super.key,
-    required this.child,
-    this.theme,
-    this.darkTheme,
-    this.brightness = Brightness.light,
-    this.presentation = GlossPresentation.root,
-    this.tabs = const [],
-    this.selectedIndex = 0,
-    this.action,
-    this.brand,
-    this.drawer = false,
-    this.platform = PreviewPlatform.android,
-  });
-
-  /// The page.
-  final Widget child;
-
-  /// The theme by day.
-  final GlossThemeData? theme;
-
-  /// The theme by night.
-  final GlossThemeData? darkTheme;
-
-  /// The brightness to draw in.
-  final Brightness brightness;
-
-  /// How the page stands.
-  final GlossPresentation presentation;
-
-  /// The app's places, on a root.
-  final List<GlossTab> tabs;
-
-  /// The place the page is.
-  final int selectedIndex;
-
-  /// The app's one act, on a root.
-  final ShellAction? action;
-
-  /// The app's name, at the head of its places on a tablet or a desktop.
-  final String? brand;
-
-  /// Whether a sheet stands as tall as its content.
-  final bool drawer;
-
-  /// The platform previewed.
-  final PreviewPlatform platform;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget rooted(Widget page) => tabs.isEmpty && action == null
-        ? page
-        : GlossAppShell(
-            tabs: tabs,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: (_) {},
-            action: action,
-            brand: brand,
-            child: page,
-          );
-    return PreviewFrame(
-      platform: platform,
-      brightness: brightness,
-      // A semantics node of its own: the app's routes block only what is
-      // under them in it, never the page the preview stands on.
-      child: Semantics(
-        container: true,
-        child: MaterialApp(
-          key: ValueKey<Object>((presentation, drawer)),
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: const [
-            RawWidgetsLocalizations.delegate,
-            DefaultMaterialLocalizations.delegate,
-            DefaultWidgetsLocalizations.delegate,
-          ],
-          builder: (context, app) => GlossHost(
-            theme: theme,
-            darkTheme: darkTheme,
-            brightness: brightness,
-            child: app ?? const SizedBox.shrink(),
-          ),
-          home: switch (presentation) {
-            GlossPresentation.root => rooted(child),
-            GlossPresentation.pushed => PreviewStage(
-              route: (context, page) => GlossPage<void>(
-                key: const ValueKey<String>('gloss-preview'),
-                child: page,
-              ).createRoute(context),
-              child: child,
-            ),
-            GlossPresentation.sheet => PreviewStage(
-              route: (context, page) => GlossSheetPage<void>(
-                key: const ValueKey<String>('gloss-preview'),
-                drawer: drawer,
-                child: page,
-              ).createRoute(context),
-              child: child,
-            ),
-          },
-        ),
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<GlossThemeData>('theme', theme, defaultValue: null),
-      )
-      ..add(
-        DiagnosticsProperty<GlossThemeData>(
-          'darkTheme',
-          darkTheme,
-          defaultValue: null,
-        ),
-      )
-      ..add(DiagnosticsProperty<Brightness>('brightness', brightness))
-      ..add(
-        DiagnosticsProperty<GlossPresentation>('presentation', presentation),
-      )
-      ..add(IterableProperty<GlossTab>('tabs', tabs))
-      ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      )
-      ..add(StringProperty('brand', brand, defaultValue: null))
-      ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
-      ..add(DiagnosticsProperty<PreviewPlatform>('platform', platform));
-  }
-}
-
-/// The app's places and its one act round a root page: [GlossScaffold]'s
-/// bottom bar on a phone, its rail on a tablet, its sidebar on a desktop.
-/// The act is a jade gel key in the chrome, never floating over the page:
-/// the bottom bar's last cell on a phone, under the app's name at the head
-/// of the rail or the sidebar. An app on a router mounts it through
-/// `GlossShell`; a preview mounts it directly.
-///
-/// ```dart
-/// GlossAppShell(tabs: const [GlossTab(LucideIcons.house, 'Today'), GlossTab(LucideIcons.bookOpen, 'Recipes')], selectedIndex: 0, onDestinationSelected: (i) {}, child: const TodayPage())
-/// ```
-class GlossAppShell extends StatelessWidget {
-  /// [child] with the app's [tabs].
-  const GlossAppShell({
-    super.key,
-    required this.tabs,
-    required this.selectedIndex,
-    required this.onDestinationSelected,
-    required this.child,
-    this.action,
-    this.brand,
-    this.showPlaces = true,
-  });
-
-  /// The app's places.
-  final List<GlossTab> tabs;
-
-  /// The place shown.
-  final int selectedIndex;
-
-  /// Called with the place chosen.
-  final ValueChanged<int> onDestinationSelected;
-
-  /// The page.
-  final Widget child;
-
-  /// The app's one act.
-  final ShellAction? action;
-
-  /// The app's name, at the head of the rail or the sidebar.
-  final String? brand;
-
-  /// Whether a phone's bar stands: false while a page pushed over the root
-  /// covers it, and it springs away with the act in it (a rail or a sidebar
-  /// stays).
-  final bool showPlaces;
-
-  @override
-  Widget build(BuildContext context) {
-    final act = action;
-    final name = brand;
-    return GlossScaffold(
-      destinations: [
-        for (final tab in tabs)
-          GlossDestination(icon: tab.icon, label: tab.label, key: tab.key),
-      ],
-      selectedIndex: selectedIndex,
-      onDestinationSelected: tabs.isNotEmpty ? onDestinationSelected : null,
-      showNavigation: showPlaces,
-      brand: name == null || name.isEmpty ? null : _Brand(name),
-      action: act == null ? null : _ActKey(act),
-      body: child,
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(IterableProperty<GlossTab>('tabs', tabs))
-      ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has(
-          'onDestinationSelected',
-          onDestinationSelected,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      )
-      ..add(StringProperty('brand', brand, defaultValue: null))
-      ..add(
-        FlagProperty('showPlaces', value: showPlaces, ifTrue: 'showPlaces'),
-      );
-  }
-}
-
-/// The app's name at the head of its places, letterpressed: in the title
-/// type where it fits, its first letter where it does not (a rail).
-class _Brand extends StatelessWidget {
-  const _Brand(this.name);
-
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = GlossTheme.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < 120;
-        return Semantics(
-          header: true,
-          label: name,
-          child: ExcludeSemantics(
-            child: Padding(
-              padding: const EdgeInsets.all(GlossSpacing.regular),
-              child: Text(
-                narrow ? name.characters.first.toUpperCase() : name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: narrow ? TextAlign.center : TextAlign.start,
-                style: glossLetterpress(theme.textTheme.title, theme.colors),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// The shell's act: a jade gel bead when it is the app's standing
-/// invitation ([ShellAction.accent]), else a pearl one.
-class _ActKey extends StatelessWidget {
-  const _ActKey(this.action);
-
-  final ShellAction action;
-
-  @override
-  Widget build(BuildContext context) {
-    final words = action.label ?? 'New';
-    void press() => action.onPressed(context);
-    // The sidebar has room for the act's words: a key with its glyph.
-    final wide =
-        MediaQuery.sizeOf(context).width >= GlossMetrics.sidebarBreakpoint;
-    if (wide) {
-      final glyph = Icon(action.icon, size: 18);
-      return KeyedSubtree(
-        key: action.key,
-        child: action.accent
-            ? GlossButton.filled(words, onPressed: press, icon: glyph)
-            : GlossButton(words, onPressed: press, icon: glyph),
-      );
-    }
-    return KeyedSubtree(
-      key: action.key,
-      child: action.accent
-          ? GlossIconButton.filled(
-              onPressed: press,
-              tooltip: words,
-              icon: Icon(action.icon),
-            )
-          : GlossIconButton(
-              onPressed: press,
-              tooltip: words,
-              icon: Icon(action.icon),
-            ),
-    );
-  }
-}
-
-/// One of an app shell's places as an app declares it: its glyph, its name
-/// and the key on its cell.
-///
-/// ```dart
-/// GlossTab(LucideIcons.house, 'Today', ValueKey('open-today'))
-/// ```
-@immutable
-class GlossTab {
-  /// A place called [label], shown by [icon].
-  const GlossTab(this.icon, this.label, [this.key]);
-
-  /// Its glyph.
-  final IconData icon;
-
-  /// Its name.
-  final String label;
-
-  /// The key on its cell.
-  final Key? key;
-}
-
-/// The app's one act beside its places (add, plan, capture): a jade gel
-/// bead in the chrome when [accent], a pearl one when not.
-///
-/// ```dart
-/// GlossShellAction(icon: LucideIcons.plus, accent: true, onPressed: (context) => openNewRecipe(context))
-/// ```
-class GlossShellAction extends ShellAction {
-  /// An act wearing [icon].
-  const GlossShellAction({
-    required super.icon,
-    required super.onPressed,
-    super.label,
-    super.accent = true,
-    super.key,
-  });
-}
-
 /// While a page's data is on its way: the spinner over its word, centred.
 ///
 /// ```dart
@@ -707,7 +377,7 @@ class GlossLoadingState extends StatelessWidget {
   /// The page waiting.
   const GlossLoadingState({super.key, this.label});
 
-  /// What a screen reader says; null takes the design kit's ("Loading").
+  /// Its word under the spinner; null takes the design kit's ("Loading").
   final String? label;
 
   @override

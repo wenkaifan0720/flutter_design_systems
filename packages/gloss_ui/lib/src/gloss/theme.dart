@@ -4,6 +4,9 @@
 library;
 
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
+
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
@@ -11,6 +14,8 @@ import 'package:ui_core/ui_core.dart';
 import 'fonts.dart';
 import 'internal/platform_words.dart';
 import 'page_transitions.dart';
+
+export 'package:ui_core/ui_core.dart' show RawNamedPalette;
 
 /// How one part of Gloss looks, as Material's `ButtonStyle` is: every slot a
 /// `WidgetStateProperty`, read from a part's `style:` first, then from its
@@ -32,9 +37,10 @@ typedef GlossStyle = RawStyle;
 /// tap target stays at the floor for the input whatever the density.
 typedef GlossDensity = RawDensity;
 
-/// The look's constants: its corners, its depths and its light. They are not
-/// settings: one light from the top and parts moulded at these radii are what
-/// Gloss is.
+/// The look's constants: its sizes, its depths and its light. They are not
+/// settings: one light from the top and parts moulded at these depths are
+/// what Gloss is. Its corners are on the theme
+/// ([GlossThemeData.shapeScheme]), within Gloss's bands.
 abstract final class GlossMetrics {
   /// A control's height at [RawDensity.standard], before density.
   static const double controlHeight = 48;
@@ -42,19 +48,39 @@ abstract final class GlossMetrics {
   /// A list row's least height at [RawDensity.standard].
   static const double rowHeight = 52;
 
-  /// The corner of a field, a select and the small wells inside a panel.
+  /// The corner of a field, a select and the small wells inside a panel, in Gloss's own shapes: the default scheme's small step.
+  @Deprecated(
+    'Read the theme\'s corner, GlossTheme.of(context).shapeScheme.corners.small, '
+    'which follows a theme\'s shapeScheme. Removed in 0.7.0.',
+  )
   static const double fieldRadius = 12;
 
-  /// The corner of a well holding a group of rows.
+  /// The corner of a well holding a group of rows, in Gloss's own shapes: the default scheme's medium step.
+  @Deprecated(
+    'Read the theme\'s corner, GlossTheme.of(context).shapeScheme.corners.medium, '
+    'which follows a theme\'s shapeScheme. Removed in 0.7.0.',
+  )
   static const double wellRadius = 16;
 
-  /// The corner of a card (an object's tile).
+  /// The corner of a card (an object's tile), in Gloss's own shapes: the default scheme's large step.
+  @Deprecated(
+    'Read the theme\'s corner, GlossTheme.of(context).shapeScheme.corners.large, '
+    'which follows a theme\'s shapeScheme. Removed in 0.7.0.',
+  )
   static const double cardRadius = 18;
 
-  /// The corner of a dialog and a sheet's top.
+  /// The corner of a dialog and a sheet's top, in Gloss's own shapes: the default scheme's extraLarge step.
+  @Deprecated(
+    'Read the theme\'s corner, GlossTheme.of(context).shapeScheme.corners.extraLarge, '
+    'which follows a theme\'s shapeScheme. Removed in 0.7.0.',
+  )
   static const double panelRadius = 24;
 
-  /// The corner of a checkbox's socket.
+  /// The corner of a checkbox's socket, in Gloss's own shapes: the default scheme's extraSmall step.
+  @Deprecated(
+    'Read the theme\'s corner, GlossTheme.of(context).shapeScheme.corners.extraSmall, '
+    'which follows a theme\'s shapeScheme. Removed in 0.7.0.',
+  )
   static const double socketRadius = 7;
 
   /// How far a key sinks when pressed home.
@@ -130,6 +156,18 @@ abstract final class GlossSpacing {
       : width >= 600
       ? large
       : regular;
+
+  /// The widest a page's words stand on a wide screen: a [GlossScreen]'s
+  /// column, inside its margins.
+  static const double pageMeasure = 1080;
+
+  /// How far in from its sides a page's words start in a space [extent]
+  /// wide, in a window [width] wide: the page margin, or on a wide screen
+  /// the room either side of [pageMeasure], whichever is more. A bar or a
+  /// footer over a page keeps to it, so its title and its keys line up with
+  /// the page's words.
+  static double pageInset(double width, double extent) =>
+      math.max(pageMargin(width), (extent - pageMeasure) / 2);
 }
 
 /// Gloss's motion: springs, run through `RawMotionPolicy`, which honours
@@ -761,6 +799,7 @@ class GlossThemeData with Diagnosticable {
     required this.colors,
     GlossTextTheme? textTheme,
     GlossDensity? density,
+    RawShapeScheme? shapeScheme,
     this.buttonStyle,
     this.filledButtonStyle,
     this.textButtonStyle,
@@ -813,7 +852,11 @@ class GlossThemeData with Diagnosticable {
     this.splitViewStyle,
     this.treeStyle,
   }) : textTheme = textTheme ?? GlossTextTheme.from(colors),
-       density = density ?? GlossDensity.adaptivePlatformDensity;
+       density = density ?? GlossDensity.adaptivePlatformDensity,
+       shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? defaultShapeScheme,
+         look: 'Gloss',
+       );
 
   /// The jade preset by day.
   factory GlossThemeData.light({GlossDensity? density}) =>
@@ -942,8 +985,60 @@ class GlossThemeData with Diagnosticable {
     );
   }
 
-  /// Gloss's six gels, by id, each by day and by night: jade (the look's own)
-  /// and five more on the same porcelain. [GlossThemeData.preset] builds one.
+  /// Gloss's six gels on the same porcelain, as an app's palette picker
+  /// shows them: each one's [RawNamedPalette.id] to store, its label, and
+  /// its gel and its page as swatches, by day and by night. Jade, the look's
+  /// own, comes first and is the default; then sapphire, amethyst, amber,
+  /// rose and teal. [GlossThemeData.preset] builds each by id, and
+  /// `GlossHost.palette` mounts one. Any other colour is
+  /// [GlossThemeData.from]'s.
+  ///
+  /// ```dart
+  /// GlossHost(palette: GlossThemeData.palettes.firstWhere((p) => p.id == 'teal'), child: const Text('Home'))
+  /// ```
+  static const List<RawNamedPalette> palettes = <RawNamedPalette>[
+    RawNamedPalette(
+      id: 'jade',
+      label: 'Jade',
+      swatches: [Color(0xFF0E7652), Color(0xFFE6E9ED)],
+      darkSwatches: [Color(0xFF0F7A55), Color(0xFF1B1E22)],
+    ),
+    RawNamedPalette(
+      id: 'sapphire',
+      label: 'Sapphire',
+      swatches: [Color(0xFF1E5BC6), Color(0xFFE6E9ED)],
+      darkSwatches: [Color(0xFF1E5BC6), Color(0xFF1B1E22)],
+    ),
+    RawNamedPalette(
+      id: 'amethyst',
+      label: 'Amethyst',
+      swatches: [Color(0xFF7B3FB5), Color(0xFFE6E9ED)],
+      darkSwatches: [Color(0xFF7B3FB5), Color(0xFF1B1E22)],
+    ),
+    RawNamedPalette(
+      id: 'amber',
+      label: 'Amber',
+      swatches: [Color(0xFFAC5200), Color(0xFFE6E9ED)],
+      darkSwatches: [Color(0xFFAC5200), Color(0xFF1B1E22)],
+    ),
+    RawNamedPalette(
+      id: 'rose',
+      label: 'Rose',
+      swatches: [Color(0xFFC0306E), Color(0xFFE6E9ED)],
+      darkSwatches: [Color(0xFFC0306E), Color(0xFF1B1E22)],
+    ),
+    RawNamedPalette(
+      id: 'teal',
+      label: 'Teal',
+      swatches: [Color(0xFF007684), Color(0xFFE6E9ED)],
+      darkSwatches: [Color(0xFF007684), Color(0xFF1B1E22)],
+    ),
+  ];
+
+  /// The six gels' ids, in [palettes]' order.
+  @Deprecated(
+    'Read GlossThemeData.palettes, whose ids these are. Removed in 0.7.0.',
+  )
   static const List<String> presets = [
     'jade',
     'sapphire',
@@ -953,13 +1048,13 @@ class GlossThemeData with Diagnosticable {
     'teal',
   ];
 
-  /// The preset [id] by [brightness].
+  /// The palette [id] (one of [palettes]' ids) by [brightness]. An id
+  /// Gloss doesn't know (a choice stored by another version) is jade's.
   factory GlossThemeData.preset(
     String id,
     Brightness brightness, {
     GlossDensity? density,
   }) {
-    assert(presets.contains(id), 'Gloss has no preset "$id": $presets');
     final gel = switch (id) {
       'sapphire' => const Color(0xFF1E5BC6),
       'amethyst' => const Color(0xFF7B3FB5),
@@ -985,6 +1080,50 @@ class GlossThemeData with Diagnosticable {
 
   /// How tight the controls stand.
   final GlossDensity density;
+
+  /// The corners an app can change, held to [shapeLimits]. Each part takes
+  /// the step that fits its size: a checkbox's socket, a key cap and a
+  /// link's focus [RawCorner.extraSmall]; a field, a select, a segmented
+  /// trough and a sidebar's chosen plate [RawCorner.small]; a well of rows, a
+  /// floating list and a chart's tray [RawCorner.medium]; a card and a
+  /// picture's frame [RawCorner.large]; a dialog, a sheet's top and the
+  /// calendar's panel [RawCorner.extraLarge]. What stands inside a part (a
+  /// row's plate in its well) keeps its corner in proportion. Keys, beads,
+  /// switches, chips and the toast stay pills and circles: a moulded key is
+  /// round-ended. Gloss's edges are light (a rim of highlight and an inner
+  /// shade) and its three depths are its light, so it opens no stroke and no
+  /// depth.
+  ///
+  /// ```dart
+  /// GlossThemeData.jade(Brightness.light).copyWith(shapeScheme: GlossThemeData.defaultShapeScheme.copyWith(corners: GlossThemeData.defaultShapeScheme.corners.scaled(1.25)))
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Gloss's own corners: round fillets of 7, 12, 16, 18 and 24.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 7,
+      small: 12,
+      medium: 16,
+      large: 18,
+      extraLarge: 24,
+    ),
+  );
+
+  /// The bands Gloss holds a [shapeScheme] to, so that every end still reads
+  /// as moulded porcelain: round corners alone (the glaze's highlight and the
+  /// rim run concentric with a round fillet; a bevel, a notch or a stair
+  /// would cut the glaze, and a continuous corner moves its highlight off
+  /// the rim), each step within about a third of its own (a socket from 5,
+  /// still a square socket, to 9, short of a radio's round one; a field up to
+  /// 16, short of the search field's pill), no stroke and no depth.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(5, 9),
+    small: RawBand(8, 16),
+    medium: RawBand(12, 22),
+    large: RawBand(14, 24),
+    extraLarge: RawBand(18, 32),
+  );
 
   /// The pearl key's part theme ([GlossButton]).
   final GlossStyle? buttonStyle;
@@ -1154,6 +1293,7 @@ class GlossThemeData with Diagnosticable {
     GlossColors? colors,
     GlossTextTheme? textTheme,
     GlossDensity? density,
+    RawShapeScheme? shapeScheme,
     GlossStyle? buttonStyle,
     GlossStyle? filledButtonStyle,
     GlossStyle? textButtonStyle,
@@ -1211,6 +1351,7 @@ class GlossThemeData with Diagnosticable {
         textTheme ??
         (colors == null ? this.textTheme : GlossTextTheme.from(colors)),
     density: density ?? this.density,
+    shapeScheme: shapeScheme ?? this.shapeScheme,
     buttonStyle: buttonStyle ?? this.buttonStyle,
     filledButtonStyle: filledButtonStyle ?? this.filledButtonStyle,
     textButtonStyle: textButtonStyle ?? this.textButtonStyle,
@@ -1380,6 +1521,7 @@ class GlossThemeData with Diagnosticable {
       colors: GlossColors.lerp(a.colors, b.colors, t),
       textTheme: GlossTextTheme.lerp(a.textTheme, b.textTheme, t),
       density: GlossDensity.lerp(a.density, b.density, t),
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       buttonStyle: s.buttonStyle,
       filledButtonStyle: s.filledButtonStyle,
       textButtonStyle: s.textButtonStyle,
@@ -1440,11 +1582,17 @@ class GlossThemeData with Diagnosticable {
       other.colors == colors &&
       other.textTheme == textTheme &&
       other.density == density &&
+      other.shapeScheme == shapeScheme &&
       listEquals(other._styles, _styles);
 
   @override
-  int get hashCode =>
-      Object.hash(colors, textTheme, density, Object.hashAll(_styles));
+  int get hashCode => Object.hash(
+    colors,
+    textTheme,
+    density,
+    shapeScheme,
+    Object.hashAll(_styles),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1453,6 +1601,13 @@ class GlossThemeData with Diagnosticable {
       ..add(DiagnosticsProperty<GlossColors>('colors', colors))
       ..add(DiagnosticsProperty<GlossTextTheme>('textTheme', textTheme))
       ..add(DiagnosticsProperty<GlossDensity>('density', density))
+      ..add(
+        DiagnosticsProperty<RawShapeScheme>(
+          'shapeScheme',
+          shapeScheme,
+          defaultValue: defaultShapeScheme,
+        ),
+      )
       ..add(DoubleProperty('controlHeight', controlHeight));
     final styles = _styles;
     for (var i = 0; i < styles.length; i++) {
@@ -1682,7 +1837,7 @@ class _GlossThemeTween extends Tween<GlossThemeData> {
   GlossThemeData lerp(double t) => GlossThemeData.lerp(begin!, end!, t);
 }
 
-/// `context.glossTheme`: the [GlossThemeData] above.
+/// Reads the [GlossThemeData] above a context as `context.glossTheme`.
 extension GlossThemeContext on BuildContext {
   /// The [GlossThemeData] above this context ([GlossTheme.of]).
   GlossThemeData get glossTheme => GlossTheme.of(this);

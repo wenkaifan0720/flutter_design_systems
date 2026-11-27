@@ -418,11 +418,18 @@ class SimmerFrameState extends State<SimmerFrame> {
       ),
       SimmerPlace.settings => const SimmerSettings(),
     };
-    return GlossScaffold(
-      destinations: _places,
+    return GlossAppShell.router(
+      destinations: [
+        for (final d in _places)
+          RawNavigationDestination(
+            label: d.label,
+            icon: d.icon,
+            selectedIcon: d.selectedIcon,
+          ),
+      ],
       selectedIndex: _place.index,
       onDestinationSelected: (i) => go(SimmerPlace.values[i]),
-      brand: width >= 1024
+      header: width >= 1024
           ? const Text('Simmer')
           : Text(
               'S',
@@ -430,7 +437,7 @@ class SimmerFrameState extends State<SimmerFrame> {
             ),
       // The account is a row in a well at the sidebar's foot: pressable,
       // but not a raised plate, which is the current place's alone.
-      sideFooter: GlossWell(
+      footer: GlossWell(
         children: [
           GlossListTile(
             leading: const SimmerAvatar(size: 32),
@@ -495,9 +502,18 @@ class SimmerPage extends StatelessWidget {
   final double maxWidth;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(
+    // The page's words stand on its column, level with the top bar's
+    // title: the margin, or on a wide screen the room either side of
+    // GlossSpacing.pageMeasure.
+    builder: (context, box) => _page(
+      context,
+      GlossSpacing.pageInset(MediaQuery.sizeOf(context).width, box.maxWidth),
+    ),
+  );
+
+  Widget _page(BuildContext context, double margin) {
     final width = MediaQuery.sizeOf(context).width;
-    final margin = GlossSpacing.pageMargin(width);
     // On a desk the page's keys stand in its title strip, the gel key at
     // its end; on a phone and a tablet they are a bar at the foot.
     final keys = width >= GlossMetrics.sidebarBreakpoint ? null : bottom;

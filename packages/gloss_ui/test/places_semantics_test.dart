@@ -42,7 +42,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(home.app(Brightness.light, TextDirection.ltr));
     await tester.pumpAndSettle();
-    await tester.tap(find.bySemanticsLabel('Recipes').last);
+    // The phone's bar is ui_core's tab bar too: "Recipes\nTab 3 of 5".
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Recipes(\n|$)')).last);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
     // Mid-switch: Today is still going as Recipes comes.

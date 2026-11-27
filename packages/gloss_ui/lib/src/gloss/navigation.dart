@@ -1,7 +1,7 @@
 /// Gloss's navigation, on its grained chrome: [GlossTopBar], [GlossTabBar],
 /// and the three ways between an app's places ([GlossNavigationBar] under
 /// 600 px, [GlossNavigationRail] to 1024, [GlossSidebar] past it), which
-/// [GlossScaffold] picks by width on ui_core's adaptive shell.
+/// [GlossAppShell] picks by width on ui_core's adaptive shell.
 library;
 
 import 'dart:math' as math;
@@ -10,12 +10,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
+
+export 'package:ui_core/ui_core.dart'
+    show RawBranchBackBehavior, RawNavigationDestination;
+
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'fonts.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// A Gloss top bar: the grained chrome along a page's top, its [title]
 /// letterpressed at the start, a pearl back bead before it when [onBack]
@@ -106,7 +111,6 @@ class GlossTopBar extends StatelessWidget {
     final c = theme.colors;
     final top = MediaQuery.paddingOf(context).top;
     final width = MediaQuery.sizeOf(context).width;
-    final margin = GlossSpacing.pageMargin(width);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final titleStyle = glossLetterpress(theme.textTheme.title, c);
     // On a desk the place's name sits in the quiet strip with its keys, on
@@ -121,94 +125,101 @@ class GlossTopBar extends StatelessWidget {
                 tooltip: RawWidgetsLocalizations.of(context).backButtonTooltip,
                 glyph: rtl ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
               ));
-    final row = SizedBox(
-      height: height,
-      child: Row(
-        children: [
-          if (lead != null)
-            Padding(
-              // The bead's face on the page's margin (its tap target
-              // reaches 2 px past it on a touch screen).
-              padding: EdgeInsetsDirectional.only(start: margin - 2),
-              child: lead,
-            ),
-          Expanded(
-            child: large
-                ? const SizedBox.shrink()
-                : Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      start: lead == null ? margin : GlossSpacing.medium,
-                      end: GlossSpacing.small,
-                    ),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: Semantics(
-                        header: true,
-                        child: RawCapCenter(
-                          capHeightFactor: glossCapHeightFactor,
-                          // The bar's one line grows with the reader's text
-                          // up to 1.5x; the large title under it grows all
-                          // the way, and wraps.
-                          child: Text(
-                            title,
-                            textScaler: MediaQuery.textScalerOf(context)
-                                .clamp(maxScaleFactor: 1.5),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: titleStyle,
+    return LayoutBuilder(
+      builder: (context, box) {
+        // The bar keeps to the page's column: on a wide screen its title
+        // and its keys line up with the page's words.
+        final margin = GlossSpacing.pageInset(width, box.maxWidth);
+        final row = SizedBox(
+          height: height,
+          child: Row(
+            children: [
+              if (lead != null)
+                Padding(
+                  // The bead's face on the page's margin (its tap target
+                  // reaches 2 px past it on a touch screen).
+                  padding: EdgeInsetsDirectional.only(start: margin - 2),
+                  child: lead,
+                ),
+              Expanded(
+                child: large
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          start: lead == null ? margin : GlossSpacing.medium,
+                          end: GlossSpacing.small,
+                        ),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Semantics(
+                            header: true,
+                            child: RawCapCenter(
+                              capHeightFactor: glossCapHeightFactor,
+                              // The bar's one line grows with the reader's text
+                              // up to 1.5x; the large title under it grows all
+                              // the way, and wraps.
+                              child: Text(
+                                title,
+                                textScaler: MediaQuery.textScalerOf(context)
+                                    .clamp(maxScaleFactor: 1.5),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: titleStyle,
+                              ),
+                            ),
                           ),
                         ),
                       ),
+              ),
+              for (final (i, action) in actions.indexed) ...[
+                if (i > 0) const SizedBox(width: GlossSpacing.tight),
+                action,
+              ],
+              // The last bead's face on the page's margin, as the back bead's is
+              // at the start.
+              SizedBox(width: actions.isEmpty ? 0 : margin - 2),
+            ],
+          ),
+        );
+        return GlossBar(
+          child: Padding(
+            padding: EdgeInsets.only(top: top),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                row,
+                if (large)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      start: margin,
+                      end: margin,
+                      bottom: GlossSpacing.medium,
+                    ),
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: glossLetterpress(theme.textTheme.headline, c),
+                      ),
                     ),
                   ),
-          ),
-          for (final (i, action) in actions.indexed) ...[
-            if (i > 0) const SizedBox(width: GlossSpacing.tight),
-            action,
-          ],
-          // The last bead's face on the page's margin, as the back bead's is
-          // at the start.
-          SizedBox(width: actions.isEmpty ? 0 : margin - 2),
-        ],
-      ),
-    );
-    return GlossBar(
-      child: Padding(
-        padding: EdgeInsets.only(top: top),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            row,
-            if (large)
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                  start: margin,
-                  end: margin,
-                  bottom: GlossSpacing.medium,
-                ),
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: glossLetterpress(theme.textTheme.headline, c),
+                if (bottom != null)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      start: margin,
+                      end: margin,
+                      bottom: GlossSpacing.medium,
+                    ),
+                    child: bottom,
                   ),
-                ),
-              ),
-            if (bottom != null)
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                  start: margin,
-                  end: margin,
-                  bottom: GlossSpacing.medium,
-                ),
-                child: bottom,
-              ),
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -363,7 +374,7 @@ class _SideFace extends StatelessWidget {
     if (chosen) {
       face = GlossFace.pearl(
         c,
-        radius: 12,
+        radius: glossCorner(theme, RawCorner.small),
       ).copyWith(lens: light ? 0.55 : 0.25, lift: 0.6, travel: pressed ? 1 : 0);
     } else {
       final tint = pressed ? shade : clear;
@@ -372,7 +383,7 @@ class _SideFace extends StatelessWidget {
         middle: tint,
         bottom: tint,
         foreground: c.ink,
-        radius: 12,
+        radius: glossCorner(theme, RawCorner.small),
         shade: c.shadow,
       );
     }
@@ -427,7 +438,7 @@ class _SideFace extends StatelessWidget {
 }
 
 /// A place pressed on its own (a bar, a rail or a sidebar standing alone):
-/// each place is a tab stop of its own. In a [GlossScaffold] ui_core's
+/// each place is a tab stop of its own. In a [GlossAppShell] ui_core's
 /// shell presses them instead.
 class _Place extends StatelessWidget {
   const _Place({
@@ -534,9 +545,11 @@ Widget _sideFrame(
     child: SizedBox(
       width: GlossSidebar.width,
       child: Padding(
+        // A head starts in the top bar's band (GlossTopBar.height); without
+        // one the places start a margin down.
         padding: EdgeInsets.fromLTRB(
           GlossSpacing.medium,
-          top + GlossSpacing.regular,
+          top + (header == null ? GlossSpacing.regular : 0),
           GlossSpacing.medium,
           GlossSpacing.regular,
         ),
@@ -549,9 +562,20 @@ Widget _sideFrame(
                   start: GlossSpacing.medium,
                   bottom: GlossSpacing.large,
                 ),
-                child: DefaultTextStyle(
-                  style: glossLetterpress(theme.textTheme.title, theme.colors),
-                  child: header,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: GlossTopBar.height,
+                  ),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: DefaultTextStyle(
+                      style: glossLetterpress(
+                        theme.textTheme.title,
+                        theme.colors,
+                      ),
+                      child: header,
+                    ),
+                  ),
                 ),
               ),
             for (final place in places)
@@ -647,7 +671,7 @@ class GlossNavigationRail extends StatelessWidget {
     this.style,
   }) : _places = null;
 
-  // A rail round places ui_core's shell presses ([GlossScaffold]).
+  // A rail round places ui_core's shell presses ([GlossAppShell]).
   const GlossNavigationRail._shell(
     this._places, {
     required this.selectedIndex,
@@ -726,7 +750,7 @@ class GlossSidebar extends StatelessWidget {
     this.style,
   }) : _places = null;
 
-  // A sidebar round places ui_core's shell presses ([GlossScaffold]).
+  // A sidebar round places ui_core's shell presses ([GlossAppShell]).
   const GlossSidebar._shell(
     this._places, {
     required this.selectedIndex,
@@ -791,6 +815,418 @@ class GlossSidebar extends StatelessWidget {
   }
 }
 
+/// An app's frame in Gloss: its places along a phone's foot in the grained
+/// bottom bar, down a tablet's start side in the rail from 600 wide, and in
+/// the sidebar from 1024, each place keeping its own stack of pages (as
+/// Material's `NavigationBar`, `NavigationRail` and `NavigationDrawer`
+/// round a `Scaffold`). The current place sits in a pocket pressed into the
+/// bar or the rail, on a pearl plate in the sidebar. The app's one act
+/// ([action], a [GlossActKey]) is a jade gel key in the chrome, never over
+/// the page: the bar's last cell on a phone, under [header] (the app's
+/// [GlossBrand]) atop the rail and the sidebar. [footer] stands at the
+/// sidebar's foot (the account).
+///
+/// Built on ui_core's [RawAdaptiveShell] at every width, the phone's bar
+/// included: the places are one tab stop, the arrows move along them, F6
+/// moves between them and the page, and a screen reader hears each as a tab
+/// ("Books, Tab 1 of 3"), the act a button of its own beside the tabs. A
+/// page pushed in a place keeps the rail or the sidebar beside it while the
+/// bar steps away ([hideBarOnPush]); back pops the place's own stack. Toasts
+/// keep clear of the bar and centre on the page beside a rail or a sidebar.
+///
+/// Each of [destinations] opens its root page from [branches], in order; a
+/// page pushes in its own place with `Navigator.of(context).push`, and one
+/// pushed on the app's root navigator covers the whole frame. An app on a
+/// router that keeps each place's navigator itself (go_router's
+/// `StatefulShellRoute`) uses [GlossAppShell.router].
+///
+/// ```dart
+/// GlossAppShell(header: const GlossBrand('Shelf'), destinations: const [RawNavigationDestination(label: 'Books', icon: LucideIcons.bookOpen), RawNavigationDestination(label: 'Settings', icon: LucideIcons.settings)], branches: [(context) => const Text('Books'), (context) => const Text('Settings')])
+/// ```
+class GlossAppShell extends StatefulWidget {
+  /// A frame over [destinations], each opening its page from [branches].
+  const GlossAppShell({
+    super.key,
+    required this.destinations,
+    required List<WidgetBuilder> this.branches,
+    this.selectedIndex,
+    this.onDestinationSelected,
+    this.header,
+    this.footer,
+    this.action,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
+  }) : body = null,
+       showBar = true,
+       assert(
+         destinations.length == branches.length,
+         'Each place has its root page.',
+       );
+
+  /// A frame round [body], the page a router shows for the place at
+  /// [selectedIndex]: the router keeps each place's pages (go_router's
+  /// `StatefulNavigationShell`), and [onDestinationSelected] asks it for
+  /// another place. With [showBar] false a phone's bar steps away (a page
+  /// pushed over a place's root); a rail or a sidebar stays.
+  ///
+  /// ```dart
+  /// GlossAppShell.router(destinations: const [RawNavigationDestination(label: 'Books', icon: LucideIcons.bookOpen), RawNavigationDestination(label: 'Settings', icon: LucideIcons.settings)], selectedIndex: 0, onDestinationSelected: (index) {}, body: const Text('Books'))
+  /// ```
+  const GlossAppShell.router({
+    super.key,
+    required this.destinations,
+    required Widget this.body,
+    required int this.selectedIndex,
+    required ValueChanged<int> this.onDestinationSelected,
+    this.header,
+    this.footer,
+    this.action,
+    this.showBar = true,
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination,
+       hideBarOnPush = false;
+
+  /// The app's places, two to five, in order. A place whose
+  /// [RawNavigationDestination.data] is a [Key] carries it on its cell.
+  final List<RawNavigationDestination> destinations;
+
+  /// Each place's root page, in [destinations]' order; null in
+  /// [GlossAppShell.router].
+  final List<WidgetBuilder>? branches;
+
+  /// The router's page for the current place; null in the branches form.
+  final Widget? body;
+
+  /// The place shown, when the page keeps it; null: the frame keeps its own,
+  /// starting at the first.
+  final int? selectedIndex;
+
+  /// Called with the place chosen (the one shown again included, which pops
+  /// it to its root).
+  final ValueChanged<int>? onDestinationSelected;
+
+  /// What heads the rail and the sidebar: the app's [GlossBrand].
+  final Widget? header;
+
+  /// What stands at the sidebar's foot: the account, say.
+  final Widget? footer;
+
+  /// The app's one act, a [GlossActKey]: in a phone's bar, its last cell;
+  /// atop the rail and the sidebar, under [header].
+  final Widget? action;
+
+  /// The places' navigators' keys, to push in a place from outside (a
+  /// notification opening a record); null: the frame's own.
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place at its root page.
+  final RawBranchBackBehavior backBehavior;
+
+  /// Whether a phone's bar steps away while a page is pushed over a place's
+  /// root (a rail or a sidebar stays). False keeps the bar under pushed
+  /// pages, as Cupertino's tab scaffold does.
+  final bool hideBarOnPush;
+
+  /// In [GlossAppShell.router], whether a phone's bar stands.
+  final bool showBar;
+
+  @override
+  State<GlossAppShell> createState() => _GlossAppShellState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<String>('destinations', [
+          for (final d in destinations) d.label,
+        ]),
+      )
+      ..add(IntProperty('branches', branches?.length, defaultValue: null))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        EnumProperty<RawBranchBackBehavior>(
+          'backBehavior',
+          backBehavior,
+          defaultValue: RawBranchBackBehavior.firstDestination,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideBarOnPush',
+          value: hideBarOnPush,
+          ifFalse: 'bar kept under pushed pages',
+        ),
+      )
+      ..add(FlagProperty('showBar', value: showBar, ifFalse: 'bar hidden'));
+  }
+}
+
+class _GlossAppShellState extends State<GlossAppShell> {
+  int _own = 0;
+
+  int get _selected => widget.selectedIndex ?? _own;
+
+  void _select(int index) {
+    if (widget.selectedIndex == null) setState(() => _own = index);
+    widget.onDestinationSelected?.call(index);
+  }
+
+  // Gloss's own widths: the rail from 600, the sidebar from 1024, a little
+  // before ui_core's 1200, where a desk's window has room for it.
+  static RawNavigationMode _modeFor(double width) =>
+      width < GlossMetrics.railBreakpoint
+      ? RawNavigationMode.bar
+      : width < GlossMetrics.sidebarBreakpoint
+      ? RawNavigationMode.rail
+      : RawNavigationMode.sidebar;
+
+  Widget _place(
+    BuildContext context,
+    RawNavigationDestination destination,
+    RawDestinationDetails details,
+  ) {
+    final d = GlossDestination(
+      icon: destination.icon,
+      selectedIcon: destination.selectedIcon,
+      label: destination.label,
+    );
+    final key = destination.data;
+    return KeyedSubtree(
+      key: key is Key ? key : null,
+      child: details.mode == RawNavigationMode.sidebar
+          ? _SideFace(destination: d, states: details.states, style: null)
+          : _PocketFace(destination: d, states: details.states, style: null),
+    );
+  }
+
+  // The brand, and the act under it, atop a rail or a sidebar.
+  Widget? _head(bool wide) {
+    final act = widget.action;
+    if (act == null) return widget.header;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: wide
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
+      children: [
+        ?widget.header,
+        // In a sidebar the act stands on the start line the name and the
+        // places' glyphs keep, a gap under the name's band.
+        Padding(
+          padding: EdgeInsets.only(
+            top: wide && widget.header != null
+                ? GlossSpacing.large
+                : GlossSpacing.small,
+            bottom: GlossSpacing.small,
+          ),
+          child: act,
+        ),
+      ],
+    );
+  }
+
+  Widget _navigation(BuildContext context, RawNavigationDetails details) =>
+      switch (details.mode) {
+        RawNavigationMode.sidebar => GlossSidebar._shell(
+          details.destinations,
+          selectedIndex: details.selectedIndex,
+          header: _head(true),
+          footer: widget.footer,
+        ),
+        RawNavigationMode.rail => GlossNavigationRail._shell(
+          details.destinations,
+          selectedIndex: details.selectedIndex,
+          leading: _head(false),
+        ),
+        // The bar: the places as the tab bar, the act in a cell of its own
+        // beside them, outside the tabs.
+        _ => _barFrame(context, [
+          details.group(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final place in details.destinations)
+                  Expanded(child: place),
+              ],
+            ),
+          ),
+        ], widget.action),
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = GlossTheme.of(context);
+    final branches = widget.branches;
+    final shell = branches == null
+        ? RawAdaptiveShell(
+            destinations: widget.destinations,
+            selectedIndex: _selected,
+            onDestinationSelected: _select,
+            modeForWidth: _modeFor,
+            showNavigation: widget.showBar,
+            destinationBuilder: _place,
+            navigationBuilder: _navigation,
+            body: widget.body!,
+          )
+        : RawAdaptiveShell.branches(
+            destinations: widget.destinations,
+            branches: branches,
+            navigatorKeys: widget.navigatorKeys,
+            backBehavior: widget.backBehavior,
+            hideBarOnPush: widget.hideBarOnPush,
+            selectedIndex: _selected,
+            onDestinationSelected: _select,
+            modeForWidth: _modeFor,
+            destinationBuilder: _place,
+            navigationBuilder: _navigation,
+          );
+    return ColoredBox(color: theme.colors.page, child: shell);
+  }
+}
+
+/// The app's name at the head of its places, letterpressed: in the title
+/// type where it fits (a sidebar), its first letter where it does not (a
+/// rail). A screen reader hears the name once, as a heading.
+///
+/// ```dart
+/// const GlossBrand('Shelf')
+/// ```
+class GlossBrand extends StatelessWidget {
+  /// The app's [name].
+  const GlossBrand(this.name, {super.key});
+
+  /// The app's name.
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = GlossTheme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < 120;
+        final style = glossLetterpress(theme.textTheme.title, theme.colors);
+        return Semantics(
+          header: true,
+          label: name,
+          child: ExcludeSemantics(
+            // Narrow, atop a rail, its initial is centred.
+            child: narrow
+                ? Padding(
+                    padding: const EdgeInsets.all(GlossSpacing.regular),
+                    child: Text(
+                      name.isEmpty ? name : name.characters.first.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: style,
+                    ),
+                  )
+                // Wide, atop a sidebar, the name stands in the top bar's band
+                // with its capitals centred as the bar's title's are, so the
+                // two share a line, and on the start line of the places'
+                // glyphs. Like the bar's title it grows up to 1.5x.
+                : SizedBox(
+                    height: GlossTopBar.height,
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: RawCapCenter(
+                        capHeightFactor: glossCapHeightFactor,
+                        child: Text(
+                          name,
+                          textScaler: MediaQuery.textScalerOf(context)
+                              .clamp(maxScaleFactor: 1.5),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: style,
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('name', name));
+  }
+}
+
+/// The app's one act in its [GlossAppShell] (add, plan, capture): a jade gel
+/// key, the screen's standing invitation; with [accent] off a pearl one. In
+/// a phone's bar and atop a rail it is a round bead wearing [icon], [label]
+/// its tooltip and its name to a screen reader; in a desktop's sidebar a key
+/// with its glyph and its words.
+///
+/// ```dart
+/// GlossActKey(icon: LucideIcons.plus, label: 'Add book', onPressed: () {})
+/// ```
+class GlossActKey extends StatelessWidget {
+  /// An act named [label], wearing [icon].
+  const GlossActKey({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.accent = true,
+  });
+
+  /// Its glyph.
+  final IconData icon;
+
+  /// Its words: on the sidebar's key, else its tooltip and name.
+  final String label;
+
+  /// Called when it is pressed; null puts it out of use.
+  final VoidCallback? onPressed;
+
+  /// Whether it is the jade gel (true) or pearl.
+  final bool accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final wide =
+        MediaQuery.sizeOf(context).width >= GlossMetrics.sidebarBreakpoint;
+    if (wide) {
+      final glyph = Icon(icon, size: 18);
+      return accent
+          ? GlossButton.filled(label, onPressed: onPressed, icon: glyph)
+          : GlossButton(label, onPressed: onPressed, icon: glyph);
+    }
+    return accent
+        ? GlossIconButton.filled(
+            onPressed: onPressed,
+            tooltip: label,
+            icon: Icon(icon),
+          )
+        : GlossIconButton(
+            onPressed: onPressed,
+            tooltip: label,
+            icon: Icon(icon),
+          );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('accent', value: accent, ifFalse: 'pearl'));
+  }
+}
+
 /// A page with its places: a [GlossNavigationBar] under it below 600 px
 /// of window, a [GlossNavigationRail] beside it to 1024, a [GlossSidebar]
 /// past it; [topBar] over [body] either way.
@@ -807,6 +1243,10 @@ class GlossSidebar extends StatelessWidget {
 /// ```dart
 /// GlossScaffold(topBar: const GlossTopBar(title: 'Today'), destinations: const [GlossDestination(icon: LucideIcons.house, label: 'Today'), GlossDestination(icon: LucideIcons.bookOpen, label: 'Recipes')], selectedIndex: 0, onDestinationSelected: (index) {}, body: const SizedBox.expand())
 /// ```
+@Deprecated(
+  'Use GlossAppShell, which keeps each place\'s pages, with a GlossScreen '
+  '(its topBar) per page. Removed in 0.7.0.',
+)
 class GlossScaffold extends StatelessWidget {
   /// A page of [body].
   const GlossScaffold({
@@ -964,10 +1404,14 @@ class GlossScaffold extends StatelessWidget {
           : CrossAxisAlignment.center,
       children: [
         ?brand,
+        // In a sidebar the act stands on the start line the name and the
+        // places' glyphs keep, a gap under the name's band.
         Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: wide ? GlossSpacing.regular : 0,
-            vertical: GlossSpacing.small,
+          padding: EdgeInsets.only(
+            top: wide && brand != null
+                ? GlossSpacing.large
+                : GlossSpacing.small,
+            bottom: GlossSpacing.small,
           ),
           child: act,
         ),

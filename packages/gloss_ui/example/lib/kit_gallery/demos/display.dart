@@ -128,7 +128,7 @@ Widget kitDisplayDemo(Brightness brightness) => kitScreen(
         KitRow(
           children: [
             GlossTag('Quick'),
-            GlossTag('Vegetarian', tone: GlossTagTone.jade),
+            GlossTag('Vegetarian', tone: GlossTagTone.accent),
             GlossTag('Contains nuts', tone: GlossTagTone.danger),
           ],
         ),

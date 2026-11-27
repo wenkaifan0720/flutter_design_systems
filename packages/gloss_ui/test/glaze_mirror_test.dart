@@ -76,12 +76,16 @@ void main() {
       face: GlossFace.pearl(c, radius: 12).copyWith(focus: c.focus),
     ),
     "a focused field's lip": (c) => GlossSurface(
-      face: GlossFace.well(c, radius: GlossMetrics.fieldRadius).copyWith(
-        lift: -1,
-        edge: c.focus,
-        glow: glossFocusGlow(c),
-        focus: c.focus,
-      ),
+      face:
+          GlossFace.well(
+            c,
+            radius: GlossThemeData.defaultShapeScheme.corners.small,
+          ).copyWith(
+            lift: -1,
+            edge: c.focus,
+            glow: glossFocusGlow(c),
+            focus: c.focus,
+          ),
     ),
     "a key's glaze": (c) => const GlossGlazeHighlight(
       focused: true,

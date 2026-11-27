@@ -16,22 +16,23 @@ class SimmerDish extends StatelessWidget {
   const SimmerDish({
     super.key,
     required this.recipe,
-    this.radius = GlossMetrics.cardRadius,
+    this.radius,
     this.semanticLabel,
   });
 
   /// The recipe.
   final SimmerRecipe recipe;
 
-  /// The tile's corner.
-  final double radius;
+  /// The tile's corner; null: the theme's card corner.
+  final double? radius;
 
   /// What a screen reader says; the picture is decoration when null.
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final c = GlossTheme.of(context).colors;
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
     final picture = RepaintBoundary(
       child: CustomPaint(
         painter: _DishPainter(recipe, c.brightness),
@@ -39,7 +40,9 @@ class SimmerDish extends StatelessWidget {
       ),
     );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
+      borderRadius: BorderRadius.circular(
+        radius ?? theme.shapeScheme.corners.large,
+      ),
       child: semanticLabel == null
           ? ExcludeSemantics(child: picture)
           : Semantics(image: true, label: semanticLabel, child: picture),

@@ -381,12 +381,12 @@ class _SimmerRecipePageState extends State<SimmerRecipePage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(GlossMetrics.cardRadius),
+          borderRadius: BorderRadius.circular(theme.shapeScheme.corners.large),
           child: AspectRatio(
             aspectRatio: 16 / 9,
             child: SimmerDish(
               recipe: _r,
-              radius: GlossMetrics.cardRadius,
+              radius: theme.shapeScheme.corners.large,
               semanticLabel: 'A bowl of ${_r.name.toLowerCase()}',
             ),
           ),

@@ -1,5 +1,7 @@
-// Gloss's six gels (GlossThemeData.presets): jade first, the look's own,
-// then five more on the same porcelain. On each, by day and by night, words
+// Gloss's six gels (GlossThemeData.palettes, ui_core's RawNamedPalette):
+// jade first, the look's own, then five more on the same porcelain; each
+// palette's swatches are its theme's gel and page by day and by night, and
+// the host takes one and eases a change. On each, by day and by night, words
 // read 4.5:1 on the page, a bar, a well (its floor and the rim's shadow at
 // its top, as painted) and a porcelain tile; the ink reads 4.5:1 and the
 // supporting words and the jade's 3:1 at least on a pearl part's crown and
@@ -48,16 +50,55 @@ void _reads(GlossColors c, String name) {
 }
 
 void main() {
-  test('six gels, jade first', () {
-    expect(GlossThemeData.presets, [
-      'jade',
-      'sapphire',
-      'amethyst',
-      'amber',
-      'rose',
-      'teal',
-    ]);
+  final ids = [for (final p in GlossThemeData.palettes) p.id];
+
+  test('six gels, jade first, each its theme in swatches', () {
+    expect(ids, ['jade', 'sapphire', 'amethyst', 'amber', 'rose', 'teal']);
+    for (final p in GlossThemeData.palettes) {
+      expect(p.label, p.id[0].toUpperCase() + p.id.substring(1));
+      for (final b in Brightness.values) {
+        final c = GlossThemeData.preset(p.id, b).colors;
+        expect(p.swatchesFor(b), [c.jade, c.page], reason: '${p.id} ${b.name}');
+      }
+    }
+    // A choice stored by another version is jade's.
+    expect(
+      GlossThemeData.preset('cobalt', Brightness.light).colors,
+      const GlossColors.light(),
+    );
   });
+
+  for (final b in Brightness.values) {
+    testWidgets('${b.name}: the host takes a palette and eases a change', (
+      t,
+    ) async {
+      late BuildContext seen;
+      Widget app(RawNamedPalette palette) => Directionality(
+        textDirection: TextDirection.ltr,
+        child: GlossHost(
+          palette: palette,
+          brightness: b,
+          child: Builder(
+            builder: (context) {
+              seen = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      final jade = GlossThemeData.palettes.first;
+      final teal = GlossThemeData.palettes.last;
+      await t.pumpWidget(app(jade));
+      expect(GlossTheme.of(seen).colors.jade, jade.swatchesFor(b).first);
+      await t.pumpWidget(app(teal));
+      await t.pump(const Duration(milliseconds: 60));
+      final mid = GlossTheme.of(seen).colors.jade;
+      expect(mid, isNot(jade.swatchesFor(b).first));
+      expect(mid, isNot(teal.swatchesFor(b).first));
+      await t.pumpAndSettle();
+      expect(GlossTheme.of(seen).colors.jade, teal.swatchesFor(b).first);
+    });
+  }
 
   for (final b in Brightness.values) {
     final jade = b == Brightness.dark
@@ -70,13 +111,12 @@ void main() {
 
     test('${b.name}: each gel its own', () {
       final gels = {
-        for (final name in GlossThemeData.presets)
-          GlossThemeData.preset(name, b).colors.jade,
+        for (final name in ids) GlossThemeData.preset(name, b).colors.jade,
       };
-      expect(gels, hasLength(GlossThemeData.presets.length));
+      expect(gels, hasLength(ids.length));
     });
 
-    for (final name in GlossThemeData.presets) {
+    for (final name in ids) {
       test('${b.name}, $name: every word reads where it stands', () {
         final c = GlossThemeData.preset(name, b).colors;
         expect(c.brightness, b);

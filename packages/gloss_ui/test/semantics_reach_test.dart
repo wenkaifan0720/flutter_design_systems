@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gloss_ui/gloss_ui.dart';
+import 'package:gloss_ui/gloss_host.dart';
 
 import '../example/lib/gallery_pages.dart';
 import '../example/lib/kit_gallery/kit.dart';

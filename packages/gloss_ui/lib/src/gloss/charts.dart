@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'internal/label_stride.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// One series of figures in a chart.
 @immutable
@@ -147,8 +148,12 @@ class _Framed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = GlossTheme.of(context).colors;
-    var tray = GlossFace.well(c, radius: 16).copyWith(lift: -0.55);
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
+    var tray = GlossFace.well(
+      c,
+      radius: glossCorner(theme, RawCorner.medium),
+    ).copyWith(lift: -0.55);
     if (fill != null) tray = tray.glazed(fill!);
     return Semantics(
       label: semanticLabel,
@@ -507,7 +512,15 @@ class _BarPainter extends _AxesPainter {
     required super.t,
     required super.words,
     required super.valueFormat,
+    required this.corner,
   });
+
+  // The theme's extraSmall step: a bar's crown is rounded in proportion.
+  final double corner;
+
+  @override
+  bool shouldRepaint(_AxesPainter old) =>
+      super.shouldRepaint(old) || (old is _BarPainter && old.corner != corner);
 
   @override
   double xAt(Rect plot, int i, int n) {
@@ -544,8 +557,8 @@ class _BarPainter extends _AxesPainter {
           rect,
           _gelOf(_gelAt(c, s.color, si)).copyWith(
             corners: BorderRadius.vertical(
-              top: Radius.circular(math.min(bar / 2, 8)),
-              bottom: const Radius.circular(2),
+              top: Radius.circular(math.min(bar / 2, corner * 8 / 7)),
+              bottom: Radius.circular(corner * 2 / 7),
             ),
           ),
         );
@@ -740,6 +753,7 @@ class GlossBarChart extends StatelessWidget {
         fill: layered.fill,
         painter: _BarPainter(
           c: c,
+          corner: glossCorner(theme, RawCorner.extraSmall),
           text: theme.textTheme.caption.copyWith(color: c.inkSecondary),
           labels: labels,
           series: series,

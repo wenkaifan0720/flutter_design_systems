@@ -126,7 +126,7 @@ Widget _captioned(String caption, Widget calendar) => Builder(
         GlossSurface(
           face: GlossFace.well(
             context.glossTheme.colors,
-            radius: GlossMetrics.wellRadius,
+            radius: context.glossTheme.shapeScheme.corners.medium,
           ),
           child: Padding(
             padding: const EdgeInsets.all(GlossSpacing.small),

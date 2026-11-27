@@ -1,6 +1,8 @@
 // Page dots are found at a glance: a page not shown is an empty socket
 // whose floor reads at 3:1 on the page, by day and by night, in every gel
 // (they were about 1.1:1, nearly invisible by night).
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -76,7 +78,7 @@ void main() {
   setUpAll(glossLoadFonts);
 
   for (final brightness in Brightness.values) {
-    for (final gel in GlossThemeData.presets) {
+    for (final gel in [for (final p in GlossThemeData.palettes) p.id]) {
       testWidgets('the dots read on the page, $gel, $brightness', (
         tester,
       ) async {

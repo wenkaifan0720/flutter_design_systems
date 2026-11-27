@@ -1,6 +1,8 @@
 // By night a switch that is off for good reads apart from one that is only
 // switched off: its bead sinks halfway to the page, as a key off does,
 // instead of shining as the moonlit bead a finger can move.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:typed_data';
 
 import 'package:flutter/rendering.dart';

@@ -2,6 +2,8 @@
 // words after it read as two nodes, the heading flagged as a header: the keys
 // set round the app and its panes (F6 between panes) add no node of their own
 // for the two to merge into.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

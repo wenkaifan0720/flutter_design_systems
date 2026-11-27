@@ -266,11 +266,11 @@ class _CollectionsState extends State<_Collections> {
             child: GlossSurface(
               face: GlossFace.well(
                 context.glossTheme.colors,
-                radius: GlossMetrics.wellRadius,
+                radius: context.glossTheme.shapeScheme.corners.medium,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(
-                  GlossMetrics.wellRadius - 2,
+                  context.glossTheme.shapeScheme.corners.medium - 2,
                 ),
                 child: GlossSplitView(
                   minFirst: 140,

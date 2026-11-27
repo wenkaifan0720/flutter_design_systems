@@ -17,6 +17,7 @@ import 'internal/glaze_state.dart';
 import 'internal/socket_rim.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// A 0-to-1 value that springs to [target] whenever it changes: what a
 /// control's moving part rides on.
@@ -156,6 +157,10 @@ class GlossCheckbox extends StatelessWidget {
               (light) => _SocketPainter(
                 rtl: Directionality.of(context) == TextDirection.rtl,
                 colors: c,
+                corner: glossCorner(
+                  GlossTheme.of(context),
+                  RawCorner.extraSmall,
+                ),
                 t: t,
                 round: false,
                 mixed: value == null,
@@ -284,6 +289,7 @@ class _RadioSocket extends StatelessWidget {
           (light) => _SocketPainter(
             rtl: Directionality.of(context) == TextDirection.rtl,
             colors: c,
+            corner: glossCorner(GlossTheme.of(context), RawCorner.extraSmall),
             t: t,
             round: true,
             mixed: false,
@@ -322,6 +328,7 @@ class GlossRadioGroup<T> extends StatelessWidget {
     required this.groupValue,
     required this.labelOf,
     required this.onChanged,
+    this.trailingOf,
     this.isEnabled,
     this.direction = Axis.vertical,
     this.semanticLabel,
@@ -336,6 +343,10 @@ class GlossRadioGroup<T> extends StatelessWidget {
 
   /// The words beside a choice's socket, which a screen reader says too.
   final String Function(T value) labelOf;
+
+  /// What stands after a choice's words (a palette's swatches); null for
+  /// none. A screen reader hears the words alone.
+  final Widget? Function(T value)? trailingOf;
 
   /// Called with the choice the reader makes; null disables the group.
   final ValueChanged<T>? onChanged;
@@ -434,12 +445,32 @@ class _GlossRadioGroupBodyState<T> extends State<_GlossRadioGroupBody<T>> {
       });
     }
     final onChanged = group.onChanged;
+    // Rows that show something after their words keep it in one column:
+    // each row's words take the room of the widest.
+    double? wordsRoom;
+    if (group.trailingOf != null && direction == Axis.vertical) {
+      final words = DefaultTextStyle.of(context).style
+          .merge(GlossTheme.of(context).textTheme.body);
+      for (final option in options) {
+        final painter = TextPainter(
+          text: TextSpan(text: labelOf(option), style: words),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          locale: Localizations.maybeLocaleOf(context),
+          maxLines: 1,
+        )..layout();
+        wordsRoom = math.max(wordsRoom ?? 0, painter.width);
+        painter.dispose();
+      }
+    }
     final rows = [
       for (final option in options)
         _GlossRadioRow<T>(
           key: ObjectKey(option),
           value: option,
           label: labelOf(option),
+          trailing: group.trailingOf?.call(option),
+          wordsRoom: wordsRoom,
           focusNode: _nodeFor(option),
           enabled: onChanged != null && (group.isEnabled?.call(option) ?? true),
           direction: direction,
@@ -488,6 +519,8 @@ class _GlossRadioRow<T> extends StatelessWidget {
     super.key,
     required this.value,
     required this.label,
+    required this.trailing,
+    required this.wordsRoom,
     required this.focusNode,
     required this.enabled,
     required this.direction,
@@ -496,6 +529,10 @@ class _GlossRadioRow<T> extends StatelessWidget {
 
   final T value;
   final String label;
+  final Widget? trailing;
+  // The widest words' width in the group, when what follows the words keeps
+  // one column; null otherwise.
+  final double? wordsRoom;
   final FocusNode focusNode;
   final bool enabled;
   final Axis direction;
@@ -547,13 +584,22 @@ class _GlossRadioRow<T> extends StatelessWidget {
                         ),
                         const SizedBox(width: GlossSpacing.medium),
                         Flexible(
-                          child: Text(
-                            label,
-                            style: theme.textTheme.body.copyWith(
-                              color: off ? c.inkDisabled : c.ink,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: wordsRoom ?? 0,
+                            ),
+                            child: Text(
+                              label,
+                              style: theme.textTheme.body.copyWith(
+                                color: off ? c.inkDisabled : c.ink,
+                              ),
                             ),
                           ),
                         ),
+                        if (trailing case final trailing?) ...[
+                          const SizedBox(width: GlossSpacing.small),
+                          trailing,
+                        ],
                       ],
                     ),
                   ),
@@ -596,9 +642,12 @@ class _SocketPainter extends CustomPainter {
     required this.fill,
     required this.focus,
     required this.highContrast,
+    required this.corner,
   });
 
   final GlossColors colors;
+  // A checkbox's socket corner: the theme's extraSmall step.
+  final double corner;
   final double t;
   final bool round;
   final bool mixed;
@@ -613,7 +662,7 @@ class _SocketPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    final radius = round ? null : GlossMetrics.socketRadius;
+    final radius = round ? null : corner;
     var socket = GlossFace.well(colors, radius: radius).copyWith(
       lift: disabled ? -0.5 : (pressed ? -1 : -0.85),
       // A fine rim round the socket's mouth, so an empty one (a box not
@@ -652,15 +701,12 @@ class _SocketPainter extends CustomPainter {
     );
     var gel = disabled
         ? GlossFace.pearlOff(colors).copyWith(lift: 0.2)
-        : GlossFace.gel(
-            colors,
-            radius: round ? null : GlossMetrics.socketRadius - inset,
-          );
+        : GlossFace.gel(colors, radius: round ? null : corner - inset);
     if (fill != null && !disabled) gel = gel.glazed(fill!);
     gel = gel.copyWith(
       focus: focus,
       lift: 0.35,
-      radius: round ? null : (GlossMetrics.socketRadius - inset) * scale,
+      radius: round ? null : (corner - inset) * scale,
     );
     canvas.saveLayer(
       rect.inflate(4),
@@ -707,6 +753,7 @@ class _SocketPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SocketPainter old) =>
+      old.corner != corner ||
       old.colors != colors ||
       old.t != t ||
       old.round != round ||
@@ -1328,7 +1375,11 @@ class _SegmentState<T> extends State<_Segment<T>> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (segment.icon != null) ...[
-                    Icon(segment.icon, size: 18, color: colour),
+                    Icon(
+                      segment.icon,
+                      size: MediaQuery.textScalerOf(context).scale(18),
+                      color: colour,
+                    ),
                     const SizedBox(width: GlossSpacing.tight + 2),
                   ],
                   // A word too long for its segment at a large text
@@ -1492,8 +1543,11 @@ class GlossStepper extends StatelessWidget {
                 child: SizedBox(
                   height: height,
                   child: AnimatedGlossSurface(
-                    face: GlossFace.well(c, radius: GlossMetrics.fieldRadius)
-                        .copyWith(
+                    face:
+                        GlossFace.well(
+                          c,
+                          radius: glossCorner(theme, RawCorner.small),
+                        ).copyWith(
                           lift: enabled ? -1 : -0.5,
                           focus: glossGlazeOf(c, states),
                         ),
@@ -1684,14 +1738,13 @@ class _GlossSliderState extends State<GlossSlider> {
     return widget.min + ((clamped - widget.min) / unit).round() * unit;
   }
 
-  // The bead travels between two ends a finger's half (the touch floor's)
-  // in from the slider's sides, as a range slider's beads do, so the two
-  // stacked in one column run between the same ends.
-  double get _reach => RawTapTargets.of(context).touch.width;
-
+  // The groove meets the slider's sides, the edges its column's fields
+  // share, and the bead travels with its own edge on them: at either end it
+  // stands flush with the column, over the groove's round end. A range
+  // slider's beads run between the same ends.
   double _valueAt(Offset local, double width) {
-    final usable = width - _reach;
-    var x = ((local.dx - _reach / 2) / usable).clamp(0.0, 1.0);
+    final usable = width - _bead;
+    var x = ((local.dx - _bead / 2) / usable).clamp(0.0, 1.0);
     if (Directionality.of(context) == TextDirection.rtl) x = 1 - x;
     return _snap(widget.min + x * (widget.max - widget.min));
   }
@@ -1710,7 +1763,7 @@ class _GlossSliderState extends State<GlossSlider> {
     return LayoutBuilder(
       builder: (context, box) {
         final width = box.hasBoundedWidth ? box.maxWidth : 240.0;
-        final usable = width - _reach;
+        final usable = width - _bead;
         void start(Offset at) {
           setState(() => _dragging = true);
           widget.onChangeStart?.call(widget.value);
@@ -1752,8 +1805,8 @@ class _GlossSliderState extends State<GlossSlider> {
                 clipBehavior: Clip.none,
                 children: [
                   Positioned(
-                    left: _reach / 2 - 5,
-                    right: _reach / 2 - 5,
+                    left: 0,
+                    right: 0,
                     top: (slot - 10) / 2,
                     height: 10,
                     child: CustomPaint(
@@ -1772,7 +1825,7 @@ class _GlossSliderState extends State<GlossSlider> {
                     ),
                   ),
                   PositionedDirectional(
-                    start: (_reach - _bead) / 2 + fraction * usable,
+                    start: fraction * usable,
                     top: (slot - _bead) / 2,
                     child: RawValueHandle(
                       value: widget.value,
@@ -1849,7 +1902,8 @@ class _GroovePainter extends CustomPainter {
       ),
     );
     // The lit part, from the start to the value (the bead's centre).
-    final lit = 5 + fraction * (size.width - 10);
+    const half = _GlossSliderState._bead / 2;
+    final lit = half + fraction * (size.width - 2 * half);
     final litRect = rtl
         ? Rect.fromLTRB(size.width - lit, 0, size.width, size.height)
         : Rect.fromLTRB(0, 0, lit, size.height);

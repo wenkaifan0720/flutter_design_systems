@@ -12,6 +12,7 @@ import 'fonts.dart';
 import 'internal/menu_parts.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// One row of a [GlossMenu].
 @immutable
@@ -99,6 +100,9 @@ class GlossMenuRow extends StatelessWidget {
       c,
       lit: focused || (!disabled && states.contains(WidgetState.hovered)),
       pressed: states.contains(WidgetState.pressed),
+      radius:
+          glossCorner(GlossTheme.of(context), RawCorner.medium) -
+          glossPanelInset,
     );
     if (layered.fill != null) plate = plate.glazed(layered.fill!);
     return ConstrainedBox(
@@ -224,7 +228,10 @@ class GlossMenuPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = GlossTheme.of(context).colors;
     return GlossSurface(
-      face: glossPanelFace(c),
+      face: glossPanelFace(
+        c,
+        radius: glossCorner(GlossTheme.of(context), RawCorner.medium),
+      ),
       child: ConstrainedBox(
         constraints: BoxConstraints(minWidth: minWidth, maxHeight: maxHeight),
         child: SingleChildScrollView(
@@ -609,7 +616,10 @@ class _Card extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, styleOf(theme)], const {});
-    var face = glossPanelFace(c);
+    var face = glossPanelFace(
+      c,
+      radius: glossCorner(GlossTheme.of(context), RawCorner.medium),
+    );
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return SizedBox(
       width: width,
@@ -718,7 +728,7 @@ class _Smoke extends StatelessWidget {
       foreground: const Color(0xFFF7F9FA),
       lens: 0.6,
       lift: 0.6,
-      radius: 10,
+      radius: glossCorner(theme, RawCorner.small, 10),
     );
     if (layered.fill != null) face = face.glazed(layered.fill!);
     return ConstrainedBox(

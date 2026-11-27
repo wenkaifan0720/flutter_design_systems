@@ -1,6 +1,8 @@
 // A toast on a phone stands above the scaffold's tab bar, as a Scaffold
 // keeps a snackbar above its navigation bar; under a route that covers the
 // bar, the bar keeps nothing clear and the toast stands at the foot.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';

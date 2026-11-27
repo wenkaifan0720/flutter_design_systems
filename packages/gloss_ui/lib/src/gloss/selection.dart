@@ -18,6 +18,7 @@ import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// A range's two ends.
 @immutable
@@ -49,9 +50,11 @@ class GlossRangeValues {
 /// GlossRangeSlider(values: const GlossRangeValues(15, 45), max: 90, onChanged: (values) {})
 /// ```
 class GlossRangeSlider extends StatelessWidget {
-  // The groove's depth: the groove runs from one bead's centre to the
-  // other's, its round ends under them.
+  // The groove's depth; it runs the column's width.
   static const double _groove = 10;
+
+  // A bead's width; its target is the touch floor's.
+  static const double _bead = 28;
 
   /// A range slider at [values].
   const GlossRangeSlider({
@@ -102,46 +105,66 @@ class GlossRangeSlider extends StatelessWidget {
     final fill = RawStyleOf([style, theme.sliderStyle], const {}).fill;
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return RawRangeSlider(
-      values: RawRangeValues(values.start, values.end),
-      onChanged: onChanged == null
-          ? null
-          : (v) => onChanged!(GlossRangeValues(v.start, v.end)),
-      min: min,
-      max: max,
-      divisions: divisions,
-      startLabel: startLabel,
-      endLabel: endLabel,
-      semanticFormatterCallback: semanticFormatterCallback,
-      // A bead's target: a finger's square (the touch floor) on every input.
-      thumbSize: Size.square(RawTapTargets.of(context).touch.height),
-      trackBuilder: (context, track) => SizedBox(
-        height: _groove,
-        child: CustomPaint(
-          size: Size.infinite,
-          painter: _RangeGroove(
-            c: c,
-            start: track.start,
-            end: track.end,
-            enabled: enabled,
-            fill: fill,
-            rtl: rtl,
-            highContrast: high,
-          ),
-        ),
-      ),
-      thumbBuilder: (context, index, states) => Center(
-        child: SizedBox.square(
-          dimension: 28,
-          child: AnimatedGlossSurface(
-            face: GlossFace.pearl(c).copyWith(
-              travel: states.contains(WidgetState.pressed) ? 0.6 : 0,
-              lens: enabled ? null : 0.3,
-              lift: enabled ? null : 0.4,
-              focus: glossGlazeOf(c, states),
+    // Each bead keeps a finger's square to press (the touch floor), but it
+    // travels with its own edge on the column's: the slider is laid out the
+    // target's spare width past each side, and the groove runs on to the
+    // column's edges, its round ends under the beads at the ends.
+    final touch = RawTapTargets.of(context).touch;
+    final spare = (touch.width - _bead) / 2;
+    return SizedBox(
+      height: touch.height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: -spare,
+            right: -spare,
+            top: 0,
+            bottom: 0,
+            child: RawRangeSlider(
+              values: RawRangeValues(values.start, values.end),
+              onChanged: onChanged == null
+                  ? null
+                  : (v) => onChanged!(GlossRangeValues(v.start, v.end)),
+              min: min,
+              max: max,
+              divisions: divisions,
+              startLabel: startLabel,
+              endLabel: endLabel,
+              semanticFormatterCallback: semanticFormatterCallback,
+              // A bead's target: a finger's square (the touch floor) on every input.
+              thumbSize: Size.square(touch.height),
+              trackBuilder: (context, track) => SizedBox(
+                height: _groove,
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: _RangeGroove(
+                    c: c,
+                    start: track.start,
+                    end: track.end,
+                    enabled: enabled,
+                    fill: fill,
+                    rtl: rtl,
+                    highContrast: high,
+                  ),
+                ),
+              ),
+              thumbBuilder: (context, index, states) => Center(
+                child: SizedBox.square(
+                  dimension: 28,
+                  child: AnimatedGlossSurface(
+                    face: GlossFace.pearl(c).copyWith(
+                      travel: states.contains(WidgetState.pressed) ? 0.6 : 0,
+                      lens: enabled ? null : 0.3,
+                      lift: enabled ? null : 0.4,
+                      focus: glossGlazeOf(c, states),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -194,15 +217,18 @@ class _RangeGroove extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
-    // The core track spans from the first thumb's center to the last one's.
-    final radius = size.height / 2;
+    // The core track spans from the first bead's centre at the start to
+    // the last one's at the end; the groove runs on a bead's half past each,
+    // to the column's edges.
+    const reach = GlossRangeSlider._bead / 2;
+    final groove = Rect.fromLTRB(-reach, 0, size.width + reach, size.height);
     _fromStart(
       canvas,
-      Rect.fromLTRB(-radius, 0, size.width + radius, size.height),
+      groove,
       rtl,
       () => paintGlossFace(
         canvas,
-        Rect.fromLTRB(-radius, 0, size.width + radius, size.height),
+        groove,
         GlossFace.well(c).copyWith(
           lift: enabled ? -1 : -0.5,
           edge: highContrast ? c.ink : const Color(0x00000000),
@@ -546,7 +572,7 @@ class GlossFileDrop extends StatelessWidget {
       children: [
         if (labelText != null) GlossFieldLabel(labelText!, enabled: enabled),
         GlossSurface(
-          face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
+          face: GlossFace.well(c, radius: glossCorner(theme, RawCorner.medium)),
           child: Padding(
             padding: const EdgeInsets.all(GlossSpacing.large),
             child: Column(

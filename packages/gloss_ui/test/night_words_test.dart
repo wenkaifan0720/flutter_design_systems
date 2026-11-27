@@ -2,6 +2,8 @@
 // destructive key's danger words (about 2.6:1 on the night pearl) and a
 // toast's jade action (about 3.1:1). Measured against the lightest of the
 // face where the words stand, as painted.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:async';
 import 'dart:math' as math;
 

@@ -10,6 +10,7 @@ import '../fonts.dart';
 import '../surface.dart';
 import '../theme.dart';
 import 'glaze_state.dart';
+import 'corners.dart';
 
 /// The well a field is typed in, for its [states] (focused, disabled,
 /// error), glazed by [fill] and rimmed by [edge] when a style gives them.
@@ -24,7 +25,10 @@ GlossFace glossEntryFace(
   final error = states.contains(WidgetState.error);
   final enabled = !states.contains(WidgetState.disabled);
   final focused = states.contains(WidgetState.focused);
-  var face = GlossFace.well(c, radius: radius ?? GlossMetrics.fieldRadius);
+  var face = GlossFace.well(
+    c,
+    radius: radius ?? glossCorner(theme, RawCorner.small),
+  );
   if (fill != null) face = face.glazed(fill);
   return face.copyWith(
     foreground: enabled ? c.ink : c.inkDisabled,

@@ -5,6 +5,15 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor host}
+/// {@canonicalFor host.GlossPresentation}
+/// {@canonicalFor host.GlossPreview}
+/// {@canonicalFor host.GlossShellAction}
+/// {@canonicalFor host.GlossTab}
+/// {@canonicalFor host.glossShellActKey}
 library;
 
 export 'package:ui_core/host.dart';
+
+export 'src/gloss/host.dart';

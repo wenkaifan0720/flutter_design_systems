@@ -6,6 +6,7 @@ import 'package:ui_core/inventory.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../actions.dart';
+import '../app.dart';
 import '../button.dart';
 import '../charts.dart';
 import '../choices.dart';
@@ -394,13 +395,20 @@ RawInventory _registry() => RawInventory(
     ),
     _row(
       'Scaffold',
-      (_) => const SizedBox(
+      (_) => SizedBox(
         height: 360,
-        child: GlossScaffold(
-          topBar: GlossTopBar(title: 'Recipes'),
-          destinations: _places,
-          onDestinationSelected: _ignore,
-          body: SizedBox.expand(),
+        child: GlossAppShell(
+          destinations: [
+            for (final d in _places)
+              RawNavigationDestination(label: d.label, icon: d.icon),
+          ],
+          branches: [
+            for (final d in _places)
+              (context) => GlossScreen(
+                topBar: GlossTopBar(title: d.label),
+                body: const SizedBox.shrink(),
+              ),
+          ],
         ),
       ),
     ),
@@ -511,7 +519,7 @@ RawInventory _registry() => RawInventory(
       'Badge',
       (_) => const GlossBadge(count: 3, child: Icon(LucideIcons.bell)),
     ),
-    _row('Tag', (_) => const GlossTag('Quick', tone: GlossTagTone.jade)),
+    _row('Tag', (_) => const GlossTag('Quick', tone: GlossTagTone.accent)),
     _row(
       'Media',
       (_) => const SizedBox(

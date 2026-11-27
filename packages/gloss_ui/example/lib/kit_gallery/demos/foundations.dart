@@ -24,7 +24,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
       title: 'Gels',
       note:
           'Six gels on the same porcelain: jade, sapphire, amethyst, amber, '
-          'rose and teal (GlossThemeData.preset).',
+          'rose and teal (GlossThemeData.palettes).',
       children: [_Gels()],
     ),
     KitSection(title: 'Type', children: [_Type()]),
@@ -71,7 +71,9 @@ class _Glazes extends StatelessWidget {
       padding: const EdgeInsets.all(GlossSpacing.small),
       decoration: BoxDecoration(
         color: colour,
-        borderRadius: BorderRadius.circular(GlossMetrics.fieldRadius),
+        borderRadius: BorderRadius.circular(
+          GlossTheme.of(context).shapeScheme.corners.small,
+        ),
         border: Border.all(color: c.hairline),
       ),
       alignment: AlignmentDirectional.bottomStart,
@@ -128,14 +130,14 @@ class _Gels extends StatelessWidget {
             .floorToDouble();
         return KitRow(
           children: [
-            for (final name in GlossThemeData.presets)
+            for (final palette in GlossThemeData.palettes)
               SizedBox(
                 width: width,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GlossTheme(
-                      data: GlossThemeData.preset(name, brightness),
+                      data: GlossThemeData.preset(palette.id, brightness),
                       child: Builder(
                         builder: (context) {
                           final theme = GlossTheme.of(context);
@@ -164,9 +166,36 @@ class _Gels extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      name[0].toUpperCase() + name.substring(1),
-                      style: page.textTheme.secondary,
+                    Row(
+                      children: [
+                        for (final swatch in palette.swatchesFor(brightness))
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(end: 4),
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: swatch,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: page.colors.inkSecondary.withValues(
+                                    alpha: .4,
+                                  ),
+                                  width: .5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 2),
+                        Flexible(
+                          child: Text(
+                            palette.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: page.textTheme.secondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

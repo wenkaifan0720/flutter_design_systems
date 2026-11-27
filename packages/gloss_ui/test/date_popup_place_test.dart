@@ -4,6 +4,8 @@
 // stands at the field's width, edge to edge with it, where it stood about 7
 // past each side; from a wider field it starts at the field's start. Below
 // 600 wide the calendar rises in a sheet instead (date_picker_sheet_test).
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

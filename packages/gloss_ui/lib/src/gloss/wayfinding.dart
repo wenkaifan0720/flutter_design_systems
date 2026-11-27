@@ -13,6 +13,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'fonts.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu_parts.dart';
+import 'internal/corners.dart';
 import 'popovers.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -178,7 +179,7 @@ class _CrumbLink extends StatelessWidget {
               middle: clear,
               bottom: clear,
               foreground: ink,
-              radius: 6,
+              radius: glossCorner(theme, RawCorner.extraSmall, 6),
               focus: glossGlazeOf(c, states),
             ),
             child: Padding(
@@ -283,7 +284,7 @@ class GlossPagination extends StatelessWidget {
     // less (concentric), as a lit row in a well.
     const inset = 4.0;
     final key = theme.controlHeight - 2 * inset;
-    final corner = GlossMetrics.fieldRadius + inset;
+    final corner = glossCorner(theme, RawCorner.small) + inset;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     Widget cell({
       required String semanticLabel,
@@ -776,7 +777,7 @@ class GlossMenuBar extends StatelessWidget {
       bottom: c.barBottom,
       edge: c.hairline,
       foreground: c.ink,
-      radius: 12,
+      radius: glossCorner(theme, RawCorner.small),
     );
     if (bar.fill != null) strip = strip.glazed(bar.fill!);
     return RawMenuBar(
@@ -832,7 +833,7 @@ class GlossMenuBar extends StatelessWidget {
           c,
           lit: open,
           pressed: states.contains(WidgetState.pressed),
-          radius: 11,
+          radius: glossCorner(theme, RawCorner.small, 11),
         );
         return AnimatedGlossSurface(
           face: plate.copyWith(
@@ -1064,7 +1065,10 @@ Widget _palettePanel(BuildContext context, GlossStyle? style, Widget child) {
   final theme = GlossTheme.of(context);
   final c = theme.colors;
   final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
-  var face = glossPanelFace(c, radius: 20);
+  var face = glossPanelFace(
+    c,
+    radius: glossCorner(theme, RawCorner.extraLarge, 20),
+  );
   if (layered.fill != null) face = face.glazed(layered.fill!);
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 560),

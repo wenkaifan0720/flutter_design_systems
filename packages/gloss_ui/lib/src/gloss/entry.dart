@@ -13,6 +13,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
+import 'internal/corners.dart';
 import 'feedback.dart' show GlossSpinner;
 import 'fonts.dart';
 import 'internal/chevron.dart';
@@ -783,6 +784,9 @@ class _OptionRow extends StatelessWidget {
           c,
           lit: focused,
           pressed: states.contains(WidgetState.pressed),
+          radius:
+              glossCorner(GlossTheme.of(context), RawCorner.medium) -
+              glossPanelInset,
         ).copyWith(foreground: ink, focus: glossGlazeOf(c, states)),
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -802,7 +806,12 @@ class _OptionRow extends StatelessWidget {
                   ),
                 ),
               ),
-              if (chosen) Icon(LucideIcons.check, size: 18, color: ink),
+              if (chosen)
+                Icon(
+                  LucideIcons.check,
+                  size: MediaQuery.textScalerOf(context).scale(18),
+                  color: ink,
+                ),
             ],
           ),
         ),
@@ -812,7 +821,10 @@ class _OptionRow extends StatelessWidget {
 }
 
 Widget _panel(BuildContext context, Widget list) => GlossSurface(
-  face: glossPanelFace(GlossTheme.of(context).colors),
+  face: glossPanelFace(
+    GlossTheme.of(context).colors,
+    radius: glossCorner(GlossTheme.of(context), RawCorner.medium),
+  ),
   child: Padding(padding: const EdgeInsets.all(glossPanelInset), child: list),
 );
 
@@ -1406,8 +1418,15 @@ class _Tag extends StatelessWidget {
   }
 }
 
-/// A form: [GlossFormField]s inside it are checked together, and a failed
-/// submit moves the focus to the first one that is wrong.
+/// A form, ui_core's [RawForm]: the fields inside it ([GlossTextFormField]s,
+/// or any Flutter [FormField]) are checked together; a submit that fails
+/// shows every error, moves the focus to the first field that is wrong and
+/// tells a screen reader how many need attention, and one that passes runs
+/// each field's `onSaved`, then [RawForm.onSubmit].
+///
+/// ```dart
+/// GlossForm(onSubmit: save, child: GlossTextFormField(labelText: 'Title', validator: (v) => (v ?? '').trim().isEmpty ? 'Enter the title' : null))
+/// ```
 typedef GlossForm = RawForm;
 
 /// Any control with its label, help and error, as one field: the label

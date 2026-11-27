@@ -6,10 +6,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'display.dart' show GlossAvatar;
 import 'fonts.dart';
 import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'theme.dart';
+import 'internal/corners.dart';
 
 /// A section's head: its words letterpressed into the page, in sentence
 /// case, 8 px above the well it heads, on the rows' keyline.
@@ -114,9 +116,14 @@ class GlossWell extends StatelessWidget {
         children: [
           if (header != null) GlossSectionHeader(header!),
           GlossSurface(
-            face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
+            face: GlossFace.well(
+              c,
+              radius: glossCorner(theme, RawCorner.medium),
+            ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(GlossMetrics.wellRadius),
+              borderRadius: BorderRadius.circular(
+                glossCorner(theme, RawCorner.medium),
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -160,6 +167,13 @@ class GlossWell extends StatelessWidget {
 /// pearl plate in the well under the row, inset 4 px with its corners
 /// concentric with the well's.
 ///
+/// A screen reader hears the row by its words, a tag at its end among them;
+/// a [GlossAvatar] at its start stays out, the title naming what it
+/// pictures. A row without [onTap] is one node with its control, the title
+/// naming the switch at its end, as Flutter's `SwitchListTile` is; a row
+/// that opens something keeps a control at its end (its menu) a node of its
+/// own, as a Material `ListTile` does.
+///
 /// ```dart
 /// GlossListTile(leading: const Icon(LucideIcons.bell), title: 'Reminders', trailing: GlossSwitch(value: true, onChanged: (value) {}))
 /// ```
@@ -187,10 +201,10 @@ class GlossListTile extends StatelessWidget {
   /// A second line.
   final String? subtitle;
 
-  /// A glyph at the row's start.
+  /// A glyph or a [GlossAvatar] at the row's start.
   final Widget? leading;
 
-  /// A control at the row's end (a switch, a stepper).
+  /// A control or a tag at the row's end (a switch, a stepper, a status).
   final Widget? trailing;
 
   /// A value at the row's end.
@@ -275,6 +289,7 @@ class GlossListTile extends StatelessWidget {
         glossGlazeOf(c, states),
         (light) => _RowPainter(
           colors: c,
+          corner: glossCorner(GlossTheme.of(context), RawCorner.medium),
           floor: floor,
           selected: selected && !disabled,
           focus: light,
@@ -299,7 +314,14 @@ class GlossListTile extends StatelessWidget {
                         data: IconThemeData(size: 22, color: glyph),
                         child: SizedBox.square(
                           dimension: 24,
-                          child: Center(child: leading),
+                          // An avatar at the start pictures what the title
+                          // names: it stays out of the row's name, which
+                          // would say the name twice.
+                          child: Center(
+                            child: leading is GlossAvatar
+                                ? ExcludeSemantics(child: leading)
+                                : leading,
+                          ),
                         ),
                       ),
                       const SizedBox(width: GlossSpacing.medium),
@@ -356,7 +378,18 @@ class GlossListTile extends StatelessWidget {
                   if (trailing != null) ...[
                     if (trailingText != null)
                       const SizedBox(width: GlossSpacing.medium),
-                    trailing!,
+                    // The control at the end takes its own width, up to three
+                    // fifths of the row, the title keeping the rest: a
+                    // control isn't squeezed (a stepper keeps its well), and
+                    // a long one never pushes the title out.
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: box.maxWidth.isFinite
+                            ? box.maxWidth * 0.6
+                            : double.infinity,
+                      ),
+                      child: trailing,
+                    ),
                   ],
                   if (chevron) ...[
                     if (trailingText != null || trailing != null)
@@ -409,11 +442,16 @@ class GlossListTile extends StatelessWidget {
     }
 
     if (onTap == null) {
-      return Semantics(
-        container: true,
-        selected: selected ? true : null,
-        label: semanticLabel,
-        child: body({if (!enabled) WidgetState.disabled}),
+      // A row without a press of its own is one node with its control (a
+      // switch at its end), the title naming it, as Flutter's
+      // SwitchListTile is.
+      return MergeSemantics(
+        child: Semantics(
+          container: true,
+          selected: selected ? true : null,
+          label: semanticLabel,
+          child: body({if (!enabled) WidgetState.disabled}),
+        ),
       );
     }
     return RawButton(
@@ -421,6 +459,10 @@ class GlossListTile extends StatelessWidget {
       selected: selected,
       semanticSelected: selected ? true : null,
       semanticLabel: semanticLabel,
+      // A control at the row's end (its menu, a switch) keeps a node of its
+      // own, which a screen reader reaches apart from the row, as in a
+      // Material ListTile; the row's words still name the row.
+      mergeSemantics: trailing == null,
       builder: (context, states, _) => body(states),
     );
   }
@@ -451,9 +493,12 @@ class _RowPainter extends CustomPainter {
     required this.selected,
     required this.focus,
     required this.rtl,
+    required this.corner,
   });
 
   final GlossColors colors;
+  // The well's corner: the theme's medium step.
+  final double corner;
   final Color floor;
   final bool selected;
   final Color focus;
@@ -461,7 +506,7 @@ class _RowPainter extends CustomPainter {
 
   // Its plate fits 4 px inside the wall of the well.
   static const double _inset = 4;
-  static const double _radius = GlossMetrics.wellRadius - _inset;
+  double get _radius => corner - _inset;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -495,7 +540,7 @@ class _RowPainter extends CustomPainter {
       rtl,
       () => paintGlossHalo(
         canvas,
-        RRect.fromRectAndRadius(plate, const Radius.circular(_radius)),
+        RRect.fromRectAndRadius(plate, Radius.circular(_radius)),
         focus,
         brightness: colors.brightness,
         inside: true,
@@ -509,7 +554,8 @@ class _RowPainter extends CustomPainter {
       old.floor != floor ||
       old.selected != selected ||
       old.focus != focus ||
-      old.rtl != rtl;
+      old.rtl != rtl ||
+      old.corner != corner;
 }
 
 // Gloss is lit once, from above and the reading start: right to left, what
@@ -596,7 +642,10 @@ class GlossCard extends StatelessWidget {
     final c = theme.colors;
     Widget tile(Set<WidgetState> states) {
       final layered = RawStyleOf([style, theme.cardStyle], states);
-      var face = GlossFace.porcelain(c, radius: GlossMetrics.cardRadius);
+      var face = GlossFace.porcelain(
+        c,
+        radius: glossCorner(theme, RawCorner.large),
+      );
       if (layered.fill != null) face = face.glazed(layered.fill!);
       final pressed = states.contains(WidgetState.pressed);
       face = face.copyWith(
@@ -607,7 +656,9 @@ class GlossCard extends StatelessWidget {
       return AnimatedGlossSurface(
         face: face,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(GlossMetrics.cardRadius),
+          borderRadius: BorderRadius.circular(
+            glossCorner(theme, RawCorner.large),
+          ),
           child: Padding(
             padding: layered.padding(Directionality.of(context)) ?? padding,
             child: child,

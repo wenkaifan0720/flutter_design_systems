@@ -2,6 +2,8 @@
 // add-on) read at one size and ink: the value's size in secondary ink, as
 // Material's suffix text takes the input's style (they stood 14 and 16);
 // and a unit stands on the value's line, to the pixel.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

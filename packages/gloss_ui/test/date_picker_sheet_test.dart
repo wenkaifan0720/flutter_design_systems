@@ -3,6 +3,8 @@
 // a phone's field, stood over the labels round it. The month stands at most
 // 400 wide, centred, its name at the sheet title's edge; from 600 the panel
 // opens as before.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

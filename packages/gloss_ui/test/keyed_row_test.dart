@@ -3,6 +3,8 @@
 // it, as a lit row's plate is drawn. By day the row stood clear, its only
 // mark the glaze's white reflection on white porcelain, about 3/255 from its
 // neighbours.
+// GlossScaffold is deprecated (GlossAppShell replaces it); tested until 0.7.0 removes it.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
