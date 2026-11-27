@@ -136,7 +136,7 @@ class Fluent2BottomSheet extends StatelessWidget {
                         ? null
                         : Fluent2IconButton(
                             Fluent2Icons.dismiss,
-                            label: RawWidgetsLocalizations.of(context)
+                            semanticLabel: RawWidgetsLocalizations.of(context)
                                 .closeButtonLabel,
                             onPressed: close,
                           ),
@@ -311,7 +311,7 @@ class Fluent2ActionSheet<T> extends StatelessWidget {
       bool emphasis = false,
     }) => Fluent2Pressable(
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       radius: Fluent2Radius.medium,
       builder: (context, states) => Fluent2MenuRowFace(
         label: label,
@@ -478,13 +478,13 @@ Widget _rise(RawPopoverInfo info, Widget child) => AnimatedBuilder(
 /// the menu theme ([Fluent2ThemeData.menuTheme]) where that sets them.
 ///
 /// ```dart
-/// Fluent2Popover(label: 'Sharing', trigger: (context, toggle) => Fluent2Button('Share', onPressed: toggle), content: const Text('Shared with 4 people'))
+/// Fluent2Popover(semanticLabel: 'Sharing', trigger: (context, toggle) => Fluent2Button('Share', onPressed: toggle), content: const Text('Shared with 4 people'))
 /// ```
 class Fluent2Popover extends StatelessWidget {
   /// A popover opened by what [trigger] builds.
   const Fluent2Popover({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.trigger,
     required this.content,
     this.side = RawPopoverSide.below,
@@ -500,7 +500,7 @@ class Fluent2Popover extends StatelessWidget {
   static const Duration hoverOpenDelay = Duration(milliseconds: 250);
 
   /// The popover's name, read as it opens.
-  final String label;
+  final String semanticLabel;
 
   /// Builds the control that opens it: call `toggle` from its press.
   final Widget Function(BuildContext context, VoidCallback toggle) trigger;
@@ -533,7 +533,7 @@ class Fluent2Popover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RawPopover(
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     trigger: openOnHover ? RawPopoverTrigger.hover : RawPopoverTrigger.press,
     // A hover card leaves focus where it was.
     focusOnOpen: !openOnHover,
@@ -572,7 +572,7 @@ class Fluent2Popover extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<
           Widget Function(BuildContext context, VoidCallback toggle)
@@ -632,11 +632,11 @@ Future<T?> showFluent2Menu<T>(
   required List<Fluent2MenuItem<T>> items,
   BuildContext? anchor,
   String? title,
-  String? label,
+  String? semanticLabel,
 }) => Fluent2Menu.show<T>(
   context,
   items: items,
   anchor: anchor,
   title: title,
-  label: label,
+  semanticLabel: semanticLabel,
 );

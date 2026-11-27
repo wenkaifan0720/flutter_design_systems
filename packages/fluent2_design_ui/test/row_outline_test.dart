@@ -13,7 +13,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 const _registers = <String, (TargetPlatform, double)>{
   'touch': (TargetPlatform.android, 3),
@@ -63,7 +62,7 @@ Map<String, Widget> _row(int size) {
     ),
     'icon button': Fluent2IconButton(
       Fluent2Icons.add,
-      label: 'Add',
+      semanticLabel: 'Add',
       onPressed: _none,
       appearance: Fluent2ButtonAppearance.secondary,
       size: b,
@@ -76,7 +75,7 @@ Map<String, Widget> _row(int size) {
       actions: const [Fluent2SplitAction('Reply all', onPressed: _none)],
     ),
     'segmented': Fluent2SegmentedButton<String>(
-      label: 'View',
+      semanticLabel: 'View',
       size: s,
       value: 'list',
       onChanged: _drop,
@@ -175,7 +174,7 @@ void main() {
                   debugShowCheckedModeBanner: false,
                   builder: (context, route) => Fluent2Host(
                     light: theme,
-                    darkData: theme,
+                    dark: theme,
                     brightness: brightness,
                     child: route!,
                   ),

@@ -3,7 +3,6 @@
 // foot: never two on a line and the third alone under them, never a stack
 // of ragged widths. Phones from 320 to 390, at their text size and larger,
 // and a desk; ui_core_test's DesignDialogActionsCheck reads each.
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';

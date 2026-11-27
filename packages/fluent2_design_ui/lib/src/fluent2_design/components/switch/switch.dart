@@ -106,7 +106,7 @@ class Fluent2Switch extends StatelessWidget {
           onPressed: tap,
           radius: Fluent2Radius.medium,
           ring: words == null,
-          label: semanticLabel ?? words,
+          semanticLabel: semanticLabel ?? words,
           toggled: value,
           builder: (context, states) {
             final press = states.press;

@@ -114,7 +114,7 @@ Widget kitSpecimenProgressBarBusy() => const Fluent2ProgressBar(
 
 /// What fills the team's storage, the rest left free.
 Widget kitSpecimenSegmentBar() => const Fluent2SegmentBar(
-  label: 'Storage by type',
+  semanticLabel: 'Storage by type',
   total: 10,
   segments: [
     Fluent2SegmentBarPart('Documents', 3.2, valueText: '3.2 GB'),
@@ -132,7 +132,7 @@ Widget kitSpecimenSegmentBar() => const Fluent2SegmentBar(
 
 /// A file list still loading: an avatar and two lines a row.
 Widget kitSpecimenSkeletonList() => Fluent2Skeleton(
-  label: 'Loading files',
+  semanticLabel: 'Loading files',
   child: Column(
     mainAxisSize: MainAxisSize.min,
     spacing: Fluent2Spacing.l,
@@ -176,7 +176,7 @@ Widget kitSpecimenSkeletonCard() => Builder(
         borderRadius: BorderRadius.circular(Fluent2Radius.medium),
       ),
       child: const Fluent2Skeleton(
-        label: 'Loading the meeting',
+        semanticLabel: 'Loading the meeting',
         appearance: Fluent2SkeletonAppearance.translucent,
         animation: Fluent2SkeletonAnimation.pulse,
         child: Column(

@@ -77,7 +77,9 @@ const double _optionGlyph = 20;
 };
 
 /// Fluent 2's Dropdown: a field-faced button (32 tall, 12 in at its start
-/// and 10 at its end, at least 250 wide where there is room) saying the
+/// and 10 at its end, in a [Fluent2Form] or a [Fluent2FormSection] the column's
+/// width, as a text field's; elsewhere its widest option's, at least 250 and
+/// at most 320 from a 600 window) saying the
 /// chosen option's label, or its [prompt] in the fourth ink, before the
 /// down chevron in the accessible stroke; where the options carry glyphs,
 /// the chosen one's glyph before its words, its column kept while the
@@ -86,12 +88,12 @@ const double _optionGlyph = 20;
 /// check): on a tablet, the desktop or under a pointer the popover under
 /// the field (`shadow16`, 4 round its rows), the field's width or its
 /// widest option's, its rows a finger's tall under a finger; on a phone a
-/// bottom sheet headed by [label]. A choice calls [onChanged]; null draws it
+/// bottom sheet headed by [semanticLabel]. A choice calls [onChanged]; null draws it
 /// disabled. Enter, Space and the down arrow open it, the arrows move
 /// through the list, Escape closes it.
 ///
 /// ```dart
-/// Fluent2Select<String>(label: 'Channel', prompt: 'Choose a channel', value: channel, options: const [Fluent2Option('general', 'General'), Fluent2Option('design', 'Design')], onChanged: (v) => setState(() => channel = v))
+/// Fluent2Select<String>(semanticLabel: 'Channel', prompt: 'Choose a channel', value: channel, options: const [Fluent2Option('general', 'General'), Fluent2Option('design', 'Design')], onChanged: (v) => setState(() => channel = v))
 /// ```
 class Fluent2Select<T> extends StatefulWidget {
   /// A select of [options] showing [value].
@@ -99,7 +101,7 @@ class Fluent2Select<T> extends StatefulWidget {
     required this.options,
     required this.value,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.prompt,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
@@ -126,7 +128,7 @@ class Fluent2Select<T> extends StatefulWidget {
 
   /// The spoken name and the phone sheet's title; null takes the
   /// enclosing field's label.
-  final String? label;
+  final String? semanticLabel;
 
   /// The words before anything is chosen; null is "Select an option" in the
   /// app's language.
@@ -160,7 +162,7 @@ class Fluent2Select<T> extends StatefulWidget {
       ..add(IterableProperty<Fluent2Option<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('prompt', prompt, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
@@ -217,7 +219,7 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
   }
 
   String? get _name =>
-      widget.label ?? Fluent2FieldScope.maybeOf(context)?.label;
+      widget.semanticLabel ?? Fluent2FieldScope.maybeOf(context)?.label;
 
   String get _prompt =>
       widget.prompt ?? Fluent2Localizations.of(context).selectAnOption;
@@ -347,9 +349,9 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
     const glyphRoom = _optionGlyph + Fluent2Spacing.xs;
     // A route pushed over this one's: its list closes, the focus the route's.
     final covered = !(ModalRoute.isCurrentOf(context) ?? true);
-    // From 600 it keeps its own width, its widest option's (its list
-    // matches it, as Fluent's listbox matches its button): never the
-    // column's or the page's.
+    // In a form's column, the column's width; elsewhere its widest
+    // option's (its list matches it, as Fluent's listbox matches its
+    // button).
     final content =
         2 +
         start +
@@ -361,7 +363,7 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
         glyphGap +
         glyphSize +
         end;
-    return fluent2KeepsOwnWidth(
+    return fluent2FieldWidth(
       context,
       content: content,
       child: Fluent2FieldPopover(
@@ -397,7 +399,7 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
           child: Fluent2FieldButton(
             autofocus: widget.autofocus,
             onOpen: live ? _open : null,
-            label: _name ?? _prompt,
+            semanticLabel: _name ?? _prompt,
             value: selected?.label,
             hint: Fluent2Localizations.of(context).opensList,
             expanded: open,
@@ -475,10 +477,10 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
 /// Escape closes the list, and leaving the field puts back the chosen
 /// label. An app's [search] can find the options instead, the list saying
 /// "Loading" while it runs and offering "Try again" when it fails. A choice
-/// calls [onChanged]; null draws it disabled. Read as a text field named [label].
+/// calls [onChanged]; null draws it disabled. Read as a text field named [semanticLabel].
 ///
 /// ```dart
-/// Fluent2Combobox<String>(label: 'Assignee', hintText: 'Type a name', value: owner, options: [for (final p in people) Fluent2Option(p.id, p.name)], onChanged: (v) => setState(() => owner = v))
+/// Fluent2Combobox<String>(semanticLabel: 'Assignee', hintText: 'Type a name', value: owner, options: [for (final p in people) Fluent2Option(p.id, p.name)], onChanged: (v) => setState(() => owner = v))
 /// ```
 class Fluent2Combobox<T> extends StatefulWidget {
   /// A combobox of [options]: a field that filters them as the user types.
@@ -486,7 +488,7 @@ class Fluent2Combobox<T> extends StatefulWidget {
     required this.options,
     required this.value,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.hintText,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
@@ -516,7 +518,7 @@ class Fluent2Combobox<T> extends StatefulWidget {
 
   /// What a screen reader calls the field; null reads the surrounding form
   /// field's label.
-  final String? label;
+  final String? semanticLabel;
 
   /// The words shown while it is empty.
   final String? hintText;
@@ -564,7 +566,7 @@ class Fluent2Combobox<T> extends StatefulWidget {
       ..add(IterableProperty<Fluent2Option<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
@@ -671,8 +673,8 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
       Fluent2InputSize.medium => (Fluent2Spacing.m, Fluent2Spacing.mNudge),
       Fluent2InputSize.large => (18.0, Fluent2Spacing.m),
     };
-    // From 600 it keeps its own width, its widest option's, and its list
-    // matches it.
+    // In a form's column, the column's width; elsewhere its widest
+    // option's. Its list matches it.
     final content =
         2 +
         start +
@@ -683,7 +685,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
         glyphGap +
         glyphSize +
         end;
-    return fluent2KeepsOwnWidth(
+    return fluent2FieldWidth(
       context,
       content: content,
       child: RawCombobox<Fluent2Option<T>>(
@@ -703,7 +705,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
         errorBuilder: widget.search == null ? null : fluent2SearchFailed,
         controller: _text,
         focusNode: _focus,
-        semanticLabel: widget.label ?? scope?.label,
+        semanticLabel: widget.semanticLabel ?? scope?.label,
         emptyBuilder: (context) => Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: Fluent2Spacing.s,
@@ -744,7 +746,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
             children: [
               Expanded(
                 child: Semantics(
-                  label: widget.label ?? scope?.label,
+                  label: widget.semanticLabel ?? scope?.label,
                   expanded: field.isOpen,
                   child: Fluent2FieldEditor(
                     autofocus: widget.autofocus,

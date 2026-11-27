@@ -30,7 +30,7 @@ class Fluent2NavigationRail extends StatelessWidget {
     this.onDestinationSelected,
     this.header,
     this.footer,
-    this.label,
+    this.semanticLabel,
   });
 
   /// The destinations.
@@ -49,7 +49,7 @@ class Fluent2NavigationRail extends StatelessWidget {
   final Widget? footer;
 
   /// What a screen reader calls it.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,7 @@ class Fluent2NavigationRail extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: Container(
         width: 48,
         padding: const EdgeInsets.symmetric(vertical: Fluent2Spacing.xs),
@@ -121,7 +121,7 @@ class Fluent2NavigationRail extends StatelessWidget {
           onDestinationSelected,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -140,7 +140,7 @@ class Fluent2Pagination extends StatelessWidget {
     required this.page,
     required this.pages,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
   }) : assert(page >= 1 && page <= pages);
 
   /// The current page, from 1.
@@ -153,7 +153,7 @@ class Fluent2Pagination extends StatelessWidget {
   final ValueChanged<int>? onChanged;
 
   /// What a screen reader calls it.
-  final String? label;
+  final String? semanticLabel;
 
   /// Page numbers with the gaps shown as null: the ends, and two either side
   /// of the current page.
@@ -181,7 +181,7 @@ class Fluent2Pagination extends StatelessWidget {
       final ok = go != null && to >= 1 && to <= pages;
       return Fluent2IconButton(
         (back != rtl) ? Fluent2Icons.chevronLeft : Fluent2Icons.chevronRight,
-        label: back
+        semanticLabel: back
             ? RawWidgetsLocalizations.of(context).previousPageTooltip
             : RawWidgetsLocalizations.of(context).nextPageTooltip,
         onPressed: ok ? () => go(to) : null,
@@ -192,7 +192,7 @@ class Fluent2Pagination extends StatelessWidget {
       final current = p == page;
       return Fluent2Pressable(
         onPressed: go == null ? null : () => go(p),
-        label: words.pageNumber(p),
+        semanticLabel: words.pageNumber(p),
         selected: current,
         radius: Fluent2Radius.medium,
         builder: (context, states) {
@@ -233,7 +233,7 @@ class Fluent2Pagination extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: LayoutBuilder(
         builder: (context, box) {
           final shown = _shown(page, pages);
@@ -297,7 +297,7 @@ class Fluent2Pagination extends StatelessWidget {
       ..add(IntProperty('page', page))
       ..add(IntProperty('pages', pages))
       ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -393,7 +393,7 @@ class Fluent2StepProgress extends StatelessWidget {
 /// (40) tall when [onChanged] is set; otherwise the row only tells.
 ///
 /// ```dart
-/// Fluent2PageDots(count: 4, selectedIndex: 1, label: 'Photos', onChanged: go)
+/// Fluent2PageDots(count: 4, selectedIndex: 1, semanticLabel: 'Photos', onChanged: go)
 /// ```
 class Fluent2PageDots extends StatelessWidget {
   /// A dot for each of [count] pages.
@@ -401,7 +401,7 @@ class Fluent2PageDots extends StatelessWidget {
     super.key,
     required this.count,
     required this.selectedIndex,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.position,
   }) : assert(count > 0, 'dots for at least one page'),
@@ -417,7 +417,7 @@ class Fluent2PageDots extends StatelessWidget {
   final int selectedIndex;
 
   /// What a screen reader calls them.
-  final String label;
+  final String semanticLabel;
 
   /// Told the dot pressed; null leaves them telling.
   final ValueChanged<int>? onChanged;
@@ -479,7 +479,7 @@ class Fluent2PageDots extends StatelessWidget {
 
     if (go == null) {
       return Semantics(
-        label: label,
+        label: semanticLabel,
         value: words.pageOf(selectedIndex + 1, count),
         excludeSemantics: true,
         child: Row(
@@ -492,14 +492,14 @@ class Fluent2PageDots extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           for (var i = 0; i < count; i++)
             Fluent2Pressable(
               onPressed: () => go(i),
-              label: words.pageOf(i + 1, count),
+              semanticLabel: words.pageOf(i + 1, count),
               selected: i == selectedIndex,
               radius: Fluent2Radius.medium,
               // Under a finger each dot is a whole target (the floor, 40)
@@ -525,7 +525,7 @@ class Fluent2PageDots extends StatelessWidget {
     properties
       ..add(IntProperty('count', count))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
       ..add(DoubleProperty('position', position, defaultValue: null));
   }

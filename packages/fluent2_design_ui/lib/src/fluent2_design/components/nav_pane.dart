@@ -2,19 +2,17 @@ import '../internal/well.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';
-import '../internal/cap_label.dart';
-import '../internal/icon_fill.dart';
 import '../localizations.dart';
-import '../styled.dart';
 import '../theme.dart';
 import 'account.dart';
+import 'app_shell.dart';
 import 'avatar/avatar.dart';
 import 'button/button.dart';
 import 'nav_bar.dart';
+import '../internal/nav_faces.dart';
 import 'pressable/pressable.dart';
 
 /// The desktop nav pane, Fluent 2's `NavDrawer` standing on the window's
@@ -60,7 +58,7 @@ class Fluent2NavigationDrawer extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
 
   /// The shell's act: the primary button under the head.
-  final ShellAction? action;
+  final Fluent2ShellAction? action;
 
   /// The app's name at the head.
   final String? brand;
@@ -99,7 +97,7 @@ class Fluent2NavigationDrawer extends StatelessWidget {
           if (toggle != null)
             Fluent2IconButton(
               Fluent2Icons.navigation,
-              label: collapsed
+              semanticLabel: collapsed
                   ? words.expandNavigation
                   : words.collapseNavigation,
               size: Fluent2ButtonSize.large,
@@ -133,7 +131,7 @@ class Fluent2NavigationDrawer extends StatelessWidget {
               ? Fluent2IconButton(
                   act.icon,
                   key: act.key,
-                  label: act.label ?? words.create,
+                  semanticLabel: act.label ?? words.create,
                   appearance: act.accent
                       ? Fluent2ButtonAppearance.primary
                       : Fluent2ButtonAppearance.secondary,
@@ -218,7 +216,11 @@ class Fluent2NavigationDrawer extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<Fluent2ShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       )
       ..add(StringProperty('brand', brand, defaultValue: null))
       ..add(FlagProperty('collapsed', value: collapsed, ifTrue: 'collapsed'))
@@ -290,127 +292,23 @@ class Fluent2NavigationDrawerItem extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.fluent2Theme;
-    return Fluent2Pressable(
-      focusNode: focusNode,
-      autofocus: autofocus,
-      onPressed: onPressed,
+  Widget build(BuildContext context) => Fluent2Pressable(
+    focusNode: focusNode,
+    autofocus: autofocus,
+    onPressed: onPressed,
+    semanticLabel: label,
+    selected: selected,
+    radius: Fluent2Radius.medium,
+    builder: (context, states) => Fluent2PaneItemFace(
+      icon: icon,
+      selectedIcon: selectedIcon,
       label: label,
       selected: selected,
-      radius: Fluent2Radius.medium,
-      builder: (context, states) {
-        final press = states.press;
-        final fill = selected
-            ? press.pick(
-                fluent2Step(t, t.colors.subtleBackgroundSelected),
-                fluent2Step(t, t.colors.subtleBackgroundHover),
-                fluent2Step(t, t.colors.subtleBackgroundPressed),
-              )
-            : press.pick(
-                t.colors.subtleBackground,
-                fluent2Step(t, t.colors.subtleBackgroundHover),
-                fluent2Step(t, t.colors.subtleBackgroundPressed),
-              );
-        // Disabled, the glyph and the words take the disabled ink.
-        final off = press == Fluent2Press.disabled;
-        final ink = off
-            ? t.colors.neutralForegroundDisabled
-            : selected
-            ? t.colors.neutralForeground1
-            : press.pick(
-                t.colors.neutralForeground2,
-                t.colors.neutralForeground2Hover,
-                t.colors.neutralForeground2Pressed,
-              );
-        return fluent2EasedInks(
-          [
-            fill,
-            ink,
-            selected && !off ? t.colors.neutralForeground2BrandSelected : ink,
-          ],
-          (context, inks) {
-            final [fill, ink, glyphInk] = inks;
-            final glyph = Icon(
-              selected
-                  ? (selectedIcon ?? fluent2Filled(icon))
-                  : press == Fluent2Press.hover || press == Fluent2Press.pressed
-                  ? fluent2Filled(icon)
-                  : icon,
-              size: Fluent2IconSize.i20,
-              color: glyphInk,
-            );
-            return Container(
-              height: Fluent2ChromeMetrics.paneItem,
-              decoration: BoxDecoration(
-                color: fill,
-                borderRadius: BorderRadius.circular(Fluent2Radius.medium),
-              ),
-              // The glyph and the words stand in the item's middle (a stack
-              // leaves a loose child at its top).
-              child: Stack(
-                alignment: AlignmentDirectional.centerStart,
-                children: [
-                  if (selected)
-                    PositionedDirectional(
-                      start: 0,
-                      top:
-                          (Fluent2ChromeMetrics.paneItem -
-                              Fluent2ChromeMetrics.paneIndicatorHeight) /
-                          2,
-                      child: Container(
-                        width: Fluent2ChromeMetrics.paneIndicatorWidth,
-                        height: Fluent2ChromeMetrics.paneIndicatorHeight,
-                        decoration: BoxDecoration(
-                          color: t.colors.compoundBrandForeground1,
-                          borderRadius: BorderRadius.circular(
-                            Fluent2Radius.circular,
-                          ),
-                        ),
-                      ),
-                    ),
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      start: collapsed ? 0 : Fluent2ChromeMetrics.paneItemStart,
-                      end: collapsed ? 0 : Fluent2ChromeMetrics.paneItemEnd,
-                    ),
-                    child: collapsed
-                        ? Center(child: glyph)
-                        : Row(
-                            spacing: Fluent2ChromeMetrics.paneItemGap,
-                            children: [
-                              glyph,
-                              // A destination's name stays whole: one
-                              // longer than the pane is drawn smaller,
-                              // never cut.
-                              Expanded(
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: AlignmentDirectional.centerStart,
-                                  child: fluent2CapCentred(
-                                    Text(
-                                      label,
-                                      maxLines: 1,
-                                      softWrap: false,
-                                      style:
-                                          (selected ? t.body1Strong : t.body1)
-                                              .c(ink),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              ?trailing,
-                            ],
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+      collapsed: collapsed,
+      trailing: trailing,
+      states: states,
+    ),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -456,7 +354,7 @@ class _AccountFoot extends StatelessWidget {
     final open = account.onProfile;
     return Fluent2Pressable(
       onPressed: open == null ? null : () => open(context),
-      label: '${account.name}, profile and settings',
+      semanticLabel: '${account.name}, profile and settings',
       selected: current,
       radius: Fluent2Radius.medium,
       builder: (context, states) => Container(
@@ -478,11 +376,15 @@ class _AccountFoot extends StatelessWidget {
         child: Row(
           spacing: Fluent2Spacing.s,
           children: [
-            Fluent2Avatar(
-              name: account.name,
-              initials: account.initials,
-              image: account.image,
-              color: Fluent2AvatarColor.colorful,
+            // The collapsed rail's width is fixed: its avatar keeps its
+            // size at any text size, as a rail's glyphs do.
+            MediaQuery.withNoTextScaling(
+              child: Fluent2Avatar(
+                name: account.name,
+                initials: account.initials,
+                image: account.image,
+                color: Fluent2AvatarColor.colorful,
+              ),
             ),
             if (!collapsed)
               Expanded(

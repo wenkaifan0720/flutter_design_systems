@@ -2,16 +2,16 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
-import '../internal/icon_fill.dart';
 import '../internal/measure.dart';
 import '../internal/well.dart';
 import '../localizations.dart';
 import '../styled.dart';
 import '../theme.dart';
 import 'acrylic.dart';
+import 'app_shell.dart';
+import '../internal/nav_faces.dart';
 import 'pressable/pressable.dart';
 
 /// A destination in the tab bar or navigation pane. [label] provides the
@@ -25,16 +25,7 @@ import 'pressable/pressable.dart';
 @immutable
 class Fluent2NavItem {
   /// A destination showing [icon] and [label].
-  const Fluent2NavItem(this.icon, this.label, [this.key, this.selectedIcon])
-    : ground = ChromeGround.surface;
-
-  /// Creates a destination from the icon, label and placement of a [NavTab].
-  Fluent2NavItem.fromTab(NavTab tab)
-    : icon = tab.icon,
-      label = tab.label,
-      selectedIcon = tab.selectedIcon,
-      key = tab.key,
-      ground = tab.ground;
+  const Fluent2NavItem(this.icon, this.label, [this.key, this.selectedIcon]);
 
   /// The destination's glyph.
   final IconData icon;
@@ -48,9 +39,6 @@ class Fluent2NavItem {
 
   /// The key on its hit target, for tests and walkthroughs.
   final Key? key;
-
-  /// The ground its root page stands on.
-  final ChromeGround ground;
 }
 
 /// The phone tab bar, Fluent 2's mobile tab bar: the acrylic under a hairline
@@ -96,7 +84,7 @@ class Fluent2NavigationBar extends StatelessWidget {
   final Widget? accessory;
 
   /// The shell's act, floating over the bar's end.
-  final ShellAction? action;
+  final Fluent2ShellAction? action;
 
   /// Paint the solid ground and blur nothing (the media ground).
   final bool solid;
@@ -214,7 +202,11 @@ class Fluent2NavigationBar extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<Fluent2ShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       )
       ..add(FlagProperty('solid', value: solid, ifTrue: 'solid'));
   }
@@ -236,86 +228,21 @@ class _Tab extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.fluent2Theme;
-    return Fluent2Pressable(
-      key: item.key,
-      onPressed: onTap,
+  Widget build(BuildContext context) => Fluent2Pressable(
+    key: item.key,
+    onPressed: onTap,
+    semanticLabel: item.label,
+    selected: selected,
+    radius: Fluent2Radius.medium,
+    builder: (context, states) => Fluent2TabFace(
+      icon: item.icon,
+      selectedIcon: item.selectedIcon,
       label: item.label,
       selected: selected,
-      radius: Fluent2Radius.medium,
-      builder: (context, states) {
-        final press = states.press;
-        final ink = selected
-            ? t.colors.compoundBrandForeground1
-            : press.pick(
-                t.colors.neutralForeground3,
-                t.colors.neutralForeground3Hover,
-                t.colors.neutralForeground3Pressed,
-              );
-        return fluent2EasedInks([ink], (context, inks) {
-          final [ink] = inks;
-          return Stack(
-            children: [
-              if (selected)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: Fluent2ChromeMetrics.tabMarkWidth,
-                      height: Fluent2ChromeMetrics.tabMarkHeight,
-                      decoration: BoxDecoration(
-                        color: t.colors.compoundBrandForeground1,
-                        borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(Fluent2Radius.circular),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: Fluent2ChromeMetrics.tabGap,
-                  children: [
-                    Icon(
-                      selected
-                          ? (item.selectedIcon ?? fluent2Filled(item.icon))
-                          : item.icon,
-                      size: Fluent2ChromeMetrics.tabGlyph,
-                      color: ink,
-                    ),
-                    // Whole, at the bar's shared scale; a hair over its
-                    // room (a font's rounding) is drawn smaller, not cut.
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Fluent2ChromeMetrics.tabLabelSide,
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          item.label,
-                          maxLines: 1,
-                          softWrap: false,
-                          textAlign: TextAlign.center,
-                          textScaler: TextScaler.linear(scale),
-                          style: (selected ? t.caption1Strong : t.caption1).c(
-                            ink,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
+      scale: scale,
+      states: states,
+    ),
+  );
 }
 
 /// Fluent 2's floating action button, the shell's act on a phone: a 56
@@ -370,7 +297,8 @@ class Fluent2FloatingActionButton extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: semanticLabel ?? words ?? Fluent2Localizations.of(context).create,
+      semanticLabel:
+          semanticLabel ?? words ?? Fluent2Localizations.of(context).create,
       radius: h / 2,
       builder: (context, states) {
         // Disabled, it is Fluent's disabled primary button: the grey fill,

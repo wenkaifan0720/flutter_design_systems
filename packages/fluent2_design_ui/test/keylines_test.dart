@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 void _none() {}
 

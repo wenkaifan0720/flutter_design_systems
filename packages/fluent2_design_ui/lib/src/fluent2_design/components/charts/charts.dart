@@ -104,10 +104,10 @@ enum Fluent2ChartHue {
 /// dot in a 2 ring of the ground ([ground], the surface by default), an
 /// [area] wash of the hue at 10% under it. Derived: Fluent's charting has
 /// a Sparkline; this one is drawn from the tokens to common chart
-/// mark specs. Read as [label] with where it starts and ends.
+/// mark specs. Read as [semanticLabel] with where it starts and ends.
 ///
 /// ```dart
-/// Fluent2Sparkline(values: const [3, 5, 4, 7, 6, 9], label: 'Files shared this week', area: true)
+/// Fluent2Sparkline(values: const [3, 5, 4, 7, 6, 9], semanticLabel: 'Files shared this week', area: true)
 /// ```
 class Fluent2Sparkline extends StatelessWidget {
   /// A sparkline of [values].
@@ -118,7 +118,7 @@ class Fluent2Sparkline extends StatelessWidget {
     this.height = 32,
     this.width,
     this.ground,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -142,12 +142,12 @@ class Fluent2Sparkline extends StatelessWidget {
   final Color? ground;
 
   /// What it shows ("Files shared this week").
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    final name = label ?? Fluent2Localizations.of(context).trend;
+    final name = semanticLabel ?? Fluent2Localizations.of(context).trend;
     final spoken = values.isEmpty
         ? name
         : '$name, from ${fluent2Figure(context, values.first)} to '
@@ -192,7 +192,7 @@ class Fluent2Sparkline extends StatelessWidget {
       ..add(DoubleProperty('height', height, defaultValue: 32))
       ..add(DoubleProperty('width', width, defaultValue: null))
       ..add(ColorProperty('ground', ground, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -294,11 +294,11 @@ class Fluent2Bar {
 /// highlighted one in the first ink, strong) and each label under the
 /// baseline in caption1. With [onHighlight] each bar is a button that
 /// picks it. Derived: Fluent's charting has a VerticalBarChart; this one
-/// is drawn from the tokens to common chart mark specs. Read as [label],
+/// is drawn from the tokens to common chart mark specs. Read as [semanticLabel],
 /// then every bar and its value.
 ///
 /// ```dart
-/// Fluent2BarChart(label: 'Meeting hours this week', highlight: 2, bars: const [Fluent2Bar('Mon', 3), Fluent2Bar('Tue', 5), Fluent2Bar('Wed', 6)])
+/// Fluent2BarChart(semanticLabel: 'Meeting hours this week', highlight: 2, bars: const [Fluent2Bar('Mon', 3), Fluent2Bar('Tue', 5), Fluent2Bar('Wed', 6)])
 /// ```
 class Fluent2BarChart extends StatelessWidget {
   /// A bar chart of [bars].
@@ -308,7 +308,7 @@ class Fluent2BarChart extends StatelessWidget {
     this.onHighlight,
     this.hue = Fluent2ChartHue.brand,
     this.height = 160,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -328,7 +328,7 @@ class Fluent2BarChart extends StatelessWidget {
   final double height;
 
   /// What it shows ("Meeting hours this week").
-  final String? label;
+  final String? semanticLabel;
 
   static String _text(BuildContext context, Fluent2Bar b) =>
       b.valueText ?? fluent2Figure(context, b.value);
@@ -351,7 +351,7 @@ class Fluent2BarChart extends StatelessWidget {
     final line = scaler.scale(t.caption1.fontSize!) * t.caption1.height!;
     final pick = onHighlight;
     final spoken = [
-      ?label,
+      ?semanticLabel,
       for (final b in bars) '${b.label} ${_text(context, b)}',
     ].join(', ');
     final direction = Directionality.of(context);
@@ -441,7 +441,7 @@ class Fluent2BarChart extends StatelessWidget {
                 ? column(i)
                 : Fluent2Pressable(
                     onPressed: () => pick(i),
-                    label: bars[i].label,
+                    semanticLabel: bars[i].label,
                     value: _text(context, bars[i]),
                     selected: highlight == i,
                     radius: Fluent2Radius.medium,
@@ -457,7 +457,7 @@ class Fluent2BarChart extends StatelessWidget {
           : Semantics(
               container: true,
               explicitChildNodes: true,
-              label: label,
+              label: semanticLabel,
               child: row,
             ),
     );
@@ -480,6 +480,6 @@ class Fluent2BarChart extends StatelessWidget {
         ),
       )
       ..add(DoubleProperty('height', height, defaultValue: 160))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

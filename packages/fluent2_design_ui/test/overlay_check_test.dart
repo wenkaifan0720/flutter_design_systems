@@ -3,7 +3,6 @@
 // and a multi-select's suggestions, a date picker's calendar, a time picker's
 // list, a menu and a popover, each opened from an anchor high, in the middle
 // and low on a 390 x 844 screen; and each dialog and sheet.
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,7 +55,7 @@ final _anchored =
     <String, (Widget, Future<void> Function(WidgetTester), String)>{
       'select': (
         Fluent2Select<String>(
-          label: 'Environment',
+          semanticLabel: 'Environment',
           options: _environments,
           value: 'production',
           onChanged: (_) {},
@@ -66,7 +65,7 @@ final _anchored =
       ),
       'combobox': (
         Fluent2Combobox<String>(
-          label: 'Environment',
+          semanticLabel: 'Environment',
           options: _environments,
           value: null,
           onChanged: (_) {},
@@ -76,7 +75,7 @@ final _anchored =
       ),
       'multi-select': (
         Fluent2MultiSelect<String>(
-          label: 'Environments',
+          semanticLabel: 'Environments',
           options: _environments,
           selected: const [],
           onChanged: (_) {},
@@ -86,7 +85,7 @@ final _anchored =
       ),
       'date picker': (
         Fluent2DatePicker(
-          label: 'Freeze from',
+          semanticLabel: 'Freeze from',
           value: DateTime(2026, 11, 20),
           firstDate: DateTime(2026),
           lastDate: DateTime(2027, 12, 31),
@@ -97,7 +96,7 @@ final _anchored =
       ),
       'time picker': (
         Fluent2TimePicker(
-          label: 'Starts',
+          semanticLabel: 'Starts',
           value: const Fluent2Time(9, 0),
           onChanged: (_) {},
         ),
@@ -124,7 +123,7 @@ final _anchored =
       ),
       'popover': (
         Fluent2Popover(
-          label: 'Filters',
+          semanticLabel: 'Filters',
           trigger: (context, toggle) =>
               Fluent2Button('Filters', onPressed: toggle),
           content: const Text('Only failed runs'),

@@ -36,7 +36,7 @@ Widget _screen(RoutePresentation presentation, TextDirection direction) {
               actions: [
                 Fluent2IconButton(
                   Fluent2Icons.moreHorizontal,
-                  label: 'More',
+                  semanticLabel: 'More',
                   onPressed: () {},
                 ),
               ],
@@ -154,7 +154,9 @@ void main() {
                     of: presentation == RoutePresentation.root
                         ? find.byType(Fluent2Bell)
                         : find.byWidgetPredicate(
-                            (w) => w is Fluent2IconButton && w.label == 'More',
+                            (w) =>
+                                w is Fluent2IconButton &&
+                                w.semanticLabel == 'More',
                           ),
                     matching: find.byType(Icon),
                   )

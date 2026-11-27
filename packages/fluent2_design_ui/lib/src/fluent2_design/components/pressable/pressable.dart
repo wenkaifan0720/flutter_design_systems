@@ -92,11 +92,11 @@ extension Fluent2PressStates on Set<WidgetState> {
 ///
 /// A null [onPressed] (and no [onLongPress]) makes it disabled: the face is
 /// drawn disabled, the node is announced as disabled, and nothing answers a
-/// tap or a key. [label] is the spoken name; it replaces what the face says
+/// tap or a key. [semanticLabel] is the spoken name; it replaces what the face says
 /// when [excludeChild] is true.
 ///
 /// ```dart
-/// Fluent2Pressable(onPressed: open, label: 'Open file', builder: (context, states) => ColoredBox(color: states.press.pick(rest, hover, pressed), child: row))
+/// Fluent2Pressable(onPressed: open, semanticLabel: 'Open file', builder: (context, states) => ColoredBox(color: states.press.pick(rest, hover, pressed), child: row))
 /// ```
 class Fluent2Pressable extends StatelessWidget {
   /// A control drawn by [builder], or [child] in every state.
@@ -105,7 +105,7 @@ class Fluent2Pressable extends StatelessWidget {
     required this.onPressed,
     this.child,
     this.builder,
-    this.label,
+    this.semanticLabel,
     this.value,
     this.hint,
     this.role = Fluent2PressRole.button,
@@ -130,6 +130,7 @@ class Fluent2Pressable extends StatelessWidget {
     this.statesController,
     this.padded = true,
     this.faceAlignment = AlignmentDirectional.center,
+    this.mergeSemantics = true,
   }) : assert(
          (child == null) != (builder == null),
          'a pressable draws a child or a builder, one of the two',
@@ -145,7 +146,7 @@ class Fluent2Pressable extends StatelessWidget {
   final Widget Function(BuildContext context, Set<WidgetState> states)? builder;
 
   /// The spoken name; null leaves the face's own words.
-  final String? label;
+  final String? semanticLabel;
 
   /// The spoken value after the name.
   final String? value;
@@ -190,7 +191,7 @@ class Fluent2Pressable extends StatelessWidget {
   /// False when the face draws its own focus ring from `states.focused`.
   final bool ring;
 
-  /// Whether the face's own semantics are replaced by [label].
+  /// Whether the face's own semantics are replaced by [semanticLabel].
   final bool excludeChild;
 
   /// False when the control around it says what it is: the press then adds
@@ -229,6 +230,13 @@ class Fluent2Pressable extends StatelessWidget {
   /// the other so no gap opens between them.
   final AlignmentGeometry faceAlignment;
 
+  /// Whether every node inside comes to the press's one node, as a
+  /// button's should. False keeps the press a container that merges no node
+  /// into it: the face's words still name it, and a control inside (a row's
+  /// trailing button, a card's) keeps a node of its own that a screen reader
+  /// reaches apart.
+  final bool mergeSemantics;
+
   bool get _live => onPressed != null || onLongPress != null;
 
   KeyEventResult _key(FocusNode node, KeyEvent event) {
@@ -256,7 +264,7 @@ class Fluent2Pressable extends StatelessWidget {
       autofocus: autofocus,
       mouseCursor: mouseCursor,
       onKeyEvent: keys == null || keys!.isEmpty ? null : _key,
-      semanticLabel: semantics ? label : null,
+      semanticLabel: semantics ? semanticLabel : null,
       semanticValue: semantics ? value : null,
       semanticHint: semantics ? hint : null,
       button: semantics && role == Fluent2PressRole.button,
@@ -267,7 +275,8 @@ class Fluent2Pressable extends StatelessWidget {
       toggled: semantics ? toggled : null,
       expanded: semantics ? expanded : null,
       inMutuallyExclusiveGroup: semantics && inGroup,
-      excludeSemantics: !semantics || (excludeChild && label != null),
+      excludeSemantics: !semantics || (excludeChild && semanticLabel != null),
+      mergeSemantics: mergeSemantics,
       // Fluent's controls answer a press with their own face, not a click.
       enableFeedback: false,
       builder: (context, states, _) => Fluent2PressFace(
@@ -293,7 +302,7 @@ class Fluent2Pressable extends StatelessWidget {
           Widget Function(BuildContext context, Set<WidgetState> states)?
         >.has('builder', builder),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(
@@ -326,6 +335,13 @@ class Fluent2Pressable extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('ring', value: ring, ifFalse: 'ring: false'))
+      ..add(
+        FlagProperty(
+          'mergeSemantics',
+          value: mergeSemantics,
+          ifFalse: 'mergeSemantics: false',
+        ),
+      )
       ..add(
         FlagProperty(
           'excludeChild',

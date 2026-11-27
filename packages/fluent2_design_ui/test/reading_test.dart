@@ -92,7 +92,7 @@ void main() {
         Fluent2Card(
           selected: true,
           onSelected: (_) {},
-          label: 'Brand kit',
+          semanticLabel: 'Brand kit',
           children: const [Text('Brand kit')],
         ),
       ),

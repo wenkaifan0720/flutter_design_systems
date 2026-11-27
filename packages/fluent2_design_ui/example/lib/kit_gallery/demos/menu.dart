@@ -81,7 +81,7 @@ class _OpenState extends State<_Open> {
           Builder(
             builder: (anchor) => Fluent2IconButton(
               Fluent2Icons.moreHorizontal,
-              label: kitW('More options'),
+              semanticLabel: kitW('More options'),
               onPressed: () async {
                 final picked = await Fluent2Menu.show<String>(
                   anchor,

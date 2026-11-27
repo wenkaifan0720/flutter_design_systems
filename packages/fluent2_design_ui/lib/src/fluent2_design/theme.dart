@@ -571,8 +571,9 @@ BoxShadow fluent2CssShadow({
 );
 
 /// The tone a badge, a message bar, a field's validation or a toast wears:
-/// Fluent's informative (the neutral grey), brand, success, warning, danger
-/// (Fluent's error) and severe (its darker orange).
+/// Fluent's informative (the neutral grey), brand, success, warning (an
+/// amber), danger (Fluent's error, a red) and severe (an orange, between
+/// the two).
 enum Fluent2Tone {
   /// Fluent's informative tone, a neutral grey.
   informative,
@@ -589,7 +590,8 @@ enum Fluent2Tone {
   /// Fluent's danger red (its `error`).
   danger,
 
-  /// Fluent's severe warning, a darker orange.
+  /// Fluent's severe warning, an orange: stronger than a warning, short of
+  /// an error.
   severe,
 }
 
@@ -687,16 +689,6 @@ final class Fluent2ThemeData with Diagnosticable {
     Brightness brightness = Brightness.light,
   ]) => preset('juniper', brightness);
 
-  /// The `clover` preset: a green brand ramp (#107C10) from Fluent's theme designer.
-  @Deprecated(
-    "clover's brand is Fluent's success green (#107C10), so a primary reads "
-    'as a success: use juniper, or Fluent2ThemeData.from(brand:) for a green '
-    'of your own. This preset was deprecated in 0.7.0 and is removed in '
-    '0.8.0.',
-  )
-  factory Fluent2ThemeData.clover([Brightness brightness = Brightness.light]) =>
-      preset('clover', brightness);
-
   /// The `pumpkin` preset: a warm orange brand ramp (#CA5010) from Fluent's theme designer.
   factory Fluent2ThemeData.pumpkin([
     Brightness brightness = Brightness.light,
@@ -713,7 +705,7 @@ final class Fluent2ThemeData with Diagnosticable {
   factory Fluent2ThemeData.flint([Brightness brightness = Brightness.light]) =>
       preset('flint', brightness);
 
-  /// Which preset this theme is (see [presets]).
+  /// Which of [palettes] this theme is, by its id.
   final String id;
 
   /// Which appearance this theme is.
@@ -1036,12 +1028,16 @@ final class Fluent2ThemeData with Diagnosticable {
   /// Danger's tint.
   Color get dangerSubtle => tone(Fluent2Tone.danger).tint;
 
-  /// One tone's colours, from Fluent's status tokens (danger, success,
-  /// warning), its severe palette (dark orange), its brand and its neutral
-  /// informative. The ink is the status `Foreground1`, the solid its
+  /// One tone's colours, from Fluent's status tokens (danger, success), its
+  /// marigold for warning (Windows' caution amber), its orange warning
+  /// tokens for severe, its brand and its neutral informative. The ink is
+  /// the status `Foreground1` (warning's the marigold that holds 4.5:1, its
+  /// `Foreground2` by day and `Foreground3` by night; severe's the orange
+  /// `Foreground1` by day and `Foreground3` by night), the solid its
   /// `Background3`, the tint its `Background1` and the border its
   /// `Border1`; warning's solid carries the page ink, as Fluent's warning
-  /// badge does (white on #F7630C reads 3.0:1).
+  /// badge does. Danger, severe and warning stand apart as red, orange and
+  /// amber, by day and by night, so a reader tells them by colour.
   Fluent2ToneColors tone(Fluent2Tone tone) => switch (tone) {
     Fluent2Tone.informative => Fluent2ToneColors(
       ink: colors.neutralForeground3,
@@ -1070,11 +1066,13 @@ final class Fluent2ThemeData with Diagnosticable {
       border: colors.statusSuccessBorder1,
     ),
     Fluent2Tone.warning => Fluent2ToneColors(
-      ink: colors.statusWarningForeground3,
-      solid: colors.statusWarningBackground3,
+      ink: brightness == Brightness.dark
+          ? sharedColors.paletteMarigoldForeground3
+          : sharedColors.paletteMarigoldForeground2,
+      solid: sharedColors.paletteMarigoldBackground3,
       onSolid: const Color(0xFF242424),
-      tint: colors.statusWarningBackground1,
-      border: colors.statusWarningBorder1,
+      tint: sharedColors.paletteMarigoldBackground1,
+      border: sharedColors.paletteMarigoldBorder1,
     ),
     Fluent2Tone.danger => Fluent2ToneColors(
       ink: colors.statusDangerForeground1,
@@ -1084,28 +1082,72 @@ final class Fluent2ThemeData with Diagnosticable {
       border: colors.statusDangerBorder1,
     ),
     Fluent2Tone.severe => Fluent2ToneColors(
-      ink: sharedColors.paletteDarkOrangeForeground1,
+      ink: brightness == Brightness.dark
+          ? colors.statusWarningForeground3
+          : colors.statusWarningForeground2,
       solid: sharedColors.paletteDarkOrangeBackground3,
       onSolid: colors.neutralForegroundOnBrand,
-      tint: sharedColors.paletteDarkOrangeBackground1,
-      border: sharedColors.paletteDarkOrangeBorder1,
+      tint: colors.statusWarningBackground1,
+      border: colors.statusWarningBorder1,
     ),
   };
 
   // --- presets ----------------------------------------------------------------
 
-  /// The six preset ids, the first the default. `preset('clover', ...)`
-  /// still builds the deprecated `clover` ([Fluent2ThemeData.clover]).
-  static const List<String> presets = <String>[
-    'lapis',
-    'iris',
-    'juniper',
-    'pumpkin',
-    'berry',
-    'flint',
+  /// The palettes [preset] builds, the default first, each by day and by
+  /// night: what an app's palette picker lists (each [RawNamedPalette] its
+  /// label, and its brand and ground as swatches) and the
+  /// [RawNamedPalette.id] an app stores and hands back to [preset] or
+  /// [Fluent2Host.palette]. `lapis` is Fluent's own blue (#0F6CBD) and
+  /// `iris` its indigo (#5B5FC7); `juniper` a teal, `pumpkin` an orange,
+  /// `berry` a magenta and `flint` a grey come from Fluent's theme designer.
+  static const List<RawNamedPalette> palettes = <RawNamedPalette>[
+    RawNamedPalette(
+      id: 'lapis',
+      label: 'Lapis',
+      swatches: [Color(0xFF0F6CBD), Color(0xFFF2F4F7)],
+      darkSwatches: [Color(0xFF479EF5), Color(0xFF182027)],
+    ),
+    RawNamedPalette(
+      id: 'iris',
+      label: 'Iris',
+      swatches: [Color(0xFF5B5FC7), Color(0xFFF1F2F6)],
+      darkSwatches: [Color(0xFF7F85F5), Color(0xFF27272F)],
+    ),
+    RawNamedPalette(
+      id: 'juniper',
+      label: 'Juniper',
+      swatches: [Color(0xFF0D7579), Color(0xFFE9EFEF)],
+      darkSwatches: [Color(0xFF3A9194), Color(0xFF1A1E1E)],
+    ),
+    RawNamedPalette(
+      id: 'pumpkin',
+      label: 'Pumpkin',
+      swatches: [Color(0xFFA74411), Color(0xFFF6E9E3)],
+      darkSwatches: [Color(0xFFCF5A20), Color(0xFF201B18)],
+    ),
+    RawNamedPalette(
+      id: 'berry',
+      label: 'Berry',
+      swatches: [Color(0xFFA53398), Color(0xFFF4E9F2)],
+      darkSwatches: [Color(0xFFC94EBA), Color(0xFF201B1F)],
+    ),
+    RawNamedPalette(
+      id: 'flint',
+      label: 'Flint',
+      swatches: [Color(0xFF5F656A), Color(0xFFECECED)],
+      darkSwatches: [Color(0xFF7B8184), Color(0xFF1C1D1D)],
+    ),
   ];
 
-  /// The theme for preset [id] in [brightness]; an unknown id throws.
+  /// The theme for one of [palettes], by its id, in [brightness]. Throws
+  /// [ArgumentError] for an id that is not one of theirs (an app restoring a
+  /// stored id it no longer trusts reads [palettes] first). The same id and
+  /// brightness always return the same instance.
+  ///
+  /// ```dart
+  /// Fluent2ThemeData.preset(Fluent2ThemeData.palettes[1].id, Brightness.dark)
+  /// ```
   static Fluent2ThemeData preset(String id, Brightness brightness) {
     final dark = brightness == Brightness.dark;
     final cached = (dark ? _dark : _light)[id];
@@ -1123,12 +1165,6 @@ final class Fluent2ThemeData with Diagnosticable {
         brightness,
         dark ? juniperDark : juniperLight,
         juniperRamp,
-      ),
-      'clover' => _build(
-        id,
-        brightness,
-        dark ? cloverDark : cloverLight,
-        cloverRamp,
       ),
       'pumpkin' => _build(
         id,
@@ -1151,7 +1187,7 @@ final class Fluent2ThemeData with Diagnosticable {
       _ => throw ArgumentError.value(
         id,
         'id',
-        'not a Fluent 2 preset (${presets.join(', ')})',
+        'not a Fluent 2 palette (${palettes.map((p) => p.id).join(', ')})',
       ),
     };
     return (dark ? _dark : _light)[id] = built;
@@ -1644,15 +1680,6 @@ final class Fluent2ThemeData with Diagnosticable {
       DiagnosticsProperty<Fluent2Shadows>('brandShadows', brandShadows),
     );
   }
-
-  /// The WCAG contrast ratio of [ink] on [ground], 1..21, as it is seen:
-  /// a translucent ink is laid over the ground first. [ground] is opaque.
-  @Deprecated(
-    "Use RawPalette.contrastRatio: ui_core's WCAG ratio, the same maths. "
-    'This method was deprecated in 0.7.0 and is removed in 0.8.0.',
-  )
-  static double contrast(Color ink, Color ground) =>
-      RawPalette.contrastRatio(ink, ground);
 }
 
 class _Fluent2Scope extends InheritedTheme {
@@ -1745,20 +1772,20 @@ class Fluent2Theme extends StatelessWidget {
   /// with no theme above.
   static final ({Fluent2ThemeData light, Fluent2ThemeData dark}) _fallback = (
     light: Fluent2ThemeData.preset(
-      Fluent2ThemeData.presets.first,
+      Fluent2ThemeData.palettes.first.id,
       Brightness.light,
     ),
     dark: Fluent2ThemeData.preset(
-      Fluent2ThemeData.presets.first,
+      Fluent2ThemeData.palettes.first.id,
       Brightness.dark,
     ),
   );
 
   static Fluent2ThemeData _darkFor(Fluent2ThemeData data) {
     if (data.isDark) return data;
-    final id = Fluent2ThemeData.presets.contains(data.id)
+    final id = Fluent2ThemeData.palettes.any((p) => p.id == data.id)
         ? data.id
-        : Fluent2ThemeData.presets.first;
+        : Fluent2ThemeData.palettes.first.id;
     return Fluent2ThemeData.preset(id, Brightness.dark);
   }
 
@@ -1967,7 +1994,7 @@ ThemeData _fluent2MaterialTheme(Fluent2ThemeData t, TargetPlatform platform) =>
       dividerTheme: DividerThemeData(color: t.border, thickness: 1),
     );
 
-/// `context.fluent2Theme`: the theme in scope.
+/// The theme in scope, read as `context.fluent2Theme`.
 extension Fluent2ThemeContext on BuildContext {
   /// The Fluent 2 theme in scope: `Fluent2Theme.of(this)`, as in
   /// `context.fluent2Theme.colors.neutralBackground1`.

@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 Future<BuildContext> _pump(WidgetTester t, Widget part) async {
   t.view.physicalSize = const Size(390, 844);
@@ -122,7 +121,7 @@ void main() {
       SizedBox(
         width: 240,
         child: Fluent2MultiSelect<String>(
-          label: 'Rooms',
+          semanticLabel: 'Rooms',
           options: [for (final r in _rooms) Fluent2Option(r, r)],
           selected: _rooms,
           onChanged: (_) {},

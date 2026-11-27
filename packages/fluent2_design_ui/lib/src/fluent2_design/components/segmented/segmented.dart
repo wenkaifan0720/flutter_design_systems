@@ -61,10 +61,10 @@ class Fluent2ButtonSegment<T> {
 /// others in body1 in the second ink, tinted under the pointer. 32 tall
 /// (24 small, 40 large); [expand] fills the row's width, else the widest
 /// segment sets every segment's width. The arrows move the choice. Read
-/// as a group named [label] of selectable buttons.
+/// as a group named [semanticLabel] of selectable buttons.
 ///
 /// ```dart
-/// Fluent2SegmentedButton(label: 'Calendar view', segments: const [Fluent2ButtonSegment('day', 'Day'), Fluent2ButtonSegment('week', 'Week')], value: view, onChanged: (v) => setState(() => view = v))
+/// Fluent2SegmentedButton(semanticLabel: 'Calendar view', segments: const [Fluent2ButtonSegment('day', 'Day'), Fluent2ButtonSegment('week', 'Week')], value: view, onChanged: (v) => setState(() => view = v))
 /// ```
 class Fluent2SegmentedButton<T> extends StatelessWidget {
   /// A segmented button of [segments], [value] chosen.
@@ -72,7 +72,7 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
     required this.segments,
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.size = Fluent2SegmentedButtonSize.medium,
     this.expand = false,
     this.style,
@@ -89,7 +89,7 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// What a screen reader calls the group.
-  final String label;
+  final String semanticLabel;
 
   /// Fluent's `size`: how large it is drawn.
   final Fluent2SegmentedButtonSize size;
@@ -178,7 +178,7 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
       return Expanded(
         child: Fluent2Pressable(
           onPressed: on && change != null ? () => change(s.value) : null,
-          label: s.label,
+          semanticLabel: s.label,
           selected: chosen,
           radius: corner,
           builder: (context, states) {
@@ -315,7 +315,7 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
           );
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       child: CallbackShortcuts(
         bindings: {
@@ -336,7 +336,7 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
       ..add(IterableProperty<Fluent2ButtonSegment<T>>('segments', segments))
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         EnumProperty<Fluent2SegmentedButtonSize>(
           'size',

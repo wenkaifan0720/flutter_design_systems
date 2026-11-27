@@ -41,7 +41,7 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
       'Slider, disabled',
       children: [
         const Fluent2Slider(
-          label: 'Meeting volume',
+          semanticLabel: 'Meeting volume',
           value: 40,
           onChanged: null,
         ),
@@ -61,7 +61,7 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
           _Live<double>(
             3.5,
             (v, set) => Fluent2Rating(
-              label: 'Rate the ${kitSay(size)} sample',
+              semanticLabel: 'Rate the ${kitSay(size)} sample',
               value: v,
               allowHalf: true,
               size: size,
@@ -70,7 +70,7 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
             ),
           ),
         const Fluent2Rating(
-          label: 'Rating, disabled',
+          semanticLabel: 'Rating, disabled',
           value: 2,
           onChanged: null,
         ),
@@ -90,12 +90,13 @@ Widget kitSpecimenSlider() => Column(
   children: [
     _Live<double>(
       60,
-      (v, set) => Fluent2Slider(label: 'Volume', value: v, onChanged: set),
+      (v, set) =>
+          Fluent2Slider(semanticLabel: 'Volume', value: v, onChanged: set),
     ),
     _Live<double>(
       30,
       (v, set) => Fluent2Slider(
-        label: 'Keep deleted files',
+        semanticLabel: 'Keep deleted files',
         value: v,
         min: 0,
         max: 90,
@@ -113,7 +114,7 @@ Widget kitSpecimenSliderStepped() => Column(
     _Live<double>(
       2,
       (v, set) => Fluent2Slider(
-        label: 'Reminder, hours before',
+        semanticLabel: 'Reminder, hours before',
         value: v,
         min: 0,
         max: 8,
@@ -125,7 +126,7 @@ Widget kitSpecimenSliderStepped() => Column(
     _Live<double>(
       40,
       (v, set) => Fluent2Slider(
-        label: 'Thumbnail size',
+        semanticLabel: 'Thumbnail size',
         value: v,
         size: Fluent2SliderSize.small,
         onChanged: set,
@@ -138,7 +139,7 @@ Widget kitSpecimenSpinButton() => kitRow([
   _Live<num>(
     6,
     (v, set) => Fluent2SpinButton(
-      label: 'Seats',
+      semanticLabel: 'Seats',
       value: v,
       min: 1,
       max: 50,
@@ -148,7 +149,7 @@ Widget kitSpecimenSpinButton() => kitRow([
   _Live<num>(
     30,
     (v, set) => Fluent2SpinButton(
-      label: 'Meeting length',
+      semanticLabel: 'Meeting length',
       value: v,
       min: 15,
       max: 240,
@@ -161,7 +162,7 @@ Widget kitSpecimenSpinButton() => kitRow([
   _Live<num>(
     2,
     (v, set) => Fluent2SpinButton(
-      label: 'Copies',
+      semanticLabel: 'Copies',
       value: v,
       min: 1,
       size: Fluent2InputSize.small,
@@ -172,26 +173,33 @@ Widget kitSpecimenSpinButton() => kitRow([
 
 Widget kitSpecimenSpinBounds() => kitRow([
   Fluent2SpinButton(
-    label: 'Seats, at the least',
+    semanticLabel: 'Seats, at the least',
     value: 1,
     min: 1,
     max: 50,
     onChanged: (_) {},
   ),
   Fluent2SpinButton(
-    label: 'Seats, at the most',
+    semanticLabel: 'Seats, at the most',
     value: 50,
     min: 1,
     max: 50,
     onChanged: (_) {},
   ),
-  const Fluent2SpinButton(label: 'Seats, disabled', value: 6, onChanged: null),
+  const Fluent2SpinButton(
+    semanticLabel: 'Seats, disabled',
+    value: 6,
+    onChanged: null,
+  ),
 ]);
 
 Widget kitSpecimenRating() => _Live<double>(
   3,
-  (v, set) =>
-      Fluent2Rating(label: 'Rate this meeting', value: v, onChanged: set),
+  (v, set) => Fluent2Rating(
+    semanticLabel: 'Rate this meeting',
+    value: v,
+    onChanged: set,
+  ),
 );
 
 Widget kitSpecimenRatingColors() => Column(
@@ -202,7 +210,7 @@ Widget kitSpecimenRatingColors() => Column(
       _Live<double>(
         4,
         (v, set) => Fluent2Rating(
-          label: 'Rate the ${kitSay(color)} sample',
+          semanticLabel: 'Rate the ${kitSay(color)} sample',
           value: v,
           color: color,
           size: Fluent2RatingSize.large,

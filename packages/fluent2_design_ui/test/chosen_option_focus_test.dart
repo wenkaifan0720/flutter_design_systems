@@ -1,7 +1,6 @@
 // A list opens with the keys on what is chosen, from its first frame: a
 // select's chosen option; a date picker's calendar, on the chosen day. No
 // frame shows the keys elsewhere before they move.
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -73,7 +72,7 @@ void main() {
       _app(
         _page(
           Fluent2Select<String>(
-            label: 'Environment',
+            semanticLabel: 'Environment',
             options: _environments,
             value: 'production',
             onChanged: (_) {},
@@ -99,7 +98,7 @@ void main() {
       _app(
         _page(
           Fluent2DatePicker(
-            label: 'Freeze from',
+            semanticLabel: 'Freeze from',
             value: DateTime(2026, 11, 20),
             firstDate: DateTime(2026),
             lastDate: DateTime(2027),

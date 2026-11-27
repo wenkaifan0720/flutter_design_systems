@@ -15,6 +15,7 @@ import 'package:material_ui/material_ui.dart'
         MaterialType,
         TextField,
         VisualDensity;
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -1081,7 +1082,7 @@ class Fluent2FieldButton extends StatefulWidget {
   const Fluent2FieldButton({
     required this.onOpen,
     required this.builder,
-    required this.label,
+    required this.semanticLabel,
     this.value,
     this.hint,
     this.expanded,
@@ -1099,9 +1100,9 @@ class Fluent2FieldButton extends StatefulWidget {
   builder;
 
   /// What a screen reader calls the button.
-  final String label;
+  final String semanticLabel;
 
-  /// The chosen value's words, read with [label].
+  /// The chosen value's words, read with [semanticLabel].
   final String? value;
 
   /// The words read while nothing is chosen.
@@ -1125,7 +1126,7 @@ class Fluent2FieldButton extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(ObjectFlagProperty<VoidCallback?>.has('onOpen', onOpen))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
@@ -1182,7 +1183,7 @@ class _Fluent2FieldButtonState extends State<Fluent2FieldButton> {
                 return KeyEventResult.handled;
               }
             : null,
-        semanticLabel: widget.label,
+        semanticLabel: widget.semanticLabel,
         semanticValue: widget.value,
         semanticHint: widget.hint,
         expanded: widget.expanded,
@@ -1272,9 +1273,46 @@ class Fluent2FieldPopover extends StatefulWidget {
   }
 }
 
-class _Fluent2PopoverState extends State<Fluent2FieldPopover> {
+class _Fluent2PopoverState extends State<Fluent2FieldPopover>
+    with SingleTickerProviderStateMixin {
   final _link = LayerLink();
   final _anchor = GlobalKey();
+  // The portal the popover stands on: it follows the owner's controller,
+  // and stays up while the popover fades out, so it closes as it opened,
+  // over Fluent's durations, never in one frame. Each opening takes a fresh
+  // one, shown before it is attached, as a portal cannot be shown during
+  // a build.
+  var _portal = OverlayPortalController();
+  late final AnimationController _shown = AnimationController(vsync: this)
+    ..addStatusListener(_settled);
+
+  void _settled(AnimationStatus status) {
+    if (status != AnimationStatus.dismissed) return;
+    void hide() {
+      if (mounted && _shown.isDismissed && _portal.isShowing) _portal.hide();
+    }
+
+    // A cut (motion off) settles inside the owner's build: the popover is
+    // already clear, and the portal goes once the frame is built.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => hide());
+    } else {
+      hide();
+    }
+  }
+
+  void _follow() {
+    if (widget.controller.isShowing) {
+      if (!_portal.isShowing) _portal = OverlayPortalController()..show();
+      _shown.duration = Fluent2Motion.of(context, Fluent2Motion.normal);
+      if (!_shown.isForwardOrCompleted) _shown.forward();
+    } else if (_portal.isShowing && _shown.isForwardOrCompleted) {
+      _shown.reverseDuration = Fluent2Motion.of(context, Fluent2Motion.faster);
+      _shown.reverse();
+    }
+  }
+
   // Whether the anchor's route is its navigator's top one.
   bool _routeCurrent = true;
 
@@ -1289,6 +1327,7 @@ class _Fluent2PopoverState extends State<Fluent2FieldPopover> {
   @override
   void dispose() {
     FocusManager.instance.removeListener(_focusMoved);
+    _shown.dispose();
     super.dispose();
   }
 
@@ -1352,25 +1391,29 @@ class _Fluent2PopoverState extends State<Fluent2FieldPopover> {
   }
 
   // The owners show and hide the popover inside setState, so this builds
-  // again each time it opens or closes, and the back follows it.
+  // again each time it opens or closes, and the back and the portal follow
+  // it.
   @override
-  Widget build(BuildContext context) => PopScope<Object?>(
-    canPop: !widget.controller.isShowing,
-    onPopInvokedWithResult: (didPop, _) {
-      if (!didPop && widget.controller.isShowing) _dismiss();
-    },
-    child: TapRegion(
-      groupId: _group,
-      child: CompositedTransformTarget(
-        link: _link,
-        child: OverlayPortal(
-          controller: widget.controller,
-          overlayChildBuilder: _overlay,
-          child: KeyedSubtree(key: _anchor, child: widget.child),
+  Widget build(BuildContext context) {
+    _follow();
+    return PopScope<Object?>(
+      canPop: !widget.controller.isShowing,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && widget.controller.isShowing) _dismiss();
+      },
+      child: TapRegion(
+        groupId: _group,
+        child: CompositedTransformTarget(
+          link: _link,
+          child: OverlayPortal(
+            controller: _portal,
+            overlayChildBuilder: _overlay,
+            child: KeyedSubtree(key: _anchor, child: widget.child),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _overlay(BuildContext context) {
     final anchor = _anchor.currentContext?.findRenderObject() as RenderBox?;
@@ -1417,23 +1460,57 @@ class _Fluent2PopoverState extends State<Fluent2FieldPopover> {
         offset: Offset(dx, down ? gap : -gap),
         child: TapRegion(
           groupId: _group,
-          onTapOutside: (_) => widget.onDismiss?.call(),
+          onTapOutside: (_) {
+            if (widget.controller.isShowing) widget.onDismiss?.call();
+          },
           child: CallbackShortcuts(
             bindings: {
-              const SingleActivator(LogicalKeyboardKey.escape): () =>
-                  widget.onDismiss?.call(),
+              const SingleActivator(LogicalKeyboardKey.escape): () {
+                if (widget.controller.isShowing) widget.onDismiss?.call();
+              },
             },
             // Painted on a layer of its own, as the field's page is: it
             // repaints alone as its rows light, and its pixels are read on
             // the same grid as the field's.
             child: RepaintBoundary(
-              child: SizedBox(
-                width: width,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: math.min(widget.maxHeight, room),
+              // In, it fades and slides from the field; out, it fades,
+              // taking no taps, no focus and no reader while it goes.
+              child: IgnorePointer(
+                ignoring: !widget.controller.isShowing,
+                child: ExcludeFocus(
+                  excluding: !widget.controller.isShowing,
+                  child: ExcludeSemantics(
+                    excluding: !widget.controller.isShowing,
+                    child: AnimatedBuilder(
+                      animation: _shown,
+                      builder: (context, child) {
+                        final t = _shown.value;
+                        final eased = _shown.status == AnimationStatus.reverse
+                            ? Fluent2Motion.accelerateMid.transform(t)
+                            : Fluent2Motion.decelerateMid.transform(t);
+                        return Opacity(
+                          opacity: eased,
+                          child: Transform.translate(
+                            offset: Offset(
+                              0,
+                              (1 - eased) *
+                                  (down ? -Fluent2Spacing.s : Fluent2Spacing.s),
+                            ),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: SizedBox(
+                        width: width,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: math.min(widget.maxHeight, room),
+                          ),
+                          child: widget.popover(context),
+                        ),
+                      ),
+                    ),
                   ),
-                  child: widget.popover(context),
                 ),
               ),
             ),
@@ -1555,7 +1632,7 @@ class Fluent2OptionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Fluent2Pressable(
     onPressed: onPressed,
-    label: label,
+    semanticLabel: label,
     value: secondary,
     selected: selected,
     focusNode: focusNode,

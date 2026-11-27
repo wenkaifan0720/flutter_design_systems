@@ -25,7 +25,11 @@ Widget kitPopoverDemo(Brightness brightness) => kitScreen(
           ])
             Fluent2Tooltip(
               message: name,
-              child: Fluent2IconButton(icon, label: name, onPressed: () {}),
+              child: Fluent2IconButton(
+                icon,
+                semanticLabel: name,
+                onPressed: () {},
+              ),
             ),
           Fluent2Tooltip(
             message: 'Copy link',
@@ -34,7 +38,7 @@ Widget kitPopoverDemo(Brightness brightness) => kitScreen(
             withArrow: true,
             child: Fluent2IconButton(
               Fluent2Icons.link,
-              label: 'Copy link',
+              semanticLabel: 'Copy link',
               onPressed: () {},
             ),
           ),
@@ -66,7 +70,7 @@ Widget _hoverCard() => Builder(
       children: [
         Text('Reviewed by ', style: t.body1.c(t.textPrimary)),
         Fluent2Popover(
-          label: 'Mara Okafor',
+          semanticLabel: 'Mara Okafor',
           openOnHover: true,
           trigger: (_, toggle) =>
               Fluent2Link('Mara Okafor', onPressed: toggle, inline: true),

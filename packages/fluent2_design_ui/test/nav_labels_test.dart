@@ -255,12 +255,12 @@ void main() {
                       if (commands) ...[
                         Fluent2IconButton(
                           Fluent2Icons.calendarAdd,
-                          label: 'New event',
+                          semanticLabel: 'New event',
                           onPressed: () {},
                         ),
                         Fluent2IconButton(
                           Fluent2Icons.filter,
-                          label: 'Filter',
+                          semanticLabel: 'Filter',
                           onPressed: () {},
                         ),
                       ],

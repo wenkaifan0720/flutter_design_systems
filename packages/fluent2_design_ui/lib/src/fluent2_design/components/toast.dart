@@ -390,7 +390,7 @@ class Fluent2Toast extends StatelessWidget {
               if (label != null)
                 Fluent2Pressable(
                   onPressed: onAction,
-                  label: label,
+                  semanticLabel: label,
                   radius: Fluent2Radius.small,
                   builder: (context, states) => Text(
                     label,

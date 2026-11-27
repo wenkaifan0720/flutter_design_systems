@@ -226,7 +226,7 @@ void main() {
           child: SizedBox(
             width: 320,
             child: Fluent2Select<String>(
-              label: 'Type',
+              semanticLabel: 'Type',
               value: 'equipment',
               options: _options,
               onChanged: (_) {},
@@ -247,7 +247,7 @@ void main() {
         child: SizedBox(
           width: 320,
           child: Fluent2Combobox<String>(
-            label: 'Type',
+            semanticLabel: 'Type',
             value: 'equipment',
             options: _options,
             onChanged: (_) {},
@@ -284,7 +284,7 @@ void main() {
       child: SizedBox(
         width: 320,
         child: Fluent2Select<String>(
-          label: 'Type',
+          semanticLabel: 'Type',
           value: 'equipment',
           options: _options,
           onChanged: (_) {},

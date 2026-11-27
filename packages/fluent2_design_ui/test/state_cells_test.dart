@@ -9,7 +9,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 void _noop() {}
 
@@ -65,7 +64,7 @@ final _parts = <_Part>[
     'Icon button',
     (enabled, error) => Fluent2IconButton(
       Fluent2Icons.share,
-      label: 'Share',
+      semanticLabel: 'Share',
       onPressed: enabled ? _noop : null,
     ),
   ),
@@ -150,7 +149,7 @@ final _parts = <_Part>[
     'Completion check',
     (enabled, error) => Fluent2CompletionCheck(
       value: false,
-      label: 'Review the deck',
+      semanticLabel: 'Review the deck',
       onChanged: enabled ? _drop : null,
     ),
   ),
@@ -160,7 +159,7 @@ final _parts = <_Part>[
       240,
       Fluent2Slider(
         value: 40,
-        label: 'Volume',
+        semanticLabel: 'Volume',
         onChanged: enabled ? _drop : null,
       ),
     ),
@@ -171,7 +170,7 @@ final _parts = <_Part>[
     'Rating',
     (enabled, error) => Fluent2Rating(
       value: 3,
-      label: 'Rating',
+      semanticLabel: 'Rating',
       onChanged: enabled ? _drop : null,
     ),
     press: false,
@@ -197,7 +196,7 @@ final _parts = <_Part>[
       240,
       Fluent2Card(
         onPressed: enabled ? _noop : null,
-        label: 'Budget',
+        semanticLabel: 'Budget',
         children: const [Text('Budget')],
       ),
     ),
@@ -229,7 +228,7 @@ final _parts = <_Part>[
   _p(
     'Segmented button',
     (enabled, error) => Fluent2SegmentedButton<String>(
-      label: 'View',
+      semanticLabel: 'View',
       value: 'a',
       segments: const [
         Fluent2ButtonSegment('a', 'List'),
@@ -248,7 +247,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2TextField(
-        label: 'Name',
+        semanticLabel: 'Name',
         value: 'Ana Ruiz',
         onChanged: enabled ? _drop : null,
         invalid: error,
@@ -264,7 +263,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2TextArea(
-        label: 'Notes',
+        semanticLabel: 'Notes',
         value: 'Bring the deck',
         onChanged: enabled ? _drop : null,
         invalid: error,
@@ -291,7 +290,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2PasswordField(
-        label: 'Password',
+        semanticLabel: 'Password',
         value: 'secret',
         onChanged: enabled ? _drop : null,
         invalid: error,
@@ -307,7 +306,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2InputGroup(
-        label: 'Website',
+        semanticLabel: 'Website',
         hintText: 'example.com',
         onChanged: _drop,
         enabled: enabled,
@@ -321,7 +320,7 @@ final _parts = <_Part>[
   _p(
     'Number field',
     (enabled, error) => Fluent2SpinButton(
-      label: 'Copies',
+      semanticLabel: 'Copies',
       value: 2,
       onChanged: enabled ? _drop : null,
       invalid: error,
@@ -335,7 +334,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2Select<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         value: 'm',
         options: _sizes,
         onChanged: enabled ? _drop : null,
@@ -349,7 +348,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2Combobox<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         value: 'm',
         options: _sizes,
         onChanged: enabled ? _drop : null,
@@ -365,7 +364,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2MultiSelect<String>(
-        label: 'Sizes',
+        semanticLabel: 'Sizes',
         options: _sizes,
         selected: const ['s'],
         onChanged: enabled ? _drop : null,
@@ -381,7 +380,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2DatePicker(
-        label: 'Due',
+        semanticLabel: 'Due',
         value: DateTime(2026, 6, 14),
         onChanged: enabled ? _drop : null,
         invalid: error,
@@ -394,7 +393,7 @@ final _parts = <_Part>[
     (enabled, error) => _w(
       280,
       Fluent2TimePicker(
-        label: 'Starts',
+        semanticLabel: 'Starts',
         value: const Fluent2Time(9, 30),
         onChanged: enabled ? _drop : null,
         invalid: error,

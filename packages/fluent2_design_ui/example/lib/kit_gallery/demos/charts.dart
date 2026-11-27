@@ -110,7 +110,7 @@ Widget kitSpecimenSparklines() => Builder(
           const Fluent2Sparkline(
             values: [820, 940, 910, 1080, 1010, 1190, 1284],
             area: true,
-            label: 'Files shared this week',
+            semanticLabel: 'Files shared this week',
           ),
         ),
         line(
@@ -119,7 +119,7 @@ Widget kitSpecimenSparklines() => Builder(
           const Fluent2Sparkline(
             values: [510, 580, 720, 690, 600, 655, 642],
             hue: Fluent2ChartHue.pumpkin,
-            label: 'Messages this week',
+            semanticLabel: 'Messages this week',
           ),
         ),
         line(
@@ -129,7 +129,7 @@ Widget kitSpecimenSparklines() => Builder(
             values: [7.9, 8.1, 8.4, 8.6, 8.9, 9.1, 9.4],
             hue: Fluent2ChartHue.forest,
             area: true,
-            label: 'Storage this week',
+            semanticLabel: 'Storage this week',
           ),
         ),
       ],
@@ -139,14 +139,14 @@ Widget kitSpecimenSparklines() => Builder(
 
 /// The week's meeting hours, Wednesday highlighted.
 Widget kitSpecimenBarChart() => const Fluent2BarChart(
-  label: 'Meeting hours this week',
+  semanticLabel: 'Meeting hours this week',
   highlight: 2,
   bars: _hours,
 );
 
 /// The same week with no day picked.
 Widget kitSpecimenBarChartPlain() => const Fluent2BarChart(
-  label: 'Meeting hours this week',
+  semanticLabel: 'Meeting hours this week',
   hue: Fluent2ChartHue.cornflower,
   height: 140,
   bars: _hours,
@@ -157,7 +157,7 @@ const _week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 /// Files shared by you, your team and the company over a week: three
 /// series, each named at its line's end and in the legend.
 Widget kitSpecimenLineChart() => const Fluent2LineChart(
-  label: 'Files shared this week',
+  semanticLabel: 'Files shared this week',
   labels: _week,
   series: [
     Fluent2ChartSeries('You', [3, 5, 4, 7, 6]),
@@ -168,7 +168,7 @@ Widget kitSpecimenLineChart() => const Fluent2LineChart(
 
 /// Storage used over six months, one washed series.
 Widget kitSpecimenAreaChart() => Fluent2AreaChart(
-  label: 'Storage used',
+  semanticLabel: 'Storage used',
   labels: const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
   series: const [
     Fluent2ChartSeries('Used', [212, 260, 318, 351, 402, 455]),
@@ -181,7 +181,7 @@ Widget kitSpecimenPieChart() => Builder(
   builder: (context) {
     final t = context.fluent2Theme;
     return Fluent2PieChart(
-      label: 'Storage by kind',
+      semanticLabel: 'Storage by kind',
       slices: const [
         Fluent2PieSlice('Documents', 410, valueText: '410 GB'),
         Fluent2PieSlice('Photos', 260, valueText: '260 GB'),
@@ -211,7 +211,7 @@ class _PickBarState extends State<_PickBar> {
 
   @override
   Widget build(BuildContext context) => Fluent2BarChart(
-    label: 'Meeting hours this week',
+    semanticLabel: 'Meeting hours this week',
     highlight: _day,
     onHighlight: (i) => setState(() => _day = i),
     bars: _hours,

@@ -122,7 +122,7 @@ class Fluent2Toolbar extends StatelessWidget {
     required this.items,
     this.size = Fluent2ToolbarSize.medium,
     this.vertical = false,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -137,7 +137,7 @@ class Fluent2Toolbar extends StatelessWidget {
 
   /// What a screen reader calls the toolbar; null is "Toolbar" in the app's
   /// language.
-  final String? label;
+  final String? semanticLabel;
 
   Fluent2ButtonSize get _buttonSize => _toolbarButtonSize;
 
@@ -195,7 +195,7 @@ class Fluent2Toolbar extends StatelessWidget {
     final floor = Fluent2Layout.hitTargetOf(context);
     final least = touch ? floor : 0.0;
     final padding = _padding(wide, touch, floor);
-    final label = this.label ?? Fluent2Localizations.of(context).toolbar;
+    final label = semanticLabel ?? Fluent2Localizations.of(context).toolbar;
     if (vertical) {
       return Semantics(
         container: true,
@@ -271,7 +271,7 @@ class Fluent2Toolbar extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -303,7 +303,7 @@ Widget _toolbarPart(Fluent2ToolbarItem item, {required bool vertical}) {
     }
     return Fluent2IconButton(
       icon,
-      label: label,
+      semanticLabel: label,
       size: _toolbarButtonSize,
       selected: item.checked,
       filled: item.checkedIcon,
@@ -321,7 +321,7 @@ Widget _toolbarPart(Fluent2ToolbarItem item, {required bool vertical}) {
   }
   return Fluent2IconButton(
     icon,
-    label: label,
+    semanticLabel: label,
     size: _toolbarButtonSize,
     onPressed: item.onPressed,
   );
@@ -330,7 +330,7 @@ Widget _toolbarPart(Fluent2ToolbarItem item, {required bool vertical}) {
 /// Fluent 2's ToolbarGroup: commands that belong together (a document's
 /// text formatting, a file's sharing) standing side by side as a
 /// toolbar's subtle buttons, toggles and dividers, read as a group named
-/// [label]. It has no room of its own: it stands in a row or a
+/// [semanticLabel]. It has no room of its own: it stands in a row or a
 /// [Fluent2Toolbar]'s place, and unlike a toolbar it never folds its
 /// commands into a more button: where they don't fit on one line (large
 /// text on a phone) they run on to the next. It keeps to its commands'
@@ -338,13 +338,13 @@ Widget _toolbarPart(Fluent2ToolbarItem item, {required bool vertical}) {
 /// toolbar's group, not a border.
 ///
 /// ```dart
-/// Fluent2ToolbarGroup(label: 'Share', items: [Fluent2ToolbarItem.button(icon: Fluent2Icons.link, label: 'Copy link', onPressed: copy), Fluent2ToolbarItem.button(icon: Fluent2Icons.mail, label: 'Email', onPressed: email)])
+/// Fluent2ToolbarGroup(semanticLabel: 'Share', items: [Fluent2ToolbarItem.button(icon: Fluent2Icons.link, label: 'Copy link', onPressed: copy), Fluent2ToolbarItem.button(icon: Fluent2Icons.mail, label: 'Email', onPressed: email)])
 /// ```
 class Fluent2ToolbarGroup extends StatelessWidget {
-  /// A group of [items], read as [label].
+  /// A group of [items], read as [semanticLabel].
   const Fluent2ToolbarGroup({
     required this.items,
-    required this.label,
+    required this.semanticLabel,
     this.vertical = false,
     super.key,
   });
@@ -353,7 +353,7 @@ class Fluent2ToolbarGroup extends StatelessWidget {
   final List<Fluent2ToolbarItem> items;
 
   /// What a screen reader calls the group.
-  final String label;
+  final String semanticLabel;
 
   /// Whether the items stand one under another.
   final bool vertical;
@@ -363,7 +363,7 @@ class Fluent2ToolbarGroup extends StatelessWidget {
     child: Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: Wrap(
         direction: vertical ? Axis.vertical : Axis.horizontal,
         crossAxisAlignment: WrapCrossAlignment.center,
@@ -379,7 +379,7 @@ class Fluent2ToolbarGroup extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<Fluent2ToolbarItem>('items', items))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'));
   }
 }
@@ -433,13 +433,13 @@ class Fluent2ToolbarToggle<T> {
 /// with ui_core's [RadioGroupKeyboardFix] round them) and move focus among
 /// independent toggles.
 /// Space and Enter activate the focused item. Read as a radio group or a group of toggles
-/// named [label]. It keeps to its toggles' width, and where they don't
+/// named [semanticLabel]. It keeps to its toggles' width, and where they don't
 /// fit on one line (large text on a phone) they run on to the next. One
 /// choice of a view's few modes with a sliding thumb is the segmented
 /// control ([Fluent2SegmentedButton]) instead.
 ///
 /// ```dart
-/// Fluent2ToolbarToggleGroup<String>(label: 'Show', multiSelectionEnabled: true, toggles: const [Fluent2ToolbarToggle('flagged', icon: Fluent2Icons.flag, label: 'Flagged'), Fluent2ToolbarToggle('attached', icon: Fluent2Icons.attach, label: 'With files')], selected: shown, onSelectionChanged: (next) => setState(() => shown = next))
+/// Fluent2ToolbarToggleGroup<String>(semanticLabel: 'Show', multiSelectionEnabled: true, toggles: const [Fluent2ToolbarToggle('flagged', icon: Fluent2Icons.flag, label: 'Flagged'), Fluent2ToolbarToggle('attached', icon: Fluent2Icons.attach, label: 'With files')], selected: shown, onSelectionChanged: (next) => setState(() => shown = next))
 /// ```
 class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
   /// A group of [toggles], [selected] chosen.
@@ -447,7 +447,7 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
     required this.toggles,
     required this.selected,
     required this.onSelectionChanged,
-    required this.label,
+    required this.semanticLabel,
     this.multiSelectionEnabled = false,
     this.emptySelectionAllowed = false,
     this.vertical = false,
@@ -465,7 +465,7 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
   final ValueChanged<Set<T>>? onSelectionChanged;
 
   /// What a screen reader calls the group.
-  final String label;
+  final String semanticLabel;
 
   /// Whether any number may be chosen (ToolbarToggleButtons); false is one
   /// choice (a ToolbarRadioGroup).
@@ -500,7 +500,7 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
           multiSelectionEnabled: true,
           isEnabled: (value) => byValue[value]!.enabled,
           labelOf: (value) => byValue[value]!.label,
-          semanticLabel: label,
+          semanticLabel: semanticLabel,
           direction: axis,
           minimumSize: Size.zero,
           layoutBuilder: layout,
@@ -514,7 +514,7 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
         toggles: toggles,
         selected: selected,
         onSelectionChanged: onSelectionChanged,
-        label: label,
+        label: semanticLabel,
         emptySelectionAllowed: emptySelectionAllowed,
         layout: layout,
         face: face,
@@ -534,7 +534,7 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
           onSelectionChanged,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         FlagProperty(
           'multiSelectionEnabled',
@@ -824,7 +824,7 @@ class _More extends StatelessWidget {
   Widget build(BuildContext context) => Builder(
     builder: (anchor) => Fluent2IconButton(
       Fluent2Icons.moreHorizontal,
-      label: RawWidgetsLocalizations.of(anchor).moreButtonTooltip,
+      semanticLabel: RawWidgetsLocalizations.of(anchor).moreButtonTooltip,
       size: size,
       onPressed: () async {
         final menu = <Fluent2MenuItem<int>>[];

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart'
     show Material, MaterialApp, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart' show RawToasterKeepClear;
 
 import '../theme.dart';
 import 'account.dart';
@@ -132,7 +133,7 @@ class Fluent2Preview extends StatelessWidget {
           textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
           child: Fluent2Host(
             light: light,
-            darkData: darkData,
+            dark: darkData,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),
@@ -264,20 +265,20 @@ class _Root extends StatelessWidget {
         child: child,
       );
     }
-    final media =
-        activeIndex < tabs.length &&
-        tabs[activeIndex].ground == ChromeGround.media;
+    final media = fluent2OnMedia(tabs, activeIndex);
     final inset = MediaQuery.paddingOf(context).bottom;
     final bar = Fluent2ShellInsets.allowance(
       systemInset: inset,
       action: action != null,
     );
-    final Widget bottom = Fluent2NavigationBar(
-      items: tabs,
-      selectedIndex: activeIndex,
-      action: action,
-      onDestinationSelected: (_) {},
-      solid: media,
+    final Widget bottom = RawToasterKeepClear(
+      child: Fluent2NavigationBar(
+        items: tabs,
+        selectedIndex: activeIndex,
+        action: fluent2ActionOf(action),
+        onDestinationSelected: (_) {},
+        solid: media,
+      ),
     );
     return Stack(
       fit: StackFit.expand,
@@ -327,16 +328,14 @@ class _Beside extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (tabs.isEmpty || !Fluent2Layout.isWide(context)) return child;
-    final media =
-        activeIndex < tabs.length &&
-        tabs[activeIndex].ground == ChromeGround.media;
+    final media = fluent2OnMedia(tabs, activeIndex);
     final account = Fluent2AccountScope.maybeOf(context);
     final at = location;
     final pane = Fluent2NavigationDrawer(
       items: tabs,
       selectedIndex: activeIndex,
       onDestinationSelected: (_) {},
-      action: action,
+      action: fluent2ActionOf(action),
       brand: brand,
       onToggle: () {},
       profileCurrent: at != null && (account?.showsProfile(at) ?? false),

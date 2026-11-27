@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 Widget _host(
   Widget child, {
@@ -57,7 +56,7 @@ void main() {
         _host(
           Fluent2Card(
             onPressed: () => taps++,
-            label: 'Q3 plan',
+            semanticLabel: 'Q3 plan',
             children: const [
               Fluent2CardHeader(header: 'Q3 plan.docx', description: '2h ago'),
               Fluent2CardPreview(height: 80, child: SizedBox.expand()),

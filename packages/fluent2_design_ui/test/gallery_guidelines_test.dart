@@ -22,7 +22,7 @@ void main() {
   // Every run checks the targets on each page in the first preset (leak tracked, so each page's disposal is held),
   // light and dark in turn, and each other preset once, on pages spread over the gallery, the other way; the sweep,
   // the rest.
-  final presets = Fluent2ThemeData.presets;
+  final presets = [for (final p in Fluent2ThemeData.palettes) p.id];
   final step = galleryPages.length ~/ (presets.length - 1);
   for (final (i, page) in galleryPages.indexed) {
     final mode = Brightness.values[i % 2];

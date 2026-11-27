@@ -389,11 +389,11 @@ class Fluent2SegmentBarPart {
 /// the ends round, [thickness] 8 by default; with [legend], a wrapping key
 /// under it, each part's swatch, name and amount in caption1. Derived:
 /// Fluent has no segmented bar; this is its ProgressBar's track holding
-/// the chart palette. Read as one image: [label], then every part and its
+/// the chart palette. Read as one image: [semanticLabel], then every part and its
 /// amount.
 ///
 /// ```dart
-/// Fluent2SegmentBar(label: 'Storage', total: 10, segments: const [Fluent2SegmentBarPart('Documents', 3.1, valueText: '3.1 GB'), Fluent2SegmentBarPart('Photos', 2, valueText: '2 GB')])
+/// Fluent2SegmentBar(semanticLabel: 'Storage', total: 10, segments: const [Fluent2SegmentBarPart('Documents', 3.1, valueText: '3.1 GB'), Fluent2SegmentBarPart('Photos', 2, valueText: '2 GB')])
 /// ```
 class Fluent2SegmentBar extends StatelessWidget {
   /// A bar of [segments], one whole in parts.
@@ -402,7 +402,7 @@ class Fluent2SegmentBar extends StatelessWidget {
     this.total,
     this.thickness = 8,
     this.legend = true,
-    this.label,
+    this.semanticLabel,
     super.key,
   }) : assert(total == null || total > 0, 'a positive total'),
        assert(thickness > 0, 'a bar of some thickness');
@@ -420,7 +420,7 @@ class Fluent2SegmentBar extends StatelessWidget {
   final bool legend;
 
   /// What the bar measures ("Storage, 6.2 GB of 10 GB").
-  final String? label;
+  final String? semanticLabel;
 
   /// The hue of the part at [index].
   Fluent2ChartHue hueAt(int index) =>
@@ -440,7 +440,7 @@ class Fluent2SegmentBar extends StatelessWidget {
     final whole = math.max(total ?? sum, sum);
     final colors = [for (var i = 0; i < segments.length; i++) hueAt(i).of(t)];
     final spoken = [
-      ?label,
+      ?semanticLabel,
       for (final s in segments) '${s.label} ${_amount(s)}',
     ].join(', ');
     final bar = SizedBox(
@@ -523,7 +523,7 @@ class Fluent2SegmentBar extends StatelessWidget {
       ..add(DoubleProperty('total', total, defaultValue: null))
       ..add(DoubleProperty('thickness', thickness, defaultValue: 8))
       ..add(FlagProperty('legend', value: legend, ifFalse: 'legend: false'))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

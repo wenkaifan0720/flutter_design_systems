@@ -1,15 +1,20 @@
 /// Width limits for form controls and sections on larger screens.
-/// From [fluent2RoomyFrom], a select or stepper can grow to
-/// [fluent2ControlMax]. Text fields and tables can span the form.
+/// A text field takes its column's width, and so do a select, a combobox and
+/// a date field in a form's column ([Fluent2FormColumn]), as Material's
+/// fields do; from [fluent2RoomyFrom] one of those alone, a stepper, a
+/// filling button or a search box stops at [fluent2ControlMax].
 library;
 
+import 'dart:math' as math;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 /// The window width from which controls keep their own width.
 const double fluent2RoomyFrom = 600;
 
-/// The widest a select, a filling button or a stepper stands from
-/// [fluent2RoomyFrom].
+/// The widest a filling button, a stepper, a search box or a select outside
+/// a form stands from [fluent2RoomyFrom].
 const double fluent2ControlMax = 320;
 
 /// The widest a form section runs: a reading measure for its labels and
@@ -20,14 +25,13 @@ const double fluent2FormMeasure = 560;
 bool fluent2Roomy(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= fluent2RoomyFrom;
 
-/// [child] (a select's or a combobox's trigger): under [fluent2RoomyFrom]
-/// at least 250 and its column's width, as a phone's form runs; from there
-/// as wide as its [content] (its widest words with its room, chevron and
-/// strokes), at least 250 (Fluent's Dropdown) and at most
-/// [fluent2ControlMax], never wider than its cell, at the cell's start. Its
-/// list, anchored to [child], matches it. Given room to choose, its box is
-/// that width alone, so a form field's merged node (and the box a screen
-/// reader outlines) is the trigger a tap reaches, not the column.
+/// [child] (a search box, or a select outside a form) under
+/// [fluent2RoomyFrom] at least 250 and its column's width, as a phone's form
+/// runs; from there as wide as its [content] (its words with its room,
+/// glyphs and strokes), at least 250 and at most [fluent2ControlMax], never
+/// wider than its cell, at the cell's start. Given room to choose, its box
+/// is that width alone, so its merged node (and the box a screen reader
+/// outlines) is the face a tap reaches, not the column.
 Widget fluent2KeepsOwnWidth(
   BuildContext context, {
   required Widget child,
@@ -49,6 +53,86 @@ Widget fluent2KeepsOwnWidth(
       child: child,
     ),
   );
+}
+
+/// Marks [child] as a form's column of fields ([Fluent2Form],
+/// [Fluent2FormSection]): a select, a combobox or a date field in it takes
+/// the column's width, as a text field does.
+class Fluent2FormColumn extends InheritedWidget {
+  /// A form's column round [child].
+  const Fluent2FormColumn({super.key, required super.child});
+
+  /// Whether [context] is in a form's column.
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<Fluent2FormColumn>() != null;
+
+  @override
+  bool updateShouldNotify(Fluent2FormColumn oldWidget) => false;
+}
+
+/// [child] (a select's, a combobox's or a date field's trigger): in a form's
+/// column ([Fluent2FormColumn]) the column's width wherever the column
+/// bounds it, as Material's fields and the text fields take theirs;
+/// elsewhere (a toolbar's filter, one alone on a page) as
+/// [fluent2KeepsOwnWidth] lays it, its [content] (its widest words with its
+/// room, chevron and strokes) at least 250 (Fluent's Dropdown) and at most
+/// [fluent2ControlMax]. Its list, anchored to [child], matches it.
+Widget fluent2FieldWidth(
+  BuildContext context, {
+  required Widget child,
+  double content = 0,
+}) => Fluent2FormColumn.of(context)
+    ? _FieldWidth(own: content.clamp(250.0, fluent2ControlMax), child: child)
+    : fluent2KeepsOwnWidth(context, content: content, child: child);
+
+class _FieldWidth extends SingleChildRenderObjectWidget {
+  const _FieldWidth({required this.own, super.child});
+
+  final double own;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderFieldWidth(own);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderFieldWidth renderObject,
+  ) => renderObject.own = own;
+}
+
+class _RenderFieldWidth extends RenderProxyBox {
+  _RenderFieldWidth(this._own);
+
+  double _own;
+  set own(double value) {
+    if (value == _own) return;
+    _own = value;
+    markNeedsLayout();
+  }
+
+  BoxConstraints _forChild(BoxConstraints constraints) =>
+      constraints.hasBoundedWidth
+      ? constraints.tighten(width: constraints.maxWidth)
+      : constraints.copyWith(
+          minWidth: math.max(constraints.minWidth, _own),
+          maxWidth: math.max(constraints.minWidth, _own),
+        );
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      child?.getDryLayout(_forChild(constraints)) ?? constraints.smallest;
+
+  @override
+  void performLayout() {
+    final c = child;
+    if (c == null) {
+      size = constraints.smallest;
+      return;
+    }
+    c.layout(_forChild(constraints), parentUsesSize: true);
+    size = constraints.constrain(c.size);
+  }
 }
 
 /// The widest of [lines] in [style], at the text scale of [context].

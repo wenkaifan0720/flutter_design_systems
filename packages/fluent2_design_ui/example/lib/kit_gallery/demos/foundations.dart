@@ -38,7 +38,7 @@ String _hex(Color c) {
   return c.a < 1 ? '$rgb ${(c.a * 100).round()}%' : rgb;
 }
 
-/// The six palettes ([Fluent2ThemeData.presets]) in the page's appearance,
+/// The six palettes ([Fluent2ThemeData.palettes.map((p) => p.id)]) in the page's appearance,
 /// each on its own ground: its name, its brand fill with the words on it,
 /// its brand words, and five steps of its brand ramp.
 class _Palettes extends StatelessWidget {
@@ -51,7 +51,7 @@ class _Palettes extends StatelessWidget {
       spacing: Fluent2Spacing.m,
       runSpacing: Fluent2Spacing.m,
       children: [
-        for (final id in Fluent2ThemeData.presets)
+        for (final id in Fluent2ThemeData.palettes.map((p) => p.id))
           _Palette(id, Fluent2ThemeData.preset(id, t.brightness)),
       ],
     );

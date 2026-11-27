@@ -103,7 +103,7 @@ void main() {
       await t.pumpWidget(
         _app(
           Fluent2Popover(
-            label: 'Sharing',
+            semanticLabel: 'Sharing',
             trigger: (context, toggle) =>
                 Fluent2Button('Share', onPressed: toggle),
             content: const Text('Shared with 4 people'),
@@ -122,25 +122,25 @@ void main() {
     const look = Fluent2Style(fill: WidgetStatePropertyAll<Color?>(_blue));
     final fields = <String, Widget>{
       'text field': Fluent2TextField(
-        label: 'Name',
+        semanticLabel: 'Name',
         value: '',
         onChanged: (_) {},
         style: look,
       ),
       'text area': Fluent2TextArea(
-        label: 'Notes',
+        semanticLabel: 'Notes',
         value: '',
         onChanged: (_) {},
         style: look,
       ),
       'search box': Fluent2SearchBox(
-        label: 'Search',
+        semanticLabel: 'Search',
         value: '',
         onChanged: (_) {},
         style: look,
       ),
       'select': Fluent2Select<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         value: 'm',
         options: const [
           Fluent2Option('s', 'Small'),
@@ -150,26 +150,26 @@ void main() {
         style: look,
       ),
       'combobox': Fluent2Combobox<String>(
-        label: 'Owner',
+        semanticLabel: 'Owner',
         value: null,
         options: const [Fluent2Option('ana', 'Ana')],
         onChanged: (_) {},
         style: look,
       ),
       'spin button': Fluent2SpinButton(
-        label: 'Copies',
+        semanticLabel: 'Copies',
         value: 1,
         onChanged: (_) {},
         style: look,
       ),
       'date picker': Fluent2DatePicker(
-        label: 'Due',
+        semanticLabel: 'Due',
         value: DateTime(2026, 3, 10),
         onChanged: (_) {},
         style: look,
       ),
       'tag picker': Fluent2MultiSelect<String>(
-        label: 'Invite',
+        semanticLabel: 'Invite',
         options: const [Fluent2Option('ana', 'Ana')],
         selected: const [],
         onChanged: (_) {},

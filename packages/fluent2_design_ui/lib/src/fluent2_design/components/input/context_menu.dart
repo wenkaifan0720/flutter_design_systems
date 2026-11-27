@@ -128,7 +128,7 @@ class Fluent2FieldContextMenu extends StatelessWidget {
                       for (final item in items)
                         Fluent2Pressable(
                           onPressed: item.onPressed,
-                          label: labelOf(context, item),
+                          semanticLabel: labelOf(context, item),
                           radius: Fluent2Radius.medium,
                           ring: false,
                           builder: (context, states) => Fluent2MenuRowFace(

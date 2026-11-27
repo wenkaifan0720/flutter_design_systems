@@ -234,7 +234,7 @@ class Fluent2Stat extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: tap,
-      label: spoken,
+      semanticLabel: spoken,
       radius: Fluent2Radius.medium,
       builder: (context, states) => card(states.press),
     );

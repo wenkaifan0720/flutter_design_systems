@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/in_row.dart';
 import '../../localizations.dart';
 import '../../styled.dart';
 import '../../theme.dart';
@@ -157,7 +158,7 @@ class Fluent2Avatar extends StatelessWidget {
     this.presence,
     this.selected = false,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.icon,
     this.focusNode,
     this.autofocus = false,
@@ -179,7 +180,8 @@ class Fluent2Avatar extends StatelessWidget {
   final ImageProvider? image;
 
   /// The side, in pixels (Fluent's 16, 20, 24, 28, 32, 36, 40, 48, 56, 64,
-  /// 72, 96, 120 or 128).
+  /// 72, 96, 120 or 128). Up to 40 it grows with the reader's text size, as
+  /// the words beside it do.
   final double size;
 
   /// Fluent's `shape`: circular for a person, square for a group or an app.
@@ -198,7 +200,7 @@ class Fluent2Avatar extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// What a screen reader says with [onPressed]; null says [name].
-  final String? label;
+  final String? semanticLabel;
 
   /// The glyph drawn with neither picture nor initials; null is the
   /// person (or the people, for a square group).
@@ -213,6 +215,9 @@ class Fluent2Avatar extends StatelessWidget {
   /// Whether the control takes focus when it first builds.
   /// {@endtemplate}
   final bool autofocus;
+
+  // The largest avatar that grows with the reader's text.
+  static const double _rowMax = 40;
 
   /// The initials' type at [size], Fluent's: caption2Strong to 24,
   /// caption1Strong to 28, body1Strong to 40, subtitle2 to 56, subtitle1
@@ -260,6 +265,12 @@ class Fluent2Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
+    // An avatar in a row's register (up to 40) grows with the reader's text,
+    // as the name beside it does, its initials stepping up Fluent's type
+    // with it; a larger one is a portrait and keeps its size.
+    final size = this.size > _rowMax
+        ? this.size
+        : MediaQuery.textScalerOf(context).scale(this.size);
     final who = name ?? '';
     final letters = initials ?? fluent2Initials(who, single: size <= 16);
     final (Color fill, Color ink) = switch (color) {
@@ -287,10 +298,10 @@ class Fluent2Avatar extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (context, _, _) => _letters(t, letters, fill, ink),
+        errorBuilder: (context, _, _) => _letters(t, size, letters, fill, ink),
       );
     } else {
-      face = _letters(t, letters, fill, ink);
+      face = _letters(t, size, letters, fill, ink);
     }
     face = outline == null
         ? ClipRRect(
@@ -338,8 +349,15 @@ class Fluent2Avatar extends StatelessWidget {
         ],
       );
     }
+    // In a list row whose title it repeats, the name is the row's already:
+    // only its presence is news.
+    final named = Fluent2RowLeading.repeatsTitle(context, who)
+        ? ''
+        : who.isNotEmpty
+        ? who
+        : letters;
     final spoken = [
-      if (who.isNotEmpty) who else if (letters.isNotEmpty) letters,
+      if (named.isNotEmpty) named,
       if (p != null) p.spoken,
     ].join(', ');
     final tap = onPressed;
@@ -357,36 +375,41 @@ class Fluent2Avatar extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: tap,
-        label: label ?? spoken,
+        semanticLabel: semanticLabel ?? spoken,
         radius: radius.topLeft.x,
         child: face,
       ),
     );
   }
 
-  Widget _letters(Fluent2ThemeData t, String letters, Color fill, Color ink) =>
-      ColoredBox(
-        color: fill,
-        child: Center(
-          child: letters.isEmpty
-              ? Icon(
-                  icon ??
-                      (shape == Fluent2AvatarShape.square
-                          ? Fluent2Icons.people
-                          : Fluent2Icons.person),
-                  size: math.max(12, (size * 0.6).roundToDouble()),
-                  color: ink,
-                )
-              : fluent2CapCentred(
-                  Text(
-                    letters,
-                    maxLines: 1,
-                    textScaler: TextScaler.noScaling,
-                    style: typeOf(t, size).c(ink),
-                  ),
-                ),
-        ),
-      );
+  Widget _letters(
+    Fluent2ThemeData t,
+    double size,
+    String letters,
+    Color fill,
+    Color ink,
+  ) => ColoredBox(
+    color: fill,
+    child: Center(
+      child: letters.isEmpty
+          ? Icon(
+              icon ??
+                  (shape == Fluent2AvatarShape.square
+                      ? Fluent2Icons.people
+                      : Fluent2Icons.person),
+              size: math.max(12, (size * 0.6).roundToDouble()),
+              color: ink,
+            )
+          : fluent2CapCentred(
+              Text(
+                letters,
+                maxLines: 1,
+                textScaler: TextScaler.noScaling,
+                style: typeOf(t, size).c(ink),
+              ),
+            ),
+    ),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -420,7 +443,7 @@ class Fluent2Avatar extends StatelessWidget {
       )
       ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -774,7 +797,7 @@ class Fluent2AvatarGroup extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: tap,
-      label: spoken,
+      semanticLabel: spoken,
       radius: size / 2,
       child: group,
     );

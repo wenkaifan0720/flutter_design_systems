@@ -24,18 +24,18 @@ import '../pressable/pressable.dart';
 /// value back. [format] says the value in the field while it rests (the
 /// number at [step]'s precision by default); editing, it shows the number.
 /// [onChanged] gets each value; null draws it disabled. Read as an
-/// adjustable field named [label]. It is ui_core's `RawNumberField` in
+/// adjustable field named [semanticLabel]. It is ui_core's `RawNumberField` in
 /// Fluent's field and steppers.
 ///
 /// ```dart
-/// Fluent2SpinButton(label: 'Seats', value: seats, min: 1, max: 50, onChanged: (v) => setState(() => seats = v.toInt()))
+/// Fluent2SpinButton(semanticLabel: 'Seats', value: seats, min: 1, max: 50, onChanged: (v) => setState(() => seats = v.toInt()))
 /// ```
 class Fluent2SpinButton extends StatefulWidget {
   /// A spin button: a number field with its step buttons.
   const Fluent2SpinButton({
     required this.value,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.min,
     this.max,
     this.step = 1,
@@ -66,7 +66,7 @@ class Fluent2SpinButton extends StatefulWidget {
   final ValueChanged<num>? onChanged;
 
   /// The spoken name; null takes the enclosing field's label.
-  final String? label;
+  final String? semanticLabel;
 
   /// The least number; null sets no bound.
   final num? min;
@@ -112,7 +112,7 @@ class Fluent2SpinButton extends StatefulWidget {
     properties
       ..add(DiagnosticsProperty<num>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<num>?>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DiagnosticsProperty<num>('min', min, defaultValue: null))
       ..add(DiagnosticsProperty<num>('max', max, defaultValue: null))
       ..add(DiagnosticsProperty<num>('step', step, defaultValue: 1))
@@ -212,7 +212,7 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
       step: widget.step.toDouble(),
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
-      semanticLabel: widget.label ?? scope?.label,
+      semanticLabel: widget.semanticLabel ?? scope?.label,
       semanticFormatterCallback: format == null ? null : (v) => format(_out(v)),
       fieldBuilder: (context, field) {
         states = field.states;

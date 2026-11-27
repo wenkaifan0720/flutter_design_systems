@@ -251,7 +251,7 @@ class _Section extends StatelessWidget {
     final header = MergeSemantics(
       child: Fluent2Pressable(
         onPressed: onTap,
-        label: item.title,
+        semanticLabel: item.title,
         expanded: open,
         radius: Fluent2Radius.medium,
         builder: (context, states) {

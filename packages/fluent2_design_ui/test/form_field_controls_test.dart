@@ -7,7 +7,6 @@
 // a stepper. The label is read once, and ui_core's DesignFieldSemanticsCheck
 // holds each. An entry beside a button of its own keeps a node as large as
 // its frame, and an info label leaves the label's words to the field.
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -177,7 +176,7 @@ void main() {
     await pump(
       tester,
       (context, set) => Fluent2Slider(
-        label: 'level',
+        semanticLabel: 'level',
         value: value,
         step: 10,
         onChanged: (v) => set(() => value = v),
@@ -205,7 +204,7 @@ void main() {
       (context, set) => SizedBox(
         width: 300,
         child: Fluent2RangeSlider(
-          label: 'window',
+          semanticLabel: 'window',
           values: values,
           divisions: 10,
           onChanged: (v) => set(() => values = v),
@@ -269,7 +268,7 @@ void main() {
     await pump(
       tester,
       (context, set) => Fluent2Rating(
-        label: 'stars',
+        semanticLabel: 'stars',
         value: value,
         onChanged: (v) => set(() => value = v),
       ),
@@ -318,7 +317,7 @@ void main() {
     await pump(
       tester,
       (context, set) => Fluent2PasswordField(
-        label: 'New password',
+        semanticLabel: 'New password',
         value: 'abc',
         onChanged: (_) {},
         validationMessage: 'Use at least 8 characters',
@@ -371,7 +370,7 @@ void main() {
     Widget range(BuildContext context, StateSetter set) => SizedBox(
       width: 300,
       child: Fluent2RangeSlider(
-        label: 'window',
+        semanticLabel: 'window',
         values: values,
         divisions: 10,
         onChanged: (v) => set(() => values = v),

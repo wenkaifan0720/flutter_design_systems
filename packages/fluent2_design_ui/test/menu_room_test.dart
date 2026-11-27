@@ -4,7 +4,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 Widget _app(Widget page) => WidgetsApp(
   color: const Color(0xFF000000),
@@ -75,7 +74,7 @@ void main() {
         addTearDown(tester.view.reset);
         const content = SizedBox(height: 320, child: Text('Notes'));
         final popover = Fluent2Popover(
-          label: 'Notes',
+          semanticLabel: 'Notes',
           trigger: (context, toggle) =>
               Fluent2Button('Notes', onPressed: toggle),
           content: content,

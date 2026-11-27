@@ -3,7 +3,6 @@
 // ui_core_test's DesignFieldWordsCheck reads them: a text field, a text area,
 // a password field and a multi-select holding no tags, one and three, in a
 // form field, with their help, then their error.
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

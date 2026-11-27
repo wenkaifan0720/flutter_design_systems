@@ -4,7 +4,6 @@
 // frame, the frame is as tall as a text field's beside it, and its steppers
 // take the field's height.
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,14 +38,14 @@ Widget _app(double scale, TextDirection direction) => WidgetsApp(
               child: Fluent2TextField(
                 key: const ValueKey('text'),
                 value: 'Nov 20, 2026',
-                label: 'Due date',
+                semanticLabel: 'Due date',
                 onChanged: (_) {},
               ),
             ),
             const SizedBox(height: 16),
             Fluent2SpinButton(
               key: const ValueKey('spin'),
-              label: 'Estimate (minutes)',
+              semanticLabel: 'Estimate (minutes)',
               value: 45,
               min: 0,
               max: 600,

@@ -201,7 +201,17 @@ class _Pair extends StatelessWidget {
                 color: t.textSecondary,
               ),
             ),
-          Expanded(child: shown),
+          // A part of the caller's (a badge) keeps its own width, at the
+          // start of the value's column.
+          Expanded(
+            child: p.child == null
+                ? shown
+                : Align(
+                    alignment: AlignmentDirectional.topStart,
+                    heightFactor: 1,
+                    child: shown,
+                  ),
+          ),
           if (p.onPressed != null)
             Padding(
               padding: const EdgeInsets.only(top: Fluent2Spacing.xxs),
@@ -258,7 +268,7 @@ class _Pair extends StatelessWidget {
       container: true,
       child: Fluent2Pressable(
         onPressed: p.onPressed,
-        label: p.child == null ? spoken : p.label,
+        semanticLabel: p.child == null ? spoken : p.label,
         excludeChild: p.child == null,
         radius: Fluent2Radius.medium,
         builder: (context, states) => pair(states.press),

@@ -5,7 +5,6 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 import '../kit.dart';
 
@@ -13,6 +12,7 @@ Widget kitNavigationDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Rail, pages, steps & commands',
   sections: [
+    kitSection('The app\'s shell', children: [kitSpecimenAppShell()]),
     kitSection('Navigation rail', children: [kitSpecimenNavigationRail()]),
     kitSection(
       'Nav pane beside the page',
@@ -27,6 +27,27 @@ Widget kitNavigationDemo(Brightness brightness) => kitScreen(
   ],
 );
 
+/// The app's frame: the places in a tab bar on a phone, the rail from 640
+/// and the pane from 1024, the page beside them.
+Widget kitSpecimenAppShell() {
+  var at = 0;
+  return StatefulBuilder(
+    builder: (context, set) => SizedBox(
+      height: 360,
+      child: Fluent2AppShell(
+        header: const Text('Northwind'),
+        destinations: kitTabs,
+        selectedIndex: at,
+        onDestinationSelected: (i) => set(() => at = i),
+        body: Fluent2Scaffold(
+          topBar: Fluent2AppBar(title: kitTabs[at].label),
+          body: const SizedBox(height: 120),
+        ),
+      ),
+    ),
+  );
+}
+
 Widget kitSpecimenNavigationRail() {
   var at = 1;
   return StatefulBuilder(
@@ -36,7 +57,7 @@ Widget kitSpecimenNavigationRail() {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Fluent2NavigationRail(
-            label: 'Northwind',
+            semanticLabel: 'Northwind',
             items: kitTabs,
             selectedIndex: at,
             onDestinationSelected: (i) => set(() => at = i),
@@ -103,7 +124,7 @@ Widget kitSpecimenPagination() {
   var page = 3;
   return StatefulBuilder(
     builder: (context, set) => Fluent2Pagination(
-      label: 'Files',
+      semanticLabel: 'Files',
       page: page,
       pages: 12,
       onChanged: (p) => set(() => page = p),
@@ -131,7 +152,7 @@ Widget kitSpecimenPageDots() {
     builder: (context, set) => Fluent2PageDots(
       count: 4,
       selectedIndex: at,
-      label: 'Tour, page ${at + 1} of 4',
+      semanticLabel: 'Tour, page ${at + 1} of 4',
       onChanged: (i) => set(() => at = i),
     ),
   );

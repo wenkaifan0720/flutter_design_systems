@@ -1,0 +1,29 @@
+import 'package:flutter/widgets.dart';
+import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+
+void main(BuildContext context) {
+  final share = Fluent2IconButton(
+    Fluent2Icons.share,
+    semanticLabel: 'Share',
+    onPressed: () {},
+  );
+  share.semanticLabel;
+  Fluent2Slider(semanticLabel: 'Volume', value: 0.5, onChanged: (_) {});
+  Fluent2SegmentedButton<String>(
+    semanticLabel: 'View',
+    segments: const [
+      Fluent2ButtonSegment('day', 'Day'),
+      Fluent2ButtonSegment('week', 'Week'),
+    ],
+    value: 'day',
+    onChanged: (_) {},
+  );
+  Fluent2TextField(semanticLabel: 'Name', onChanged: (_) {});
+  Fluent2Badge(3, semanticLabel: '3 unread messages');
+  Fluent2Badge.dot(semanticLabel: 'New');
+  showFluent2Menu<String>(
+    context,
+    items: const [Fluent2MenuItem('rename', 'Rename')],
+    semanticLabel: 'File',
+  );
+}

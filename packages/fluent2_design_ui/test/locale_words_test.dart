@@ -5,7 +5,6 @@
 // A field's selection menu reads them on a phone of each platform.
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
@@ -26,7 +25,11 @@ Widget _app(Locale locale) => WidgetsApp(
     pageBuilder: (context, _, _) => Center(
       child: SizedBox(
         width: 320,
-        child: Fluent2TextField(value: '', label: 'Name', onChanged: (_) {}),
+        child: Fluent2TextField(
+          value: '',
+          semanticLabel: 'Name',
+          onChanged: (_) {},
+        ),
       ),
     ),
   ),

@@ -1,5 +1,5 @@
 import 'package:fluent2_design_ui/fluent2_design_ui.dart' show Fluent2DataGrid;
-import 'package:fluent2_design_ui_example/main.dart';
+import 'package:fluent2_design_ui_example/gallery.dart';
 import 'package:flutter/widgets.dart'
     show Directionality, Scrollable, Size, TextDirection;
 import 'package:flutter_test/flutter_test.dart';

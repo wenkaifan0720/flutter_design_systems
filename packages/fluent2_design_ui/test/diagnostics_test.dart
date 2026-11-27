@@ -94,7 +94,7 @@ void main() {
         Fluent2Slider(
           value: 30,
           onChanged: (_) {},
-          label: 'Volume',
+          semanticLabel: 'Volume',
           step: 10,
           autofocus: true,
         ),
@@ -102,7 +102,7 @@ void main() {
       unorderedEquals([
         'value: 30.0',
         'has onChanged',
-        'label: "Volume"',
+        'semanticLabel: "Volume"',
         'step: 10.0',
         'autofocus',
       ]),
@@ -130,19 +130,23 @@ void main() {
       'page dots past their count': () => Fluent2PageDots(
         count: 3,
         selectedIndex: 3,
-        label: 'Photos',
+        semanticLabel: 'Photos',
         onChanged: (_) {},
       ),
       'a rating past its max': () =>
-          Fluent2Rating(value: 6, onChanged: (_) {}, label: 'Rate'),
+          Fluent2Rating(value: 6, onChanged: (_) {}, semanticLabel: 'Rate'),
       'a rating shown below none': () => Fluent2RatingDisplay(value: _d(-1)),
       'progress past its max': () => Fluent2ProgressBar(value: _d(1.5)),
-      'a slider of no step': () =>
-          Fluent2Slider(value: 5, onChanged: (_) {}, label: 'Volume', step: 0),
+      'a slider of no step': () => Fluent2Slider(
+        value: 5,
+        onChanged: (_) {},
+        semanticLabel: 'Volume',
+        step: 0,
+      ),
       'a slider whose min passes its max': () => Fluent2Slider(
         value: 5,
         onChanged: (_) {},
-        label: 'Volume',
+        semanticLabel: 'Volume',
         min: 10,
         max: 0,
       ),

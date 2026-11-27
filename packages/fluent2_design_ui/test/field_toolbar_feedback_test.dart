@@ -3,7 +3,6 @@ import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
     show Fluent2FieldButton;
 
@@ -77,7 +76,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         Fluent2MultiSelect<String>(
-          label: 'Invite',
+          semanticLabel: 'Invite',
           options: const [
             Fluent2Option('kai', 'Kai Tanaka'),
             Fluent2Option('mara', 'Mara Okafor'),
@@ -106,7 +105,7 @@ void main() {
             mainAxisSize: MainAxisSize.min,
             children: [
               Fluent2ToolbarToggleGroup<String>(
-                label: 'Layout',
+                semanticLabel: 'Layout',
                 toggles: const [
                   Fluent2ToolbarToggle(
                     'list',
@@ -123,7 +122,7 @@ void main() {
                 onSelectionChanged: (v) => set(() => chosen = v),
               ),
               Fluent2ToolbarGroup(
-                label: 'Share',
+                semanticLabel: 'Share',
                 items: [
                   Fluent2ToolbarItem.button(
                     icon: Fluent2Icons.link,
@@ -153,7 +152,7 @@ void main() {
         Align(
           alignment: AlignmentDirectional.topStart,
           child: Fluent2Popover(
-            label: 'Mara Okafor',
+            semanticLabel: 'Mara Okafor',
             openOnHover: true,
             trigger: (context, toggle) =>
                 Fluent2Link('Mara Okafor', onPressed: toggle),
@@ -266,12 +265,12 @@ void main() {
           actions: [
             Fluent2IconButton(
               Fluent2Icons.search,
-              label: 'Search',
+              semanticLabel: 'Search',
               onPressed: () {},
             ),
             Fluent2IconButton(
               Fluent2Icons.share,
-              label: 'Share',
+              semanticLabel: 'Share',
               onPressed: () {},
             ),
           ],

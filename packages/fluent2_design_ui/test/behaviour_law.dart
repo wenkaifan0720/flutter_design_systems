@@ -62,8 +62,9 @@ bool lawLeftOut(String path) =>
     path.contains('/patterns/') || path.contains('/sign_in/');
 
 /// Parts that take a callback but are not placed by a page (the plumbing of a part in the table), or that only hold one.
-const _notPlaced = {
-  'Fluent2Account',
+/// The host's account is named by its type, so a rename reaches it.
+final _notPlaced = <String>{
+  '$Fluent2Account',
   'Fluent2FieldButton',
   'Fluent2FieldEditor',
   'Fluent2FieldPopover',

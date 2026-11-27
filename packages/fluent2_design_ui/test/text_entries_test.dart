@@ -9,7 +9,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 import 'tiers.dart';
 
@@ -24,7 +23,7 @@ DesignAlignmentTheme _under(Fluent2Density density, {ThemeData? host}) =>
         theme: host,
         builder: (context, route) => Fluent2Host(
           light: theme,
-          darkData: theme,
+          dark: theme,
           brightness: Brightness.light,
           child: route!,
         ),

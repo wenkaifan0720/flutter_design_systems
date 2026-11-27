@@ -244,7 +244,7 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
                       first(
                         Fluent2IconButton(
                           Fluent2Icons.arrowUp,
-                          label: RawWidgetsLocalizations.of(context)
+                          semanticLabel: RawWidgetsLocalizations.of(context)
                               .previousMonthTooltip,
                           size: Fluent2ButtonSize.small,
                           onPressed: h.previous,
@@ -254,7 +254,7 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
                       first(
                         Fluent2IconButton(
                           Fluent2Icons.arrowDown,
-                          label: RawWidgetsLocalizations.of(context)
+                          semanticLabel: RawWidgetsLocalizations.of(context)
                               .nextMonthTooltip,
                           size: Fluent2ButtonSize.small,
                           onPressed: h.next,
@@ -405,21 +405,25 @@ class _Day extends StatelessWidget {
 
 /// A date field that opens a [Fluent2Calendar].
 ///
-/// The field displays the formatted [value] or its [hintText] when empty. A
+/// The field displays [value] as a medium date with its year ("Nov 26,
+/// 2026" in English, as `Fluent2Format.date(value, year: true)` prints
+/// it; the app's language's elsewhere), or its [hintText] while [value] is
+/// null. In a [Fluent2Form] or a [Fluent2FormSection] it takes the column's
+/// width, as a text field does. A
 /// desktop or tablet opens a popover with keyboard focus in the calendar.
 /// Escape closes the popover and returns focus to the field. A touch phone
-/// opens a bottom sheet titled [label]. Selecting a day calls [onChanged]
+/// opens a bottom sheet titled [semanticLabel]. Selecting a day calls [onChanged]
 /// and closes the calendar. A null callback disables the field.
 ///
 /// ```dart
-/// Fluent2DatePicker(label: 'Due date', value: due, onChanged: (d) => setState(() => due = d))
+/// Fluent2DatePicker(semanticLabel: 'Due date', value: due, onChanged: (d) => setState(() => due = d))
 /// ```
 class Fluent2DatePicker extends StatefulWidget {
   /// A date field showing [value] that opens a calendar.
   const Fluent2DatePicker({
     required this.value,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.hintText,
     this.firstDate,
     this.lastDate,
@@ -447,7 +451,7 @@ class Fluent2DatePicker extends StatefulWidget {
 
   /// What a screen reader calls the field; null reads the surrounding form
   /// field's label.
-  final String? label;
+  final String? semanticLabel;
 
   /// The words before a date is chosen; null is "Select a date..." in the
   /// app's language.
@@ -496,7 +500,7 @@ class Fluent2DatePicker extends StatefulWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>?>.has('onChanged', onChanged),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         DiagnosticsProperty<DateTime>(
@@ -556,7 +560,7 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
   }
 
   String? get _name =>
-      widget.label ?? Fluent2FieldScope.maybeOf(context)?.label;
+      widget.semanticLabel ?? Fluent2FieldScope.maybeOf(context)?.label;
 
   String get _hint =>
       widget.hintText ?? Fluent2Localizations.of(context).selectADate;
@@ -611,8 +615,9 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
               MaterialLocalizations.of(context).formatShortDate(value);
     final type = Fluent2FieldMetrics.typeOf(t, widget.size);
     final open = _portal.isShowing;
-    // From 600 it keeps its own width, as a select does: its words (the
-    // hint, or a long date) with its room and glyph, at least 250.
+    // As a select: in a form's column, the column's width; elsewhere its
+    // words (the hint, or a long date) with its room and glyph, at least
+    // 250.
     final content =
         2 +
         m.combined +
@@ -626,7 +631,7 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
         m.gap +
         m.glyph +
         m.root;
-    return fluent2KeepsOwnWidth(
+    return fluent2FieldWidth(
       context,
       content: content,
       child: Fluent2FieldPopover(
@@ -662,7 +667,7 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
           child: Fluent2FieldButton(
             autofocus: widget.autofocus,
             onOpen: live ? _open : null,
-            label: _name ?? _hint,
+            semanticLabel: _name ?? _hint,
             value: words,
             hint: Fluent2Localizations.of(context).opensCalendar,
             expanded: open,

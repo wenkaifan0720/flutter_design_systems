@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 Widget _host(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
@@ -54,7 +53,7 @@ void main() {
         _host(
           Fluent2IconButton(
             Fluent2Icons.star,
-            label: 'Pin',
+            semanticLabel: 'Pin',
             selected: on,
             onPressed: () {},
           ),
@@ -86,7 +85,11 @@ void main() {
       'state', (tester) async {
     await tester.pumpWidget(
       _host(
-        Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: () {}),
+        Fluent2IconButton(
+          Fluent2Icons.share,
+          semanticLabel: 'Share',
+          onPressed: () {},
+        ),
       ),
     );
     expect(

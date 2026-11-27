@@ -174,10 +174,10 @@ enum Fluent2Hue {
 /// the square avatar's corners and the glyph a step smaller (16 at 24 and
 /// 28, 20 at 32 and 36, 24 at 40 and 44, 28 at 48). Derived: Fluent has no
 /// icon tile; it is the square avatar with a glyph. Read as an image named
-/// [label]; with no label it is silent, its row saying what it is.
+/// [semanticLabel]; with no label it is silent, its row saying what it is.
 ///
 /// ```dart
-/// Fluent2IconTile(Fluent2Icons.folder, hue: Fluent2Hue.cornflower, label: 'Folder')
+/// Fluent2IconTile(Fluent2Icons.folder, hue: Fluent2Hue.cornflower, semanticLabel: 'Folder')
 /// ```
 class Fluent2IconTile extends StatelessWidget {
   /// A tile showing [icon] on [hue]'s tint.
@@ -185,7 +185,7 @@ class Fluent2IconTile extends StatelessWidget {
     this.icon, {
     this.hue = Fluent2Hue.brand,
     this.size = 40,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -199,7 +199,7 @@ class Fluent2IconTile extends StatelessWidget {
   final double size;
 
   /// What a screen reader hears; null is silent.
-  final String? label;
+  final String? semanticLabel;
 
   /// The glyph at a tile's [size].
   static double glyphOf(double size) => size >= 48
@@ -224,7 +224,7 @@ class Fluent2IconTile extends StatelessWidget {
       ),
       child: Icon(icon, size: glyphOf(size), color: ink),
     );
-    final name = label;
+    final name = semanticLabel;
     if (name == null) return ExcludeSemantics(child: tile);
     return Semantics(
       label: name,
@@ -243,7 +243,7 @@ class Fluent2IconTile extends StatelessWidget {
         EnumProperty<Fluent2Hue>('hue', hue, defaultValue: Fluent2Hue.brand),
       )
       ..add(DoubleProperty('size', size, defaultValue: 40))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

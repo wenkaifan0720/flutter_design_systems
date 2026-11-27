@@ -95,12 +95,12 @@ class _Editor extends StatelessWidget {
 /// Inside a `Fluent2FormField`, the parent supplies the label and validation.
 ///
 /// ```dart
-/// Fluent2TextField(label: 'Project name', hintText: 'Northwind launch', value: name, onChanged: (v) => setState(() => name = v))
+/// Fluent2TextField(semanticLabel: 'Project name', hintText: 'Northwind launch', value: name, onChanged: (v) => setState(() => name = v))
 /// ```
 class Fluent2TextField extends StatefulWidget {
   /// A text field, Fluent's Input.
   const Fluent2TextField({
-    this.label,
+    this.semanticLabel,
     this.value,
     this.onChanged,
     this.onSubmitted,
@@ -131,7 +131,7 @@ class Fluent2TextField extends StatefulWidget {
   final Fluent2Style? style;
 
   /// The spoken name; null takes the enclosing field's label.
-  final String? label;
+  final String? semanticLabel;
 
   /// The text, when the page owns it.
   final String? value;
@@ -205,7 +205,7 @@ class Fluent2TextField extends StatefulWidget {
       DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
     );
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
@@ -333,7 +333,7 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
       if (password)
         Fluent2IconButton(
           _revealed ? Fluent2Icons.eyeOff : Fluent2Icons.eye,
-          label: _revealed
+          semanticLabel: _revealed
               ? RawWidgetsLocalizations.of(context).hidePasswordLabel
               : RawWidgetsLocalizations.of(context).showPasswordLabel,
           appearance: Fluent2ButtonAppearance.transparent,
@@ -377,7 +377,7 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
                 focusNode: fieldFocus,
                 style: Fluent2FieldMetrics.typeOf(t, widget.size),
                 enabled: enabled,
-                label: widget.label ?? scope?.label,
+                label: widget.semanticLabel ?? scope?.label,
                 placeholder: widget.hintText,
                 onChanged: widget.onChanged,
                 onSubmitted: widget.onSubmitted,
@@ -414,12 +414,12 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
 /// [onChanged], or a [controller]; with neither it is disabled.
 ///
 /// ```dart
-/// Fluent2TextArea(label: 'Notes', hintText: 'What should the team know?', value: notes, onChanged: (v) => setState(() => notes = v))
+/// Fluent2TextArea(semanticLabel: 'Notes', hintText: 'What should the team know?', value: notes, onChanged: (v) => setState(() => notes = v))
 /// ```
 class Fluent2TextArea extends StatefulWidget {
   /// A text area for several lines, Fluent's Textarea.
   const Fluent2TextArea({
-    this.label,
+    this.semanticLabel,
     this.value,
     this.onChanged,
     this.controller,
@@ -444,7 +444,7 @@ class Fluent2TextArea extends StatefulWidget {
 
   /// What a screen reader calls the field; null reads the surrounding form
   /// field's label.
-  final String? label;
+  final String? semanticLabel;
 
   /// The words it starts with; null starts empty.
   final String? value;
@@ -486,7 +486,7 @@ class Fluent2TextArea extends StatefulWidget {
       DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
     );
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
@@ -568,7 +568,7 @@ class _Fluent2TextareaState extends State<Fluent2TextArea>
           autofocus: widget.autofocus,
           style: Fluent2FieldMetrics.typeOf(t, widget.size),
           enabled: enabled,
-          label: widget.label ?? scope?.label,
+          label: widget.semanticLabel ?? scope?.label,
           placeholder: widget.hintText,
           onChanged: widget.onChanged,
           readOnly: widget.readOnly,
@@ -583,7 +583,7 @@ class _Fluent2TextareaState extends State<Fluent2TextArea>
 /// and, once it holds a query, the dismiss glyph that clears it (calling
 /// [onChanged] with the empty text and [onClear]); 8 at the sides, the
 /// words 6 after the glyph, on the outline face by default. Read as a
-/// search field named [label] (Search). With neither [onChanged] nor a
+/// search field named [semanticLabel] (Search). With neither [onChanged] nor a
 /// [controller] it is disabled.
 ///
 /// ```dart
@@ -599,7 +599,7 @@ class Fluent2SearchBox extends StatefulWidget {
     this.controller,
     this.focusNode,
     this.hintText,
-    this.label,
+    this.semanticLabel,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
     this.autofocus = false,
@@ -634,7 +634,7 @@ class Fluent2SearchBox extends StatefulWidget {
   final String? hintText;
 
   /// The spoken name; null says [hintText].
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
@@ -681,7 +681,7 @@ class Fluent2SearchBox extends StatefulWidget {
         ),
       )
       ..add(StringProperty('hintText', hintText, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
           'appearance',
@@ -759,7 +759,7 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
                 focusNode: fieldFocus,
                 style: Fluent2FieldMetrics.typeOf(t, widget.size),
                 enabled: enabled,
-                label: widget.label ?? hint,
+                label: widget.semanticLabel ?? hint,
                 placeholder: hint,
                 onChanged: widget.onChanged,
                 onSubmitted: widget.onSubmitted,
@@ -775,7 +775,8 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
               ),
               child: Fluent2Pressable(
                 onPressed: enabled ? _clear : null,
-                label: RawWidgetsLocalizations.of(context).clearButtonTooltip,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .clearButtonTooltip,
                 radius: Fluent2Radius.small,
                 builder: (context, states) => Icon(
                   Fluent2Icons.dismiss,
@@ -858,7 +859,7 @@ class Fluent2SearchEntry extends StatelessWidget {
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onPressed,
-        label: words ?? hint,
+        semanticLabel: words ?? hint,
         hint: own.opensSearch,
         radius: Fluent2Radius.medium,
         builder: (context, states) => Fluent2FieldFrame(
@@ -924,7 +925,7 @@ class Fluent2SearchEntry extends StatelessWidget {
           Expanded(child: entry),
         Fluent2IconButton(
           Fluent2Icons.filter,
-          label: own.filters,
+          semanticLabel: own.filters,
           appearance: Fluent2ButtonAppearance.secondary,
           size: switch (size) {
             Fluent2InputSize.small => Fluent2ButtonSize.small,

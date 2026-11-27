@@ -44,12 +44,12 @@ enum Fluent2MultiSelectSize {
 /// list. An app's [search] can find the options instead, the list saying
 /// "Loading" while it runs and offering "Try again" when it fails. Null
 /// [onChanged] draws it disabled. Read as a text field named
-/// [label], each tag a button "Remove …" with a Remove action. The
+/// [semanticLabel], each tag a button "Remove …" with a Remove action. The
 /// behaviour is the shared RawTagInput; Fluent 2 paints the
 /// field, the tags and the list.
 ///
 /// ```dart
-/// Fluent2MultiSelect(label: 'Invite', options: people, selected: invited, onChanged: (v) => setState(() => invited = v))
+/// Fluent2MultiSelect(semanticLabel: 'Invite', options: people, selected: invited, onChanged: (v) => setState(() => invited = v))
 /// ```
 class Fluent2MultiSelect<T> extends StatefulWidget {
   /// A select of [options] that takes several, shown as tags.
@@ -57,7 +57,7 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
     required this.options,
     required this.selected,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.hintText,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2MultiSelectSize.medium,
@@ -86,7 +86,7 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
 
   /// What a screen reader calls the field; null reads the surrounding form
   /// field's label.
-  final String? label;
+  final String? semanticLabel;
 
   /// The input's empty words; null is "Add people" in the app's language.
   final String? hintText;
@@ -132,7 +132,7 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<List<T>>?>.has('onChanged', onChanged),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
@@ -241,7 +241,7 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
     final type = t.body1;
     final vertical = large ? Fluent2Spacing.s : Fluent2Spacing.sNudge;
     final gap = large ? Fluent2Spacing.sNudge : Fluent2Spacing.xs;
-    final name = widget.label ?? scope?.label;
+    final name = widget.semanticLabel ?? scope?.label;
     final words = Fluent2Localizations.of(context);
     return RawTagInput<Fluent2Option<T>>(
       values: _chosen,
@@ -448,7 +448,7 @@ class _Tag extends StatelessWidget {
       child: ExcludeFocus(
         child: Fluent2Pressable(
           onPressed: onRemove,
-          label: removeLabel,
+          semanticLabel: removeLabel,
           radius: Fluent2Radius.medium,
           ring: false,
           builder: (context, states) => Container(

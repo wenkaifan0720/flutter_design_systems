@@ -90,7 +90,7 @@ class Fluent2ListItem extends StatelessWidget {
   /// from the row's press and the words read with it.
   ///
   /// ```dart
-  /// Fluent2ListItem(title: 'Q3 plan.docx', selected: true, onTap: open, action: Fluent2IconButton(Fluent2Icons.moreHorizontal, label: 'More options', onPressed: openMenu))
+  /// Fluent2ListItem(title: 'Q3 plan.docx', selected: true, onTap: open, action: Fluent2IconButton(Fluent2Icons.moreHorizontal, semanticLabel: 'More options', onPressed: openMenu))
   /// ```
   final Widget? action;
 
@@ -233,14 +233,39 @@ class Fluent2ListItem extends StatelessWidget {
           leading ??
           (icon == null
               ? null
+              // The glyph grows with the reader's text, as the title does.
               : Icon(
                   icon,
-                  size: wide ? Fluent2IconSize.i20 : Fluent2IconSize.i24,
+                  size: MediaQuery.textScalerOf(context)
+                      .scale(wide ? Fluent2IconSize.i20 : Fluent2IconSize.i24),
                   color: glyph,
                 ));
       final ground = control == null
           ? groundOf(state)
           : const Color(0x00000000);
+      final Widget? valueBox = value == null
+          ? null
+          : ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 160),
+              child: ExcludeSemantics(
+                excluding: speaks,
+                child: fluent2CapCentred(
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: t.body1.c(quiet),
+                  ),
+                ),
+              ),
+            );
+      // The end part (a tag, a switch, a time) at its own width, up to two
+      // thirds of the line with the words: a long tag ellipsizes rather
+      // than pushing the title out.
+      final Widget? end = trailing == null
+          ? null
+          : Fluent2InRow(child: trailing!);
       return fluent2EasedInks([ground], (context, inks) {
         final [ground] = inks;
         // The density moves the desktop row; a phone's row keeps the floor.
@@ -260,6 +285,10 @@ class Fluent2ListItem extends StatelessWidget {
         // The room over and under is the words': a part at the end (a
         // switch's touch target) stands in the row's height, centred,
         // and never makes it taller than its neighbours.
+        final padded = Padding(
+          padding: EdgeInsets.only(top: room.top, bottom: room.bottom),
+          child: ExcludeSemantics(excluding: speaks, child: words),
+        );
         return ColoredBox(
           color: ground,
           child: ConstrainedBox(
@@ -274,33 +303,27 @@ class Fluent2ListItem extends StatelessWidget {
                       checked: check,
                       press: inert ? Fluent2Press.disabled : state,
                     ),
-                  ?lead,
+                  if (lead != null)
+                    Fluent2RowLeading(title: title, child: lead),
                   Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: room.top,
-                        bottom: room.bottom,
-                      ),
-                      child: ExcludeSemantics(excluding: speaks, child: words),
-                    ),
-                  ),
-                  if (value != null)
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 160),
-                      child: ExcludeSemantics(
-                        excluding: speaks,
-                        child: fluent2CapCentred(
-                          Text(
-                            value,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.end,
-                            style: t.body1.c(quiet),
+                    child: trailing == null
+                        ? padded
+                        : Fluent2RowLine(
+                            title: padded,
+                            end: valueBox == null
+                                ? end!
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    spacing: Fluent2Spacing.m,
+                                    children: [
+                                      valueBox,
+                                      Flexible(child: end!),
+                                    ],
+                                  ),
+                            gap: Fluent2Spacing.m,
                           ),
-                        ),
-                      ),
-                    ),
-                  if (trailing case final end?) Fluent2InRow(child: end),
+                  ),
+                  if (trailing == null) ?valueBox,
                   // The chevron's ink stops 5 px inside its 16 px box: the
                   // box hangs that far past the row's end, so the ink ends on
                   // the keyline with a switch's track and a value's words.
@@ -343,11 +366,18 @@ class Fluent2ListItem extends StatelessWidget {
               autofocus: autofocus,
               onPressed: press,
               onLongPress: onLongPress,
-              label: spoken,
+              semanticLabel: spoken,
               value: value,
               checked: check,
               selected: check == null && selected ? true : null,
               excludeChild: false,
+              // The row stands the tap floor itself (minHeightOf), so it
+              // takes no tap target.
+              padded: false,
+              // A control at its end (a share button) keeps its own node, a
+              // screen reader reaching it apart from the row; the row's
+              // words still name the row.
+              mergeSemantics: trailing == null,
               radius: 0,
               statesController: states,
               builder: (context, states) => face(states.press),
@@ -646,7 +676,7 @@ class _HeaderLink extends StatelessWidget {
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onTap,
-        label: label,
+        semanticLabel: label,
         role: Fluent2PressRole.link,
         radius: Fluent2Radius.small,
         builder: (context, states) {

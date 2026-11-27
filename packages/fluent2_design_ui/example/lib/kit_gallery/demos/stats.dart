@@ -100,35 +100,35 @@ Widget kitSpecimenIconTiles() => kitRow(const [
   Fluent2IconTile(
     Fluent2Icons.folder,
     hue: Fluent2Hue.cornflower,
-    label: 'Folder',
+    semanticLabel: 'Folder',
   ),
   Fluent2IconTile(
     Fluent2Icons.calendarLtr,
     hue: Fluent2Hue.pumpkin,
-    label: 'Meeting',
+    semanticLabel: 'Meeting',
   ),
   Fluent2IconTile(
     Fluent2Icons.taskListLtr,
     hue: Fluent2Hue.forest,
-    label: 'Plan',
+    semanticLabel: 'Plan',
   ),
-  Fluent2IconTile(Fluent2Icons.channel, label: 'Channel'),
+  Fluent2IconTile(Fluent2Icons.channel, semanticLabel: 'Channel'),
   Fluent2IconTile(
     Fluent2Icons.document,
     hue: Fluent2Hue.neutral,
-    label: 'File',
+    semanticLabel: 'File',
   ),
   Fluent2IconTile(
     Fluent2Icons.mail,
     hue: Fluent2Hue.lavender,
     size: 24,
-    label: 'Mail',
+    semanticLabel: 'Mail',
   ),
   Fluent2IconTile(
     Fluent2Icons.people,
     hue: Fluent2Hue.magenta,
     size: 48,
-    label: 'Team',
+    semanticLabel: 'Team',
   ),
 ]);
 

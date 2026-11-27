@@ -3,7 +3,6 @@
 // and "Su Mo Tu" over Arabic-Indic days. English stays as it was, and an
 // app's own Fluent 2 words still win.
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

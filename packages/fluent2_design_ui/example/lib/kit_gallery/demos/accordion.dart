@@ -47,7 +47,7 @@ Widget kitAccordionDemo(Brightness brightness) => kitScreen(
       children: [
         const Fluent2Tree<String>(
           size: Fluent2TreeSize.small,
-          label: 'Folders',
+          semanticLabel: 'Folders',
           items: _folders,
         ),
       ],
@@ -145,7 +145,7 @@ Widget kitSpecimenAccordionMultiple() => Fluent2Accordion(
 Widget kitSpecimenTree() => _Live<String>(
   'brand',
   (value, set) => Fluent2Tree<String>(
-    label: 'Northwind files',
+    semanticLabel: 'Northwind files',
     items: _folders,
     value: value,
     initiallyExpanded: const {'design'},

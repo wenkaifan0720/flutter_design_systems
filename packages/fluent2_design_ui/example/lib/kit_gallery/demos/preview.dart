@@ -46,7 +46,7 @@ Widget kitPreviewDemo(Brightness brightness) => kitScreen(
       children: [
         Fluent2Host(
           light: kitTheme(Brightness.light),
-          darkData: kitTheme(Brightness.dark),
+          dark: kitTheme(Brightness.dark),
           brightness: brightness == Brightness.dark
               ? Brightness.light
               : Brightness.dark,
@@ -81,7 +81,7 @@ Widget kitPreviewDemo(Brightness brightness) => kitScreen(
                 .copyWith(textScaler: const TextScaler.linear(2)),
             child: Fluent2Host(
               light: kitTheme(Brightness.light),
-              darkData: kitTheme(Brightness.dark),
+              dark: kitTheme(Brightness.dark),
               brightness: brightness,
               child: Builder(
                 builder: (context) {
@@ -211,7 +211,11 @@ class _Folder extends StatelessWidget {
       title: 'Launch plan',
       backLabel: 'Files',
       actions: [
-        Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: () {}),
+        Fluent2IconButton(
+          Fluent2Icons.share,
+          semanticLabel: 'Share',
+          onPressed: () {},
+        ),
       ],
     ),
     body: const Column(

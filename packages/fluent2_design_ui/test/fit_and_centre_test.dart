@@ -8,7 +8,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/button/button.dart'
     show Fluent2ButtonBox;
 
@@ -259,13 +258,13 @@ void main() {
           ),
         ),
         Fluent2SpinButton(
-          label: 'Copies',
+          semanticLabel: 'Copies',
           value: 2,
           width: double.infinity,
           onChanged: (_) {},
         ),
         Fluent2SegmentedButton<String>(
-          label: 'Speed',
+          semanticLabel: 'Speed',
           expand: true,
           segments: const [
             Fluent2ButtonSegment('std', 'Standard'),
@@ -284,8 +283,9 @@ void main() {
     ),
   );
 
-  testWidgets('(a) from 600 the form\'s controls keep their own width; on a '
-      'phone they fill the column', (t) async {
+  testWidgets('(a) from 600 the form\'s controls keep their own width, a '
+      'select the column\'s as a text field does; on a phone they fill the '
+      'column', (t) async {
     addTearDown(t.view.reset);
     final faults = <String>[];
     await _each(t, (what, ratio, density) async {
@@ -301,8 +301,17 @@ void main() {
           return ink == null ? 0 : ink.$2 - ink.$1;
         }
 
+        // A select is a field: the column's width at every width, as a
+        // text field's (Material's parity).
+        final select = width(find.byType(Fluent2Select<String>));
+        final text = width(find.byType(Fluent2TextField));
+        if ((select - text).abs() > 1) {
+          faults.add(
+            '$what, ${view.width}: the select is $select wide, the '
+            'text field $text',
+          );
+        }
         final parts = <String, Finder>{
-          'select': find.byType(Fluent2Select<String>),
           'stepper': find.byType(Fluent2SpinButton),
           'segmented control': find.byType(Fluent2SegmentedButton<String>),
           'filling button': find.byType(Fluent2Button),
@@ -338,7 +347,7 @@ void main() {
   final cells = <String, (Widget, String, double)>{
     'segmented control': (
       Fluent2SegmentedButton<String>(
-        label: 'View',
+        semanticLabel: 'View',
         segments: const [
           Fluent2ButtonSegment('day', 'Day'),
           Fluent2ButtonSegment('month', 'Month'),
@@ -449,7 +458,7 @@ void main() {
       onChanged: (_) {},
     ),
     'segment': (_) => Fluent2SegmentedButton<String>(
-      label: 'Place',
+      semanticLabel: 'Place',
       segments: const [
         Fluent2ButtonSegment('home', 'Home', icon: Fluent2Icons.home),
         Fluent2ButtonSegment('search', 'Search', icon: Fluent2Icons.search),

@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 const _width = 480.0;
 
@@ -106,7 +105,7 @@ void main() {
     (
       'a text field: its glyph before the words',
       const Fluent2TextField(
-        label: 'Search',
+        semanticLabel: 'Search',
         value: 'Northwind',
         onChanged: _drop,
         prefixIcon: Fluent2Icons.search,
@@ -145,7 +144,7 @@ void main() {
     (
       'segments: the first segment',
       const Fluent2SegmentedButton<String>(
-        label: 'Calendar view',
+        semanticLabel: 'Calendar view',
         segments: [
           Fluent2ButtonSegment('day', 'Day'),
           Fluent2ButtonSegment('week', 'Week'),
@@ -252,7 +251,7 @@ void main() {
     double? got;
     final slider = StatefulBuilder(
       builder: (context, set) => Fluent2Slider(
-        label: 'Volume',
+        semanticLabel: 'Volume',
         value: 50,
         onChanged: (v) => set(() => got = v),
       ),

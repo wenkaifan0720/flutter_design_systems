@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
     show Fluent2OptionFace;
 
@@ -89,7 +88,7 @@ void main() {
       t,
       StatefulBuilder(
         builder: (context, set) => Fluent2Combobox<String>(
-          label: 'Type',
+          semanticLabel: 'Type',
           value: value,
           options: _options,
           focusNode: field,
@@ -124,7 +123,7 @@ void main() {
       t,
       StatefulBuilder(
         builder: (context, set) => Fluent2MultiSelect<String>(
-          label: 'Types',
+          semanticLabel: 'Types',
           options: _options,
           selected: chosen,
           focusNode: field,
@@ -153,7 +152,7 @@ void main() {
     await _stage(
       t,
       Fluent2TextField(
-        label: 'Name',
+        semanticLabel: 'Name',
         focusNode: field,
         onChanged: (_) {},
         onSubmitted: submitted.add,
@@ -174,7 +173,7 @@ void main() {
       t,
       StatefulBuilder(
         builder: (context, set) => Fluent2SpinButton(
-          label: 'Seats',
+          semanticLabel: 'Seats',
           value: value,
           min: 0,
           max: 10,

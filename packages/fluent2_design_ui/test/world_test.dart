@@ -2,7 +2,6 @@
 // left, every gallery page lays out at text scale 2.0 (the 200% a reader may ask for), and the main gallery pages meet
 // Flutter's four accessibility guidelines by day and by night.
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -104,7 +103,7 @@ void main() {
     (
       'a text field',
       const Fluent2TextField(
-        label: 'Search',
+        semanticLabel: 'Search',
         value: 'Northwind',
         onChanged: _drop,
         prefixIcon: Fluent2Icons.search,
@@ -137,7 +136,7 @@ void main() {
     (
       'segments',
       const Fluent2SegmentedButton<String>(
-        label: 'Calendar view',
+        semanticLabel: 'Calendar view',
         segments: [
           Fluent2ButtonSegment('day', 'Day'),
           Fluent2ButtonSegment('week', 'Week'),

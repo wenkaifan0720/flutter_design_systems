@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 const _options = [
   Fluent2Option('equipment', 'Equipment'),
@@ -20,7 +19,7 @@ const _options = [
 /// The words of the option or item the focus is on.
 String? _focused() => FocusManager.instance.primaryFocus?.context
     ?.findAncestorWidgetOfExactType<Fluent2Pressable>()
-    ?.label;
+    ?.semanticLabel;
 
 Future<void> _stage(WidgetTester t, Widget body, {double width = 1440}) async {
   t.view.physicalSize = Size(width, 900);
@@ -71,7 +70,7 @@ class _SelectState extends State<_Select> {
 
   @override
   Widget build(BuildContext context) => Fluent2Select<String>(
-    label: 'Type',
+    semanticLabel: 'Type',
     value: _value,
     options: _options,
     focusNode: widget.field,

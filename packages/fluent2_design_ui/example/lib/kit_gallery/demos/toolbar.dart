@@ -165,7 +165,7 @@ Widget _toolbar({
   (marks, set) => Fluent2Toolbar(
     size: size,
     vertical: vertical,
-    label: 'File commands',
+    semanticLabel: 'File commands',
     items: _commands(marks, set, more: more),
   ),
 );
@@ -175,7 +175,7 @@ Widget _toolbar({
 Widget kitSpecimenToolbarFile() => _Live<_Marks>(
   _start,
   (marks, set) => Fluent2Toolbar(
-    label: 'File commands',
+    semanticLabel: 'File commands',
     items: _commands(marks, set, more: true),
   ),
 );
@@ -183,7 +183,7 @@ Widget kitSpecimenToolbarFile() => _Live<_Marks>(
 Widget kitSpecimenToolbarLabelled() => _Live<_Marks>(
   _start,
   (marks, set) => Fluent2Toolbar(
-    label: 'File commands',
+    semanticLabel: 'File commands',
     items: _commands(marks, set, labels: true),
   ),
 );
@@ -194,7 +194,7 @@ Widget kitSpecimenToolbarGroup() => Wrap(
   crossAxisAlignment: WrapCrossAlignment.center,
   children: [
     Fluent2ToolbarGroup(
-      label: 'Share',
+      semanticLabel: 'Share',
       items: [
         Fluent2ToolbarItem.button(
           icon: Fluent2Icons.link,
@@ -214,7 +214,7 @@ Widget kitSpecimenToolbarGroup() => Wrap(
       ],
     ),
     Fluent2ToolbarGroup(
-      label: 'Arrange',
+      semanticLabel: 'Arrange',
       items: [
         Fluent2ToolbarItem.button(
           icon: Fluent2Icons.arrowSort,
@@ -236,7 +236,7 @@ Widget kitSpecimenToolbarGroup() => Wrap(
 Widget kitSpecimenToolbarRadioGroup() => _Live<Set<String>>(
   const {'list'},
   (layout, set) => Fluent2ToolbarToggleGroup<String>(
-    label: 'Layout',
+    semanticLabel: 'Layout',
     toggles: const [
       Fluent2ToolbarToggle('list', icon: Fluent2Icons.list, label: 'List'),
       Fluent2ToolbarToggle('grid', icon: Fluent2Icons.grid, label: 'Tiles'),
@@ -250,7 +250,7 @@ Widget kitSpecimenToolbarRadioGroup() => _Live<Set<String>>(
 Widget kitSpecimenToolbarToggleGroup() => _Live<Set<String>>(
   const {'flagged'},
   (shown, set) => Fluent2ToolbarToggleGroup<String>(
-    label: 'Show',
+    semanticLabel: 'Show',
     multiSelectionEnabled: true,
     toggles: const [
       Fluent2ToolbarToggle(

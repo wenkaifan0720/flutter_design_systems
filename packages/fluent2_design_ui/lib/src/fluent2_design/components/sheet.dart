@@ -18,7 +18,7 @@ import 'host.dart';
 /// back ([leading]), 8 between, at least 48 tall.
 ///
 /// ```dart
-/// Fluent2SheetHead(title: 'Share', close: Fluent2IconButton(Fluent2Icons.dismiss, label: 'Close', onPressed: close))
+/// Fluent2SheetHead(title: 'Share', close: Fluent2IconButton(Fluent2Icons.dismiss, semanticLabel: 'Close', onPressed: close))
 /// ```
 class Fluent2SheetHead extends StatelessWidget {
   /// A sheet's head showing [title].
@@ -199,7 +199,7 @@ class Fluent2SheetShell extends StatelessWidget {
                   ? Fluent2IconButton(
                       Fluent2Icons.dismiss,
                       key: closeKey,
-                      label: RawWidgetsLocalizations.of(context)
+                      semanticLabel: RawWidgetsLocalizations.of(context)
                           .closeButtonLabel,
                       onPressed:
                           onClose ?? () => Navigator.of(context).maybePop(),
@@ -394,7 +394,8 @@ class Fluent2Sheet extends StatelessWidget {
                 title: title,
                 close: Fluent2IconButton(
                   Fluent2Icons.dismiss,
-                  label: RawWidgetsLocalizations.of(context).closeButtonLabel,
+                  semanticLabel: RawWidgetsLocalizations.of(context)
+                      .closeButtonLabel,
                   onPressed: onClose ?? () => Navigator.of(context).maybePop(),
                 ),
               ),

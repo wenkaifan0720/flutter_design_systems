@@ -162,14 +162,19 @@ final class Fluent2BadgeFace with Diagnosticable {
             c.neutralForeground1,
             c.neutralBackground1,
           ),
-          // Fluent's neutralBackground5 step under the page's ground, so the
-          // badge shows on the tinted page as on a card (solid: a badge is
-          // worn over other parts); its words a step darker than Fluent's
-          // third ink, to hold 4.5:1 there.
-          Fluent2BadgeColor.informative => (
-            Color.alphaBlend(fluent2Well(t), t.background),
-            c.neutralForeground2,
-          ),
+          // By day Fluent's neutralBackground5 step under the page's ground,
+          // so the badge shows on the tinted page as on a card (solid: a
+          // badge is worn over other parts), its words a step darker than
+          // Fluent's third ink to hold 4.5:1 there. By night a step over
+          // the ground and a card, in the third ink: Fluent's black step
+          // and its first ink made the quiet neutral the loudest badge.
+          Fluent2BadgeColor.informative =>
+            t.brightness == Brightness.dark
+                ? (c.neutralBackground1Hover, c.neutralForeground3)
+                : (
+                    Color.alphaBlend(fluent2Well(t), t.background),
+                    c.neutralForeground2,
+                  ),
           Fluent2BadgeColor.severe => (
             s.paletteDarkOrangeBackground3,
             c.neutralForegroundOnBrand,
@@ -225,8 +230,12 @@ final class Fluent2BadgeFace with Diagnosticable {
             c.neutralBackground1,
             c.transparentStroke,
           ),
+          // By night Fluent's neutralBackground2 rather than its near-black
+          // fourth step, so it sits as deep as the other tints.
           Fluent2BadgeColor.informative => (
-            c.neutralBackground4,
+            t.brightness == Brightness.dark
+                ? c.neutralBackground2
+                : c.neutralBackground4,
             c.neutralForeground3,
             c.neutralStroke2,
           ),
@@ -386,7 +395,12 @@ class Fluent2LabelBadge extends StatelessWidget {
         : Fluent2Spacing.xs;
     final glyph = icon == null
         ? null
-        : Icon(icon, size: size.glyph, color: face.ink);
+        // The glyph grows with the reader's text, as the words beside it do.
+        : Icon(
+            icon,
+            size: MediaQuery.textScalerOf(context).scale(size.glyph),
+            color: face.ink,
+          );
     Widget? content;
     if (words != null) {
       final text = fluent2CapCentred(
@@ -518,17 +532,17 @@ enum Fluent2BadgeCountColor {
 /// at zero unless [showZero], or a 6 [dot] that says only that something
 /// is new ([Fluent2Badge.dot]). Rides [child]'s top end corner, as
 /// Material's `Badge` rides an icon, or stands alone at a row's end. Read
-/// as [label], else its count ("99+").
+/// as [semanticLabel], else its count ("99+").
 ///
 /// ```dart
-/// Fluent2Badge(3, color: Fluent2BadgeCountColor.danger, label: '3 unread messages', child: Icon(Fluent2Icons.mail))
+/// Fluent2Badge(3, color: Fluent2BadgeCountColor.danger, semanticLabel: '3 unread messages', child: Icon(Fluent2Icons.mail))
 /// ```
 class Fluent2Badge extends StatelessWidget {
   /// [count] as words.
   const Fluent2Badge(
     this.count, {
     super.key,
-    this.label,
+    this.semanticLabel,
     this.child,
     this.overflowCount = 99,
     this.showZero = false,
@@ -543,7 +557,7 @@ class Fluent2Badge extends StatelessWidget {
   /// The 6 dot that says only that something is new ("New").
   const Fluent2Badge.dot({
     super.key,
-    this.label,
+    this.semanticLabel,
     this.child,
     this.color = Fluent2BadgeCountColor.brand,
     this.appearance = Fluent2BadgeAppearance.filled,
@@ -579,7 +593,7 @@ class Fluent2Badge extends StatelessWidget {
   final Fluent2BadgeShape shape;
 
   /// What a screen reader says ("3 unread messages"); null says the count.
-  final String? label;
+  final String? semanticLabel;
 
   /// What it rides; null draws the badge alone.
   final Widget? child;
@@ -603,7 +617,8 @@ class Fluent2Badge extends StatelessWidget {
         color: badgeColor,
         size: Fluent2BadgeSize.tiny,
         shape: shape,
-        semanticLabel: label ?? Fluent2Localizations.of(context).newItem,
+        semanticLabel:
+            semanticLabel ?? Fluent2Localizations.of(context).newItem,
       );
     } else if (count == 0 && !showZero) {
       badge = null;
@@ -615,7 +630,7 @@ class Fluent2Badge extends StatelessWidget {
         color: badgeColor,
         size: size.isDot ? Fluent2BadgeSize.small : size,
         shape: shape,
-        semanticLabel: label ?? text,
+        semanticLabel: semanticLabel ?? text,
       );
     }
     final under = child;
@@ -669,7 +684,7 @@ class Fluent2Badge extends StatelessWidget {
           defaultValue: Fluent2BadgeShape.circular,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -723,10 +738,10 @@ enum Fluent2StatusGlyphSize {
 /// A workflow state as Fluent draws one in Planner and To Do: Fluent UI
 /// System Icons' status set, each [status] its glyph in its tone's ink
 /// (the empty circle, the clock, the filled tick, the warning, the error
-/// circle, the dismiss circle), with an optional [label] in body1 (caption1
+/// circle, the dismiss circle), with an optional [semanticLabel] in body1 (caption1
 /// at the small size) after it. The glyph never stands alone as the only
 /// cue to a sighted reader of a dense list: pair it with words or a column
-/// heading. Read as its [label] or the status's own name.
+/// heading. Read as its [semanticLabel] or the status's own name.
 ///
 /// ```dart
 /// Fluent2StatusGlyph(Fluent2TaskStatus.done, label: 'Done')

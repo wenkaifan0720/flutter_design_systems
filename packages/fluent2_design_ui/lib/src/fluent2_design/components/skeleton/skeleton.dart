@@ -46,7 +46,7 @@ enum Fluent2SkeletonShape {
 /// [Fluent2SkeletonItem]s laid as the content will be (an avatar circle
 /// beside two lines of a row), all breathing together by its [animation]
 /// in its [appearance] (still under Reduce Motion). Read
-/// as one busy node, [label] ("Loading files"), its shapes silent.
+/// as one busy node, [semanticLabel] ("Loading files"), its shapes silent.
 ///
 /// ```dart
 /// Fluent2Skeleton(child: Row(children: [Fluent2SkeletonItem(shape: Fluent2SkeletonShape.circle, size: 32), SizedBox(width: 12), Expanded(child: Fluent2SkeletonItem())]))
@@ -57,7 +57,7 @@ class Fluent2Skeleton extends StatefulWidget {
     required this.child,
     this.appearance = Fluent2SkeletonAppearance.opaque,
     this.animation = Fluent2SkeletonAnimation.wave,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -71,7 +71,7 @@ class Fluent2Skeleton extends StatefulWidget {
   final Fluent2SkeletonAnimation animation;
 
   /// What a screen reader says; null is "Loading" in the app's language.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   State<Fluent2Skeleton> createState() => _Fluent2SkeletonState();
@@ -94,7 +94,7 @@ class Fluent2Skeleton extends StatefulWidget {
           defaultValue: Fluent2SkeletonAnimation.wave,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -130,7 +130,9 @@ class _Fluent2SkeletonState extends State<Fluent2Skeleton>
   }
 
   Widget _drawn(BuildContext context) => Semantics(
-    label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
+    label:
+        widget.semanticLabel ??
+        RawWidgetsLocalizations.of(context).loadingLabel,
     role: SemanticsRole.loadingSpinner,
     excludeSemantics: true,
     child: _SkeletonScope(

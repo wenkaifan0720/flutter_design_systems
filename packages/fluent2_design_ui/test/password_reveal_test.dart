@@ -2,7 +2,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 void main() {
   testWidgets('a password field shows one reveal button', (t) async {
@@ -13,7 +12,10 @@ void main() {
         home: Center(
           child: SizedBox(
             width: 320,
-            child: Fluent2PasswordField(label: 'Password', onChanged: (_) {}),
+            child: Fluent2PasswordField(
+              semanticLabel: 'Password',
+              onChanged: (_) {},
+            ),
           ),
         ),
       ),
@@ -37,7 +39,7 @@ void main() {
           child: SizedBox(
             width: 320,
             child: Fluent2TextField(
-              label: 'PIN',
+              semanticLabel: 'PIN',
               obscureText: true,
               trailing: end,
               onChanged: (_) {},

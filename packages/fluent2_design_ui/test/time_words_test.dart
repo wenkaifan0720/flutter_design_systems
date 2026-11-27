@@ -4,7 +4,6 @@
 // without Fluent 2's delegate installed. English is as it was, and an app's
 // own words win.
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter/widgets.dart';

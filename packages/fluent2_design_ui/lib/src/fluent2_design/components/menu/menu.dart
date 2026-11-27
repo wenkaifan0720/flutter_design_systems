@@ -88,7 +88,7 @@ class Fluent2MenuItem<T> {
 /// `side`, `shape` and `padding`.
 ///
 /// ```dart
-/// Builder(builder: (anchor) => Fluent2IconButton(Fluent2Icons.moreHorizontal, label: 'More options', onPressed: () async { final picked = await Fluent2Menu.show<String>(anchor, items: actions); if (picked != null) run(picked); }))
+/// Builder(builder: (anchor) => Fluent2IconButton(Fluent2Icons.moreHorizontal, semanticLabel: 'More options', onPressed: () async { final picked = await Fluent2Menu.show<String>(anchor, items: actions); if (picked != null) run(picked); }))
 /// ```
 class Fluent2Menu<T> extends StatefulWidget {
   /// A menu of [items].
@@ -96,7 +96,7 @@ class Fluent2Menu<T> extends StatefulWidget {
     required this.items,
     required this.onSelected,
     this.title,
-    this.label,
+    this.semanticLabel,
     this.style,
     super.key,
   });
@@ -111,7 +111,7 @@ class Fluent2Menu<T> extends StatefulWidget {
   final String? title;
 
   /// What a screen reader calls the menu; null says [title].
-  final String? label;
+  final String? semanticLabel;
 
   /// This menu's own look, slot by slot, over the menu theme
   /// ([Fluent2ThemeData.menuTheme]): the slots this class's doc names.
@@ -125,7 +125,7 @@ class Fluent2Menu<T> extends StatefulWidget {
     BuildContext context, {
     required List<Fluent2MenuItem<T>> items,
     String? title,
-    String? label,
+    String? semanticLabel,
     BuildContext? anchor,
     Fluent2Style? style,
   }) {
@@ -151,7 +151,7 @@ class Fluent2Menu<T> extends StatefulWidget {
           Fluent2Menu<T>(
             items: items,
             title: title,
-            label: label,
+            semanticLabel: semanticLabel,
             style: style,
             onSelected: (value) => Navigator.of(menuContext).pop(value),
           ),
@@ -170,7 +170,7 @@ class Fluent2Menu<T> extends StatefulWidget {
       ..add(IterableProperty<Fluent2MenuItem<T>>('items', items))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(StringProperty('title', title, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
       );
@@ -232,7 +232,8 @@ class _Fluent2MenuState<T> extends State<Fluent2Menu<T>> {
       scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
-      label: widget.label ?? head ?? Fluent2Localizations.of(context).menu,
+      label:
+          widget.semanticLabel ?? head ?? Fluent2Localizations.of(context).menu,
       child: Material(
         type: MaterialType.transparency,
         child: ConstrainedBox(
@@ -343,7 +344,7 @@ class _MenuRow<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return Fluent2Pressable(
       onPressed: onTap,
-      label: item.label,
+      semanticLabel: item.label,
       value: item.secondary,
       selected: item.checked,
       focusNode: focusNode,

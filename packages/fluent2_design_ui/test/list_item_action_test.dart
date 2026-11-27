@@ -50,7 +50,7 @@ Future<void> _pump(
                       onTap: onOpen ?? () {},
                       action: Fluent2IconButton(
                         Fluent2Icons.moreHorizontal,
-                        label: 'Task actions',
+                        semanticLabel: 'Task actions',
                         onPressed: onMenu ?? () {},
                       ),
                     ),

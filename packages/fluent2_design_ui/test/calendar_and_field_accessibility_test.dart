@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
     show Fluent2PopoverSurface;
 
@@ -41,7 +40,10 @@ void main() {
   ) async {
     final editor = TextEditingController(text: 'One password');
     addTearDown(editor.dispose);
-    await _pump(t, Fluent2PasswordField(label: 'Password', controller: editor));
+    await _pump(
+      t,
+      Fluent2PasswordField(semanticLabel: 'Password', controller: editor),
+    );
     await t.tap(find.byType(EditableText));
     await t.pump();
     await t.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -108,7 +110,7 @@ void main() {
         Fluent2DatePicker(
           focusNode: trigger,
           value: DateTime(2026, 11, 4),
-          label: 'Due date',
+          semanticLabel: 'Due date',
           onChanged: (_) {},
         ),
         scale: 2,

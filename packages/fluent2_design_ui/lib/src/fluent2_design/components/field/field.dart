@@ -9,6 +9,8 @@ import '../../theme.dart';
 import '../input/field_core.dart';
 import '../pressable/pressable.dart';
 
+import '../../internal/message_reveal.dart';
+
 /// What a field's validation says, Fluent's `validationState`: [error]
 /// the red diamond and red words (and the control's red stroke),
 /// [warning] the orange warning, [success] the green check, [none] the
@@ -256,7 +258,8 @@ class _Fluent2InfoLabelState extends State<Fluent2InfoLabel> {
       ),
       child: Fluent2Pressable(
         onPressed: widget.enabled ? _toggle : null,
-        label: Fluent2Localizations.of(context).informationAbout(widget.text),
+        semanticLabel: Fluent2Localizations.of(context)
+            .informationAbout(widget.text),
         selected: open,
         radius: Fluent2Radius.medium,
         builder: (context, states) {
@@ -535,7 +538,16 @@ class Fluent2FormField extends StatelessWidget {
             ),
           ),
         placed,
-        ...under,
+        // The lines under grow open and fade in (and out) as the field's
+        // message comes and goes: the fields below move, never jump.
+        Fluent2MessageReveal(
+          id: validationMessage,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: under,
+          ),
+        ),
       ],
     );
     if (orientation == Fluent2FieldOrientation.vertical) return vertical();
@@ -569,7 +581,17 @@ class Fluent2FormField extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [placed, ...under],
+                children: [
+                  placed,
+                  Fluent2MessageReveal(
+                    id: validationMessage,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: under,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -670,44 +692,46 @@ class Fluent2FormSection extends StatelessWidget {
         heightFactor: 1,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: fluent2FormMeasure),
-          child: RawKeylineRegion(
-            label: head ?? 'Form',
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (head != null)
-                  Semantics(
-                    header: true,
-                    child: Text(head, style: t.subtitle2),
-                  ),
-                if (description != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: Fluent2Spacing.xs),
-                    child: Text(
-                      description!,
-                      style: t.body1.c(t.colors.neutralForeground3),
+          child: Fluent2FormColumn(
+            child: RawKeylineRegion(
+              label: head ?? 'Form',
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (head != null)
+                    Semantics(
+                      header: true,
+                      child: Text(head, style: t.subtitle2),
                     ),
-                  ),
-                if (head != null || description != null)
-                  const SizedBox(height: Fluent2Spacing.m),
-                for (var i = 0; i < children.length; i++) ...[
-                  if (i > 0) const SizedBox(height: Fluent2Spacing.l),
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    widthFactor: null,
-                    child: children[i],
-                  ),
+                  if (description != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: Fluent2Spacing.xs),
+                      child: Text(
+                        description!,
+                        style: t.body1.c(t.colors.neutralForeground3),
+                      ),
+                    ),
+                  if (head != null || description != null)
+                    const SizedBox(height: Fluent2Spacing.m),
+                  for (var i = 0; i < children.length; i++) ...[
+                    if (i > 0) const SizedBox(height: Fluent2Spacing.l),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      widthFactor: null,
+                      child: children[i],
+                    ),
+                  ],
+                  if (footnote != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: Fluent2Spacing.m),
+                      child: Text(
+                        footnote!,
+                        style: t.caption1.c(t.colors.neutralForeground3),
+                      ),
+                    ),
                 ],
-                if (footnote != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: Fluent2Spacing.m),
-                    child: Text(
-                      footnote!,
-                      style: t.caption1.c(t.colors.neutralForeground3),
-                    ),
-                  ),
-              ],
+              ),
             ),
           ),
         ),

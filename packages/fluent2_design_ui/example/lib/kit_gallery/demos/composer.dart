@@ -100,13 +100,13 @@ Widget kitSpecimenComposerDraft() => KitOwned(
 
 Widget kitSpecimenComposerAssistant() => Fluent2Composer(
   style: Fluent2ComposerAppearance.assistant,
-  label: kitW('Ask the assistant'),
+  semanticLabel: kitW('Ask the assistant'),
   hintText: kitW('Ask about your files, chats and meetings'),
   onAttach: () {},
   actions: [
     Fluent2IconButton(
       Fluent2Icons.sparkle,
-      label: kitW('Prompts'),
+      semanticLabel: kitW('Prompts'),
       size: Fluent2ButtonSize.small,
       onPressed: () {},
     ),

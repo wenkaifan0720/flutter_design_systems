@@ -8,6 +8,7 @@ import '../../internal/keys_shown.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
 import '../../theme.dart';
+import '../field/field.dart';
 import '../input/field_core.dart';
 import '../pressable/pressable.dart';
 
@@ -70,6 +71,7 @@ class Fluent2Radio<T> extends StatelessWidget {
   const Fluent2Radio(
     this.value,
     this.label, {
+    this.secondary,
     this.enabled = true,
     this.style,
     super.key,
@@ -80,6 +82,10 @@ class Fluent2Radio<T> extends StatelessWidget {
 
   /// Its words.
   final String label;
+
+  /// What shows after its words, as `RadioListTile.secondary` does: a
+  /// palette's swatches, say. It only shows; a screen reader hears [label].
+  final Widget? secondary;
 
   /// False draws it inert in the disabled inks.
   final bool enabled;
@@ -222,6 +228,11 @@ class Fluent2Radio<T> extends StatelessWidget {
                 style: type.c(ink),
               ),
             ),
+            if (secondary case final secondary?)
+              Padding(
+                padding: const EdgeInsets.only(bottom: Fluent2Spacing.s),
+                child: ExcludeSemantics(child: secondary),
+              ),
           ],
         );
       }
@@ -246,6 +257,24 @@ class Fluent2Radio<T> extends StatelessWidget {
                 child: Text(label, style: type.c(ink)),
               ),
             ),
+            if (secondary case final secondary?)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  end: Fluent2Spacing.s,
+                ),
+                // Centred on the words' first line, as the circle is.
+                child: fluent2OnFirstLine(
+                  context,
+                  type,
+                  SizedBox(
+                    height: side + 2 * Fluent2Spacing.s,
+                    child: Center(
+                      widthFactor: 1,
+                      child: ExcludeSemantics(child: secondary),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       );
@@ -297,7 +326,9 @@ class Fluent2RadioGroup<T> extends StatefulWidget {
   /// Called with the value of the radio chosen; null puts the group out of use.
   final ValueChanged<T>? onChanged;
 
-  /// The group's label, shown over it and spoken; null shows none.
+  /// The group's label, drawn over it (a [Fluent2Label]) and spoken as
+  /// its name; null shows none, and a [Fluent2FormField] round it draws its
+  /// own.
   final String? label;
 
   /// Fluent's `layout`: the radios under one another or side by side.
@@ -339,7 +370,7 @@ class _Fluent2RadioGroupState<T> extends State<Fluent2RadioGroup<T>> {
           child: option,
         ),
     ];
-    return Semantics(
+    final group = Semantics(
       container: true,
       explicitChildNodes: true,
       label: widget.label ?? Fluent2FieldScope.maybeOf(context)?.label,
@@ -365,6 +396,24 @@ class _Fluent2RadioGroupState<T> extends State<Fluent2RadioGroup<T>> {
           },
         ),
       ),
+    );
+    final words = widget.label;
+    if (words == null) return group;
+    // The label is drawn over the group as a field's is (2 over it, 4
+    // under), and said once, as the group's name.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: Fluent2Spacing.xxs,
+            bottom: Fluent2Spacing.xxs * 2,
+          ),
+          child: ExcludeSemantics(child: Fluent2Label(words)),
+        ),
+        group,
+      ],
     );
   }
 }

@@ -108,7 +108,7 @@ class Fluent2TabList extends StatefulWidget {
     this.appearance = Fluent2TabAppearance.transparent,
     this.size = Fluent2TabSize.medium,
     this.vertical = false,
-    this.label,
+    this.semanticLabel,
     this.style,
   }) : items = null;
 
@@ -122,7 +122,7 @@ class Fluent2TabList extends StatefulWidget {
     this.appearance = Fluent2TabAppearance.transparent,
     this.size = Fluent2TabSize.medium,
     this.vertical = false,
-    this.label,
+    this.semanticLabel,
     this.style,
   }) : tabs = null;
 
@@ -153,7 +153,7 @@ class Fluent2TabList extends StatefulWidget {
   final bool vertical;
 
   /// What a screen reader calls the list.
-  final String? label;
+  final String? semanticLabel;
 
   List<Fluent2Tab> get _all =>
       items ?? [for (final word in tabs!) Fluent2Tab(word)];
@@ -189,7 +189,7 @@ class Fluent2TabList extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -292,7 +292,7 @@ class _Fluent2TabListState extends State<Fluent2TabList>
       controller: tabs,
       indicatorPosition: DecorationPosition.foreground,
       direction: widget.vertical ? Axis.vertical : Axis.horizontal,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       tabs: [
         for (final tab in all)
           RawTab(

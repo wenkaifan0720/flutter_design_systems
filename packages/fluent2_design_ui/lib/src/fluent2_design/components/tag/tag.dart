@@ -519,7 +519,7 @@ class Fluent2Tag extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: enabled ? dismiss : null,
-        label: deleteLabel ?? '$label, remove',
+        semanticLabel: deleteLabel ?? '$label, remove',
         radius: radius,
         builder: (context, states) => face(states.press),
       ),
@@ -727,7 +727,7 @@ class Fluent2InteractionTag extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label + (secondary == null ? '' : ', $secondary'),
+      semanticLabel: label + (secondary == null ? '' : ', $secondary'),
       selected: selected,
       radius: radius,
       faceAlignment: dismiss == null
@@ -803,7 +803,8 @@ class Fluent2InteractionTag extends StatelessWidget {
     final secondaryPart = Fluent2Pressable(
       padded: false,
       onPressed: dismiss,
-      label: deleteLabel ?? Fluent2Localizations.of(context).remove(label),
+      semanticLabel:
+          deleteLabel ?? Fluent2Localizations.of(context).remove(label),
       radius: radius,
       faceAlignment: AlignmentDirectional.centerStart,
       builder: (context, states) {
@@ -990,7 +991,7 @@ class Fluent2TagItem<T> {
 /// a time unless [multiple]): the filters over a list, the topics of a
 /// post. With [onDeleted] each is removable (the recipients picked, the
 /// labels set). Neither: static [Fluent2Tag]s. Null [onSelectionChanged]
-/// draws a choosable group inert. Read as a group named [label].
+/// draws a choosable group inert. Read as a group named [semanticLabel].
 ///
 /// ```dart
 /// Fluent2TagGroup<String>(items: const [Fluent2TagItem('all', 'All'), Fluent2TagItem('docs', 'Documents')], selected: {'all'}, onSelectionChanged: (v) => setState(() => picked = v))
@@ -1006,7 +1007,7 @@ class Fluent2TagGroup<T> extends StatelessWidget {
     this.appearance = Fluent2TagAppearance.filled,
     this.size = Fluent2TagSize.medium,
     this.shape = Fluent2TagShape.rounded,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -1036,7 +1037,7 @@ class Fluent2TagGroup<T> extends StatelessWidget {
   final Fluent2TagShape shape;
 
   /// What a screen reader calls the group.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1091,7 +1092,7 @@ class Fluent2TagGroup<T> extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       // Faces stand the group's gap apart, along a run and run under run,
       // their targets reaching into the room between (ui_core's
       // RawChipGroup): in a Wrap each target's slack stood between too.
@@ -1139,6 +1140,6 @@ class Fluent2TagGroup<T> extends StatelessWidget {
           defaultValue: Fluent2TagShape.rounded,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

@@ -7,7 +7,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 import 'moving_states.dart';
 
@@ -43,7 +42,11 @@ void main() {
       Fluent2Button,
     ),
     'an icon button': (
-      Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: () {}),
+      Fluent2IconButton(
+        Fluent2Icons.share,
+        semanticLabel: 'Share',
+        onPressed: () {},
+      ),
       Fluent2IconButton,
     ),
     'a card': (
@@ -64,7 +67,7 @@ void main() {
       Fluent2ListItem,
     ),
     'a text field': (
-      Fluent2TextField(value: '', label: 'Name', onChanged: (_) {}),
+      Fluent2TextField(value: '', semanticLabel: 'Name', onChanged: (_) {}),
       Fluent2TextField,
     ),
     'a switch': (
@@ -81,7 +84,7 @@ void main() {
     ),
     'a select': (
       Fluent2Select<String>(
-        label: 'Channel',
+        semanticLabel: 'Channel',
         value: 'general',
         options: const [Fluent2Option('general', 'General')],
         onChanged: (_) {},

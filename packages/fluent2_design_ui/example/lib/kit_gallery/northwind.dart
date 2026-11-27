@@ -430,7 +430,7 @@ class _FilesState extends State<_Files> {
         actions: [
           Fluent2IconButton(
             Fluent2Icons.cloudArrowUp,
-            label: kitW('Upload'),
+            semanticLabel: kitW('Upload'),
             onPressed: () {},
           ),
         ],
@@ -450,7 +450,7 @@ class _FilesState extends State<_Files> {
           ),
           const Fluent2Gap(Fluent2Spacing.m),
           Fluent2TabList(
-            label: kitW('Which files'),
+            semanticLabel: kitW('Which files'),
             selectedIndex: _set,
             onChanged: (i) => setState(() => _set = i),
             tabs: [for (final set in _files.keys) kitW(set)],
@@ -533,7 +533,7 @@ class _FilePage extends StatelessWidget {
         actions: [
           Fluent2IconButton(
             Fluent2Icons.share,
-            label: kitW('Share'),
+            semanticLabel: kitW('Share'),
             onPressed: () {},
           ),
         ],
@@ -697,7 +697,7 @@ class _RequestState extends State<_Request> {
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: Fluent2SegmentedButton<String>(
-                    label: kitW('Priority'),
+                    semanticLabel: kitW('Priority'),
                     segments: _priorities,
                     value: _priority,
                     onChanged: (v) => setState(() => _priority = v),

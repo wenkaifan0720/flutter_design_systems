@@ -38,32 +38,32 @@ List<Fluent2Option<String>> _glyphed(TextDirection direction) => [
 
 final _fields = <String, Widget Function(TextDirection)>{
   'select': (d) => Fluent2Select<String>(
-    label: 'Period',
+    semanticLabel: 'Period',
     value: 'week',
     options: _options(d),
     onChanged: (_) {},
   ),
   'select with glyphs, its prompt showing': (d) => Fluent2Select<String>(
-    label: 'Channel',
+    semanticLabel: 'Channel',
     prompt: 'Choose a channel',
     value: null,
     options: _glyphed(d),
     onChanged: (_) {},
   ),
   'select with glyphs': (d) => Fluent2Select<String>(
-    label: 'Channel',
+    semanticLabel: 'Channel',
     value: 'week',
     options: _glyphed(d),
     onChanged: (_) {},
   ),
   'combobox': (d) => Fluent2Combobox<String>(
-    label: 'Period',
+    semanticLabel: 'Period',
     value: 'week',
     options: _options(d),
     onChanged: (_) {},
   ),
   'tag picker': (d) => Fluent2MultiSelect<String>(
-    label: 'Periods',
+    semanticLabel: 'Periods',
     options: _options(d),
     selected: const ['day'],
     onChanged: (_) {},
@@ -203,7 +203,7 @@ void main() {
             child: SizedBox(
               width: 132,
               child: Fluent2TimePicker(
-                label: 'Start',
+                semanticLabel: 'Start',
                 value: Fluent2Time(9, 30),
                 onChanged: _ignore,
               ),

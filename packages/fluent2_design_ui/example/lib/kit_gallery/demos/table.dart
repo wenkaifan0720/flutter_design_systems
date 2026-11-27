@@ -141,7 +141,7 @@ Widget _filesTable({
 }) => _Live<_View>(
   _start,
   (view, set) => Fluent2Table(
-    label: 'Northwind files',
+    semanticLabel: 'Northwind files',
     size: size,
     selectionAppearance: appearance,
     columns: _columns,
@@ -172,7 +172,7 @@ const List<Fluent2DescriptionItem> _details = [
 Widget kitSpecimenTableFiles() => _Live<_View>(
   _start,
   (view, set) => Fluent2Table(
-    label: 'Northwind files',
+    semanticLabel: 'Northwind files',
     columns: _columns,
     sortColumn: view.column,
     sortDirection: view.direction,
@@ -184,7 +184,7 @@ Widget kitSpecimenTableFiles() => _Live<_View>(
 Widget kitSpecimenTableSelected() => _Live<_View>(
   _start,
   (view, set) => Fluent2Table(
-    label: 'Northwind files',
+    semanticLabel: 'Northwind files',
     columns: _columns,
     sortColumn: view.column,
     sortDirection: view.direction,

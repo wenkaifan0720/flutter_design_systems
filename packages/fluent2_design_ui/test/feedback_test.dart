@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/badge/badge.dart'
     show Fluent2BadgeFace;
 import 'package:fluent2_design_ui/src/fluent2_design/components/tag/tag.dart'
@@ -46,7 +45,7 @@ void main() {
   );
 
   final themes = [
-    for (final id in Fluent2ThemeData.presets)
+    for (final id in Fluent2ThemeData.palettes.map((p) => p.id))
       for (final b in Brightness.values) Fluent2ThemeData.preset(id, b),
   ];
   String name(Fluent2ThemeData t) => '${t.id} ${t.brightness.name}';
@@ -212,7 +211,7 @@ void main() {
       final failures = <String>[];
       for (final t in themes) {
         for (final (label, ink, ground, floor) in pairs(t)) {
-          final ratio = Fluent2ThemeData.contrast(ink, ground);
+          final ratio = RawPalette.contrastRatio(ink, ground);
           if (ratio < floor) {
             failures.add(
               '${name(t)}: $label ${ratio.toStringAsFixed(2)} < $floor',
@@ -438,7 +437,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           const Fluent2SegmentBar(
-            label: 'Storage',
+            semanticLabel: 'Storage',
             total: 10,
             segments: [
               Fluent2SegmentBarPart('Documents', 3.2, valueText: '3.2 GB'),
@@ -457,7 +456,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           const Fluent2Skeleton(
-            label: 'Loading files',
+            semanticLabel: 'Loading files',
             child: Row(
               children: [
                 Fluent2SkeletonItem(
@@ -492,7 +491,7 @@ void main() {
               withArrow: true,
               child: Fluent2IconButton(
                 Fluent2Icons.share,
-                label: 'Share',
+                semanticLabel: 'Share',
                 onPressed: () {},
               ),
             ),
@@ -703,7 +702,7 @@ void main() {
         _host(
           const Row(
             children: [
-              Fluent2IconTile(Fluent2Icons.folder, label: 'Folder'),
+              Fluent2IconTile(Fluent2Icons.folder, semanticLabel: 'Folder'),
               Fluent2IconTile(
                 Fluent2Icons.mail,
                 hue: Fluent2Hue.teal,
@@ -799,7 +798,7 @@ void main() {
         _host(
           const Fluent2Sparkline(
             values: [3, 5, 4, 9],
-            label: 'Files shared',
+            semanticLabel: 'Files shared',
             area: true,
           ),
         ),
@@ -819,9 +818,13 @@ void main() {
         _host(
           Column(
             children: [
-              const Fluent2BarChart(label: 'Hours', highlight: 1, bars: bars),
+              const Fluent2BarChart(
+                semanticLabel: 'Hours',
+                highlight: 1,
+                bars: bars,
+              ),
               Fluent2BarChart(
-                label: 'Pick',
+                semanticLabel: 'Pick',
                 highlight: 2,
                 bars: bars,
                 onHighlight: (i) => picked = i,
@@ -900,7 +903,7 @@ void main() {
                       onChanged: (_) {},
                     ),
                     const Fluent2BarChart(
-                      label: 'Hours',
+                      semanticLabel: 'Hours',
                       highlight: 2,
                       bars: [
                         Fluent2Bar('Monday', 3, valueText: '3 hours'),
@@ -913,7 +916,7 @@ void main() {
                       ],
                     ),
                     const Fluent2SegmentBar(
-                      label: 'Storage',
+                      semanticLabel: 'Storage',
                       segments: [
                         Fluent2SegmentBarPart(
                           'Documents',

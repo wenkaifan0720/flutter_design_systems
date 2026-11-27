@@ -105,6 +105,12 @@ final _rowMisreads = <(RegExp, String)>[
 /// What the width check names that is not the look's.
 final _widthMisreads = <(RegExp, String)>[
   (
+    RegExp(r'^600 · a tab bar "Home\nTab 1 of 4": '),
+    'the app shell\'s specimen at 600 is the phone\'s frame (the tab bar '
+        'under 640), whose bar spans the window as a phone\'s does; its card '
+        'stands for the window',
+  ),
+  (
     RegExp(
       r'a button "(Brand guidelines\.pdf|Upload a file|Find a person|'
       r'Start a meeting)": ',
@@ -281,7 +287,7 @@ void listChecks() {
             }
             final name = t
                 .widget<Fluent2FieldButton>(face)
-                .label
+                .semanticLabel
                 .replaceAll('\n', ' ');
             await t.tap(face);
             await t.pump();

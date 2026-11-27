@@ -121,7 +121,7 @@ Widget kitSpecimenListGroupGround() => Fluent2ListGroup(
       onTap: () {},
       action: Fluent2IconButton(
         Fluent2Icons.moreHorizontal,
-        label: 'More options',
+        semanticLabel: 'More options',
         onPressed: () {},
       ),
     ),

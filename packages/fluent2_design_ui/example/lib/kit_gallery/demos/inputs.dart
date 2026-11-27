@@ -82,7 +82,7 @@ Widget kitInputsDemo(Brightness brightness) => kitScreen(
             _Live<String>(
               '',
               (v, set) => Fluent2TextField(
-                label: 'Project name, ${kitSay(size)}',
+                semanticLabel: 'Project name, ${kitSay(size)}',
                 hintText: kitSay(size),
                 value: v,
                 size: size,
@@ -113,7 +113,7 @@ Widget kitSpecimenInputAppearances() => _atFieldWidth(
         _Live<String>(
           '',
           (v, set) => Fluent2TextField(
-            label: 'Project name, ${kitSay(appearance)}',
+            semanticLabel: 'Project name, ${kitSay(appearance)}',
             hintText: switch (appearance) {
               Fluent2InputAppearance.outline => 'Outline',
               Fluent2InputAppearance.underline => 'Underline',
@@ -138,7 +138,7 @@ Widget kitSpecimenInputStates() => _atFieldWidth(
       _Live<String>(
         'ines@northwind.example',
         (v, set) => Fluent2TextField(
-          label: 'Email',
+          semanticLabel: 'Email',
           value: v,
           prefixIcon: Fluent2Icons.mail,
           onChanged: set,
@@ -147,7 +147,7 @@ Widget kitSpecimenInputStates() => _atFieldWidth(
       _Live<String>(
         'launch-2026',
         (v, set) => Fluent2TextField(
-          label: 'Password',
+          semanticLabel: 'Password',
           value: v,
           password: true,
           prefixIcon: Fluent2Icons.lockClosed,
@@ -157,14 +157,14 @@ Widget kitSpecimenInputStates() => _atFieldWidth(
       _Live<String>(
         'northwind launch',
         (v, set) => Fluent2TextField(
-          label: 'Channel name',
+          semanticLabel: 'Channel name',
           value: v,
           invalid: true,
           onChanged: set,
         ),
       ),
       const Fluent2TextField(
-        label: 'Workspace',
+        semanticLabel: 'Workspace',
         value: 'Northwind',
         suffixIcon: Fluent2Icons.lockClosed,
       ),
@@ -181,7 +181,7 @@ Widget kitSpecimenTextarea() => _atFieldWidth(
       _Live<String>(
         '',
         (v, set) => Fluent2TextArea(
-          label: 'Meeting notes',
+          semanticLabel: 'Meeting notes',
           hintText: 'What did the team decide?',
           value: v,
           onChanged: set,
@@ -191,7 +191,7 @@ Widget kitSpecimenTextarea() => _atFieldWidth(
         'Ship the launch deck on Thursday. Kai owns the demo; Mara the '
         'press notes.',
         (v, set) => Fluent2TextArea(
-          label: 'Summary',
+          semanticLabel: 'Summary',
           value: v,
           appearance: Fluent2InputAppearance.filledDarker,
           size: Fluent2InputSize.large,
@@ -249,7 +249,7 @@ Widget kitSpecimenDropdown() => Column(
     _Live<String?>(
       null,
       (v, set) => Fluent2Select<String>(
-        label: 'Channel',
+        semanticLabel: 'Channel',
         prompt: 'Choose a channel',
         options: _channels,
         value: v,
@@ -259,7 +259,7 @@ Widget kitSpecimenDropdown() => Column(
     _Live<String?>(
       'design',
       (v, set) => Fluent2Select<String>(
-        label: 'Channel',
+        semanticLabel: 'Channel',
         options: _channels,
         value: v,
         appearance: Fluent2InputAppearance.filledDarker,
@@ -267,7 +267,7 @@ Widget kitSpecimenDropdown() => Column(
       ),
     ),
     const Fluent2Select<String>(
-      label: 'Channel, disabled',
+      semanticLabel: 'Channel, disabled',
       options: _channels,
       value: 'general',
       onChanged: null,
@@ -283,7 +283,7 @@ Widget kitSpecimenCombobox() => Column(
     _Live<String?>(
       'harbor',
       (v, set) => Fluent2Combobox<String>(
-        label: 'Room',
+        semanticLabel: 'Room',
         hintText: 'Find a room',
         options: _rooms,
         value: v,
@@ -295,7 +295,7 @@ Widget kitSpecimenCombobox() => Column(
     _Live<String?>(
       null,
       (v, set) => Fluent2Combobox<String>(
-        label: 'Room',
+        semanticLabel: 'Room',
         hintText: 'Find a room',
         options: _rooms,
         value: v,
@@ -314,7 +314,7 @@ Widget kitSpecimenTagPicker() => Column(
     _Live<List<String>>(
       [kitPeople[1].name, kitPeople[2].name],
       (v, set) => Fluent2MultiSelect<String>(
-        label: 'Invite',
+        semanticLabel: 'Invite',
         options: _people,
         selected: v,
         onChanged: set,
@@ -323,7 +323,7 @@ Widget kitSpecimenTagPicker() => Column(
     _Live<List<String>>(
       const [],
       (v, set) => Fluent2MultiSelect<String>(
-        label: 'Reviewers',
+        semanticLabel: 'Reviewers',
         hintText: 'Add reviewers',
         options: _people,
         selected: v,
@@ -332,7 +332,7 @@ Widget kitSpecimenTagPicker() => Column(
       ),
     ),
     Fluent2MultiSelect<String>(
-      label: 'Owners, disabled',
+      semanticLabel: 'Owners, disabled',
       options: _people,
       selected: [kitPeople[0].name],
       onChanged: null,

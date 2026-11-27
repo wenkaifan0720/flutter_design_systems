@@ -69,7 +69,7 @@ class Fluent2Back extends StatelessWidget {
         Fluent2SheetShell.around(context)) {
       return Fluent2IconButton(
         close ? Fluent2Icons.dismiss : Fluent2Icons.arrowLeft,
-        label: spoken,
+        semanticLabel: spoken,
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -79,7 +79,7 @@ class Fluent2Back extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: spoken,
+      semanticLabel: spoken,
       role: Fluent2PressRole.link,
       radius: Fluent2Radius.medium,
       builder: (context, states) {
@@ -169,7 +169,7 @@ class _BackLabel extends InheritedWidget {
 /// Commands are [Fluent2IconButton]s (subtle), at most three.
 ///
 /// ```dart
-/// Fluent2AppBar(title: 'Files', caption: 'Northwind', actions: [Fluent2IconButton(Fluent2Icons.search, label: 'Search', onPressed: search)])
+/// Fluent2AppBar(title: 'Files', caption: 'Northwind', actions: [Fluent2IconButton(Fluent2Icons.search, semanticLabel: 'Search', onPressed: search)])
 /// ```
 ///
 /// ```dart
@@ -268,7 +268,7 @@ class Fluent2AppBar extends StatelessWidget {
         initials: account.initials,
         image: account.image,
         color: Fluent2AvatarColor.colorful,
-        label: Fluent2Localizations.of(context).profileAndSettings,
+        semanticLabel: Fluent2Localizations.of(context).profileAndSettings,
         onPressed: open == null ? null : () => open(context),
       );
     }
@@ -469,7 +469,7 @@ class _MoreCommands extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Fluent2IconButton(
     Fluent2Icons.moreHorizontal,
-    label: RawWidgetsLocalizations.of(context).moreButtonTooltip,
+    semanticLabel: RawWidgetsLocalizations.of(context).moreButtonTooltip,
     onPressed: () async {
       final picked = await Fluent2Menu.show<int>(
         context,
@@ -477,7 +477,7 @@ class _MoreCommands extends StatelessWidget {
           for (final (i, b) in glyphs.indexed)
             Fluent2MenuItem(
               i,
-              b.label,
+              b.semanticLabel,
               icon: b.icon,
               enabled: b.onPressed != null,
             ),

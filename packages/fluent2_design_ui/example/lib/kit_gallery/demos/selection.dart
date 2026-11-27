@@ -164,7 +164,7 @@ Widget kitSelectionDemo(Brightness brightness) => kitScreen(
         _Live<String>(
           'all',
           (v, set) => Fluent2SegmentedButton<String>(
-            label: 'Files',
+            semanticLabel: 'Files',
             segments: _filters,
             value: v,
             expand: true,
@@ -251,7 +251,7 @@ Widget kitSpecimenCompletionCheck() => Builder(
           (v, set) => task(
             Fluent2CompletionCheck(
               value: v,
-              label: 'Send the launch deck to Kai',
+              semanticLabel: 'Send the launch deck to Kai',
               onChanged: set,
             ),
             'Send the launch deck to Kai',
@@ -263,7 +263,7 @@ Widget kitSpecimenCompletionCheck() => Builder(
           (v, set) => task(
             Fluent2CompletionCheck(
               value: v,
-              label: 'Book the design review room',
+              semanticLabel: 'Book the design review room',
               onChanged: set,
             ),
             'Book the design review room',
@@ -273,14 +273,17 @@ Widget kitSpecimenCompletionCheck() => Builder(
         task(
           const Fluent2CompletionCheck(
             value: true,
-            label: 'Press notes, done',
+            semanticLabel: 'Press notes, done',
             readOnly: true,
           ),
           'Press notes (Mara marked it done)',
           quiet: true,
         ),
         task(
-          const Fluent2CompletionCheck(value: false, label: 'Archived task'),
+          const Fluent2CompletionCheck(
+            value: false,
+            semanticLabel: 'Archived task',
+          ),
           'Archived task',
           inert: true,
         ),
@@ -329,7 +332,7 @@ Widget kitSpecimenSwitchStates() => kitRow([
 Widget kitSpecimenSegmented() => _Live<String>(
   'week',
   (v, set) => Fluent2SegmentedButton<String>(
-    label: 'Calendar view',
+    semanticLabel: 'Calendar view',
     segments: _views,
     value: v,
     onChanged: set,
@@ -344,7 +347,7 @@ Widget kitSpecimenSegmentedSizes() => Column(
       _Live<String>(
         'day',
         (v, set) => Fluent2SegmentedButton<String>(
-          label: 'Calendar view, ${kitSay(size)}',
+          semanticLabel: 'Calendar view, ${kitSay(size)}',
           segments: _views,
           value: v,
           size: size,
@@ -354,7 +357,7 @@ Widget kitSpecimenSegmentedSizes() => Column(
       const SizedBox(height: Fluent2Spacing.m),
     ],
     const Fluent2SegmentedButton<String>(
-      label: 'Calendar view, disabled',
+      semanticLabel: 'Calendar view, disabled',
       segments: _views,
       value: 'month',
       onChanged: null,

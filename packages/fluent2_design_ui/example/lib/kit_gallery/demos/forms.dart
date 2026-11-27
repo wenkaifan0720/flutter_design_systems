@@ -34,6 +34,10 @@ Widget kitFormsDemo(Brightness brightness) => kitScreen(
     kitSection('Field', children: [kitSpecimenField()]),
     kitSection('Validation', children: [kitSpecimenFieldValidation()]),
     kitSection(
+      'A form that checks its fields',
+      children: [kitSpecimenValidatedForm()],
+    ),
+    kitSection(
       'Horizontal (vertical under 400 wide)',
       children: [
         _Live<String>(
@@ -157,6 +161,51 @@ Widget kitSpecimenFieldValidation() => Column(
       ),
     ),
   ],
+);
+
+/// A form whose Save checks its fields: an empty title shows its error and
+/// takes the focus; the select and the date field span the form's column.
+Widget kitSpecimenValidatedForm() => Fluent2Form(
+  child: Fluent2FormSection(
+    title: 'New channel',
+    children: [
+      Fluent2TextFormField(
+        labelText: 'Channel name',
+        required: true,
+        hintText: 'launch-2026',
+        validator: (value) =>
+            (value ?? '').trim().isEmpty ? 'Enter a channel name.' : null,
+      ),
+      const Fluent2TextFormField(
+        labelText: 'Purpose',
+        helperText: 'Shown under the name in the channel list.',
+      ),
+      _Live<String?>(
+        'public',
+        (v, set) => Fluent2FormField(
+          labelText: 'Who can join',
+          child: Fluent2Select<String>(
+            value: v,
+            options: const [
+              Fluent2Option('public', 'Anyone in Northwind'),
+              Fluent2Option('private', 'Invited people only'),
+            ],
+            onChanged: set,
+          ),
+        ),
+      ),
+      Builder(
+        builder: (context) => Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Fluent2Button(
+            'Create channel',
+            appearance: Fluent2ButtonAppearance.primary,
+            onPressed: () => Fluent2Form.submit(context),
+          ),
+        ),
+      ),
+    ],
+  ),
 );
 
 Widget kitSpecimenFormSection() =>

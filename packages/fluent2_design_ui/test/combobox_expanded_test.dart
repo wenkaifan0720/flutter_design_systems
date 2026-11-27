@@ -3,7 +3,6 @@
 // shows, collapsed again after Escape.
 import 'dart:ui' show Tristate;
 
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -41,13 +40,13 @@ const _environments = [
 
 final _fields = <String, Widget>{
   'combobox': Fluent2Combobox<String>(
-    label: 'Environment',
+    semanticLabel: 'Environment',
     options: _environments,
     value: null,
     onChanged: (_) {},
   ),
   'multi-select': Fluent2MultiSelect<String>(
-    label: 'Environments',
+    semanticLabel: 'Environments',
     options: _environments,
     selected: const [],
     onChanged: (_) {},

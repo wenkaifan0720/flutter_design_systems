@@ -48,7 +48,7 @@ Widget kitSpecimenListSectionFiles() => _Live<int>(
     selector: Fluent2TabList(
       size: Fluent2TabSize.small,
       appearance: Fluent2TabAppearance.subtleCircular,
-      label: 'Which files',
+      semanticLabel: 'Which files',
       selectedIndex: chosen,
       onChanged: set,
       tabs: const ['Recent', 'Shared'],

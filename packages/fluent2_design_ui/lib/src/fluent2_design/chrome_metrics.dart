@@ -20,8 +20,8 @@ abstract final class Fluent2ChromeMetrics {
   /// The room under a desktop page's last part.
   static const double pageBottomWide = 40;
 
-  /// The widest a desktop page's column runs (DERIVED: a reading measure
-  /// for a single column of cards and forms).
+  /// The widest a desktop page's column runs: a reading measure for a single
+  /// column of cards and forms.
   static const double pageMaxWidth = 1120;
 
   // --- the top bar ------------------------------------------------------------
@@ -70,8 +70,8 @@ abstract final class Fluent2ChromeMetrics {
   /// end tabs' words stand at least this far from the screen's edges.
   static const double tabLabelSide = 8;
 
-  /// The selected tab's mark: a pill 4 tall and 16 wide (DERIVED from
-  /// Fluent's nav indicator, 4 by 20, laid along the bar's top edge).
+  /// The selected tab's mark, its height: a pill laid along the bar's top
+  /// edge, a step slimmer than Fluent's 4 by 20 nav indicator.
   static const double tabMarkHeight = 3;
 
   /// The selected tab's mark, its width.

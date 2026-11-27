@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 Widget _host(Widget child, {double scale = 1}) => MaterialApp(
   debugShowCheckedModeBanner: false,
@@ -43,7 +42,7 @@ void main() {
             message: 'Share',
             child: Fluent2IconButton(
               Fluent2Icons.share,
-              label: 'Share file',
+              semanticLabel: 'Share file',
               onPressed: () {},
             ),
           ),
@@ -83,7 +82,7 @@ void main() {
             child: SizedBox(
               width: 320,
               child: Fluent2Combobox<String>(
-                label: 'Assignee',
+                semanticLabel: 'Assignee',
                 value: null,
                 options: const [],
                 onChanged: (_) {},
@@ -195,7 +194,7 @@ void main() {
     await t.pumpWidget(
       _host(
         Fluent2Rating(
-          label: 'Rate this meeting',
+          semanticLabel: 'Rate this meeting',
           value: 3,
           onChanged: (v) => asked = v,
         ),
@@ -218,7 +217,7 @@ void main() {
         _host(
           StatefulBuilder(
             builder: (context, set) => Fluent2SpinButton(
-              label: 'Copies',
+              semanticLabel: 'Copies',
               value: value,
               max: 50,
               onChanged: (v) => set(() => value = v),
@@ -327,7 +326,7 @@ void main() {
         const SizedBox(
           width: 480,
           child: Fluent2LineChart(
-            label: 'Files shared',
+            semanticLabel: 'Files shared',
             labels: ['Mon', 'Tue', 'Wed'],
             series: [
               Fluent2ChartSeries('You', [3, 5, 4]),

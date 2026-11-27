@@ -183,7 +183,7 @@ class _ArrowPainter extends CustomPainter {
 /// goes). Never put an act or the only copy of something needed inside one.
 ///
 /// ```dart
-/// Fluent2Tooltip(message: 'Share', child: Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: share))
+/// Fluent2Tooltip(message: 'Share', child: Fluent2IconButton(Fluent2Icons.share, semanticLabel: 'Share', onPressed: share))
 /// ```
 class Fluent2Tooltip extends StatelessWidget {
   /// A tooltip that names [child] with [message] on hover, long press or focus.

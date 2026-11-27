@@ -1,6 +1,5 @@
 // Under a finger a calendar's day is as tall as the floor (ui_core's 40); its number is in the app's digits.
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 

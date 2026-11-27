@@ -99,13 +99,13 @@ final behaviourParts = <String, LawPart>{
   'Fluent2Card': LawPart(
     (hit) => Fluent2Card(
       onPressed: hit,
-      label: 'Budget',
+      semanticLabel: 'Budget',
       children: const [Text('Budget')],
     ),
   ),
   'Fluent2CarouselView': LawPart(
     (hit) => Fluent2CarouselView(
-      label: 'Highlights',
+      semanticLabel: 'Highlights',
       onChanged: lawOn(hit),
       children: const [Text('One'), Text('Two')],
     ),
@@ -121,7 +121,7 @@ final behaviourParts = <String, LawPart>{
   ),
   'Fluent2Combobox': LawPart(
     (hit) => Fluent2Combobox<String>(
-      label: 'Size',
+      semanticLabel: 'Size',
       value: 'a',
       options: _options,
       onChanged: lawOn(hit),
@@ -132,7 +132,7 @@ final behaviourParts = <String, LawPart>{
   'Fluent2CompletionCheck': LawPart(
     (hit) => Fluent2CompletionCheck(
       value: false,
-      label: 'Done',
+      semanticLabel: 'Done',
       onChanged: lawOn(hit),
     ),
   ),
@@ -152,7 +152,7 @@ final behaviourParts = <String, LawPart>{
   ),
   'Fluent2DatePicker': LawPart(
     (hit) => Fluent2DatePicker(
-      label: 'Due',
+      semanticLabel: 'Due',
       value: DateTime(2026, 6, 14),
       onChanged: lawOn(hit),
     ),
@@ -187,11 +187,14 @@ final behaviourParts = <String, LawPart>{
     ),
   ),
   'Fluent2IconButton': LawPart(
-    (hit) =>
-        Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: hit),
+    (hit) => Fluent2IconButton(
+      Fluent2Icons.share,
+      semanticLabel: 'Share',
+      onPressed: hit,
+    ),
   ),
   'Fluent2InputGroup': lawText(
-    (hit) => Fluent2InputGroup(label: 'Site', onChanged: lawOn(hit)),
+    (hit) => Fluent2InputGroup(semanticLabel: 'Site', onChanged: lawOn(hit)),
   ),
   'Fluent2Link': LawPart((hit) => Fluent2Link('Read', onPressed: hit)),
   'Fluent2ListItem': LawPart(
@@ -219,6 +222,25 @@ final behaviourParts = <String, LawPart>{
       onPressed: hit,
     ),
   ),
+  'Fluent2Form': lawText(
+    (hit) => Fluent2Form(
+      onSubmit: hit,
+      child: const Fluent2TextFormField(labelText: 'Title'),
+    ),
+  ),
+  'Fluent2TextFormField': lawText(
+    (hit) => Fluent2TextFormField(labelText: 'Title', onChanged: lawOn(hit)),
+  ),
+  'Fluent2AppShell': LawPart(
+    (hit) => _tall(
+      Fluent2AppShell(
+        destinations: _nav,
+        selectedIndex: 0,
+        onDestinationSelected: lawOn(hit),
+        body: const SizedBox.expand(),
+      ),
+    ),
+  ),
   'Fluent2NavigationRail': LawPart(
     (hit) => _tall(
       Fluent2NavigationRail(
@@ -229,8 +251,11 @@ final behaviourParts = <String, LawPart>{
     ),
   ),
   'Fluent2SpinButton': LawPart(
-    (hit) =>
-        Fluent2SpinButton(label: 'Copies', value: 2, onChanged: lawOn(hit)),
+    (hit) => Fluent2SpinButton(
+      semanticLabel: 'Copies',
+      value: 2,
+      onChanged: lawOn(hit),
+    ),
     keys: false,
     pressable: false,
   ),
@@ -238,7 +263,7 @@ final behaviourParts = <String, LawPart>{
     (hit) => Fluent2PageDots(
       count: 3,
       selectedIndex: 0,
-      label: 'Page 1 of 3',
+      semanticLabel: 'Page 1 of 3',
       onChanged: lawOn(hit),
     ),
     keys: false,
@@ -248,12 +273,13 @@ final behaviourParts = <String, LawPart>{
     (hit) => Fluent2Pagination(page: 2, pages: 5, onChanged: lawOn(hit)),
   ),
   'Fluent2PasswordField': lawText(
-    (hit) => Fluent2PasswordField(label: 'Password', onChanged: lawOn(hit)),
+    (hit) =>
+        Fluent2PasswordField(semanticLabel: 'Password', onChanged: lawOn(hit)),
   ),
   'Fluent2Pressable': LawPart(
     (hit) => Fluent2Pressable(
       onPressed: hit,
-      label: 'A tile',
+      semanticLabel: 'A tile',
       builder: (context, states) => const Text('A tile'),
     ),
   ),
@@ -267,7 +293,7 @@ final behaviourParts = <String, LawPart>{
   ),
   'Fluent2RangeSlider': LawPart(
     (hit) => Fluent2RangeSlider(
-      label: 'Pages',
+      semanticLabel: 'Pages',
       values: const RawRangeValues(20, 60),
       onChanged: lawOn(hit),
     ),
@@ -275,7 +301,8 @@ final behaviourParts = <String, LawPart>{
     pressable: false,
   ),
   'Fluent2Rating': LawPart(
-    (hit) => Fluent2Rating(value: 3, label: 'Rating', onChanged: lawOn(hit)),
+    (hit) =>
+        Fluent2Rating(value: 3, semanticLabel: 'Rating', onChanged: lawOn(hit)),
     keys: false,
     pressable: false,
   ),
@@ -296,7 +323,7 @@ final behaviourParts = <String, LawPart>{
   'Fluent2SearchBox': lawText((hit) => Fluent2SearchBox(onChanged: lawOn(hit))),
   'Fluent2SegmentedButton': LawPart(
     (hit) => Fluent2SegmentedButton<String>(
-      label: 'View',
+      semanticLabel: 'View',
       value: 'a',
       segments: const [
         Fluent2ButtonSegment('a', 'List'),
@@ -308,7 +335,7 @@ final behaviourParts = <String, LawPart>{
   ),
   'Fluent2Select': LawPart(
     (hit) => Fluent2Select<String>(
-      label: 'Size',
+      semanticLabel: 'Size',
       value: 'a',
       options: _options,
       onChanged: lawOn(hit),
@@ -323,7 +350,11 @@ final behaviourParts = <String, LawPart>{
     disables: false,
   ),
   'Fluent2Slider': LawPart(
-    (hit) => Fluent2Slider(value: 40, label: 'Volume', onChanged: lawOn(hit)),
+    (hit) => Fluent2Slider(
+      value: 40,
+      semanticLabel: 'Volume',
+      onChanged: lawOn(hit),
+    ),
     keys: false,
     pressable: false,
   ),
@@ -379,7 +410,7 @@ final behaviourParts = <String, LawPart>{
   'Fluent2Tag': LawPart((hit) => Fluent2Tag('Draft', onDeleted: hit)),
   'Fluent2TagGroup': LawPart(
     (hit) => Fluent2TagGroup<String>(
-      label: 'Tags',
+      semanticLabel: 'Tags',
       items: const [Fluent2TagItem('a', 'Draft')],
       onDeleted: lawOn(hit),
     ),
@@ -393,13 +424,13 @@ final behaviourParts = <String, LawPart>{
     disables: false,
   ),
   'Fluent2TextArea': lawText(
-    (hit) => Fluent2TextArea(label: 'Note', onChanged: lawOn(hit)),
+    (hit) => Fluent2TextArea(semanticLabel: 'Note', onChanged: lawOn(hit)),
   ),
   'Fluent2TextField': lawText(
-    (hit) => Fluent2TextField(label: 'Name', onChanged: lawOn(hit)),
+    (hit) => Fluent2TextField(semanticLabel: 'Name', onChanged: lawOn(hit)),
   ),
   'Fluent2TimePicker': LawPart(
-    (hit) => Fluent2TimePicker(label: 'Start', onChanged: lawOn(hit)),
+    (hit) => Fluent2TimePicker(semanticLabel: 'Start', onChanged: lawOn(hit)),
     keys: false,
   ),
   'Fluent2ToggleButton': LawPart(
@@ -418,7 +449,7 @@ final behaviourParts = <String, LawPart>{
   ),
   'Fluent2Tree': LawPart(
     (hit) => Fluent2Tree<String>(
-      label: 'Files',
+      semanticLabel: 'Files',
       items: const [Fluent2TreeItem('a', 'Reports')],
       onChanged: lawOn(hit),
     ),
@@ -433,7 +464,7 @@ final behaviourParts = <String, LawPart>{
   ),
   'Fluent2WheelPicker': LawPart(
     (hit) => Fluent2WheelPicker<String>(
-      label: 'Size',
+      semanticLabel: 'Size',
       items: const ['Small', 'Large'],
       value: 'Small',
       rows: 3,

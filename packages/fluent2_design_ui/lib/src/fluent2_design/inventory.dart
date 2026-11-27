@@ -90,7 +90,7 @@ final RawInventory fluent2Inventory = RawInventory(
       'IconButton',
       (_) => const Fluent2IconButton(
         Fluent2Icons.share,
-        label: 'Share',
+        semanticLabel: 'Share',
         onPressed: _none,
       ),
     ),
@@ -105,7 +105,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const Fluent2ToolbarGroup(
-        label: 'Share',
+        semanticLabel: 'Share',
         items: [
           Fluent2ToolbarItem.button(
             icon: Fluent2Icons.link,
@@ -125,7 +125,7 @@ final RawInventory fluent2Inventory = RawInventory(
       (_) => _choice<Set<String>>(
         const {'list'},
         (selected, select) => Fluent2ToolbarToggleGroup<String>(
-          label: 'Layout',
+          semanticLabel: 'Layout',
           toggles: const [
             Fluent2ToolbarToggle(
               'list',
@@ -162,12 +162,15 @@ final RawInventory fluent2Inventory = RawInventory(
     // Inputs
     RawInventoryEntry.present(
       'TextField',
-      (_) =>
-          Fluent2TextField(label: 'Name', value: 'Sam Lee', onChanged: (_) {}),
+      (_) => Fluent2TextField(
+        semanticLabel: 'Name',
+        value: 'Sam Lee',
+        onChanged: (_) {},
+      ),
     ),
     RawInventoryEntry.present(
       'TextArea',
-      (_) => Fluent2TextArea(label: 'Note', onChanged: (_) {}),
+      (_) => Fluent2TextArea(semanticLabel: 'Note', onChanged: (_) {}),
     ),
     RawInventoryEntry.present(
       'SearchField',
@@ -175,12 +178,12 @@ final RawInventory fluent2Inventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'PasswordField',
-      (_) => Fluent2PasswordField(label: 'Password', onChanged: (_) {}),
+      (_) => Fluent2PasswordField(semanticLabel: 'Password', onChanged: (_) {}),
     ),
     RawInventoryEntry.present(
       'InputGroup',
       (_) => const Fluent2InputGroup(
-        label: 'Website',
+        semanticLabel: 'Website',
         prefix: 'https://',
         suffix: '.com',
       ),
@@ -192,13 +195,16 @@ final RawInventory fluent2Inventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'NumberField',
-      (_) =>
-          const Fluent2SpinButton(label: 'Copies', value: 2, onChanged: _drop),
+      (_) => const Fluent2SpinButton(
+        semanticLabel: 'Copies',
+        value: 2,
+        onChanged: _drop,
+      ),
     ),
     RawInventoryEntry.present(
       'Select',
       (_) => const Fluent2Select<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         value: 'medium',
         options: _sizes,
         onChanged: _drop,
@@ -207,7 +213,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'Combobox',
       (_) => const Fluent2Combobox<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         value: 'medium',
         options: _sizes,
         onChanged: _drop,
@@ -216,7 +222,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'MultiSelect',
       (_) => const Fluent2MultiSelect<String>(
-        label: 'Sizes',
+        semanticLabel: 'Sizes',
         selected: ['small'],
         options: _sizes,
         onChanged: _drop,
@@ -252,12 +258,16 @@ final RawInventory fluent2Inventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Slider',
-      (_) => const Fluent2Slider(label: 'Volume', value: 40, onChanged: _drop),
+      (_) => const Fluent2Slider(
+        semanticLabel: 'Volume',
+        value: 40,
+        onChanged: _drop,
+      ),
     ),
     RawInventoryEntry.present(
       'RangeSlider',
       (_) => const Fluent2RangeSlider(
-        label: 'Pages',
+        semanticLabel: 'Pages',
         values: RawRangeValues(20, 60),
         onChanged: _drop,
       ),
@@ -265,7 +275,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'SegmentedButton',
       (_) => const Fluent2SegmentedButton<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         value: 'medium',
         segments: [
           Fluent2ButtonSegment('small', 'Small'),
@@ -285,7 +295,11 @@ final RawInventory fluent2Inventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Rating',
-      (_) => const Fluent2Rating(label: 'Rating', value: 4, onChanged: _drop),
+      (_) => const Fluent2Rating(
+        semanticLabel: 'Rating',
+        value: 4,
+        onChanged: _drop,
+      ),
     ),
     RawInventoryEntry.present(
       'FileUpload',
@@ -294,7 +308,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'DatePicker',
       (_) => Fluent2DatePicker(
-        label: 'Due',
+        semanticLabel: 'Due',
         value: DateTime(2026, 6, 14),
         onChanged: _drop,
       ),
@@ -318,7 +332,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'TimePicker',
       (_) => const Fluent2TimePicker(
-        label: 'Start',
+        semanticLabel: 'Start',
         value: Fluent2Time(9, 30),
         onChanged: _drop,
       ),
@@ -334,7 +348,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'WheelPicker',
       (_) => const Fluent2WheelPicker<String>(
-        label: 'Size',
+        semanticLabel: 'Size',
         items: ['Small', 'Medium', 'Large'],
         value: 'Medium',
         rows: 3,
@@ -413,7 +427,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'Pagination',
       (_) => const Fluent2Pagination(
-        label: 'Results',
+        semanticLabel: 'Results',
         page: 2,
         pages: 5,
         onChanged: _drop,
@@ -429,7 +443,7 @@ final RawInventory fluent2Inventory = RawInventory(
       (_) => const Fluent2PageDots(
         count: 4,
         selectedIndex: 1,
-        label: 'Page 2 of 4',
+        semanticLabel: 'Page 2 of 4',
         onChanged: _drop,
       ),
     ),
@@ -502,7 +516,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'Table',
       (_) => const Fluent2Table(
-        label: 'Files',
+        semanticLabel: 'Files',
         columns: [
           Fluent2TableColumn('Name'),
           Fluent2TableColumn('Pages', numeric: true),
@@ -541,7 +555,7 @@ final RawInventory fluent2Inventory = RawInventory(
           ],
         ),
         (_, rows) => Fluent2DataGrid<_File>(
-          label: 'Files',
+          semanticLabel: 'Files',
           controller: rows,
           cell: (row, column) =>
               column.id == 'name' ? row.name : '${row.pages}',
@@ -573,7 +587,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'CarouselView',
       (_) => Fluent2CarouselView(
-        label: 'Highlights',
+        semanticLabel: 'Highlights',
         children: [_say('First'), _say('Second'), _say('Third')],
       ),
     ),
@@ -615,7 +629,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'TreeView',
       (_) => const Fluent2Tree<String>(
-        label: 'Files',
+        semanticLabel: 'Files',
         initiallyExpanded: {'reports'},
         items: [
           Fluent2TreeItem(
@@ -708,7 +722,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'Popover',
       (_) => Fluent2Popover(
-        label: 'Filters',
+        semanticLabel: 'Filters',
         trigger: (_, toggle) => Fluent2Button('Filters', onPressed: toggle),
         content: const Text('Only shared files'),
       ),
@@ -716,7 +730,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'HoverCard',
       (_) => Fluent2Popover(
-        label: 'Mara Okafor',
+        semanticLabel: 'Mara Okafor',
         openOnHover: true,
         trigger: (_, toggle) => Fluent2Link('Mara Okafor', onPressed: toggle),
         content: const Text('Design lead · Seattle'),
@@ -776,7 +790,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'LineChart',
       (_) => const Fluent2LineChart(
-        label: 'Files shared',
+        semanticLabel: 'Files shared',
         labels: ['Mon', 'Tue', 'Wed', 'Thu'],
         series: [
           Fluent2ChartSeries('You', [3, 5, 4, 7]),
@@ -787,7 +801,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'BarChart',
       (_) => const Fluent2BarChart(
-        label: 'Files by day',
+        semanticLabel: 'Files by day',
         bars: [
           Fluent2Bar('Mon', 3),
           Fluent2Bar('Tue', 5),
@@ -798,7 +812,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'AreaChart',
       (_) => const Fluent2AreaChart(
-        label: 'Storage used',
+        semanticLabel: 'Storage used',
         labels: ['Jan', 'Feb', 'Mar'],
         series: [
           Fluent2ChartSeries('Used', [12, 18, 21]),
@@ -808,7 +822,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'PieChart',
       (_) => const Fluent2PieChart(
-        label: 'Storage',
+        semanticLabel: 'Storage',
         slices: [
           Fluent2PieSlice('Documents', 40),
           Fluent2PieSlice('Photos', 25),
@@ -819,7 +833,7 @@ final RawInventory fluent2Inventory = RawInventory(
     RawInventoryEntry.present(
       'Sparkline',
       (_) => const Fluent2Sparkline(
-        label: 'Files this week',
+        semanticLabel: 'Files this week',
         values: [3, 5, 4, 7, 6],
       ),
     ),

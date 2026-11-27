@@ -576,10 +576,10 @@ class _PlotPainter extends CustomPainter {
 /// grid, 2 lines in the data hues, the last or the hovered point marked with an
 /// 8 dot ringed in the ground. Two or more series get a legend, and up to four
 /// their names at the line ends. Hover or a drag shows a crosshair and a card
-/// of the values. Read as [label], then where each series starts and ends.
+/// of the values. Read as [semanticLabel], then where each series starts and ends.
 ///
 /// ```dart
-/// Fluent2LineChart(label: 'Files shared', labels: const ['Mon', 'Tue', 'Wed'], series: const [Fluent2ChartSeries('You', [3, 5, 4])])
+/// Fluent2LineChart(semanticLabel: 'Files shared', labels: const ['Mon', 'Tue', 'Wed'], series: const [Fluent2ChartSeries('You', [3, 5, 4])])
 /// ```
 class Fluent2LineChart extends StatelessWidget {
   /// A chart of [series] over [labels].
@@ -587,7 +587,7 @@ class Fluent2LineChart extends StatelessWidget {
     super.key,
     required this.series,
     required this.labels,
-    this.label,
+    this.semanticLabel,
     this.height = 200,
     this.valueLabel,
     this.ground,
@@ -600,7 +600,7 @@ class Fluent2LineChart extends StatelessWidget {
   final List<String> labels;
 
   /// What it shows.
-  final String? label;
+  final String? semanticLabel;
 
   /// The plot's height, axis labels included.
   final double height;
@@ -617,7 +617,7 @@ class Fluent2LineChart extends StatelessWidget {
     labels: labels,
     area: false,
     height: height,
-    label: label,
+    label: semanticLabel,
     valueLabel: valueLabel,
     ground: ground,
   );
@@ -628,7 +628,7 @@ class Fluent2LineChart extends StatelessWidget {
     properties
       ..add(IterableProperty<Fluent2ChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 200))
       ..add(
         ObjectFlagProperty<String Function(double value)?>.has(
@@ -644,7 +644,7 @@ class Fluent2LineChart extends StatelessWidget {
 /// hue: how much, more than where it went.
 ///
 /// ```dart
-/// Fluent2AreaChart(label: 'Storage used', labels: const ['Jan', 'Feb', 'Mar'], series: const [Fluent2ChartSeries('Used', [12, 18, 21])])
+/// Fluent2AreaChart(semanticLabel: 'Storage used', labels: const ['Jan', 'Feb', 'Mar'], series: const [Fluent2ChartSeries('Used', [12, 18, 21])])
 /// ```
 class Fluent2AreaChart extends StatelessWidget {
   /// A chart of [series] over [labels].
@@ -652,7 +652,7 @@ class Fluent2AreaChart extends StatelessWidget {
     super.key,
     required this.series,
     required this.labels,
-    this.label,
+    this.semanticLabel,
     this.height = 200,
     this.valueLabel,
     this.ground,
@@ -665,7 +665,7 @@ class Fluent2AreaChart extends StatelessWidget {
   final List<String> labels;
 
   /// What it shows.
-  final String? label;
+  final String? semanticLabel;
 
   /// The plot's height, axis labels included.
   final double height;
@@ -682,7 +682,7 @@ class Fluent2AreaChart extends StatelessWidget {
     labels: labels,
     area: true,
     height: height,
-    label: label,
+    label: semanticLabel,
     valueLabel: valueLabel,
     ground: ground,
   );
@@ -693,7 +693,7 @@ class Fluent2AreaChart extends StatelessWidget {
     properties
       ..add(IterableProperty<Fluent2ChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 200))
       ..add(
         ObjectFlagProperty<String Function(double value)?>.has(
@@ -732,17 +732,17 @@ class Fluent2PieSlice {
 /// Parts of a whole as a donut: the data hues in fixed order with 2 gaps
 /// between them, past five parts the rest folded into a neutral "Other", a
 /// legend of every part with its value beside it. The pointer on a part sets
-/// the others back and says it in the hole. Read as [label], then each part.
+/// the others back and says it in the hole. Read as [semanticLabel], then each part.
 ///
 /// ```dart
-/// Fluent2PieChart(label: 'Storage', slices: const [Fluent2PieSlice('Documents', 40), Fluent2PieSlice('Photos', 25)])
+/// Fluent2PieChart(semanticLabel: 'Storage', slices: const [Fluent2PieSlice('Documents', 40), Fluent2PieSlice('Photos', 25)])
 /// ```
 class Fluent2PieChart extends StatefulWidget {
   /// A donut of [slices].
   const Fluent2PieChart({
     super.key,
     required this.slices,
-    this.label,
+    this.semanticLabel,
     this.size = 160,
     this.thickness = 24,
     this.center,
@@ -753,7 +753,7 @@ class Fluent2PieChart extends StatefulWidget {
   final List<Fluent2PieSlice> slices;
 
   /// What it shows.
-  final String? label;
+  final String? semanticLabel;
 
   /// The donut's side.
   final double size;
@@ -775,7 +775,7 @@ class Fluent2PieChart extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<Fluent2PieSlice>('slices', slices))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('size', size, defaultValue: 160))
       ..add(DoubleProperty('thickness', thickness, defaultValue: 24))
       ..add(ColorProperty('ground', ground, defaultValue: null));
@@ -812,7 +812,7 @@ class _Fluent2PieChartState extends State<Fluent2PieChart> {
       dimension: widget.size,
       child: RawPieChart(
         semanticLabel:
-            widget.label ?? [for (final s in parts) s.label].join(', '),
+            widget.semanticLabel ?? [for (final s in parts) s.label].join(', '),
         semanticSummary: summary,
         slices: [
           for (final s in parts)

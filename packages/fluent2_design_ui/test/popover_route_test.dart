@@ -6,7 +6,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 const _options = [
   Fluent2Option('equipment', 'Equipment'),
@@ -29,7 +28,7 @@ Future<void> _app(
         SizedBox(
           width: 320,
           child: Fluent2Select<String>(
-            label: 'Type',
+            semanticLabel: 'Type',
             value: 'equipment',
             options: _options,
             onChanged: (_) {},
@@ -91,11 +90,16 @@ void main() {
       final focus = FocusNode(debugLabel: 'alert');
       addTearDown(focus.dispose);
       _alert(t, focus);
-      // Gone within the alert's first frames: the alert's own navigator takes
-      // the focus as its first frame ends, the list closes as the next ends.
+      // Closed within the alert's first frames: the alert's own navigator
+      // takes the focus as its first frame ends, the list closes as the next
+      // ends. It fades out under the alert, as it would on any close, and is
+      // gone as the frame after its fade ends; a list closed any later would
+      // still stand.
       for (var frame = 0; frame < 3; frame++) {
         await t.pump();
       }
+      await t.pump(Fluent2Motion.faster);
+      await t.pump(const Duration(milliseconds: 16));
       expect(find.text('Access'), findsNothing);
       await t.pumpAndSettle();
       expect(find.text('Access'), findsNothing);

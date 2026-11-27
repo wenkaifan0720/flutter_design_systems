@@ -124,7 +124,11 @@ class Fluent2TableCell {
 @immutable
 class Fluent2TableRow {
   /// A row of [cells].
-  const Fluent2TableRow({required this.cells, this.onPressed, this.label});
+  const Fluent2TableRow({
+    required this.cells,
+    this.onPressed,
+    this.semanticLabel,
+  });
 
   /// The row's cells, one per column.
   final List<Fluent2TableCell> cells;
@@ -133,7 +137,7 @@ class Fluent2TableRow {
   final VoidCallback? onPressed;
 
   /// What a screen reader says for the row; null says its cells.
-  final String? label;
+  final String? semanticLabel;
 }
 
 /// Fluent 2's Table (and DataGrid's look): a header row in body1 over
@@ -163,7 +167,7 @@ class Fluent2Table extends StatelessWidget {
     this.onSelectionChanged,
     this.size = Fluent2TableSize.medium,
     this.selectionAppearance = Fluent2TableSelectionAppearance.neutral,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -196,7 +200,7 @@ class Fluent2Table extends StatelessWidget {
   final Fluent2TableSelectionAppearance selectionAppearance;
 
   /// What a screen reader calls the table.
-  final String? label;
+  final String? semanticLabel;
 
   /// The selection column's width (Fluent's `CELL_WIDTH`).
   static const double selectionWidth = 44;
@@ -266,7 +270,7 @@ class Fluent2Table extends StatelessWidget {
         final framed = Semantics(
           container: true,
           explicitChildNodes: true,
-          label: label,
+          label: semanticLabel,
           child: table,
         );
         if (total <= room + 0.5) return framed;
@@ -410,7 +414,7 @@ class Fluent2Table extends StatelessWidget {
           defaultValue: Fluent2TableSelectionAppearance.neutral,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -479,7 +483,7 @@ class _HeaderCell extends StatelessWidget {
     }
     return Fluent2Pressable(
       onPressed: onTap,
-      label: Fluent2Localizations.of(context).sortBy(column.label),
+      semanticLabel: Fluent2Localizations.of(context).sortBy(column.label),
       value: sorted == null
           ? null
           : sorted == Fluent2SortDirection.ascending
@@ -520,7 +524,7 @@ class _SelectCell extends StatelessWidget {
     container: true,
     child: Fluent2Pressable(
       onPressed: onTap,
-      label: label,
+      semanticLabel: label,
       checked: checked ?? false,
       mixed: checked == null,
       radius: Fluent2Radius.medium,
@@ -558,7 +562,7 @@ class _TableRowView extends StatelessWidget {
     final press = row.onPressed ?? toggle;
     final small = table.size == Fluent2TableSize.extraSmall;
     final spoken =
-        row.label ??
+        row.semanticLabel ??
         [
           for (final cell in row.cells)
             [
@@ -628,7 +632,7 @@ class _TableRowView extends StatelessWidget {
             container: true,
             child: Fluent2Pressable(
               onPressed: press,
-              label: spoken,
+              semanticLabel: spoken,
               selected: picked == null ? null : on,
               radius: Fluent2Radius.medium,
               builder: (context, states) => face(states.press),

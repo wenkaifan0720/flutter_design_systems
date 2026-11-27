@@ -81,7 +81,7 @@ class Fluent2Tree<T> extends StatefulWidget {
     this.onChanged,
     this.initiallyExpanded,
     this.size = Fluent2TreeSize.medium,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -102,7 +102,7 @@ class Fluent2Tree<T> extends StatefulWidget {
   final Fluent2TreeSize size;
 
   /// What a screen reader calls the tree.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   State<Fluent2Tree<T>> createState() => _Fluent2TreeState<T>();
@@ -128,7 +128,7 @@ class Fluent2Tree<T> extends StatefulWidget {
           defaultValue: Fluent2TreeSize.medium,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -193,7 +193,7 @@ class _Fluent2TreeState<T> extends State<Fluent2Tree<T>> {
     final change = widget.onChanged;
     return RawTree<Fluent2TreeItem<T>>(
       controller: _tree,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       labelOf: (item) =>
           item.aside == null ? item.label : '${item.label}, ${item.aside}',
       onActivate: change == null

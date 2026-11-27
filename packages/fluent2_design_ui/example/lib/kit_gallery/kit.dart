@@ -187,7 +187,7 @@ Widget _kitMaterialApp(Brightness brightness, Widget home) => MaterialApp(
         context,
         Fluent2Host(
           light: kitTheme(Brightness.light),
-          darkData: kitTheme(Brightness.dark),
+          dark: kitTheme(Brightness.dark),
           brightness: brightness,
           child: Fluent2AccountScope(
             account: _kitOwner,
@@ -306,7 +306,7 @@ Widget kitRouterApp({
         context,
         Fluent2Host(
           light: kitTheme(Brightness.light),
-          darkData: kitTheme(Brightness.dark),
+          dark: kitTheme(Brightness.dark),
           brightness: brightness,
           child: Fluent2AccountScope(
             account: _kitOwner,
@@ -416,7 +416,7 @@ Widget kitSpecimenStage({
         context,
         Fluent2Host(
           light: Fluent2ThemeData.preset(style, Brightness.light),
-          darkData: Fluent2ThemeData.preset(style, Brightness.dark),
+          dark: Fluent2ThemeData.preset(style, Brightness.dark),
           brightness: brightness,
           child: Fluent2AccountScope(
             account: kitInes,

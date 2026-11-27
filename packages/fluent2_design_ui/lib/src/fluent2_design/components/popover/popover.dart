@@ -451,7 +451,7 @@ class _TeachButton extends StatelessWidget {
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onTap,
-        label: label,
+        semanticLabel: label,
         radius: Fluent2Radius.medium,
         builder: (context, states) {
           final press = states.press;
@@ -691,7 +691,7 @@ class Fluent2TeachingPopover extends StatelessWidget {
               if (dismiss != null)
                 Fluent2IconButton(
                   Fluent2Icons.dismiss,
-                  label: dismissLabel ?? words.dismiss,
+                  semanticLabel: dismissLabel ?? words.dismiss,
                   size: Fluent2ButtonSize.small,
                   appearance: Fluent2ButtonAppearance.transparent,
                   color: quiet,

@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart' show DesignRadioGroupCheck;
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 /// The controls and inputs group: every public control pumps under a
 /// Fluent2Host, says its role, value and state to a screen reader, answers
@@ -131,12 +130,12 @@ void main() {
           children: [
             Fluent2CompletionCheck(
               value: false,
-              label: 'Send the deck',
+              semanticLabel: 'Send the deck',
               onChanged: (v) => got = v,
             ),
             const Fluent2CompletionCheck(
               value: true,
-              label: 'Reported',
+              semanticLabel: 'Reported',
               readOnly: true,
             ),
           ],
@@ -179,7 +178,7 @@ void main() {
                             width: 310,
                             child: layout == null
                                 ? Fluent2ToolbarToggleGroup<String>(
-                                    label: 'Layout',
+                                    semanticLabel: 'Layout',
                                     toggles: [
                                       for (final option in options)
                                         Fluent2ToolbarToggle(
@@ -270,7 +269,7 @@ void main() {
                       width: 310,
                       child: layout == null
                           ? Fluent2ToolbarToggleGroup<String>(
-                              label: 'Layout',
+                              semanticLabel: 'Layout',
                               toggles: [
                                 for (final option in options)
                                   Fluent2ToolbarToggle(
@@ -317,7 +316,7 @@ void main() {
           tester,
           StatefulBuilder(
             builder: (context, setState) => Fluent2ToolbarToggleGroup<String>(
-              label: 'Layout',
+              semanticLabel: 'Layout',
               toggles: const [
                 Fluent2ToolbarToggle(
                   'List',
@@ -496,13 +495,13 @@ void main() {
           builder: (context, set) => Column(
             children: [
               Fluent2SegmentedButton<String>(
-                label: 'View',
+                semanticLabel: 'View',
                 segments: segments,
                 value: view,
                 onChanged: (v) => set(() => view = v),
               ),
               const Fluent2SegmentedButton<String>(
-                label: 'Locked view',
+                semanticLabel: 'Locked view',
                 segments: segments,
                 value: 'day',
                 onChanged: null,
@@ -537,12 +536,16 @@ void main() {
           builder: (context, set) => Column(
             children: [
               Fluent2Slider(
-                label: 'Volume',
+                semanticLabel: 'Volume',
                 value: value,
                 step: 10,
                 onChanged: (v) => set(() => value = v),
               ),
-              const Fluent2Slider(label: 'Muted', value: 20, onChanged: null),
+              const Fluent2Slider(
+                semanticLabel: 'Muted',
+                value: 20,
+                onChanged: null,
+              ),
             ],
           ),
         ),
@@ -568,7 +571,11 @@ void main() {
       double? got;
       await pump(
         tester,
-        Fluent2Slider(label: 'Volume', value: 0, onChanged: (v) => got = v),
+        Fluent2Slider(
+          semanticLabel: 'Volume',
+          value: 0,
+          onChanged: (v) => got = v,
+        ),
       );
       final box = tester.getRect(find.byType(Fluent2Slider));
       await tester.tapAt(Offset(box.right - 4, box.center.dy));
@@ -585,7 +592,7 @@ void main() {
         tester,
         StatefulBuilder(
           builder: (context, set) => Fluent2SpinButton(
-            label: 'Seats',
+            semanticLabel: 'Seats',
             value: value,
             min: 1,
             max: 50,
@@ -611,7 +618,11 @@ void main() {
     testWidgets('disabled is inert', (tester) async {
       await pump(
         tester,
-        const Fluent2SpinButton(label: 'Seats', value: 3, onChanged: null),
+        const Fluent2SpinButton(
+          semanticLabel: 'Seats',
+          value: 3,
+          onChanged: null,
+        ),
       );
       await tester.tap(find.byIcon(Fluent2Icons.chevronUp16));
       expect(tester.takeException(), isNull);
@@ -631,11 +642,15 @@ void main() {
           builder: (context, set) => Column(
             children: [
               Fluent2Rating(
-                label: 'Rate',
+                semanticLabel: 'Rate',
                 value: score,
                 onChanged: (v) => set(() => score = v),
               ),
-              const Fluent2Rating(label: 'Locked', value: 2, onChanged: null),
+              const Fluent2Rating(
+                semanticLabel: 'Locked',
+                value: 2,
+                onChanged: null,
+              ),
             ],
           ),
         ),
@@ -666,7 +681,7 @@ void main() {
       await pump(
         tester,
         Fluent2Rating(
-          label: 'Rate',
+          semanticLabel: 'Rate',
           value: 1,
           allowHalf: true,
           onChanged: (v) => got = v,
@@ -709,11 +724,14 @@ void main() {
         Column(
           children: [
             Fluent2TextField(
-              label: 'Project name',
+              semanticLabel: 'Project name',
               hintText: 'Northwind launch',
               onChanged: (v) => got = v,
             ),
-            const Fluent2TextField(label: 'Workspace', value: 'Northwind'),
+            const Fluent2TextField(
+              semanticLabel: 'Workspace',
+              value: 'Northwind',
+            ),
           ],
         ),
       );
@@ -734,7 +752,7 @@ void main() {
       await pump(
         tester,
         Fluent2TextField(
-          label: 'Password',
+          semanticLabel: 'Password',
           value: 'secret',
           password: true,
           onChanged: (_) {},
@@ -756,7 +774,7 @@ void main() {
       await pump(
         tester,
         Fluent2TextField(
-          label: 'Password',
+          semanticLabel: 'Password',
           hintText: 'At least 8 characters',
           obscureText: true,
           validationMessage: 'Too short',
@@ -797,7 +815,7 @@ void main() {
       String? got;
       await pump(
         tester,
-        Fluent2TextArea(label: 'Notes', onChanged: (v) => got = v),
+        Fluent2TextArea(semanticLabel: 'Notes', onChanged: (v) => got = v),
       );
       final before = tester.getSize(find.byType(Fluent2TextArea)).height;
       await tester.enterText(find.byType(TextField), 'one\ntwo\nthree\nfour');
@@ -868,7 +886,7 @@ void main() {
           tester,
           StatefulBuilder(
             builder: (context, set) => Fluent2Select<String>(
-              label: 'Channel',
+              semanticLabel: 'Channel',
               prompt: 'Choose a channel',
               options: options,
               value: value,
@@ -893,7 +911,7 @@ void main() {
       await pump(
         tester,
         const Fluent2Select<String>(
-          label: 'Channel',
+          semanticLabel: 'Channel',
           options: options,
           value: 'general',
           onChanged: null,
@@ -911,7 +929,7 @@ void main() {
         tester,
         StatefulBuilder(
           builder: (context, set) => Fluent2Combobox<String>(
-            label: 'Room',
+            semanticLabel: 'Room',
             options: const [
               Fluent2Option('fjord', 'Fjord room'),
               Fluent2Option('harbor', 'Harbor room'),
@@ -934,7 +952,7 @@ void main() {
       await pump(
         tester,
         Fluent2Combobox<String>(
-          label: 'Room',
+          semanticLabel: 'Room',
           options: const [Fluent2Option('fjord', 'Fjord room')],
           value: null,
           onChanged: (_) {},
@@ -955,7 +973,7 @@ void main() {
         tester,
         StatefulBuilder(
           builder: (context, set) => Fluent2MultiSelect<String>(
-            label: 'Invite',
+            semanticLabel: 'Invite',
             options: const [
               Fluent2Option('Kai', 'Kai Tanaka'),
               Fluent2Option('Mara', 'Mara Okafor'),
@@ -994,7 +1012,7 @@ void main() {
       await pump(
         tester,
         Fluent2MultiSelect<String>(
-          label: 'Invite',
+          semanticLabel: 'Invite',
           options: const [Fluent2Option('Kai', 'Kai Tanaka')],
           selected: const ['Kai'],
           onChanged: (_) {},
@@ -1012,7 +1030,7 @@ void main() {
       await pump(
         tester,
         const Fluent2MultiSelect<String>(
-          label: 'Owners',
+          semanticLabel: 'Owners',
           options: [Fluent2Option('Ines', 'Ines Duarte')],
           selected: ['Ines'],
           onChanged: null,
@@ -1179,7 +1197,7 @@ void main() {
           tester,
           StatefulBuilder(
             builder: (context, set) => Fluent2DatePicker(
-              label: 'Due date',
+              semanticLabel: 'Due date',
               value: value,
               today: today,
               onChanged: (d) => set(() => value = d),
@@ -1200,7 +1218,7 @@ void main() {
     testWidgets('date picker disabled does not open', (tester) async {
       await pump(
         tester,
-        Fluent2DatePicker(label: 'Due', value: today, onChanged: null),
+        Fluent2DatePicker(semanticLabel: 'Due', value: today, onChanged: null),
         size: desktop,
       );
       await tester.tap(find.text('Nov 4, 2026'));
@@ -1245,7 +1263,7 @@ void main() {
             Fluent2Composer(
               style: Fluent2ComposerAppearance.assistant,
               onSend: null,
-              label: 'Ask',
+              semanticLabel: 'Ask',
             ),
           ],
         ),
@@ -1275,7 +1293,7 @@ void main() {
             onChanged: (_) {},
           ),
           Fluent2SegmentedButton<String>(
-            label: 'Files',
+            semanticLabel: 'Files',
             segments: const [
               Fluent2ButtonSegment(
                 'all',
@@ -1297,20 +1315,24 @@ void main() {
             onChanged: (_) {},
           ),
           Fluent2Slider(
-            label: 'Keep deleted files',
+            semanticLabel: 'Keep deleted files',
             value: 30,
             valueLabel: (v) => '${v.round()} days',
             onChanged: (_) {},
           ),
-          Fluent2SpinButton(label: 'Seats', value: 6, onChanged: (_) {}),
-          Fluent2Rating(label: 'Rate', value: 3, onChanged: (_) {}),
+          Fluent2SpinButton(
+            semanticLabel: 'Seats',
+            value: 6,
+            onChanged: (_) {},
+          ),
+          Fluent2Rating(semanticLabel: 'Rate', value: 3, onChanged: (_) {}),
           const Fluent2RatingDisplay(
             value: 4.5,
             count: 1160,
             size: Fluent2RatingSize.extraLarge,
           ),
           Fluent2TextField(
-            label: 'Email',
+            semanticLabel: 'Email',
             password: true,
             value: 'x',
             onChanged: (_) {},
@@ -1322,7 +1344,7 @@ void main() {
             onFilter: () {},
           ),
           Fluent2Select<String>(
-            label: 'Room',
+            semanticLabel: 'Room',
             options: const [
               Fluent2Option('h', 'Harbor room, third floor, east wing'),
             ],
@@ -1330,7 +1352,7 @@ void main() {
             onChanged: (_) {},
           ),
           Fluent2MultiSelect<String>(
-            label: 'Invite',
+            semanticLabel: 'Invite',
             options: const [
               Fluent2Option('a', 'Tomas Lindqvist'),
               Fluent2Option('b', 'Priya Raman'),
@@ -1340,7 +1362,7 @@ void main() {
             onChanged: (_) {},
           ),
           Fluent2DatePicker(
-            label: 'Due',
+            semanticLabel: 'Due',
             value: DateTime(2026, 11, 4),
             onChanged: (_) {},
           ),
@@ -1359,7 +1381,7 @@ void main() {
 
   test('the group\'s colour pairs hold the floors in every preset', () {
     final failures = <String>[];
-    for (final id in Fluent2ThemeData.presets) {
+    for (final id in Fluent2ThemeData.palettes.map((p) => p.id)) {
       for (final b in Brightness.values) {
         final t = Fluent2ThemeData.preset(id, b);
         final c = t.colors;
@@ -1386,7 +1408,7 @@ void main() {
           ],
           (
             'marigold star or its edge on surface',
-            Fluent2ThemeData.contrast(
+            RawPalette.contrastRatio(
                       s.paletteMarigoldBorderActive,
                       t.surface,
                     ) >=
@@ -1443,7 +1465,7 @@ void main() {
           ),
         ];
         for (final (label, ink, ground, floor) in pairs) {
-          final ratio = Fluent2ThemeData.contrast(ink, ground);
+          final ratio = RawPalette.contrastRatio(ink, ground);
           if (ratio < floor) {
             failures.add(
               '$id ${b.name}: $label ${ratio.toStringAsFixed(2)} < $floor',

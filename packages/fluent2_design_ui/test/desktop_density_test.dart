@@ -18,7 +18,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/internal/cap_label.dart';
 
@@ -63,7 +62,7 @@ final _entries = <_Entry>[
   _Entry(
     'text field',
     (_) => const Fluent2TextField(
-      label: 'Name',
+      semanticLabel: 'Name',
       hintText: 'Your name',
       onChanged: _drop,
     ),
@@ -74,7 +73,7 @@ final _entries = <_Entry>[
   _Entry(
     'text area',
     (_) => const Fluent2TextArea(
-      label: 'Notes',
+      semanticLabel: 'Notes',
       hintText: 'Add a note',
       onChanged: _drop,
     ),
@@ -92,7 +91,7 @@ final _entries = <_Entry>[
   _Entry(
     'password field',
     (_) => const Fluent2PasswordField(
-      label: 'Password',
+      semanticLabel: 'Password',
       hintText: 'At least 8 characters',
       onChanged: _drop,
     ),
@@ -103,7 +102,7 @@ final _entries = <_Entry>[
   _Entry(
     'input group',
     (_) => const Fluent2InputGroup(
-      label: 'Website',
+      semanticLabel: 'Website',
       hintText: 'example.com',
       onChanged: _drop,
     ),
@@ -114,7 +113,7 @@ final _entries = <_Entry>[
   _Entry(
     'combobox',
     (_) => const Fluent2Combobox<String>(
-      label: 'Size',
+      semanticLabel: 'Size',
       hintText: 'Type a size',
       value: null,
       options: _sizes,
@@ -127,7 +126,7 @@ final _entries = <_Entry>[
   _Entry(
     'multi select',
     (_) => const Fluent2MultiSelect<String>(
-      label: 'Sizes',
+      semanticLabel: 'Sizes',
       hintText: 'Add sizes',
       options: _sizes,
       selected: [],
@@ -140,7 +139,7 @@ final _entries = <_Entry>[
   _Entry(
     'composer',
     (_) => const Fluent2Composer(
-      label: 'Message',
+      semanticLabel: 'Message',
       hintText: 'Message',
       onSend: _drop,
     ),
@@ -149,7 +148,11 @@ final _entries = <_Entry>[
   ),
   _Entry(
     'number field',
-    (_) => const Fluent2SpinButton(label: 'Copies', value: 2, onChanged: _drop),
+    (_) => const Fluent2SpinButton(
+      semanticLabel: 'Copies',
+      value: 2,
+      onChanged: _drop,
+    ),
     words: '2',
     type: false,
     capitals: true,
@@ -157,7 +160,7 @@ final _entries = <_Entry>[
   _Entry(
     'select',
     (filled) => Fluent2Select<String>(
-      label: 'Size',
+      semanticLabel: 'Size',
       prompt: 'Pick a size',
       value: filled ? 'm' : null,
       options: _sizes,

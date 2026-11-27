@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 // Thirty rooms, none's words the start of another's.
 final _rooms = [
@@ -65,7 +64,7 @@ void main() {
       t,
       const Size(1440, 900),
       Fluent2Select<String>(
-        label: 'Room',
+        semanticLabel: 'Room',
         value: 'r28',
         options: _rooms,
         onChanged: (_) {},
@@ -95,7 +94,7 @@ void main() {
       t,
       const Size(390, 844),
       Fluent2Select<String>(
-        label: 'Room',
+        semanticLabel: 'Room',
         value: 'r28',
         options: _rooms,
         onChanged: (_) {},
@@ -112,7 +111,7 @@ void main() {
       t,
       const Size(1440, 900),
       Fluent2Combobox<String>(
-        label: 'Room',
+        semanticLabel: 'Room',
         value: 'r28',
         options: _rooms,
         onChanged: (_) {},

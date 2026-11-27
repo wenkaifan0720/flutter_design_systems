@@ -103,7 +103,7 @@ Widget _tabs({
     appearance: appearance,
     size: size,
     vertical: vertical,
-    label: 'Channel pages',
+    semanticLabel: 'Channel pages',
     selectedIndex: value,
     onChanged: set,
     items: _pages(),
@@ -115,7 +115,7 @@ Widget _tabs({
 Widget kitSpecimenTabsFit() => _Live<int>(
   0,
   (value, set) => Fluent2TabList.items(
-    label: 'Channel pages',
+    semanticLabel: 'Channel pages',
     selectedIndex: value,
     onChanged: set,
     items: _pages(glyphs: true),
@@ -125,7 +125,7 @@ Widget kitSpecimenTabsFit() => _Live<int>(
 Widget kitSpecimenTabsScroll() => _Live<int>(
   0,
   (value, set) => Fluent2TabList.items(
-    label: 'Channel pages',
+    semanticLabel: 'Channel pages',
     selectedIndex: value,
     onChanged: set,
     items: _pages(many: true),
@@ -136,7 +136,7 @@ Widget kitSpecimenTabsCircular() => _Live<int>(
   0,
   (value, set) => Fluent2TabList.items(
     appearance: Fluent2TabAppearance.filledCircular,
-    label: 'Channel pages',
+    semanticLabel: 'Channel pages',
     selectedIndex: value,
     onChanged: set,
     items: _pages(),

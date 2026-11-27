@@ -12,7 +12,7 @@ import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 // The panel is the example app's; a test reads its settings from there.
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'tiers.dart';
 

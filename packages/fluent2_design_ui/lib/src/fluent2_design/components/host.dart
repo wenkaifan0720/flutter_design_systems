@@ -1,47 +1,56 @@
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 
 import '../theme.dart';
+import 'toast.dart';
 
-/// The one mount of Fluent 2 in a host app. Picks the theme for the
-/// brightness in force and puts it in scope with a [Fluent2Theme] (which
-/// gives the platform primitives beneath the thin Material `ThemeData` they
-/// read and sets Fluent's `body1` as the default text style), paints the
-/// page's ground behind the app, carries status-bar polarity, and clamps the
-/// text scale at [maxTextScale] so a large accessibility size grows rows
-/// rather than breaking them. Every render host mounts it once above its
-/// Navigator: the app in its router builder, a page preview in its own.
+/// Fluent 2's one mount in an app, over its navigator: the theme for the
+/// appearance in force, the ground, the toasts, the tap targets and the
+/// status bar's ink.
 ///
-/// The host follows the ambient platform for behaviour (scroll physics,
-/// text selection, back gestures) and never pins one; inside a preview
-/// frame it follows the frame's register.
+/// It builds the theme of [palette] by day and by night (or takes [light]
+/// and [dark] as given), follows the platform's appearance unless
+/// [brightness] pins one, and eases to a new appearance or palette over
+/// Fluent's durationNormal (at once with reduced motion). It puts the theme
+/// in scope with a [Fluent2Theme], paints the page's ground, hosts the
+/// toasts ([Fluent2Toaster]), declares Fluent's tap targets (40 at a finger,
+/// 24 at a pointer), sets the status bar's ink, and holds text scaling at
+/// [maxTextScale] (200%), the largest size its parts are laid out for.
+///
+/// The host follows the platform for behaviour (scroll physics, text
+/// selection, back gestures) and never pins one.
 ///
 /// ```dart
-/// MaterialApp.router(routerConfig: router, builder: (context, child) => Fluent2Host(child: child!))
+/// MaterialApp(builder: (context, child) => Fluent2Host(palette: Fluent2ThemeData.palettes[1], child: child!), home: const HomePage())
 /// ```
 class Fluent2Host extends StatelessWidget {
   /// Mounts Fluent 2 over [child].
   const Fluent2Host({
     required this.child,
+    this.palette,
     this.light,
-    this.darkData,
+    this.dark,
     this.brightness,
     super.key,
   });
 
-  /// The light theme; null is the default preset's.
+  /// The palette both appearances are built from, one of
+  /// [Fluent2ThemeData.palettes]; null takes the first, `lapis`.
+  final RawNamedPalette? palette;
+
+  /// The theme by day; null builds [palette]'s.
   final Fluent2ThemeData? light;
 
-  /// The dark theme; null is the default preset's.
-  final Fluent2ThemeData? darkData;
+  /// The theme by night; null builds [palette]'s.
+  final Fluent2ThemeData? dark;
 
-  /// Pins the appearance; null follows the platform (or the preview frame).
+  /// Pins the appearance; null follows the platform.
   final Brightness? brightness;
 
-  /// The app under the host: its navigator and pages.
+  /// The app: its navigator, as `MaterialApp.builder` hands it.
   final Widget child;
 
   /// The largest text scale a Fluent 2 page lays out at: twice the size,
@@ -84,19 +93,11 @@ class Fluent2Host extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
-    final darkTheme =
-        darkData ??
-        Fluent2ThemeData.preset(
-          Fluent2ThemeData.presets.first,
-          Brightness.dark,
-        );
+    final id = (palette ?? Fluent2ThemeData.palettes.first).id;
+    final darkTheme = dark ?? Fluent2ThemeData.preset(id, Brightness.dark);
     final t = wanted == Brightness.dark
         ? darkTheme
-        : light ??
-              Fluent2ThemeData.preset(
-                Fluent2ThemeData.presets.first,
-                Brightness.light,
-              );
+        : light ?? Fluent2ThemeData.preset(id, Brightness.light);
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: maxTextScale,
       // Day to night (and a new preset) eases over Fluent's durationNormal,
@@ -121,7 +122,7 @@ class Fluent2Host extends StatelessWidget {
             child: Builder(
               builder: (context) => ColoredBox(
                 color: context.fluent2Theme.background,
-                child: _HostMark(child: child),
+                child: Fluent2Toaster(child: _HostMark(child: child)),
               ),
             ),
           ),
@@ -135,6 +136,13 @@ class Fluent2Host extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
+        DiagnosticsProperty<RawNamedPalette>(
+          'palette',
+          palette,
+          defaultValue: null,
+        ),
+      )
+      ..add(
         DiagnosticsProperty<Fluent2ThemeData>(
           'light',
           light,
@@ -142,11 +150,7 @@ class Fluent2Host extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<Fluent2ThemeData>(
-          'darkData',
-          darkData,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<Fluent2ThemeData>('dark', dark, defaultValue: null),
       )
       ..add(
         EnumProperty<Brightness>('brightness', brightness, defaultValue: null),

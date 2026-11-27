@@ -153,18 +153,18 @@ String _figure(double v) =>
 /// previews the score it passes over, a press or a drag across the row
 /// sets it (a step played at each star); arrows step it (mirrored right to
 /// left), End fills it, Home or 0 clears it, a digit sets that many. Null
-/// [onChanged] draws it disabled. Read as a slider named [label] saying
+/// [onChanged] draws it disabled. Read as a slider named [semanticLabel] saying
 /// "3 of 5". It is ui_core's `RawRating` drawn in Fluent's stars.
 ///
 /// ```dart
-/// Fluent2Rating(label: 'Rate this meeting', value: score, onChanged: (v) => setState(() => score = v))
+/// Fluent2Rating(semanticLabel: 'Rate this meeting', value: score, onChanged: (v) => setState(() => score = v))
 /// ```
 class Fluent2Rating extends StatelessWidget {
   /// A rating the user sets, [value] of [max] stars.
   const Fluent2Rating({
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.max = 5,
     this.allowHalf = false,
     this.color = Fluent2RatingColor.neutral,
@@ -182,7 +182,7 @@ class Fluent2Rating extends StatelessWidget {
   final ValueChanged<double>? onChanged;
 
   /// What a screen reader calls the rating.
-  final String label;
+  final String semanticLabel;
 
   /// How many stars it has.
   final int max;
@@ -222,7 +222,7 @@ class Fluent2Rating extends StatelessWidget {
       allowHalf: allowHalf,
       focusNode: focusNode,
       autofocus: autofocus,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       semanticFormatterCallback: (v) => say.ratingValue(_figure(v), max),
       itemBuilder: (context, item) {
         focused = item.states.contains(WidgetState.focused);
@@ -261,7 +261,7 @@ class Fluent2Rating extends StatelessWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<double>?>.has('onChanged', onChanged),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IntProperty('max', max, defaultValue: 5))
       ..add(FlagProperty('allowHalf', value: allowHalf, ifTrue: 'allowHalf'))
       ..add(

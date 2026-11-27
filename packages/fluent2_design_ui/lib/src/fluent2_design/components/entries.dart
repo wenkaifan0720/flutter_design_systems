@@ -25,13 +25,13 @@ import 'raised.dart';
 /// Tab moves from the field to the button. Space or Enter toggles visibility.
 ///
 /// ```dart
-/// Fluent2PasswordField(label: 'Password', onChanged: (v) => setState(() => password = v))
+/// Fluent2PasswordField(semanticLabel: 'Password', onChanged: (v) => setState(() => password = v))
 /// ```
 class Fluent2PasswordField extends StatelessWidget {
   /// A password field.
   const Fluent2PasswordField({
     super.key,
-    this.label,
+    this.semanticLabel,
     this.hintText,
     this.value,
     this.controller,
@@ -47,7 +47,7 @@ class Fluent2PasswordField extends StatelessWidget {
   });
 
   /// The field's name.
-  final String? label;
+  final String? semanticLabel;
 
   /// Placeholder text shown when the field is empty.
   final String? hintText;
@@ -92,7 +92,7 @@ class Fluent2PasswordField extends StatelessWidget {
       showLabel: RawWidgetsLocalizations.of(context).showPasswordLabel,
       hideLabel: RawWidgetsLocalizations.of(context).hidePasswordLabel,
       builder: (context, s) => Fluent2TextField(
-        label: label,
+        semanticLabel: semanticLabel,
         hintText: hintText,
         value: value,
         controller: controller,
@@ -108,7 +108,7 @@ class Fluent2PasswordField extends StatelessWidget {
         obscureText: s.obscured,
         trailing: Fluent2IconButton(
           s.obscured ? Fluent2Icons.eye : Fluent2Icons.eyeOff,
-          label: s.toggleLabel,
+          semanticLabel: s.toggleLabel,
           size: Fluent2ButtonSize.small,
           appearance: Fluent2ButtonAppearance.transparent,
           onPressed: onChanged != null || controller != null ? s.toggle : null,
@@ -121,7 +121,7 @@ class Fluent2PasswordField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
@@ -186,7 +186,7 @@ class Fluent2PasswordField extends StatelessWidget {
 /// scheme, hostname, and suffix stay in address order.
 ///
 /// ```dart
-/// Fluent2InputGroup(label: 'Website', prefix: 'https://', suffix: '.com', onChanged: setSite)
+/// Fluent2InputGroup(semanticLabel: 'Website', prefix: 'https://', suffix: '.com', onChanged: setSite)
 /// ```
 class Fluent2InputGroup extends StatefulWidget {
   /// A field grouped with its add-ons.
@@ -194,7 +194,7 @@ class Fluent2InputGroup extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-    this.label,
+    this.semanticLabel,
     this.prefix,
     this.suffix,
     this.leading,
@@ -209,7 +209,7 @@ class Fluent2InputGroup extends StatefulWidget {
   });
 
   /// The field's name.
-  final String? label;
+  final String? semanticLabel;
 
   /// Fixed words before the text.
   final String? prefix;
@@ -257,7 +257,7 @@ class Fluent2InputGroup extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('prefix', prefix, defaultValue: null))
       ..add(StringProperty('suffix', suffix, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
@@ -343,7 +343,7 @@ class _Fluent2InputGroupState extends State<Fluent2InputGroup> {
         ),
       ),
       child: Semantics(
-        label: widget.label,
+        label: widget.semanticLabel,
         child: Fluent2FieldEditor(
           autofocus: widget.autofocus,
           controller: _text,
@@ -371,7 +371,7 @@ class _Fluent2InputGroupState extends State<Fluent2InputGroup> {
 /// [onChanged] draws it out of use.
 ///
 /// ```dart
-/// Fluent2RangeSlider(label: 'Price', values: const RawRangeValues(20, 80), onChanged: setPrice)
+/// Fluent2RangeSlider(semanticLabel: 'Price', values: const RawRangeValues(20, 80), onChanged: setPrice)
 /// ```
 class Fluent2RangeSlider extends StatelessWidget {
   /// A slider over [values].
@@ -379,7 +379,7 @@ class Fluent2RangeSlider extends StatelessWidget {
     super.key,
     required this.values,
     required this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.min = 0,
     this.max = 100,
     this.divisions,
@@ -398,7 +398,7 @@ class Fluent2RangeSlider extends StatelessWidget {
   final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// Its name; each thumb's is this with its end.
-  final String? label;
+  final String? semanticLabel;
 
   /// The low end of the rail.
   final double min;
@@ -434,12 +434,12 @@ class Fluent2RangeSlider extends StatelessWidget {
       divisions: divisions,
       minGap: minGap,
       semanticFormatterCallback: say,
-      startLabel: label == null
+      startLabel: semanticLabel == null
           ? RawWidgetsLocalizations.of(context).rangeSliderStartLabel
-          : '$label, ${RawWidgetsLocalizations.of(context).rangeSliderStartLabel}',
-      endLabel: label == null
+          : '$semanticLabel, ${RawWidgetsLocalizations.of(context).rangeSliderStartLabel}',
+      endLabel: semanticLabel == null
           ? RawWidgetsLocalizations.of(context).rangeSliderEndLabel
-          : '$label, ${RawWidgetsLocalizations.of(context).rangeSliderEndLabel}',
+          : '$semanticLabel, ${RawWidgetsLocalizations.of(context).rangeSliderEndLabel}',
       trackBuilder: (context, track) => SizedBox(
         height: 32,
         child: CustomPaint(
@@ -522,7 +522,7 @@ class Fluent2RangeSlider extends StatelessWidget {
           onChangeEnd,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('min', min, defaultValue: 0))
       ..add(DoubleProperty('max', max, defaultValue: 100))
       ..add(IntProperty('divisions', divisions, defaultValue: null))
@@ -631,7 +631,7 @@ class Fluent2FileUpload extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: title,
+      semanticLabel: title,
       hint: hint,
       isError: invalid,
       radius: Fluent2Radius.xLarge,
@@ -817,7 +817,7 @@ class Fluent2DateRangePicker extends StatelessWidget {
                 first(
                   Fluent2IconButton(
                     Fluent2Icons.chevronLeft,
-                    label: RawWidgetsLocalizations.of(context)
+                    semanticLabel: RawWidgetsLocalizations.of(context)
                         .previousMonthTooltip,
                     size: Fluent2ButtonSize.small,
                     onPressed: h.previous,
@@ -826,7 +826,8 @@ class Fluent2DateRangePicker extends StatelessWidget {
                 first(
                   Fluent2IconButton(
                     Fluent2Icons.chevronRight,
-                    label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
+                    semanticLabel: RawWidgetsLocalizations.of(context)
+                        .nextMonthTooltip,
                     size: Fluent2ButtonSize.small,
                     onPressed: h.next,
                   ),
@@ -1213,7 +1214,7 @@ class Fluent2Time {
 /// use. [showFluent2TimePicker] asks with two wheels instead.
 ///
 /// ```dart
-/// Fluent2TimePicker(label: 'Starts', value: const Fluent2Time(9, 30), onChanged: setStart)
+/// Fluent2TimePicker(semanticLabel: 'Starts', value: const Fluent2Time(9, 30), onChanged: setStart)
 /// ```
 class Fluent2TimePicker extends StatelessWidget {
   /// A time picker.
@@ -1221,7 +1222,7 @@ class Fluent2TimePicker extends StatelessWidget {
     super.key,
     required this.onChanged,
     this.value,
-    this.label,
+    this.semanticLabel,
     this.minuteStep = 30,
     this.use24Hour,
     this.appearance = Fluent2InputAppearance.outline,
@@ -1236,7 +1237,7 @@ class Fluent2TimePicker extends StatelessWidget {
   final ValueChanged<Fluent2Time>? onChanged;
 
   /// Its name.
-  final String? label;
+  final String? semanticLabel;
 
   /// The minutes between the times it lists.
   final int minuteStep;
@@ -1271,7 +1272,7 @@ class Fluent2TimePicker extends StatelessWidget {
       ],
       value: value,
       onChanged: onChanged,
-      label: label,
+      semanticLabel: semanticLabel,
       // Fluent 2's "Choose a time" in English or the app's own words; else
       // ui_core's "Select time" in the app's language.
       prompt:
@@ -1296,7 +1297,7 @@ class Fluent2TimePicker extends StatelessWidget {
           onChanged,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(IntProperty('minuteStep', minuteStep, defaultValue: 30))
       ..add(
         DiagnosticsProperty<bool>('use24Hour', use24Hour, defaultValue: null),
@@ -1354,7 +1355,7 @@ Future<Fluent2Time?> showFluent2TimePicker(
           SizedBox(
             width: 88,
             child: Fluent2WheelPicker<int>(
-              label: words.hour,
+              semanticLabel: words.hour,
               items: [for (var h = 0; h < 24; h++) h],
               value: hour,
               looping: true,
@@ -1368,7 +1369,7 @@ Future<Fluent2Time?> showFluent2TimePicker(
           SizedBox(
             width: 88,
             child: Fluent2WheelPicker<int>(
-              label: words.minute,
+              semanticLabel: words.minute,
               items: [for (var m = 0; m < 60; m++) m],
               value: minute,
               looping: true,
@@ -1403,7 +1404,7 @@ Future<Fluent2Time?> showFluent2TimePicker(
 /// ui_core's `RawPicker`, one column, in Fluent's lines and band.
 ///
 /// ```dart
-/// Fluent2WheelPicker<int>(label: 'Guests', items: const [1, 2, 3, 4], value: guests, onChanged: setGuests)
+/// Fluent2WheelPicker<int>(semanticLabel: 'Guests', items: const [1, 2, 3, 4], value: guests, onChanged: setGuests)
 /// ```
 class Fluent2WheelPicker<T> extends StatefulWidget {
   /// A wheel of [items].
@@ -1412,7 +1413,7 @@ class Fluent2WheelPicker<T> extends StatefulWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.itemLabel,
     this.rows = 5,
     this.looping = false,
@@ -1428,7 +1429,7 @@ class Fluent2WheelPicker<T> extends StatefulWidget {
   final ValueChanged<T>? onChanged;
 
   /// What a screen reader calls it.
-  final String label;
+  final String semanticLabel;
 
   /// A choice's words; null is its `toString`.
   final String Function(T item)? itemLabel;
@@ -1449,7 +1450,7 @@ class Fluent2WheelPicker<T> extends StatefulWidget {
       ..add(IterableProperty<T>('items', items))
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<String Function(T item)?>.has(
           'itemLabel',
@@ -1478,7 +1479,7 @@ class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
         RawPickerColumn(
           itemCount: items.length,
           itemLabel: (i) => _say(items[i]),
-          semanticLabel: widget.label,
+          semanticLabel: widget.semanticLabel,
           looping: widget.looping,
         ),
       ],
@@ -1709,7 +1710,7 @@ class _HexFieldState extends State<_HexField> {
   Widget build(BuildContext context) => Directionality(
     textDirection: TextDirection.ltr,
     child: Fluent2TextField(
-      label: Fluent2Localizations.of(context).hexColor,
+      semanticLabel: Fluent2Localizations.of(context).hexColor,
       controller: _text,
       focusNode: _focus,
       onChanged: widget.controller.setHex,

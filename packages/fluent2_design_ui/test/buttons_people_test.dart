@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/button/button.dart'
     show Fluent2ButtonBox;
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
@@ -202,7 +201,10 @@ void main() {
             _light.copyWith(density: Fluent2Density.compact),
             const SizedBox(
               width: 240,
-              child: Fluent2TextField(label: 'Name', key: ValueKey('f')),
+              child: Fluent2TextField(
+                semanticLabel: 'Name',
+                key: ValueKey('f'),
+              ),
             ),
           ),
         );
@@ -234,7 +236,7 @@ void main() {
             Fluent2IconButton(
               Fluent2Icons.add,
               key: const ValueKey('i'),
-              label: 'Add',
+              semanticLabel: 'Add',
               size: Fluent2ButtonSize.small,
               onPressed: () => presses++,
             ),
@@ -398,7 +400,7 @@ void main() {
           _host(
             Fluent2IconButton(
               Fluent2Icons.moreHorizontal,
-              label: 'More options',
+              semanticLabel: 'More options',
               onPressed: () {},
             ),
           ),
@@ -421,7 +423,7 @@ void main() {
         _host(
           Fluent2IconButton(
             Fluent2Icons.star,
-            label: 'Favourite',
+            semanticLabel: 'Favourite',
             selected: true,
             filled: Fluent2Icons.starFilled,
             onPressed: () {},
@@ -577,7 +579,7 @@ void main() {
       );
       expect(t.widget<Text>(find.text('KT')).style!.color, hue.$2);
       expect(
-        Fluent2ThemeData.contrast(hue.$2, hue.$1),
+        RawPalette.contrastRatio(hue.$2, hue.$1),
         greaterThanOrEqualTo(4.5),
       );
     });

@@ -101,7 +101,7 @@ Widget kitSpecimenDatePicker() => Column(
     _Live<DateTime?>(
       null,
       (v, set) => Fluent2DatePicker(
-        label: 'Due date',
+        semanticLabel: 'Due date',
         value: v,
         today: _today,
         onChanged: set,
@@ -110,7 +110,7 @@ Widget kitSpecimenDatePicker() => Column(
     _Live<DateTime?>(
       DateTime(2026, 11, 12),
       (v, set) => Fluent2DatePicker(
-        label: 'Review date',
+        semanticLabel: 'Review date',
         value: v,
         today: _today,
         appearance: Fluent2InputAppearance.filledDarker,
@@ -118,7 +118,7 @@ Widget kitSpecimenDatePicker() => Column(
       ),
     ),
     Fluent2DatePicker(
-      label: 'Archived on',
+      semanticLabel: 'Archived on',
       value: DateTime(2026, 10, 30),
       onChanged: null,
     ),

@@ -190,30 +190,30 @@ Widget kitSpecimenButtonDisabled() => kitRow([
 ]);
 
 Widget kitSpecimenIconButtons() => kitRow([
-  Fluent2IconButton(Fluent2Icons.edit, label: 'Edit', onPressed: () {}),
+  Fluent2IconButton(Fluent2Icons.edit, semanticLabel: 'Edit', onPressed: () {}),
   Fluent2IconButton(
     Fluent2Icons.share,
-    label: 'Share',
+    semanticLabel: 'Share',
     appearance: Fluent2ButtonAppearance.secondary,
     onPressed: () {},
   ),
   Fluent2IconButton(
     Fluent2Icons.add,
-    label: 'New',
+    semanticLabel: 'New',
     appearance: Fluent2ButtonAppearance.primary,
     shape: Fluent2ButtonShape.circular,
     onPressed: () {},
   ),
   Fluent2IconButton(
     Fluent2Icons.star,
-    label: 'Favourite',
+    semanticLabel: 'Favourite',
     selected: true,
     filled: Fluent2Icons.starFilled,
     onPressed: () {},
   ),
   Fluent2IconButton(
     Fluent2Icons.moreHorizontal,
-    label: 'More',
+    semanticLabel: 'More',
     size: Fluent2ButtonSize.small,
     onPressed: () {},
   ),

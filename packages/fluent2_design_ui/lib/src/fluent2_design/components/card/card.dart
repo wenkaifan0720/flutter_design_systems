@@ -60,7 +60,7 @@ enum Fluent2CardOrientation {
 /// pressed fill. With [selected] set it is selectable: its check at the top
 /// end corner and, while selected, its selected fill inside the selected
 /// stroke; a press asks [onSelected] for the other state (null
-/// draws it disabled). Read as its words, or as [label] when given.
+/// draws it disabled). Read as its words, or as [semanticLabel] when given.
 ///
 /// [style] restyles it over `Fluent2ThemeData.cardTheme`, in its states
 /// (hovered, pressed, selected, disabled): `fill`, `overlay`, `edge`,
@@ -79,7 +79,7 @@ class Fluent2Card extends StatelessWidget {
     this.onPressed,
     this.selected,
     this.onSelected,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -113,7 +113,7 @@ class Fluent2Card extends StatelessWidget {
   final ValueChanged<bool>? onSelected;
 
   /// What a screen reader says; null reads the card's own words.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
@@ -202,7 +202,10 @@ class Fluent2Card extends StatelessWidget {
                   )
                 : ShapeDecoration(shape: shape.copyWith(side: rim)),
             // Its parts share the card's keylines (the keyline check).
-            child: RawKeylineRegion(label: label ?? 'Card', child: clipped),
+            child: RawKeylineRegion(
+              label: semanticLabel ?? 'Card',
+              child: clipped,
+            ),
           );
           if (selectable) {
             box = Stack(
@@ -229,9 +232,9 @@ class Fluent2Card extends StatelessWidget {
       // card's buttons), unless a label speaks for the whole.
       return Semantics(
         container: true,
-        explicitChildNodes: label == null,
-        label: label,
-        excludeSemantics: label != null,
+        explicitChildNodes: semanticLabel == null,
+        label: semanticLabel,
+        excludeSemantics: semanticLabel != null,
         child: face(const {}),
       );
     }
@@ -243,8 +246,14 @@ class Fluent2Card extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: press,
-        label: label,
+        semanticLabel: semanticLabel,
         checked: selectable ? selected : null,
+        // A control on the card (a footer's button) keeps its own node, a
+        // screen reader reaching it apart from the card. The card stands
+        // far past the tap floor, so it takes no tap target, which would
+        // merge the control into the card's node.
+        mergeSemantics: false,
+        padded: false,
         radius: radius,
         shape: WidgetStateProperty.resolveWith(outline),
         builder: (context, states) => face(states),
@@ -409,7 +418,7 @@ class Fluent2Card extends StatelessWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<bool>?>.has('onSelected', onSelected),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',

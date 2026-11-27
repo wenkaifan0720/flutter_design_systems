@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 /// The nodes under [root] whose tooltip or label says [words].
 List<SemanticsNode> _saying(SemanticsNode root, String words) {
@@ -29,7 +28,11 @@ void main() {
   final keys = <String, (String, Widget)>{
     'Fluent2IconButton': (
       'Share',
-      Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: () {}),
+      Fluent2IconButton(
+        Fluent2Icons.share,
+        semanticLabel: 'Share',
+        onPressed: () {},
+      ),
     ),
     'Fluent2Button': ('Archive', Fluent2Button('Archive', onPressed: () {})),
   };

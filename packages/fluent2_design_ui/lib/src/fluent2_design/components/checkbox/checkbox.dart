@@ -264,7 +264,7 @@ class Fluent2Checkbox extends StatelessWidget {
           onPressed: tap,
           radius: Fluent2Radius.medium,
           ring: words == null,
-          label: semanticLabel ?? words,
+          semanticLabel: semanticLabel ?? words,
           checked: value ?? false,
           mixed: value == null,
           builder: (context, states) {
@@ -377,17 +377,17 @@ class Fluent2Checkbox extends StatelessWidget {
 /// the other state; with no [onChanged] it is disabled, inert in the
 /// disabled inks; [readOnly] makes it a mark that only reports (drawn at
 /// full strength, not a control).
-/// [label] names the task to a screen reader. Its target is the tap floor
+/// [semanticLabel] names the task to a screen reader. Its target is the tap floor
 /// (40 under a finger, 24 under a pointer).
 ///
 /// ```dart
-/// Fluent2CompletionCheck(value: task.done, label: 'Review the launch deck', onChanged: (v) => setState(() => task.done = v))
+/// Fluent2CompletionCheck(value: task.done, semanticLabel: 'Review the launch deck', onChanged: (v) => setState(() => task.done = v))
 /// ```
 class Fluent2CompletionCheck extends StatelessWidget {
   /// A task's done mark holding [value].
   const Fluent2CompletionCheck({
     required this.value,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.readOnly = false,
     this.focusNode,
@@ -399,7 +399,7 @@ class Fluent2CompletionCheck extends StatelessWidget {
   final bool value;
 
   /// The task it marks, as a screen reader names it.
-  final String label;
+  final String semanticLabel;
 
   /// Asked for the other state; null disables it.
   final ValueChanged<bool>? onChanged;
@@ -438,7 +438,7 @@ class Fluent2CompletionCheck extends StatelessWidget {
         container: true,
         excludeSemantics: true,
         checked: value,
-        label: label,
+        label: semanticLabel,
         child: ConstrainedBox(
           constraints: BoxConstraints(minWidth: room, minHeight: room),
           child: Center(
@@ -460,7 +460,7 @@ class Fluent2CompletionCheck extends StatelessWidget {
           autofocus: autofocus,
           onPressed: tap,
           radius: Fluent2Radius.circular,
-          label: label,
+          semanticLabel: semanticLabel,
           checked: value,
           builder: (context, states) => face(states.press),
         ),
@@ -473,7 +473,7 @@ class Fluent2CompletionCheck extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<bool>('value', value))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
       ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
       ..add(

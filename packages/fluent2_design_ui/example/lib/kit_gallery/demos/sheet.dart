@@ -97,7 +97,7 @@ List<Widget> _options(
     for (final name in _folders)
       Fluent2Pressable(
         onPressed: () => onPick(name),
-        label: kitW(name),
+        semanticLabel: kitW(name),
         selected: name == current,
         radius: Fluent2Radius.medium,
         builder: (context, states) => ConstrainedBox(

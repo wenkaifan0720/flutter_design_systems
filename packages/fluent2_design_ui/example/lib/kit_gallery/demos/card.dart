@@ -105,7 +105,7 @@ Widget kitSpecimenCardFile() => Fluent2Card(
       description: 'Brand guidelines.pdf · 5m ago',
       action: Fluent2IconButton(
         Fluent2Icons.moreHorizontal,
-        label: 'More options',
+        semanticLabel: 'More options',
         onPressed: () {},
       ),
     ),

@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 Widget _host(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
@@ -172,7 +171,9 @@ void main() {
     {
       testWidgets('the frame clips the moving slide to its corners', (t) async {
         await t.pumpWidget(
-          _host(Fluent2CarouselView(label: 'Highlights', children: slides)),
+          _host(
+            Fluent2CarouselView(semanticLabel: 'Highlights', children: slides),
+          ),
         );
         final view = find.byType(PageView);
         final frame = t.getRect(view);

@@ -195,13 +195,13 @@ Future<void> settle(WidgetTester tester) async {
 /// Track widget disposal in both appearances of the first preset. The other
 /// presets exercise the same lifecycle with different colours and dimensions.
 LeakTesting? leakTestingIn(String preset) =>
-    preset == Fluent2ThemeData.presets.first
+    preset == Fluent2ThemeData.palettes.map((p) => p.id).first
     ? null
     : LeakTesting.settings.withIgnoredAll();
 
 /// Every preset, light and dark.
 Iterable<(String, Brightness)> get presetsAndModes sync* {
-  for (final preset in Fluent2ThemeData.presets) {
+  for (final preset in Fluent2ThemeData.palettes.map((p) => p.id)) {
     for (final b in Brightness.values) {
       yield (preset, b);
     }

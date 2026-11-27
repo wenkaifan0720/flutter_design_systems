@@ -1,359 +1,542 @@
-// The Fluent 2 gallery: every page, in every preset, light and dark, and the
-// theme's settings. The band at the top picks the page, the preset and the
-// appearance; Customize opens the settings (your own brand colour and the
-// density), which every page takes as you set them. The page under the band is the gallery's own screen.
-//
-// A link opens a page in a given theme, direction and text size, the scheme every look's gallery reads:
-// /#/<page>?theme=dark&dir=rtl&text=200 (and preset=<id>).
+// Shelf: a small reading list on Fluent 2, the whole app in one file. The
+// host over the navigator (light, dark or the platform's, and the toasts),
+// the shell with three places, a list with a pushed detail, a form with
+// validation and a date, a dialog popped with its answer, and settings with
+// the six palettes. Copy it, rename it, and grow it.
 import 'package:material_ui/material_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
-import 'gallery_pages.dart';
-import 'kit_gallery/kit.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // The faces before the first frame: on the web the words never flash in a
-  // fallback face and the glyphs never draw as empty boxes.
-  await fluent2LoadFonts();
-  // Flutter's own words in the app's language, as an ordinary app gives them;
-  // Fluent 2 brings its own Material and Cupertino words.
-  kitFlutterLocalizations = GlobalMaterialLocalizations.delegates;
-  runApp(GalleryApp(link: GalleryLink.of(Uri.base)));
+  await fluent2LoadFonts(); // the bundled faces, before the first frame
+  runApp(ShelfApp());
 }
 
-/// What a link asks the gallery to open: `/#/<page>?theme=dark&dir=rtl&text=200`, and `preset=<id>`. Each part is
-/// optional; one the gallery does not know is ignored.
-class GalleryLink {
-  /// A link that asks for nothing.
-  const GalleryLink({
-    this.page,
-    this.theme,
-    this.direction,
-    this.textScale,
-    this.preset,
+// ── The data ────────────────────────────────────────────────────────────────
+
+enum Status {
+  wanted('Want to read', Fluent2BadgeColor.informative),
+  reading('Reading', Fluent2BadgeColor.brand),
+  finished('Finished', Fluent2BadgeColor.success);
+
+  const Status(this.label, this.color);
+
+  final String label;
+  final Fluent2BadgeColor color;
+}
+
+class Book {
+  Book({
+    required this.title,
+    required this.author,
+    this.status = Status.wanted,
+    this.started,
+    this.favourite = false,
   });
 
-  /// Reads [uri]'s fragment.
-  factory GalleryLink.of(Uri uri) {
-    final fragment = uri.fragment;
-    if (fragment.isEmpty) return const GalleryLink();
-    final at = Uri.tryParse(fragment.startsWith('/') ? fragment : '/$fragment');
-    if (at == null) return const GalleryLink();
-    final q = at.queryParameters;
-    final id = at.pathSegments.isEmpty ? null : at.pathSegments.first;
-    final text = double.tryParse(q['text'] ?? '');
-    return GalleryLink(
-      page: galleryPages.any((p) => p.id == id) ? id : null,
-      theme: switch (q['theme']) {
-        'dark' => Brightness.dark,
-        'light' => Brightness.light,
-        _ => null,
-      },
-      direction: switch (q['dir']) {
-        'rtl' => TextDirection.rtl,
-        'ltr' => TextDirection.ltr,
-        _ => null,
-      },
-      textScale: text == null || text <= 0 ? null : text / 100,
-      preset: Fluent2ThemeData.presets.contains(q['preset'])
-          ? q['preset']
-          : null,
-    );
-  }
-
-  /// The page's id.
-  final String? page;
-
-  /// Light or dark.
-  final Brightness? theme;
-
-  /// The reading direction.
-  final TextDirection? direction;
-
-  /// The text scale (`text=200` is 2.0).
-  final double? textScale;
-
-  /// The preset's id.
-  final String? preset;
+  String title;
+  String author;
+  Status status;
+  DateTime? started;
+  bool favourite;
 }
 
-/// A brand colour the panel offers, for [Fluent2ThemeData.from].
-typedef GalleryBrand = ({String name, Color colour});
+/// The books, and the app's appearance: what every page reads and changes.
+class Library extends ChangeNotifier {
+  final List<Book> books = [
+    Book(
+      title: 'Stoner',
+      author: 'John Williams',
+      status: Status.finished,
+      started: DateTime(2026, 9, 2),
+      favourite: true,
+    ),
+    Book(
+      title: 'The Remains of the Day',
+      author: 'Kazuo Ishiguro',
+      status: Status.reading,
+      started: DateTime(2026, 11, 18),
+    ),
+    Book(title: 'Middlemarch', author: 'George Eliot'),
+    Book(
+      title: 'Pachinko',
+      author: 'Min Jin Lee',
+      status: Status.reading,
+      started: DateTime(2026, 11, 3),
+    ),
+  ];
 
-/// The brand colours the panel offers beside the preset's.
-const List<GalleryBrand> galleryBrands = [
-  (name: 'Violet', colour: Color(0xFF8A3FFC)),
-  (name: 'Teal', colour: Color(0xFF00B294)),
-  (name: 'Amber', colour: Color(0xFFFFB900)),
-  (name: 'Red', colour: Color(0xFFE81123)),
-];
+  /// The palette, one of [Fluent2ThemeData.palettes]; an app would store its
+  /// id and find it again in the list.
+  RawNamedPalette palette = Fluent2ThemeData.palettes.first;
 
-/// What the Customize panel holds. Its defaults are the look's own, so an
-/// untouched panel draws the preset as designed.
-@immutable
-class GalleryCustom {
-  /// The panel's settings.
-  const GalleryCustom({this.density = Fluent2Density.standard, this.brand});
+  /// Light or dark; null follows the platform.
+  Brightness? brightness;
 
-  /// How compact the controls stand.
-  final Fluent2Density density;
-
-  /// Your own brand colour in place of the preset's; null keeps the preset.
-  final GalleryBrand? brand;
-
-  /// [preset] in [brightness], or your own brand colour, at [density].
-  Fluent2ThemeData theme(String preset, Brightness brightness) {
-    final own = brand;
-    final base = own == null
-        ? Fluent2ThemeData.preset(preset, brightness)
-        : Fluent2ThemeData.from(brand: own.colour, brightness: brightness);
-    return base.copyWith(density: density);
+  void save(Book book) {
+    if (!books.contains(book)) books.add(book);
+    notifyListeners();
   }
 
-  /// This with the named settings changed; [brand] is set as given.
-  GalleryCustom copyWith({
-    Fluent2Density? density,
-    GalleryBrand? Function()? brand,
-  }) => GalleryCustom(
-    density: density ?? this.density,
-    brand: brand == null ? this.brand : brand(),
+  void delete(Book book) {
+    books.remove(book);
+    notifyListeners();
+  }
+
+  void setAppearance({
+    RawNamedPalette? palette,
+    Brightness? brightness,
+    bool system = false,
+  }) {
+    this.palette = palette ?? this.palette;
+    this.brightness = system ? null : brightness ?? this.brightness;
+    notifyListeners();
+  }
+}
+
+// ── The app ─────────────────────────────────────────────────────────────────
+
+class ShelfApp extends StatelessWidget {
+  ShelfApp({super.key});
+
+  final Library library = Library();
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) => MaterialApp(
+      title: 'Shelf',
+      debugShowCheckedModeBanner: false,
+      // Fluent's push and pop for the pages the app pushes.
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: fluent2PageTransitions,
+        ),
+      ),
+      // The one mount: the theme by day and by night (animating between
+      // them and between palettes), and the toasts.
+      builder: (context, child) => Fluent2Host(
+        palette: library.palette,
+        brightness: library.brightness,
+        child: child!,
+      ),
+      home: Shell(library: library),
+    ),
   );
 }
 
-/// The gallery with its picker.
-class GalleryApp extends StatefulWidget {
-  /// The gallery, opening on what [link] asks for, else its first page in the
-  /// default preset, light, left to right.
-  const GalleryApp({this.link = const GalleryLink(), super.key});
+class Shell extends StatefulWidget {
+  const Shell({super.key, required this.library});
 
-  /// The page, theme, direction and text size to open on.
-  final GalleryLink link;
+  final Library library;
 
   @override
-  State<GalleryApp> createState() => _GalleryAppState();
+  State<Shell> createState() => _ShellState();
 }
 
-class _GalleryAppState extends State<GalleryApp> {
-  late var _page = widget.link.page ?? galleryPages.first.id;
-  late var _preset = widget.link.preset ?? kitShownPreset;
-  late var _brightness = widget.link.theme ?? Brightness.light;
-  late var _direction = widget.link.direction ?? TextDirection.ltr;
-  late final _textScale = widget.link.textScale;
-  var _custom = const GalleryCustom();
-  var _customizing = false;
+class _ShellState extends State<Shell> {
+  int _place = 0;
 
   @override
-  Widget build(BuildContext context) {
-    kitShownPreset = _preset;
-    kitShownDirection = _direction;
-    kitShownTextScale = _textScale;
-    final custom = _custom;
-    kitShownTheme = (brightness) => custom.theme(_preset, brightness);
-    final page = galleryPages.firstWhere((p) => p.id == _page);
-    final textScale = _textScale;
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Fluent 2',
-      // A route the app pushes itself moves as the look's own do.
-      theme: kitAppTheme,
-      // ui_core's 30 languages beside Flutter's own words, as the README's
-      // app gives them: right to left the gallery reads Arabic, the parts'
-      // shared words with it.
-      locale: kitLocale,
-      localizationsDelegates: kitLocalizations,
-      supportedLocales: RawWidgetsLocalizations.supportedLocales,
-      // The link was read before the first frame; the app opens at its root.
-      initialRoute: Navigator.defaultRouteName,
-      // The snack bars queue in the toaster round the app, inside the theme.
-      // The whole gallery reads in the chosen direction, the band included.
-      builder: (context, child) => MediaQuery(
-        data: textScale == null
-            ? MediaQuery.of(context)
-            : MediaQuery.of(context)
-                  .copyWith(textScaler: TextScaler.linear(textScale)),
-        child: Directionality(
-          textDirection: _direction,
-          child: AnimatedFluent2Theme(
-            data: custom.theme(_preset, _brightness),
-            child: Fluent2Toaster(child: child!),
-          ),
-        ),
-      ),
-      home: Builder(
-        builder: (context) => ColoredBox(
-          color: context.fluent2Theme.background,
-          child: SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.end,
-                    children: [
-                      SizedBox(
-                        width: 260,
-                        child: Fluent2Select<String>(
-                          label: 'Page',
-                          value: _page,
-                          options: [
-                            for (final p in galleryPages)
-                              Fluent2Option(p.id, p.title),
-                          ],
-                          onChanged: (v) => setState(() => _page = v),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 160,
-                        child: Fluent2Select<String>(
-                          label: 'Preset',
-                          value: _preset,
-                          options: [
-                            for (final id in Fluent2ThemeData.presets)
-                              Fluent2Option(id, id),
-                          ],
-                          onChanged: (v) => setState(() => _preset = v),
-                        ),
-                      ),
-                      Fluent2SegmentedButton<Brightness>(
-                        label: 'Appearance',
-                        value: _brightness,
-                        segments: const [
-                          Fluent2ButtonSegment(Brightness.light, 'Light'),
-                          Fluent2ButtonSegment(Brightness.dark, 'Dark'),
-                        ],
-                        onChanged: (v) => setState(() => _brightness = v),
-                      ),
-                      Fluent2SegmentedButton<TextDirection>(
-                        label: 'Direction',
-                        value: _direction,
-                        segments: const [
-                          Fluent2ButtonSegment(
-                            TextDirection.ltr,
-                            'Left to right',
-                          ),
-                          Fluent2ButtonSegment(
-                            TextDirection.rtl,
-                            'Right to left',
-                          ),
-                        ],
-                        onChanged: (v) => setState(() => _direction = v),
-                      ),
-                      Fluent2ToggleButton(
-                        'Customize',
-                        icon: Fluent2Icons.settings,
-                        value: _customizing,
-                        onChanged: (v) => setState(() => _customizing = v),
-                      ),
-                    ],
-                  ),
+  Widget build(BuildContext context) => Fluent2AppShell.branches(
+    header: Text('Shelf', style: context.fluent2Theme.subtitle2),
+    destinations: const [
+      Fluent2NavItem(Fluent2Icons.book, 'Books'),
+      Fluent2NavItem(Fluent2Icons.bookmark, 'Reading'),
+      Fluent2NavItem(Fluent2Icons.settings, 'Settings'),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (index) => setState(() => _place = index),
+    // Each place keeps its own pages: a book opened in Books stays open
+    // while you look at Settings.
+    branches: [
+      (context) => BooksPage(library: widget.library),
+      (context) => BooksPage(library: widget.library, only: Status.reading),
+      (context) => SettingsPage(library: widget.library),
+    ],
+  );
+}
+
+// ── A list, and its pushed detail ───────────────────────────────────────────
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key, required this.library, this.only});
+
+  final Library library;
+  final Status? only;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) {
+      final books = [
+        for (final book in library.books)
+          if (only == null || book.status == only) book,
+      ];
+      final title = only?.label ?? 'Books';
+      return Fluent2Scaffold(
+        topBar: Fluent2AppBar(
+          title: title,
+          caption: Fluent2Format.plural(books.length, 'book'),
+          actions: [
+            Fluent2IconButton(
+              Fluent2Icons.add,
+              semanticLabel: 'Add a book',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) =>
+                      BookForm(library: library, parent: title),
                 ),
-                if (_customizing)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
-                    child: CustomizePanel(
-                      custom: custom,
-                      onChanged: (v) => setState(() => _custom = v),
-                    ),
-                  ),
-                Expanded(
-                  child: KeyedSubtree(
-                    key: ValueKey(
-                      '$_page/$_preset/${_brightness.name}/${_direction.name}/'
-                      '${custom.density.vertical}/${custom.brand?.name}',
-                    ),
-                    child: KitGalleryNavigator(
-                      navigator: Navigator.of(context),
-                      child: page.build(_brightness),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-      ),
-    );
-  }
+        body: books.isEmpty
+            ? const Fluent2EmptyState(
+                icon: Fluent2Icons.book,
+                title: 'Nothing here yet',
+                body: 'Books you add show up here.',
+              )
+            : Fluent2ListGroup(
+                children: [
+                  for (final book in books)
+                    Fluent2ListItem(
+                      title: book.title,
+                      subtitle: book.author,
+                      trailing: Fluent2LabelBadge(
+                        label: book.status.label,
+                        appearance: Fluent2BadgeAppearance.tint,
+                        color: book.status.color,
+                      ),
+                      chevron: true,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => BookPage(
+                            library: library,
+                            book: book,
+                            parent: title,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+      );
+    },
+  );
 }
 
-/// The theme's knobs, each a control of the look's own at its natural
-/// width.
-class CustomizePanel extends StatelessWidget {
-  /// A panel over [custom], reporting each change.
-  const CustomizePanel({
+class BookPage extends StatelessWidget {
+  const BookPage({
     super.key,
-    required this.custom,
-    required this.onChanged,
+    required this.library,
+    required this.book,
+    required this.parent,
   });
 
-  /// What it shows.
-  final GalleryCustom custom;
+  final Library library;
+  final Book book;
+  final String parent;
 
-  /// Called with the panel's next settings.
-  final ValueChanged<GalleryCustom> onChanged;
+  Future<void> _delete(BuildContext context) async {
+    // The dialog pops with the answer: true to delete, false or null to keep.
+    final sure = await showFluent2Dialog<bool>(
+      context,
+      builder: (context) => Fluent2Dialog(
+        title: 'Delete "${book.title}"?',
+        message: 'It leaves your shelf. This cannot be undone.',
+        actions: [
+          Fluent2Button(
+            'Keep',
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          Fluent2Button(
+            'Delete',
+            appearance: Fluent2ButtonAppearance.primary,
+            danger: true,
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (sure != true || !context.mounted) return;
+    library.delete(book);
+    Navigator.of(context).pop();
+    showFluent2Toast(context, 'Deleted "${book.title}"');
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final c = custom;
-    final t = context.fluent2Theme;
-    Widget strip<T>(
-      String label,
-      T value,
-      List<Fluent2ButtonSegment<T>> segments,
-      ValueChanged<T> set,
-    ) => Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: Fluent2Spacing.xs,
-      children: [
-        ExcludeSemantics(
-          child: Text(label, style: t.caption1Strong.c(t.textSecondary)),
-        ),
-        Fluent2SegmentedButton<T>(
-          label: label,
-          value: value,
-          segments: segments,
-          onChanged: set,
-        ),
-      ],
-    );
-    return Fluent2Card(
-      children: [
-        Wrap(
-          spacing: 24,
-          runSpacing: 16,
-          crossAxisAlignment: WrapCrossAlignment.end,
-          children: [
-            SizedBox(
-              width: 220,
-              child: Fluent2Select<String>(
-                label: 'Your own brand colour',
-                value: c.brand?.name ?? '',
-                options: [
-                  const Fluent2Option('', "The preset's"),
-                  for (final b in galleryBrands) Fluent2Option(b.name, b.name),
-                ],
-                onChanged: (v) => onChanged(
-                  c.copyWith(
-                    brand: () =>
-                        galleryBrands.where((b) => b.name == v).firstOrNull,
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) {
+      final started = book.started;
+      return Fluent2Scaffold(
+        topBar: Fluent2AppBar(
+          title: book.title,
+          backLabel: parent,
+          actions: [
+            Fluent2IconButton(
+              Fluent2Icons.edit,
+              semanticLabel: 'Edit',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => BookForm(
+                    library: library,
+                    book: book,
+                    parent: book.title,
                   ),
                 ),
               ),
             ),
-            strip('Density', c.density, const [
-              Fluent2ButtonSegment(Fluent2Density.standard, 'Standard'),
-              Fluent2ButtonSegment(Fluent2Density.comfortable, 'Comfortable'),
-              Fluent2ButtonSegment(Fluent2Density.compact, 'Compact'),
-            ], (v) => onChanged(c.copyWith(density: v))),
           ],
         ),
-      ],
+        body: Fluent2DescriptionList(
+          properties: [
+            Fluent2DescriptionItem(
+              'Author',
+              book.author,
+              icon: Fluent2Icons.person,
+            ),
+            Fluent2DescriptionItem(
+              'Status',
+              book.status.label,
+              icon: Fluent2Icons.flag,
+              child: Fluent2LabelBadge(
+                label: book.status.label,
+                appearance: Fluent2BadgeAppearance.tint,
+                color: book.status.color,
+              ),
+            ),
+            Fluent2DescriptionItem(
+              'Started',
+              started == null
+                  ? 'Not yet'
+                  : Fluent2Format.date(started, year: true),
+              icon: Fluent2Icons.calendarLtr,
+            ),
+            Fluent2DescriptionItem(
+              'Favourite',
+              book.favourite ? 'Yes' : 'No',
+              icon: Fluent2Icons.heart,
+            ),
+          ],
+        ),
+        footer: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Fluent2Button(
+              'Delete',
+              danger: true,
+              onPressed: () => _delete(context),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+// ── A form ──────────────────────────────────────────────────────────────────
+
+class BookForm extends StatefulWidget {
+  const BookForm({
+    super.key,
+    required this.library,
+    this.book,
+    required this.parent,
+  });
+
+  final Library library;
+
+  /// The book to edit; null adds one.
+  final Book? book;
+  final String parent;
+
+  @override
+  State<BookForm> createState() => _BookFormState();
+}
+
+class _BookFormState extends State<BookForm> {
+  late final Book _draft = Book(
+    title: widget.book?.title ?? '',
+    author: widget.book?.author ?? '',
+    status: widget.book?.status ?? Status.wanted,
+    started: widget.book?.started,
+    favourite: widget.book?.favourite ?? false,
+  );
+
+  void _save() {
+    final book = widget.book ?? Book(title: '', author: '');
+    book
+      ..title = _draft.title
+      ..author = _draft.author
+      ..status = _draft.status
+      ..started = _draft.started
+      ..favourite = _draft.favourite;
+    widget.library.save(book);
+    Navigator.of(context).pop();
+    showFluent2Toast(context, 'Saved "${book.title}"');
+  }
+
+  @override
+  Widget build(BuildContext context) => Fluent2Form(
+    // Called once every field is fine, after each field's onSaved.
+    onSubmit: _save,
+    child: Fluent2Scaffold(
+      topBar: Fluent2AppBar(
+        title: widget.book == null ? 'New book' : 'Edit',
+        backLabel: widget.parent,
+      ),
+      // The form's column: every field at its width, 16 apart, on a 560
+      // measure.
+      body: Fluent2FormSection(
+        children: [
+          Fluent2TextFormField(
+            labelText: 'Title',
+            required: true,
+            initialValue: _draft.title,
+            validator: (value) =>
+                (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+            onSaved: (value) => _draft.title = value!.trim(),
+          ),
+          Fluent2TextFormField(
+            labelText: 'Author',
+            initialValue: _draft.author,
+            onSaved: (value) => _draft.author = value!.trim(),
+          ),
+          Fluent2FormField(
+            labelText: 'Status',
+            child: Fluent2Select<Status>(
+              value: _draft.status,
+              options: [
+                for (final status in Status.values)
+                  Fluent2Option(status, status.label),
+              ],
+              onChanged: (value) => setState(() => _draft.status = value),
+            ),
+          ),
+          Fluent2FormField(
+            labelText: 'Started',
+            child: Fluent2DatePicker(
+              value: _draft.started,
+              hintText: 'Not yet',
+              lastDate: DateTime.now(),
+              onChanged: (value) => setState(() => _draft.started = value),
+            ),
+          ),
+          Fluent2Switch(
+            label: 'Favourite',
+            value: _draft.favourite,
+            onChanged: (value) => setState(() => _draft.favourite = value),
+          ),
+        ],
+      ),
+      footer: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          // Under the form: submit checks every field, shows what is wrong
+          // and moves focus to the first, or saves.
+          Builder(
+            builder: (context) => Fluent2Button(
+              'Save',
+              appearance: Fluent2ButtonAppearance.primary,
+              onPressed: () => Fluent2Form.submit(context),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// ── Settings ────────────────────────────────────────────────────────────────
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key, required this.library});
+
+  final Library library;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) => Fluent2Scaffold(
+      topBar: const Fluent2AppBar(title: 'Settings'),
+      body: Fluent2FormSection(
+        children: [
+          Fluent2RadioGroup<String>(
+            label: 'Appearance',
+            layout: Fluent2RadioLayout.horizontal,
+            value: library.brightness?.name ?? 'system',
+            onChanged: (value) => value == 'system'
+                ? library.setAppearance(system: true)
+                : library.setAppearance(
+                    brightness: Brightness.values.byName(value),
+                  ),
+            options: const [
+              Fluent2Radio('system', 'System'),
+              Fluent2Radio('light', 'Light'),
+              Fluent2Radio('dark', 'Dark'),
+            ],
+          ),
+          Fluent2RadioGroup<RawNamedPalette>(
+            label: 'Palette',
+            value: library.palette,
+            onChanged: (value) => library.setAppearance(palette: value),
+            options: [
+              for (final palette in Fluent2ThemeData.palettes)
+                Fluent2Radio(
+                  palette,
+                  palette.label,
+                  secondary: PaletteSwatches(palette),
+                ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// [palette]'s colours in the brightness on screen, beside its name in the
+/// picker: its accent on a tile of its ground.
+class PaletteSwatches extends StatelessWidget {
+  /// [palette]'s swatches.
+  const PaletteSwatches(this.palette, {super.key});
+
+  /// The palette they show.
+  final RawNamedPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.fluent2Theme;
+    final swatches = palette.swatchesFor(theme.brightness);
+    // The last swatch is the palette's ground: a small tile of it, ringed in
+    // the hairline, with the others as dots on it, so a ground as pale as
+    // the page reads as a page and not as an empty ring.
+    final ground = swatches.length > 1 ? swatches.last : null;
+    final dots = ground == null
+        ? swatches
+        : swatches.sublist(0, swatches.length - 1);
+    return Container(
+      margin: const EdgeInsetsDirectional.only(start: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+      decoration: BoxDecoration(
+        color: ground,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: theme.colors.neutralStroke1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 3,
+        children: [
+          for (final color in dots)
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+        ],
+      ),
     );
   }
 }

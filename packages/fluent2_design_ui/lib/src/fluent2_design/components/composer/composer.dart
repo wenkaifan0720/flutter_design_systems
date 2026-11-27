@@ -37,7 +37,7 @@ class Fluent2Composer extends StatefulWidget {
     required this.onSend,
     this.controller,
     this.hintText,
-    this.label,
+    this.semanticLabel,
     this.onAttach,
     this.onEmoji,
     this.actions = const [],
@@ -61,7 +61,7 @@ class Fluent2Composer extends StatefulWidget {
   final String? hintText;
 
   /// The text field's spoken name; null is "Message" in the app's language.
-  final String? label;
+  final String? semanticLabel;
 
   /// Called by the attach button; null shows none.
   final VoidCallback? onAttach;
@@ -105,7 +105,7 @@ class Fluent2Composer extends StatefulWidget {
         ),
       )
       ..add(StringProperty('hintText', hintText, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onAttach', onAttach))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onEmoji', onEmoji))
       ..add(
@@ -195,7 +195,7 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
     final type = t.body1;
     final own = Fluent2Localizations.of(context);
     final words = Semantics(
-      label: widget.label ?? own.message,
+      label: widget.semanticLabel ?? own.message,
       child: Fluent2FieldEditor(
         controller: _text,
         focusNode: _focus,
@@ -231,14 +231,14 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
       if (widget.onAttach != null)
         Fluent2IconButton(
           Fluent2Icons.attach,
-          label: own.attachFile,
+          semanticLabel: own.attachFile,
           size: Fluent2ButtonSize.small,
           onPressed: live ? widget.onAttach : null,
         ),
       if (widget.onEmoji != null)
         Fluent2IconButton(
           Fluent2Icons.emoji,
-          label: own.emoji,
+          semanticLabel: own.emoji,
           size: Fluent2ButtonSize.small,
           onPressed: live ? widget.onEmoji : null,
         ),
@@ -248,7 +248,7 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
     final send = assistant
         ? Fluent2IconButton(
             Fluent2Icons.sendFilled,
-            label: own.send,
+            semanticLabel: own.send,
             appearance: Fluent2ButtonAppearance.primary,
             shape: Fluent2ButtonShape.circular,
             size: Fluent2ButtonSize.small,
@@ -256,7 +256,7 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
           )
         : Fluent2IconButton(
             draft ? Fluent2Icons.sendFilled : Fluent2Icons.send,
-            label: own.send,
+            semanticLabel: own.send,
             size: Fluent2ButtonSize.small,
             color: canSend ? c.compoundBrandForeground1 : null,
             onPressed: canSend ? _send : null,

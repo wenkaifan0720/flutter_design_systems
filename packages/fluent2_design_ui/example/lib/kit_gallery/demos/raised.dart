@@ -106,7 +106,7 @@ final _raiseActions = Builder(
 );
 
 Widget kitSpecimenPopover() => Fluent2Popover(
-  label: 'Filters',
+  semanticLabel: 'Filters',
   width: 260,
   trigger: (context, toggle) =>
       Fluent2Button('Filters', icon: Fluent2Icons.filter, onPressed: toggle),

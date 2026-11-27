@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 Widget _app(Widget page, {Fluent2Localizations? words}) => WidgetsApp(
   color: const Color(0xFF000000),

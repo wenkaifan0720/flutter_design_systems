@@ -54,7 +54,7 @@ Widget kitSpecimenDataTable() => KitOwned(
     ],
   ),
   (context, files) => Fluent2DataGrid<_File>(
-    label: 'Files',
+    semanticLabel: 'Files',
     controller: files,
     selectable: true,
     cell: (row, column) => switch (column.id) {
@@ -174,7 +174,7 @@ Widget kitSpecimenCarouselView() => Builder(
     // Taller with the reader's text size, so a slide's words still fit.
     final grow = MediaQuery.textScalerOf(context).scale(16) / 16;
     return Fluent2CarouselView(
-      label: 'Highlights',
+      semanticLabel: 'Highlights',
       aspect: 16 / (7 * grow),
       children: [
         _slide(

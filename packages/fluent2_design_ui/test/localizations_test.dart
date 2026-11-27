@@ -12,7 +12,6 @@ import 'package:material_ui/material_ui.dart'
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 /// An app in [locale] with ui_core's and Fluent 2's words and no Material or
 /// Cupertino words at all (but [words], listed first), Fluent 2's host round
@@ -71,7 +70,7 @@ void main() {
     for (final (label, field) in [
       (
         'text field',
-        Fluent2TextField(value: '', label: 'Name', onChanged: (_) {}),
+        Fluent2TextField(value: '', semanticLabel: 'Name', onChanged: (_) {}),
       ),
       ('search box', Fluent2SearchBox(value: '', onChanged: (_) {})),
     ]) {
@@ -116,7 +115,7 @@ void main() {
             locale,
             Fluent2DatePicker(
               value: DateTime(2026, 11, 14),
-              label: 'Due',
+              semanticLabel: 'Due',
               onChanged: (_) {},
             ),
           ),
@@ -187,7 +186,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           label == 'English' ? const Locale('en') : const Locale('de'),
-          Fluent2TextField(value: '', label: 'Name', onChanged: (_) {}),
+          Fluent2TextField(value: '', semanticLabel: 'Name', onChanged: (_) {}),
           words: words,
         ),
       );
@@ -216,7 +215,7 @@ void main() {
                   width: 320,
                   child: Fluent2TextField(
                     value: '',
-                    label: 'Name',
+                    semanticLabel: 'Name',
                     onChanged: (_) {},
                   ),
                 ),

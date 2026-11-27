@@ -818,7 +818,7 @@ class Fluent2Button extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: onPressed,
-          label: semanticLabel ?? label,
+          semanticLabel: semanticLabel ?? label,
           radius: look.radius,
           shape: look.outlines,
           builder: (context, states) {
@@ -922,7 +922,7 @@ class Fluent2Button extends StatelessWidget {
 
 /// Fluent 2's icon-only Button: one glyph in a square of the size's height
 /// (24, 32, 40), on the [appearance]'s face (subtle by default, as a
-/// toolbar's and a bar's commands are), named by [label] for a screen
+/// toolbar's and a bar's commands are), named by [semanticLabel] for a screen
 /// reader. [filled] is the glyph worn while [selected] (a toggled
 /// command, read as a button selected or not, as Flutter's
 /// `IconButton(isSelected:)` is); its tap target is the floor (40 under a finger, 24 under a pointer). [style]
@@ -930,13 +930,13 @@ class Fluent2Button extends StatelessWidget {
 /// appearance's button theme and the theme's knobs.
 ///
 /// ```dart
-/// Fluent2IconButton(Fluent2Icons.moreHorizontal, label: 'More options', onPressed: openMenu)
+/// Fluent2IconButton(Fluent2Icons.moreHorizontal, semanticLabel: 'More options', onPressed: openMenu)
 /// ```
 class Fluent2IconButton extends StatelessWidget {
-  /// An icon-only button showing [icon], read as [label].
+  /// An icon-only button showing [icon], read as [semanticLabel].
   const Fluent2IconButton(
     this.icon, {
-    required this.label,
+    required this.semanticLabel,
     required this.onPressed,
     this.appearance = Fluent2ButtonAppearance.subtle,
     this.size = Fluent2ButtonSize.medium,
@@ -955,7 +955,7 @@ class Fluent2IconButton extends StatelessWidget {
   final IconData icon;
 
   /// What a screen reader says.
-  final String label;
+  final String semanticLabel;
 
   /// {@macro fluent2.onPressed}
   final VoidCallback? onPressed;
@@ -1011,7 +1011,7 @@ class Fluent2IconButton extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: onPressed,
-          label: label,
+          semanticLabel: semanticLabel,
           selected: selected,
           radius: look.radius,
           shape: look.outlines,
@@ -1066,7 +1066,7 @@ class Fluent2IconButton extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<IconData>('icon', icon))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
       ..add(
         EnumProperty<Fluent2ButtonAppearance>(
@@ -1103,7 +1103,7 @@ class Fluent2IconButton extends StatelessWidget {
 }
 
 /// Fluent 2's ToggleButton: a [Fluent2Button] that stays pressed while
-/// [checked], on the appearance's selected face, its glyph turning to
+/// [value], on the appearance's selected face, its glyph turning to
 /// [checkedIcon]; a press asks [onChanged] for the other state. Read as
 /// Flutter's `IconButton(isSelected:)` is: a button named [label], selected
 /// while [value].
@@ -1186,7 +1186,7 @@ class Fluent2ToggleButton extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: change == null ? null : () => change(!value),
-          label: label,
+          semanticLabel: label,
           selected: value,
           radius: look.radius,
           shape: look.outlines,
@@ -1353,7 +1353,7 @@ class Fluent2CompoundButton extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
-        label: '$label, $secondary',
+        semanticLabel: '$label, $secondary',
         radius: look.radius,
         shape: look.outlines,
         builder: (context, states) {
@@ -1505,7 +1505,7 @@ class Fluent2MenuButton extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: onPressed,
-          label: label,
+          semanticLabel: label,
           hint: Fluent2Localizations.of(context).opensMenu,
           radius: look.radius,
           shape: look.outlines,

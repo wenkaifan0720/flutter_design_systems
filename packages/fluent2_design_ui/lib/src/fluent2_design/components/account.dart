@@ -170,7 +170,7 @@ class Fluent2Bell extends StatelessWidget {
     final n = account.unread;
     return Fluent2IconButton(
       Fluent2Icons.alert,
-      label: n > 0
+      semanticLabel: n > 0
           ? Fluent2Localizations.of(context).notificationsUnread(n)
           : Fluent2Localizations.of(context).notifications,
       onPressed: open == null ? null : () => open(context),

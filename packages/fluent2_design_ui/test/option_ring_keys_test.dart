@@ -50,7 +50,7 @@ void main() {
     await _pump(
       t,
       Fluent2Combobox<String>(
-        label: 'Assignee',
+        semanticLabel: 'Assignee',
         value: 'maya',
         options: _people,
         onChanged: (_) {},
@@ -77,7 +77,7 @@ void main() {
     await _pump(
       t,
       Fluent2MultiSelect<String>(
-        label: 'Reviewers',
+        semanticLabel: 'Reviewers',
         options: _people,
         selected: const [],
         onChanged: (_) {},

@@ -12,7 +12,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
-import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/badge/badge.dart'
     show Fluent2BadgeFace;
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
@@ -25,7 +24,7 @@ Widget _host(Fluent2ThemeData theme, Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, route) => Fluent2Host(
     light: theme.brightness == Brightness.light ? theme : null,
-    darkData: theme.brightness == Brightness.dark ? theme : null,
+    dark: theme.brightness == Brightness.dark ? theme : null,
     brightness: theme.brightness,
     child: route!,
   ),
@@ -45,7 +44,7 @@ Color _fillOf(WidgetTester t, Finder of, {int at = 0}) {
 
 void main() {
   final themes = [
-    for (final id in Fluent2ThemeData.presets)
+    for (final id in Fluent2ThemeData.palettes.map((p) => p.id))
       for (final b in Brightness.values) Fluent2ThemeData.preset(id, b),
   ];
 
@@ -63,7 +62,7 @@ void main() {
     for (final g in grounds(t).entries) {
       final seen = Color.alphaBlend(fill, g.value);
       expect(
-        Fluent2ThemeData.contrast(seen, g.value),
+        RawPalette.contrastRatio(seen, g.value),
         greaterThanOrEqualTo(floor),
         reason: '${t.id} ${t.brightness.name}: $part on the ${g.key}',
       );
@@ -131,7 +130,7 @@ void main() {
       if (light) {
         for (final g in grounds(t).values) {
           double over(Color f) =>
-              Fluent2ThemeData.contrast(Color.alphaBlend(f, g), g);
+              RawPalette.contrastRatio(Color.alphaBlend(f, g), g);
           expect(
             over(fluent2Step(t, c.subtleBackgroundPressed)),
             greaterThan(over(fluent2Step(t, c.subtleBackgroundHover))),
@@ -141,7 +140,7 @@ void main() {
       }
       for (final g in grounds(t).values) {
         double over(Color f) =>
-            Fluent2ThemeData.contrast(Color.alphaBlend(f, g), g);
+            RawPalette.contrastRatio(Color.alphaBlend(f, g), g);
         expect(
           over(fluent2Step(t, c.neutralStroke1)),
           greaterThan(over(fluent2Step(t, c.neutralStroke2))),
@@ -152,13 +151,13 @@ void main() {
       // from every other ground, its words in the brand's second ink.
       final tint = fluent2BrandWell(t);
       expect(
-        Fluent2ThemeData.contrast(tint, t.background),
+        RawPalette.contrastRatio(tint, t.background),
         greaterThanOrEqualTo(1.15),
         reason: '$name: brand tint on the page',
       );
       holds(t, 'brand tint', tint, 1.1);
       expect(
-        Fluent2ThemeData.contrast(c.brandForeground2, tint),
+        RawPalette.contrastRatio(c.brandForeground2, tint),
         greaterThanOrEqualTo(4.5),
         reason: '$name: brand words on the brand tint',
       );
@@ -179,7 +178,7 @@ void main() {
           ),
         ]) {
           expect(
-            Fluent2ThemeData.contrast(ink, Color.alphaBlend(fill, g.value)),
+            RawPalette.contrastRatio(ink, Color.alphaBlend(fill, g.value)),
             greaterThanOrEqualTo(4.5),
             reason: '$name: $what on the ${g.key}',
           );
@@ -207,7 +206,7 @@ void main() {
             mainAxisSize: MainAxisSize.min,
             children: [
               Fluent2SegmentedButton<String>(
-                label: 'View',
+                semanticLabel: 'View',
                 segments: const [
                   Fluent2ButtonSegment('day', 'Day'),
                   Fluent2ButtonSegment('week', 'Week'),

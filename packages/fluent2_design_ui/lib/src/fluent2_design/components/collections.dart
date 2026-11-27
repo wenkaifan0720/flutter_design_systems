@@ -32,7 +32,7 @@ const double _gripDot = 3;
 /// headings exceed its available width.
 ///
 /// ```dart
-/// Fluent2DataGrid<Map<String, String>>(label: 'Files', controller: files, cell: (row, column) => row[column.id] ?? '')
+/// Fluent2DataGrid<Map<String, String>>(semanticLabel: 'Files', controller: files, cell: (row, column) => row[column.id] ?? '')
 /// ```
 class Fluent2DataGrid<R> extends StatelessWidget {
   /// A table over [controller].
@@ -40,7 +40,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
     super.key,
     required this.controller,
     required this.cell,
-    this.label,
+    this.semanticLabel,
     this.selectable = true,
     this.onActivate,
   });
@@ -52,7 +52,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
   final String Function(R row, RawDataColumn<R> column) cell;
 
   /// The grid's accessibility label.
-  final String? label;
+  final String? semanticLabel;
 
   /// Whether rows can be ticked.
   final bool selectable;
@@ -109,7 +109,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
       ),
     );
     return Semantics(
-      label: label,
+      label: semanticLabel,
       container: true,
       explicitChildNodes: true,
       child: ListenableBuilder(
@@ -308,7 +308,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
           cell,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         FlagProperty(
           'selectable',
@@ -581,7 +581,7 @@ class Fluent2Resizable extends StatelessWidget {
 /// arrows while it holds focus.
 ///
 /// ```dart
-/// Fluent2CarouselView(label: 'Highlights', children: slides)
+/// Fluent2CarouselView(semanticLabel: 'Highlights', children: slides)
 /// ```
 class Fluent2CarouselView extends StatelessWidget {
   /// A carousel of [children].
@@ -590,7 +590,7 @@ class Fluent2CarouselView extends StatelessWidget {
     this.autofocus = false,
     super.key,
     required this.children,
-    this.label,
+    this.semanticLabel,
     this.initialItem = 0,
     this.looping = false,
     this.autoplay,
@@ -602,7 +602,7 @@ class Fluent2CarouselView extends StatelessWidget {
   final List<Widget> children;
 
   /// What a screen reader calls it.
-  final String? label;
+  final String? semanticLabel;
 
   /// The first slide shown.
   final int initialItem;
@@ -640,7 +640,7 @@ class Fluent2CarouselView extends StatelessWidget {
       loop: looping,
       autoplayInterval: autoplay,
       onPageChanged: onChanged,
-      semanticLabel: label ?? '',
+      semanticLabel: semanticLabel ?? '',
       slideLabel: (i, count) =>
           RawWidgetsLocalizations.of(context).carouselSlideLabel(i, count),
       duration: Fluent2Motion.of(context, Fluent2Motion.slow),
@@ -671,7 +671,7 @@ class Fluent2CarouselView extends StatelessWidget {
               children: [
                 Fluent2IconButton(
                   Fluent2Icons.chevronLeft,
-                  label: words.previousSlide,
+                  semanticLabel: words.previousSlide,
                   onPressed: controls.previous,
                 ),
                 Expanded(
@@ -684,7 +684,7 @@ class Fluent2CarouselView extends StatelessWidget {
                         count: n,
                         selectedIndex: controls.page,
                         position: position,
-                        label: RawWidgetsLocalizations.of(context)
+                        semanticLabel: RawWidgetsLocalizations.of(context)
                             .carouselSlideLabel(controls.page, n),
                         onChanged: controls.goToPage,
                       ),
@@ -694,12 +694,12 @@ class Fluent2CarouselView extends StatelessWidget {
                 if (controls.togglePlay != null)
                   Fluent2IconButton(
                     controls.playing ? Fluent2Icons.pause : Fluent2Icons.play,
-                    label: controls.playing ? words.pause : words.play,
+                    semanticLabel: controls.playing ? words.pause : words.play,
                     onPressed: controls.togglePlay,
                   ),
                 Fluent2IconButton(
                   Fluent2Icons.chevronRight,
-                  label: words.nextSlide,
+                  semanticLabel: words.nextSlide,
                   onPressed: controls.next,
                 ),
               ],
@@ -714,7 +714,7 @@ class Fluent2CarouselView extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(IntProperty('initialItem', initialItem, defaultValue: 0))
       ..add(FlagProperty('looping', value: looping, ifTrue: 'looping'))
       ..add(

@@ -107,13 +107,13 @@ Widget kitSpecimenBadgeSizes() => Column(
 Widget kitSpecimenCounterBadges() => kitRow([
   Fluent2IconButton(
     Fluent2Icons.chat,
-    label: 'Chat, 3 unread',
+    semanticLabel: 'Chat, 3 unread',
     onPressed: () {},
     badge: const Fluent2Badge(3, size: Fluent2BadgeSize.small),
   ),
   Fluent2IconButton(
     Fluent2Icons.mail,
-    label: 'Mail, 120 unread',
+    semanticLabel: 'Mail, 120 unread',
     onPressed: () {},
     badge: const Fluent2Badge(
       120,
@@ -123,7 +123,7 @@ Widget kitSpecimenCounterBadges() => kitRow([
   ),
   Fluent2IconButton(
     Fluent2Icons.alert,
-    label: 'Activity, new',
+    semanticLabel: 'Activity, new',
     onPressed: () {},
     badge: const Fluent2Badge.dot(),
   ),
@@ -236,7 +236,7 @@ Widget kitSpecimenInteractionTagSelected() => kitRow([
 
 /// The file filters, one picked.
 Widget kitSpecimenTagGroup() => Fluent2TagGroup<String>(
-  label: 'File type',
+  semanticLabel: 'File type',
   items: const [
     Fluent2TagItem('all', 'All files', dismissible: false),
     Fluent2TagItem('docs', 'Documents', icon: Fluent2Icons.document),
@@ -283,7 +283,7 @@ class _FiltersState extends State<_Filters> {
         ),
       ]),
       Fluent2TagGroup<String>(
-        label: 'People',
+        semanticLabel: 'People',
         multiple: true,
         shape: Fluent2TagShape.circular,
         items: [

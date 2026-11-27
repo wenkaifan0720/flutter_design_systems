@@ -80,7 +80,7 @@ Widget kitSpecimenScreenHome() => Stack(
         actions: [
           Fluent2IconButton(
             Fluent2Icons.search,
-            label: kitW('Search'),
+            semanticLabel: kitW('Search'),
             onPressed: () {},
           ),
         ],
@@ -142,8 +142,8 @@ Widget kitSpecimenScreenHome() => Stack(
 );
 
 /// A pushed meeting's page and the act that joins it at the foot, with its
-/// secondary (DERIVED: Fluent draws no page footer; the band is its
-/// surface over a hairline).
+/// secondary: the band is the page's surface over a hairline, as Fluent
+/// draws no page footer of its own.
 Widget kitSpecimenScreenFooter() => kitInRegister(
   RoutePresentation.pushed,
   Fluent2Scaffold(
@@ -153,7 +153,7 @@ Widget kitSpecimenScreenFooter() => kitInRegister(
       actions: [
         Fluent2IconButton(
           Fluent2Icons.moreHorizontal,
-          label: kitW('More'),
+          semanticLabel: kitW('More'),
           onPressed: () {},
         ),
       ],
@@ -220,12 +220,12 @@ Widget kitSpecimenTopBarCommands() => _onGutter(
     actions: [
       Fluent2IconButton(
         Fluent2Icons.calendarAdd,
-        label: kitW('New event'),
+        semanticLabel: kitW('New event'),
         onPressed: () {},
       ),
       Fluent2IconButton(
         Fluent2Icons.filter,
-        label: kitW('Filter'),
+        semanticLabel: kitW('Filter'),
         onPressed: () {},
       ),
     ],
@@ -241,7 +241,7 @@ Widget kitSpecimenTopBarPushed() => kitInRegister(
       actions: [
         Fluent2IconButton(
           Fluent2Icons.share,
-          label: kitW('Share'),
+          semanticLabel: kitW('Share'),
           onPressed: () {},
         ),
       ],

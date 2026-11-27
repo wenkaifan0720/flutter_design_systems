@@ -32,12 +32,12 @@ Widget kitSpecimenPasswordField() => const Column(
   spacing: Fluent2Spacing.m,
   children: [
     Fluent2PasswordField(
-      label: 'Password',
+      semanticLabel: 'Password',
       value: 'harbor-light-42',
       onChanged: _typed,
     ),
     Fluent2PasswordField(
-      label: 'New password',
+      semanticLabel: 'New password',
       value: 'abc',
       onChanged: _typed,
       validationMessage: 'Use at least 8 characters',
@@ -52,14 +52,14 @@ Widget kitSpecimenInputGroup() => const Column(
     Directionality(
       textDirection: TextDirection.ltr,
       child: Fluent2InputGroup(
-        label: 'Website',
+        semanticLabel: 'Website',
         prefix: 'https://',
         suffix: '.com',
         hintText: 'northwind',
       ),
     ),
     Fluent2InputGroup(
-      label: 'Budget',
+      semanticLabel: 'Budget',
       prefix: r'$',
       suffix: 'per month',
       hintText: '0',
@@ -71,7 +71,7 @@ Widget kitSpecimenRangeSlider() {
   var price = const RawRangeValues(40, 160);
   return StatefulBuilder(
     builder: (context, set) => Fluent2RangeSlider(
-      label: 'Price per night',
+      semanticLabel: 'Price per night',
       min: 0,
       max: 300,
       divisions: 30,
@@ -125,12 +125,12 @@ Widget kitSpecimenTimePicker() {
       spacing: Fluent2Spacing.m,
       children: [
         Fluent2TimePicker(
-          label: 'Starts',
+          semanticLabel: 'Starts',
           value: start,
           minuteStep: 15,
           onChanged: (v) => set(() => start = v),
         ),
-        const Fluent2TimePicker(label: 'Ends', onChanged: null),
+        const Fluent2TimePicker(semanticLabel: 'Ends', onChanged: null),
       ],
     ),
   );
@@ -140,7 +140,7 @@ Widget kitSpecimenWheelPicker() {
   var size = 'Medium';
   return StatefulBuilder(
     builder: (context, set) => Fluent2WheelPicker<String>(
-      label: 'Size',
+      semanticLabel: 'Size',
       items: const ['Extra small', 'Small', 'Medium', 'Large', 'Extra large'],
       value: size,
       onChanged: (v) => set(() => size = v),

@@ -7,7 +7,7 @@ import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 /// the strokes and glyphs a control is read by at 3:1.
 void main() {
   final themes = [
-    for (final id in Fluent2ThemeData.presets)
+    for (final id in Fluent2ThemeData.palettes.map((p) => p.id))
       for (final b in Brightness.values) Fluent2ThemeData.preset(id, b),
   ];
 
@@ -102,7 +102,7 @@ void main() {
     final failures = <String>[];
     for (final t in themes) {
       for (final (label, ink, ground, floor) in pairs(t)) {
-        final ratio = Fluent2ThemeData.contrast(ink, ground);
+        final ratio = RawPalette.contrastRatio(ink, ground);
         if (ratio < floor) {
           failures.add(
             '${name(t)}: $label ${ratio.toStringAsFixed(2)} < $floor',
@@ -129,7 +129,7 @@ void main() {
       for (final b in Brightness.values) {
         final t = Fluent2ThemeData.from(brand: seed, brightness: b);
         for (final (label, ink, ground, floor) in pairs(t)) {
-          final ratio = Fluent2ThemeData.contrast(ink, ground);
+          final ratio = RawPalette.contrastRatio(ink, ground);
           if (ratio < floor) {
             failures.add(
               '${seed.toARGB32().toRadixString(16)} ${b.name}: '
@@ -157,7 +157,7 @@ void main() {
   });
 
   test('the presets are six, the first the default, each designed twice', () {
-    expect(Fluent2ThemeData.presets, [
+    expect(Fluent2ThemeData.palettes.map((p) => p.id), [
       'lapis',
       'iris',
       'juniper',
@@ -165,7 +165,7 @@ void main() {
       'berry',
       'flint',
     ]);
-    for (final id in Fluent2ThemeData.presets) {
+    for (final id in Fluent2ThemeData.palettes.map((p) => p.id)) {
       final light = Fluent2ThemeData.preset(id, Brightness.light);
       final dark = Fluent2ThemeData.preset(id, Brightness.dark);
       expect(light.isDark, isFalse);

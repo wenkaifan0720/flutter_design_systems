@@ -30,18 +30,18 @@ enum Fluent2SliderSize {
 /// drag or a tap on the rail moves it, as do the arrow keys (a step, or a
 /// hundredth), Page Up and Down (a tenth), Home and End; [onChanged] gets
 /// each value and [onChangeEnd] the one let go at. Read as a slider named
-/// [label] saying [valueLabel]'s words (the value by default). Null
+/// [semanticLabel] saying [valueLabel]'s words (the value by default). Null
 /// [onChanged] draws it disabled.
 ///
 /// ```dart
-/// Fluent2Slider(label: 'Volume', value: volume, onChanged: (v) => setState(() => volume = v))
+/// Fluent2Slider(semanticLabel: 'Volume', value: volume, onChanged: (v) => setState(() => volume = v))
 /// ```
 class Fluent2Slider extends StatefulWidget {
   /// A slider at [value] between [min] and [max].
   const Fluent2Slider({
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.min = 0,
     this.max = 100,
     this.step,
@@ -69,7 +69,7 @@ class Fluent2Slider extends StatefulWidget {
   final ValueChanged<double>? onChangeEnd;
 
   /// The spoken name.
-  final String label;
+  final String semanticLabel;
 
   /// The value at the track's start.
   final double min;
@@ -112,7 +112,7 @@ class Fluent2Slider extends StatefulWidget {
           onChangeEnd,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(DoubleProperty('min', min, defaultValue: 0))
       ..add(DoubleProperty('max', max, defaultValue: 100))
       ..add(DoubleProperty('step', step, defaultValue: null))
@@ -217,7 +217,7 @@ class _Fluent2SliderState extends State<Fluent2Slider> {
         slider: true,
         enabled: live,
         focusable: live,
-        label: widget.label,
+        label: widget.semanticLabel,
         value: _say(widget.value),
         increasedValue: live ? _say(up) : null,
         decreasedValue: live ? _say(down) : null,

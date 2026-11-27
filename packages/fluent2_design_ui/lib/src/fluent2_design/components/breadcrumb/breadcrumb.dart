@@ -62,7 +62,7 @@ class Fluent2Breadcrumb extends StatelessWidget {
     required this.items,
     this.size = Fluent2BreadcrumbSize.medium,
     this.maxDisplayedItems,
-    this.label,
+    this.semanticLabel,
     super.key,
   });
 
@@ -78,7 +78,7 @@ class Fluent2Breadcrumb extends StatelessWidget {
 
   /// What a screen reader calls the path; null is "Breadcrumb" in the app's
   /// language.
-  final String? label;
+  final String? semanticLabel;
 
   double get _height => switch (size) {
     Fluent2BreadcrumbSize.small => 24,
@@ -207,7 +207,7 @@ class Fluent2Breadcrumb extends StatelessWidget {
         return Semantics(
           container: true,
           explicitChildNodes: true,
-          label: label ?? Fluent2Localizations.of(context).breadcrumb,
+          label: semanticLabel ?? Fluent2Localizations.of(context).breadcrumb,
           child: Row(mainAxisSize: MainAxisSize.min, children: parts),
         );
       },
@@ -217,7 +217,8 @@ class Fluent2Breadcrumb extends StatelessWidget {
   Widget _overflow(List<int> folded) => Builder(
     builder: (anchor) => Fluent2IconButton(
       Fluent2Icons.moreHorizontal,
-      label: Fluent2Localizations.of(anchor).morePlacesCount(folded.length),
+      semanticLabel: Fluent2Localizations.of(anchor)
+          .morePlacesCount(folded.length),
       size: switch (size) {
         Fluent2BreadcrumbSize.small => Fluent2ButtonSize.small,
         Fluent2BreadcrumbSize.medium => Fluent2ButtonSize.medium,
@@ -226,7 +227,7 @@ class Fluent2Breadcrumb extends StatelessWidget {
       onPressed: () async {
         final picked = await Fluent2Menu.show<int>(
           anchor,
-          label: Fluent2Localizations.of(anchor).morePlaces,
+          semanticLabel: Fluent2Localizations.of(anchor).morePlaces,
           items: [
             for (final i in folded)
               Fluent2MenuItem(
@@ -257,7 +258,7 @@ class Fluent2Breadcrumb extends StatelessWidget {
       ..add(
         IntProperty('maxDisplayedItems', maxDisplayedItems, defaultValue: null),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -327,7 +328,7 @@ class _Crumb extends StatelessWidget {
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: item.onPressed,
-        label: item.label,
+        semanticLabel: item.label,
         role: Fluent2PressRole.link,
         radius: Fluent2Radius.medium,
         builder: (context, states) {

@@ -145,7 +145,7 @@ class Fluent2MessageBar extends StatelessWidget {
         ? null
         : Fluent2IconButton(
             Fluent2Icons.dismiss,
-            label: dismissLabel ?? own.dismiss,
+            semanticLabel: dismissLabel ?? own.dismiss,
             appearance: Fluent2ButtonAppearance.transparent,
             onPressed: onDismiss,
           );

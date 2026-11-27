@@ -1,5 +1,6 @@
 // The six palettes: each reads in both appearances (Fluent's words on the ground and the card, the words on the brand
-// fill, the brand's words and links, the brand stroke and the focus stroke), and the deprecated clover still builds.
+// fill, the brand's words and links, the brand stroke and the focus stroke), and each palette's swatches are its brand
+// as it reads and its ground.
 // flint has no hue to mark a choice, so its brand inks (a chosen page's, a link's) read stronger than the neutral
 // inks a page not chosen stands in.
 import 'package:flutter/widgets.dart';
@@ -7,15 +8,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 void main() {
-  test('six palettes, lapis the default', () {
-    expect(Fluent2ThemeData.presets, hasLength(6));
-    expect(Fluent2ThemeData.presets.first, 'lapis');
-    expect(Fluent2ThemeData.presets, isNot(contains('clover')));
-    // ignore: deprecated_member_use_from_same_package
-    expect(Fluent2ThemeData.clover().id, 'clover');
+  test('six palettes for a picker, lapis the default', () {
+    expect(
+      [for (final palette in Fluent2ThemeData.palettes) palette.id],
+      ['lapis', 'iris', 'juniper', 'pumpkin', 'berry', 'flint'],
+    );
+    expect(
+      () => Fluent2ThemeData.preset('clover', Brightness.light),
+      throwsArgumentError,
+    );
+    for (final palette in Fluent2ThemeData.palettes) {
+      expect(palette.label, isNotEmpty);
+      for (final brightness in Brightness.values) {
+        final t = Fluent2ThemeData.preset(palette.id, brightness);
+        // As stored: the ground is a blend, so the swatch is its 8 bits.
+        expect(
+          [
+            for (final swatch
+                in brightness == Brightness.dark
+                    ? palette.darkSwatches
+                    : palette.swatches)
+              swatch.toARGB32(),
+          ],
+          [
+            t.colors.compoundBrandBackground.toARGB32(),
+            t.background.toARGB32(),
+          ],
+          reason: '${palette.id} by ${brightness.name}',
+        );
+      }
+    }
   });
 
-  for (final id in Fluent2ThemeData.presets) {
+  for (final id in Fluent2ThemeData.palettes.map((p) => p.id)) {
     for (final brightness in Brightness.values) {
       test('$id reads in ${brightness.name}', () {
         final t = Fluent2ThemeData.preset(id, brightness);

@@ -275,3 +275,1106 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'hintText'
+
+  # 0.8.0: clover's brand was Fluent's success green, so its primary read as a success; juniper is the green-blue
+  # palette. Fluent2ThemeData.contrast was ui_core's RawPalette.contrastRatio. Fluent2Host's night theme is dark, as
+  # its day theme is light (Fluent2Theme.darkData stays the media ground's theme).
+  - title: "Use 'juniper'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: 'clover'
+      inClass: 'Fluent2ThemeData'
+    changes:
+      - kind: 'rename'
+        newName: 'juniper'
+
+  - title: "Use 'RawPalette.contrastRatio'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      method: 'contrast'
+      inClass: 'Fluent2ThemeData'
+      static: true
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:ui_core/ui_core.dart']
+          method: 'contrastRatio'
+          inClass: 'RawPalette'
+          static: true
+
+  - title: "Rename to 'dark'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Host'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'darkData'
+        newName: 'dark'
+
+  - title: "Rename to 'dark'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'darkData'
+      inClass: 'Fluent2Host'
+    changes:
+      - kind: 'rename'
+        newName: 'dark'
+
+  # 0.8.0: a label only a screen reader hears is semanticLabel, as Flutter's Icon and Image name theirs; a label drawn
+  # on the part stays label.
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2NavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2NavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Pagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Pagination'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2PageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2PageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2PasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2PasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2InputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2InputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2RangeSlider'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2RangeSlider'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2TimePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2WheelPicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2WheelPicker'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Popover'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Popover'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2DataGrid'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2DataGrid'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2CarouselView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2CarouselView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2IconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2IconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TableRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2TableRow'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Table'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Table'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Menu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Menu'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Avatar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Avatar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Breadcrumb'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Breadcrumb'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TagGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2TagGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Badge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: 'dot'
+      inClass: 'Fluent2Badge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Badge'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TabList'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: 'items'
+      inClass: 'Fluent2TabList'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2TabList'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Tree'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Tree'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Select'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Select'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Combobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Combobox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2SpinButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2SpinButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2IconTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2IconTile'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Rating'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Rating'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Card'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Card'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2MultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2MultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2SegmentBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2SegmentBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2FieldButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2FieldButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2TextField'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2TextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2TextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2SearchBox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2SearchBox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Skeleton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Skeleton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2SegmentedButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2SegmentedButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Composer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Composer'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2DatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2DatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Toolbar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Toolbar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2ToolbarGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2ToolbarGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2ToolbarToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2ToolbarToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2CompletionCheck'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2CompletionCheck'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2LineChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2LineChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2AreaChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2AreaChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2PieChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2PieChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Sparkline'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Sparkline'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2BarChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2BarChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Slider'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Slider'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      constructor: ''
+      inClass: 'Fluent2Pressable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      field: 'label'
+      inClass: 'Fluent2Pressable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      method: 'show'
+      inClass: 'Fluent2Menu'
+      static: true
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['fluent2_design_ui.dart']
+      function: 'showFluent2Menu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
