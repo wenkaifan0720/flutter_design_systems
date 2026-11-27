@@ -130,15 +130,16 @@ enum RetroDesktopAppearance {
   /// other way), a
   /// pressed face that inverts its bevel and moves its label one pixel, a
   /// dotted focus rectangle inside the face, and a solid title bar with the
-  /// title at its start and square caption buttons at its end.
+  /// title at its start and a square close button at its end on a window that
+  /// closes.
   chisel,
 
   /// Mac OS 8's Platinum appearance, the default: grey plates in a one-pixel
   /// dark outline round a soft one-step bevel, push buttons and popups in a
   /// small rounded rectangle, windows and fields square, a pressed face that
   /// darkens without moving, a two-pixel focus ring outside the part in the
-  /// accent, and a pinstriped title bar with the title centred, a close box at
-  /// its start and zoom and collapse boxes at its end.
+  /// accent, and a pinstriped title bar with the title centred and a close box
+  /// at its start on a window that closes.
   platinum,
 }
 

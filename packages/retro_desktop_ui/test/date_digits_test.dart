@@ -5,7 +5,6 @@ import 'package:cupertino_ui/cupertino_ui.dart'
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
-import 'package:retro_desktop_ui/retro_desktop_host.dart';
 
 // Material's English words under any locale: the look gives its own, an app has flutter_localizations' Arabic.
 class _AnyMaterial extends LocalizationsDelegate<MaterialLocalizations> {

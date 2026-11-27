@@ -26,7 +26,7 @@ abstract class RetroDesktopPixelPainter {
   bool shouldRepaint(covariant RetroDesktopPixelPainter old);
 }
 
-/// `CustomPaint` on the device's grid. It paints behind [child], or over it if [foreground].
+/// Paints its [painter] on the device's pixel grid, behind [child], or over it when [foreground].
 ///
 /// ```dart
 /// RetroDesktopPixelPaint(painter: painter, child: const SizedBox(width: 80, height: 40))

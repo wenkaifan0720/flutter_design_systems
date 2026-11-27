@@ -337,7 +337,7 @@ void main() {
             RetroDesktopListTile(
               title: 'Attachment',
               subtitle: 'Personal',
-              label: 'Open file',
+              semanticLabel: 'Open file',
               onPressed: () {},
             ),
             Builder(

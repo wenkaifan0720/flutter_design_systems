@@ -218,9 +218,13 @@ class _BarLayout extends MultiChildLayoutDelegate {
     this.pixel = 1,
     this.striped = true,
     this.boxes = true,
+    this.close = true,
     this.reach = 0,
   });
   final bool rtl;
+
+  /// Whether the close box stands at the bar's start; without it the start's stripes run from the bar's edge.
+  final bool close;
 
   /// How far the close box's press reaches across the stripes: the finger's floor in effect.
   final double reach;
@@ -255,13 +259,16 @@ class _BarLayout extends MultiChildLayoutDelegate {
       'zoom',
       Offset(place(size.width - side - 2 * box - boxGap, box), y),
     );
-    final start = side + box;
+    final start = close ? side + box : side;
     final end = boxes
         ? size.width - side - 2 * box - boxGap - boxGap
-        : size.width - side - box;
+        : close
+        ? size.width - side - box
+        : size.width - side;
     // With no boxes at the end, the end's stripes run on through the close box's room to the bar's edge, as the
     // start's run from the close box: an empty slot there read as a missing box. The title keeps the window's middle.
-    final endRun = boxes ? 0.0 : box;
+    // With no close box either, both runs start at the bar's edges.
+    final endRun = boxes || !close ? 0.0 : box;
     final room = end - start;
     final bars = 2 * (min + 2 * margin);
     // A title that wraps (twice the text size on a phone) keeps whole stripes of at least 12 beside its lines: as 6 px
@@ -307,6 +314,7 @@ class _BarLayout extends MultiChildLayoutDelegate {
   bool shouldRelayout(_BarLayout o) =>
       o.rtl != rtl ||
       o.boxes != boxes ||
+      o.close != close ||
       o.caps != caps ||
       o.line != line ||
       o.pixel != pixel ||
@@ -314,7 +322,8 @@ class _BarLayout extends MultiChildLayoutDelegate {
       o.reach != reach;
 }
 
-/// A title bar. Active: pinstripes, boxes and full ink. Inactive: flat, no boxes, quieter words, in the same place.
+/// A title bar. Active: pinstripes, the boxes that act and full ink. Inactive: flat, no boxes, quieter words, in the same
+/// place.
 class _TitleBar extends StatelessWidget {
   const _TitleBar({
     required this.title,
@@ -384,13 +393,15 @@ class _TitleBar extends StatelessWidget {
     if (t.chisel) {
       return _chiselBar(context, t, ink, wordsStyle);
     }
-    // Off the desk (a phone, a tablet) a window fills its screen and is neither shaded nor zoomed: its zoom and shade
-    // boxes, drawn there, read as controls that did nothing; it keeps its close box, the way back.
+    // A box is drawn where it acts, as the period drew none on a window that could not close or zoom: the close box when
+    // the window closes, the fold box on a folded window (with its zoom box, active on a desk). Drawn on every window,
+    // they read as controls that did nothing.
     Widget box(int kind) => Visibility(
-      visible:
-          (active && (kind == 0 || (t.desk && !modal))) ||
-          (kind == 0 && onClose != null) ||
-          (kind == 2 && folded),
+      visible: switch (kind) {
+        0 => onClose != null,
+        1 => folded && active && t.desk && !modal,
+        _ => folded,
+      },
       maintainSize: true,
       maintainAnimation: true,
       maintainState: true,
@@ -464,7 +475,8 @@ class _TitleBar extends StatelessWidget {
                 line: line,
                 pixel: pixel,
                 striped: striped,
-                boxes: (t.desk && !modal) || folded,
+                boxes: folded,
+                close: onClose != null,
                 reach: RawTapTargets.of(context).touch.width,
               ),
               children: [
@@ -600,18 +612,16 @@ extension _ChiselTitleBar on _TitleBar {
             .roundToDouble() *
         pixel;
     // A narrow window keeps its close button and some of its title: the shade
-    // and zoom buttons give way first, then the icon. Off the desk (a phone, a
-    // tablet) a window fills its screen and is neither shaded nor zoomed: it
-    // keeps its close button alone, the way back, as a modal sheet does
-    // anywhere. A folded window keeps them anywhere, as Platinum's keeps its
-    // fold box: the bar alone read as a wide push button.
+    // and zoom buttons give way first, then the icon. A folded window keeps
+    // them anywhere, as Platinum's keeps its fold box: the bar alone read as a
+    // wide push button.
     return LayoutBuilder(
       builder: (context, constraints) {
         final room = constraints.maxWidth - 10;
         final withIcon = icon != null && room - 18 >= 16 + 24;
-        final all =
-            ((t.desk && !modal) || folded) &&
-            room - (withIcon ? 18 : 0) >= 3 * 16 + 2 + 24;
+        // The minimise and maximise buttons stand on a folded window alone, the close button where the window closes:
+        // drawn on every window they read as controls that did nothing.
+        final all = folded && room - (withIcon ? 18 : 0) >= 3 * 16 + 2 + 24;
         return _Chrome(
           child: SizedBox(
             height: height,
@@ -655,12 +665,13 @@ extension _ChiselTitleBar on _TitleBar {
                           box(1),
                           const SizedBox(width: RetroDesktopSpacing.s2),
                         ],
-                        onClose == null || reach
-                            ? box(0)
-                            : RetroDesktopPressable(
-                                onPressed: onClose,
-                                child: box(0),
-                              ),
+                        if (onClose != null)
+                          reach
+                              ? box(0)
+                              : RetroDesktopPressable(
+                                  onPressed: onClose,
+                                  child: box(0),
+                                ),
                       ],
                     ),
                   ),
@@ -862,7 +873,8 @@ class RetroDesktopWindow extends StatelessWidget {
   /// In place of the 12 a window gives a child that isn't flush.
   final EdgeInsetsGeometry? padding;
 
-  /// Draws the close box live. On a phone such a window's title bar stands a finger's reach tall, so the box reaches a finger.
+  /// Closes the window: its close box is drawn only with it (a window that can't close draws none, as the period's). On a
+  /// phone such a window's title bar stands a finger's reach tall, so the box reaches a finger.
   final VoidCallback? onClose;
 
   @override

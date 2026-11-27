@@ -24,6 +24,12 @@ import '../example/lib/kit_gallery/demos/rows.dart';
 import 'support.dart';
 
 final shapeSpecimens = <String, Widget Function()>{
+  'RetroDesktopDateField': () => RetroDesktopDateField(
+    labelText: 'Started',
+    hintText: 'Not yet',
+    value: null,
+    onChanged: (_) {},
+  ),
   'kitSpecimenThumbGauge': kitSpecimenThumbGauge,
   'kitSpecimenGaugeBlock': kitSpecimenGaugeBlock,
   'kitSpecimenMonthGrid': kitSpecimenMonthGrid,

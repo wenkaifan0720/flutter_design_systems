@@ -521,7 +521,9 @@ void main() {
                   );
                   painted.add(box);
                 }
-                expect(painted, hasLength(width == 390 ? 1 : 3));
+                // A window that closes draws its close box alone: the zoom and shade boxes (minimise and maximise in
+                // Chisel) stand on a folded window, where they act.
+                expect(painted, hasLength(1));
                 final ink =
                     (chisel
                             ? theme.colors.text

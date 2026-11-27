@@ -10,13 +10,13 @@ import 'component_themes.dart';
 /// at a round value; a press or the arrows read a point.
 ///
 /// ```dart
-/// const RetroDesktopLineChart(label: 'Visits', series: [RetroDesktopChartSeries('Visits', [9, 15, 22, 12])], labels: ['Mon', 'Tue', 'Wed', 'Thu'])
+/// const RetroDesktopLineChart(semanticLabel: 'Visits', series: [RetroDesktopChartSeries('Visits', [9, 15, 22, 12])], labels: ['Mon', 'Tue', 'Wed', 'Thu'])
 /// ```
 class RetroDesktopLineChart extends StatelessWidget {
   /// Creates a [RetroDesktopLineChart].
   const RetroDesktopLineChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.height = 180,
@@ -27,7 +27,7 @@ class RetroDesktopLineChart extends StatelessWidget {
   });
 
   /// The chart's name, for a screen reader and its readout.
-  final String label;
+  final String semanticLabel;
 
   /// The lines, each a key entry.
   final List<RetroDesktopChartSeries> series;
@@ -52,7 +52,7 @@ class RetroDesktopLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RetroDesktopChart(
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     kind: RetroDesktopChartType.line,
@@ -67,7 +67,7 @@ class RetroDesktopLineChart extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
       ..add(DoubleProperty('height', height, defaultValue: 180))
@@ -88,13 +88,13 @@ class RetroDesktopLineChart extends StatelessWidget {
 /// named at a round value.
 ///
 /// ```dart
-/// const RetroDesktopBarChart(label: 'Files', series: [RetroDesktopChartSeries('Documents', [4, 8, 6, 12])], labels: ['Mon', 'Tue', 'Wed', 'Thu'])
+/// const RetroDesktopBarChart(semanticLabel: 'Files', series: [RetroDesktopChartSeries('Documents', [4, 8, 6, 12])], labels: ['Mon', 'Tue', 'Wed', 'Thu'])
 /// ```
 class RetroDesktopBarChart extends StatelessWidget {
   /// Creates a [RetroDesktopBarChart].
   const RetroDesktopBarChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.height = 180,
@@ -105,7 +105,7 @@ class RetroDesktopBarChart extends StatelessWidget {
   });
 
   /// The chart's name, for a screen reader and its readout.
-  final String label;
+  final String semanticLabel;
 
   /// The bars' series, each a key entry.
   final List<RetroDesktopChartSeries> series;
@@ -130,7 +130,7 @@ class RetroDesktopBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RetroDesktopChart(
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     kind: RetroDesktopChartType.bar,
@@ -145,7 +145,7 @@ class RetroDesktopBarChart extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
       ..add(DoubleProperty('height', height, defaultValue: 180))
@@ -166,13 +166,13 @@ class RetroDesktopBarChart extends StatelessWidget {
 /// a balance.
 ///
 /// ```dart
-/// const RetroDesktopAreaChart(label: 'Disk used', series: [RetroDesktopChartSeries('Disk used', [12, 15, 21, 24, 30])], labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'])
+/// const RetroDesktopAreaChart(semanticLabel: 'Disk used', series: [RetroDesktopChartSeries('Disk used', [12, 15, 21, 24, 30])], labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'])
 /// ```
 class RetroDesktopAreaChart extends StatelessWidget {
   /// Creates a [RetroDesktopAreaChart].
   const RetroDesktopAreaChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.height = 180,
@@ -183,7 +183,7 @@ class RetroDesktopAreaChart extends StatelessWidget {
   });
 
   /// The chart's name, for a screen reader and its readout.
-  final String label;
+  final String semanticLabel;
 
   /// The areas' series, each a key entry.
   final List<RetroDesktopChartSeries> series;
@@ -208,7 +208,7 @@ class RetroDesktopAreaChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RetroDesktopChart(
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     kind: RetroDesktopChartType.area,
@@ -223,7 +223,7 @@ class RetroDesktopAreaChart extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
       ..add(DoubleProperty('height', height, defaultValue: 180))
@@ -244,13 +244,13 @@ class RetroDesktopAreaChart extends StatelessWidget {
 /// hole.
 ///
 /// ```dart
-/// const RetroDesktopPieChart(label: 'Storage', series: [RetroDesktopChartSeries('Storage', [52, 28, 20])], labels: ['Documents', 'Pictures', 'Other'])
+/// const RetroDesktopPieChart(semanticLabel: 'Storage', series: [RetroDesktopChartSeries('Storage', [52, 28, 20])], labels: ['Documents', 'Pictures', 'Other'])
 /// ```
 class RetroDesktopPieChart extends StatelessWidget {
   /// Creates a [RetroDesktopPieChart].
   const RetroDesktopPieChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.height = 180,
@@ -261,7 +261,7 @@ class RetroDesktopPieChart extends StatelessWidget {
   });
 
   /// The chart's name, for a screen reader and its readout.
-  final String label;
+  final String semanticLabel;
 
   /// The shares: one series, a value per share.
   final List<RetroDesktopChartSeries> series;
@@ -286,7 +286,7 @@ class RetroDesktopPieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RetroDesktopChart(
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     kind: RetroDesktopChartType.donut,
@@ -301,7 +301,7 @@ class RetroDesktopPieChart extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
       ..add(DoubleProperty('height', height, defaultValue: 180))

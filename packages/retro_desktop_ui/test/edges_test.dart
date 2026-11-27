@@ -17,7 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'support.dart';
 

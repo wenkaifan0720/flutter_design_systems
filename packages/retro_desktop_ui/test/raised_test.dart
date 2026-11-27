@@ -5,6 +5,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:retro_desktop_ui/src/retro_desktop/theme.dart'
+    show retroDesktopThemeWith;
 
 Widget _host(Widget child) => MaterialApp(
   builder: (context, child) =>
@@ -559,7 +561,7 @@ void main() {
             message: 'Search every document',
             child: RetroDesktopIconButton(
               RetroDesktopGlyphs.search,
-              label: 'Search',
+              semanticLabel: 'Search',
               onPressed: () {},
             ),
           ),
@@ -751,8 +753,8 @@ void main() {
                         context: context,
                         locale: const Locale('en', 'GB'),
                         child: RetroDesktopTheme(
-                          data: RetroDesktopThemeData.berry().copyWith(
-                            // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
+                          data: retroDesktopThemeWith(
+                            RetroDesktopThemeData.berry(),
                             motion: const RetroDesktopMotion(
                               raise: Duration(seconds: 1),
                               leave: Duration(seconds: 1),

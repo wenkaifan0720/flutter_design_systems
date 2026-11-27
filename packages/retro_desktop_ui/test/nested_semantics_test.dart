@@ -10,7 +10,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'support.dart';
 

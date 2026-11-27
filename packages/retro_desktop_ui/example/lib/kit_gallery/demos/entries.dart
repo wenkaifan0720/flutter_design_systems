@@ -34,21 +34,26 @@ Widget kitSpecimenCodeField() => const RetroDesktopInputOtp(
 );
 Widget kitSpecimenSelect() => kitValue(
   'local',
-  (value, change) => RetroDesktopSelect<String>(
-    labelText: 'Destination',
-    value: value,
-    onChanged: change,
-    options: const [
-      RetroDesktopOption('local', 'This computer'),
-      RetroDesktopOption('server', 'File server'),
-      RetroDesktopOption('off', 'Unavailable', enabled: false),
-    ],
+  (value, change) => kitAlone(
+    RetroDesktopSelect<String>(
+      labelText: 'Destination',
+      value: value,
+      onChanged: change,
+      options: const [
+        RetroDesktopOption('local', 'This computer'),
+        RetroDesktopOption('server', 'File server'),
+        RetroDesktopOption('off', 'Unavailable', enabled: false),
+      ],
+    ),
   ),
 );
 Widget kitSpecimenSwitch() => kitValue(
   false,
-  (value, change) =>
-      RetroDesktopSwitch(value: value, label: 'Synchronize', onChanged: change),
+  (value, change) => RetroDesktopSwitch(
+    value: value,
+    semanticLabel: 'Synchronize',
+    onChanged: change,
+  ),
 );
 Widget kitSpecimenSwitchRow() => kitValue(
   true,

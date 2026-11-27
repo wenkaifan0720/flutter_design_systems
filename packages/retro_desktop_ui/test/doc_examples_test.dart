@@ -72,39 +72,39 @@ void main() {
         builder: (context) => const Text('Project notes'),
       ),
       'RetroDesktopChart': (context) => const RetroDesktopChart(
-        label: 'Weekly activity',
+        semanticLabel: 'Weekly activity',
         series: [
           RetroDesktopChartSeries('Visits', [12, 18, 9]),
         ],
         labels: ['Mon', 'Tue', 'Wed'],
       ),
       'RetroDesktopSparkline': (context) => const RetroDesktopSparkline(
-        label: 'Visits this week',
+        semanticLabel: 'Visits this week',
         values: [3, 5, 4, 8, 6, 9, 7],
       ),
       'RetroDesktopLineChart': (context) => const RetroDesktopLineChart(
-        label: 'Visits',
+        semanticLabel: 'Visits',
         series: [
           RetroDesktopChartSeries('Visits', [9, 15, 22, 12]),
         ],
         labels: ['Mon', 'Tue', 'Wed', 'Thu'],
       ),
       'RetroDesktopBarChart': (context) => const RetroDesktopBarChart(
-        label: 'Files',
+        semanticLabel: 'Files',
         series: [
           RetroDesktopChartSeries('Documents', [4, 8, 6, 12]),
         ],
         labels: ['Mon', 'Tue', 'Wed', 'Thu'],
       ),
       'RetroDesktopAreaChart': (context) => const RetroDesktopAreaChart(
-        label: 'Disk used',
+        semanticLabel: 'Disk used',
         series: [
           RetroDesktopChartSeries('Disk used', [12, 15, 21, 24, 30]),
         ],
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
       ),
       'RetroDesktopPieChart': (context) => const RetroDesktopPieChart(
-        label: 'Storage',
+        semanticLabel: 'Storage',
         series: [
           RetroDesktopChartSeries('Storage', [52, 28, 20]),
         ],
@@ -174,7 +174,7 @@ void main() {
       'RetroDesktopMedia': (context) => const RetroDesktopMedia(
         slotId: 'workshop-bench',
         aspect: 4 / 3,
-        label: 'The bench',
+        semanticLabel: 'The bench',
       ),
       'RetroDesktopPictureCard': (context) {
         void open() {}
@@ -209,7 +209,7 @@ void main() {
       },
       'RetroDesktopIconButton': (context) => RetroDesktopIconButton(
         RetroDesktopGlyphs.tag,
-        label: 'Tag',
+        semanticLabel: 'Tag',
         onPressed: () {},
       ),
       'RetroDesktopTriangleMark': (context) =>
@@ -231,7 +231,7 @@ void main() {
         return RetroDesktopCheckbox(
           value: done,
           onChanged: (v) => setState(() => done = v),
-          label: 'Option',
+          semanticLabel: 'Option',
         );
       },
       'RetroDesktopCheckRow': (context) {
@@ -340,7 +340,7 @@ void main() {
       ),
       'RetroDesktopSwitch': (context) => RetroDesktopSwitch(
         value: true,
-        label: 'Notifications',
+        semanticLabel: 'Notifications',
         onChanged: (_) {},
       ),
       'RetroDesktopSwitchRow': (context) => RetroDesktopSwitchRow(
@@ -394,6 +394,19 @@ void main() {
         child: RetroDesktopTextField(hintText: 'name@example.com'),
       ),
       'Text': (context) => Text(RetroDesktopFormat.number(1200)),
+      'RetroDesktopFormat.mediumDate': (context) =>
+          Text(RetroDesktopFormat.mediumDate(context, DateTime(2026, 10, 2))),
+      'RetroDesktopDateField': (context) => StatefulBuilder(
+        builder: (context, setState) {
+          DateTime? started;
+          return RetroDesktopDateField(
+            labelText: 'Started',
+            hintText: 'Not yet',
+            value: started,
+            onChanged: (day) => setState(() => started = day),
+          );
+        },
+      ),
       'RetroDesktopWindowScope': (context) => const RetroDesktopWindowScope(
         active: true,
         compact: false,
@@ -586,6 +599,60 @@ void main() {
       ),
       'RetroDesktopHost': (context) =>
           const RetroDesktopHost(child: Text('Workspace')),
+      'RetroDesktopHost 2': (context) => MaterialApp(
+        builder: (context, child) => RetroDesktopHost(
+          palette: RetroDesktopThemeData.palettes[1],
+          child: child!,
+        ),
+        home: const Text('Shelf'),
+      ),
+      'RetroDesktopThemeData.preset': (context) => RetroDesktopThemeData.preset(
+        RetroDesktopThemeData.palettes[2].id,
+        Brightness.dark,
+      ),
+      'RetroDesktopAppAction': (context) {
+        void add() {}
+        return RetroDesktopNavigationBar(
+          items: const [
+            RetroDesktopNavItem(
+              label: 'Files',
+              short: 'Files',
+              icon: RetroDesktopGlyphs.folder,
+            ),
+          ],
+          onDestinationSelected: (_) {},
+          action: RetroDesktopAppAction(
+            icon: RetroDesktopGlyphs.plus,
+            label: 'Add',
+            onPressed: add,
+          ),
+        );
+      },
+      'RetroDesktopAppShell': (context) {
+        var place = 0;
+        void setState(VoidCallback change) => change();
+        return RetroDesktopAppShell.branches(
+          brand: 'Shelf',
+          destinations: const [
+            RetroDesktopNavItem(
+              label: 'Books',
+              short: 'Books',
+              icon: RetroDesktopGlyphs.folder,
+            ),
+            RetroDesktopNavItem(
+              label: 'Settings',
+              short: 'Settings',
+              icon: RetroDesktopGlyphs.settings,
+            ),
+          ],
+          selectedIndex: place,
+          onDestinationSelected: (index) => setState(() => place = index),
+          branches: [
+            (context) => const Text('Books'),
+            (context) => const Text('Settings'),
+          ],
+        );
+      },
       'RetroDesktopPreview': (context) =>
           const RetroDesktopPreview(child: Text('A page preview')),
       'RetroDesktopScaffold 2': (context) => const RetroDesktopScaffold(
@@ -666,7 +733,7 @@ void main() {
       'RetroDesktopPageDots': (context) => RetroDesktopPageDots(
         count: 3,
         selectedIndex: 1,
-        label: 'Introduction pages',
+        semanticLabel: 'Introduction pages',
         onChanged: (_) {},
       ),
       'RetroDesktopStepProgress': (context) => const RetroDesktopStepProgress(
@@ -740,7 +807,7 @@ void main() {
         child: Text('Document details'),
       ),
       'RetroDesktopMenu': (context) => RetroDesktopMenu(
-        label: 'Document actions',
+        semanticLabel: 'Document actions',
         items: const [
           RetroDesktopMenuItem('open', 'Open'),
           RetroDesktopMenuItem('rename', 'Rename'),
@@ -863,7 +930,7 @@ void main() {
         ],
       ),
       'RetroDesktopPicture': (context) => const RetroDesktopPicture(
-        label: 'Document preview',
+        semanticLabel: 'Document preview',
         child: Text('Preview'),
       ),
       'RetroDesktopSurface': (context) =>
@@ -1087,14 +1154,16 @@ void main() {
         tone: RetroDesktopTone.success,
       ),
       'RetroDesktopBadge': (context) =>
-          const RetroDesktopBadge(3, label: 'Unread messages'),
+          const RetroDesktopBadge(3, semanticLabel: 'Unread messages'),
       'RetroDesktopCircularProgressIndicator': (context) =>
           const RetroDesktopCircularProgressIndicator(
             value: .6,
-            label: 'Upload',
+            semanticLabel: 'Upload',
           ),
-      'RetroDesktopSkeleton': (context) =>
-          const RetroDesktopSkeleton(lines: 3, label: 'Loading messages'),
+      'RetroDesktopSkeleton': (context) => const RetroDesktopSkeleton(
+        lines: 3,
+        semanticLabel: 'Loading messages',
+      ),
       'RetroDesktopSuccessState': (context) {
         const Widget files = SizedBox();
         return const RetroDesktopSuccessState(
@@ -1128,10 +1197,13 @@ void main() {
       ),
       'RetroDesktopPagination': (context) =>
           RetroDesktopPagination(count: 12, page: 3, onChanged: (_) {}),
-      'RetroDesktopRating': (context) =>
-          RetroDesktopRating(label: 'Your rating', value: 4, onChanged: (_) {}),
+      'RetroDesktopRating': (context) => RetroDesktopRating(
+        semanticLabel: 'Your rating',
+        value: 4,
+        onChanged: (_) {},
+      ),
       'RetroDesktopFileUpload': (context) => RetroDesktopFileUpload(
-        label: 'Attachments',
+        semanticLabel: 'Attachments',
         onChoose: () {},
         files: const ['notes.txt'],
       ),

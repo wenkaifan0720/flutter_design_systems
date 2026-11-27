@@ -1,0 +1,73 @@
+// The control labels retro_desktop_ui 0.8.0 renames: a `label` a control only speaks is its `semanticLabel` (a drawn
+// one keeps `label`). label_names.dart calls them as before `dart fix --apply`, label_names.dart.expect as after.
+// ignore_for_file: avoid_print, unused_local_variable, not_enough_positional_arguments, missing_required_argument
+import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+
+void calls() {
+  final s1 = RetroDesktopButtonGroup(label: 'Text');
+  print(s1.label);
+  final s2 = RetroDesktopToggleGroup(label: 'Text');
+  print(s2.label);
+  final s3 = RetroDesktopChart(label: 'Text');
+  print(s3.label);
+  final s4 = RetroDesktopSparkline(label: 'Text');
+  print(s4.label);
+  final s5 = RetroDesktopLineChart(label: 'Text');
+  print(s5.label);
+  final s6 = RetroDesktopBarChart(label: 'Text');
+  print(s6.label);
+  final s7 = RetroDesktopAreaChart(label: 'Text');
+  print(s7.label);
+  final s8 = RetroDesktopPieChart(label: 'Text');
+  print(s8.label);
+  final s9 = RetroDesktopMedia(label: 'Text');
+  print(s9.label);
+  final s10 = RetroDesktopIconButton(label: 'Text');
+  print(s10.label);
+  final s11 = RetroDesktopCheckbox(label: 'Text');
+  print(s11.label);
+  final s12 = RetroDesktopChoiceBox(label: 'Text');
+  print(s12.label);
+  final s13 = RetroDesktopTabBar(label: 'Text');
+  print(s13.label);
+  final s14 = RetroDesktopSwitch(label: 'Text');
+  print(s14.label);
+  final s15 = RetroDesktopScrollArea(label: 'Text');
+  print(s15.label);
+  final s16 = RetroDesktopResizable(label: 'Text');
+  print(s16.label);
+  final s17 = RetroDesktopTreeView(label: 'Text');
+  print(s17.label);
+  final s18 = RetroDesktopNavigationDrawer(label: 'Text');
+  print(s18.label);
+  final s19 = RetroDesktopNavigationRail(label: 'Text');
+  print(s19.label);
+  final s20 = RetroDesktopPageDots(label: 'Text');
+  print(s20.label);
+  final s21 = RetroDesktopMenu(label: 'Text');
+  print(s21.label);
+  final s22 = RetroDesktopMenuBar(label: 'Text');
+  print(s22.label);
+  final s23 = RetroDesktopListTile(label: 'Text');
+  print(s23.label);
+  final s24 = RetroDesktopPicture(label: 'Text');
+  print(s24.label);
+  final s25 = RetroDesktopSurface(label: 'Text');
+  print(s25.label);
+  final s26 = RetroDesktopBadge(label: 'Text');
+  print(s26.label);
+  final s27 = RetroDesktopCircularProgressIndicator(label: 'Text');
+  print(s27.label);
+  final s28 = RetroDesktopSkeleton(label: 'Text');
+  print(s28.label);
+  final s29 = RetroDesktopBreadcrumb(label: 'Text');
+  print(s29.label);
+  final s30 = RetroDesktopPagination(label: 'Text');
+  print(s30.label);
+  final s31 = RetroDesktopRating(label: 'Text');
+  print(s31.label);
+  final s32 = RetroDesktopFileUpload(label: 'Text');
+  print(s32.label);
+  final s33 = RetroDesktopIconButton.triangle(label: 'Text');
+  print(s33.label);
+}

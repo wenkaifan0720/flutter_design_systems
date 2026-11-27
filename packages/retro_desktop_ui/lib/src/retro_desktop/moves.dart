@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import 'chrome.dart' show RetroDesktopNavItem;
+import 'places.dart' show RetroDesktopNavItem;
 import 'component_themes.dart';
 import 'internal/caps.dart';
 import 'internal/face.dart';
@@ -25,7 +25,7 @@ class RetroDesktopNavigationDrawer extends StatelessWidget {
     this.onDestinationSelected,
     this.header,
     this.footer,
-    this.label,
+    this.semanticLabel,
     this.style,
   }) : assert(selectedIndex >= 0);
 
@@ -45,7 +45,7 @@ class RetroDesktopNavigationDrawer extends StatelessWidget {
   final Widget? footer;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -56,7 +56,7 @@ class RetroDesktopNavigationDrawer extends StatelessWidget {
     onDestinationSelected: onDestinationSelected,
     header: header,
     footer: footer,
-    label: label,
+    label: semanticLabel,
     style: style,
   );
 
@@ -72,7 +72,7 @@ class RetroDesktopNavigationDrawer extends StatelessWidget {
           onDestinationSelected,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -97,7 +97,7 @@ class RetroDesktopNavigationRail extends StatelessWidget {
     this.onDestinationSelected,
     this.header,
     this.footer,
-    this.label,
+    this.semanticLabel,
     this.style,
   }) : assert(selectedIndex >= 0);
 
@@ -117,7 +117,7 @@ class RetroDesktopNavigationRail extends StatelessWidget {
   final Widget? footer;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -128,7 +128,7 @@ class RetroDesktopNavigationRail extends StatelessWidget {
     onDestinationSelected: onDestinationSelected,
     header: header,
     footer: footer,
-    label: label,
+    label: semanticLabel,
     style: style,
     rail: true,
   );
@@ -145,7 +145,7 @@ class RetroDesktopNavigationRail extends StatelessWidget {
           onDestinationSelected,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -275,7 +275,7 @@ class _SideNavigation extends StatelessWidget {
 /// A sequence of page marks in the family's mark shape; arrows and semantic steps move the selection.
 ///
 /// ```dart
-/// RetroDesktopPageDots(count: 3, selectedIndex: 1, label: 'Introduction pages', onChanged: (_) {})
+/// RetroDesktopPageDots(count: 3, selectedIndex: 1, semanticLabel: 'Introduction pages', onChanged: (_) {})
 /// ```
 class RetroDesktopPageDots extends StatefulWidget {
   /// Creates a [RetroDesktopPageDots].
@@ -283,7 +283,7 @@ class RetroDesktopPageDots extends StatefulWidget {
     super.key,
     required this.count,
     required this.selectedIndex,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.style,
   }) : assert(count > 0),
@@ -296,7 +296,7 @@ class RetroDesktopPageDots extends StatefulWidget {
   final int selectedIndex;
 
   /// The visible or accessible name of this part.
-  final String label;
+  final String semanticLabel;
 
   /// {@macro retro_desktop.onChanged}
   final ValueChanged<int>? onChanged;
@@ -312,7 +312,7 @@ class RetroDesktopPageDots extends StatefulWidget {
     properties
       ..add(IntProperty('count', count))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
@@ -348,7 +348,7 @@ class _PageDotsState extends State<RetroDesktopPageDots> {
 
     return Semantics(
       container: true,
-      label: widget.label,
+      label: widget.semanticLabel,
       explicitChildNodes: true,
       child: Wrap(
         children: [
@@ -382,7 +382,7 @@ class _PageDotsState extends State<RetroDesktopPageDots> {
                   _nodes[i].skipTraversal = i != widget.selectedIndex;
                   return RetroDesktopPressable(
                     label:
-                        '${widget.label} ${RetroDesktopLocalizations.of(context).formatInteger(i + 1)}',
+                        '${widget.semanticLabel} ${RetroDesktopLocalizations.of(context).formatInteger(i + 1)}',
                     value:
                         '${RetroDesktopLocalizations.of(context).formatInteger(i + 1)} / ${RetroDesktopLocalizations.of(context).formatInteger(widget.count)}',
                     selected: i == widget.selectedIndex,

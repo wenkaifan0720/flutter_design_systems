@@ -1,7 +1,9 @@
 /// Classic Mac and PC controls, menus, windows, and themes for Flutter.
 library;
 
+export 'retro_desktop/app.dart';
 export 'retro_desktop/chrome.dart';
+export 'retro_desktop/places.dart';
 export 'retro_desktop/controls.dart'
     hide retroDesktopFillHeight, retroDesktopCheckFace;
 export 'retro_desktop/frames.dart'
@@ -23,8 +25,7 @@ export 'retro_desktop/layout.dart'
         retroDesktopOwnSize,
         RetroDesktopFill,
         RetroDesktopReach,
-        RenderRetroDesktopReach,
-        retroDesktopReach;
+        RenderRetroDesktopReach;
 export 'retro_desktop/pixels.dart'
     show
         RetroDesktopPixelPaint,
@@ -35,7 +36,8 @@ export 'retro_desktop/signatures/charts.dart';
 export 'retro_desktop/signatures/empty.dart';
 export 'retro_desktop/signatures/lists.dart';
 export 'retro_desktop/signatures/objects.dart';
-export 'retro_desktop/theme.dart' hide RetroDesktopOffHighlight;
+export 'retro_desktop/theme.dart'
+    hide RetroDesktopOffHighlight, retroDesktopThemeWith;
 
 export 'retro_desktop/behavior.dart';
 export 'retro_desktop/press.dart' hide retroDesktopPressChrome;

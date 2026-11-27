@@ -8,6 +8,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:retro_desktop_ui/src/retro_desktop/theme.dart'
+    show retroDesktopThemeWith;
 import 'package:retro_desktop_ui/src/retro_desktop/pixels.dart'
     show retroDesktopPinstripes;
 
@@ -110,11 +112,14 @@ Future<_Shot> _shoot(
   tester.view.physicalSize = view * dpr;
   tester.view.devicePixelRatio = dpr;
   addTearDown(tester.view.reset);
-  final theme = RetroDesktopThemeData.preset(
+  final plain = RetroDesktopThemeData.preset(
     'classic',
     dark ? Brightness.dark : Brightness.light,
-    // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
-  ).copyWith(motion: motion).atWidth(view.width);
+  );
+  final theme = retroDesktopThemeWith(
+    plain,
+    motion: motion,
+  ).atWidth(view.width);
   final placed = SizedBox(
     key: _part,
     width: size.width,

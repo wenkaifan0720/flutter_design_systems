@@ -80,7 +80,7 @@ final _fixed = <String, _Fixed>{
   // height (one line of words, the density's padding, the rim).
   'RetroDesktopIconButton': _Fixed(
     const Size(40, 40),
-    () => const RetroDesktopIconButton(LucideIcons.plus, label: 'Add'),
+    () => const RetroDesktopIconButton(LucideIcons.plus, semanticLabel: 'Add'),
     reach: true,
   ),
   'RetroDesktopTriangleMark': _Fixed(
@@ -91,7 +91,7 @@ final _fixed = <String, _Fixed>{
   // Off: its tick breaks out of the box on purpose, as the period's did.
   'RetroDesktopCheckbox': _Fixed(
     const Size(18, 18),
-    () => const RetroDesktopCheckbox(value: false, label: 'Option'),
+    () => const RetroDesktopCheckbox(value: false, semanticLabel: 'Option'),
     reach: true,
     keyline: true,
   ),
@@ -154,6 +154,7 @@ const _flows = <String, String>{
   'RetroDesktopButton': 'as wide as its words, by the hugging law below',
   'RetroDesktopPopupButton': 'as wide as its words, by the hugging law below',
   'RetroDesktopTextField': 'paints to its size',
+  'RetroDesktopDateField': 'paints to its size',
   'RetroDesktopFlag': 'as wide as its words, by the hugging law below',
   'RetroDesktopKbd': 'as wide as its words, by the hugging law below',
   'RetroDesktopChip': 'as wide as its words, by the hugging law below',

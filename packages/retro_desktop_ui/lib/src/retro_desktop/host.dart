@@ -13,8 +13,10 @@ import 'package:ui_core/host.dart';
 
 import 'theme.dart';
 import 'behavior.dart';
+import 'app.dart';
 import 'chrome.dart';
-import 'raised.dart' show RetroDesktopToaster;
+import 'places.dart';
+import 'localizations.dart';
 
 /// A small fact at the menu bar's end: synced, an hour. On a phone an item with an icon shows only the icon. [highlighted] gives the
 /// icon the highlight.
@@ -49,6 +51,20 @@ class RetroDesktopShellAction extends ShellAction {
   });
 }
 
+/// [action], a host's [ShellAction], as the main library's [RetroDesktopAppAction], pressed with [context].
+RetroDesktopAppAction? retroDesktopAppAction(
+  ShellAction? action,
+  BuildContext context,
+) => action == null
+    ? null
+    : RetroDesktopAppAction(
+        icon: action.icon,
+        label: action.label ?? RetroDesktopLocalizations.of(context).choose,
+        onPressed: () => action.onPressed(context),
+        accent: action.accent,
+        key: action.key,
+      );
+
 /// What every page under the shell reads: the app's name and its places.
 ///
 /// ```dart
@@ -62,6 +78,9 @@ class RetroDesktopChromeScope extends InheritedWidget {
     required this.nav,
     required this.active,
     this.action,
+    this.utility = const [],
+    this.initials,
+    this.shellDrawn = false,
     required super.child,
   });
 
@@ -74,8 +93,17 @@ class RetroDesktopChromeScope extends InheritedWidget {
   /// The index of the active place in [nav].
   final int active;
 
-  /// An optional action shown beside the content.
-  final ShellAction? action;
+  /// The app's one act, at the menu bar's end on a desk and in the middle of a phone's strip.
+  final RetroDesktopAppAction? action;
+
+  /// The shell's facts, at the end of each page's menu bar on a phone.
+  final List<RetroDesktopUtility> utility;
+
+  /// The shell's account letters, at the end of each page's menu bar on a phone.
+  final String? initials;
+
+  /// Whether a `RetroDesktopAppShell` draws the menu bar on a desk, so each page draws only its own bar under it.
+  final bool shellDrawn;
 
   /// Returns the nearest matching scope, or null when none is installed.
   static RetroDesktopChromeScope? maybeOf(BuildContext context) =>
@@ -85,7 +113,10 @@ class RetroDesktopChromeScope extends InheritedWidget {
       old.active != active ||
       old.brand != brand ||
       old.nav != nav ||
-      old.action != action;
+      old.action != action ||
+      old.utility != utility ||
+      old.initials != initials ||
+      old.shellDrawn != shellDrawn;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -95,85 +126,16 @@ class RetroDesktopChromeScope extends InheritedWidget {
       ..add(IterableProperty<RetroDesktopNavItem>('nav', nav))
       ..add(IntProperty('active', active))
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      );
-  }
-}
-
-/// The app's host, mounted once around the router's navigator: Retro Desktop's theme, desk and text defaults.
-///
-/// ```dart
-/// RetroDesktopHost(child: const Text('Workspace'))
-/// ```
-class RetroDesktopHost extends StatelessWidget {
-  /// Creates a [RetroDesktopHost].
-  const RetroDesktopHost({
-    super.key,
-    this.light,
-    this.dark,
-    this.brightness,
-    required this.child,
-  });
-
-  /// The light appearance.
-  final RetroDesktopThemeData? light;
-
-  /// The dark appearance.
-  final RetroDesktopThemeData? dark;
-
-  /// The requested light or dark appearance.
-  final Brightness? brightness;
-
-  /// The widget displayed inside this part.
-  final Widget child;
-  @override
-  Widget build(BuildContext context) {
-    final wanted =
-        brightness ??
-        PreviewFrame.maybeOf(context)?.brightness ??
-        MediaQuery.platformBrightnessOf(context);
-    final theme =
-        (wanted == Brightness.dark ? dark : light) ??
-        RetroDesktopThemeData.preset(
-          RetroDesktopThemeData.presets.first,
-          wanted,
-        );
-    return Theme(
-      data: Theme.of(context)
-          .copyWith(platform: PreviewFrame.targetPlatformOf(context)),
-      child: RetroDesktopTheme(
-        data: theme,
-        child: Builder(
-          builder: (context) => ColoredBox(
-            color: RetroDesktopTheme.of(context).colors.desktop,
-            // The look's notices stand over the app, above its bars (showRetroDesktopSnackBar).
-            child: RetroDesktopToaster(child: child),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<RetroDesktopThemeData>(
-          'light',
-          light,
+        DiagnosticsProperty<RetroDesktopAppAction>(
+          'action',
+          action,
           defaultValue: null,
         ),
       )
+      ..add(IterableProperty<RetroDesktopUtility>('utility', utility))
+      ..add(StringProperty('initials', initials, defaultValue: null))
       ..add(
-        DiagnosticsProperty<RetroDesktopThemeData>(
-          'dark',
-          dark,
-          defaultValue: null,
-        ),
-      )
-      ..add(
-        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+        FlagProperty('shellDrawn', value: shellDrawn, ifTrue: 'shell drawn'),
       );
   }
 }
@@ -449,6 +411,7 @@ class RetroDesktopPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final act = retroDesktopAppAction(action, context);
     final nav = [
       for (final tab in tabs)
         RetroDesktopNavItem(
@@ -465,7 +428,7 @@ class RetroDesktopPreview extends StatelessWidget {
             brand: brand ?? '',
             nav: nav,
             active: activeIndex,
-            action: action,
+            action: act,
             child: page,
           );
     return PreviewFrame(
@@ -500,7 +463,7 @@ class RetroDesktopPreview extends StatelessWidget {
                           RetroDesktopNavigationBar(
                             items: nav,
                             selectedIndex: activeIndex,
-                            action: action,
+                            action: act,
                           ),
                       ],
                     ),

@@ -2246,7 +2246,10 @@ class _CheckLine extends StatelessWidget {
         padding: const EdgeInsets.only(
           top: RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
         ),
-        child: RetroDesktopCheckbox(value: item.value, label: item.text),
+        child: RetroDesktopCheckbox(
+          value: item.value,
+          semanticLabel: item.text,
+        ),
       );
     }
     // Chips beside the words centre them on the chips' height: a live box goes with its words there, so it stays on

@@ -110,6 +110,8 @@ void behaviourTests({required int part, required int parts}) {
         entry.key == 'RetroDesktopSelect' ||
         entry.key == 'RetroDesktopMenuAnchor' ||
         entry.key == 'RetroDesktopTimePicker';
+    // A date field's key opens its calendar, as a tap does; the day is chosen there.
+    final calendarTrigger = entry.key == 'RetroDesktopDateField';
     final closingAction = entry.key == 'RetroDesktopDialogAction';
     group(entry.key, () {
       testWidgetsAcross('Tab focuses and keyboard activates', (tester) async {
@@ -202,6 +204,25 @@ void behaviourTests({required int part, required int parts}) {
             await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
             await tester.pumpAndSettle();
             expect(hits, 1, reason: 'an arrow selects the next enabled value');
+            expect(tester.takeException(), isNull);
+            return;
+          }
+          if (calendarTrigger) {
+            for (final key in [
+              LogicalKeyboardKey.enter,
+              LogicalKeyboardKey.space,
+            ]) {
+              await tester.sendKeyEvent(key);
+              await tester.pumpAndSettle();
+              expect(
+                find.byType(RetroDesktopDatePicker),
+                findsOneWidget,
+                reason: '${key.keyLabel} opens the calendar',
+              );
+              await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+              await tester.pumpAndSettle();
+              expect(find.byType(RetroDesktopDatePicker), findsNothing);
+            }
             expect(tester.takeException(), isNull);
             return;
           }

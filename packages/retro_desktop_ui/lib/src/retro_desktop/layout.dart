@@ -12,14 +12,6 @@ import 'package:ui_core/ui_core.dart';
 import 'theme.dart';
 import 'chrome_metrics.dart';
 
-/// ui_core's default touch floor (`RawTapTargets.fallback`), 40. An app's `RawTapTargetScope` may raise the
-/// floor, so a reach reads the one in effect: `RawTapTargets.of(context).touch`.
-@Deprecated(
-  'Read the floor in effect: RawTapTargets.of(context).touch. '
-  'This is only the default, which an app may raise.',
-)
-double get retroDesktopReach => RawTapTargets.fallback.touch.height;
-
 /// A control's reach, ui_core's `TapTargetPadding` at the look's floors: the area a press reaches, the box a screen reader
 /// outlines and the layout are one. On a phone at least the touch floor each way (`RawTapTargets.of(context).touch`, 40 by default) to a finger, its drawing
 /// unchanged at [alignment] in it (the middle, unless the drawing must keep an edge where it was); on a desk at least
@@ -1514,7 +1506,7 @@ class RenderRetroDesktopSplit extends RenderBox
       defaultPaint(context, offset);
 }
 
-/// `text-wrap: balance`: finds the narrowest width that keeps the same number of lines, so no line ends alone.
+/// Text set at the narrowest width that keeps its number of lines, so its last line never stands short and alone.
 ///
 /// ```dart
 /// RetroDesktopBalancedText('A carefully balanced heading', style: RetroDesktopTheme.of(context).textTheme.head)

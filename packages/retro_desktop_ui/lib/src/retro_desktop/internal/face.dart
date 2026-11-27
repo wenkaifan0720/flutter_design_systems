@@ -203,6 +203,28 @@ Widget retroDesktopFieldNote(
   );
 }
 
+/// A field's box while its value is wrong: a 2 lp line in the words' ink round it, over its sunk edge, as the note under
+/// it gains the warning sign. The look has no red; the heavier edge is how the box itself reads as wrong, by day and by
+/// night, and it stays inside the box, so the focus ring outside it still shows. It stands round the box with or
+/// without an error, drawing only while [on], so an error that turns up leaves the box's editor, its words and its
+/// focus where they are.
+Widget retroDesktopErrorEdge(
+  RetroDesktopThemeData t,
+  OutlinedBorder shape, {
+  required bool on,
+  required Widget child,
+}) => DecoratedBox(
+  position: DecorationPosition.foreground,
+  decoration: on
+      ? ShapeDecoration(
+          shape: shape.copyWith(
+            side: BorderSide(color: t.colors.text, width: 2),
+          ),
+        )
+      : const BoxDecoration(),
+  child: child,
+);
+
 /// The fill of a Chisel checkbox or radio while the pointer holds it: the PC
 /// greyed the white box until the button came up. By night the box is darker
 /// than the face, so it lifts to the lighter grey.

@@ -58,7 +58,7 @@ enum RetroDesktopChartType {
 /// values it says so in the well; [loading] holds the well while data comes.
 ///
 /// ```dart
-/// const RetroDesktopChart(label: 'Weekly activity', series: [RetroDesktopChartSeries('Visits', [12, 18, 9])], labels: ['Mon', 'Tue', 'Wed'])
+/// const RetroDesktopChart(semanticLabel: 'Weekly activity', series: [RetroDesktopChartSeries('Visits', [12, 18, 9])], labels: ['Mon', 'Tue', 'Wed'])
 /// ```
 class RetroDesktopChart extends StatefulWidget {
   /// Creates a [RetroDesktopChart].
@@ -67,7 +67,7 @@ class RetroDesktopChart extends StatefulWidget {
   /// changed afterwards (build a new list to change the data).
   const RetroDesktopChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.kind = RetroDesktopChartType.line,
@@ -85,7 +85,7 @@ class RetroDesktopChart extends StatefulWidget {
   final RetroDesktopStyle? style;
 
   /// The visible or accessible name of this part.
-  final String label;
+  final String semanticLabel;
 
   /// The named data series shown on the plot.
   final List<RetroDesktopChartSeries> series;
@@ -128,7 +128,7 @@ class RetroDesktopChart extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels))
       ..add(
@@ -427,9 +427,10 @@ class _ChartState extends State<RetroDesktopChart> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // The swatch grows with the name beside it.
               retroDesktopOwnSize(
-                width: 24,
-                height: 14,
+                width: MediaQuery.textScalerOf(context).scale(24),
+                height: MediaQuery.textScalerOf(context).scale(14),
                 child: CustomPaint(
                   painter: _LegendPainter(
                     index: index,
@@ -466,7 +467,7 @@ class _ChartState extends State<RetroDesktopChart> {
     gutter = math.min(gutter, math.max(60.0, most));
     return Semantics(
       container: true,
-      label: widget.label,
+      label: widget.semanticLabel,
       value: at == null ? read : reading(at),
       liveRegion: at != null,
       excludeSemantics: true,
@@ -652,13 +653,13 @@ class _ChartState extends State<RetroDesktopChart> {
 /// last value marked in the highlight, as the reading now.
 ///
 /// ```dart
-/// RetroDesktopSparkline(label: 'Visits this week', values: const [3, 5, 4, 8, 6, 9, 7])
+/// RetroDesktopSparkline(semanticLabel: 'Visits this week', values: const [3, 5, 4, 8, 6, 9, 7])
 /// ```
 class RetroDesktopSparkline extends StatelessWidget {
   /// Creates a [RetroDesktopSparkline].
   const RetroDesktopSparkline({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.values,
     this.width = 96,
     this.height = 24,
@@ -666,7 +667,7 @@ class RetroDesktopSparkline extends StatelessWidget {
   });
 
   /// The line's accessible name.
-  final String label;
+  final String semanticLabel;
 
   /// The values, oldest first; null leaves a gap.
   final List<double?> values;
@@ -686,7 +687,7 @@ class RetroDesktopSparkline extends StatelessWidget {
         if (v != null && v.isFinite) format?.call(v) ?? words.formatNumber(v),
     ];
     return Semantics(
-      label: label,
+      label: semanticLabel,
       value: shown.isEmpty ? words.noData : shown.join(', '),
       excludeSemantics: true,
       child: retroDesktopOwnSize(
@@ -709,7 +710,7 @@ class RetroDesktopSparkline extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<double?>('values', values))
       ..add(DoubleProperty('width', width, defaultValue: 96))
       ..add(DoubleProperty('height', height, defaultValue: 24))

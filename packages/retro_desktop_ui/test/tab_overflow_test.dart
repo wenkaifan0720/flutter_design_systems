@@ -18,7 +18,7 @@ Widget _tabs() => Padding(
 );
 
 Finder _arrow(String label) => find.byWidgetPredicate(
-  (w) => w is RetroDesktopIconButton && w.label == label,
+  (w) => w is RetroDesktopIconButton && w.semanticLabel == label,
 );
 
 void main() {

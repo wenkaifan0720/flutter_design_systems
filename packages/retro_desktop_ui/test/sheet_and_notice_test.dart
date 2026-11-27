@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
-import 'package:retro_desktop_ui/retro_desktop_host.dart';
 import 'package:retro_desktop_ui/src/retro_desktop/internal/marks.dart';
 
 import 'support.dart';

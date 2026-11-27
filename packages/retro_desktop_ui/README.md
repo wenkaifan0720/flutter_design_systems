@@ -13,97 +13,41 @@ menus, forms and tables, with six color palettes and light and dark themes.
 flutter pub add retro_desktop_ui material_ui
 ```
 
-or, under `dependencies:` in `pubspec.yaml`, `retro_desktop_ui: ^0.7.0` and `material_ui: ^1.9.0`.
-
-The examples use `MaterialApp` from `material_ui`. For a `CupertinoApp`, add `cupertino_ui` instead.
-A `WidgetsApp` can use Retro Desktop directly.
-
-## A first app
+A whole app: Retro Desktop's faces loaded, `RetroDesktopHost` over the app and one button.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
-void main() => runApp(
-  MaterialApp(
-    builder: (context, child) =>
-        RetroDesktopTheme(data: RetroDesktopThemeData.classic(), child: child!),
-    home: Center(child: RetroDesktopButton('Save', onPressed: () {})),
-  ),
-);
-```
-
-`RetroDesktopTheme` gives every route the look's theme. The fuller setup below also loads the faces before the first
-frame and makes pushed pages change in place.
-
-The package bundles its faces (Jersey 15, Atkinson Hyperlegible Next and Mono) and its icon font; an app needs no
-font setup of its own. Load them before the first frame so nothing draws in a fallback face:
-
-```dart
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await retroDesktopLoadFonts();
-  runApp(const MyApp());
-}
-```
-
-## Theme setup
-
-Put `RetroDesktopTheme` above your pages with the app's `builder`. The look's parts are plain Flutter widgets, so the
-same setup works under a `MaterialApp`, a `CupertinoApp` or a bare `WidgetsApp`.
-
-```dart
-import 'package:material_ui/material_ui.dart';
-import 'package:retro_desktop_ui/retro_desktop_ui.dart';
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-    // Pages the app pushes change in place, as the look's own do ("Pages change in place", below).
-    theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: retroDesktopPageTransitions)),
-    builder: (context, child) => RetroDesktopTheme(
-      // Follows the platform's light or dark setting.
-      data: RetroDesktopThemeData.classic(MediaQuery.platformBrightnessOf(context)),
-      child: child!,
+  runApp(
+    MaterialApp(
+      builder: (context, child) => RetroDesktopHost(child: child!),
+      home: Center(child: RetroDesktopButton('Save', onPressed: () {})),
     ),
-    home: const HomePage(),
   );
 }
 ```
 
-```dart
-import 'package:cupertino_ui/cupertino_ui.dart';
+`material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; import it, not
+`package:flutter/material.dart`. `retro_desktop_ui.dart` exports none of Flutter's libraries, so a file imports
+`material_ui` (or `package:flutter/widgets.dart`) beside it. An app on `CupertinoApp` adds `cupertino_ui`; one on
+`WidgetsApp` needs only `retro_desktop_ui`. The package bundles its faces (Jersey 15 for the chrome, Atkinson
+Hyperlegible Next and Mono for the content) and its glyphs: `retroDesktopLoadFonts` loads the faces before the first
+frame, so nothing draws in a fallback face.
 
-CupertinoApp(
-  builder: (context, child) => RetroDesktopTheme(
-    data: RetroDesktopThemeData.lagoon(),
-    child: child!,
-  ),
-  home: const HomePage(),
-);
-```
+## Mount RetroDesktopHost
 
-```dart
-import 'package:flutter/widgets.dart';
-
-WidgetsApp(
-  color: const Color(0xff5e62a3),
-  pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
-    settings: settings,
-    pageBuilder: (context, _, _) => builder(context),
-  ),
-  builder: (context, child) => RetroDesktopTheme(
-    data: RetroDesktopThemeData.slate(Brightness.dark),
-    child: child!,
-  ),
-  home: const HomePage(),
-);
-```
-
-A page is a `RetroDesktopScaffold`: on a desk (from 1024 wide) its body stands in a window on the desktop, on a phone
-it fills the screen under the app bar.
+`RetroDesktopHost` is the one mount an app needs, in its app's `builder`, above the navigator: Retro Desktop's theme
+by day and by night, the palette, the desk's colour under the pages, and the toaster, so a notice
+(`showRetroDesktopSnackBar`) stands over the app, above its bars. Its `brightness` is light, dark, or null for the
+platform's setting; its `palette` is one of `RetroDesktopThemeData.palettes` (`light` and `dark` take whole themes
+of your own instead). A new appearance or palette shows at once, as every change of state on the period's desktops
+did; an app that wants it to cross-fade gives the host a `duration` (at once under Reduce Motion all the same).
+Dialogs, sheets and menus need no mount of their own: each opens on the navigator's overlay in the theme it was raised
+in. Your navigator, routes and localizations stay yours.
 
 ```dart
 class HomePage extends StatelessWidget {
@@ -118,29 +62,319 @@ class HomePage extends StatelessWidget {
     ),
   );
 }
+
+class App extends StatefulWidget {
+  const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  // Null follows the platform's light or dark setting.
+  Brightness? brightness;
+  RawNamedPalette palette = RetroDesktopThemeData.palettes.first;
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    builder: (context, child) => RetroDesktopHost(
+      brightness: brightness,
+      palette: palette,
+      child: child!,
+    ),
+    home: const HomePage(),
+  );
+}
 ```
 
-**Pages change in place.** The period's screens changed at once: nothing in the look slides or zooms, and its own
-pages, sheets, dialogs and menus stand in their places as they open. Push your own pages with `RetroDesktopPageRoute`,
-which does the same and pops the same way. A `MaterialPageRoute` takes your app's own page transitions, by default
-the platform's slide from the side or its zoom (on a Mac, the Cupertino slide), whatever theme the look builds; give
-your app's `ThemeData` the look's `retroDesktopPageTransitions`, one for every platform, as in the setup above, and it
-changes in place too. The map fits Flutter's `ThemeData` and material_ui's alike. On iOS a page still pops with the
-swipe from the screen's leading edge, which lives in Cupertino's slide: the map's iOS entry, and `RetroDesktopPageRoute`
-there, stand ui_core's `SwipeBackPageTransitionsBuilder` round the look's change, so the page follows the finger
-while it swipes and stands in place otherwise. A map of your own keeps the swipe the same way, through ui_core's
-`rawSwipeBack(map)`.
+A page is a `RetroDesktopScaffold`: on a desk (from 1024 wide) its body stands in a window on the desktop, on a phone
+it fills the screen under the app bar.
+
+**Pages change in place.** The period's screens changed at once: nothing in the look slides or zooms, and its pages,
+sheets, dialogs and menus stand in their places as they open. retro_desktop_ui stands on material_ui, and
+`RetroDesktopHost` (its `RetroDesktopTheme`) gives material_ui's `Theme` the look's page change, so a
+`MaterialPageRoute` your app pushes on material_ui's `MaterialApp` changes in place already; `RetroDesktopPageRoute`
+does the same under any app. On Flutter's own `MaterialApp` (`package:flutter/material.dart`, deprecated from Flutter
+3.50) a `MaterialPageRoute` reads Flutter's `Theme`, which the look doesn't reach, and slides in unless that theme
+carries `retroDesktopPageTransitions`: `theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders:
+retroDesktopPageTransitions))`. On iOS a page still pops with the swipe from the screen's leading edge, the page
+following the finger while it swipes and standing in place otherwise: the map wraps the change there in ui_core's
+`SwipeBackPageTransitionsBuilder`. A map of your own keeps the swipe the same way, through `rawSwipeBack(map)`.
+
+With `CupertinoApp`, or with `WidgetsApp` for an app with no Material or Cupertino at all:
 
 ```dart
-MaterialApp(
-  theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: retroDesktopPageTransitions)),
-  builder: (context, child) => RetroDesktopTheme(data: RetroDesktopThemeData.classic(), child: child!),
+import 'package:cupertino_ui/cupertino_ui.dart';
+
+CupertinoApp(
+  builder: (context, child) => RetroDesktopHost(child: child!),
   home: const HomePage(),
 );
-
-// From a page:
-Navigator.of(context).push(RetroDesktopPageRoute<void>(builder: (context) => const DocumentPage()));
 ```
+
+```dart
+WidgetsApp(
+  color: const Color(0xff5e62a3),
+  pageRouteBuilder: <T>(settings, builder) => RetroDesktopPageRoute<T>(settings: settings, builder: builder),
+  builder: (context, child) => RetroDesktopHost(child: child!),
+  home: const HomePage(),
+);
+```
+
+`RetroDesktopTheme` alone restyles a part of the tree:
+`RetroDesktopTheme(data: RetroDesktopThemeData.preset('lagoon', Brightness.dark), child: ...)`.
+
+## Build an app
+
+The example, `example/lib/main.dart`, is this app in one file to copy: a shelf of books in three places.
+
+**A list and its page.** A list is a section of ruled rows; a row pushes its page with Flutter's own route, and the
+pushed page's bar has its way back (Escape and the back gesture pop it too). A row's name reads its trailing tag, so a
+screen reader hears "Piranesi, Susanna Clarke, To read".
+
+```dart
+class BookPage extends StatelessWidget {
+  const BookPage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => RetroDesktopScaffold(
+    appBar: RetroDesktopAppBar(title: title),
+    body: const RetroDesktopCard(title: 'Susanna Clarke', child: Text('Started 2 Oct 2026.')),
+  );
+}
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => RetroDesktopScaffold(
+    appBar: const RetroDesktopAppBar(title: 'Books'),
+    body: RetroDesktopListSection(
+      children: [
+        for (final (index, title) in ['Piranesi', 'Stoner'].indexed)
+          RetroDesktopListTile(
+            isFirst: index == 0,
+            title: title,
+            subtitle: 'Susanna Clarke',
+            trailing: const RetroDesktopTag('To read', icon: RetroDesktopGlyphs.clock),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (context) => BookPage(title: title)),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+```
+
+**A dialog: pop it with the answer.** A dialog is a modal window, standing in place as it opens. Each
+`RetroDesktopDialogAction` pops the dialog with its `value`, which `showRetroDesktopDialog` returns; Escape and the
+back gesture return null, and Return presses the default action. Focus goes back where it was. A notice says what
+happened.
+
+```dart
+Future<void> confirmRemove(BuildContext context, String title) async {
+  final remove = await showRetroDesktopDialog<bool>(
+    context,
+    builder: (context) => RetroDesktopDialog(
+      title: 'Remove $title?',
+      message: 'It leaves your shelf. You can add it again.',
+      actions: const [
+        RetroDesktopDialogAction('Keep', value: false),
+        RetroDesktopDialogAction('Remove', value: true, isDestructiveAction: true),
+      ],
+    ),
+  );
+  if (remove == true && context.mounted) showRetroDesktopSnackBar(context, 'Removed $title');
+}
+```
+
+**A form.** `RawForm` (ui_core's, exported with retro_desktop_ui) checks every field's `validator` on submit: each
+error shows under its field, with the field's heavier edge, the first wrong field takes the focus and a screen reader
+hears how many need attention; after that the errors follow the typing. Each field brings its label and its help or
+error, and takes the column's width. A `RetroDesktopDateField` raises the calendar; the page's `footer` holds the
+window's default button.
+
+```dart
+class AddBookPage extends StatefulWidget {
+  const AddBookPage({super.key});
+
+  @override
+  State<AddBookPage> createState() => _AddBookPageState();
+}
+
+class _AddBookPageState extends State<AddBookPage> {
+  final form = GlobalKey<RawFormState>();
+  DateTime? started;
+
+  @override
+  Widget build(BuildContext context) => RetroDesktopScaffold(
+    appBar: const RetroDesktopAppBar(title: 'Add a book'),
+    footer: RetroDesktopButton('Save', isDefaultAction: true, onPressed: () => form.currentState!.submit()),
+    body: RawForm(
+      key: form,
+      onSubmit: () => showRetroDesktopSnackBar(context, 'Added', tone: RetroDesktopTone.success),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: RetroDesktopSpacing.s16,
+        children: [
+          RetroDesktopTextField(
+            labelText: 'Title',
+            validator: (value) => (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+          ),
+          RetroDesktopDateField(
+            labelText: 'Started',
+            hintText: 'Not yet',
+            value: started,
+            firstDate: DateTime(1900),
+            lastDate: DateTime.now(),
+            onChanged: (day) => setState(() => started = day),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+A select is a pop-up button (Platinum) or a sunken field with a drop button (Chisel), opening its list on its field,
+the current choice ticked:
+
+```dart
+RetroDesktopSelect<String>(
+  labelText: 'Sort by',
+  value: 'name',
+  options: const [
+    RetroDesktopOption('name', 'Name'),
+    RetroDesktopOption('date', 'Date modified'),
+  ],
+  onChanged: (value) {},
+);
+```
+
+**Settings: the palette picker.** `RetroDesktopThemeData.palettes` are the six palettes as ui_core's
+`RawNamedPalette`: an `id` to store, a `label` to show, and `swatchesFor(brightness)`, its colours by day or by
+night. A row a palette, its swatches leading its name and the chosen one selected; give the chosen one to
+`RetroDesktopHost(palette: ...)`.
+
+```dart
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key, required this.palette, required this.onPalette});
+
+  final RawNamedPalette palette;
+  final ValueChanged<RawNamedPalette> onPalette;
+
+  @override
+  Widget build(BuildContext context) => RetroDesktopScaffold(
+    appBar: const RetroDesktopAppBar(title: 'Settings'),
+    body: RetroDesktopListSection(
+      title: 'Palette',
+      children: [
+        for (final (index, option) in RetroDesktopThemeData.palettes.indexed)
+          RetroDesktopListTile(
+            isFirst: index == 0,
+            leading: Swatches(option.swatchesFor(RetroDesktopTheme.of(context).colors.brightness)),
+            title: option.label,
+            selected: option.id == palette.id,
+            onPressed: () => onPalette(option),
+          ),
+      ],
+    ),
+  );
+}
+
+/// A palette's colours side by side in one square, ruled in the row's ink.
+class Swatches extends StatelessWidget {
+  const Swatches(this.colors, {super.key});
+
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: IconTheme.of(context).size ?? 16,
+    child: DecoratedBox(
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(border: Border.all(color: RetroDesktopTheme.of(context).colors.text)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        // Colours have no reading direction: the stripes stand in one order in every language.
+        textDirection: TextDirection.ltr,
+        children: [for (final color in colors) Expanded(child: ColoredBox(color: color))],
+      ),
+    ),
+  );
+}
+```
+
+**The places: `RetroDesktopAppShell`.** On a phone the places are the strip at the foot; on a desk (from 1024 wide)
+the menu bar across the top, with the app's `brand` at its start. `.branches` keeps a stack for each place: a pushed
+page keeps the menu bar on a desk while the phone's strip steps away, and back pops it. A screen reader hears the
+places as tabs.
+
+```dart
+class Shelf extends StatefulWidget {
+  const Shelf({super.key});
+
+  @override
+  State<Shelf> createState() => _ShelfState();
+}
+
+class _ShelfState extends State<Shelf> {
+  int place = 0;
+  RawNamedPalette palette = RetroDesktopThemeData.palettes.first;
+
+  @override
+  Widget build(BuildContext context) => RetroDesktopAppShell.branches(
+    brand: 'Shelf',
+    destinations: const [
+      RetroDesktopNavItem(label: 'Books', short: 'Books', icon: RetroDesktopGlyphs.book),
+      RetroDesktopNavItem(label: 'Add a book', short: 'Add', icon: RetroDesktopGlyphs.add),
+      RetroDesktopNavItem(label: 'Settings', short: 'Settings', icon: RetroDesktopGlyphs.settings),
+    ],
+    selectedIndex: place,
+    onDestinationSelected: (index) => setState(() => place = index),
+    branches: [
+      (context) => const BooksPage(),
+      (context) => const AddBookPage(),
+      (context) => SettingsPage(palette: palette, onPalette: (next) => setState(() => palette = next)),
+    ],
+  );
+}
+```
+
+## Building blocks
+
+| For | Retro Desktop's |
+| --- | --- |
+| The app's mount | `RetroDesktopHost`; `RetroDesktopTheme` for a part of the tree |
+| Places | `RetroDesktopAppShell`, `RetroDesktopMenuBar`, `RetroDesktopNavigationBar`, `RetroDesktopNavigationRail`, `RetroDesktopNavigationDrawer`, `RetroDesktopTabBar` |
+| A page | `RetroDesktopScaffold`, `RetroDesktopAppBar`, `RetroDesktopBackButton`, `RetroDesktopPageRoute` |
+| Windows | `RetroDesktopWindow`, `RetroDesktopDesktop`, `RetroDesktopGroupBox`, `RetroDesktopToolbar` |
+| Buttons | `RetroDesktopButton` (`.text`), `RetroDesktopIconButton`, `RetroDesktopSplitButton`, `RetroDesktopButtonGroup`, `RetroDesktopToggleGroup`, `RetroDesktopLink` |
+| Text entry | `RetroDesktopTextField`, `RetroDesktopTextArea`, `RetroDesktopPasswordField`, `RetroDesktopSearchField`, `RetroDesktopNumberField`, `RetroDesktopInputOtp`, `RetroDesktopInputGroup`, `RetroDesktopCombobox` |
+| Choices | `RetroDesktopSelect`, `RetroDesktopCheckbox`, `RetroDesktopCheckRow`, `RetroDesktopRadioGroup`, `RetroDesktopSwitch`, `RetroDesktopSwitchRow`, `RetroDesktopSegmentedButton`, `RetroDesktopChip` |
+| Amounts | `RetroDesktopSlider`, `RetroDesktopRangeSlider`, `RetroDesktopRating`, `RetroDesktopMeter` |
+| Dates and times | `RetroDesktopDateField`, `RetroDesktopCalendar`, `showRetroDesktopDatePicker`, `RetroDesktopDateRangePicker`, `showRetroDesktopTimePicker` |
+| A form | `RawForm`, `RetroDesktopFormField` |
+| Lists and tables | `RetroDesktopListSection`, `RetroDesktopListTile`, `RetroDesktopReorderableListView`, `RetroDesktopTable`, `RetroDesktopDataTable`, `RetroDesktopListTable`, `RetroDesktopDescriptionList`, `RetroDesktopTreeView` |
+| Surfaces | `RetroDesktopCard`, `RetroDesktopWell`, `RetroDesktopSections`, `RetroDesktopDisclosure`, `RetroDesktopDivider` |
+| Raised | `showRetroDesktopDialog` with `RetroDesktopDialog`, `showRetroDesktopBottomSheet`, `showRetroDesktopSheet`, `showRetroDesktopActionSheet`, `showRetroDesktopMenu`, `RetroDesktopMenuAnchor`, `RetroDesktopPopover`, `RetroDesktopTooltip` |
+| Feedback | `showRetroDesktopSnackBar`, `RetroDesktopBanner`, `RetroDesktopAlert`, `RetroDesktopLinearProgressIndicator`, `RetroDesktopCircularProgressIndicator`, `RetroDesktopSkeleton`, `RetroDesktopEmptyState`, `RetroDesktopErrorState` |
+| Status | `RetroDesktopTag`, `RetroDesktopBadge`, `RetroDesktopFlag` |
+| People | `RetroDesktopAvatar`, `RetroDesktopAvatarGroup`, `RetroDesktopMonogram` |
+| Steps and pages | `RetroDesktopStepProgress`, `RetroDesktopPagination`, `RetroDesktopBreadcrumb`, `RetroDesktopPageDots` |
+| Charts | `RetroDesktopLineChart`, `RetroDesktopBarChart`, `RetroDesktopAreaChart`, `RetroDesktopPieChart`, `RetroDesktopSparkline` |
+| The desk's own | `RetroDesktopDeskIcon`, `RetroDesktopFolderGrid`, `RetroDesktopFileGrid`, `RetroDesktopScaleBar`, `RetroDesktopSpanBar`, `RetroDesktopPixelSky` |
+| Layout | `RetroDesktopRow`, `RetroDesktopGridOf`, `RetroDesktopScrollArea`, `RetroDesktopResizable` |
+| Glyphs | `RetroDesktopGlyphs` |
+
+A button comes in Cupertino's pattern: `isDefaultAction` is the window's default button (the one Return presses, one
+a window), `isDestructiveAction` marks an action that destroys, and `RetroDesktopButton.text` has no face at rest.
+
+`RetroDesktopGlyphs` names the icons Retro Desktop's parts draw, Lucide's, so an app has them with no other package;
+for the rest of Lucide, add `lucide_icons_flutter` and pass its `LucideIcons` where a part takes an `IconData`.
 
 ## The look
 
@@ -158,114 +392,6 @@ ring round the focused thing or Chisel's dotted rectangle, and a selection takes
 | ![Papers by day: a document list and an open note, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/desktop_day.png) | ![A workspace window by night, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/workspace_night.png) |
 | ![Buttons by day, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/buttons_day.png) | ![Windows by night, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/windows_night.png) |
 | ![An order form on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/checkout_phone_day.png) | ![Settings on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/settings_phone_night.png) |
-
-## Everyday parts
-
-Buttons take `onPressed`; inputs take `value` and `onChanged`; navigation takes `selectedIndex`. A null callback
-shows the part disabled.
-
-**Button.** One `RetroDesktopButton`, in Cupertino's pattern: `isDefaultAction` is the window's default button (the
-one Return presses, one a window), `isDestructiveAction` marks an action that destroys, and `RetroDesktopButton.text`
-has no face at rest.
-
-```dart
-Row(
-  children: [
-    RetroDesktopButton.text('Cancel', onPressed: () {}),
-    const SizedBox(width: 12),
-    RetroDesktopButton('Save', isDefaultAction: true, onPressed: () {}),
-  ],
-);
-```
-
-**Text field.** A sunken field with its label above, a helper or an error below.
-
-```dart
-RetroDesktopTextField(
-  labelText: 'Name',
-  hintText: 'Your full name',
-  helperText: 'As it appears on the card',
-  onChanged: (name) {},
-);
-```
-
-**Select.** A pop-up button (Platinum) or a sunken field with a drop button (Chisel), opening its list on its field.
-
-```dart
-RetroDesktopSelect<String>(
-  labelText: 'Sort by',
-  value: sort,
-  options: const [
-    RetroDesktopOption('name', 'Name'),
-    RetroDesktopOption('date', 'Date modified'),
-    RetroDesktopOption('size', 'Size'),
-  ],
-  onChanged: (value) => setState(() => sort = value),
-);
-```
-
-**List.** Rows in a sunken well, a rule between them; a row with `onPressed` shows its press.
-
-```dart
-RetroDesktopWell(
-  child: RetroDesktopList(
-    children: [
-      RetroDesktopListTile(
-        title: 'Quarterly report',
-        subtitle: 'Document · edited today',
-        leading: const Icon(RetroDesktopGlyphs.fileText),
-        onPressed: () {},
-      ),
-      RetroDesktopListTile(
-        title: 'Photos',
-        subtitle: 'Folder · 38 items',
-        leading: const Icon(RetroDesktopGlyphs.folder),
-        onPressed: () {},
-      ),
-    ],
-  ),
-);
-```
-
-**Dialog.** A modal window; it returns the value of the action that closed it.
-
-```dart
-final save = await showRetroDesktopDialog<bool>(
-  context,
-  builder: (context) => const RetroDesktopDialog(
-    title: 'Save changes?',
-    message: 'Your document has changed since you opened it.',
-    actions: [
-      RetroDesktopDialogAction("Don't save", value: false),
-      RetroDesktopDialogAction('Save', value: true, isDefaultAction: true),
-    ],
-  ),
-);
-```
-
-**Navigation.** Folder tabs over one panel on a desk; the phone's strip at the foot of the screen.
-
-```dart
-RetroDesktopTabBar(
-  tabs: const ['Recent', 'Shared', 'Archived'],
-  selectedIndex: tab,
-  onChanged: (index) => setState(() => tab = index),
-  child: pages[tab],
-);
-
-RetroDesktopNavigationBar(
-  items: const [
-    RetroDesktopNavItem(label: 'Files', short: 'Files', icon: RetroDesktopGlyphs.folder),
-    RetroDesktopNavItem(label: 'Inbox', short: 'Inbox', icon: RetroDesktopGlyphs.inbox),
-  ],
-  selectedIndex: place,
-  onDestinationSelected: (index) => setState(() => place = index),
-);
-```
-
-`showRetroDesktopBottomSheet`, `showRetroDesktopMenu`, `showRetroDesktopTooltip` and `showRetroDesktopSnackBar`
-present their parts the same way. Charts take named series and numbers; folder, file, picture and empty-state art
-slots take any widget.
 
 ## How Retro Desktop is built
 
@@ -349,8 +475,9 @@ final theme = RetroDesktopThemeData.from(
 The theme's settings are the ones a product changes: the palette (a preset or `from`), light or dark, the
 appearance, the density and, for a brand or a script the bundled faces lack, the `typeface` (its `fallback` faces reach
 every text style, as `ThemeData.fontFamilyFallback` does). Corners, line widths and
-shadows belong to the appearance and are not settings, and neither is motion: things appear and go at once, as the
-period's did (`copyWith`'s `motion` is deprecated in 0.2.0; `dart fix --apply` removes it). Text size follows the
+shadows belong to the appearance and are not settings (Retro Desktop opens none of ui_core's `RawShapeScheme`: its
+steps are the appearance's, `RetroDesktopThemeData.shapes`), and neither is motion: things appear and go at once, as
+the period's did. Text size follows the
 platform's text scaling, and Reduce Motion is honoured wherever anything moves.
 
 ### Appearances
@@ -451,7 +578,10 @@ never disposes it, and makes and disposes its own when none is given. Groups (ta
 the pickers) take none, as Flutter's do.
 
 Pass text for button, chip, tab and menu labels. Windows, dialogs, cards and list rows take text for their titles.
-Use `IconData` for a control's `icon` and a widget for a list row's `leading` or `trailing` slot.
+Use `IconData` for a control's `icon` and a widget for a list row's `leading` or `trailing` slot. A part's `label` is
+the words it draws; `semanticLabel` is a name only a screen reader hears (an icon button's, a chart's, a tab bar's).
+Inside a field's label and help (`RetroDesktopFormField`, a field's own `labelText`), a control is read once, by that
+label.
 
 Sizes follow the period's: a button is as wide as its words, up to 300 on a desk and half the screen on a phone (never
 under 160); `wide: true` fills its row. A table narrower than its columns' least widths scrolls sideways under the
@@ -479,12 +609,15 @@ host, its pages and sheets, the page preview, the component inventory). An app b
 
 ## Example
 
-The example app shows every part by kind, ordinary applications built from them (a form, settings, a list, a
-checkout, a workspace, projects), and the look's own pieces (the desktop and its windows, objects and figures, gauges
-and calendars). Its Customize panel changes the palette, light or dark, the appearance, the density and the
-colours. The All components page answers every row of the shared component list; three rows are absent by design: the
-floating action button (the toolbar's default button is the desktop's), the command palette (the period ran commands
-from its menu bar and their keys) and the wheel picker (the period chose from a pop-up button).
+`example/lib/main.dart` is Shelf, the app in "Build an app" in one file: the host, the shell with three places, a
+list pushing a book's page that asks before it removes the book, a checked form with a date, and settings with the
+appearance and the six palettes. `flutter run -t lib/gallery.dart` runs the gallery of every part by kind, ordinary
+screens built from them (a form, settings, a list, a checkout, a workspace, projects) and the look's own pieces (the
+desktop and its windows, objects and figures, gauges and calendars), with a Customize panel for the palette, light or
+dark, the appearance and the density. Its All components page answers every row of the shared component list; three
+rows are absent by design: the floating action button (the toolbar's default button is the desktop's), the command
+palette (the period ran commands from its menu bar and their keys) and the wheel picker (the period chose from a
+pop-up button).
 
 ## Requirements
 

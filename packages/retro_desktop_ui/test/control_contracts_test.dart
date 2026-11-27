@@ -133,7 +133,7 @@ void main() {
           _host(
             StatefulBuilder(
               builder: (context, change) => RetroDesktopCheckbox(
-                label: 'Choice',
+                semanticLabel: 'Choice',
                 value: value,
                 onChanged: (next) => change(() => value = next),
               ),
@@ -312,7 +312,7 @@ void main() {
       _host(
         StatefulBuilder(
           builder: (context, change) => RetroDesktopRating(
-            label: 'Rating',
+            semanticLabel: 'Rating',
             value: value.toDouble(),
             onChanged: (next) => change(() => value = next),
           ),

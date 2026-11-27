@@ -63,7 +63,7 @@ class RetroDesktopMenuBar extends StatelessWidget {
   const RetroDesktopMenuBar({
     super.key,
     required this.menus,
-    this.label,
+    this.semanticLabel,
     this.leading,
     this.trailing,
   });
@@ -72,7 +72,7 @@ class RetroDesktopMenuBar extends StatelessWidget {
   final List<RawMenuEntry> menus;
 
   /// The bar's name for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   /// Before the titles: the app's mark.
   final Widget? leading;
@@ -100,7 +100,8 @@ class RetroDesktopMenuBar extends StatelessWidget {
       // resting pointer, so a menu opened from the keys would light the row under the mouse, not its first; the
       // period's menus (and a Mac's today) wait for the pointer to move.
       highlightFollowsPointer: false,
-      semanticLabel: label ?? RawWidgetsLocalizations.of(context).menuBarLabel,
+      semanticLabel:
+          semanticLabel ?? RawWidgetsLocalizations.of(context).menuBarLabel,
       // An alert stands below the bar, however many rows it wraps to.
       barBuilder: (context, items) => RetroDesktopBarFoot(
         child: DecoratedBox(
@@ -294,7 +295,7 @@ class RetroDesktopMenuBar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RawMenuEntry>('menus', menus))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

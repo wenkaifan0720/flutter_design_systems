@@ -60,7 +60,7 @@ void main() {
             retroDesktopApp(
               StatefulBuilder(
                 builder: (context, change) => RetroDesktopSwitch(
-                  label: 'Notifications',
+                  semanticLabel: 'Notifications',
                   value: value,
                   onChanged: (next) => change(() => value = next),
                 ),

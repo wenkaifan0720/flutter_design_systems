@@ -3,7 +3,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
-import 'package:retro_desktop_ui/retro_desktop_host.dart';
 import 'package:ui_core_review/ui_core_review.dart' show DesignOverlayCheck;
 
 import 'support.dart';

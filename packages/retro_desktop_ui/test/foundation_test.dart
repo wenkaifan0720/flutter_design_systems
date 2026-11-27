@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:retro_desktop_ui/src/retro_desktop/internal/field_hooks.dart';
+import 'package:retro_desktop_ui/src/retro_desktop/theme.dart'
+    show retroDesktopThemeWith;
 
 // The focus rings a part's highlight painters will draw (claimed fallbacks
 // excluded): the ring follows the part's outline, outside it.
@@ -33,12 +35,13 @@ void main() {
     'theme values copy, compare and interpolate without losing custom slots',
     () {
       final base = RetroDesktopThemeData.classic();
-      final changed = base.copyWith(
-        colors: base.colors.copyWith(text: const Color(0xff222222)),
-        defaultButtonTheme: const RetroDesktopStyle(
-          fill: WidgetStatePropertyAll(Color(0xff333333)),
+      final changed = retroDesktopThemeWith(
+        base.copyWith(
+          colors: base.colors.copyWith(text: const Color(0xff222222)),
+          defaultButtonTheme: const RetroDesktopStyle(
+            fill: WidgetStatePropertyAll(Color(0xff333333)),
+          ),
         ),
-        // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
         motion: const RetroDesktopMotion(state: Duration(milliseconds: 200)),
       );
       final direct = base.copyWith(
@@ -224,7 +227,7 @@ void main() {
                       onEditingComplete: () => completed++,
                       trailing: RetroDesktopIconButton(
                         Icons.clear,
-                        label: 'Separate action',
+                        semanticLabel: 'Separate action',
                         onPressed: () {},
                       ),
                     ),
@@ -443,8 +446,8 @@ void main() {
       await tester.pumpWidget(app(RetroDesktopThemeData.classic()));
       await tester.pumpWidget(
         app(
-          RetroDesktopThemeData.berry().copyWith(
-            // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
+          retroDesktopThemeWith(
+            RetroDesktopThemeData.berry(),
             motion: const RetroDesktopMotion(state: Duration(seconds: 1)),
           ),
         ),

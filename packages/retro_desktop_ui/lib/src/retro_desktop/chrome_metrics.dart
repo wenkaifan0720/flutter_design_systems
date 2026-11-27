@@ -16,14 +16,6 @@ abstract final class RetroDesktopChromeMetrics {
   /// the pointer's floor (`RawTapTargets`, 24).
   static const double target = 40;
 
-  /// ui_core's default touch floor (`RawTapTargets.fallback`), 40. An app's `RawTapTargetScope` may raise
-  /// the floor, so a reach reads the one in effect: [targetOf], or `RawTapTargets.of(context).touch`.
-  @Deprecated(
-    'Read the floor in effect: RawTapTargets.of(context).touch, or targetOf. '
-    'This is only the default, which an app may raise.',
-  )
-  static double get touchTarget => RawTapTargets.fallback.touch.height;
-
   /// Whether a finger reaches the controls at [context]: by the app's
   /// `RawTapTargets` input, else the platform the look's host keeps.
   static bool touchOf(BuildContext context) =>

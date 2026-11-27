@@ -16,6 +16,20 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'theme.dart';
 
+/// A field shown alone, as a filter in a toolbar stands: from 600 wide up at most a field's measure (320), at the
+/// start of its column. A form's fields take their column's width; one alone keeps to a field's measure.
+Widget kitAlone(Widget field) => Builder(
+  builder: (context) => MediaQuery.sizeOf(context).width < 600
+      ? field
+      : Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: field,
+          ),
+        ),
+);
+
 /// Holds an example's controlled value without changing its initial specimen.
 Widget kitValue<T>(T initial, Widget Function(T, ValueChanged<T>) builder) =>
     _KitValue<T>(initial: initial, builder: builder);

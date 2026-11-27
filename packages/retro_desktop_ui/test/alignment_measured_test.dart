@@ -238,7 +238,7 @@ void main() {
             actions: [
               RetroDesktopIconButton(
                 RetroDesktopGlyphs.tag,
-                label: 'Tag',
+                semanticLabel: 'Tag',
                 onPressed: () {},
               ),
             ],

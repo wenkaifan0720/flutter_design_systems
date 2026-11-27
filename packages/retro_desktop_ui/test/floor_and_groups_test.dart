@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
-import 'package:retro_desktop_ui/retro_desktop_host.dart';
 
 import 'support.dart';
 
@@ -58,7 +57,7 @@ Rect _face(WidgetTester tester, Finder of) {
 
 Widget _button() => RetroDesktopIconButton(
   RetroDesktopGlyphs.chevronLeft,
-  label: 'Back',
+  semanticLabel: 'Back',
   onPressed: () {},
 );
 
@@ -269,23 +268,23 @@ void main() {
                 children: [
                   RetroDesktopIconButton(
                     RetroDesktopGlyphs.chevronLeft,
-                    label: 'Back',
+                    semanticLabel: 'Back',
                     onPressed: () {},
                   ),
                   RetroDesktopIconButton(
                     RetroDesktopGlyphs.chevronRight,
-                    label: 'Next',
+                    semanticLabel: 'Next',
                     onPressed: () {},
                   ),
                   const Spacer(),
                   RetroDesktopIconButton(
                     RetroDesktopGlyphs.menu,
-                    label: 'More',
+                    semanticLabel: 'More',
                     onPressed: () {},
                   ),
                   RetroDesktopIconButton(
                     RetroDesktopGlyphs.close,
-                    label: 'Close',
+                    semanticLabel: 'Close',
                     onPressed: () {},
                   ),
                 ],

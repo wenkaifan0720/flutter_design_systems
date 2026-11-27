@@ -24,6 +24,9 @@ abstract final class RetroDesktopGlyphs {
   /// bell glyph.
   static const IconData bell = LucideIcons.bell;
 
+  /// book glyph.
+  static const IconData book = LucideIcons.bookOpen;
+
   /// calendar glyph.
   static const IconData calendar = LucideIcons.calendar;
 
@@ -182,6 +185,9 @@ abstract final class RetroDesktopGlyphs {
 
   /// send glyph.
   static const IconData send = LucideIcons.send;
+
+  /// settings glyph.
+  static const IconData settings = LucideIcons.settings;
 
   /// share glyph.
   static const IconData share = LucideIcons.share2;

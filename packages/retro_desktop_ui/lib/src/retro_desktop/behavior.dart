@@ -152,10 +152,9 @@ class RetroDesktopMotion {
 }
 
 /// A page pushed the look's way: it stands in its place at once, as the period's screens changed, and goes the same
-/// way when popped; nothing travels across the screen. With a [RetroDesktopMotion.travel] set, it fades in over that
-/// time and out over [RetroDesktopMotion.leave], still in its place; Reduce Motion makes it instant again. Push your
-/// app's own pages with it: a `MaterialPageRoute` takes your `MaterialApp`'s page transitions, the platform's slide or
-/// zoom, unless you set them (the README's "Pages").
+/// way when popped; nothing travels across the screen. Under any app (a `WidgetsApp`'s `pageRouteBuilder`, or pushed
+/// by hand); a `MaterialPageRoute` on material_ui's `MaterialApp` changes the same way under [RetroDesktopHost], and on
+/// Flutter's own `MaterialApp` with [retroDesktopPageTransitions] in its theme (the README's "Pages change in place").
 ///
 /// ```dart
 /// RetroDesktopPageRoute<void>(builder: (context) => const Text('Project notes'))

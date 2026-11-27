@@ -43,13 +43,17 @@ class RetroDesktopBreadcrumbItem {
 /// ```
 class RetroDesktopBreadcrumb extends StatelessWidget {
   /// Creates a [RetroDesktopBreadcrumb].
-  const RetroDesktopBreadcrumb({super.key, required this.items, this.label});
+  const RetroDesktopBreadcrumb({
+    super.key,
+    required this.items,
+    this.semanticLabel,
+  });
 
   /// The places, outermost first; the last is the current page.
   final List<RetroDesktopBreadcrumbItem> items;
 
   /// The trail's accessible name; defaults to the localized "Breadcrumbs".
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +68,7 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
     );
     return Semantics(
       container: true,
-      label: label ?? RetroDesktopLocalizations.of(context).breadcrumbs,
+      label: semanticLabel ?? RetroDesktopLocalizations.of(context).breadcrumbs,
       explicitChildNodes: true,
       // A chip group: each link's reach takes the room between the words, so
       // the crumbs and their marks stand the look's spacing apart.
@@ -128,7 +132,7 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RetroDesktopBreadcrumbItem>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -146,7 +150,7 @@ class RetroDesktopPagination extends StatelessWidget {
     required this.count,
     required this.page,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.style,
   }) : assert(count > 0),
        assert(page >= 0 && page < count);
@@ -161,7 +165,7 @@ class RetroDesktopPagination extends StatelessWidget {
   final ValueChanged<int>? onChanged;
 
   /// The pager's accessible name; defaults to the localized "Pages".
-  final String? label;
+  final String? semanticLabel;
 
   /// Overrides the page buttons' component theme.
   final RetroDesktopStyle? style;
@@ -204,7 +208,7 @@ class RetroDesktopPagination extends StatelessWidget {
     const gap = 2.0;
     return Semantics(
       container: true,
-      label: label ?? words.pages,
+      label: semanticLabel ?? words.pages,
       explicitChildNodes: true,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -239,7 +243,8 @@ class RetroDesktopPagination extends StatelessWidget {
                 rtl
                     ? RetroDesktopGlyphs.chevronRight
                     : RetroDesktopGlyphs.chevronLeft,
-                label: RawWidgetsLocalizations.of(context).previousPageTooltip,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .previousPageTooltip,
                 size: RetroDesktopButtonSize.small,
                 style: arrow,
                 onPressed: live && page > 0 ? () => onChanged!(page - 1) : null,
@@ -319,7 +324,8 @@ class RetroDesktopPagination extends StatelessWidget {
                 rtl
                     ? RetroDesktopGlyphs.chevronLeft
                     : RetroDesktopGlyphs.chevronRight,
-                label: RawWidgetsLocalizations.of(context).nextPageTooltip,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .nextPageTooltip,
                 size: RetroDesktopButtonSize.small,
                 style: arrow,
                 onPressed: live && page < count - 1
@@ -340,7 +346,7 @@ class RetroDesktopPagination extends StatelessWidget {
       ..add(IntProperty('count', count))
       ..add(IntProperty('page', page))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -359,13 +365,13 @@ class RetroDesktopPagination extends StatelessWidget {
 /// them lights nothing, as on the period's desktop.
 ///
 /// ```dart
-/// RetroDesktopRating(label: 'Your rating', value: 4, onChanged: (_) {})
+/// RetroDesktopRating(semanticLabel: 'Your rating', value: 4, onChanged: (_) {})
 /// ```
 class RetroDesktopRating extends StatefulWidget {
   /// Creates a [RetroDesktopRating].
   const RetroDesktopRating({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.value,
     this.max = 5,
     this.onChanged,
@@ -378,7 +384,7 @@ class RetroDesktopRating extends StatefulWidget {
   final bool enabled;
 
   /// The rating's accessible name.
-  final String label;
+  final String semanticLabel;
 
   /// The stars given, whole numbers when chosen; a reading may be fractional.
   final double value;
@@ -397,7 +403,7 @@ class RetroDesktopRating extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(DoubleProperty('value', value))
       ..add(IntProperty('max', max, defaultValue: 5))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
@@ -505,7 +511,7 @@ class _RatingState extends State<RetroDesktopRating> {
       itemCount: w.max,
       readOnly: still,
       onChanged: _takes ? (value) => w.onChanged!(value.round()) : null,
-      semanticLabel: w.label,
+      semanticLabel: w.semanticLabel,
       semanticFormatterCallback: (value) => words.ratingOf(value, w.max),
       focusNode: _focus,
       // In a slot narrower than the stars the row scales down: ui_core reads a pointer along one line. In a wider one
@@ -664,13 +670,13 @@ class _StarPainter extends RetroDesktopPixelPainter {
 /// drop listener sets it), and lists what was taken with a way to remove each.
 ///
 /// ```dart
-/// RetroDesktopFileUpload(label: 'Attachments', onChoose: () {}, files: const ['notes.txt'])
+/// RetroDesktopFileUpload(semanticLabel: 'Attachments', onChoose: () {}, files: const ['notes.txt'])
 /// ```
 class RetroDesktopFileUpload extends StatelessWidget {
   /// Creates a [RetroDesktopFileUpload].
   const RetroDesktopFileUpload({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     this.hint,
     this.onChoose,
     this.active = false,
@@ -680,7 +686,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
   });
 
   /// What the files are for; also the well's accessible name.
-  final String label;
+  final String semanticLabel;
 
   /// A line under the invitation (kinds and sizes taken).
   final String? hint;
@@ -707,7 +713,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
     final words = RetroDesktopLocalizations.of(context);
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -790,7 +796,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
                   if (onRemove != null)
                     RetroDesktopIconButton(
                       RetroDesktopGlyphs.x,
-                      label: '${words.removeFile} ${files[i]}',
+                      semanticLabel: '${words.removeFile} ${files[i]}',
                       size: RetroDesktopButtonSize.small,
                       onPressed: () => onRemove!(i),
                     ),
@@ -806,7 +812,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onChoose', onChoose))
       ..add(FlagProperty('active', value: active, ifTrue: 'active'))

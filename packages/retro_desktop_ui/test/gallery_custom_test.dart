@@ -11,9 +11,12 @@ import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'support.dart';
+
+import 'package:retro_desktop_ui/src/retro_desktop/theme.dart'
+    show retroDesktopThemeWith;
 
 /// Every setting: each knob away from the look's own, each pair of your own colours, and every knob at once.
 final Map<String, GalleryCustom> settings = {
@@ -133,13 +136,10 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       RetroDesktopTheme(
-        data: RetroDesktopThemeData.preset('classic', Brightness.light)
-            .copyWith(
-              // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
-              motion: const RetroDesktopMotion(
-                state: Duration(milliseconds: 120),
-              ),
-            ),
+        data: retroDesktopThemeWith(
+          RetroDesktopThemeData.preset('classic', Brightness.light),
+          motion: const RetroDesktopMotion(state: Duration(milliseconds: 120)),
+        ),
         child: Directionality(
           textDirection: TextDirection.ltr,
           child: Builder(

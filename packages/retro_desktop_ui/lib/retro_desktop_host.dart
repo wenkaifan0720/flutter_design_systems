@@ -10,13 +10,13 @@
 /// {@canonicalFor chrome_metrics.RetroDesktopChromeMetrics}
 /// {@canonicalFor host}
 /// {@canonicalFor host.RetroDesktopChromeScope}
-/// {@canonicalFor host.RetroDesktopHost}
 /// {@canonicalFor host.RetroDesktopPage}
 /// {@canonicalFor host.RetroDesktopPresentation}
 /// {@canonicalFor host.RetroDesktopPreview}
 /// {@canonicalFor host.RetroDesktopSheetPage}
 /// {@canonicalFor host.RetroDesktopShellAction}
 /// {@canonicalFor host.RetroDesktopUtility}
+/// {@canonicalFor host.retroDesktopAppAction}
 /// {@canonicalFor inventory}
 /// {@canonicalFor inventory.RetroDesktopInventoryGallery}
 /// {@canonicalFor inventory.retroDesktopInventory}

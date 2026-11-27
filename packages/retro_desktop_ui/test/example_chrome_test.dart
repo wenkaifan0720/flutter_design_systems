@@ -13,7 +13,7 @@ import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'misreads.dart';
 import 'support.dart';

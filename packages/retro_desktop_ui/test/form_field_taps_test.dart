@@ -98,7 +98,7 @@ class _FormState extends State<_Form> {
             children: [
               for (final d in ['Mon', 'Tue'])
                 RetroDesktopCheckbox(
-                  label: d,
+                  semanticLabel: d,
                   value: _days.contains(d),
                   onChanged: (_) {
                     _say('day $d');
@@ -117,7 +117,7 @@ class _FormState extends State<_Form> {
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: RetroDesktopSwitch(
-            label: 'Reminder',
+            semanticLabel: 'Reminder',
             value: _reminder,
             onChanged: (v) {
               _say('reminder $v');
@@ -149,7 +149,7 @@ class _FormState extends State<_Form> {
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: RetroDesktopCheckbox(
-            label: 'Done',
+            semanticLabel: 'Done',
             value: _done,
             onChanged: (v) {
               _say('done $v');
@@ -181,8 +181,9 @@ Future<List<String>> _pump(WidgetTester tester) async {
 }
 
 // A box by its name; its label is spoken, not drawn.
-Finder _box(String name) =>
-    find.byWidgetPredicate((w) => w is RetroDesktopCheckbox && w.label == name);
+Finder _box(String name) => find.byWidgetPredicate(
+  (w) => w is RetroDesktopCheckbox && w.semanticLabel == name,
+);
 
 const _taken = [
   'priority high',

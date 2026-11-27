@@ -9,10 +9,12 @@ import 'behavior.dart';
 import 'component_themes.dart';
 import 'controls.dart';
 import 'editing.dart';
+import 'format.dart';
 import 'glyphs.dart';
 import 'internal/face.dart';
 import 'localizations.dart';
 import 'layout.dart';
+import 'pickers.dart' show showRetroDesktopDatePicker;
 import 'pixels.dart';
 import 'press.dart';
 import 'raised.dart';
@@ -55,6 +57,316 @@ Widget _labelled(
         ),
     ],
   );
+}
+
+/// A day in a form. Its box, sunk as a text field's, shows the day in the one medium date ("Oct 2, 2026", in the
+/// device's language), or [hintText] while [value] is null, the calendar glyph at its end; a press opens the date
+/// dialog ([showRetroDesktopDatePicker]) on the day shown. [labelText] stands above the box and is its spoken name. In
+/// a `RawForm` a [validator] checks the day, as a text field's checks its words; an error draws the field's heavier
+/// edge and the warning sign before its words.
+///
+/// ```dart
+/// RetroDesktopDateField(labelText: 'Started', hintText: 'Not yet', value: started, onChanged: (day) => setState(() => started = day))
+/// ```
+class RetroDesktopDateField extends StatefulWidget {
+  /// Creates a date field showing [value], or [hintText] while it is null.
+  const RetroDesktopDateField({
+    super.key,
+    required this.value,
+    this.onChanged,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
+    this.semanticLabel,
+    this.firstDate,
+    this.lastDate,
+    this.validator,
+    this.onSaved,
+    this.autovalidateMode,
+    this.focusNode,
+    this.autofocus = false,
+    this.style,
+  });
+
+  /// The day shown; null: none yet, and [hintText] stands in the box.
+  final DateTime? value;
+
+  /// Called with the day chosen in the dialog. Null: the field is disabled.
+  final ValueChanged<DateTime>? onChanged;
+
+  /// The field's name, drawn above its box and spoken as its name. Null: no line above the box.
+  final String? labelText;
+
+  /// What the box says while [value] is null. Null: the localized "Choose a date".
+  final String? hintText;
+
+  /// Supporting words under the box; an error takes their place.
+  final String? helperText;
+
+  /// What is wrong, under the box after the warning sign, the box's edge heavier. With a [validator], the form's error
+  /// shows while this is null.
+  final String? errorText;
+
+  /// The name a screen reader speaks when there is no [labelText].
+  final String? semanticLabel;
+
+  /// The first day the dialog offers; null: 1 January 1900.
+  final DateTime? firstDate;
+
+  /// The last day the dialog offers; null: 31 December 2100.
+  final DateTime? lastDate;
+
+  /// Checks [value] in the `RawForm` above; it is given the day shown, or null.
+  final FormFieldValidator<DateTime>? validator;
+
+  /// Called with the day shown when the `RawForm` above saves.
+  final FormFieldSetter<DateTime>? onSaved;
+
+  /// When [validator] runs before the form is submitted; null: as the form says.
+  final AutovalidateMode? autovalidateMode;
+
+  /// Optional externally owned focus.
+  final FocusNode? focusNode;
+
+  /// Requests focus when mounted.
+  final bool autofocus;
+
+  /// {@macro retro_desktop.style}
+  final RetroDesktopStyle? style;
+
+  @override
+  State<RetroDesktopDateField> createState() => _DateFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<FormFieldValidator<DateTime>>.has(
+          'validator',
+          validator,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<FormFieldSetter<DateTime>>.has('onSaved', onSaved),
+      )
+      ..add(
+        EnumProperty<AutovalidateMode>(
+          'autovalidateMode',
+          autovalidateMode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
+}
+
+class _DateFieldState extends State<RetroDesktopDateField> {
+  FocusNode? _ownFocus;
+  bool _opening = false;
+
+  FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
+
+  @override
+  void dispose() {
+    _ownFocus?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _open(ValueChanged<DateTime> changed) async {
+    if (_opening) return;
+    _opening = true;
+    try {
+      final day = await showRetroDesktopDatePicker(
+        context,
+        value: widget.value,
+        firstDate: widget.firstDate,
+        lastDate: widget.lastDate,
+        title: widget.labelText,
+      );
+      if (mounted && day != null) changed(day);
+    } finally {
+      _opening = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final validator = widget.validator;
+    final changed = widget.onChanged;
+    if (validator == null && widget.onSaved == null) {
+      return _field(context, widget.errorText, changed);
+    }
+    // In a RawForm: the form's submit checks the day shown, shows its error under the box and puts the focus on the
+    // first wrong field; a given errorText wins.
+    return RawFormField<DateTime>(
+      focusNode: _focus,
+      initialValue: widget.value,
+      validator: validator == null ? null : (_) => validator(widget.value),
+      onSaved: widget.onSaved == null
+          ? null
+          : (_) => widget.onSaved!(widget.value),
+      autovalidateMode: widget.autovalidateMode,
+      enabled: changed != null,
+      builder: (state) => _field(
+        context,
+        widget.errorText ?? state.errorText,
+        changed == null
+            ? null
+            : (day) {
+                state.didChange(day);
+                changed(day);
+              },
+      ),
+    );
+  }
+
+  Widget _field(
+    BuildContext context,
+    String? error,
+    ValueChanged<DateTime>? changed,
+  ) {
+    final t = RetroDesktopTheme.of(context);
+    final c = t.colors;
+    final day = widget.value;
+    final shown = day == null
+        ? null
+        : RetroDesktopFormat.mediumDate(context, day);
+    final hint =
+        widget.hintText ?? RetroDesktopLocalizations.of(context).chooseDate;
+    final style = t.textTheme.body;
+    // As tall as a one-line text field beside it: its line and 6 above and below, and under a finger the whole reach,
+    // as the field's.
+    final lineHeight =
+        MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
+        (style.height ?? 1.3);
+    final tall = RetroDesktopReach.padsAcross(context)
+        ? math.max(lineHeight + 12, RetroDesktopReach.least(context))
+        : lineHeight + 12;
+    final shape = t.textFieldTheme.shape?.resolve(const {}) ?? t.shapes.small;
+    final press = RetroDesktopPressable(
+      focusNode: _focus,
+      autofocus: widget.autofocus,
+      label: widget.labelText ?? widget.semanticLabel,
+      value: shown ?? hint,
+      hint: error ?? widget.helperText,
+      isError: error != null,
+      focusShape: shape,
+      onPressed: changed == null ? null : () => _open(changed),
+      builder: (context, states) {
+        final face = retroDesktopFace(
+          states: states,
+          sunken: true,
+          component: t.textFieldTheme.over(
+            RetroDesktopStyle(fill: WidgetStatePropertyAll(c.paper)),
+          ),
+          style: widget.style,
+          // Its words start where a field's do (8 in).
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            RetroDesktopSpacing.s8,
+            RetroDesktopSpacing.s6,
+            RetroDesktopSpacing.s6,
+            RetroDesktopSpacing.s6,
+          ),
+          child: SizedBox(
+            height: tall - 12,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    shown ?? hint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: shown == null
+                        ? style.copyWith(color: c.textTertiary)
+                        : style.copyWith(color: c.text),
+                  ),
+                ),
+                const SizedBox(width: RetroDesktopSpacing.s8),
+                Icon(
+                  RetroDesktopGlyphs.calendar,
+                  size: MediaQuery.textScalerOf(context).scale(15),
+                  color: c.text,
+                ),
+              ],
+            ),
+          ),
+        );
+        return Opacity(
+          opacity: changed == null ? .5 : 1,
+          child: retroDesktopErrorEdge(
+            t,
+            shape,
+            on: error != null,
+            child: face,
+          ),
+        );
+      },
+    );
+    final label = widget.labelText;
+    final note = error ?? widget.helperText;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // The box speaks its name, so the line above it is drawn only.
+        if (label != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
+            child: ExcludeSemantics(
+              child: Text(label, style: t.textTheme.body),
+            ),
+          ),
+        press,
+        if (note != null)
+          Padding(
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
+            child: error != null
+                ? Semantics(
+                    liveRegion: true,
+                    child: retroDesktopFieldNote(t, error, error: true),
+                  )
+                : ExcludeSemantics(
+                    child: retroDesktopFieldNote(t, note, error: false),
+                  ),
+          ),
+      ],
+    );
+  }
 }
 
 /// A search editor whose clear action preserves the editor's focus.
@@ -650,6 +962,10 @@ class RetroDesktopOption<T> {
 
 /// A controlled value picker with a real keyboard menu.
 ///
+/// It takes its column's width, as a form's fields do; one standing alone (a
+/// toolbar's filter) is given a width, as a pop-up menu keeps to its items:
+/// `SizedBox(width: 240, child: RetroDesktopSelect(...))`.
+///
 /// ```dart
 /// RetroDesktopSelect(labelText: 'Sort by', value: 'name', options: const [RetroDesktopOption('name', 'Name'), RetroDesktopOption('date', 'Date')], onChanged: (_) {})
 /// ```
@@ -737,7 +1053,8 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
     if (_opening) return;
     final box = anchorContext.findRenderObject();
     if (box is! RenderBox || !box.hasSize) return;
-    _opening = true;
+    // Open while its list is up: a screen reader hears it expanded.
+    setState(() => _opening = true);
     try {
       final picked = await showRetroDesktopMenu<T>(
         anchorContext,
@@ -757,7 +1074,11 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
       );
       if (mounted && picked != null) widget.onChanged?.call(picked);
     } finally {
-      _opening = false;
+      if (mounted) {
+        setState(() => _opening = false);
+      } else {
+        _opening = false;
+      }
     }
   }
 
@@ -771,15 +1092,11 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
         selected?.label ??
         widget.prompt ??
         RetroDesktopLocalizations.of(context).choose;
-    // From 600 up a select doesn't stretch to its column: it is as wide as
-    // its widest option, at most 320, at the column's start.
-    final hug = MediaQuery.sizeOf(context).width >= 600;
     Widget choice({EdgeInsetsGeometry padding = EdgeInsets.zero}) =>
         _SelectChoice(
           options: widget.options,
           selected: selected,
           shown: shown,
-          hug: hug,
           padding: padding,
         );
     final press = Builder(
@@ -788,6 +1105,7 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
         autofocus: widget.autofocus,
         label: widget.labelText ?? shown,
         value: selected?.label,
+        expanded: _opening,
         isError: widget.errorText != null,
         onPressed:
             widget.onChanged == null || !widget.options.any((o) => o.enabled)
@@ -818,7 +1136,7 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
                   ),
                   child: IntrinsicHeight(
                     child: Row(
-                      mainAxisSize: hug ? MainAxisSize.min : MainAxisSize.max,
+                      mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         choice(
@@ -865,7 +1183,7 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
                   RetroDesktopSpacing.s8,
                 ),
                 child: Row(
-                  mainAxisSize: hug ? MainAxisSize.min : MainAxisSize.max,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     choice(),
                     const SizedBox(width: RetroDesktopSpacing.s8),
@@ -883,17 +1201,7 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
     );
     return _labelled(
       context,
-      hug
-          ? Align(
-              alignment: AlignmentDirectional.centerStart,
-              widthFactor: 1,
-              heightFactor: 1,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 320),
-                child: press,
-              ),
-            )
-          : press,
+      press,
       label: widget.labelText,
       helper: widget.helperText,
       error: widget.errorText,
@@ -901,21 +1209,17 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
   }
 }
 
-/// The choice on a select's face, its glyph and words. Hugging, it is as wide
-/// as the widest option (the face's own type), so choosing another doesn't
-/// resize the face; otherwise it takes the face's room.
+/// The choice on a select's face, its glyph and words, in the face's room.
 class _SelectChoice<T> extends StatelessWidget {
   const _SelectChoice({
     required this.options,
     required this.selected,
     required this.shown,
-    required this.hug,
     required this.padding,
   });
   final List<RetroDesktopOption<T>> options;
   final RetroDesktopOption<T>? selected;
   final String shown;
-  final bool hug;
   final EdgeInsetsGeometry padding;
 
   @override
@@ -932,36 +1236,7 @@ class _SelectChoice<T> extends StatelessWidget {
         ],
       ),
     );
-    if (!hug) return Expanded(child: row);
-    return Flexible(
-      child: Builder(
-        builder: (context) {
-          final style = DefaultTextStyle.of(context).style;
-          final scaler = MediaQuery.textScalerOf(context);
-          final glyph = (IconTheme.of(context).size ?? 24) + 8;
-          double width(String words) {
-            final p = TextPainter(
-              text: TextSpan(text: words, style: style),
-              textDirection: Directionality.of(context),
-              textScaler: scaler,
-              maxLines: 1,
-            )..layout();
-            final w = p.width;
-            p.dispose();
-            return w;
-          }
-
-          var widest = width(shown) + (selected?.icon != null ? glyph : 0);
-          for (final o in options) {
-            widest = math.max(
-              widest,
-              width(o.label) + (o.icon != null ? glyph : 0),
-            );
-          }
-          return SizedBox(width: widest.ceilToDouble(), child: row);
-        },
-      ),
-    );
+    return Expanded(child: row);
   }
 }
 
@@ -1057,7 +1332,7 @@ class _SwitchFace extends StatelessWidget {
 /// A desktop switch whose sliding lever is inset from its themed track.
 ///
 /// ```dart
-/// RetroDesktopSwitch(value: true, label: 'Notifications', onChanged: (_) {})
+/// RetroDesktopSwitch(value: true, semanticLabel: 'Notifications', onChanged: (_) {})
 /// ```
 class RetroDesktopSwitch extends StatelessWidget {
   /// Creates a [RetroDesktopSwitch].
@@ -1065,7 +1340,7 @@ class RetroDesktopSwitch extends StatelessWidget {
     super.key,
     required this.value,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
     this.style,
@@ -1078,7 +1353,7 @@ class RetroDesktopSwitch extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
@@ -1093,7 +1368,7 @@ class RetroDesktopSwitch extends StatelessWidget {
     // A bare lever stands on its column's start edge; its target grows toward the end.
     alignment: AlignmentDirectional.centerStart,
     focusShape: RetroDesktopTheme.of(context).shapes.full,
-    label: label,
+    label: semanticLabel,
     button: false,
     toggled: value,
     focusNode: focusNode,
@@ -1109,7 +1384,7 @@ class RetroDesktopSwitch extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<bool>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -2012,7 +2287,13 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             if (option.icon != null) ...[
-                              Icon(option.icon),
+                              // The glyph grows with the words beside it.
+                              IconTheme.merge(
+                                data: const IconThemeData(
+                                  applyTextScaling: true,
+                                ),
+                                child: Icon(option.icon),
+                              ),
                               const SizedBox(width: RetroDesktopSpacing.s6),
                             ],
                             Flexible(

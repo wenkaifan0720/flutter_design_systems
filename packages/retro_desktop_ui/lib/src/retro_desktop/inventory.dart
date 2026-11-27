@@ -11,13 +11,15 @@ import 'acts_more.dart';
 import 'chart.dart';
 import 'chart_set.dart';
 import 'chrome.dart';
+import 'places.dart';
 import 'controls.dart';
 import 'entries.dart';
 import 'fields_more.dart';
 import 'glyphs.dart';
 import 'heads.dart';
 import 'holds_more.dart';
-import 'layout.dart' show RetroDesktopColumn;
+import 'layout.dart'
+    show RetroDesktopColumn, retroDesktopHugMost, retroDesktopHugs;
 import 'moves.dart';
 import 'pickers.dart';
 import 'pickers_more.dart';
@@ -34,6 +36,18 @@ import 'tokens.dart';
 
 void _none() {}
 void _drop(Object? _) {}
+
+// A field shown alone, at the start of its column and from 600 wide up at
+// most a field's measure.
+Widget _alone(BuildContext context, Widget field) => retroDesktopHugs(context)
+    ? Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: retroDesktopHugMost),
+          child: field,
+        ),
+      )
+    : field;
 
 const _desk = RetroDesktopNavItem(
   label: 'Desktop',
@@ -164,7 +178,7 @@ final RawInventory retroDesktopInventory = RawInventory(
       'IconButton',
       (_) => const RetroDesktopIconButton(
         RetroDesktopGlyphs.search,
-        label: 'Find',
+        semanticLabel: 'Find',
         onPressed: _none,
       ),
     ),
@@ -172,7 +186,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const RetroDesktopButtonGroup(
-        label: 'Week',
+        semanticLabel: 'Week',
         items: [
           RetroDesktopButtonGroupItem(label: 'Previous', onPressed: _none),
           RetroDesktopButtonGroupItem(label: 'Today', onPressed: _none),
@@ -183,7 +197,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'ToggleGroup',
       (_) => RetroDesktopToggleGroup<String>(
-        label: 'Style',
+        semanticLabel: 'Style',
         values: const ['Bold', 'Italic', 'Underline'],
         selected: const {'Bold'},
         labelOf: (v) => v,
@@ -257,14 +271,19 @@ final RawInventory retroDesktopInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Select',
-      (_) => const RetroDesktopSelect<String>(
-        labelText: 'Paper',
-        value: 'a4',
-        options: [
-          RetroDesktopOption('a4', 'A4'),
-          RetroDesktopOption('letter', 'Letter'),
-        ],
-        onChanged: _drop,
+      // Alone, as a filter stands: a field's measure from 600 up; a form's
+      // fields take their column.
+      (context) => _alone(
+        context,
+        const RetroDesktopSelect<String>(
+          labelText: 'Paper',
+          value: 'a4',
+          options: [
+            RetroDesktopOption('a4', 'A4'),
+            RetroDesktopOption('letter', 'Letter'),
+          ],
+          onChanged: _drop,
+        ),
       ),
     ),
     RawInventoryEntry.present(
@@ -280,7 +299,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'Checkbox',
       (_) => const RetroDesktopCheckbox(
-        label: 'Keep a backup',
+        semanticLabel: 'Keep a backup',
         value: true,
         onChanged: _drop,
       ),
@@ -300,7 +319,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'Switch',
       (_) => const RetroDesktopSwitch(
-        label: 'Sound',
+        semanticLabel: 'Sound',
         value: true,
         onChanged: _drop,
       ),
@@ -341,7 +360,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'Rating',
       (_) => const RetroDesktopRating(
-        label: 'Your rating',
+        semanticLabel: 'Your rating',
         value: 4,
         onChanged: _drop,
       ),
@@ -349,7 +368,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'FileUpload',
       (_) => const RetroDesktopFileUpload(
-        label: 'Attachments',
+        semanticLabel: 'Attachments',
         onChoose: _none,
         files: ['notes.txt'],
         onRemove: _drop,
@@ -418,7 +437,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'NavigationRail',
       (_) => const RetroDesktopNavigationRail(
-        label: 'Places',
+        semanticLabel: 'Places',
         items: [_desk, _mail, _bin],
         onDestinationSelected: _drop,
       ),
@@ -426,7 +445,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'NavigationDrawer',
       (_) => const RetroDesktopNavigationDrawer(
-        label: 'Places',
+        semanticLabel: 'Places',
         items: [_desk, _mail, _bin],
         onDestinationSelected: _drop,
       ),
@@ -434,7 +453,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'TabBar',
       (_) => const RetroDesktopTabBar(
-        label: 'Settings',
+        semanticLabel: 'Settings',
         tabs: ['General', 'Sharing', 'Memory'],
         onChanged: _drop,
       ),
@@ -466,7 +485,7 @@ final RawInventory retroDesktopInventory = RawInventory(
       (_) => const RetroDesktopPageDots(
         count: 4,
         selectedIndex: 1,
-        label: 'Pages',
+        semanticLabel: 'Pages',
         onChanged: _drop,
       ),
     ),
@@ -569,7 +588,7 @@ final RawInventory retroDesktopInventory = RawInventory(
       (_) => _OwnScroll(
         (scroll) => RetroDesktopScrollArea(
           controller: scroll,
-          label: 'Files',
+          semanticLabel: 'Files',
           child: ListView(
             controller: scroll,
             children: [
@@ -609,7 +628,7 @@ final RawInventory retroDesktopInventory = RawInventory(
       (_) => _Own(
         _folders,
         (folders) => RetroDesktopTreeView<String>(
-          label: 'Folders',
+          semanticLabel: 'Folders',
           controller: folders,
           labelOf: (n) => n,
         ),
@@ -641,7 +660,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Badge',
-      (_) => const RetroDesktopBadge(3, label: 'Three unread'),
+      (_) => const RetroDesktopBadge(3, semanticLabel: 'Three unread'),
     ),
     RawInventoryEntry.present(
       'Tag',
@@ -651,7 +670,7 @@ final RawInventory retroDesktopInventory = RawInventory(
       'Media',
       (_) => const RetroDesktopMedia(
         slotId: 'desk-photo',
-        label: 'The desk',
+        semanticLabel: 'The desk',
         aspect: 16 / 9,
       ),
     ),
@@ -731,7 +750,7 @@ final RawInventory retroDesktopInventory = RawInventory(
         message: 'Find a document',
         child: RetroDesktopIconButton(
           RetroDesktopGlyphs.search,
-          label: 'Find',
+          semanticLabel: 'Find',
           onPressed: _none,
         ),
       ),
@@ -739,7 +758,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'Menu',
       (_) => const RetroDesktopMenu<String>(
-        label: 'File',
+        semanticLabel: 'File',
         items: [
           RetroDesktopMenuItem('open', 'Open'),
           RetroDesktopMenuItem('close', 'Close'),
@@ -775,12 +794,12 @@ final RawInventory retroDesktopInventory = RawInventory(
       'CircularProgressIndicator',
       (_) => const RetroDesktopCircularProgressIndicator(
         value: .6,
-        label: 'Copying',
+        semanticLabel: 'Copying',
       ),
     ),
     RawInventoryEntry.present(
       'Skeleton',
-      (_) => const RetroDesktopSkeleton(label: 'Loading documents'),
+      (_) => const RetroDesktopSkeleton(semanticLabel: 'Loading documents'),
     ),
     RawInventoryEntry.present(
       'StatusView',
@@ -798,7 +817,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'LineChart',
       (_) => const RetroDesktopLineChart(
-        label: 'Visits',
+        semanticLabel: 'Visits',
         height: 140,
         labels: ['Mon', 'Tue', 'Wed', 'Thu'],
         series: [
@@ -809,7 +828,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'BarChart',
       (_) => const RetroDesktopBarChart(
-        label: 'Files',
+        semanticLabel: 'Files',
         height: 140,
         labels: ['Mon', 'Tue', 'Wed', 'Thu'],
         series: [
@@ -820,7 +839,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'AreaChart',
       (_) => const RetroDesktopAreaChart(
-        label: 'Disk used',
+        semanticLabel: 'Disk used',
         height: 140,
         labels: ['Jan', 'Feb', 'Mar', 'Apr'],
         series: [
@@ -831,7 +850,7 @@ final RawInventory retroDesktopInventory = RawInventory(
     RawInventoryEntry.present(
       'PieChart',
       (_) => const RetroDesktopPieChart(
-        label: 'Storage',
+        semanticLabel: 'Storage',
         height: 140,
         labels: ['Documents', 'Pictures', 'Other'],
         series: [
@@ -841,8 +860,10 @@ final RawInventory retroDesktopInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Sparkline',
-      (_) =>
-          const RetroDesktopSparkline(label: 'Visits', values: [4, 6, 5, 9, 8]),
+      (_) => const RetroDesktopSparkline(
+        semanticLabel: 'Visits',
+        values: [4, 6, 5, 9, 8],
+      ),
     ),
   ],
 );
@@ -885,7 +906,7 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
   Widget _list(BuildContext context, ScrollController scroll) =>
       RetroDesktopScrollArea(
         controller: scroll,
-        label: 'Components',
+        semanticLabel: 'Components',
         child: _gallery(context, scroll),
       );
 

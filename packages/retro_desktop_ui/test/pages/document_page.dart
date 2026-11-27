@@ -40,12 +40,12 @@ class DocumentPage extends StatelessWidget {
                     const RetroDesktopToolRule(),
                     RetroDesktopIconButton(
                       LucideIcons.tag,
-                      label: 'Tag',
+                      semanticLabel: 'Tag',
                       onPressed: onOpen,
                     ),
                     RetroDesktopIconButton(
                       LucideIcons.paperclip,
-                      label: 'Attach',
+                      semanticLabel: 'Attach',
                       onPressed: onOpen,
                     ),
                     const Spacer(),
@@ -55,7 +55,7 @@ class DocumentPage extends StatelessWidget {
                     ),
                     RetroDesktopIconButton(
                       LucideIcons.history,
-                      label: 'Versions',
+                      semanticLabel: 'Versions',
                       onPressed: onOpen,
                     ),
                   ],

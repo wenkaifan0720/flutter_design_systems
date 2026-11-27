@@ -278,20 +278,24 @@ class RetroDesktopButtonGroupItem {
 /// ```
 class RetroDesktopButtonGroup extends StatelessWidget {
   /// Creates a [RetroDesktopButtonGroup].
-  const RetroDesktopButtonGroup({super.key, required this.items, this.label});
+  const RetroDesktopButtonGroup({
+    super.key,
+    required this.items,
+    this.semanticLabel,
+  });
 
   /// The segments in reading order.
   final List<RetroDesktopButtonGroupItem> items;
 
   /// The group's accessible name.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       child: _joined(context, [
         for (final item in items)
@@ -314,7 +318,7 @@ class RetroDesktopButtonGroup extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RetroDesktopButtonGroupItem>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -338,7 +342,7 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
     this.multiple = false,
     this.allowEmpty = false,
     this.isEnabled,
-    this.label,
+    this.semanticLabel,
   });
 
   /// The values in reading order.
@@ -369,7 +373,7 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
   final bool Function(T value)? isEnabled;
 
   /// The group's accessible name.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -382,7 +386,7 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
       emptySelectionAllowed: allowEmpty,
       isEnabled: isEnabled,
       labelOf: labelOf,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       minimumSize: Size(least, least),
       layoutBuilder: (context, items) => _joined(context, items),
       itemBuilder: (context, value, states) {
@@ -431,7 +435,7 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
       ..add(
         ObjectFlagProperty<bool Function(T value)>.has('isEnabled', isEnabled),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

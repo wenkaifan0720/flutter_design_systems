@@ -121,14 +121,14 @@ class RetroDesktopBanner extends StatelessWidget {
 /// A rectangular count mark, alone or beside another widget.
 ///
 /// ```dart
-/// RetroDesktopBadge(3, label: 'Unread messages')
+/// RetroDesktopBadge(3, semanticLabel: 'Unread messages')
 /// ```
 class RetroDesktopBadge extends StatelessWidget {
   /// Creates a [RetroDesktopBadge].
   const RetroDesktopBadge(
     this.count, {
     super.key,
-    this.label,
+    this.semanticLabel,
     this.child,
     this.style,
   }) : assert(count >= 0);
@@ -137,7 +137,7 @@ class RetroDesktopBadge extends StatelessWidget {
   final int count;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// The widget displayed inside this part.
   final Widget? child;
@@ -149,7 +149,7 @@ class RetroDesktopBadge extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final countText = RetroDesktopLocalizations.of(context).formatNumber(count);
     final badge = Semantics(
-      label: label ?? countText,
+      label: semanticLabel ?? countText,
       child: ExcludeSemantics(
         child: retroDesktopFace(
           states: const {WidgetState.selected},
@@ -184,7 +184,7 @@ class RetroDesktopBadge extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('count', count))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -200,14 +200,14 @@ class RetroDesktopBadge extends StatelessWidget {
 /// run through). Where motion is reduced, the picture stands still.
 ///
 /// ```dart
-/// RetroDesktopCircularProgressIndicator(value: .6, label: 'Upload')
+/// RetroDesktopCircularProgressIndicator(value: .6, semanticLabel: 'Upload')
 /// ```
 class RetroDesktopCircularProgressIndicator extends StatefulWidget {
   /// Creates a [RetroDesktopCircularProgressIndicator].
   const RetroDesktopCircularProgressIndicator({
     super.key,
     this.value,
-    this.label,
+    this.semanticLabel,
     this.size = 32,
     this.style,
   }) : assert(value == null || (value >= 0 && value <= 1)),
@@ -220,7 +220,7 @@ class RetroDesktopCircularProgressIndicator extends StatefulWidget {
   final double? value;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// The size of the visible face; minimum interactive reach is retained.
   final double size;
@@ -240,7 +240,7 @@ class RetroDesktopCircularProgressIndicator extends StatefulWidget {
         ),
       )
       ..add(DoubleProperty('value', value, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('size', size, defaultValue: 32));
   }
 }
@@ -289,7 +289,9 @@ class _ProgressState extends State<RetroDesktopCircularProgressIndicator>
       slot((s) => s.minimumSize)?.longestSide ?? 0,
     );
     return Semantics(
-      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
+      label:
+          widget.semanticLabel ??
+          RawWidgetsLocalizations.of(context).loadingLabel,
       value: widget.value == null
           ? null
           : RetroDesktopLocalizations.of(context).formatPercent(widget.value!),
@@ -331,7 +333,7 @@ class _ProgressState extends State<RetroDesktopCircularProgressIndicator>
 /// pixel a cell, as a screen with no grey to spare drew a dimmed thing. They stand still; nothing shimmers.
 ///
 /// ```dart
-/// RetroDesktopSkeleton(lines: 3, label: 'Loading messages')
+/// RetroDesktopSkeleton(lines: 3, semanticLabel: 'Loading messages')
 /// ```
 class RetroDesktopSkeleton extends StatelessWidget {
   /// Creates a [RetroDesktopSkeleton].
@@ -339,7 +341,7 @@ class RetroDesktopSkeleton extends StatelessWidget {
     super.key,
     this.style,
     this.lines = 3,
-    this.label,
+    this.semanticLabel,
     this.width,
   }) : assert(lines > 0);
 
@@ -350,7 +352,7 @@ class RetroDesktopSkeleton extends StatelessWidget {
   final int lines;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// The width in logical pixels.
   final double? width;
@@ -367,7 +369,7 @@ class RetroDesktopSkeleton extends StatelessWidget {
             ? t.colors.bevelLight
             : t.colors.bevelDark);
     return Semantics(
-      label: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
+      label: semanticLabel ?? RawWidgetsLocalizations.of(context).loadingLabel,
       child: ExcludeSemantics(
         child: SizedBox(
           width: width,
@@ -410,7 +412,7 @@ class RetroDesktopSkeleton extends StatelessWidget {
         ),
       )
       ..add(IntProperty('lines', lines, defaultValue: 3))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('width', width, defaultValue: null));
   }
 }

@@ -81,13 +81,13 @@ void main() {
               children: [
                 RetroDesktopIconButton(
                   RetroDesktopGlyphs.add,
-                  label: 'Pin',
+                  semanticLabel: 'Pin',
                   selected: true,
                   onPressed: () {},
                 ),
                 RetroDesktopIconButton(
                   RetroDesktopGlyphs.add,
-                  label: 'Mute',
+                  semanticLabel: 'Mute',
                   selected: false,
                   onPressed: () {},
                 ),

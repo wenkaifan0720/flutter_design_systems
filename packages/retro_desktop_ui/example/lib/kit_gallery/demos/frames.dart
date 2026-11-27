@@ -125,10 +125,14 @@ Widget kitSpecimenToolbar() => kitAction(
     children: [
       kitPopup('First folder', icon: LucideIcons.folder),
       const RetroDesktopToolRule(),
-      RetroDesktopIconButton(LucideIcons.tag, label: 'Tag', onPressed: press),
+      RetroDesktopIconButton(
+        LucideIcons.tag,
+        semanticLabel: 'Tag',
+        onPressed: press,
+      ),
       RetroDesktopIconButton(
         LucideIcons.paperclip,
-        label: 'Attach',
+        semanticLabel: 'Attach',
         onPressed: press,
       ),
       const RetroDesktopToolNote('Saved', icon: LucideIcons.cloudCheck),

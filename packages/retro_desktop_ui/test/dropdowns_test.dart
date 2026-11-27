@@ -1,12 +1,11 @@
-// Dropdowns: from 600 up a select and a combobox
-// stand at their column's start, at most 320 wide, closed; a
-// select's open list is at least as wide as its field and starts on its
-// leading edge. At 600, 1024, 1440 and 1920, in both appearances.
+// Dropdowns: a select and a combobox take their column's width at every
+// width, as Material's fields do; a select's open list is at least as wide
+// as its field and starts on its leading edge. At 600, 1024, 1440 and 1920,
+// in both appearances.
 // And at 390 and 1440: a select's, a combobox's and a
 // menu's open list, opened from a card, floats over it in
 // the window's overlay, whole on the screen; a field's options start their
-// words on one x, the field's value's. And at 640 a select hugs its widest option, at most 320; at 390 it spans its
-// column.
+// words on one x, the field's value's. And at 640, as at 390, a select spans its column.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,8 +30,8 @@ void main() {
   });
 
   for (final appearance in RetroDesktopAppearance.values) {
-    testWidgets('${appearance.name}: dropdowns hug from 600 up; a select\'s '
-        'list is at least its field\'s width, on its leading edge', (
+    testWidgets('${appearance.name}: dropdowns take their column\'s width; a '
+        'select\'s list is at least its field\'s width, on its leading edge', (
       tester,
     ) async {
       final faults = <String>[];
@@ -109,11 +108,16 @@ void main() {
                 .first,
           ),
         };
-        for (final MapEntry(key: name, value: r) in parts.entries) {
-          if (r.right - column.left > 320.5) {
+        // The select's face meets the column's end; the combobox's words run
+        // on to its drop button, a glyph's room from the end.
+        for (final (name, r, room) in [
+          ('select', parts['select']!, .5),
+          ('combobox', parts['combobox']!, 60.0),
+        ]) {
+          if (column.right - r.right > room) {
             faults.add(
-              '$width: the $name reaches ${r.right - column.left} into its '
-              'column, past 320',
+              '$width: the $name ends ${column.right - r.right} short of its '
+              'column\'s end',
             );
           }
         }
@@ -286,9 +290,9 @@ void main() {
   }
 
   for (final appearance in appearances.entries) {
-    testWidgets('${appearance.key}: from 600 up a select hugs its widest '
-        'option, at most 320; below 600 it spans its column', (tester) async {
-      for (final (view, hugs) in const [(640.0, true), (390.0, false)]) {
+    testWidgets('${appearance.key}: a select spans its column at 640 as at '
+        '390', (tester) async {
+      for (final view in const [640.0, 390.0]) {
         tester.view.physicalSize = Size(view, 600);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
@@ -319,15 +323,8 @@ void main() {
           ),
         );
         final face = tester.getRect(find.byType(RetroDesktopPressable).first);
-        final widest = tester.getSize(find.text('This computer')).width;
-        if (hugs) {
-          expect(face.width, lessThan(320.5));
-          expect(face.width, lessThan(330), reason: 'stretched to 340');
-          expect(face.left, 0);
-          expect(widest, greaterThan(0));
-        } else {
-          expect(face.width, 340);
-        }
+        expect(face.left, 0);
+        expect(face.width, 340);
       }
     });
   }

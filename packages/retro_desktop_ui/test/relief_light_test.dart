@@ -236,7 +236,7 @@ void main() {
     ),
   );
   Widget rating() => const RetroDesktopRating(
-    label: 'Your rating',
+    semanticLabel: 'Your rating',
     value: 4,
     onChanged: _drop,
   );
@@ -249,7 +249,7 @@ void main() {
   Widget floatingPlate() =>
       const RetroDesktopSurface(floating: true, child: Text('A desktop plate'));
   Widget menu() => const RetroDesktopMenu(
-    label: 'Document actions',
+    semanticLabel: 'Document actions',
     items: [
       RetroDesktopMenuItem('open', 'Open'),
       RetroDesktopMenuItem('rename', 'Rename'),
@@ -297,7 +297,7 @@ void main() {
     'an icon button': (
       part: () => RetroDesktopIconButton(
         RetroDesktopGlyphs.tag,
-        label: 'Tag',
+        semanticLabel: 'Tag',
         onPressed: () {},
       ),
       act: null,
@@ -331,7 +331,7 @@ void main() {
     'a checkbox': (
       part: () => const RetroDesktopCheckbox(
         value: false,
-        label: 'Option',
+        semanticLabel: 'Option',
         onChanged: _drop,
       ),
       act: null,
@@ -351,7 +351,7 @@ void main() {
     'a switch': (
       part: () => const RetroDesktopSwitch(
         value: true,
-        label: 'Notifications',
+        semanticLabel: 'Notifications',
         onChanged: _drop,
       ),
       act: null,

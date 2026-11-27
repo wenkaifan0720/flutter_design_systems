@@ -43,7 +43,7 @@ void main() {
             SizedBox(
               width: 500,
               child: RetroDesktopChart(
-                label: 'Visits',
+                semanticLabel: 'Visits',
                 kind: kind,
                 series: [RetroDesktopChartSeries('Visits', values)],
                 labels: const ['Mon', 'Tue', 'Wed', 'Thu'],

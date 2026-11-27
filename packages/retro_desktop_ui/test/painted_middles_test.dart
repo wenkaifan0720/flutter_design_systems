@@ -200,6 +200,20 @@ void main() {
                   final boxes = _painted(
                     theme.chisel ? '_CaptionPainter' : '_BoxPainter',
                   );
+                  // A window that does not close draws no boxes: nothing to stand on their line.
+                  if (!close) {
+                    expect(
+                      boxes.evaluate().where(
+                        (e) =>
+                            e
+                                .findAncestorWidgetOfExactType<Visibility>()
+                                ?.visible !=
+                            false,
+                      ),
+                      isEmpty,
+                    );
+                    continue;
+                  }
                   expect(boxes, findsWidgets);
                   final line = tester.getRect(boxes.first).center.dy * ratio;
                   for (final b in boxes.evaluate()) {

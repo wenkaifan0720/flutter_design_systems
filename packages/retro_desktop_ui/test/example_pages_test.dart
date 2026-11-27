@@ -8,7 +8,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
+import '../example/lib/main.dart' as shelf;
 import 'gallery_support.dart';
 import 'support.dart';
 
@@ -179,6 +180,19 @@ void main() {
                 );
               }
             }
+          }
+        }
+      }
+      // The example app builds the shell and the form's parts; each place, at a phone's width and a desk's.
+      for (final width in [galleryWidth, 1440.0]) {
+        tester.view.physicalSize = Size(width, 900);
+        await tester.pumpWidget(const shelf.ShelfApp());
+        await settle(tester);
+        for (final place in ['Add', 'Settings']) {
+          await tester.tap(find.bySemanticsLabel(RegExp('^$place')).first);
+          await settle(tester);
+          for (final w in tester.allWidgets) {
+            built.add(w.runtimeType.toString().split('<').first);
           }
         }
       }

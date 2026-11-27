@@ -29,7 +29,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           RetroDesktopChart(
-            label: 'Observations',
+            semanticLabel: 'Observations',
             series: [RetroDesktopChartSeries('Reading', values)],
             format: (value) => value.toStringAsExponential(2),
           ),
@@ -86,7 +86,7 @@ void main() {
           await tester.pumpWidget(
             _host(
               RetroDesktopChart(
-                label: 'Observations',
+                semanticLabel: 'Observations',
                 kind: kind,
                 series: const [
                   RetroDesktopChartSeries('Reading', [
@@ -147,7 +147,7 @@ void main() {
                 child: SizedBox(
                   width: 358,
                   child: RetroDesktopChart(
-                    label: 'الساعات',
+                    semanticLabel: 'الساعات',
                     series: const [
                       RetroDesktopChartSeries('الساعات', [
                         0,

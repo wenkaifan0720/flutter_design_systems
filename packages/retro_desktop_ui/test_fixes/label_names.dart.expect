@@ -1,0 +1,73 @@
+// The control labels retro_desktop_ui 0.8.0 renames: a `label` a control only speaks is its `semanticLabel` (a drawn
+// one keeps `label`). label_names.dart calls them as before `dart fix --apply`, label_names.dart.expect as after.
+// ignore_for_file: avoid_print, unused_local_variable, not_enough_positional_arguments, missing_required_argument
+import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+
+void calls() {
+  final s1 = RetroDesktopButtonGroup(semanticLabel: 'Text');
+  print(s1.semanticLabel);
+  final s2 = RetroDesktopToggleGroup(semanticLabel: 'Text');
+  print(s2.semanticLabel);
+  final s3 = RetroDesktopChart(semanticLabel: 'Text');
+  print(s3.semanticLabel);
+  final s4 = RetroDesktopSparkline(semanticLabel: 'Text');
+  print(s4.semanticLabel);
+  final s5 = RetroDesktopLineChart(semanticLabel: 'Text');
+  print(s5.semanticLabel);
+  final s6 = RetroDesktopBarChart(semanticLabel: 'Text');
+  print(s6.semanticLabel);
+  final s7 = RetroDesktopAreaChart(semanticLabel: 'Text');
+  print(s7.semanticLabel);
+  final s8 = RetroDesktopPieChart(semanticLabel: 'Text');
+  print(s8.semanticLabel);
+  final s9 = RetroDesktopMedia(semanticLabel: 'Text');
+  print(s9.semanticLabel);
+  final s10 = RetroDesktopIconButton(semanticLabel: 'Text');
+  print(s10.semanticLabel);
+  final s11 = RetroDesktopCheckbox(semanticLabel: 'Text');
+  print(s11.semanticLabel);
+  final s12 = RetroDesktopChoiceBox(semanticLabel: 'Text');
+  print(s12.semanticLabel);
+  final s13 = RetroDesktopTabBar(semanticLabel: 'Text');
+  print(s13.semanticLabel);
+  final s14 = RetroDesktopSwitch(semanticLabel: 'Text');
+  print(s14.semanticLabel);
+  final s15 = RetroDesktopScrollArea(semanticLabel: 'Text');
+  print(s15.semanticLabel);
+  final s16 = RetroDesktopResizable(semanticLabel: 'Text');
+  print(s16.semanticLabel);
+  final s17 = RetroDesktopTreeView(semanticLabel: 'Text');
+  print(s17.semanticLabel);
+  final s18 = RetroDesktopNavigationDrawer(semanticLabel: 'Text');
+  print(s18.semanticLabel);
+  final s19 = RetroDesktopNavigationRail(semanticLabel: 'Text');
+  print(s19.semanticLabel);
+  final s20 = RetroDesktopPageDots(semanticLabel: 'Text');
+  print(s20.semanticLabel);
+  final s21 = RetroDesktopMenu(semanticLabel: 'Text');
+  print(s21.semanticLabel);
+  final s22 = RetroDesktopMenuBar(semanticLabel: 'Text');
+  print(s22.semanticLabel);
+  final s23 = RetroDesktopListTile(semanticLabel: 'Text');
+  print(s23.semanticLabel);
+  final s24 = RetroDesktopPicture(semanticLabel: 'Text');
+  print(s24.semanticLabel);
+  final s25 = RetroDesktopSurface(semanticLabel: 'Text');
+  print(s25.semanticLabel);
+  final s26 = RetroDesktopBadge(semanticLabel: 'Text');
+  print(s26.semanticLabel);
+  final s27 = RetroDesktopCircularProgressIndicator(semanticLabel: 'Text');
+  print(s27.semanticLabel);
+  final s28 = RetroDesktopSkeleton(semanticLabel: 'Text');
+  print(s28.semanticLabel);
+  final s29 = RetroDesktopBreadcrumb(semanticLabel: 'Text');
+  print(s29.semanticLabel);
+  final s30 = RetroDesktopPagination(semanticLabel: 'Text');
+  print(s30.semanticLabel);
+  final s31 = RetroDesktopRating(semanticLabel: 'Text');
+  print(s31.semanticLabel);
+  final s32 = RetroDesktopFileUpload(semanticLabel: 'Text');
+  print(s32.semanticLabel);
+  final s33 = RetroDesktopIconButton.triangle(semanticLabel: 'Text');
+  print(s33.semanticLabel);
+}

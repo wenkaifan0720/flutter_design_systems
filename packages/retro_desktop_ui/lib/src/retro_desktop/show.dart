@@ -163,13 +163,13 @@ class RetroDesktopAvatarGroup extends StatelessWidget {
 /// An image or arbitrary caller-supplied artwork in a frame of the family's surface shape.
 ///
 /// ```dart
-/// RetroDesktopPicture(label: 'Document preview', child: const Text('Preview'))
+/// RetroDesktopPicture(semanticLabel: 'Document preview', child: const Text('Preview'))
 /// ```
 class RetroDesktopPicture extends StatelessWidget {
   /// Creates a [RetroDesktopPicture].
   const RetroDesktopPicture({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     this.image,
     this.child,
     this.aspectRatio = 16 / 9,
@@ -179,7 +179,7 @@ class RetroDesktopPicture extends StatelessWidget {
        assert(aspectRatio > 0);
 
   /// The visible or accessible name of this part.
-  final String label;
+  final String semanticLabel;
 
   /// The image to display, with the component's fallback when unavailable.
   final ImageProvider? image;
@@ -214,7 +214,7 @@ class RetroDesktopPicture extends StatelessWidget {
     );
     return Semantics(
       image: true,
-      label: label,
+      label: semanticLabel,
       child: ExcludeSemantics(
         child: AspectRatio(
           aspectRatio: aspectRatio,
@@ -247,7 +247,7 @@ class RetroDesktopPicture extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
       )
@@ -284,7 +284,7 @@ class RetroDesktopSurface extends StatelessWidget {
     this.pressed = false,
     this.floating = false,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -309,7 +309,7 @@ class RetroDesktopSurface extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -351,7 +351,7 @@ class RetroDesktopSurface extends StatelessWidget {
             focusNode: focusNode,
             autofocus: autofocus,
             onPressed: onPressed,
-            label: label,
+            label: semanticLabel,
             selected: selected,
             builder: (context, states) => face(states),
           );
@@ -372,7 +372,7 @@ class RetroDesktopSurface extends StatelessWidget {
       ..add(FlagProperty('pressed', value: pressed, ifTrue: 'pressed'))
       ..add(FlagProperty('floating', value: floating, ifTrue: 'floating'))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',

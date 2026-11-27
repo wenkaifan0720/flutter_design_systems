@@ -1200,7 +1200,7 @@ class RetroDesktopMenuItem<T> {
 /// A keyboard menu: arrows skip disabled rows, Home and End reach its ends.
 ///
 /// ```dart
-/// RetroDesktopMenu(label: 'Document actions', items: const [RetroDesktopMenuItem('open', 'Open'), RetroDesktopMenuItem('rename', 'Rename')], onSelected: (_) {})
+/// RetroDesktopMenu(semanticLabel: 'Document actions', items: const [RetroDesktopMenuItem('open', 'Open'), RetroDesktopMenuItem('rename', 'Rename')], onSelected: (_) {})
 /// ```
 class RetroDesktopMenu<T> extends StatefulWidget {
   /// Creates a [RetroDesktopMenu].
@@ -1208,7 +1208,7 @@ class RetroDesktopMenu<T> extends StatefulWidget {
     super.key,
     required this.items,
     this.onSelected,
-    this.label,
+    this.semanticLabel,
     this.style,
   });
 
@@ -1219,7 +1219,7 @@ class RetroDesktopMenu<T> extends StatefulWidget {
   final ValueChanged<T>? onSelected;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -1232,7 +1232,7 @@ class RetroDesktopMenu<T> extends StatefulWidget {
     properties
       ..add(IterableProperty<RetroDesktopMenuItem<T>>('items', items))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -1374,7 +1374,7 @@ class _MenuState<T> extends State<RetroDesktopMenu<T>> {
     // A list with a choice keeps a column at the rows' end for the chosen one's tick.
     final marks = widget.items.any((item) => item.selected);
     return Semantics(
-      label: widget.label,
+      label: widget.semanticLabel,
       child: _RaisedSurface(
         componentTheme: t.menuTheme,
         style: widget.style,
@@ -1673,7 +1673,7 @@ Future<T?> showRetroDesktopMenu<T>(
               on: matchWidth,
               child: RetroDesktopMenu<T>(
                 items: items,
-                label: label,
+                semanticLabel: label,
                 style: style,
                 onSelected: (value) => Navigator.pop(context, value),
               ),

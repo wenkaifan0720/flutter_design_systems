@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:retro_desktop_ui/src/retro_desktop/theme.dart'
+    show retroDesktopThemeWith;
 
 Future<void> _app(
   WidgetTester tester,
@@ -129,8 +131,8 @@ void main() {
 
   testWidgets('with a travel set, a page fades in its place; Reduce Motion '
       'makes it instant', (tester) async {
-    final look = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
+    final look = retroDesktopThemeWith(
+      RetroDesktopThemeData.classic(),
       motion: const RetroDesktopMotion(
         travel: Duration(milliseconds: 200),
         leave: Duration(milliseconds: 200),
@@ -186,8 +188,8 @@ void main() {
       travel: Duration(milliseconds: 200),
       leave: Duration(milliseconds: 200),
     );
-    final look = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
+    final look = retroDesktopThemeWith(
+      RetroDesktopThemeData.classic(),
       motion: timed,
     );
     tester.platformDispatcher.accessibilityFeaturesTestValue =
@@ -305,8 +307,8 @@ void main() {
     expect(find.text('Find…'), findsNothing);
 
     // An app's own motion: the panel fades in and out on ui_core's spring.
-    final look = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
+    final look = retroDesktopThemeWith(
+      RetroDesktopThemeData.classic(),
       motion: const RetroDesktopMotion(
         raise: Duration(milliseconds: 150),
         leave: Duration(milliseconds: 150),

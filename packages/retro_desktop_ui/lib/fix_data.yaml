@@ -1044,3 +1044,622 @@ transforms:
     changes:
       - kind: 'removeParameter'
         name: 'motion'
+  # 0.8.0: a control's label is the words it draws; a name only a screen reader hears is semanticLabel.
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopButtonGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopButtonGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSparkline'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopSparkline'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopLineChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopLineChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopBarChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopBarChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopAreaChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopAreaChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopPieChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopPieChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopMedia'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopMedia'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'triangle'
+      inClass: 'RetroDesktopIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopCheckbox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopCheckbox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopChoiceBox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopChoiceBox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSwitch'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopSwitch'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopScrollArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopScrollArea'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopResizable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopResizable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTreeView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopTreeView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopNavigationDrawer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopNavigationDrawer'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopMenu'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopMenuBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopMenuBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopPicture'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopPicture'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSurface'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopSurface'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopCircularProgressIndicator'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopCircularProgressIndicator'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSkeleton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopSkeleton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopBreadcrumb'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopBreadcrumb'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopRating'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopRating'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'

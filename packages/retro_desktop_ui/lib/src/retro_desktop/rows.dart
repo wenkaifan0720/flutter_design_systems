@@ -15,6 +15,7 @@ import 'glyphs.dart';
 
 import 'controls.dart';
 import 'heads.dart';
+import 'holds_more.dart' show RetroDesktopTag;
 import 'layout.dart';
 import 'pixels.dart';
 import 'theme.dart';
@@ -200,7 +201,7 @@ class RetroDesktopListTile extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
-    this.label,
+    this.semanticLabel,
     this.note,
     this.leading,
     this.trailing,
@@ -236,7 +237,7 @@ class RetroDesktopListTile extends StatelessWidget {
   final String? figure;
 
   /// The screen reader label. Defaults to [title] followed by [subtitle], if set.
-  final String? label;
+  final String? semanticLabel;
 
   /// An icon, a monogram, a `RetroDesktopMedia(width: 56)`: its own width stays.
   final Widget? leading;
@@ -262,32 +263,90 @@ class RetroDesktopListTile extends StatelessWidget {
   /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
+  // What a trailing part says when the row is read with it: a tag's words, a figure's text.
+  static String? _spoken(Widget? part) => switch (part) {
+    RetroDesktopTag(:final label) => label,
+    Text(:final data?) => data,
+    _ => null,
+  };
+
+  // A trailing part that only shows something: a tag, words, a glyph. Anything else is taken for a control.
+  static bool _shows(Widget? part) =>
+      part is RetroDesktopTag ||
+      part is Text ||
+      part is RichText ||
+      part is Icon;
+
   @override
   Widget build(BuildContext context) {
+    // A control at the end of a row that presses stands beside it, as an action does, so it keeps its own node and its
+    // own press.
+    if (onPressed != null && trailing != null && !_shows(trailing)) {
+      return RetroDesktopListTile(
+        focusNode: focusNode,
+        autofocus: autofocus,
+        title: title,
+        semanticLabel: semanticLabel,
+        subtitle: subtitle,
+        note: note,
+        leading: leading,
+        figure: figure,
+        onPressed: onPressed,
+        style: style,
+        isFirst: isFirst,
+        selected: selected,
+        enabled: enabled,
+        action: action == null
+            ? trailing
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  trailing!,
+                  const SizedBox(width: RetroDesktopSpacing.s8),
+                  action!,
+                ],
+              ),
+      );
+    }
     if (action != null && onPressed != null) {
-      return Row(
-        children: [
-          Expanded(
-            child: RetroDesktopListTile(
-              focusNode: focusNode,
-              autofocus: autofocus,
-              title: title,
-              label: label,
-              subtitle: subtitle,
-              note: note,
-              leading: leading,
-              trailing: trailing,
-              figure: figure,
-              onPressed: onPressed,
-              style: style,
-              isFirst: isFirst,
-              selected: selected,
-              enabled: enabled,
+      final t = RetroDesktopTheme.of(context);
+      // The rule above the row runs under the action too, to the list's end; the row inside draws none of its own.
+      final top = isFirst || _FirstRow.here(context);
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          border: top
+              ? null
+              : Border(
+                  top: BorderSide(
+                    color: t.colors.divider,
+                    width: t.strokes.hairline,
+                  ),
+                ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: RetroDesktopListTile(
+                focusNode: focusNode,
+                autofocus: autofocus,
+                title: title,
+                semanticLabel: semanticLabel,
+                subtitle: subtitle,
+                note: note,
+                leading: leading,
+                trailing: trailing,
+                figure: figure,
+                onPressed: onPressed,
+                style: style,
+                isFirst: true,
+                selected: selected,
+                enabled: enabled,
+              ),
             ),
-          ),
-          const SizedBox(width: RetroDesktopSpacing.s8),
-          action!,
-        ],
+            const SizedBox(width: RetroDesktopSpacing.s8),
+            action!,
+          ],
+        ),
       );
     }
     return _RowFrame(
@@ -298,9 +357,14 @@ class RetroDesktopListTile extends StatelessWidget {
       selected: selected,
       enabled: enabled,
       onPressed: onPressed,
+      // A row's name reads its title, its subtitle and what a tag or words at its end say: "Piranesi, Susanna Clarke, Read".
       label:
-          label ??
-          [title, if (subtitle?.isNotEmpty ?? false) subtitle!].join(', '),
+          semanticLabel ??
+          [
+            title,
+            if (subtitle?.isNotEmpty ?? false) subtitle!,
+            ?_spoken(trailing),
+          ].join(', '),
       child: Builder(
         builder: (context) {
           final t = RetroDesktopTheme.of(context);
@@ -465,7 +529,7 @@ class RetroDesktopListTile extends StatelessWidget {
       ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(StringProperty('note', note, defaultValue: null))
       ..add(StringProperty('figure', figure, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(FlagProperty('isFirst', value: isFirst, ifTrue: 'isFirst'))
       ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
@@ -697,7 +761,7 @@ class RetroDesktopTaskRow extends StatelessWidget {
                   onChanged: onChanged == null
                       ? null
                       : (value) => onChanged!(value ?? false),
-                  label: title,
+                  semanticLabel: title,
                 );
                 return Row(
                   children: [
@@ -955,7 +1019,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
             textScaler: MediaQuery.textScalerOf(context),
             maxLines: 1,
           )..layout();
-          widest = math.max(widest, tp.width);
+          widest = math.max(widest, tp.width + (f.icon == null ? 0 : 20));
           tp.dispose();
         }
         final col = math.min(widest.ceilToDouble(), box.maxWidth * .4);
@@ -971,11 +1035,29 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: col,
-                      child: Text(
-                        f.label,
-                        style: label,
-                        textAlign: TextAlign.end,
-                      ),
+                      // A fact's glyph stands before its label, both against the values.
+                      child: f.icon == null
+                          ? Text(
+                              f.label,
+                              style: label,
+                              textAlign: TextAlign.end,
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Icon(f.icon, size: 14, color: c.textTertiary),
+                                const SizedBox(width: RetroDesktopSpacing.s6),
+                                Flexible(
+                                  child: Text(
+                                    f.label,
+                                    style: label,
+                                    textAlign: TextAlign.end,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                     const SizedBox(width: RetroDesktopSpacing.s10),
                     // The value is what's read: in the reading size, never smaller than its label.

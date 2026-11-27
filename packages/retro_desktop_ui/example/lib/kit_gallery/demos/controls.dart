@@ -79,11 +79,15 @@ Widget kitSpecimenIconButton() => kitAction(
   (press) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      RetroDesktopIconButton(LucideIcons.tag, label: 'Tag', onPressed: press),
+      RetroDesktopIconButton(
+        LucideIcons.tag,
+        semanticLabel: 'Tag',
+        onPressed: press,
+      ),
       const SizedBox(height: 8),
       RetroDesktopIconButton(
         LucideIcons.plus,
-        label: 'Add',
+        semanticLabel: 'Add',
         size: RetroDesktopButtonSize.small,
         onPressed: press,
       ),
@@ -131,7 +135,7 @@ Widget kitSpecimenCheck() => Wrap(
         (value, change) => RetroDesktopCheckbox(
           value: value,
           onChanged: (next) => change(next ?? false),
-          label: item.$2,
+          semanticLabel: item.$2,
         ),
       ),
   ],

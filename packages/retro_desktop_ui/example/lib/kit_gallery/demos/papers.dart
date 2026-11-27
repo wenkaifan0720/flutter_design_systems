@@ -1448,7 +1448,7 @@ class _KitPapersState extends State<KitPapers> {
           appBar: ListenableBuilder(
             listenable: _view,
             builder: (context, _) => RetroDesktopMenuBar(
-              label: context.say('Papers'),
+              semanticLabel: context.say('Papers'),
               // On a phone the titles and the way back need the mark's room.
               leading: t.desk ? const RetroDesktopSystemMark() : null,
               menus: _menus(host),

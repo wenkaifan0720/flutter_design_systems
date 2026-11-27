@@ -388,7 +388,8 @@ class RetroDesktopMonthHead extends StatelessWidget {
             children: [
               RetroDesktopIconButton.triangle(
                 rtl ? AxisDirection.right : AxisDirection.left,
-                label: RawWidgetsLocalizations.of(context).previousMonthTooltip,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .previousMonthTooltip,
                 onPressed: onPrevious,
                 style: arrow,
               ),
@@ -399,7 +400,8 @@ class RetroDesktopMonthHead extends StatelessWidget {
               ),
               RetroDesktopIconButton.triangle(
                 rtl ? AxisDirection.left : AxisDirection.right,
-                label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .nextMonthTooltip,
                 onPressed: onNext,
                 style: arrow,
               ),

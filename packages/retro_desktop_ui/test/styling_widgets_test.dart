@@ -6,6 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:retro_desktop_ui/src/retro_desktop/theme.dart'
+    show retroDesktopThemeWith;
 
 Widget host(
   Widget child,
@@ -150,8 +152,8 @@ void main() {
   testWidgets('surface overlays animate and cut when motion is disabled', (
     tester,
   ) async {
-    final theme = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
+    final theme = retroDesktopThemeWith(
+      RetroDesktopThemeData.classic(),
       motion: const RetroDesktopMotion(state: Duration(milliseconds: 200)),
     );
     const snapshot = ValueKey('overlay-snapshot');

@@ -531,14 +531,10 @@ class _Labelled extends StatelessWidget {
     this.label,
     this.note,
     this.error = false,
-    this.dropdown = false,
   });
   final Widget child;
   final String? label, note;
   final bool error;
-  // A dropdown: from 600 up it doesn't stretch to its column, it stands at
-  // its start at most 320 wide, as a select does.
-  final bool dropdown;
 
   @override
   Widget build(BuildContext context) {
@@ -559,17 +555,7 @@ class _Labelled extends StatelessWidget {
               child: Text(label!, style: t.textTheme.body),
             ),
           ),
-        if (dropdown && MediaQuery.sizeOf(context).width >= 600)
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            widthFactor: 1,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 320),
-              child: child,
-            ),
-          )
-        else
-          child,
+        child,
         if (note != null)
           Padding(
             padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
@@ -784,7 +770,6 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
       label: labelText,
       note: errorText ?? helperText,
       error: errorText != null,
-      dropdown: true,
       child: box,
     );
   }

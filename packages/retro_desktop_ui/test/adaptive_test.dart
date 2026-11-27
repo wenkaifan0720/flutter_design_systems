@@ -9,6 +9,9 @@ import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import 'support.dart';
 
+import 'package:retro_desktop_ui/src/retro_desktop/theme.dart'
+    show retroDesktopThemeWith;
+
 Widget _host(
   Widget child, {
   TargetPlatform? platform,
@@ -362,8 +365,8 @@ void main() {
       _host(
         const RetroDesktopTextField(hintText: 'Drag words'),
         reduceMotion: true,
-        look: RetroDesktopThemeData.classic().copyWith(
-          // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
+        look: retroDesktopThemeWith(
+          RetroDesktopThemeData.classic(),
           motion: const RetroDesktopMotion(move: Duration(milliseconds: 200)),
         ),
       ),

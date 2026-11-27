@@ -12,8 +12,8 @@ import 'component_themes.dart';
 import 'internal/caps.dart';
 import 'internal/face.dart';
 
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 
 import 'glyphs.dart';
 
@@ -27,35 +27,8 @@ import 'theme.dart';
 import 'acts.dart' show RetroDesktopButton, RetroDesktopButtonSize;
 import 'localizations.dart';
 import 'host.dart';
+import 'places.dart';
 import 'tokens.dart';
-
-/// A place in the app: a menu in the menu bar, a button in the phone's strip.
-class RetroDesktopNavItem {
-  /// Creates a [RetroDesktopNavItem].
-  const RetroDesktopNavItem({
-    required this.label,
-    required this.short,
-    required this.icon,
-    this.onPressed,
-    this.key,
-    this.badgeLabel,
-  });
-
-  /// `label` in the menu bar; `short` under the icon in the strip.
-  final String label, short;
-
-  /// An optional count or status announced with the action.
-  final String? badgeLabel;
-
-  /// The glyph shown with the content.
-  final IconData icon;
-
-  /// {@macro retro_desktop.onPressed}
-  final VoidCallback? onPressed;
-
-  /// A key on its hit target, for a test to find and press it.
-  final Key? key;
-}
 
 class _MarkPainter extends RetroDesktopPixelPainter {
   const _MarkPainter(this.c);
@@ -187,6 +160,7 @@ class _MenuBar extends StatelessWidget {
     this.action,
     this.leading,
     this.actions = const [],
+    this.places,
   });
   final String brand;
 
@@ -195,9 +169,12 @@ class _MenuBar extends StatelessWidget {
   final int active;
   final List<RetroDesktopUtility> utility;
   final String? who;
-  final ShellAction? action;
+  final RetroDesktopAppAction? action;
   final Widget? leading;
   final List<Widget> actions;
+
+  /// The shell's places, built by `RawAdaptiveShell` (each presses and speaks), in place of the scope's.
+  final Widget? places;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
@@ -258,7 +235,9 @@ class _MenuBar extends StatelessWidget {
         ),
         child: name,
       ),
-      if (t.desk)
+      if (places != null)
+        places!
+      else if (t.desk)
         for (var i = 0; i < nav.length; i++)
           _MenuCell(
             cellKey: nav[i].key,
@@ -285,7 +264,7 @@ class _MenuBar extends StatelessWidget {
         _MenuCell(
           cellKey: action!.key,
           label: action!.label,
-          onPressed: () => action!.onPressed(context),
+          onPressed: action!.onPressed,
           child: Icon(
             action!.icon,
             size: 15,
@@ -428,8 +407,8 @@ class RetroDesktopNavigationBar extends StatelessWidget {
   /// The index of the currently selected item.
   final int selectedIndex;
 
-  /// An optional action shown beside the content.
-  final ShellAction? action;
+  /// The app's one act, a square button in the middle of the strip.
+  final RetroDesktopAppAction? action;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -470,11 +449,11 @@ class RetroDesktopNavigationBar extends StatelessWidget {
             ),
           ),
         );
-    Widget actionButton(ShellAction a) => RetroDesktopIconButton(
+    Widget actionButton(RetroDesktopAppAction a) => RetroDesktopIconButton(
       a.icon,
-      label: a.label ?? RetroDesktopLocalizations.of(context).choose,
+      semanticLabel: a.label,
       key: a.key,
-      onPressed: () => a.onPressed(context),
+      onPressed: a.onPressed,
     );
     final children = <Widget>[];
     for (var i = 0; i < items.length; i++) {
@@ -535,7 +514,11 @@ class RetroDesktopNavigationBar extends StatelessWidget {
       )
       ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<RetroDesktopAppAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       )
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
@@ -712,6 +695,526 @@ class RetroDesktopTab {
   final Key? key;
 }
 
+/// The app's one act beside its places (add, write, capture): a square button in the middle of the phone's strip and
+/// an icon at the menu bar's end on a desk, lit in the highlight when [accent] is on.
+///
+/// ```dart
+/// RetroDesktopAppAction(icon: RetroDesktopGlyphs.plus, label: 'Add', onPressed: add)
+/// ```
+@immutable
+/// The app's frame: its places and its pages, at every width, through ui_core's `RawAdaptiveShell`. Under
+/// [retroDesktopDeskWidth] the places stand in the phone's strip at the foot ([RetroDesktopNavigationBar]'s raised
+/// buttons, the current one lit like a pressed key), the [action] a square button in its middle, and each page draws its
+/// own menu bar with the app's [brand]; on a desk the places are the menu bar's menus beside the [brand], the [action],
+/// [utility] and [initials] at its end, and each page's own bar stands under it with its way back, its subtitle and its
+/// actions. [modeForWidth] moves that width; a rail or a sidebar shows the strip's buttons down the start. A screen
+/// reader hears the places as tabs, the current one selected; the arrows move along them, Enter or Space chooses one,
+/// and F6 moves to the page. Notices stand above the strip.
+///
+/// [RetroDesktopAppShell.branches] keeps a stack of pages for each place: a page pushed on one
+/// (`Navigator.of(context).push`) keeps the menu bar while the phone's strip steps away, and back pops it.
+/// [RetroDesktopAppShell] stands round the app's own [body] (an `IndexedStack`, a router's shell), and
+/// [showNavigation] hides the strip.
+///
+/// ```dart
+/// RetroDesktopAppShell.branches(brand: 'Shelf', destinations: const [RetroDesktopNavItem(label: 'Books', short: 'Books', icon: RetroDesktopGlyphs.folder), RetroDesktopNavItem(label: 'Settings', short: 'Settings', icon: RetroDesktopGlyphs.settings)], selectedIndex: place, onDestinationSelected: (index) => setState(() => place = index), branches: [(context) => const Text('Books'), (context) => const Text('Settings')])
+/// ```
+class RetroDesktopAppShell extends StatelessWidget {
+  /// The app's places round its own [body].
+  const RetroDesktopAppShell({
+    super.key,
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required Widget this.body,
+    this.brand,
+    this.action,
+    this.utility = const [],
+    this.initials,
+    this.modeForWidth = RetroDesktopAppShell.modeFor,
+    this.showNavigation = true,
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination,
+       hideBarOnPush = false;
+
+  /// The app's places, each with a stack of pages of its own, starting on its [branches] page.
+  const RetroDesktopAppShell.branches({
+    super.key,
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required List<WidgetBuilder> this.branches,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
+    this.brand,
+    this.action,
+    this.utility = const [],
+    this.initials,
+    this.modeForWidth = RetroDesktopAppShell.modeFor,
+    this.showNavigation = true,
+  }) : body = null;
+
+  /// Retro Desktop's places for a shell [width] wide: the phone's strip under [retroDesktopDeskWidth], where the look
+  /// lays a phone's page, and the menu bar from there, where it lays a desk.
+  static RawNavigationMode modeFor(double width) =>
+      width < retroDesktopDeskWidth
+      ? RawNavigationMode.bar
+      : RawNavigationMode.top;
+
+  /// The app's places, in order: each one's `label` names it in the menu bar and to a screen reader, its `short`
+  /// under its glyph in the strip; [onDestinationSelected] chooses it (its own `onPressed` is not called).
+  final List<RetroDesktopNavItem> destinations;
+
+  /// The place shown.
+  final int selectedIndex;
+
+  /// Called with the place chosen.
+  final ValueChanged<int> onDestinationSelected;
+
+  /// The app's own pages ([RetroDesktopAppShell]); null for [RetroDesktopAppShell.branches].
+  final Widget? body;
+
+  /// Each place's first page ([RetroDesktopAppShell.branches]); null round a [body].
+  final List<WidgetBuilder>? branches;
+
+  /// The places' navigators, to push onto one from outside it (a notification opening a page).
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place's first page.
+  final RawBranchBackBehavior backBehavior;
+
+  /// Whether the phone's strip steps away while a page is pushed over a place's first page; the menu bar stays.
+  final bool hideBarOnPush;
+
+  /// The app's name, after the system mark at the menu bar's start.
+  final String? brand;
+
+  /// The app's one act.
+  final RetroDesktopAppAction? action;
+
+  /// Small facts at the menu bar's end (synced, an hour).
+  final List<RetroDesktopUtility> utility;
+
+  /// The account's two letters, at the menu bar's end.
+  final String? initials;
+
+  /// How the places show for the shell's width: [modeFor] by default.
+  final RawNavigationModeForWidth modeForWidth;
+
+  /// Whether the phone's strip shows: false while a page of the app's own covers a place's first page.
+  final bool showNavigation;
+
+  @override
+  Widget build(BuildContext context) {
+    final places = [
+      for (final d in destinations)
+        RawNavigationDestination(
+          label: d.badgeLabel == null ? d.label : '${d.label}, ${d.badgeLabel}',
+          icon: d.icon,
+        ),
+    ];
+    Widget destination(
+      BuildContext context,
+      RawNavigationDestination place,
+      RawDestinationDetails details,
+    ) {
+      final item = destinations[details.index];
+      return KeyedSubtree(
+        key: item.key,
+        child: details.mode == RawNavigationMode.top
+            ? _MenuPlace(item: item, states: details.states)
+            : _StripPlace(
+                item: item,
+                states: details.states,
+                wide: details.mode == RawNavigationMode.sidebar,
+              ),
+      );
+    }
+
+    Widget navigation(BuildContext context, RawNavigationDetails details) =>
+        switch (details.mode) {
+          RawNavigationMode.top => _MenuBar(
+            brand: brand ?? '',
+            action: action,
+            utility: utility,
+            who: initials,
+            places: details.group(
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: details.destinations,
+              ),
+            ),
+          ),
+          RawNavigationMode.bar => _ShellStrip(
+            details: details,
+            action: action,
+          ),
+          RawNavigationMode.rail || RawNavigationMode.sidebar => _ShellColumn(
+            details: details,
+            action: action,
+            width: details.mode == RawNavigationMode.rail ? 96 : 220,
+          ),
+        };
+    final branches = this.branches;
+    final c = RetroDesktopTheme.of(context).colors;
+    return ColoredBox(
+      color: c.desktop,
+      child: RetroDesktopChromeScope(
+        brand: brand ?? '',
+        nav: destinations,
+        active: selectedIndex,
+        action: action,
+        utility: utility,
+        initials: initials,
+        shellDrawn: true,
+        child: branches == null
+            ? RawAdaptiveShell(
+                destinations: places,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                destinationBuilder: destination,
+                navigationBuilder: navigation,
+                modeForWidth: modeForWidth,
+                showNavigation: showNavigation,
+                body: body!,
+              )
+            : RawAdaptiveShell.branches(
+                destinations: places,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                destinationBuilder: destination,
+                navigationBuilder: navigation,
+                modeForWidth: modeForWidth,
+                showNavigation: showNavigation,
+                hideBarOnPush: hideBarOnPush,
+                backBehavior: backBehavior,
+                navigatorKeys: navigatorKeys,
+                branches: branches,
+              ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(IntProperty('branches', branches?.length, defaultValue: null))
+      ..add(
+        IterableProperty<GlobalKey<NavigatorState>>(
+          'navigatorKeys',
+          navigatorKeys,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<RawBranchBackBehavior>(
+          'backBehavior',
+          backBehavior,
+          defaultValue: RawBranchBackBehavior.firstDestination,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideBarOnPush',
+          value: hideBarOnPush,
+          ifTrue: 'bar hidden on push',
+        ),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopAppAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<RetroDesktopUtility>(
+          'utility',
+          utility,
+          defaultValue: const [],
+        ),
+      )
+      ..add(StringProperty('initials', initials, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<RawNavigationModeForWidth>(
+          'modeForWidth',
+          modeForWidth,
+          ifPresent: modeForWidth == RetroDesktopAppShell.modeFor
+              ? null
+              : 'custom',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'showNavigation',
+          value: showNavigation,
+          ifFalse: 'navigation hidden',
+          defaultValue: true,
+        ),
+      );
+  }
+}
+
+// A place in the menu bar: its label, in the highlight while it is the current one; the keyboard's ring inside the cell.
+class _MenuPlace extends StatelessWidget {
+  const _MenuPlace({required this.item, required this.states});
+  final RetroDesktopNavItem item;
+  final Set<WidgetState> states;
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    final c = t.colors;
+    final on = states.contains(WidgetState.selected);
+    final menu = t.textTheme.chrome;
+    return retroDesktopJoinedRing(
+      shape: t.shapes.small,
+      focused: states.contains(WidgetState.focused),
+      insideColor: on ? c.onHighlight : null,
+      child: _MenuCell(
+        on: on,
+        child: RetroDesktopCaps(
+          style: menu,
+          Text(
+            item.label,
+            style: menu.copyWith(color: on ? c.onHighlight : c.text),
+            maxLines: 1,
+            softWrap: false,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// A place in the strip: a raised button, its glyph over its short name, lit like a pressed key while it is the current
+// one; in a sidebar its glyph beside its name.
+class _StripPlace extends StatelessWidget {
+  const _StripPlace({
+    required this.item,
+    required this.states,
+    this.wide = false,
+  });
+  final RetroDesktopNavItem item;
+  final Set<WidgetState> states;
+  final bool wide;
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    final words = Text(
+      wide ? item.label : item.short,
+      textAlign: wide ? TextAlign.start : TextAlign.center,
+      maxLines: wide ? 1 : null,
+      overflow: wide ? TextOverflow.ellipsis : null,
+    );
+    return retroDesktopFace(
+      states: states,
+      component: t.navigationBarTheme.over(
+        RetroDesktopStyle(
+          textStyle: WidgetStatePropertyAll(t.textTheme.pixel(16, 14)),
+          minimumSize: const WidgetStatePropertyAll(Size(0, 50)),
+        ),
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: wide ? RetroDesktopSpacing.s10 : RetroDesktopSpacing.s2,
+        vertical: RetroDesktopSpacing.s4,
+      ),
+      child: wide
+          ? Row(
+              children: [
+                Icon(item.icon),
+                const SizedBox(width: RetroDesktopSpacing.s8),
+                Expanded(child: words),
+              ],
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(item.icon),
+                const SizedBox(height: RetroDesktopSpacing.s4),
+                words,
+              ],
+            ),
+    );
+  }
+}
+
+// The shell's strip at a phone's foot: the places' buttons across it, the act a square button over a gap in their
+// middle, outside the tab bar a screen reader hears (which holds the places alone). Notices stand above it.
+class _ShellStrip extends StatelessWidget {
+  const _ShellStrip({required this.details, required this.action});
+  final RawNavigationDetails details;
+  final RetroDesktopAppAction? action;
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    final c = t.colors;
+    final act = action;
+    final count = details.destinations.length;
+    final middle = (count + 1) ~/ 2;
+    final slots = act == null ? count : count + 1;
+    final row = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          if (act != null && i == middle) const Spacer(),
+          Expanded(child: details.destinations[i]),
+        ],
+        if (act != null && middle >= count) const Spacer(),
+      ],
+    );
+    return RawToasterKeepClear(
+      child: retroDesktopFace(
+        states: const {},
+        component: t.navigationBarTheme.over(
+          RetroDesktopStyle(fill: WidgetStatePropertyAll(c.platinum)),
+        ),
+        scale: RetroDesktopFaceScale.surface,
+        padding: EdgeInsets.fromLTRB(
+          8,
+          7,
+          8,
+          8 + MediaQuery.paddingOf(context).bottom,
+        ),
+        // On a wide screen the places keep a phone's spacing, centred, rather than each spreading over the screen.
+        child: Align(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 168.0 * slots),
+            child: act == null
+                ? details.group(row)
+                : LayoutBuilder(
+                    builder: (context, box) {
+                      final slot = box.maxWidth / slots;
+                      return Stack(
+                        alignment: AlignmentDirectional.centerStart,
+                        children: [
+                          details.group(row),
+                          PositionedDirectional(
+                            start: slot * middle,
+                            width: slot,
+                            top: 0,
+                            bottom: 0,
+                            child: Center(
+                              child: RetroDesktopIconButton(
+                                act.icon,
+                                semanticLabel: act.label,
+                                key: act.key,
+                                onPressed: act.onPressed,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// A rail or a sidebar, when an app's modeForWidth picks one: the strip's buttons down the start on the platinum
+// surface, the act at the head.
+class _ShellColumn extends StatelessWidget {
+  const _ShellColumn({
+    required this.details,
+    required this.action,
+    required this.width,
+  });
+  final RawNavigationDetails details;
+  final RetroDesktopAppAction? action;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    final c = t.colors;
+    final act = action;
+    return SizedBox(
+      width: width,
+      child: retroDesktopFace(
+        states: const {},
+        component: t.navigationBarTheme.over(
+          RetroDesktopStyle(fill: WidgetStatePropertyAll(c.platinum)),
+        ),
+        scale: RetroDesktopFaceScale.surface,
+        padding: EdgeInsets.fromLTRB(
+          8,
+          8 + MediaQuery.paddingOf(context).top,
+          8,
+          8,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (act != null) ...[
+              Center(
+                child: RetroDesktopIconButton(
+                  act.icon,
+                  semanticLabel: act.label,
+                  key: act.key,
+                  onPressed: act.onPressed,
+                ),
+              ),
+              const SizedBox(height: RetroDesktopSpacing.s12),
+            ],
+            details.group(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: RetroDesktopSpacing.s6,
+                children: details.destinations,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// A page's fact in its own bar under the shell's menu bar: its glyph, then its words.
+class _PageFact extends StatelessWidget {
+  const _PageFact(this.fact);
+  final RetroDesktopUtility fact;
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    final c = t.colors;
+    final style = t.textTheme.meta;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: RetroDesktopSpacing.s8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (fact.icon != null) ...[
+            Icon(
+              fact.icon,
+              size: 15,
+              color: fact.highlighted ? c.highlight : c.text,
+            ),
+            const SizedBox(width: RetroDesktopSpacing.s4),
+          ],
+          Text(fact.text, style: style, maxLines: 1, softWrap: false),
+        ],
+      ),
+    );
+  }
+}
+
 /// A page: the menu bar over a desktop of windows. [body] is usually a `RetroDesktopDesktop`, which says which window is active.
 /// Anything else is put in a window of its own, titled from [appBar], and that window is the active one: a page can't come out
 /// with no window or no hero. A pushed page keeps its way back at the menu bar's start. In a sheet there is no desktop: the
@@ -753,10 +1256,11 @@ class RetroDesktopScaffold extends StatelessWidget {
   /// An optional externally owned scroll controller.
   final ScrollController? scrollController;
 
-  /// The account's two letters, at the menu bar's end.
+  /// The account's two letters, at the menu bar's end (under a [RetroDesktopAppShell] on a desk, at the end of the
+  /// page's own bar; the shell's [RetroDesktopAppShell.initials] stand in its menu bar).
   final String? initials;
 
-  /// Small facts at the menu bar's end.
+  /// Small facts at the menu bar's end (under a [RetroDesktopAppShell] on a desk, at the end of the page's own bar).
   final List<RetroDesktopUtility> utility;
   @override
   Widget build(BuildContext context) {
@@ -776,24 +1280,86 @@ class RetroDesktopScaffold extends StatelessWidget {
             ? null
             : RetroDesktopAppBar.autoLeading(context));
     final actions = bar?.actions ?? const <Widget>[];
+    final who = initials ?? chrome?.initials;
+    final facts = [...?chrome?.utility, ...utility];
+    // Under a RetroDesktopAppShell on a desk the shell draws the menu bar: the page's own bar stands under it with its
+    // way back, its title and subtitle, its actions and its facts, when it has any of them.
+    final underShell = chrome != null && chrome.shellDrawn && t.desk;
+    // The scaffold draws the page's window unless the page brings its own (a window or a desk of them) or none: its
+    // subtitle then stands in the window's info strip, under its title, as a Finder window's count did.
+    final drawsWindow =
+        !fullBleed &&
+        body is! RetroDesktopWindow &&
+        body is! RetroDesktopDesktop;
+    final barSubtitle = drawsWindow ? null : bar?.subtitle;
+    // On a desk, where the page's window stands: the page's bar and its footer keep to it.
+    final (double, double) Function(double width)? column = fullBleed
+        ? null
+        : !scroll
+        ? (w) => (RetroDesktopSpacing.s24, w - RetroDesktopSpacing.s24)
+        : body is RetroDesktopDesktop
+        ? (w) => _pageColumn(w, span: 12)
+        : _pageColumn;
     final showBar =
         chrome != null ||
         leading != null ||
         actions.isNotEmpty ||
-        initials != null ||
-        utility.isNotEmpty;
-    final head = !showBar
-        ? null
-        : _MenuBar(
-            brand: chrome?.brand ?? '',
-            chrome: chrome,
-            active: chrome?.active ?? 0,
-            action: chrome?.action,
-            who: initials,
-            utility: utility,
-            leading: leading,
-            actions: actions,
-          );
+        who != null ||
+        facts.isNotEmpty;
+    final Widget? head;
+    if (underShell) {
+      final own =
+          leading != null ||
+          actions.isNotEmpty ||
+          initials != null ||
+          utility.isNotEmpty ||
+          barSubtitle != null;
+      final pageBar = RetroDesktopAppBar(
+        title: bar?.title,
+        subtitle: barSubtitle,
+        leading: leading,
+        style: bar?.style,
+        actions: [
+          ...actions,
+          for (final u in utility) _PageFact(u),
+          if (initials != null)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: RetroDesktopSpacing.s8,
+              ),
+              child: Center(child: RetroDesktopMonogram(initials!)),
+            ),
+        ],
+      );
+      head = !own
+          ? null
+          : column == null
+          ? pageBar
+          : LayoutBuilder(
+              builder: (context, box) {
+                final (start, end) = column(box.maxWidth);
+                return _PageInset(
+                  width: box.maxWidth,
+                  start: start,
+                  end: end,
+                  child: pageBar,
+                );
+              },
+            );
+    } else {
+      head = !showBar
+          ? null
+          : _MenuBar(
+              brand: chrome?.brand ?? '',
+              chrome: chrome,
+              active: chrome?.active ?? 0,
+              action: chrome?.action,
+              who: who,
+              utility: facts,
+              leading: leading,
+              actions: actions,
+            );
+    }
     final other = bar == null ? appBar : null;
     final windowTitle = bar?.title ?? chrome?.brand ?? '';
 
@@ -813,6 +1379,7 @@ class RetroDesktopScaffold extends StatelessWidget {
                     ? body
                     : RetroDesktopWindow(
                         title: windowTitle,
+                        info: bar?.subtitle,
                         fills: true,
                         child: body,
                       ),
@@ -833,7 +1400,11 @@ class RetroDesktopScaffold extends StatelessWidget {
                   RetroDesktopWindowColumn(
                     span: 8,
                     windows: [
-                      RetroDesktopWindow(title: windowTitle, child: body),
+                      RetroDesktopWindow(
+                        title: windowTitle,
+                        info: bar?.subtitle,
+                        child: body,
+                      ),
                     ],
                   ),
                 ],
@@ -867,7 +1438,7 @@ class RetroDesktopScaffold extends StatelessWidget {
                 ],
               ),
             ),
-            if (footer != null) _Foot(child: footer!),
+            if (footer != null) _Foot(column: column, child: footer!),
           ],
         ),
       ],
@@ -935,9 +1506,38 @@ class RetroDesktopScaffold extends StatelessWidget {
   }
 }
 
+/// Where a page's window stands across a desk [width], counted as the desk's tiles count it: 24 in from the start, [span]
+/// of 12 columns on a grid at most 1680 wide with 24 between columns.
+(double, double) _pageColumn(double width, {int span = 8}) {
+  const pad = 24.0, gutter = 24.0, most = 1680.0;
+  final grid = math.min(width - 2 * pad, most);
+  final unit = (grid + gutter) / 12;
+  return (pad, (pad + span * unit - gutter).roundToDouble());
+}
+
+/// The page's column on a desk, for the page's own bar under the shell's menu bar: its way back starts where the window
+/// does, its actions end where it ends.
+class _PageInset extends InheritedWidget {
+  const _PageInset({
+    required this.width,
+    required this.start,
+    required this.end,
+    required super.child,
+  });
+
+  /// The bar's width, and where the window starts and ends across it.
+  final double width, start, end;
+  @override
+  bool updateShouldNotify(_PageInset old) =>
+      old.width != width || old.start != start || old.end != end;
+}
+
 class _Foot extends StatelessWidget {
-  const _Foot({required this.child});
+  const _Foot({required this.child, this.column});
   final Widget child;
+
+  /// On a desk, where the page's window stands: the footer's buttons end where it ends, not at the screen's end.
+  final (double, double) Function(double width)? column;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
@@ -947,21 +1547,51 @@ class _Foot extends StatelessWidget {
         painter: _StripPainter(t.colors),
         child: SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              RetroDesktopSpacing.s12,
-              RetroDesktopSpacing.s10,
-              RetroDesktopSpacing.s12,
-              RetroDesktopSpacing.s10,
-            ),
-            child: t.desk
-                ? Align(
+          child: !t.desk
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    RetroDesktopSpacing.s12,
+                    RetroDesktopSpacing.s10,
+                    RetroDesktopSpacing.s12,
+                    RetroDesktopSpacing.s10,
+                  ),
+                  // At its end, as on a desk and as a dialog's buttons stand at its end.
+                  child: Align(
                     alignment: AlignmentDirectional.centerEnd,
                     heightFactor: 1,
-                    child: SizedBox(width: 360, child: child),
-                  )
-                : child,
-          ),
+                    child: child,
+                  ),
+                )
+              : LayoutBuilder(
+                  builder: (context, box) {
+                    final (start, end) =
+                        column?.call(box.maxWidth) ??
+                        (
+                          RetroDesktopSpacing.s12,
+                          box.maxWidth - RetroDesktopSpacing.s12,
+                        );
+                    return Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(
+                        start,
+                        RetroDesktopSpacing.s10,
+                        box.maxWidth - end,
+                        RetroDesktopSpacing.s10,
+                      ),
+                      // At the window's end, as a dialog's buttons stand at its end: a button its own width, a row of
+                      // them at most 360.
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        heightFactor: 1,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: math.min(360, math.max(0, end - start)),
+                          ),
+                          child: child,
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
       ),
     );
@@ -1052,7 +1682,7 @@ class RetroDesktopBackButton extends StatelessWidget {
     final button = close
         ? RetroDesktopIconButton(
             RetroDesktopGlyphs.x,
-            label: label,
+            semanticLabel: label,
             style: style,
             onPressed: onPressed,
             size: inBar && t.desk
@@ -1061,7 +1691,7 @@ class RetroDesktopBackButton extends StatelessWidget {
           )
         : RetroDesktopIconButton.triangle(
             rtl ? AxisDirection.right : AxisDirection.left,
-            label: label,
+            semanticLabel: label,
             style: style,
             onPressed: onPressed,
             size: inBar && t.desk
@@ -1111,7 +1741,9 @@ class RetroDesktopAppBar extends StatelessWidget {
   /// The heading displayed above the content.
   final String? title;
 
-  /// Secondary information displayed with the main content.
+  /// A line more about the page. In a [RetroDesktopScaffold] it stands in the info strip under the page window's title
+  /// (a page that brings its own window gives it `info` there); under the shell's menu bar on a desk, when the page
+  /// brings its own windows, in the page's bar under its title.
   final String? subtitle;
 
   /// Optional content before the main content in reading order.
@@ -1145,6 +1777,24 @@ class RetroDesktopAppBar extends StatelessWidget {
       const {},
     );
     final exit = leading ?? autoLeading(context);
+    // Under the shell's menu bar on a desk, the page's bar keeps to the page's window: its way back starts where the
+    // window starts.
+    final column = context.dependOnInheritedWidgetOfExactType<_PageInset>();
+    // Counted from the bar's edges: inside its rim the room is that much narrower on each side.
+    Widget onColumn(Widget row) => column == null
+        ? row
+        : LayoutBuilder(
+            builder: (context, box) {
+              final rim = (column.width - box.maxWidth) / 2;
+              return Padding(
+                padding: EdgeInsetsDirectional.only(
+                  start: math.max(0, column.start - rim),
+                  end: math.max(0, column.width - column.end - rim),
+                ),
+                child: row,
+              );
+            },
+          );
     return retroDesktopFace(
       states: const {},
       style: style,
@@ -1153,45 +1803,62 @@ class RetroDesktopAppBar extends StatelessWidget {
         RetroDesktopStyle(fill: WidgetStatePropertyAll(t.colors.platinumLight)),
       ),
       padding: EdgeInsets.zero,
-      child: Padding(
-        padding: t.density.apply(
-          EdgeInsetsDirectional.only(
-            start: exit == null ? 12 : 2,
-            end: 8,
-            top: 2,
-            bottom: 3,
-          ),
-          Directionality.of(context),
-        ),
-        child: Row(
-          children: [
-            ?exit,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (title != null)
-                    Text(
-                      title!,
-                      style: t.textTheme.sub.merge(words).copyWith(color: ink),
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle!,
-                      style: t.textTheme.meta.merge(words).copyWith(color: ink),
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
+      child: onColumn(
+        Padding(
+          padding: t.density.apply(
+            EdgeInsetsDirectional.only(
+              start: column != null
+                  ? 0
+                  : exit == null
+                  ? 12
+                  : 2,
+              end: column != null ? 0 : 8,
+              top: 2,
+              bottom: 3,
             ),
-            ...actions,
-          ],
+            Directionality.of(context),
+          ),
+          child: Row(
+            children: [
+              // An icon-only way back fills its box to its edge, so it stands 8 clear of the title; a worded button
+              // keeps its own room.
+              if (exit != null) ...[
+                exit,
+                if (exit is RetroDesktopBackButton ||
+                    exit is RetroDesktopIconButton)
+                  const SizedBox(width: RetroDesktopSpacing.s8),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (title != null)
+                      Text(
+                        title!,
+                        style: t.textTheme.sub
+                            .merge(words)
+                            .copyWith(color: ink),
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        style: t.textTheme.meta
+                            .merge(words)
+                            .copyWith(color: ink),
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+              ),
+              ...actions,
+            ],
+          ),
         ),
       ),
     );
@@ -1347,7 +2014,7 @@ class _PhotoEdge extends RetroDesktopPixelPainter {
 /// its height by [aspect].
 ///
 /// ```dart
-/// RetroDesktopMedia(slotId: 'workshop-bench', aspect: 4 / 3, label: 'The bench')
+/// RetroDesktopMedia(slotId: 'workshop-bench', aspect: 4 / 3, semanticLabel: 'The bench')
 /// ```
 class RetroDesktopMedia extends StatelessWidget {
   /// Creates a [RetroDesktopMedia].
@@ -1356,7 +2023,7 @@ class RetroDesktopMedia extends StatelessWidget {
     this.style,
     required this.slotId,
     this.aspect = 4 / 3,
-    this.label,
+    this.semanticLabel,
     this.fit = BoxFit.cover,
     this.width,
     this.bare = false,
@@ -1372,7 +2039,7 @@ class RetroDesktopMedia extends StatelessWidget {
   final double aspect;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// How the image fits inside its frame.
   final BoxFit fit;
@@ -1403,8 +2070,8 @@ class RetroDesktopMedia extends StatelessWidget {
       child: Center(child: RetroDesktopSystemMark(size: small ? 16 : 32)),
     );
     final picture = Semantics(
-      image: label != null,
-      label: label,
+      image: semanticLabel != null,
+      label: semanticLabel,
       child: AspectRatio(
         aspectRatio: aspect,
         child: DecoratedBox(
@@ -1447,7 +2114,7 @@ class RetroDesktopMedia extends StatelessWidget {
       )
       ..add(StringProperty('slotId', slotId))
       ..add(DoubleProperty('aspect', aspect, defaultValue: 4 / 3))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
       ..add(DoubleProperty('width', width, defaultValue: null))
       ..add(FlagProperty('bare', value: bare, ifTrue: 'bare'));
@@ -1552,7 +2219,7 @@ class RetroDesktopPictureCard extends StatelessWidget {
               RetroDesktopMedia(
                 slotId: slotId!,
                 aspect: aspect,
-                label: title,
+                semanticLabel: title,
                 bare: true,
               ),
             RetroDesktopGrow(

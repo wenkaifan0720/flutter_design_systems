@@ -46,7 +46,7 @@ void main() {
           slotId: 'x',
           aspect: 1,
           width: 56,
-          label: 'x',
+          semanticLabel: 'x',
         ),
         action: RetroDesktopButton('Open', onPressed: () {}),
       ),
@@ -57,12 +57,15 @@ void main() {
   group('RetroDesktopCheckbox, RetroDesktopCheckRow', () {
     check(
       'on',
-      () =>
-          RetroDesktopCheckbox(value: true, onChanged: (_) {}, label: 'Option'),
+      () => RetroDesktopCheckbox(
+        value: true,
+        onChanged: (_) {},
+        semanticLabel: 'Option',
+      ),
     );
     check(
       'off, no handler',
-      () => const RetroDesktopCheckbox(value: false, label: 'Option'),
+      () => const RetroDesktopCheckbox(value: false, semanticLabel: 'Option'),
     );
     check(
       'row, long',

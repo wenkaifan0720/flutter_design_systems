@@ -99,7 +99,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
                       builder: (context, _) {
                         final all = controller.pageSelection;
                         return RetroDesktopCheckbox(
-                          label:
+                          semanticLabel:
                               selectAllLabel ??
                               RetroDesktopLocalizations.of(context)
                                   .selectAllRows,
@@ -207,7 +207,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
                       if (selectable)
                         box(
                           RetroDesktopCheckbox(
-                            label:
+                            semanticLabel:
                                 selectLabel ??
                                 RetroDesktopLocalizations.of(context).selectRow,
                             value: row.selected,
@@ -300,7 +300,7 @@ class RetroDesktopScrollArea extends StatelessWidget {
     required this.controller,
     required this.child,
     this.axis = Axis.vertical,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
   });
@@ -321,7 +321,7 @@ class RetroDesktopScrollArea extends StatelessWidget {
   final Axis axis;
 
   /// Its name for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +335,7 @@ class RetroDesktopScrollArea extends StatelessWidget {
       // finger): a thumb sized by the content grew and shrank as a lazy list built its rows.
       thumbLength: RawTapTargets.of(context).floorOn().height,
       visibility: RawScrollbarVisibility.always,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       focusNode: focusNode,
       autofocus: autofocus,
       frameBuilder: (context, focused, area) => RetroDesktopHighlight(
@@ -395,7 +395,7 @@ class RetroDesktopScrollArea extends StatelessWidget {
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(DiagnosticsProperty<ScrollController>('controller', controller))
       ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -437,7 +437,7 @@ class RetroDesktopResizable extends StatelessWidget {
     this.minFirst = 0,
     this.minSecond = 0,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
   });
@@ -464,7 +464,7 @@ class RetroDesktopResizable extends StatelessWidget {
   final ValueChanged<double>? onChanged;
 
   /// The bar's name for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +481,8 @@ class RetroDesktopResizable extends StatelessWidget {
       dividerThickness: 6,
       hitExtent: math.max(12, RetroDesktopReach.least(context)),
       semanticLabel:
-          label ?? RawWidgetsLocalizations.of(context).splitViewHandleLabel,
+          semanticLabel ??
+          RawWidgetsLocalizations.of(context).splitViewHandleLabel,
       focusNode: focusNode,
       autofocus: autofocus,
       dividerBuilder: (context, states, axis) => RetroDesktopHighlight(
@@ -534,7 +535,7 @@ class RetroDesktopResizable extends StatelessWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -863,9 +864,21 @@ class _ReorderRow extends StatefulWidget {
 class _ReorderRowState extends State<_ReorderRow> {
   bool _ring = false;
 
+  // Whether the keyboard brought the focus, as ui_core's parts decide it: a mouse that connected first (an iPad's
+  // trackpad) leaves Flutter's highlight mode traditional without telling the detector.
+  late final RawFocusShown _focus = RawFocusShown(
+    (on) => setState(() => _ring = on),
+  );
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => FocusableActionDetector(
-    onShowFocusHighlight: (on) => setState(() => _ring = on),
+    onFocusChange: _focus.focused,
     child: RetroDesktopHighlight(
       shape: retroDesktopItemShape(RetroDesktopTheme.of(context)),
       focused: _ring,
@@ -890,7 +903,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
     required this.labelOf,
     this.iconOf,
     this.onActivate,
-    this.label,
+    this.semanticLabel,
   });
 
   /// The roots, what is open and what is chosen; the caller disposes it.
@@ -906,7 +919,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
   final ValueChanged<T>? onActivate;
 
   /// The tree's name for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -920,7 +933,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
         controller: controller,
         labelOf: labelOf,
         onActivate: onActivate,
-        semanticLabel: label,
+        semanticLabel: semanticLabel,
         rowBuilder: (context, item) {
           final lit = item.selected;
           final ink = lit ? c.onHighlight : c.text;
@@ -971,7 +984,11 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
                               : null,
                         ),
                         if (icon != null) ...[
-                          Icon(icon, size: 16, color: ink),
+                          Icon(
+                            icon,
+                            size: MediaQuery.textScalerOf(context).scale(16),
+                            color: ink,
+                          ),
                           const SizedBox(width: RetroDesktopSpacing.s6),
                         ],
                         Expanded(
@@ -1004,7 +1021,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
         ObjectFlagProperty<IconData? Function(T node)>.has('iconOf', iconOf),
       )
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1178,9 +1195,11 @@ class RetroDesktopTag extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
       heightFactor: 1,
+      // Flat in its outline, no bevel: a bevel is what a desktop drew on what presses.
       child: retroDesktopFace(
         states: const {},
         scale: RetroDesktopFaceScale.mark,
+        bevel: false,
         component: t.badgeTheme.over(
           RetroDesktopStyle(
             fill: WidgetStatePropertyAll(c.platinumLight),
@@ -1196,7 +1215,12 @@ class RetroDesktopTag extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 12, color: c.text),
+              // The glyph grows with the words it leads.
+              Icon(
+                icon,
+                size: MediaQuery.textScalerOf(context).scale(12),
+                color: c.text,
+              ),
               const SizedBox(width: RetroDesktopSpacing.s4),
             ],
             RetroDesktopCaps(Text(label)),

@@ -118,7 +118,7 @@ void main() {
       final wells = <String, (Widget Function(bool enabled), Finder)>{
         'Checkbox': (
           (enabled) => RetroDesktopCheckbox(
-            label: 'Remember me',
+            semanticLabel: 'Remember me',
             value: false,
             onChanged: enabled ? (_) {} : null,
           ),

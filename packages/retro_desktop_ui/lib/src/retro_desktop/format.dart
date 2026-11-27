@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart' show BuildContext;
+import 'package:ui_core/ui_core.dart' show RawWidgetsLocalizations;
 import 'package:intl/intl.dart';
 
 /// Locale-aware display formatting shared by desktop controls and application data.
@@ -24,6 +26,16 @@ abstract final class RetroDesktopFormat {
   /// Formats a complete date for a calendar cell's accessible name.
   static String date(DateTime value, {String locale = 'en_US'}) =>
       DateFormat.yMMMMd(locale).format(value);
+
+  /// A chosen day as a field or a list shows it: its month short, the day and the year, in the device's language and
+  /// its order ("Oct 2, 2026"; "2 oct. 2026" in French). The one day format the look shows a day in: the date field's
+  /// value, a list's due date.
+  ///
+  /// ```dart
+  /// Text(RetroDesktopFormat.mediumDate(context, DateTime(2026, 10, 2)))
+  /// ```
+  static String mediumDate(BuildContext context, DateTime value) =>
+      RawWidgetsLocalizations.of(context).formatMediumDate(value);
 
   /// Formats a ratio as a localized percent.
   static String percent(double value, {String locale = 'en_US'}) =>

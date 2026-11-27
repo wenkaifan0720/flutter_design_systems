@@ -55,9 +55,11 @@ void main() {
       // A row may show its part's kinds side by side (the Button row: default, plain, text and destructive), each of
       // them the look's own part.
       final parts = specimen is Wrap ? specimen.children : [specimen];
-      // A part set apart by a Padding (the quiet button's room for its held face) is still the part inside it.
+      // A part set apart by a Padding (the quiet button's room for its held face), or held to a field's measure at
+      // the start of its column (Align round a ConstrainedBox: the select, alone), is still the part inside it.
       for (final placed in parts) {
-        final part = placed is Padding ? placed.child! : placed;
+        var part = placed is Padding ? placed.child! : placed;
+        if (part case Align(child: ConstrainedBox(:final child?))) part = child;
         final name = '${part.runtimeType}'.split('<').first;
         // A specimen that takes a controller holds its own in a private
         // holder around the part (_Own, _OwnScroll), disposed with it.

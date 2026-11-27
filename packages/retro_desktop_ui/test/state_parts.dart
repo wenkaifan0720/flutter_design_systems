@@ -89,7 +89,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       ? null
       : RetroDesktopIconButton(
           RetroDesktopGlyphs.search,
-          label: 'Search',
+          semanticLabel: 'Search',
           selected: s == 'selected',
           onPressed: s == 'disabled' ? null : _noop,
         ),
@@ -150,7 +150,7 @@ final Map<String, Widget? Function(String)> stateParts = {
           ),
         ),
   'Checkbox': (s) => RetroDesktopCheckbox(
-    label: 'Remember me',
+    semanticLabel: 'Remember me',
     value: s == 'selected',
     isError: s == 'error',
     onChanged: s == 'disabled' ? null : _take,
@@ -168,7 +168,7 @@ final Map<String, Widget? Function(String)> stateParts = {
   'Switch': (s) => s == 'error'
       ? null
       : RetroDesktopSwitch(
-          label: 'Wi-Fi',
+          semanticLabel: 'Wi-Fi',
           value: s == 'selected',
           onChanged: s == 'disabled' ? null : _take,
         ),
@@ -229,7 +229,7 @@ final Map<String, Widget? Function(String)> stateParts = {
   'Rating': (s) => s == 'error' || s == 'selected'
       ? null
       : RetroDesktopRating(
-          label: 'Rating',
+          semanticLabel: 'Rating',
           value: 3,
           onChanged: _take,
           enabled: s != 'disabled',
@@ -250,7 +250,7 @@ final Map<String, Widget? Function(String)> stateParts = {
   'Button group': (s) => s == 'selected' || s == 'error'
       ? null
       : RetroDesktopButtonGroup(
-          label: 'Week',
+          semanticLabel: 'Week',
           items: [
             for (final word in const ['Previous', 'Today', 'Next'])
               RetroDesktopButtonGroupItem(
@@ -262,7 +262,7 @@ final Map<String, Widget? Function(String)> stateParts = {
   'Toggle group': (s) => s == 'error'
       ? null
       : RetroDesktopToggleGroup<String>(
-          label: 'Style',
+          semanticLabel: 'Style',
           values: const ['Bold', 'Italic', 'Underline'],
           selected: s == 'selected' ? const {'Bold'} : const {},
           labelOf: (v) => v,
@@ -417,7 +417,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 280,
           child: RetroDesktopTreeView<String>(
-            label: 'Folders',
+            semanticLabel: 'Folders',
             controller: _tree(s == 'selected'),
             labelOf: (n) => n,
           ),
@@ -431,7 +431,7 @@ final Map<String, Widget? Function(String)> stateParts = {
               final controller = ScrollController();
               return RetroDesktopScrollArea(
                 controller: controller,
-                label: 'Files',
+                semanticLabel: 'Files',
                 child: ListView(
                   controller: controller,
                   children: [
@@ -535,7 +535,7 @@ final Map<String, Widget? Function(String)> stateParts = {
 
 Widget _chart(
   Widget Function({
-    required String label,
+    required String semanticLabel,
     required List<RetroDesktopChartSeries> series,
     List<String> labels,
     double height,
@@ -544,7 +544,7 @@ Widget _chart(
 ) => SizedBox(
   width: 320,
   child: make(
-    label: 'Visits',
+    semanticLabel: 'Visits',
     labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
     height: 140,
     series: const [

@@ -126,6 +126,17 @@ final _fullWidthRow = Misread(
       r'Cards and media: a button "Open folder": \d|Charts: a button: \d',
 );
 
+// In Platinum the width check takes a text field's face to be the box inside its decorator (10 px in from the start
+// of the well drawn round it, 8 from its end), where in Chisel it reads the well itself; so the select under the Email field, on
+// the well's edges, reads as one alone. A pixel scan of the Form page at 1024 has the Email field's well and the
+// select's face on the same columns (483 to 885), and the boxes of both run 483 to 885.
+final _platinumWell = Misread(
+  'Platinum field well',
+  'the check reads a Platinum text field by the box inside its well; the '
+      'select under it stands on the well\'s edges, a field of the form',
+  r'(Form|Save changes): a select "Save new documents to": \d',
+);
+
 // Chisel's list face draws through its own render box (a RetroDesktopPixelPaint), not a DecoratedBox; checkList finds a
 // list by a DecoratedBox face, so it reports none open (the list stands on the field's width under it: dropdowns_test).
 final _chiselList = Misread(
@@ -263,7 +274,7 @@ final _chipIcon = Misread(
 );
 
 /// The width check's misreads ([DesignWidthCheck]).
-final widthMisreads = [_fullWidthRow, _tabs];
+final widthMisreads = [_fullWidthRow, _tabs, _platinumWell];
 
 /// The list check's misreads ([DesignWidthCheck.checkList]) in Chisel; Platinum has none.
 final chiselListMisreads = [_chiselList];

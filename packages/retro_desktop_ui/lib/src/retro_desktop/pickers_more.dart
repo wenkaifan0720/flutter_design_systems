@@ -681,7 +681,8 @@ Widget _monthHead(
               Directionality.of(context) == TextDirection.rtl
                   ? RetroDesktopGlyphs.chevronRight
                   : RetroDesktopGlyphs.chevronLeft,
-              label: RawWidgetsLocalizations.of(context).previousMonthTooltip,
+              semanticLabel: RawWidgetsLocalizations.of(context)
+                  .previousMonthTooltip,
               onPressed: h.previous,
             ),
           ),
@@ -703,7 +704,8 @@ Widget _monthHead(
               Directionality.of(context) == TextDirection.rtl
                   ? RetroDesktopGlyphs.chevronLeft
                   : RetroDesktopGlyphs.chevronRight,
-              label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
+              semanticLabel: RawWidgetsLocalizations.of(context)
+                  .nextMonthTooltip,
               onPressed: h.next,
             ),
           ),

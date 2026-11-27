@@ -69,7 +69,7 @@ Widget kitSpecimenMark() => const RetroDesktopSystemMark();
 Widget kitSpecimenPhoto() => const RetroDesktopMedia(
   slotId: 'kit-picture',
   aspect: 16 / 9,
-  label: 'A picture',
+  semanticLabel: 'A picture',
 );
 
 Widget kitSpecimenPictureCard() => const RetroDesktopGridOf(

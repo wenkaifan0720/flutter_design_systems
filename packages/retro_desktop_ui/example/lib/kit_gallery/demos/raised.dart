@@ -136,7 +136,7 @@ Widget kitSpecimenMenu() => kitAction(
       constraints: const BoxConstraints(maxWidth: 280),
       child: IntrinsicWidth(
         child: RetroDesktopMenu<String>(
-          label: 'Document commands',
+          semanticLabel: 'Document commands',
           items: _menu,
           onSelected: (_) => press(),
         ),
@@ -150,7 +150,7 @@ Widget kitSpecimenTooltip() => kitAction(
     message: 'Search every document',
     child: RetroDesktopIconButton(
       RetroDesktopGlyphs.search,
-      label: 'Search',
+      semanticLabel: 'Search',
       onPressed: press,
     ),
   ),

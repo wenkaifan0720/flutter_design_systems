@@ -192,25 +192,25 @@ final helpers = <String, Widget Function(BuildContext)>{
   'stem charts': (context) => const RetroDesktopColumn(
     children: [
       RetroDesktopLineChart(
-        label: 'Visits',
+        semanticLabel: 'Visits',
         series: [
           RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
       ),
       RetroDesktopBarChart(
-        label: 'Visits',
+        semanticLabel: 'Visits',
         series: [
           RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
       ),
       RetroDesktopAreaChart(
-        label: 'Visits',
+        semanticLabel: 'Visits',
         series: [
           RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
       ),
       RetroDesktopPieChart(
-        label: 'Visits',
+        semanticLabel: 'Visits',
         series: [
           RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
@@ -292,6 +292,27 @@ final helpers = <String, Widget Function(BuildContext)>{
       child: const RetroDesktopScaffold(body: Text('Preview')),
     ),
   ),
+  'app shell': (context) => SizedBox(
+    height: 600,
+    child: RetroDesktopAppShell(
+      brand: 'Shelf',
+      destinations: const [
+        RetroDesktopNavItem(
+          label: 'Books',
+          short: 'Books',
+          icon: RetroDesktopGlyphs.folder,
+        ),
+        RetroDesktopNavItem(
+          label: 'Settings',
+          short: 'Settings',
+          icon: RetroDesktopGlyphs.settings,
+        ),
+      ],
+      selectedIndex: 0,
+      onDestinationSelected: (_) {},
+      body: const RetroDesktopScaffold(body: Text('Books')),
+    ),
+  ),
   'chrome scope': (context) => const RetroDesktopChromeScope(
     brand: 'Files',
     nav: [],
@@ -334,7 +355,7 @@ void main() {
                 children: [
                   RetroDesktopSwitch(
                     value: true,
-                    label: 'Sync',
+                    semanticLabel: 'Sync',
                     onChanged: (_) {},
                   ),
                   RetroDesktopSegmentedButton<String>(

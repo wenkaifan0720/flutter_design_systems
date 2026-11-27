@@ -28,17 +28,17 @@ import 'internal/caps.dart';
 import 'internal/field_hooks.dart';
 import 'tokens.dart';
 
-/// A button with one icon, or a [triangle], in the family's control shape, and a [label] for a screen reader.
+/// A button with one icon, or a [triangle], in the family's control shape, and a [semanticLabel] for a screen reader.
 ///
 /// ```dart
-/// RetroDesktopIconButton(RetroDesktopGlyphs.tag, label: 'Tag', onPressed: () {})
+/// RetroDesktopIconButton(RetroDesktopGlyphs.tag, semanticLabel: 'Tag', onPressed: () {})
 /// ```
 class RetroDesktopIconButton extends StatelessWidget {
   /// Creates a [RetroDesktopIconButton].
   const RetroDesktopIconButton(
     this.icon, {
     super.key,
-    required this.label,
+    required this.semanticLabel,
     this.onPressed,
     this.focusNode,
     this.autofocus = false,
@@ -52,7 +52,7 @@ class RetroDesktopIconButton extends StatelessWidget {
   const RetroDesktopIconButton.triangle(
     AxisDirection this.triangle, {
     super.key,
-    required this.label,
+    required this.semanticLabel,
     this.onPressed,
     this.focusNode,
     this.autofocus = false,
@@ -69,7 +69,7 @@ class RetroDesktopIconButton extends StatelessWidget {
   final AxisDirection? triangle;
 
   /// The visible or accessible name of this part.
-  final String label;
+  final String semanticLabel;
 
   /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
@@ -97,7 +97,7 @@ class RetroDesktopIconButton extends StatelessWidget {
     return retroDesktopOwnSize(
       child: RetroDesktopPressable(
         onPressed: onPressed,
-        label: label,
+        label: semanticLabel,
         value: badgeLabel,
         selected: selected,
         focusNode: focusNode,
@@ -137,7 +137,7 @@ class RetroDesktopIconButton extends StatelessWidget {
       ..add(
         EnumProperty<AxisDirection>('triangle', triangle, defaultValue: null),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         EnumProperty<RetroDesktopButtonSize>(
@@ -351,7 +351,9 @@ class RetroDesktopPopupButton extends StatelessWidget {
 
 /// A text box: white, sunk into the machine, a 1 lp dark line along its top and its start. [leading] stands at its start (an
 /// `Icon` takes the field's icon size and ink),
-/// [trailing] a `RetroDesktopKbd` or a small button, [lines] above 1 a box for a note.
+/// [trailing] a `RetroDesktopKbd` or a small button, [lines] above 1 a box for a note. In a `RawForm` a [validator]
+/// checks it as `TextFormField` does in a `Form`: the form's submit shows its error under it and puts the focus on the
+/// first wrong field. An error, given or found, draws a heavier edge round the box and the warning sign before its words.
 ///
 /// ```dart
 /// RetroDesktopTextField(hintText: 'Search 40 notes', leading: const Icon(RetroDesktopGlyphs.search), trailing: const RetroDesktopKbd('/'))
@@ -380,6 +382,9 @@ class RetroDesktopTextField extends StatefulWidget {
     this.inputFormatters,
     this.obscureText = false,
     this.onEditingComplete,
+    this.validator,
+    this.onSaved,
+    this.autovalidateMode,
     this.style,
   }) : assert(lines >= 1);
 
@@ -441,6 +446,17 @@ class RetroDesktopTextField extends StatefulWidget {
 
   /// Completes platform editing before the submit callback.
   final VoidCallback? onEditingComplete;
+
+  /// Checks the text in the `RawForm` above: a message says what is wrong, null that it is right. [errorText] wins
+  /// while it is given.
+  final FormFieldValidator<String>? validator;
+
+  /// Called with the text when the `RawForm` above saves.
+  final FormFieldSetter<String>? onSaved;
+
+  /// When [validator] runs before the form is submitted; null: as the form says.
+  final AutovalidateMode? autovalidateMode;
+
   @override
   State<RetroDesktopTextField> createState() => _TextFieldState();
 
@@ -522,6 +538,20 @@ class RetroDesktopTextField extends StatefulWidget {
           'onEditingComplete',
           onEditingComplete,
         ),
+      )
+      ..add(
+        ObjectFlagProperty<FormFieldValidator<String>>.has(
+          'validator',
+          validator,
+        ),
+      )
+      ..add(ObjectFlagProperty<FormFieldSetter<String>>.has('onSaved', onSaved))
+      ..add(
+        EnumProperty<AutovalidateMode>(
+          'autovalidateMode',
+          autovalidateMode,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -529,27 +559,72 @@ class RetroDesktopTextField extends StatefulWidget {
 class _TextFieldState extends State<RetroDesktopTextField> {
   bool _hovered = false;
   FocusNode? _ownFocus;
+  TextEditingController? _ownController;
+
+  FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
+
+  // A field in a form reads its text from a controller, its own when the app gives none.
+  TextEditingController get _controller =>
+      widget.controller ??
+      (_ownController ??= TextEditingController(text: widget.initial));
+
   @override
   void dispose() {
     _ownFocus?.dispose();
+    _ownController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = widget.controller;
+    final validator = widget.validator;
+    if (validator == null && widget.onSaved == null) {
+      return _field(
+        context,
+        widget.controller,
+        widget.errorText,
+        widget.onChanged,
+      );
+    }
+    // In a RawForm: the form's submit checks it, shows its error under it and puts the focus on the first wrong
+    // field; a given errorText wins.
+    return RawFormField<String>(
+      focusNode: _focus,
+      initialValue: _controller.text,
+      validator: validator == null ? null : (_) => validator(_controller.text),
+      onSaved: widget.onSaved == null
+          ? null
+          : (_) => widget.onSaved!(_controller.text),
+      autovalidateMode: widget.autovalidateMode,
+      enabled: widget.enabled,
+      builder: (state) => _field(
+        context,
+        _controller,
+        widget.errorText ?? state.errorText,
+        (value) {
+          state.didChange(value);
+          widget.onChanged?.call(value);
+        },
+      ),
+    );
+  }
+
+  Widget _field(
+    BuildContext context,
+    TextEditingController? controller,
+    String? error,
+    ValueChanged<String>? onChanged,
+  ) {
     final initial = widget.initial;
     final hint = widget.hintText;
-    final onChanged = widget.onChanged;
     final onSubmitted = widget.onSubmitted;
     final leading = widget.leading;
     final lines = widget.lines;
     final keyboardType = widget.keyboardType;
     final label = widget.labelText;
     final helper = widget.helperText;
-    final error = widget.errorText;
     final enabled = widget.enabled;
-    final focusNode = widget.focusNode ?? (_ownFocus ??= FocusNode());
+    final focusNode = _focus;
     final autofocus = widget.autofocus;
     final textInputAction = widget.textInputAction;
     final autofillHints = widget.autofillHints;
@@ -711,7 +786,7 @@ class _TextFieldState extends State<RetroDesktopTextField> {
         ],
       ],
     );
-    final field = retroDesktopFace(
+    final Widget face = retroDesktopFace(
       states: states,
       component: t.textFieldTheme.over(
         RetroDesktopStyle(fill: WidgetStatePropertyAll(c.paper)),
@@ -747,6 +822,12 @@ class _TextFieldState extends State<RetroDesktopTextField> {
               : editorRow(),
         ),
       ),
+    );
+    final field = retroDesktopErrorEdge(
+      t,
+      slot((s) => s.shape) ?? t.shapes.small,
+      on: error != null,
+      child: face,
     );
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -943,7 +1024,7 @@ class _CheckMarkPainter extends CustomPainter {
 /// Activation cycles false, true, null, then false; [RetroDesktopCheckRow] is the binary labelled-row form.
 ///
 /// ```dart
-/// RetroDesktopCheckbox(value: done, onChanged: (v) => setState(() => done = v), label: 'Option')
+/// RetroDesktopCheckbox(value: done, onChanged: (v) => setState(() => done = v), semanticLabel: 'Option')
 /// ```
 class RetroDesktopCheckbox extends StatelessWidget {
   /// Creates a [RetroDesktopCheckbox].
@@ -951,7 +1032,7 @@ class RetroDesktopCheckbox extends StatelessWidget {
     super.key,
     required this.value,
     this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.isError = false,
     this.focusNode,
     this.autofocus = false,
@@ -977,7 +1058,7 @@ class RetroDesktopCheckbox extends StatelessWidget {
   final ValueChanged<bool?>? onChanged;
 
   /// The visible or accessible name of this part.
-  final String label;
+  final String semanticLabel;
   @override
   Widget build(BuildContext context) {
     return retroDesktopOwnSize(
@@ -989,7 +1070,7 @@ class RetroDesktopCheckbox extends StatelessWidget {
         isError: isError,
         focusNode: focusNode,
         autofocus: autofocus,
-        label: label,
+        label: semanticLabel,
         button: false,
         onPressed: onChanged == null
             ? null
@@ -1027,7 +1108,7 @@ class RetroDesktopCheckbox extends StatelessWidget {
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label));
+      ..add(StringProperty('semanticLabel', semanticLabel));
   }
 }
 
@@ -1275,7 +1356,7 @@ class RetroDesktopChip extends StatelessWidget {
         if (onDeleted != null)
           RetroDesktopIconButton(
             RetroDesktopGlyphs.x,
-            label:
+            semanticLabel:
                 deleteLabel ??
                 RawWidgetsLocalizations.of(context).deleteButtonTooltip,
             onPressed: isEnabled ? onDeleted : null,
@@ -1317,7 +1398,11 @@ class RetroDesktopChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon),
+            // The glyph grows with the words beside it.
+            IconTheme.merge(
+              data: const IconThemeData(applyTextScaling: true),
+              child: Icon(icon),
+            ),
             const SizedBox(width: RetroDesktopSpacing.s4),
           ],
           // One line: a capsule's round ends never meet a wrapped line. A
@@ -1937,7 +2022,7 @@ class RetroDesktopChoiceBox extends StatelessWidget {
     this.selected = false,
     this.padding = EdgeInsets.zero,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.hint,
     this.many = false,
     this.inGroup = false,
@@ -1962,7 +2047,7 @@ class RetroDesktopChoiceBox extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// Placeholder text shown while the input has no value.
   final String? hint;
@@ -1983,7 +2068,7 @@ class RetroDesktopChoiceBox extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     return RetroDesktopPressable(
       onPressed: onPressed,
-      label: label,
+      label: semanticLabel,
       selected: many ? null : selected,
       checked: many ? selected : null,
       inGroup: inGroup,
@@ -2024,7 +2109,7 @@ class RetroDesktopChoiceBox extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(FlagProperty('many', value: many, ifTrue: 'many'))
       ..add(FlagProperty('inGroup', value: inGroup, ifTrue: 'inGroup'))
@@ -2161,7 +2246,7 @@ class RetroDesktopChoices extends StatelessWidget {
                     horizontal: pad,
                     vertical: 7,
                   ),
-                  label: o.label,
+                  semanticLabel: o.label,
                   onPressed: onChanged == null
                       ? null
                       : () => onChanged!(o.value),
@@ -2979,7 +3064,7 @@ class RetroDesktopTabBar extends StatefulWidget implements RetroDesktopFlush {
     this.child,
     this.selectedIndex = 0,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.counts = const [],
     this.style,
   }) : assert(selectedIndex >= 0);
@@ -3000,7 +3085,7 @@ class RetroDesktopTabBar extends StatefulWidget implements RetroDesktopFlush {
   final Widget? child;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? semanticLabel;
 
   /// Each tab's count, shown after its words; null (or a shorter list) shows none.
   final List<String?> counts;
@@ -3021,7 +3106,7 @@ class RetroDesktopTabBar extends StatefulWidget implements RetroDesktopFlush {
       ..add(IterableProperty<String>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         IterableProperty<String?>('counts', counts, defaultValue: const []),
       );
@@ -3234,7 +3319,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
     final bar = RawTabBar(
       controller: controller,
       isScrollable: true,
-      semanticLabel: widget.label ?? words.tabs,
+      semanticLabel: widget.semanticLabel ?? words.tabs,
       tabs: [
         for (var i = 0; i < widget.tabs.length; i++)
           RawTab(
@@ -3350,7 +3435,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
                     rtl
                         ? RetroDesktopGlyphs.chevronRight
                         : RetroDesktopGlyphs.chevronLeft,
-                    label: words.earlierTabs,
+                    semanticLabel: words.earlierTabs,
                     size: RetroDesktopButtonSize.small,
                     onPressed: p.pixels > 0 ? () => _step(-1) : null,
                   ),
@@ -3358,7 +3443,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
                     rtl
                         ? RetroDesktopGlyphs.chevronLeft
                         : RetroDesktopGlyphs.chevronRight,
-                    label: words.laterTabs,
+                    semanticLabel: words.laterTabs,
                     size: RetroDesktopButtonSize.small,
                     onPressed: p.pixels < p.maxScrollExtent
                         ? () => _step(1)
@@ -3390,7 +3475,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
     );
     // For ui_core's keyline check: the row of tabs is one item to what holds it, and the panel is a section of its own.
     final strip = RawKeylineRegion(
-      label: widget.label ?? RetroDesktopLocalizations.of(context).tabs,
+      label: widget.semanticLabel ?? RetroDesktopLocalizations.of(context).tabs,
       mixedHeights:
           'the open tab stands taller than the others and joins its panel, '
           'as a folder tab does',

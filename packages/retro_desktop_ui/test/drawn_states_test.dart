@@ -86,7 +86,7 @@ void main() {
           f.value,
           b,
           const RetroDesktopCheckbox(
-            label: 'Agree',
+            semanticLabel: 'Agree',
             value: false,
             onChanged: _take,
           ),
@@ -97,7 +97,7 @@ void main() {
           f.value,
           b,
           const RetroDesktopCheckbox(
-            label: 'Agree',
+            semanticLabel: 'Agree',
             value: false,
             isError: true,
             onChanged: _take,
@@ -115,7 +115,7 @@ void main() {
           f.value,
           b,
           const RetroDesktopCheckbox(
-            label: 'Agree',
+            semanticLabel: 'Agree',
             value: false,
             isError: true,
             onChanged: _take,
@@ -132,14 +132,18 @@ void main() {
           tester,
           f.value,
           b,
-          const RetroDesktopRating(label: 'Rating', value: 3, onChanged: _take),
+          const RetroDesktopRating(
+            semanticLabel: 'Rating',
+            value: 3,
+            onChanged: _take,
+          ),
         );
         final (off, offSize) = await stillPixels(
           tester,
           f.value,
           b,
           const RetroDesktopRating(
-            label: 'Rating',
+            semanticLabel: 'Rating',
             value: 3,
             onChanged: _take,
             enabled: false,
@@ -201,7 +205,7 @@ void main() {
       testWidgets('$name: a held checkbox or radio shows it', (tester) async {
         for (final child in <Widget>[
           const RetroDesktopCheckbox(
-            label: 'Agree',
+            semanticLabel: 'Agree',
             value: false,
             onChanged: _take,
           ),

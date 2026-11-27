@@ -16,13 +16,22 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopButton': (hit) => RetroDesktopButton('Back', onPressed: hit),
   'RetroDesktopButton (wide)': (hit) =>
       RetroDesktopButton('Go', wide: true, onPressed: hit),
-  'RetroDesktopIconButton': (hit) =>
-      RetroDesktopIconButton(LucideIcons.tag, label: 'Tag', onPressed: hit),
+  'RetroDesktopIconButton': (hit) => RetroDesktopIconButton(
+    LucideIcons.tag,
+    semanticLabel: 'Tag',
+    onPressed: hit,
+  ),
   'RetroDesktopPopupButton': (hit) =>
       RetroDesktopPopupButton('Pick one', onPressed: hit),
   'RetroDesktopTextField': (hit) => RetroDesktopTextField(
     hintText: 'Search',
     enabled: hit != null,
+    onChanged: hit == null ? null : (_) => hit(),
+  ),
+  'RetroDesktopDateField': (hit) => RetroDesktopDateField(
+    labelText: 'Started',
+    hintText: 'Not yet',
+    value: null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopInput': (hit) => RetroDesktopInput(
@@ -33,7 +42,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopCheckbox': (hit) => RetroDesktopCheckbox(
     value: true,
     onChanged: hit == null ? null : (_) => hit(),
-    label: 'Option',
+    semanticLabel: 'Option',
   ),
   'RetroDesktopRadioGroup': (hit) => RetroDesktopRadioGroup<int>(
     labelText: 'Choice',
@@ -285,7 +294,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopSwitch': (hit) => RetroDesktopSwitch(
     value: true,
-    label: 'Sync',
+    semanticLabel: 'Sync',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopSwitchRow': (hit) => RetroDesktopSwitchRow(
@@ -328,7 +337,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onPressed: hit,
   ),
   'RetroDesktopMenu': (hit) => RetroDesktopMenu<String>(
-    label: 'Commands',
+    semanticLabel: 'Commands',
     items: const [RetroDesktopMenuItem('open', 'Open')],
     onSelected: hit == null ? null : (_) => hit(),
   ),
@@ -370,7 +379,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopPageDots': (hit) => RetroDesktopPageDots(
     count: 3,
     selectedIndex: 0,
-    label: 'Pages',
+    semanticLabel: 'Pages',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopBreadcrumbItem': (hit) => RetroDesktopBreadcrumb(
@@ -385,12 +394,12 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopRating': (hit) => RetroDesktopRating(
-    label: 'Rating',
+    semanticLabel: 'Rating',
     value: 3,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopFileUpload': (hit) => RetroDesktopFileUpload(
-    label: 'Attachments',
+    semanticLabel: 'Attachments',
     onChoose: hit,
     files: const ['notes.txt'],
     onRemove: hit == null ? null : (_) => hit(),
@@ -400,13 +409,13 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopSnackBar': (hit) =>
       RetroDesktopSnackBar('Saved', actionLabel: 'Undo', onAction: hit),
   'RetroDesktopSurface': (hit) => RetroDesktopSurface(
-    label: 'Open',
+    semanticLabel: 'Open',
     onPressed: hit,
     child: const Text('Contents'),
   ),
   // Grouped actions, pickers, containers and raised parts.
   'RetroDesktopButtonGroupItem': (hit) => RetroDesktopButtonGroup(
-    label: 'Steps',
+    semanticLabel: 'Steps',
     items: [RetroDesktopButtonGroupItem(label: 'Next', onPressed: hit)],
   ),
   'RetroDesktopSplitButton': (hit) => RetroDesktopSplitButton(

@@ -359,7 +359,8 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                 Directionality.of(context) == TextDirection.rtl
                     ? RetroDesktopGlyphs.chevronRight
                     : RetroDesktopGlyphs.chevronLeft,
-                label: RawWidgetsLocalizations.of(context).previousMonthTooltip,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .previousMonthTooltip,
                 onPressed: widget.onChanged != null && canBack
                     ? () => _moveMonth(-1)
                     : null,
@@ -385,7 +386,8 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                 Directionality.of(context) == TextDirection.rtl
                     ? RetroDesktopGlyphs.chevronLeft
                     : RetroDesktopGlyphs.chevronRight,
-                label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .nextMonthTooltip,
                 onPressed: widget.onChanged != null && canNext
                     ? () => _moveMonth(1)
                     : null,

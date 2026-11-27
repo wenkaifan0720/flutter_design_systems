@@ -21,7 +21,7 @@ void main() {
             child: SizedBox(
               width: 560,
               child: RetroDesktopChart(
-                label: 'Hours',
+                semanticLabel: 'Hours',
                 kind: type,
                 series: const [
                   RetroDesktopChartSeries('Hours', [0, 0, 0, 0, 0, 0, 0]),

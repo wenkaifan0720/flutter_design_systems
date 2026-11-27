@@ -40,7 +40,7 @@ final _variants = <String, Widget Function()>{
   'a popup': () => RetroDesktopPopupButton('Workshop', onPressed: () {}),
   'an icon button': () => RetroDesktopIconButton(
     RetroDesktopGlyphs.tag,
-    label: 'Tag',
+    semanticLabel: 'Tag',
     onPressed: () {},
   ),
   'a button group': () => RetroDesktopButtonGroup(

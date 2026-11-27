@@ -98,7 +98,7 @@ class _HeldState<C extends ChangeNotifier> extends State<_Held<C>> {
 Widget kitSpecimenButtonGroup() => kitAction(
   'Moved through the week',
   (press) => RetroDesktopButtonGroup(
-    label: 'Week',
+    semanticLabel: 'Week',
     items: [
       RetroDesktopButtonGroupItem(label: 'Previous', onPressed: press),
       RetroDesktopButtonGroupItem(label: 'Today', onPressed: press),
@@ -109,7 +109,7 @@ Widget kitSpecimenButtonGroup() => kitAction(
 Widget kitSpecimenToggleGroup() => kitValue<Set<String>>(
   const {'Bold'},
   (value, change) => RetroDesktopToggleGroup<String>(
-    label: 'Style',
+    semanticLabel: 'Style',
     values: const ['Bold', 'Italic', 'Underline'],
     selected: value,
     labelOf: (v) => v,
@@ -269,7 +269,7 @@ Widget kitSpecimenTreeView() => _Held(
     },
   ),
   builder: (controller) => RetroDesktopTreeView<String>(
-    label: 'Folders',
+    semanticLabel: 'Folders',
     controller: controller,
     labelOf: (node) => node,
   ),
@@ -284,7 +284,7 @@ Widget kitSpecimenScrollArea() => _Held(
       padding: EdgeInsets.zero,
       child: RetroDesktopScrollArea(
         controller: controller,
-        label: 'Files',
+        semanticLabel: 'Files',
         child: ListView(
           controller: controller,
           padding: const EdgeInsetsDirectional.only(start: 10),
@@ -418,15 +418,17 @@ class _SheetFiltersState extends State<_SheetFilters> {
         value: _pictures,
         onChanged: (v) => setState(() => _pictures = v),
       ),
-      RetroDesktopSelect<String>(
-        labelText: 'Changed',
-        value: _since,
-        options: const [
-          RetroDesktopOption('week', 'This week'),
-          RetroDesktopOption('month', 'This month'),
-          RetroDesktopOption('any', 'Any time'),
-        ],
-        onChanged: (v) => setState(() => _since = v),
+      kitAlone(
+        RetroDesktopSelect<String>(
+          labelText: 'Changed',
+          value: _since,
+          options: const [
+            RetroDesktopOption('week', 'This week'),
+            RetroDesktopOption('month', 'This month'),
+            RetroDesktopOption('any', 'Any time'),
+          ],
+          onChanged: (v) => setState(() => _since = v),
+        ),
       ),
     ],
   );

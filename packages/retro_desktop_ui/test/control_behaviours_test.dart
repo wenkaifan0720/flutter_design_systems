@@ -327,7 +327,7 @@ void main() {
           builder: (context, change) => RetroDesktopPageDots(
             count: 3,
             selectedIndex: selected,
-            label: 'Introduction',
+            semanticLabel: 'Introduction',
             onChanged: (next) => change(() => selected = next),
           ),
         ),
@@ -403,7 +403,7 @@ void main() {
                 RetroDesktopPageDots(
                   count: 3,
                   selectedIndex: 0,
-                  label: 'Pages',
+                  semanticLabel: 'Pages',
                   onChanged: (_) {},
                 ),
                 const RetroDesktopStepProgress(

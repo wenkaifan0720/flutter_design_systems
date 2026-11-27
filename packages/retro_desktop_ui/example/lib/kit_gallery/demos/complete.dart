@@ -140,7 +140,7 @@ Widget kitSpecimenPageDots() {
     builder: (context, change) => RetroDesktopPageDots(
       count: 4,
       selectedIndex: value,
-      label: 'Introduction',
+      semanticLabel: 'Introduction',
       onChanged: (next) => change(() => value = next),
     ),
   );
@@ -156,12 +156,18 @@ Widget kitSpecimenNotice() => const RetroDesktopBanner(
   message: 'Your changes will synchronize when you reconnect.',
   tone: RetroDesktopTone.info,
 );
-Widget kitSpecimenBadge() =>
-    const RetroDesktopBadge(12, label: '12 unread', child: Text('Inbox'));
+Widget kitSpecimenBadge() => const RetroDesktopBadge(
+  12,
+  semanticLabel: '12 unread',
+  child: Text('Inbox'),
+);
 Widget kitSpecimenCircularProgressIndicator() =>
-    const RetroDesktopCircularProgressIndicator(label: 'Copying', value: .5);
+    const RetroDesktopCircularProgressIndicator(
+      semanticLabel: 'Copying',
+      value: .5,
+    );
 Widget kitSpecimenSkeleton() =>
-    const RetroDesktopSkeleton(lines: 3, label: 'Loading documents');
+    const RetroDesktopSkeleton(lines: 3, semanticLabel: 'Loading documents');
 Widget kitSpecimenSuccessState() => const RetroDesktopSuccessState(
   title: 'All files copied',
   message: 'You can close this window.',
@@ -189,13 +195,13 @@ Widget kitSpecimenFacePile() => const RetroDesktopAvatarGroup(
 );
 // The application's own picture in the frame: here one of the look's pixel objects, grown by whole pixels.
 Widget kitSpecimenPicture() => const RetroDesktopPicture(
-  label: 'A floppy disk',
+  semanticLabel: 'A floppy disk',
   child: RetroDesktopObjectArt(RetroDesktopObject.floppy, fill: .6),
 );
 Widget kitSpecimenSurface() => kitValue(
   false,
   (value, change) => RetroDesktopSurface(
-    label: 'Open folder',
+    semanticLabel: 'Open folder',
     selected: value,
     onPressed: () => change(!value),
     child: const Text('A selectable surface'),
@@ -219,7 +225,7 @@ Widget kitSpecimenAmount() =>
 Widget kitSpecimenMeter() =>
     const RetroDesktopMeter(label: 'Storage', value: 64, max: 100);
 Widget kitSpecimenChart() => const RetroDesktopBarChart(
-  label: 'Files copied each day',
+  semanticLabel: 'Files copied each day',
   labels: ['Mon', 'Tue', 'Wed', 'Thu'],
   series: [
     RetroDesktopChartSeries('Documents', [4, 8, 6, 12]),
@@ -227,7 +233,7 @@ Widget kitSpecimenChart() => const RetroDesktopBarChart(
   ],
 );
 Widget kitSpecimenLineChart() => const RetroDesktopLineChart(
-  label: 'Visits this week',
+  semanticLabel: 'Visits this week',
   labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
   series: [
     RetroDesktopChartSeries('This week', [12, 18, 9, 22, 17]),
@@ -235,7 +241,7 @@ Widget kitSpecimenLineChart() => const RetroDesktopLineChart(
   ],
 );
 Widget kitSpecimenAreaChart() => RetroDesktopAreaChart(
-  label: 'Disk used',
+  semanticLabel: 'Disk used',
   labels: const ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
   format: (v) => '${v.round()} GB',
   series: const [
@@ -243,7 +249,7 @@ Widget kitSpecimenAreaChart() => RetroDesktopAreaChart(
   ],
 );
 Widget kitSpecimenDonutChart() => const RetroDesktopPieChart(
-  label: 'What fills the disk',
+  semanticLabel: 'What fills the disk',
   height: 200,
   labels: ['Documents', 'Pictures', 'Music', 'Other'],
   series: [
@@ -254,18 +260,18 @@ Widget kitSpecimenSparkline() => const Row(
   children: [
     Expanded(child: Text('Visits')),
     RetroDesktopSparkline(
-      label: 'Visits, last seven days',
+      semanticLabel: 'Visits, last seven days',
       values: [3, 5, 4, 8, 6, 9, 7],
     ),
   ],
 );
 Widget kitSpecimenChartEmpty() => const RetroDesktopChart(
-  label: 'Files shared',
+  semanticLabel: 'Files shared',
   height: 120,
   series: [RetroDesktopChartSeries('Shared', [])],
 );
 Widget kitSpecimenChartLoading() => const RetroDesktopChart(
-  label: 'Files shared',
+  semanticLabel: 'Files shared',
   height: 120,
   loading: true,
   series: [RetroDesktopChartSeries('Shared', [])],
@@ -288,7 +294,7 @@ Widget kitSpecimenPagination() => kitValue(
 Widget kitSpecimenRating() => kitValue(
   4,
   (value, change) => RetroDesktopRating(
-    label: 'Your rating',
+    semanticLabel: 'Your rating',
     value: value.toDouble(),
     onChanged: change,
   ),
@@ -296,7 +302,7 @@ Widget kitSpecimenRating() => kitValue(
 Widget kitSpecimenFileDrop() => kitValue(
   const ['notes.txt'],
   (files, change) => RetroDesktopFileUpload(
-    label: 'Attachments',
+    semanticLabel: 'Attachments',
     hint: 'Up to 10 MB each',
     files: files,
     onChoose: () => change([...files, 'file ${files.length + 1}.txt']),

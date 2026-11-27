@@ -1609,6 +1609,30 @@ class RetroDesktopThemeData with Diagnosticable {
     'lime',
   ];
 
+  /// The six presets as ui_core's [RawNamedPalette]s, for an app's palette picker: each one's id is its preset's (one
+  /// of [presets]), its label the preset's name, its swatches the desk, the highlight and the platinum, by day and by
+  /// night. [RetroDesktopThemeData.preset] with the id gives its theme, and `RetroDesktopHost` takes one as its
+  /// `palette`.
+  ///
+  /// ```dart
+  /// RetroDesktopThemeData.preset(RetroDesktopThemeData.palettes[2].id, Brightness.dark)
+  /// ```
+  static final List<RawNamedPalette> palettes = [
+    for (final id in presets)
+      RawNamedPalette(
+        id: id,
+        label: '${id[0].toUpperCase()}${id.substring(1)}',
+        swatches: _swatches(_palettes[id]!.day),
+        darkSwatches: _swatches(_palettes[id]!.night),
+      ),
+  ];
+
+  static List<Color> _swatches(RetroDesktopColors c) => [
+    c.desktop,
+    c.highlight,
+    c.platinum,
+  ];
+
   static final Map<String, _Palette> _palettes = {
     'classic': _classic,
     'lagoon': _lagoon,
@@ -1744,9 +1768,20 @@ class RetroDesktopThemeData with Diagnosticable {
   /// theme's or a `style:`'s shape is bound to them too: any other
   /// [OutlinedBorder] (a stadium, a large radius) is drawn smooth and off the
   /// pixel grid, and no longer looks like this look.
+  ///
+  /// Retro Desktop opens none of ui_core's `RawShapeScheme`: every value is
+  /// fixed by the pixel law, and [appearance] is the choice it offers.
+  ///
+  /// | Value | Retro Desktop's | Why it is fixed |
+  /// |---|---|---|
+  /// | Corner steps | Platinum: buttons 4, the rest square; Chisel: square | The period drew a corner as a whole-pixel stair or not at all; the appearance, not a radius, says which. |
+  /// | Corner style | a pixel stair (Platinum's buttons), square elsewhere | A 1-bit-era raster draws a stair; a round, a bevel or a concave corner is drawn smooth, off the grid. |
+  /// | full | a circle (the radio) | Exclusive choice is a circle in both appearances. |
+  /// | stroke | 1 (2 for a default button's ring and Platinum's focus) | Whole pixels only: a 1.5 px rule anti-aliases into a grey the look never shows. |
+  /// | depth | the appearance's 1 to 2 px bevels, a 2 px window shadow | The bevel is pixel art per appearance; a multiplier blurs it, and the two appearances are its whole-pixel choices. |
   RetroDesktopShapes get shapes => RetroDesktopShapes.forAppearance(appearance);
 
-  /// The look's line widths, for a part drawn in its hand.
+  /// The look's line widths, for a part drawn in its hand: whole pixels, fixed by the pixel law (see [shapes]).
   RetroDesktopStrokes get strokes => RetroDesktopStrokes.standard;
 
   final RetroDesktopDensity? _density;
@@ -1765,11 +1800,11 @@ class RetroDesktopThemeData with Diagnosticable {
   final RetroDesktopComponentThemes _components;
 
   /// The look's timings: instant ([RetroDesktopMotion.still]), as the period's desktops were. Part of the look, not a
-  /// setting ([copyWith]'s `motion` is deprecated); Reduce Motion is honoured wherever anything moves.
+  /// setting; Reduce Motion is honoured wherever anything moves.
   final RetroDesktopMotion motion;
 
   // The page change of the Material theme the look builds: [retroDesktopPageTransitions], or a fade in place where a
-  // motion with a travel was set through [copyWith]'s deprecated `motion`.
+  // motion with a travel stands (the look's own tests set one).
   Map<TargetPlatform, PageTransitionsBuilder> get _pageTransitions =>
       motion == RetroDesktopMotion.still
       ? retroDesktopPageTransitions
@@ -1808,11 +1843,6 @@ class RetroDesktopThemeData with Diagnosticable {
   RetroDesktopThemeData copyWith({
     RetroDesktopColors? colors,
     RetroDesktopColors? page,
-    @Deprecated(
-      "Retro Desktop is instant, as the period was: its motion is the look's, not a setting. Leave it out (dart fix "
-      'removes it). This feature was deprecated after v0.2.0.',
-    )
-    RetroDesktopMotion? motion,
     RetroDesktopFocusRing? focus,
     RetroDesktopAppearance? appearance,
     RetroDesktopDensity? density,
@@ -1895,7 +1925,7 @@ class RetroDesktopThemeData with Diagnosticable {
       well: wellTheme,
       toolbar: toolbarTheme,
     ),
-    motion: motion ?? this.motion,
+    motion: motion,
     focus: focus ?? _focus,
     appearance: appearance ?? this.appearance,
     density: density ?? _density,
@@ -2071,6 +2101,26 @@ class RetroDesktopThemeData with Diagnosticable {
   /// Appearance of the timePicker component.
   RetroDesktopStyle get timePickerTheme => _components.timePicker;
 }
+
+/// [theme] with [motion]: Retro Desktop's own tests time its parts in motions an app does not set (the look is
+/// instant). Not exported.
+@visibleForTesting
+RetroDesktopThemeData retroDesktopThemeWith(
+  RetroDesktopThemeData theme, {
+  required RetroDesktopMotion motion,
+}) => RetroDesktopThemeData._(
+  theme.id,
+  theme._palette,
+  theme.colors,
+  theme.page,
+  theme.width,
+  components: theme._components,
+  motion: motion,
+  focus: theme._focus,
+  appearance: theme.appearance,
+  density: theme._density,
+  typeface: theme.typeface,
+);
 
 class _RetroDesktopScope extends InheritedTheme {
   const _RetroDesktopScope({required this.data, required super.child});
@@ -2466,7 +2516,7 @@ class RetroDesktopOffHighlight extends StatelessWidget {
   }
 }
 
-/// `context.retroDesktopTheme`: the theme in scope.
+/// Reads the Retro Desktop theme in scope from a context: `context.retroDesktopTheme`.
 extension RetroDesktopThemeContext on BuildContext {
   /// Reads the current Retro Desktop theme.
   RetroDesktopThemeData get retroDesktopTheme => RetroDesktopTheme.of(this);
