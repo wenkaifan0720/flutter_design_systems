@@ -1,3 +1,16 @@
+## 0.8.5
+
+- **A part's own corners: `RawCorners`, a step per corner.** It is directional (top start, top end, bottom start, bottom end), so the corners mirror in a right-to-left app. A corner left null keeps the part's own (`over`). `RawCorners.only` squares the corners it does not name, as `BorderRadius.only` does, and `RawCorners.all` gives every corner one step. The steps are the look's, not lengths, so an app's two diagonal cuts, or a top start cut alone, follow the theme's scale, its "rounder" and its lerps.
+- **`RawStyle.corners`**, a slot beside `shape` that resolves per state, so a part takes it from its `style:` or its component theme. `shape` keeps taking any border as given, outside the look's limits, as Material's `ButtonStyle.shape` does, and it wins over `corners`. `RawStyle.lerp` switches `corners` halfway; a part whose design moves its shapes morphs the border they resolve to. `RawStyleOf.corners` reads the slot, and `freeze` keeps it.
+- **`RawCornerScale.borderOf`**: a border whose corners each take their own step, in the scale's one style. A single corner can be `full` (half the shorter side, at most `fullMaxRadius`), as in a pill cut square at one end. Corners that would overlap shrink together. Where every corner takes one step, `borderOf` gives the same border as `border`. A round border with corners of their own still draws as an `RRect`. `RawCornerBorder` lerps each corner's radius and fullness, so a `ShapeBorderTween` between two sets of corners, or from none, moves every frame. A corner growing from square grows from its point (a stair by whole steps, as its doc says). `inset` and `outset` keep a square corner square and a full corner full.
+- **`RawShapeLimits.clampCorners`**: the corners a part draws, an app's over the part's own, as far as the look allows. `cornerFreedom` sets how far:
+  - `fixed` (the default) ignores an override;
+  - `uniform` takes an override that leaves all four corners one step over the part's own (every corner given, or a partial one that leaves the four equal), and ignores one that leaves them differing;
+  - `perCorner` takes each corner.
+
+  `cornerSteps` sends a step the look does not allow to the nearest one (`nearestStep`, the larger on a tie). The steps resolve through the look's held scale, so every corner lies in its step's band. In debug, an ignored override or a moved step is printed once per look.
+- README: "A part's own corners", with an app's two diagonal cuts and a look's card reading them.
+
 ## 0.8.4
 
 - **Shapes a look can open: `RawShapeScheme`**, its corners (`RawCornerScale`), its `stroke` and its `depth`, for a look that opens them to an app as Material 3 opens its shape scale. A corner scale has Material 3's five steps plus none and full (`RawCorner`), Material 3's numbers by default, and one `RawCornerStyle` for every corner: round, continuous, bevel, notch, step or concave. `scaled` makes every step rounder or squarer in one value. A null stroke or depth is not opened: the look draws its own constant. A scheme lerps in a theme's lerp; a value opened on one side only switches halfway.

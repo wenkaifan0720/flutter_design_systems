@@ -8,7 +8,7 @@ it, so an app that uses a look rarely imports it directly. Add it to build a loo
 
 ```yaml
 dependencies:
-  ui_core: ^0.8.4
+  ui_core: ^0.8.5
 ```
 
 ```dart
@@ -485,6 +485,51 @@ class InkThemeData {
       InkThemeData._(RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t));
 }
 ```
+
+### A part's own corners
+
+An app can give one part its own corners, such as two diagonal corners cut and the other two square, or only the
+top start one cut. A style's `corners` names a step per corner (`RawCorners`), and a corner it leaves out keeps the
+part's own. The corners are steps of the look's scale, not lengths, so they follow the theme and stay in its bands.
+Start and end mirror in a right-to-left app.
+
+A look lets them through as far as its design allows, set by `cornerFreedom` on its `RawShapeLimits`:
+
+- `fixed` (the default): the part keeps its own corners, and debug says the override was ignored.
+- `uniform`: one step on every corner.
+- `perCorner`: a step for each corner.
+
+`cornerSteps` narrows the steps a corner may take. One corner style still shapes the whole border. A style's
+`shape` wins over its `corners`: it takes any border as given, as Material's `ButtonStyle.shape` does, outside the
+look's limits.
+
+```dart
+// An app: a card with two diagonal corners cut, the others square.
+const cut = RawStyle(
+  corners: WidgetStatePropertyAll(
+    RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+  ),
+);
+
+// A look's card: the corners given, held to the look's limits, drawn in its
+// scale. The default card (no override) keeps its medium step.
+ShapeBorder cardShape(
+  RawShapeScheme scheme,
+  RawShapeLimits limits,
+  RawStyle? style,
+) {
+  final look = RawStyleOf([style], const {});
+  final corners = limits.clampCorners(
+    look.corners,
+    base: const RawCorners.all(RawCorner.medium),
+    look: 'Ink',
+  );
+  return look.shape ?? scheme.corners.borderOf(corners);
+}
+```
+
+A theme's lerp switches `corners` halfway, as `ButtonStyle.lerp` does with what it cannot blend. A part whose design
+moves its shapes morphs the border it resolves to (a `ShapeBorderTween`), so the corners move each frame.
 
 ## A look's forms
 

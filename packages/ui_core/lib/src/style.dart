@@ -3,6 +3,8 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'shapes.dart';
+
 /// How one part of a look looks, as Material's `ButtonStyle` is: every slot
 /// resolves for the part's states ([WidgetState.disabled],
 /// [WidgetState.hovered], [WidgetState.focused], [WidgetState.pressed],
@@ -22,6 +24,7 @@ import 'package:flutter/widgets.dart';
 /// | [overlay] | the wash over the face in the states it names |
 /// | [side] | the whole rim, colour and width; it wins over [edge] |
 /// | [shape] | the outline: the look's own borders, or any [OutlinedBorder] |
+/// | [corners] | the step each corner takes, held to the look's limits; [shape] wins |
 /// | [padding] | the room between the rim and what stands inside |
 /// | [minimumSize] | the least the face stands; the tap target is the look's floor |
 /// | [textStyle] | the words' style, merged over the look's (its colour comes from [foreground]) |
@@ -66,6 +69,7 @@ class RawStyle with Diagnosticable {
     this.overlay,
     this.side,
     this.shape,
+    this.corners,
     this.padding,
     this.minimumSize,
     this.textStyle,
@@ -108,6 +112,7 @@ class RawStyle with Diagnosticable {
       overlay: combine((s) => s.overlay),
       side: combine((s) => s.side),
       shape: combine((s) => s.shape),
+      corners: combine((s) => s.corners),
       padding: combine((s) => s.padding),
       minimumSize: combine((s) => s.minimumSize),
       textStyle: combine((s) => s.textStyle),
@@ -131,8 +136,17 @@ class RawStyle with Diagnosticable {
   /// The whole rim, colour and width. Wins over [edge].
   final WidgetStateProperty<BorderSide?>? side;
 
-  /// The outline.
+  /// The outline, as Material's `ButtonStyle.shape`: any border, drawn as
+  /// given, outside the look's limits. It wins over [corners].
   final WidgetStateProperty<OutlinedBorder?>? shape;
+
+  /// The step each corner takes ([RawCorners]), over the part's own: the
+  /// look holds it to its limits ([RawShapeLimits.clampCorners]) and draws
+  /// it in its corner scale ([RawCornerScale.borderOf]), so it follows the
+  /// theme. Start and end mirror in a right-to-left app. A lerp switches it
+  /// halfway; a part whose design moves its shapes morphs the border it
+  /// resolves to. Each part's doc says whether it reads it.
+  final WidgetStateProperty<RawCorners?>? corners;
 
   /// The room between the rim and what stands inside.
   final WidgetStateProperty<EdgeInsetsGeometry?>? padding;
@@ -154,6 +168,7 @@ class RawStyle with Diagnosticable {
       overlay == null &&
       side == null &&
       shape == null &&
+      corners == null &&
       padding == null &&
       minimumSize == null &&
       textStyle == null &&
@@ -196,6 +211,7 @@ class RawStyle with Diagnosticable {
     WidgetStateProperty<Color?>? overlay,
     WidgetStateProperty<BorderSide?>? side,
     WidgetStateProperty<OutlinedBorder?>? shape,
+    WidgetStateProperty<RawCorners?>? corners,
     WidgetStateProperty<EdgeInsetsGeometry?>? padding,
     WidgetStateProperty<Size?>? minimumSize,
     WidgetStateProperty<TextStyle?>? textStyle,
@@ -207,6 +223,7 @@ class RawStyle with Diagnosticable {
     overlay: overlay ?? this.overlay,
     side: side ?? this.side,
     shape: shape ?? this.shape,
+    corners: corners ?? this.corners,
     padding: padding ?? this.padding,
     minimumSize: minimumSize ?? this.minimumSize,
     textStyle: textStyle ?? this.textStyle,
@@ -224,6 +241,7 @@ class RawStyle with Diagnosticable {
       overlay: overlay ?? other.overlay,
       side: side ?? other.side,
       shape: shape ?? other.shape,
+      corners: corners ?? other.corners,
       padding: padding ?? other.padding,
       minimumSize: minimumSize ?? other.minimumSize,
       textStyle: textStyle ?? other.textStyle,
@@ -234,7 +252,9 @@ class RawStyle with Diagnosticable {
   /// Between [a] and [b], slot by slot, as `ButtonStyle.lerp`: colours,
   /// sides, insets, sizes and type blend; shapes morph where their borders
   /// can (`OutlinedBorder.lerp`) and snap at the middle where they cannot; a
-  /// value on one side only snaps at the middle.
+  /// value on one side only snaps at the middle. [corners] are steps, which
+  /// switch at the middle; a part whose design moves its shapes morphs the
+  /// border they resolve to.
   static RawStyle? lerp(RawStyle? a, RawStyle? b, double t) {
     if (identical(a, b) || t == 0) return a;
     if (t == 1) return b;
@@ -260,6 +280,7 @@ class RawStyle with Diagnosticable {
         b?.shape,
         (x, y) => OutlinedBorder.lerp(x, y, t)!,
       ),
+      corners: t < .5 ? a?.corners : b?.corners,
       padding: l<EdgeInsetsGeometry>(
         a?.padding,
         b?.padding,
@@ -290,6 +311,7 @@ class RawStyle with Diagnosticable {
     overlay,
     side,
     shape,
+    corners,
     padding,
     minimumSize,
     textStyle,
@@ -322,6 +344,7 @@ class RawStyle with Diagnosticable {
     add('overlay', overlay);
     add('side', side);
     add('shape', shape);
+    add('corners', corners);
     add('padding', padding);
     add('minimumSize', minimumSize);
     add('textStyle', textStyle);
@@ -367,6 +390,9 @@ class RawStyleOf {
   /// The outline.
   OutlinedBorder? get shape => _first((s) => s.shape);
 
+  /// The step each corner takes, before the look's limits.
+  RawCorners? get corners => _first((s) => s.corners);
+
   /// The room inside, resolved for [direction].
   EdgeInsets? padding(TextDirection direction) =>
       _first((s) => s.padding)?.resolve(direction);
@@ -410,6 +436,7 @@ class RawStyleOf {
       overlay: fixed(_first((s) => s.overlay)),
       side: fixed(side),
       shape: fixed(shape),
+      corners: fixed(corners),
       padding: fixed(_first((s) => s.padding)),
       minimumSize: fixed(minimumSize),
       textStyle: fixed(textStyle),

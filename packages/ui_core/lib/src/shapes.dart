@@ -49,6 +49,21 @@ enum RawCornerStyle {
 // A cubic from $1 to $4, $2 and $3 its control points.
 typedef _Cubic = (Offset, Offset, Offset, Offset);
 
+// Each corner's fullness, start and end as the text runs: top start, top
+// end, bottom start, bottom end. 1: half the shorter side; 0: its radius;
+// between, lerping from one to the other.
+typedef _Fullness = (double, double, double, double);
+
+const _Fullness _noneFull = (0.0, 0.0, 0.0, 0.0);
+const _Fullness _allFull = (1.0, 1.0, 1.0, 1.0);
+
+_Fullness _lerpFullness(_Fullness a, _Fullness b, double t) => (
+  a.$1 + (b.$1 - a.$1) * t,
+  a.$2 + (b.$2 - a.$2) * t,
+  a.$3 + (b.$3 - a.$3) * t,
+  a.$4 + (b.$4 - a.$4) * t,
+);
+
 // A corner's radius [r] once its sides move [d] in (out when negative), so
 // the new corner runs parallel to the old: a round corner keeps its centre
 // (the radius less the inset); a chamfer at 45° keeps its distance (2 − √2
@@ -233,7 +248,9 @@ List<double>? _mixOrNull(List<double> weights) {
 
 /// A rectangle's outline whose four corners are cut in one [style], each to
 /// its own radius in [borderRadius] (elliptical and directional radii
-/// allowed), or round as a stadium ([full]).
+/// allowed), or round as a stadium ([full]). A look's border for a part
+/// whose corners each take their own step comes from
+/// [RawCornerScale.borderOf], where a single corner may be full.
 ///
 /// Lerps from and to Flutter's [RoundedRectangleBorder] (as
 /// [RawCornerStyle.round]), [RoundedSuperellipseBorder] (as
@@ -260,7 +277,7 @@ class RawCornerBorder extends OutlinedBorder {
     this.borderRadius = BorderRadius.zero,
     bool full = false,
     this.maxRadius,
-  }) : _fullness = full ? 1.0 : 0.0,
+  }) : _fullness = full ? _allFull : _noneFull,
        _mix = null,
        _inset = null,
        _floor = 0,
@@ -288,8 +305,9 @@ class RawCornerBorder extends OutlinedBorder {
   /// ballooning under enlarged text); null, half the shorter side always.
   final double? maxRadius;
 
-  // 1: a stadium; 0: [borderRadius]; between, lerping from one to the other.
-  final double _fullness;
+  // Each corner's: 1, half the shorter side (all four: a stadium); 0, its
+  // [borderRadius]; between, lerping from one to the other.
+  final _Fullness _fullness;
 
   // Each style's share while lerping between styles; null: [style] alone.
   final List<double>? _mix;
@@ -302,7 +320,11 @@ class RawCornerBorder extends OutlinedBorder {
 
   /// Whether every corner is half the shorter side (a stadium, at most
   /// [maxRadius]).
-  bool get full => _fullness >= 1;
+  bool get full =>
+      _fullness.$1 >= 1 &&
+      _fullness.$2 >= 1 &&
+      _fullness.$3 >= 1 &&
+      _fullness.$4 >= 1;
 
   List<double> get _weights => _mix ?? _oneHot(style);
 
@@ -365,7 +387,7 @@ class RawCornerBorder extends OutlinedBorder {
     side: side ?? this.side,
     style: style ?? this.style,
     borderRadius: borderRadius ?? this.borderRadius,
-    fullness: full == null ? _fullness : (full ? 1 : 0),
+    fullness: full == null ? _fullness : (full ? _allFull : _noneFull),
     maxRadius: maxRadius ?? this.maxRadius,
     mix: style == null ? _mix : null,
     inset: _inset,
@@ -406,7 +428,7 @@ class RawCornerBorder extends OutlinedBorder {
         b.borderRadius,
         t,
       )!,
-      fullness: lerpDouble(a._fullness, b._fullness, t)!,
+      fullness: _lerpFullness(a._fullness, b._fullness, t),
       maxRadius: a.maxRadius != null && b.maxRadius != null
           ? lerpDouble(a.maxRadius, b.maxRadius, t)
           : (t < 0.5 ? a.maxRadius : b.maxRadius),
@@ -458,13 +480,13 @@ class RawCornerBorder extends OutlinedBorder {
       return math.max(math.max(to, math.min(radius, _floor)), 0);
     }
 
-    final fullness = _fullness.clamp(0.0, 1.0);
     final half = math.max(box.shortestSide / 2, 0.0);
     double fullAlong(double inset) => maxRadius == null
         ? half
         : math.min(half, math.max(moved(maxRadius!, inset), 0.0));
-    Radius corner(Radius base, double dx, double dy) {
+    Radius corner(Radius base, double dx, double dy, double fullness) {
       final own = Radius.elliptical(along(base.x, dx), along(base.y, dy));
+      fullness = fullness.clamp(0.0, 1.0);
       if (fullness == 0) return own;
       return Radius.lerp(
         own,
@@ -473,13 +495,23 @@ class RawCornerBorder extends OutlinedBorder {
       )!;
     }
 
+    // Each corner's fullness, top left first round to bottom left.
+    final (ts, te, bs, be) = _fullness;
+    assert(
+      textDirection != null || (ts == te && te == bs && bs == be),
+      'A RawCornerBorder whose corners are not all equally full needs a '
+      'text direction: start and end are read from it.',
+    );
+    final f = textDirection == TextDirection.rtl
+        ? [te, ts, bs, be]
+        : [ts, te, be, bs];
     final left = pending.left + extra, right = pending.right + extra;
     final top = pending.top + extra, bottom = pending.bottom + extra;
     final radii = [
-      corner(r.topLeft, left, top),
-      corner(r.topRight, right, top),
-      corner(r.bottomRight, right, bottom),
-      corner(r.bottomLeft, left, bottom),
+      corner(r.topLeft, left, top, f[0]),
+      corner(r.topRight, right, top, f[1]),
+      corner(r.bottomRight, right, bottom, f[2]),
+      corner(r.bottomLeft, left, bottom, f[3]),
     ];
     // Corners that would overlap shrink together, as an RRect's do.
     final rrect = RRect.fromRectAndCorners(
@@ -652,9 +684,22 @@ class RawCornerBorder extends OutlinedBorder {
   );
 
   @override
-  String toString() =>
-      '${objectRuntimeType(this, 'RawCornerBorder')}(${style.name}, '
-      '${full ? 'full' : '$borderRadius'}, $side)';
+  String toString() {
+    final (ts, te, bs, be) = _fullness;
+    final fullAt = [
+      if (ts >= 1) 'topStart',
+      if (te >= 1) 'topEnd',
+      if (bs >= 1) 'bottomStart',
+      if (be >= 1) 'bottomEnd',
+    ];
+    final corners = full
+        ? 'full'
+        : fullAt.isEmpty
+        ? '$borderRadius'
+        : '$borderRadius, full at ${fullAt.join(', ')}';
+    return '${objectRuntimeType(this, 'RawCornerBorder')}(${style.name}, '
+        '$corners, $side)';
+  }
 }
 
 /// A step of a [RawCornerScale]: Material 3's corner tokens.
@@ -679,6 +724,126 @@ enum RawCorner {
 
   /// Half the shorter side: a stadium, or a circle when square.
   full,
+}
+
+/// Which step ([RawCorner]) each corner of a part takes: an app's per-part
+/// override of the part's own corners, as a part's style carries it. Start
+/// and end follow the text direction, so the corners mirror in a
+/// right-to-left app. A corner left null keeps the part's own ([over]).
+///
+/// A look holds it to what it allows ([RawShapeLimits.clampCorners]) and
+/// draws it in its own corner scale ([RawCornerScale.borderOf]), so an
+/// overridden corner follows the theme as the part's own corners do.
+///
+/// ```dart
+/// const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none)
+/// ```
+@immutable
+class RawCorners with Diagnosticable {
+  /// The corners given; each one left null keeps the part's own.
+  const RawCorners({
+    this.topStart,
+    this.topEnd,
+    this.bottomStart,
+    this.bottomEnd,
+  });
+
+  /// [step] on every corner.
+  const RawCorners.all(RawCorner step)
+    : topStart = step,
+      topEnd = step,
+      bottomStart = step,
+      bottomEnd = step;
+
+  /// The corners given, every other one square ([RawCorner.none]), as
+  /// [BorderRadius.only] makes the others 0.
+  ///
+  /// ```dart
+  /// const RawCorners.only(topStart: RawCorner.large)
+  /// ```
+  const RawCorners.only({
+    RawCorner this.topStart = RawCorner.none,
+    RawCorner this.topEnd = RawCorner.none,
+    RawCorner this.bottomStart = RawCorner.none,
+    RawCorner this.bottomEnd = RawCorner.none,
+  });
+
+  /// The top corner where the text starts: the top left in a left-to-right
+  /// app.
+  final RawCorner? topStart;
+
+  /// The top corner where the text ends.
+  final RawCorner? topEnd;
+
+  /// The bottom corner where the text starts.
+  final RawCorner? bottomStart;
+
+  /// The bottom corner where the text ends.
+  final RawCorner? bottomEnd;
+
+  List<RawCorner?> get _all => [topStart, topEnd, bottomStart, bottomEnd];
+
+  /// Whether no corner is given.
+  bool get isEmpty =>
+      topStart == null &&
+      topEnd == null &&
+      bottomStart == null &&
+      bottomEnd == null;
+
+  /// Whether every corner given takes the same step (none given: true).
+  bool get isUniform => _all.nonNulls.toSet().length <= 1;
+
+  /// This over [base]: each corner this gives, else [base]'s.
+  RawCorners over(RawCorners base) => RawCorners(
+    topStart: topStart ?? base.topStart,
+    topEnd: topEnd ?? base.topEnd,
+    bottomStart: bottomStart ?? base.bottomStart,
+    bottomEnd: bottomEnd ?? base.bottomEnd,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RawCorners &&
+          other.topStart == topStart &&
+          other.topEnd == topEnd &&
+          other.bottomStart == bottomStart &&
+          other.bottomEnd == bottomEnd;
+
+  @override
+  int get hashCode => Object.hash(topStart, topEnd, bottomStart, bottomEnd);
+
+  @override
+  String toStringShort() {
+    final given = [
+      for (final (name, step) in [
+        ('topStart', topStart),
+        ('topEnd', topEnd),
+        ('bottomStart', bottomStart),
+        ('bottomEnd', bottomEnd),
+      ])
+        if (step != null) '$name: ${step.name}',
+    ];
+    return '${objectRuntimeType(this, 'RawCorners')}(${given.join(', ')})';
+  }
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) =>
+      toStringShort();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<RawCorner>('topStart', topStart, defaultValue: null))
+      ..add(EnumProperty<RawCorner>('topEnd', topEnd, defaultValue: null))
+      ..add(
+        EnumProperty<RawCorner>('bottomStart', bottomStart, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<RawCorner>('bottomEnd', bottomEnd, defaultValue: null),
+      );
+  }
 }
 
 /// A look's corner steps, Material 3's tokens ([RawCorner]) in one corner
@@ -766,8 +931,51 @@ class RawCornerScale with Diagnosticable {
       borderRadius: full || step == RawCorner.none
           ? BorderRadius.zero
           : BorderRadius.all(Radius.circular(radius(step))),
-      fullness: full ? 1 : 0,
+      fullness: full ? _allFull : _noneFull,
       maxRadius: full ? fullMaxRadius : null,
+      mix: _mix,
+      inset: null,
+      floor: 0,
+    );
+  }
+
+  /// A border whose corners each take their own step of [corners] (a corner
+  /// left null is square), in this scale's style, [side] its stroke. Start
+  /// and end follow the text direction, so the corners mirror in a
+  /// right-to-left app. A [RawCorner.full] corner reaches half the shorter
+  /// side (at most [fullMaxRadius]), and corners that would overlap shrink
+  /// together. Where every corner takes one step, the same border as
+  /// [border].
+  ///
+  /// ```dart
+  /// const RawCornerScale(style: RawCornerStyle.bevel).borderOf(const RawCorners.all(RawCorner.medium).over(const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none)))
+  /// ```
+  RawCornerBorder borderOf(
+    RawCorners corners, {
+    BorderSide side = BorderSide.none,
+  }) {
+    final ts = corners.topStart ?? RawCorner.none;
+    final te = corners.topEnd ?? RawCorner.none;
+    final bs = corners.bottomStart ?? RawCorner.none;
+    final be = corners.bottomEnd ?? RawCorner.none;
+    if (ts == te && te == bs && bs == be) return border(ts, side: side);
+    Radius at(RawCorner step) =>
+        step == RawCorner.none || step == RawCorner.full
+        ? Radius.zero
+        : Radius.circular(radius(step));
+    double fullAt(RawCorner step) => step == RawCorner.full ? 1 : 0;
+    final anyFull = [ts, te, bs, be].contains(RawCorner.full);
+    return RawCornerBorder._raw(
+      side: side,
+      style: style,
+      borderRadius: BorderRadiusDirectional.only(
+        topStart: at(ts),
+        topEnd: at(te),
+        bottomStart: at(bs),
+        bottomEnd: at(be),
+      ),
+      fullness: (fullAt(ts), fullAt(te), fullAt(bs), fullAt(be)),
+      maxRadius: anyFull ? fullMaxRadius : null,
       mix: _mix,
       inset: null,
       floor: 0,
@@ -1004,10 +1212,28 @@ const List<List<RawCornerStyle>> _kin = [
   [RawCornerStyle.concave],
 ];
 
+/// How far a look lets an app's per-part corners ([RawCorners]) go: the
+/// part's own corners, one step on every corner, or a step per corner.
+enum RawCornerFreedom {
+  /// The part's own corners: an override is ignored, and debug says so.
+  fixed,
+
+  /// One step on every corner: an override is taken when, over the part's
+  /// own corners, all four take one step (every corner given, or a partial
+  /// one that leaves the four equal); one that leaves them differing is
+  /// ignored, and debug says so.
+  uniform,
+
+  /// A step per corner: each corner given is taken.
+  perCorner,
+}
+
 /// The bands a look holds its [RawShapeScheme] to: the corner [styles] it
 /// allows (the first its default), a band per corner step, and bands for the
 /// stroke and depth it opens (null: not opened). One const per look, the
-/// code twin of the table in its theme's docs.
+/// code twin of the table in its theme's docs. How far an app's per-part
+/// corners go is its [cornerFreedom] and [cornerSteps], held by
+/// [clampCorners].
 ///
 /// A look holds every scheme it is given to its bands ([clamp]) where its
 /// theme data takes it, in debug and release alike: a value from an app's
@@ -1031,6 +1257,8 @@ class RawShapeLimits with Diagnosticable {
     this.fullMaxRadius,
     this.stroke,
     this.depth,
+    this.cornerFreedom = RawCornerFreedom.fixed,
+    this.cornerSteps,
   });
 
   /// The corner styles the look allows, its default first; one: fixed.
@@ -1062,6 +1290,122 @@ class RawShapeLimits with Diagnosticable {
   /// [RawShapeScheme.depth]'s band; null: the look opens no depth, and a
   /// depth given is dropped.
   final RawBand? depth;
+
+  /// How far an app's per-part corners go ([clampCorners]): fixed, the
+  /// default, so a look opens them on purpose.
+  final RawCornerFreedom cornerFreedom;
+
+  /// The steps an app's per-part corner may take; null, every step. A step
+  /// outside them goes to the nearest ([nearestStep]).
+  final Set<RawCorner>? cornerSteps;
+
+  /// The allowed step nearest [step]: [step] itself when [cornerSteps]
+  /// allows it (or is null), else the nearest in step order (none, extra
+  /// small … extra large, full), the larger on a tie.
+  RawCorner nearestStep(RawCorner step) {
+    final allowed = cornerSteps;
+    assert(allowed == null || allowed.isNotEmpty, 'cornerSteps allows none');
+    if (allowed == null || allowed.contains(step)) return step;
+    RawCorner? best;
+    for (final s in allowed) {
+      if (best == null) {
+        best = s;
+        continue;
+      }
+      final d = (s.index - step.index).abs(),
+          b = (best.index - step.index).abs();
+      if (d < b || (d == b && s.index > best.index)) best = s;
+    }
+    return best!;
+  }
+
+  /// The corners a part draws: [override] (an app's, from the part's style)
+  /// over [base] (the part's own), as [cornerFreedom] allows, each step
+  /// given held to [cornerSteps]. The steps resolve through the look's held
+  /// [RawCornerScale] ([RawCornerScale.borderOf]), so every corner lies in
+  /// its step's band. In debug, an override ignored, or a step moved, is
+  /// printed once per look and what changed, [look] naming whose limits.
+  ///
+  /// ```dart
+  /// const RawShapeLimits(cornerFreedom: RawCornerFreedom.perCorner).clampCorners(const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none), base: const RawCorners.all(RawCorner.medium))
+  /// ```
+  RawCorners clampCorners(
+    RawCorners? override, {
+    required RawCorners base,
+    String? look,
+  }) {
+    final (held, notes) = _corners(override, base);
+    assert(() {
+      final name = look ?? 'The look';
+      for (final (what, line) in notes) {
+        if (_reported.add('$name $what')) debugPrint('$name $line.');
+      }
+      return true;
+    }());
+    return held;
+  }
+
+  // What [clampCorners] gives, and what it tells, each with what it is.
+  (RawCorners, List<(String, String)>) _corners(
+    RawCorners? override,
+    RawCorners base,
+  ) {
+    if (override == null || override.isEmpty) return (base, const []);
+    final notes = <(String, String)>[];
+    RawCorner? step(RawCorner? given) {
+      if (given == null) return null;
+      final to = nearestStep(given);
+      if (to != given) {
+        notes.add((
+          'corner ${given.name}',
+          'holds corner ${given.name} to ${to.name}, the nearest step it '
+              'allows',
+        ));
+      }
+      return to;
+    }
+
+    switch (cornerFreedom) {
+      case RawCornerFreedom.fixed:
+        if (override.over(base) == base) return (base, const []);
+        return (
+          base,
+          const [
+            (
+              'corners fixed',
+              'ignores a corners override: its corners are fixed',
+            ),
+          ],
+        );
+      case RawCornerFreedom.uniform:
+        final resolved = override.over(base);
+        if (!resolved.isUniform) {
+          return (
+            base,
+            const [
+              (
+                'corners mixed',
+                'ignores a corners override whose corners differ: it takes '
+                    'one step on every corner',
+              ),
+            ],
+          );
+        }
+        final agreed = resolved._all.nonNulls.firstOrNull;
+        if (agreed == null || resolved == base) return (base, const []);
+        return (RawCorners.all(step(agreed)!), notes);
+      case RawCornerFreedom.perCorner:
+        return (
+          RawCorners(
+            topStart: step(override.topStart),
+            topEnd: step(override.topEnd),
+            bottomStart: step(override.bottomStart),
+            bottomEnd: step(override.bottomEnd),
+          ).over(base),
+          notes,
+        );
+    }
+  }
 
   /// The allowed style nearest [style]: [style] itself when allowed, else
   /// the first allowed of its kin (round and continuous; bevel, notch and
@@ -1182,7 +1526,9 @@ class RawShapeLimits with Diagnosticable {
           other.extraLarge == extraLarge &&
           other.fullMaxRadius == fullMaxRadius &&
           other.stroke == stroke &&
-          other.depth == depth;
+          other.depth == depth &&
+          other.cornerFreedom == cornerFreedom &&
+          setEquals(other.cornerSteps, cornerSteps);
 
   @override
   int get hashCode => Object.hash(
@@ -1195,6 +1541,8 @@ class RawShapeLimits with Diagnosticable {
     fullMaxRadius,
     stroke,
     depth,
+    cornerFreedom,
+    cornerSteps == null ? null : Object.hashAllUnordered(cornerSteps!),
   );
 
   @override
@@ -1215,6 +1563,20 @@ class RawShapeLimits with Diagnosticable {
         ),
       )
       ..add(DiagnosticsProperty<RawBand>('stroke', stroke, defaultValue: null))
-      ..add(DiagnosticsProperty<RawBand>('depth', depth, defaultValue: null));
+      ..add(DiagnosticsProperty<RawBand>('depth', depth, defaultValue: null))
+      ..add(
+        EnumProperty<RawCornerFreedom>(
+          'cornerFreedom',
+          cornerFreedom,
+          defaultValue: RawCornerFreedom.fixed,
+        ),
+      )
+      ..add(
+        IterableProperty<RawCorner>(
+          'cornerSteps',
+          cornerSteps,
+          defaultValue: null,
+        ),
+      );
   }
 }

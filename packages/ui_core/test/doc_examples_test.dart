@@ -1088,6 +1088,23 @@ final Map<String, DocExample> _examples = {
     medium: RawBand(10, 20),
     stroke: RawBand(1, 3),
   ).clamp(const RawShapeScheme(corners: RawCornerScale(medium: 40), stroke: 2)),
+  'RawCorners': (context) =>
+      const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+  'RawCorners.only': (context) =>
+      const RawCorners.only(topStart: RawCorner.large),
+  'RawCornerScale.borderOf': (context) =>
+      const RawCornerScale(style: RawCornerStyle.bevel).borderOf(
+        const RawCorners.all(RawCorner.medium).over(
+          const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+        ),
+      ),
+  'RawShapeLimits.clampCorners': (context) =>
+      const RawShapeLimits(
+        cornerFreedom: RawCornerFreedom.perCorner,
+      ).clampCorners(
+        const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+        base: const RawCorners.all(RawCorner.medium),
+      ),
 };
 
 /// The host app's own layer (its router, its app chrome and its

@@ -183,4 +183,48 @@ void main() {
       );
     });
   });
+  test('corners: a slot like the rest; layered by state, merge whole, a '
+      'lerp switches it halfway, RawStyleOf reads and freezes it', () {
+    const diagonal = RawCorners(
+      topEnd: RawCorner.none,
+      bottomStart: RawCorner.none,
+    );
+    const large = RawCorners.all(RawCorner.large);
+    final pressed = RawStyle(
+      corners: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.pressed) ? large : null,
+      ),
+    );
+    const themed = RawStyle(corners: WidgetStatePropertyAll(diagonal));
+    final layered = RawStyle.layered([pressed, themed]);
+    expect(layered.corners!.resolve(_pressed), large);
+    expect(layered.corners!.resolve(_rest), diagonal);
+    expect(pressed.merge(themed).corners!.resolve(_rest), isNull);
+    expect(
+      const RawStyle().copyWith(corners: themed.corners).corners,
+      same(themed.corners),
+    );
+    expect(
+      themed.copyWith(fill: const WidgetStatePropertyAll(_red)).corners,
+      same(themed.corners),
+    );
+    expect(RawStyle.lerp(themed, pressed, .4)!.corners, same(themed.corners));
+    expect(RawStyle.lerp(themed, pressed, .6)!.corners, same(pressed.corners));
+    expect(RawStyle.lerp(themed, null, .6)!.corners, isNull);
+    final look = RawStyleOf([pressed, themed], _pressed);
+    expect(look.corners, large);
+    expect(look.at(_rest).corners, diagonal);
+    expect(look.freeze().corners!.resolve(_rest), large);
+    expect(themed.isEmpty, isFalse);
+    expect(themed, const RawStyle(corners: WidgetStatePropertyAll(diagonal)));
+    expect(themed, isNot(const RawStyle()));
+    final builder = DiagnosticPropertiesBuilder();
+    themed.debugFillProperties(builder);
+    expect(
+      builder.properties
+          .where((p) => !p.isFiltered(DiagnosticLevel.info))
+          .map((p) => p.name),
+      ['corners'],
+    );
+  });
 }
