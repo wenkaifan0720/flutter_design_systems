@@ -2,7 +2,7 @@ name: ui_core_review
 description: >-
   A layout review for design systems on ui_core, never published: rows in line, labels and keylines, widths, spacing
   and a field's own parts, each held to the look's own numbers.
-version: 0.2.1
+version: 0.2.2
 publish_to: none
 
 environment:
@@ -14,7 +14,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.8.1
+  ui_core: ^0.8.2
   ui_core_test: ^0.6.1
 
 dev_dependencies:

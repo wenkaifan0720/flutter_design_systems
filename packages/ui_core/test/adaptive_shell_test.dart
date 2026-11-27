@@ -658,6 +658,157 @@ void main() {
       }
       semantics.dispose();
     });
+
+    // The places from a branch's page by keyboard, as a Scaffold's
+    // NavigationBar or NavigationRail beside its body: Tab reaches the
+    // destinations' one stop, Shift+Tab goes back to what the page holds,
+    // and Enter or Space chooses. A page with nothing to focus is no stop.
+    group('the places by keyboard from a page', () {
+      int? place() {
+        final label = FocusManager.instance.primaryFocus?.debugLabel ?? '';
+        final m = RegExp(r'^RawAdaptiveShell (\d+)$').firstMatch(label);
+        return m == null ? null : int.parse(m.group(1)!);
+      }
+
+      Future<void> press(
+        WidgetTester tester,
+        LogicalKeyboardKey key, {
+        bool shift = false,
+      }) async {
+        if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyEvent(key);
+        if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.pumpAndSettle();
+      }
+
+      // Pages showing their words alone, or a field.
+      Widget shell(
+        RawNavigationMode mode,
+        List<int> chosen, {
+        List<GlobalKey<NavigatorState>>? keys,
+        bool fields = false,
+      }) => RawAdaptiveShell.branches(
+        destinations: _destinations,
+        selectedIndex: 0,
+        onDestinationSelected: chosen.add,
+        destinationBuilder: _destination,
+        navigationBuilder: _navigationOf,
+        mode: mode,
+        navigatorKeys: keys,
+        hideBarOnPush: false,
+        branches: [
+          for (final d in _destinations)
+            (context) => fields ? _body(d.label) : Text('${d.label} page'),
+        ],
+      );
+
+      for (final mode in RawNavigationMode.values) {
+        for (final direction in TextDirection.values) {
+          final next = mode.isHorizontal
+              ? (direction == TextDirection.ltr
+                    ? LogicalKeyboardKey.arrowRight
+                    : LogicalKeyboardKey.arrowLeft)
+              : LogicalKeyboardKey.arrowDown;
+          final name = '${mode.name} ${direction.name}';
+
+          testWidgets('$name: from a page with nothing to focus', (
+            tester,
+          ) async {
+            await _width(tester, 1000);
+            final chosen = <int>[];
+            await tester.pumpWidget(
+              harness(shell(mode, chosen), textDirection: direction),
+            );
+            await tester.pumpAndSettle();
+            await press(tester, LogicalKeyboardKey.tab);
+            expect(place(), 0, reason: 'Tab from the page');
+            await press(tester, LogicalKeyboardKey.tab);
+            expect(place(), 0, reason: 'no stop on the page');
+            await press(tester, LogicalKeyboardKey.tab, shift: true);
+            expect(place(), 0, reason: 'none on Shift+Tab either');
+            await press(tester, LogicalKeyboardKey.enter);
+            expect(chosen, [0]);
+            await press(tester, next);
+            expect(place(), 1);
+            await press(tester, LogicalKeyboardKey.space);
+            expect(chosen, [0, 1]);
+          });
+
+          testWidgets('$name: from a page pushed in a branch', (tester) async {
+            await _width(tester, 1000);
+            final chosen = <int>[];
+            final keys = [
+              for (final _ in _destinations) GlobalKey<NavigatorState>(),
+            ];
+            await tester.pumpWidget(
+              harness(
+                shell(mode, chosen, keys: keys),
+                textDirection: direction,
+              ),
+            );
+            await tester.pumpAndSettle();
+            unawaited(
+              keys[0].currentState!.push(
+                PageRouteBuilder<void>(
+                  pageBuilder: (context, _, _) => const Text('Home detail'),
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+            await press(tester, LogicalKeyboardKey.tab, shift: true);
+            expect(place(), 0, reason: 'Shift+Tab from the pushed page');
+            await press(tester, LogicalKeyboardKey.tab);
+            expect(place(), 0, reason: 'no stop on it');
+            // The selected place takes its branch back to its first page.
+            await press(tester, LogicalKeyboardKey.enter);
+            expect(chosen, [0]);
+            expect(find.text('Home detail'), findsNothing);
+          });
+
+          testWidgets("$name: from a page's field and back, and a page "
+              'pushed over it', (tester) async {
+            await _width(tester, 1000);
+            final chosen = <int>[];
+            final keys = [
+              for (final _ in _destinations) GlobalKey<NavigatorState>(),
+            ];
+            await tester.pumpWidget(
+              harness(
+                shell(mode, chosen, keys: keys, fields: true),
+                textDirection: direction,
+              ),
+            );
+            await tester.pumpAndSettle();
+            await press(tester, LogicalKeyboardKey.tab);
+            expect(_fieldFocused('Home'), isTrue);
+            await press(tester, LogicalKeyboardKey.tab);
+            expect(place(), 0, reason: 'Tab from the field');
+            await press(tester, LogicalKeyboardKey.tab, shift: true);
+            expect(_fieldFocused('Home'), isTrue, reason: 'and back');
+            unawaited(
+              keys[0].currentState!.push(
+                PageRouteBuilder<void>(
+                  pageBuilder: (context, _, _) => _body('Detail'),
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+            await press(tester, LogicalKeyboardKey.tab);
+            expect(_fieldFocused('Detail'), isTrue);
+            await press(tester, LogicalKeyboardKey.tab);
+            expect(place(), 0, reason: 'Tab from the pushed field');
+            await press(tester, LogicalKeyboardKey.tab, shift: true);
+            expect(
+              _fieldFocused('Detail'),
+              isTrue,
+              reason: 'not the page under',
+            );
+            await press(tester, LogicalKeyboardKey.space);
+            expect(chosen, isEmpty, reason: 'a field takes no choice');
+          });
+        }
+      }
+    });
   });
 
   testWidgets('a shown toaster is one more pane: F6 reaches the newest toast '

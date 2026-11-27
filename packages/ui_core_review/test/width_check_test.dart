@@ -223,6 +223,8 @@ class _Combobox extends StatefulWidget {
     this.itemPad = 12,
     this.chips = const [],
     this.tagWords = false,
+    this.entryFace = false,
+    this.entryLayer = false,
   });
 
   final double itemPad;
@@ -234,6 +236,14 @@ class _Combobox extends StatefulWidget {
   // Each chip drawn as its words beside a remove button that shows none (an
   // x), not as a button holding its words (Ledger's tags).
   final bool tagWords;
+
+  // The entry on a face of its own inside the field's (a strip it paints
+  // round its words, as Neumorphism's multi-select's entry does).
+  final bool entryFace;
+
+  // The entry drawn in a layer of its own (a repaint boundary round it),
+  // in a groove painted short of its lit sides (Neumorphism's).
+  final bool entryLayer;
 
   @override
   State<_Combobox> createState() => _ComboboxState();
@@ -253,14 +263,9 @@ class _ComboboxState extends State<_Combobox> {
   @override
   Widget build(BuildContext context) => RawPopover(
     focusOnOpen: false,
-    anchorBuilder: (context, anchor) => DecoratedBox(
-      key: _fieldKey,
-      decoration: BoxDecoration(
-        color: _white,
-        border: Border.all(color: _line),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: SizedBox(
+    anchorBuilder: (context, anchor) => _comboFace(
+      widget.entryLayer,
+      SizedBox(
         height: 40,
         child: Row(
           children: [
@@ -322,16 +327,26 @@ class _ComboboxState extends State<_Combobox> {
                 // As a field's entry announces itself.
                 child: Semantics(
                   textField: true,
-                  child: EditableText(
-                    controller: _text,
-                    focusNode: _focus,
-                    style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 14,
-                      color: _ink,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: widget.entryFace
+                          ? const Color(0xFFEDEFF3)
+                          : const Color(0x00000000),
                     ),
-                    cursorColor: _ink,
-                    backgroundCursorColor: _line,
+                    child: _layer(
+                      widget.entryLayer,
+                      EditableText(
+                        controller: _text,
+                        focusNode: _focus,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 14,
+                          color: _ink,
+                        ),
+                        cursorColor: _ink,
+                        backgroundCursorColor: _line,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -2570,6 +2585,120 @@ void main() {
       expect(await _list(tester), isEmpty);
     });
 
+    testWidgets("a multi-select's field read from its entry is the groove "
+        'round its chips and entry', (tester) async {
+      // Neumorphism's multi-select: the test hands the check the entry, as
+      // a field with a text entry is checked from it.
+      Future<List<String>> fromEntry() async =>
+          (await const DesignWidthCheck(look: 'Fixture').checkList(
+            tester.element(find.byType(EditableText)),
+            runAsync: tester.runAsync,
+          )).problems;
+      for (final (chips, entryFace, entryLayer) in [
+        (const ['Porto'], false, false),
+        (const <String>[], false, false),
+        // The entry on a strip of its own after the chips: the groove round
+        // both is the field, not the strip.
+        (const ['Porto', 'Faro'], true, false),
+        // The entry drawn in a layer of its own inside the groove
+        // (Neumorphism's): the groove is read in its own image.
+        (const ['Porto'], false, true),
+      ]) {
+        await _pump(
+          tester,
+          _hugging(
+            SizedBox(
+              width: 280,
+              child: _Combobox(
+                chips: chips,
+                entryFace: entryFace,
+                entryLayer: entryLayer,
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.byIcon(_chevron));
+        await tester.pumpAndSettle();
+        expect(await fromEntry(), isEmpty, reason: '$chips');
+        await tester.tapAt(Offset.zero);
+        await tester.pumpAndSettle();
+      }
+      // A card round a field with no face of its own, a button under it, is
+      // not the field: the list at the card's width is past the entry's.
+      final text = TextEditingController(text: 'Lisbon');
+      final focus = FocusNode();
+      addTearDown(text.dispose);
+      addTearDown(focus.dispose);
+      await _pump(
+        tester,
+        _hugging(
+          SizedBox(
+            width: 280,
+            child: RawPopover(
+              focusOnOpen: false,
+              anchorBuilder: (context, anchor) => DecoratedBox(
+                decoration: BoxDecoration(
+                  color: _white,
+                  border: Border.all(color: _line),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        RawButton(
+                          onPressed: () {},
+                          semanticLabel: 'Remove Porto',
+                          builder: (_, _, _) => _words('Porto'),
+                        ),
+                        Expanded(
+                          child: Semantics(
+                            textField: true,
+                            child: EditableText(
+                              controller: text,
+                              focusNode: focus,
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 14,
+                              ),
+                              cursorColor: _ink,
+                              backgroundCursorColor: _line,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: anchor.toggle,
+                          child: Semantics(
+                            button: true,
+                            label: 'Show suggestions',
+                            child: const Icon(_chevron, size: 20),
+                          ),
+                        ),
+                      ],
+                    ),
+                    RawButton(
+                      onPressed: () {},
+                      semanticLabel: 'Done',
+                      builder: (_, _, _) => _words('Done'),
+                    ),
+                  ],
+                ),
+              ),
+              overlayBuilder: (context, info) => IntrinsicWidth(
+                child: _listSurface(
+                  ownSurface: false,
+                  child: _options(const ['Lisbon', 'Porto'], info.close),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byIcon(_chevron));
+      await tester.pumpAndSettle();
+      expect(await fromEntry(), isNotEmpty);
+    });
+
     testWidgets("a tag drawn as its words beside a remove button that shows "
         'none is a chip before the entry', (tester) async {
       await _pump(
@@ -2730,6 +2859,616 @@ void main() {
       ]);
     });
 
+    testWidgets(
+      "a text entry's outline drawn round its decorator, on its rows, "
+      "is the field's edge",
+      (tester) async {
+        // Comic's form at 1440: each entry's decorator paints a fill of its
+        // own, and the look's ink outline is drawn round it with 18.5 px at
+        // its sides, on its rows; the Delivery select under it is on the
+        // outline's edges.
+        Widget framed(String words, {double side = 18.5}) {
+          final controller = TextEditingController(text: words);
+          final focus = FocusNode();
+          addTearDown(controller.dispose);
+          addTearDown(focus.dispose);
+          const fill = BoxDecoration(color: Color(0xFFF1F1F1));
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: _white,
+              border: Border.all(color: _ink, width: 2),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: side),
+              // A surface the entry's size round it (an ink surface), and the
+              // decorator's fill in it.
+              child: DecoratedBox(
+                decoration: fill,
+                child: Semantics(
+                  textField: true,
+                  child: DecoratedBox(
+                    decoration: fill,
+                    child: SizedBox(
+                      height: 48,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: RepaintBoundary(
+                          child: EditableText(
+                            controller: controller,
+                            focusNode: focus,
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 14,
+                            ),
+                            cursorColor: _ink,
+                            backgroundCursorColor: _line,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // [card]: each outline in a card of its own on the select's edges,
+        // taller than the outline and 8 px wider at each side.
+        Widget form({bool card = false}) => Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: 344.5,
+            child: _stack(gap: 16, [
+              for (final words in ['Ada', 'Town'])
+                card
+                    ? DecoratedBox(
+                        decoration: const BoxDecoration(color: _line),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: framed(words),
+                        ),
+                      )
+                    : framed(words),
+              _select('Delivery'),
+            ]),
+          ),
+        );
+        await _pump(tester, form(), width: 1440);
+        expect(await _widths(tester), isEmpty);
+        // A card taller than the outline is a surface round the field, not
+        // its edge: the select keeps to its content.
+        await _pump(tester, form(card: true), width: 1440);
+        expect(await _widths(tester), [
+          matches(
+            RegExp(
+              r'^a select "Delivery": 344.5 px wide as laid out.*at most 320',
+            ),
+          ),
+        ]);
+        // Two entries side by side on a band drawn round their row: the band
+        // holds both, so it is neither's edge; a select under the first, on
+        // its outline's edges, is in its column.
+        await _pump(
+          tester,
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 816,
+              child: _stack(gap: 16, [
+                DecoratedBox(
+                  decoration: const BoxDecoration(color: _line),
+                  child: Row(
+                    children: [
+                      Expanded(child: framed('City')),
+                      const SizedBox(width: 16),
+                      Expanded(child: framed('Postcode')),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: SizedBox(width: 400, child: _select('Delivery')),
+                ),
+              ]),
+            ),
+          ),
+          width: 1440,
+        );
+        expect(await _widths(tester), isEmpty);
+      },
+    );
+
+    testWidgets("a text entry's inset face is read as laid out, not by the ink "
+        'its lit edge leaves', (tester) async {
+      // Neumorphism's groove: its shade drawn to 3 px short of its trailing
+      // and bottom edges, the lit edge there the colour of the page; the
+      // select under it on the groove's box.
+      final controller = TextEditingController(text: 'Phone');
+      final focus = FocusNode();
+      addTearDown(controller.dispose);
+      addTearDown(focus.dispose);
+      await _pump(
+        tester,
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 614,
+            child: _stack(gap: 20, [
+              CustomPaint(
+                painter: const _ShortInset(),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Semantics(
+                    textField: true,
+                    child: EditableText(
+                      controller: controller,
+                      focusNode: focus,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                      ),
+                      cursorColor: _ink,
+                      backgroundCursorColor: _line,
+                    ),
+                  ),
+                ),
+              ),
+              _select('Country'),
+            ]),
+          ),
+        ),
+        width: 1440,
+      );
+      expect(await _widths(tester), isEmpty);
+      // The groove round a decorator that paints a fill of its own, on its
+      // rows: the groove's box is the field's edge.
+      await _pump(
+        tester,
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 614,
+            child: _stack(gap: 20, [
+              CustomPaint(
+                painter: const _ShortInset(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Semantics(
+                    textField: true,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(color: Color(0xFFF1F1F1)),
+                      child: SizedBox(
+                        height: 48,
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: EditableText(
+                            controller: controller,
+                            focusNode: focus,
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 14,
+                            ),
+                            cursorColor: _ink,
+                            backgroundCursorColor: _line,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              _select('Country'),
+            ]),
+          ),
+        ),
+        width: 1440,
+      );
+      expect(await _widths(tester), isEmpty);
+      // A surface round it that draws nothing (a clear hover surface) is
+      // no edge: the select under its box is alone.
+      await _pump(
+        tester,
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 614,
+            child: _stack(gap: 20, [
+              CustomPaint(
+                painter: const _Clear(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Semantics(
+                    textField: true,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(color: Color(0xFFF1F1F1)),
+                      child: SizedBox(
+                        height: 48,
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: EditableText(
+                            controller: controller,
+                            focusNode: focus,
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 14,
+                            ),
+                            cursorColor: _ink,
+                            backgroundCursorColor: _line,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              _select('Country'),
+            ]),
+          ),
+        ),
+        width: 1440,
+      );
+      expect(await _widths(tester), [
+        matches(
+          RegExp(r'^a select "Country": 614 px wide as laid out.*at most 320'),
+        ),
+      ]);
+    });
+
+    testWidgets(
+      "a tree's folder rows are a tree's rows, not a form's selects",
+      (tester) async {
+        // Frosted's data page: RawTree's rows say open or closed and chosen or
+        // not, as a tree's items do; a select says open alone.
+        final tree = RawTreeController<String>(
+          roots: const ['Projects', 'Launch', 'Research', 'Shared'],
+          childrenOf: (node) =>
+              node.endsWith('.md') ? const [] : ['${node.toLowerCase()}.md'],
+          expanded: const ['Projects'],
+        );
+        addTearDown(tree.dispose);
+        Widget face(String words, int depth) => DecoratedBox(
+          decoration: BoxDecoration(
+            color: _white,
+            border: Border.all(color: _line),
+          ),
+          child: SizedBox(
+            height: 36,
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(start: 12.0 + 16 * depth),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: _words(words),
+              ),
+            ),
+          ),
+        );
+        await _pump(
+          tester,
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 960,
+              child: RawTree<String>(
+                controller: tree,
+                labelOf: (node) => node,
+                rowBuilder: (context, item) =>
+                    face(item.row.node, item.row.depth),
+              ),
+            ),
+          ),
+          width: 1440,
+        );
+        expect(await _widths(tester), isEmpty);
+        // The same faces as selects (open or closed, nothing chosen) in a
+        // form's column are its fields.
+        await _pump(
+          tester,
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 960,
+              child: _stack(gap: 16, [
+                for (final words in ['Projects', 'Launch'])
+                  RawButton(
+                    onPressed: () {},
+                    expanded: false,
+                    semanticLabel: words,
+                    excludeSemantics: true,
+                    builder: (_, _, _) => face(words, 0),
+                  ),
+              ]),
+            ),
+          ),
+          width: 1440,
+        );
+        expect(
+          await _widths(tester),
+          contains(
+            matches(RegExp(r'^a select "Projects": a field of a form, 960 px')),
+          ),
+        );
+      },
+    );
+
+    testWidgets(
+      "a group drawn on a band takes the field's column by its band",
+      (tester) async {
+        // Frosted's filled segmented button under a text field: its band on
+        // the field's edges, its choices 2 px inside the band.
+        final controller = TextEditingController(text: 'Ada');
+        final focus = FocusNode();
+        addTearDown(controller.dispose);
+        addTearDown(focus.dispose);
+        Widget group({required bool band, bool behind = false}) {
+          final choices = Row(
+            children: [
+              for (final (i, words) in ['Day', 'Week', 'Month'].indexed) ...[
+                if (i > 0) const SizedBox(width: 4),
+                Expanded(
+                  child: RawButton(
+                    onPressed: () {},
+                    semanticSelected: i == 0,
+                    builder: (_, _, _) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: i == 0 ? _ink : _white,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: SizedBox(
+                        height: 36,
+                        child: Center(
+                          child: _words(words, colour: i == 0 ? _white : _ink),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          );
+          if (behind) {
+            // Frosted's strip: the band a stack paints under its choices,
+            // and a pill under the chosen one alone.
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: _line,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Stack(
+                    children: [
+                      const Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 60,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(color: _page),
+                        ),
+                      ),
+                      choices,
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+          return band
+              ? DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: _line,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: choices,
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: choices,
+                );
+        }
+
+        // A card on the field's edges round the group, that shows more than
+        // its choices (a title) or holds another control (a swatch with no
+        // words), is no band of the group's.
+        Widget card(Widget extra) => DecoratedBox(
+          decoration: BoxDecoration(
+            color: _white,
+            border: Border.all(color: _line),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [group(band: false), const SizedBox(height: 8), extra],
+            ),
+          ),
+        );
+        final swatch = RawButton(
+          onPressed: () {},
+          semanticLabel: 'Colour',
+          builder: (_, _, _) => const SizedBox.square(
+            dimension: 24,
+            child: DecoratedBox(decoration: BoxDecoration(color: _ink)),
+          ),
+        );
+        // [readOnly]: the field over the group shows a value it does not
+        // edit (a specimen's), so it takes no tap.
+        Widget form(Widget group, {bool readOnly = false}) => Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 600,
+            child: _stack(gap: 16, [
+              if (readOnly)
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: _white,
+                    border: Border.all(color: _line),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: EditableText(
+                      controller: controller,
+                      focusNode: focus,
+                      readOnly: true,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                      ),
+                      cursorColor: _ink,
+                      backgroundCursorColor: _line,
+                    ),
+                  ),
+                )
+              else
+                entry(controller, focus),
+              group,
+            ]),
+          ),
+        );
+        await _pump(tester, form(group(band: true)), width: 1440);
+        expect(await _widths(tester), isEmpty);
+        await _pump(
+          tester,
+          form(group(band: false, behind: true)),
+          width: 1440,
+        );
+        expect(await _widths(tester), isEmpty);
+        // Frosted's form specimen: a read-only field over the group.
+        await _pump(
+          tester,
+          form(group(band: false, behind: true), readOnly: true),
+          width: 1440,
+        );
+        expect(await _widths(tester), isEmpty);
+        // Selectable words over the group, on a card on its edges, are no
+        // field: the group is alone.
+        await _pump(
+          tester,
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 600,
+              child: _stack(gap: 16, [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: _white,
+                    border: Border.all(color: _line),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: EditableText(
+                      controller: controller,
+                      focusNode: focus,
+                      readOnly: true,
+                      maxLines: null,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                      ),
+                      cursorColor: _ink,
+                      backgroundCursorColor: _line,
+                    ),
+                  ),
+                ),
+                group(band: true),
+              ]),
+            ),
+          ),
+          width: 1440,
+        );
+        expect(await _widths(tester), [
+          matches(RegExp(r'^a group of choices "Day".*\(at most 320')),
+        ]);
+        // With no band, its choices 2 px in from the field's edges are a group
+        // alone.
+        final alone = [
+          matches(RegExp(r'^a group of choices "Day".*\(at most 320')),
+        ];
+        await _pump(tester, form(group(band: false)), width: 1440);
+        expect(await _widths(tester), alone);
+        await _pump(tester, form(card(_words('Range'))), width: 1440);
+        expect(await _widths(tester), alone);
+        // A card painted under a titled group is no band of the group's.
+        await _pump(
+          tester,
+          form(
+            Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: _white,
+                      border: Border.all(color: _line),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _words('Range'),
+                      const SizedBox(height: 8),
+                      group(band: false),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          width: 1440,
+        );
+        expect(await _widths(tester), alone);
+        // Nor is one painted under the group and another control.
+        await _pump(
+          tester,
+          form(
+            Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: _white,
+                      border: Border.all(color: _line),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      group(band: false),
+                      const SizedBox(height: 8),
+                      Align(alignment: Alignment.centerLeft, child: swatch),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          width: 1440,
+        );
+        expect(await _widths(tester), alone);
+        await _pump(
+          tester,
+          form(card(Align(alignment: Alignment.centerLeft, child: swatch))),
+          width: 1440,
+        );
+        expect(await _widths(tester), alone);
+      },
+    );
+
     // An "Add a book" form as a look lays it out at a desk: a title, a
     // shelf, the day it was started and a filled strip of how far, each its
     // column's width, [width] wide.
@@ -2839,4 +3578,69 @@ class _Seams extends CustomPainter {
 
   @override
   bool shouldRepaint(_Seams oldDelegate) => false;
+}
+
+// An inset face: its shade drawn to 3 px short of its trailing and bottom
+// edges, the lit edge there left the page's colour.
+class _ShortInset extends CustomPainter {
+  const _ShortInset();
+
+  @override
+  void paint(Canvas canvas, Size size) => canvas.drawRect(
+    Rect.fromLTWH(0, 0, size.width - 3, size.height - 3),
+    Paint()..color = const Color(0xFFD6D6D6),
+  );
+
+  @override
+  bool shouldRepaint(_ShortInset oldDelegate) => false;
+}
+
+// A surface that draws nothing until it is hovered.
+class _Clear extends CustomPainter {
+  const _Clear();
+
+  @override
+  void paint(Canvas canvas, Size size) {}
+
+  @override
+  bool shouldRepaint(_Clear oldDelegate) => false;
+}
+
+// [child] in a repaint boundary of its own when [own].
+Widget _layer(bool own, Widget child) =>
+    own ? RepaintBoundary(child: child) : child;
+
+// A combobox's face: a ringed box, or a groove painted short of its lit
+// sides, their highlight lighter than the page.
+Widget _comboFace(bool groove, Widget child) => groove
+    ? CustomPaint(key: _fieldKey, painter: const _LitGroove(), child: child)
+    : DecoratedBox(
+        key: _fieldKey,
+        decoration: BoxDecoration(
+          color: _white,
+          border: Border.all(color: _line),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: child,
+      );
+
+// A groove lit from the top left: its fill short of its right and bottom
+// edges, a highlight there.
+class _LitGroove extends CustomPainter {
+  const _LitGroove();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, w - 3, h - 3),
+      Paint()..color = const Color(0xFFC9CCD3),
+    );
+    final light = Paint()..color = _white;
+    canvas.drawRect(Rect.fromLTWH(w - 3, 0, 3, h), light);
+    canvas.drawRect(Rect.fromLTWH(0, h - 3, w, 3), light);
+  }
+
+  @override
+  bool shouldRepaint(_LitGroove oldDelegate) => false;
 }

@@ -68,7 +68,8 @@ class DesignWidthLimit {
 ///   finds them) with a face of its own around one line of words, an icon,
 ///   or both is a button; one that anchors a [RawPopover] (or a
 ///   Material dropdown or menu), or whose semantics carry an expanded state,
-///   is a select. Two or more tabs side by side (`SemanticsRole.tab` on
+///   is a select; a tree's row (open or closed, and chosen or not, as
+///   `RawTree`'s rows say) is a row, not a select. Two or more tabs side by side (`SemanticsRole.tab` on
 ///   each control, inside it, or round it alone, as a tab bar says it) are
 ///   a tab bar, measured from its first tab to its last. Two or more
 ///   choices side by side (each chosen or not, or toggled) are a segmented
@@ -123,10 +124,16 @@ class DesignWidthLimit {
 ///   of a form, 1392 px wide as laid out, 1392 as drawn (a form keeps to 720
 ///   from 600 wide)`. One alone, with no field on its edges (a toolbar's
 ///   filter), keeps to its content as above. A text entry's face is the one
-///   inside it or the well drawn round it, read in the layer its field is
-///   drawn on: an entry drawn in a repaint boundary no larger than its
-///   field (Flutter's TextField paints its EditableText in one) is read in
-///   the layer round it, with its form's other fields.
+///   inside it or the well drawn round it, out to the outermost face round
+///   that on its rows holding no other control (a look's outline drawn
+///   round its decorator), read in the layer its field is drawn on: an
+///   entry drawn in a repaint boundary no larger than its field (Flutter's
+///   TextField paints its EditableText in one) is read in the layer round
+///   it, with its form's other fields; a one-line entry outside any
+///   control (a read-only field, which takes no tap) is one too. A group of
+///   choices drawn on a band
+///   (round its choices, or painted under them) is measured by the band;
+///   a tree's rows are rows, not selects.
 /// - **A look's own limit**: [limits] gives a kind another width, with the
 ///   reason (`DesignWidthLimit(400, 'the sign-in card's one act spans its
 ///   400 card')`); a reason that is a to-do fails.
@@ -306,11 +313,56 @@ class DesignWidthCheck {
     // choices.
     final fields = <({RenderRepaintBoundary? boundary, Rect laid})>[];
     final formFields = <int, ({Rect laid, Rect drawn})>{};
-    for (final c in controls) {
-      if (!_semanticsOf(c).entry) continue;
-      // Its face: one inside it, or the well drawn round it.
-      Rect faceOf(_RowReader r) =>
-          (r._face(c) ?? r._well(c, root))?.rect ?? _global(c);
+    // Its text entries: those that take a tap, and a one-line entry outside
+    // any control (a read-only field's, which takes no tap: Flutter's
+    // TextField drops its tap when read-only). Selectable text, more than
+    // one line, is no field.
+    final entries = [
+      for (final c in controls)
+        if (_semanticsOf(c).entry) c,
+    ];
+    void readOnly(RenderObject n) {
+      if (_isControl(n)) return;
+      if (n is RenderEditable) {
+        if (n.hasSize && n.maxLines == 1) entries.add(n);
+        return;
+      }
+      _visitShown(n, readOnly);
+    }
+
+    readOnly(root);
+    for (final c in entries) {
+      // Its face: one inside it, or the well drawn round it; then the
+      // outermost face round that, on its rows, that holds no other
+      // control (a look's outline drawn round the entry's decorator with
+      // room at its sides, as Comic's is). A box taller than the face (a
+      // card round the field) ends the climb. Each face by its box as laid
+      // out, not the ink read in it: an inset face (Neumorphism's groove)
+      // leaves its lit edge the page's colour, short of its box.
+      Rect faceOf(_RowReader r) {
+        final face = r._face(c) ?? r._well(c, root);
+        var rect = face == null ? _global(c) : _global(face.box);
+        for (
+          RenderObject? up = (face?.box ?? c).parent;
+          up != null && !identical(up, root);
+          up = up.parent
+        ) {
+          if (up is! RenderBox || !up.hasSize) continue;
+          final box = _global(up);
+          if (box.top < rect.top - tolerance ||
+              box.bottom > rect.bottom + tolerance ||
+              r._controlsUnder(up).length > 1) {
+            break;
+          }
+          if (!r._showsFace(up)) continue;
+          // A custom paint that draws nothing of its own is no face.
+          if (up is! RenderCustomPaint || r._ownInk(box, up) != null) {
+            rect = box;
+          }
+        }
+        return rect;
+      }
+
       var reader = await readerFor(c);
       // An entry's face is read in the layer round it when the boundary it
       // is drawn in is no larger than the field: Flutter's TextField paints
@@ -343,8 +395,25 @@ class DesignWidthCheck {
       if (reader == null) continue;
       final ({Rect laid, Rect drawn})? field;
       if (item.kind == DesignWidthKind.choiceGroup) {
-        final m = _itemsWidth(reader, item.held, tabs: false);
-        field = m == null ? null : (laid: m.laid, drawn: m.drawn);
+        // By the band it draws round its choices or under them, where it
+        // draws one that shows nothing else (a filled segmented button's
+        // strip, its choices inside it): on a field's edges, the band is;
+        // else by its choices' faces.
+        final band = _bandOf(reader, item.box, item.held);
+        final m = band == null
+            ? _itemsWidth(reader, item.held, tabs: false)
+            : null;
+        field = band != null
+            ? (
+                laid: _global(band),
+                drawn: marked.contains(band)
+                    ? _global(band)
+                    : reader._outline(_global(band), item.box, band, null) ??
+                          _global(band),
+              )
+            : m == null
+            ? null
+            : (laid: m.laid, drawn: m.drawn);
       } else {
         final face = item.control == null
             ? _groupFace(reader, item.box, item.held)
@@ -606,17 +675,80 @@ class DesignWidthCheck {
         controls.length == 1 &&
         !identical(control, box) &&
         _semanticsOf(control).entry;
-    final fieldFace = controls.length > 1
-        ? fieldReader._face(box)
-        : (entryOnly ? fieldReader._face(box) : null) ??
-              fieldReader._face(control) ??
-              fieldReader._well(control, root);
+    // Whether [o] is the field's entry or holds it.
+    bool holdsEntry(RenderObject o) {
+      for (RenderObject? n = control; n != null; n = n.parent) {
+        if (identical(n, o)) return true;
+      }
+      return false;
+    }
+
+    // A multi-select's groove round its chosen chips and its entry (and a
+    // combobox's toggle beside it), when the check is handed the entry: the
+    // nearest face round the entry and another control, all of them on the
+    // entry's row (a card with a button under the field is not it).
+    Future<({Rect rect, RenderBox box, bool read, _RowReader reader})?>
+    chipWell() async {
+      final entry = _global(control);
+      for (
+        RenderObject? up = control.parent;
+        up != null && !identical(up, root);
+        up = up.parent
+      ) {
+        if (up is! RenderBox || !up.hasSize) continue;
+        var others = false;
+        for (final o in fieldReader._controlsUnder(up)) {
+          if (holdsEntry(o)) continue;
+          final r = _global(o);
+          if (r.top >= entry.bottom || r.bottom <= entry.top) return null;
+          others = true;
+        }
+        // A face round the entry alone (a strip it paints round its words)
+        // is the entry's, not the field's.
+        if (!others) continue;
+        // Read in the image it is drawn in: the entry may be drawn in a
+        // layer of its own inside the groove.
+        final reader = await readerFor(up) ?? fieldReader;
+        if (!reader._showsFace(up)) continue;
+        if (up is! RenderCustomPaint) {
+          return (rect: _global(up), box: up, read: false, reader: reader);
+        }
+        final own = reader._ownInk(_global(up), up);
+        if (own != null) {
+          return (rect: own.rect, box: up, read: own.read, reader: reader);
+        }
+      }
+      return null;
+    }
+
+    // Handed the entry, the groove round it and its chips comes first: a
+    // strip round the entry alone is no field.
+    final chip = controls.length <= 1 && _semanticsOf(control).entry
+        ? await chipWell()
+        : null;
+    final chipFace = chip == null
+        ? null
+        : (rect: chip.rect, box: chip.box, read: chip.read);
+    final faceReader = chip?.reader ?? fieldReader;
+    final fieldFace =
+        chipFace ??
+        (controls.length > 1
+            ? fieldReader._face(box)
+            : (entryOnly ? fieldReader._face(box) : null) ??
+                  fieldReader._face(control) ??
+                  fieldReader._well(control, root));
+    // The field whole: the groove round the entry and its chips when read
+    // from the entry, else as handed.
+    final fieldWhole = chipFace?.box ?? whole;
+    final fieldControls = chipFace == null
+        ? controls
+        : fieldReader._controlsUnder(chipFace.box);
     // A face read from its own ink stops short on its lit sides as its
     // outline does (_litTo): read to its box there.
     final fieldLaid = fieldFace == null
         ? _global(whole)
         : fieldFace.read
-        ? fieldReader._litTo(_global(fieldFace.box), fieldFace.rect)
+        ? faceReader._litTo(_global(fieldFace.box), fieldFace.rect)
         : fieldFace.rect;
     // A side lit from a corner reads short as drawn (a groove's highlight,
     // too faint to stand off): read to its box there (_litTo).
@@ -626,18 +758,18 @@ class DesignWidthCheck {
     // in on each side of a 2 px rule).
     final fieldGround = fieldFace == null
         ? null
-        : await groundUnder(fieldReader, fieldLaid);
+        : await groundUnder(faceReader, fieldLaid);
     final fieldOutline = fieldFace == null
         ? null
-        : fieldReader._outline(
+        : faceReader._outline(
             fieldLaid,
-            whole,
+            fieldWhole,
             fieldFace.read ? null : fieldFace.box,
             fieldGround,
           );
     final fieldDrawn = fieldOutline == null
         ? fieldLaid
-        : fieldReader._litTo(fieldLaid, fieldOutline, ground: fieldGround);
+        : faceReader._litTo(fieldLaid, fieldOutline, ground: fieldGround);
     var top = field as Element;
     field.visitAncestorElements((e) {
       top = e;
@@ -735,13 +867,13 @@ class DesignWidthCheck {
     final entryLead = lead(entry);
     bool before(Rect r) => lead(r) < entryLead - tolerance;
     bool onEntryRow(Rect r) => r.top < entry.bottom && r.bottom > entry.top;
-    final inControls = {for (final c in controls) ..._wordsOf(c)};
-    final tagWords = _wordsOf(whole).any((w) {
+    final inControls = {for (final c in fieldControls) ..._wordsOf(c)};
+    final tagWords = _wordsOf(fieldWhole).any((w) {
       final r = _global(w);
       return !inControls.contains(w) && before(r) && onEntryRow(r);
     });
-    final chipsFirst = controls.any((c) {
-      if (identical(c, control)) return false;
+    final chipsFirst = fieldControls.any((c) {
+      if (holdsEntry(c)) return false;
       final r = _global(c);
       return before(r) &&
           (_wordsOf(c).isNotEmpty || (tagWords && onEntryRow(r)));
@@ -821,7 +953,10 @@ class DesignWidthCheck {
           p,
     ];
     if (lines.length > 1 || lines.any((p) => !isOneLine(p))) return null;
-    if (s.expanded || _anchored(control, anchors)) {
+    // A select says it is open or closed; a tree's row says so beside
+    // whether it is chosen (RawTree's rows, as a tree's items do), and
+    // shows its children under it, no menu.
+    if (_anchored(control, anchors) || (s.expanded && !s.choice)) {
       return DesignWidthKind.select;
     }
     if (s.steps) return DesignWidthKind.stepper;
@@ -1218,6 +1353,15 @@ class DesignWidthCheck {
     _DrawnReader finder,
     RenderBox node,
     List<RenderBox> held,
+  ) => _sharedFaceOf(finder, node, held) != null;
+
+  // The box of [_sharedFace]: the innermost from [node] down that paints a
+  // face round all of [held] and holds nothing else, else the nearest above
+  // it; null when none does.
+  static RenderBox? _sharedFaceOf(
+    _DrawnReader finder,
+    RenderBox node,
+    List<RenderBox> held,
   ) {
     final all = held.map(_global).reduce((a, b) => a.expandToInclude(b));
     final rects = [for (final c in held) _global(c).inflate(0.5)];
@@ -1225,30 +1369,76 @@ class DesignWidthCheck {
       final r = _global(b);
       return rects.any((c) => c.contains(r.center));
     });
-    var found = false;
+    bool theirs(RenderBox n) {
+      final r = _global(n).inflate(0.5);
+      return r.contains(all.topLeft) &&
+          r.contains(all.bottomRight) &&
+          finder._controlsUnder(n).length == held.length &&
+          onlyTheirs(n);
+    }
+
+    RenderBox? found;
     void visit(RenderObject n) {
-      if (found || _isControl(n)) return;
-      if (n is RenderBox && n.hasSize && _paintsFace(n)) {
-        final r = _global(n).inflate(0.5);
-        if (r.contains(all.topLeft) &&
-            r.contains(all.bottomRight) &&
-            finder._controlsUnder(n).length == held.length &&
-            onlyTheirs(n)) {
-          found = true;
-          return;
-        }
+      if (_isControl(n)) return;
+      if (n is RenderBox && n.hasSize && _paintsFace(n) && theirs(n)) {
+        found = n;
       }
       _visitShown(n, visit);
     }
 
+    visit(node);
+    if (found != null) return found;
     for (RenderObject? up = node; up != null; up = up.parent) {
       if (up is! RenderBox || !up.hasSize || _isControl(up)) break;
       if (finder._controlsUnder(up).length != held.length) break;
       if (!onlyTheirs(up)) break;
-      if (_paintsFace(up)) return true;
+      if (_paintsFace(up)) return up;
     }
-    visit(node);
-    return found;
+    return null;
+  }
+
+  // The band a group of choices is drawn on: the face round them that holds
+  // nothing else ([_sharedFaceOf]), else a face drawn behind them (a glass
+  // strip a stack paints under its choices): from [node] up, while a box
+  // holds [held] and shows nothing but theirs, a child of it that holds no
+  // control, shows a face and spans them all (a pill under the chosen one
+  // alone does not). Null without one.
+  static RenderBox? _bandOf(
+    _DrawnReader finder,
+    RenderBox node,
+    List<RenderBox> held,
+  ) {
+    final shared = _sharedFaceOf(finder, node, held);
+    if (shared != null) return shared;
+    final all = held
+        .map(_global)
+        .reduce((a, b) => a.expandToInclude(b))
+        .deflate(0.5);
+    final rects = [for (final c in held) _global(c).inflate(0.5)];
+    bool onlyTheirs(RenderBox box) => _shownIn(box).every((b) {
+      final r = _global(b);
+      return rects.any((c) => c.contains(r.center));
+    });
+    for (RenderObject? up = node; up != null; up = up.parent) {
+      if (up is! RenderBox || !up.hasSize || _isControl(up)) break;
+      if (finder._controlsUnder(up).length != held.length) break;
+      if (!onlyTheirs(up)) break;
+      RenderBox? behind;
+      _visitShown(up, (child) {
+        if (behind != null || child is! RenderBox || !child.hasSize) return;
+        if (_isControl(child) || finder._controlsUnder(child).isNotEmpty) {
+          return;
+        }
+        final r = _global(child).inflate(0.5);
+        if (r.contains(all.topLeft) &&
+            r.contains(all.bottomRight) &&
+            finder._showsFace(child)) {
+          behind = child;
+        }
+      });
+      if (behind != null) return behind;
+    }
+    return null;
   }
 
   // A group's face: from [node] down, while one box holds all of [held],

@@ -1,3 +1,7 @@
+## 0.8.2
+
+- **`RawAdaptiveShell.branches`: Tab reaches the navigation from a page with nothing to focus on it.** Each branch's navigator focuses its page's scope, as a route does when pushed. A scope holding nothing to focus is its own first focus, so Tab, Shift+Tab, Enter and Space did nothing: in every mode, a shell whose pages show words alone (or a page pushed in a branch that does) kept the keyboard off its destinations. Traversal now moves on from such a page to the navigation, as from a page that holds a field, and the page is no stop on the way round. Shift+Tab from the navigation goes back to what a page holds, and Enter or Space chooses a destination, as with a `Scaffold`'s `NavigationBar` or `NavigationRail`.
+
 ## 0.8.1
 
 - `RawButton.mergeSemantics` (true by default, as before): false keeps the press's node a container that merges nothing into it, as an `InkWell`'s is. The face's words still name it, and a control inside keeps a node of its own that a screen reader reaches apart: a row's share or "more" button in the row's own press, which 0.8.0 merged into the row's node (`Dune / Share Dune`) with no way out.

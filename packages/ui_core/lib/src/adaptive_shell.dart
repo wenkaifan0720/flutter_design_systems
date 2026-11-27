@@ -452,7 +452,8 @@ class RawAdaptiveShell extends StatefulWidget {
   /// to its root. Back (Android's, Escape's route pop) pops the selected
   /// branch, then at its root goes where [backBehavior] says, then leaves.
   /// While the selected branch has a page over its root the bar steps away
-  /// ([hideBarOnPush]).
+  /// ([hideBarOnPush]). Tab from a branch's page reaches the navigation, a
+  /// page with nothing to focus on it too, and Shift+Tab goes back to it.
   ///
   /// ```dart
   /// RawAdaptiveShell.branches(destinations: const [RawNavigationDestination(label: 'Home', icon: IconData(0xe318)), RawNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), branches: [(context) => const Text('Home'), (context) => const Text('Mail')])
@@ -614,6 +615,8 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
 
   // The body keeps its state as the mode changes and the frame with it.
   final GlobalKey _body = GlobalKey(debugLabel: 'RawAdaptiveShell body');
+  _BranchTraversalPolicy? _traversal;
+  FocusTraversalPolicy? _fallbackTraversal;
   late final AnimationController _visibility = AnimationController.unbounded(
     vsync: this,
     value: widget.showNavigation ? 1 : 0,
@@ -773,47 +776,56 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
   Widget _branches(List<WidgetBuilder> branches) {
     final selected = widget.selectedIndex;
     _built.add(selected);
+    final around =
+        FocusTraversalGroup.maybeOf(context) ??
+        (_fallbackTraversal ??= ReadingOrderTraversalPolicy());
+    if (!identical(_traversal?.around, around)) {
+      _traversal = _BranchTraversalPolicy(around);
+    }
     return PopScope<Object?>(
       canPop: !_takesBack,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _back();
       },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          for (var i = 0; i < branches.length; i++)
-            if (_built.contains(i))
-              KeyedSubtree(
-                key: ValueKey(i),
-                child: Offstage(
-                  offstage: i != selected,
-                  child: TickerMode(
-                    enabled: i == selected,
-                    child: ExcludeFocus(
-                      excluding: i != selected,
-                      child: NotificationListener<NavigationNotification>(
-                        onNotification: (notification) {
-                          _branchDepth(i, notification.canHandlePop);
-                          return true;
-                        },
-                        child: Navigator(
-                          key: _navigatorKey(i),
-                          onGenerateInitialRoutes: (navigator, name) => [
-                            PageRouteBuilder<void>(
-                              settings: RouteSettings(name: name),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                              pageBuilder: (context, _, _) =>
-                                  widget.branches![i](context),
-                            ),
-                          ],
+      child: FocusTraversalGroup(
+        policy: _traversal,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            for (var i = 0; i < branches.length; i++)
+              if (_built.contains(i))
+                KeyedSubtree(
+                  key: ValueKey(i),
+                  child: Offstage(
+                    offstage: i != selected,
+                    child: TickerMode(
+                      enabled: i == selected,
+                      child: ExcludeFocus(
+                        excluding: i != selected,
+                        child: NotificationListener<NavigationNotification>(
+                          onNotification: (notification) {
+                            _branchDepth(i, notification.canHandlePop);
+                            return true;
+                          },
+                          child: Navigator(
+                            key: _navigatorKey(i),
+                            onGenerateInitialRoutes: (navigator, name) => [
+                              PageRouteBuilder<void>(
+                                settings: RouteSettings(name: name),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
+                                pageBuilder: (context, _, _) =>
+                                    widget.branches![i](context),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -992,4 +1004,84 @@ class _BarLayout extends MultiChildLayoutDelegate {
   @override
   bool shouldRelayout(_BarLayout oldDelegate) =>
       visibility != oldDelegate.visibility;
+}
+
+// The branches' traversal, the policy round the shell's otherwise: a page
+// with nothing to focus on it is no stop, and keys move on from it.
+//
+// Each branch's navigator focuses its page's scope, as a route does when it
+// is pushed. A scope holding nothing to focus is its own first focus, so Tab
+// there found nothing to move to; from it, traversal goes on from where the
+// page stands in the scope round it, to the navigation, as from a page that
+// holds a field.
+class _BranchTraversalPolicy extends FocusTraversalPolicy {
+  _BranchTraversalPolicy(this.around)
+    : super(requestFocusCallback: around.requestFocusCallback);
+
+  final FocusTraversalPolicy around;
+
+  // A page's scope with nothing to focus in it.
+  static bool _empty(FocusNode node) =>
+      node is FocusScopeNode && node.traversalDescendants.isEmpty;
+
+  // The scope round an empty page focused, else [node].
+  static FocusNode _from(FocusNode node) {
+    final outer = node.enclosingScope;
+    return _empty(node) && outer != null && outer.focusedChild == node
+        ? outer
+        : node;
+  }
+
+  @override
+  bool next(FocusNode currentNode) => around.next(_from(currentNode));
+
+  @override
+  bool previous(FocusNode currentNode) => around.previous(_from(currentNode));
+
+  @override
+  bool inDirection(FocusNode currentNode, TraversalDirection direction) =>
+      around.inDirection(currentNode, direction);
+
+  @override
+  FocusNode? findFirstFocus(
+    FocusNode currentNode, {
+    bool ignoreCurrentFocus = false,
+  }) => around.findFirstFocus(
+    currentNode,
+    ignoreCurrentFocus: ignoreCurrentFocus,
+  );
+
+  @override
+  FocusNode findLastFocus(
+    FocusNode currentNode, {
+    bool ignoreCurrentFocus = false,
+  }) =>
+      around.findLastFocus(currentNode, ignoreCurrentFocus: ignoreCurrentFocus);
+
+  @override
+  FocusNode? findFirstFocusInDirection(
+    FocusNode currentNode,
+    TraversalDirection direction,
+  ) => around.findFirstFocusInDirection(currentNode, direction);
+
+  @override
+  Iterable<FocusNode> sortDescendants(
+    Iterable<FocusNode> descendants,
+    FocusNode currentNode,
+  ) => around.sortDescendants([
+    for (final d in descendants)
+      if (identical(d, currentNode) || !_empty(d)) d,
+  ], currentNode);
+
+  @override
+  void invalidateScopeData(FocusScopeNode node) {
+    super.invalidateScopeData(node);
+    around.invalidateScopeData(node);
+  }
+
+  @override
+  void changedScope({FocusNode? node, FocusScopeNode? oldScope}) {
+    super.changedScope(node: node, oldScope: oldScope);
+    around.changedScope(node: node, oldScope: oldScope);
+  }
 }
