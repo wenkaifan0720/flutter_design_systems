@@ -361,19 +361,23 @@ class Fluent2LabelBadge extends StatelessWidget {
   /// What a screen reader says; null says [label].
   final String? semanticLabel;
 
-  /// The corner of [shape] at [size] for a badge [height] tall.
+  /// The corner of [shape] at [size] for a badge [height] tall, on
+  /// [theme]'s corners (Fluent's own when null).
   static double radiusOf(
     Fluent2BadgeShape shape,
     Fluent2BadgeSize size,
-    double height,
-  ) => switch (shape) {
-    Fluent2BadgeShape.circular => height / 2,
-    Fluent2BadgeShape.rounded =>
-      size.index <= Fluent2BadgeSize.small.index
-          ? Fluent2Radius.small
-          : Fluent2Radius.medium,
-    Fluent2BadgeShape.square => Fluent2Radius.none,
-  };
+    double height, [
+    Fluent2ThemeData? theme,
+  ]) {
+    final c =
+        (theme?.shapeScheme ?? Fluent2ThemeData.defaultShapeScheme).corners;
+    return switch (shape) {
+      Fluent2BadgeShape.circular => height / 2,
+      Fluent2BadgeShape.rounded =>
+        size.index <= Fluent2BadgeSize.small.index ? c.extraSmall : c.small,
+      Fluent2BadgeShape.square => Fluent2Radius.none,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -436,9 +440,9 @@ class Fluent2LabelBadge extends StatelessWidget {
         ? fluent2CornerOf(
             look.shape,
             size.side,
-            radiusOf(shape, size, size.side),
+            radiusOf(shape, size, size.side, t),
           ).clamp(0, size.side / 2).toDouble()
-        : radiusOf(shape, size, size.side);
+        : radiusOf(shape, size, size.side, t);
     final badge = ConstrainedBox(
       constraints: BoxConstraints(minWidth: size.side, minHeight: size.side),
       child: DecoratedBox(

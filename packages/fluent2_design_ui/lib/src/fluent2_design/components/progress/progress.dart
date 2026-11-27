@@ -205,7 +205,7 @@ class _Fluent2ProgressBarState extends State<Fluent2ProgressBar>
     final track = fluent2ProgressTrack(t);
     final fill = fluent2ProgressFill(t, w.color);
     final radius = w.shape == Fluent2ProgressShape.rounded
-        ? Fluent2Radius.medium
+        ? t.radiusMedium
         : Fluent2Radius.none;
     final v = w.value;
     final fraction = v == null || w.max <= 0

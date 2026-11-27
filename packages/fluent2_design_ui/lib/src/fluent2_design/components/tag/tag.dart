@@ -584,7 +584,7 @@ double _tagCorner(
     : fluent2CornerOf(
         styled,
         size.height,
-        Fluent2Radius.medium,
+        t.radiusMedium,
       ).clamp(0, size.height / 2).toDouble();
 
 Set<WidgetState> _statesOf(Fluent2Press press, {bool selected = false}) => {

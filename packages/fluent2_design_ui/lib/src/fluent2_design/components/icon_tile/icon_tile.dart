@@ -220,7 +220,9 @@ class Fluent2IconTile extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: fill,
-        borderRadius: BorderRadius.circular(Fluent2Avatar.squareRadius(size)),
+        borderRadius: BorderRadius.circular(
+          Fluent2Avatar.squareRadius(size, context.fluent2Theme),
+        ),
       ),
       child: Icon(icon, size: glyphOf(size), color: ink),
     );
@@ -335,7 +337,7 @@ class Fluent2DateBlock extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: fill,
-          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+          borderRadius: BorderRadius.circular(t.radiusMedium),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

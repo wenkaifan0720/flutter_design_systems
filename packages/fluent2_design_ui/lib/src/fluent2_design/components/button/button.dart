@@ -359,13 +359,18 @@ final class Fluent2ButtonMetrics {
         Fluent2ButtonSize.large => t.subtitle2,
       };
 
-  /// The corner of [shape] at [size].
-  static double radiusOf(Fluent2ButtonShape shape, double height) =>
-      switch (shape) {
-        Fluent2ButtonShape.rounded => Fluent2Radius.medium,
-        Fluent2ButtonShape.circular => height / 2,
-        Fluent2ButtonShape.square => Fluent2Radius.none,
-      };
+  /// The corner of [shape] at [height], on [theme]'s corners (Fluent's own
+  /// when null).
+  static double radiusOf(
+    Fluent2ButtonShape shape,
+    double height, [
+    Fluent2ThemeData? theme,
+  ]) => switch (shape) {
+    Fluent2ButtonShape.rounded =>
+      (theme?.shapeScheme ?? Fluent2ThemeData.defaultShapeScheme).corners.small,
+    Fluent2ButtonShape.circular => height / 2,
+    Fluent2ButtonShape.square => Fluent2Radius.none,
+  };
 }
 
 /// The box every button draws: the face's fill inside its stroke at the
@@ -575,6 +580,7 @@ final class Fluent2ButtonLook {
   double get radius => Fluent2ButtonMetrics.radiusOf(
     shape ?? Fluent2ButtonShape.rounded,
     height,
+    t,
   );
 
   /// The room at each side at the theme's density.
@@ -1690,7 +1696,7 @@ class Fluent2SplitButton extends StatelessWidget {
     final words = Fluent2Localizations.of(context);
     final direction = Directionality.of(context);
     Radius corner(Set<WidgetState> states) => Radius.circular(
-      fluent2CornerOf(look.outline(states), h, Fluent2Radius.medium),
+      fluent2CornerOf(look.outline(states), h, t.radiusMedium),
     );
     // The halves keep the button's own height. Under a finger each half is
     // its own target: it stands the floor (40) tall round its face, and each

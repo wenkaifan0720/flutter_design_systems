@@ -289,7 +289,7 @@ class _Crumb extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: side + Fluent2Stroke.thin),
       decoration: BoxDecoration(
         color: fill,
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -330,7 +330,6 @@ class _Crumb extends StatelessWidget {
         onPressed: item.onPressed,
         semanticLabel: item.label,
         role: Fluent2PressRole.link,
-        radius: Fluent2Radius.medium,
         builder: (context, states) {
           final press = states.press;
           final f = Fluent2ButtonFace.of(

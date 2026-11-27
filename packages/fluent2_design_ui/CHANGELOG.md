@@ -1,3 +1,10 @@
+## 0.9.0
+
+- Requires ui_core 0.8.4.
+- **Corners on the theme**: `Fluent2ThemeData.shapeScheme` (ui_core's `RawShapeScheme`) holds Fluent's radius tokens, `borderRadiusSmall` to `borderRadius2XLarge` (2, 4, 6, 8 and 12 by default, so nothing moves at rest), held to `Fluent2ThemeData.shapeLimits`: round only, a control from 2 to 8, each step in its band; no stroke and no depth. Every part takes its corner from it (read as `radiusSmall` to `radius2XLarge`), and a change eases across with the theme. `Fluent2ThemeData.from` takes `shapeScheme` too.
+- `Fluent2Pressable.radius`, `Fluent2PressFace.radius`, `Fluent2FocusRing.radius` and `Fluent2Flyout.radius` are nullable: null is the theme's `radiusMedium`. `Fluent2Avatar.squareRadius`, `Fluent2ButtonMetrics.radiusOf`, `Fluent2Card.radiusOf` and `Fluent2Badge.radiusOf` take the theme as an optional last argument. `fluent2PaintArrow` takes its `corner` from the caller (required; it was `Fluent2Radius.medium`), so a bubble's arrow keeps clear of the theme's corner.
+- Deprecated `Fluent2Radius.small`, `.medium`, `.large`, `.xLarge` and `.x2Large`, `Fluent2ChromeMetrics.layerRadius` and `.sheetRadius`: read the theme's corner (`Fluent2Theme.of(context).radiusMedium`), which follows `shapeScheme`. They go in 0.10.0.
+
 ## 0.8.0
 
 - Requires ui_core 0.8.3.

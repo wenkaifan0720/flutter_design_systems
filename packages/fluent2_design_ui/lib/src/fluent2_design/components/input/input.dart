@@ -777,7 +777,7 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
                 onPressed: enabled ? _clear : null,
                 semanticLabel: RawWidgetsLocalizations.of(context)
                     .clearButtonTooltip,
-                radius: Fluent2Radius.small,
+                radius: t.radiusSmall,
                 builder: (context, states) => Icon(
                   Fluent2Icons.dismiss,
                   size: m.glyph,
@@ -861,7 +861,6 @@ class Fluent2SearchEntry extends StatelessWidget {
         onPressed: onPressed,
         semanticLabel: words ?? hint,
         hint: own.opensSearch,
-        radius: Fluent2Radius.medium,
         builder: (context, states) => Fluent2FieldFrame(
           appearance: appearance,
           focused: false,

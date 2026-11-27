@@ -165,7 +165,7 @@ class _Home extends StatelessWidget {
     final greeting = DecoratedBox(
       decoration: BoxDecoration(
         color: t.colors.brandBackground2,
-        borderRadius: BorderRadius.circular(Fluent2Radius.xLarge),
+        borderRadius: BorderRadius.circular(t.radiusXLarge),
       ),
       child: Padding(
         padding: const EdgeInsets.all(Fluent2Spacing.xl),

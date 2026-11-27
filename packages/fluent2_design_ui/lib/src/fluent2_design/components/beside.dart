@@ -21,8 +21,8 @@ class Fluent2Beside extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    const corner = Radius.circular(Fluent2ChromeMetrics.layerRadius);
-    final radius = const BorderRadiusDirectional.only(topStart: corner)
+    final corner = Radius.circular(t.radiusXLarge);
+    final radius = BorderRadiusDirectional.only(topStart: corner)
         .resolve(Directionality.of(context));
     return ColoredBox(
       color: t.background,
@@ -46,6 +46,7 @@ class Fluent2Beside extends StatelessWidget {
                   foregroundPainter: _LayerEdge(
                     color: t.colors.neutralStroke2,
                     rtl: Directionality.of(context) == TextDirection.rtl,
+                    radius: t.radiusXLarge,
                   ),
                   child: ClipRRect(
                     borderRadius: radius,
@@ -72,14 +73,17 @@ class Fluent2Beside extends StatelessWidget {
 /// The content layer's edge: a hairline down its start edge, round its
 /// top-start corner and along its top.
 class _LayerEdge extends CustomPainter {
-  _LayerEdge({required this.color, required this.rtl});
+  _LayerEdge({required this.color, required this.rtl, required this.radius});
 
   final Color color;
   final bool rtl;
 
+  /// The layer's top-start corner, the theme's.
+  final double radius;
+
   @override
   void paint(Canvas canvas, Size size) {
-    const r = Fluent2ChromeMetrics.layerRadius;
+    final r = radius;
     const h = Fluent2ChromeMetrics.hairline / 2;
     final path = Path();
     if (rtl) {
@@ -88,7 +92,7 @@ class _LayerEdge extends CustomPainter {
         ..lineTo(size.width - h, r)
         ..arcToPoint(
           Offset(size.width - r, h),
-          radius: const Radius.circular(r - h),
+          radius: Radius.circular(r - h),
           clockwise: false,
         )
         ..lineTo(0, h);
@@ -96,7 +100,7 @@ class _LayerEdge extends CustomPainter {
       path
         ..moveTo(h, size.height)
         ..lineTo(h, r)
-        ..arcToPoint(const Offset(r, h), radius: const Radius.circular(r - h))
+        ..arcToPoint(Offset(r, h), radius: Radius.circular(r - h))
         ..lineTo(size.width, h);
     }
     canvas.drawPath(
@@ -109,5 +113,6 @@ class _LayerEdge extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_LayerEdge old) => old.color != color || old.rtl != rtl;
+  bool shouldRepaint(_LayerEdge old) =>
+      old.color != color || old.rtl != rtl || old.radius != radius;
 }

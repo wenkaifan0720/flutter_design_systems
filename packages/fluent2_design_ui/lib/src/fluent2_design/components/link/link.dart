@@ -89,7 +89,7 @@ class Fluent2Link extends StatelessWidget {
       onPressed: tap,
       padded: !inSentence,
       role: Fluent2PressRole.link,
-      radius: Fluent2Radius.small,
+      radius: t.radiusSmall,
       semanticLabel: semanticLabel ?? text,
       builder: (context, states) {
         final press = states.press;

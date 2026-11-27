@@ -104,7 +104,6 @@ class Fluent2Switch extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: tap,
-          radius: Fluent2Radius.medium,
           ring: words == null,
           semanticLabel: semanticLabel ?? words,
           toggled: value,

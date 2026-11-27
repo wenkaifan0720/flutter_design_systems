@@ -199,7 +199,7 @@ void main() {
                   .resolve(TextDirection.ltr)
                   .topLeft
                   .x;
-        expect(corner, closeTo(Fluent2Radius.medium, 0.01));
+        expect(corner, closeTo(Fluent2ThemeData.lapis().radiusMedium, 0.01));
         await drag.moveBy(Offset(-frame.width * .4, 0));
         await t.pump();
         expect(t.getRect(clip.first), frame);

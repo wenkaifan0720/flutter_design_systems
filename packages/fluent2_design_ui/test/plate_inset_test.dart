@@ -45,7 +45,7 @@ Rect _rowFill(WidgetTester t, String label) {
           w is DecoratedBox &&
           w.decoration is BoxDecoration &&
           (w.decoration as BoxDecoration).borderRadius ==
-              BorderRadius.circular(Fluent2Radius.medium),
+              BorderRadius.circular(Fluent2ThemeData.lapis().radiusMedium),
     ),
   );
   return _rect(t, fill.first);

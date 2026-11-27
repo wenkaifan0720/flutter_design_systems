@@ -285,11 +285,7 @@ class Fluent2SheetCard extends StatelessWidget {
     ], const {});
 
     final r = Radius.circular(
-      fluent2CornerOf(
-        look.shape,
-        2 * Fluent2ChromeMetrics.sheetRadius * 3,
-        Fluent2ChromeMetrics.sheetRadius,
-      ),
+      fluent2CornerOf(look.shape, 2 * t.radiusXLarge * 3, t.radiusXLarge),
     );
     final radius = switch (at) {
       _SheetPlace.bottom => BorderRadius.vertical(top: r),

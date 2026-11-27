@@ -55,7 +55,7 @@ class Fluent2MenuSurface extends StatelessWidget {
               look,
               t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
             ),
-            radius: BorderRadius.circular(Fluent2Radius.medium),
+            radius: BorderRadius.circular(t.radiusMedium),
             shape: look.shape,
             shadows: t.shadows.shadow16,
             // Fluent's 4 round the rows, inside the 1 px stroke, as the

@@ -57,7 +57,7 @@ Widget kitPreviewDemo(Brightness brightness) => kitScreen(
                 decoration: BoxDecoration(
                   color: t.background,
                   border: Border.all(color: t.border),
-                  borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+                  borderRadius: BorderRadius.circular(t.radiusMedium),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(Fluent2Spacing.xl),
@@ -121,10 +121,10 @@ class _Phone extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: t.border),
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
         child: AspectRatio(
           aspectRatio: 390 / 844,
           child: ExcludeSemantics(
@@ -265,7 +265,7 @@ class _Materials extends StatelessWidget {
     }) => SizedBox(
       height: 96,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -280,8 +280,8 @@ class _Materials extends StatelessWidget {
               top: 24,
               child: ground
                   ? ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(Fluent2Radius.medium),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(t.radiusMedium),
                       ),
                       child: ColoredBox(
                         color: t.background,
@@ -290,8 +290,8 @@ class _Materials extends StatelessWidget {
                     )
                   : Fluent2Acrylic(
                       solid: solid,
-                      radius: const BorderRadius.vertical(
-                        top: Radius.circular(Fluent2Radius.medium),
+                      radius: BorderRadius.vertical(
+                        top: Radius.circular(t.radiusMedium),
                       ),
                       child: Center(child: Text(name, style: t.body1Strong)),
                     ),

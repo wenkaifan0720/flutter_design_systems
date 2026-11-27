@@ -68,7 +68,8 @@ Finder _inList(String label) => find.descendant(
     final box = element.widget as Container;
     if (box.decoration
         case BoxDecoration(:final color, borderRadius: final radius?)
-        when radius == BorderRadius.circular(Fluent2Radius.medium)) {
+        when radius ==
+            BorderRadius.circular(Fluent2ThemeData.lapis().radiusMedium)) {
       return (t.getRect(find.byWidget(box)), color);
     }
   }

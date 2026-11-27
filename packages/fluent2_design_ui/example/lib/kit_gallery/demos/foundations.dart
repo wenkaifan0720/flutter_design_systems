@@ -76,7 +76,7 @@ class _Palette extends StatelessWidget {
         decoration: BoxDecoration(
           color: p.background,
           border: Border.all(color: t.border),
-          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+          borderRadius: BorderRadius.circular(t.radiusMedium),
         ),
         child: Padding(
           padding: const EdgeInsets.all(Fluent2Spacing.s),
@@ -93,9 +93,7 @@ class _Palette extends StatelessWidget {
                     DecoratedBox(
                       decoration: BoxDecoration(
                         color: c.brandBackground,
-                        borderRadius: BorderRadius.circular(
-                          Fluent2Radius.medium,
-                        ),
+                        borderRadius: BorderRadius.circular(t.radiusMedium),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -150,7 +148,7 @@ class _Swatches extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: color,
                     border: Border.all(color: t.border),
-                    borderRadius: BorderRadius.circular(Fluent2Radius.small),
+                    borderRadius: BorderRadius.circular(t.radiusSmall),
                   ),
                   child: const SizedBox(width: 32, height: 20),
                 ),
@@ -252,7 +250,7 @@ class _Ramp extends StatelessWidget {
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: t.brand(shade),
-                  borderRadius: BorderRadius.circular(Fluent2Radius.small),
+                  borderRadius: BorderRadius.circular(t.radiusSmall),
                   border: shade == 80
                       ? Border.all(color: t.focus, width: Fluent2Stroke.thick)
                       : null,
@@ -286,7 +284,7 @@ class _Tones extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: colors.tint,
                   border: Border.all(color: colors.border),
-                  borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+                  borderRadius: BorderRadius.circular(t.radiusMedium),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -414,11 +412,11 @@ class _Corners extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     return kitRow([
-      for (final (name, radius) in const [
-        ('small 2', Fluent2Radius.small),
-        ('medium 4', Fluent2Radius.medium),
-        ('large 6', Fluent2Radius.large),
-        ('xLarge 8', Fluent2Radius.xLarge),
+      for (final (name, radius) in [
+        ('small ${t.radiusSmall.round()}', t.radiusSmall),
+        ('medium ${t.radiusMedium.round()}', t.radiusMedium),
+        ('large ${t.radiusLarge.round()}', t.radiusLarge),
+        ('xLarge ${t.radiusXLarge.round()}', t.radiusXLarge),
         ('circular', Fluent2Radius.circular),
       ])
         Column(
@@ -509,7 +507,7 @@ class _Elevation extends StatelessWidget {
             DecoratedBox(
               decoration: BoxDecoration(
                 color: t.surface,
-                borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+                borderRadius: BorderRadius.circular(t.radiusMedium),
                 boxShadow: shadow,
               ),
               child: SizedBox(
@@ -568,7 +566,7 @@ class _Metrics extends StatelessWidget {
           ('tab bar', '${Fluent2ChromeMetrics.tabBarHeight.round()}'),
           ('nav pane', '${Fluent2ChromeMetrics.paneWidth.round()}'),
           ('nav pane item', '${Fluent2ChromeMetrics.paneItem.round()}'),
-          ('sheet corner', '${Fluent2ChromeMetrics.sheetRadius.round()}'),
+          ('sheet corner', '${context.fluent2Theme.radiusXLarge.round()}'),
           ('hit target floor', '${Fluent2Layout.hitTargetOf(context).round()}'),
           ('desktop from', '${Fluent2Layout.wide.round()}'),
         ])

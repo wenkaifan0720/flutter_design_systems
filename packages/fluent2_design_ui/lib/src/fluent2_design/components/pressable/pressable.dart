@@ -88,7 +88,8 @@ extension Fluent2PressStates on Set<WidgetState> {
 /// and disabled colour step. While the keyboard holds focus it draws
 /// Fluent's focus indicator over the face: a 2 stroke of `strokeFocus2` on
 /// the face's edge and a 1 stroke of `strokeFocus1` inside it, [radius]
-/// round, [ringInsets] in from the box.
+/// round (the theme's [Fluent2ThemeData.radiusMedium] unless given),
+/// [ringInsets] in from the box.
 ///
 /// A null [onPressed] (and no [onLongPress]) makes it disabled: the face is
 /// drawn disabled, the node is announced as disabled, and nothing answers a
@@ -116,7 +117,7 @@ class Fluent2Pressable extends StatelessWidget {
     this.inGroup = false,
     this.expanded,
     this.isError = false,
-    this.radius = 4,
+    this.radius,
     this.shape,
     this.ringInsets = EdgeInsets.zero,
     this.ring = true,
@@ -178,8 +179,9 @@ class Fluent2Pressable extends StatelessWidget {
   /// What it holds is wrong: the face gets [WidgetState.error].
   final bool isError;
 
-  /// The corner radius of the focus ring.
-  final double radius;
+  /// The corner radius of the focus ring; null is the theme's
+  /// [Fluent2ThemeData.radiusMedium], a control's corner.
+  final double? radius;
 
   /// The focus ring's outline for the press's states, when the face is a
   /// styled shape; null (or null for the states) rounds it [radius].
@@ -319,7 +321,7 @@ class Fluent2Pressable extends StatelessWidget {
       ..add(FlagProperty('inGroup', value: inGroup, ifTrue: 'inGroup'))
       ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
       ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
-      ..add(DoubleProperty('radius', radius, defaultValue: 4))
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
       ..add(
         DiagnosticsProperty<WidgetStateProperty<OutlinedBorder?>>(
           'shape',
@@ -406,7 +408,7 @@ class Fluent2PressFace extends StatelessWidget {
     super.key,
     required this.states,
     required this.child,
-    this.radius = 4,
+    this.radius,
     this.shape,
     this.ringInsets = EdgeInsets.zero,
     this.ring = true,
@@ -422,7 +424,7 @@ class Fluent2PressFace extends StatelessWidget {
   final Widget child;
 
   /// See [Fluent2Pressable.radius].
-  final double radius;
+  final double? radius;
 
   /// See [Fluent2Pressable.shape].
   final WidgetStateProperty<OutlinedBorder?>? shape;
@@ -480,7 +482,7 @@ class Fluent2PressFace extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<WidgetState>('states', states))
-      ..add(DoubleProperty('radius', radius, defaultValue: 4))
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
       ..add(
         DiagnosticsProperty<WidgetStateProperty<OutlinedBorder?>>(
           'shape',
@@ -515,14 +517,15 @@ class Fluent2PressFace extends StatelessWidget {
 /// that takes text) places it the same way.
 ///
 /// ```dart
-/// Positioned.fill(child: Fluent2FocusRing(radius: 4))
+/// Positioned.fill(child: Fluent2FocusRing())
 /// ```
 class Fluent2FocusRing extends StatelessWidget {
   /// A focus ring [radius] round, or along [shape].
-  const Fluent2FocusRing({super.key, this.radius = 4, this.shape});
+  const Fluent2FocusRing({super.key, this.radius, this.shape});
 
-  /// The ringed face's corner radius.
-  final double radius;
+  /// The ringed face's corner radius; null is the theme's
+  /// [Fluent2ThemeData.radiusMedium], a control's corner.
+  final double? radius;
 
   /// The ringed face's outline, when it is a styled shape; it wins over
   /// [radius].
@@ -533,6 +536,7 @@ class Fluent2FocusRing extends StatelessWidget {
     final t = context.fluent2Theme;
     final c = t.colors;
     final outer = Fluent2ChromeMetrics.focusOuter;
+    final radius = this.radius ?? t.radiusMedium;
     final drawn = shape;
     if (drawn != null) {
       return DecoratedBox(
@@ -582,7 +586,7 @@ class Fluent2FocusRing extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DoubleProperty('radius', radius, defaultValue: 4))
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
       ..add(
         DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
       );

@@ -224,12 +224,7 @@ class Fluent2AppShell extends StatelessWidget {
     };
     return KeyedSubtree(
       key: item.key,
-      child: Fluent2PressFace(
-        states: states,
-        radius: Fluent2Radius.medium,
-        padded: false,
-        child: face,
-      ),
+      child: Fluent2PressFace(states: states, padded: false, child: face),
     );
   }
 

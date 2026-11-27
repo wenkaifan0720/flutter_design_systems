@@ -232,7 +232,7 @@ typedef Fluent2StyleOf = RawStyleOf;
 /// Fluent2Plate(
 ///   fill: look.fill ?? theme.colors.neutralBackground1,
 ///   side: fluent2Rim(theme, look, theme.colors.neutralStroke2),
-///   radius: BorderRadius.circular(Fluent2Radius.xLarge),
+///   radius: BorderRadius.circular(theme.radiusXLarge),
 ///   shape: look.shape,
 ///   child: body,
 /// );

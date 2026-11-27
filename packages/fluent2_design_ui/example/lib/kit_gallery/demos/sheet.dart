@@ -99,7 +99,7 @@ List<Widget> _options(
         onPressed: () => onPick(name),
         semanticLabel: kitW(name),
         selected: name == current,
-        radius: Fluent2Radius.medium,
+        radius: t.radiusMedium,
         builder: (context, states) => ConstrainedBox(
           constraints: BoxConstraints(
             minHeight: Fluent2Layout.hitTargetOf(context),
@@ -111,7 +111,7 @@ List<Widget> _options(
                 t.colors.subtleBackgroundHover,
                 t.colors.subtleBackgroundPressed,
               ),
-              borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+              borderRadius: BorderRadius.circular(t.radiusMedium),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: Fluent2Spacing.s),

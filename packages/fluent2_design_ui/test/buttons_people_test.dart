@@ -141,7 +141,10 @@ void main() {
                     )
                     .decoration
                 as BoxDecoration;
-        expect(face.borderRadius, BorderRadius.circular(Fluent2Radius.medium));
+        expect(
+          face.borderRadius,
+          BorderRadius.circular(Fluent2ThemeData.lapis().radiusMedium),
+        );
         expect((face.border! as Border).top.width, Fluent2Stroke.thin);
         expect(
           t

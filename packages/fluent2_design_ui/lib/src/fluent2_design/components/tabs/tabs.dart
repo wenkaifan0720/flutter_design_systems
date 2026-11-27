@@ -755,7 +755,7 @@ class _Tab extends StatelessWidget {
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2KeyRing(
         focused: states.contains(WidgetState.focused),
-        radius: _circular ? 10000 : Fluent2Radius.medium,
+        radius: _circular ? 10000 : t.radiusMedium,
         child: Builder(
           builder: (context) {
             final press = states.press;
@@ -815,7 +815,7 @@ class _Tab extends StatelessWidget {
                   children: [?icon, words],
                 );
                 final shape = BorderRadius.circular(
-                  _circular ? 10000 : Fluent2Radius.medium,
+                  _circular ? 10000 : t.radiusMedium,
                 );
                 Widget box = Container(
                   padding: room,

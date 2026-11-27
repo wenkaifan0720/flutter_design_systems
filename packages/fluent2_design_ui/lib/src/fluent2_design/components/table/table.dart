@@ -489,7 +489,6 @@ class _HeaderCell extends StatelessWidget {
           : sorted == Fluent2SortDirection.ascending
           ? 'ascending'
           : 'descending',
-      radius: Fluent2Radius.medium,
       builder: (context, states) => face(
         states.press.pick(
           t.colors.neutralForeground1,
@@ -527,7 +526,6 @@ class _SelectCell extends StatelessWidget {
       semanticLabel: label,
       checked: checked ?? false,
       mixed: checked == null,
-      radius: Fluent2Radius.medium,
       builder: (context, states) => Center(
         child: Fluent2CheckIndicator(checked: checked, press: states.press),
       ),
@@ -634,7 +632,6 @@ class _TableRowView extends StatelessWidget {
               onPressed: press,
               semanticLabel: spoken,
               selected: picked == null ? null : on,
-              radius: Fluent2Radius.medium,
               builder: (context, states) => face(states.press),
             ),
           );

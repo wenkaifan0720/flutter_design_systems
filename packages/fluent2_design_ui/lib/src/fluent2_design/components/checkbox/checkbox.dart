@@ -120,7 +120,7 @@ class _Indicator extends StatelessWidget {
           look?.side ??
           BorderSide(color: look?.edge ?? stroke, width: Fluent2Stroke.thin);
       // Fluent's small corner, kept to a quarter of the box.
-      final corner = Fluent2Radius.small.clamp(0, side / 4).toDouble();
+      final corner = t.radiusSmall.clamp(0, side / 4).toDouble();
       final Widget? mark = switch (value) {
         true => Icon(
           large
@@ -262,7 +262,6 @@ class Fluent2Checkbox extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: tap,
-          radius: Fluent2Radius.medium,
           ring: words == null,
           semanticLabel: semanticLabel ?? words,
           checked: value ?? false,

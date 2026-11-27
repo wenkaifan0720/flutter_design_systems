@@ -312,7 +312,6 @@ class Fluent2ActionSheet<T> extends StatelessWidget {
     }) => Fluent2Pressable(
       onPressed: onPressed,
       semanticLabel: label,
-      radius: Fluent2Radius.medium,
       builder: (context, states) => Fluent2MenuRowFace(
         label: label,
         states: states,

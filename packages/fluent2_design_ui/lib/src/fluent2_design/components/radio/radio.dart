@@ -109,7 +109,6 @@ class Fluent2Radio<T> extends StatelessWidget {
           label: label,
           builder: (context, states) => Fluent2PressFace(
             states: states,
-            radius: Fluent2Radius.medium,
             ring: scope.stacked,
             child: _face(
               context,

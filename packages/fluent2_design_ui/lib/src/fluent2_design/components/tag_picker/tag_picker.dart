@@ -430,11 +430,7 @@ class _Tag extends StatelessWidget {
       fit: StackFit.passthrough,
       children: [
         face,
-        const Positioned.fill(
-          child: IgnorePointer(
-            child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-          ),
-        ),
+        const Positioned.fill(child: IgnorePointer(child: Fluent2FocusRing())),
       ],
     );
   }
@@ -449,7 +445,6 @@ class _Tag extends StatelessWidget {
         child: Fluent2Pressable(
           onPressed: onRemove,
           semanticLabel: removeLabel,
-          radius: Fluent2Radius.medium,
           ring: false,
           builder: (context, states) => Container(
             // Fluent's 24 (20), and taller with a large text size, so the
@@ -458,7 +453,7 @@ class _Tag extends StatelessWidget {
             padding: const EdgeInsetsDirectional.only(start: _tagStart),
             decoration: BoxDecoration(
               color: live ? fluent2Well(t) : fluent2WellDisabled(t),
-              borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+              borderRadius: BorderRadius.circular(t.radiusMedium),
               border: live
                   ? null
                   : Border.all(color: fluent2Step(t, c.neutralStrokeDisabled)),

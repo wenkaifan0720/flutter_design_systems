@@ -161,7 +161,7 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
     final corner = fluent2CornerOf(
       Fluent2Style.first(layers, (s) => s.shape, const {}),
       height,
-      Fluent2Layout.padded(context) ? height / 2 : Fluent2Radius.medium,
+      Fluent2Layout.padded(context) ? height / 2 : t.radiusMedium,
     ).clamp(0, height / 2).toDouble();
     final live = onChanged != null;
     final n = segments.length;

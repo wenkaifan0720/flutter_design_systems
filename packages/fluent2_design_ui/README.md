@@ -389,6 +389,24 @@ The palettes are `lapis` (the default), `iris`, `juniper`, `pumpkin`, `berry` an
 
 Use `copyWith` to set density, select a typeface from your app's assets, or replace acrylic blur with an opaque surface using `solidAcrylic: true`. You can also override a component theme or pass a `Fluent2Style` to an individual widget. Style properties can resolve different values for hover, focus, selection and press.
 
+**Corners**: `shapeScheme` holds Fluent's radius tokens, `borderRadiusSmall` to `borderRadius2XLarge` (2, 4, 6, 8 and 12), which the parts take as a Fluent theme's components do: a check box and a tag 2, buttons, fields, cards and menus 4, dialogs, toasts and flyouts 8. `Fluent2ThemeData.shapeLimits` holds each to a band where it still reads as Fluent (a control from 2 to 8, the web's 4 to Windows 11's 8), round only; pills and discs stay round, and the strokes and elevations stay Fluent's. A part of your own reads the theme's corner (`Fluent2Theme.of(context).radiusMedium`), so it follows. Give the host both appearances to change them with a palette picker, and a change eases across with the theme.
+
+```dart
+import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+// Windows 11's rounder controls: every step doubled, within Fluent's bands.
+final corners = Fluent2ThemeData.defaultShapeScheme.copyWith(
+  corners: Fluent2ThemeData.defaultShapeScheme.corners.scaled(2),
+);
+
+Widget host(RawNamedPalette palette, Widget child) => Fluent2Host(
+  light: Fluent2ThemeData.preset(palette.id, Brightness.light).copyWith(shapeScheme: corners),
+  dark: Fluent2ThemeData.preset(palette.id, Brightness.dark).copyWith(shapeScheme: corners),
+  child: child,
+);
+```
+
 ```dart
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:material_ui/material_ui.dart';

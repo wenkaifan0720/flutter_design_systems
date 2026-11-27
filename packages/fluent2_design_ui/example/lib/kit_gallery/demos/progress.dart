@@ -173,7 +173,7 @@ Widget kitSpecimenSkeletonCard() => Builder(
       padding: const EdgeInsets.all(Fluent2Spacing.m),
       decoration: BoxDecoration(
         color: t.colors.brandBackground2,
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
       ),
       child: const Fluent2Skeleton(
         semanticLabel: 'Loading the meeting',

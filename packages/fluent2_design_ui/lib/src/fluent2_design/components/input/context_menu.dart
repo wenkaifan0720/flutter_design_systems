@@ -109,7 +109,7 @@ class Fluent2FieldContextMenu extends StatelessWidget {
                 padding: const EdgeInsets.all(Fluent2ChromeMetrics.menuPadding),
                 decoration: BoxDecoration(
                   color: t.colors.neutralBackground1,
-                  borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+                  borderRadius: BorderRadius.circular(t.radiusMedium),
                   border: Border.all(
                     color: t.isDark
                         ? t.colors.neutralStroke2
@@ -129,7 +129,6 @@ class Fluent2FieldContextMenu extends StatelessWidget {
                         Fluent2Pressable(
                           onPressed: item.onPressed,
                           semanticLabel: labelOf(context, item),
-                          radius: Fluent2Radius.medium,
                           ring: false,
                           builder: (context, states) => Fluent2MenuRowFace(
                             label: labelOf(context, item),

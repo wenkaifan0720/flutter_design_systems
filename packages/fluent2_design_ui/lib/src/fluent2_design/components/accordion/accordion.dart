@@ -253,7 +253,6 @@ class _Section extends StatelessWidget {
         onPressed: onTap,
         semanticLabel: item.title,
         expanded: open,
-        radius: Fluent2Radius.medium,
         builder: (context, states) {
           final press = states.press;
           final ink = press == Fluent2Press.disabled
@@ -279,7 +278,7 @@ class _Section extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: t.colors.transparentBackground,
-              borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+              borderRadius: BorderRadius.circular(t.radiusMedium),
             ),
             child: Row(
               children: [

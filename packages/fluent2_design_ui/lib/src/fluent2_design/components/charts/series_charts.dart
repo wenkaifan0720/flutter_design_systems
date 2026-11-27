@@ -218,7 +218,7 @@ class _Plot extends StatelessWidget {
                   ];
                   return Fluent2KeyRing(
                     focused: chart.states.contains(WidgetState.focused),
-                    radius: Fluent2Radius.medium,
+                    radius: t.radiusMedium,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -335,7 +335,7 @@ class _Card extends StatelessWidget {
           padding: const EdgeInsets.all(padding),
           decoration: BoxDecoration(
             color: t.colors.neutralBackground1,
-            borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+            borderRadius: BorderRadius.circular(t.radiusMedium),
             border: Border.all(
               color: t.isDark
                   ? t.colors.neutralStroke2

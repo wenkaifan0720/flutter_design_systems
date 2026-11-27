@@ -81,7 +81,6 @@ class Fluent2Back extends StatelessWidget {
       onPressed: onPressed,
       semanticLabel: spoken,
       role: Fluent2PressRole.link,
-      radius: Fluent2Radius.medium,
       builder: (context, states) {
         final press = states.press;
         final ink = press.pick(

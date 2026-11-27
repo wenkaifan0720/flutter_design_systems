@@ -91,8 +91,8 @@ export 'fluent2_design/theme.dart' hide fluent2CssShadow;
 // The shared kit's values the look's parts take and hand back: a range, a
 // date range and its calendar, a colour, a table's rows and columns, a code,
 // a menu bar's entries, a command, where a flyout opens, a toast's handle,
-// the inventory, iOS's swipe back round a page's push, and a window's size
-// class.
+// the inventory, iOS's swipe back round a page's push, a window's size
+// class, and the corners a theme holds.
 export 'package:ui_core/ui_core.dart' show RawWindowSizeClass;
 export 'package:ui_core/ui_core.dart' show RawPopoverSide, RawPopoverAlign;
 export 'package:ui_core/ui_core.dart'
@@ -105,5 +105,13 @@ export 'package:ui_core/inventory.dart'
 export 'package:ui_core/ui_core.dart'
     show SwipeBackPageTransitionsBuilder, rawSwipeBack;
 export 'package:ui_core/ui_core.dart' show RawRangeValues;
+export 'package:ui_core/ui_core.dart'
+    show
+        RawBand,
+        RawCorner,
+        RawCornerScale,
+        RawCornerStyle,
+        RawShapeLimits,
+        RawShapeScheme;
 export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 export 'package:ui_core/ui_core.dart' show RawToastController;

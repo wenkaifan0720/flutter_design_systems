@@ -344,9 +344,7 @@ class _Stepper extends StatelessWidget {
     final t = context.fluent2Theme;
     final c = t.colors;
     final r = Radius.circular(
-      appearance == Fluent2InputAppearance.underline
-          ? 0
-          : Fluent2Radius.medium - 1,
+      appearance == Fluent2InputAppearance.underline ? 0 : t.radiusMedium - 1,
     );
     final (hover, pressed) = switch (appearance) {
       Fluent2InputAppearance.filledDarker => (

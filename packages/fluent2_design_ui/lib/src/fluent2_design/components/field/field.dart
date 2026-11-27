@@ -261,7 +261,6 @@ class _Fluent2InfoLabelState extends State<Fluent2InfoLabel> {
         semanticLabel: Fluent2Localizations.of(context)
             .informationAbout(widget.text),
         selected: open,
-        radius: Fluent2Radius.medium,
         builder: (context, states) {
           final press = states.press;
           final lit =
@@ -282,7 +281,7 @@ class _Fluent2InfoLabelState extends State<Fluent2InfoLabel> {
                       c.transparentBackgroundHover,
                       c.transparentBackgroundPressed,
                     ),
-              borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+              borderRadius: BorderRadius.circular(t.radiusMedium),
             ),
             child: Icon(
               lit ? filled : glyph,

@@ -268,7 +268,7 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
         enabled: live,
         textNode: true,
         minHeight: 0,
-        radius: Fluent2Radius.xLarge,
+        radius: t.radiusXLarge,
         padding: const EdgeInsets.fromLTRB(
           Fluent2Spacing.m,
           Fluent2Spacing.m,

@@ -252,15 +252,20 @@ class Fluent2Avatar extends StatelessWidget {
       ? 10
       : 6;
 
-  /// A square avatar's corner at [size], Fluent's: 2 to 24, 4 to 48, 6 to
-  /// 72, 8 above.
-  static double squareRadius(double size) => size <= 24
-      ? Fluent2Radius.small
-      : size <= 48
-      ? Fluent2Radius.medium
-      : size <= 72
-      ? Fluent2Radius.large
-      : Fluent2Radius.xLarge;
+  /// A square avatar's corner at [size], on [theme]'s corners (Fluent's
+  /// own when null): `borderRadiusSmall` to 24, `Medium` to 48, `Large`
+  /// to 72, `XLarge` above (2, 4, 6 and 8 by default).
+  static double squareRadius(double size, [Fluent2ThemeData? theme]) {
+    final c =
+        (theme?.shapeScheme ?? Fluent2ThemeData.defaultShapeScheme).corners;
+    return size <= 24
+        ? c.extraSmall
+        : size <= 48
+        ? c.small
+        : size <= 72
+        ? c.medium
+        : c.large;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +294,7 @@ class Fluent2Avatar extends StatelessWidget {
     final outline = shape == Fluent2AvatarShape.circular ? look.shape : null;
     final radius = shape == Fluent2AvatarShape.circular
         ? BorderRadius.circular(size / 2)
-        : BorderRadius.circular(squareRadius(size));
+        : BorderRadius.circular(squareRadius(size, t));
     final img = image;
     Widget face;
     if (img != null) {
@@ -329,7 +334,7 @@ class Fluent2Avatar extends StatelessWidget {
             : BoxDecoration(
                 borderRadius: shape == Fluent2AvatarShape.circular
                     ? BorderRadius.circular(size)
-                    : BorderRadius.circular(squareRadius(size) + ring * 2),
+                    : BorderRadius.circular(squareRadius(size, t) + ring * 2),
                 border: Border.all(color: rim.color, width: rim.width),
               ),
         child: Padding(padding: EdgeInsets.all(ring / 2), child: face),

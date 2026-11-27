@@ -51,9 +51,7 @@ Widget kitChartsDemo(Brightness brightness) => kitScreen(
                         height: 12,
                         decoration: BoxDecoration(
                           color: hue.of(t),
-                          borderRadius: BorderRadius.circular(
-                            Fluent2Radius.small,
-                          ),
+                          borderRadius: BorderRadius.circular(t.radiusSmall),
                         ),
                       ),
                       Text(kitSay(hue), style: t.caption1.c(t.textSecondary)),

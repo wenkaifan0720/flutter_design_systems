@@ -208,7 +208,7 @@ class Fluent2SkeletonItem extends StatelessWidget {
         ? (const Color(0x00000000), c.neutralStencil1Alpha)
         : (c.neutralStencil1, c.neutralStencil2);
     final radius = switch (shape) {
-      Fluent2SkeletonShape.rectangle => Fluent2Radius.medium,
+      Fluent2SkeletonShape.rectangle => t.radiusMedium,
       Fluent2SkeletonShape.circle => size / 2,
       Fluent2SkeletonShape.square => Fluent2Radius.none,
     };

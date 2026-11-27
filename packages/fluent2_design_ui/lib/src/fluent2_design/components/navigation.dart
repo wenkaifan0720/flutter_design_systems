@@ -194,7 +194,6 @@ class Fluent2Pagination extends StatelessWidget {
         onPressed: go == null ? null : () => go(p),
         semanticLabel: words.pageNumber(p),
         selected: current,
-        radius: Fluent2Radius.medium,
         builder: (context, states) {
           final press = states.press;
           return Container(
@@ -202,7 +201,7 @@ class Fluent2Pagination extends StatelessWidget {
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: Fluent2Spacing.xs),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+              borderRadius: BorderRadius.circular(t.radiusMedium),
               color: current
                   ? press.pick(
                       fluent2Step(t, t.colors.subtleBackgroundSelected),
@@ -363,7 +362,7 @@ class Fluent2StepProgress extends StatelessWidget {
                   child: Container(
                     height: 4,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(Fluent2Radius.small),
+                      borderRadius: BorderRadius.circular(t.radiusSmall),
                       color: i <= currentStep
                           ? t.colors.compoundBrandBackground
                           : fluent2Rail(t),
@@ -501,7 +500,6 @@ class Fluent2PageDots extends StatelessWidget {
               onPressed: () => go(i),
               semanticLabel: words.pageOf(i + 1, count),
               selected: i == selectedIndex,
-              radius: Fluent2Radius.medium,
               // Under a finger each dot is a whole target (the floor, 40)
               // wide; under a pointer half that. The current one's cell is wider by what
               // its pill is wider, so every gap between dots is the same.

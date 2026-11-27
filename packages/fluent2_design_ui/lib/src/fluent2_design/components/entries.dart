@@ -557,7 +557,8 @@ class _RailPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final width = math.max(0.0, size.width - inset * 2);
     final cy = size.height / 2;
-    final r = const Radius.circular(Fluent2Radius.xLarge);
+    // The rail's round ends.
+    const r = Radius.circular(2);
     final whole = Rect.fromLTWH(inset, cy - 2, width, 4);
     canvas.drawRRect(RRect.fromRectAndRadius(whole, r), Paint()..color = rail);
     final a = rtl ? 1 - end : start;
@@ -634,7 +635,7 @@ class Fluent2FileUpload extends StatelessWidget {
       semanticLabel: title,
       hint: hint,
       isError: invalid,
-      radius: Fluent2Radius.xLarge,
+      radius: t.radiusXLarge,
       builder: (context, states) {
         final live = states.enabled;
         final press = states.press;
@@ -643,7 +644,7 @@ class Fluent2FileUpload extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 120),
           padding: const EdgeInsets.all(Fluent2Spacing.l),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Fluent2Radius.xLarge),
+            borderRadius: BorderRadius.circular(t.radiusXLarge),
             border: Border.all(
               color: !live
                   ? fluent2Step(t, c.neutralStrokeDisabled)
@@ -1509,7 +1510,7 @@ class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
       ),
       columnBuilder: (context, column, wheel) => Fluent2KeyRing(
         focused: column.states.contains(WidgetState.focused),
-        radius: Fluent2Radius.medium,
+        radius: t.radiusMedium,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -1519,7 +1520,7 @@ class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
                 // iOS's selection band in Fluent's grey step, laid over
                 // the ground so it shows on the tinted page.
                 color: live ? fluent2Well(t) : fluent2WellDisabled(t),
-                borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+                borderRadius: BorderRadius.circular(t.radiusMedium),
               ),
             ),
             wheel,
@@ -1557,7 +1558,7 @@ class Fluent2ColorPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
-    final r = BorderRadius.circular(Fluent2Radius.medium);
+    final r = BorderRadius.circular(t.radiusMedium);
     final edge = Border.all(color: c.neutralStroke1);
     Widget knob(Set<WidgetState> states, Color fill, double size) => Center(
       child: Stack(

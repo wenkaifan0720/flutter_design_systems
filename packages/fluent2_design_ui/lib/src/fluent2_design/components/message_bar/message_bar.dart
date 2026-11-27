@@ -318,7 +318,7 @@ class Fluent2MessageBar extends StatelessWidget {
             decoration: BoxDecoration(
               color: tone.tint,
               borderRadius: BorderRadius.circular(
-                square ? Fluent2Radius.none : Fluent2Radius.medium,
+                square ? Fluent2Radius.none : t.radiusMedium,
               ),
               border: Border.all(color: tone.border),
             ),

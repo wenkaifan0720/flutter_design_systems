@@ -249,7 +249,7 @@ class _Fluent2MenuState<T> extends State<Fluent2Menu<T>> {
                 look,
                 t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
               ),
-              radius: BorderRadius.circular(Fluent2Radius.medium),
+              radius: BorderRadius.circular(t.radiusMedium),
               shape: look.shape,
               shadows: t.shadows.shadow16,
               // Fluent's 4 round the items, inside the 1 px stroke.
@@ -348,7 +348,6 @@ class _MenuRow<T> extends StatelessWidget {
       value: item.secondary,
       selected: item.checked,
       focusNode: focusNode,
-      radius: Fluent2Radius.medium,
       // The face rings itself, as the open menu's lead says.
       ring: false,
       builder: (context, states) => Fluent2MenuRowFace(
@@ -471,7 +470,7 @@ class Fluent2MenuRowFace extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: rowFill,
-            borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+            borderRadius: BorderRadius.circular(t.radiusMedium),
           ),
           child: Row(
             spacing: Fluent2ChromeMetrics.menuItemGap,
@@ -553,9 +552,7 @@ class Fluent2MenuRowFace extends StatelessWidget {
             children: [
               row,
               const Positioned.fill(
-                child: IgnorePointer(
-                  child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-                ),
+                child: IgnorePointer(child: Fluent2FocusRing()),
               ),
             ],
           ),

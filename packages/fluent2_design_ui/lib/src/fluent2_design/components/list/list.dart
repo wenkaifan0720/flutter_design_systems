@@ -542,7 +542,7 @@ class Fluent2ListGroup extends StatelessWidget {
                 (look.edge == null
                     ? BorderSide.none
                     : BorderSide(color: look.edge!, width: Fluent2Stroke.thin)),
-            radius: BorderRadius.circular(Fluent2Radius.medium),
+            radius: BorderRadius.circular(t.radiusMedium),
             shape: look.shape,
             shadows: t.shadows.shadow4,
             clip: true,
@@ -678,7 +678,7 @@ class _HeaderLink extends StatelessWidget {
         onPressed: onTap,
         semanticLabel: label,
         role: Fluent2PressRole.link,
-        radius: Fluent2Radius.small,
+        radius: t.radiusSmall,
         builder: (context, states) {
           final press = states.press;
           final ink = press.pick(

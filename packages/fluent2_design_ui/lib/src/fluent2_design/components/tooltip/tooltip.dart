@@ -93,7 +93,7 @@ class Fluent2TooltipBubble extends StatelessWidget {
       child: Fluent2Plate(
         fill: fill,
         side: fluent2Rim(t, look, t.colors.transparentStroke),
-        radius: BorderRadius.circular(Fluent2Radius.medium),
+        radius: BorderRadius.circular(t.radiusMedium),
         shape: look.shape,
         shadows: t.shadows.shadow8,
         padding: look.padding(Directionality.of(context)) ?? _bubbleInsets,
@@ -106,6 +106,7 @@ class Fluent2TooltipBubble extends StatelessWidget {
         placement: p,
         fill: fill,
         height: arrow,
+        corner: t.radiusMedium,
         // A placement that notifies repaints the arrow as it moves.
         repaint: p is Listenable ? p as Listenable : null,
       ),
@@ -149,12 +150,14 @@ class _ArrowPainter extends CustomPainter {
     required this.placement,
     required this.fill,
     required this.height,
+    required this.corner,
     super.repaint,
   });
 
   final Fluent2ArrowPlacement placement;
   final Color fill;
   final double height;
+  final double corner;
 
   @override
   void paint(Canvas canvas, Size size) => fluent2PaintArrow(
@@ -163,6 +166,7 @@ class _ArrowPainter extends CustomPainter {
     placement: placement,
     fill: fill,
     height: height,
+    corner: corner,
   );
 
   // The placement is written during layout, after this painter was made.

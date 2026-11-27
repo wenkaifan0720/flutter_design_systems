@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 
 import '../components/tooltip/arrow_placement.dart';
-import '../theme.dart';
 
 /// Paints a bubble's arrow: a [height] triangle in [fill] on the edge
 /// [placement] says (inside the [height] of room left at the top and the
@@ -16,7 +15,7 @@ void fluent2PaintArrow(
   required Fluent2ArrowPlacement placement,
   required Color fill,
   required double height,
-  double corner = Fluent2Radius.medium,
+  required double corner,
 }) {
   final half = height;
   final x = placement.offset

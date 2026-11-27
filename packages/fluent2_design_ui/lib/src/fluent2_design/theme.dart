@@ -24,10 +24,11 @@ export 'knobs.dart';
 ///
 /// Fluent 2 is a look in the Fluent 2 family, and its values are Fluent 2's,
 /// read from `@fluentui/tokens` 1.0.0-alpha.24: the global scales (spacing,
-/// radii, stroke widths, durations, curves, the type ramp) are this file's
-/// consts under Fluent's own names (`spacingHorizontalM` is
-/// [Fluent2Spacing.m], `borderRadiusMedium` [Fluent2Radius.medium],
-/// `durationFaster` [Fluent2Motion.faster]); the colours are the alias tokens
+/// stroke widths, durations, curves, the type ramp) are this file's consts
+/// under Fluent's own names (`spacingHorizontalM` is [Fluent2Spacing.m],
+/// `durationFaster` [Fluent2Motion.faster]); the radii are the theme's, as a
+/// Fluent theme's radius tokens are (`borderRadiusMedium` is
+/// [Fluent2ThemeData.radiusMedium]); the colours are the alias tokens
 /// of one preset in one appearance, generated as [Fluent2Colors]
 /// (`internal/presets.g.dart`), carried by [Fluent2ThemeData.colors] and read by the
 /// name the Fluent React component's styles read (`t.colors.neutralBackground1`).
@@ -84,26 +85,49 @@ abstract final class Fluent2Spacing {
   static const double x48 = 48;
 }
 
-/// Corner radii, Fluent's `borderRadius*`: controls and cards at
-/// [medium] (4), the small parts at [small] (2), a dialog at [xLarge] (8),
-/// a pill or a disc at [circular].
+/// Fluent's `borderRadius*` tokens at their own values. The parts draw the
+/// theme's corners ([Fluent2ThemeData.shapeScheme], read as
+/// [Fluent2ThemeData.radiusSmall] to [Fluent2ThemeData.radius2XLarge]), which
+/// an app can change within Fluent's bands; a part of an app's own reads them
+/// there, so it follows. [none], [circular] and the steps past 12 are not
+/// opened.
 abstract final class Fluent2Radius {
   /// Fluent's `borderRadiusNone`: 0.
   static const double none = 0;
 
   /// Fluent's `borderRadiusSmall`: 2.
+  @Deprecated(
+    "Read the theme's corner, Fluent2Theme.of(context).radiusSmall, which follows "
+    'its shapeScheme. Removed in 0.10.0.',
+  )
   static const double small = 2;
 
   /// Fluent's `borderRadiusMedium`: 4.
+  @Deprecated(
+    "Read the theme's corner, Fluent2Theme.of(context).radiusMedium, which follows "
+    'its shapeScheme. Removed in 0.10.0.',
+  )
   static const double medium = 4;
 
   /// Fluent's `borderRadiusLarge`: 6.
+  @Deprecated(
+    "Read the theme's corner, Fluent2Theme.of(context).radiusLarge, which follows "
+    'its shapeScheme. Removed in 0.10.0.',
+  )
   static const double large = 6;
 
   /// Fluent's `borderRadiusXLarge`: 8.
+  @Deprecated(
+    "Read the theme's corner, Fluent2Theme.of(context).radiusXLarge, which follows "
+    'its shapeScheme. Removed in 0.10.0.',
+  )
   static const double xLarge = 8;
 
   /// Fluent's `borderRadius2XLarge`: 12.
+  @Deprecated(
+    "Read the theme's corner, Fluent2Theme.of(context).radius2XLarge, which follows "
+    'its shapeScheme. Removed in 0.10.0.',
+  )
   static const double x2Large = 12;
 
   /// Fluent's `borderRadius3XLarge`: 16.
@@ -674,6 +698,7 @@ final class Fluent2ThemeData with Diagnosticable {
     this.typeface = Fluent2Typeface.look,
     this.solidAcrylic = false,
     this.fontFamilyFallback = const [],
+    this.shapeScheme = defaultShapeScheme,
   });
 
   /// The `lapis` preset: Fluent's own web light and dark, the familiar web blue (#0F6CBD).
@@ -770,6 +795,73 @@ final class Fluent2ThemeData with Diagnosticable {
   /// that should not pay for the blur or a reader who needs a steady ground
   /// under the words. False unless set; the recipe itself stays Fluent's.
   final bool solidAcrylic;
+
+  /// The corners an app can change, Fluent's `borderRadius*` ramp, held to
+  /// [shapeLimits]: [RawCorner.extraSmall] is `borderRadiusSmall` (2: a
+  /// check box, a tag, a skeleton line), [RawCorner.small]
+  /// `borderRadiusMedium` (4: buttons, fields, cards, menus, rows),
+  /// [RawCorner.medium] `borderRadiusLarge` (6), [RawCorner.large]
+  /// `borderRadiusXLarge` (8: a dialog, a toast, a flyout) and
+  /// [RawCorner.extraLarge] `borderRadius2XLarge` (12), as a Fluent theme
+  /// sets its radius tokens. The parts read them through [radiusSmall] to
+  /// [radius2XLarge]. Pills and discs stay round (`borderRadiusCircular`),
+  /// and the strokes and the elevations stay Fluent's: the 2 px focus stroke
+  /// carries its contrast and the shadows are the layers' order, so it opens
+  /// no stroke and no depth. A change of corners eases across with the
+  /// theme ([lerp]).
+  ///
+  /// ```dart
+  /// final rounder = Fluent2ThemeData.lapis().copyWith(
+  ///   shapeScheme: Fluent2ThemeData.defaultShapeScheme.copyWith(
+  ///     corners: Fluent2ThemeData.defaultShapeScheme.corners.scaled(2),
+  ///   ),
+  /// );
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Fluent's own corners: round, 2, 4, 6, 8 and 12.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 2,
+      small: 4,
+      medium: 6,
+      large: 8,
+      extraLarge: 12,
+    ),
+  );
+
+  /// The bands Fluent 2 holds a [shapeScheme] to, so every end still reads as
+  /// Fluent: round corners alone (Fluent's corners are arcs on every
+  /// platform), a control from 2 to 8 (the web's 4 and Windows 11's 8 both
+  /// read as Fluent; square controls read as Metro, pill controls as another
+  /// system), each other step in proportion, and no stroke and no depth.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(0, 4),
+    small: RawBand(2, 8),
+    medium: RawBand(4, 10),
+    large: RawBand(4, 12),
+    extraLarge: RawBand(8, 16),
+  );
+
+  /// Fluent's `borderRadiusSmall` in this theme, 2 by default: a check box,
+  /// a tag, a skeleton line ([RawCorner.extraSmall]).
+  double get radiusSmall => shapeScheme.corners.extraSmall;
+
+  /// Fluent's `borderRadiusMedium` in this theme, 4 by default: a button, a
+  /// field, a card, a menu, a row's plate ([RawCorner.small]).
+  double get radiusMedium => shapeScheme.corners.small;
+
+  /// Fluent's `borderRadiusLarge` in this theme, 6 by default
+  /// ([RawCorner.medium]).
+  double get radiusLarge => shapeScheme.corners.medium;
+
+  /// Fluent's `borderRadiusXLarge` in this theme, 8 by default: a dialog, a
+  /// toast, a flyout ([RawCorner.large]).
+  double get radiusXLarge => shapeScheme.corners.large;
+
+  /// Fluent's `borderRadius2XLarge` in this theme, 12 by default
+  /// ([RawCorner.extraLarge]).
+  double get radius2XLarge => shapeScheme.corners.extraLarge;
 
   /// Fluent's `caption2`, 10/14 regular.
   late final TextStyle caption2 = _ramp(10, 14, 400);
@@ -1285,8 +1377,8 @@ final class Fluent2ThemeData with Diagnosticable {
   ///   `compoundBrandForeground1`, `brandForegroundLink`) reach 4.5:1;
   /// - the brand strokes (`compoundBrandStroke`, `brandStroke1`) reach 3:1.
   ///
-  /// The density, the typeface, the font fallback and the component themes
-  /// ride along as `copyWith` takes them.
+  /// The density, the typeface, the font fallback, the corners and the
+  /// component themes ride along as `copyWith` takes them.
   ///
   /// ```dart
   /// final theme = Fluent2ThemeData.from(
@@ -1302,6 +1394,7 @@ final class Fluent2ThemeData with Diagnosticable {
     Fluent2Typeface? typeface,
     Fluent2ComponentThemes? components,
     List<String>? fontFamilyFallback,
+    RawShapeScheme? shapeScheme,
   }) {
     final dark = brightness == Brightness.dark;
     const white = Color(0xFFFFFFFF);
@@ -1461,6 +1554,7 @@ final class Fluent2ThemeData with Diagnosticable {
       typeface: typeface,
       components: components,
       fontFamilyFallback: fontFamilyFallback,
+      shapeScheme: shapeScheme,
     );
   }
 
@@ -1485,6 +1579,7 @@ final class Fluent2ThemeData with Diagnosticable {
     Fluent2Typeface? typeface,
     List<String>? fontFamilyFallback,
     bool? solidAcrylic,
+    RawShapeScheme? shapeScheme,
     Fluent2ComponentThemes? components,
     Fluent2Style? primaryButtonTheme,
     Fluent2Style? secondaryButtonTheme,
@@ -1553,6 +1648,9 @@ final class Fluent2ThemeData with Diagnosticable {
       density: density ?? this.density,
       typeface: typeface ?? this.typeface,
       fontFamilyFallback: fontFamilyFallback ?? this.fontFamilyFallback,
+      shapeScheme: shapeScheme == null
+          ? this.shapeScheme
+          : shapeLimits.clamp(shapeScheme, look: 'Fluent 2'),
     );
   }
 
@@ -1585,6 +1683,7 @@ final class Fluent2ThemeData with Diagnosticable {
       typeface: Fluent2Typeface.lerp(typeface, other.typeface, t),
       solidAcrylic: near.solidAcrylic,
       fontFamilyFallback: near.fontFamilyFallback,
+      shapeScheme: RawShapeScheme.lerp(shapeScheme, other.shapeScheme, t),
     );
   }
 
@@ -1605,7 +1704,8 @@ final class Fluent2ThemeData with Diagnosticable {
           other.density == density &&
           other.typeface == typeface &&
           other.solidAcrylic == solidAcrylic &&
-          listEquals(other.fontFamilyFallback, fontFamilyFallback);
+          listEquals(other.fontFamilyFallback, fontFamilyFallback) &&
+          other.shapeScheme == shapeScheme;
 
   @override
   int get hashCode => Object.hash(
@@ -1623,6 +1723,7 @@ final class Fluent2ThemeData with Diagnosticable {
     typeface,
     solidAcrylic,
     Object.hashAll(fontFamilyFallback),
+    shapeScheme,
   );
 
   @override
@@ -1654,6 +1755,13 @@ final class Fluent2ThemeData with Diagnosticable {
         'density',
         density,
         defaultValue: Fluent2Density.standard,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<RawShapeScheme>(
+        'shapeScheme',
+        shapeScheme,
+        defaultValue: defaultShapeScheme,
       ),
     );
     properties.add(

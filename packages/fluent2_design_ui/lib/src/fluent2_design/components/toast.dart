@@ -354,7 +354,7 @@ class Fluent2Toast extends StatelessWidget {
           look,
           t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
         ),
-        radius: BorderRadius.circular(Fluent2Radius.medium),
+        radius: BorderRadius.circular(t.radiusMedium),
         shape: look.shape,
         shadows: t.shadows.shadow8,
         padding:
@@ -391,7 +391,7 @@ class Fluent2Toast extends StatelessWidget {
                 Fluent2Pressable(
                   onPressed: onAction,
                   semanticLabel: label,
-                  radius: Fluent2Radius.small,
+                  radius: t.radiusSmall,
                   builder: (context, states) => Text(
                     label,
                     maxLines: 1,

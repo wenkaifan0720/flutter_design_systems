@@ -89,7 +89,7 @@ class _Sizes extends StatelessWidget {
           padding: const EdgeInsets.all(Fluent2Spacing.l),
           decoration: BoxDecoration(
             color: t.accent,
-            borderRadius: BorderRadius.circular(Fluent2Radius.large),
+            borderRadius: BorderRadius.circular(t.radiusLarge),
           ),
           child: Fluent2Spinner(
             inverted: true,

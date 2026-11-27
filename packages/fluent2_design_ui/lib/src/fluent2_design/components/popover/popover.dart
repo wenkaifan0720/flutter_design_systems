@@ -111,7 +111,7 @@ class Fluent2Flyout extends StatelessWidget {
     this.arrowUp = true,
     this.minWidth = 0,
     this.maxWidth = 360,
-    this.radius = Fluent2Radius.medium,
+    this.radius,
     super.key,
   }) : _placement = null;
 
@@ -122,7 +122,7 @@ class Fluent2Flyout extends StatelessWidget {
     required Fluent2ArrowPlacement this._placement,
     this.minWidth = 0,
     this.maxWidth = 360,
-    this.radius = Fluent2Radius.medium,
+    this.radius,
   }) : arrowAt = null,
        arrowUp = true;
 
@@ -148,8 +148,9 @@ class Fluent2Flyout extends StatelessWidget {
   /// The widest the flyout stands.
   final double maxWidth;
 
-  /// Its corners: Fluent's 4 (a teaching popover's 8).
-  final double radius;
+  /// Its corners; null is the theme's [Fluent2ThemeData.radiusMedium] (a
+  /// teaching popover's are [Fluent2ThemeData.radiusXLarge]).
+  final double? radius;
   final Fluent2ArrowPlacement? _placement;
 
   /// Opens [builder]'s content in a popover anchored to the control
@@ -217,6 +218,7 @@ class Fluent2Flyout extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final (fill, ink, edge) = fluent2FlyoutFace(t, appearance);
+    final radius = this.radius ?? t.radiusMedium;
     final surface = ConstrainedBox(
       constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
       child: DecoratedBox(
@@ -285,9 +287,7 @@ class Fluent2Flyout extends StatelessWidget {
       ..add(FlagProperty('arrowUp', value: arrowUp, ifFalse: 'arrowUp: false'))
       ..add(DoubleProperty('minWidth', minWidth, defaultValue: 0))
       ..add(DoubleProperty('maxWidth', maxWidth, defaultValue: 360))
-      ..add(
-        DoubleProperty('radius', radius, defaultValue: Fluent2Radius.medium),
-      );
+      ..add(DoubleProperty('radius', radius, defaultValue: null));
   }
 }
 
@@ -446,13 +446,12 @@ class _TeachButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
-    final radius = BorderRadius.circular(Fluent2Radius.medium);
+    final radius = BorderRadius.circular(t.radiusMedium);
     return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onTap,
         semanticLabel: label,
-        radius: Fluent2Radius.medium,
         builder: (context, states) {
           final press = states.press;
           final Fluent2ButtonFace face;
@@ -745,7 +744,7 @@ class Fluent2TeachingPopover extends StatelessWidget {
             size: Fluent2FlyoutSize.medium,
             placement: placed,
             maxWidth: 360,
-            radius: Fluent2Radius.xLarge,
+            radius: t.radiusXLarge,
             child: content,
           )
         : Fluent2Flyout(
@@ -753,7 +752,7 @@ class Fluent2TeachingPopover extends StatelessWidget {
             arrowAt: arrowAt,
             arrowUp: arrowUp,
             maxWidth: 360,
-            radius: Fluent2Radius.xLarge,
+            radius: t.radiusXLarge,
             child: content,
           );
     return Semantics(

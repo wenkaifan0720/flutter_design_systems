@@ -212,7 +212,7 @@ class Fluent2Stat extends StatelessWidget {
           t.colors.neutralCardBackgroundHover,
           t.colors.neutralCardBackgroundPressed,
         ),
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
         border: Border.all(
           color: t.isDark
               ? fluent2Step(t, t.colors.neutralStroke2)
@@ -235,7 +235,6 @@ class Fluent2Stat extends StatelessWidget {
       autofocus: autofocus,
       onPressed: tap,
       semanticLabel: spoken,
-      radius: Fluent2Radius.medium,
       builder: (context, states) => card(states.press),
     );
   }

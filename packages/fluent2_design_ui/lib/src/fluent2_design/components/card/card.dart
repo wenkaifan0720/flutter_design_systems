@@ -128,13 +128,17 @@ class Fluent2Card extends StatelessWidget {
     Fluent2CardSize.large => Fluent2Spacing.l,
   };
 
-  /// The corner at [size] (Fluent's `borderRadiusSmall`, `Medium`,
-  /// `Large`: 2, 4, 6).
-  static double radiusOf(Fluent2CardSize size) => switch (size) {
-    Fluent2CardSize.small => Fluent2Radius.small,
-    Fluent2CardSize.medium => Fluent2Radius.medium,
-    Fluent2CardSize.large => Fluent2Radius.large,
-  };
+  /// The corner at [size] on [theme]'s corners (Fluent's own when null):
+  /// `borderRadiusSmall`, `Medium`, `Large` (2, 4, 6 by default).
+  static double radiusOf(Fluent2CardSize size, [Fluent2ThemeData? theme]) {
+    final c =
+        (theme?.shapeScheme ?? Fluent2ThemeData.defaultShapeScheme).corners;
+    return switch (size) {
+      Fluent2CardSize.small => c.extraSmall,
+      Fluent2CardSize.medium => c.small,
+      Fluent2CardSize.large => c.medium,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +150,7 @@ class Fluent2Card extends StatelessWidget {
         : onPressed;
     final interactive = press != null;
     final disabled = selectable && press == null;
-    final radius = radiusOf(size);
+    final radius = radiusOf(size, t);
     final corner = BorderRadius.circular(radius);
     final content = _layout(paddingOf(size));
     final preview = children.any((c) => c is Fluent2CardPreview);

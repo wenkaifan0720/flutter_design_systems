@@ -254,7 +254,7 @@ class _Pair extends StatelessWidget {
                   fluent2Step(t, t.colors.subtleBackgroundHover),
                   fluent2Step(t, t.colors.subtleBackgroundPressed),
                 ),
-          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+          borderRadius: BorderRadius.circular(t.radiusMedium),
         ),
         child: body,
       );
@@ -270,7 +270,6 @@ class _Pair extends StatelessWidget {
         onPressed: p.onPressed,
         semanticLabel: p.child == null ? spoken : p.label,
         excludeChild: p.child == null,
-        radius: Fluent2Radius.medium,
         builder: (context, states) => pair(states.press),
       ),
     );

@@ -298,7 +298,6 @@ class Fluent2NavigationDrawerItem extends StatelessWidget {
     onPressed: onPressed,
     semanticLabel: label,
     selected: selected,
-    radius: Fluent2Radius.medium,
     builder: (context, states) => Fluent2PaneItemFace(
       icon: icon,
       selectedIcon: selectedIcon,
@@ -356,7 +355,6 @@ class _AccountFoot extends StatelessWidget {
       onPressed: open == null ? null : () => open(context),
       semanticLabel: '${account.name}, profile and settings',
       selected: current,
-      radius: Fluent2Radius.medium,
       builder: (context, states) => Container(
         padding: const EdgeInsets.symmetric(
           horizontal: Fluent2Spacing.xs,
@@ -371,7 +369,7 @@ class _AccountFoot extends StatelessWidget {
                   fluent2Step(t, t.colors.subtleBackgroundPressed),
                   t.colors.subtleBackground,
                 ),
-          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+          borderRadius: BorderRadius.circular(t.radiusMedium),
         ),
         child: Row(
           spacing: Fluent2Spacing.s,

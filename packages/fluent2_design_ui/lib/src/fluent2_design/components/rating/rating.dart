@@ -230,7 +230,7 @@ class Fluent2Rating extends StatelessWidget {
       },
       layoutBuilder: (context, stars) => Fluent2KeyRing(
         focused: focused,
-        radius: Fluent2Radius.medium,
+        radius: t.radiusMedium,
         child: SizedBox(
           width: star * max,
           height: star,

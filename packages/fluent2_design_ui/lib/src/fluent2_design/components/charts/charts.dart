@@ -405,8 +405,8 @@ class Fluent2BarChart extends StatelessWidget {
                 height: h,
                 decoration: BoxDecoration(
                   color: highlight == null || lit ? color : rest,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(Fluent2Radius.medium),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(t.radiusMedium),
                   ),
                 ),
               ),
@@ -444,7 +444,6 @@ class Fluent2BarChart extends StatelessWidget {
                     semanticLabel: bars[i].label,
                     value: _text(context, bars[i]),
                     selected: highlight == i,
-                    radius: Fluent2Radius.medium,
                     child: column(i),
                   ),
           ),

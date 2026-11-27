@@ -161,9 +161,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
                               fluent2Step(t, c.subtleBackgroundHover),
                               fluent2Step(t, c.subtleBackgroundPressed),
                             ),
-                            borderRadius: BorderRadius.circular(
-                              Fluent2Radius.medium,
-                            ),
+                            borderRadius: BorderRadius.circular(t.radiusMedium),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -190,11 +188,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
                         ),
                         if (states.focused)
                           const Positioned.fill(
-                            child: IgnorePointer(
-                              child: Fluent2FocusRing(
-                                radius: Fluent2Radius.medium,
-                              ),
-                            ),
+                            child: IgnorePointer(child: Fluent2FocusRing()),
                           ),
                       ],
                     );
@@ -401,9 +395,7 @@ class Fluent2ScrollArea extends StatelessWidget {
           area,
           if (focused)
             const Positioned.fill(
-              child: IgnorePointer(
-                child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-              ),
+              child: IgnorePointer(child: Fluent2FocusRing()),
             ),
         ],
       ),
@@ -529,7 +521,7 @@ class Fluent2Resizable extends StatelessWidget {
               height: along ? 24 : 8,
               decoration: BoxDecoration(
                 color: c.neutralBackground1,
-                borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+                borderRadius: BorderRadius.circular(t.radiusMedium),
                 border: Border.all(
                   color: held
                       ? c.compoundBrandStroke
@@ -541,9 +533,7 @@ class Fluent2Resizable extends StatelessWidget {
               SizedBox(
                 width: along ? 12 : 28,
                 height: along ? 28 : 12,
-                child: const IgnorePointer(
-                  child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-                ),
+                child: const IgnorePointer(child: Fluent2FocusRing()),
               ),
           ],
         );
@@ -653,15 +643,15 @@ class Fluent2CarouselView extends StatelessWidget {
               AspectRatio(
                 aspectRatio: aspect,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+                  borderRadius: BorderRadius.circular(
+                    context.fluent2Theme.radiusMedium,
+                  ),
                   child: viewport,
                 ),
               ),
               if (controls.focused)
                 const Positioned.fill(
-                  child: IgnorePointer(
-                    child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-                  ),
+                  child: IgnorePointer(child: Fluent2FocusRing()),
                 ),
             ],
           ),
@@ -778,7 +768,7 @@ class Fluent2ReorderableListView<T extends Object> extends StatelessWidget {
       proxyDecorator: (child, index, animation) => DecoratedBox(
         decoration: BoxDecoration(
           color: c.neutralBackground1,
-          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+          borderRadius: BorderRadius.circular(t.radiusMedium),
           boxShadow: t.shadows.shadow16,
         ),
         child: child,

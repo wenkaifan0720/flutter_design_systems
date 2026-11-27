@@ -132,13 +132,22 @@ abstract final class Fluent2ChromeMetrics {
   /// layer standing 0 from the pane and 0 from the window's top.
   static const double paneHead = 48;
 
-  /// The content layer's top-start corner beside the nav pane.
+  /// The content layer's top-start corner beside the nav pane: Fluent's
+  /// `borderRadiusXLarge`.
+  @Deprecated(
+    "Read the theme's corner, Fluent2Theme.of(context).radiusXLarge, which "
+    'follows its shapeScheme. Removed in 0.10.0.',
+  )
   static const double layerRadius = 8;
 
   // --- sheets and dialogs -----------------------------------------------------
 
   /// A phone's bottom sheet: its top corners 8, its handle 36 by 4 at 8
   /// under its top, its parts 16 in; it stands at most 90% of the screen.
+  @Deprecated(
+    "Read the theme's corner, Fluent2Theme.of(context).radiusXLarge, which "
+    'follows its shapeScheme. Removed in 0.10.0.',
+  )
   static const double sheetRadius = 8;
 
   /// A bottom sheet's handle, its width.

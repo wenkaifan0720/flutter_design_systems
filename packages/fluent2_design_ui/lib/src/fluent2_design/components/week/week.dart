@@ -89,7 +89,6 @@ class Fluent2WeekStrip extends StatelessWidget {
         semanticLabel: isToday ? '$spoken, ${names.currentDateLabel}' : spoken,
         value: events ? 'Has events' : null,
         selected: picked,
-        radius: Fluent2Radius.medium,
         builder: (context, states) {
           final press = states.press;
           final fill = picked

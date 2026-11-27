@@ -396,7 +396,9 @@ void main() {
           // straight side to fill.
           final shown = t.widget(at);
           final radius = math.min(
-            shown is Fluent2Pressable ? shown.radius : 4.0,
+            shown is Fluent2Pressable
+                ? shown.radius ?? Fluent2ThemeData.lapis().radiusMedium
+                : 4.0,
             cell.shortestSide / 2,
           );
           TestGesture? finger;

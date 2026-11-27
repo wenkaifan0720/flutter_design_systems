@@ -125,7 +125,7 @@ class Fluent2Image extends StatelessWidget {
           );
     final BorderRadius? radius = switch (shape) {
       Fluent2ImageShape.square => null,
-      Fluent2ImageShape.rounded => BorderRadius.circular(Fluent2Radius.medium),
+      Fluent2ImageShape.rounded => BorderRadius.circular(t.radiusMedium),
       Fluent2ImageShape.circular => null,
     };
     final circle = shape == Fluent2ImageShape.circular;

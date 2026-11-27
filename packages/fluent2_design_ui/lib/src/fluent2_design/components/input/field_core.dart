@@ -781,7 +781,7 @@ class Fluent2FieldFrame extends StatefulWidget {
   final MouseCursor cursor;
 
   /// The corner radius; null is the style's, then Fluent's control radius
-  /// ([Fluent2Radius.medium]).
+  /// ([Fluent2ThemeData.radiusMedium]).
   final double? radius;
 
   /// The field's own look, over the text field theme.
@@ -872,11 +872,7 @@ class _Fluent2FieldFrameState extends State<Fluent2FieldFrame> {
     final radius = square
         ? 0.0
         : widget.radius ??
-              fluent2CornerOf(
-                look.shape,
-                double.infinity,
-                Fluent2Radius.medium,
-              );
+              fluent2CornerOf(look.shape, double.infinity, t.radiusMedium);
     final rim = look.side;
     final edge = rim?.color ?? look.edge;
     final fill = look.fill ?? face.fill;
@@ -1555,7 +1551,7 @@ class Fluent2PopoverSurface extends StatelessWidget {
         look,
         t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
       ),
-      radius: BorderRadius.circular(Fluent2Radius.medium),
+      radius: BorderRadius.circular(t.radiusMedium),
       shape: look.shape,
       shadows: t.shadows.shadow16,
       padding: look.padding(Directionality.of(context)) ?? padding,
@@ -1636,7 +1632,6 @@ class Fluent2OptionRow extends StatelessWidget {
     value: secondary,
     selected: selected,
     focusNode: focusNode,
-    radius: Fluent2Radius.medium,
     builder: (context, states) => Fluent2OptionFace(
       label: label,
       selected: selected,
@@ -1737,7 +1732,7 @@ class Fluent2OptionFace extends StatelessWidget {
           color: selected && !off
               ? c.compoundBrandBackground
               : c.transparentBackground,
-          borderRadius: BorderRadius.circular(Fluent2Radius.small),
+          borderRadius: BorderRadius.circular(t.radiusSmall),
           border: Border.all(
             color: off
                 ? c.neutralForegroundDisabled
@@ -1789,7 +1784,7 @@ class Fluent2OptionFace extends StatelessWidget {
           chosen: selected,
           resting: c.transparentBackground,
         ),
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
       ),
       child: Row(
         children: [
@@ -1851,7 +1846,7 @@ class Fluent2OptionFace extends StatelessWidget {
     return DecoratedBox(
       position: DecorationPosition.foreground,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        borderRadius: BorderRadius.circular(t.radiusMedium),
         border: Border.all(color: c.strokeFocus2, width: Fluent2Stroke.thick),
       ),
       child: chosen,

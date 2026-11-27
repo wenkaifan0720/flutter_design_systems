@@ -152,7 +152,7 @@ class Fluent2Dialog extends StatelessWidget {
                             width: Fluent2Stroke.thin,
                           )
                         : BorderSide.none),
-                radius: BorderRadius.circular(Fluent2Radius.xLarge),
+                radius: BorderRadius.circular(t.radiusXLarge),
                 shape: look.shape,
                 shadows: t.shadows.shadow64,
                 padding:

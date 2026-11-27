@@ -290,7 +290,7 @@ class _TreeRow<T> extends StatelessWidget {
         padding: EdgeInsetsDirectional.only(start: indent),
         decoration: BoxDecoration(
           color: fill,
-          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+          borderRadius: BorderRadius.circular(t.radiusMedium),
         ),
         child: Row(
           children: [
@@ -354,11 +354,7 @@ class _TreeRow<T> extends StatelessWidget {
       fit: StackFit.passthrough,
       children: [
         face,
-        const Positioned.fill(
-          child: IgnorePointer(
-            child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-          ),
-        ),
+        const Positioned.fill(child: IgnorePointer(child: Fluent2FocusRing())),
       ],
     );
   }

@@ -228,7 +228,7 @@ class _Fluent2SliderState extends State<Fluent2Slider> {
           autofocus: widget.autofocus,
           enabled: live,
           keys: live ? keys : const {},
-          radius: Fluent2Radius.medium,
+          radius: t.radiusMedium,
           ringInsets: const EdgeInsets.symmetric(
             horizontal: Fluent2Spacing.xs,
             vertical: Fluent2Spacing.xxs,
@@ -355,7 +355,8 @@ class _SliderPainter extends CustomPainter {
     final width = math.max(0.0, size.width - thumb);
     final cy = size.height / 2;
     final railRect = Rect.fromLTWH(left, cy - rail / 2, width, rail);
-    const r = Radius.circular(Fluent2Radius.xLarge);
+    // The rail's round ends.
+    final r = Radius.circular(rail / 2);
     final at = progress * width;
     canvas.drawRRect(
       RRect.fromRectAndRadius(railRect, r),

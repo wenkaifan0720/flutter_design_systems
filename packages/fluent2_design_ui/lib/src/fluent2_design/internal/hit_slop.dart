@@ -48,9 +48,7 @@ class Fluent2HangRoom extends StatelessWidget {
                 end: 0,
                 top: 0,
                 bottom: 0,
-                child: const IgnorePointer(
-                  child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-                ),
+                child: const IgnorePointer(child: Fluent2FocusRing()),
               ),
           ],
         ),

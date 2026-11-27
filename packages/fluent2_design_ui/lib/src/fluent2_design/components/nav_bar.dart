@@ -233,7 +233,6 @@ class _Tab extends StatelessWidget {
     onPressed: onTap,
     semanticLabel: item.label,
     selected: selected,
-    radius: Fluent2Radius.medium,
     builder: (context, states) => Fluent2TabFace(
       icon: item.icon,
       selectedIcon: item.selectedIcon,

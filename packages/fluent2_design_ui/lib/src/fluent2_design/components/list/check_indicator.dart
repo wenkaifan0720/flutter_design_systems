@@ -81,7 +81,9 @@ class Fluent2CheckIndicator extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: fill,
-            borderRadius: BorderRadius.circular(Fluent2Radius.small),
+            borderRadius: BorderRadius.circular(
+              context.fluent2Theme.radiusSmall,
+            ),
             border: Border.all(color: stroke),
           ),
           child: Center(

@@ -203,7 +203,7 @@ class Fluent2PaneItemFace extends StatelessWidget {
           height: Fluent2ChromeMetrics.paneItem,
           decoration: BoxDecoration(
             color: fill,
-            borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+            borderRadius: BorderRadius.circular(t.radiusMedium),
           ),
           // The glyph and the words stand in the item's middle (a stack
           // leaves a loose child at its top).
