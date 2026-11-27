@@ -46,25 +46,6 @@ class ApplianceTab {
       ApplianceDestination(icon: icon, label: label, key: key);
 }
 
-/// The app's one act beside its places (add, write, capture): on a phone a
-/// square key at the end of the key strip, on a tablet a key at the top of
-/// the rail, on a desk a wide key at the top of the side panel. The signal
-/// key when [accent], a plain key otherwise.
-///
-/// ```dart
-/// ApplianceShellAction(icon: LucideIcons.plus, label: 'New list', accent: true, onPressed: (context) {})
-/// ```
-class ApplianceShellAction extends ShellAction {
-  /// The act [onPressed], wearing [icon].
-  const ApplianceShellAction({
-    required super.icon,
-    required super.onPressed,
-    super.label,
-    super.accent,
-    super.key,
-  });
-}
-
 /// A page's data on its way: the look's turning ring in a sunk bezel, and
 /// what is loading.
 ///
@@ -269,7 +250,7 @@ class AppliancePreview extends StatelessWidget {
   final int selectedIndex;
 
   /// The app's act, beside its places.
-  final ShellAction? action;
+  final ApplianceShellAction? action;
 
   /// Whether a sheet stands only as tall as a drawer.
   final bool drawer;

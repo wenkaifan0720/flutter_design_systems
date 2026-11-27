@@ -359,8 +359,10 @@ class ApplianceRadioGroup<T> extends StatelessWidget {
     required this.labelOf,
     required this.onChanged,
     this.isEnabled,
+    this.secondaryOf,
     this.direction = Axis.vertical,
     this.semanticLabel,
+    this.focusNode,
     this.style,
   });
 
@@ -378,6 +380,17 @@ class ApplianceRadioGroup<T> extends StatelessWidget {
 
   /// Whether a choice can be made; null: all can.
   final bool Function(T value)? isEnabled;
+
+  /// What shows after an option's words, as `RadioListTile.secondary` does
+  /// (a palette's swatches); null, or null for an option, shows nothing. A
+  /// screen reader hears the words alone.
+  final Widget? Function(T value)? secondaryOf;
+
+  /// The focus of the chosen option, or of the first enabled one while none
+  /// is chosen, for a caller that moves focus to the group: a
+  /// `RawFormField` round it, which a failed submit focuses; null keeps the
+  /// options' own.
+  final FocusNode? focusNode;
 
   /// Which way the rows run, and which arrows move along them: a column
   /// by default.
@@ -401,6 +414,19 @@ class ApplianceRadioGroup<T> extends StatelessWidget {
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
+      )
+      ..add(
+        ObjectFlagProperty<Widget? Function(T value)>.has(
+          'secondaryOf',
+          secondaryOf,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -472,13 +498,21 @@ class _ApplianceRadioGroupBodyState<T>
       });
     }
     final onChanged = group.onChanged;
+    final open = [
+      for (final option in options)
+        if (group.isEnabled?.call(option) ?? true) option,
+    ];
+    final focused = open.contains(value) ? value : open.firstOrNull;
     final rows = [
       for (final option in options)
         _ApplianceRadioRow<T>(
           key: ObjectKey(option),
           value: option,
           label: labelOf(option),
-          focusNode: _nodeFor(option),
+          secondary: group.secondaryOf?.call(option),
+          focusNode: option == focused && group.focusNode != null
+              ? group.focusNode!
+              : _nodeFor(option),
           enabled: onChanged != null && (group.isEnabled?.call(option) ?? true),
           direction: direction,
           style: style,
@@ -530,10 +564,12 @@ class _ApplianceRadioRow<T> extends StatelessWidget {
     required this.enabled,
     required this.direction,
     required this.style,
+    this.secondary,
   });
 
   final T value;
   final String label;
+  final Widget? secondary;
   final FocusNode focusNode;
   final bool enabled;
   final Axis direction;
@@ -592,6 +628,11 @@ class _ApplianceRadioRow<T> extends StatelessWidget {
                             ),
                           ),
                         ),
+                        // Right after the words, not at the row's far end.
+                        if (secondary case final secondary?) ...[
+                          const SizedBox(width: ApplianceSpacing.small),
+                          secondary,
+                        ],
                       ],
                     ),
                   ),
@@ -655,98 +696,105 @@ class ApplianceSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return RawButton(
-      onPressed: onChanged == null ? null : () => onChanged!(!value),
-      focusNode: focusNode,
-      toggled: value,
-      semanticLabel: semanticLabel,
-      excludeSemantics: true,
-      builder: (context, states, _) {
-        final layered = RawStyleOf([style, theme.toggleStyle], states);
-        final disabled = states.contains(WidgetState.disabled);
-        final held = states.contains(WidgetState.pressed);
-        // On, the slot is lit in the signal (dimmed while disabled).
-        final lit = value
-            ? Color.lerp(c.trough, c.signal, disabled ? 0.35 : 1)!
-            : c.trough;
-        final slot = layered.on(
-          ApplianceFace(
-            top: lit,
-            bottom: value ? Color.lerp(lit, c.signalBottom, 0.5)! : lit,
-            lift: -1,
-            radius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
-            foreground: disabled
-                ? c.printDisabled
-                : value
-                ? c.onSignal
-                : c.print,
-          ),
-        );
-        return TapTargetPadding(
-          child: SizedBox.fromSize(
-            size: size,
-            child: AnimatedApplianceSurface(
-              face: slot,
-              child: ApplianceSpringValue(
-                value: value ? 1 : 0,
-                spring: ApplianceMotion.snap,
-                builder: (context, t, _) => CustomPaint(
-                  painter: _SwitchPainter(
-                    marks: slot.foreground,
-                    rtl: Directionality.of(context) == TextDirection.rtl,
-                  ),
-                  child: Align(
-                    alignment: Alignment.lerp(
-                      AlignmentDirectional.centerStart.resolve(
-                        Directionality.of(context),
-                      ),
-                      AlignmentDirectional.centerEnd.resolve(
-                        Directionality.of(context),
-                      ),
-                      t,
-                    )!,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: ApplianceMetrics.capInset,
-                      ),
-                      child: SizedBox.fromSize(
-                        size: capSize,
-                        child: ApplianceSurface(
-                          // Concentric with the slot: its corner less the
-                          // room between them.
-                          face:
-                              ApplianceFace.key(
-                                c,
-                                radius:
-                                    ApplianceMetrics.smallKeyRadius -
-                                    ApplianceMetrics.capInset,
-                              ).copyWith(
-                                lift: disabled ? 0.4 : (held ? 0.6 : 1),
-                                // Focus lights the cap's bezel, on or off:
-                                // the lamp means on, and a half-lit lamp
-                                // would read as half on.
-                                focus: applianceLitFocus(
+    // Its slot's size wherever it stands: at the start of a line that
+    // stretches its children (a field), not drawn across it.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: RawButton(
+        onPressed: onChanged == null ? null : () => onChanged!(!value),
+        focusNode: focusNode,
+        toggled: value,
+        semanticLabel: semanticLabel,
+        excludeSemantics: true,
+        builder: (context, states, _) {
+          final layered = RawStyleOf([style, theme.toggleStyle], states);
+          final disabled = states.contains(WidgetState.disabled);
+          final held = states.contains(WidgetState.pressed);
+          // On, the slot is lit in the signal (dimmed while disabled).
+          final lit = value
+              ? Color.lerp(c.trough, c.signal, disabled ? 0.35 : 1)!
+              : c.trough;
+          final slot = layered.on(
+            ApplianceFace(
+              top: lit,
+              bottom: value ? Color.lerp(lit, c.signalBottom, 0.5)! : lit,
+              lift: -1,
+              radius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
+              foreground: disabled
+                  ? c.printDisabled
+                  : value
+                  ? c.onSignal
+                  : c.print,
+            ),
+          );
+          return TapTargetPadding(
+            child: SizedBox.fromSize(
+              size: size,
+              child: AnimatedApplianceSurface(
+                face: slot,
+                child: ApplianceSpringValue(
+                  value: value ? 1 : 0,
+                  spring: ApplianceMotion.snap,
+                  builder: (context, t, _) => CustomPaint(
+                    painter: _SwitchPainter(
+                      marks: slot.foreground,
+                      rtl: Directionality.of(context) == TextDirection.rtl,
+                    ),
+                    child: Align(
+                      alignment: Alignment.lerp(
+                        AlignmentDirectional.centerStart.resolve(
+                          Directionality.of(context),
+                        ),
+                        AlignmentDirectional.centerEnd.resolve(
+                          Directionality.of(context),
+                        ),
+                        t,
+                      )!,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ApplianceMetrics.capInset,
+                        ),
+                        child: SizedBox.fromSize(
+                          size: capSize,
+                          child: ApplianceSurface(
+                            // Concentric with the slot: its corner less the
+                            // room between them.
+                            face:
+                                ApplianceFace.key(
                                   c,
-                                  states,
-                                  lit: !disabled,
+                                  radius:
+                                      ApplianceMetrics.smallKeyRadius -
+                                      ApplianceMetrics.capInset,
+                                ).copyWith(
+                                  lift: disabled ? 0.4 : (held ? 0.6 : 1),
+                                  // Focus lights the cap's bezel, on or off:
+                                  // the lamp means on, and a half-lit lamp
+                                  // would read as half on.
+                                  focus: applianceLitFocus(
+                                    c,
+                                    states,
+                                    lit: !disabled,
+                                  ),
                                 ),
+                            // A gripped cap: two moulded ribs round its lamp.
+                            child: CustomPaint(
+                              painter: _GripPainter(
+                                shade: c.shade,
+                                light: c.highlight,
                               ),
-                          // A gripped cap: two moulded ribs round its lamp.
-                          child: CustomPaint(
-                            painter: _GripPainter(
-                              shade: c.shade,
-                              light: c.highlight,
-                            ),
-                            child: Center(
-                              // Out of use, an on switch's lamp stays lit in
-                              // the disabled print, as a radio's does.
-                              child: ApplianceControlLamp(
-                                lit: value,
-                                states: states.difference(const {
-                                  WidgetState.focused,
-                                }),
-                                size: ApplianceMetrics.lampSize - 1,
-                                color: disabled ? c.printDisabled : null,
+                              child: Center(
+                                // Out of use, an on switch's lamp stays lit in
+                                // the disabled print, as a radio's does.
+                                child: ApplianceControlLamp(
+                                  lit: value,
+                                  states: states.difference(const {
+                                    WidgetState.focused,
+                                  }),
+                                  size: ApplianceMetrics.lampSize - 1,
+                                  color: disabled ? c.printDisabled : null,
+                                ),
                               ),
                             ),
                           ),
@@ -757,9 +805,9 @@ class ApplianceSwitch extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -821,18 +869,26 @@ class _SwitchPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final cap = ApplianceSwitch.capSize.width + 6;
-    final startX = cap / 2;
-    final endX = size.width - cap / 2;
-    final (onX, offX) = rtl ? (endX, startX) : (startX, endX);
+    // Each mark stands midway in the room the cap leaves bare when it rests
+    // at the other end (from the cap's edge to the slot's far wall, as the
+    // eye reads it), so the exposed I or O stands clear of the cap; the cap
+    // still covers the mark it rests on.
+    final bare =
+        (ApplianceMetrics.capInset +
+            ApplianceSwitch.capSize.width +
+            size.width) /
+        2;
+    final (onX, offX) = rtl
+        ? (bare, size.width - bare)
+        : (size.width - bare, bare);
     final cy = size.height / 2;
     final paint = Paint()
       ..color = marks
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round;
-    // The on mark sits where the cap rests when off; moulded large enough
-    // that the exposed mark, I or O, says on or off without the lamp.
+    // Moulded large enough that the exposed mark, I or O, says on or off
+    // without the lamp.
     canvas
       ..drawLine(Offset(onX, cy - 6.5), Offset(onX, cy + 6.5), paint)
       ..drawCircle(Offset(offX, cy), 5.5, paint);

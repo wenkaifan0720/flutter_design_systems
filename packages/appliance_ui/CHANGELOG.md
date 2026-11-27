@@ -1,3 +1,27 @@
+## 0.6.0
+
+- Requires ui_core 0.8.3.
+- **The frame**: `ApplianceScaffold` stands on ui_core's `RawAdaptiveShell` at every width: a phone's key strip, the rail from 600, the side panel from 1024. A phone's places are tabs that say which is chosen (they were plain buttons). With `.branches` each place keeps its own pages; a pushed page keeps the rail or side panel beside it while a phone's key strip steps away, and choosing a place again returns to its first page. `ApplianceShellAction` is Appliance's own act.
+- **Palettes**: `ApplianceThemeData.palettes`, the six finishes as ui_core's `RawNamedPalette` (an `id` to store, a `label` to show, swatches by day and by night), replace the `presets` list of names; `ApplianceThemeData.preset(id, brightness)` builds one and `ApplianceHost(palette:)` builds both appearances from one, easing between them.
+- **Tones**: no finish's signal is green or red, so the ready and danger lamps stay apart from it in all six, by day and by night (mint's signal is teal, Reading and Done read apart; ui_core's `DesignToneCheck`).
+- **Forms**: `ApplianceForm` and `ApplianceTextFormField`, a text field in a form as `TextFormField` in a `Form` (`validator`, `onSaved`, `autovalidateMode`), on ui_core's `RawForm`; a failed `ApplianceForm.submit` focuses the first field in error. Any other control takes part through ui_core's `RawFormField`: `ApplianceDatePicker` and `ApplianceRadioGroup` take a `focusNode` for it.
+- **Dates**: `ApplianceFormat.date(context, day)` writes a day as the date field does, a medium date with its year in the app's language ("Nov 23, 2026" in English), for a page that shows the same day (the gallery's detail read "Monday, 23 November 2026" beside the field's "Nov 23, 2026").
+- **List rows**: the end slot takes its own width up to two thirds of the row, so a long tag ellipsizes rather than overflowing (it overflowed at 390). A tag is said as written and stays in the row's name; an avatar repeating the title stays out of it; a control at the row's end keeps its own node.
+- **The page's measure**: `ApplianceScreen` holds its app bar and its footer to the body's `maxWidth`, so on a wide window the title and the footer's keys line up with the content (the title stood at the window's edge).
+- **Keys**: a focused filled key's rim glows a pale lamp-light; the faint line under its words after a press, which read as a link, is gone.
+- **Text size**: a tag's lamp, a row's glyph, a menu row's glyph, a chip's glyph, a key's glyph beside its legend and an avatar up to 40 grow with the reader's text, as the words beside them do; a larger avatar is a portrait and keeps its size, and its initials fill the disc at either.
+- **Radios**: `ApplianceRadioGroup(secondaryOf:)` shows a widget right after an option's words, as `RadioListTile.secondary` does (a palette's swatches); a screen reader hears the words alone.
+- **Icons**: `LucideIcons` comes with `package:appliance_ui/appliance_ui.dart`.
+- **The example** is one app to copy, `example/lib/main.dart`: Shelf, a reading list with three places, a list with a pushed page, a form that checks itself, a dialog and settings with the six finishes, each with its colours beside its name. The gallery and Larder are `example/lib/gallery.dart`.
+- **The README** builds an app: forms, rows, the page's measure, the alert dialog, the palette picker and the example; every Dart block compiles.
+- **Switches**: `ApplianceSwitch` keeps its slot's size at the start of a line that stretches its children (an `ApplianceField`); it was drawn across the line.
+- **Messages under fields**: a field's error or help line grows open as it fades in, and fades before it folds away, so the fields under it move rather than jump; under Reduce Motion it is there at once.
+- **Selects in a form**: an `ApplianceSelect` in an `ApplianceForm` spans the form's column, as the fields beside it do; it stopped at 320 on a wide window. Alone it still stops there.
+- **Switches' marks**: the exposed I or O stands midway in the room the cap leaves bare; it stood against the cap.
+- **Rows**: a row's title eases to its hover and focus ink with the row's face; it switched in one frame.
+- **The top bar's keys**: an icon key an app puts at the bar's end stands 40 square, as the way back at its start does (it stood 48 beside it); an app's own `iconButtonStyle` size still wins.
+- **The side panel's brand** stands on the top bar's title line, the app's act under it (it stood lower, out of line with the page's title).
+
 ## 0.5.0
 
 - Six finishes, each by day and by night: `warm` (the default), `mint`, `butter`, `powder`, `blush` and `slate` (`ApplianceThemeData.presets`, `ApplianceThemeData.preset`, `ApplianceColors.preset`). The example's Foundations shows them, and its colour swatches show again (they had shrunk to a hairline).

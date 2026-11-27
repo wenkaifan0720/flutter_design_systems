@@ -304,7 +304,8 @@ class ApplianceColors with Diagnosticable {
     signalInk: Color(0xFFFEA168),
     focus: Color(0xFFF2803F),
     lampOff: Color(0xFF4E4C47),
-    danger: Color(0xFFFF8F80),
+    // Rose, a step from salmon, so the orange signal's words stay apart.
+    danger: Color(0xFFFF8A8A),
     onDanger: Color(0xFF2A0A06),
     display: Color(0xFF171614),
     onDisplay: Color(0xFFF1EBE1),
@@ -338,12 +339,12 @@ class ApplianceColors with Diagnosticable {
     return colors;
   }
 
-  /// Appliance's finish [name] (one of [ApplianceThemeData.presets]) for
+  /// Appliance's palette [name] (one of [ApplianceThemeData.palettes]) for
   /// [brightness]: `warm` ([light] and [dark]: warm-white plastic, an
-  /// orange signal), `mint` (mint plastic, a green signal), `butter` (cream
-  /// plastic, a tomato signal), `powder` (powder-blue plastic, a blue
-  /// signal), `blush` (pink plastic, a raspberry signal) or `slate` (cool
-  /// grey plastic, an amber signal). Each is the warm plastic at its own
+  /// orange signal), `mint` (mint plastic, a petrol signal), `butter`
+  /// (cream plastic, a grape signal), `powder` (powder-blue plastic, a blue
+  /// signal), `blush` (pink plastic, a berry signal) or `slate` (cool grey
+  /// plastic, an amber signal). Each is the warm plastic at its own
   /// tones in another hue ([ApplianceColors.from]), so every legend reads as
   /// it does in warm. An unknown name gives warm.
   ///
@@ -734,10 +735,12 @@ class _Finish {
 
 // Appliance's finishes beside warm.
 const Map<String, _Finish> _finishes = {
-  'mint': _Finish(Color(0xFFD9EDE4), Color(0xFF1F8A70)),
-  'butter': _Finish(Color(0xFFF3E7C2), Color(0xFFD33F2C)),
+  // Petrol, not green: the ready lamp is green.
+  'mint': _Finish(Color(0xFFD9EDE4), Color(0xFF0F7C8C)),
+  // Grape and berry, not red: the danger lamp is red.
+  'butter': _Finish(Color(0xFFF3E7C2), Color(0xFF7A4FB0)),
   'powder': _Finish(Color(0xFFD5E2EF), Color(0xFF2F6BC2)),
-  'blush': _Finish(Color(0xFFF2DADD), Color(0xFFC8385A)),
+  'blush': _Finish(Color(0xFFF2DADD), Color(0xFFA63A8F)),
   'slate': _Finish(Color(0xFFCDD2D8), Color(0xFFF0A81C)),
 };
 
@@ -923,7 +926,7 @@ class ApplianceTextTheme with Diagnosticable {
 ///
 /// [ApplianceThemeData.light] and [ApplianceThemeData.dark] are warm, the
 /// look's default finish; [ApplianceThemeData.preset] gives each of its six
-/// finishes ([presets]) and [ApplianceThemeData.from] recolours the finish
+/// palettes ([palettes]) and [ApplianceThemeData.from] recolours the finish
 /// and the signal for a brand.
 ///
 /// ```dart
@@ -976,35 +979,72 @@ class ApplianceThemeData with Diagnosticable {
   factory ApplianceThemeData.dark({RawDensity? density}) =>
       ApplianceThemeData(colors: ApplianceColors.dark, density: density);
 
-  /// The look's finishes by name, each by day and by night: `warm` (the
-  /// default), `mint`, `butter`, `powder`, `blush` and `slate`
-  /// ([ApplianceColors.preset]).
-  static const List<String> presets = [
-    'warm',
-    'mint',
-    'butter',
-    'powder',
-    'blush',
-    'slate',
+  /// The look's six palettes, the first its default, each by day and by
+  /// night: what an app's palette picker lists (each [RawNamedPalette] its
+  /// label, and its signal key and its plastic as swatches) and the
+  /// [RawNamedPalette.id] an app stores and hands back to [preset] or
+  /// [ApplianceHost.palette]. warm: warm-white plastic, an orange signal;
+  /// mint: mint plastic, a petrol signal; butter: cream plastic, a grape
+  /// signal; powder: powder-blue plastic, a blue signal; blush: pink
+  /// plastic, a berry signal; slate: cool grey plastic, an amber signal. No
+  /// signal is green or red, so the ready lamp and the danger lamp stay
+  /// apart from it.
+  static const List<RawNamedPalette> palettes = <RawNamedPalette>[
+    RawNamedPalette(
+      id: 'warm',
+      label: 'Warm',
+      swatches: [Color(0xFFEE6A26), Color(0xFFF7F6F2)],
+      darkSwatches: [Color(0xFFEE6A26), Color(0xFF383733)],
+    ),
+    RawNamedPalette(
+      id: 'mint',
+      label: 'Mint',
+      swatches: [Color(0xFF0F7C8C), Color(0xFFE7FBF2)],
+      darkSwatches: [Color(0xFF0F7C8C), Color(0xFF323836)],
+    ),
+    RawNamedPalette(
+      id: 'butter',
+      label: 'Butter',
+      swatches: [Color(0xFF7A4FB0), Color(0xFFFFF6DC)],
+      darkSwatches: [Color(0xFF7A4FB0), Color(0xFF3A372D)],
+    ),
+    RawNamedPalette(
+      id: 'powder',
+      label: 'Powder',
+      swatches: [Color(0xFF2F6BC2), Color(0xFFF0F7FF)],
+      darkSwatches: [Color(0xFF2F6BC2), Color(0xFF33373B)],
+    ),
+    RawNamedPalette(
+      id: 'blush',
+      label: 'Blush',
+      swatches: [Color(0xFFA63A8F), Color(0xFFFFF3F4)],
+      darkSwatches: [Color(0xFFA63A8F), Color(0xFF3F3436)],
+    ),
+    RawNamedPalette(
+      id: 'slate',
+      label: 'Slate',
+      swatches: [Color(0xFFF0A81C), Color(0xFFF2F6FD)],
+      darkSwatches: [Color(0xFFF0A81C), Color(0xFF33383B)],
+    ),
   ];
 
-  /// The finish [name], one of [presets], for [brightness]
+  /// The palette [id], one of [palettes], for [brightness]
   /// ([ApplianceColors.preset]).
   ///
   /// ```dart
   /// ApplianceThemeData.preset('mint', Brightness.dark)
   /// ```
   factory ApplianceThemeData.preset(
-    String name,
+    String id,
     Brightness brightness, {
     RawDensity? density,
   }) {
     assert(
-      presets.contains(name),
-      'Appliance has no preset $name; it offers ${presets.join(', ')}.',
+      palettes.any((p) => p.id == id),
+      'Appliance has no palette "$id": ${[for (final p in palettes) p.id]}',
     );
     return ApplianceThemeData(
-      colors: ApplianceColors.preset(name, brightness),
+      colors: ApplianceColors.preset(id, brightness),
       density: density,
     );
   }

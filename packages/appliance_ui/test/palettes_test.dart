@@ -1,4 +1,4 @@
-// Appliance's six finishes (ApplianceThemeData.presets): warm first, each the
+// Appliance's six palettes (ApplianceThemeData.palettes): warm first, each the
 // warm plastic at its own tones in another hue with a signal of its own.
 // Every word and legend reads 4.5:1 on what it sits on, the signal's words
 // too, and the focus stands 3:1, by day and by night.
@@ -10,14 +10,10 @@ typedef _Pick = Color Function(ApplianceColors c);
 
 void main() {
   test('six finishes, warm first', () {
-    expect(ApplianceThemeData.presets, [
-      'warm',
-      'mint',
-      'butter',
-      'powder',
-      'blush',
-      'slate',
-    ]);
+    expect(
+      [for (final p in ApplianceThemeData.palettes) p.id],
+      ['warm', 'mint', 'butter', 'powder', 'blush', 'slate'],
+    );
   });
 
   for (final b in Brightness.values) {
@@ -32,13 +28,13 @@ void main() {
 
     test('${b.name}: each finish its own signal', () {
       final signals = {
-        for (final name in ApplianceThemeData.presets)
-          ApplianceColors.preset(name, b).signal,
+        for (final p in ApplianceThemeData.palettes)
+          ApplianceColors.preset(p.id, b).signal,
       };
-      expect(signals, hasLength(ApplianceThemeData.presets.length));
+      expect(signals, hasLength(ApplianceThemeData.palettes.length));
     });
 
-    for (final name in ApplianceThemeData.presets) {
+    for (final name in [for (final p in ApplianceThemeData.palettes) p.id]) {
       final c = ApplianceThemeData.preset(name, b).colors;
       final housing = [c.housingTop, c.housingBottom];
       final plates = [c.face, c.well];

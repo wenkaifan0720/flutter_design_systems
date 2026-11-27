@@ -1,7 +1,7 @@
 name: appliance_ui
 description: >-
   Flutter controls inspired by household appliances, with moulded keys, indicator lights, recessed displays and responsive navigation in light and dark themes.
-version: 0.5.0
+version: 0.6.0
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/appliance/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/appliance_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
@@ -31,7 +31,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.7.2
+  ui_core: ^0.8.3
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -41,7 +41,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.5.2
+  ui_core_test: ^0.6.1
 
 flutter:
   fonts:

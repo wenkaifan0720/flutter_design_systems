@@ -17,7 +17,7 @@ import 'package:appliance_ui/appliance_ui.dart';
 
 import 'theme.dart';
 
-/// The preset the gallery shows (one of ApplianceThemeData.presets).
+/// The palette the gallery shows (an id of ApplianceThemeData.palettes).
 String kitShownPreset = kitPreset;
 
 /// A live theme override, for a test or the example.

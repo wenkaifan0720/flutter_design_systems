@@ -6,7 +6,6 @@ library;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:appliance_ui/appliance_ui.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'data.dart';
 import 'larder.dart';

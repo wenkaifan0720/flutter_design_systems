@@ -819,8 +819,12 @@ class ApplianceChip extends StatelessWidget {
               const SizedBox(width: ApplianceSpacing.small),
             ],
             if (icon != null) ...[
+              // The glyph grows with the words beside it.
               IconTheme.merge(
-                data: IconThemeData(size: 16, color: face.foreground),
+                data: IconThemeData(
+                  size: MediaQuery.textScalerOf(context).scale(16),
+                  color: face.foreground,
+                ),
                 child: icon!,
               ),
               const SizedBox(width: ApplianceSpacing.small),

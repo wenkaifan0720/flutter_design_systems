@@ -73,13 +73,20 @@ class ApplianceAvatar extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.avatarStyle], const {});
+    // Up to 40, the size it takes in a row beside words, it grows with the
+    // reader's text size as the words do; a larger one is a portrait and
+    // keeps its size. The initials fill the disc at either.
+    final side = size <= 40
+        ? MediaQuery.textScalerOf(context).scale(size)
+        : size;
     final initials = Center(
       child: Text(
         _initials(name),
+        textScaler: TextScaler.noScaling,
         style: layered.text(
           theme.textTheme.label.copyWith(
             color: c.printMuted,
-            fontSize: size * 0.36,
+            fontSize: side * 0.36,
             height: 1,
           ),
         ),
@@ -89,19 +96,19 @@ class ApplianceAvatar extends StatelessWidget {
     final slot = slotId;
     // The ring round the picture: two hairlines on a large one, one on a
     // small one.
-    final ring = size >= 40 ? ApplianceSpacing.nudge : ApplianceSpacing.hair;
+    final ring = side >= 40 ? ApplianceSpacing.nudge : ApplianceSpacing.hair;
     return Semantics(
       label: name,
       image: picture != null || slot != null,
       child: ExcludeSemantics(
         child: SizedBox.square(
-          dimension: size,
+          dimension: side,
           child: ApplianceSurface(
             face: layered.on(
               ApplianceFace.well(
                 c,
                 fill: c.trough,
-              ).copyWith(radius: BorderRadius.circular(size / 2)),
+              ).copyWith(radius: BorderRadius.circular(side / 2)),
             ),
             child: Padding(
               padding: EdgeInsets.all(ring),
@@ -287,31 +294,48 @@ class ApplianceTag extends StatelessWidget {
       ApplianceTagTone.ready => (c.print, c.ready),
       ApplianceTagTone.danger => (c.danger, c.danger),
     };
-    return Container(
-      padding:
-          layered.padding(Directionality.of(context)) ??
-          const EdgeInsets.symmetric(
-            horizontal: ApplianceSpacing.small,
-            vertical: ApplianceSpacing.nudge,
+    // Said as written: printed capitals would be spelt out letter by
+    // letter. Short of room, the words end in an ellipsis.
+    return Semantics(
+      label: label,
+      child: ExcludeSemantics(
+        child: Container(
+          padding:
+              layered.padding(Directionality.of(context)) ??
+              const EdgeInsets.symmetric(
+                horizontal: ApplianceSpacing.small,
+                vertical: ApplianceSpacing.nudge,
+              ),
+          decoration: BoxDecoration(
+            color: layered.fill ?? c.well,
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: c.hairline),
           ),
-      decoration: BoxDecoration(
-        color: layered.fill ?? c.well,
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: c.hairline),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (lamp != null) ...[
-            ApplianceLamp(lit: true, size: 6, color: lamp),
-            const SizedBox(width: ApplianceSpacing.tight),
-          ],
-          Text(
-            label.toUpperCase(),
-            maxLines: 1,
-            style: layered.text(theme.textTheme.legend.copyWith(color: ink)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (lamp != null) ...[
+                // The lamp grows with the words beside it.
+                ApplianceLamp(
+                  lit: true,
+                  size: MediaQuery.textScalerOf(context).scale(6),
+                  color: lamp,
+                ),
+                const SizedBox(width: ApplianceSpacing.tight),
+              ],
+              Flexible(
+                child: Text(
+                  label.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: layered.text(
+                    theme.textTheme.legend.copyWith(color: ink),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  for (final name in ApplianceThemeData.presets) {
+  for (final name in [for (final p in ApplianceThemeData.palettes) p.id]) {
     for (final b in Brightness.values) {
       testWidgets('$name, ${b.name}: the first trace', (tester) async {
         final theme = ApplianceThemeData.preset(name, b);

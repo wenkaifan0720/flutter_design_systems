@@ -1,5 +1,5 @@
 name: appliance_ui_example
-description: The Appliance gallery, every component in every preset by day and by night.
+description: A Appliance app to copy (lib/main.dart) and the gallery of every component in every palette by day and by night (lib/gallery.dart).
 publish_to: none
 
 environment:
@@ -18,7 +18,7 @@ dependencies:
   appliance_ui:
     path: ../
   # An example imports the foundation itself too (its inventory, say).
-  ui_core: ^0.7.2
+  ui_core: ^0.8.3
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
 
 dev_dependencies:

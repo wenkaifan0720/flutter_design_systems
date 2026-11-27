@@ -5,7 +5,6 @@
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp, Scaffold;
 
 int _opened = 0;

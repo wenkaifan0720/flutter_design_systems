@@ -180,7 +180,6 @@ void main() {
           final faces = _focusedFace();
           final lamps = find.byType(ApplianceLamp);
           final bounds = switch (name) {
-            'signal key' => [tester.getRect(find.text('Add entry'))],
             // A lamp already lit: the lamp brightens and the part's own
             // bezel lights.
             'switch, on' || 'chip' || 'radio' || 'selector' => [

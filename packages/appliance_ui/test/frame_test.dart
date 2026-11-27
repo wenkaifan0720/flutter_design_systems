@@ -7,7 +7,6 @@
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _exit = ValueKey('exit');
 
@@ -187,7 +186,8 @@ void main() {
     _size(tester, 390);
     await tester.pumpWidget(frame());
     await _settle(tester);
-    expect(find.byType(ApplianceNavigationBar), findsNothing);
+    // The strip slides away below the screen: nothing of it takes a tap.
+    expect(find.byType(ApplianceNavigationBar).hitTestable(), findsNothing);
     tester.view.physicalSize = const Size(800, 844);
     await tester.pumpWidget(frame());
     await _settle(tester);
@@ -232,14 +232,10 @@ void main() {
   });
 
   test('the preset by name', () {
-    expect(ApplianceThemeData.presets, [
-      'warm',
-      'mint',
-      'butter',
-      'powder',
-      'blush',
-      'slate',
-    ]);
+    expect(
+      [for (final p in ApplianceThemeData.palettes) p.id],
+      ['warm', 'mint', 'butter', 'powder', 'blush', 'slate'],
+    );
     expect(
       ApplianceThemeData.preset('warm', Brightness.dark).colors,
       ApplianceThemeData.dark().colors,

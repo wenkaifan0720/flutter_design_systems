@@ -138,16 +138,11 @@ class ApplianceButton extends StatelessWidget {
         final minimum =
             layered.minimumSize ??
             Size(text ? 0 : theme.controlHeight, theme.controlHeight);
-        final lamp = applianceControlLight(states);
-        final litLegend = _kind == _ButtonKind.filled && lamp > 0;
         final legend = DefaultTextStyle.merge(
           style: layered.text(
             theme.textTheme.label.copyWith(
               color: face.foreground,
               fontWeight: _kind == _ButtonKind.filled ? FontWeight.w600 : null,
-              decoration: litLegend ? TextDecoration.underline : null,
-              decorationColor: const Color(0xFFFFE8BD).withValues(alpha: lamp),
-              decorationThickness: 1.5,
             ),
           ),
           // A key's words are what it does: a second line, centred, reads
@@ -177,9 +172,11 @@ class ApplianceButton extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (icon != null) ...[
+                        // The glyph grows with the legend beside it.
                         IconTheme.merge(
                           data: IconThemeData(
-                            size: layered.iconSize ?? 20,
+                            size: MediaQuery.textScalerOf(context)
+                                .scale(layered.iconSize ?? 20),
                             color: face.foreground,
                           ),
                           child: icon!,
@@ -221,6 +218,9 @@ class ApplianceButton extends StatelessWidget {
 }
 
 /// A key's face in [states].
+/// The pale lamp-light a filled key's rim glows with when it has the focus.
+const Color _litRim = Color(0xFFFFE8BD);
+
 ApplianceFace _keyFace(
   ApplianceThemeData theme,
   Set<WidgetState> states,
@@ -273,6 +273,9 @@ ApplianceFace _keyFace(
           ? Color.lerp(c.danger, c.shade, 0.15)!
           : c.signalBottom;
       final words = destructive ? c.onDanger : c.onSignal;
+      // Focused, the lit key's rim glows a pale lamp-light from inside, as
+      // another key's rim lights: the signal's own colour would not show on
+      // it, and a line under the words would read as a link.
       return ApplianceFace(
         top: pressed ? Color.lerp(bottom, c.shade, 0.08)! : top,
         bottom: pressed ? Color.lerp(top, c.shade, 0.04)! : bottom,
@@ -280,6 +283,7 @@ ApplianceFace _keyFace(
         travel: pressed ? 1 : 0,
         radius: BorderRadius.circular(ApplianceMetrics.keyRadius),
         foreground: words,
+        focus: _litRim.withValues(alpha: applianceControlLight(states)),
       );
   }
 }

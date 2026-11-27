@@ -116,7 +116,8 @@ class ApplianceSelect<T> extends StatefulWidget {
   /// The key's style, over [ApplianceThemeData.selectStyle].
   final ApplianceStyle? style;
 
-  /// The widest a select stands from 600 px up; below, it spans its column.
+  /// The widest a select stands alone from 600 px up; below 600, and in an
+  /// [ApplianceForm]'s column (beside its fields), it spans its column.
   static const double maxWideWidth = 320;
 
   @override
@@ -311,7 +312,10 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
               ),
             ),
           );
-    final narrow = MediaQuery.sizeOf(context).width < 600;
+    // In a form's column a select spans it, as the fields beside it do.
+    final narrow =
+        MediaQuery.sizeOf(context).width < 600 ||
+        RawForm.maybeOf(context) != null;
     final field = applianceFieldFrame(
       labelText: labelText,
       semanticLabel: widget.semanticLabel,

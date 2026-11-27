@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 // Distinct plastics let the test read each painted edge through its lighting,

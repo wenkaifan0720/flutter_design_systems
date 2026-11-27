@@ -15,6 +15,7 @@ import 'internal/control_light.dart';
 import 'material.dart';
 import 'theme.dart';
 import 'internal/field_frame.dart';
+import 'internal/message_reveal.dart';
 
 /// The words over a field: printed on the panel, 14 px medium, 8 px above
 /// the well.
@@ -72,8 +73,13 @@ class ApplianceFieldMessage extends StatelessWidget {
   /// The field's parts, from its [RawInputDecorator].
   final RawInputDecoratorDetails parts;
 
+  // The line grows open and fades in (and out) as the field's words come
+  // and go, so the fields under it move with it and never jump.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ApplianceMessageReveal(id: parts.errorText, child: _line(context));
+
+  Widget _line(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final style = theme.textTheme.secondary;
     final error = parts.error;

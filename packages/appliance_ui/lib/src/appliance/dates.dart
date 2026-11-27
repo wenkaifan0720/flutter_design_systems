@@ -45,6 +45,20 @@ String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
   return full;
 }
 
+/// Appliance's days in words, in the date picker's own shape, so a page
+/// writes a day as its fields do: one date format across the app.
+abstract final class ApplianceFormat {
+  /// A day with its month and year as [ApplianceDatePicker] writes it, in
+  /// the reader's language: "Nov 23, 2026" in American English,
+  /// "23 Nov 2026" in British.
+  ///
+  /// ```dart
+  /// Text(ApplianceFormat.date(context, DateTime(2026, 11, 23)))
+  /// ```
+  static String date(BuildContext context, DateTime day) =>
+      _dateLabel(RawWidgetsLocalizations.of(context), day);
+}
+
 /// A day cell's height at 1x text.
 const double _dayHeight = 44;
 
@@ -490,6 +504,7 @@ class _PickerKey extends StatefulWidget {
     required this.plate,
     required this.style,
     this.labelText,
+    this.focusNode,
   });
 
   /// The words over the key, drawn with it: a plate that opens above stands
@@ -504,6 +519,7 @@ class _PickerKey extends StatefulWidget {
   final String? semanticValue;
   final Widget Function(BuildContext context, VoidCallback close) plate;
   final ApplianceStyle? style;
+  final FocusNode? focusNode;
 
   @override
   State<_PickerKey> createState() => _PickerKeyState();
@@ -560,6 +576,7 @@ class _PickerKeyState extends State<_PickerKey> {
       final open = expanded ?? false;
       return RawButton(
         onPressed: onPressed,
+        focusNode: widget.focusNode,
         expanded: expanded,
         // The field names the key; the label names the plate it opens.
         semanticValue: semanticValue,
@@ -772,6 +789,7 @@ class ApplianceDatePicker extends StatelessWidget {
     this.semanticLabel,
     this.selectable,
     this.currentDate,
+    this.focusNode,
     this.style,
   });
 
@@ -808,6 +826,11 @@ class ApplianceDatePicker extends StatelessWidget {
   /// Today, for the calendar's mark; the clock's otherwise.
   final DateTime? currentDate;
 
+  /// The key's focus, for a caller that moves focus to it: a
+  /// `RawFormField` round it, which a failed submit focuses; null keeps one
+  /// of its own.
+  final FocusNode? focusNode;
+
   /// The key's style, over [ApplianceThemeData.selectStyle].
   final ApplianceStyle? style;
 
@@ -831,6 +854,7 @@ class ApplianceDatePicker extends StatelessWidget {
         semanticLabel: semanticLabel ?? labelText,
         semanticValue: chosen == null ? null : words.formatFullDate(chosen),
         style: style,
+        focusNode: focusNode,
         plate: (context, close) => _CalendarPlate(
           make: () => RawCalendarController(
             firstDate: firstDate,
@@ -855,7 +879,14 @@ class ApplianceDatePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('labelText', labelText, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null));
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
   }
 }
 

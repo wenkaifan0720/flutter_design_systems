@@ -48,7 +48,7 @@ Color _ink(WidgetTester tester, String figure) => tester
 void main() {
   setUpAll(applianceLoadFonts);
 
-  for (final name in ApplianceThemeData.presets) {
+  for (final name in [for (final p in ApplianceThemeData.palettes) p.id]) {
     for (final brightness in Brightness.values) {
       final theme = ApplianceThemeData.preset(name, brightness);
       final c = theme.colors;

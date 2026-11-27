@@ -104,8 +104,12 @@ class ApplianceMenuRow extends StatelessWidget {
           child: Row(
             children: [
               if (leading != null) ...[
+                // The glyph grows with the words beside it.
                 IconTheme.merge(
-                  data: IconThemeData(size: 18, color: words),
+                  data: IconThemeData(
+                    size: MediaQuery.textScalerOf(context).scale(18),
+                    color: words,
+                  ),
                   child: leading!,
                 ),
                 const SizedBox(width: ApplianceSpacing.medium),

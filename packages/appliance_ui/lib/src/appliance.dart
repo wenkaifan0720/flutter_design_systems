@@ -9,6 +9,9 @@
 /// faceplates ([AppliancePanel], [ApplianceListGroup]).
 library;
 
+// The glyphs Appliance draws with, so an app's own glyphs match them.
+export 'package:lucide_icons_flutter/lucide_icons.dart' show LucideIcons;
+
 export 'appliance/actions.dart';
 export 'appliance/app.dart';
 export 'appliance/button.dart';
@@ -20,6 +23,7 @@ export 'appliance/display.dart';
 export 'appliance/feedback.dart';
 export 'appliance/fields.dart';
 export 'appliance/fonts.dart';
+export 'appliance/form.dart';
 export 'appliance/frame.dart';
 export 'appliance/inventory.dart';
 export 'appliance/lists.dart';

@@ -159,7 +159,9 @@ class _Finishes extends StatelessWidget {
                 .floorToDouble();
             return KitRow(
               children: [
-                for (final name in ApplianceThemeData.presets)
+                for (final name in [
+                  for (final p in ApplianceThemeData.palettes) p.id,
+                ])
                   SizedBox(
                     width: width,
                     child: Column(

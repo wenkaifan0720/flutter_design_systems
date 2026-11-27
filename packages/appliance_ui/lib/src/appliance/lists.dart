@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'display.dart' show ApplianceAvatar, ApplianceTag;
 import 'internal/control_light.dart';
 import 'material.dart';
 import 'theme.dart';
@@ -468,6 +469,14 @@ class ApplianceListTile extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final named = semanticLabel != null;
+    // A tag at the end is words, part of the row's name; anything else
+    // there is a control with a press and a node of its own.
+    final control = trailing != null && trailing is! ApplianceTag;
+    // An avatar of the title's own name would say it twice.
+    final echo = switch (leading) {
+      ApplianceAvatar(:final name) => title.contains(name),
+      _ => false,
+    };
     // [under]: the row's key beneath its words, when a trailing control
     // stands beside it in the same latched face (the words are its node's).
     Widget body(Set<WidgetState> states, {Widget? under}) {
@@ -495,7 +504,7 @@ class ApplianceListTile extends StatelessWidget {
                   applianceControlLight(states),
                 )!);
       final muted = disabled ? c.printDisabled : c.printMuted;
-      final chevron = showChevron ?? (onTap != null && trailing == null);
+      final chevron = showChevron ?? (onTap != null && !control);
       final face = layered.on(
         ApplianceFace(
           top: down ? c.keyDownTop : _none(c.keyDownTop),
@@ -539,16 +548,19 @@ class ApplianceListTile extends StatelessWidget {
                       if (leading != null) ...[
                         passive(
                           ExcludeSemantics(
-                            excluding: under != null,
+                            excluding: under != null || echo,
+                            // The glyph grows with the words beside it.
                             child: IconTheme.merge(
                               data: IconThemeData(
-                                size: layered.iconSize ?? 20,
+                                size: MediaQuery.textScalerOf(context)
+                                    .scale(layered.iconSize ?? 20),
                                 color: disabled
                                     ? c.printDisabled
                                     : c.printMuted,
                               ),
                               child: SizedBox.square(
-                                dimension: 24,
+                                dimension: MediaQuery.textScalerOf(context)
+                                    .scale(24),
                                 child: Center(child: leading),
                               ),
                             ),
@@ -570,7 +582,13 @@ class ApplianceListTile extends StatelessWidget {
                                     title,
                                     style: layered.text(
                                       theme.textTheme.body.copyWith(
-                                        color: ink,
+                                        // The surface's ink, eased with its
+                                        // face from state to state.
+                                        color:
+                                            DefaultTextStyle.of(context)
+                                                .style
+                                                .color ??
+                                            ink,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -617,9 +635,25 @@ class ApplianceListTile extends StatelessWidget {
                           ),
                         ),
                       ],
+                      // The end takes its own width up to two thirds of the
+                      // row, the title the rest.
                       if (trailing != null) ...[
                         const SizedBox(width: ApplianceSpacing.medium),
-                        trailing!,
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: box.maxWidth.isFinite
+                                ? box.maxWidth * 2 / 3
+                                : double.infinity,
+                          ),
+                          child: control
+                              ? trailing!
+                              : passive(
+                                  ExcludeSemantics(
+                                    excluding: quiet,
+                                    child: trailing!,
+                                  ),
+                                ),
+                        ),
                       ],
                       if (chevron) ...[
                         const SizedBox(width: ApplianceSpacing.small),
@@ -655,7 +689,7 @@ class ApplianceListTile extends StatelessWidget {
         child: body({if (!enabled) WidgetState.disabled}),
       );
     }
-    if (trailing != null) {
+    if (control) {
       // The row's key lies under its words, the control on top: the latched
       // face takes both, the control keeps its own press and node.
       return _KeyedRow(
