@@ -355,7 +355,7 @@ class _HearthAppState extends State<HearthApp> {
   Widget _galleryKey(BuildContext context) => NeumorphicRoundButton(
     NeumorphicGlyphs.layoutGrid,
     key: const Key('hearth-gallery'),
-    label: kitSay(context, 'Gallery'),
+    semanticLabel: kitSay(context, 'Gallery'),
     onPressed: () => _showWays(context),
   );
 
@@ -436,7 +436,7 @@ class _HearthAppState extends State<HearthApp> {
           children: [
             NeumorphicNavigationRail(
               key: const Key('hearth-rail'),
-              label: 'Hearth',
+              semanticLabel: 'Hearth',
               items: nav,
               selectedIndex: _index,
               onDestinationSelected: (i) => widget.onRoute(hearthScreens[i].id),
@@ -531,7 +531,7 @@ class _GalleryWays extends StatelessWidget {
     children: [
       NeumorphicSegmentedButton<Brightness>(
         key: const Key('hearth-appearance'),
-        label: kitSay(context, 'Appearance'),
+        semanticLabel: kitSay(context, 'Appearance'),
         value: brightness,
         segments: [
           NeumorphicButtonSegment(Brightness.light, kitSay(context, 'Day')),
@@ -911,7 +911,7 @@ class _DevicesScreenState extends State<_DevicesScreen> {
       trailing: NeumorphicRoundButton(
         NeumorphicGlyphs.plus,
         key: const Key('hearth-add'),
-        label: kitSay(context, 'Add a device'),
+        semanticLabel: kitSay(context, 'Add a device'),
         onPressed: _add,
       ),
     );
@@ -1127,7 +1127,7 @@ class _ShopScreen extends StatelessWidget {
         ),
         NeumorphicRadioGroup<bool>(
           key: const Key('hearth-delivery'),
-          label: kitSay(context, 'Delivery'),
+          semanticLabel: kitSay(context, 'Delivery'),
           value: home.express,
           options: [
             NeumorphicRadio(
@@ -1149,7 +1149,7 @@ class _ShopScreen extends StatelessWidget {
           labelText: kitSay(context, 'Pay with'),
           child: NeumorphicSegmentedButton<String>(
             key: const Key('hearth-pay-with'),
-            label: kitSay(context, 'Pay with'),
+            semanticLabel: kitSay(context, 'Pay with'),
             value: home.pay,
             segments: [
               NeumorphicButtonSegment(

@@ -111,7 +111,7 @@ class _Swatches extends StatelessWidget {
   }
 }
 
-// Each of the six palettes (NeumorphicThemeData.presets, the default first) in the page's brightness: its name over its
+// Each of the six palettes (NeumorphicThemeData.palettes.map((p) => p.id), the default first) in the page's brightness: its name over its
 // wall, face, well, pigment, the pigment's words and the ink, a hairline between like ones so they stay apart.
 class _Palettes extends StatelessWidget {
   const _Palettes();
@@ -128,7 +128,7 @@ class _Palettes extends StatelessWidget {
         child: NeumorphicColumn(
           gap: 12,
           children: [
-            for (final id in NeumorphicThemeData.presets)
+            for (final id in NeumorphicThemeData.palettes.map((p) => p.id))
               NeumorphicColumn(
                 gap: 4,
                 children: [

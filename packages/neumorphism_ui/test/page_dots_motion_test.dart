@@ -26,7 +26,7 @@ void main() {
                       builder: (context, value, _) => NeumorphicPageDots(
                         count: 3,
                         selectedIndex: value,
-                        label: 'Tour',
+                        semanticLabel: 'Tour',
                         individualTargets: false,
                         onChanged: (_) {},
                       ),
@@ -82,7 +82,7 @@ void main() {
               builder: (context, value, _) => NeumorphicPageDots(
                 count: value,
                 selectedIndex: 0,
-                label: 'Tour',
+                semanticLabel: 'Tour',
                 individualTargets: false,
                 onChanged: selected.add,
               ),

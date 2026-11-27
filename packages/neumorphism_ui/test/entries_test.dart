@@ -25,7 +25,7 @@ void main() {
                   value: value,
                   isError: error,
                   tristate: true,
-                  label: 'Terms',
+                  semanticLabel: 'Terms',
                   onChanged: (_) {},
                 );
               },
@@ -163,7 +163,7 @@ void main() {
             Center(
               child: StatefulBuilder(
                 builder: (context, setState) => NeumorphicCheckbox(
-                  label: 'Agree',
+                  semanticLabel: 'Agree',
                   value: value,
                   tristate: true,
                   onChanged: (v) => setState(() => value = v),
@@ -203,7 +203,7 @@ void main() {
       neumorphicApp(
         Center(
           child: NeumorphicCheckbox(
-            label: 'Some',
+            semanticLabel: 'Some',
             value: null,
             onChanged: (v) => selected = v,
           ),
@@ -230,7 +230,7 @@ void main() {
                     children: [
                       if (segmented)
                         NeumorphicSegmentedButton<String>(
-                          label: 'Period',
+                          semanticLabel: 'Period',
                           value: value,
                           segments: const [
                             NeumorphicButtonSegment('a', 'First'),
@@ -245,7 +245,7 @@ void main() {
                         )
                       else
                         NeumorphicRadioGroup<String>(
-                          label: 'Space',
+                          semanticLabel: 'Space',
                           value: value,
                           options: const [
                             NeumorphicRadio('a', 'First'),
@@ -397,7 +397,7 @@ void main() {
   check(
     'radio with long labels',
     () => NeumorphicRadioGroup<int>(
-      label: 'Space',
+      semanticLabel: 'Space',
       options: const [NeumorphicRadio(1, longLine, note: longLine)],
       onChanged: (_) {},
     ),
@@ -405,7 +405,7 @@ void main() {
   check(
     'segment with long label',
     () => NeumorphicSegmentedButton<int>(
-      label: 'Period',
+      semanticLabel: 'Period',
       segments: const [NeumorphicButtonSegment(1, longLine)],
       onChanged: (_) {},
     ),

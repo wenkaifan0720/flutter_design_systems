@@ -28,7 +28,7 @@ void main() {
       ),
       'a resting round button': NeumorphicRoundButton(
         NeumorphicGlyphs.plus,
-        label: 'Add',
+        semanticLabel: 'Add',
         onPressed: () {},
       ),
       'stepper keys': NeumorphicNumberField(value: 2, onChanged: (_) {}),
@@ -52,7 +52,11 @@ void main() {
       ),
       'a slider at rest': SizedBox(
         width: 300,
-        child: NeumorphicSlider(label: 'Level', value: 0, onChanged: (_) {}),
+        child: NeumorphicSlider(
+          semanticLabel: 'Level',
+          value: 0,
+          onChanged: (_) {},
+        ),
       ),
     };
     final surfaces = <String, Widget Function(Widget)>{
@@ -66,7 +70,7 @@ void main() {
     }
 
     final palettes = <String, NeumorphicThemeData Function(Brightness)>{
-      for (final id in NeumorphicThemeData.presets)
+      for (final id in NeumorphicThemeData.palettes.map((p) => p.id))
         id: (b) => NeumorphicThemeData.preset(id, b),
       for (final (name, ground, pigment) in [
         ('custom plum', const Color(0xFFE8E3ED), const Color(0xFF7542A3)),

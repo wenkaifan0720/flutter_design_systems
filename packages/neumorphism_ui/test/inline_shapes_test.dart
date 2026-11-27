@@ -27,7 +27,7 @@ void main() {
         NeumorphicChip(label, style: style, onPressed: () {}),
     'tag': (label, style) => NeumorphicTag(label, style: style),
     'segments': (label, style) => NeumorphicSegmentedButton<int>(
-      label: 'Settings',
+      semanticLabel: 'Settings',
       segments: [NeumorphicButtonSegment(1, label)],
       value: 1,
       style: style,
@@ -65,7 +65,7 @@ void main() {
                       .shape
                 : tester
                       .widgetList<NeumorphicTap>(find.byType(NeumorphicTap))
-                      .singleWhere((tap) => tap.label == label)
+                      .singleWhere((tap) => tap.semanticLabel == label)
                       .shape;
             // A bank's cell takes its outline from the bank: the bank is the pill that holds or wraps the words.
             final shape = role is NeumorphicCellBorder ? role.bank : role;
@@ -99,7 +99,7 @@ void main() {
                 .style
           : tester
                 .widgetList<NeumorphicTap>(find.byType(NeumorphicTap))
-                .singleWhere((tap) => tap.label == 'One')
+                .singleWhere((tap) => tap.semanticLabel == 'One')
                 .style;
       expect(local?.shape?.resolve({}), shape);
     });

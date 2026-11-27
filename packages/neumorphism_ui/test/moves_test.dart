@@ -256,7 +256,7 @@ void main() {
           NeumorphicPageDots(
             count: 4,
             selectedIndex: 0,
-            label: 'Tour',
+            semanticLabel: 'Tour',
             onChanged: (v) => selected = v,
           ),
         ),
@@ -281,7 +281,7 @@ void main() {
               NeumorphicPageDots(
                 count: 3,
                 selectedIndex: 1,
-                label: 'Tour',
+                semanticLabel: 'Tour',
                 individualTargets: false,
                 onChanged: selected.add,
               ),
@@ -367,7 +367,7 @@ void main() {
     () => NeumorphicPageDots(
       count: 20,
       selectedIndex: 5,
-      label: 'Pages',
+      semanticLabel: 'Pages',
       onChanged: (_) {},
     ),
   );

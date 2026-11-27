@@ -7,7 +7,6 @@
 import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 final _ascii = RegExp('[0-9]');

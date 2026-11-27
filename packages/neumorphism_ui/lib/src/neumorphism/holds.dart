@@ -271,7 +271,7 @@ class _NeumorphicDisclosureState extends State<NeumorphicDisclosure> {
         children: [
           NeumorphicTap(
             autofocus: widget.autofocus,
-            label: [
+            semanticLabel: [
               widget.title,
               if (widget.subtitle != null) widget.subtitle!,
             ].join(', '),
@@ -393,7 +393,7 @@ class NeumorphicTableRow {
     this.onPressed,
     this.selected = false,
     this.key,
-    this.label,
+    this.semanticLabel,
   });
 
   /// Cell content in column order; each entry is text or a widget.
@@ -409,7 +409,7 @@ class NeumorphicTableRow {
   final Key? key;
 
   /// An optional accessible name for the whole row.
-  final String? label;
+  final String? semanticLabel;
 }
 
 /// Records in columns, becoming labelled cards when width or text size needs it.
@@ -424,7 +424,7 @@ class NeumorphicTable extends StatelessWidget {
     this.style,
     required this.columns,
     required this.rows,
-    this.label,
+    this.semanticLabel,
     this.stackBelow = 520,
   });
 
@@ -438,7 +438,7 @@ class NeumorphicTable extends StatelessWidget {
   final List<NeumorphicTableRow> rows;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? semanticLabel;
 
   /// The width below which rows become labelled vertical records.
   final double stackBelow;
@@ -477,7 +477,7 @@ class NeumorphicTable extends StatelessWidget {
   }
 
   String _spoken(NeumorphicTableRow row) =>
-      row.label ??
+      row.semanticLabel ??
       [
         for (var i = 0; i < row.cells.length && i < columns.length; i++)
           if (row.cells[i] is! Widget) '${columns[i].label}: ${row.cells[i]}',
@@ -508,7 +508,7 @@ class NeumorphicTable extends StatelessWidget {
           ? Semantics(selected: row.selected, child: face)
           : NeumorphicTap(
               onPressed: row.onPressed,
-              label: _spoken(row),
+              semanticLabel: _spoken(row),
               selected: row.selected,
               child: face,
             ),
@@ -529,7 +529,7 @@ class NeumorphicTable extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: LayoutBuilder(
         builder: (context, box) {
           if (columns.isEmpty) return const SizedBox.shrink();
@@ -630,7 +630,7 @@ class NeumorphicTable extends StatelessWidget {
       )
       ..add(IterableProperty<NeumorphicTableColumn>('columns', columns))
       ..add(IterableProperty<NeumorphicTableRow>('rows', rows))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('stackBelow', stackBelow, defaultValue: 520));
   }
 }

@@ -171,7 +171,7 @@ final RawInventory neumorphicInventory = RawInventory(
       'IconButton',
       (_) => const NeumorphicIconButton(
         NeumorphicGlyphs.share2,
-        label: 'Share',
+        semanticLabel: 'Share',
         onPressed: _none,
       ),
     ),
@@ -182,7 +182,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'ButtonGroup',
       (_) => const NeumorphicButtonGroup(
-        label: 'Week',
+        semanticLabel: 'Week',
         items: [
           NeumorphicButtonGroupItem('Previous', onPressed: _none),
           NeumorphicButtonGroupItem('Today', onPressed: _none),
@@ -193,7 +193,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'ToggleGroup',
       (_) => const NeumorphicToggleGroup<String>(
-        label: 'Rooms',
+        semanticLabel: 'Rooms',
         selected: {'bed'},
         onChanged: _drop,
         items: [
@@ -257,14 +257,20 @@ final RawInventory neumorphicInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Select',
-      (_) => const NeumorphicSelect<String>(
-        labelText: 'Room',
-        value: 'bed',
-        options: [
-          NeumorphicMenuItem('bed', 'Bedroom'),
-          NeumorphicMenuItem('study', 'Study'),
+      // Alone, as a filter, a select keeps to its content; in a form's
+      // column it takes the column.
+      (_) => const Row(
+        children: [
+          NeumorphicSelect<String>(
+            labelText: 'Room',
+            value: 'bed',
+            options: [
+              NeumorphicMenuItem('bed', 'Bedroom'),
+              NeumorphicMenuItem('study', 'Study'),
+            ],
+            onChanged: _drop,
+          ),
         ],
-        onChanged: _drop,
       ),
     ),
     RawInventoryEntry.present(
@@ -287,7 +293,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'Checkbox',
       (_) => const NeumorphicCheckbox(
-        label: 'Dim at dusk',
+        semanticLabel: 'Dim at dusk',
         value: true,
         onChanged: _drop,
       ),
@@ -295,7 +301,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'RadioGroup',
       (_) => const NeumorphicRadioGroup<String>(
-        label: 'Room',
+        semanticLabel: 'Room',
         value: 'bed',
         options: [
           NeumorphicRadio('bed', 'Bedroom'),
@@ -307,15 +313,18 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'Switch',
       (_) => const NeumorphicSwitch(
-        label: 'Night light',
+        semanticLabel: 'Night light',
         value: true,
         onChanged: _drop,
       ),
     ),
     RawInventoryEntry.present(
       'Slider',
-      (_) =>
-          const NeumorphicSlider(label: 'Warmth', value: .5, onChanged: _drop),
+      (_) => const NeumorphicSlider(
+        semanticLabel: 'Warmth',
+        value: .5,
+        onChanged: _drop,
+      ),
     ),
     RawInventoryEntry.present(
       'RangeSlider',
@@ -330,7 +339,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'SegmentedButton',
       (_) => const NeumorphicSegmentedButton<String>(
-        label: 'View',
+        semanticLabel: 'View',
         value: 'day',
         segments: [
           NeumorphicButtonSegment('day', 'Day'),
@@ -345,7 +354,11 @@ final RawInventory neumorphicInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Rating',
-      (_) => const NeumorphicRating(label: 'Sleep', value: 4, onChanged: _drop),
+      (_) => const NeumorphicRating(
+        semanticLabel: 'Sleep',
+        value: 4,
+        onChanged: _drop,
+      ),
     ),
     RawInventoryEntry.present(
       'FileUpload',
@@ -374,7 +387,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'WheelPicker',
       (_) => const NeumorphicWheelPicker<int>(
-        label: 'Lamps',
+        semanticLabel: 'Lamps',
         items: [1, 2, 3, 4, 5, 6],
         value: 2,
         onChanged: _drop,
@@ -427,7 +440,7 @@ final RawInventory neumorphicInventory = RawInventory(
       'TabBar',
       (_) => NeumorphicTabBar(
         tabs: const ['Day', 'Week', 'Month'],
-        label: 'Span',
+        semanticLabel: 'Span',
         onChanged: _drop,
       ),
     ),
@@ -455,7 +468,7 @@ final RawInventory neumorphicInventory = RawInventory(
       (_) => const NeumorphicPageDots(
         count: 4,
         selectedIndex: 1,
-        label: 'Rooms',
+        semanticLabel: 'Rooms',
         onChanged: _drop,
       ),
     ),
@@ -560,7 +573,7 @@ final RawInventory neumorphicInventory = RawInventory(
       (_) => _Owns(
         _table,
         (context, table) => NeumorphicDataTable<_Room>(
-          label: 'Rooms',
+          semanticLabel: 'Rooms',
           controller: table,
           cell: (r, column) => column.id == 'room' ? r.name : '${r.heat}',
         ),
@@ -573,7 +586,7 @@ final RawInventory neumorphicInventory = RawInventory(
         _scroll,
         (context, scroll) => NeumorphicScrollArea(
           controller: scroll,
-          label: 'Rooms',
+          semanticLabel: 'Rooms',
           child: ListView(
             controller: scroll,
             children: [
@@ -609,7 +622,7 @@ final RawInventory neumorphicInventory = RawInventory(
         children: [Text(line)],
       );
       return NeumorphicCarouselView(
-        label: 'Rooms',
+        semanticLabel: 'Rooms',
         height: 132,
         initialPage: 1,
         children: [
@@ -647,7 +660,7 @@ final RawInventory neumorphicInventory = RawInventory(
       (_) => _Owns(
         _places,
         (context, places) => NeumorphicTreeView<String>(
-          label: 'Rooms',
+          semanticLabel: 'Rooms',
           controller: places,
           labelOf: (n) => n,
         ),
@@ -686,8 +699,10 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present('Tag', (_) => const NeumorphicTag('Warm')),
     RawInventoryEntry.present(
       'Media',
-      (_) =>
-          const NeumorphicMedia(label: 'Bedroom', glyph: NeumorphicGlyphs.lamp),
+      (_) => const NeumorphicMedia(
+        semanticLabel: 'Bedroom',
+        glyph: NeumorphicGlyphs.lamp,
+      ),
     ),
     RawInventoryEntry.present(
       'EmptyState',
@@ -743,7 +758,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'Popover',
       (_) => NeumorphicPopover(
-        label: 'Lights out',
+        semanticLabel: 'Lights out',
         trigger: (context, toggle) =>
             NeumorphicButton('When', onPressed: toggle),
         content: const Text('At half past ten, every night.'),
@@ -795,8 +810,10 @@ final RawInventory neumorphicInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'CircularProgressIndicator',
-      (_) =>
-          const NeumorphicCircularProgressIndicator(value: .6, label: 'Upload'),
+      (_) => const NeumorphicCircularProgressIndicator(
+        value: .6,
+        semanticLabel: 'Upload',
+      ),
     ),
     RawInventoryEntry.present(
       'Skeleton',
@@ -820,7 +837,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'LineChart',
       (_) => const NeumorphicLineChart(
-        label: 'Hours slept',
+        semanticLabel: 'Hours slept',
         height: 140,
         labels: ['Mon', 'Tue', 'Wed', 'Thu'],
         series: [
@@ -831,7 +848,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'BarChart',
       (_) => const NeumorphicBarChart(
-        label: 'Lamp hours',
+        semanticLabel: 'Lamp hours',
         height: 140,
         labels: ['June', 'July', 'August'],
         series: [
@@ -843,7 +860,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'AreaChart',
       (_) => const NeumorphicAreaChart(
-        label: 'Warmth',
+        semanticLabel: 'Warmth',
         height: 140,
         labels: ['Mon', 'Tue', 'Wed', 'Thu'],
         series: [
@@ -854,7 +871,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'PieChart',
       (_) => const NeumorphicPieChart(
-        label: 'Rooms',
+        semanticLabel: 'Rooms',
         caption: 'rooms',
         slices: [NeumorphicPieSlice('On', 3), NeumorphicPieSlice('Off', 5)],
       ),
@@ -862,7 +879,7 @@ final RawInventory neumorphicInventory = RawInventory(
     RawInventoryEntry.present(
       'Sparkline',
       (_) => const NeumorphicSparkline(
-        label: 'Hours slept',
+        semanticLabel: 'Hours slept',
         values: [7, 8, 6, 7.5, 8],
       ),
     ),

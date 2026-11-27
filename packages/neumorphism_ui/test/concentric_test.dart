@@ -291,7 +291,7 @@ final _parts = <String, (Widget Function(), int)>{
   'icon button': (
     () => const NeumorphicIconButton(
       NeumorphicGlyphs.plus,
-      label: 'Add',
+      semanticLabel: 'Add',
       onPressed: _hit,
     ),
     1,
@@ -302,12 +302,16 @@ final _parts = <String, (Widget Function(), int)>{
     1,
   ),
   'checkbox': (
-    () => NeumorphicCheckbox(value: true, label: 'Agree', onChanged: (_) {}),
+    () => NeumorphicCheckbox(
+      value: true,
+      semanticLabel: 'Agree',
+      onChanged: (_) {},
+    ),
     1,
   ),
   'radio': (
     () => NeumorphicRadioGroup<int>(
-      label: 'Delivery',
+      semanticLabel: 'Delivery',
       value: 0,
       options: const [
         NeumorphicRadio(0, 'Standard'),
@@ -318,17 +322,22 @@ final _parts = <String, (Widget Function(), int)>{
     1,
   ),
   'switch': (
-    () => NeumorphicSwitch(value: true, label: 'Alerts', onChanged: (_) {}),
+    () => NeumorphicSwitch(
+      value: true,
+      semanticLabel: 'Alerts',
+      onChanged: (_) {},
+    ),
     1,
   ),
   'slider': (
-    () => NeumorphicSlider(label: 'Volume', value: .4, onChanged: (_) {}),
+    () =>
+        NeumorphicSlider(semanticLabel: 'Volume', value: .4, onChanged: (_) {}),
     1,
   ),
   for (final (i, place) in ['first', 'middle', 'last'].indexed) ...{
     'segmented, $place chosen': (
       () => NeumorphicSegmentedButton<int>(
-        label: 'Period',
+        semanticLabel: 'Period',
         value: i,
         segments: _segments(),
         onChanged: (_) {},
@@ -556,7 +565,7 @@ final _wholes = <String, _Whole>{
   for (final (i, place) in ['first', 'middle', 'last'].indexed)
     'segmented, the $place cell focused': (
       build: () => NeumorphicSegmentedButton<int>(
-        label: 'Period',
+        semanticLabel: 'Period',
         value: i,
         segments: _segments(),
         onChanged: (_) {},
@@ -683,7 +692,7 @@ final _plates = <String, Widget Function()>{
       onChanged: (_) {},
     ),
     'segmented, $place chosen': () => NeumorphicSegmentedButton<int>(
-      label: 'Period',
+      semanticLabel: 'Period',
       value: i,
       segments: _segments(),
       onChanged: (_) {},
@@ -699,9 +708,12 @@ final _plates = <String, Widget Function()>{
     ),
   },
   'switch, on': () =>
-      NeumorphicSwitch(value: true, label: 'Alerts', onChanged: (_) {}),
-  'switch, off': () =>
-      NeumorphicSwitch(value: false, label: 'Alerts', onChanged: (_) {}),
+      NeumorphicSwitch(value: true, semanticLabel: 'Alerts', onChanged: (_) {}),
+  'switch, off': () => NeumorphicSwitch(
+    value: false,
+    semanticLabel: 'Alerts',
+    onChanged: (_) {},
+  ),
   'chips in a field': () => NeumorphicMultiSelect<String>(
     labelText: 'Guests',
     values: const ['Ann', 'Ben'],

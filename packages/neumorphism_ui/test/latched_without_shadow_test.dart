@@ -20,7 +20,7 @@ void main() {
   });
 
   group('latched against unlatched, with no shadow visible', () {
-    for (final preset in NeumorphicThemeData.presets) {
+    for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
       for (final b in Brightness.values) {
         final t = NeumorphicThemeData.preset(preset, b);
         final name = '$preset ${b.name}';

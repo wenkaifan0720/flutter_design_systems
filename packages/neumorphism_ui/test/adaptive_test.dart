@@ -135,7 +135,7 @@ void main() {
                         helperText: longLine,
                       ),
                       NeumorphicSegmentedButton<String>(
-                        label: 'Period',
+                        semanticLabel: 'Period',
                         value: 'day',
                         segments: const [
                           NeumorphicButtonSegment('day', 'Day'),

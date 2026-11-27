@@ -21,7 +21,9 @@ List<String> _lit(WidgetTester tester, List<String> labels) {
   for (final label in labels) {
     for (final e
         in find
-            .byWidgetPredicate((w) => w is NeumorphicTap && w.label == label)
+            .byWidgetPredicate(
+              (w) => w is NeumorphicTap && w.semanticLabel == label,
+            )
             .evaluate()) {
       final tap = e.widget as NeumorphicTap;
       final raised = find
@@ -66,7 +68,7 @@ List<String> _lit(WidgetTester tester, List<String> labels) {
 Finder _row(String label) => find
     .byWidgetPredicate(
       (w) =>
-          (w is NeumorphicTap && w.label == label) ||
+          (w is NeumorphicTap && w.semanticLabel == label) ||
           (w is NeumorphicPanelRow && w.label == label),
     )
     .last;

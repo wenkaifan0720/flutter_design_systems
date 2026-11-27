@@ -26,12 +26,12 @@ Widget _key(_Kind kind) => switch (kind) {
   _Kind.round40 => NeumorphicRoundButton(
     NeumorphicGlyphs.ellipsis,
     size: 40,
-    label: _keyLabel,
+    semanticLabel: _keyLabel,
     onPressed: () => _pressed++,
   ),
   _Kind.iconButton => NeumorphicIconButton(
     NeumorphicGlyphs.ellipsis,
-    label: _keyLabel,
+    semanticLabel: _keyLabel,
     onPressed: () => _pressed++,
   ),
 };

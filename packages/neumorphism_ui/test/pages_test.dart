@@ -95,7 +95,7 @@ void main() {
       (tester) => holds(tester, page.value, 'porcelain', false, 320),
       experimentalLeakTesting: matrixLeakTesting,
     );
-    for (final preset in NeumorphicThemeData.presets) {
+    for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
       final turn = subject++;
       var cell = 0;
       for (final dark in const [false, true]) {

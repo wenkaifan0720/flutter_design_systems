@@ -18,7 +18,7 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:ui_core_review/ui_core_review.dart' show DesignKeylineCheck;
 
 // ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/hearth.dart';
 import '../example/lib/kit_gallery/live.dart' show liveGalleryPages;
 import 'gallery_support.dart' show loadBundledFonts, settle;

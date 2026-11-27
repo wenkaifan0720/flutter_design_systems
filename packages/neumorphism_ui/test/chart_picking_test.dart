@@ -18,7 +18,7 @@ Widget _chart({NeumorphicChartKind kind = NeumorphicChartKind.line}) =>
         child: SizedBox(
           width: 360,
           child: NeumorphicChart(
-            label: 'Sleep',
+            semanticLabel: 'Sleep',
             kind: kind,
             labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
             series: const [
@@ -35,7 +35,7 @@ Widget _pie() => neumorphicApp(
     child: SizedBox(
       width: 360,
       child: NeumorphicPieChart(
-        label: 'Energy',
+        semanticLabel: 'Energy',
         total: '10 kWh',
         slices: [
           NeumorphicPieSlice('Heating', 5),

@@ -40,16 +40,21 @@ Widget kitSpecimenCodeField() => const NeumorphicInputOtp(
 Widget kitSpecimenSelect() {
   var value = 'room';
   return StatefulBuilder(
-    builder: (context, setState) => NeumorphicSelect<String>(
-      labelText: 'Space',
-      value: value,
-      helperText: 'Choose somewhere quiet.',
-      options: const [
-        NeumorphicMenuItem('room', 'Reading room'),
-        NeumorphicMenuItem('window', 'Beside the window'),
-        NeumorphicMenuItem('court', 'Courtyard', enabled: false),
+    // Alone, a select keeps to its content.
+    builder: (context, setState) => Row(
+      children: [
+        NeumorphicSelect<String>(
+          labelText: 'Space',
+          value: value,
+          helperText: 'Choose somewhere quiet.',
+          options: const [
+            NeumorphicMenuItem('room', 'Reading room'),
+            NeumorphicMenuItem('window', 'Beside the window'),
+            NeumorphicMenuItem('court', 'Courtyard', enabled: false),
+          ],
+          onChanged: (v) => setState(() => value = v),
+        ),
       ],
-      onChanged: (v) => setState(() => value = v),
     ),
   );
 }
@@ -89,7 +94,7 @@ Widget kitSpecimenRadioGroup() {
   var value = 'room';
   return StatefulBuilder(
     builder: (context, setState) => NeumorphicRadioGroup<String>(
-      label: 'Space',
+      semanticLabel: 'Space',
       value: value,
       options: const [
         NeumorphicRadio('room', 'Reading room', note: 'Near the books'),
@@ -105,7 +110,7 @@ Widget kitSpecimenSegmented() {
   var value = 'day';
   return StatefulBuilder(
     builder: (context, setState) => NeumorphicSegmentedButton<String>(
-      label: 'Period',
+      semanticLabel: 'Period',
       value: value,
       segments: const [
         NeumorphicButtonSegment('day', 'Day'),
@@ -124,11 +129,15 @@ Widget kitSpecimenRating() {
       gap: 12,
       children: [
         NeumorphicRating(
-          label: 'Your rating',
+          semanticLabel: 'Your rating',
           value: stars.toDouble(),
           onChanged: (v) => setState(() => stars = v),
         ),
-        const NeumorphicRating(label: 'Average rating', value: 3.5, size: 18),
+        const NeumorphicRating(
+          semanticLabel: 'Average rating',
+          value: 3.5,
+          size: 18,
+        ),
       ],
     ),
   );

@@ -210,7 +210,7 @@ void main() {
       await _shoot(
         tester,
         const NeumorphicBarChart(
-          label: 'Visits',
+          semanticLabel: 'Visits',
           series: [
             NeumorphicChartSeries('Visits', [2, 4, 6]),
           ],

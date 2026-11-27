@@ -6,11 +6,8 @@
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
 ///
-/// {@canonicalFor chrome_metrics}
-/// {@canonicalFor chrome_metrics.NeumorphicChromeMetrics}
 /// {@canonicalFor host}
 /// {@canonicalFor host.NeumorphicChromeScope}
-/// {@canonicalFor host.NeumorphicHost}
 /// {@canonicalFor host.NeumorphicPage}
 /// {@canonicalFor host.NeumorphicPresentation}
 /// {@canonicalFor host.NeumorphicPreview}
@@ -24,6 +21,5 @@ library;
 
 export 'package:ui_core/host.dart';
 
-export 'src/neumorphism/chrome_metrics.dart';
 export 'src/neumorphism/host.dart';
 export 'src/neumorphism/inventory.dart';

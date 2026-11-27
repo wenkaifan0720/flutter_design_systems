@@ -131,8 +131,8 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
       debugShowCheckedModeBanner: false,
       title: 'Neumorphism',
       builder: (context, child) => NeumorphicHost(
-        light: kitTheme(Brightness.light),
-        darkData: kitTheme(Brightness.dark),
+        theme: kitTheme(Brightness.light),
+        darkTheme: kitTheme(Brightness.dark),
         brightness: brightness,
         child: NeumorphicChromeScope(
           brand: _kitBrand,
@@ -220,8 +220,8 @@ Widget kitSpecimenStage({
   debugShowCheckedModeBanner: false,
   title: 'Neumorphism',
   builder: (context, home) => NeumorphicHost(
-    light: NeumorphicThemeData.preset(style, Brightness.light),
-    darkData: NeumorphicThemeData.preset(style, Brightness.dark),
+    theme: NeumorphicThemeData.preset(style, Brightness.light),
+    darkTheme: NeumorphicThemeData.preset(style, Brightness.dark),
     brightness: brightness,
     child: NeumorphicChromeScope(
       brand: _kitBrand,

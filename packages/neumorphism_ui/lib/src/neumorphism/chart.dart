@@ -84,14 +84,14 @@ class NeumorphicChartBand {
 /// state.
 ///
 /// ```dart
-/// NeumorphicChart(label: 'Hours slept', series: const [NeumorphicChartSeries('Sleep', [7, null, 8])])
+/// NeumorphicChart(semanticLabel: 'Hours slept', series: const [NeumorphicChartSeries('Sleep', [7, null, 8])])
 /// ```
 class NeumorphicChart extends StatelessWidget {
   /// Creates a [NeumorphicChart].
   const NeumorphicChart({
     super.key,
     this.style,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.kind = NeumorphicChartKind.line,
     this.labels = const [],
@@ -106,7 +106,7 @@ class NeumorphicChart extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// The accessible name of the chart.
-  final String label;
+  final String semanticLabel;
 
   /// The series drawn together on a shared scale.
   final List<NeumorphicChartSeries> series;
@@ -135,7 +135,11 @@ class NeumorphicChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     if (loading) {
-      return _ChartLoading(label: label, style: style, height: height + 32);
+      return _ChartLoading(
+        label: semanticLabel,
+        style: style,
+        height: height + 32,
+      );
     }
     // The figures are ui_core's (RawChartValueFormat), in the reader's digits; [format] replaces them.
     final figures = RawWidgetsLocalizations.of(context);
@@ -236,7 +240,7 @@ class NeumorphicChart extends StatelessWidget {
     // right, the gutter and its scale too.
     final rtl = direction == TextDirection.rtl;
     final plot = RawChart(
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       semanticSummary: read,
       series: [
         for (final s in series)
@@ -405,7 +409,7 @@ class NeumorphicChart extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicChartSeries>('series', series))
       ..add(
         EnumProperty<NeumorphicChartKind>(
@@ -995,13 +999,13 @@ class NeumorphicPieSlice {
 /// or the slice under the mouse or the last touch. [loading] shows a skeleton; a sum of zero shows the empty state.
 ///
 /// ```dart
-/// NeumorphicPieChart(label: 'Where the time went', slices: const [NeumorphicPieSlice('Work', 6), NeumorphicPieSlice('Rest', 2)])
+/// NeumorphicPieChart(semanticLabel: 'Where the time went', slices: const [NeumorphicPieSlice('Work', 6), NeumorphicPieSlice('Rest', 2)])
 /// ```
 class NeumorphicPieChart extends StatefulWidget {
   /// Creates a [NeumorphicPieChart].
   const NeumorphicPieChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.slices,
     this.total,
     this.caption,
@@ -1013,7 +1017,7 @@ class NeumorphicPieChart extends StatefulWidget {
   }) : assert(size >= 96);
 
   /// The accessible name of the chart.
-  final String label;
+  final String semanticLabel;
 
   /// The parts, in key order, at most six: fold the rest into one 'Other'.
   final List<NeumorphicPieSlice> slices;
@@ -1045,7 +1049,7 @@ class NeumorphicPieChart extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicPieSlice>('slices', slices))
       ..add(StringProperty('total', total, defaultValue: null))
       ..add(StringProperty('caption', caption, defaultValue: null))
@@ -1078,7 +1082,7 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
     final words = NeumorphicLocalizations.of(context);
     if (widget.loading) {
       return _ChartLoading(
-        label: widget.label,
+        label: widget.semanticLabel,
         style: widget.style,
         height: widget.size,
       );
@@ -1118,7 +1122,7 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
       child: SizedBox.square(
         dimension: widget.size,
         child: RawPieChart(
-          semanticLabel: widget.label,
+          semanticLabel: widget.semanticLabel,
           semanticSummary: read,
           slices: [
             for (final s in widget.slices)
@@ -1389,13 +1393,13 @@ class _SliceKeyPainter extends CustomPainter {
 /// two values draw a level dash.
 ///
 /// ```dart
-/// NeumorphicSparkline(label: 'Steps this week', values: const [4.2, 6.1, 5.0, 7.3])
+/// NeumorphicSparkline(semanticLabel: 'Steps this week', values: const [4.2, 6.1, 5.0, 7.3])
 /// ```
 class NeumorphicSparkline extends StatelessWidget {
   /// Creates a [NeumorphicSparkline].
   const NeumorphicSparkline({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.values,
     this.summary,
     this.width = 96,
@@ -1404,7 +1408,7 @@ class NeumorphicSparkline extends StatelessWidget {
   }) : assert(width >= 32 && height >= 16);
 
   /// The accessible name of the trend.
-  final String label;
+  final String semanticLabel;
 
   /// Ordered samples; null or non-finite values are left out.
   final List<double?> values;
@@ -1431,7 +1435,7 @@ class NeumorphicSparkline extends StatelessWidget {
     ];
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       value: summary ?? points.map(fmt).join(', '),
       child: ExcludeSemantics(
         child: neumorphicOwnSize(
@@ -1453,7 +1457,7 @@ class NeumorphicSparkline extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<double?>('values', values))
       ..add(StringProperty('summary', summary, defaultValue: null))
       ..add(DoubleProperty('width', width, defaultValue: 96))

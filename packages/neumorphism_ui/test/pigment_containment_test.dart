@@ -89,6 +89,8 @@ void main() {
       found.remove('NeumorphicCellBank');
       found.remove('NeumorphicPanelRowRelief');
       found.remove('NeumorphicPanelRowRaise');
+      // The bead painter of a wrong field's mark and of a tell: internal, handed its face by the part that draws it.
+      found.remove('NeumorphicBeadPainter');
       // A colour picker's initialColor is the value it picks from, not a colour it is drawn in.
       found.remove('NeumorphicColorPicker');
       expect(found, isEmpty);

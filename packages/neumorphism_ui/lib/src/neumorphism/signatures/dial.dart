@@ -459,7 +459,7 @@ class NeumorphicDial extends StatelessWidget {
                 alignment: AlignmentDirectional.centerStart,
                 child: NeumorphicRoundButton(
                   NeumorphicGlyphs.minus,
-                  label: NeumorphicLocalizations.of(context).less,
+                  semanticLabel: NeumorphicLocalizations.of(context).less,
                   onPressed: onDecrease,
                 ),
               ),
@@ -468,7 +468,7 @@ class NeumorphicDial extends StatelessWidget {
                 alignment: AlignmentDirectional.centerEnd,
                 child: NeumorphicRoundButton(
                   NeumorphicGlyphs.plus,
-                  label: NeumorphicLocalizations.of(context).more,
+                  semanticLabel: NeumorphicLocalizations.of(context).more,
                   onPressed: onIncrease,
                 ),
               ),
@@ -693,7 +693,7 @@ class NeumorphicDial extends StatelessWidget {
                   NeumorphicGlyphs.minus,
                   size: keySize,
                   iconSize: keyIcon,
-                  label: NeumorphicLocalizations.of(context).less,
+                  semanticLabel: NeumorphicLocalizations.of(context).less,
                   onPressed: onDecrease,
                 ),
               ),
@@ -707,7 +707,7 @@ class NeumorphicDial extends StatelessWidget {
                   NeumorphicGlyphs.plus,
                   size: keySize,
                   iconSize: keyIcon,
-                  label: NeumorphicLocalizations.of(context).more,
+                  semanticLabel: NeumorphicLocalizations.of(context).more,
                   onPressed: onIncrease,
                 ),
               ),
@@ -1343,7 +1343,7 @@ class NeumorphicGauge extends StatelessWidget {
             focusNode: focusNode,
             autofocus: autofocus,
             onPressed: onPressed,
-            label: name,
+            semanticLabel: name,
             child: tile,
           );
   }

@@ -48,7 +48,7 @@ void main() {
               final c = NeumorphicTheme.of(context).colors;
               return Center(
                 child: NeumorphicTap(
-                  label: 'Custom action',
+                  semanticLabel: 'Custom action',
                   onPressed: () => calls++,
                   child: NeumorphicSurface(
                     cast: NeumorphicSurfaceLevel.part,
@@ -101,8 +101,8 @@ void main() {
   });
 
   test('every preset lerps to every other without a fault', () {
-    for (final a in NeumorphicThemeData.presets) {
-      for (final b in NeumorphicThemeData.presets) {
+    for (final a in NeumorphicThemeData.palettes.map((p) => p.id)) {
+      for (final b in NeumorphicThemeData.palettes.map((p) => p.id)) {
         for (final t in [0.0, .5, 1.0]) {
           final m = NeumorphicThemeData.lerp(
             NeumorphicThemeData.preset(a, Brightness.light),

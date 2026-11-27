@@ -16,6 +16,9 @@ import 'package:neumorphism_ui/src/neumorphism/chart.dart' show NeumorphicChart;
 import 'package:neumorphism_ui/src/neumorphism/ornaments.dart'
     show NeumorphicMark;
 
+import 'package:neumorphism_ui/src/neumorphism/internal/error_mark.dart'
+    show NeumorphicErrorMark;
+
 import 'support.dart';
 // The demo art is the example's; a test or page that draws it reads it from there.
 // ignore: avoid_relative_lib_imports
@@ -82,12 +85,17 @@ final _fixed = <String, _Fixed>{
   ),
   'NeumorphicSparkline': _Fixed(
     const Size(96, 32),
-    () => const NeumorphicSparkline(label: 'Steps', values: [4, 6, 5]),
+    () => const NeumorphicSparkline(semanticLabel: 'Steps', values: [4, 6, 5]),
   ),
   'NeumorphicMiniDial': _Fixed(
     const Size(104, 104),
     () => const NeumorphicMiniDial(value: 40, figure: '40'),
     wordsCentred: true,
+  ),
+  // A wrong field's mark: a bead at the field's end.
+  'NeumorphicErrorMark': _Fixed(
+    const Size(24, 24),
+    () => const NeumorphicErrorMark(),
   ),
 };
 
@@ -109,7 +117,7 @@ final _fills = <String, _Fill>{
   'NeumorphicChart': _Fill(
     680,
     () => const NeumorphicChart(
-      label: 'Sleep',
+      semanticLabel: 'Sleep',
       series: [
         NeumorphicChartSeries('Hours', [7, null, 8]),
       ],
@@ -148,7 +156,7 @@ final _fills = <String, _Fill>{
   'NeumorphicPieChart': _Fill(
     680,
     () => const NeumorphicPieChart(
-      label: 'Time',
+      semanticLabel: 'Time',
       slices: [NeumorphicPieSlice('Work', 6), NeumorphicPieSlice('Rest', 2)],
     ),
     aspect: null,
@@ -233,6 +241,7 @@ const _flows = <String, String>{
   'NeumorphicListTile': 'a row the width of its column; one that opens and holds an action lays its press under the row, painted to it',
   'NeumorphicChosenBand':
       'a chosen row\'s pressed band, painted to the row it stands behind',
+  'NeumorphicHintSlot': 'the line under a field, its width; two stack only while one crosses to the other',
 };
 
 // A part drawn through its own RenderObject shows none of these, so it adds its private widget's name.
@@ -296,7 +305,7 @@ Widget _stage(
   bool dark = false,
 }) {
   final theme = NeumorphicThemeData.preset(
-    NeumorphicThemeData.presets.first,
+    NeumorphicThemeData.palettes.first.id,
     dark ? Brightness.dark : Brightness.light,
   );
   const stretch = CrossAxisAlignment.stretch;

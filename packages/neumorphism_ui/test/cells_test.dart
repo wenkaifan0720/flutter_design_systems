@@ -40,7 +40,7 @@ const _labels = ['Day', 'Week', 'Month'];
 /// The three banks, each at [chosen], reporting a choice to [choose].
 final _banks = <String, Widget Function(int chosen, ValueChanged<int> choose)>{
   'segmented control': (chosen, choose) => NeumorphicSegmentedButton<int>(
-    label: 'Period',
+    semanticLabel: 'Period',
     value: chosen,
     segments: [
       for (final (i, label) in _labels.indexed)
@@ -223,7 +223,7 @@ void main() {
 
   // A focused field keeps its own fill: focus is the caret and a deeper well at the edges, never a tint behind the
   // words.
-  for (final preset in NeumorphicThemeData.presets) {
+  for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
     for (final brightness in Brightness.values) {
       testWidgets(
         'a focused field keeps its fill in $preset ${brightness.name}',

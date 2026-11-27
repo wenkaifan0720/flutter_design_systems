@@ -93,7 +93,7 @@ Future<void> fitPage(WidgetTester tester, {double most = 40000}) async {
 
 /// Every preset by day and by night.
 Iterable<(String, Brightness)> get presetsAndModes sync* {
-  for (final preset in NeumorphicThemeData.presets) {
+  for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
     for (final b in Brightness.values) {
       yield (preset, b);
     }

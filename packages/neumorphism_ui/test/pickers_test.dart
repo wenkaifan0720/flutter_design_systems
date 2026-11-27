@@ -147,7 +147,8 @@ void main() {
     expect(arrows.every((b) => b.onPressed == null), isTrue);
     final fifth = find.byWidgetPredicate(
       (w) =>
-          w is NeumorphicTap && w.label?.contains('November 5, 2026') == true,
+          w is NeumorphicTap &&
+          w.semanticLabel?.contains('November 5, 2026') == true,
     );
     tester.widget<NeumorphicTap>(fifth).focusNode!.requestFocus();
     await tester.pump();
@@ -158,7 +159,7 @@ void main() {
     expect(picked, DateTime(2026, 11, 5));
     final disabled = tester
         .widgetList<NeumorphicTap>(find.byType(NeumorphicTap))
-        .where((w) => w.label?.contains('November 4, 2026') == true)
+        .where((w) => w.semanticLabel?.contains('November 4, 2026') == true)
         .single;
     expect(disabled.onPressed, isNull);
   });
@@ -271,7 +272,8 @@ void main() {
       ),
     );
     final days = find.byWidgetPredicate(
-      (w) => w is NeumorphicTap && w.label?.contains('November') == true,
+      (w) =>
+          w is NeumorphicTap && w.semanticLabel?.contains('November') == true,
     );
     for (final e in days.evaluate()) {
       expect(

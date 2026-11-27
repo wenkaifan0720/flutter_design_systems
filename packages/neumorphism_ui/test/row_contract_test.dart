@@ -9,7 +9,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -23,8 +22,8 @@ Widget _host(NeumorphicDensity density, Brightness brightness, Widget child) =>
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (context, navigator) => NeumorphicHost(
-        light: NeumorphicThemeData.porcelain().copyWith(density: density),
-        darkData: NeumorphicThemeData.preset(
+        theme: NeumorphicThemeData.porcelain().copyWith(density: density),
+        darkTheme: NeumorphicThemeData.preset(
           'porcelain',
           Brightness.dark,
         ).copyWith(density: density),
@@ -60,7 +59,7 @@ void main() {
   setUpAll(loadNeumorphicFonts);
 
   for (final width in [600.0, 1024.0, 1440.0, 1920.0]) {
-    testWidgets('dropdowns keep their width and open to it at $width', (
+    testWidgets('dropdowns in a column take its width and open to it at $width', (
       tester,
     ) async {
       tester.view.devicePixelRatio = 1;
@@ -114,8 +113,11 @@ void main() {
       ]) {
         final control = find.byKey(Key(key));
         final face = _face(tester, control);
-        if (face.width > 320.5) {
-          faults.add('$key: closed face ${face.width} wide (at most 320)');
+        // In one column every field takes the column, as Material's do.
+        if ((face.width - (width - 48)).abs() > .5) {
+          faults.add(
+            '$key: closed face ${face.width} wide in a ${width - 48} column',
+          );
         }
         final entry = find.descendant(
           of: control,

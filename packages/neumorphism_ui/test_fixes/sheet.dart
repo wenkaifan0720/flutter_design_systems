@@ -1,0 +1,8 @@
+// NeumorphicSheet's edge, which drew nothing and neumorphism_ui 0.8.0 removed; dart fix drops it (sheet.dart.expect).
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+dynamic any;
+
+void sheet() {
+  NeumorphicSheet(title: any, edge: any, child: any);
+}

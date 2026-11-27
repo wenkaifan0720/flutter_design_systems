@@ -39,7 +39,7 @@ class NeumorphicTabBar extends StatefulWidget {
     required this.tabs,
     this.selectedIndex = 0,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.style,
   }) : assert(selectedIndex >= 0),
        assert(tabs.length == 0 || selectedIndex < tabs.length);
@@ -57,7 +57,7 @@ class NeumorphicTabBar extends StatefulWidget {
   final ValueChanged<int>? onChanged;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? semanticLabel;
   @override
   State<NeumorphicTabBar> createState() => _NeumorphicTabBarState();
 
@@ -75,7 +75,7 @@ class NeumorphicTabBar extends StatefulWidget {
       ..add(IterableProperty<String>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -158,7 +158,8 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar>
       least = math.max(least, painter.width + padding.horizontal + 2);
       painter.dispose();
     }
-    final label = widget.label ?? NeumorphicLocalizations.of(context).tabs;
+    final semanticLabel =
+        widget.semanticLabel ?? NeumorphicLocalizations.of(context).tabs;
     // A tab's face: its cell pressed in when chosen, the keyboard's lift, its words centred by their capitals.
     Widget face(int i, Set<WidgetState> states) => Builder(
       builder: (context) {
@@ -220,7 +221,7 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar>
       // along it (mirrored right to left, wrapping), Home and End, each tab heard as a tab with its place.
       strip: (cell) => RawTabBar(
         controller: controller,
-        semanticLabel: label,
+        semanticLabel: semanticLabel,
         tabs: [
           for (final tab in widget.tabs) RawTab(label: tab, enabled: !off),
         ],
@@ -440,7 +441,7 @@ class _DotWell extends CustomPainter {
 /// Page marks with padded targets when they can be pressed. Long runs wrap.
 ///
 /// ```dart
-/// NeumorphicPageDots(count: 4, selectedIndex: page, label: 'Introduction', onChanged: jump)
+/// NeumorphicPageDots(count: 4, selectedIndex: page, semanticLabel: 'Introduction', onChanged: jump)
 /// ```
 class NeumorphicPageDots extends StatelessWidget {
   /// Creates a [NeumorphicPageDots].
@@ -448,7 +449,7 @@ class NeumorphicPageDots extends StatelessWidget {
     super.key,
     required this.count,
     required this.selectedIndex,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.individualTargets = true,
   }) : assert(count >= 0),
@@ -462,7 +463,7 @@ class NeumorphicPageDots extends StatelessWidget {
   final int selectedIndex;
 
   /// The text identifying this item or control.
-  final String label;
+  final String semanticLabel;
 
   /// Reports a user-requested value change; update the supplied value to reflect it.
   final ValueChanged<int>? onChanged;
@@ -486,7 +487,7 @@ class NeumorphicPageDots extends StatelessWidget {
           for (var i = 0; i < count; i++)
             NeumorphicTap(
               selected: i == selectedIndex,
-              label: '$label, ${words.pageOf(i + 1, count)}',
+              semanticLabel: '$semanticLabel, ${words.pageOf(i + 1, count)}',
               round: true,
               focusInset: 9,
               onPressed: onChanged == null ? null : () => onChanged!(i),
@@ -513,7 +514,7 @@ class NeumorphicPageDots extends StatelessWidget {
     properties
       ..add(IntProperty('count', count))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
       ..add(
         DiagnosticsProperty<bool>(
@@ -586,7 +587,7 @@ class _AdjustablePageDotsState extends State<_AdjustablePageDots> {
       heightFactor: 1,
       child: Semantics(
         container: true,
-        label: dots.label,
+        label: dots.semanticLabel,
         value: words.pageOf(dots.selectedIndex + 1, dots.count),
         onIncrease: increase ? () => _move(1) : null,
         onDecrease: decrease ? () => _move(-1) : null,
@@ -973,7 +974,7 @@ class _PageKeyState extends State<_PageKey> {
     return NeumorphicTap(
       shape: shape,
       onPressed: widget.onPressed,
-      label: widget.label,
+      semanticLabel: widget.label,
       selected: widget.group ? widget.selected : null,
       inMutuallyExclusiveGroup: widget.group,
       focusSize: Size.square(widget.face),
@@ -1134,20 +1135,20 @@ class _StepKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      NeumorphicIconButton(icon, label: label, onPressed: onPressed);
+      NeumorphicIconButton(icon, semanticLabel: label, onPressed: onPressed);
 }
 
 /// A paged strip of cards or pictures, one in view at a time with its whole cast, with page dots under it and, at
 /// wide widths, a step back and on beside it. Reduced motion jumps instead of sliding.
 ///
 /// ```dart
-/// NeumorphicCarouselView(label: 'Rooms', height: 220, children: [for (final room in rooms) NeumorphicPictureCard(title: room)])
+/// NeumorphicCarouselView(semanticLabel: 'Rooms', height: 220, children: [for (final room in rooms) NeumorphicPictureCard(title: room)])
 /// ```
 class NeumorphicCarouselView extends StatefulWidget {
   /// Creates a [NeumorphicCarouselView].
   const NeumorphicCarouselView({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.children,
     this.height = 220,
     this.initialPage = 0,
@@ -1168,7 +1169,7 @@ class NeumorphicCarouselView extends StatefulWidget {
   final bool autofocus;
 
   /// The accessible name of the strip and its dots.
-  final String label;
+  final String semanticLabel;
 
   /// The items, one to a page.
   final List<Widget> children;
@@ -1196,7 +1197,7 @@ class NeumorphicCarouselView extends StatefulWidget {
       ..add(
         DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(DoubleProperty('height', height, defaultValue: 220))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
   }
@@ -1220,7 +1221,7 @@ class _NeumorphicCarouselState extends State<NeumorphicCarouselView> {
       // slides (a bump under bumps); the arrows, the dots and a swipe say there are more.
       viewportFraction: 1,
       initialPage: widget.initialPage,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       slideLabel: (i, n) => words.pageOf(i + 1, n),
       duration: t.motion.move,
       // The frame below clips in the slab's shape; the viewport adds no square cut of its own.
@@ -1301,7 +1302,7 @@ class _NeumorphicCarouselState extends State<NeumorphicCarouselView> {
                     child: NeumorphicPageDots(
                       count: count,
                       selectedIndex: controls.page,
-                      label: widget.label,
+                      semanticLabel: widget.semanticLabel,
                       onChanged: controls.goToPage,
                       individualTargets: false,
                     ),

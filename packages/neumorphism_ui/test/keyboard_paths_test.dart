@@ -29,7 +29,7 @@ final _parts = <String, _Build>{
       NeumorphicFace('NW', name: 'Nia Walker'),
       NeumorphicFace('AK', name: 'Amir Khan'),
     ],
-    label: 'People',
+    semanticLabel: 'People',
     onPressed: hit,
   ),
   // An action of a split button's menu, reached from the button.
@@ -64,7 +64,7 @@ final _parts = <String, _Build>{
   'NeumorphicPageDots': (hit) => NeumorphicPageDots(
     count: 1,
     selectedIndex: 0,
-    label: 'Introduction',
+    semanticLabel: 'Introduction',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicDatePicker': (hit) => NeumorphicDatePicker(
@@ -79,8 +79,11 @@ final _parts = <String, _Build>{
     minuteStep: 30,
     onChanged: hit == null ? null : (_) => hit(),
   ),
-  'NeumorphicIconButton': (hit) =>
-      NeumorphicIconButton(NeumorphicGlyphs.plus, label: 'Add', onPressed: hit),
+  'NeumorphicIconButton': (hit) => NeumorphicIconButton(
+    NeumorphicGlyphs.plus,
+    semanticLabel: 'Add',
+    onPressed: hit,
+  ),
   'NeumorphicSearchField': (hit) => NeumorphicSearchField(
     hintText: 'Search',
     onChanged: hit == null ? null : (_) => hit(),
@@ -93,6 +96,29 @@ final _parts = <String, _Build>{
     labelText: 'Code',
     onChanged: hit == null ? null : (_) => hit(),
   ),
+  'NeumorphicTextFormField': (hit) => NeumorphicTextFormField(
+    labelText: 'Title',
+    onChanged: hit == null ? null : (_) => hit(),
+  ),
+  'NeumorphicDateField': (hit) => NeumorphicDateField(
+    labelText: 'Started',
+    value: null,
+    onChanged: hit == null ? null : (_) => hit(),
+  ),
+  'NeumorphicAppShell': (hit) => SizedBox(
+    height: 600,
+    child: NeumorphicAppShell(
+      destinations: const [
+        RawNavigationDestination(label: 'Books', icon: NeumorphicGlyphs.house),
+        RawNavigationDestination(
+          label: 'Settings',
+          icon: NeumorphicGlyphs.settings,
+        ),
+      ],
+      branches: [(_) => const Text('Books'), (_) => const Text('Settings')],
+      onDestinationSelected: hit == null ? null : (_) => hit(),
+    ),
+  ),
   'NeumorphicSelect': (hit) => NeumorphicSelect<String>(
     labelText: 'Space',
     options: const [NeumorphicMenuItem('room', 'Room')],
@@ -100,7 +126,7 @@ final _parts = <String, _Build>{
   ),
   'NeumorphicCheckbox': (hit) => NeumorphicCheckbox(
     value: false,
-    label: 'Agree',
+    semanticLabel: 'Agree',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicCheckRow': (hit) => NeumorphicCheckRow(
@@ -109,12 +135,12 @@ final _parts = <String, _Build>{
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicRadioGroup': (hit) => NeumorphicRadioGroup<String>(
-    label: 'Space',
+    semanticLabel: 'Space',
     options: const [NeumorphicRadio('room', 'Room')],
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicSegmentedButton': (hit) => NeumorphicSegmentedButton<String>(
-    label: 'Period',
+    semanticLabel: 'Period',
     segments: const [NeumorphicButtonSegment('day', 'Day')],
     onChanged: hit == null ? null : (_) => hit(),
   ),
@@ -137,7 +163,7 @@ final _parts = <String, _Build>{
       NeumorphicTap(onPressed: hit, child: const Text('Open')),
   'NeumorphicLink': (hit) => NeumorphicLink('Open', onPressed: hit),
   'NeumorphicRoundButton': (hit) =>
-      NeumorphicRoundButton(Icons.add, label: 'Add', onPressed: hit),
+      NeumorphicRoundButton(Icons.add, semanticLabel: 'Add', onPressed: hit),
   'NeumorphicChip': (hit) => NeumorphicChip('All', onPressed: hit),
   'NeumorphicLatchGroup': (hit) => NeumorphicLatchGroup(
     options: const [NeumorphicLatch('Day'), NeumorphicLatch('Week')],
@@ -168,7 +194,7 @@ final _parts = <String, _Build>{
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicSlider': (hit) => NeumorphicSlider(
-    label: 'Level',
+    semanticLabel: 'Level',
     value: .5,
     onChanged: hit == null ? null : (_) => hit(),
   ),
@@ -250,18 +276,18 @@ final _parts = <String, _Build>{
     ],
   ),
   'NeumorphicCarouselView': (hit) => NeumorphicCarouselView(
-    label: 'Rooms',
+    semanticLabel: 'Rooms',
     height: 80,
     onChanged: hit == null ? null : (_) => hit(),
     children: const [Text('One'), Text('Two'), Text('Three')],
   ),
   'NeumorphicRating': (hit) => NeumorphicRating(
-    label: 'Rating',
+    semanticLabel: 'Rating',
     value: 0,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicButtonGroupItem': (hit) => NeumorphicButtonGroup(
-    label: 'Days',
+    semanticLabel: 'Days',
     items: [NeumorphicButtonGroupItem('Today', onPressed: hit)],
   ),
   'NeumorphicSplitButton': (hit) => NeumorphicSplitButton(
@@ -329,7 +355,7 @@ final _parts = <String, _Build>{
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicWheelPicker': (hit) => NeumorphicWheelPicker<int>(
-    label: 'Lamps',
+    semanticLabel: 'Lamps',
     items: const [1, 2, 3],
     value: 2,
     rows: 3,
@@ -369,7 +395,7 @@ final _parts = <String, _Build>{
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicDataTable': (hit) => NeumorphicDataTable<String>(
-    label: 'Rooms',
+    semanticLabel: 'Rooms',
     controller: _own(
       RawDataTableController<String>(
         rows: const ['Bedroom'],
@@ -380,7 +406,7 @@ final _parts = <String, _Build>{
     onActivate: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicTreeView': (hit) => NeumorphicTreeView<String>(
-    label: 'Rooms',
+    semanticLabel: 'Rooms',
     controller: _own(
       RawTreeController<String>(
         roots: const ['Bedroom'],
@@ -482,6 +508,33 @@ final _drives = <String, _Drive>{
     expect(count(), picked + 1);
   },
   'NeumorphicDateRangePicker': _tabUntil(LogicalKeyboardKey.enter),
+  // Enter opens the picker at today; Enter takes the day, and Choose sets it.
+  'NeumorphicDateField': (tester, count) async {
+    await _key(tester, LogicalKeyboardKey.enter);
+    await _key(tester, LogicalKeyboardKey.enter);
+    for (var i = 0; i < 4 && count() == 0; i++) {
+      await _key(tester, LogicalKeyboardKey.tab);
+      final focused = FocusManager.instance.primaryFocus?.context;
+      if (focused != null &&
+          find
+              .descendant(
+                of: find.byWidget(focused.widget),
+                matching: find.text('Choose'),
+              )
+              .evaluate()
+              .isNotEmpty) {
+        await _key(tester, LogicalKeyboardKey.enter);
+      }
+    }
+    expect(count(), 1);
+  },
+  // The bar's one stop is the chosen place; the arrow reaches the next, and
+  // Enter goes there.
+  'NeumorphicAppShell': (tester, count) async {
+    await _key(tester, LogicalKeyboardKey.arrowRight);
+    await _key(tester, LogicalKeyboardKey.enter);
+    expect(count(), 1);
+  },
   // A row: Enter opens it (Space chooses it).
   'NeumorphicDataTable': _tabUntil(LogicalKeyboardKey.enter),
   'NeumorphicTreeView': _tabUntil(LogicalKeyboardKey.enter),
@@ -560,6 +613,7 @@ void main() {
     final text = {
       'NeumorphicInput',
       'NeumorphicTextField',
+      'NeumorphicTextFormField',
       'NeumorphicSearchField',
       'NeumorphicTextArea',
       'NeumorphicInputOtp',

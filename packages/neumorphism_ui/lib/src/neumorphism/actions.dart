@@ -54,19 +54,19 @@ class NeumorphicButtonGroupItem {
 /// Each acts on its own and goes in when pressed; none stays in. Narrow, the bank wraps to a second row.
 ///
 /// ```dart
-/// NeumorphicButtonGroup(label: 'Week', items: [NeumorphicButtonGroupItem('Previous', onPressed: back), NeumorphicButtonGroupItem('Next', onPressed: on)])
+/// NeumorphicButtonGroup(semanticLabel: 'Week', items: [NeumorphicButtonGroupItem('Previous', onPressed: back), NeumorphicButtonGroupItem('Next', onPressed: on)])
 /// ```
 class NeumorphicButtonGroup extends StatelessWidget {
-  /// A group named [label] of [items].
+  /// A group named [semanticLabel] of [items].
   const NeumorphicButtonGroup({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.items,
     this.style,
   });
 
   /// What a screen reader calls the group.
-  final String label;
+  final String semanticLabel;
 
   /// The buttons, in reading order.
   final List<NeumorphicButtonGroupItem> items;
@@ -83,7 +83,7 @@ class NeumorphicButtonGroup extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: NeumorphicOutOfUse(
         off: items.every((i) => i.onPressed == null),
         child: NeumorphicCellBank(
@@ -104,7 +104,7 @@ class NeumorphicButtonGroup extends StatelessWidget {
                     themeStyle: t.segmentedButtonTheme,
                     shape: cell.border,
                     focusReach: .5,
-                    label: item.semanticLabel ?? item.label,
+                    semanticLabel: item.semanticLabel ?? item.label,
                     onPressed: item.onPressed,
                     child: Builder(
                       builder: (context) => _cellContent(
@@ -132,7 +132,7 @@ class NeumorphicButtonGroup extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicButtonGroupItem>('items', items))
       ..add(
         DiagnosticsProperty<NeumorphicStyle>(
@@ -251,13 +251,13 @@ class NeumorphicKbd extends StatelessWidget {
 /// along it. Narrow, the bank wraps to a second row.
 ///
 /// ```dart
-/// NeumorphicToggleGroup<String>(label: 'Text', items: const [NeumorphicButtonSegment('b', 'Bold'), NeumorphicButtonSegment('i', 'Italic')], selected: const {'b'}, onChanged: (next) {})
+/// NeumorphicToggleGroup<String>(semanticLabel: 'Text', items: const [NeumorphicButtonSegment('b', 'Bold'), NeumorphicButtonSegment('i', 'Italic')], selected: const {'b'}, onChanged: (next) {})
 /// ```
 class NeumorphicToggleGroup<T> extends StatelessWidget {
-  /// A group named [label] of [items], [selected] on.
+  /// A group named [semanticLabel] of [items], [selected] on.
   const NeumorphicToggleGroup({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.items,
     required this.selected,
     this.onChanged,
@@ -267,7 +267,7 @@ class NeumorphicToggleGroup<T> extends StatelessWidget {
   });
 
   /// What a screen reader calls the group.
-  final String label;
+  final String semanticLabel;
 
   /// The toggles, in reading order.
   final List<NeumorphicButtonSegment<T>> items;
@@ -303,7 +303,7 @@ class NeumorphicToggleGroup<T> extends StatelessWidget {
       emptySelectionAllowed: allowEmpty,
       isEnabled: (v) => item(v).enabled,
       labelOf: (v) => item(v).semanticLabel ?? item(v).label,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       minimumSize: Size.zero,
       // Out of use the whole bank goes quiet: its groove and the cells that are in with the words.
       layoutBuilder: (context, cells) => NeumorphicOutOfUse(
@@ -353,7 +353,7 @@ class NeumorphicToggleGroup<T> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicButtonSegment<T>>('items', items))
       ..add(IterableProperty<T>('selected', selected))
       ..add(

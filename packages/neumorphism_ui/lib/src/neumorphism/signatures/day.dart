@@ -306,7 +306,11 @@ class _Tile extends StatelessWidget {
     );
     return e.onPressed == null
         ? tile
-        : NeumorphicTap(onPressed: e.onPressed, label: e.title, child: tile);
+        : NeumorphicTap(
+            onPressed: e.onPressed,
+            semanticLabel: e.title,
+            child: tile,
+          );
   }
 }
 
@@ -661,7 +665,7 @@ class _ReadableDayTray extends StatelessWidget {
             ? face
             : NeumorphicTap(
                 onPressed: event.onPressed,
-                label: [
+                semanticLabel: [
                   event.start,
                   event.end,
                   event.title,
@@ -840,7 +844,7 @@ class NeumorphicMonth extends StatelessWidget {
       return onDay != null && inMonth
           ? NeumorphicTap(
               onPressed: () => onDay!(d),
-              label: words.formatFullDate(date),
+              semanticLabel: words.formatFullDate(date),
               shape: t.shapes.corner(NeumorphicRadii.cap),
               focusSize: isToday ? Size.square(height) : null,
               child: box,
@@ -924,7 +928,9 @@ class NeumorphicMonth extends StatelessWidget {
                 children: [
                   for (var d = 1; d <= length; d++)
                     NeumorphicTap(
-                      label: words.formatFullDate(DateTime(year, month, d)),
+                      semanticLabel: words.formatFullDate(
+                        DateTime(year, month, d),
+                      ),
                       onPressed: () => onDay!(d),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -1020,7 +1026,7 @@ class NeumorphicPushGroup extends StatelessWidget {
     Widget push(NeumorphicPush p) {
       return NeumorphicTap(
         onPressed: p.onPressed,
-        label: p.label,
+        semanticLabel: p.label,
         selected: p.selected,
         child: Column(
           mainAxisSize: MainAxisSize.min,

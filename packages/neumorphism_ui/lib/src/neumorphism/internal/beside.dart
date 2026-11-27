@@ -15,6 +15,8 @@ class BesideOrUnder extends MultiChildRenderObjectWidget {
     required this.need,
     required this.centre,
     this.mark = 48,
+    this.topFrom = double.infinity,
+    this.firstLine = 0,
     required super.children,
   });
 
@@ -28,12 +30,25 @@ class BesideOrUnder extends MultiChildRenderObjectWidget {
   /// however short (a toast's act).
   final double mark;
 
+  /// Words at least this tall stand a [centre]d figure on the middle of their first line ([firstLine] tall), not on
+  /// their middle: beside three lines it stands where a list tile's key and mark stand.
+  final double topFrom;
+
+  /// The height of the words' first line, for [topFrom].
+  final double firstLine;
+
   /// The most of the width the figure takes beside the words.
   static const share = .4;
 
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      RenderBesideOrUnder(need, centre, Directionality.of(context), mark);
+  RenderObject createRenderObject(BuildContext context) => RenderBesideOrUnder(
+    need,
+    centre,
+    Directionality.of(context),
+    mark,
+    topFrom,
+    firstLine,
+  );
 
   @override
   void updateRenderObject(
@@ -43,7 +58,9 @@ class BesideOrUnder extends MultiChildRenderObjectWidget {
     ..need = need
     ..centre = centre
     ..direction = Directionality.of(context)
-    ..mark = mark;
+    ..mark = mark
+    ..topFrom = topFrom
+    ..firstLine = firstLine;
 }
 
 class _BesideData extends ContainerBoxParentData<RenderBox> {}
@@ -56,7 +73,14 @@ class RenderBesideOrUnder extends RenderBox
         ContainerRenderObjectMixin<RenderBox, _BesideData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _BesideData> {
   /// Lays out [BesideOrUnder]'s two children.
-  RenderBesideOrUnder(this._need, this._centre, this._direction, this._mark);
+  RenderBesideOrUnder(
+    this._need,
+    this._centre,
+    this._direction,
+    this._mark, [
+    this._topFrom = double.infinity,
+    this._firstLine = 0,
+  ]);
 
   static const _gap = 12.0, _under = 6.0;
 
@@ -81,6 +105,24 @@ class RenderBesideOrUnder extends RenderBox
     markNeedsLayout();
   }
 
+  double _topFrom;
+  set topFrom(double value) {
+    if (value == _topFrom) return;
+    _topFrom = value;
+    markNeedsLayout();
+  }
+
+  double _firstLine;
+  set firstLine(double value) {
+    if (value == _firstLine) return;
+    _firstLine = value;
+    markNeedsLayout();
+  }
+
+  // Beside words this tall, a centred figure stands on their first line; the words stand lower by what it needs above.
+  bool _atTop(_Plan p) => p.beside && _centre && p.words.height >= _topFrom;
+  double _lift(_Plan p) => math.max(0, (p.side.height - _firstLine) / 2);
+
   @override
   void setupParentData(RenderBox child) {
     if (child.parentData is! _BesideData) child.parentData = _BesideData();
@@ -99,9 +141,18 @@ class RenderBesideOrUnder extends RenderBox
       );
     }
     // Measured by laying out, not by intrinsics: a figure may hold a LayoutBuilder (a toast's link), which has none.
-    // Each child's last measure is the one it keeps.
+    // Each child's last measure is the one it keeps. A figure wider than its share stands under the words without
+    // being laid out in the share: one that draws from its width (a tag's shape) would flip between two shapes on
+    // every layout, and an animated one would never come to rest.
     final w = c.maxWidth, most = w * BesideOrUnder.share;
     final alone = measure(side, BoxConstraints(maxWidth: w));
+    if (alone.width > most) {
+      return (
+        beside: false,
+        words: measure(words, BoxConstraints.tightFor(width: w)),
+        side: alone,
+      );
+    }
     final s = measure(side, BoxConstraints(maxWidth: most));
     final room = w - s.width - _gap;
     // On one line in its share, the words keeping [need] beside it.
@@ -133,7 +184,10 @@ class RenderBesideOrUnder extends RenderBox
   Size _size(_Plan p, BoxConstraints c) => c.constrain(
     Size(
       c.hasBoundedWidth ? c.maxWidth : p.words.width + _gap + p.side.width,
-      p.beside
+      _atTop(p)
+          ? _lift(p) +
+                math.max(p.words.height, (_firstLine + p.side.height) / 2)
+          : p.beside
           ? math.max(p.words.height, p.side.height)
           : p.words.height + _under + p.side.height,
     ),
@@ -155,7 +209,14 @@ class RenderBesideOrUnder extends RenderBox
     final wordsAt = words.parentData! as _BesideData;
     final sideAt = side.parentData! as _BesideData;
     double startOf(double width) => rtl ? size.width - width : 0;
-    if (p.beside) {
+    if (_atTop(p)) {
+      final lift = _lift(p);
+      wordsAt.offset = Offset(startOf(p.words.width), lift);
+      sideAt.offset = Offset(
+        rtl ? 0 : size.width - p.side.width,
+        lift + (_firstLine - p.side.height) / 2,
+      );
+    } else if (p.beside) {
       double y(double height) => _centre ? (size.height - height) / 2 : 0;
       wordsAt.offset = Offset(startOf(p.words.width), y(p.words.height));
       sideAt.offset = Offset(
@@ -199,10 +260,13 @@ class RenderBesideOrUnder extends RenderBox
     );
     final room = width - sideWidth - _gap;
     if (_beside(width)) {
-      return math.max(
-        words.getMinIntrinsicHeight(room),
-        side.getMinIntrinsicHeight(sideWidth),
-      );
+      final w = words.getMinIntrinsicHeight(room);
+      final s = side.getMinIntrinsicHeight(sideWidth);
+      if (_centre && w >= _topFrom) {
+        return math.max(0, (s - _firstLine) / 2) +
+            math.max(w, (_firstLine + s) / 2);
+      }
+      return math.max(w, s);
     }
     return words.getMinIntrinsicHeight(width) +
         _under +

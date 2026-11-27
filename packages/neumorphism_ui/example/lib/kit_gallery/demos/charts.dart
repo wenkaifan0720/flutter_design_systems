@@ -121,7 +121,7 @@ Widget kitSpecimenChartKey() => const NeumorphicLegend([
 ], note: 'A note on the same line');
 
 Widget kitSpecimenChart() => const NeumorphicLineChart(
-  label: 'Hours slept',
+  semanticLabel: 'Hours slept',
   labels: ['M', 'T', 'W', 'T', 'F'],
   band: NeumorphicChartBand(7, 9, label: 'Goal'),
   series: [
@@ -131,7 +131,7 @@ Widget kitSpecimenChart() => const NeumorphicLineChart(
 );
 
 Widget kitSpecimenLineChart() => const NeumorphicLineChart(
-  label: 'Hours slept',
+  semanticLabel: 'Hours slept',
   labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
   series: [
     NeumorphicChartSeries('Hours', [7, 8, 6, 7.5, 8]),
@@ -139,7 +139,7 @@ Widget kitSpecimenLineChart() => const NeumorphicLineChart(
 );
 
 Widget kitSpecimenBarChart() => const NeumorphicBarChart(
-  label: 'Lamp hours',
+  semanticLabel: 'Lamp hours',
   labels: ['June', 'July', 'August'],
   series: [
     NeumorphicChartSeries('Bedroom', [4, 6, 5]),
@@ -148,7 +148,7 @@ Widget kitSpecimenBarChart() => const NeumorphicBarChart(
 );
 
 Widget kitSpecimenAreaChart() => const NeumorphicAreaChart(
-  label: 'Warmth',
+  semanticLabel: 'Warmth',
   labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
   series: [
     NeumorphicChartSeries('Warmth', [18, 20, 19, 21, 20]),
@@ -157,7 +157,7 @@ Widget kitSpecimenAreaChart() => const NeumorphicAreaChart(
 
 /// The week's rain as an area: the chart card's specimen.
 Widget kitSpecimenChartArea() => const NeumorphicAreaChart(
-  label: 'Rain this week',
+  semanticLabel: 'Rain this week',
   labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
   series: [
     NeumorphicChartSeries('Rain, mm', [2, 5, 9, 4, 1, 0, 3]),
@@ -165,7 +165,7 @@ Widget kitSpecimenChartArea() => const NeumorphicAreaChart(
 );
 
 Widget kitSpecimenDonut() => const NeumorphicPieChart(
-  label: 'Where the energy went',
+  semanticLabel: 'Where the energy went',
   caption: 'kWh today',
   slices: [
     NeumorphicPieSlice('Heating', 9.2),
@@ -199,7 +199,7 @@ Widget kitSpecimenSparkline() => Builder(
                 ),
               ),
               const NeumorphicSparkline(
-                label: 'Steps this week',
+                semanticLabel: 'Steps this week',
                 values: [4.2, 6.1, 5.0, 7.3, 6.8, 8.1, 7.3],
               ),
             ],
@@ -210,5 +210,8 @@ Widget kitSpecimenSparkline() => Builder(
   },
 );
 
-Widget kitSpecimenChartLoading() =>
-    const NeumorphicLineChart(label: 'Hours slept', series: [], loading: true);
+Widget kitSpecimenChartLoading() => const NeumorphicLineChart(
+  semanticLabel: 'Hours slept',
+  series: [],
+  loading: true,
+);

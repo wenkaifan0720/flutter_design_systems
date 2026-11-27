@@ -41,7 +41,7 @@ void main() {
     'charts': kitChartsDemo,
     'tell': kitTellDemo,
   };
-  for (final id in NeumorphicThemeData.presets) {
+  for (final id in NeumorphicThemeData.palettes.map((p) => p.id)) {
     testWidgets('$id: no contrast faults by day or by night', (tester) async {
       final semantics = tester.ensureSemantics();
       tester.view

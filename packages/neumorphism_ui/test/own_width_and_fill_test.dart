@@ -1,6 +1,7 @@
 // Two layout rules, read from the drawn pixels at each density the look ships:
-// - Width on a wide layout: from 600 up, no select, button, stepper or bank of
-//   segments stretches to a wide column; each takes its own width, at most 320. On a phone they span their column.
+// - Width on a wide layout: from 600 up, no button, stepper or bank of segments stretches to a wide column; each
+//   takes its own width, at most 320. On a phone they span their column. A select and a select field are fields: they
+//   take their column at every width, as a text field does (Material's dropdown in a form).
 // - A chosen or pressed fill covers its whole cell: the state reaches the
 //   cell's edges, top and bottom, and the seams it shares with a neighbour.
 import 'dart:typed_data';
@@ -10,7 +11,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -28,7 +28,7 @@ const _shot = Key('shot');
 Widget _host(NeumorphicDensity density, Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, navigator) => NeumorphicHost(
-    light: NeumorphicThemeData.porcelain().copyWith(density: density),
+    theme: NeumorphicThemeData.porcelain().copyWith(density: density),
     brightness: Brightness.light,
     child: navigator!,
   ),
@@ -101,7 +101,7 @@ final Map<String, Widget> _controls = {
     onPressed: _tap,
   ),
   'segmented control': const NeumorphicSegmentedButton<int>(
-    label: 'Period',
+    semanticLabel: 'Period',
     value: 0,
     segments: [
       NeumorphicButtonSegment(0, 'Day'),
@@ -111,7 +111,7 @@ final Map<String, Widget> _controls = {
     onChanged: _drop,
   ),
   'toggle group': const NeumorphicToggleGroup<String>(
-    label: 'Text',
+    semanticLabel: 'Text',
     items: [
       NeumorphicButtonSegment('b', 'Bold'),
       NeumorphicButtonSegment('i', 'Italic'),
@@ -125,7 +125,7 @@ final Map<String, Widget> _controls = {
     onChanged: _drop,
   ),
   'button group': const NeumorphicButtonGroup(
-    label: 'Week',
+    semanticLabel: 'Week',
     items: [
       NeumorphicButtonGroupItem('Previous', onPressed: _tap),
       NeumorphicButtonGroupItem('Next', onPressed: _tap),
@@ -156,7 +156,7 @@ final Map<String, Widget> _controls = {
 /// Banks whose chosen cell is [chosen], or with [chosen] pressed.
 final Map<String, Widget Function(int chosen)> _banks = {
   'segmented control': (chosen) => NeumorphicSegmentedButton<int>(
-    label: 'Period',
+    semanticLabel: 'Period',
     value: chosen,
     segments: const [
       NeumorphicButtonSegment(0, 'Day'),
@@ -166,7 +166,7 @@ final Map<String, Widget Function(int chosen)> _banks = {
     onChanged: _drop,
   ),
   'toggle group': (chosen) => NeumorphicToggleGroup<int>(
-    label: 'Text',
+    semanticLabel: 'Text',
     items: const [
       NeumorphicButtonSegment(0, 'Bold'),
       NeumorphicButtonSegment(1, 'Italic'),
@@ -196,60 +196,70 @@ void main() {
 
   for (final MapEntry(key: density, value: d) in _densities.entries) {
     for (final MapEntry(key: name, value: control) in _controls.entries) {
-      testWidgets('$name keeps to its own width on a desk, $density', (
-        tester,
-      ) async {
-        final faults = <String>[];
-        for (final window in [1440.0, 390.0]) {
-          tester.view.physicalSize = Size(window, 400);
-          tester.view.devicePixelRatio = 1;
-          addTearDown(tester.view.reset);
-          // A wide column on a desk, the page's column on a phone.
-          final column = window > 600 ? 640.0 : window - 32;
-          await tester.pumpWidget(
-            _host(
-              d,
-              Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: column,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        KeyedSubtree(key: const Key('c'), child: control),
-                      ],
+      final field = name == 'select' || name == 'select field';
+      testWidgets(
+        field
+            ? '$name takes its column, $density'
+            : '$name keeps to its own width on a desk, $density',
+        (tester) async {
+          final faults = <String>[];
+          for (final window in [1440.0, 390.0]) {
+            tester.view.physicalSize = Size(window, 400);
+            tester.view.devicePixelRatio = 1;
+            addTearDown(tester.view.reset);
+            // A wide column on a desk, the page's column on a phone.
+            final column = window > 600 ? 640.0 : window - 32;
+            await tester.pumpWidget(
+              _host(
+                d,
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: SizedBox(
+                      width: column,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          KeyedSubtree(key: const Key('c'), child: control),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-          await tester.pumpAndSettle();
-          final shot = await _pixels(tester, 1);
-          // The face's middle: the line through the control's lowest 48, below any label it carries.
-          final rect = tester.getRect(find.byKey(const Key('c')));
-          final y = (rect.bottom - 24).round();
-          final (first, last) = _extent(shot, y);
-          final drawn = last - first + 1;
-          if (window > 600 && drawn > 320 + 2 * 20) {
-            faults.add(
-              'at $window it is drawn $drawn wide in a $column column',
             );
+            await tester.pumpAndSettle();
+            final shot = await _pixels(tester, 1);
+            // The face's middle: the line through the control's lowest 48, below any label it carries.
+            final rect = tester.getRect(find.byKey(const Key('c')));
+            final y = (rect.bottom - 24).round();
+            final (first, last) = _extent(shot, y);
+            final drawn = last - first + 1;
+            if (field && drawn < column - 2) {
+              faults.add(
+                'at $window it is drawn $drawn wide in a $column column',
+              );
+            }
+            if (!field && window > 600 && drawn > 320 + 2 * 20) {
+              faults.add(
+                'at $window it is drawn $drawn wide in a $column column',
+              );
+            }
+            // A quiet button draws no face, and a number field is its keys and figure: neither spans.
+            if (window < 600 &&
+                name != 'number field' &&
+                name != 'wide quiet button' &&
+                drawn < column - 2) {
+              faults.add(
+                'at $window it is drawn $drawn wide in a $column column',
+              );
+            }
           }
-          // A quiet button draws no face, and a number field is its keys and figure: neither spans.
-          if (window < 600 &&
-              name != 'number field' &&
-              name != 'wide quiet button' &&
-              drawn < column - 2) {
-            faults.add(
-              'at $window it is drawn $drawn wide in a $column column',
-            );
-          }
-        }
-        expect(faults, isEmpty, reason: faults.join('\n'));
-      }, tags: ['goldens']);
+          expect(faults, isEmpty, reason: faults.join('\n'));
+        },
+        tags: ['goldens'],
+      );
     }
 
     for (final MapEntry(key: name, value: build) in _banks.entries) {

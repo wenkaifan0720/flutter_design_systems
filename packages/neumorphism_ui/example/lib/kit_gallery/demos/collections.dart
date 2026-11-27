@@ -64,7 +64,7 @@ Widget kitSpecimenDataTable() => kitHeld<RawDataTableController<_Room>>(
     // show no sign it sorts.
   )..sortBy('room'),
   (context, rooms) => NeumorphicDataTable<_Room>(
-    label: 'Rooms',
+    semanticLabel: 'Rooms',
     controller: rooms,
     cell: (r, column) => switch (column.id) {
       'room' => r.name,
@@ -85,7 +85,7 @@ Widget kitSpecimenTreeView() => kitHeld<RawTreeController<String>>(
     },
   ),
   (context, places) => NeumorphicTreeView<String>(
-    label: 'Rooms',
+    semanticLabel: 'Rooms',
     controller: places,
     labelOf: (n) => n,
     iconOf: (n) => n == 'Upstairs' || n == 'Ground'
@@ -189,7 +189,7 @@ Widget kitLiveScrollArea() => kitHeld<ScrollController>(
           height: 160,
           child: NeumorphicScrollArea(
             controller: scroll,
-            label: 'Rooms',
+            semanticLabel: 'Rooms',
             thumbVisibility: true,
             child: ListView(
               controller: scroll,

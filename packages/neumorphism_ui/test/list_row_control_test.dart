@@ -24,7 +24,7 @@ Future<void> _show(WidgetTester tester, {bool selected = true}) async {
           onPressed: () => _opened++,
           action: NeumorphicIconButton(
             NeumorphicGlyphs.ellipsis,
-            label: 'Task actions',
+            semanticLabel: 'Task actions',
             size: 38,
             onPressed: () => _menus++,
           ),

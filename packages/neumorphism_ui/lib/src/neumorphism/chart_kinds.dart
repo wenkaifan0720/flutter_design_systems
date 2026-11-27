@@ -11,14 +11,14 @@ import 'component_themes.dart';
 /// values show the empty state.
 ///
 /// ```dart
-/// NeumorphicLineChart(label: 'Hours slept', series: const [NeumorphicChartSeries('Sleep', [7, 6.5, 8])], labels: const ['Mon', 'Tue', 'Wed'])
+/// NeumorphicLineChart(semanticLabel: 'Hours slept', series: const [NeumorphicChartSeries('Sleep', [7, 6.5, 8])], labels: const ['Mon', 'Tue', 'Wed'])
 /// ```
 class NeumorphicLineChart extends StatelessWidget {
   /// Creates a [NeumorphicLineChart].
   const NeumorphicLineChart({
     super.key,
     this.style,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.band,
@@ -32,7 +32,7 @@ class NeumorphicLineChart extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// The accessible name of the chart.
-  final String label;
+  final String semanticLabel;
 
   /// The series drawn together on a shared scale.
   final List<NeumorphicChartSeries> series;
@@ -58,7 +58,7 @@ class NeumorphicLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NeumorphicChart(
     style: style,
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     band: band,
@@ -79,7 +79,7 @@ class NeumorphicLineChart extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicChartSeries>('series', series))
       ..add(
         IterableProperty<String>(
@@ -108,14 +108,14 @@ class NeumorphicLineChart extends StatelessWidget {
 /// readout.
 ///
 /// ```dart
-/// NeumorphicBarChart(label: 'Visits', series: const [NeumorphicChartSeries('Visits', [12, 18, 9])], labels: const ['Mon', 'Tue', 'Wed'])
+/// NeumorphicBarChart(semanticLabel: 'Visits', series: const [NeumorphicChartSeries('Visits', [12, 18, 9])], labels: const ['Mon', 'Tue', 'Wed'])
 /// ```
 class NeumorphicBarChart extends StatelessWidget {
   /// Creates a [NeumorphicBarChart].
   const NeumorphicBarChart({
     super.key,
     this.style,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.band,
@@ -130,7 +130,7 @@ class NeumorphicBarChart extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// The accessible name of the chart.
-  final String label;
+  final String semanticLabel;
 
   /// The series drawn together on a shared scale.
   final List<NeumorphicChartSeries> series;
@@ -156,7 +156,7 @@ class NeumorphicBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NeumorphicChart(
     style: style,
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     kind: NeumorphicChartKind.bar,
     labels: labels,
@@ -178,7 +178,7 @@ class NeumorphicBarChart extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicChartSeries>('series', series))
       ..add(
         IterableProperty<String>(
@@ -207,14 +207,14 @@ class NeumorphicBarChart extends StatelessWidget {
 /// well with its gridlines, labels, key and readout.
 ///
 /// ```dart
-/// NeumorphicAreaChart(label: 'Energy used', series: const [NeumorphicChartSeries('kWh', [3.2, 4.1, 2.8])], labels: const ['Mon', 'Tue', 'Wed'])
+/// NeumorphicAreaChart(semanticLabel: 'Energy used', series: const [NeumorphicChartSeries('kWh', [3.2, 4.1, 2.8])], labels: const ['Mon', 'Tue', 'Wed'])
 /// ```
 class NeumorphicAreaChart extends StatelessWidget {
   /// Creates a [NeumorphicAreaChart].
   const NeumorphicAreaChart({
     super.key,
     this.style,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.band,
@@ -229,7 +229,7 @@ class NeumorphicAreaChart extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// The accessible name of the chart.
-  final String label;
+  final String semanticLabel;
 
   /// The series drawn together on a shared scale.
   final List<NeumorphicChartSeries> series;
@@ -255,7 +255,7 @@ class NeumorphicAreaChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NeumorphicChart(
     style: style,
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     kind: NeumorphicChartKind.area,
     labels: labels,
@@ -277,7 +277,7 @@ class NeumorphicAreaChart extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicChartSeries>('series', series))
       ..add(
         IterableProperty<String>(

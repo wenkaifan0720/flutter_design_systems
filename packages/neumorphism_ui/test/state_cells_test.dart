@@ -9,7 +9,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -44,8 +43,8 @@ _Stated _stated(
 Widget _host(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, navigator) => NeumorphicHost(
-    light: NeumorphicThemeData.preset('porcelain', Brightness.light),
-    darkData: NeumorphicThemeData.preset('porcelain', Brightness.dark),
+    theme: NeumorphicThemeData.preset('porcelain', Brightness.light),
+    darkTheme: NeumorphicThemeData.preset('porcelain', Brightness.dark),
     brightness: Brightness.light,
     child: navigator!,
   ),
@@ -113,14 +112,14 @@ final Map<String, _Stated> _parts = {
   'NeumorphicIconButton': _stated(
     ({enabled = true, error}) => NeumorphicIconButton(
       NeumorphicGlyphs.close,
-      label: 'Close',
+      semanticLabel: 'Close',
       onPressed: enabled ? _tap : null,
     ),
   ),
   'NeumorphicRoundButton': _stated(
     ({enabled = true, error}) => NeumorphicRoundButton(
       NeumorphicGlyphs.plus,
-      label: 'Add',
+      semanticLabel: 'Add',
       onPressed: enabled ? _tap : null,
     ),
   ),
@@ -142,7 +141,7 @@ final Map<String, _Stated> _parts = {
   'NeumorphicCheckbox': _stated(
     ({enabled = true, error}) => NeumorphicCheckbox(
       value: false,
-      label: 'Agree',
+      semanticLabel: 'Agree',
       isError: error != null,
       onChanged: enabled ? _drop : null,
     ),
@@ -151,13 +150,13 @@ final Map<String, _Stated> _parts = {
   'NeumorphicSwitch': _stated(
     ({enabled = true, error}) => NeumorphicSwitch(
       value: false,
-      label: 'Lamp',
+      semanticLabel: 'Lamp',
       onChanged: enabled ? _drop : null,
     ),
   ),
   'NeumorphicRadioGroup': _stated(
     ({enabled = true, error}) => NeumorphicRadioGroup<String>(
-      label: 'Room',
+      semanticLabel: 'Room',
       value: 'a',
       options: const [NeumorphicRadio('a', 'A'), NeumorphicRadio('b', 'B')],
       onChanged: enabled ? _drop : null,
@@ -166,7 +165,7 @@ final Map<String, _Stated> _parts = {
   'NeumorphicSegmentedButton': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicSegmentedButton<String>(
-        label: 'View',
+        semanticLabel: 'View',
         value: 'a',
         segments: const [
           NeumorphicButtonSegment('a', 'Day'),
@@ -179,7 +178,7 @@ final Map<String, _Stated> _parts = {
   'NeumorphicToggleGroup': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicToggleGroup<String>(
-        label: 'Rooms',
+        semanticLabel: 'Rooms',
         selected: const {'a'},
         items: const [
           NeumorphicButtonSegment('a', 'Bed'),
@@ -191,7 +190,7 @@ final Map<String, _Stated> _parts = {
   ),
   'NeumorphicRating': _stated(
     ({enabled = true, error}) => NeumorphicRating(
-      label: 'Sleep',
+      semanticLabel: 'Sleep',
       value: 3,
       onChanged: _drop,
       enabled: enabled,
@@ -269,7 +268,7 @@ final Map<String, _Stated> _parts = {
   'NeumorphicSlider': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicSlider(
-        label: 'Warmth',
+        semanticLabel: 'Warmth',
         value: .5,
         onChanged: enabled ? _drop : null,
       ),
@@ -289,7 +288,7 @@ final Map<String, _Stated> _parts = {
   'NeumorphicWheelPicker': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicWheelPicker<int>(
-        label: 'Lamps',
+        semanticLabel: 'Lamps',
         items: const [1, 2, 3],
         value: 2,
         rows: 3,

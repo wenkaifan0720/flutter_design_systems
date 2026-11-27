@@ -36,26 +36,32 @@ final _parts = <String, Widget Function()>{
   ),
   'NeumorphicIconButton': () => const NeumorphicIconButton(
     NeumorphicGlyphs.plus,
-    label: 'Add',
+    semanticLabel: 'Add',
     onPressed: _hit,
   ),
   'NeumorphicRoundButton': () => const NeumorphicRoundButton(
     NeumorphicGlyphs.plus,
-    label: 'Add',
+    semanticLabel: 'Add',
     onPressed: _hit,
   ),
   'NeumorphicChip': () => const NeumorphicChip('Quiet', onPressed: _hit),
-  'NeumorphicCheckbox': () =>
-      NeumorphicCheckbox(value: false, label: 'Agree', onChanged: (_) {}),
+  'NeumorphicCheckbox': () => NeumorphicCheckbox(
+    value: false,
+    semanticLabel: 'Agree',
+    onChanged: (_) {},
+  ),
   'NeumorphicCheckRow': () =>
       NeumorphicCheckRow(label: 'Agree', value: false, onChanged: (_) {}),
   'NeumorphicRoundCheckbox': () => NeumorphicRoundCheckbox(onChanged: (_) {}),
-  'NeumorphicSwitch': () =>
-      NeumorphicSwitch(value: false, label: 'Alerts', onChanged: (_) {}),
+  'NeumorphicSwitch': () => NeumorphicSwitch(
+    value: false,
+    semanticLabel: 'Alerts',
+    onChanged: (_) {},
+  ),
   'NeumorphicSwitchRow': () =>
       NeumorphicSwitchRow(label: 'Alerts', value: false, onChanged: (_) {}),
   'NeumorphicRadioGroup': () => NeumorphicRadioGroup<int>(
-    label: 'Delivery',
+    semanticLabel: 'Delivery',
     value: 0,
     options: const [
       NeumorphicRadio(0, 'Standard'),
@@ -64,7 +70,7 @@ final _parts = <String, Widget Function()>{
     onChanged: (_) {},
   ),
   'NeumorphicSegmentedButton': () => NeumorphicSegmentedButton<int>(
-    label: 'Period',
+    semanticLabel: 'Period',
     value: 0,
     segments: const [
       NeumorphicButtonSegment(0, 'Day'),
@@ -108,7 +114,7 @@ final _parts = <String, Widget Function()>{
     child: const Text('More'),
   ),
   'NeumorphicSlider': () =>
-      NeumorphicSlider(label: 'Volume', value: .4, onChanged: (_) {}),
+      NeumorphicSlider(semanticLabel: 'Volume', value: .4, onChanged: (_) {}),
   'NeumorphicDatePicker': () => NeumorphicDatePicker(
     value: DateTime(2026, 11, 6),
     firstDate: DateTime(2026, 11, 1),
@@ -124,7 +130,7 @@ final _parts = <String, Widget Function()>{
     ],
   ),
   'NeumorphicRating': () =>
-      NeumorphicRating(label: 'Rating', value: 3, onChanged: (_) {}),
+      NeumorphicRating(semanticLabel: 'Rating', value: 3, onChanged: (_) {}),
   'NeumorphicFileUpload': () => const NeumorphicFileUpload(onPressed: _hit),
   'NeumorphicTimePicker': () => NeumorphicTimePicker(
     value: const NeumorphicTime(9, 0),
@@ -156,15 +162,16 @@ final _disabled = <String, Widget Function()>{
   'NeumorphicButton': () => const NeumorphicButton('Save'),
   'NeumorphicButton.filled': () => const NeumorphicButton.filled('Save'),
   'NeumorphicIconButton': () =>
-      const NeumorphicIconButton(NeumorphicGlyphs.plus, label: 'Add'),
+      const NeumorphicIconButton(NeumorphicGlyphs.plus, semanticLabel: 'Add'),
   'NeumorphicChip': () => const NeumorphicChip('Quiet', isEnabled: false),
-  'NeumorphicSwitch': () => const NeumorphicSwitch(value: true, label: 'On'),
+  'NeumorphicSwitch': () =>
+      const NeumorphicSwitch(value: true, semanticLabel: 'On'),
   'NeumorphicCheckbox': () =>
-      const NeumorphicCheckbox(value: true, label: 'Agree'),
+      const NeumorphicCheckbox(value: true, semanticLabel: 'Agree'),
   'NeumorphicTextField': () =>
       const NeumorphicTextField(labelText: 'Name', enabled: false),
   'NeumorphicSegmentedButton': () => const NeumorphicSegmentedButton<int>(
-    label: 'Period',
+    semanticLabel: 'Period',
     value: 0,
     segments: [
       NeumorphicButtonSegment(0, 'Day'),

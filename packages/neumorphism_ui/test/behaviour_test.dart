@@ -8,7 +8,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -32,7 +31,7 @@ void main() {
               child: SizedBox(
                 width: 300,
                 child: NeumorphicSlider(
-                  label: 'Temperature',
+                  semanticLabel: 'Temperature',
                   value: value,
                   min: -10,
                   max: 30,
@@ -65,7 +64,7 @@ void main() {
       await tester.pumpWidget(
         neumorphicApp(
           NeumorphicSlider(
-            label: 'Fixed',
+            semanticLabel: 'Fixed',
             value: 10,
             min: 10,
             max: 10,
@@ -94,7 +93,7 @@ void main() {
             child: SizedBox(
               width: 300,
               child: NeumorphicSlider(
-                label: 'Volume',
+                semanticLabel: 'Volume',
                 value: value,
                 onChanged: (next) => setState(() => value = next),
                 onChangeEnd: commits.add,
@@ -205,7 +204,7 @@ void main() {
         Center(
           child: NeumorphicRoundButton.filled(
             NeumorphicGlyphs.plus,
-            label: 'Add',
+            semanticLabel: 'Add',
             onPressed: () {},
           ),
         ),
@@ -225,7 +224,7 @@ void main() {
         Center(
           child: NeumorphicRoundButton(
             Icons.add,
-            label: 'Add',
+            semanticLabel: 'Add',
             onPressed: () => presses++,
           ),
         ),
@@ -249,7 +248,7 @@ void main() {
     for (final part in <Widget>[
       NeumorphicRoundButton(
         Icons.add,
-        label: 'Add',
+        semanticLabel: 'Add',
         size: 28,
         onPressed: () => presses++,
       ),
@@ -311,7 +310,8 @@ void main() {
     ('text link', (go) => NeumorphicLink('Book', onPressed: go)),
     (
       'round button',
-      (go) => NeumorphicRoundButton(Icons.add, label: 'Add', onPressed: go),
+      (go) =>
+          NeumorphicRoundButton(Icons.add, semanticLabel: 'Add', onPressed: go),
     ),
     ('chip', (go) => NeumorphicChip('Book', onPressed: go)),
   ];

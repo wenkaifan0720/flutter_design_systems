@@ -5,7 +5,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 final _shot = GlobalKey();
@@ -41,7 +40,7 @@ void main() {
                     action: NeumorphicRoundButton(
                       NeumorphicGlyphs.ellipsis,
                       size: 40,
-                      label: 'Task actions',
+                      semanticLabel: 'Task actions',
                       onPressed: () {},
                     ),
                   ),

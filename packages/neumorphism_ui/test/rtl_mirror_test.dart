@@ -24,7 +24,11 @@ void main() {
       find.byType(NeumorphicSwitch),
     ),
     'checkbox and its label': (
-      () => NeumorphicCheckbox(value: true, label: 'Agree', onChanged: (_) {}),
+      () => NeumorphicCheckbox(
+        value: true,
+        semanticLabel: 'Agree',
+        onChanged: (_) {},
+      ),
       find.descendant(
         of: find.byType(NeumorphicCheckbox),
         matching: find.byType(NeumorphicSurface),
@@ -32,7 +36,7 @@ void main() {
     ),
     'segmented button': (
       () => NeumorphicSegmentedButton<String>(
-        label: 'Plan',
+        semanticLabel: 'Plan',
         segments: const [
           NeumorphicButtonSegment('m', 'Monthly'),
           NeumorphicButtonSegment('y', 'Yearly'),

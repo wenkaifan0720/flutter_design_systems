@@ -212,7 +212,7 @@ class NeumorphicAvatarGroup extends StatelessWidget {
     this.most = 4,
     this.total,
     this.size = 36,
-    this.label,
+    this.semanticLabel,
     this.onPressed,
     this.style,
   }) : assert(most >= 0),
@@ -235,7 +235,7 @@ class NeumorphicAvatarGroup extends StatelessWidget {
   final double size;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? semanticLabel;
 
   /// Opens the people behind the group. Null shows the group without a press.
   final VoidCallback? onPressed;
@@ -358,12 +358,16 @@ class NeumorphicAvatarGroup extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
-        label: label ?? names,
+        semanticLabel: semanticLabel ?? names,
         shape: cluster,
         child: group,
       );
     }
-    return Semantics(container: true, label: label ?? names, child: group);
+    return Semantics(
+      container: true,
+      label: semanticLabel ?? names,
+      child: group,
+    );
   }
 
   @override
@@ -381,7 +385,7 @@ class NeumorphicAvatarGroup extends StatelessWidget {
       ..add(IntProperty('most', most, defaultValue: 4))
       ..add(IntProperty('total', total, defaultValue: null))
       ..add(DoubleProperty('size', size, defaultValue: 36))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         DiagnosticsProperty<FocusNode>(

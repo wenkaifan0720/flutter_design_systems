@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/hearth.dart'
     show hearthScreens, isHearthScreen;
 import '../example/lib/kit_gallery/live.dart';
@@ -63,7 +63,7 @@ void main() {
 
   for (final page in liveGalleryPages) {
     if (isHearthScreen(page.id)) continue;
-    for (final preset in NeumorphicThemeData.presets) {
+    for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
       for (final brightness in Brightness.values) {
         testWidgets(
           'live ${page.id} guidelines in $preset ${brightness.name}',

@@ -6,6 +6,7 @@ library;
 
 export 'neumorphism/chrome.dart';
 export 'neumorphism/chrome_items.dart';
+export 'neumorphism/app_host.dart';
 export 'neumorphism/controls.dart' hide NeumorphicTapFace;
 export 'neumorphism/frames.dart'
     hide
@@ -71,6 +72,7 @@ export 'neumorphism/records.dart';
 export 'neumorphism/sheets.dart';
 export 'neumorphism/wheel_picker.dart';
 export 'neumorphism/fields.dart';
+export 'neumorphism/form_fields.dart';
 export 'neumorphism/collections.dart';
 export 'neumorphism/calendar.dart';
 export 'neumorphism/overlays.dart';
@@ -96,6 +98,7 @@ export 'package:ui_core/ui_core.dart' show RawToastController;
 export 'package:ui_core/ui_core.dart' show RawTreeController;
 
 export 'neumorphism/format.dart';
+export 'neumorphism/chrome_metrics.dart';
 export 'neumorphism/component_themes.dart';
 export 'neumorphism/knobs.dart';
 export 'neumorphism/shapes.dart';

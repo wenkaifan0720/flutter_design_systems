@@ -136,7 +136,7 @@ void main() {
             Padding(
               padding: const EdgeInsets.all(16),
               child: NeumorphicCarouselView(
-                label: 'Rooms',
+                semanticLabel: 'Rooms',
                 children: [
                   for (final room in ['Hall', 'Kitchen', 'Study'])
                     NeumorphicPictureCard(title: room),

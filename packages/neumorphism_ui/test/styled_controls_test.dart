@@ -121,7 +121,7 @@ void main() {
       'icon',
       (s, p) => NeumorphicIconButton(
         NeumorphicGlyphs.plus,
-        label: 'Control',
+        semanticLabel: 'Control',
         style: s,
         onPressed: p,
       ),
@@ -131,7 +131,7 @@ void main() {
       'round act',
       (s, p) => NeumorphicRoundButton.filled(
         NeumorphicGlyphs.plus,
-        label: 'Control',
+        semanticLabel: 'Control',
         style: s,
         onPressed: p,
       ),
@@ -141,7 +141,7 @@ void main() {
       'round',
       (s, p) => NeumorphicRoundButton(
         NeumorphicGlyphs.plus,
-        label: 'Control',
+        semanticLabel: 'Control',
         style: s,
         onPressed: p,
       ),

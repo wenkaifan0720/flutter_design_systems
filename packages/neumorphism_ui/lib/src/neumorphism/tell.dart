@@ -10,7 +10,6 @@ import 'chrome_metrics.dart';
 import 'controls.dart';
 import 'frames.dart';
 import 'knobs.dart';
-import 'internal/geometry.dart' show neumorphicFillPaint;
 import 'internal/text_entry.dart' show neumorphicLineHeight;
 import 'component_themes.dart';
 import 'styled.dart';
@@ -21,6 +20,7 @@ import 'localizations.dart';
 import 'theme.dart';
 import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/moulded.dart';
+import 'internal/error_mark.dart' show NeumorphicBeadPainter;
 
 /// A message on a soft well, with its tone's own mark and optional next action.
 ///
@@ -106,7 +106,7 @@ class NeumorphicBanner extends StatelessWidget {
         tone == NeumorphicTone.warning || tone == NeumorphicTone.danger;
     final Widget ownMark = calls
         ? CustomPaint(
-            painter: _BeadPainter(
+            painter: NeumorphicBeadPainter(
               const CircleBorder(),
               t.colors,
               null,
@@ -181,7 +181,7 @@ class NeumorphicBanner extends StatelessWidget {
                   child: neumorphicAtEnd(
                     NeumorphicIconButton(
                       NeumorphicGlyphs.close,
-                      label: dismissLabel ?? words.dismiss,
+                      semanticLabel: dismissLabel ?? words.dismiss,
                       onPressed: onDismiss,
                     ),
                   ),
@@ -276,14 +276,14 @@ class _RepeatState extends State<_Repeat> with SingleTickerProviderStateMixin {
 /// An arc in the pigment in a pressed round groove: live work. With no value it travels until finished.
 ///
 /// ```dart
-/// NeumorphicCircularProgressIndicator(value: .4, label: 'Uploading', size: 32)
+/// NeumorphicCircularProgressIndicator(value: .4, semanticLabel: 'Uploading', size: 32)
 /// ```
 class NeumorphicCircularProgressIndicator extends StatelessWidget {
   /// Creates a [NeumorphicCircularProgressIndicator].
   const NeumorphicCircularProgressIndicator({
     super.key,
     this.value,
-    this.label,
+    this.semanticLabel,
     this.color,
     this.size = 28,
   }) : assert((value ?? 0) >= 0 && (value ?? 0) <= 1),
@@ -293,7 +293,7 @@ class NeumorphicCircularProgressIndicator extends StatelessWidget {
   final double? value;
 
   /// An accessible description of the operation.
-  final String? label;
+  final String? semanticLabel;
 
   /// An optional colour overriding the pigment of the arc (a busy button gives its own words' colour).
   final Color? color;
@@ -309,7 +309,7 @@ class NeumorphicCircularProgressIndicator extends StatelessWidget {
       role: progress == null
           ? SemanticsRole.loadingSpinner
           : SemanticsRole.progressBar,
-      label: label ?? words.loading,
+      label: semanticLabel ?? words.loading,
       // Flutter's progress role requires a machine-readable numeric range.
       minValue: progress == null ? null : '0',
       maxValue: progress == null ? null : '100',
@@ -342,7 +342,7 @@ class NeumorphicCircularProgressIndicator extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DoubleProperty('value', value, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ColorProperty('color', color, defaultValue: null))
       ..add(DoubleProperty('size', size, defaultValue: 28));
   }
@@ -636,19 +636,22 @@ class _LineProgressPainter extends CustomPainter {
 /// ```
 class NeumorphicSkeleton extends StatelessWidget {
   /// Creates a [NeumorphicSkeleton.lines].
-  const NeumorphicSkeleton.lines(this.lines, {super.key, this.label})
+  const NeumorphicSkeleton.lines(this.lines, {super.key, this.semanticLabel})
     : aspect = null,
       row = false,
       assert(lines > 0);
 
   /// Creates a [NeumorphicSkeleton.box].
-  const NeumorphicSkeleton.box({super.key, this.aspect = 16 / 9, this.label})
-    : lines = 0,
-      row = false,
-      assert(aspect != null && aspect > 0);
+  const NeumorphicSkeleton.box({
+    super.key,
+    this.aspect = 16 / 9,
+    this.semanticLabel,
+  }) : lines = 0,
+       row = false,
+       assert(aspect != null && aspect > 0);
 
   /// Creates a [NeumorphicSkeleton.row].
-  const NeumorphicSkeleton.row({super.key, this.label})
+  const NeumorphicSkeleton.row({super.key, this.semanticLabel})
     : lines = 2,
       aspect = null,
       row = true;
@@ -663,14 +666,14 @@ class NeumorphicSkeleton extends StatelessWidget {
   final bool row;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? semanticLabel;
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     return Semantics(
       container: true,
-      label: label ?? NeumorphicLocalizations.of(context).loading,
+      label: semanticLabel ?? NeumorphicLocalizations.of(context).loading,
       child: ExcludeSemantics(
         child: LayoutBuilder(
           builder: (context, box) {
@@ -714,7 +717,7 @@ class NeumorphicSkeleton extends StatelessWidget {
       ..add(IntProperty('lines', lines))
       ..add(DoubleProperty('aspect', aspect, defaultValue: 16 / 9))
       ..add(DiagnosticsProperty<bool>('row', row))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -887,14 +890,14 @@ const double _badgeOverlap = 0;
 /// moment, the look's sign of something new. Zero disappears, and large counts use a plus sign.
 ///
 /// ```dart
-/// NeumorphicBadge(3, label: '3 unread', child: Icon(NeumorphicGlyphs.bell))
+/// NeumorphicBadge(3, semanticLabel: '3 unread', child: Icon(NeumorphicGlyphs.bell))
 /// ```
 class NeumorphicBadge extends StatelessWidget {
   /// Creates a [NeumorphicBadge].
   const NeumorphicBadge(
     this.count, {
     super.key,
-    this.label,
+    this.semanticLabel,
     this.max = 99,
     this.child,
     this.style,
@@ -911,7 +914,7 @@ class NeumorphicBadge extends StatelessWidget {
   final int max;
 
   /// An optional accessible description of the count.
-  final String? label;
+  final String? semanticLabel;
 
   /// Optional content carrying the badge.
   final Widget? child;
@@ -973,7 +976,7 @@ class NeumorphicBadge extends StatelessWidget {
           );
     measure.dispose();
     final badge = Semantics(
-      label: label ?? words.formatNumber(count),
+      label: semanticLabel ?? words.formatNumber(count),
       child: ExcludeSemantics(
         child: _Fresh(
           count: count,
@@ -1022,7 +1025,7 @@ class NeumorphicBadge extends StatelessWidget {
                 );
               }
               return CustomPaint(
-                painter: _BeadPainter(
+                painter: NeumorphicBeadPainter(
                   outline,
                   t.colors,
                   look.fill,
@@ -1081,7 +1084,7 @@ class NeumorphicBadge extends StatelessWidget {
       )
       ..add(IntProperty('count', count))
       ..add(IntProperty('max', max, defaultValue: 99))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1123,62 +1126,4 @@ class _FreshState extends State<_Fresh> with SingleTickerProviderStateMixin {
           : 0,
     ),
   );
-}
-
-/// A badge's bead: raised off what it sits on, its face the material's (or an app's fill), its lit side and face
-/// warmed by the pigment while the count is [fresh].
-class _BeadPainter extends CustomPainter {
-  const _BeadPainter(
-    this.border,
-    this.c,
-    this.fill,
-    this.fresh,
-    this.elevation,
-    this.flat,
-  );
-  final ShapeBorder border;
-  final NeumorphicColors c;
-  final Color? fill;
-  final double fresh;
-  final NeumorphicElevation elevation;
-  final bool flat;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final box = Offset.zero & size;
-    final shape = border.getOuterPath(box);
-    final warm = Color.lerp(c.highlight, c.pigmentHi, .6 * fresh)!;
-    neumorphicPaintRaised(
-      canvas,
-      shape,
-      c,
-      light: (const Offset(-1.5, -1.5), 3),
-      dark: (const Offset(1.5, 1.5), 4),
-      lightColor: warm,
-      face: fill == null
-          ? LinearGradient(
-              begin: c.light,
-              end: -c.light,
-              colors: [c.faceStart, c.faceEnd],
-            ).createShader(box)
-          : LinearGradient(colors: [fill!, fill!]).createShader(box),
-      flat: flat,
-      elevation: elevation,
-    );
-    if (fresh > 0) {
-      canvas.drawPath(
-        shape,
-        neumorphicFillPaint(c.wash.withValues(alpha: c.wash.a * 2 * fresh)),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_BeadPainter old) =>
-      old.border != border ||
-      old.c != c ||
-      old.fill != fill ||
-      old.fresh != fresh ||
-      old.elevation != elevation ||
-      old.flat != flat;
 }

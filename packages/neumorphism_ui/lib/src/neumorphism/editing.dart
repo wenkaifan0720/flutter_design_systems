@@ -211,7 +211,7 @@ class NeumorphicTextContextMenu extends StatelessWidget {
       for (final item in buttonItems)
         NeumorphicTap(
           onPressed: item.onPressed,
-          label: labelOf(context, item),
+          semanticLabel: labelOf(context, item),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: floor.height,

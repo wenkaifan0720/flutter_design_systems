@@ -1,0 +1,146 @@
+// Each spoken-only name neumorphism_ui 0.8.0 renamed to semanticLabel, used once; dart fix renames it
+// (semantic_labels.dart.expect).
+import 'package:neumorphism_ui/neumorphism_host.dart';
+import 'package:neumorphism_ui/neumorphism_parts.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+dynamic any;
+
+void constructors() {
+  NeumorphicIconButton(semanticLabel: any);
+  NeumorphicRoundButton(semanticLabel: any);
+  NeumorphicRoundButton.filled(semanticLabel: any);
+  NeumorphicTap(semanticLabel: any);
+  NeumorphicSwitch(semanticLabel: any);
+  NeumorphicSlider(semanticLabel: any);
+  NeumorphicCheckbox(semanticLabel: any);
+  NeumorphicChoiceBox(semanticLabel: any);
+  NeumorphicTabBar(semanticLabel: any);
+  NeumorphicPageDots(semanticLabel: any);
+  NeumorphicRating(semanticLabel: any);
+  NeumorphicCarouselView(semanticLabel: any);
+  NeumorphicScrollArea(semanticLabel: any);
+  NeumorphicDataTable(semanticLabel: any);
+  NeumorphicTreeView(semanticLabel: any);
+  NeumorphicPopover(semanticLabel: any);
+  NeumorphicHoverCard(semanticLabel: any);
+  NeumorphicMenuBar(semanticLabel: any);
+  NeumorphicContextMenu(semanticLabel: any);
+  NeumorphicMenu(semanticLabel: any);
+  NeumorphicWheelPicker(semanticLabel: any);
+  NeumorphicButtonGroup(semanticLabel: any);
+  NeumorphicToggleGroup(semanticLabel: any);
+  NeumorphicNavigationRail(semanticLabel: any);
+  NeumorphicNavigationDrawer(semanticLabel: any);
+  NeumorphicSkeleton.lines(semanticLabel: any);
+  NeumorphicSkeleton.box(semanticLabel: any);
+  NeumorphicSkeleton.row(semanticLabel: any);
+  NeumorphicMedia(semanticLabel: any);
+  NeumorphicAvatarGroup(semanticLabel: any);
+  NeumorphicBadge(semanticLabel: any);
+  NeumorphicLoadingState(semanticLabel: any);
+  NeumorphicCircularProgressIndicator(semanticLabel: any);
+  NeumorphicTimeline(semanticLabel: any);
+  NeumorphicDescriptionList(semanticLabel: any);
+  NeumorphicPanel(semanticLabel: any);
+  NeumorphicTable(semanticLabel: any);
+  NeumorphicTableRow(semanticLabel: any);
+  NeumorphicChart(semanticLabel: any);
+  NeumorphicPieChart(semanticLabel: any);
+  NeumorphicSparkline(semanticLabel: any);
+  NeumorphicLineChart(semanticLabel: any);
+  NeumorphicBarChart(semanticLabel: any);
+  NeumorphicAreaChart(semanticLabel: any);
+  NeumorphicRadioGroup(semanticLabel: any);
+  NeumorphicSegmentedButton(semanticLabel: any);
+}
+
+void fields(
+  NeumorphicIconButton p0,
+  NeumorphicRoundButton p1,
+  NeumorphicTap p2,
+  NeumorphicSwitch p3,
+  NeumorphicSlider p4,
+  NeumorphicCheckbox p5,
+  NeumorphicChoiceBox p6,
+  NeumorphicTabBar p7,
+  NeumorphicPageDots p8,
+  NeumorphicRating p9,
+  NeumorphicCarouselView p10,
+  NeumorphicScrollArea p11,
+  NeumorphicDataTable<Object> p12,
+  NeumorphicTreeView<Object> p13,
+  NeumorphicPopover p14,
+  NeumorphicHoverCard p15,
+  NeumorphicMenuBar p16,
+  NeumorphicContextMenu p17,
+  NeumorphicMenu<Object> p18,
+  NeumorphicWheelPicker<Object> p19,
+  NeumorphicButtonGroup p20,
+  NeumorphicToggleGroup<Object> p21,
+  NeumorphicNavigationRail p22,
+  NeumorphicNavigationDrawer p23,
+  NeumorphicSkeleton p24,
+  NeumorphicMedia p25,
+  NeumorphicAvatarGroup p26,
+  NeumorphicBadge p27,
+  NeumorphicLoadingState p28,
+  NeumorphicCircularProgressIndicator p29,
+  NeumorphicTimeline p30,
+  NeumorphicDescriptionList p31,
+  NeumorphicPanel p32,
+  NeumorphicTable p33,
+  NeumorphicTableRow p34,
+  NeumorphicChart p35,
+  NeumorphicPieChart p36,
+  NeumorphicSparkline p37,
+  NeumorphicLineChart p38,
+  NeumorphicBarChart p39,
+  NeumorphicAreaChart p40,
+  NeumorphicRadioGroup<Object> p41,
+  NeumorphicSegmentedButton<Object> p42,
+) {
+  p0.semanticLabel;
+  p1.semanticLabel;
+  p2.semanticLabel;
+  p3.semanticLabel;
+  p4.semanticLabel;
+  p5.semanticLabel;
+  p6.semanticLabel;
+  p7.semanticLabel;
+  p8.semanticLabel;
+  p9.semanticLabel;
+  p10.semanticLabel;
+  p11.semanticLabel;
+  p12.semanticLabel;
+  p13.semanticLabel;
+  p14.semanticLabel;
+  p15.semanticLabel;
+  p16.semanticLabel;
+  p17.semanticLabel;
+  p18.semanticLabel;
+  p19.semanticLabel;
+  p20.semanticLabel;
+  p21.semanticLabel;
+  p22.semanticLabel;
+  p23.semanticLabel;
+  p24.semanticLabel;
+  p25.semanticLabel;
+  p26.semanticLabel;
+  p27.semanticLabel;
+  p28.semanticLabel;
+  p29.semanticLabel;
+  p30.semanticLabel;
+  p31.semanticLabel;
+  p32.semanticLabel;
+  p33.semanticLabel;
+  p34.semanticLabel;
+  p35.semanticLabel;
+  p36.semanticLabel;
+  p37.semanticLabel;
+  p38.semanticLabel;
+  p39.semanticLabel;
+  p40.semanticLabel;
+  p41.semanticLabel;
+  p42.semanticLabel;
+}

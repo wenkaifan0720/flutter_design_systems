@@ -4,7 +4,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -34,7 +33,7 @@ Future<void> _row(
               ? NeumorphicIconButton(
                   NeumorphicGlyphs.share2,
                   key: _key,
-                  label: 'Share',
+                  semanticLabel: 'Share',
                   onPressed: () {},
                 )
               : null,

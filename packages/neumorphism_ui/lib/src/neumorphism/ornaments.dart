@@ -349,6 +349,7 @@ class NeumorphicMonogram extends StatelessWidget {
 }
 
 /// A glyph in a small pressed round well. [live] sets the pigment in it: this thing is on. Off, it's an ink glyph.
+/// The glyph grows with the reader's text, and the well round it.
 ///
 /// ```dart
 /// NeumorphicIconWell(NeumorphicGlyphs.lock, live: true)
@@ -385,8 +386,12 @@ class NeumorphicIconWell extends StatelessWidget {
       [style, t.iconButtonTheme],
       {if (live) WidgetState.selected},
     );
+    // The glyph grows with the reader's text, as the words beside it do, and the well grows round it, keeping its
+    // ring: at twice the text a 20 glyph is 40, in a 64 well.
+    final base = look.iconSize ?? size * .46;
+    final glyph = MediaQuery.textScalerOf(context).scale(base);
     final diameter = math.max(
-      size,
+      math.max(size, glyph + size - base),
       math.max(look.minimumSize?.width ?? 0, look.minimumSize?.height ?? 0),
     );
     var shape = look.shape ?? (square ? null : t.shapes.circle());
@@ -406,7 +411,7 @@ class NeumorphicIconWell extends StatelessWidget {
         child: Center(
           child: Icon(
             icon,
-            size: look.iconSize ?? size * .46,
+            size: glyph,
             color: look.foreground ?? (live ? c.pigment : c.inkSecondary),
           ),
         ),

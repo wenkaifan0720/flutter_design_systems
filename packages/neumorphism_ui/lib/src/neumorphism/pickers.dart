@@ -303,7 +303,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
               rtl
                   ? NeumorphicGlyphs.chevronRight
                   : NeumorphicGlyphs.chevronLeft,
-              label: words.previousMonth,
+              semanticLabel: words.previousMonth,
               onPressed: widget.onChanged == null || !canPrevious
                   ? null
                   : () => _move(_inMonth(_focused, -1), requestFocus: false),
@@ -324,7 +324,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                 rtl
                     ? NeumorphicGlyphs.chevronLeft
                     : NeumorphicGlyphs.chevronRight,
-                label: words.nextMonth,
+                semanticLabel: words.nextMonth,
                 onPressed: widget.onChanged == null || !canNext
                     ? null
                     : () => _move(_inMonth(_focused, 1), requestFocus: false),
@@ -437,7 +437,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                                     radius: NeumorphicRadii.cap,
                                     onKeyEvent: (_, event) => _key(date, event),
                                     selected: selected,
-                                    label:
+                                    semanticLabel:
                                         '${words.formatFullDate(date)}${today ? ', ${words.today}' : ''}',
                                     onPressed: !enabled
                                         ? null
@@ -692,7 +692,7 @@ class NeumorphicTimePicker extends StatelessWidget {
         const SizedBox(height: 8),
         NeumorphicSegmentedButton<int>(
           style: partStyle,
-          label: hourLabel ?? words.hour,
+          semanticLabel: hourLabel ?? words.hour,
           value: value == null
               ? null
               : fullDay
@@ -718,7 +718,7 @@ class NeumorphicTimePicker extends StatelessWidget {
         const SizedBox(height: 8),
         NeumorphicSegmentedButton<int>(
           style: partStyle,
-          label: minuteLabel ?? words.minute,
+          semanticLabel: minuteLabel ?? words.minute,
           value: value?.minute,
           segments: [
             for (final minute in minutes)
@@ -734,7 +734,7 @@ class NeumorphicTimePicker extends StatelessWidget {
           const SizedBox(height: 8),
           NeumorphicSegmentedButton<int>(
             style: partStyle,
-            label: periodLabel ?? words.period,
+            semanticLabel: periodLabel ?? words.period,
             value: value == null ? null : time.hour ~/ 12,
             segments: [
               NeumorphicButtonSegment(0, words.am),

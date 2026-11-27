@@ -52,13 +52,13 @@ Widget _header(
   );
   final back = NeumorphicIconButton(
     rtl ? NeumorphicGlyphs.chevronRight : NeumorphicGlyphs.chevronLeft,
-    label: words.previousMonth,
+    semanticLabel: words.previousMonth,
     onPressed: h.previous,
   );
   final forward = neumorphicAtEnd(
     NeumorphicIconButton(
       rtl ? NeumorphicGlyphs.chevronLeft : NeumorphicGlyphs.chevronRight,
-      label: words.nextMonth,
+      semanticLabel: words.nextMonth,
       onPressed: h.next,
     ),
   );
@@ -406,13 +406,6 @@ class NeumorphicCalendar extends StatefulWidget {
   /// The narrowest a month is laid out: seven cells of 44, room for a day's cap with its figure and dash at a 1.3 text
   /// scale. A column narrower than the months scrolls them sideways instead of crushing them.
   static const double minMonthWidth = 7 * 44;
-
-  /// The widest a month was laid out from a medium window up: seven days of 48, the old touch floor.
-  @Deprecated(
-    'A month is laid out up to seven days of the medium line (NeumorphicChromeMetrics.lineOf), and never under '
-    'minMonthWidth.',
-  )
-  static const double maxMonthWidth = 7 * 48;
 
   @override
   State<NeumorphicCalendar> createState() => _NeumorphicCalendarState();

@@ -62,7 +62,7 @@ Future<Color> _pixel(RenderCustomPaint render, Offset at) async {
 void main() {
   setUpAll(loadNeumorphicFonts);
   final themes = <String, NeumorphicThemeData>{
-    for (final preset in NeumorphicThemeData.presets)
+    for (final preset in NeumorphicThemeData.palettes.map((p) => p.id))
       for (final brightness in Brightness.values)
         '$preset ${brightness.name}': NeumorphicThemeData.preset(
           preset,
@@ -94,7 +94,7 @@ void main() {
             child: SizedBox(
               width: 320,
               child: NeumorphicChart(
-                label: 'Readings',
+                semanticLabel: 'Readings',
                 band: NeumorphicChartBand(-100, 100),
                 series: [
                   NeumorphicChartSeries('One', [1, 1]),

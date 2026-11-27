@@ -278,7 +278,7 @@ void main() {
           SizedBox(
             width: 360,
             child: NeumorphicRadioGroup<int>(
-              label: 'Delivery',
+              semanticLabel: 'Delivery',
               value: 0,
               options: const [
                 NeumorphicRadio(0, 'Standard'),
@@ -365,7 +365,7 @@ void main() {
                 ),
                 const SizedBox(height: 16),
                 NeumorphicSegmentedButton<int>(
-                  label: 'Period',
+                  semanticLabel: 'Period',
                   value: 1,
                   segments: const [
                     NeumorphicButtonSegment(0, 'Day'),
@@ -440,13 +440,13 @@ void main() {
               title: 'Kitchen',
               leading: NeumorphicIconButton(
                 NeumorphicGlyphs.back,
-                label: 'Back',
+                semanticLabel: 'Back',
                 onPressed: _hit,
               ),
               actions: [
                 NeumorphicIconButton(
                   NeumorphicGlyphs.settings,
-                  label: 'Settings',
+                  semanticLabel: 'Settings',
                   onPressed: _hit,
                 ),
               ],
@@ -520,7 +520,7 @@ void main() {
           Padding(
             padding: const EdgeInsets.all(20),
             child: NeumorphicRadioGroup<int>(
-              label: 'Delivery',
+              semanticLabel: 'Delivery',
               value: 0,
               onChanged: (_) {},
               options: const [

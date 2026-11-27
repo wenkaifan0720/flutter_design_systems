@@ -66,7 +66,7 @@ class ShelfPage extends StatelessWidget {
       actions: [
         NeumorphicRoundButton(
           NeumorphicGlyphs.search,
-          label: 'Search',
+          semanticLabel: 'Search',
           onPressed: () {},
         ),
       ],
@@ -108,7 +108,7 @@ class ShelfPage extends StatelessWidget {
                     glyph: _saved[i],
                     aspect: 1,
                     width: 56,
-                    label: 'A saved piece',
+                    semanticLabel: 'A saved piece',
                   ),
                   title: 'A saved piece ${i + 1}',
                   note: 'Kept this week',

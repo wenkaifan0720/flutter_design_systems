@@ -75,12 +75,15 @@ void main() {
   testWidgets('photo accepts direct content and absent media', (tester) async {
     await tester.pumpWidget(
       neumorphicApp(
-        const NeumorphicMedia(label: 'A place', child: Text('Custom picture')),
+        const NeumorphicMedia(
+          semanticLabel: 'A place',
+          child: Text('Custom picture'),
+        ),
       ),
     );
     expect(find.text('Custom picture'), findsOneWidget);
     await tester.pumpWidget(
-      neumorphicApp(const NeumorphicMedia(label: 'Missing picture')),
+      neumorphicApp(const NeumorphicMedia(semanticLabel: 'Missing picture')),
     );
     expect(tester.takeException(), isNull);
   });

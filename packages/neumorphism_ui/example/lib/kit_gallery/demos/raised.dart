@@ -198,7 +198,10 @@ Widget kitSpecimenTooltip() => const SizedBox(
       children: [
         NeumorphicTooltipFace(message: 'About this space'),
         SizedBox(height: 12),
-        NeumorphicRoundButton(NeumorphicGlyphs.info, label: 'About this space'),
+        NeumorphicRoundButton(
+          NeumorphicGlyphs.info,
+          semanticLabel: 'About this space',
+        ),
       ],
     ),
   ),
@@ -281,7 +284,7 @@ class _Launchers extends StatelessWidget {
         message: 'Help is here',
         child: NeumorphicRoundButton(
           NeumorphicGlyphs.info,
-          label: 'Help',
+          semanticLabel: 'Help',
           onPressed: () {},
         ),
       ),

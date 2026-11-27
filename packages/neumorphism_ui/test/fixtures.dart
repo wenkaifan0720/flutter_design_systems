@@ -99,7 +99,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicCard': (context) =>
       const NeumorphicCard(title: 'Details', children: [Text('Content')]),
   'NeumorphicPieChart': (context) => const NeumorphicPieChart(
-    label: 'Time',
+    semanticLabel: 'Time',
     slices: [
       NeumorphicPieSlice('Work', 6),
       NeumorphicPieSlice('Rest', 2),
@@ -109,7 +109,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     caption: 'hours',
   ),
   'NeumorphicSparkline': (context) =>
-      const NeumorphicSparkline(label: 'Steps', values: [4, 6, 5, 7]),
+      const NeumorphicSparkline(semanticLabel: 'Steps', values: [4, 6, 5, 7]),
   'NeumorphicPagination': (context) =>
       NeumorphicPagination(count: 12, page: 5, onChanged: (_) {}),
   'NeumorphicBreadcrumb': (context) => NeumorphicBreadcrumb(
@@ -120,7 +120,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     ],
   ),
   'NeumorphicCarouselView': (context) => const NeumorphicCarouselView(
-    label: 'Rooms',
+    semanticLabel: 'Rooms',
     height: 120,
     children: [
       NeumorphicCard(title: 'Kitchen', children: [Text('Lights on')]),
@@ -128,7 +128,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     ],
   ),
   'NeumorphicRating': (context) =>
-      NeumorphicRating(label: 'Rating', value: 3, onChanged: (_) {}),
+      NeumorphicRating(semanticLabel: 'Rating', value: 3, onChanged: (_) {}),
   'NeumorphicFileUpload': (context) => NeumorphicFileUpload(
     hint: 'PDF or image',
     onPressed: hit,
@@ -136,7 +136,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     onRemove: (_) {},
   ),
   'NeumorphicChart': (context) => const NeumorphicChart(
-    label: 'Hours',
+    semanticLabel: 'Hours',
     series: [
       NeumorphicChartSeries('Work', [2, 4, 3]),
     ],
@@ -148,8 +148,11 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
       NeumorphicRoundCheckbox(onChanged: (_) => hit()),
   'NeumorphicCheckRow': (context) =>
       NeumorphicCheckRow(value: false, label: 'Agree', onChanged: (_) => hit()),
-  'NeumorphicCheckbox': (context) =>
-      NeumorphicCheckbox(value: false, label: 'Agree', onChanged: (_) => hit()),
+  'NeumorphicCheckbox': (context) => NeumorphicCheckbox(
+    value: false,
+    semanticLabel: 'Agree',
+    onChanged: (_) => hit(),
+  ),
   'NeumorphicChip': (context) => const NeumorphicChip('All', onPressed: hit),
   'NeumorphicChoiceBox': (context) =>
       const NeumorphicChoiceBox(onPressed: hit, child: Text('One')),
@@ -258,13 +261,13 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     title: 'Volume',
   ),
   'NeumorphicHost': (context) => NeumorphicHost(
-    light: NeumorphicTheme.of(context),
-    darkData: NeumorphicTheme.of(context),
+    theme: NeumorphicTheme.of(context),
+    darkTheme: NeumorphicTheme.of(context),
     child: const Text('Content'),
   ),
   'NeumorphicIconButton': (context) => const NeumorphicIconButton(
     NeumorphicGlyphs.plus,
-    label: 'Add',
+    semanticLabel: 'Add',
     onPressed: hit,
   ),
   'NeumorphicIconWell': (context) =>
@@ -331,12 +334,14 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicPageDots': (context) => NeumorphicPageDots(
     count: 1,
     selectedIndex: 0,
-    label: 'Introduction',
+    semanticLabel: 'Introduction',
     onChanged: (_) => hit(),
   ),
   'NeumorphicPageHead': (context) => const NeumorphicPageHead(title: 'Details'),
-  'NeumorphicMedia': (context) =>
-      const NeumorphicMedia(label: 'A room', glyph: NeumorphicGlyphs.house),
+  'NeumorphicMedia': (context) => const NeumorphicMedia(
+    semanticLabel: 'A room',
+    glyph: NeumorphicGlyphs.house,
+  ),
   'NeumorphicPictureCard': (context) => const NeumorphicPictureCard(
     glyph: Icons.photo,
     title: 'Photo',
@@ -367,7 +372,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicButton.text': (context) =>
       const NeumorphicButton.text('Later', onPressed: hit),
   'NeumorphicRadioGroup': (context) => NeumorphicRadioGroup<String>(
-    label: 'Space',
+    semanticLabel: 'Space',
     options: const [NeumorphicRadio('room', 'Room')],
     onChanged: (_) => hit(),
   ),
@@ -379,7 +384,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
       const NeumorphicRelief(title: 'House', compact: true, onPressed: hit),
   'NeumorphicRoundButton': (context) => const NeumorphicRoundButton(
     NeumorphicGlyphs.plus,
-    label: 'Add',
+    semanticLabel: 'Add',
     onPressed: hit,
   ),
   'NeumorphicRow': (context) => const NeumorphicRow(
@@ -398,7 +403,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicSections': (context) =>
       const NeumorphicSections(children: [Text('First'), Text('Second')]),
   'NeumorphicSegmentedButton': (context) => NeumorphicSegmentedButton<String>(
-    label: 'Period',
+    semanticLabel: 'Period',
     segments: const [NeumorphicButtonSegment('day', 'Day')],
     onChanged: (_) => hit(),
   ),
@@ -417,8 +422,11 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
       const NeumorphicShareBars(rows: [NeumorphicShare('Work', '6', .5)]),
   'NeumorphicSkeleton': (context) => const NeumorphicSkeleton.row(),
   'NeumorphicSlab': (context) => const NeumorphicSlab(child: Text('Content')),
-  'NeumorphicSlider': (context) =>
-      NeumorphicSlider(label: 'Level', value: .5, onChanged: (_) => hit()),
+  'NeumorphicSlider': (context) => NeumorphicSlider(
+    semanticLabel: 'Level',
+    value: .5,
+    onChanged: (_) => hit(),
+  ),
   'NeumorphicSnackBar': (context) => const NeumorphicSnackBar('Saved'),
   'NeumorphicSpanDial': (context) => const NeumorphicSpanDial(
     start: '09:00',

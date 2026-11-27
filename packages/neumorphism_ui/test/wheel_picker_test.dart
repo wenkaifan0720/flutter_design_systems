@@ -28,7 +28,7 @@ class _TurnedState extends State<_Turned> {
   Widget build(BuildContext context) => Align(
     alignment: Alignment.topLeft,
     child: NeumorphicWheelPicker<String>(
-      label: 'Day',
+      semanticLabel: 'Day',
       items: _days,
       value: _day,
       width: 200,
@@ -131,7 +131,7 @@ void main() {
     await tester.pumpWidget(
       neumorphicApp(
         NeumorphicWheelPicker<String>(
-          label: 'Day',
+          semanticLabel: 'Day',
           items: const [],
           value: '',
           onChanged: (_) {},

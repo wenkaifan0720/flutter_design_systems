@@ -45,7 +45,7 @@ Widget kitSpecimenActionRow() => NeumorphicColumn(
       title: 'A third',
       note: 'With a switch',
       trailing: NeumorphicSwitch(
-        label: 'A third',
+        semanticLabel: 'A third',
         value: true,
         onChanged: (_) {},
       ),

@@ -2,7 +2,6 @@
 // RawWidgetsLocalizations): Arabic-Indic in Arabic, Western in English.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 Future<void> _pump(WidgetTester t, Locale locale) async {

@@ -76,7 +76,7 @@ void main() {
             theme,
             NeumorphicCheckbox(
               value: false,
-              label: 'Include a receipt',
+              semanticLabel: 'Include a receipt',
               onChanged: (_) {},
             ),
             stage,
@@ -143,7 +143,7 @@ void main() {
           stage,
         );
         Finder tap(String label) => find.byWidgetPredicate(
-          (w) => w is NeumorphicTap && w.label == label,
+          (w) => w is NeumorphicTap && w.semanticLabel == label,
         );
         final selected = tester.widget<NeumorphicTap>(tap('First choice'));
         expect(
@@ -233,7 +233,7 @@ void main() {
         expect(words.style!.color, ink);
         expect(words.style!.fontSize, 18);
         final tap = find.byWidgetPredicate(
-          (w) => w is NeumorphicTap && w.label == 'Active',
+          (w) => w is NeumorphicTap && w.semanticLabel == 'Active',
         );
         final boundary = tester.renderObject<RenderRepaintBoundary>(
           find.byKey(stage),
@@ -327,7 +327,7 @@ void main() {
         NeumorphicThemeData.porcelain(),
         NeumorphicCheckbox(
           value: value,
-          label: 'Remember these details',
+          semanticLabel: 'Remember these details',
           tristate: true,
           onChanged: (_) {},
         ),
@@ -357,7 +357,7 @@ void main() {
   // high_contrast_edge_test holds that for every preset by day and by night.
   final palettes = <String, NeumorphicThemeData>{
     for (final brightness in Brightness.values) ...{
-      for (final id in NeumorphicThemeData.presets)
+      for (final id in NeumorphicThemeData.palettes.map((p) => p.id))
         '$id ${brightness.name}': NeumorphicThemeData.preset(id, brightness),
       for (final (name, ground, pigment) in [
         ('custom pale', const Color(0xFFEEEEEE), const Color(0xFFFDFAED)),
@@ -379,8 +379,11 @@ void main() {
     'field': () => const NeumorphicFieldBox(child: SizedBox(height: 48)),
     'card': () => const NeumorphicCard(children: [SizedBox(height: 80)]),
     'search': () => const NeumorphicSearchField(hintText: 'Search'),
-    'checkbox': () =>
-        NeumorphicCheckbox(value: false, label: 'Agree', onChanged: (_) {}),
+    'checkbox': () => NeumorphicCheckbox(
+      value: false,
+      semanticLabel: 'Agree',
+      onChanged: (_) {},
+    ),
   };
   for (final MapEntry(key: name, value: theme) in palettes.entries) {
     for (final MapEntry(key: part, value: build) in parts.entries) {
@@ -449,7 +452,11 @@ void main() {
   final states = <String, (double, Widget Function(bool on))>{
     'checked box': (
       240,
-      (on) => NeumorphicCheckbox(value: on, label: 'Agree', onChanged: (_) {}),
+      (on) => NeumorphicCheckbox(
+        value: on,
+        semanticLabel: 'Agree',
+        onChanged: (_) {},
+      ),
     ),
     'round check': (
       240,
@@ -457,12 +464,16 @@ void main() {
     ),
     'on switch': (
       240,
-      (on) => NeumorphicSwitch(value: on, label: 'Share', onChanged: (_) {}),
+      (on) => NeumorphicSwitch(
+        value: on,
+        semanticLabel: 'Share',
+        onChanged: (_) {},
+      ),
     ),
     'chosen radio': (
       240,
       (on) => NeumorphicRadioGroup<String>(
-        label: 'Plan',
+        semanticLabel: 'Plan',
         options: const [
           NeumorphicRadio('m', 'Monthly'),
           NeumorphicRadio('y', 'Yearly'),
@@ -486,7 +497,7 @@ void main() {
     'chosen segment': (
       240,
       (on) => NeumorphicSegmentedButton<String>(
-        label: 'Plan',
+        semanticLabel: 'Plan',
         segments: const [
           NeumorphicButtonSegment('m', 'Monthly'),
           NeumorphicButtonSegment('y', 'Yearly'),
@@ -499,7 +510,7 @@ void main() {
       240,
       (on) => NeumorphicSlider(
         value: on ? .8 : .2,
-        label: 'Volume',
+        semanticLabel: 'Volume',
         onChanged: (_) {},
       ),
     ),
@@ -605,7 +616,11 @@ void main() {
                 style: NeumorphicTheme.of(context).textTheme.caption,
               ),
             ),
-            NeumorphicSlider(value: 0, label: 'Volume', onChanged: (_) {}),
+            NeumorphicSlider(
+              value: 0,
+              semanticLabel: 'Volume',
+              onChanged: (_) {},
+            ),
           ],
         ),
       ),

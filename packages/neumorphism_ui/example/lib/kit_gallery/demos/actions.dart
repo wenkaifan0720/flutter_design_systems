@@ -23,7 +23,7 @@ List<Widget> kitActionsSections() => [
 ];
 
 Widget kitSpecimenButtonGroup() => NeumorphicButtonGroup(
-  label: 'Week',
+  semanticLabel: 'Week',
   items: [
     NeumorphicButtonGroupItem('Previous', onPressed: () {}),
     NeumorphicButtonGroupItem('Today', onPressed: () {}),
@@ -34,7 +34,7 @@ Widget kitSpecimenButtonGroup() => NeumorphicButtonGroup(
 Widget kitSpecimenToggleGroup() => kitValue<Set<String>>(
   const {'bed'},
   (context, on, change) => NeumorphicToggleGroup<String>(
-    label: 'Rooms that dim at dusk',
+    semanticLabel: 'Rooms that dim at dusk',
     selected: on,
     onChanged: change,
     items: const [

@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -26,7 +25,7 @@ DesignAlignmentTheme _look(
       theme: host == null ? null : ThemeData(inputDecorationTheme: host),
       builder: (context, navigator) {
         final page = NeumorphicHost(
-          light: NeumorphicThemeData.porcelain().copyWith(density: density),
+          theme: NeumorphicThemeData.porcelain().copyWith(density: density),
           brightness: Brightness.light,
           child: navigator!,
         );
@@ -69,7 +68,7 @@ final neumorphicAlignment = DesignAlignmentMatrix(
           DesignInlineControl.iconButton,
           (context, label) => NeumorphicIconButton(
             NeumorphicGlyphs.plus,
-            label: label,
+            semanticLabel: label,
             size: 36,
             onPressed: _tap,
           ),
@@ -93,7 +92,7 @@ final neumorphicAlignment = DesignAlignmentMatrix(
           DesignInlineControl.iconButton,
           (context, label) => NeumorphicIconButton(
             NeumorphicGlyphs.plus,
-            label: label,
+            semanticLabel: label,
             onPressed: _tap,
           ),
         ),
@@ -116,7 +115,7 @@ final neumorphicAlignment = DesignAlignmentMatrix(
         DesignAlignmentEntry(
           DesignInlineControl.segmentedButton,
           (context, label) => NeumorphicSegmentedButton<int>(
-            label: 'Choice',
+            semanticLabel: 'Choice',
             value: 0,
             segments: [
               NeumorphicButtonSegment(0, label),

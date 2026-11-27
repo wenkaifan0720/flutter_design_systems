@@ -40,7 +40,7 @@ double _contrast(Color a, Color b) {
 
 void main() {
   setUpAll(loadNeumorphicFonts);
-  for (final preset in NeumorphicThemeData.presets) {
+  for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
     for (final brightness in Brightness.values) {
       testWidgets(
         'the first series is in $preset\'s pigment by ${brightness.name}',
@@ -54,7 +54,7 @@ void main() {
                 child: SizedBox(
                   width: 320,
                   child: NeumorphicChart(
-                    label: 'Hours slept',
+                    semanticLabel: 'Hours slept',
                     kind: NeumorphicChartKind.bar,
                     series: [
                       NeumorphicChartSeries('Sleep', [7, 8, 6]),

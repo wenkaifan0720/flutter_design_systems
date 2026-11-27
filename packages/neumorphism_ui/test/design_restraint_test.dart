@@ -68,7 +68,7 @@ void main() {
       );
     }
   }
-  for (final preset in NeumorphicThemeData.presets) {
+  for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
     for (final brightness in Brightness.values) {
       testWidgets('$preset ${brightness.name}: strong outlines are opt-in', (
         tester,
@@ -156,7 +156,7 @@ void main() {
   }
 
   for (final kind in ['linear', 'circular']) {
-    for (final preset in NeumorphicThemeData.presets) {
+    for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
       for (final brightness in Brightness.values) {
         testWidgets(
           '$kind progress in $preset ${brightness.name}: track outline is opt-in',

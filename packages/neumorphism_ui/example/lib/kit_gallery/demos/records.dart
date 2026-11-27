@@ -26,7 +26,7 @@ List<Widget> kitRecordsSections() => [
 ];
 
 Widget kitSpecimenTimeline() => const NeumorphicTimeline(
-  label: 'Tonight',
+  semanticLabel: 'Tonight',
   stops: [
     NeumorphicTimelineStop(
       time: '19:45',
@@ -50,7 +50,7 @@ Widget kitSpecimenDescriptionList() => const NeumorphicDescriptionList([
   NeumorphicDescription('Lights out', '22:30'),
   NeumorphicDescription('Lamps', '2'),
   NeumorphicDescription('Warmth', '19 degrees'),
-], label: 'Tonight');
+], semanticLabel: 'Tonight');
 
 Widget kitSpecimenMeter() => const NeumorphicMeter(
   label: 'Hot water',

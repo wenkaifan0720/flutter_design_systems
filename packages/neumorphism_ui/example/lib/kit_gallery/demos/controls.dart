@@ -52,18 +52,18 @@ Widget kitSpecimenRoundButton() => Wrap(
   children: [
     NeumorphicRoundButton(
       NeumorphicGlyphs.moon,
-      label: 'Off',
+      semanticLabel: 'Off',
       onPressed: () {},
     ),
     NeumorphicRoundButton(
       NeumorphicGlyphs.clapperboard,
-      label: 'On',
+      semanticLabel: 'On',
       selected: true,
       onPressed: () {},
     ),
     NeumorphicRoundButton(
       NeumorphicGlyphs.inbox,
-      label: 'Inbox',
+      semanticLabel: 'Inbox',
       badge: '2',
       onPressed: () {},
     ),
@@ -131,12 +131,12 @@ Widget kitSpecimenSwitch() {
       children: [
         NeumorphicSwitch(
           value: a,
-          label: 'Lights',
+          semanticLabel: 'Lights',
           onChanged: (v) => setState(() => a = v),
         ),
         NeumorphicSwitch(
           value: b,
-          label: 'Fan',
+          semanticLabel: 'Fan',
           onChanged: (v) => setState(() => b = v),
         ),
       ],
@@ -152,7 +152,7 @@ Widget kitSpecimenSwitchRow() => NeumorphicSwitchRow(
 );
 
 Widget kitSpecimenSlider() =>
-    NeumorphicSlider(label: 'Level', value: .3, onChanged: (_) {});
+    NeumorphicSlider(semanticLabel: 'Level', value: .3, onChanged: (_) {});
 
 Widget kitSpecimenProgress() =>
     const NeumorphicProgress(value: .21, start: '0:25:12', end: '1:58:00');
@@ -167,15 +167,19 @@ Widget kitSpecimenCheck() => const Wrap(
 Widget kitSpecimenIconButton() => Wrap(
   spacing: 12,
   children: [
-    NeumorphicIconButton(NeumorphicGlyphs.plus, label: 'Add', onPressed: () {}),
+    NeumorphicIconButton(
+      NeumorphicGlyphs.plus,
+      semanticLabel: 'Add',
+      onPressed: () {},
+    ),
     NeumorphicIconButton(
       NeumorphicGlyphs.bell,
-      label: 'Notifications',
+      semanticLabel: 'Notifications',
       selected: true,
       badge: '2',
       onPressed: () {},
     ),
-    const NeumorphicIconButton(NeumorphicGlyphs.lock, label: 'Locked'),
+    const NeumorphicIconButton(NeumorphicGlyphs.lock, semanticLabel: 'Locked'),
   ],
 );
 

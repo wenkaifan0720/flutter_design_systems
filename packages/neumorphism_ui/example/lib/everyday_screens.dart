@@ -3,7 +3,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'kit_gallery/hearth.dart';
-import 'main.dart';
+import 'gallery.dart';
 
 /// Hearth opened on [page] (one of [hearthScreens]), past it to [start].
 Widget _hearth(

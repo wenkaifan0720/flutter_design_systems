@@ -36,6 +36,9 @@ enum NeumorphicTone {
 /// The width where the phone layout becomes the 12-column desktop layout.
 const double neumorphicDesktopBreakpoint = 1024;
 
+/// How wide a page grows by default, its margins included: [NeumorphicScaffold.maxWidth].
+const double neumorphicPageMaxWidth = 1264;
+
 /// An engraved rule's width, between rows and inside a part.
 const double neumorphicRuleWidth = 1;
 
@@ -1561,14 +1564,57 @@ class NeumorphicThemeData with Diagnosticable {
   static NeumorphicThemeData of(BuildContext context) =>
       NeumorphicTheme.of(context);
 
-  /// The preset ids, the default first. Each is designed in light and dark.
-  static const List<String> presets = <String>[
-    'porcelain',
-    'pompeii',
-    'verona',
-    'siena',
-    'tyrian',
-    'capri',
+  /// The six palettes, porcelain (the default) first, each designed by day
+  /// and by night: what an app's palette picker lists (each one's [RawNamedPalette.label]
+  /// and swatches) and stores (its [RawNamedPalette.id]), for [preset] or
+  /// `NeumorphicHost.palette`. Porcelain is ultramarine on cool porcelain,
+  /// Pompeii cinnabar on warm limestone, Verona malachite on green-grey,
+  /// Siena burnt umber on ochre, Tyrian purple on mauve-grey and Capri a
+  /// blue-green on sea-grey.
+  ///
+  /// ```dart
+  /// NeumorphicHost(
+  ///   palette: NeumorphicThemeData.palettes.firstWhere((p) => p.id == saved),
+  ///   child: child,
+  /// )
+  /// ```
+  static const List<RawNamedPalette> palettes = <RawNamedPalette>[
+    RawNamedPalette(
+      id: 'porcelain',
+      label: 'Porcelain',
+      swatches: [Color(0xFF2E46D0), Color(0xFFE4E8EE)],
+      darkSwatches: [Color(0xFF7896FF), Color(0xFF1E2431)],
+    ),
+    RawNamedPalette(
+      id: 'pompeii',
+      label: 'Pompeii',
+      swatches: [Color(0xFFA82A1C), Color(0xFFEDE7DF)],
+      darkSwatches: [Color(0xFFF07F62), Color(0xFF2A2220)],
+    ),
+    RawNamedPalette(
+      id: 'verona',
+      label: 'Verona',
+      swatches: [Color(0xFF14694F), Color(0xFFE3E9E3)],
+      darkSwatches: [Color(0xFF62D2A9), Color(0xFF1C2723)],
+    ),
+    RawNamedPalette(
+      id: 'siena',
+      label: 'Siena',
+      swatches: [Color(0xFF8F4F06), Color(0xFFEBE4D3)],
+      darkSwatches: [Color(0xFFE6B04A), Color(0xFF27231A)],
+    ),
+    RawNamedPalette(
+      id: 'tyrian',
+      label: 'Tyrian',
+      swatches: [Color(0xFF7B1C72), Color(0xFFE9E3E8)],
+      darkSwatches: [Color(0xFFDA8FD8), Color(0xFF271F2B)],
+    ),
+    RawNamedPalette(
+      id: 'capri',
+      label: 'Capri',
+      swatches: [Color(0xFF0B6278), Color(0xFFE1E9EB)],
+      darkSwatches: [Color(0xFF5AC6DC), Color(0xFF1A2529)],
+    ),
   ];
 
   static const Map<String, _Palette> _palettes = {
@@ -1581,18 +1627,20 @@ class NeumorphicThemeData with Diagnosticable {
   };
   static final Map<(String, Brightness), NeumorphicThemeData> _cache = {};
 
-  /// The theme for preset [id] in [brightness]; an unknown id throws. The theme file's call.
+  /// The theme of the palette [id] (one of [palettes]' ids) in
+  /// [brightness], one instance for each id and appearance. An id this
+  /// version doesn't offer (one an app stored before its palette was
+  /// retired) gives the default, porcelain, so a stored choice never stops
+  /// an app.
+  ///
+  /// ```dart
+  /// NeumorphicThemeData.preset(NeumorphicThemeData.palettes[1].id, Brightness.dark)
+  /// ```
   static NeumorphicThemeData preset(String id, Brightness brightness) {
-    final palette = _palettes[id];
-    if (palette == null) {
-      throw ArgumentError.value(
-        id,
-        'id',
-        'not a Neumorphism preset (${presets.join(', ')})',
-      );
-    }
-    return _cache[(id, brightness)] ??= NeumorphicThemeData._(
-      id,
+    final known = _palettes.containsKey(id) ? id : palettes.first.id;
+    final palette = _palettes[known]!;
+    return _cache[(known, brightness)] ??= NeumorphicThemeData._(
+      known,
       (brightness == Brightness.dark ? palette.night : palette.day).colors,
       0,
     );
@@ -2334,7 +2382,7 @@ class _Dressing extends StatelessWidget {
   }
 }
 
-/// `context.neumorphicTheme`: the theme in scope.
+/// The theme in scope, read from a build context: `context.neumorphicTheme`.
 extension NeumorphicThemeContext on BuildContext {
   /// The nearest inherited Neumorphic theme.
   NeumorphicThemeData get neumorphicTheme => NeumorphicTheme.of(this);

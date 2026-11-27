@@ -36,7 +36,7 @@ void _reads(
 
 void main() {
   test('six presets, the default first', () {
-    expect(NeumorphicThemeData.presets, [
+    expect(NeumorphicThemeData.palettes.map((p) => p.id), [
       'porcelain',
       'pompeii',
       'verona',
@@ -46,11 +46,16 @@ void main() {
     ]);
   });
 
-  test('an unknown preset is an error, not a silent default', () {
-    expect(
-      () => NeumorphicThemeData.preset('nope', Brightness.light),
-      throwsArgumentError,
-    );
+  test('a stored palette this version does not offer gives the first', () {
+    // An app's stored choice (a palette since retired) never stops the app.
+    for (final b in Brightness.values) {
+      expect(
+        NeumorphicThemeData.preset('nope', b),
+        same(
+          NeumorphicThemeData.preset(NeumorphicThemeData.palettes.first.id, b),
+        ),
+      );
+    }
   });
 
   test('the luminance here is the true one', () {
@@ -62,7 +67,7 @@ void main() {
     );
   });
 
-  for (final id in NeumorphicThemeData.presets) {
+  for (final id in NeumorphicThemeData.palettes.map((p) => p.id)) {
     for (final b in Brightness.values) {
       final name = '$id ${b.name}';
       final t = NeumorphicThemeData.preset(id, b);
@@ -166,7 +171,7 @@ void main() {
 
   test('the presets are designed apart: wall and pigment change together', () {
     final grounds = <int>{}, pigments = <int>{};
-    for (final id in NeumorphicThemeData.presets) {
+    for (final id in NeumorphicThemeData.palettes.map((p) => p.id)) {
       for (final b in Brightness.values) {
         final c = NeumorphicThemeData.preset(id, b).colors;
         expect(
@@ -182,7 +187,7 @@ void main() {
       }
     }
     final seen = <String>{};
-    for (final id in NeumorphicThemeData.presets) {
+    for (final id in NeumorphicThemeData.palettes.map((p) => p.id)) {
       final c = NeumorphicThemeData.preset(id, Brightness.light).colors;
       expect(
         seen.add('${c.ground.toARGB32()}-${c.pigment.toARGB32()}'),

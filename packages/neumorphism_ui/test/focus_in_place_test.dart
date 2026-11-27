@@ -166,8 +166,11 @@ void main() {
         alignment: AlignmentDirectional.centerStart,
         child: _Value<bool?>(
           false,
-          (v, set) =>
-              NeumorphicCheckbox(value: v, label: 'Receipt', onChanged: set),
+          (v, set) => NeumorphicCheckbox(
+            value: v,
+            semanticLabel: 'Receipt',
+            onChanged: set,
+          ),
         ),
       ),
     ),
@@ -177,8 +180,11 @@ void main() {
         alignment: AlignmentDirectional.centerStart,
         child: _Value<bool?>(
           true,
-          (v, set) =>
-              NeumorphicCheckbox(value: v, label: 'Receipt', onChanged: set),
+          (v, set) => NeumorphicCheckbox(
+            value: v,
+            semanticLabel: 'Receipt',
+            onChanged: set,
+          ),
         ),
       ),
     ),
@@ -195,7 +201,7 @@ void main() {
       () => _Value<String?>(
         null,
         (v, set) => NeumorphicRadioGroup<String>(
-          label: 'Delivery',
+          semanticLabel: 'Delivery',
           value: v,
           options: const [
             NeumorphicRadio('standard', 'Standard'),
@@ -211,8 +217,11 @@ void main() {
         alignment: AlignmentDirectional.centerStart,
         child: _Value<bool>(
           false,
-          (v, set) =>
-              NeumorphicSwitch(value: v, label: 'Share', onChanged: set),
+          (v, set) => NeumorphicSwitch(
+            value: v,
+            semanticLabel: 'Share',
+            onChanged: set,
+          ),
         ),
       ),
     ),
@@ -222,8 +231,11 @@ void main() {
         alignment: AlignmentDirectional.centerStart,
         child: _Value<bool>(
           true,
-          (v, set) =>
-              NeumorphicSwitch(value: v, label: 'Share', onChanged: set),
+          (v, set) => NeumorphicSwitch(
+            value: v,
+            semanticLabel: 'Share',
+            onChanged: set,
+          ),
         ),
       ),
     ),
@@ -306,7 +318,7 @@ void main() {
         alignment: AlignmentDirectional.centerStart,
         child: NeumorphicIconButton(
           NeumorphicGlyphs.check,
-          label: 'Done',
+          semanticLabel: 'Done',
           onPressed: live ? () {} : null,
         ),
       ),
@@ -314,7 +326,7 @@ void main() {
         alignment: AlignmentDirectional.centerStart,
         child: NeumorphicCheckbox(
           value: false,
-          label: 'Receipt',
+          semanticLabel: 'Receipt',
           onChanged: live ? (_) {} : null,
         ),
       ),
@@ -322,7 +334,7 @@ void main() {
         alignment: AlignmentDirectional.centerStart,
         child: NeumorphicSwitch(
           value: false,
-          label: 'Share',
+          semanticLabel: 'Share',
           onChanged: live ? (_) {} : null,
         ),
       ),

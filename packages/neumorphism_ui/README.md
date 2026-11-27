@@ -1,9 +1,10 @@
 # neumorphism_ui
 
 A soft UI design system for Flutter: every part is moulded from one wall colour, raised or pressed in by paired light
-and shadow, with one pigment marking what acts. An optional high-contrast setting adds firmer edges.
+and shadow, with one pigment marking what acts. An optional high-contrast setting adds firmer edges. Choose from six
+palettes, each with a light and a dark appearance.
 
-![Hearth, the gallery's home app, on Neumorphism: its living room at 1440 px by day beside the same room on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hero_home.png)
+![Hearth, the example gallery's home app, on Neumorphism: its living room at 1440 px by day beside the same room on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hero_home.png)
 
 **[Docs and demo](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/neumorphism/)** · [Try it in Stint](https://wenkaifan0720.github.io/flutter_design_systems/docs/stint/?look=neumorphism) · [API reference](https://pub.dev/documentation/neumorphism_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/docs/)
 
@@ -13,33 +14,27 @@ and shadow, with one pigment marking what acts. An optional high-contrast settin
 flutter pub add neumorphism_ui material_ui
 ```
 
-or, under `dependencies:` in `pubspec.yaml`, `neumorphism_ui: ^0.7.0` and `material_ui: ^1.9.0`.
+Every snippet on this page compiles after that line. The icons in them are `NeumorphicGlyphs`, the glyphs Neumorphism
+draws with; for an icon of your own, add `lucide_icons_flutter`, the set they come from.
 
-`material_ui` is Flutter's Material library as a package; the examples' `MaterialApp` comes from it.
-
-## A first app
+Each file imports the look and the Material it is built on:
 
 ```dart
 import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-
-void main() => runApp(
-  MaterialApp(
-    builder: (context, child) =>
-        NeumorphicTheme(data: NeumorphicThemeData.porcelain(), child: child!),
-    home: NeumorphicScaffold(
-      body: Center(child: NeumorphicButton('Save', onPressed: () {})),
-    ),
-  ),
-);
 ```
 
-`NeumorphicTheme` gives every route the look's theme. The fuller setup below also loads the bundled face before the
-first frame and gives the app's own routes the look's page change.
+`neumorphism_ui.dart` holds the parts, `NeumorphicHost` included, and the ui_core types their API takes
+(`RawNavigationDestination`, `RawNamedPalette`). `neumorphism_parts.dart` adds the tokens, painters and the
+lower-level pieces (`NeumorphicChart`, `NeumorphicPanel`) for parts of your own. `material_ui` is Flutter's Material
+library as a package, with `MaterialApp`; import it rather than `package:flutter/material.dart`.
 
-## Use
+## Mount the host
 
-`NeumorphicTheme` installs the design system under a `MaterialApp`, `CupertinoApp` or `WidgetsApp`. It supplies the text styles, localizations, scrolling behavior and private bridge used by the controls.
+`NeumorphicHost`, in the app's `builder`, is the one mount: it picks the light or dark theme from the palette, gives
+the app's own routes (a `MaterialPageRoute`) the look's page change, paints the wall behind the app, holds the toasts,
+and eases a change of palette or appearance (a cut under Reduce Motion). Load the bundled face before `runApp` so the
+first frame is set in it.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -48,150 +43,340 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await neumorphicLoadFonts();
-  runApp(MaterialApp(
-    // The look's page change for the app's own routes (a MaterialPageRoute), on every platform; iOS keeps its
-    // swipe back from the screen's edge round it.
-    theme: ThemeData(
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: neumorphicPageTransitions,
-      ),
-    ),
-    builder: (context, child) => NeumorphicTheme(
-      data: NeumorphicThemeData.porcelain(
-        MediaQuery.platformBrightnessOf(context),
-      ),
+  runApp(const App());
+}
+
+class App extends StatelessWidget {
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Shelf',
+    // brightness: null follows the platform; Brightness.light or
+    // Brightness.dark pins it. palette: one of the six, porcelain by default.
+    builder: (context, child) => NeumorphicHost(
+      palette: NeumorphicThemeData.palettes.first,
+      brightness: null,
       child: child!,
     ),
-    home: NeumorphicScaffold(
-      topBar: const NeumorphicAppBar(title: 'Your day'),
-      body: NeumorphicSections(children: [
-        NeumorphicCard(
-          title: 'A quiet start',
-          children: [NeumorphicButton('Continue', onPressed: () {})],
-        ),
-      ]),
+    home: const NeumorphicScaffold(
+      topBar: NeumorphicAppBar(title: 'Today', subtitle: 'Thursday'),
+      body: NeumorphicListTile(title: 'Stoner', subtitle: 'John Williams'),
     ),
-  ));
+  );
 }
 ```
 
-Controls use Flutter conventions: `onPressed`, `value` and `onChanged`, and `selectedIndex`. Each raised component has its own presenter, such as `showNeumorphicDialog` and `showNeumorphicBottomSheet`. The package requires no router.
+A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:`. `NeumorphicHost(theme:,
+darkTheme:)` takes themes of your own instead of a palette. To theme one subtree, wrap it in `NeumorphicTheme(data:
+…)`; `AnimatedNeumorphicTheme` eases between two.
 
-A form in a card, its action live once the terms are agreed:
+## Build an app
 
-```dart
-NeumorphicCard(
-  title: 'Create an account',
-  children: [
-    NeumorphicTextField(labelText: 'Full name', onChanged: setName),
-    NeumorphicTextField(
-      labelText: 'Email',
-      keyboardType: TextInputType.emailAddress,
-      onChanged: setEmail,
-    ),
-    NeumorphicPasswordField(labelText: 'Password', onChanged: setPassword),
-    NeumorphicSegmentedButton<String>(
-      label: 'Plan',
-      segments: const [
-        NeumorphicButtonSegment('monthly', 'Monthly'),
-        NeumorphicButtonSegment('yearly', 'Yearly'),
-      ],
-      value: plan,
-      onChanged: (next) => setState(() => plan = next),
-    ),
-    NeumorphicSwitchRow(
-      label: 'Reminders',
-      subtitle: 'A note each morning',
-      value: reminders,
-      onChanged: (on) => setState(() => reminders = on),
-    ),
-    NeumorphicCheckbox(
-      value: agreed,
-      label: 'I agree to the terms',
-      onChanged: (on) => setState(() => agreed = on ?? false),
-    ),
-    NeumorphicButton.filled(
-      'Create account',
-      onPressed: agreed ? submit : null,
-    ),
-  ],
-);
-```
+The example app, `example/lib/main.dart`, is all of this in one file: Shelf, a reading list with three places, a
+list with a pushed page, a form, a dialog and settings with the six palettes. Copy it and grow it.
+`example/lib/gallery.dart` shows every part.
 
-A dialog that returns a value:
+### The shell
+
+`NeumorphicAppShell` is the app's frame: its places in the raised tab bar along a phone's foot, on the pilaster down
+the start edge from 1024 wide. The place shown is pressed into the wall. Each place keeps its own stack of pages; a
+page pushed in a place keeps the pilaster beside it while the tab bar steps away, and back pops it. Toasts keep clear
+of the tab bar.
 
 ```dart
-final keep = await showNeumorphicDialog<bool>(
-  context,
-  builder: (context) => NeumorphicDialog(
-    title: 'Keep this draft?',
-    message: 'You can finish it later.',
-    actions: [
-      NeumorphicButton('Discard', onPressed: () => Navigator.pop(context, false)),
-      NeumorphicButton.filled('Keep', onPressed: () => Navigator.pop(context, true)),
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  int _place = 0;
+
+  @override
+  Widget build(BuildContext context) => NeumorphicAppShell(
+    header: const NeumorphicBrandRow('Shelf'),
+    destinations: const [
+      RawNavigationDestination(label: 'Books', icon: NeumorphicGlyphs.layers),
+      RawNavigationDestination(label: 'Reading', icon: NeumorphicGlyphs.bookOpen),
+      RawNavigationDestination(label: 'Settings', icon: NeumorphicGlyphs.settings),
     ],
-  ),
-);
+    selectedIndex: _place,
+    onDestinationSelected: (index) => setState(() => _place = index),
+    branches: [
+      (context) => const NeumorphicScaffold(topBar: NeumorphicAppBar(title: 'Books'), body: SizedBox()),
+      (context) => const NeumorphicScaffold(topBar: NeumorphicAppBar(title: 'Reading'), body: SizedBox()),
+      (context) => const NeumorphicScaffold(topBar: NeumorphicAppBar(title: 'Settings'), body: SizedBox()),
+    ],
+  );
+}
 ```
 
-A select, its options in a raised menu:
+`NeumorphicBrandRow('Shelf')` sets the app's name at the head of the pilaster.
+
+### A list, and its page
+
+A page is a `NeumorphicScaffold`: its bar, its body and a footer for its acts. `maxWidth` holds all three to one
+column on a wide window (1264 by default, margins included). A row pushes its record's page in the same place; the
+pushed page's bar has the back key.
 
 ```dart
-NeumorphicSelect<String>(
-  label: 'Country',
-  value: country,
-  options: const [
-    NeumorphicMenuItem('ca', 'Canada'),
-    NeumorphicMenuItem('fr', 'France'),
-    NeumorphicMenuItem('jp', 'Japan'),
-  ],
-  onChanged: (next) => setState(() => country = next),
-);
-```
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
 
-A list in a card, each row pressed in when tapped:
+class Book {
+  const Book(this.name, this.author, {this.reading = false});
 
-```dart
-NeumorphicListSection(
-  label: 'Account',
-  children: [
-    NeumorphicListTile(
-      title: 'Profile',
-      subtitle: 'Name, photo and email',
-      onPressed: openProfile,
+  final String name;
+  final String author;
+  final bool reading;
+}
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key, required this.books});
+
+  final List<Book> books;
+
+  @override
+  Widget build(BuildContext context) => NeumorphicScaffold(
+    maxWidth: 760,
+    topBar: const NeumorphicAppBar(title: 'Books'),
+    body: NeumorphicListSection(
+      children: [
+        for (final book in books)
+          NeumorphicListTile(
+            leading: NeumorphicMonogram(book.name.substring(0, 1)),
+            title: book.name,
+            subtitle: book.author,
+            trailing: book.reading ? const NeumorphicTag('Reading') : null,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (context) => BookPage(book: book)),
+            ),
+          ),
+      ],
     ),
-    NeumorphicListTile(title: 'Security', onPressed: openSecurity),
-  ],
-);
+  );
+}
+
+class BookPage extends StatelessWidget {
+  const BookPage({super.key, required this.book});
+
+  final Book book;
+
+  @override
+  Widget build(BuildContext context) => NeumorphicScaffold(
+    maxWidth: 760,
+    topBar: NeumorphicAppBar(title: book.name),
+    body: NeumorphicDescriptionList([
+      NeumorphicDescription('Author', book.author),
+      // What is under way now is live: it takes the pigment.
+      NeumorphicDescription('Status', book.reading ? 'Reading' : 'Want to read', live: book.reading),
+    ]),
+    footer: NeumorphicButton.filled('Start reading', wide: true, onPressed: () {}),
+  );
+}
 ```
 
-A tappable row announces its title, subtitle and note together. Set `semanticLabel` when the row needs a different spoken name.
+A description list keeps each value beside its term up to 480 wide, however wide its column.
 
-On a phone, the navigation bar gives destinations a second row when their labels need more space. The selected destination stays visible.
+### Forms
+
+Neumorphism's form fields are Flutter `FormField`s: put them in a `Form`, and `validate()` shows each one's error
+under it, marked as an error. In a column every field takes the column's width.
 
 ```dart
-NeumorphicNavigationBar(
-  items: const [
-    NeumorphicNavItem(label: 'Home', icon: NeumorphicGlyphs.house),
-    NeumorphicNavItem(label: 'Search', icon: NeumorphicGlyphs.search),
-    NeumorphicNavItem(label: 'Settings', icon: NeumorphicGlyphs.settings),
-  ],
-  selectedIndex: tab,
-  onDestinationSelected: (index) => setState(() => tab = index),
-);
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+class NewBookPage extends StatefulWidget {
+  const NewBookPage({super.key});
+
+  @override
+  State<NewBookPage> createState() => _NewBookPageState();
+}
+
+class _NewBookPageState extends State<NewBookPage> {
+  final _form = GlobalKey<FormState>();
+  String _name = '';
+  DateTime? _started;
+  bool _favourite = false;
+
+  void _save() {
+    if (!_form.currentState!.validate()) return;
+    _form.currentState!.save();
+    Navigator.of(context).pop(_name);
+  }
+
+  @override
+  Widget build(BuildContext context) => NeumorphicScaffold(
+    maxWidth: 760,
+    topBar: const NeumorphicAppBar(title: 'New book'),
+    body: Form(
+      key: _form,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 20,
+        children: [
+          NeumorphicTextFormField(
+            labelText: 'Title',
+            validator: (value) => (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+            onSaved: (value) => _name = value!.trim(),
+          ),
+          NeumorphicDateField(
+            labelText: 'Started',
+            value: _started,
+            hintText: 'Not yet',
+            lastDate: DateTime.now(),
+            onChanged: (value) => setState(() => _started = value),
+          ),
+          NeumorphicSwitchRow(
+            label: 'Favourite',
+            value: _favourite,
+            onChanged: (value) => setState(() => _favourite = value),
+          ),
+        ],
+      ),
+    ),
+    footer: NeumorphicButton.filled('Save', wide: true, onPressed: _save),
+  );
+}
 ```
 
-## Pictures
+A date field shows its day with the year, "Nov 26, 2026" in American English, and opens the look's calendar;
+`NeumorphicFormat.mediumDate(context, day)` writes the same.
 
-Hearth, the example app in the gallery, built from this package:
+### Dialogs and toasts
 
-![A checkout at night at 1440 px, with address fields, a delivery choice, a quantity stepper and the one act, Pay](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-checkout-1440-night.png)
+`showNeumorphicDialog` raises a dialog over the whole app and completes with what its route pops: here true to
+delete, false or null (dismissed) to keep. A destructive act says so: `isDestructiveAction` gives the key its mark.
+`showNeumorphicToast` shows a short note over the app, clear of the tab bar.
 
-![An account form on a 390 px phone by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-form-390-day.png)
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
 
-![Settings by day at 1440 px, rows of switches beside a moulded volume dial](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-settings-1440-day.png)
+Future<void> deleteBook(BuildContext context, String name) async {
+  final sure = await showNeumorphicDialog<bool>(
+    context,
+    builder: (context) => NeumorphicDialog(
+      title: 'Delete "$name"?',
+      message: 'It leaves your shelf. This cannot be undone.',
+      actions: [
+        NeumorphicButton('Keep', onPressed: () => Navigator.of(context).pop(false)),
+        NeumorphicButton.filled(
+          'Delete',
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    ),
+  );
+  if (sure != true || !context.mounted) return;
+  showNeumorphicToast(context, message: 'Deleted "$name"');
+}
+```
 
-![A list of devices at night on a 390 px phone](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-list-390-night.png)
+### The palette picker
+
+Each palette by its name, its colours right beside it (`swatchesFor` the brightness shown); hand the chosen one to
+the host.
+
+```dart
+import 'dart:math' as math;
+
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+class PalettePicker extends StatelessWidget {
+  const PalettePicker({super.key, required this.palette, required this.onChanged});
+
+  final RawNamedPalette palette;
+  final ValueChanged<RawNamedPalette> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = NeumorphicTheme.of(context).dark ? Brightness.dark : Brightness.light;
+    return NeumorphicFormField(
+      labelText: 'Palette',
+      child: NeumorphicRadioGroup<String>(
+        semanticLabel: 'Palette',
+        value: palette.id,
+        onChanged: (id) => onChanged(NeumorphicThemeData.palettes.firstWhere((p) => p.id == id)),
+        options: [
+          for (final p in NeumorphicThemeData.palettes)
+            NeumorphicRadio(p.id, p.label, suffix: Swatches(p.swatchesFor(brightness))),
+        ],
+      ),
+    );
+  }
+}
+
+/// A palette's colours as Material's palette pickers show them: one disc split
+/// between them, in a hairline so a pale colour reads on a pale wall and a dark
+/// one on a dark wall.
+class Swatches extends StatelessWidget {
+  const Swatches(this.colors, {super.key});
+
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 24,
+    child: CustomPaint(
+      painter: _SplitDisc(colors, NeumorphicTheme.of(context).colors.inkSecondary),
+    ),
+  );
+}
+
+class _SplitDisc extends CustomPainter {
+  _SplitDisc(this.colors, this.ring);
+
+  final List<Color> colors;
+  final Color ring;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final disc = Offset.zero & size;
+    final share = 2 * math.pi / colors.length;
+    for (final (i, color) in colors.indexed) {
+      canvas.drawArc(disc, -3 * math.pi / 4 + share * i, share, true, Paint()..color = color);
+    }
+    canvas.drawCircle(
+      disc.center,
+      size.shortestSide / 2 - .5,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = ring,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SplitDisc old) => old.colors != colors || old.ring != ring;
+}
+```
+
+## Building blocks
+
+| For | Use |
+|---|---|
+| The app's frame | `NeumorphicHost`, `NeumorphicAppShell`, `NeumorphicBrandRow`, `NeumorphicNavigationBar`, `NeumorphicNavigationRail`, `NeumorphicNavigationDrawer` |
+| A page | `NeumorphicScaffold`, `NeumorphicAppBar`, `NeumorphicSections`, `NeumorphicTabBar`, `NeumorphicBreadcrumb`, `NeumorphicPagination` |
+| Acts | `NeumorphicButton` (`.filled`, `.text`), `NeumorphicIconButton`, `NeumorphicRoundButton`, `NeumorphicButtonGroup`, `NeumorphicSplitButton`, `NeumorphicLink` |
+| Words in | `NeumorphicTextField`, `NeumorphicTextFormField`, `NeumorphicTextArea`, `NeumorphicPasswordField`, `NeumorphicSearchField`, `NeumorphicNumberField`, `NeumorphicInputOtp` |
+| Choices | `NeumorphicSelect`, `NeumorphicCombobox`, `NeumorphicMultiSelect`, `NeumorphicRadioGroup`, `NeumorphicCheckbox`, `NeumorphicSwitch`, `NeumorphicSegmentedButton`, `NeumorphicToggleGroup`, `NeumorphicChip`, `NeumorphicSlider`, `NeumorphicRangeSlider`, `NeumorphicRating`, `NeumorphicColorPicker` |
+| Dates and times | `NeumorphicDateField`, `NeumorphicCalendar`, `NeumorphicDatePicker`, `NeumorphicDateRangePicker`, `NeumorphicTimePicker`, `showNeumorphicDatePicker` |
+| Lists and tables | `NeumorphicListTile`, `NeumorphicListSection`, `NeumorphicDescriptionList`, `NeumorphicReorderableListView`, `NeumorphicTreeView`, `NeumorphicTable`, `NeumorphicDataTable` |
+| Form and settings rows | `NeumorphicFormField`, `NeumorphicSwitchRow`, `NeumorphicCheckRow`, `NeumorphicSelectField` |
+| Over the page | `NeumorphicDialog`, `showNeumorphicDialog`, `NeumorphicBottomSheet`, `NeumorphicActionSheet`, `NeumorphicMenu`, `NeumorphicPopover`, `NeumorphicHoverCard`, `NeumorphicTooltip`, `NeumorphicContextMenu`, `showNeumorphicToast` |
+| Status | `NeumorphicTag`, `NeumorphicBadge`, `NeumorphicBanner`, `NeumorphicEmptyState`, `NeumorphicErrorState`, `NeumorphicLoadingState`, `NeumorphicSkeleton`, `NeumorphicLinearProgressIndicator`, `NeumorphicCircularProgressIndicator`, `NeumorphicMeter`, `NeumorphicStepProgress` |
+| Cards and marks | `NeumorphicCard`, `NeumorphicAvatar`, `NeumorphicAvatarGroup`, `NeumorphicMonogram`, `NeumorphicMedia` |
+| Dials | `NeumorphicDial`, `NeumorphicKnob`, `NeumorphicGauge` |
+| Charts | `NeumorphicLineChart`, `NeumorphicAreaChart`, `NeumorphicBarChart`, `NeumorphicPieChart`, `NeumorphicSparkline` |
 
 ## How Neumorphism is built
 
@@ -208,9 +393,11 @@ These are the look's laws. A part the original style never had is made by them, 
 
 ## Palettes
 
-Six palettes, porcelain the default, each designed by day and by night: every factory takes `Brightness.light` (the
-default) or `Brightness.dark`, and `NeumorphicThemeData.preset(name, brightness)` takes one of
-`NeumorphicThemeData.presets` by name.
+`NeumorphicThemeData.palettes` are the six palettes, porcelain first and the default, each designed by day and by
+night. Each is a `RawNamedPalette`: an `id` to store, a `label` to show and the swatches to draw beside it. Give
+the chosen one to `NeumorphicHost(palette:)`; `NeumorphicThemeData.preset(id, brightness)` builds a stored id's theme
+again (an id it doesn't know gives porcelain), and each palette has a factory of its own that takes `Brightness.light`
+(the default) or `Brightness.dark`.
 
 | Factory | Appearance |
 | --- | --- |
@@ -223,14 +410,16 @@ default) or `Brightness.dark`, and `NeumorphicThemeData.preset(name, brightness)
 
 `NeumorphicThemeData.from(ground:, pigment:, brightness:)` derives a whole palette from a wall colour and a pigment:
 the wall keeps the ground's hue at a plaster's lightness, and the words, the pigment's ink and the bars each take the
-nearest tone of their own hue that reads on every face and well (ui_core's `RawPalette`). The example gallery shows
-every palette and appearance; run it with `flutter run` from `example/`.
+nearest tone of their own hue that reads on every face and well (ui_core's `RawPalette`).
 
 ## Theme and styles
 
 `NeumorphicTheme.of(context)` returns immutable `NeumorphicThemeData`, with `copyWith`, `lerp`, value equality and diagnostics. `AnimatedNeumorphicTheme` animates changes and respects reduced motion.
 
 ```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
 final theme = NeumorphicThemeData.porcelain().copyWith(
   density: NeumorphicDensity.compact,
   elevation: const NeumorphicElevation(depth: .5),
@@ -250,7 +439,10 @@ Nothing draws a dark outline: the relief alone finds every edge, an empty checkb
 Component themes cover buttons, fields, chips, checkbox/radio/switch/slider, segmented buttons, options, steppers, date/time pickers, cards, raised surfaces, badges and avatars. A local `style:` takes priority over its component theme, followed by theme knobs and the component's default drawing.
 
 ```dart
-NeumorphicButton.filled(
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+final save = NeumorphicButton.filled(
   'Save',
   onPressed: () {},
   style: NeumorphicStyle(
@@ -270,11 +462,15 @@ Controls support keyboard activation, focus, disabled states and targets of at l
 Hover changes nothing on a part's face: no wash, tint or shadow. The pointer says what a part does instead: a hand over what presses, the text beam over fields, grab over a slider, the arrow over what is disabled. A press sinks the part in its own outline, and keyboard focus lifts a raised part or deepens a well. Hover stays only where it tells you something: the active row of an open menu, a tooltip, a chart's readout, a rating's preview, a day of a month (which has no face of its own until it is chosen) and a file drop target with a drag over it. Every part still receives `WidgetState.hovered`, but a wash or a tint on hover breaks the look's state rules (a press sinks, focus lifts, hover says nothing), so the look draws none. To make a part or a region say more or less, use the look's own two means: the pigment, for what is live (`NeumorphicButton.filled` for the one act that matters), and depth. A quieter side panel, for instance, is the same surface cast shallower:
 
 ```dart
-NeumorphicTheme(
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+/// [panel], cast shallower than the page round it.
+Widget quieter(BuildContext context, Widget panel) => NeumorphicTheme(
   data: NeumorphicTheme.of(context).copyWith(
     elevation: const NeumorphicElevation(depth: .75),
   ),
-  child: sidePanel,
+  child: panel,
 );
 ```
 
@@ -294,11 +490,29 @@ Known limits:
 - The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `RawWidgetsLocalizations`, which speaks 30 languages once your app adds `RawWidgetsLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). Install `NeumorphicLocalizations.delegate` beside it: it serves every locale, and the time picker's words (its hour, minute and AM and PM), Done, Try again, the required mark and a table's sort hints come from `RawWidgetsLocalizations` in the reader's language. The rest of the look's own words (a file drop's prompts and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
 - Dates are formatted with `intl`: in the app's locale with `NeumorphicLocalizations.delegate` installed (in English where `intl` lacks the locale), else in English unless your subclass names another `localeName`. Numbers take the reader's digits and separators from ui_core (Arabic-Indic in Arabic). Short weekday names are English, and the day tray's times show in 24-hour form.
 
+## Pictures
+
+Hearth, the home app in the example gallery (`example/lib/gallery.dart`), built from this package:
+
+![A checkout at night at 1440 px, with address fields, a delivery choice, a quantity stepper and the one act, Pay](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-checkout-1440-night.png)
+
+![An account form on a 390 px phone by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-form-390-day.png)
+
+![Settings by day at 1440 px, rows of switches beside a moulded volume dial](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-settings-1440-day.png)
+
+![A list of devices at night on a 390 px phone](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-list-390-night.png)
+
 ## Fonts and copying components
 
 Manrope is bundled under SIL OFL 1.1. `neumorphicLoadFonts()` loads it before the first frame; `NeumorphicTypeface.app` selects fonts supplied by your app. Icons come from Lucide under its ISC licence.
 
 To adapt a component, copy its file from `lib/src/neumorphism/`, rename it, and replace its sibling imports with `package:neumorphism_ui/neumorphism_parts.dart`. The parts library exports the tokens, painters and helpers used to draw the public components.
+
+## Example
+
+`example/lib/main.dart` is Shelf, the app the snippets above come from: copy it, rename it and grow it.
+`example/lib/gallery.dart` is the gallery: every part the package exports, working, in every palette, by day and by
+night; run it with `flutter run -t lib/gallery.dart` from `example/`.
 
 ## Requirements
 

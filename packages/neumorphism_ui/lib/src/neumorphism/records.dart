@@ -53,13 +53,17 @@ class NeumorphicTimelineStop {
 /// ```
 class NeumorphicTimeline extends StatelessWidget {
   /// A timeline of [stops], first to last.
-  const NeumorphicTimeline({super.key, required this.stops, this.label});
+  const NeumorphicTimeline({
+    super.key,
+    required this.stops,
+    this.semanticLabel,
+  });
 
   /// The stops, in order.
   final List<NeumorphicTimelineStop> stops;
 
   /// What a screen reader calls the whole.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +75,7 @@ class NeumorphicTimeline extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label,
+      label: semanticLabel,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -166,7 +170,7 @@ class NeumorphicTimeline extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<NeumorphicTimelineStop>('stops', stops))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -263,41 +267,53 @@ class NeumorphicDescription {
   final bool live;
 }
 
+// How wide a description list grows: its details stay near their terms on a wide page.
+const double _descriptionMeasure = 480;
+
 /// Terms and their details, a ruled row each, the details bold at the end; when the two can't share a line the
-/// details drop under the term. For a record's facts: an order, a booking, a device.
+/// details drop under the term. For a record's facts: an order, a booking, a device. On a wide page it keeps to a
+/// reading measure (480) at the start, so a detail never stands at the far side of a wide card from its term.
 ///
 /// ```dart
 /// NeumorphicDescriptionList([NeumorphicDescription('Table', '12'), NeumorphicDescription('Guests', '4')])
 /// ```
 class NeumorphicDescriptionList extends StatelessWidget {
   /// A list of [items].
-  const NeumorphicDescriptionList(this.items, {super.key, this.label});
+  const NeumorphicDescriptionList(this.items, {super.key, this.semanticLabel});
 
   /// The terms and their details, in order.
   final List<NeumorphicDescription> items;
 
   /// What a screen reader calls the whole.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) => Semantics(
     container: true,
     explicitChildNodes: true,
-    label: label,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (var i = 0; i < items.length; i++)
-          MergeSemantics(
-            child: NeumorphicKvRow(
-              items[i].term,
-              items[i].details,
-              isFirst: i == 0,
-              live: items[i].live,
-            ),
-          ),
-      ],
+    label: semanticLabel,
+    // On a wide page it keeps to a reading measure at the start, so each detail stays near its term.
+    child: Align(
+      alignment: AlignmentDirectional.topStart,
+      heightFactor: 1,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _descriptionMeasure),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < items.length; i++)
+              MergeSemantics(
+                child: NeumorphicKvRow(
+                  items[i].term,
+                  items[i].details,
+                  isFirst: i == 0,
+                  live: items[i].live,
+                ),
+              ),
+          ],
+        ),
+      ),
     ),
   );
 
@@ -306,7 +322,7 @@ class NeumorphicDescriptionList extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<NeumorphicDescription>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

@@ -1,3 +1,63 @@
+## 0.8.0
+
+- Requires ui_core 0.8.2.
+- A field turning wrong, or right again, eases where it changed in one frame: its failure line fades in as the room
+  under the field opens, so what stands below slides rather than jumps, and the error mark at its end fades in as the
+  entry gives it room; a date field's calendar crosses to the mark. A field's label lights in the pigment's ink as the
+  field takes the focus, easing across as its groove deepens. Under Reduce Motion each cuts.
+- New `NeumorphicAppShell`, the app's frame, on ui_core's `RawAdaptiveShell.branches`: its places in the raised tab
+  bar on a phone and a tablet and on the pilaster down the start edge from 1024 wide, each place keeping its own stack
+  of pages, the one shown pressed into the wall. A page pushed in a place keeps the pilaster beside it while the tab
+  bar steps away (`hideBarOnPush`); back pops it. Toasts keep clear of the tab bar.
+- `NeumorphicHost` moves to the main library, under semver (it was in `neumorphism_host.dart`), and is the one mount:
+  it takes a `palette` and picks the theme for the brightness in force from it, and eases a change of palette or
+  appearance (a cut under Reduce Motion). Its `light` and `darkData` are `theme` and `darkTheme`, Material's names.
+  `dart fix --apply` makes the renames.
+- `NeumorphicChromeMetrics` (the density's line, `lineOf`, and the tap floor in effect, `targetOf`) moves to the main
+  library, under semver: an app built on `neumorphism_ui.dart` needs nothing from `neumorphism_host.dart`.
+- Palettes: `NeumorphicThemeData.palettes` is the six as ui_core's `RawNamedPalette` (an `id` to store, a `label`
+  to show, swatches by day and by night), for an app's palette picker. `NeumorphicThemeData.presets` is removed: read
+  `NeumorphicThemeData.palettes.map((p) => p.id)`. `NeumorphicThemeData.preset` takes an id it doesn't know (a
+  stored one from an older build) as the first palette, porcelain, where it threw.
+- New `NeumorphicRadio.suffix`: a part that follows the words, right beside them at any width (a palette's swatches
+  in a palette picker). It is drawn, not read; the label names the choice.
+- New `NeumorphicTextFormField`, a `FormField` with `validator`, `onSaved` and reset, and `NeumorphicDateField`, a
+  nullable day in a field's groove, shown with its year ("Nov 26, 2026"), picked from the look's calendar. New
+  `NeumorphicFormat.mediumDate` writes a day the same way. New glyph `NeumorphicGlyphs.pencil`.
+- A wrong field shows the error's mark at its end, in the error's ink, and its message leads with the mark: the field
+  itself reads as wrong, not only its message.
+- Form fields take their column's width at every size, as a text field does: a select and a select field too, as
+  Material's dropdown in a form. One alone in a row (a filter) keeps to its content.
+- A name only a screen reader hears is `semanticLabel`; `label` is kept for words a part draws. Renamed on
+  `NeumorphicIconButton`, `NeumorphicRoundButton`, `NeumorphicTap`, `NeumorphicSwitch`, `NeumorphicSlider`, `NeumorphicCheckbox`, `NeumorphicChoiceBox`, `NeumorphicTabBar`, `NeumorphicPageDots`, `NeumorphicRating`, `NeumorphicCarouselView`, `NeumorphicScrollArea`, `NeumorphicDataTable`, `NeumorphicTreeView`, `NeumorphicPopover`, `NeumorphicHoverCard`, `NeumorphicMenuBar`, `NeumorphicContextMenu`, `NeumorphicMenu`, `NeumorphicWheelPicker`, `NeumorphicButtonGroup`, `NeumorphicToggleGroup`, `NeumorphicNavigationRail`, `NeumorphicNavigationDrawer`, `NeumorphicSkeleton`, `NeumorphicMedia`, `NeumorphicAvatarGroup`, `NeumorphicBadge`, `NeumorphicLoadingState`, `NeumorphicCircularProgressIndicator`, `NeumorphicTimeline`, `NeumorphicDescriptionList`, `NeumorphicPanel`, `NeumorphicTable`, `NeumorphicTableRow`, `NeumorphicChart`, `NeumorphicPieChart`, `NeumorphicSparkline`, `NeumorphicLineChart`, `NeumorphicBarChart`, `NeumorphicAreaChart`, `NeumorphicRadioGroup` and `NeumorphicSegmentedButton` (each constructor). `dart fix --apply` makes the renames.
+- A control inside `NeumorphicFormField` is heard once, by the field's label. A `NeumorphicListTile` that opens says
+  its title, its line, its note and its trailing status (a `NeumorphicStatus`, a `NeumorphicTag` or a `Text`), and
+  leaves out its mark, which repeats the title; its `action` stays a stop of its own.
+- New `NeumorphicScaffold.maxWidth` (`neumorphicPageMaxWidth`, 1264, by default): the bar's title and actions, the
+  body and the footer hold to one column, centred on a wide window, its margins included.
+- `NeumorphicDescriptionList` keeps each value beside its term up to 480 wide, at the start of a wider column, so a
+  value never drifts to the far end of a desktop page.
+- A grouped list's first row stands under the card's rim with no rule above it: the rim already closes it. After a
+  section's label the first row keeps its rule.
+- A list row whose trailing figure is wider than its share (a long `NeumorphicTag` on a phone) comes to rest: it was
+  laid out at its share and at the row's width on every layout, so its shape flipped and `pumpAndSettle` timed out.
+- A `NeumorphicListTile` whose title wraps keeps its trailing status and its action on one line: beside three lines
+  of words both stand on the title's first line, beside fewer both stand on the words' middle.
+- `NeumorphicIconWell`'s glyph grows with the reader's text, as a tag's words and a monogram's letters do, and the
+  well grows round it: at 200% a 20 glyph is 40, in a 64 well.
+- Removed `NeumorphicChromeMetrics.target`, `touchTarget`, `targetSize` and `padded`, deprecated in 0.7.0: read the
+  floor in effect, `NeumorphicChromeMetrics.targetOf(context)` or `RawTapTargets.of(context).touch`. Removed
+  `NeumorphicCalendar.maxMonthWidth`, deprecated in 0.7.0; a month is laid out up to seven days of the medium line.
+  Both read the floor from a `BuildContext`, so `dart fix` cannot make the change.
+- Removed `NeumorphicSheet.edge`, which drew nothing: the sheet is a slab, every corner round, and
+  `showNeumorphicSheet(edge:)` stands it on the page's side. `dart fix --apply` drops the argument.
+- The docs say what each part is in plain words.
+- `example/lib/main.dart` is Shelf, one app to copy: the host, the shell with three places, a list with a pushed page,
+  a form, a dialog and settings with the six palettes. The gallery is `example/lib/gallery.dart`. `example/lib/minimal.dart`,
+  which mounted the theme without the host, is gone: the README's snippets compile as written.
+- The README: the install line every snippet compiles after, the host, building an app (the shell, a list and its
+  page, forms, dialogs and toasts, the palette picker) and the building blocks.
+
 ## 0.7.0
 
 - Requires ui_core 0.7.2.

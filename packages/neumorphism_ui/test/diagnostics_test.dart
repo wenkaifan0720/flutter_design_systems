@@ -73,13 +73,13 @@ void main() {
       _description(
         NeumorphicRoundButton(
           NeumorphicGlyphs.close,
-          label: 'Close',
+          semanticLabel: 'Close',
           onPressed: () {},
         ),
       ),
       unorderedEquals([
         'icon: IconData(U+${NeumorphicGlyphs.close.codePoint.toRadixString(16).toUpperCase().padLeft(5, '0')})',
-        'label: "Close"',
+        'semanticLabel: "Close"',
         'has onPressed',
       ]),
     );

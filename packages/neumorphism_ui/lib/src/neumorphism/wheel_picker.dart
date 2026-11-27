@@ -16,7 +16,7 @@ import 'internal/out_of_use.dart';
 /// letters; a screen reader adjusts it up and down. For a date or a time, use the date and time pickers.
 ///
 /// ```dart
-/// NeumorphicWheelPicker<int>(label: 'Guests', items: const [1, 2, 3, 4, 5, 6], value: guests, onChanged: setGuests)
+/// NeumorphicWheelPicker<int>(semanticLabel: 'Guests', items: const [1, 2, 3, 4, 5, 6], value: guests, onChanged: setGuests)
 /// ```
 class NeumorphicWheelPicker<T> extends StatelessWidget {
   /// A wheel of [items] at [value].
@@ -25,7 +25,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.displayStringForOption,
     this.rows = 5,
     this.looping = false,
@@ -44,7 +44,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// What a screen reader calls it.
-  final String label;
+  final String semanticLabel;
 
   /// A value's words; null: its `toString()`.
   final String Function(T value)? displayStringForOption;
@@ -110,7 +110,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
     if (n == 0) {
       // Nothing to choose: the empty well, out of use.
       return Semantics(
-        label: label,
+        label: semanticLabel,
         enabled: false,
         child: NeumorphicOutOfUse(
           off: true,
@@ -127,7 +127,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
             RawPickerColumn(
               itemCount: n,
               itemLabel: (i) => _words(items[i]),
-              semanticLabel: label,
+              semanticLabel: semanticLabel,
               looping: looping,
             ),
           ],
@@ -186,7 +186,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
       ..add(IterableProperty<T>('items', items))
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<String Function(T value)>.has(
           'displayStringForOption',

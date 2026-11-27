@@ -100,7 +100,7 @@ void main() {
       (s) => NeumorphicCheckbox(
         style: s,
         value: true,
-        label: 'Choice',
+        semanticLabel: 'Choice',
         onChanged: (_) {},
       ),
       (t, s) => t.copyWith(checkboxTheme: s),
@@ -120,7 +120,7 @@ void main() {
       'radio',
       (s) => NeumorphicRadioGroup<int>(
         style: s,
-        label: 'Choice',
+        semanticLabel: 'Choice',
         value: 1,
         options: const [NeumorphicRadio(1, 'One'), NeumorphicRadio(2, 'Two')],
         onChanged: (_) {},
@@ -131,7 +131,7 @@ void main() {
       'segments',
       (s) => NeumorphicSegmentedButton<int>(
         style: s,
-        label: 'Choice',
+        semanticLabel: 'Choice',
         value: 1,
         segments: const [
           NeumorphicButtonSegment(1, 'One'),

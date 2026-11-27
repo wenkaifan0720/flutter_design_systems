@@ -35,7 +35,7 @@ Widget kitSpecimenPageDots() {
     builder: (context, setState) => NeumorphicPageDots(
       count: 4,
       selectedIndex: selected,
-      label: 'Introduction',
+      semanticLabel: 'Introduction',
       onChanged: (v) => setState(() => selected = v),
     ),
   );
@@ -68,7 +68,7 @@ Widget kitSpecimenBreadcrumbs() => NeumorphicBreadcrumb(
 );
 
 Widget kitSpecimenCarousel() => NeumorphicCarouselView(
-  label: 'Rooms',
+  semanticLabel: 'Rooms',
   height: 150,
   // The middle room first: a neighbour shows on each side and both steps are live.
   initialPage: 1,

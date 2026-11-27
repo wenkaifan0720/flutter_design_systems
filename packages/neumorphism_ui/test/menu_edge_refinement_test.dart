@@ -138,7 +138,7 @@ void main() {
       tags: ['goldens'],
     );
   }
-  for (final preset in NeumorphicThemeData.presets) {
+  for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
     testWidgets('$preset unchecked light well has depth beyond a thin edge', (
       tester,
     ) async {
@@ -156,7 +156,7 @@ void main() {
               child: Center(
                 child: NeumorphicCheckbox(
                   value: false,
-                  label: 'Remember these details',
+                  semanticLabel: 'Remember these details',
                   onChanged: (_) {},
                 ),
               ),

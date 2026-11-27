@@ -9,8 +9,9 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import 'support.dart';
 
-Finder _key(String label) =>
-    find.byWidgetPredicate((w) => w is NeumorphicTap && w.label == label);
+Finder _key(String label) => find.byWidgetPredicate(
+  (w) => w is NeumorphicTap && w.semanticLabel == label,
+);
 
 NeumorphicSurface _face(WidgetTester tester, String label) =>
     tester.widget<NeumorphicSurface>(

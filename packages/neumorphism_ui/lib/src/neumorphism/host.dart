@@ -6,8 +6,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
+import 'app_host.dart';
 import 'localizations.dart';
-import 'overlays.dart';
 import 'theme.dart';
 import 'chrome.dart';
 import 'chrome_items.dart';
@@ -75,87 +75,6 @@ class NeumorphicChromeScope extends InheritedWidget {
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      );
-  }
-}
-
-/// The app's host, mounted once around the router's navigator: Neumorphism's theme, ground and text defaults.
-///
-/// ```dart
-/// NeumorphicHost(child: Text('Themed content'))
-/// ```
-class NeumorphicHost extends StatelessWidget {
-  /// Creates a [NeumorphicHost].
-  const NeumorphicHost({
-    super.key,
-    this.light,
-    this.darkData,
-    this.brightness,
-    required this.child,
-  });
-
-  /// The theme used in the light appearance, or the default when null.
-  final NeumorphicThemeData? light;
-
-  /// The theme used in the dark appearance, or the default when null.
-  final NeumorphicThemeData? darkData;
-
-  /// An appearance override; null follows the surrounding media query.
-  final Brightness? brightness;
-
-  /// The content placed inside this component.
-  final Widget child;
-  @override
-  Widget build(BuildContext context) {
-    final wanted =
-        brightness ??
-        PreviewFrame.maybeOf(context)?.brightness ??
-        MediaQuery.platformBrightnessOf(context);
-    final theme =
-        (wanted == Brightness.dark ? darkData : light) ??
-        NeumorphicThemeData.preset(NeumorphicThemeData.presets.first, wanted);
-    // The theme declares the look's tap floors, ui_core's, unless the app declared its own above: each control lays out
-    // at the touch floor on every platform (NeumorphicChromeMetrics.targetOf), so a row stands the same wherever it runs.
-    return NeumorphicTheme(
-      data: theme,
-      child: Builder(
-        builder: (context) {
-          final t = NeumorphicTheme.of(context);
-          return ColoredBox(
-            color: t.colors.ground,
-            child: DefaultTextStyle(
-              style: t.textTheme.body,
-              child: IconTheme(
-                data: IconThemeData(color: t.colors.ink, size: 22),
-                child: NeumorphicToaster(child: child),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<NeumorphicThemeData>(
-          'light',
-          light,
-          defaultValue: null,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<NeumorphicThemeData>(
-          'darkData',
-          darkData,
-          defaultValue: null,
-        ),
-      )
-      ..add(
-        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
       );
   }
 }
@@ -444,8 +363,8 @@ class NeumorphicPreview extends StatelessWidget {
           key: ValueKey<Object>((presentation, drawer)),
           debugShowCheckedModeBanner: false,
           builder: (context, app) => NeumorphicHost(
-            light: light,
-            darkData: darkData,
+            theme: light,
+            darkTheme: darkData,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),

@@ -218,7 +218,7 @@ void main() {
         tester,
         NeumorphicCheckbox(
           value: true,
-          label: 'Receipt',
+          semanticLabel: 'Receipt',
           onChanged: (_) => pressed++,
         ),
       );
@@ -260,11 +260,15 @@ void main() {
           children: [
             NeumorphicRoundButton(
               NeumorphicGlyphs.plus,
-              label: 'Add',
+              semanticLabel: 'Add',
               onPressed: () {},
             ),
             NeumorphicNumberField(value: 2, onChanged: (_) {}),
-            NeumorphicRating(label: 'Rating', value: 3, onChanged: (_) {}),
+            NeumorphicRating(
+              semanticLabel: 'Rating',
+              value: 3,
+              onChanged: (_) {},
+            ),
             NeumorphicDatePicker(
               value: DateTime(2026, 11, 12),
               firstDate: DateTime(2026),

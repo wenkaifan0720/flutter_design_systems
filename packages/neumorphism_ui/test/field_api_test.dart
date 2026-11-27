@@ -197,7 +197,7 @@ void main() {
       expect(
         tester
             .widget<NeumorphicRoundButton>(find.byType(NeumorphicRoundButton))
-            .label,
+            .semanticLabel,
         'Hide password',
       );
       await tester.pumpWidget(

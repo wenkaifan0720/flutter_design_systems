@@ -398,7 +398,7 @@ class _BayCell extends StatelessWidget {
         ? cell
         : NeumorphicTap(
             onPressed: bay.onPressed,
-            label: bay.name,
+            semanticLabel: bay.name,
             child: RawKeylineFace(child: cell),
           );
   }
@@ -709,7 +709,7 @@ class NeumorphicRelief extends StatelessWidget {
               focusNode: focusNode,
               autofocus: autofocus,
               onPressed: onPressed,
-              label: title,
+              semanticLabel: title,
               child: band,
             );
     }

@@ -29,6 +29,13 @@ class NeumorphicGroupRowScope extends InheritedWidget {
   /// The space between this row and the next, where the next row's rule starts: the row's face runs down to it.
   final double gap;
 
+  /// Whether the row in [context] is the first of its card with nothing above it: the card's rim closes it.
+  static bool firstOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<NeumorphicGroupRowScope>()
+          ?.top ??
+      false;
+
   /// How far a row's card runs past a side the row shares with a neighbour: far enough that its corners never reach
   /// the row, so that side's corners are square.
   static const double far = 4096;

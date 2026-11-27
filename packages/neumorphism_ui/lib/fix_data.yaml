@@ -907,6 +907,907 @@ transforms:
       - kind: 'renameParameter'
         oldName: 'today'
         newName: 'currentDate'
+  # 0.8.0: NeumorphicHost is in the main library, under semver, and takes Material's theme names.
+  - title: "Import 'package:neumorphism_ui/neumorphism_ui.dart'"
+    date: 2026-11-26
+    element:
+      uris: ['neumorphism_host.dart']
+      class: 'NeumorphicHost'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:neumorphism_ui/neumorphism_ui.dart']
+          class: 'NeumorphicHost'
+  - title: "Use NeumorphicHost's new parameter names"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+      - kind: 'renameParameter'
+        oldName: 'darkData'
+        newName: 'darkTheme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'light'
+      inClass: 'NeumorphicHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'darkData'
+      inClass: 'NeumorphicHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  # 0.8.0: NeumorphicSheet stands where showNeumorphicSheet puts it; its own edge drew nothing.
+  - title: "Remove 'edge'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSheet'
+    changes:
+      - kind: 'removeParameter'
+        name: 'edge'
+  # 0.8.0: a control's `label` is drawn; a name only a screen reader hears is `semanticLabel`, as on Flutter's Icon
+  # and Image.
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicRoundButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'filled'
+      inClass: 'NeumorphicRoundButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicRoundButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTap'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTap'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSwitch'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicSwitch'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSlider'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicSlider'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicCheckbox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicCheckbox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicChoiceBox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicChoiceBox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicRating'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicRating'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicCarouselView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicCarouselView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicScrollArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicScrollArea'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicDataTable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicDataTable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTreeView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTreeView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicPopover'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicPopover'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicHoverCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicHoverCard'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicMenuBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicMenuBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicContextMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicContextMenu'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicMenu'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicMenu'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicWheelPicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicWheelPicker'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicButtonGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicButtonGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicNavigationDrawer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicNavigationDrawer'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'lines'
+      inClass: 'NeumorphicSkeleton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'box'
+      inClass: 'NeumorphicSkeleton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: 'row'
+      inClass: 'NeumorphicSkeleton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicSkeleton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicMedia'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicMedia'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicAvatarGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicAvatarGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicLoadingState'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicLoadingState'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicCircularProgressIndicator'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicCircularProgressIndicator'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTimeline'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTimeline'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicDescriptionList'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicDescriptionList'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicPanel'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicPanel'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTableRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTableRow'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicPieChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicPieChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSparkline'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicSparkline'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicLineChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicLineChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicBarChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicBarChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicAreaChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicAreaChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSegmentedButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicSegmentedButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
   # 0.2.0: NeumorphicStyle is ui_core's RawStyle, whose `layered` is what `cascade` was. The old name cannot stay
   # beside it as a deprecated alias (a typedef carries no statics of its own), so the fix is the way across.
   - title: "Rename to 'layered'"

@@ -111,12 +111,12 @@ void main() {
         'filled cap',
         NeumorphicRoundButton.filled(
           NeumorphicGlyphs.play,
-          label: 'Start',
+          semanticLabel: 'Start',
           onPressed: () {},
         ),
         const NeumorphicRoundButton.filled(
           NeumorphicGlyphs.play,
-          label: 'Start',
+          semanticLabel: 'Start',
           onPressed: null,
         ),
       ),
@@ -210,7 +210,7 @@ void main() {
           tester,
           (onPressed) => NeumorphicRoundButton.filled(
             NeumorphicGlyphs.play,
-            label: 'Start',
+            semanticLabel: 'Start',
             size: size,
             onPressed: onPressed,
           ),

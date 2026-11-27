@@ -24,8 +24,9 @@ Set<String> _painters(WidgetTester tester, Finder of) => {
         q.runtimeType.toString(),
 };
 
-Finder _row(String label) =>
-    find.byWidgetPredicate((w) => w is NeumorphicTap && w.label == label);
+Finder _row(String label) => find.byWidgetPredicate(
+  (w) => w is NeumorphicTap && w.semanticLabel == label,
+);
 
 const _chosen = '_ChosenCell';
 const _raise = 'NeumorphicPanelRowRaise';

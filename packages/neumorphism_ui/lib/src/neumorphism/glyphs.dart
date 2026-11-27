@@ -18,6 +18,9 @@ abstract final class NeumorphicGlyphs {
   /// The bookOpen glyph.
   static const IconData bookOpen = LucideIcons.bookOpen;
 
+  /// An edit: the pencil.
+  static const IconData pencil = LucideIcons.pencil;
+
   /// The calendar glyph.
   static const IconData calendar = LucideIcons.calendar;
 

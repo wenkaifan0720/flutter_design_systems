@@ -216,7 +216,7 @@ void main() {
                                   onChanged: (_) {},
                                 ),
                                 NeumorphicPopover(
-                                  label: 'Opening hours',
+                                  semanticLabel: 'Opening hours',
                                   trigger: (context, toggle) =>
                                       NeumorphicButton(
                                         'Hours',
@@ -405,7 +405,7 @@ void main() {
                     ),
                     NeumorphicSwitch(
                       value: on,
-                      label: 'Lights',
+                      semanticLabel: 'Lights',
                       onChanged: (v) => setState(() => on = v),
                     ),
                     NeumorphicButton(

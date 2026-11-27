@@ -296,7 +296,7 @@ void main() {
       final close = tester.widget<NeumorphicRoundButton>(
         find.byType(NeumorphicRoundButton),
       );
-      expect(close.label, 'Close from nested words');
+      expect(close.semanticLabel, 'Close from nested words');
       await tester.tap(find.byType(NeumorphicRoundButton));
       await tester.pumpAndSettle();
     },
@@ -319,7 +319,7 @@ void main() {
         final disabled = tester
             .getSemantics(
               find.byWidgetPredicate(
-                (w) => w is NeumorphicTap && w.label == 'Banana',
+                (w) => w is NeumorphicTap && w.semanticLabel == 'Banana',
               ),
             )
             .getSemanticsData();
@@ -327,7 +327,7 @@ void main() {
         final selected = tester
             .getSemantics(
               find.byWidgetPredicate(
-                (w) => w is NeumorphicTap && w.label == 'Cherry',
+                (w) => w is NeumorphicTap && w.semanticLabel == 'Cherry',
               ),
             )
             .getSemanticsData();
@@ -733,7 +733,7 @@ void main() {
     },
   );
 
-  for (final preset in NeumorphicThemeData.presets) {
+  for (final preset in NeumorphicThemeData.palettes.map((p) => p.id)) {
     for (final brightness in Brightness.values) {
       for (final width in [390.0, 768.0, 1024.0, 1440.0]) {
         testWidgets(

@@ -40,7 +40,7 @@ List<Widget> kitOverlaysSections() => [
 Widget kitSpecimenMenuBar() => kitValue<bool>(
   true,
   (context, roomsShown, change) => NeumorphicMenuBar(
-    label: 'Scenes',
+    semanticLabel: 'Scenes',
     menus: [
       RawMenuEntry(
         label: 'Scene',
@@ -84,7 +84,7 @@ Widget kitSpecimenMenuBar() => kitValue<bool>(
 );
 
 Widget kitSpecimenPopover() => NeumorphicPopover(
-  label: 'Lights out',
+  semanticLabel: 'Lights out',
   trigger: (context, toggle) =>
       NeumorphicButton('Lights out', onPressed: toggle),
   content: Builder(
@@ -107,7 +107,7 @@ Widget kitSpecimenPopover() => NeumorphicPopover(
 Widget kitSpecimenHoverCard() => Align(
   alignment: AlignmentDirectional.centerStart,
   child: NeumorphicHoverCard(
-    label: 'Marta Rossi',
+    semanticLabel: 'Marta Rossi',
     content: const Text('Asleep by eleven, most nights.'),
     child: NeumorphicLink('Marta Rossi', onPressed: () {}),
   ),
@@ -137,7 +137,7 @@ Widget kitSpecimenContextMenu() => kitValue<bool>(
   (context, lit, change) => Align(
     alignment: AlignmentDirectional.centerStart,
     child: NeumorphicContextMenu(
-      label: 'Hall lamp',
+      semanticLabel: 'Hall lamp',
       menuChildren: [
         RawMenuEntry(label: 'On', checked: lit, onPressed: () => change(!lit)),
         RawMenuEntry(
@@ -158,7 +158,7 @@ Widget kitSpecimenContextMenu() => kitValue<bool>(
           title: 'Hall lamp',
           subtitle: lit ? 'On' : 'Off',
           trailing: NeumorphicSwitch(
-            label: 'Hall lamp',
+            semanticLabel: 'Hall lamp',
             value: lit,
             onChanged: change,
           ),
@@ -181,7 +181,7 @@ Widget kitSpecimenSideSheet() => Builder(
           actions: [NeumorphicButton('Show 12 rooms', onPressed: close)],
           child: const NeumorphicCheckbox(
             value: true,
-            label: 'Warm white',
+            semanticLabel: 'Warm white',
             onChanged: _ignore,
           ),
         ),

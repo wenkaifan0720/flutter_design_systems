@@ -160,7 +160,7 @@ class AgendaPage extends StatelessWidget {
       actions: [
         NeumorphicRoundButton(
           NeumorphicGlyphs.plus,
-          label: 'New',
+          semanticLabel: 'New',
           selected: true,
           onPressed: () {},
         ),

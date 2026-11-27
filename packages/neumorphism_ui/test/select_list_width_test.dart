@@ -31,7 +31,10 @@ Future<(Rect field, Rect list)> _open(
         padding: const EdgeInsets.all(24),
         child: Align(
           alignment: AlignmentDirectional.topStart,
-          child: stretch ? select : SizedBox(width: width - 48, child: select),
+          // Alone in a row, a select keeps to its content.
+          child: stretch
+              ? select
+              : Row(mainAxisSize: MainAxisSize.min, children: [select]),
         ),
       ),
       direction: direction,
@@ -39,7 +42,7 @@ Future<(Rect field, Rect list)> _open(
     ),
   );
   final face = find.byWidgetPredicate(
-    (w) => w is NeumorphicTap && w.label == 'Room, Living room',
+    (w) => w is NeumorphicTap && w.semanticLabel == 'Room, Living room',
   );
   final field = tester.getRect(face);
   await tester.tap(face);

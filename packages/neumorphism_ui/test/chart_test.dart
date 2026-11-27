@@ -28,7 +28,7 @@ void main() {
               child: SizedBox(
                 width: 320,
                 child: NeumorphicChart(
-                  label: 'Sleep',
+                  semanticLabel: 'Sleep',
                   series: [NeumorphicChartSeries('Hours', values)],
                   band: band,
                 ),
@@ -95,7 +95,7 @@ void main() {
         final values = <double?>[-2, null, 4];
         Widget chart() => neumorphicApp(
           NeumorphicChart(
-            label: 'Balance',
+            semanticLabel: 'Balance',
             series: [
               NeumorphicChartSeries('One', values),
               const NeumorphicChartSeries('Two', [1, 2, 3]),
@@ -138,7 +138,7 @@ void main() {
     check(
       'multi-series ${kind.name}',
       () => NeumorphicChart(
-        label: 'Balance',
+        semanticLabel: 'Balance',
         kind: kind,
         labels: const ['Monday', 'Tuesday', 'Wednesday'],
         band: const NeumorphicChartBand(-2, 4, label: 'Target interval'),
@@ -153,7 +153,7 @@ void main() {
     await tester.pumpWidget(
       neumorphicApp(
         const NeumorphicChart(
-          label: 'Reading',
+          semanticLabel: 'Reading',
           series: [
             NeumorphicChartSeries('Missing', [
               null,
@@ -183,7 +183,7 @@ void main() {
                 child: SizedBox(
                   width: width,
                   child: NeumorphicChart(
-                    label: 'Steps',
+                    semanticLabel: 'Steps',
                     kind: kind,
                     labels: days,
                     series: const [

@@ -1267,7 +1267,8 @@ class RenderNeumorphicSplit extends RenderBox
       defaultPaint(context, offset);
 }
 
-/// `text-wrap: balance`: finds the narrowest width that keeps the same number of lines, so no line ends alone.
+/// Text whose lines are balanced: it takes the narrowest width that keeps the same number of lines, so no line ends
+/// with a word alone.
 ///
 /// ```dart
 /// NeumorphicBalancedText('A balanced heading', style: TextStyle(fontSize: 24))

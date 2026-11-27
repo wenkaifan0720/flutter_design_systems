@@ -47,10 +47,14 @@ Widget kitFramesDemo(Brightness brightness) => kitScreen(
                 children: [
                   NeumorphicSwitch(
                     value: false,
-                    label: 'Off',
+                    semanticLabel: 'Off',
                     onChanged: (_) {},
                   ),
-                  NeumorphicSwitch(value: true, label: 'On', onChanged: (_) {}),
+                  NeumorphicSwitch(
+                    value: true,
+                    semanticLabel: 'On',
+                    onChanged: (_) {},
+                  ),
                 ],
               ),
             ],

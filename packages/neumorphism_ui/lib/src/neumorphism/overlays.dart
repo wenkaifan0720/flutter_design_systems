@@ -27,13 +27,13 @@ import 'internal/actions.dart' show NeumorphicActionBar;
 /// outside and Tab out close it, and focus goes back to the trigger.
 ///
 /// ```dart
-/// NeumorphicPopover(label: 'Opening hours', trigger: (context, toggle) => NeumorphicButton('Hours', onPressed: toggle), content: const Text('Nine to six'))
+/// NeumorphicPopover(semanticLabel: 'Opening hours', trigger: (context, toggle) => NeumorphicButton('Hours', onPressed: toggle), content: const Text('Nine to six'))
 /// ```
 class NeumorphicPopover extends StatelessWidget {
-  /// A popover called [label].
+  /// A popover called [semanticLabel].
   const NeumorphicPopover({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.trigger,
     required this.content,
     this.side = RawPopoverSide.below,
@@ -43,7 +43,7 @@ class NeumorphicPopover extends StatelessWidget {
   }) : assert(width > 0);
 
   /// What a screen reader calls it.
-  final String label;
+  final String semanticLabel;
 
   /// Builds the control that opens it; call `toggle` from its press.
   final Widget Function(BuildContext context, VoidCallback toggle) trigger;
@@ -65,7 +65,7 @@ class NeumorphicPopover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RawPopover(
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     // Words or a small form keep their own width, whatever the trigger's: not a list opened from a field.
     placement: RawPopoverPlacement(
       side: side,
@@ -92,7 +92,7 @@ class NeumorphicPopover extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<
           Widget Function(BuildContext context, VoidCallback toggle)
@@ -135,7 +135,7 @@ class NeumorphicHoverCard extends StatelessWidget {
     super.key,
     required this.child,
     required this.content,
-    this.label,
+    this.semanticLabel,
     this.width = 300,
     this.openDelay = const Duration(milliseconds: 600),
     this.style,
@@ -148,7 +148,7 @@ class NeumorphicHoverCard extends StatelessWidget {
   final Widget content;
 
   /// What a screen reader calls the preview.
-  final String? label;
+  final String? semanticLabel;
 
   /// Its width, clamped to the screen.
   final double width;
@@ -164,7 +164,7 @@ class NeumorphicHoverCard extends StatelessWidget {
     trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
     hoverOpenDelay: openDelay,
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     // A person's card keeps its own width over a long name.
     placement: const RawPopoverPlacement(gap: 10, matchAnchorWidth: false),
     anchorBuilder: (context, anchor) => child,
@@ -183,7 +183,7 @@ class NeumorphicHoverCard extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('width', width, defaultValue: 300))
       ..add(
         DiagnosticsProperty<Duration>(
@@ -203,7 +203,8 @@ class NeumorphicHoverCard extends StatelessWidget {
 }
 
 /// A panel standing on one side of the page for filters, details or a form beside the work: a heading with a close
-/// action, the body scrolling under it, the actions at its foot. [showNeumorphicSheet] opens one on a route that traps
+/// action, the body scrolling under it, the actions at its foot. A slab, every corner round as the look's every
+/// corner is; [showNeumorphicSheet] stands it on the page's side. [showNeumorphicSheet] opens one on a route that traps
 /// focus, closes on Escape, a press on the scrim or a drag toward its edge, and gives focus back.
 ///
 /// ```dart
@@ -217,7 +218,6 @@ class NeumorphicSheet extends StatelessWidget {
     required this.child,
     this.actions = const [],
     this.onClose,
-    this.edge = RawSheetEdge.end,
     this.style,
   });
 
@@ -232,9 +232,6 @@ class NeumorphicSheet extends StatelessWidget {
 
   /// The close action; null leaves it out.
   final VoidCallback? onClose;
-
-  /// The page side it stands on: only its inner corners are rounded.
-  final RawSheetEdge edge;
 
   /// The panel's own style, before the sheet theme.
   final NeumorphicStyle? style;
@@ -274,7 +271,7 @@ class NeumorphicSheet extends StatelessWidget {
                       neumorphicAtEnd(
                         NeumorphicIconButton(
                           NeumorphicGlyphs.close,
-                          label: words.close,
+                          semanticLabel: words.close,
                           onPressed: onClose,
                         ),
                       ),
@@ -308,13 +305,6 @@ class NeumorphicSheet extends StatelessWidget {
     properties
       ..add(StringProperty('title', title))
       ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
-      ..add(
-        EnumProperty<RawSheetEdge>(
-          'edge',
-          edge,
-          defaultValue: RawSheetEdge.end,
-        ),
-      )
       ..add(
         DiagnosticsProperty<NeumorphicStyle>(
           'style',
@@ -518,13 +508,13 @@ Future<void> showNeumorphicCommand(
 /// ```
 class NeumorphicMenuBar extends StatelessWidget {
   /// A bar of [menus].
-  const NeumorphicMenuBar({super.key, required this.menus, this.label});
+  const NeumorphicMenuBar({super.key, required this.menus, this.semanticLabel});
 
   /// The bar's menus, each with its entries.
   final List<RawMenuEntry> menus;
 
   /// What a screen reader calls the bar; null: the localized Menu.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -534,7 +524,7 @@ class NeumorphicMenuBar extends StatelessWidget {
     final shape = t.shapes.corner(NeumorphicRadii.control);
     return RawMenuBar(
       menus: menus,
-      semanticLabel: label ?? words.menu,
+      semanticLabel: semanticLabel ?? words.menu,
       barBuilder: (context, items) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         // A column too narrow for every menu runs them on to a second line.
@@ -589,7 +579,7 @@ class NeumorphicMenuBar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RawMenuEntry>('menus', menus))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -649,7 +639,7 @@ class NeumorphicContextMenu extends StatelessWidget {
     super.key,
     required this.menuChildren,
     required this.child,
-    this.label,
+    this.semanticLabel,
     this.controller,
     this.onOpenChanged,
   });
@@ -661,7 +651,7 @@ class NeumorphicContextMenu extends StatelessWidget {
   final Widget child;
 
   /// What a screen reader calls the menu; null: none.
-  final String? label;
+  final String? semanticLabel;
 
   /// Opens it at a point of [child] from outside (`open(position:)`) and closes it; null: it makes its own.
   final MenuController? controller;
@@ -672,7 +662,7 @@ class NeumorphicContextMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RawContextMenu(
     menuChildren: menuChildren,
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     controller: controller,
     onOpenChanged: onOpenChanged,
     dividerBuilder: _menuDivider,
@@ -686,7 +676,7 @@ class NeumorphicContextMenu extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RawMenuEntry>('menuChildren', menuChildren))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MenuController>(
           'controller',

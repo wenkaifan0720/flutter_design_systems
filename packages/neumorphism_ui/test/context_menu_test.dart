@@ -31,7 +31,7 @@ class _LampState extends State<_Lamp> {
     child: Padding(
       padding: const EdgeInsets.all(40),
       child: NeumorphicContextMenu(
-        label: 'Hall lamp',
+        semanticLabel: 'Hall lamp',
         menuChildren: [
           RawMenuEntry(
             label: 'On',
@@ -55,7 +55,7 @@ class _LampState extends State<_Lamp> {
           child: NeumorphicCard(
             title: 'Hall lamp',
             trailing: NeumorphicSwitch(
-              label: 'Hall lamp',
+              semanticLabel: 'Hall lamp',
               value: _on,
               onChanged: (on) => setState(() => _on = on),
             ),

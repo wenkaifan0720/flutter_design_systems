@@ -1,736 +1,525 @@
-// The Neumorphism gallery: every part the package exports, working, on pages with plain names, in every preset, by day
-// and by night, and made yours. The look's own navigation moves between the pages: the pilaster rail from 1024 wide, a
-// drawer behind the menu key below that. Customize opens what a product team really turns (the preset or your own
-// colours, the density, the depth, high contrast) above every page, and every page takes them as you set them.
+// Shelf: a small reading list on Neumorphism, the whole app in one file. The host
+// over the navigator (light, dark or the platform's, the palette, and the
+// toasts), the shell with three places, a list with a pushed detail, a form
+// with validation and a date, a dialog popped with its answer, and settings
+// with the six palettes. Copy it, rename it, and grow it.
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/scheduler.dart' show timeDilation;
-import 'package:flutter/services.dart' show SystemNavigator;
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
-
-import 'kit_gallery/hearth.dart';
-import 'kit_gallery/live.dart';
-import 'kit_gallery/kit.dart';
-import 'kit_gallery/kit_words.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // The faces before the first frame: on the web the words never flash in a fallback face.
-  await neumorphicLoadFonts();
-  // A page opens by link, in the looks' shared form /#/<page>?theme=dark&dir=rtl&text=200 or the gallery's own
-  // ?design=<page>&dark=1&rtl=1&text=2 (and ?contrast=1, ?density=compact, ?slow=8).
-  final link = Uri.parse(Uri.base.fragment.isEmpty ? '/' : Uri.base.fragment);
-  final query = {...Uri.base.queryParameters, ...link.queryParameters};
-  final linkedPage = link.pathSegments.where((s) => s.isNotEmpty).firstOrNull;
-  final text = double.tryParse(query['text'] ?? '') ?? 1;
-  // Slow motion: ?slow=8 plays every move eight times slower, so a frame between two states can be looked
-  // at with a real pointer.
-  timeDilation = (double.tryParse(query['slow'] ?? '') ?? 1).clamp(1, 20);
-  runApp(
-    GalleryApp(
-      initialPage: linkedPage ?? query['design'] ?? 'overview',
-      initialBrightness: query['theme'] == 'dark' || query['dark'] == '1'
-          ? Brightness.dark
-          : Brightness.light,
-      initialCustom: GalleryCustom(
-        highContrast: query['contrast'] == '1',
-        rightToLeft: query['dir'] == 'rtl' || query['rtl'] == '1',
-        // text=200 is a percentage, text=2 a scale.
-        textScale: (text > 4 ? text / 100 : text).clamp(1, 2),
-        density: GalleryDensity.values.firstWhere(
-          (d) => d.name == query['density'],
-          orElse: () => GalleryDensity.automatic,
-        ),
-      ),
-    ),
-  );
+  await neumorphicLoadFonts(); // the bundled faces, before the first frame
+  runApp(ShelfApp());
 }
 
-/// The densities the panel offers. Automatic is the look's own: compact where a pointer drives the app, standard on
-/// touch.
-enum GalleryDensity {
-  /// The platform's: compact on a desktop, standard on a phone.
-  automatic(null, 'Automatic'),
+// The data
 
-  /// Touch-sized everywhere.
-  standard(NeumorphicDensity.standard, 'Standard'),
+enum Status {
+  wanted('Want to read'),
+  reading('Reading'),
+  finished('Finished');
 
-  /// Two steps in, everywhere.
-  compact(NeumorphicDensity.compact, 'Compact');
+  const Status(this.label);
 
-  const GalleryDensity(this.density, this.label);
-
-  /// What the theme takes; null leaves it to the platform.
-  final NeumorphicDensity? density;
-
-  /// The panel's name for it.
   final String label;
 }
 
-/// A pair of colours for `NeumorphicThemeData.from`: the pigment and the ground.
-typedef GalleryColours = ({String name, Color pigment, Color ground});
-
-/// The colour pairs the panel offers in place of a preset.
-const List<GalleryColours> galleryColours = [
-  (
-    name: 'Clay and blue',
-    pigment: Color(0xFF2459AD),
-    ground: Color(0xFFE3D8CD),
-  ),
-  (
-    name: 'Sage and berry',
-    pigment: Color(0xFF8D315B),
-    ground: Color(0xFFD9E0D7),
-  ),
-  (
-    name: 'Slate and amber',
-    pigment: Color(0xFFC27B16),
-    ground: Color(0xFF252C38),
-  ),
-  (name: 'One grey', pigment: Color(0xFF888888), ground: Color(0xFF888888)),
-];
-
-/// What the Customize panel holds. Its defaults are the look's own, so an untouched panel draws the preset as designed.
-@immutable
-class GalleryCustom {
-  /// The panel's settings.
-  const GalleryCustom({
-    this.highContrast = false,
-    this.density = GalleryDensity.automatic,
-    this.depth = 1,
-    this.colours,
-    this.rightToLeft = false,
-    this.textScale = 1,
+class Book {
+  Book({
+    required this.title,
+    required this.author,
+    this.status = Status.wanted,
+    this.started,
+    this.favourite = false,
   });
 
-  /// Lays every page out right to left, as Arabic and Hebrew read.
-  final bool rightToLeft;
+  String title;
+  String author;
+  Status status;
+  DateTime? started;
+  bool favourite;
 
-  /// The reader's text size, from 1 to 2.
-  final double textScale;
-
-  /// The fine outline on every part. Off leaves it to the platform's own setting.
-  final bool highContrast;
-
-  /// How compact the controls stand.
-  final GalleryDensity density;
-
-  /// Relief depth: as drawn, or lower.
-  final double depth;
-
-  /// Your own colours in place of the preset's; null keeps the preset.
-  final GalleryColours? colours;
-
-  /// [preset] in [brightness], or your own colours, with every setting applied.
-  NeumorphicThemeData theme(String preset, Brightness brightness) {
-    final pair = colours;
-    final base = pair == null
-        ? NeumorphicThemeData.preset(preset, brightness)
-        : NeumorphicThemeData.from(
-            pigment: pair.pigment,
-            ground: pair.ground,
-            brightness: brightness,
-          );
-    return base.copyWith(
-      highContrast: highContrast ? true : null,
-      density: density.density,
-      elevation: depth == 1 ? null : NeumorphicElevation(depth: depth),
-    );
-  }
-
-  /// This with the named settings changed; [colours] is set as given.
-  GalleryCustom copyWith({
-    bool? highContrast,
-    GalleryDensity? density,
-    double? depth,
-    GalleryColours? Function()? colours,
-    bool? rightToLeft,
-    double? textScale,
-  }) => GalleryCustom(
-    highContrast: highContrast ?? this.highContrast,
-    density: density ?? this.density,
-    depth: depth ?? this.depth,
-    colours: colours == null ? this.colours : colours(),
-    rightToLeft: rightToLeft ?? this.rightToLeft,
-    textScale: textScale ?? this.textScale,
-  );
+  /// The first letters of the title's first two words, for its monogram.
+  String get initials => title
+      .split(' ')
+      .where((word) => word.isNotEmpty)
+      .take(2)
+      .map((word) => word[0].toUpperCase())
+      .join();
 }
 
-/// The gallery: its pages behind the look's navigation, with the Customize panel.
-class GalleryApp extends StatefulWidget {
-  /// The gallery, opening on [initialPage] in the default preset.
-  const GalleryApp({
-    super.key,
-    this.initialPage = 'overview',
-    this.initialBrightness = Brightness.light,
-    this.initialCustom = const GalleryCustom(),
-    this.initialCustomizing = false,
-    this.initialStart = const HearthStart(),
-  });
+/// The books, and the app's appearance: what every page reads and changes.
+class Library extends ChangeNotifier {
+  final List<Book> books = [
+    Book(
+      title: 'Stoner',
+      author: 'John Williams',
+      status: Status.finished,
+      started: DateTime(2026, 9, 2),
+      favourite: true,
+    ),
+    Book(
+      title: 'The Remains of the Day',
+      author: 'Kazuo Ishiguro',
+      status: Status.reading,
+      started: DateTime(2026, 11, 18),
+    ),
+    Book(title: 'Middlemarch', author: 'George Eliot'),
+    Book(
+      title: 'Pachinko',
+      author: 'Min Jin Lee',
+      status: Status.reading,
+      started: DateTime(2026, 11, 3),
+    ),
+  ];
 
-  /// The page it opens on, an id from [liveGalleryPages] or one of the app's [hearthScreens]; an unknown id opens the
-  /// Overview.
-  final String initialPage;
+  /// The palette, one of [NeumorphicThemeData.palettes].
+  RawNamedPalette palette = NeumorphicThemeData.palettes.first;
 
-  /// The appearance it opens in.
-  final Brightness initialBrightness;
+  /// Light or dark; null follows the platform.
+  Brightness? brightness;
 
-  /// The knobs it opens with.
-  final GalleryCustom initialCustom;
+  void save(Book book) {
+    if (!books.contains(book)) books.add(book);
+    notifyListeners();
+  }
 
-  /// Whether it opens with the Customize panel showing.
-  final bool initialCustomizing;
+  void delete(Book book) {
+    books.remove(book);
+    notifyListeners();
+  }
 
-  /// Where the app opens past its screen, when [initialPage] is one of the app's.
-  final HearthStart initialStart;
-
-  @override
-  State<GalleryApp> createState() => _GalleryAppState();
+  void setAppearance({
+    RawNamedPalette? palette,
+    Brightness? brightness,
+    bool system = false,
+  }) {
+    this.palette = palette ?? this.palette;
+    this.brightness = system ? null : brightness ?? this.brightness;
+    notifyListeners();
+  }
 }
 
-class _GalleryAppState extends State<GalleryApp> {
-  late var _page =
-      liveGalleryPages.any((p) => p.id == widget.initialPage) ||
-          isHearthScreen(widget.initialPage)
-      ? widget.initialPage
-      : liveGalleryPages.first.id;
-  var _preset = kitShownPreset;
-  late var _brightness = widget.initialBrightness;
-  late var _custom = widget.initialCustom;
-  late var _customizing = widget.initialCustomizing;
+/// How wide a page's column grows on a wide window.
+const double _measure = 760;
 
-  /// Opens [page], and on the web puts it in the address, so a page or an app screen can be linked.
-  void _open(String page) {
-    setState(() => _page = page);
-    if (kIsWeb) {
-      // The shared link form, keeping the address's own settings: /#/<page>?theme=dark&dir=rtl&text=200.
-      final link = Uri.parse(
-        Uri.base.fragment.isEmpty ? '/' : Uri.base.fragment,
-      );
-      SystemNavigator.routeInformationUpdated(
-        uri: Uri(
-          path: '/$page',
-          queryParameters: link.queryParameters.isEmpty
-              ? null
-              : link.queryParameters,
-        ),
-        replace: true,
-      );
-    }
-  }
+// The app
 
-  void _toggleCustomize() => setState(() => _customizing = !_customizing);
+class ShelfApp extends StatelessWidget {
+  ShelfApp({super.key});
 
-  void _toggleBrightness() => setState(
-    () => _brightness = _brightness == Brightness.dark
-        ? Brightness.light
-        : Brightness.dark,
-  );
-
-  /// The phone's page list: the look's drawer, sliding in from the start edge over the scrim its sheets use.
-  void _openDrawer(BuildContext context) {
-    final t = NeumorphicTheme.of(context);
-    // Every timing zero under Reduce Motion.
-    final motion = NeumorphicMotion.of(context);
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final active = liveGalleryPages.indexWhere((p) => p.id == _page);
-    showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: NeumorphicLocalizations.of(context).close,
-      barrierColor: const Color(0x66000000),
-      transitionDuration: motion.raise,
-      transitionBuilder: (context, animation, _, child) => _DrawerSlide(
-        animation: animation,
-        motion: motion,
-        fromRight: rtl,
-        child: child,
-      ),
-      pageBuilder: (drawerContext, _, _) => Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: DefaultTextStyle(
-          style: t.textTheme.body,
-          child: IconTheme(
-            data: IconThemeData(color: t.colors.ink, size: 22),
-            child: NeumorphicNavigationDrawer(
-              key: const Key('gallery-drawer'),
-              width: math.min(320, MediaQuery.sizeOf(drawerContext).width - 56),
-              label: kitSay(drawerContext, 'Pages'),
-              header: const NeumorphicBrandRow('Neumorphism'),
-              selectedIndex: active,
-              items: [
-                for (final page in liveGalleryPages)
-                  NeumorphicNavItem(
-                    label: kitSay(drawerContext, page.title),
-                    icon: page.icon,
-                    key: Key('drawer-${page.id}'),
-                  ),
-              ],
-              onDestinationSelected: (i) {
-                Navigator.pop(drawerContext);
-                _open(liveGalleryPages[i].id);
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _customizePanel() => CustomizePanel(
-    custom: _custom,
-    onChanged: (custom) => setState(() => _custom = custom),
-    preset: _preset,
-    onPreset: (preset) => setState(() => _preset = preset),
-    onClose: _toggleCustomize,
-  );
-
-  Widget _home(BuildContext context) {
-    // The app is its own world, with its own navigation and one quiet way back.
-    if (isHearthScreen(_page)) {
-      return HearthApp(
-        key: const ValueKey('hearth'),
-        route: _page,
-        onRoute: _open,
-        onGallery: () => _open('overview'),
-        brightness: _brightness,
-        onBrightness: (b) => setState(() => _brightness = b),
-        customizing: _customizing,
-        onCustomize: _toggleCustomize,
-        panel: _customizing ? _customizePanel() : null,
-        start: widget.initialStart,
-      );
-    }
-    final dark = _brightness == Brightness.dark;
-    final active = liveGalleryPages.indexWhere((p) => p.id == _page);
-    return NeumorphicChromeScope(
-      brand: const NeumorphicBrand(name: 'Neumorphism'),
-      nav: [
-        for (final page in liveGalleryPages)
-          NeumorphicNavItem(
-            label: kitSay(context, page.title),
-            icon: page.icon,
-            key: Key('nav-${page.id}'),
-            onPressed: () => _open(page.id),
-          ),
-      ],
-      selectedIndex: active,
-      child: NeumorphicScaffold(
-        scroll: false,
-        fullBleed: true,
-        railAct: NeumorphicButton(
-          kitSay(context, _customizing ? 'Close Customize' : 'Customize'),
-          key: const Key('gallery-customize'),
-          icon: NeumorphicGlyphs.slidersHorizontal,
-          wide: true,
-          onPressed: _toggleCustomize,
-        ),
-        railFoot: [
-          _Labelled(
-            kitSay(context, 'Appearance'),
-            NeumorphicSegmentedButton<Brightness>(
-              key: const Key('gallery-appearance'),
-              label: kitSay(context, 'Appearance'),
-              value: _brightness,
-              segments: [
-                NeumorphicButtonSegment(
-                  Brightness.light,
-                  kitSay(context, 'Day'),
-                ),
-                NeumorphicButtonSegment(
-                  Brightness.dark,
-                  kitSay(context, 'Night'),
-                ),
-              ],
-              onChanged: (v) => setState(() => _brightness = v),
-            ),
-          ),
-        ],
-        lead: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Builder(
-              builder: (context) => NeumorphicRoundButton(
-                NeumorphicGlyphs.menu,
-                key: const Key('gallery-menu'),
-                label: kitSay(context, 'Pages'),
-                onPressed: () => _openDrawer(context),
-              ),
-            ),
-            const SizedBox(width: 14),
-            const Flexible(child: NeumorphicBrandRow('Neumorphism')),
-          ],
-        ),
-        actions: [
-          NeumorphicRoundButton(
-            dark ? NeumorphicGlyphs.sun : NeumorphicGlyphs.moon,
-            key: const Key('gallery-brightness'),
-            label: kitSay(context, dark ? 'Day' : 'Night'),
-            onPressed: _toggleBrightness,
-          ),
-          NeumorphicRoundButton(
-            NeumorphicGlyphs.slidersHorizontal,
-            key: const Key('gallery-customize-key'),
-            label: kitSay(
-              context,
-              _customizing ? 'Close Customize' : 'Customize',
-            ),
-            selected: _customizing,
-            onPressed: _toggleCustomize,
-          ),
-        ],
-        // Keyed by the page, not by the knobs: a corner that changes eases to its new shape in place.
-        body: KeyedSubtree(
-          key: ValueKey(_page),
-          child: LiveExample(
-            page: _page,
-            onOpen: _open,
-            header: _customizing ? _customizePanel() : null,
-          ),
-        ),
-      ),
-    );
-  }
+  final Library library = Library();
 
   @override
-  Widget build(BuildContext context) {
-    kitShownPreset = _preset;
-    // Every gallery page builds its theme through this: the panel's knobs reach each page as they change.
-    final custom = _custom;
-    kitShownTheme = (brightness) => custom.theme(_preset, brightness);
-    return MaterialApp(
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) => MaterialApp(
+      title: 'Shelf',
       debugShowCheckedModeBanner: false,
-      title: 'Neumorphism',
-      // The app's own routes (a MaterialPageRoute) change page in the look's way on every platform, as an app lists them.
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: neumorphicPageTransitions,
-        ),
+      // The one mount: the palette by day and by night (easing between
+      // them), Neumorphism's page motion, and the toasts.
+      builder: (context, child) => NeumorphicHost(
+        palette: library.palette,
+        brightness: library.brightness,
+        child: child!,
       ),
-      // ui_core's 30 languages, as an ordinary app lists them: a device in one of them hears the parts' shared words
-      // (Cancel, Close, Today) in it, and right to left the gallery reads Arabic, those words with it. The look gives
-      // the Material and Cupertino words its own parts read, in the same language.
-      locale: custom.rightToLeft ? const Locale('ar') : null,
-      localizationsDelegates: const [
-        RawWidgetsLocalizations.delegate,
-        ...GlobalMaterialLocalizations.delegates,
-      ],
-      supportedLocales: RawWidgetsLocalizations.supportedLocales,
-      // The app's root, as an app's own is: the host sets the theme, the ground, the type and the icons; the animated
-      // theme inside it eases each knob's change across the page.
-      builder: (context, child) => Directionality(
-        // The panel's reading direction and text size reach every page, as a device's would.
-        textDirection: custom.rightToLeft
-            ? TextDirection.rtl
-            : Directionality.of(context),
-        // Right to left, the gallery reads in Arabic: its direction is checked on real script.
-        child: KitWords(
-          arabic: custom.rightToLeft,
-          child: MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: custom.textScale == 1
-                  ? MediaQuery.textScalerOf(context)
-                  : TextScaler.linear(custom.textScale),
-            ),
-            child: NeumorphicHost(
-              light: custom.theme(_preset, Brightness.light),
-              darkData: custom.theme(_preset, Brightness.dark),
-              brightness: _brightness,
-              child: AnimatedNeumorphicTheme(
-                data: custom.theme(_preset, _brightness),
-                child: child!,
-              ),
-            ),
-          ),
-        ),
-      ),
-      // The address names a page (/#/buttons): the gallery opens that page itself, so the navigator holds one route
-      // whatever the address says.
-      onGenerateInitialRoutes: (_) => [MaterialPageRoute<void>(builder: _home)],
-      onGenerateRoute: (_) => MaterialPageRoute<void>(builder: _home),
-    );
-  }
-}
-
-/// The drawer's slide in from the reading start: in on [motion]'s enter curve, out on its exit. A widget of its own so
-/// the eased animation is made once per drawer and disposed with it, not made again on every frame of the slide.
-class _DrawerSlide extends StatefulWidget {
-  const _DrawerSlide({
-    required this.animation,
-    required this.motion,
-    required this.fromRight,
-    required this.child,
-  });
-
-  final Animation<double> animation;
-  final NeumorphicMotion motion;
-  final bool fromRight;
-  final Widget child;
-
-  @override
-  State<_DrawerSlide> createState() => _DrawerSlideState();
-}
-
-class _DrawerSlideState extends State<_DrawerSlide> {
-  late final _eased = CurvedAnimation(
-    parent: widget.animation,
-    curve: widget.motion.enter,
-    reverseCurve: widget.motion.exit,
-  );
-
-  @override
-  void didUpdateWidget(_DrawerSlide oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _eased
-      ..curve = widget.motion.enter
-      ..reverseCurve = widget.motion.exit;
-  }
-
-  @override
-  void dispose() {
-    _eased.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => SlideTransition(
-    position: Tween(
-      begin: Offset(widget.fromRight ? 1 : -1, 0),
-      end: Offset.zero,
-    ).animate(_eased),
-    child: widget.child,
-  );
-}
-
-/// The theme's knobs, each a control of the look's own at its natural width, on a grid that starts at the left.
-class CustomizePanel extends StatelessWidget {
-  /// A panel over [custom], reporting each change to [onChanged].
-  const CustomizePanel({
-    super.key,
-    required this.custom,
-    required this.onChanged,
-    this.preset,
-    this.onPreset,
-    this.onClose,
-  });
-
-  /// What it shows.
-  final GalleryCustom custom;
-
-  /// Called with the panel's next settings.
-  final ValueChanged<GalleryCustom> onChanged;
-
-  /// The preset in force, when the panel offers the presets.
-  final String? preset;
-
-  /// Called with the chosen preset.
-  final ValueChanged<String>? onPreset;
-
-  /// Closes the panel.
-  final VoidCallback? onClose;
-
-  static String _name(String id) => id[0].toUpperCase() + id.substring(1);
-
-  @override
-  Widget build(BuildContext context) {
-    final c = custom;
-    return NeumorphicSlab(
-      child: NeumorphicColumn(
-        gap: 20,
-        children: [
-          NeumorphicSectionHeader(
-            title: 'Customize',
-            subtitle: 'Every page takes these as you set them.',
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NeumorphicButton.text(
-                  'Reset',
-                  onPressed: () => onChanged(const GalleryCustom()),
-                ),
-                if (onClose != null) ...[
-                  const SizedBox(width: 8),
-                  NeumorphicButton.text('Done', onPressed: onClose),
-                ],
-              ],
-            ),
-          ),
-          Wrap(
-            key: const Key('customize-knobs'),
-            spacing: 24,
-            runSpacing: 22,
-            children: [
-              if (preset != null)
-                _Knob(
-                  null,
-                  260,
-                  NeumorphicSelect<String>(
-                    labelText: 'Preset',
-                    value: preset,
-                    options: [
-                      for (final id in NeumorphicThemeData.presets)
-                        NeumorphicMenuItem(id, _name(id)),
-                    ],
-                    onChanged: c.colours == null ? onPreset : null,
-                    helperText: c.colours == null
-                        ? null
-                        : 'Your own colours stand in for it.',
-                  ),
-                ),
-              _Knob(
-                null,
-                260,
-                NeumorphicSelect<String>(
-                  labelText: 'Your own colours',
-                  value: c.colours?.name ?? '',
-                  options: [
-                    const NeumorphicMenuItem('', "The preset's"),
-                    for (final pair in galleryColours)
-                      NeumorphicMenuItem(pair.name, pair.name),
-                  ],
-                  onChanged: (v) => onChanged(
-                    c.copyWith(
-                      colours: () =>
-                          galleryColours.where((p) => p.name == v).firstOrNull,
-                    ),
-                  ),
-                ),
-              ),
-              _Knob(
-                'Density',
-                380,
-                NeumorphicSegmentedButton<GalleryDensity>(
-                  label: 'Density',
-                  value: c.density,
-                  segments: [
-                    for (final d in GalleryDensity.values)
-                      NeumorphicButtonSegment(d, d.label),
-                  ],
-                  onChanged: (v) => onChanged(c.copyWith(density: v)),
-                ),
-                note: c.density == GalleryDensity.automatic
-                    ? 'Compact with a pointer, standard on touch.'
-                    : null,
-              ),
-              _Knob(
-                'Relief',
-                240,
-                NeumorphicSegmentedButton<double>(
-                  label: 'Relief',
-                  value: c.depth,
-                  segments: const [
-                    NeumorphicButtonSegment(.5, 'Low'),
-                    NeumorphicButtonSegment(1.0, 'As drawn'),
-                  ],
-                  onChanged: (v) => onChanged(c.copyWith(depth: v)),
-                ),
-              ),
-              _Knob(
-                null,
-                340,
-                NeumorphicSwitchRow(
-                  label: 'High contrast',
-                  subtitle:
-                      'A fine outline on every part. Off follows the device.',
-                  value: c.highContrast,
-                  onChanged: (v) => onChanged(c.copyWith(highContrast: v)),
-                ),
-              ),
-              _Knob(
-                null,
-                340,
-                NeumorphicSwitchRow(
-                  label: 'Right to left',
-                  subtitle: 'Every page laid out as Arabic and Hebrew read.',
-                  value: c.rightToLeft,
-                  onChanged: (v) => onChanged(c.copyWith(rightToLeft: v)),
-                ),
-              ),
-              _Knob(
-                'Text size',
-                240,
-                NeumorphicSegmentedButton<double>(
-                  label: 'Text size',
-                  value: c.textScale,
-                  segments: const [
-                    NeumorphicButtonSegment(1.0, 'As set'),
-                    NeumorphicButtonSegment(1.5, 'Large'),
-                    NeumorphicButtonSegment(2.0, 'Largest'),
-                  ],
-                  onChanged: (v) => onChanged(c.copyWith(textScale: v)),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// One knob of the panel at its own width (never wider than the panel), its name above it.
-class _Knob extends StatelessWidget {
-  const _Knob(this.label, this.width, this.child, {this.note});
-
-  /// The name drawn above it, when the control draws none of its own.
-  final String? label;
-  final double width;
-  final Widget child;
-  final String? note;
-
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) => SizedBox(
-      width: math.min(width, box.maxWidth),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (label != null) ...[
-            ExcludeSemantics(child: _KnobName(label!)),
-            const SizedBox(height: 8),
-          ],
-          child,
-          if (note != null) ...[
-            const SizedBox(height: 6),
-            Text(note!, style: NeumorphicTheme.of(context).textTheme.caption),
-          ],
-        ],
-      ),
+      home: Shell(library: library),
     ),
   );
 }
 
-/// A control's name drawn above it: a segmented button names itself only to a screen reader.
-class _Labelled extends StatelessWidget {
-  const _Labelled(this.text, this.child);
+class Shell extends StatefulWidget {
+  const Shell({super.key, required this.library});
 
-  final String text;
-  final Widget child;
+  final Library library;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      ExcludeSemantics(child: _KnobName(text)),
-      const SizedBox(height: 8),
-      child,
+  State<Shell> createState() => _ShellState();
+}
+
+class _ShellState extends State<Shell> {
+  int _place = 0;
+
+  @override
+  Widget build(BuildContext context) => NeumorphicAppShell(
+    header: const NeumorphicBrandRow('Shelf'),
+    destinations: const [
+      RawNavigationDestination(label: 'Books', icon: NeumorphicGlyphs.layers),
+      RawNavigationDestination(
+        label: 'Reading',
+        icon: NeumorphicGlyphs.bookOpen,
+      ),
+      RawNavigationDestination(
+        label: 'Settings',
+        icon: NeumorphicGlyphs.settings,
+      ),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (index) => setState(() => _place = index),
+    // Each place keeps its own pages: a book opened in Books stays open
+    // while you look at Settings.
+    branches: [
+      (context) => BooksPage(library: widget.library),
+      (context) => BooksPage(library: widget.library, only: Status.reading),
+      (context) => SettingsPage(library: widget.library),
     ],
   );
 }
 
-/// A knob's name in the words a field's label takes (a select's, a text field's), so every name on the panel matches.
-class _KnobName extends StatelessWidget {
-  const _KnobName(this.text);
+// A list, and its pushed detail
 
-  final String text;
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key, required this.library, this.only});
+
+  final Library library;
+  final Status? only;
 
   @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: NeumorphicTheme.of(context).textTheme.caption
-        .copyWith(fontWeight: FontWeight.w700),
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) {
+      final books = [
+        for (final book in library.books)
+          if (only == null || book.status == only) book,
+      ];
+      final title = only?.label ?? 'Books';
+      return NeumorphicScaffold(
+        maxWidth: _measure,
+        topBar: NeumorphicAppBar(
+          title: title,
+          subtitle: books.length == 1 ? '1 book' : '${books.length} books',
+          actions: [
+            NeumorphicIconButton(
+              NeumorphicGlyphs.plus,
+              semanticLabel: 'Add a book',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => BookForm(library: library),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: books.isEmpty
+            ? const NeumorphicEmptyState(
+                title: 'Nothing here yet',
+                body: 'Books you add show up here.',
+              )
+            : NeumorphicListSection(
+                children: [
+                  for (final book in books)
+                    NeumorphicListTile(
+                      leading: NeumorphicMonogram(book.initials),
+                      title: book.title,
+                      subtitle: book.author,
+                      trailing: NeumorphicTag(book.status.label),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) =>
+                              BookPage(library: library, book: book),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+      );
+    },
   );
+}
+
+class BookPage extends StatelessWidget {
+  const BookPage({super.key, required this.library, required this.book});
+
+  final Library library;
+  final Book book;
+
+  Future<void> _delete(BuildContext context) async {
+    // The dialog pops with the answer: true to delete, false or null to keep.
+    final sure = await showNeumorphicDialog<bool>(
+      context,
+      builder: (context) => NeumorphicDialog(
+        title: 'Delete "${book.title}"?',
+        message: 'It leaves your shelf. This cannot be undone.',
+        actions: [
+          NeumorphicButton(
+            'Keep',
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          NeumorphicButton.filled(
+            'Delete',
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (sure != true || !context.mounted) return;
+    library.delete(book);
+    Navigator.of(context).pop();
+    showNeumorphicToast(context, message: 'Deleted "${book.title}"');
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) {
+      final started = book.started;
+      return NeumorphicScaffold(
+        maxWidth: _measure,
+        topBar: NeumorphicAppBar(
+          title: book.title,
+          actions: [
+            NeumorphicIconButton(
+              NeumorphicGlyphs.pencil,
+              semanticLabel: 'Edit',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => BookForm(library: library, book: book),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: NeumorphicDescriptionList([
+          NeumorphicDescription('Author', book.author),
+          // What you are reading now is live: it takes the pigment.
+          NeumorphicDescription(
+            'Status',
+            book.status.label,
+            live: book.status == Status.reading,
+          ),
+          NeumorphicDescription(
+            'Started',
+            started == null
+                ? 'Not yet'
+                : NeumorphicFormat.mediumDate(context, started),
+          ),
+          NeumorphicDescription('Favourite', book.favourite ? 'Yes' : 'No'),
+        ]),
+        footer: NeumorphicButton(
+          'Delete',
+          isDestructiveAction: true,
+          wide: true,
+          onPressed: () => _delete(context),
+        ),
+      );
+    },
+  );
+}
+
+// A form
+
+class BookForm extends StatefulWidget {
+  const BookForm({super.key, required this.library, this.book});
+
+  final Library library;
+
+  /// The book to edit; null adds one.
+  final Book? book;
+
+  @override
+  State<BookForm> createState() => _BookFormState();
+}
+
+class _BookFormState extends State<BookForm> {
+  final _form = GlobalKey<FormState>();
+  late final Book _draft = Book(
+    title: widget.book?.title ?? '',
+    author: widget.book?.author ?? '',
+    status: widget.book?.status ?? Status.wanted,
+    started: widget.book?.started,
+    favourite: widget.book?.favourite ?? false,
+  );
+
+  void _save() {
+    // validate() shows each field's error under it; save() runs onSaved.
+    final form = _form.currentState!;
+    if (!form.validate()) return;
+    form.save();
+    final book = widget.book ?? Book(title: '', author: '');
+    book
+      ..title = _draft.title
+      ..author = _draft.author
+      ..status = _draft.status
+      ..started = _draft.started
+      ..favourite = _draft.favourite;
+    widget.library.save(book);
+    Navigator.of(context).pop();
+    showNeumorphicToast(context, message: 'Saved "${book.title}"');
+  }
+
+  @override
+  Widget build(BuildContext context) => NeumorphicScaffold(
+    maxWidth: _measure,
+    topBar: NeumorphicAppBar(title: widget.book == null ? 'New book' : 'Edit'),
+    body: Form(
+      key: _form,
+      // Every field at the column's width, 20 apart.
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 20,
+        children: [
+          NeumorphicTextFormField(
+            labelText: 'Title',
+            initialValue: _draft.title,
+            textInputAction: TextInputAction.next,
+            validator: (value) =>
+                (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+            onSaved: (value) => _draft.title = value!.trim(),
+          ),
+          NeumorphicTextFormField(
+            labelText: 'Author',
+            initialValue: _draft.author,
+            onSaved: (value) => _draft.author = value!.trim(),
+          ),
+          NeumorphicSelect<Status>(
+            labelText: 'Status',
+            value: _draft.status,
+            options: [
+              for (final status in Status.values)
+                NeumorphicMenuItem(status, status.label),
+            ],
+            onChanged: (value) => setState(() => _draft.status = value),
+          ),
+          NeumorphicDateField(
+            labelText: 'Started',
+            value: _draft.started,
+            hintText: 'Not yet',
+            lastDate: DateTime.now(),
+            onChanged: (value) => setState(() => _draft.started = value),
+          ),
+          NeumorphicSwitchRow(
+            label: 'Favourite',
+            value: _draft.favourite,
+            onChanged: (value) => setState(() => _draft.favourite = value),
+          ),
+        ],
+      ),
+    ),
+    footer: NeumorphicButton.filled('Save', wide: true, onPressed: _save),
+  );
+}
+
+// Settings
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key, required this.library});
+
+  final Library library;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: library,
+    builder: (context, _) {
+      final brightness = NeumorphicTheme.of(context).dark
+          ? Brightness.dark
+          : Brightness.light;
+      return NeumorphicScaffold(
+        maxWidth: _measure,
+        topBar: const NeumorphicAppBar(title: 'Settings'),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 28,
+          children: [
+            NeumorphicFormField(
+              labelText: 'Appearance',
+              child: NeumorphicSegmentedButton<String>(
+                semanticLabel: 'Appearance',
+                segments: const [
+                  NeumorphicButtonSegment('system', 'System'),
+                  NeumorphicButtonSegment('light', 'Light'),
+                  NeumorphicButtonSegment('dark', 'Dark'),
+                ],
+                value: library.brightness?.name ?? 'system',
+                onChanged: (value) => value == 'system'
+                    ? library.setAppearance(system: true)
+                    : library.setAppearance(
+                        brightness: Brightness.values.byName(value),
+                      ),
+              ),
+            ),
+            NeumorphicFormField(
+              labelText: 'Palette',
+              child: NeumorphicRadioGroup<String>(
+                semanticLabel: 'Palette',
+                value: library.palette.id,
+                onChanged: (id) => library.setAppearance(
+                  palette: NeumorphicThemeData.palettes.firstWhere(
+                    (p) => p.id == id,
+                  ),
+                ),
+                // Each palette by its name and its colours, as they show by
+                // day or by night.
+                options: [
+                  for (final palette in NeumorphicThemeData.palettes)
+                    NeumorphicRadio(
+                      palette.id,
+                      palette.label,
+                      suffix: Swatches(palette.swatchesFor(brightness)),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/// A palette's colours as a picker shows them, as Material's palette
+/// pickers do: one disc split between them, the most telling on top, in a
+/// hairline so a pale colour reads on a pale wall and a dark one on a dark
+/// wall.
+class Swatches extends StatelessWidget {
+  const Swatches(this.colors, {super.key});
+
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 24,
+    child: CustomPaint(
+      painter: _SplitDisc(
+        colors,
+        NeumorphicTheme.of(context).colors.inkSecondary,
+      ),
+    ),
+  );
+}
+
+class _SplitDisc extends CustomPainter {
+  _SplitDisc(this.colors, this.ring);
+
+  final List<Color> colors;
+  final Color ring;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final disc = Offset.zero & size;
+    final share = 2 * math.pi / colors.length;
+    for (final (i, color) in colors.indexed) {
+      canvas.drawArc(
+        disc,
+        -3 * math.pi / 4 + share * i,
+        share,
+        true,
+        Paint()..color = color,
+      );
+    }
+    canvas.drawCircle(
+      disc.center,
+      size.shortestSide / 2 - .5,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = ring,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SplitDisc old) =>
+      !listEquals(old.colors, colors) || old.ring != ring;
 }

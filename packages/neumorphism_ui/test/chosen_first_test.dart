@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -30,8 +29,8 @@ String? _focusedLabel() {
   final context = FocusManager.instance.primaryFocus?.context;
   if (context == null) return null;
   final own = context.widget;
-  if (own is NeumorphicTap) return own.label;
-  return context.findAncestorWidgetOfExactType<NeumorphicTap>()?.label;
+  if (own is NeumorphicTap) return own.semanticLabel;
+  return context.findAncestorWidgetOfExactType<NeumorphicTap>()?.semanticLabel;
 }
 
 void main() {

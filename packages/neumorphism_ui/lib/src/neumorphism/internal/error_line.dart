@@ -1,8 +1,9 @@
-// The one line an error takes under its control: the warning mark and the words, in the caption and the ink.
+// The one line an error takes under its control: the look's error mark on its warmed bead, and the words in the caption
+// and the ink.
 import 'package:flutter/widgets.dart';
 
-import '../glyphs.dart';
 import '../theme.dart';
+import 'error_mark.dart';
 
 /// [child], usually a [Text], as an error message: every field, select and picker writes its failure with this.
 class NeumorphicErrorLine extends StatelessWidget {
@@ -23,14 +24,9 @@ class NeumorphicErrorLine extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ExcludeSemantics(
-            child: Icon(
-              NeumorphicGlyphs.triangleAlert,
-              color: t.colors.ink,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 6),
+          // The look's error mark, raised on its warmed bead: the line reads as a failure, not as a note.
+          const NeumorphicErrorMark(size: 20, glyphSize: 12),
+          const SizedBox(width: 8),
           Expanded(
             child: DefaultTextStyle.merge(
               style: t.textTheme.caption.copyWith(color: t.colors.ink),

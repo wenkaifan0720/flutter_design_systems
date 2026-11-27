@@ -38,7 +38,8 @@ final _fields = <String, Widget Function()>{
 Rect _face(WidgetTester tester, String name) => name == 'a select'
     ? tester.getRect(
         find.byWidgetPredicate(
-          (w) => w is NeumorphicTap && (w.label ?? '').startsWith('Room,'),
+          (w) =>
+              w is NeumorphicTap && (w.semanticLabel ?? '').startsWith('Room,'),
         ),
       )
     : tester.getRect(find.byType(NeumorphicFieldBox).first);

@@ -8,7 +8,7 @@ import 'package:neumorphism_ui/neumorphism_host.dart';
 import 'package:neumorphism_ui/neumorphism_parts.dart' show NeumorphicChart;
 
 // ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/live.dart';
 import '../example/lib/kit_gallery/hearth.dart' show hearthScreens;
 import 'flutter_test_config.dart' show longWalkLeakTesting;
@@ -138,10 +138,10 @@ void main() {
   ) async {
     await pumpLive(tester, 'fields', width: 1440, customizing: true);
     final relief = find.byWidgetPredicate(
-      (w) => w is NeumorphicSegmentedButton && w.label == 'Relief',
+      (w) => w is NeumorphicSegmentedButton && w.semanticLabel == 'Relief',
     );
     final density = find.byWidgetPredicate(
-      (w) => w is NeumorphicSegmentedButton && w.label == 'Density',
+      (w) => w is NeumorphicSegmentedButton && w.semanticLabel == 'Density',
     );
     // A two-choice control is not the panel's width at 1440, and the knobs start at the panel's left.
     expect(tester.getSize(relief).width, lessThanOrEqualTo(260));
@@ -274,8 +274,9 @@ void main() {
       await tapLive(tester, find.text('Filters'));
       seen.addAll(builtWidgets(tester));
       await tapLive(tester, find.text('Show 12 rooms'));
-      // Not a part of an app's screen: the gallery's preview frame.
-      final notOnAPage = {'$NeumorphicPreview'};
+      // Not a part of an app's screen: the gallery's preview frame. The app's
+      // frame stands round every page: the example app is built on it.
+      final notOnAPage = {'$NeumorphicPreview', '$NeumorphicAppShell'};
       expect(
         exportedWidgets().difference(seen).difference(notOnAPage),
         isEmpty,

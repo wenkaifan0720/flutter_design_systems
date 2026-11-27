@@ -37,7 +37,7 @@ void main() {
         child: SizedBox(
           height: 200,
           child: NeumorphicScrollArea(
-            label: 'Notes',
+            semanticLabel: 'Notes',
             controller: controller,
             child: ListView(controller: controller, children: rows()),
           ),

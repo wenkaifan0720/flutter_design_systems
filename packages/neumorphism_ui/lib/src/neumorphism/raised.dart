@@ -771,7 +771,7 @@ class NeumorphicBottomSheet extends StatelessWidget {
                   neumorphicAtEnd(
                     NeumorphicRoundButton(
                       NeumorphicGlyphs.close,
-                      label:
+                      semanticLabel:
                           closeLabel ??
                           NeumorphicLocalizations.of(context).close,
                       onPressed: close,
@@ -940,7 +940,7 @@ class NeumorphicMenu<T> extends StatefulWidget {
     required this.items,
     this.onSelected,
     this.width,
-    this.label,
+    this.semanticLabel,
     this.autofocus = true,
     this.style,
     this.fieldWords,
@@ -963,7 +963,7 @@ class NeumorphicMenu<T> extends StatefulWidget {
   final double? width;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? semanticLabel;
 
   /// Whether to request focus when first attached.
   final bool autofocus;
@@ -985,7 +985,7 @@ class NeumorphicMenu<T> extends StatefulWidget {
       ..add(IterableProperty<NeumorphicMenuItem<T>>('items', items))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(DoubleProperty('width', width, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: true),
       );
@@ -1143,7 +1143,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
       child: Semantics(
         container: true,
         explicitChildNodes: true,
-        label: widget.label,
+        label: widget.semanticLabel,
         child: NeumorphicSurface(
           cast: NeumorphicSurfaceLevel.part,
           style: widget.style,
@@ -1188,7 +1188,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                           }
                         },
                         child: NeumorphicTap(
-                          label: widget.items[i].label,
+                          semanticLabel: widget.items[i].label,
                           shape: rowBorder,
                           selected: widget.items[i].selected,
                           onPressed:
@@ -1563,7 +1563,7 @@ Future<T?> showNeumorphicMenu<T>(
             fieldWords: fieldWords,
             items: items,
             width: matchWidth ? anchor.width : width,
-            label: label,
+            semanticLabel: label,
             onSelected: (value) => Navigator.of(context).pop(value),
           ),
         );
@@ -1850,7 +1850,7 @@ NeumorphicRaised showNeumorphicTooltip(
 /// the look's raised face, faded in above the control (below where there is no room), its tail never drawn.
 ///
 /// ```dart
-/// NeumorphicTooltip(message: 'Share', child: NeumorphicRoundButton(NeumorphicGlyphs.info, label: 'Share', onPressed: share))
+/// NeumorphicTooltip(message: 'Share', child: NeumorphicRoundButton(NeumorphicGlyphs.info, semanticLabel: 'Share', onPressed: share))
 /// ```
 class NeumorphicTooltip extends StatelessWidget {
   /// Creates a [NeumorphicTooltip].
@@ -2143,7 +2143,7 @@ class NeumorphicSnackBar extends StatelessWidget {
                     neumorphicAtEnd(
                       NeumorphicRoundButton(
                         NeumorphicGlyphs.close,
-                        label:
+                        semanticLabel:
                             dismissLabel ??
                             NeumorphicLocalizations.of(context).dismiss,
                         onPressed: onDismiss,

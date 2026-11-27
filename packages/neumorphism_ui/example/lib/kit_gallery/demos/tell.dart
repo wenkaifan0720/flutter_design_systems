@@ -41,7 +41,7 @@ Widget kitSpecimenCircularProgressIndicator() => const Wrap(
     NeumorphicCircularProgressIndicator(
       value: .6,
       size: 40,
-      label: 'Uploading',
+      semanticLabel: 'Uploading',
     ),
   ],
 );
@@ -73,7 +73,7 @@ Widget kitSpecimenBadge() => const Wrap(
     NeumorphicBadge(120),
     NeumorphicBadge(
       3,
-      label: '3 unread messages',
+      semanticLabel: '3 unread messages',
       child: Icon(NeumorphicGlyphs.bell),
     ),
   ],

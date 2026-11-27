@@ -52,15 +52,17 @@ String? _focusedRow(WidgetTester tester) {
   )) {
     if (tap.focusNode != null &&
         tap.focusNode == focus &&
-        _countries.contains(tap.label)) {
-      return tap.label;
+        _countries.contains(tap.semanticLabel)) {
+      return tap.semanticLabel;
     }
   }
   return null;
 }
 
 bool _listOpen() => find
-    .byWidgetPredicate((w) => w is NeumorphicTap && w.label == 'Denmark')
+    .byWidgetPredicate(
+      (w) => w is NeumorphicTap && w.semanticLabel == 'Denmark',
+    )
     .evaluate()
     .isNotEmpty;
 
@@ -168,7 +170,7 @@ void main() {
     await mouse.moveTo(
       tester.getCenter(
         find.byWidgetPredicate(
-          (w) => w is NeumorphicTap && w.label == 'Austria',
+          (w) => w is NeumorphicTap && w.semanticLabel == 'Austria',
         ),
       ),
     );

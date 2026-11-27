@@ -58,7 +58,12 @@ class NeumorphicRuled extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const width = neumorphicRuleWidth;
-    if (!rule) return child;
+    // The first row of a grouped card stands under the card's rim, which already closes it: a rule there read as a
+    // stray line over the list. A rule inside that row is the row's own and stays.
+    final first =
+        NeumorphicGroupRowScope.firstOf(context) &&
+        context.findAncestorWidgetOfExactType<NeumorphicRuled>() == null;
+    if (!rule || first) return child;
     // The rule is a box of its own, the crease and its catch-light high: the row under it paints nothing, so it reads
     // as a divider over a row, not as a face holding the row.
     return Stack(
@@ -492,8 +497,9 @@ class NeumorphicListTile extends StatelessWidget {
   /// Supporting text displayed with the primary content.
   final String? note;
 
-  /// The accessible name for a tappable row. By default it includes the title,
-  /// subtitle and note, in reading order.
+  /// The accessible name for a tappable row. By default it is the title, subtitle and note, and the [trailing]
+  /// status's words (a [NeumorphicStatus], a [NeumorphicTag] or a [Text]), in reading order; the [leading] mark
+  /// only repeats the title, so it is left out.
   final String? semanticLabel;
 
   /// A monogram, an icon well, a `NeumorphicMedia(width: 56)`: its own width stays.
@@ -570,6 +576,22 @@ class NeumorphicListTile extends StatelessWidget {
     );
     Widget layout(BuildContext context, BoxConstraints c) {
       final wide = c.maxWidth >= 520;
+      // One line of [style] at the reader's size.
+      double lineOf(TextStyle style) {
+        final painter = TextPainter(
+          text: TextSpan(text: 'Hg', style: style),
+          textDirection: TextDirection.ltr,
+          textScaler: MediaQuery.textScalerOf(context),
+          maxLines: 1,
+        )..layout();
+        final h = painter.height;
+        painter.dispose();
+        return h;
+      }
+
+      final metaStyle = dense ? t.textTheme.micro : t.textTheme.caption;
+      // Words this tall run to three lines (a title and two of its meta's): the mark and the key stand at the top.
+      final threeTall = lineOf(titleStyle) + 2 * lineOf(metaStyle) - 1;
       // A title, its line and a note are three lines: the figure beside them stands at their top, as the mark does.
       final align = top || (subtitle != null && note != null)
           ? CrossAxisAlignment.start
@@ -599,27 +621,14 @@ class NeumorphicListTile extends StatelessWidget {
                 ),
               ],
             )
+          // Beside three lines it stands on the title's first line, where the mark and a key stand.
           : BesideOrUnder(
               need: need,
               centre: !top,
+              topFrom: threeTall,
+              firstLine: lineOf(titleStyle),
               children: [told, passive(trailing!)],
             );
-      // One line of [style] at the reader's size.
-      double lineOf(TextStyle style) {
-        final painter = TextPainter(
-          text: TextSpan(text: 'Hg', style: style),
-          textDirection: TextDirection.ltr,
-          textScaler: MediaQuery.textScalerOf(context),
-          maxLines: 1,
-        )..layout();
-        final h = painter.height;
-        painter.dispose();
-        return h;
-      }
-
-      final metaStyle = dense ? t.textTheme.micro : t.textTheme.caption;
-      // Words this tall run to three lines (a title and two of its meta's): the mark and the key stand at the top.
-      final threeTall = lineOf(titleStyle) + 2 * lineOf(metaStyle) - 1;
       if (action == null) {
         // The words start on a keyline of their own, after the mark, as they do beside an action.
         return _MarkRow(
@@ -691,12 +700,14 @@ class NeumorphicListTile extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
-        label:
+        // The row's words and its status, in reading order; a monogram or an icon only repeats the title.
+        semanticLabel:
             semanticLabel ??
             [
               title,
               ?subtitle,
               ?note,
+              ?_wordsOf(trailing),
             ].where((text) => text.isNotEmpty).join(', '),
         selected: selected,
         // The chosen band is already in; a press on another row shows it going in.
@@ -753,6 +764,15 @@ class NeumorphicListTile extends StatelessWidget {
       );
   }
 }
+
+/// The words [part] draws, when it is words: a status, a tag or a text; null for a figure of its own (an amount, a
+/// glyph), which a row that names itself leaves out.
+String? _wordsOf(Widget? part) => switch (part) {
+  NeumorphicStatus(:final words) => words,
+  NeumorphicTag(:final text) => text,
+  Text(:final data?) => data,
+  _ => null,
+};
 
 /// A list tile's padding above and below its words.
 const double _tilePadding = 12;
@@ -1651,7 +1671,7 @@ class NeumorphicLevelRow extends StatelessWidget {
                 NeumorphicSwitch(
                   focusNode: focusNode,
                   autofocus: autofocus,
-                  label: title,
+                  semanticLabel: title,
                   value: value,
                   onChanged: onChanged,
                 ),
@@ -1667,7 +1687,7 @@ class NeumorphicLevelRow extends StatelessWidget {
                     children: [
                       Expanded(
                         child: NeumorphicSlider(
-                          label: title,
+                          semanticLabel: title,
                           value: level!,
                           onChanged: onLevelChanged,
                         ),
@@ -2068,7 +2088,7 @@ class NeumorphicNudge extends StatelessWidget {
 /// button, a stepper, a slider). The label and the help are a text field's own, so the form keeps one label style.
 ///
 /// ```dart
-/// NeumorphicFormGroup(labelText: 'Pay with', child: NeumorphicSegmentedButton<String>(label: 'Pay with', segments: ways, value: way, onChanged: setWay))
+/// NeumorphicFormGroup(labelText: 'Pay with', child: NeumorphicSegmentedButton<String>(semanticLabel: 'Pay with', segments: ways, value: way, onChanged: setWay))
 /// ```
 class NeumorphicFormGroup extends StatelessWidget {
   /// Creates a [NeumorphicFormGroup].

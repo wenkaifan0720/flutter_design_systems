@@ -48,7 +48,7 @@ Widget kitSpecimenDisclosure() => const NeumorphicColumn(
   ],
 );
 Widget kitSpecimenTable() => NeumorphicTable(
-  label: 'Purchases',
+  semanticLabel: 'Purchases',
   columns: const [
     NeumorphicTableColumn('Item', flex: 2),
     NeumorphicTableColumn('Quantity', numeric: true),

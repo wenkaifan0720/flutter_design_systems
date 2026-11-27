@@ -30,7 +30,7 @@ void main() {
                 width: 310,
                 key: const ValueKey('radios'),
                 child: NeumorphicRadioGroup<String>(
-                  label: 'Plan',
+                  semanticLabel: 'Plan',
                   options: const [
                     NeumorphicRadio('A', 'A'),
                     NeumorphicRadio('B', 'B', enabled: false),

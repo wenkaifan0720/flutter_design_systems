@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/kit_gallery/hearth.dart' show hearthScreens;
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart'
     show inkedContrastFailures, loadBundledFonts, settle, touchFloorTargets;
 import 'support.dart' show loadNeumorphicFonts;

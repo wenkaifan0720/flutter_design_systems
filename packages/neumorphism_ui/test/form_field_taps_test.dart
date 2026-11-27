@@ -32,7 +32,7 @@ class _FormState extends State<_Form> {
       NeumorphicFormField(
         labelText: 'Priority',
         child: NeumorphicSegmentedButton<String>(
-          label: 'Priority',
+          semanticLabel: 'Priority',
           segments: const [
             NeumorphicButtonSegment('low', 'Low'),
             NeumorphicButtonSegment('normal', 'Normal'),
@@ -72,7 +72,7 @@ class _FormState extends State<_Form> {
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: NeumorphicSwitch(
-            label: 'Reminder',
+            semanticLabel: 'Reminder',
             value: _reminder,
             onChanged: (v) {
               _say('reminder $v');
@@ -86,7 +86,7 @@ class _FormState extends State<_Form> {
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: NeumorphicCheckbox(
-            label: 'Done',
+            semanticLabel: 'Done',
             value: _done,
             onChanged: (v) {
               _say('done $v');

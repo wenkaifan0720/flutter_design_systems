@@ -82,7 +82,7 @@ void main() {
     (
       'chart',
       () => const NeumorphicChart(
-        label: 'Hours',
+        semanticLabel: 'Hours',
         series: [
           NeumorphicChartSeries('Work', [2, 4, 3]),
         ],

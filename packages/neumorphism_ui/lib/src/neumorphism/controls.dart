@@ -20,7 +20,9 @@ import 'knobs.dart';
 import 'editing.dart';
 import 'localizations.dart';
 import 'internal/cell_bank.dart';
+import 'internal/eased_lines.dart';
 import 'internal/error_line.dart';
+import 'internal/error_mark.dart';
 import 'internal/field_hooks.dart';
 import 'internal/geometry.dart';
 import 'internal/reach.dart';
@@ -51,7 +53,7 @@ import 'internal/actions.dart' show neumorphicInActionBar;
 /// sinks. [radius] and [round] say which outline the lift follows.
 ///
 /// ```dart
-/// NeumorphicTap(onPressed: open, label: 'Open', child: tile)
+/// NeumorphicTap(onPressed: open, semanticLabel: 'Open', child: tile)
 /// ```
 class NeumorphicTap extends StatefulWidget {
   /// Creates a [NeumorphicTap].
@@ -59,7 +61,7 @@ class NeumorphicTap extends StatefulWidget {
     super.key,
     required this.child,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.semanticValue,
     this.semanticHint,
     this.enabled,
@@ -118,7 +120,7 @@ class NeumorphicTap extends StatefulWidget {
   final VoidCallback? onPressed;
 
   /// An accessible name replacing the descendant semantics when supplied.
-  final String? label;
+  final String? semanticLabel;
 
   /// The current value announced by accessibility services.
   final String? semanticValue;
@@ -231,7 +233,7 @@ class NeumorphicTap extends StatefulWidget {
         DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
       )
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('semanticValue', semanticValue, defaultValue: null))
       ..add(StringProperty('semanticHint', semanticHint, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
@@ -323,11 +325,11 @@ class _NeumorphicTapState extends State<NeumorphicTap> {
     );
     final pressable = RawButton(
       onPressed: widget.onPressed,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       semanticValue: widget.semanticValue,
       semanticHint: widget.semanticHint,
       enabled: widget.enabled,
-      excludeSemantics: widget.label != null,
+      excludeSemantics: widget.semanticLabel != null,
       semanticSelected: widget.selected,
       expanded: widget.expanded,
       checked: widget.checked,
@@ -999,7 +1001,7 @@ class _MouldedState extends State<_Moulded> {
     themeStyle: widget.themeStyle,
     shape: widget.shape,
     onPressed: widget.busy ? null : widget.onPressed,
-    label: widget.label,
+    semanticLabel: widget.label,
     selected: widget.selected,
     focusNode: widget.focusNode,
     enabled: widget.busy ? widget.onPressed != null : null,
@@ -1405,7 +1407,7 @@ class _ActButtonState extends State<_ActButton> {
       themeStyle: themeStyle,
       shape: shape,
       onPressed: onPressed,
-      label: widget.label,
+      semanticLabel: widget.label,
       focusNode: widget.focusNode,
       enabled: widget.busy ? widget.onPressed != null : null,
       semanticValue: widget.busy && widget.showBusy
@@ -1831,7 +1833,7 @@ class _QuietButton extends StatelessWidget {
       style: style,
       themeStyle: themeStyle,
       shape: shape,
-      label: label,
+      semanticLabel: label,
       focusNode: focusNode,
       onPressed: busy ? null : onPressed,
       enabled: busy ? onPressed != null : null,
@@ -1946,7 +1948,8 @@ enum _ButtonForm { ordinary, filled, text }
 /// A button with its words: the plain moulded button, in ink, any number of them. Height 48, radius 12. It hugs its
 /// words, and [wide] makes it take the width it's given; in a bare Row it leaves its neighbours their words.
 /// [NeumorphicButton.filled] is the page's one act; [NeumorphicButton.text] has no raised face; [isDestructiveAction]
-/// on any of them puts a warning mark beside explicit words such as Delete.
+/// on any of them puts a warning mark beside explicit words such as Delete, and a destructive act never takes the
+/// pigment: a filled one stands as the plain moulded key with its mark, so Delete never reads as the page's Save.
 ///
 /// ```dart
 /// NeumorphicButton('Open', icon: NeumorphicGlyphs.arrowRight, onPressed: () {})
@@ -2045,8 +2048,8 @@ class NeumorphicButton extends StatelessWidget {
   /// The button's height, spacing and type scale.
   final NeumorphicButtonSize size;
 
-  /// Whether the action destroys something: a warning mark stands beside its words when no [icon] is given, and the
-  /// mark reads without colour.
+  /// Whether the action destroys something: a warning mark stands beside its words when no [icon] is given, the mark
+  /// reads without colour, and a filled button stands as the plain key (the pigment is the page's one act).
   final bool isDestructiveAction;
 
   /// State-resolved visual overrides before the button's component theme.
@@ -2066,7 +2069,11 @@ class NeumorphicButton extends StatelessWidget {
     // It lays out by the act's measures, so it keeps the act's size, glyph and words, and a key going out of use never
     // shifts its row.
     final laidDown = _form == _ButtonForm.filled && onPressed == null && !busy;
-    final form = laidDown ? _ButtonForm.ordinary : _form;
+    // The pigment is the page's one act; what destroys stands apart from it, as the plain key with its warning mark.
+    final form =
+        laidDown || (_form == _ButtonForm.filled && isDestructiveAction)
+        ? _ButtonForm.ordinary
+        : _form;
     return switch (form) {
       _ButtonForm.ordinary => _LineButton(
         label,
@@ -2253,7 +2260,7 @@ class NeumorphicLink extends StatelessWidget {
         semanticValue: busy && showBusy
             ? NeumorphicLocalizations.of(context).loading
             : null,
-        label: label,
+        semanticLabel: label,
         focusNode: focusNode,
         child: LayoutBuilder(
           builder: (context, box) {
@@ -2408,7 +2415,7 @@ class NeumorphicLink extends StatelessWidget {
 /// the pigment in its glyph and a wash under it.
 ///
 /// ```dart
-/// NeumorphicRoundButton(NeumorphicGlyphs.plus, size: 52, label: 'Up', onPressed: () {})
+/// NeumorphicRoundButton(NeumorphicGlyphs.plus, size: 52, semanticLabel: 'Up', onPressed: () {})
 /// ```
 class NeumorphicRoundButton extends StatelessWidget {
   /// Creates a [NeumorphicRoundButton].
@@ -2421,7 +2428,7 @@ class NeumorphicRoundButton extends StatelessWidget {
     this.autofocus = false,
     this.size = 44,
     this.iconSize,
-    this.label,
+    this.semanticLabel,
     this.selected = false,
     this.onPressed,
     this.style,
@@ -2444,23 +2451,23 @@ class NeumorphicRoundButton extends StatelessWidget {
        autofocus = false,
        size = 44,
        iconSize = null,
-       label = null,
+       semanticLabel = null,
        selected = false,
        onPressed = null;
 
   /// The act as a round key: the pigment-filled cap with [icon] alone, for a phone's top or a row with no room for the
-  /// word; [label] is read out, never drawn. [size] is the face's diameter: 36, 48 or 56. Out of use (no
+  /// word; [semanticLabel] is read out, never drawn. [size] is the face's diameter: 36, 48 or 56. Out of use (no
   /// [onPressed]) it lays its pigment down and stands as a plain cap out of use.
   ///
   /// ```dart
-  /// NeumorphicRoundButton.filled(NeumorphicGlyphs.power, label: 'Turn off', onPressed: () {})
+  /// NeumorphicRoundButton.filled(NeumorphicGlyphs.power, semanticLabel: 'Turn off', onPressed: () {})
   /// ```
   const NeumorphicRoundButton.filled(
     this.icon, {
     super.key,
     this.focusNode,
     this.autofocus = false,
-    required String this.label,
+    required String this.semanticLabel,
     this.size = 48,
     this.onPressed,
     this.style,
@@ -2492,7 +2499,7 @@ class NeumorphicRoundButton extends StatelessWidget {
   final double? iconSize;
 
   /// The accessible name of the icon action.
-  final String? label;
+  final String? semanticLabel;
 
   /// Whether to emphasize the active state with the pigment colour.
   final bool selected;
@@ -2520,7 +2527,7 @@ class NeumorphicRoundButton extends StatelessWidget {
       return _ActButton(
         focusNode: focusNode,
         autofocus: autofocus,
-        label ?? '',
+        semanticLabel ?? '',
         icon: icon,
         round: true,
         size: _capSize(size),
@@ -2751,7 +2758,7 @@ class NeumorphicRoundButton extends StatelessWidget {
                   themeStyle: t.iconButtonTheme,
                   shape: t.shapes.circle(),
                   onPressed: onPressed,
-                  label: label,
+                  semanticLabel: semanticLabel,
                   semanticValue: badgeLabel ?? badge,
                   focusSize: Size.square(faceMinimum(rest)),
                   faceAlignment: place,
@@ -2783,7 +2790,7 @@ class NeumorphicRoundButton extends StatelessWidget {
       ..add(DiagnosticsProperty<IconData>('icon', icon))
       ..add(DoubleProperty('size', size, defaultValue: 44))
       ..add(DoubleProperty('iconSize', iconSize, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
       )
@@ -2856,7 +2863,7 @@ class _KeyBeadPainter extends CustomPainter {
 /// A labelled icon on a round moulded button.
 ///
 /// ```dart
-/// NeumorphicIconButton(NeumorphicGlyphs.plus, label: 'Add', onPressed: add)
+/// NeumorphicIconButton(NeumorphicGlyphs.plus, semanticLabel: 'Add', onPressed: add)
 /// ```
 class NeumorphicIconButton extends StatelessWidget {
   /// Creates a [NeumorphicIconButton].
@@ -2865,7 +2872,7 @@ class NeumorphicIconButton extends StatelessWidget {
     super.key,
     this.focusNode,
     this.autofocus = false,
-    required this.label,
+    required this.semanticLabel,
     this.onPressed,
     this.size = 44,
     this.iconSize,
@@ -2883,7 +2890,7 @@ class NeumorphicIconButton extends StatelessWidget {
   final IconData icon;
 
   /// The accessible name of the icon action.
-  final String label;
+  final String semanticLabel;
 
   /// Called when the item is activated.
   final VoidCallback? onPressed;
@@ -2915,7 +2922,7 @@ class NeumorphicIconButton extends StatelessWidget {
     autofocus: autofocus,
     icon,
     style: style,
-    label: label,
+    semanticLabel: semanticLabel,
     onPressed: onPressed,
     size: size,
     iconSize: iconSize,
@@ -2936,7 +2943,7 @@ class NeumorphicIconButton extends StatelessWidget {
         ),
       )
       ..add(DiagnosticsProperty<IconData>('icon', icon))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(DoubleProperty('size', size, defaultValue: 44))
       ..add(DoubleProperty('iconSize', iconSize, defaultValue: null))
@@ -3211,7 +3218,7 @@ class NeumorphicChip extends StatelessWidget {
                           style: style,
                           themeStyle: t.chipTheme,
                           shape: shape,
-                          label: label,
+                          semanticLabel: label,
                           selected: selected,
                           radius: NeumorphicRadii.chip,
                           child: Padding(
@@ -3230,7 +3237,7 @@ class NeumorphicChip extends StatelessWidget {
                   height: NeumorphicChromeMetrics.targetOf(context).height,
                   child: NeumorphicTap(
                     onPressed: isEnabled ? onDeleted : null,
-                    label:
+                    semanticLabel:
                         deleteLabel ??
                         '${NeumorphicLocalizations.of(context).delete} $label',
                     style: style,
@@ -3397,7 +3404,7 @@ class NeumorphicLatchGroup extends StatelessWidget {
             shape: cell.border,
             focusReach: .5,
             pressRelief: !on,
-            label: o.label,
+            semanticLabel: o.label,
             selected: on,
             child: NeumorphicCellFace(
               child: Builder(
@@ -4028,25 +4035,16 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
     final trailing = reveal != null
         ? NeumorphicRoundButton(
             reveal.obscured ? NeumorphicGlyphs.eye : NeumorphicGlyphs.eyeOff,
-            label: reveal.toggleLabel,
+            semanticLabel: reveal.toggleLabel,
             size: keySize,
             onPressed: widget.enabled ? reveal.toggle : null,
           )
         : widget.trailing;
-    // A field that fails carries the warning mark at its end, in the ink, as the line under it does: the field itself
-    // says which one failed, with no colour of its own (the look's one pigment is for what is live). A key of its own
-    // there (the eye, a send key) keeps its place, and the line under the field still says why.
-    final end =
-        trailing ??
-        (widget.errorText == null
-            ? null
-            : ExcludeSemantics(
-                child: Icon(
-                  NeumorphicGlyphs.triangleAlert,
-                  size: 18,
-                  color: t.colors.ink,
-                ),
-              ));
+    // A field that fails carries the look's error mark at its end, raised on its warmed bead, as the line under it
+    // does: the field itself reads as failed, with no colour of its own (the look's one pigment is for what is live,
+    // and only warms the bead). A key of its own there (the eye, a send key) keeps its place, and the line under the
+    // field still says why.
+    final end = trailing;
     final field = NeumorphicFieldBox(
       style: widget.style,
       states: states,
@@ -4094,7 +4092,23 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
                 child: end,
               ),
             ),
-          ],
+          ] else
+            // The mark fades in where a key would stand, the entry giving it its room as it comes.
+            NeumorphicMarkSlot(
+              shown: widget.errorText != null,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: math.max(0, _keyGap - keyAir)),
+                  band(
+                    const NeumorphicFacePlace(
+                      alignment: AlignmentDirectional.center,
+                      child: NeumorphicErrorMark(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -4143,34 +4157,40 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (label != null && !nameOnly) ...[
-            DefaultTextStyle.merge(
-              // A field being typed in names itself in the pigment's ink: its deeper well alone is barely deeper
-              // by night, and the caret blinks, so focus would have no steady 3:1 mark but the edge.
-              style: t.textTheme.caption.copyWith(
-                fontWeight: FontWeight.w700,
-                color: _focused ? t.colors.pigmentInk : null,
-              ),
+            // A field being typed in names itself in the pigment's ink: its deeper well alone is barely deeper
+            // by night, and the caret blinks, so focus would have no steady 3:1 mark but the edge.
+            NeumorphicLabelInk(
+              lit: _focused,
+              style: t.textTheme.caption.copyWith(fontWeight: FontWeight.w700),
               child: parts.label ?? ExcludeSemantics(child: Text(label)),
             ),
             const SizedBox(height: 8),
           ],
           parts.control,
-          if (lines && (error != null || helper != null)) ...[
-            const SizedBox(height: 8),
-            if (error != null)
-              (failureLine ?? (child) => child)(
-                // The decorator's error line is the field's announcement; a form's own is the form's.
-                NeumorphicErrorLine(
-                  live: !own && failureLine == null,
-                  child: parts.error ?? Text(error),
-                ),
-              )
-            else
-              DefaultTextStyle.merge(
-                style: t.textTheme.caption,
-                child: parts.helper ?? ExcludeSemantics(child: Text(helper!)),
-              ),
-          ],
+          // The help or the failure eases in under the field.
+          NeumorphicHintSlot(
+            child: !lines
+                ? null
+                : error != null
+                ? KeyedSubtree(
+                    key: const ValueKey<bool>(true),
+                    child: (failureLine ?? (child) => child)(
+                      // The decorator's error line is the field's announcement; a form's own is the form's.
+                      NeumorphicErrorLine(
+                        live: !own && failureLine == null,
+                        child: parts.error ?? Text(error),
+                      ),
+                    ),
+                  )
+                : helper != null
+                ? DefaultTextStyle.merge(
+                    key: const ValueKey<bool>(false),
+                    style: t.textTheme.caption,
+                    child:
+                        parts.helper ?? ExcludeSemantics(child: Text(helper)),
+                  )
+                : null,
+          ),
           if (widget.counter != null) ...[
             const SizedBox(height: 6),
             Align(
@@ -4240,7 +4260,7 @@ class NeumorphicSendButton extends StatelessWidget {
           // The face draws its own depression.
           pressRelief: false,
           onPressed: onPressed,
-          label: NeumorphicLocalizations.of(context).send,
+          semanticLabel: NeumorphicLocalizations.of(context).send,
           style: style,
           themeStyle: t.iconButtonTheme,
           shape: shape,
@@ -4379,25 +4399,8 @@ class NeumorphicSelectField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // From a medium window up, a picker is a control, not a band: at most a control's most in a wider column.
-    return LayoutBuilder(
-      builder: (context, box) {
-        final row = _row(context);
-        if (!box.hasBoundedWidth) return row;
-        return Align(
-          alignment: AlignmentDirectional.centerStart,
-          heightFactor: 1,
-          child: SizedBox(
-            width: neumorphicControlWidth(
-              context,
-              box.maxWidth,
-              neumorphicWideControlMax,
-            ),
-            child: row,
-          ),
-        );
-      },
-    );
+    // In a column it takes the column, as every field does.
+    return _row(context);
   }
 
   Widget _row(BuildContext context) {
@@ -4410,7 +4413,7 @@ class NeumorphicSelectField extends StatelessWidget {
       // A field: its focus deepens its well, as a text field's does, and never raises the face.
       showFocus: false,
       onPressed: onPressed,
-      label: value,
+      semanticLabel: value,
       child: Builder(
         builder: (context) {
           final look = neumorphicStyleOf([
@@ -4509,7 +4512,7 @@ class NeumorphicChoiceBox extends StatelessWidget {
     this.selected = false,
     this.padding = const EdgeInsets.all(12),
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.hint,
     this.many = false,
     this.inGroup = false,
@@ -4532,7 +4535,7 @@ class NeumorphicChoiceBox extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? semanticLabel;
 
   /// An accessible description of what selecting this option does.
   final String? hint;
@@ -4559,7 +4562,7 @@ class NeumorphicChoiceBox extends StatelessWidget {
       style: style,
       themeStyle: t.optionTheme,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: semanticLabel,
       selected: many ? null : selected,
       checked: many ? selected : null,
       inMutuallyExclusiveGroup: inGroup,
@@ -4640,7 +4643,7 @@ class NeumorphicChoiceBox extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('many', many, defaultValue: false))
       ..add(DiagnosticsProperty<bool>('inGroup', inGroup, defaultValue: false))
@@ -4770,7 +4773,7 @@ class NeumorphicChoices extends StatelessWidget {
                   horizontal: pad,
                   vertical: 10,
                 ),
-                label: o.label,
+                semanticLabel: o.label,
                 onPressed: onChanged == null ? null : () => onChanged!(o.value),
                 child: Builder(
                   builder: (context) {
@@ -5367,7 +5370,7 @@ class NeumorphicSwitch extends StatelessWidget {
     this.onChanged,
     this.focusNode,
     this.style,
-    this.label,
+    this.semanticLabel,
   });
 
   /// Whether the switch is on.
@@ -5381,7 +5384,7 @@ class NeumorphicSwitch extends StatelessWidget {
 
   /// The setting announced with its on/off value. Supply this for a standalone
   /// switch; [NeumorphicSwitchRow] owns the label for its decorative switch.
-  final String? label;
+  final String? semanticLabel;
 
   /// Track fill, knob ink, rim and shape before the switch theme.
   final NeumorphicStyle? style;
@@ -5410,7 +5413,7 @@ class NeumorphicSwitch extends StatelessWidget {
       height: _targetSize(context, size.height),
       child: NeumorphicTap(
         autofocus: autofocus,
-        label: label,
+        semanticLabel: semanticLabel,
         toggled: value,
         focusNode: focusNode,
         button: false,
@@ -5506,7 +5509,7 @@ class NeumorphicSwitch extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<NeumorphicStyle>(
           'style',
@@ -5574,7 +5577,7 @@ class NeumorphicSwitchRow extends StatelessWidget {
       autofocus: autofocus,
       style: style,
       themeStyle: t.switchTheme,
-      label: label,
+      semanticLabel: label,
       semanticHint: subtitle,
       toggled: value,
       button: false,
@@ -5874,7 +5877,7 @@ class _ThumbLift extends CustomPainter {
 /// A level you drag: a groove, a pigment fill, a raised round thumb. At zero the fill goes and the thumb's point turns ink.
 ///
 /// ```dart
-/// NeumorphicSlider(label: 'Level', value: .3, onChanged: (v) {})
+/// NeumorphicSlider(semanticLabel: 'Level', value: .3, onChanged: (v) {})
 /// ```
 class NeumorphicSlider extends StatefulWidget {
   /// Creates a [NeumorphicSlider].
@@ -5883,7 +5886,7 @@ class NeumorphicSlider extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     required this.value,
-    required this.label,
+    required this.semanticLabel,
     this.min = 0,
     this.max = 1,
     this.divisions,
@@ -5917,7 +5920,7 @@ class NeumorphicSlider extends StatefulWidget {
   final ValueChanged<double>? onChangeEnd;
 
   /// A screen reader's name for this level.
-  final String label;
+  final String semanticLabel;
 
   /// Formats the current and adjacent accessibility values.
   final String Function(double value)? valueLabel;
@@ -5955,7 +5958,7 @@ class NeumorphicSlider extends StatefulWidget {
           onChangeEnd,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<String Function(double value)>.has(
           'valueLabel',
@@ -6034,7 +6037,7 @@ class _NeumorphicSliderState extends State<NeumorphicSlider> {
           child: MergeSemantics(
             child: Semantics(
               slider: true,
-              label: widget.label,
+              label: widget.semanticLabel,
               value: spoken(widget.value),
               increasedValue: enabled ? spoken(widget.value + _step) : null,
               decreasedValue: enabled ? spoken(widget.value - _step) : null,

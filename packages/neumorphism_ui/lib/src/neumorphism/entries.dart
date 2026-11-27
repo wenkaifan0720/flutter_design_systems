@@ -13,6 +13,7 @@ import 'component_themes.dart';
 import 'styled.dart';
 import 'shapes.dart';
 import 'internal/cell_bank.dart';
+import 'internal/eased_lines.dart';
 import 'internal/reach.dart' show NeumorphicFacePlace, NeumorphicOwnRoot;
 import 'internal/error_line.dart';
 import 'internal/field_hooks.dart';
@@ -239,7 +240,7 @@ class _NeumorphicSearchFieldState extends State<NeumorphicSearchField> {
             : NeumorphicRoundButton(
                 NeumorphicGlyphs.close,
                 size: 32,
-                label:
+                semanticLabel:
                     widget.clearLabel ??
                     NeumorphicLocalizations.of(context).clearSearch,
                 onPressed: !widget.enabled
@@ -742,20 +743,25 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
             off: !widget.enabled,
             child: MergeSemantics(child: decorate(field)),
           ),
-          if (error != null || helper != null) ...[
-            const SizedBox(height: 8),
-            if (error != null)
-              (failureLine ?? (child) => child)(
-                NeumorphicErrorLine(
-                  live: failureLine == null,
-                  child: Text(error),
-                ),
-              )
-            else
-              ExcludeSemantics(
-                child: Text(helper!, style: t.textTheme.caption),
-              ),
-          ],
+          // The help or the failure eases in under the boxes.
+          NeumorphicHintSlot(
+            child: error != null
+                ? KeyedSubtree(
+                    key: const ValueKey<bool>(true),
+                    child: (failureLine ?? (child) => child)(
+                      NeumorphicErrorLine(
+                        live: failureLine == null,
+                        child: Text(error),
+                      ),
+                    ),
+                  )
+                : helper != null
+                ? ExcludeSemantics(
+                    key: const ValueKey<bool>(false),
+                    child: Text(helper, style: t.textTheme.caption),
+                  )
+                : null,
+          ),
         ],
       );
     }
@@ -779,19 +785,21 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
             const SizedBox(height: 8),
           ],
           parts.control,
-          if (error != null || helper != null) ...[
-            const SizedBox(height: 8),
-            if (error != null)
-              NeumorphicErrorLine(
-                live: false,
-                child: parts.error ?? Text(error),
-              )
-            else
-              DefaultTextStyle.merge(
-                style: t.textTheme.caption,
-                child: parts.helper ?? ExcludeSemantics(child: Text(helper!)),
-              ),
-          ],
+          // The help or the failure eases in under the boxes.
+          NeumorphicHintSlot(
+            child: error != null
+                ? NeumorphicErrorLine(
+                    live: false,
+                    child: parts.error ?? Text(error),
+                  )
+                : helper != null
+                ? DefaultTextStyle.merge(
+                    style: t.textTheme.caption,
+                    child:
+                        parts.helper ?? ExcludeSemantics(child: Text(helper)),
+                  )
+                : null,
+          ),
         ],
       ),
     );
@@ -951,33 +959,29 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (label != null) ...[
-            ExcludeSemantics(
-              child: Text(
-                label,
-                // A focused select names itself in the pigment's ink, as a focused text field does.
-                style: t.textTheme.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: _focused ? t.colors.pigmentInk : null,
-                ),
-              ),
+            // A focused select names itself in the pigment's ink, as a focused text field does.
+            NeumorphicLabelInk(
+              lit: _focused,
+              style: t.textTheme.caption.copyWith(fontWeight: FontWeight.w700),
+              child: ExcludeSemantics(child: Text(label)),
             ),
             const SizedBox(height: 8),
           ],
           parts.control,
-          if (error != null || helper != null) ...[
-            const SizedBox(height: 8),
-            if (error != null)
-              NeumorphicErrorLine(live: false, child: parts.error!)
-            else
-              DefaultTextStyle.merge(
-                style: t.textTheme.caption,
-                child: parts.helper!,
-              ),
-          ],
+          // The help or the failure eases in under the face.
+          NeumorphicHintSlot(
+            child: error != null
+                ? NeumorphicErrorLine(live: false, child: parts.error!)
+                : helper != null
+                ? DefaultTextStyle.merge(
+                    style: t.textTheme.caption,
+                    child: parts.helper!,
+                  )
+                : null,
+          ),
         ],
       ),
-      // From a medium window up the face is as wide as its widest option, at most a control's most; the open list
-      // matches it, so it hugs the options too.
+      // The face takes its column; the open list matches it.
       child: LayoutBuilder(
         builder: (context, box) {
           final look = neumorphicStyleOf([
@@ -1011,20 +1015,12 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
                       (look.iconSize ?? 18))
                   .ceilToDouble() +
               1;
-          final width = box.hasBoundedWidth
-              ? neumorphicControlWidth(
-                  context,
-                  box.maxWidth,
-                  math.min(own, neumorphicWideControlMax),
-                )
-              : math.min(own, neumorphicWideControlMax);
-          if (!box.hasBoundedWidth) {
-            return SizedBox(width: width, child: face);
-          }
-          return Align(
-            alignment: AlignmentDirectional.centerStart,
-            heightFactor: 1,
-            child: SizedBox(width: width, child: face),
+          // In a column it takes the column, as every field does (Material's dropdown field too); alone in a row with no
+          // bound (a filter in a toolbar), its widest option's width.
+          if (box.hasBoundedWidth) return face;
+          return SizedBox(
+            width: math.min(own, neumorphicWideControlMax),
+            child: face,
           );
         },
       ),
@@ -1045,7 +1041,10 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
       final focused = states.contains(WidgetState.focused);
       if (focused != _focused) setState(() => _focused = focused);
     },
-    label: [if (widget.labelText != null) widget.labelText!, value].join(', '),
+    semanticLabel: [
+      if (widget.labelText != null) widget.labelText!,
+      value,
+    ].join(', '),
     onPressed: widget.onChanged == null ? null : _show,
     // The arrows open it too, as Enter and Space do: its list opens on the chosen option, or the first, and the
     // arrows go on moving there.
@@ -1118,7 +1117,7 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
 /// A rounded-square inset checkbox; null is mixed. Tristate adds mixed to the press cycle.
 ///
 /// ```dart
-/// NeumorphicCheckbox(value: agreed, label: 'Agree', onChanged: change)
+/// NeumorphicCheckbox(value: agreed, semanticLabel: 'Agree', onChanged: change)
 /// ```
 class NeumorphicCheckbox extends StatelessWidget {
   /// Creates a [NeumorphicCheckbox].
@@ -1127,7 +1126,7 @@ class NeumorphicCheckbox extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     required this.value,
-    required this.label,
+    required this.semanticLabel,
     this.onChanged,
     this.tristate = false,
     this.isError = false,
@@ -1141,7 +1140,7 @@ class NeumorphicCheckbox extends StatelessWidget {
   final bool? value;
 
   /// The text identifying this item or control.
-  final String label;
+  final String semanticLabel;
 
   /// Reports a user-requested value change; update the supplied value to reflect it.
   final ValueChanged<bool?>? onChanged;
@@ -1186,7 +1185,7 @@ class NeumorphicCheckbox extends StatelessWidget {
           checked: value == true,
           mixed: value == null,
 
-          label: label,
+          semanticLabel: semanticLabel,
           button: false,
           round: false,
           focusInset:
@@ -1224,7 +1223,7 @@ class NeumorphicCheckbox extends StatelessWidget {
         ),
       )
       ..add(DiagnosticsProperty<bool>('value', value, defaultValue: null))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
       ..add(
         DiagnosticsProperty<bool>('tristate', tristate, defaultValue: false),
@@ -1386,7 +1385,7 @@ class NeumorphicCheckRow extends StatelessWidget {
       showFocus: cell != null,
 
       button: false,
-      label: [label, ?subtitle].join(', '),
+      semanticLabel: [label, ?subtitle].join(', '),
       onPressed: onChanged == null
           ? null
           : () => onChanged!(
@@ -1490,7 +1489,7 @@ class NeumorphicCheckRow extends StatelessWidget {
 }
 
 /// One radio choice; the group holds the selected value. [trailingText] is a figure at the end of the label's line: a
-/// delivery's or a plan's price.
+/// delivery's or a plan's price. [suffix] follows the words right beside them: a palette's swatches.
 ///
 /// ```dart
 /// NeumorphicRadio('next', 'Next day', note: 'Tomorrow by 18:00', trailingText: '£6.00')
@@ -1503,6 +1502,7 @@ class NeumorphicRadio<T> {
     this.label, {
     this.note,
     this.trailingText,
+    this.suffix,
     this.enabled = true,
   });
 
@@ -1518,6 +1518,10 @@ class NeumorphicRadio<T> {
   /// A figure at the end of the label's line, on its baseline: a price. A long label wraps before it moves the figure.
   final String? trailingText;
 
+  /// What follows the words, right beside them at any width, as an input's suffix follows its text: a palette's
+  /// swatches, so they read as that palette's colours. It is drawn, not read: the [label] names the choice.
+  final Widget? suffix;
+
   /// Whether the control accepts user interaction.
   final bool enabled;
   @override
@@ -1527,21 +1531,23 @@ class NeumorphicRadio<T> {
       other.label == label &&
       other.note == note &&
       other.trailingText == trailingText &&
+      other.suffix == suffix &&
       other.enabled == enabled;
   @override
-  int get hashCode => Object.hash(value, label, note, trailingText, enabled);
+  int get hashCode =>
+      Object.hash(value, label, note, trailingText, suffix, enabled);
 }
 
 /// A single radio choice with roving arrow-key focus and one Tab stop.
 ///
 /// ```dart
-/// NeumorphicRadioGroup<String>(label: 'Time', options: const [NeumorphicRadio('day', 'Day'), NeumorphicRadio('night', 'Night')], value: time, onChanged: choose)
+/// NeumorphicRadioGroup<String>(semanticLabel: 'Time', options: const [NeumorphicRadio('day', 'Day'), NeumorphicRadio('night', 'Night')], value: time, onChanged: choose)
 /// ```
 class NeumorphicRadioGroup<T> extends StatelessWidget {
   /// Creates a [NeumorphicRadioGroup].
   const NeumorphicRadioGroup({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.options,
     this.value,
     this.onChanged,
@@ -1552,7 +1558,7 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// The text identifying this item or control.
-  final String label;
+  final String semanticLabel;
 
   /// The mutually exclusive options, in display order.
   final List<NeumorphicRadio<T>> options;
@@ -1571,7 +1577,7 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
     final takesChoice = onChanged != null;
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       explicitChildNodes: true,
       // Flutter's radio group: one Tab stop, on the chosen option or else the first one that can be chosen, and arrows
       // that choose as they move, wrapping and passing over options out of use. ui_core's keyboard fix inside it keeps
@@ -1613,7 +1619,7 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicRadio<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged));
@@ -1760,40 +1766,88 @@ class _NeumorphicRadioOptionState<T> extends State<_NeumorphicRadioOption<T>> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (o.trailingText == null)
-                                      Text(o.label, style: words)
-                                    else
-                                      // The figure on the label's baseline; the label wraps before it moves the figure.
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.baseline,
-                                        textBaseline: TextBaseline.alphabetic,
-                                        children: [
-                                          Expanded(
-                                            child: Text(o.label, style: words),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            o.trailingText!,
-                                            style: words.tabular,
-                                          ),
-                                        ],
-                                      ),
-                                    if (o.note != null)
-                                      Text(
-                                        o.note!,
-                                        style: t.textTheme.caption
-                                            .merge(look.textStyle)
-                                            .copyWith(color: look.foreground),
-                                      ),
-                                  ],
+                              // Words keep to their own width before a suffix, so it stands right beside them.
+                              if (o.suffix == null)
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (o.trailingText == null)
+                                        Text(o.label, style: words)
+                                      else
+                                        // The figure on the label's baseline; the label wraps before it moves the figure.
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.baseline,
+                                          textBaseline: TextBaseline.alphabetic,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                o.label,
+                                                style: words,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              o.trailingText!,
+                                              style: words.tabular,
+                                            ),
+                                          ],
+                                        ),
+                                      if (o.note != null)
+                                        Text(
+                                          o.note!,
+                                          style: t.textTheme.caption
+                                              .merge(look.textStyle)
+                                              .copyWith(color: look.foreground),
+                                        ),
+                                    ],
+                                  ),
+                                )
+                              else ...[
+                                Flexible(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (o.trailingText == null)
+                                        Text(o.label, style: words)
+                                      else
+                                        // The figure on the label's baseline; the label wraps before it moves the figure.
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.baseline,
+                                          textBaseline: TextBaseline.alphabetic,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                o.label,
+                                                style: words,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              o.trailingText!,
+                                              style: words.tabular,
+                                            ),
+                                          ],
+                                        ),
+                                      if (o.note != null)
+                                        Text(
+                                          o.note!,
+                                          style: t.textTheme.caption
+                                              .merge(look.textStyle)
+                                              .copyWith(color: look.foreground),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 12),
+                                o.suffix!,
+                              ],
                             ],
                           ),
                         ),
@@ -1876,13 +1930,13 @@ bool _greyChoice(NeumorphicColors c) {
 /// to a row, and more wrap into even rows.
 ///
 /// ```dart
-/// NeumorphicSegmentedButton<String>(label: 'Period', segments: const [NeumorphicButtonSegment('day', 'Day'), NeumorphicButtonSegment('week', 'Week')], value: period, onChanged: choose)
+/// NeumorphicSegmentedButton<String>(semanticLabel: 'Period', segments: const [NeumorphicButtonSegment('day', 'Day'), NeumorphicButtonSegment('week', 'Week')], value: period, onChanged: choose)
 /// ```
 class NeumorphicSegmentedButton<T> extends StatelessWidget {
   /// Creates a [NeumorphicSegmentedButton].
   const NeumorphicSegmentedButton({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.segments,
     this.value,
     this.onChanged,
@@ -1893,7 +1947,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// The text identifying this item or control.
-  final String label;
+  final String semanticLabel;
 
   /// The mutually exclusive segments, in display order.
   final List<NeumorphicButtonSegment<T>> segments;
@@ -1937,7 +1991,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
       heightFactor: 1,
       child: Semantics(
         container: true,
-        label: label,
+        label: semanticLabel,
         explicitChildNodes: true,
         child: _ChoiceSet(
           selectedIndex: selectedIndex,
@@ -1992,7 +2046,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
                   pressRelief: !selected,
                   focusNode: node,
                   onKeyEvent: (_, e) => key(e),
-                  label: o.semanticLabel ?? o.label,
+                  semanticLabel: o.semanticLabel ?? o.label,
                   selected: selected,
                   onPressed: enabled ? () => onChanged!(o.value) : null,
                   child: NeumorphicCellFace(
@@ -2099,7 +2153,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<NeumorphicButtonSegment<T>>('segments', segments))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged));
@@ -2225,13 +2279,13 @@ class _ChoiceSetState extends State<_ChoiceSet> {
 /// where it is, faded and still.
 ///
 /// ```dart
-/// NeumorphicRating(label: 'Your rating', value: 4, onChanged: (stars) => setState(() => rating = stars))
+/// NeumorphicRating(semanticLabel: 'Your rating', value: 4, onChanged: (stars) => setState(() => rating = stars))
 /// ```
 class NeumorphicRating extends StatelessWidget {
   /// Creates a [NeumorphicRating].
   const NeumorphicRating({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.value,
     this.count = 5,
     this.onChanged,
@@ -2242,7 +2296,7 @@ class NeumorphicRating extends StatelessWidget {
        assert(size >= 12);
 
   /// The accessible name of the score.
-  final String label;
+  final String semanticLabel;
 
   /// The score, from 0 to [count]; a fraction fills part of a star when it only shows.
   final double value;
@@ -2293,7 +2347,7 @@ class NeumorphicRating extends StatelessWidget {
           onChanged: null,
           readOnly: true,
           itemCount: count,
-          semanticLabel: label,
+          semanticLabel: semanticLabel,
           semanticFormatterCallback: say,
           layoutBuilder: (context, items) => Row(
             mainAxisSize: MainAxisSize.min,
@@ -2332,7 +2386,7 @@ class NeumorphicRating extends StatelessWidget {
             value: chosen.toDouble(),
             onChanged: enabled ? (score) => onChanged!(score.round()) : null,
             itemCount: count,
-            semanticLabel: label,
+            semanticLabel: semanticLabel,
             semanticFormatterCallback: say,
             itemBuilder: (context, item) => _StarTarget(
               item: item,
@@ -2365,7 +2419,7 @@ class NeumorphicRating extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(DoubleProperty('value', value))
       ..add(IntProperty('count', count, defaultValue: 5))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))

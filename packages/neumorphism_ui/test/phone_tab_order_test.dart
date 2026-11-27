@@ -57,7 +57,7 @@ void main() {
       walked.add(
         FocusManager.instance.primaryFocus!.context!
             .findAncestorWidgetOfExactType<NeumorphicTap>()!
-            .label!,
+            .semanticLabel!,
       );
     }
     expect(walked, [...rows, 'Home', 'Shop']);

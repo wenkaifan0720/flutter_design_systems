@@ -172,10 +172,14 @@ void main() {
   );
   Widget slider() => SizedBox(
     width: 280,
-    child: NeumorphicSlider(value: .3, label: 'Volume', onChanged: (_) {}),
+    child: NeumorphicSlider(
+      value: .3,
+      semanticLabel: 'Volume',
+      onChanged: (_) {},
+    ),
   );
   Widget on() =>
-      NeumorphicSwitch(value: true, label: 'Share', onChanged: (_) {});
+      NeumorphicSwitch(value: true, semanticLabel: 'Share', onChanged: (_) {});
 
   final cases = <String, _Case>{
     'a raised button': (part: button, act: null),
@@ -210,14 +214,17 @@ void main() {
     ),
     'a card': (part: card, act: null),
     'a switch, off': (
-      part: () =>
-          NeumorphicSwitch(value: false, label: 'Share', onChanged: (_) {}),
+      part: () => NeumorphicSwitch(
+        value: false,
+        semanticLabel: 'Share',
+        onChanged: (_) {},
+      ),
       act: null,
     ),
     'a switch, on': (part: on, act: null),
     'a focused switch': (part: on, act: _focus),
     'a switch out of use': (
-      part: () => const NeumorphicSwitch(value: true, label: 'Share'),
+      part: () => const NeumorphicSwitch(value: true, semanticLabel: 'Share'),
       act: null,
     ),
     'a slider': (part: slider, act: null),
@@ -232,7 +239,7 @@ void main() {
     ),
     'a segmented button': (
       part: () => NeumorphicSegmentedButton<String>(
-        label: 'Plan',
+        semanticLabel: 'Plan',
         segments: const [
           NeumorphicButtonSegment('m', 'Month'),
           NeumorphicButtonSegment('y', 'Year'),
@@ -243,13 +250,19 @@ void main() {
       act: null,
     ),
     'a checkbox': (
-      part: () =>
-          NeumorphicCheckbox(value: false, label: 'Agree', onChanged: (_) {}),
+      part: () => NeumorphicCheckbox(
+        value: false,
+        semanticLabel: 'Agree',
+        onChanged: (_) {},
+      ),
       act: null,
     ),
     'a checked checkbox': (
-      part: () =>
-          NeumorphicCheckbox(value: true, label: 'Agree', onChanged: (_) {}),
+      part: () => NeumorphicCheckbox(
+        value: true,
+        semanticLabel: 'Agree',
+        onChanged: (_) {},
+      ),
       act: null,
     ),
     'a calendar and its chosen day': (

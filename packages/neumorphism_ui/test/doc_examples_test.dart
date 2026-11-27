@@ -53,6 +53,19 @@ var rating = 4;
 var page = 1;
 var pressed = true;
 VoidCallback? onPressed;
+String? title;
+DateTime? started;
+var saved = 'pompeii';
+
+/// The caller's own page and the app's tree a host stands over.
+const Widget child = Text('Home');
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Books');
+}
 
 /// The caller's setState, outside a State.
 void setState(VoidCallback change) => change();
@@ -103,11 +116,59 @@ void main() {
   testDocExamples(
     self: 'test/doc_examples_test.dart',
     examples: {
+      'NeumorphicHost over an app': (context) => MaterialApp(
+        builder: (context, child) => NeumorphicHost(child: child!),
+        home: const BooksPage(),
+      ),
+      'NeumorphicHost with a palette': (context) => MaterialApp(
+        builder: (context, child) => NeumorphicHost(
+          palette: NeumorphicThemeData.palettes[1],
+          child: child!,
+        ),
+        home: const Text('Home'),
+      ),
+      'NeumorphicHost with a stored palette': (context) => NeumorphicHost(
+        palette: NeumorphicThemeData.palettes.firstWhere((p) => p.id == saved),
+        child: child,
+      ),
+      'NeumorphicThemeData.preset': (context) => NeumorphicThemeData.preset(
+        NeumorphicThemeData.palettes[1].id,
+        Brightness.dark,
+      ),
+      'NeumorphicTextFormField': (context) => NeumorphicTextFormField(
+        labelText: 'Title',
+        validator: (v) => (v ?? '').trim().isEmpty ? 'Enter the title' : null,
+        onSaved: (v) => title = v!,
+      ),
+      'NeumorphicDateField': (context) => NeumorphicDateField(
+        labelText: 'Started',
+        value: started,
+        lastDate: DateTime.now(),
+        onChanged: (day) => setState(() => started = day),
+      ),
+      'NeumorphicAppShell': (context) => NeumorphicAppShell(
+        header: const NeumorphicBrandRow('Shelf'),
+        destinations: const [
+          RawNavigationDestination(
+            label: 'Books',
+            icon: NeumorphicGlyphs.house,
+          ),
+          RawNavigationDestination(
+            label: 'Settings',
+            icon: NeumorphicGlyphs.settings,
+          ),
+        ],
+        branches: [
+          (context) => const Text('Books'),
+          (context) => const Text('Settings'),
+        ],
+      ),
+
       'NeumorphicButtonGroup': (context) {
         void back() {}
         void on() {}
         return NeumorphicButtonGroup(
-          label: 'Week',
+          semanticLabel: 'Week',
           items: [
             NeumorphicButtonGroupItem('Previous', onPressed: back),
             NeumorphicButtonGroupItem('Next', onPressed: on),
@@ -116,7 +177,7 @@ void main() {
       },
       'NeumorphicKbd': (context) => const NeumorphicKbd(['Ctrl', 'K']),
       'NeumorphicToggleGroup': (context) => NeumorphicToggleGroup<String>(
-        label: 'Text',
+        semanticLabel: 'Text',
         items: const [
           NeumorphicButtonSegment('b', 'Bold'),
           NeumorphicButtonSegment('i', 'Italic'),
@@ -178,35 +239,35 @@ void main() {
         return null;
       },
       'NeumorphicChart': (context) => const NeumorphicChart(
-        label: 'Hours slept',
+        semanticLabel: 'Hours slept',
         series: [
           NeumorphicChartSeries('Sleep', [7, null, 8]),
         ],
       ),
       'NeumorphicPieChart': (context) => const NeumorphicPieChart(
-        label: 'Where the time went',
+        semanticLabel: 'Where the time went',
         slices: [NeumorphicPieSlice('Work', 6), NeumorphicPieSlice('Rest', 2)],
       ),
       'NeumorphicSparkline': (context) => const NeumorphicSparkline(
-        label: 'Steps this week',
+        semanticLabel: 'Steps this week',
         values: [4.2, 6.1, 5.0, 7.3],
       ),
       'NeumorphicLineChart': (context) => const NeumorphicLineChart(
-        label: 'Hours slept',
+        semanticLabel: 'Hours slept',
         series: [
           NeumorphicChartSeries('Sleep', [7, 6.5, 8]),
         ],
         labels: ['Mon', 'Tue', 'Wed'],
       ),
       'NeumorphicBarChart': (context) => const NeumorphicBarChart(
-        label: 'Visits',
+        semanticLabel: 'Visits',
         series: [
           NeumorphicChartSeries('Visits', [12, 18, 9]),
         ],
         labels: ['Mon', 'Tue', 'Wed'],
       ),
       'NeumorphicAreaChart': (context) => const NeumorphicAreaChart(
-        label: 'Energy used',
+        semanticLabel: 'Energy used',
         series: [
           NeumorphicChartSeries('kWh', [3.2, 4.1, 2.8]),
         ],
@@ -299,10 +360,15 @@ void main() {
         hintText: 'A name',
         onChanged: (text) {},
       ),
-      'NeumorphicMedia': (context) =>
-          const NeumorphicMedia(slotId: 'item-1', aspect: 1, label: 'A piece'),
-      'NeumorphicMedia (2)': (context) =>
-          const NeumorphicMedia(glyph: NeumorphicGlyphs.lamp, label: 'A lamp'),
+      'NeumorphicMedia': (context) => const NeumorphicMedia(
+        slotId: 'item-1',
+        aspect: 1,
+        semanticLabel: 'A piece',
+      ),
+      'NeumorphicMedia (2)': (context) => const NeumorphicMedia(
+        glyph: NeumorphicGlyphs.lamp,
+        semanticLabel: 'A lamp',
+      ),
       'NeumorphicPictureCard': (context) {
         void open() {}
         return NeumorphicPictureCard(
@@ -319,7 +385,7 @@ void main() {
         figure: '62',
       ),
       'NeumorphicLoadingState': (context) =>
-          const NeumorphicLoadingState(label: 'Loading rooms'),
+          const NeumorphicLoadingState(semanticLabel: 'Loading rooms'),
       'NeumorphicErrorState': (context) {
         void retry() {}
         return NeumorphicErrorState(
@@ -341,7 +407,7 @@ void main() {
           ),
         );
         return NeumorphicDataTable<Map<String, String>>(
-          label: 'Bookings',
+          semanticLabel: 'Bookings',
           controller: bookings,
           cell: (booking, column) => booking[column.id] ?? '',
         );
@@ -349,7 +415,7 @@ void main() {
       'NeumorphicScrollArea': (context) {
         final rows = [for (var i = 0; i < 20; i++) Text('Note $i')];
         return NeumorphicScrollArea(
-          label: 'Notes',
+          semanticLabel: 'Notes',
           child: ListView(children: rows),
         );
       },
@@ -418,7 +484,11 @@ void main() {
       'NeumorphicTap': (context) {
         void open() {}
         const tile = Text('A tile');
-        return NeumorphicTap(onPressed: open, label: 'Open', child: tile);
+        return NeumorphicTap(
+          onPressed: open,
+          semanticLabel: 'Open',
+          child: tile,
+        );
       },
       'NeumorphicTapFace': (context) {
         const states = <WidgetState>{};
@@ -449,19 +519,19 @@ void main() {
       'NeumorphicRoundButton': (context) => NeumorphicRoundButton(
         NeumorphicGlyphs.plus,
         size: 52,
-        label: 'Up',
+        semanticLabel: 'Up',
         onPressed: () {},
       ),
       'NeumorphicRoundButton.filled': (context) => NeumorphicRoundButton.filled(
         NeumorphicGlyphs.power,
-        label: 'Turn off',
+        semanticLabel: 'Turn off',
         onPressed: () {},
       ),
       'NeumorphicIconButton': (context) {
         void add() {}
         return NeumorphicIconButton(
           NeumorphicGlyphs.plus,
-          label: 'Add',
+          semanticLabel: 'Add',
           onPressed: add,
         );
       },
@@ -512,8 +582,11 @@ void main() {
         value: true,
         onChanged: (v) {},
       ),
-      'NeumorphicSlider': (context) =>
-          NeumorphicSlider(label: 'Level', value: .3, onChanged: (v) {}),
+      'NeumorphicSlider': (context) => NeumorphicSlider(
+        semanticLabel: 'Level',
+        value: .3,
+        onChanged: (v) {},
+      ),
       'NeumorphicProgress': (context) => const NeumorphicProgress(
         value: .21,
         start: '0:25:12',
@@ -563,7 +636,7 @@ void main() {
         void change(bool? value) {}
         return NeumorphicCheckbox(
           value: agreed,
-          label: 'Agree',
+          semanticLabel: 'Agree',
           onChanged: change,
         );
       },
@@ -586,7 +659,7 @@ void main() {
         const time = 'day';
         void choose(String value) {}
         return NeumorphicRadioGroup<String>(
-          label: 'Time',
+          semanticLabel: 'Time',
           options: const [
             NeumorphicRadio('day', 'Day'),
             NeumorphicRadio('night', 'Night'),
@@ -599,7 +672,7 @@ void main() {
         const period = 'day';
         void choose(String value) {}
         return NeumorphicSegmentedButton<String>(
-          label: 'Period',
+          semanticLabel: 'Period',
           segments: const [
             NeumorphicButtonSegment('day', 'Day'),
             NeumorphicButtonSegment('week', 'Week'),
@@ -609,7 +682,7 @@ void main() {
         );
       },
       'NeumorphicRating': (context) => NeumorphicRating(
-        label: 'Your rating',
+        semanticLabel: 'Your rating',
         value: 4,
         onChanged: (stars) => setState(() => rating = stars),
       ),
@@ -860,7 +933,7 @@ void main() {
         return NeumorphicPageDots(
           count: 4,
           selectedIndex: page,
-          label: 'Introduction',
+          semanticLabel: 'Introduction',
           onChanged: jump,
         );
       },
@@ -888,7 +961,7 @@ void main() {
       'NeumorphicCarouselView': (context) {
         const rooms = ['Kitchen', 'Study'];
         return NeumorphicCarouselView(
-          label: 'Rooms',
+          semanticLabel: 'Rooms',
           height: 220,
           children: [
             for (final room in rooms) NeumorphicPictureCard(title: room),
@@ -908,7 +981,7 @@ void main() {
       'NeumorphicMark': (context) => const NeumorphicMark(size: 44),
       'NeumorphicEngraved': (context) => const NeumorphicEngraved(),
       'NeumorphicPopover': (context) => NeumorphicPopover(
-        label: 'Opening hours',
+        semanticLabel: 'Opening hours',
         trigger: (context, toggle) =>
             NeumorphicButton('Hours', onPressed: toggle),
         content: const Text('Nine to six'),
@@ -1109,7 +1182,7 @@ void main() {
           message: 'Share',
           child: NeumorphicRoundButton(
             NeumorphicGlyphs.info,
-            label: 'Share',
+            semanticLabel: 'Share',
             onPressed: share,
           ),
         );
@@ -1248,7 +1321,7 @@ void main() {
         return NeumorphicFormGroup(
           labelText: 'Pay with',
           child: NeumorphicSegmentedButton<String>(
-            label: 'Pay with',
+            semanticLabel: 'Pay with',
             segments: ways,
             value: way,
             onChanged: setWay,
@@ -1350,7 +1423,7 @@ void main() {
       'NeumorphicCircularProgressIndicator': (context) =>
           const NeumorphicCircularProgressIndicator(
             value: .4,
-            label: 'Uploading',
+            semanticLabel: 'Uploading',
             size: 32,
           ),
       'NeumorphicLinearProgressIndicator': (context) =>
@@ -1373,7 +1446,7 @@ void main() {
       },
       'NeumorphicBadge': (context) => const NeumorphicBadge(
         3,
-        label: '3 unread',
+        semanticLabel: '3 unread',
         child: Icon(NeumorphicGlyphs.bell),
       ),
       'neumorphicPageTransitions': (context) {
@@ -1416,7 +1489,7 @@ void main() {
         const guests = 2;
         void setGuests(int guests) {}
         return NeumorphicWheelPicker<int>(
-          label: 'Guests',
+          semanticLabel: 'Guests',
           items: const [1, 2, 3, 4, 5, 6],
           value: guests,
           onChanged: setGuests,

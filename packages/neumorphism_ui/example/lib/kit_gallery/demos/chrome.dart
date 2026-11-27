@@ -49,8 +49,11 @@ Widget kitSpecimenRailSet() => const NeumorphicRailSet(
 Widget kitSpecimenRailLink() =>
     const NeumorphicRailLink(label: 'A place', figure: '21.0', live: true);
 
-Widget kitSpecimenPhoto() =>
-    const NeumorphicMedia(slotId: 'item-1', aspect: 4 / 3, label: 'A piece');
+Widget kitSpecimenPhoto() => const NeumorphicMedia(
+  slotId: 'item-1',
+  aspect: 4 / 3,
+  semanticLabel: 'A piece',
+);
 
 Widget kitSpecimenPictureCard() => const NeumorphicPictureCard(
   glyph: NeumorphicGlyphs.lamp,

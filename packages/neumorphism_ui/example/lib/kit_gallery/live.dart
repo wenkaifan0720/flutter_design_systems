@@ -90,6 +90,7 @@ class _LiveExampleState extends State<LiveExample> {
   final _menuAnchor = GlobalKey();
   final _tooltipAnchor = GlobalKey();
   var _country = 'United States';
+  DateTime? _movingIn;
   var _tab = 0;
   var _emailUpdates = true;
   var _pushUpdates = false;
@@ -610,19 +611,19 @@ class _LiveExampleState extends State<LiveExample> {
         NeumorphicIconButton(
           NeumorphicGlyphs.star,
           key: const Key('live-favourite'),
-          label: 'Favourite',
+          semanticLabel: 'Favourite',
           selected: _favourite,
           onPressed: () => setState(() => _favourite = !_favourite),
         ),
         NeumorphicIconButton(
           NeumorphicGlyphs.bell,
-          label: 'Alerts',
+          semanticLabel: 'Alerts',
           badge: '3',
           onPressed: () => _say('Alerts opened'),
         ),
         NeumorphicRoundButton(
           NeumorphicGlyphs.plus,
-          label: 'Add',
+          semanticLabel: 'Add',
           onPressed: () => _say('Added'),
         ),
         NeumorphicLink('Read the guide', onPressed: () => _say('Guide')),
@@ -727,7 +728,7 @@ class _LiveExampleState extends State<LiveExample> {
             NeumorphicCheckbox(
               key: const Key('live-check'),
               value: _checked,
-              label: 'Include a receipt',
+              semanticLabel: 'Include a receipt',
               onChanged: (value) => setState(() => _checked = value ?? false),
             ),
             'Include a receipt',
@@ -737,7 +738,7 @@ class _LiveExampleState extends State<LiveExample> {
             NeumorphicCheckbox(
               value: _all,
               tristate: true,
-              label: 'All rooms',
+              semanticLabel: 'All rooms',
               onChanged: (value) => setState(() => _all = value),
             ),
             'All rooms (three states)',
@@ -780,7 +781,7 @@ class _LiveExampleState extends State<LiveExample> {
     _part('Radio group', [
       NeumorphicRadioGroup<String>(
         key: const Key('live-radio'),
-        label: 'Delivery',
+        semanticLabel: 'Delivery',
         value: _radio,
         options: const [
           NeumorphicRadio('standard', 'Standard', note: 'Three to five days'),
@@ -812,7 +813,7 @@ class _LiveExampleState extends State<LiveExample> {
           NeumorphicSwitch(
             key: const Key('live-switch'),
             value: _pushUpdates,
-            label: 'Enable alerts',
+            semanticLabel: 'Enable alerts',
             onChanged: (value) => setState(() => _pushUpdates = value),
           ),
           'Enable alerts',
@@ -823,7 +824,7 @@ class _LiveExampleState extends State<LiveExample> {
     _part('Segmented and latches', [
       NeumorphicSegmentedButton<String>(
         key: const Key('live-segments'),
-        label: 'Billing',
+        semanticLabel: 'Billing',
         value: _segment,
         segments: const [
           NeumorphicButtonSegment('month', 'Monthly'),
@@ -915,7 +916,7 @@ class _LiveExampleState extends State<LiveExample> {
       ),
       NeumorphicSlider(
         key: const Key('live-volume'),
-        label: 'Alert volume',
+        semanticLabel: 'Alert volume',
         value: _level,
         valueLabel: (v) => '${(v * 100).round()}%',
         onChanged: (v) => setState(() => _level = v),
@@ -932,7 +933,7 @@ class _LiveExampleState extends State<LiveExample> {
           child: Text('Your rating', style: _t.textTheme.caption),
         ),
         NeumorphicRating(
-          label: 'Your rating',
+          semanticLabel: 'Your rating',
           value: _rating.toDouble(),
           onChanged: (v) => setState(() => _rating = v),
         ),
@@ -941,7 +942,7 @@ class _LiveExampleState extends State<LiveExample> {
         ExcludeSemantics(
           child: Text('Average, 3.6 of 5', style: _t.textTheme.caption),
         ),
-        const NeumorphicRating(label: 'Average rating', value: 3.6),
+        const NeumorphicRating(semanticLabel: 'Average rating', value: 3.6),
       ], gap: 8),
     ]),
   ]);
@@ -950,16 +951,22 @@ class _LiveExampleState extends State<LiveExample> {
 
   Widget _pickers() => _stack([
     _part('Select', [
-      NeumorphicSelect<String>(
-        key: const Key('live-select'),
-        labelText: 'Country',
-        value: _country,
-        options: const [
-          NeumorphicMenuItem('United States', 'United States'),
-          NeumorphicMenuItem('Canada', 'Canada'),
-          NeumorphicMenuItem('United Kingdom', 'United Kingdom'),
+      // Alone, as a filter, a select keeps to its content; in a form's
+      // column it takes the column.
+      Row(
+        children: [
+          NeumorphicSelect<String>(
+            key: const Key('live-select'),
+            labelText: 'Country',
+            value: _country,
+            options: const [
+              NeumorphicMenuItem('United States', 'United States'),
+              NeumorphicMenuItem('Canada', 'Canada'),
+              NeumorphicMenuItem('United Kingdom', 'United Kingdom'),
+            ],
+            onChanged: (value) => setState(() => _country = value),
+          ),
         ],
-        onChanged: (value) => setState(() => _country = value),
       ),
       // A picker row that opens a page of its own: a value and its note, not a second country menu.
       _stack([
@@ -970,6 +977,13 @@ class _LiveExampleState extends State<LiveExample> {
           onPressed: () => _say('Choosing a reminder'),
         ),
       ], gap: 8),
+    ]),
+    _part('Date field', [
+      NeumorphicDateField(
+        labelText: 'Moving in',
+        value: _movingIn,
+        onChanged: (day) => setState(() => _movingIn = day),
+      ),
     ]),
     _part('Autocomplete', [
       NeumorphicSearchField(
@@ -1109,7 +1123,7 @@ class _LiveExampleState extends State<LiveExample> {
             actions: [
               NeumorphicIconButton(
                 NeumorphicGlyphs.ellipsis,
-                label: 'More',
+                semanticLabel: 'More',
                 onPressed: () => _say('More'),
               ),
             ],
@@ -1154,7 +1168,7 @@ class _LiveExampleState extends State<LiveExample> {
               height: 196,
               child: NeumorphicNavigationDrawer(
                 width: phone ? box.maxWidth : 280,
-                label: 'Rooms',
+                semanticLabel: 'Rooms',
                 selectedIndex: _rail,
                 items: const [
                   NeumorphicNavItem(
@@ -1258,7 +1272,7 @@ class _LiveExampleState extends State<LiveExample> {
         alignment: AlignmentDirectional.centerStart,
         child: NeumorphicPageDots(
           key: const Key('live-dots'),
-          label: 'Steps',
+          semanticLabel: 'Steps',
           count: 3,
           selectedIndex: _pageDot,
           onChanged: (value) => setState(() => _pageDot = value),
@@ -1481,10 +1495,10 @@ class _LiveExampleState extends State<LiveExample> {
             spans: const [6, 6],
             children: const [
               NeumorphicMedia(
-                label: 'Living room',
+                semanticLabel: 'Living room',
                 glyph: NeumorphicGlyphs.armchair,
               ),
-              NeumorphicMedia(label: 'A picture that did not load'),
+              NeumorphicMedia(semanticLabel: 'A picture that did not load'),
             ],
           ),
         ]),
@@ -1505,7 +1519,7 @@ class _LiveExampleState extends State<LiveExample> {
         ]),
         _part('Carousel', [
           NeumorphicCarouselView(
-            label: 'Rooms',
+            semanticLabel: 'Rooms',
             height: 140,
             // The middle room first: a neighbour shows on each side and both steps are live.
             initialPage: 1,
@@ -1680,7 +1694,7 @@ class _LiveExampleState extends State<LiveExample> {
           ),
         ),
         NeumorphicSlider(
-          label: 'Progress',
+          semanticLabel: 'Progress',
           value: _level,
           onChanged: (v) => setState(() => _level = v),
         ),
@@ -1688,7 +1702,7 @@ class _LiveExampleState extends State<LiveExample> {
     ]),
     _part('States', [
       NeumorphicSegmentedButton<String>(
-        label: 'State',
+        semanticLabel: 'State',
         value: _feedback,
         segments: const [
           NeumorphicButtonSegment('ready', 'Ready'),
@@ -1747,19 +1761,19 @@ class _LiveExampleState extends State<LiveExample> {
     final empty = _chartEmpty;
     return switch (_chartKind) {
       LiveChartKind.line => NeumorphicLineChart(
-        label: label,
+        semanticLabel: label,
         loading: _chartLoading,
         labels: labels,
         series: empty ? const [] : const [rain, last],
       ),
       LiveChartKind.bar => NeumorphicBarChart(
-        label: label,
+        semanticLabel: label,
         loading: _chartLoading,
         labels: labels,
         series: empty ? const [] : const [rain, last],
       ),
       LiveChartKind.area => NeumorphicAreaChart(
-        label: label,
+        semanticLabel: label,
         loading: _chartLoading,
         labels: labels,
         series: empty ? const [] : const [rain],
@@ -1779,7 +1793,7 @@ class _LiveExampleState extends State<LiveExample> {
   Widget _chartsBody() => _stack([
     _part('Line, bar and area', [
       NeumorphicSegmentedButton<LiveChartKind>(
-        label: 'Chart',
+        semanticLabel: 'Chart',
         value: _chartKind,
         segments: const [
           NeumorphicButtonSegment(LiveChartKind.line, 'Line'),
@@ -1804,7 +1818,7 @@ class _LiveExampleState extends State<LiveExample> {
     ]),
     _part('Donut and sparkline', [
       const NeumorphicPieChart(
-        label: 'Energy today',
+        semanticLabel: 'Energy today',
         caption: 'kWh today',
         slices: [
           NeumorphicPieSlice('Heating', 9.2),
@@ -1820,7 +1834,10 @@ class _LiveExampleState extends State<LiveExample> {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text('Steps this week'),
-          NeumorphicSparkline(label: 'Steps', values: [4, 6, 5, 7, 6, 8, 9]),
+          NeumorphicSparkline(
+            semanticLabel: 'Steps',
+            values: [4, 6, 5, 7, 6, 8, 9],
+          ),
         ],
       ),
     ]),
@@ -2145,7 +2162,7 @@ class _LiveExampleState extends State<LiveExample> {
                       figure: '${(_knob * 100).round()}',
                     ),
                     NeumorphicSlider(
-                      label: 'Volume',
+                      semanticLabel: 'Volume',
                       value: _knob,
                       onChanged: (v) => setState(() => _knob = v),
                     ),
@@ -2318,7 +2335,7 @@ class _LiveExampleState extends State<LiveExample> {
     ),
     NeumorphicTextField(labelText: 'Display name', controller: _name),
     NeumorphicSegmentedButton<String>(
-      label: 'Billing period',
+      semanticLabel: 'Billing period',
       value: _segment == 'quarter' ? 'month' : _segment,
       segments: const [
         NeumorphicButtonSegment('month', 'Monthly'),
@@ -2338,13 +2355,13 @@ class _LiveExampleState extends State<LiveExample> {
         ),
       ),
       NeumorphicSlider(
-        label: 'Alert volume',
+        semanticLabel: 'Alert volume',
         value: _level,
         onChanged: (v) => setState(() => _level = v),
       ),
     ], gap: 0),
     NeumorphicRadioGroup<String>(
-      label: 'Delivery',
+      semanticLabel: 'Delivery',
       value: _radio == 'pickup' ? 'standard' : _radio,
       options: const [
         NeumorphicRadio('standard', 'Standard'),
@@ -2372,14 +2389,18 @@ class _LiveExampleState extends State<LiveExample> {
       value: _checked,
       onChanged: (v) => setState(() => _checked = v ?? false),
     ),
-    NeumorphicSelect<String>(
-      labelText: 'Country',
-      value: _country,
-      options: const [
-        NeumorphicMenuItem('United States', 'United States'),
-        NeumorphicMenuItem('Canada', 'Canada'),
+    Row(
+      children: [
+        NeumorphicSelect<String>(
+          labelText: 'Country',
+          value: _country,
+          options: const [
+            NeumorphicMenuItem('United States', 'United States'),
+            NeumorphicMenuItem('Canada', 'Canada'),
+          ],
+          onChanged: (v) => setState(() => _country = v),
+        ),
       ],
-      onChanged: (v) => setState(() => _country = v),
     ),
     _wrap([
       for (final (i, name) in ['All', 'Unread', 'Starred'].indexed)

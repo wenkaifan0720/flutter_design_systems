@@ -28,7 +28,7 @@ class _RatedState extends State<_Rated> {
   Widget build(BuildContext context) => Align(
     alignment: Alignment.topLeft,
     child: NeumorphicRating(
-      label: 'Sleep',
+      semanticLabel: 'Sleep',
       value: _score.toDouble(),
       enabled: widget.enabled,
       onChanged: (score) {
@@ -186,7 +186,7 @@ void main() {
       neumorphicApp(
         const Align(
           alignment: Alignment.topLeft,
-          child: NeumorphicRating(label: 'Average', value: 3.5),
+          child: NeumorphicRating(semanticLabel: 'Average', value: 3.5),
         ),
       ),
     );
@@ -216,7 +216,11 @@ void main() {
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              NeumorphicRating(label: 'Sleep', value: 2, onChanged: log.add),
+              NeumorphicRating(
+                semanticLabel: 'Sleep',
+                value: 2,
+                onChanged: log.add,
+              ),
             ],
           ),
         ),

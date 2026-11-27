@@ -10,7 +10,9 @@ import 'package:neumorphism_ui/src/neumorphism/internal/day_face.dart';
 import 'support.dart';
 
 Finder _day(int day) => find.byWidgetPredicate(
-  (w) => w is NeumorphicTap && (w.label ?? '').contains('November $day, 2026'),
+  (w) =>
+      w is NeumorphicTap &&
+      (w.semanticLabel ?? '').contains('November $day, 2026'),
 );
 
 /// The days whose face shows the pointer.

@@ -27,7 +27,7 @@ import 'entries.dart' show NeumorphicRadioGroup, NeumorphicSegmentedButton;
 import 'frames.dart';
 import 'glyphs.dart';
 import 'internal/cap_label.dart';
-import 'internal/cell_bank.dart' show neumorphicWideRoom;
+import 'internal/eased_lines.dart';
 import 'internal/error_line.dart';
 import 'internal/field_hooks.dart';
 import 'internal/geometry.dart' show cssLinear;
@@ -53,14 +53,11 @@ class _Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: ExcludeSemantics(
-      child: Text(
-        words,
-        style: NeumorphicTheme.of(context).textTheme.caption.copyWith(
-          fontWeight: FontWeight.w700,
-          color: lit ? NeumorphicTheme.of(context).colors.pigmentInk : null,
-        ),
-      ),
+    child: NeumorphicLabelInk(
+      lit: lit,
+      style: NeumorphicTheme.of(context).textTheme.caption
+          .copyWith(fontWeight: FontWeight.w700),
+      child: ExcludeSemantics(child: Text(words)),
     ),
   );
 }
@@ -77,13 +74,18 @@ class _Under extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final error = this.error;
     final helper = this.helper;
-    if (error == null && helper == null) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
+    // It eases in and out under the field.
+    return NeumorphicHintSlot(
       child: error == null
-          ? ExcludeSemantics(child: Text(helper!, style: t.textTheme.caption))
+          ? helper == null
+                ? null
+                : ExcludeSemantics(
+                    key: const ValueKey<bool>(false),
+                    child: Text(helper, style: t.textTheme.caption),
+                  )
           : MediaQuery.supportsAnnounceOf(context)
           ? ExcludeSemantics(
+              key: const ValueKey<bool>(true),
               child: NeumorphicErrorLine(live: false, child: Text(error)),
             )
           : NeumorphicErrorLine(child: Text(error)),
@@ -748,84 +750,75 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
     // The list hangs from the groove, so the label and the words under it stand outside what it is anchored to. It
     // stands clear of the groove, and while it is up the groove rests.
     return NeumorphicFieldListOwner(
-      builder: (context, open, surface) => neumorphicWideRoom(
-        AlignmentDirectional.centerStart,
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (labelText != null) _Label(labelText!),
-            RawCombobox<T>(
-              options: options,
-              search: search,
-              debounceDuration: debounceDuration,
-              loadingBuilder: _searching,
-              errorBuilder: (context, failure) =>
-                  _SearchFailed(failure: failure, list: list),
-              value: value,
-              onSelected: onSelected,
-              displayStringForOption: words,
-              isOptionEnabled: isOptionEnabled,
-              // The pointer's row and the keys' place both stand up off the panel, so they are one place, as in a
-              // native menu: the pointer moves the keys' place, and two rows never read as two current options.
-              highlightFollowsPointer: true,
-              requireSelection: requireSelection,
-              semanticLabel: labelText,
-              // The input says the label, the help and the error; the label stands above and the lines under the
-              // whole, so the list opens at the groove.
-              fieldBuilder: (context, field) => NeumorphicFieldHooks(
-                nameOnly: true,
-                lines: false,
-                expanded: field.isOpen,
-                child: NeumorphicTextField(
-                  labelText: labelText,
-                  hintText: hintText,
-                  helperText: helperText,
-                  errorText: errorText,
-                  enabled: enabled,
-                  style: style,
-                  controller: field.controller,
-                  focusNode: field.focusNode,
-                  // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
-                  // focus restarts the text input, and in a browser the restarted input takes no typing.
-                  onEditingComplete: field.submit,
-                  trailing: ExcludeSemantics(
-                    child: Icon(
-                      NeumorphicGlyphs.chevronsUpDown,
-                      size: 18,
-                      color: t.colors.inkTertiary,
-                    ),
+      builder: (context, open, surface) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (labelText != null) _Label(labelText!),
+          RawCombobox<T>(
+            options: options,
+            search: search,
+            debounceDuration: debounceDuration,
+            loadingBuilder: _searching,
+            errorBuilder: (context, failure) =>
+                _SearchFailed(failure: failure, list: list),
+            value: value,
+            onSelected: onSelected,
+            displayStringForOption: words,
+            isOptionEnabled: isOptionEnabled,
+            // The pointer's row and the keys' place both stand up off the panel, so they are one place, as in a
+            // native menu: the pointer moves the keys' place, and two rows never read as two current options.
+            highlightFollowsPointer: true,
+            requireSelection: requireSelection,
+            semanticLabel: labelText,
+            // The input says the label, the help and the error; the label stands above and the lines under the
+            // whole, so the list opens at the groove.
+            fieldBuilder: (context, field) => NeumorphicFieldHooks(
+              nameOnly: true,
+              lines: false,
+              expanded: field.isOpen,
+              child: NeumorphicTextField(
+                labelText: labelText,
+                hintText: hintText,
+                helperText: helperText,
+                errorText: errorText,
+                enabled: enabled,
+                style: style,
+                controller: field.controller,
+                focusNode: field.focusNode,
+                // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+                // focus restarts the text input, and in a browser the restarted input takes no typing.
+                onEditingComplete: field.submit,
+                trailing: ExcludeSemantics(
+                  child: Icon(
+                    NeumorphicGlyphs.chevronsUpDown,
+                    size: 18,
+                    color: t.colors.inkTertiary,
                   ),
                 ),
               ),
-              optionBuilder: (context, option, states) => NeumorphicPanelRow(
-                label: words(option),
-                states: states,
-                checked: states.contains(WidgetState.selected),
-                inset: list.row,
-                panelInset: list.panel,
-                checkAtEnd: true,
-              ),
-              surfaceBuilder: (context, rows) => surface(
-                NeumorphicPanel(
-                  padding: EdgeInsets.all(list.panel),
-                  child: rows,
-                ),
-              ),
-              emptyBuilder: (context) => Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                child: Text(
-                  NeumorphicLocalizations.of(context).noResults,
-                  style: t.textTheme.caption,
-                ),
+            ),
+            optionBuilder: (context, option, states) => NeumorphicPanelRow(
+              label: words(option),
+              states: states,
+              checked: states.contains(WidgetState.selected),
+              inset: list.row,
+              panelInset: list.panel,
+              checkAtEnd: true,
+            ),
+            surfaceBuilder: (context, rows) => surface(
+              NeumorphicPanel(padding: EdgeInsets.all(list.panel), child: rows),
+            ),
+            emptyBuilder: (context) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Text(
+                NeumorphicLocalizations.of(context).noResults,
+                style: t.textTheme.caption,
               ),
             ),
-            _Under(error: errorText, helper: helperText),
-          ],
-        ),
+          ),
+          _Under(error: errorText, helper: helperText),
+        ],
       ),
     );
   }
@@ -1031,120 +1024,117 @@ class _NeumorphicMultiSelectState<T extends Object>
     );
     // Its list stands clear of the well, and while it is up the well rests.
     return NeumorphicFieldListOwner(
-      builder: (context, open, surface) => neumorphicWideRoom(
-        AlignmentDirectional.centerStart,
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.labelText != null) _Label(widget.labelText!),
-            // The entry says the help and the error, from ui_core's decorator; the lines are drawn under the field.
-            RawInputDecorator(
-              helperText: widget.helperText,
-              errorText: widget.errorText,
-              enabled: !off,
-              builder: (context, parts) => parts.control,
-              child: RawTagInput<T>(
-                values: widget.values,
-                onChanged: widget.onChanged ?? _unchanged,
-                options: widget.options,
-                search: widget.search,
-                debounceDuration: widget.debounceDuration,
-                loadingBuilder: _searching,
-                errorBuilder: (context, failure) =>
-                    _SearchFailed(failure: failure, list: list),
-                displayStringForOption: words,
-                isOptionEnabled: widget.isOptionEnabled,
-                // One place for the pointer and the keys, as the combobox's.
-                highlightFollowsPointer: true,
-                onCreate: widget.onCreate,
-                maxTags: widget.maxTags,
-                semanticLabel: widget.labelText,
-                deleteLabel: local.remove('').trim(),
-                fieldBuilder: (context, field) => Focus(
-                  canRequestFocus: false,
-                  skipTraversal: true,
-                  includeSemantics: false,
-                  onFocusChange: (on) => setState(() => _editing = on),
-                  child: _BareEditor(
-                    controller: field.controller,
-                    focusNode: field.focusNode,
-                    enabled: !off,
-                    // The hint stays under the chips: without it the words line read as an empty well under them.
-                    hint: widget.hintText,
-                    // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
-                    // focus restarts the text input, and in a browser the restarted input takes no typing.
-                    onEditingComplete: field.submit,
-                    style: widget.style,
-                    semanticLabel: widget.labelText ?? widget.hintText,
-                    expanded: field.isOpen,
+      builder: (context, open, surface) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (widget.labelText != null) _Label(widget.labelText!),
+          // The entry says the help and the error, from ui_core's decorator; the lines are drawn under the field.
+          RawInputDecorator(
+            helperText: widget.helperText,
+            errorText: widget.errorText,
+            enabled: !off,
+            builder: (context, parts) => parts.control,
+            child: RawTagInput<T>(
+              values: widget.values,
+              onChanged: widget.onChanged ?? _unchanged,
+              options: widget.options,
+              search: widget.search,
+              debounceDuration: widget.debounceDuration,
+              loadingBuilder: _searching,
+              errorBuilder: (context, failure) =>
+                  _SearchFailed(failure: failure, list: list),
+              displayStringForOption: words,
+              isOptionEnabled: widget.isOptionEnabled,
+              // One place for the pointer and the keys, as the combobox's.
+              highlightFollowsPointer: true,
+              onCreate: widget.onCreate,
+              maxTags: widget.maxTags,
+              semanticLabel: widget.labelText,
+              deleteLabel: local.remove('').trim(),
+              fieldBuilder: (context, field) => Focus(
+                canRequestFocus: false,
+                skipTraversal: true,
+                includeSemantics: false,
+                onFocusChange: (on) => setState(() => _editing = on),
+                child: _BareEditor(
+                  controller: field.controller,
+                  focusNode: field.focusNode,
+                  enabled: !off,
+                  // The hint stays under the chips: without it the words line read as an empty well under them.
+                  hint: widget.hintText,
+                  // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+                  // focus restarts the text input, and in a browser the restarted input takes no typing.
+                  onEditingComplete: field.submit,
+                  style: widget.style,
+                  semanticLabel: widget.labelText ?? widget.hintText,
+                  expanded: field.isOpen,
+                ),
+              ),
+              layoutBuilder: (context, tags, field) => NeumorphicOutOfUse(
+                off: off,
+                child: NeumorphicFieldBox(
+                  style: widget.style,
+                  multiline: true,
+                  shape: shape,
+                  states: {
+                    if (_editing && !open) WidgetState.focused,
+                    if (widget.errorText != null) WidgetState.error,
+                    if (off) WidgetState.disabled,
+                  },
+                  // The chips start where the words of any field start, and the words line goes on after the last chip,
+                  // on its line while there is room, as one flow. With chips the flow stands further in above and
+                  // below, 9 less the air its line leaves above a chip's face, so the first chip's face stands as far
+                  // in from the well's top as from its side, square in its corner.
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: tags.isEmpty
+                        ? 0
+                        : math.max(0, 9 - _chipAir(context)),
                   ),
-                ),
-                layoutBuilder: (context, tags, field) => NeumorphicOutOfUse(
-                  off: off,
-                  child: NeumorphicFieldBox(
-                    style: widget.style,
-                    multiline: true,
-                    shape: shape,
-                    states: {
-                      if (_editing && !open) WidgetState.focused,
-                      if (widget.errorText != null) WidgetState.error,
-                      if (off) WidgetState.disabled,
-                    },
-                    // The chips start where the words of any field start, and the words line goes on after the last chip,
-                    // on its line while there is room, as one flow. With chips the flow stands further in above and
-                    // below, 9 less the air its line leaves above a chip's face, so the first chip's face stands as far
-                    // in from the well's top as from its side, square in its corner.
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: tags.isEmpty
-                          ? 0
-                          : math.max(0, 9 - _chipAir(context)),
-                    ),
-                    // Out of use, each chip is shown alone: no ✕, and no remove action for a screen reader.
-                    child: _TagFlow(
-                      line: NeumorphicChromeMetrics.lineOf(context),
-                      children: [
-                        if (off) ...[
-                          for (final value in widget.values)
-                            KeyedSubtree(
-                              key: ValueKey<Object>(value),
-                              child: chip(value, null),
-                            ),
-                        ] else
-                          ...tags,
-                        field,
-                      ],
-                    ),
-                  ),
-                ),
-                tagBuilder: (context, value, tag) {
-                  final face = chip(value, tag.onDeleted);
-                  if (!tag.focused) return face;
-                  return CustomPaint(
-                    foregroundPainter: neumorphicFocusLift(t, t.shapes.capsule),
-                    child: face,
-                  );
-                },
-                optionBuilder: (context, option, states) => NeumorphicPanelRow(
-                  label: words(option),
-                  states: states,
-                  checked: widget.values.contains(option),
-                  inset: list.row,
-                  panelInset: list.panel,
-                  checkAtEnd: true,
-                ),
-                surfaceBuilder: (context, rows) => surface(
-                  NeumorphicPanel(
-                    padding: EdgeInsets.all(list.panel),
-                    child: rows,
+                  // Out of use, each chip is shown alone: no ✕, and no remove action for a screen reader.
+                  child: _TagFlow(
+                    line: NeumorphicChromeMetrics.lineOf(context),
+                    children: [
+                      if (off) ...[
+                        for (final value in widget.values)
+                          KeyedSubtree(
+                            key: ValueKey<Object>(value),
+                            child: chip(value, null),
+                          ),
+                      ] else
+                        ...tags,
+                      field,
+                    ],
                   ),
                 ),
               ),
+              tagBuilder: (context, value, tag) {
+                final face = chip(value, tag.onDeleted);
+                if (!tag.focused) return face;
+                return CustomPaint(
+                  foregroundPainter: neumorphicFocusLift(t, t.shapes.capsule),
+                  child: face,
+                );
+              },
+              optionBuilder: (context, option, states) => NeumorphicPanelRow(
+                label: words(option),
+                states: states,
+                checked: widget.values.contains(option),
+                inset: list.row,
+                panelInset: list.panel,
+                checkAtEnd: true,
+              ),
+              surfaceBuilder: (context, rows) => surface(
+                NeumorphicPanel(
+                  padding: EdgeInsets.all(list.panel),
+                  child: rows,
+                ),
+              ),
             ),
-            _Under(error: widget.errorText, helper: widget.helperText),
-          ],
-        ),
+          ),
+          _Under(error: widget.errorText, helper: widget.helperText),
+        ],
       ),
     );
   }
@@ -1297,10 +1287,10 @@ class NeumorphicFormField extends StatelessWidget {
 
   // The name a group gives its own node, seen through the same wrappers.
   static String? _ownName(Widget w) => switch (w) {
-    NeumorphicSegmentedButton(:final label) ||
-    NeumorphicRadioGroup(:final label) ||
-    NeumorphicToggleGroup(:final label) ||
-    NeumorphicButtonGroup(:final label) => label,
+    NeumorphicSegmentedButton(:final semanticLabel) ||
+    NeumorphicRadioGroup(:final semanticLabel) ||
+    NeumorphicToggleGroup(:final semanticLabel) ||
+    NeumorphicButtonGroup(:final semanticLabel) => semanticLabel,
     Align(:final child?) ||
     Padding(:final child?) ||
     SizedBox(:final child?) ||
@@ -1333,9 +1323,10 @@ class NeumorphicFormField extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: DefaultTextStyle.merge(
+                // The one label style every field names itself in: a text field's, a select's, a date field's.
                 style: t.textTheme.caption.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: parts.enabled ? c.ink : c.inkTertiary,
+                  color: parts.enabled ? null : c.inkTertiary,
                 ),
                 child: Row(
                   children: [
@@ -1358,22 +1349,20 @@ class NeumorphicFormField extends StatelessWidget {
               ),
             ),
           parts.control,
-          if (parts.invalid && parts.errorText != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: NeumorphicErrorLine(
-                live: false,
-                child: parts.error ?? Text(parts.errorText!),
-              ),
-            )
-          else if (parts.helperText != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: DefaultTextStyle.merge(
-                style: t.textTheme.caption,
-                child: parts.helper ?? Text(parts.helperText!),
-              ),
-            ),
+          // The help or the failure eases in under the field.
+          NeumorphicHintSlot(
+            child: parts.invalid && parts.errorText != null
+                ? NeumorphicErrorLine(
+                    live: false,
+                    child: parts.error ?? Text(parts.errorText!),
+                  )
+                : parts.helperText != null
+                ? DefaultTextStyle.merge(
+                    style: t.textTheme.caption,
+                    child: parts.helper ?? Text(parts.helperText!),
+                  )
+                : null,
+          ),
         ],
       ),
       child: child,

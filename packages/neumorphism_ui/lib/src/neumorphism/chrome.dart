@@ -26,6 +26,9 @@ import 'host.dart';
 import 'internal/cap_label.dart';
 import 'internal/moulded.dart';
 
+export 'package:ui_core/ui_core.dart'
+    show RawBranchBackBehavior, RawNavigationDestination;
+
 class _Badge extends StatelessWidget {
   const _Badge(this.text, {this.size = 18});
   final String text;
@@ -188,81 +191,14 @@ class _NavRow extends StatelessWidget {
   final NeumorphicStyle? style;
   @override
   Widget build(BuildContext context) {
-    final t = NeumorphicTheme.of(context), c = t.colors;
+    final t = NeumorphicTheme.of(context);
     return NeumorphicTap(
       onPressed: item.onPressed,
-      label: item.label,
+      semanticLabel: item.label,
       selected: on,
       style: style,
       themeStyle: t.segmentedButtonTheme,
-      child: Builder(
-        builder: (context) {
-          final states = {
-            ...NeumorphicStatesScope.of(context),
-            if (on) WidgetState.selected,
-          };
-          final look = neumorphicStyleOf([
-            style,
-            t.segmentedButtonTheme,
-          ], states);
-          final row = Row(
-            children: [
-              Icon(
-                item.icon,
-                size: look.iconSize ?? 20,
-                color: look.foreground ?? (on ? c.pigment : c.inkSecondary),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: neumorphicLabel(
-                  Text(
-                    item.label,
-                    style: t.textTheme.body
-                        .copyWith(
-                          fontWeight: on ? FontWeight.w700 : FontWeight.w600,
-                          color: on ? c.ink : c.inkSecondary,
-                        )
-                        .merge(look.textStyle)
-                        .copyWith(color: look.foreground),
-                  ),
-                ),
-              ),
-              if (item.badge != null)
-                _Badge(item.badge!, size: 22)
-              else if (item.count != null)
-                Text(
-                  item.count!,
-                  style: t.textTheme.micro
-                      .copyWith(fontWeight: FontWeight.w700)
-                      .tabular
-                      .merge(look.textStyle)
-                      .copyWith(color: look.foreground),
-                ),
-            ],
-          );
-          final pad = t.density.padding(
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          );
-          final styled =
-              !(style?.isEmpty ?? true) || !t.segmentedButtonTheme.isEmpty;
-          return ConstrainedBox(
-            key: item.key,
-            constraints: BoxConstraints(minHeight: t.density.height(48)),
-            child: on || styled
-                ? NeumorphicSurface(
-                    cast: on
-                        ? NeumorphicSurfaceLevel.groove
-                        : NeumorphicSurfaceLevel.part,
-                    style: style,
-                    themeStyle: t.segmentedButtonTheme,
-                    states: states,
-                    padding: pad,
-                    child: row,
-                  )
-                : Padding(padding: pad, child: row),
-          );
-        },
-      ),
+      child: _NavRowFace(item: item, on: on, style: style),
     );
   }
 }
@@ -270,16 +206,18 @@ class _NavRow extends StatelessWidget {
 /// The pilaster: flush with the page's edge, the height of the page, square, since it's part of the wall.
 class _Rail extends StatelessWidget {
   const _Rail({
-    required this.brand,
-    required this.nav,
-    required this.active,
+    required this.head,
+    required this.places,
     this.action,
     this.rail = const [],
     this.foot = const [],
   });
-  final NeumorphicBrand brand;
-  final List<NeumorphicNavItem> nav;
-  final int active;
+
+  /// What heads it: the app's brand.
+  final Widget? head;
+
+  /// The app's places, one under another.
+  final List<Widget> places;
   final Widget? action;
   final List<Widget> rail, foot;
   @override
@@ -313,19 +251,14 @@ class _Rail extends StatelessWidget {
                   child: NeumorphicColumn(
                     gap: 28,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: NeumorphicBrandRow(brand.name, mark: brand.mark),
-                      ),
-                      ?action,
-                      if (nav.isNotEmpty)
-                        NeumorphicColumn(
-                          gap: 6,
-                          children: [
-                            for (var i = 0; i < nav.length; i++)
-                              _NavRow(item: nav[i], on: i == active),
-                          ],
+                      if (head != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: head,
                         ),
+                      ?action,
+                      if (places.isNotEmpty)
+                        NeumorphicColumn(gap: 6, children: places),
                       ...rail,
                       // The foot stands at the bottom of the wall.
                       const NeumorphicGrow(child: SizedBox.shrink()),
@@ -448,7 +381,7 @@ class NeumorphicRailLink extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       selected: selected,
       style: style,
       themeStyle: t.segmentedButtonTheme,
@@ -584,7 +517,7 @@ class NeumorphicNavigationDrawer extends StatelessWidget {
     this.onDestinationSelected,
     this.header,
     this.footer,
-    this.label,
+    this.semanticLabel,
     this.width = 280,
   }) : assert(selectedIndex >= 0),
        assert(width > 0);
@@ -608,7 +541,7 @@ class NeumorphicNavigationDrawer extends StatelessWidget {
   final Widget? footer;
 
   /// An accessible name for this navigation region.
-  final String? label;
+  final String? semanticLabel;
 
   /// The preferred width in logical pixels.
   final double width;
@@ -644,7 +577,8 @@ class NeumorphicNavigationDrawer extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label ?? NeumorphicLocalizations.of(context).mainNavigation,
+      label:
+          semanticLabel ?? NeumorphicLocalizations.of(context).mainNavigation,
       child: SizedBox(
         width: width,
         child: CustomPaint(
@@ -704,7 +638,7 @@ class NeumorphicNavigationDrawer extends StatelessWidget {
           onDestinationSelected,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('width', width, defaultValue: 280));
   }
 }
@@ -725,7 +659,7 @@ class NeumorphicNavigationRail extends StatelessWidget {
     this.onDestinationSelected,
     this.leading,
     this.trailing,
-    this.label,
+    this.semanticLabel,
     this.width = 88,
     this.style,
   }) : assert(selectedIndex >= 0),
@@ -750,7 +684,7 @@ class NeumorphicNavigationRail extends StatelessWidget {
   final Widget? trailing;
 
   /// An accessible name for this navigation region.
-  final String? label;
+  final String? semanticLabel;
 
   /// The rail's width in logical pixels.
   final double width;
@@ -761,7 +695,8 @@ class NeumorphicNavigationRail extends StatelessWidget {
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: label ?? NeumorphicLocalizations.of(context).mainNavigation,
+      label:
+          semanticLabel ?? NeumorphicLocalizations.of(context).mainNavigation,
       child: SizedBox(
         width: width,
         child: CustomPaint(
@@ -843,7 +778,7 @@ class NeumorphicNavigationRail extends StatelessWidget {
           onDestinationSelected,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('width', width, defaultValue: 88));
   }
 }
@@ -1045,6 +980,161 @@ class NeumorphicNavigationBar extends StatelessWidget {
   }
 }
 
+/// What a tab shows in the states of the pressable round it (its [NeumorphicStatesScope]).
+class _TabFace extends StatelessWidget {
+  const _TabFace({
+    required this.item,
+    required this.on,
+    required this.style,
+    required this.radius,
+  });
+  final NeumorphicNavItem item;
+  final bool on;
+  final NeumorphicStyle? style;
+  final double radius;
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context), c = t.colors;
+    final states = {
+      ...NeumorphicStatesScope.of(context),
+      if (on) WidgetState.selected,
+    };
+    final look = neumorphicStyleOf([style, t.segmentedButtonTheme], states);
+    final column = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(
+              item.icon,
+              size: look.iconSize ?? 22,
+              color: look.foreground ?? (on ? c.pigment : c.inkTertiary),
+            ),
+            // Held by its foot on the icon's shoulder, so a larger text grows it up and away from the icon: held
+            // by its top, twice the text hung it down over the whole icon.
+            if (item.badge != null)
+              PositionedDirectional(
+                bottom: (look.iconSize ?? 22) - 14,
+                start: 12,
+                child: _Badge(item.badge!),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        neumorphicLabel(
+          Text(
+            item.short ?? item.label,
+            textAlign: TextAlign.center,
+            style: t.textTheme.micro
+                .copyWith(
+                  fontWeight: on ? FontWeight.w700 : FontWeight.w600,
+                  color: on ? c.ink : c.inkTertiary,
+                )
+                .merge(look.textStyle)
+                .copyWith(color: look.foreground),
+          ),
+        ),
+      ],
+    );
+    // A word keeps a breath from its well's walls: 2 in, at large text 'Account' ran from wall to wall.
+    final pad = t.density.padding(const EdgeInsets.fromLTRB(6, 8, 6, 6));
+    final styled = !(style?.isEmpty ?? true) || !t.segmentedButtonTheme.isEmpty;
+    return on || styled
+        ? NeumorphicSurface(
+            cast: on
+                ? NeumorphicSurfaceLevel.groove
+                : NeumorphicSurfaceLevel.part,
+            radius: radius,
+            style: style,
+            themeStyle: t.segmentedButtonTheme,
+            states: states,
+            padding: pad,
+            child: Center(heightFactor: 1, child: column),
+          )
+        : Padding(
+            padding: pad,
+            child: Center(heightFactor: 1, child: column),
+          );
+  }
+}
+
+/// What a place on the pilaster shows in the states of the pressable round it (its [NeumorphicStatesScope]).
+class _NavRowFace extends StatelessWidget {
+  const _NavRowFace({
+    required this.item,
+    required this.on,
+    required this.style,
+  });
+  final NeumorphicNavItem item;
+  final bool on;
+  final NeumorphicStyle? style;
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context), c = t.colors;
+    final states = {
+      ...NeumorphicStatesScope.of(context),
+      if (on) WidgetState.selected,
+    };
+    final look = neumorphicStyleOf([style, t.segmentedButtonTheme], states);
+    final row = Row(
+      children: [
+        Icon(
+          item.icon,
+          size: look.iconSize ?? 20,
+          color: look.foreground ?? (on ? c.pigment : c.inkSecondary),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: neumorphicLabel(
+            Text(
+              item.label,
+              style: t.textTheme.body
+                  .copyWith(
+                    fontWeight: on ? FontWeight.w700 : FontWeight.w600,
+                    color: on ? c.ink : c.inkSecondary,
+                  )
+                  .merge(look.textStyle)
+                  .copyWith(color: look.foreground),
+            ),
+          ),
+        ),
+        if (item.badge != null)
+          _Badge(item.badge!, size: 22)
+        else if (item.count != null)
+          Text(
+            item.count!,
+            style: t.textTheme.micro
+                .copyWith(fontWeight: FontWeight.w700)
+                .tabular
+                .merge(look.textStyle)
+                .copyWith(color: look.foreground),
+          ),
+      ],
+    );
+    final pad = t.density.padding(
+      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    );
+    final styled = !(style?.isEmpty ?? true) || !t.segmentedButtonTheme.isEmpty;
+    return ConstrainedBox(
+      key: item.key,
+      constraints: BoxConstraints(minHeight: t.density.height(48)),
+      child: on || styled
+          ? NeumorphicSurface(
+              cast: on
+                  ? NeumorphicSurfaceLevel.groove
+                  : NeumorphicSurfaceLevel.part,
+              style: style,
+              themeStyle: t.segmentedButtonTheme,
+              states: states,
+              padding: pad,
+              child: row,
+            )
+          : Padding(padding: pad, child: row),
+    );
+  }
+}
+
 class _TabBarPainter extends CustomPainter {
   _TabBarPainter(this.c, this.flat, this.border);
   final NeumorphicRoundedBorder border;
@@ -1119,85 +1209,17 @@ class _Tab extends StatelessWidget {
   final NeumorphicStyle? style;
   @override
   Widget build(BuildContext context) {
-    final t = NeumorphicTheme.of(context), c = t.colors;
+    final t = NeumorphicTheme.of(context);
     return NeumorphicTap(
       radius: radius,
-      label: item.label,
+      semanticLabel: item.label,
       semanticValue: item.badgeLabel ?? item.badge,
       key: item.key,
       onPressed: onPressed ?? item.onPressed,
       selected: on,
       style: style,
       themeStyle: t.segmentedButtonTheme,
-      child: Builder(
-        builder: (context) {
-          final states = {
-            ...NeumorphicStatesScope.of(context),
-            if (on) WidgetState.selected,
-          };
-          final look = neumorphicStyleOf([
-            style,
-            t.segmentedButtonTheme,
-          ], states);
-          final column = Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(
-                    item.icon,
-                    size: look.iconSize ?? 22,
-                    color: look.foreground ?? (on ? c.pigment : c.inkTertiary),
-                  ),
-                  // Held by its foot on the icon's shoulder, so a larger text grows it up and away from the icon: held
-                  // by its top, twice the text hung it down over the whole icon.
-                  if (item.badge != null)
-                    PositionedDirectional(
-                      bottom: (look.iconSize ?? 22) - 14,
-                      start: 12,
-                      child: _Badge(item.badge!),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              neumorphicLabel(
-                Text(
-                  item.short ?? item.label,
-                  textAlign: TextAlign.center,
-                  style: t.textTheme.micro
-                      .copyWith(
-                        fontWeight: on ? FontWeight.w700 : FontWeight.w600,
-                        color: on ? c.ink : c.inkTertiary,
-                      )
-                      .merge(look.textStyle)
-                      .copyWith(color: look.foreground),
-                ),
-              ),
-            ],
-          );
-          // A word keeps a breath from its well's walls: 2 in, at large text 'Account' ran from wall to wall.
-          final pad = t.density.padding(const EdgeInsets.fromLTRB(6, 8, 6, 6));
-          final styled =
-              !(style?.isEmpty ?? true) || !t.segmentedButtonTheme.isEmpty;
-          return on || styled
-              ? NeumorphicSurface(
-                  cast: on
-                      ? NeumorphicSurfaceLevel.groove
-                      : NeumorphicSurfaceLevel.part,
-                  radius: radius,
-                  style: style,
-                  themeStyle: t.segmentedButtonTheme,
-                  states: states,
-                  padding: pad,
-                  child: Center(heightFactor: 1, child: column),
-                )
-              : Padding(
-                  padding: pad,
-                  child: Center(heightFactor: 1, child: column),
-                );
-        },
-      ),
+      child: _TabFace(item: item, on: on, style: style, radius: radius),
     );
   }
 }
@@ -1212,7 +1234,7 @@ class _ActKey extends StatelessWidget {
     return NeumorphicTap(
       key: action.key,
       onPressed: () => action.onPressed(context),
-      label: action.label,
+      semanticLabel: action.label,
       round: true,
       // A plain key sinks through one depth under a press, as every moulded part does.
       pressRelief: action.accent,
@@ -1299,7 +1321,8 @@ class NeumorphicScaffold extends StatelessWidget {
     this.railAct,
     this.lead,
     this.actions = const [],
-  });
+    this.maxWidth = neumorphicPageMaxWidth,
+  }) : assert(maxWidth > 0);
 
   /// The main page content.
   final Widget body;
@@ -1333,6 +1356,11 @@ class NeumorphicScaffold extends StatelessWidget {
 
   /// At the end of the phone's top, by the brand: a chip, monograms, a round key.
   final List<Widget> actions;
+
+  /// How wide the page grows, its margins included: on a wider window it stands centred at this width, and a pushed
+  /// page's [topBar] and the [footer]'s acts line up with it. A reading page reads best narrower (760 holds a list
+  /// and a form at a comfortable measure).
+  final double maxWidth;
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
@@ -1348,13 +1376,22 @@ class NeumorphicScaffold extends StatelessWidget {
         ? const EdgeInsets.fromLTRB(48, 40, 48, 56)
         : EdgeInsets.fromLTRB(20, phoneRoot ? 12 : 16, 20, 32);
     final barAbove = topBar != null && (!root || sheet);
+    Widget onMeasure(Widget child) => sheet || fullBleed
+        ? child
+        : Center(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: child,
+            ),
+          );
     final barInside = topBar != null && !barAbove;
     final column = fullBleed
         ? body
         : Center(
             heightFactor: 1,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1264),
+              constraints: BoxConstraints(maxWidth: maxWidth),
               // The page holds its cards and heads to its margins (ui_core's keyline check).
               child: RawKeylineRegion(
                 label: 'page',
@@ -1398,9 +1435,15 @@ class NeumorphicScaffold extends StatelessWidget {
       ];
       final below = fullBleed
           ? body
-          : RawKeylineRegion(
-              label: 'page',
-              child: Padding(padding: inset, child: body),
+          : Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: RawKeylineRegion(
+                  label: 'page',
+                  child: Padding(padding: inset, child: body),
+                ),
+              ),
             );
       // The head stands above the page and is painted after it: the casts of its keys fall over the page's wall. In a
       // column the page, painted second, cut them off along a straight line.
@@ -1425,7 +1468,8 @@ class NeumorphicScaffold extends StatelessWidget {
       mainAxisSize: sheet ? MainAxisSize.min : MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (barAbove) topBar!,
+        // A pushed page's head stands on the page's measure, its title over the page's words.
+        if (barAbove) onMeasure(topBar!),
         sheet ? Flexible(child: content) : Expanded(child: content),
         if (footer != null)
           // Toasts stand above the footer, as above the navigation bar.
@@ -1438,16 +1482,27 @@ class NeumorphicScaffold extends StatelessWidget {
               ),
               child: SafeArea(
                 top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                  child: t.desk && !sheet
-                      ? Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          heightFactor: 1,
-                          child: SizedBox(width: 360, child: footer!),
-                        )
-                      : footer!,
-                ),
+                // On a desktop its acts end where the page's words end.
+                child: t.desk && !sheet
+                    ? onMeasure(
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            inset.left,
+                            12,
+                            inset.right,
+                            12,
+                          ),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            heightFactor: 1,
+                            child: SizedBox(width: 360, child: footer!),
+                          ),
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                        child: footer!,
+                      ),
               ),
             ),
           ),
@@ -1472,9 +1527,17 @@ class NeumorphicScaffold extends StatelessWidget {
                   width: 272,
                   child: FocusTraversalGroup(
                     child: _Rail(
-                      brand: chrome.brand,
-                      nav: chrome.nav,
-                      active: chrome.selectedIndex,
+                      head: NeumorphicBrandRow(
+                        chrome.brand.name,
+                        mark: chrome.brand.mark,
+                      ),
+                      places: [
+                        for (var i = 0; i < chrome.nav.length; i++)
+                          _NavRow(
+                            item: chrome.nav[i],
+                            on: i == chrome.selectedIndex,
+                          ),
+                      ],
                       action:
                           railAct ??
                           (chrome.action == null
@@ -1510,6 +1573,13 @@ class NeumorphicScaffold extends StatelessWidget {
           'scrollController',
           scrollController,
           defaultValue: null,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'maxWidth',
+          maxWidth,
+          defaultValue: neumorphicPageMaxWidth,
         ),
       );
   }
@@ -1647,7 +1717,7 @@ class NeumorphicBackButton extends StatelessWidget {
         ? NeumorphicGlyphs.chevronRight
         : NeumorphicGlyphs.chevronLeft,
     iconSize: 20,
-    label: close
+    semanticLabel: close
         ? NeumorphicLocalizations.of(context).close
         : NeumorphicLocalizations.of(context).back,
     onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
@@ -1882,11 +1952,11 @@ class NeumorphicInput extends StatelessWidget {
 /// not as holes. Keep the missing state for one.
 ///
 /// ```dart
-/// NeumorphicMedia(slotId: 'item-1', aspect: 1, label: 'A piece')
+/// NeumorphicMedia(slotId: 'item-1', aspect: 1, semanticLabel: 'A piece')
 /// ```
 ///
 /// ```dart
-/// NeumorphicMedia(glyph: NeumorphicGlyphs.lamp, label: 'A lamp')
+/// NeumorphicMedia(glyph: NeumorphicGlyphs.lamp, semanticLabel: 'A lamp')
 /// ```
 class NeumorphicMedia extends StatelessWidget {
   /// Creates a [NeumorphicMedia].
@@ -1897,7 +1967,7 @@ class NeumorphicMedia extends StatelessWidget {
     this.child,
     this.glyph,
     this.aspect = 4 / 3,
-    this.label,
+    this.semanticLabel,
     this.fit = BoxFit.cover,
     this.alignment = Alignment.center,
     this.width,
@@ -1920,7 +1990,7 @@ class NeumorphicMedia extends StatelessWidget {
   final double aspect;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? semanticLabel;
 
   /// How the image is fitted into its allotted area.
   final BoxFit fit;
@@ -1944,8 +2014,8 @@ class NeumorphicMedia extends StatelessWidget {
             ),
           );
     final picture = Semantics(
-      image: label != null,
-      label: label,
+      image: semanticLabel != null,
+      label: semanticLabel,
       child: AspectRatio(
         aspectRatio: aspect,
         child: NeumorphicSurface(
@@ -1996,7 +2066,7 @@ class NeumorphicMedia extends StatelessWidget {
       ..add(StringProperty('slotId', slotId, defaultValue: null))
       ..add(DiagnosticsProperty<IconData>('glyph', glyph, defaultValue: null))
       ..add(DoubleProperty('aspect', aspect, defaultValue: 4 / 3))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
       ..add(
         DiagnosticsProperty<AlignmentGeometry>(
@@ -2082,7 +2152,7 @@ class NeumorphicPictureCard extends StatelessWidget {
             slotId: slotId,
             glyph: glyph,
             aspect: aspect,
-            label: title,
+            semanticLabel: title,
           ),
           // The words start where the picture does: one keyline down the card.
           NeumorphicGrow(
@@ -2119,7 +2189,7 @@ class NeumorphicPictureCard extends StatelessWidget {
               focusNode: focusNode,
               autofocus: autofocus,
               onPressed: onPressed,
-              label: title,
+              semanticLabel: title,
               child: card,
             ),
     );
@@ -2191,17 +2261,17 @@ class _GlyphArt extends StatelessWidget {
 /// While a page's data is on its way: the look's mark, quietly.
 ///
 /// ```dart
-/// NeumorphicLoadingState(label: 'Loading rooms')
+/// NeumorphicLoadingState(semanticLabel: 'Loading rooms')
 /// ```
 class NeumorphicLoadingState extends StatelessWidget {
   /// Creates a [NeumorphicLoadingState].
-  const NeumorphicLoadingState({super.key, this.label});
+  const NeumorphicLoadingState({super.key, this.semanticLabel});
 
   /// An accessible description of the pending operation.
-  final String? label;
+  final String? semanticLabel;
   @override
   Widget build(BuildContext context) => Semantics(
-    label: label ?? NeumorphicLocalizations.of(context).loading,
+    label: semanticLabel ?? NeumorphicLocalizations.of(context).loading,
     child: const Center(
       child: Padding(padding: EdgeInsets.all(40), child: NeumorphicMark()),
     ),
@@ -2210,7 +2280,9 @@ class NeumorphicLoadingState extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('label', label, defaultValue: null));
+    properties.add(
+      StringProperty('semanticLabel', semanticLabel, defaultValue: null),
+    );
   }
 }
 
@@ -2298,5 +2370,255 @@ class NeumorphicErrorState extends StatelessWidget {
       ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry))
       ..add(StringProperty('retryLabel', retryLabel, defaultValue: null))
       ..add(IconDataProperty('icon', icon));
+  }
+}
+
+/// The width of the pilaster an app's places stand on from a desktop's width.
+const double neumorphicPilasterWidth = 272;
+
+/// An app's frame: its places in Neumorphism's raised tab bar along the foot
+/// of a phone or a tablet, and on the pilaster down the start edge from a
+/// desktop's width (1024), each place keeping its own stack of pages (as
+/// Material's `NavigationBar` and `NavigationDrawer` round a `Scaffold`, or
+/// Cupertino's tab scaffold). The place shown is pressed into the wall. A
+/// page pushed in a place keeps the pilaster beside it while the tab bar
+/// steps away ([hideBarOnPush]); back pops it. Toasts keep clear of the tab
+/// bar.
+///
+/// Built on ui_core's [RawAdaptiveShell.branches], which gives the places
+/// their keys (one tab stop, the arrows along them) and their meaning to a
+/// screen reader (tabs in a tab bar, the navigation menu). Each of
+/// [destinations] opens its root page from [branches], in order; each page
+/// is a [NeumorphicScaffold]. The pilaster heads itself with [header] (the
+/// app's [NeumorphicBrandRow]) and ends with [footer].
+///
+/// A page pushes in its own place with `Navigator.of(context).push`; one
+/// pushed on the app's root navigator covers the whole frame, as a
+/// full-screen editor does.
+///
+/// ```dart
+/// NeumorphicAppShell(header: const NeumorphicBrandRow('Shelf'), destinations: const [RawNavigationDestination(label: 'Books', icon: NeumorphicGlyphs.house), RawNavigationDestination(label: 'Settings', icon: NeumorphicGlyphs.settings)], branches: [(context) => const Text('Books'), (context) => const Text('Settings')])
+/// ```
+class NeumorphicAppShell extends StatefulWidget {
+  /// A frame over [destinations], each opening its page from [branches].
+  const NeumorphicAppShell({
+    required this.destinations,
+    required this.branches,
+    this.selectedIndex,
+    this.onDestinationSelected,
+    this.header,
+    this.footer,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
+    this.sidebarWidth = neumorphicPilasterWidth,
+    super.key,
+  }) : assert(
+         destinations.length == branches.length,
+         'Each place has its root page.',
+       );
+
+  /// The app's places, two to five, in order.
+  final List<RawNavigationDestination> destinations;
+
+  /// Each place's root page, in [destinations]' order.
+  final List<WidgetBuilder> branches;
+
+  /// The place shown, when the page keeps it; null: the frame keeps its own,
+  /// starting at the first.
+  final int? selectedIndex;
+
+  /// Called with the place chosen (the one shown again included, which pops
+  /// it to its root).
+  final ValueChanged<int>? onDestinationSelected;
+
+  /// What heads the pilaster: the app's [NeumorphicBrandRow], say.
+  final Widget? header;
+
+  /// What stands at the pilaster's foot: the account, say.
+  final Widget? footer;
+
+  /// The places' navigators' keys, to push in a place from outside (a
+  /// notification opening a record); null: the frame's own.
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place at its root page.
+  final RawBranchBackBehavior backBehavior;
+
+  /// Whether the tab bar steps away while a page is pushed over a place's
+  /// root (the pilaster stays). False keeps the bar under pushed pages, as
+  /// Cupertino's tab scaffold does.
+  final bool hideBarOnPush;
+
+  /// How wide the pilaster stands, its own width whatever the page's.
+  final double sidebarWidth;
+
+  @override
+  State<NeumorphicAppShell> createState() => _NeumorphicAppShellState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<String>('destinations', [
+          for (final d in destinations) d.label,
+        ]),
+      )
+      ..add(IntProperty('branches', branches.length))
+      ..add(
+        IterableProperty<GlobalKey<NavigatorState>>(
+          'navigatorKeys',
+          navigatorKeys,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        EnumProperty<RawBranchBackBehavior>(
+          'backBehavior',
+          backBehavior,
+          defaultValue: RawBranchBackBehavior.firstDestination,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideBarOnPush',
+          value: hideBarOnPush,
+          ifFalse: 'bar kept under pushed pages',
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'sidebarWidth',
+          sidebarWidth,
+          defaultValue: neumorphicPilasterWidth,
+        ),
+      );
+  }
+}
+
+class _NeumorphicAppShellState extends State<NeumorphicAppShell> {
+  int _own = 0;
+
+  int get _selected => widget.selectedIndex ?? _own;
+
+  void _select(int index) {
+    if (widget.selectedIndex == null) setState(() => _own = index);
+    widget.onDestinationSelected?.call(index);
+  }
+
+  @override
+  Widget build(BuildContext context) => RawAdaptiveShell.branches(
+    destinations: widget.destinations,
+    branches: widget.branches,
+    navigatorKeys: widget.navigatorKeys,
+    backBehavior: widget.backBehavior,
+    hideBarOnPush: widget.hideBarOnPush,
+    selectedIndex: _selected,
+    onDestinationSelected: _select,
+    // The tab bar to a desktop's width, the pilaster from there.
+    modeForWidth: (width) => width < neumorphicDesktopBreakpoint
+        ? RawNavigationMode.bar
+        : RawNavigationMode.sidebar,
+    destinationBuilder: (context, destination, details) => _ShellPlace(
+      destination: destination,
+      states: details.states,
+      bar: details.mode.isHorizontal,
+    ),
+    navigationBuilder: (context, details) => details.mode.isHorizontal
+        ? _ShellBar(details: details)
+        : SizedBox(
+            width: widget.sidebarWidth,
+            child: _Rail(
+              head: widget.header,
+              places: details.destinations,
+              foot: [?widget.footer],
+            ),
+          ),
+  );
+}
+
+/// The shell's tab bar: the raised slab along the foot, its places side by
+/// side, the shown one pressed in.
+class _ShellBar extends StatelessWidget {
+  const _ShellBar({required this.details});
+
+  final RawNavigationDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    const inset = NeumorphicNavigationBar._plateInset;
+    return CustomPaint(
+      painter: _TabBarPainter(
+        t.colors,
+        NeumorphicFlatScope.of(context),
+        t.shapes.corner(NeumorphicRadii.slab),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(inset, inset, inset, math.max(bottom, 26)),
+        child: details.group(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 6,
+            children: [
+              for (final destination in details.destinations)
+                Expanded(child: destination),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A place of the shell in its states: a tab in the bar, a row on the
+/// pilaster; the shown one pressed into the wall.
+class _ShellPlace extends StatelessWidget {
+  const _ShellPlace({
+    required this.destination,
+    required this.states,
+    required this.bar,
+  });
+
+  final RawNavigationDestination destination;
+  final Set<WidgetState> states;
+  final bool bar;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    final on = states.contains(WidgetState.selected);
+    final item = NeumorphicNavItem(
+      label: destination.label,
+      icon: on
+          ? (destination.selectedIcon ?? destination.icon)
+          : destination.icon,
+    );
+    final radius = bar
+        ? math.max(
+            NeumorphicRadii.least,
+            NeumorphicRadii.slab - NeumorphicNavigationBar._plateInset,
+          )
+        : NeumorphicRadii.control;
+    return NeumorphicStatesScope(
+      states: states,
+      child: NeumorphicTapFace(
+        states: states,
+        radius: radius,
+        themeStyle: t.segmentedButtonTheme,
+        child: bar
+            ? _TabFace(item: item, on: on, style: null, radius: radius)
+            : _NavRowFace(item: item, on: on, style: null),
+      ),
+    );
   }
 }

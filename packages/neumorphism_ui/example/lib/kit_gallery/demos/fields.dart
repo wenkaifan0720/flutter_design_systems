@@ -98,7 +98,7 @@ Widget kitSpecimenColorPicker() => kitHeld<RawColorController>(
 Widget kitSpecimenWheelPicker() => kitValue<int>(
   2,
   (context, lamps, change) => NeumorphicWheelPicker<int>(
-    label: 'Lamps',
+    semanticLabel: 'Lamps',
     items: const [1, 2, 3, 4, 5, 6, 7, 8],
     value: lamps,
     onChanged: change,

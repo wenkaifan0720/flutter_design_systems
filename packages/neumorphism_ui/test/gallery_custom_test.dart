@@ -10,7 +10,7 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'support.dart';
 

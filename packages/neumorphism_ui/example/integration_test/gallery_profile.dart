@@ -14,7 +14,7 @@ import 'package:flutter/widgets.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui_example/gallery_pages.dart';
 import 'package:neumorphism_ui_example/kit_gallery/live.dart';
-import 'package:neumorphism_ui_example/main.dart' as gallery;
+import 'package:neumorphism_ui_example/gallery.dart' as gallery;
 
 @JS('neumorphicPerformanceReport')
 external set _report(JSString value);

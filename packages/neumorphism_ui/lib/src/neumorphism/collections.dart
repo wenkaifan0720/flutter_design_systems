@@ -62,7 +62,7 @@ Widget _row(
 /// chosen row is pressed in with a breath of the pigment, and the keyboard's row lifts.
 ///
 /// ```dart
-/// NeumorphicDataTable<Map<String, String>>(label: 'Bookings', controller: bookings, cell: (booking, column) => booking[column.id] ?? '')
+/// NeumorphicDataTable<Map<String, String>>(semanticLabel: 'Bookings', controller: bookings, cell: (booking, column) => booking[column.id] ?? '')
 /// ```
 class NeumorphicDataTable<R> extends StatelessWidget {
   /// A table of [controller]'s rows, whose words are [cell]'s.
@@ -72,7 +72,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
     required this.cell,
     this.selectable = true,
     this.onActivate,
-    this.label,
+    this.semanticLabel,
   });
 
   /// The rows, columns, sort, selection and page.
@@ -88,7 +88,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
   final ValueChanged<R>? onActivate;
 
   /// What a screen reader calls the table.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +105,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
       ),
     );
     return Semantics(
-      label: label,
+      label: semanticLabel,
       container: true,
       explicitChildNodes: true,
       child: ListenableBuilder(
@@ -136,7 +136,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
                                 RawDataTableSelection.some => null,
                               },
                               tristate: true,
-                              label: words.selectAllRows,
+                              semanticLabel: words.selectAllRows,
                               onChanged: (_) => controller.togglePage(),
                             ),
                           for (final (i, column) in controller.columns.indexed)
@@ -223,7 +223,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
                       if (selectable)
                         NeumorphicCheckbox(
                           value: row.selected,
-                          label: words.select(
+                          semanticLabel: words.select(
                             cell(row.row, controller.columns.first),
                           ),
                           onChanged: (_) => row.toggle(),
@@ -315,7 +315,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
         DiagnosticsProperty<bool>('selectable', selectable, defaultValue: true),
       )
       ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -346,7 +346,7 @@ class _Sideways extends StatelessWidget {
 /// platform, so a scroll view along [axis] with no controller of its own scrolls on it.
 ///
 /// ```dart
-/// NeumorphicScrollArea(label: 'Notes', child: ListView(children: rows))
+/// NeumorphicScrollArea(semanticLabel: 'Notes', child: ListView(children: rows))
 /// ```
 class NeumorphicScrollArea extends StatefulWidget {
   /// A region around [child], which scrolls by [controller].
@@ -355,7 +355,7 @@ class NeumorphicScrollArea extends StatefulWidget {
     this.controller,
     required this.child,
     this.axis = Axis.vertical,
-    this.label,
+    this.semanticLabel,
     this.thumbVisibility = false,
     this.focusNode,
     this.autofocus = false,
@@ -378,7 +378,7 @@ class NeumorphicScrollArea extends StatefulWidget {
   final Axis axis;
 
   /// What a screen reader calls the region.
-  final String? label;
+  final String? semanticLabel;
 
   /// Whether the bar always shows.
   final bool thumbVisibility;
@@ -408,7 +408,7 @@ class NeumorphicScrollArea extends StatefulWidget {
         ),
       )
       ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>(
           'thumbVisibility',
@@ -456,7 +456,7 @@ class _NeumorphicScrollAreaState extends State<NeumorphicScrollArea> {
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       thickness: 12,
-      semanticLabel: widget.label,
+      semanticLabel: widget.semanticLabel,
       visibility: widget.thumbVisibility
           ? RawScrollbarVisibility.always
           : RawScrollbarVisibility.auto,
@@ -1033,7 +1033,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
     required this.labelOf,
     this.onActivate,
     this.iconOf,
-    this.label,
+    this.semanticLabel,
   });
 
   /// The roots, the children, and which are open and chosen.
@@ -1049,7 +1049,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
   final IconData? Function(T node)? iconOf;
 
   /// What a screen reader calls the tree.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1062,7 +1062,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       rowBuilder: (context, item) {
         final node = item.row.node;
         final icon = iconOf?.call(node);
@@ -1168,6 +1168,6 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
       ..add(
         ObjectFlagProperty<IconData? Function(T node)>.has('iconOf', iconOf),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

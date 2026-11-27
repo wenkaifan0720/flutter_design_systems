@@ -109,7 +109,7 @@ class NeumorphicPanel extends StatelessWidget {
     this.maxHeight,
     this.padding = const EdgeInsets.all(12),
     this.style,
-    this.label,
+    this.semanticLabel,
     this.menu = false,
   });
 
@@ -135,7 +135,7 @@ class NeumorphicPanel extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// What a screen reader calls it.
-  final String? label;
+  final String? semanticLabel;
 
   /// Whether it holds a menu's rows: whichever moved last, the keys or the pointer, has the one lit
   /// [NeumorphicPanelRow], never a lifted row and a raised one at once. Opened by the keys (a key still down as it
@@ -163,11 +163,11 @@ class NeumorphicPanel extends StatelessWidget {
         child: menu ? _MenuPlace(child: child) : child,
       ),
     );
-    if (label != null) {
+    if (semanticLabel != null) {
       panel = Semantics(
         container: true,
         explicitChildNodes: true,
-        label: label,
+        label: semanticLabel,
         child: panel,
       );
     }

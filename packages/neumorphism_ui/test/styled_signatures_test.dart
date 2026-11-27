@@ -22,8 +22,10 @@ void main() {
     ),
     (
       'photo placeholder',
-      () =>
-          const NeumorphicMedia(label: 'A room', glyph: NeumorphicGlyphs.house),
+      () => const NeumorphicMedia(
+        semanticLabel: 'A room',
+        glyph: NeumorphicGlyphs.house,
+      ),
     ),
     (
       'success state',

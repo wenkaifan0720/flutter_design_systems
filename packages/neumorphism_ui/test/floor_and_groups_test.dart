@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'support.dart';
 
@@ -61,7 +60,7 @@ Widget _key({double size = 32}) => Align(
   alignment: AlignmentDirectional.centerStart,
   child: NeumorphicIconButton(
     NeumorphicGlyphs.chevronLeft,
-    label: 'Back',
+    semanticLabel: 'Back',
     size: size,
     onPressed: () {},
   ),
@@ -109,10 +108,6 @@ void main() {
         targets: const RawTapTargets(touch: Size.square(56)),
       );
       expect(floor, const Size.square(56));
-      // ignore: deprecated_member_use
-      expect(NeumorphicChromeMetrics.targetSize, 40);
-      // ignore: deprecated_member_use
-      expect(NeumorphicChromeMetrics.touchTarget, 40);
     },
   );
 

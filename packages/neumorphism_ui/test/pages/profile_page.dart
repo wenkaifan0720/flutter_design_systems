@@ -113,7 +113,7 @@ class ProfilePage extends StatelessWidget {
       actions: [
         NeumorphicRoundButton(
           NeumorphicGlyphs.settings,
-          label: 'Settings',
+          semanticLabel: 'Settings',
           onPressed: () {},
         ),
       ],
