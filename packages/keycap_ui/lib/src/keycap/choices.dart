@@ -18,7 +18,9 @@ import 'lists.dart';
 import 'theme.dart';
 
 /// A checkbox: a small key that latches down when checked, a tick printed
-/// on it (a bar when [tristate] and mixed).
+/// on it (a bar when [tristate] and mixed). It keeps its own size in any
+/// parent, as Material's `Checkbox` does: in a wider slot it stands at the
+/// slot's start.
 ///
 /// ```dart
 /// KeycapCheckbox(value: images, onChanged: (v) => setState(() => images = v!))
@@ -69,26 +71,28 @@ class KeycapCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    return RawButton(
-      onPressed: onChanged == null ? null : () => onChanged!(_next),
-      focusNode: focusNode,
-      autofocus: autofocus,
-      button: false,
-      checked: value ?? false,
-      mixed: value == null,
-      semanticLabel: semanticLabel,
-      excludeSemantics: true,
-      builder: (context, states, _) => TapTargetPadding(
-        child: KeycapToggleKey(
-          states: states,
-          latched: value != false,
-          style: style,
-          shape: KeycapToggleShape.square,
-          legend: (color, t) => CustomPaint(
-            size: const Size.square(14),
-            painter: _TickPainter(t, color, mixed: value == null),
+    return _OwnSize(
+      child: RawButton(
+        onPressed: onChanged == null ? null : () => onChanged!(_next),
+        focusNode: focusNode,
+        autofocus: autofocus,
+        button: false,
+        checked: value ?? false,
+        mixed: value == null,
+        semanticLabel: semanticLabel,
+        excludeSemantics: true,
+        builder: (context, states, _) => TapTargetPadding(
+          child: KeycapToggleKey(
+            states: states,
+            latched: value != false,
+            style: style,
+            shape: KeycapToggleShape.square,
+            legend: (color, t) => CustomPaint(
+              size: const Size.square(14),
+              painter: _TickPainter(t, color, mixed: value == null),
+            ),
+            theme: theme,
           ),
-          theme: theme,
         ),
       ),
     );
@@ -220,7 +224,9 @@ class _TickPainter extends CustomPainter {
 }
 
 /// A radio: a round key that latches down, a dot printed on it, when its
-/// [value] is the group's. Most screens want [KeycapRadioGroup].
+/// [value] is the group's. Most screens want [KeycapRadioGroup]. It keeps
+/// its own size in any parent, as Material's `Radio` does: in a wider slot
+/// it stands at the slot's start.
 ///
 /// ```dart
 /// KeycapRadio<String>(value: 'md', groupValue: format, onChanged: setFormat, semanticLabel: 'Markdown')
@@ -259,22 +265,24 @@ class KeycapRadio<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final chosen = value == groupValue;
-    return RawButton(
-      onPressed: onChanged == null ? null : () => onChanged!(value),
-      focusNode: focusNode,
-      button: false,
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: semanticLabel,
-      excludeSemantics: true,
-      builder: (context, states, _) => TapTargetPadding(
-        child: KeycapToggleKey(
-          theme: theme,
-          states: states,
-          latched: chosen,
-          style: style,
-          shape: KeycapToggleShape.round,
-          legend: (color, t) => _Dot(color: color, t: t),
+    return _OwnSize(
+      child: RawButton(
+        onPressed: onChanged == null ? null : () => onChanged!(value),
+        focusNode: focusNode,
+        button: false,
+        checked: chosen,
+        inMutuallyExclusiveGroup: true,
+        semanticLabel: semanticLabel,
+        excludeSemantics: true,
+        builder: (context, states, _) => TapTargetPadding(
+          child: KeycapToggleKey(
+            theme: theme,
+            states: states,
+            latched: chosen,
+            style: style,
+            shape: KeycapToggleShape.round,
+            legend: (color, t) => _Dot(color: color, t: t),
+          ),
         ),
       ),
     );
@@ -434,7 +442,9 @@ class KeycapRadioGroup<T> extends StatelessWidget {
 
 /// A switch: a small 1.25u key, its sculpt showing, in a slot cut into the
 /// case. On, the key slides to the slot's end and the slot's floor darkens
-/// to the modifier plastic, as a lit key's housing does.
+/// to the modifier plastic, as a lit key's housing does. It keeps its own
+/// size in any parent, as Material's `Switch` does: in a wider slot (a
+/// [KeycapField] in a stretching column) it stands at the slot's start.
 ///
 /// ```dart
 /// KeycapSwitch(value: spellcheck, onChanged: (v) => setState(() => spellcheck = v), semanticLabel: 'Check spelling')
@@ -480,76 +490,78 @@ class KeycapSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    return RawButton(
-      onPressed: onChanged == null ? null : () => onChanged!(!value),
-      focusNode: focusNode,
-      autofocus: autofocus,
-      button: false,
-      toggled: value,
-      semanticLabel: semanticLabel,
-      excludeSemantics: true,
-      builder: (context, states, _) {
-        final layered = RawStyleOf([style, theme.toggleStyle], states);
-        final off = states.contains(WidgetState.disabled);
-        final focused = states.contains(WidgetState.focused);
-        final light = c.brightness == Brightness.light;
-        // On: the slot's floor turns the modifier's plastic, dark enough to
-        // hold 3:1 against the well's floor beside it.
-        final onFloor = light
-            ? Color.lerp(c.modifier.front, c.ink, 0.32)!
-            : Color.lerp(c.modifier.top, c.ink, 0.35)!;
-        var key = keycapKeyFace(
-          theme,
-          KeycapKind.alpha,
-          states.difference({WidgetState.focused}),
-          radius: KeycapMetrics.smallKeyRadius,
-        );
-        key = layered.on(key);
-        const inset = 2.0;
-        const keySide = height - inset * 2;
-        // A 1.25u key: a quarter wider than it is deep.
-        const keyWidth = keySide * 1.25;
-        return TapTargetPadding(
-          child: SizedBox(
-            width: width,
-            height: height,
-            child: KeycapSpringValue(
-              value: value ? 1 : 0,
-              spring: KeycapMotion.latch,
-              builder: (context, t, _) {
-                final p = t.clamp(0.0, 1.0);
-                final floor = Color.lerp(c.well, onFloor, p)!;
-                return Stack(
-                  children: [
-                    Positioned.fill(
-                      child: KeycapWell(
-                        radius: BorderRadius.circular(
-                          KeycapMetrics.smallKeyRadius + inset,
-                        ),
-                        floor: off ? Color.lerp(floor, c.ground, 0.5) : floor,
-                        rim: focused ? c.focus : null,
-                        clip: false,
-                      ),
-                    ),
-                    PositionedDirectional(
-                      top: inset,
-                      start: inset + (width - keyWidth - inset * 2) * t,
-                      child: SizedBox(
-                        width: keyWidth,
-                        height: keySide,
-                        child: AnimatedKeycapCap(
-                          face: key,
-                          walls: KeycapMetrics.walls(keySide),
+    return _OwnSize(
+      child: RawButton(
+        onPressed: onChanged == null ? null : () => onChanged!(!value),
+        focusNode: focusNode,
+        autofocus: autofocus,
+        button: false,
+        toggled: value,
+        semanticLabel: semanticLabel,
+        excludeSemantics: true,
+        builder: (context, states, _) {
+          final layered = RawStyleOf([style, theme.toggleStyle], states);
+          final off = states.contains(WidgetState.disabled);
+          final focused = states.contains(WidgetState.focused);
+          final light = c.brightness == Brightness.light;
+          // On: the slot's floor turns the modifier's plastic, dark enough to
+          // hold 3:1 against the well's floor beside it.
+          final onFloor = light
+              ? Color.lerp(c.modifier.front, c.ink, 0.32)!
+              : Color.lerp(c.modifier.top, c.ink, 0.35)!;
+          var key = keycapKeyFace(
+            theme,
+            KeycapKind.alpha,
+            states.difference({WidgetState.focused}),
+            radius: KeycapMetrics.smallKeyRadius,
+          );
+          key = layered.on(key);
+          const inset = 2.0;
+          const keySide = height - inset * 2;
+          // A 1.25u key: a quarter wider than it is deep.
+          const keyWidth = keySide * 1.25;
+          return TapTargetPadding(
+            child: SizedBox(
+              width: width,
+              height: height,
+              child: KeycapSpringValue(
+                value: value ? 1 : 0,
+                spring: KeycapMotion.latch,
+                builder: (context, t, _) {
+                  final p = t.clamp(0.0, 1.0);
+                  final floor = Color.lerp(c.well, onFloor, p)!;
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: KeycapWell(
+                          radius: BorderRadius.circular(
+                            KeycapMetrics.smallKeyRadius + inset,
+                          ),
+                          floor: off ? Color.lerp(floor, c.ground, 0.5) : floor,
+                          rim: focused ? c.focus : null,
+                          clip: false,
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                      PositionedDirectional(
+                        top: inset,
+                        start: inset + (width - keyWidth - inset * 2) * t,
+                        child: SizedBox(
+                          width: keyWidth,
+                          height: keySide,
+                          child: AnimatedKeycapCap(
+                            face: key,
+                            walls: KeycapMetrics.walls(keySide),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -562,6 +574,23 @@ class KeycapSwitch extends StatelessWidget {
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
   }
+}
+
+// A small control at its own size in any parent, as Material's switch,
+// checkbox and radio keep theirs: in a wider slot (a field in a stretching
+// column) it stands at the slot's start, and only its own key takes a press.
+class _OwnSize extends StatelessWidget {
+  const _OwnSize({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    widthFactor: 1,
+    heightFactor: 1,
+    child: child,
+  );
 }
 
 /// One key in a [KeycapSegmentedButton] or a [KeycapTabBar].

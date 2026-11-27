@@ -1,5 +1,5 @@
 // Keycap's colourways: the six are ui_core's named palettes and the host takes one; a tone's ink stays apart from the
-// others in every colourway, day and night.
+// others, and a note's from the accent's words, in every colourway, day and night.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keycap_ui/keycap_ui.dart';
@@ -62,6 +62,57 @@ void main() {
             },
           ),
     ]).verify();
+  });
+
+  // A note never reads as a link or a choice: its ink stays apart from the
+  // accent's words, in the six colourways and for a brand's key.
+  test("a note's ink stays apart from the accent's words in every colourway and for a brand's key", () {
+    const brands = [
+      Color(0xFF2F59CF),
+      Color(0xFF3B82F6),
+      Color(0xFF0E7C86),
+      Color(0xFF16807A),
+      Color(0xFF6A4FC8),
+      Color(0xFFC2477A),
+    ];
+    final sets = <DesignToneSet>[];
+    void add(String name, Brightness brightness, KeycapColors c) {
+      sets
+        ..add(
+          DesignToneSet(
+            palette: name,
+            brightness: brightness,
+            tones: {'info': c.info, 'accent': c.accentInk},
+          ),
+        )
+        ..add(
+          DesignToneSet(
+            palette: name,
+            brightness: brightness,
+            tones: {
+              for (final tone in KeycapTone.values) tone.name: tone.inkIn(c),
+            },
+          ),
+        );
+    }
+
+    for (final brightness in Brightness.values) {
+      for (final palette in KeycapThemeData.palettes) {
+        add(
+          palette.label,
+          brightness,
+          KeycapThemeData.preset(palette.id, brightness).colors,
+        );
+      }
+      for (final accent in brands) {
+        add(
+          'from(${accent.toARGB32().toRadixString(16)})',
+          brightness,
+          KeycapColors.from(brightness: brightness, accent: accent),
+        );
+      }
+    }
+    const DesignToneCheck(look: 'Keycap').check(sets).verify();
   });
 
   for (final b in Brightness.values) {

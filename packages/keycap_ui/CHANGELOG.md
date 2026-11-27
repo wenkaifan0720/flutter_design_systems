@@ -1,3 +1,17 @@
+## 0.6.1
+
+- Requires ui_core 0.8.5 (ui_core_test 0.6.2 for the checks).
+- `KeycapSwitch`, `KeycapCheckbox` and `KeycapRadio` keep their own size in any parent, as Material's do: under a
+  `KeycapField` in a stretching column (the README's form) each stands at the field's start, and only its own key
+  takes a press. A switch had stretched to the column's width, its key stopping a key's width along the slot.
+- `KeycapColors.info`, a note's ink, stays apart from the accent's words in every colourway: the classic's cobalt, or
+  the ocean's teal where the key itself is cobalt or near it (classic, lilac). A note (a tag, a banner, a toast in
+  `KeycapTone.info`) had been drawn in the accent's ink in five colourways, so it read as a link or a choice. A brand's
+  theme from `KeycapThemeData.from` takes the same rule.
+- A part's corners stay fixed: a style's `corners` (ui_core 0.8.5's `RawCorners`) leaves them as they are, since a
+  keycap's profile is the look.
+- The README's form shows a switch in its field, and its colours section says which tones stay apart from what.
+
 ## 0.6.0
 
 - Requires ui_core 0.8.2.

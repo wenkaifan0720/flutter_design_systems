@@ -179,7 +179,8 @@ Future<void> confirmRemove(BuildContext context, String title) async {
 wrong field takes the focus and a screen reader hears how many need attention; after that the errors follow the
 typing. Every field takes its column's width, so a form stands on one edge. `KeycapDatePicker` takes a null day for
 "not yet", raises the month and writes the day as `KeycapFormat.date` does ("Nov 14, 2026" in English). A control
-with no field of its own (a switch, a segmented row, a stepper) takes its label and its help from `KeycapField`.
+with no field of its own (a switch, a segmented row, a stepper) takes its label and its help from `KeycapField`. A
+switch, a checkbox and a radio keep their own size there, at the field's start, as Material's do.
 
 ```dart
 class AddBookPage extends StatefulWidget {
@@ -192,6 +193,7 @@ class AddBookPage extends StatefulWidget {
 class _AddBookPageState extends State<AddBookPage> {
   final form = GlobalKey<RawFormState>();
   DateTime? started;
+  bool favourite = false;
 
   @override
   Widget build(BuildContext context) => KeycapScreen(
@@ -215,6 +217,10 @@ class _AddBookPageState extends State<AddBookPage> {
             firstDate: DateTime(1900),
             lastDate: DateTime.now(),
             onChanged: (day) => setState(() => started = day),
+          ),
+          KeycapField(
+            labelText: 'Favourite',
+            child: KeycapSwitch(value: favourite, onChanged: (on) => setState(() => favourite = on)),
           ),
         ],
       ),
@@ -374,7 +380,10 @@ key, the default), `retro` (beige alphas, warm grey modifiers, an amber key), `s
 is the classic keyboard's plastics at the same tones in other hues, so every legend reads as it does in classic.
 `KeycapThemeData.palettes` lists them for a picker and `KeycapHost(palette: ...)` takes one;
 `KeycapThemeData.preset('sage', Brightness.light)` gives one's theme. A status's tones (info, success, warning,
-danger) stay apart in every colourway, so a success never reads as the accent or a warning.
+danger) stay apart from one another in every colourway, so a success never reads as a warning. A note's ink (info)
+stays apart from the accent's words as well, so a note never reads as a link or a choice: it is the classic's cobalt,
+or the ocean's teal where the key itself is cobalt or near it (classic, lilac). Sage's key is green, so there a
+success shares the key's hue.
 
 For a brand, `KeycapThemeData.from` moulds the accent key in the brand colour and keeps every legend readable; give it
 to `KeycapHost` as `theme` and `darkTheme`:
@@ -393,6 +402,8 @@ final host = KeycapHost(
 
 Set a part's defaults on the theme (`buttonStyle`, `selectStyle`, `wellStyle` and the rest) or pass a `KeycapStyle`
 to one control. A style sets colours, padding and sizes; the cap's sculpt, the wells and the light stay the look's.
+A part's corners are fixed (ui_core's `cornerFreedom: fixed`): a style's `corners` leaves them as they are, since a
+keycap's profile is the look.
 The cap, the well and the panel are public, `KeycapCap`, `KeycapWell` and `KeycapPanel`, for a part of your own in
 the look.
 

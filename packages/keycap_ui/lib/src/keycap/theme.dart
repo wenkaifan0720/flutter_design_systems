@@ -229,6 +229,8 @@ class KeycapColors with Diagnosticable {
     accentInk: Color(0xFF1F3F96),
     dangerInk: Color(0xFF84231A),
     success: Color(0xFF1A4D2D),
+    // A note's ink: the ocean's teal, apart from the cobalt key's words.
+    info: Color(0xFF00545C),
     hairline: Color(0x24141A24),
     edge: Color(0x47121822),
     focus: Color(0xFF1F3F96),
@@ -286,6 +288,8 @@ class KeycapColors with Diagnosticable {
     accentInk: Color(0xFF8DA7F2),
     dangerInk: Color(0xFFF08A7E),
     success: Color(0xFF6CC48A),
+    // A note's ink: the ocean's teal, apart from the cobalt key's words.
+    info: Color(0xFF4AA5AF),
     hairline: Color(0x14FFFFFF),
     edge: Color(0x24FFFFFF),
     focus: Color(0xFF8DA7F2),
@@ -416,9 +420,11 @@ class KeycapColors with Diagnosticable {
   /// What went right, as words or a mark.
   final Color success;
 
-  /// A note's ink (`KeycapTone.info`): [accentInk], unless the colourway's
-  /// key is too near [success]'s green to tell apart (sage's), then the
-  /// classic's cobalt, 4.5:1 on the same grounds.
+  /// A note's ink (`KeycapTone.info`), apart from the accent's words, so a
+  /// note never reads as a link or a choice: the classic's cobalt, or the
+  /// ocean's teal where the key itself is cobalt or near it (classic's,
+  /// lilac's), whichever stands farther from [accentInk], [success], [ink]
+  /// and [dangerInk]; 4.5:1 on the same grounds. Unset, [accentInk].
   Color get info => _info ?? accentInk;
   final Color? _info;
 
@@ -651,11 +657,9 @@ KeycapColors _keyed(KeycapColors base, Color accent) {
     // Its words read on every ground they are painted on: the case, a well,
     // a page, a chosen row and a panel.
     accentInk: accentInk,
-    // A note's ink stays apart from what went right: a key near success's
-    // green (sage's) leaves notes the classic's cobalt.
-    info: _apart(accentInk, base.success) < 24
-        ? RawPalette.readableTone(base.accentInk, on: grounds)
-        : null,
+    // A note's ink stays apart from the key's own words and from the other
+    // tones (sage's green key, classic's cobalt, lilac's violet).
+    info: _noteInk(accentInk, base, grounds),
     latchedLegend: night
         ? RawPalette.readableTone(accent, on: [base.modifier.top])
         : null,
@@ -679,6 +683,33 @@ double _apart(Color a, Color b) {
   final da = along(x, math.cos) - along(y, math.cos);
   final db = along(x, math.sin) - along(y, math.sin);
   return math.sqrt(dt * dt + da * da + db * db);
+}
+
+// A note's ink (`KeycapTone.info`): the classic's cobalt or the ocean's teal,
+// each at the nearest tone that reads on [grounds], whichever stands farther
+// from [accentInk] and from [base]'s success, warning (the words' ink) and
+// danger.
+Color _noteInk(Color accentInk, KeycapColors base, List<Color> grounds) {
+  final night = base.brightness == Brightness.dark;
+  Color? best;
+  var room = -1.0;
+  for (final key in [
+    (night ? KeycapColors.dark : KeycapColors.light).accentInk,
+    const Color(0xFF0E7C86),
+  ]) {
+    final ink = RawPalette.readableTone(key, on: grounds);
+    final least = [
+      accentInk,
+      base.success,
+      base.ink,
+      base.dangerInk,
+    ].map((other) => _apart(ink, other)).reduce(math.min);
+    if (least > room) {
+      room = least;
+      best = ink;
+    }
+  }
+  return best!;
 }
 
 // A colourway of the classic keyboard: its plastics at their own tones in
