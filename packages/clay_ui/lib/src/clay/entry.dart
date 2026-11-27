@@ -14,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'feedback.dart' show ClaySpinner;
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/entry_parts.dart';
 import 'internal/keys_shown.dart';
 import 'internal/menu.dart';
@@ -588,10 +589,7 @@ class _ClayInputGroupState extends State<ClayInputGroup>
                 states,
                 fill: layered.fill,
                 edge: layered.edge,
-                radius: clayRadiusOf(
-                  layered.shape,
-                  theme.shapeScheme.corners.medium,
-                ),
+                radius: clayCornerRadius(theme, layered, RawCorner.medium),
               ),
               child: child,
             ),
@@ -778,9 +776,11 @@ class ClayOtpField extends StatelessWidget {
                 states,
                 fill: layered.fill,
                 edge: layered.edge,
-                radius: clayRadiusOf(
-                  layered.shape,
-                  theme.shapeScheme.corners.medium - 2,
+                radius: clayCornerRadius(
+                  theme,
+                  layered,
+                  RawCorner.medium,
+                  own: theme.shapeScheme.corners.medium - 2,
                 ),
               ),
               child: Center(
@@ -915,10 +915,7 @@ class ClayNumberField extends StatelessWidget {
                     field.states,
                     fill: layered.fill,
                     edge: layered.edge,
-                    radius: clayRadiusOf(
-                      layered.shape,
-                      theme.shapeScheme.corners.medium,
-                    ),
+                    radius: clayCornerRadius(theme, layered, RawCorner.medium),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

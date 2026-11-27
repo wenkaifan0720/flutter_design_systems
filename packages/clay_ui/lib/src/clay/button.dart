@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'popovers.dart' show ClayTooltip;
 import 'surface.dart';
 import 'theme.dart';
@@ -213,7 +214,7 @@ class ClayButtonFace extends StatelessWidget {
             : isDestructiveAction
             ? c.dangerInk
             : c.ink);
-    final radius = _radius(layered.shape, theme.shapeScheme.corners.medium);
+    final radius = clayCornerRadius(theme, layered, RawCorner.medium);
     // A disabled key lies level with the ground: no float, as Material's
     // disabled keys lose their elevation.
     var face = disabled
@@ -344,10 +345,6 @@ class ClayButtonFace extends StatelessWidget {
       ..add(IterableProperty<WidgetState>('states', states));
   }
 }
-
-/// The corner radius a style's [shape] asks for, or [fallback].
-double _radius(OutlinedBorder? shape, double fallback) =>
-    clayRadiusOf(shape, fallback);
 
 /// A 0 to 1 press depth on Clay's press spring, for a part that draws its
 /// own press (words, a row).

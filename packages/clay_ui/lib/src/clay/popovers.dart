@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/menu.dart';
 import 'select.dart' show ClayMenuReveal;
 import 'surface.dart';
@@ -250,7 +251,7 @@ class _Card extends StatelessWidget {
       child: ClaySurface(
         face: clayMenuFace(theme).copyWith(
           color: layered.fill,
-          radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
+          radius: clayCornerRadius(theme, layered, RawCorner.large),
         ),
         child: Padding(
           padding:

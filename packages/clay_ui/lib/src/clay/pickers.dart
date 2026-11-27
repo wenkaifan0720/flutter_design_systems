@@ -14,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu.dart';
 import 'internal/words_fit.dart';
@@ -567,7 +568,7 @@ class _PickerField extends StatelessWidget {
           },
           fill: layered.fill,
           edge: layered.edge,
-          radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.medium),
+          radius: clayCornerRadius(theme, layered, RawCorner.medium),
         );
         final ball = height - 12;
         // Its height is a floor: a date on two lines makes the well taller.

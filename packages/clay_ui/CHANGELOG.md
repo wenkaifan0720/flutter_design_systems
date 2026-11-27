@@ -1,3 +1,9 @@
+## 0.6.1
+
+- Needs ui_core 0.8.5.
+- **A part's own corners.** A style's `corners` (ui_core's `RawCorners`) gives a part one step of the theme's scale on every corner: `ClayStyle(corners: WidgetStatePropertyAll(RawCorners.all(RawCorner.extraLarge)))` rounds a card past its own large step, and `RawCorner.full` makes a key a pill. The step is the theme's, so it follows a rounder or a squarer scheme and its lerps. Clay opens one step on every corner (`ClayThemeData.shapeLimits.cornerFreedom` is `uniform`), because a piece of clay is one inflated volume that rounds evenly. An override whose corners differ (two diagonal cuts, one corner alone) is set aside, and a square step goes to the extra-small step, because clay holds no sharp corner. A debug build says so once. A style's `shape` still wins and is drawn as given.
+- Every part with an outline of its own reads it: keys (`ClayButton`, `ClayButtonGroup`, `ClaySplitButton`), fields (`ClayTextField`, `ClaySelect`, `ClayDatePicker`, `ClayInputGroup`, `ClayNumberField`, `ClayOtpField`), `ClayFileDrop`, `ClayCard`, `ClayGroup`, `ClayDisclosure`, `ClayDisclosureGroup`, `ClayTable`, `ClayDataTable`, `ClayMedia`, `ClayBanner`, `ClayCarousel`, `ClayReorderableList`, `ClayDialog`, `ClayPopover` and `ClayCommandPalette`. A key group's and a split key's own keys keep concentric with the slab's corners. A group's rows keep concentric with the corners it is given. Corners that change with a state, such as a press, move there on Clay's press spring.
+
 ## 0.6.0
 
 - Needs ui_core 0.8.4.

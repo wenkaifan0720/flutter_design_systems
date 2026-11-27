@@ -20,7 +20,9 @@ import 'page_transitions.dart';
 ///
 /// A part reads `fill` as its clay's colour (its light, shade and shadow are
 /// drawn from it), `foreground` as its words and glyphs, `shape` as its
-/// outline, and `padding`, `minimumSize`, `textStyle` and `iconSize` as
+/// outline (any border, as given), `corners` as the step its corners take
+/// (one on every corner, held to [ClayThemeData.shapeLimits]; `shape` wins)
+/// where the part has an outline of its own, and `padding`, `minimumSize`, `textStyle` and `iconSize` as
 /// Material's buttons do. Clay has no strokes, so `side` and `edge` are not
 /// read.
 ///
@@ -1305,6 +1307,13 @@ class ClayThemeData with Diagnosticable {
   /// (a control's corners up to 20: past that a key reads as a chip, which
   /// is a stadium), no stroke, and a relief from 0.75 (where the smallest
   /// parts still puff) to 1.5.
+  ///
+  /// A part's own corners (a style's `corners`) take one step on every
+  /// corner, and never none: a piece of clay is one inflated volume whose
+  /// light and shade run round it in one soft curve, so it rounds evenly,
+  /// and it holds no sharp corner (a square one goes to the extra-small
+  /// step). An override whose corners differ is ignored, and a debug build
+  /// says so once.
   static const RawShapeLimits shapeLimits = RawShapeLimits(
     styles: {RawCornerStyle.continuous},
     extraSmall: RawBand(4, 8),
@@ -1313,6 +1322,15 @@ class ClayThemeData with Diagnosticable {
     large: RawBand(18, 30),
     extraLarge: RawBand(24, 40),
     depth: RawBand(0.75, 1.5),
+    cornerFreedom: RawCornerFreedom.uniform,
+    cornerSteps: {
+      RawCorner.extraSmall,
+      RawCorner.small,
+      RawCorner.medium,
+      RawCorner.large,
+      RawCorner.extraLarge,
+      RawCorner.full,
+    },
   );
 
   /// Every `ClayButton`'s style.

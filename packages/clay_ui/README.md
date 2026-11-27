@@ -388,6 +388,7 @@ stroke, is set aside.
 | `full` | stadium | fixed |
 | Stroke | none | none |
 | `depth` | 1 | 0.75–1.5 |
+| A part's own corners | its step | one step on every corner, never square |
 
 ```dart
 import 'package:clay_ui/clay_ui.dart';
@@ -407,6 +408,25 @@ ClayThemeData firm(Brightness brightness) {
 
 Widget host(BuildContext context, Widget? child) =>
     ClayHost(theme: firm(Brightness.light), darkTheme: firm(Brightness.dark), child: child!);
+```
+
+A part can take its own corners from its style: a step of the theme's scale on every corner. Clay rounds evenly, so
+corners that differ (two diagonal cuts, one corner alone) are set aside, and a square step goes to the extra-small one;
+a debug build says so. A style's `shape` wins and is drawn as given.
+
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:flutter/widgets.dart';
+
+// A card a step rounder than its own, holding a pill key.
+Widget done(VoidCallback onDone) => ClayCard(
+  style: const ClayStyle(corners: WidgetStatePropertyAll(RawCorners.all(RawCorner.extraLarge))),
+  child: ClayButton(
+    'Done',
+    onPressed: onDone,
+    style: const ClayStyle(corners: WidgetStatePropertyAll(RawCorners.all(RawCorner.full))),
+  ),
+);
 ```
 
 ## Testing your app

@@ -13,6 +13,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'actions.dart' show ClayLink;
 import 'button.dart';
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu.dart';
 import 'internal/words_fit.dart';
@@ -1004,10 +1005,7 @@ Widget _palettePanel(BuildContext context, ClayStyle? style, Widget child) {
     child: ClaySurface(
       face: clayMenuFace(theme).copyWith(
         color: layered.fill,
-        radius: clayRadiusOf(
-          layered.shape,
-          theme.shapeScheme.corners.extraLarge,
-        ),
+        radius: clayCornerRadius(theme, layered, RawCorner.extraLarge),
       ),
       child: Padding(
         padding:

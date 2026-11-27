@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/entry_parts.dart' show ClayFieldDecorator;
 import 'surface.dart';
 import 'theme.dart';
@@ -378,10 +379,7 @@ class _ClayTextFieldState extends State<ClayTextField> {
         .merge(layered.textStyle)
         .copyWith(color: widget.enabled ? c.ink : c.inkDisabled);
     final oneLine = widget.maxLines == 1;
-    final radius = clayRadiusOf(
-      layered.shape,
-      theme.shapeScheme.corners.medium,
-    );
+    final radius = clayCornerRadius(theme, layered, RawCorner.medium);
     var face = ClayFace.well(c, color: layered.fill, radius: radius);
     face = face.copyWith(
       // Off, the well fills nearly level with the ground.

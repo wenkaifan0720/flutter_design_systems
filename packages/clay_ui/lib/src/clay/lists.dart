@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -110,7 +111,8 @@ class ClayGroup extends StatelessWidget {
   final double? dividerIndent;
 
   /// This group's own style, over [ClayThemeData.groupStyle]: `fill` the
-  /// slab.
+  /// slab, `corners` its corners (its rows' plates keep concentric with
+  /// them).
   final ClayStyle? style;
 
   @override
@@ -124,7 +126,7 @@ class ClayGroup extends StatelessWidget {
         (first is ClayListTile && first.leading != null
             ? ClayListTile.leadingExtent
             : ClayListTile.inset);
-    final radius = clayRadiusOf(layered.shape, theme.shapeScheme.corners.large);
+    final radius = clayCornerRadius(theme, layered, RawCorner.large);
     return RawKeylineRegion(
       label: header ?? 'Group',
       indents: [indent],
@@ -136,18 +138,21 @@ class ClayGroup extends StatelessWidget {
             ClaySectionHeader(header!, trailing: headerTrailing),
           ClaySurface(
             face: ClayFace.raised(c, color: layered.fill, radius: radius),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final (i, row) in children.indexed) ...[
-                  // Inset at both ends, so no groove runs into the slab's
-                  // rounded edge.
-                  if (i > 0)
-                    ClayGroove(indent: indent, endIndent: ClayListTile.inset),
-                  row,
+            child: _SlabCorner(
+              radius: radius,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final (i, row) in children.indexed) ...[
+                    // Inset at both ends, so no groove runs into the slab's
+                    // rounded edge.
+                    if (i > 0)
+                      ClayGroove(indent: indent, endIndent: ClayListTile.inset),
+                    row,
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           if (footer != null)
@@ -172,6 +177,20 @@ class ClayGroup extends StatelessWidget {
       ..add(StringProperty('footer', footer, defaultValue: null))
       ..add(IntProperty('rows', children.length));
   }
+}
+
+// The corner of the slab a row stands on, so a row's plate keeps concentric
+// with it whatever corners the group's style gives it.
+class _SlabCorner extends InheritedWidget {
+  const _SlabCorner({required this.radius, required super.child});
+
+  final double radius;
+
+  static double? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_SlabCorner>()?.radius;
+
+  @override
+  bool updateShouldNotify(_SlabCorner old) => old.radius != radius;
 }
 
 /// The faint groove between two rows on a slab: a 1 px line of the well's
@@ -370,7 +389,9 @@ class ClayListTile extends StatelessWidget {
           ? theme.rowHeight
           : theme.rowHeight + 12;
       final largeText = MediaQuery.textScalerOf(context).scale(10) >= 15;
-      final plateRadius = theme.shapeScheme.corners.large - plateInset;
+      final plateRadius =
+          (_SlabCorner.of(context) ?? theme.shapeScheme.corners.large) -
+          plateInset;
       final well = ClayFace.well(c, radius: plateRadius);
       final ClayFace plate;
       if (pressed) {
@@ -792,10 +813,7 @@ class ClayCard extends StatelessWidget {
     Widget face(Set<WidgetState> states) {
       final layered = RawStyleOf([style, theme.cardStyle], states);
       final fill = color ?? layered.fill ?? c.clay;
-      final radius = clayRadiusOf(
-        layered.shape,
-        theme.shapeScheme.corners.large,
-      );
+      final radius = clayCornerRadius(theme, layered, RawCorner.large);
       return AnimatedClaySurface(
         face: ClayFace.raised(c, color: fill, radius: radius).copyWith(
           press: states.contains(WidgetState.pressed) ? 0.6 : 0,

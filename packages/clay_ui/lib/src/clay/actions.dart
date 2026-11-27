@@ -72,10 +72,7 @@ class ClayButtonGroup extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.buttonGroupStyle], const {});
-    final radius = clayRadiusOf(
-      layered.shape,
-      theme.shapeScheme.corners.medium,
-    );
+    final radius = clayCornerRadius(theme, layered, RawCorner.medium);
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -565,10 +562,7 @@ class ClaySplitButton extends StatelessWidget {
     final height = theme.controlHeight;
     final layered = RawStyleOf([style, theme.splitButtonStyle], const {});
     final fill = layered.fill ?? (filled ? c.accent : c.clay);
-    final radius = clayRadiusOf(
-      layered.shape,
-      theme.shapeScheme.corners.medium,
-    );
+    final radius = clayCornerRadius(theme, layered, RawCorner.medium);
     final words = layered.foreground ?? (filled ? c.onColor(fill) : c.ink);
     return SizedBox(
       height: height,

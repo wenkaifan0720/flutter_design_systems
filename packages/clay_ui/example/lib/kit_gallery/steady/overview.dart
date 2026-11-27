@@ -89,6 +89,8 @@ class SteadyOverview extends StatelessWidget {
         ),
         const SizedBox(height: ClaySpacing.regular),
         _Moves(wide: width >= 760),
+        const SizedBox(height: ClaySpacing.regular),
+        const _OwnCorners(),
         if (parts.isNotEmpty) ...[
           const SizedBox(height: ClaySpacing.huge),
           ClayGroup(
@@ -333,6 +335,46 @@ class _Move extends StatelessWidget {
           ),
           const SizedBox(height: ClaySpacing.tight),
           Text(body, style: theme.textTheme.secondary),
+        ],
+      ),
+    );
+  }
+}
+
+/// A card and a key given corners of their own by their style: one step on
+/// every corner.
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.clayTheme;
+    return ClayCard(
+      style: const ClayStyle(
+        corners: WidgetStatePropertyAll(RawCorners.all(RawCorner.extraLarge)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Corners of its own',
+            style: theme.textTheme.title.copyWith(color: theme.colors.ink),
+          ),
+          const SizedBox(height: ClaySpacing.tight),
+          Text(
+            'A part takes a step on every corner from its style: this card '
+            'the extra large, its key a pill. Clay rounds evenly, so it '
+            'never takes a square corner.',
+            style: theme.textTheme.secondary,
+          ),
+          const SizedBox(height: ClaySpacing.roomy),
+          ClayButton(
+            'Start a habit',
+            onPressed: () => SteadyFrame.of(context).go(SteadyPlace.habits),
+            style: const ClayStyle(
+              corners: WidgetStatePropertyAll(RawCorners.all(RawCorner.full)),
+            ),
+          ),
         ],
       ),
     );

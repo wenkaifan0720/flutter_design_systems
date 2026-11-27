@@ -14,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'feedback.dart' show ClayProgressBar;
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/entry_parts.dart' show ClayOnFocus;
 import 'surface.dart';
 import 'theme.dart';
@@ -774,10 +775,7 @@ class ClayFileDrop extends StatelessWidget {
           face: ClayFace.well(
             c,
             color: layered.fill,
-            radius: clayRadiusOf(
-              layered.shape,
-              theme.shapeScheme.corners.large,
-            ),
+            radius: clayCornerRadius(theme, layered, RawCorner.large),
           ),
           child: Padding(
             padding: const EdgeInsets.all(ClaySpacing.large),

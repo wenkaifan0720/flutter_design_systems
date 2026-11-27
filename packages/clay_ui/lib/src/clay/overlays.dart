@@ -8,6 +8,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
+import 'internal/corners.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -118,10 +119,7 @@ class ClayDialog extends StatelessWidget {
         face: ClayFace.floating(
           c,
           color: layered.fill,
-          radius: clayRadiusOf(
-            layered.shape,
-            theme.shapeScheme.corners.extraLarge,
-          ),
+          radius: clayCornerRadius(theme, layered, RawCorner.extraLarge),
         ),
         child: RawKeylineRegion(
           label: 'Dialog',

@@ -320,10 +320,7 @@ class ClayDataTable<R> extends StatelessWidget {
             face: ClayFace.raised(
               c,
               color: frame.fill,
-              radius: clayRadiusOf(
-                frame.shape,
-                theme.shapeScheme.corners.large,
-              ),
+              radius: clayCornerRadius(theme, frame, RawCorner.large),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: ClaySpacing.small),
@@ -719,7 +716,7 @@ class ClayCarousel extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layered = RawStyleOf([style, theme.carouselStyle], const {});
-    final radius = clayRadiusOf(layered.shape, theme.shapeScheme.corners.large);
+    final radius = clayCornerRadius(theme, layered, RawCorner.large);
     return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
@@ -833,7 +830,7 @@ class ClayReorderableList<T extends Object> extends StatelessWidget {
     final c = theme.colors;
     final rowHeight = theme.controlHeight + 8;
     final layered = RawStyleOf([style, theme.reorderableListStyle], const {});
-    final radius = clayRadiusOf(layered.shape, theme.shapeScheme.corners.large);
+    final radius = clayCornerRadius(theme, layered, RawCorner.large);
     return ClaySurface(
       face: ClayFace.raised(c, color: layered.fill, radius: radius),
       child: ClipRRect(

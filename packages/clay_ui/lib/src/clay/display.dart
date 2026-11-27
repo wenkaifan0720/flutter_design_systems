@@ -12,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'feedback.dart' show ClaySpinner;
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/menu.dart' show ClayChevronPainter;
 import 'internal/spring.dart';
 import 'internal/words_fit.dart';
@@ -216,7 +217,7 @@ class _ClayDisclosureState extends State<ClayDisclosure> {
       face: ClayFace.raised(
         c,
         color: layered.fill,
-        radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
+        radius: clayCornerRadius(theme, layered, RawCorner.large),
       ),
       child: body,
     );
@@ -257,7 +258,7 @@ class ClayDisclosureGroup extends StatelessWidget {
       face: ClayFace.raised(
         theme.colors,
         color: layered.fill,
-        radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
+        radius: clayCornerRadius(theme, layered, RawCorner.large),
       ),
       child: _InGroup(
         child: Column(
@@ -381,7 +382,7 @@ class ClayTable extends StatelessWidget {
       face: ClayFace.raised(
         c,
         color: layered.fill,
-        radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
+        radius: clayCornerRadius(theme, layered, RawCorner.large),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: ClaySpacing.small),
@@ -1173,9 +1174,11 @@ class ClayMedia extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.mediaStyle], const {});
-    final radius = clayRadiusOf(
-      layered.shape,
-      this.radius ?? theme.shapeScheme.corners.large,
+    final radius = clayCornerRadius(
+      theme,
+      layered,
+      RawCorner.large,
+      own: this.radius,
     );
     final blank = Center(
       child: Icon(
@@ -1488,7 +1491,7 @@ class ClayBanner extends StatelessWidget {
         face: ClayFace.raised(
           c,
           color: layered.fill ?? Color.lerp(c.clay, hue, 0.12),
-          radius: clayRadiusOf(layered.shape, theme.shapeScheme.corners.large),
+          radius: clayCornerRadius(theme, layered, RawCorner.large),
         ),
         child: Padding(
           padding: const EdgeInsets.all(ClaySpacing.regular),

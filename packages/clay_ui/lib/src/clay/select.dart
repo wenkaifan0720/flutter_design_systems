@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/corners.dart';
 import 'internal/entry_parts.dart' show ClayFieldDecorator;
 import 'internal/menu.dart';
 import 'surface.dart';
@@ -111,10 +112,7 @@ class ClaySelect<T> extends StatelessWidget {
           [style, theme.selectStyle],
           {...states, if (errorText != null) WidgetState.error},
         );
-        final radius = clayRadiusOf(
-          layered.shape,
-          theme.shapeScheme.corners.medium,
-        );
+        final radius = clayCornerRadius(theme, layered, RawCorner.medium);
         final fill = layered.fill ?? c.clay;
         var face = enabled
             ? ClayFace.raised(c, color: fill, radius: radius)
